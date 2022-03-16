@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Event, Disposable } from '@opensumi/ide-core-common';
+
 import {
   ITerminalErrorService,
   ITerminalNetwork,

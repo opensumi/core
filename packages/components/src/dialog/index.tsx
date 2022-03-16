@@ -1,11 +1,10 @@
-import React from 'react';
 import clx from 'classnames';
+import React from 'react';
 
-import { Overlay, IOverlayProps } from '../overlay';
-import { IconContext, getKaitianIcon } from '../icon';
 import { Button } from '../button';
-
 import { MessageType } from '../common';
+import { IconContext, getKaitianIcon } from '../icon';
+import { Overlay, IOverlayProps } from '../overlay';
 import './styles.less';
 
 export type ModalType = 'basic' | 'confirm' | 'info';

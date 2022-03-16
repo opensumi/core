@@ -1,4 +1,6 @@
 // eslint-disable-next-line no-console
+import React from 'react';
+
 import { Domain } from '@opensumi/ide-core-browser';
 import {
   MenuContribution,
@@ -6,7 +8,6 @@ import {
   MenuId,
   IComponentMenuItemProps,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import React from 'react';
 
 const CustomMenuItem: React.FC<IComponentMenuItemProps> = (props) => {
   const handleClick = () => {

@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
 import React from 'react';
 
-import { createFromIconfontCN } from '@opensumi/ide-components/lib/icon/iconfont-cn';
 import { Icon } from '@opensumi/ide-components/lib/icon';
+import { createFromIconfontCN } from '@opensumi/ide-components/lib/icon/iconfont-cn';
 
 type IconFontMap = 'icon-javascript' | 'icon-java' | 'icon-shoppingcart' | 'icon-python';
 

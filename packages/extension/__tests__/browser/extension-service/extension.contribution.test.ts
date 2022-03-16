@@ -1,10 +1,11 @@
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { uuid } from '@opensumi/ide-core-common';
 import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
+import { getClientId } from '../../../src/browser/extension.contribution';
+
 import { setupExtensionServiceInjector } from './extension-service-mock-helper';
-import { getClientId } from '../../../lib/browser/extension.contribution';
-import { WSChannelHandler } from '@opensumi/ide-connection';
-import { uuid } from '@opensumi/ide-core-common';
 
 describe('Extension service', () => {
   let injector: MockInjector;

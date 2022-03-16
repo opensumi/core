@@ -7,10 +7,11 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/glob.ts
 
-import * as paths from './paths';
-import * as strings from './strings';
 import { CharCode } from '../charCode';
 import { LRUCache } from '../map';
+
+import * as paths from './paths';
+import * as strings from './strings';
 
 export interface IExpression {
   [pattern: string]: boolean | SiblingClause;

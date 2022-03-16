@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { QuickOpenItem, HideReason, QuickOpenActionProvider, QuickOpenTabOptions } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
@@ -97,4 +98,5 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   setInput(model: IQuickOpenModel, autoFocus: IAutoFocus, ariaLabel?: string): void;
   show(prefix: string, options: QuickOpenInputOptions): void;
   hide(reason?: HideReason): void;
+  blur(): void;
 }

@@ -1,12 +1,15 @@
-import React from 'react';
-import { observer } from 'mobx-react-lite';
-import { localize } from '@opensumi/ide-core-browser';
-import styles from './debug-console.module.less';
 import debounce = require('lodash.debounce');
-import { useInjectable } from '@opensumi/ide-core-browser';
-import { DebugConsoleFilterService } from './debug-console-filter.service';
+import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { HistoryInputBox, IHistoryInputBoxHandler } from '@opensumi/ide-components/lib/input/HistoryInputBox';
+import { localize } from '@opensumi/ide-core-browser';
+import { useInjectable } from '@opensumi/ide-core-browser';
 import { Key } from '@opensumi/ide-core-browser';
+
+import { DebugConsoleFilterService } from './debug-console-filter.service';
+import styles from './debug-console.module.less';
+
 
 /**
  * 调试控制台筛选器

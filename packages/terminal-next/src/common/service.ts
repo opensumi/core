@@ -1,10 +1,12 @@
+import { ITerminalOptions as IXtermTerminalOptions, Terminal } from 'xterm';
+
 import { IDisposable } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
-import { ITerminalOptions as IXtermTerminalOptions, Terminal } from 'xterm';
-import { ITerminalError } from './error';
-import { IShellLaunchConfig, TerminalOptions } from './pty';
+
 import { ITerminalConnection } from './client';
+import { ITerminalError } from './error';
 import { ITerminalProfile } from './profile';
+import { IShellLaunchConfig, TerminalOptions } from './pty';
 
 export interface IPtyExitEvent {
   sessionId: string;

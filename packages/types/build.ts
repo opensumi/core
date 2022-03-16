@@ -1,8 +1,12 @@
-import { readAllMainPackages } from '../../scripts/pkg';
-import { collectPkgContains, collectPkgVersionList } from '../../scripts/manifest';
 import path from 'path';
-import pkg from './package.json';
+
 import { ensureFileSync, writeFileSync } from 'fs-extra';
+
+import { collectPkgContains, collectPkgVersionList } from '../../scripts/manifest';
+import { readAllMainPackages } from '../../scripts/pkg';
+
+import pkg from './package.json';
+
 
 (async () => {
   const manifestFile = path.join(__dirname, 'manifest.json');

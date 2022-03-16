@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
 export const ExampleEditorBottomWidget: ReactEditorComponent<any> = ({ resource }) => (

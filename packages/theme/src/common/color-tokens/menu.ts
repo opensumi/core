@@ -1,5 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor } from '../color-registry';
+
 import { contrastBorder, activeContrastBorder, foreground } from './base';
 import { dropdownBackground, dropdownForeground } from './dropdown';
 import { listActiveSelectionForeground, listActiveSelectionBackground } from './list-tree';

@@ -14,8 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { StartStopLineMatcher, WatchModeLineMatcher, AbstractLineMatcher } from './problem-line-matcher';
+ // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/node/task-problem-collector.ts
+
 import { ProblemMatcher, ProblemMatch } from '@opensumi/ide-core-common';
+
+import { StartStopLineMatcher, WatchModeLineMatcher, AbstractLineMatcher } from './problem-line-matcher';
 
 export function isWatchModeWatcher(matcher: ProblemMatcher): boolean {
   return !!matcher.watching;

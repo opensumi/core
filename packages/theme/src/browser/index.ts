@@ -1,13 +1,15 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
-import { ThemeServicePath, IThemeService, IIconService } from '../common/theme.service';
-import { WorkbenchThemeService } from './workbench.theme.service';
-import { ICSSStyleService } from '../common/style';
-import { CSSStyleService } from './style.service';
-import { IconService } from './icon.service';
-import { ThemeContribution } from './theme.contribution';
+
 import { ISemanticTokenRegistry } from '../common/semantic-tokens-registry';
+import { ICSSStyleService } from '../common/style';
+import { ThemeServicePath, IThemeService, IIconService } from '../common/theme.service';
+
+import { IconService } from './icon.service';
 import { SemanticTokenRegistryImpl } from './semantic-tokens-registry';
+import { CSSStyleService } from './style.service';
+import { ThemeContribution } from './theme.contribution';
+import { WorkbenchThemeService } from './workbench.theme.service';
 
 @Injectable()
 export class ThemeModule extends BrowserModule {

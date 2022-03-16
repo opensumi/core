@@ -1,6 +1,6 @@
 // Modify from @opensumi/ide-core-common/src/path.ts
-import { Process } from './process';
 import { isWindows } from './os';
+import { Process } from './process';
 
 const SystemPathSeparatorRegex = isWindows ? /\\/g : /\//g;
 /**

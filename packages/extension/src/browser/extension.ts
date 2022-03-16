@@ -1,5 +1,4 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
 import {
   getDebugLogger,
   registerLocalizationBundle,
@@ -11,6 +10,9 @@ import {
   replaceNlsField,
 } from '@opensumi/ide-core-common';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+
+import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
+
 import { ExtensionMetadataService } from './metadata.service';
 import { AbstractExtInstanceManagementService, ExtensionDidActivatedEvent, ExtensionWillActivateEvent } from './types';
 

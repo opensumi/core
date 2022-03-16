@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
+
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   AppConfig,
@@ -12,6 +12,7 @@ import {
   QuickOpenActionProvider,
   QuickOpenTabOptions,
 } from '@opensumi/ide-core-browser';
+import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
   HideReason,
   Highlight,
@@ -21,10 +22,11 @@ import {
   QuickOpenService,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco.context-key.service';
-import { QuickOpenWidget } from './quick-open.widget';
+import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
+
 import { IAutoFocus, IQuickOpenModel, QuickOpenContext } from './quick-open.type';
-import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import { QuickOpenView } from './quick-open.view';
+import { QuickOpenWidget } from './quick-open.widget';
 
 export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   inputAriaLabel: string;
@@ -181,9 +183,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   protected onClose(cancelled: boolean): void {
-    if (this.opts.onClose) {
-      this.opts.onClose(cancelled);
-    }
+    this.opts.onClose?.(cancelled);
   }
 
   protected async onType(lookFor: string): Promise<void> {

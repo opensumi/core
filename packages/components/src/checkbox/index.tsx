@@ -1,5 +1,6 @@
-import React from 'react';
 import classNames from 'classnames';
+import React from 'react';
+
 import { warning } from '../utils/warning';
 
 import './style.less';

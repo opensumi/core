@@ -1,9 +1,10 @@
-import { IRunTimeParams, AbstractSumiBrowserContributionRunner, ITabBarViewContribution } from '../types';
-import { IDisposable, Disposable } from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { IDisposable, Disposable } from '@opensumi/ide-core-common';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
+
+import { IRunTimeParams, AbstractSumiBrowserContributionRunner, ITabBarViewContribution } from '../types';
 
 const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar'];
 
@@ -57,6 +58,8 @@ export class TabbarBrowserContributionRunner extends AbstractSumiBrowserContribu
     const initialProps = {
       kaitianExtendService: extendService,
       kaitianExtendSet: extendProtocol,
+      sumiExtendService: extendService,
+      sumiExtendSet: extendProtocol,
     };
     this.layoutService.viewReady.promise.then(() => {
       if (kind === 'add') {

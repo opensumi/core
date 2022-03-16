@@ -2,7 +2,7 @@
 
 [English](./CONTRIBUTING.md) | 简体中文
 
-一般而言，你有许多方式为 `OpenSumi` 代码建设出力，例如：写下一个你发现的 Bug 的现象及复现路径到 Issue 区反馈，提交一个 PR (Pull Requests)，又或者是单纯对某个功能提交一个建议等。
+一般而言，你有许多方式为 `OpenSumi` 代码建设出力，例如：写下一个你发现的 Bug 的现象及复现路径到 Issue 区反馈，提交一个 PR (Pull Requests)，又或者是单纯对某个功能提交一个建议等。我们非常欢迎你的热心相助。
 
 在你克隆并构建完我们的仓库代码后，检查 [Issues](https://github.com/opensumi/core/issues)，对于标注了 `PR Welcome` 的问题是提交你第一个 PR 最佳的实践案例，如果你在过程中有任何疑问，也可以随时在评论区 @ 任何一位项目成员进行咨询。
 
@@ -27,9 +27,9 @@ $ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/canvas/
 你可能需要下面一些开发工具：
 
 - [Git](https://git-scm.com)
-- [Node.JS](https://nodejs.org/en/), **x64**, 版本号 `>= 12.x`, `<= 14.x`
+- [Node.JS](https://nodejs.org/), **x64**, 版本号 `>= 12.x`, `<= 14.x`
+  - **注意:** Windows 用户通过这种方法快速安装编译环境，不再需要重复装 Python 和 Windows Build Tools：从 Node.js 官网下载的安装包运行，勾选“Automatically install the necessary tools.”，将会自动安装 Python 和 Windows 编译工具。示意图：<img alt="示意图" src="https://img.alicdn.com/imgextra/i3/O1CN01uH4otG22z4SDCraOo_!!6000000007190-2-tps-976-760.png" width="400" />
 - [Python](https://www.python.org/downloads/) (node-gyp 库的前置依赖; 查看 [node-gyp readme](https://github.com/nodejs/node-gyp#installation) 找到当前支持的合适版本)
-  - **注意:** Windows 用户通过安装 `windows-build-tools` 的 npm 模块将会自动安装 Python，可以通过这种方式进行快速安装。（见下方）
 - 一个适合你系统的 C/C++ 编译工具:
   - **macOS**
     - 安装 [Xcode](https://developer.apple.com/xcode/downloads/) 及其命令行工具将会自动安装 `gcc`，该安装过程依赖 `make` 工具链
@@ -41,6 +41,9 @@ $ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/canvas/
         - 安装当前版本对应的 Python 版本 [Microsoft Store Package](https://docs.python.org/3/using/windows.html#the-microsoft-store-package)
         - 安装 `Visual C++ Build Environment`: 访问并安装 [Visual Studio Build Tools](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=BuildTools) 或者 [Visual Studio Community Edition](https://visualstudio.microsoft.com/zh-hans/thank-you-downloading-visual-studio/?sku=Community)。最小化的安装模式是只安装 `Desktop Development with C++`
         - 打开命令行执行 `npm config set msvs_version 2019`
+      - 如果已经装 2019 或者更高的版本，但提示找不到对应的编译工具
+        - 在系统的环境变量，设置 VCINSTALLDIR 为 "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild"
+        - npm config set msvs_version 2019 （可以通过 npm config list 获取设置的位置）
     - 注意：确保你本地的 PATH 中只包含 ASCII 字符，否则可能会导致 [node-gyp usage problems (nodejs/node-gyp/issues#297)](https://github.com/nodejs/node-gyp/issues/297) 问题，同时当前暂不支持更低版本 Windows 环境下对项目的构建及调试。
 
 ## 常见问题

@@ -1,18 +1,20 @@
-import React from 'react';
-import styles from './extension-tree-view.module.less';
-import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
-import { Injector } from '@opensumi/di';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@opensumi/ide-core-browser';
-import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
+import React from 'react';
 
-import { ExtensionTreeViewModel } from '../vscode/api/tree-view/tree-view.model.service';
+import { Injector } from '@opensumi/di';
 import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@opensumi/ide-components';
-import { TREE_VIEW_NODE_HEIGHT, TreeViewNode } from './extension-tree-view-node';
-import { ExtensionCompositeTreeNode, ExtensionTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
-import { TreeViewDataProvider } from '../vscode/api/main.thread.treeview';
+import { ViewState } from '@opensumi/ide-core-browser';
+import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.defination';
+
+import { TreeViewDataProvider } from '../vscode/api/main.thread.treeview';
+import { ExtensionTreeViewModel } from '../vscode/api/tree-view/tree-view.model.service';
+import { ExtensionCompositeTreeNode, ExtensionTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
+
+import { TREE_VIEW_NODE_HEIGHT, TreeViewNode } from './extension-tree-view-node';
+import styles from './extension-tree-view.module.less';
 
 export interface ExtensionTabBarTreeViewProps {
   injector: Injector;

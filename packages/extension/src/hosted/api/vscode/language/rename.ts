@@ -1,9 +1,11 @@
-import { getDebugLogger, Uri as URI } from '@opensumi/ide-core-common';
 import type vscode from 'vscode';
+
+import { getDebugLogger, Uri as URI } from '@opensumi/ide-core-common';
+
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
-import * as model from '../../../../common/vscode/model.api';
-import * as types from '../../../../common/vscode/ext-types';
 import * as Converter from '../../../../common/vscode/converter';
+import * as types from '../../../../common/vscode/ext-types';
+import * as model from '../../../../common/vscode/model.api';
 import { isObject } from '../../../../common/vscode/utils';
 
 export class RenameAdapter {

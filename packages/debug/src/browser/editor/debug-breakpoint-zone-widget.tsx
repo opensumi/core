@@ -1,21 +1,24 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { Select, Option } from '@opensumi/ide-components';
+import { localize, Emitter, Event } from '@opensumi/ide-core-common';
+import { ICodeEditor } from '@opensumi/ide-editor';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
+import { ICSSStyleService } from '@opensumi/ide-theme';
+import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   BreakpointChangeData,
   DebugBreakpointWidgetContext,
   DebugEditor,
   TSourceBrekpointProperties,
 } from '../../common';
-import styles from './debug-breakpoint.module.less';
-import { Select, Option } from '@opensumi/ide-components';
-import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
-import { ICodeEditor } from '@opensumi/ide-editor';
-import { Injectable, Autowired } from '@opensumi/di';
-import { ICSSStyleService } from '@opensumi/ide-theme';
+
+import styles from './debug-breakpoint.module.less';
 
 @Injectable({ multiple: true })
 export class DebugBreakpointZoneWidget extends ZoneWidget {

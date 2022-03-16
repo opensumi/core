@@ -1,12 +1,14 @@
+import { IPty as INodePty } from 'node-pty';
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
+
 import { Uri } from '@opensumi/ide-core-common';
-import { WindowsShellType } from './shell';
-import { IPty as INodePty } from 'node-pty';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+
 import { ITerminalError } from './error';
-import { IDetectProfileOptions, ITerminalProfile } from './profile';
 import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } from './extension';
+import { IDetectProfileOptions, ITerminalProfile } from './profile';
+import { WindowsShellType } from './shell';
 
 export interface IPtyProcess extends INodePty {
   /**

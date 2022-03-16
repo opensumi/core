@@ -1,11 +1,12 @@
-import React, { useCallback } from 'react';
+import classnames from 'classnames';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+
+import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
 import {
   DisposableCollection,
   getIcon,
   IPreferenceSettingsService,
-  isElectronRenderer,
   localize,
-  PreferenceDataProperty,
   PreferenceItem,
   PreferenceProvider,
   PreferenceSchemaProvider,
@@ -15,11 +16,12 @@ import {
   useInjectable,
   formatLocalize,
 } from '@opensumi/ide-core-browser';
-import styles from './preferences.module.less';
-import classnames from 'classnames';
-import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
-import { PreferenceSettingsService } from './preference-settings.service';
+
 import { toPreferenceReadableName } from '../common';
+
+import { PreferenceSettingsService } from './preference-settings.service';
+import styles from './preferences.module.less';
+
 
 interface IPreferenceItemProps {
   preferenceName: string;
@@ -63,13 +65,13 @@ export const NextPreferenceItem = ({
 
   // 获得这个设置项的当前值
   const { value: inherited, effectingScope } = settingsService.getPreference(preferenceName, scope);
-  const [value, setValue] = React.useState<boolean | string | string[] | undefined>(
+  const [value, setValue] = useState<boolean | string | string[] | undefined>(
     preferenceProvider.get<boolean | string | string[]>(preferenceName)!,
   );
-  const [schema, setSchema] = React.useState<PreferenceItem>();
+  const [schema, setSchema] = useState<PreferenceItem>();
 
   // 当这个设置项被外部变更时，更新局部值
-  React.useEffect(() => {
+  useEffect(() => {
     // 获得当前的schema
     const schemas = schemaProvider.getPreferenceProperty(preferenceName);
     setSchema(schemas);
@@ -236,9 +238,9 @@ function InputPreferenceItem({
 }: IPreferenceItemProps & { isNumber?: boolean }) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const schemaProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
-  const [value, setValue] = React.useState<string>();
+  const [value, setValue] = useState<string>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setValue(currentValue);
   }, [currentValue]);
 
@@ -307,9 +309,9 @@ function CheckboxPreferenceItem({
   const description = schema && schema.description && replaceLocalizePlaceholder(schema.description);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
 
-  const [value, setValue] = React.useState<boolean>();
+  const [value, setValue] = useState<boolean>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setValue(currentValue);
   }, [currentValue]);
 
@@ -355,26 +357,22 @@ function SelectPreferenceItem({
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const config = schema as PreferenceDataProperty;
-  const optionEnum = config.enum;
-  const optionEnumDescriptions = config.enumDescriptions;
-
-  const [value, setValue] = React.useState<string>(currentValue);
+  const [value, setValue] = useState<string>(currentValue);
 
   // 鼠标还没有划过来的时候，需要一个默认的描述信息
-  const defaultDescription = React.useMemo((): string => {
-    if (optionEnumDescriptions && optionEnum) {
-      return optionEnumDescriptions[optionEnum.indexOf(currentValue)] || '';
+  const defaultDescription = useMemo((): string => {
+    if (schema.enumDescriptions && schema.enum) {
+      return schema.enumDescriptions[schema.enum.indexOf(currentValue)] || '';
     }
     return '';
   }, [schema]);
-  const [description, setDescription] = React.useState<string>(defaultDescription);
+  const [description, setDescription] = useState<string>(defaultDescription);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setValue(currentValue);
   }, [currentValue]);
 
-  const handlerValueChange = useCallback(
+  const handleValueChange = useCallback(
     (val) => {
       preferenceService.set(preferenceName, val, scope);
       setValue(val);
@@ -387,12 +385,9 @@ function SelectPreferenceItem({
 
   const renderEnumOptions = useCallback(
     () =>
-      optionEnum?.map((item, idx) => {
+      schema.enum?.map((item, idx) => {
         if (typeof item === 'boolean') {
           item = String(item);
-        }
-        if (!value && item === config.default) {
-          setValue(String(item));
         }
 
         return (
@@ -403,13 +398,13 @@ function SelectPreferenceItem({
             className={styles.select_option}
           >
             {replaceLocalizePlaceholder((labels[item] || item).toString())}
-            {item === config.default && (
+            {item === schema.default && (
               <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
             )}
           </Option>
         );
       }),
-    [optionEnum],
+    [schema.enum],
   );
 
   const renderNoneOptions = () => (
@@ -423,13 +418,13 @@ function SelectPreferenceItem({
     </Option>
   );
 
-  const options = optionEnum && optionEnum.length > 0 ? renderEnumOptions() : renderNoneOptions();
+  const options = schema.enum && schema.enum.length > 0 ? renderEnumOptions() : renderNoneOptions();
 
   // 处理鼠标移动时候对应枚举值描述的变化
-  const handleDescriptionChange = React.useCallback(
+  const handleDescriptionChange = useCallback(
     (_, index) => {
-      if (optionEnumDescriptions) {
-        const description = optionEnumDescriptions[index];
+      if (schema.enumDescriptions) {
+        const description = schema.enumDescriptions[index];
         if (description) {
           setDescription(description);
         } else {
@@ -438,7 +433,7 @@ function SelectPreferenceItem({
         }
       }
     },
-    [optionEnumDescriptions, setDescription],
+    [schema.enumDescriptions, setDescription],
   );
 
   return (
@@ -459,7 +454,7 @@ function SelectPreferenceItem({
         <Select
           dropdownRenderType='absolute'
           maxHeight='200'
-          onChange={handlerValueChange}
+          onChange={handleValueChange}
           value={value}
           className={styles.select_control}
           description={description}
@@ -518,16 +513,16 @@ function StringArrayPreferenceItem({
   hasValueInScope,
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const [value, setValue] = React.useState<string[]>([]);
-  const [inputValue, setInputValue] = React.useState<string>();
-  const [editValue, setEditValue] = React.useState<string>();
-  const [currentEditIndex, setCurrentEditIndex] = React.useState<number>(-1);
+  const [value, setValue] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState<string>();
+  const [editValue, setEditValue] = useState<string>();
+  const [currentEditIndex, setCurrentEditIndex] = useState<number>(-1);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setValue(currentValue || []);
   }, [currentValue]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (currentEditIndex >= 0) {
       setEditValue(value[currentEditIndex]);
     } else {

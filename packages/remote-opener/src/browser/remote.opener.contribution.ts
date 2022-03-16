@@ -1,4 +1,6 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { AppConfig, ClientAppContribution, electronEnv } from '@opensumi/ide-core-browser';
 import { ContributionProvider, Domain, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { IRemoteOpenerService, RemoteOpenerServicePath } from '../common';
@@ -8,8 +10,6 @@ import {
   RemoteOpenerConverterContribution,
 } from '../common';
 
-import { AppConfig, ClientAppContribution, electronEnv } from '@opensumi/ide-core-browser';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 // 从extension.contribution.ts中Copy过来，因为直接引入会有一定概率触发IDE初始化问题
 const getClientId = (injector: Injector) => {
   let clientId: string;

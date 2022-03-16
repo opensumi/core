@@ -1,5 +1,11 @@
+import net from 'net';
+
 import { Injectable, Optional, Autowired } from '@opensumi/di';
+import { getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
+import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import { MaybePromise, Emitter, IDisposable, toDisposable, Disposable } from '@opensumi/ide-core-common';
+import { RPCServiceCenter, INodeLogger } from '@opensumi/ide-core-node';
+
 import {
   IExtensionHostManager,
   Output,
@@ -9,9 +15,6 @@ import {
   EXT_HOST_PROXY_IDENTIFIER,
   EXT_HOST_PROXY_SERVER_PROT,
 } from '../common';
-import net from 'net';
-import { RPCServiceCenter, INodeLogger } from '@opensumi/ide-core-node';
-import { createSocketConnection, getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
 
 @Injectable()
 export class ExtensionHostProxyManager implements IExtensionHostManager {

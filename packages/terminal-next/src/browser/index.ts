@@ -1,5 +1,6 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+
 import {
   ITerminalController,
   ITerminalService,
@@ -21,7 +22,9 @@ import {
   ITerminalContributionService,
   ITerminalProfileInternalService,
 } from '../common';
+import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
 import { ITerminalPreference } from '../common/preference';
+
 import {
   TerminalCommandContribution,
   TerminalMenuContribution,
@@ -31,25 +34,24 @@ import {
   TerminalNetworkContribution,
   TerminalPreferenceContribution,
 } from './contribution';
-import { TerminalController } from './terminal.controller';
-import { TerminalTheme } from './terminal.theme';
-import { NodePtyTerminalService } from './terminal.service';
-import { TerminalInternalService } from './terminal.internal.service';
-import { TerminalRestore } from './terminal.restore';
-import { createTerminalClientFactory, createTerminalClientFactory2 } from './terminal.client';
 import { TerminalApiService } from './terminal.api';
-import { TerminalSearchService } from './terminal.search';
-import { TerminalHoverManagerService } from './terminal.hover.manager';
-import { TerminalGroupViewService } from './terminal.view';
-import { TerminalErrorService } from './terminal.error';
-import { TerminalPreference } from './terminal.preference';
-import { TerminalRenderProvider } from './terminal.render';
-import { TerminalNetworkService } from './terminal.network';
-import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
-import { TerminalEnvironmentService } from './terminal.environment.service';
-import { TerminalProfileService } from './terminal.profile';
+import { createTerminalClientFactory, createTerminalClientFactory2 } from './terminal.client';
 import { TerminalContributionService } from './terminal.contribution';
+import { TerminalController } from './terminal.controller';
+import { TerminalEnvironmentService } from './terminal.environment.service';
+import { TerminalErrorService } from './terminal.error';
+import { TerminalHoverManagerService } from './terminal.hover.manager';
+import { TerminalInternalService } from './terminal.internal.service';
+import { TerminalNetworkService } from './terminal.network';
+import { TerminalPreference } from './terminal.preference';
+import { TerminalProfileService } from './terminal.profile';
 import { TerminalProfileInternalService } from './terminal.profile.internal';
+import { TerminalRenderProvider } from './terminal.render';
+import { TerminalRestore } from './terminal.restore';
+import { TerminalSearchService } from './terminal.search';
+import { NodePtyTerminalService } from './terminal.service';
+import { TerminalTheme } from './terminal.theme';
+import { TerminalGroupViewService } from './terminal.view';
 
 @Injectable()
 export class TerminalNextModule extends BrowserModule {

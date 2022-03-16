@@ -1,20 +1,21 @@
 import { Autowired } from '@opensumi/di';
 import { ClientAppContribution, ComponentContribution, ComponentRegistry, getIcon } from '@opensumi/ide-core-browser';
 import { Domain, localize, replaceLocalizePlaceholder, URI } from '@opensumi/ide-core-common';
-import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
   IResource,
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import { InstallState, IVSXExtensionService, VSXExtensionServiceToken } from '../common';
-import { VSXExtensionView } from './vsx-extension.view';
-import { ExtensionOverview } from './extension-overview';
 import { VSXExtensionRaw } from '../common/vsx-registry-types';
+
 import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID, EXTENSION_SCHEME } from './const';
+import { ExtensionOverview } from './extension-overview';
+import { VSXExtensionView } from './vsx-extension.view';
 
 @Domain(ClientAppContribution, MainLayoutContribution, ComponentContribution, BrowserEditorContribution)
 export class VSXExtensionContribution

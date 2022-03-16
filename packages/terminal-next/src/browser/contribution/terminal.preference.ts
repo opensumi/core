@@ -1,5 +1,6 @@
 import { PreferenceContribution } from '@opensumi/ide-core-browser';
 import { Domain, PreferenceSchema } from '@opensumi/ide-core-common';
+
 import { terminalPreferenceSchema } from '../../common/preference';
 
 @Domain(PreferenceContribution)

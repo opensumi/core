@@ -1,8 +1,6 @@
-import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
-import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
-import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   Emitter,
   Event,
@@ -19,12 +17,6 @@ import {
   CancellationTokenSource,
   WithEventBus,
 } from '@opensumi/ide-core-browser';
-import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
-import { ExtensionTabBarTreeView } from '../../components';
-import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
-import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
-import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
-import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import {
   AbstractMenuService,
   generateCtxMenu,
@@ -32,8 +24,20 @@ import {
   MenuId,
   MenuNode,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
+import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
+
+import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
+import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
+import { ExtensionTabBarTreeView } from '../../components';
+
+
+import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
+import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
+
 
 @Injectable({ multiple: true })
 export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeView {

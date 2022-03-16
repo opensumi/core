@@ -1,11 +1,4 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, CommandService, isWindows } from '@opensumi/ide-core-common';
-import {
-  MenuContribution,
-  IMenuRegistry,
-  getTabbarCommonMenuId,
-  MenuId as CoreMenuId,
-} from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   localize,
   PreferenceService,
@@ -14,6 +7,14 @@ import {
   AppConfig,
   getTabbarCtxKey,
 } from '@opensumi/ide-core-browser';
+import {
+  MenuContribution,
+  IMenuRegistry,
+  getTabbarCommonMenuId,
+  MenuId as CoreMenuId,
+} from '@opensumi/ide-core-browser/lib/menu/next';
+import { Domain, CommandService, isWindows } from '@opensumi/ide-core-common';
+
 import {
   ITerminalController,
   ITerminalGroupViewService,

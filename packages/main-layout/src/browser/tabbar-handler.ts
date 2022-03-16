@@ -1,7 +1,10 @@
-import { Event, Emitter, ILogger } from '@opensumi/ide-core-common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { TabbarService } from './tabbar/tabbar.service';
+import { Event, Emitter, ILogger } from '@opensumi/ide-core-common';
+
 import { IMainLayoutService } from '../common';
+
+import { TabbarService } from './tabbar/tabbar.service';
+
 
 @Injectable({ multiple: true })
 export class TabBarHandler {

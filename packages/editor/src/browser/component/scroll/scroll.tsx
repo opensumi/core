@@ -1,7 +1,8 @@
-import React from 'react';
-import styles from './scroll.module.less';
 import classnames from 'classnames';
+import React from 'react';
 import { MouseEvent, UIEvent } from 'react';
+
+import styles from './scroll.module.less';
 
 export interface ScrollAreaProps {
   className?: string;

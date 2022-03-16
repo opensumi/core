@@ -1,6 +1,8 @@
 import type vscode from 'vscode';
+
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Uri, toDisposable, onUnexpectedError } from '@opensumi/ide-core-common';
+
 import { IExtHostUrls, IMainThreadUrls, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { UriComponents } from '../../../common/vscode/ext-types';
 

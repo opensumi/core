@@ -1,5 +1,10 @@
 import { observable } from 'mobx';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
+import { ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
+import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import {
   WithEventBus,
   Emitter,
@@ -9,10 +14,11 @@ import {
   DisposableStore,
   ILogger,
 } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
 import { IThemeService } from '@opensumi/ide-theme';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+
 import {
   ITerminalController,
   ITerminalClient,
@@ -35,12 +41,9 @@ import {
   ITerminalClientFactory2,
   ICreateClientWithWidgetOptions,
 } from '../common';
-import { TerminalGroupViewService } from './terminal.view';
+
 import { TerminalContextKey } from './terminal.context-key';
-import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
-import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
-import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
-import { ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { TerminalGroupViewService } from './terminal.view';
 
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {

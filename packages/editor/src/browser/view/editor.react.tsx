@@ -1,5 +1,7 @@
 import React from 'react';
+
 import { URI, useInjectable } from '@opensumi/ide-core-browser';
+
 import { EditorCollectionService, ICodeEditor } from '../../common';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '../doc-model/types';
 

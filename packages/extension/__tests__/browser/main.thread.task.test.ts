@@ -1,4 +1,7 @@
 import path from 'path';
+
+import { Injectable } from '@opensumi/di';
+import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import {
   Emitter,
   FileUri,
@@ -8,40 +11,40 @@ import {
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
 } from '@opensumi/ide-core-common';
-import { Injectable } from '@opensumi/di';
-import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { ExtHostTasks, createTaskApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
-import { MainthreadTasks } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.tasks';
-import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
-import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
-import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
-import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
-import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
-import { ExtensionService } from '@opensumi/ide-extension';
-import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
-import { mockExtensions } from '../../__mocks__/extensions';
-import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
-import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
-import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
-import { Task, ShellExecution } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
-import { MainThreadWorkspace } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.workspace';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
-import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
-import { VariableModule } from '@opensumi/ide-variable/lib/browser';
-import { ITerminalInternalService, ITerminalController } from '@opensumi/ide-terminal-next';
-import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
-import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
-import { MonacoService } from '@opensumi/ide-monaco';
-import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { ExtensionService } from '@opensumi/ide-extension';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
+import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
+import { MainthreadTasks } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.tasks';
+import { MainThreadWorkspace } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.workspace';
+import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { Task, ShellExecution } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
+import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
+import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
+import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
+import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
+import { ExtHostTasks, createTaskApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
+import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
+import { MonacoService } from '@opensumi/ide-monaco';
+import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
+import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
+import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
+import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
+import { ITerminalInternalService, ITerminalController } from '@opensumi/ide-terminal-next';
+import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
+import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
+import { VariableModule } from '@opensumi/ide-variable/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
+import { mockExtensions } from '../../__mocks__/extensions';
+
 
 const extension = Object.assign({}, mockExtensions[0], {
   packageJSON: {

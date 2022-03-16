@@ -1,5 +1,7 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import * as fuzzy from 'fuzzy';
 import { observable, action } from 'mobx';
+
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   Disposable,
   IDisposable,
@@ -26,12 +28,14 @@ import {
   IProgressStep,
   Deferred,
 } from '@opensumi/ide-core-browser';
-import { KeymapsParser } from './keymaps-parser';
-import * as fuzzy from 'fuzzy';
-import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem, KeymapItem } from '../common';
-import { USER_STORAGE_SCHEME } from '@opensumi/ide-preferences';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { USER_STORAGE_SCHEME } from '@opensumi/ide-preferences';
+
+import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem, KeymapItem } from '../common';
+
+import { KeymapsParser } from './keymaps-parser';
+
 
 @Injectable()
 export class KeymapService implements IKeymapService {

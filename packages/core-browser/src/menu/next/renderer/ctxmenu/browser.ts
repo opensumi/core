@@ -1,9 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
 import omit from 'lodash.omit';
 
+import { Injectable, Autowired } from '@opensumi/di';
+
 import { MenuNode } from '../../base';
-import { ICtxMenuRenderer, CtxMenuRenderParams } from './base';
 import { AbstractContextMenuService } from '../../menu.interface';
+
+import { ICtxMenuRenderer, CtxMenuRenderParams } from './base';
 
 export abstract class IBrowserCtxMenu extends ICtxMenuRenderer {
   visible: boolean;

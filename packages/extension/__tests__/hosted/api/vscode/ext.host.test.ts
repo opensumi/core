@@ -1,15 +1,16 @@
-import { Deferred, IReporter } from '@opensumi/ide-core-common';
 import { Injector } from '@opensumi/di';
-import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
+import { Deferred, IReporter } from '@opensumi/ide-core-common';
+import { REPORT_NAME } from '@opensumi/ide-core-common';
+import { AppConfig, DefaultReporter } from '@opensumi/ide-core-node';
 
-import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';
-import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
+import { MainThreadExtensionLog } from '../../../../__mocks__/api/mainthread.extension.log';
 import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
-import { MainThreadExtensionLog } from '../../../../__mocks__/api/mainthread.extension.log';
+import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';
+import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { AppConfig, DefaultReporter } from '@opensumi/ide-core-node';
-import { REPORT_NAME } from '@opensumi/ide-core-common';
+import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
+
 
 const enum MessageType {
   Request = 1,

@@ -1,7 +1,9 @@
-import { ElectronMainContribution } from '../types';
-import { Domain, URI, getDebugLogger } from '@opensumi/ide-core-common';
 import { protocol } from 'electron';
 import { readFile } from 'fs-extra';
+
+import { Domain, URI, getDebugLogger } from '@opensumi/ide-core-common';
+
+import { ElectronMainContribution } from '../types';
 
 @Domain(ElectronMainContribution)
 export class ProtocolElectronMainContribution implements ElectronMainContribution {

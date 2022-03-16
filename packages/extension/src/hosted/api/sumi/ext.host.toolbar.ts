@@ -1,16 +1,19 @@
-import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
-import { ExtHostCommon } from './ext.host.common';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IToolbarPopoverStyle } from '@opensumi/ide-core-browser/lib/toolbar';
+import { Emitter, Disposable } from '@opensumi/ide-core-common';
+
+import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../../browser/sumi/types';
+import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import {
   IToolbarButtonActionHandle,
   IToolbarSelectActionHandle,
   IMainThreadToolbar,
   IExtHostToolbar,
 } from '../../../common/sumi/toolbar';
-import { Emitter, Disposable } from '@opensumi/ide-core-common';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
-import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../../browser/sumi/types';
-import { IToolbarPopoverStyle } from '@opensumi/ide-core-browser/lib/toolbar';
+import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
+
+import { ExtHostCommon } from './ext.host.common';
+
 
 export function createToolbarAPIFactory(extension: IExtensionDescription, service: ExtHostToolbarActionService) {
   return {

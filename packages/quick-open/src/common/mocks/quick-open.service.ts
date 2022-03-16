@@ -1,7 +1,8 @@
-import { QuickOpenOptions, QuickOpenService, QuickOpenModel } from '../';
-import { HideReason } from '@opensumi/ide-core-browser/lib/quick-open';
 import { Injectable } from '@opensumi/di';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+import { HideReason } from '@opensumi/ide-core-browser/lib/quick-open';
+
+import { QuickOpenOptions, QuickOpenService, QuickOpenModel } from '../';
 
 @Injectable()
 export class MockQuickOpenService implements QuickOpenService {

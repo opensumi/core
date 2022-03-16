@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react';
 import keycode from 'keycode';
+import { useState, useCallback } from 'react';
 
 // todo: hotkeys 增加类型提示
 // 键位值请查看 https://github.com/timoxley/keycode

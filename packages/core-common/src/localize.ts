@@ -1,5 +1,5 @@
-import { format, mnemonicButtonLabel } from './utils/strings';
 import { CaseInsensitiveMap } from './map';
+import { format, mnemonicButtonLabel } from './utils/strings';
 
 export type ILocalizationKey = string; // ts不支持symbol作为key
 
@@ -107,6 +107,27 @@ class LocalizationRegistry implements ILocalizationRegistry {
  */
 export function getLanguageId(scope = 'host'): string {
   return _currentLanguageId;
+}
+
+/**
+ * for vscode extension use.
+ *
+ * vscode consider that `en` and `en-us` are the same language(you can search for `en-us` in their code base).
+ * and their default language is `en`, so we should transform the language id to the vscode language id.
+ *
+ * and vscode fetch the language id from the browser (`navigator.language`) or electron's [`app.getLocale()`](https://www.electronjs.org/zh/docs/latest/api/app#appgetlocale).
+ * they both using Chromium's l10n_util library. Possible values are here: https://source.chromium.org/chromium/chromium/src/+/master:ui/base/l10n/l10n_util.cc
+ *
+ * The language used for the user interface. The format of the string is all lower case (e.g. zh-tw for Traditional Chinese)
+ * see: [language](https://github.com/microsoft/vscode/blob/32b031eeefc4fd27a21659d35070967bfe965bcc/src/vs/base/common/platform.ts#L165)
+ */
+export function getCodeLanguage(): string {
+  const languageId = _currentLanguageId.toLowerCase();
+  return (
+    {
+      'en-us': 'en',
+    }[languageId] ?? languageId
+  );
 }
 
 export function getCurrentLanguageInfo(scope = 'host'): ILocalizationInfo {

@@ -1,11 +1,14 @@
 import React from 'react';
-import { getDebugLogger, localize } from '@opensumi/ide-core-common';
-import { LayoutConfig } from '../bootstrap';
-import { useInjectable } from '../react-hooks';
-import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
-import { ConfigContext } from './config-provider';
+
 import { Button } from '@opensumi/ide-components';
+import { getDebugLogger, localize } from '@opensumi/ide-core-common';
+
+import { LayoutConfig } from '../bootstrap';
 import { IClientApp } from '../browser-module';
+import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
+import { useInjectable } from '../react-hooks';
+
+import { ConfigContext } from './config-provider';
 import styles from './slot.module.less';
 
 const logger = getDebugLogger();
@@ -101,11 +104,7 @@ export const SlotDecorator: React.FC<{ slot: string; color?: string }> = ({ slot
     }
   }, [ref]);
   return (
-    <div
-      ref={(ele) => (ref.current = ele!)}
-      className='resize-wrapper'
-      style={props.color ? { backgroundColor: props.color } : {}}
-    >
+    <div ref={(ele) => (ref.current = ele!)} className='resize-wrapper'>
       {props.children}
     </div>
   );

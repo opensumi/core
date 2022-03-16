@@ -1,3 +1,7 @@
+import { Injectable, Inject } from '@opensumi/di';
+
+import { IDisposable } from './disposable';
+import { getDebugLogger } from './log';
 import {
   IReporterService,
   ReporterMetadata,
@@ -7,9 +11,6 @@ import {
   IReporterTimer,
   REPORT_NAME,
 } from './types/reporter';
-import { getDebugLogger } from './log';
-import { Injectable, Inject } from '@opensumi/di';
-import { IDisposable } from './disposable';
 
 class ReporterTimer implements IReporterTimer {
   private now: number;

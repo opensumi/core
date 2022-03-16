@@ -1,8 +1,9 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@opensumi/ide-core-browser';
-import { IEditorDocumentModelService } from '../doc-model/types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { IEditorDocumentModelService } from '../doc-model/types';
 
 type IProvider = monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
 
@@ -41,10 +42,9 @@ export class FormattingSelector {
     });
 
     if (preferred) {
-      if (elements[preferred]) {
-        return elements[preferred];
-      } else {
-        // 喜好的插件已经不存在，进入选择
+      const idx = formatters.findIndex((provider: IProvider) => provider.extensionId === preferred);
+      if (idx >= 0) {
+        return formatters[idx];
       }
     } else if (formatters.length < 2) {
       return formatters[0];

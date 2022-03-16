@@ -1,5 +1,6 @@
-import { IContentSearchClientService } from '../common';
 import { RecentStorage, isArray } from '@opensumi/ide-core-browser';
+
+import { IContentSearchClientService } from '../common';
 
 export const SEARCH_WORD_SCOPE = 'SEARCH_WORD';
 

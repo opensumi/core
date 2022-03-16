@@ -1,17 +1,3 @@
-import { Emitter } from '@opensumi/ide-core-common';
-import { TEST_DATA_SCHEME } from './../common/testingUri';
-import { IEditor } from '@opensumi/ide-editor/lib/common';
-import {
-  BrowserEditorContribution,
-  IEditorFeatureRegistry,
-  IEditorDocumentModelContentRegistry,
-  IEditorDocumentModelContentProvider,
-  WorkbenchEditorService,
-  EditorComponentRegistry,
-  ResourceService,
-  IResource,
-  IMarkdownString,
-} from '@opensumi/ide-editor/lib/browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   ClientAppContribution,
@@ -34,6 +20,25 @@ import {
   ToolbarRegistry,
   URI,
 } from '@opensumi/ide-core-browser';
+import { TestingIsPeekVisible } from '@opensumi/ide-core-browser/lib/contextkey/testing';
+import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { Emitter, IMarkdownString } from '@opensumi/ide-core-common';
+import {
+  BrowserEditorContribution,
+  IEditorFeatureRegistry,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelContentProvider,
+  WorkbenchEditorService,
+  EditorComponentRegistry,
+  ResourceService,
+  IResource,
+} from '@opensumi/ide-editor/lib/browser';
+import { IEditor } from '@opensumi/ide-editor/lib/common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { MARKDOWN_EDITOR_COMPONENT_ID } from '@opensumi/ide-markdown/lib/browser/contribution';
+import { MarkdownEditorComponent } from '@opensumi/ide-markdown/lib/browser/editor.markdown';
+
+import { TestServiceToken } from '../common';
 import {
   ClearTestResults,
   ClosePeekTest,
@@ -49,23 +54,18 @@ import {
   TestingDebugCurrentFile,
   TestingRunCurrentFile,
 } from '../common/commands';
-
-import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { TestDecorationsContribution } from './test-decorations';
-import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
-import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
-import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
-import { TestServiceImpl } from './test.service';
-import { TestServiceToken } from '../common';
-import { TestRunProfileBitset } from '../common/testCollection';
-import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { TestResultServiceImpl } from './test.result.service';
-import { TestResultServiceToken } from '../common/test-result';
-import { MarkdownEditorComponent } from '@opensumi/ide-markdown/lib/browser/editor.markdown';
-import { MARKDOWN_EDITOR_COMPONENT_ID } from '@opensumi/ide-markdown/lib/browser/contribution';
 import { Testing } from '../common/constants';
-import { TestingIsPeekVisible } from '@opensumi/ide-core-browser/lib/contextkey/testing';
+import { TestResultServiceToken } from '../common/test-result';
+import { TestRunProfileBitset } from '../common/testCollection';
+import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
+import { ITestTreeViewModel, TestTreeViewModelToken } from '../common/tree-view.model';
+
+import { TEST_DATA_SCHEME } from './../common/testingUri';
+import { TestOutputPeekContribution } from './outputPeek/test-output-peek';
+import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
+import { TestDecorationsContribution } from './test-decorations';
+import { TestResultServiceImpl } from './test.result.service';
+import { TestServiceImpl } from './test.service';
 
 @Injectable()
 export class TestingOutputPeekDocumentProvider implements IEditorDocumentModelContentProvider {

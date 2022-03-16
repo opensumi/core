@@ -1,5 +1,13 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
+
+import { useInjectable, IEventBus, getExternalIcon, Disposable } from '@opensumi/ide-core-browser';
+import { Button } from '@opensumi/ide-core-browser/lib/components';
+import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { AbstractMenuService, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IIconService, IconType } from '@opensumi/ide-theme';
+
 import {
   IThreadComment,
   ICommentsThread,
@@ -7,11 +15,7 @@ import {
   CommentReactionClick,
   SwitchCommandReaction,
 } from '../common';
-import { Button } from '@opensumi/ide-core-browser/lib/components';
-import { useInjectable, IEventBus, getExternalIcon, Disposable } from '@opensumi/ide-core-browser';
-import { IIconService, IconType } from '@opensumi/ide-theme';
-import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { AbstractMenuService, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+
 import styles from './comments.module.less';
 
 export const CommentReactionSwitcher: React.FC<{

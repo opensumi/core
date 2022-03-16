@@ -15,14 +15,17 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/debug/src/browser/model/debug-source.ts
 
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
-import { DebugSession } from '../debug-session';
 import { URI, Uri, IRange } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@opensumi/ide-editor';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
-import { DebugStackFrame } from './debug-stack-frame';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+
+import { DebugSession } from '../debug-session';
 import { DebugModelManager } from '../editor';
+
+import { DebugStackFrame } from './debug-stack-frame';
+
 
 export class DebugSourceData {
   readonly raw: DebugProtocol.Source;

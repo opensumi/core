@@ -1,3 +1,5 @@
+import pSeries = require('p-series');
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   DecorationsManager,
@@ -7,12 +9,13 @@ import {
   TreeNodeEvent,
 } from '@opensumi/ide-components';
 import { Emitter, Deferred, Event, DisposableCollection } from '@opensumi/ide-core-browser';
-import { DebugHoverModel } from './debug-hover-model';
 import { Path } from '@opensumi/ide-core-common/lib/path';
-import pSeries = require('p-series');
+
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
-import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';
 import styles from '../view/variables/debug-variables.module.less';
+
+import { DebugHoverModel } from './debug-hover-model';
+import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

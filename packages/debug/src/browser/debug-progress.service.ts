@@ -2,15 +2,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { IProgress, IProgressStep } from '@opensumi/ide-core-common';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-import { ProgressLocation } from '@opensumi/ide-core-common';
-import { DebugSession } from './debug-session';
 import { Injectable, Autowired } from '@opensumi/di';
-import { DebugState, IDebugSessionManager } from '../common/debug-session';
-import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { Event, IDisposable } from '@opensumi/ide-core-browser';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { IProgress, IProgressStep } from '@opensumi/ide-core-common';
+import { ProgressLocation } from '@opensumi/ide-core-common';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
 import { IDebugProgress } from '../common/debug-progress';
+import { DebugState, IDebugSessionManager } from '../common/debug-session';
+
+import { DebugSession } from './debug-session';
+
 
 @Injectable()
 export class DebugProgressService implements IDebugProgress {

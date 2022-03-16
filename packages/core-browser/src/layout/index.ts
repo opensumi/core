@@ -1,9 +1,12 @@
-import { SlotLocation, AppConfig } from '../react-providers';
+import React = require('react');
+
 import { Autowired, Injectable } from '@opensumi/di';
 import { BasicEvent, getDebugLogger, IEventBus, MaybeNull } from '@opensumi/ide-core-common';
+
 import { IMenu, IContextMenu } from '../menu/next';
 import { useInjectable } from '../react-hooks';
-import React = require('react');
+import { SlotLocation, AppConfig } from '../react-providers';
+
 
 export class VisibleChangedPayload {
   constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}

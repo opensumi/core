@@ -1,5 +1,6 @@
-import { PreferenceScope, ISettingGroup, ISettingSection } from '../src';
 import { Injectable, Injector, Optional } from '@opensumi/di';
+
+import { PreferenceScope, ISettingGroup, ISettingSection } from '../src';
 import { PreferenceProvider } from '../src/preferences';
 
 @Injectable()

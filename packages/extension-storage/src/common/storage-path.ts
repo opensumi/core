@@ -1,5 +1,5 @@
-import { FileStat } from '@opensumi/ide-file-service';
 import { URI } from '@opensumi/ide-core-common';
+import { FileStat } from '@opensumi/ide-file-service';
 
 // 用于为各个插件创建插件配置的存储目录
 export const IExtensionStoragePathServer = Symbol('IExtensionStoragePathServer');

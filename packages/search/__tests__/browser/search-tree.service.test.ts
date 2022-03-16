@@ -1,18 +1,21 @@
 import path from 'path';
+
 import { Injector, Injectable } from '@opensumi/di';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { ILoggerManagerClient, Uri, URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
-import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
-import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
-import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 
+import { SearchModule } from '../../src/browser/';
+import { SearchTreeService } from '../../src/browser/search-tree.service';
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
   IContentSearchClientService,
@@ -20,8 +23,6 @@ import {
   ContentSearchOptions,
   ContentSearchResult,
 } from '../../src/common';
-import { SearchModule } from '../../src/browser/';
-import { SearchTreeService } from '../../src/browser/search-tree.service';
 
 const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString();
 

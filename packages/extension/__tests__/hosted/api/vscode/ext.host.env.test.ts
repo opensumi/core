@@ -1,14 +1,17 @@
-import { ExtHostEnv, createEnvApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
+import type vscode from 'vscode';
+
+import { RPCProtocol } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { Emitter, ILoggerManagerClient, Uri, uuid } from '@opensumi/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
-import { RPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
+import { UIKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
+import { ExtHostEnv, createEnvApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
+
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { UIKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
 
-import type vscode from 'vscode';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

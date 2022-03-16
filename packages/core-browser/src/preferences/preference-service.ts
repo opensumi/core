@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@opensumi/di';
-
 import {
   Deferred,
   Event,
@@ -13,15 +12,16 @@ import {
   LRUMap,
   deepClone,
 } from '@opensumi/ide-core-common';
+
+import { PreferenceConfigurations } from './preference-configurations';
+import { PreferenceSchemaProvider } from './preference-contribution';
 import {
   PreferenceProvider,
   PreferenceProviderDataChange,
   PreferenceProviderDataChanges,
   PreferenceResolveResult,
 } from './preference-provider';
-import { PreferenceSchemaProvider } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
-import { PreferenceConfigurations } from './preference-configurations';
 
 export interface PreferenceChange {
   readonly preferenceName: string;

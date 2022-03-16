@@ -1,16 +1,18 @@
-import { ExtHostStatusBar } from '../../../../src/hosted/api/vscode/ext.host.statusbar';
+import { RPCProtocol } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { IContextKeyService, IStatusBarService } from '@opensumi/ide-core-browser';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { Emitter, ILoggerManagerClient, uuid } from '@opensumi/ide-core-common';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
-import { RPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
-import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
+import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
+
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-import { IContextKeyService, IStatusBarService } from '@opensumi/ide-core-browser';
-import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
-import { ThemeColor } from '../../../../src/common/vscode/ext-types';
 import { mockExtensionDescription } from '../../../../__mocks__/extensions';
-import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
+import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
+import { ThemeColor } from '../../../../src/common/vscode/ext-types';
+import { ExtHostStatusBar } from '../../../../src/hosted/api/vscode/ext.host.statusbar';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();

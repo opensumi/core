@@ -1,3 +1,5 @@
+import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
+
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 /** ******************************************************************************
  * Copyright (C) 2018 Ericsson and others.
@@ -15,7 +17,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
 
 export class TokenizerState implements monaco.languages.IState {
   constructor(public readonly ruleStack: StackElement) {}

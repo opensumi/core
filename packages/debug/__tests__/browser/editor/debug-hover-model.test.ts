@@ -1,6 +1,6 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { DebugHoverModel } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-model';
 import { Disposable } from '@opensumi/ide-core-common';
+import { DebugHoverModel } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-model';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 describe('Debug Hover Model', () => {
   const mockInjector = createBrowserInjector([]);

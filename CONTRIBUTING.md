@@ -2,7 +2,7 @@
 
 English | [简体中文](./CONTRIBUTING-zh_CN.md)
 
-Generally speaking, you have many ways to contribute to the development of the `OpenSumi` code, for example: write down a issue about the bug you found, submit a PR (Pull Requests), or simply to some Each feature submits a suggestion, etc.
+There are many ways to contribute to the development of the `OpenSumi` code. For example: write down a issue about the bug you found, submit a PR (Pull Requests), or you just want to raise some suggestions to certain features, etc. We welcome all kinds of contribution.  
 
 After you clone and build our warehouse code, check [Issues](https://github.com/opensumi/core/issues). For issues marked with `PR Welcome`, it is best to submit your first PR If you have any questions in the process, you can always consult any project member in the comment area @ any project member.
 

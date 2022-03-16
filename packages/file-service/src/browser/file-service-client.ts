@@ -1,4 +1,25 @@
+import { TextDocument } from 'vscode-languageserver-types';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { FilesChangeEvent, ExtensionActivateEvent, AppConfig } from '@opensumi/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
+import {
+  URI,
+  Emitter,
+  Event,
+  IEventBus,
+  FileUri,
+  DisposableCollection,
+  IDisposable,
+  FileSystemProviderCapabilities,
+  Deferred,
+} from '@opensumi/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
+import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
+
 import {
   FileStat,
   FileDeleteOptions,
@@ -14,21 +35,6 @@ import {
   IFileSystemProviderRegistrationEvent,
   IFileSystemProviderCapabilitiesChangeEvent,
 } from '../common';
-import { TextDocument } from 'vscode-languageserver-types';
-import {
-  URI,
-  Emitter,
-  Event,
-  IEventBus,
-  FileUri,
-  DisposableCollection,
-  IDisposable,
-  FileSystemProviderCapabilities,
-  Deferred,
-} from '@opensumi/ide-core-common';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
-import { Uri } from '@opensumi/ide-core-common';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   FileChangeEvent,
   DidFilesChangedParams,
@@ -40,11 +46,9 @@ import {
   IFileServiceWatcher,
   TextDocumentContentChangeEvent,
 } from '../common';
+
 import { FileSystemWatcher } from './watcher';
-import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { FilesChangeEvent, ExtensionActivateEvent, AppConfig } from '@opensumi/ide-core-browser';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
-import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
+
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
@@ -536,7 +540,8 @@ export class FileServiceClient implements IFileServiceClient {
     try {
       const uri = new URI(uriString);
       const provider = await this.getProvider(uri.scheme);
-      return !!provider.readonly;
+      const stat = (await provider.stat(this.convertUri(uriString).codeUri)) as FileStat;
+      return !!stat.readonly;
     } catch (e) {
       // 考虑到非 readonly 变readonly 的情况，相对于 readonly 变不 readonly 来说更为严重
       return false;

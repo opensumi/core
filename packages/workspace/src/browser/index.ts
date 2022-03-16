@@ -1,9 +1,11 @@
-import { IWorkspaceStorageService } from '../common';
-import { WorkspaceContribution } from './workspace-contribution';
 import { Provider } from '@opensumi/di';
 import { BrowserModule, EffectDomain } from '@opensumi/ide-core-browser';
-import { injectWorkspacePreferences } from './workspace-preferences';
+
+import { IWorkspaceStorageService } from '../common';
 import { IWorkspaceService } from '../common';
+
+import { WorkspaceContribution } from './workspace-contribution';
+import { injectWorkspacePreferences } from './workspace-preferences';
 import { WorkspaceService } from './workspace-service';
 import { WorkspaceStorageService } from './workspace-storage-service';
 import { WorkspaceVariableContribution } from './workspace-variable-contribution';

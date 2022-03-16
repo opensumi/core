@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { Injectable } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-components/lib/utils';
 import { Emitter, Event } from '@opensumi/ide-core-common';

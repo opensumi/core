@@ -1,23 +1,21 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import type { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { toDisposable, Event, CommandService, positionToRange, URI } from '@opensumi/ide-core-common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
-import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { EditorCollectionService } from '@opensumi/ide-editor';
+import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-
-import { MockSCMProvider } from '../../scm-test-util';
-
+import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
+import { SCMService, ISCMRepository } from '../../../src';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
-import { SCMService, ISCMRepository } from '../../../src';
+import { MockSCMProvider } from '../../scm-test-util';
 
 @Injectable()
 class MockEditorDocumentModelService {

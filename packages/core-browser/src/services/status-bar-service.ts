@@ -1,4 +1,5 @@
-import { IDisposable, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
+import { IDisposable, IMarkdownString, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
+
 import { IMenu } from '../menu/next';
 
 export const IStatusBarService = Symbol('IStatusBarService');
@@ -52,7 +53,7 @@ export interface StatusBarEntry {
   color?: IThemeColor | string;
   backgroundColor?: IThemeColor | string;
   className?: string;
-  tooltip?: string;
+  tooltip?: string | IMarkdownString;
   command?: string;
   arguments?: any[];
   priority?: number;

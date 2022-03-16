@@ -1,4 +1,5 @@
 import path from 'path';
+
 import { Injector } from '@opensumi/di';
 import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import {
@@ -15,11 +16,10 @@ import {
   IExtensionLogger,
   enumValueToArray,
 } from '@opensumi/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
-import { ExtHostStorage } from './api/vscode/ext.host.storage';
-import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
-import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';
-import { createAPIFactory as createTelemetryAPIFactory } from './api/telemetry/ext.host.api.impl';
+import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
 import {
   ExtHostAPIIdentifier,
   MainThreadAPIIdentifier,
@@ -27,11 +27,14 @@ import {
   IExtensionDescription,
   ExtensionIdentifier,
 } from '../common/vscode';
+
+import { createAPIFactory as createSumiAPIFactory } from './api/sumi/ext.host.api.impl';
+import { createAPIFactory as createTelemetryAPIFactory } from './api/telemetry/ext.host.api.impl';
+import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { ExtensionContext } from './api/vscode/ext.host.extensions';
-import { KTExtension } from './vscode.extension';
-import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
-import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
+import { ExtHostStorage } from './api/vscode/ext.host.storage';
+import { KTExtension } from './vscode.extension';
 
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require

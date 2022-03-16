@@ -1,5 +1,5 @@
-import { MarkerSeverity, URI } from '@opensumi/ide-core-common';
 import { ITreeNode } from '@opensumi/ide-components';
+import { MarkerSeverity, URI } from '@opensumi/ide-core-common';
 
 export const enum OutlineSortOrder {
   ByPosition,

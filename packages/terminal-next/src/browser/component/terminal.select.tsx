@@ -1,6 +1,8 @@
-import React from 'react';
 import { observer } from 'mobx-react-lite';
+import React from 'react';
+
 import { useInjectable } from '@opensumi/ide-core-browser';
+
 import { ITerminalGroupViewService } from '../../common';
 
 import styles from './terminal.module.less';

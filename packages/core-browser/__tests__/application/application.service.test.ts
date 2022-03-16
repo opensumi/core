@@ -1,4 +1,5 @@
 import { IApplicationService, CommonServerPath, OS } from '@opensumi/ide-core-common';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { ApplicationService } from '../../src/application/application.service';
 

@@ -32,10 +32,23 @@
   align-items: center;
   width: 100%;
   user-select: none;
+  padding: 3px 4px !important;
 
   &.disabled {
     .shortcut {
       color: var(--kt-menu-disableForeground);
+    }
+  }
+
+  &:hover {
+    .shortcut {
+      color: var(--menu-selectionForeground);
+    }
+  }
+
+  &:focus {
+    .shortcut {
+      color: var(--menu-selectionForeground);
     }
   }
 }

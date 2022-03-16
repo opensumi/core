@@ -1,5 +1,5 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 // copied from https://github.com/microsoft/vscode/blob/master/src/vs/editor/common/model/textModel.ts
 
@@ -54,6 +54,11 @@ export function createMockedMonacoTextModelApi(): typeof textModel {
         : null;
       this.afterContentClassName = options.afterContentClassName ? cleanClassName(options.afterContentClassName) : null;
     }
+    description: string;
+    minimap?: monaco.editor.IModelDecorationMinimapOptions | null | undefined;
+    firstLineDecorationClassName?: string | null | undefined;
+    after?: monaco.editor.InjectedTextOptions | null | undefined;
+    before?: monaco.editor.InjectedTextOptions | null | undefined;
   }
 
   const mockedMonacoTextModelApi: any = {

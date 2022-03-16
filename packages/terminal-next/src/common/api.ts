@@ -1,7 +1,8 @@
 import { Event } from '@opensumi/ide-core-common';
-import { TerminalOptions, ITerminalInfo } from './pty';
-import { ITerminalExternalClient } from './controller';
+
 import { ITerminalExitEvent } from './client';
+import { ITerminalExternalClient } from './controller';
+import { TerminalOptions, ITerminalInfo } from './pty';
 
 export const ITerminalApiService = Symbol('ITerminalApiService');
 export interface ITerminalApiService {

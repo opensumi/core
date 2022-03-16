@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { RPCService } from '@opensumi/ide-connection';
+import { FileUri, replaceAsarInPath } from '@opensumi/ide-core-node';
+import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
 import { IProcessFactory, IProcess, ProcessOptions } from '@opensumi/ide-process';
 import { rgPath } from '@opensumi/vscode-ripgrep';
-import { FileUri, replaceAsarInPath } from '@opensumi/ide-core-node';
-import { RPCService } from '@opensumi/ide-connection';
-import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
+
 import {
   IContentSearchServer,
   ContentSearchOptions,

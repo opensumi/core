@@ -1,9 +1,10 @@
 import { Injectable } from '@opensumi/di';
+
+import { IDisposable, Disposable } from './disposable';
 import { IJSONSchemaMap, IJSONSchema } from './json-schema';
+import { formatLocalize } from './localize';
 import { IStringDictionary } from './types/string';
 import { deepClone } from './utils/objects';
-import { IDisposable, Disposable } from './disposable';
-import { formatLocalize } from './localize';
 
 interface TaskDefinition {
   extensionId: string;

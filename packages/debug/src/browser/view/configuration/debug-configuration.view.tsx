@@ -1,13 +1,12 @@
-import React from 'react';
-import styles from './debug-configuration.module.less';
 import cls from 'classnames';
-import { useInjectable, localize, isElectronRenderer, URI } from '@opensumi/ide-core-browser';
-import { DebugAction } from '../../components';
-import { DebugConfigurationService } from './debug-configuration.service';
 import { observer } from 'mobx-react-lite';
-import { DebugToolbarView } from './debug-toolbar.view';
+import React from 'react';
+
+
 import { Select, Option } from '@opensumi/ide-components';
+import { useInjectable, localize, isElectronRenderer, URI } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+
 import {
   DEFAULT_ADD_CONFIGURATION_KEY,
   DEFAULT_NO_CONFIGURATION_KEY,
@@ -15,6 +14,11 @@ import {
   DEFAULT_CONFIGURATION_NAME_SEPARATOR,
   DebugSessionOptions,
 } from '../../../common';
+import { DebugAction } from '../../components';
+
+import styles from './debug-configuration.module.less';
+import { DebugConfigurationService } from './debug-configuration.service';
+import { DebugToolbarView } from './debug-toolbar.view';
 
 interface ConfigurationSelectorProps {
   currentValue: string;

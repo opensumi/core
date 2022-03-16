@@ -5,20 +5,25 @@
 
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.63.0/src/vs/platform/terminal/node/terminalProcess.ts
 
+import { promises } from 'fs';
+import os from 'os';
+
+import omit from 'lodash.omit';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
-import os from 'os';
-import omit from 'lodash.omit';
-import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
-import { IPtyProcess } from '../common/pty';
-import { findExecutable } from './shell';
-import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
-import { Disposable, Emitter, INodeLogger } from '@opensumi/ide-core-node';
+
 import { Injectable, Autowired } from '@opensumi/di';
-import { promises } from 'fs';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { isWindows } from '@opensumi/ide-core-common/lib/platform';
+import { Disposable, Emitter, INodeLogger } from '@opensumi/ide-core-node';
+import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
+
+import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
+import { IPtyProcess } from '../common/pty';
+
+import { findExecutable } from './shell';
+
 
 export const IPtyService = Symbol('IPtyService');
 
@@ -37,8 +42,6 @@ export class PtyService extends Disposable {
   private readonly _onExit = new Emitter<IProcessExitEvent>();
   readonly onExit = this._onExit.event;
 
-  private readonly _initialCwd: string;
-
   get pty() {
     return this._ptyProcess;
   }
@@ -53,10 +56,11 @@ export class PtyService extends Disposable {
       // color prompt as defined in the default ~/.bashrc file.
       name = 'xterm-256color';
     }
-    this._initialCwd = this.parseCwd();
+
+    const cwd = this.parseCwd();
     this._ptyOptions = {
       name,
-      cwd: this._initialCwd,
+      cwd,
       env: shellLaunchConfig.env as { [key: string]: string },
       cols,
       rows,
@@ -76,27 +80,31 @@ export class PtyService extends Disposable {
   }
 
   async _validateCwd(): Promise<ITerminalLaunchError | undefined> {
-    if (this._initialCwd) {
+    const { cwd } = this._ptyOptions;
+    if (cwd) {
       try {
-        const result = await promises.stat(this._initialCwd);
+        const result = await promises.stat(cwd);
         if (!result.isDirectory()) {
           return {
-            message: `Starting directory (cwd) "${this._initialCwd}" is not a directory`,
+            message: `Starting directory (cwd) "${cwd}" is not a directory`,
           };
         }
       } catch (err) {
         if (err?.code === 'ENOENT') {
           return {
-            message: `Starting directory (cwd) "${this._initialCwd}" does not exist`,
+            message: `Starting directory (cwd) "${cwd}" does not exist`,
           };
         }
       }
+    } else {
+      return {
+        message: 'IPtyForkOptions.cwd not set',
+      };
     }
-
-    return undefined;
   }
   async _validateExecutable(): Promise<ITerminalLaunchError | undefined> {
     const options = this.shellLaunchConfig;
+    const { cwd } = this._ptyOptions;
     if (!options.executable) {
       return {
         message: 'IShellLaunchConfig.executable not set',
@@ -114,7 +122,7 @@ export class PtyService extends Disposable {
         // The executable isn't an absolute path, try find it on the PATH or CWD
         const envPaths: string[] | undefined =
           options.env && options.env.PATH ? options.env.PATH.split(path.delimiter) : undefined;
-        const executable = await findExecutable(options.executable, this._initialCwd, envPaths);
+        const executable = await findExecutable(options.executable, cwd, envPaths);
         if (!executable) {
           return {
             message: `Path to shell executable "${options.executable}" does not exist`,

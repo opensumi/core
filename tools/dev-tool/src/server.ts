@@ -1,11 +1,14 @@
 /* eslint-disable no-console */
 import 'tsconfig-paths/register';
-import { Injector } from '@opensumi/di';
-import path from 'path';
 import http from 'http';
+import path from 'path';
+
 import Koa from 'koa';
 import KoaRouter from 'koa-router';
-import { RemoteOpenerServiceImpl } from '@opensumi/ide-remote-opener/lib/node';
+
+import { Injector } from '@opensumi/di';
+import { Deferred } from '@opensumi/ide-core-common';
+import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 import {
   IExternalFileArgs,
   IExternalUrlArgs,
@@ -13,8 +16,7 @@ import {
   RemoteOpenerClientToken,
   RemoteOpenerServiceToken,
 } from '@opensumi/ide-remote-opener/lib/common';
-import { Deferred } from '@opensumi/ide-core-common';
-import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
+import { RemoteOpenerServiceImpl } from '@opensumi/ide-remote-opener/lib/node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const app = new Koa();

@@ -1,4 +1,5 @@
 import React from 'react';
+
 import { MessageType, URI } from '@opensumi/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');

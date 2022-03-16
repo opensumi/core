@@ -1,10 +1,17 @@
-import * as fse from 'fs-extra';
-import trash from 'trash';
-import paths from 'path';
 import os from 'os';
+import paths from 'path';
+
+import fileType from 'file-type';
+import * as fse from 'fs-extra';
 import mv from 'mv';
+import trash from 'trash';
 import { v4 } from 'uuid';
 import writeFileAtomic from 'write-file-atomic';
+
+import { Injectable } from '@opensumi/di';
+import { RPCService } from '@opensumi/ide-connection';
+import { isLinux } from '@opensumi/ide-core-common/lib/platform';
+import { ParsedPattern, parse } from '@opensumi/ide-core-common/lib/utils/glob';
 import {
   UriComponents,
   Uri,
@@ -18,7 +25,7 @@ import {
   getDebugLogger,
   FileUri,
 } from '@opensumi/ide-core-node';
-import { NsfwFileSystemWatcherServer } from './file-service-watcher';
+
 import {
   FileChangeEvent,
   FileStat,
@@ -32,11 +39,9 @@ import {
   FileAccess,
   FileSystemProviderCapabilities,
 } from '../common/';
-import { Injectable } from '@opensumi/di';
-import { RPCService } from '@opensumi/ide-connection';
-import fileType from 'file-type';
-import { ParsedPattern, parse } from '@opensumi/ide-core-common/lib/utils/glob';
-import { isLinux } from '@opensumi/ide-core-common/lib/platform';
+
+import { NsfwFileSystemWatcherServer } from './file-service-watcher';
+
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';

@@ -1,14 +1,15 @@
 import cls from 'classnames';
 import React from 'react';
-import { IThemeService } from '@opensumi/ide-theme';
-import { getExternalIcon } from '@opensumi/ide-core-browser';
-import { IThemeColor, isThemeColor, CommandService, StatusBarHoverCommand } from '@opensumi/ide-core-common';
-import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
+
+import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
+import { getExternalIcon, IOpenerService, toMarkdown } from '@opensumi/ide-core-browser';
+import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
+import { IThemeColor, isThemeColor, CommandService, StatusBarHoverCommand, IMarkdownString } from '@opensumi/ide-core-common';
+import { IThemeService } from '@opensumi/ide-theme';
 
 import styles from './status-bar.module.less';
-import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
-import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
 
 interface StatusBarPopoverContent {
   contents: StatusBarHoverContent[];
@@ -58,15 +59,16 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
   } = props;
 
   const themeService = useInjectable<IThemeService>(IThemeService);
+  const openerService = useInjectable<IOpenerService>(IOpenerService);
 
-  const disablePopover = React.useMemo(
-    () => !tooltip && !hoverContents && (!command || !onClick),
-    [tooltip, hoverContents, command, onClick],
-  );
+  const disablePopover = React.useMemo(() => !tooltip && !hoverContents, [tooltip, hoverContents]);
 
   const popoverContent = React.useMemo(() => {
     if (hoverContents) {
       return <StatusBarPopover contents={hoverContents} />;
+    }
+    if (tooltip && (tooltip as IMarkdownString).value) {
+      return toMarkdown((tooltip as IMarkdownString).value, openerService);
     }
     return <div className={styles.popover_tooltip}>{tooltip}</div>;
   }, []);

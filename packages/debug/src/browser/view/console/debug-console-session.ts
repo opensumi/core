@@ -1,13 +1,17 @@
-import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
-import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
-import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
-import { DebugSession } from '../../debug-session';
 import throttle = require('lodash.throttle');
-import { DebugConsoleTreeModel } from './debug-console-model';
-import { LinkDetector } from '../../debug-link-detector';
+
+import { Autowired, Injectable, Optional } from '@opensumi/di';
+import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
 import { IThemeService } from '@opensumi/ide-theme';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
+
 import { handleANSIOutput } from '../../debug-ansi-handle';
+import { LinkDetector } from '../../debug-link-detector';
+import { DebugSession } from '../../debug-session';
+import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
+
+import { DebugConsoleTreeModel } from './debug-console-model';
+
 
 type ConsoleNodes = DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer;
 

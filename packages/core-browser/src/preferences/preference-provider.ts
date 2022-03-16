@@ -12,6 +12,7 @@ import {
   FileStat,
 } from '@opensumi/ide-core-common';
 import { PreferenceScope } from '@opensumi/ide-core-common/lib/preferences/preference-scope';
+
 import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
 export interface IResolvedPreferences {
   default: { [key: string]: any };

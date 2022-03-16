@@ -1,5 +1,5 @@
 import React from 'react';
-import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
+
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   isElectronRenderer,
@@ -11,11 +11,13 @@ import {
   STORAGE_NAMESPACE,
 } from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { FileDialog } from './file-dialog.view';
-import { FileTreeDialogModel } from './file-dialog-model.service';
-import { FileTreeDialogService } from './file-dialog.service';
 import { isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
+
+import { FileTreeDialogModel } from './file-dialog-model.service';
+import { FileTreeDialogService } from './file-dialog.service';
+import { FileDialog } from './file-dialog.view';
 
 @Injectable()
 export class WindowDialogServiceImpl implements IWindowDialogService {

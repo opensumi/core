@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Event, IDisposable } from '@opensumi/ide-core-common';
+
 import { IMenuRegistry, MenuId, IMenuItem } from '../../menu/next';
 
 export const TabBarToolbarContribution = Symbol('TabBarToolbarContribution');

@@ -7,11 +7,13 @@ import {
   INativeCryptrService,
   CryptrServicePath,
 } from '@opensumi/ide-core-common';
+
+import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
 import { NodeModule } from '../node-module';
-import { CryptrService } from './cryptr.server';
+
 import { CommonServer } from './common.server';
 import { CredentialService } from './credential.server';
-import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
+import { CryptrService } from './cryptr.server';
 
 @Injectable()
 export class ServerCommonModule extends NodeModule {

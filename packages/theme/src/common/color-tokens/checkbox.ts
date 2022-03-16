@@ -1,4 +1,5 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor } from '../color-registry';
 
 export const checkboxBorder = registerColor(

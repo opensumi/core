@@ -1,10 +1,15 @@
+import path from 'path';
+
+import { INodeLogger, Event, getDebugLogger } from '@opensumi/ide-core-node';
+
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtHostProxy, IExtensionHostManager } from '../../src/common';
 import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';
 import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.manager';
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { INodeLogger, Event, getDebugLogger } from '@opensumi/ide-core-node';
-import path from 'path';
+
+// re-install RAL in `@opensumi/vscode-jsonrpc`
+import '@opensumi/vscode-jsonrpc/lib/node/main';
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

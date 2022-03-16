@@ -1,22 +1,18 @@
-import {
-  RPCServiceCenter,
-  initRPCService,
-  RPCMessageConnection,
-  WebSocketServerRoute,
-  CommonChannelHandler,
-  commonChannelPathHandler,
-} from '../../src/node';
-import { createWebSocketConnection } from '../../src/common/message';
+import http from 'http';
 
-import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
-import { RPCService } from '../../src';
-import { WSChannel } from '../../src/common/ws-channel';
-import { parse } from '../../src/common/utils';
+import ws from 'ws';
 
 import { Emitter, Uri } from '@opensumi/ide-core-common';
 
-import ws from 'ws';
-import http from 'http';
+import { RPCService } from '../../src';
+import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
+import { createWebSocketConnection } from '../../src/common/message';
+import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/rpcProtocol';
+import { parse } from '../../src/common/utils';
+import { WSChannel } from '../../src/common/ws-channel';
+import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
+
+
 const WebSocket = ws;
 
 class MockFileService extends RPCService {

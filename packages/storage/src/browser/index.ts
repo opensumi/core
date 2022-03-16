@@ -1,8 +1,10 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
-import { DatabaseStorageContribution } from './storage.contribution';
+
 import { IStoragePathServer, IGlobalStorageServer, IWorkspaceStorageServer } from '../common';
+
 import { StoragePathServer } from './storage-path';
+import { DatabaseStorageContribution } from './storage.contribution';
 import { GlobalStorageServer, WorkspaceStorageServer } from './storage.service';
 
 @Injectable()

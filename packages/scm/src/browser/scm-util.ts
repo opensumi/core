@@ -1,4 +1,5 @@
 import { basename } from '@opensumi/ide-core-common/lib/path';
+
 import { ISCMResourceGroup, ISCMResource, ISCMRepository } from '../common';
 
 export function isSCMResource(element: ISCMResourceGroup | ISCMResource): element is ISCMResource {

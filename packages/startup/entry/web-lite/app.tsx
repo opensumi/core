@@ -1,18 +1,17 @@
 import '@opensumi/ide-i18n/lib/browser';
-import { SlotLocation } from '@opensumi/ide-core-browser';
 import * as React from 'react';
 
-import { CommonBrowserModules } from './common-modules';
-import { renderApp } from './render-app';
-
-// 引入公共样式文件
-import '@opensumi/ide-core-browser/lib/style/index.less';
-import { WebLiteModule } from './lite-module';
+import { SlotLocation } from '@opensumi/ide-core-browser';
 import { SampleModule } from '../sample-modules';
 import { CodeAPIModule } from './code-api';
 import { ICodePlatform, IRepositoryModel, CodePlatform } from './code-api/common/types';
 import { parseUri, DEFAULT_URL } from './utils';
+import { CommonBrowserModules } from './common-modules';
+import { WebLiteModule } from './lite-module';
+import { renderApp } from './render-app';
 
+// 引入公共样式文件
+import '@opensumi/ide-core-browser/lib/style/index.less';
 import './styles.less';
 import './i18n';
 // 视图和slot插槽的对应关系

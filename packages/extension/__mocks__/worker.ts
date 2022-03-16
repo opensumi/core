@@ -1,6 +1,8 @@
-import * as fs from 'fs-extra';
 import path from 'path';
 import vm from 'vm';
+
+import * as fs from 'fs-extra';
+
 const { TextDecoder, TextEncoder } = require('util');
 
 const workerScript = `
@@ -65,9 +67,8 @@ export class MockWorker {
           userAgent: 'Node.js Sandbox',
         },
         setTimeout,
-        attachEvent: (listener) => {
-          //
-        },
+        attachEvent: () => {},
+        addEventListener: () => {},
       };
 
       const context = vm.createContext({

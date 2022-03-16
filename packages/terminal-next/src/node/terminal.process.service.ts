@@ -1,4 +1,5 @@
 import { Injectable } from '@opensumi/di';
+
 import { ITerminalProcessService } from '../common';
 
 @Injectable()

@@ -1,17 +1,16 @@
 import { Injectable } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 import { OverviewRulerLane, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
-import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/src/browser';
+import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
+import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-
-import { SCMPreferences } from '../../../src/browser/scm-preference';
 import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-decorator';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { SCMPreferences } from '../../../src/browser/scm-preference';
 
 const fakeScmDiffDecorationsGetter = jest.fn();
 

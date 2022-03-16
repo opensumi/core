@@ -1,9 +1,10 @@
-import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
-import { Emitter, IDisposable } from '@opensumi/ide-core-common';
-import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Emitter, IDisposable } from '@opensumi/ide-core-common';
+
 import { EMIT_EXT_HOST_EVENT } from '../../../common';
+import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import { IExtHostCommon, IMainThreadCommon } from '../../../common/sumi/common';
+import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 
 export class ExtHostCommon implements IExtHostCommon {
   private emitters = new Map<string, Emitter<any[]>>();

@@ -1,25 +1,13 @@
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { observer } from 'mobx-react-lite';
 import { act } from 'react-dom/test-utils';
+
 import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps } from '@opensumi/ide-components';
-import {
-  DebugConsoleModelService,
-  IDebugConsoleModel,
-} from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IMessageService } from '@opensumi/ide-overlay';
-import {
-  DebugPreferences,
-  DebugSessionContributionRegistry,
-  DebugSessionFactory,
-  DefaultDebugSessionFactory,
-  DebugSession,
-} from '@opensumi/ide-debug/lib/browser';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { IContextKeyService } from '@opensumi/ide-core-browser/src';
+import { Disposable } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-core-node';
-import { ITerminalApiService } from '@opensumi/ide-terminal-next';
-import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import {
   DebugModelFactory,
   IDebugServer,
@@ -27,19 +15,32 @@ import {
   IDebugSession,
   DebugSessionOptions,
 } from '@opensumi/ide-debug';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { QuickPickService } from '@opensumi/ide-quick-open';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { WSChannelHandler } from '@opensumi/ide-connection';
-import { IVariableResolverService } from '@opensumi/ide-variable';
-import { ITaskService } from '@opensumi/ide-task';
-import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
+import {
+  DebugPreferences,
+  DebugSessionContributionRegistry,
+  DebugSessionFactory,
+  DefaultDebugSessionFactory,
+  DebugSession,
+} from '@opensumi/ide-debug/lib/browser';
 import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer } from '@opensumi/ide-debug/lib/browser/tree';
-import { IContextKeyService } from '@opensumi/ide-core-browser/src';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { Disposable } from '@opensumi/ide-core-common';
-import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
+import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
+import {
+  DebugConsoleModelService,
+  IDebugConsoleModel,
+} from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { DebugConsoleRenderedNode } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.view';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { QuickPickService } from '@opensumi/ide-quick-open';
+import { ITaskService } from '@opensumi/ide-task';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { IVariableResolverService } from '@opensumi/ide-variable';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 describe('Debug console component Test Suites', () => {
   const mockInjector = createBrowserInjector([]);

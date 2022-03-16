@@ -1,9 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { LanguagesContribution } from '@opensumi/ide-monaco';
 import { localize, URI } from '@opensumi/ide-core-common';
+import { LanguagesContribution } from '@opensumi/ide-monaco';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
-import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
 export type LanguagesSchema = Array<LanguagesContribution>;
 

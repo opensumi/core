@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/main/src/vs/workbench/contrib/debug/browser/debugANSIHandling.ts
 
-import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
-import { Color, IThemeService, RGBA } from '@opensumi/ide-theme';
-import { LinkDetector } from './debug-link-detector';
 import { ansiColorIdentifiers } from '@opensumi/ide-terminal-next/lib/browser/terminal.color';
+import { Color, IThemeService, RGBA } from '@opensumi/ide-theme';
+import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
+
+import { LinkDetector } from './debug-link-detector';
 import styles from './view/console/debug-console.module.less';
 
 /**
@@ -172,7 +173,7 @@ export async function handleANSIOutput(
    * @see {@link https://zh.wikipedia.org/wiki/ANSI%E8%BD%AC%E4%B9%89%E5%BA%8F%E5%88%97#%E9%80%89%E6%8B%A9%E5%9B%BE%E5%BD%A2%E5%86%8D%E7%8E%B0%EF%BC%88SGR%EF%BC%89%E5%8F%82%E6%95%B0 }
    */
   async function setBasicFormatters(styleCodes: number[]): Promise<void> {
-    for (let code of styleCodes) {
+    for (const code of styleCodes) {
       switch (code) {
         case 0: {
           // 重置

@@ -1,19 +1,24 @@
 /**
  * Terminal Client Test
  */
-import WebSocket from 'ws';
-import httpProxy from 'http-proxy';
-import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
-import { createProxyServer, createWsServer, resetPort } from './proxy';
-import { defaultName } from './mock.service';
-import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
-import { delay } from './utils';
-import { injector } from './inject';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 import os from 'os';
 import path from 'path';
+
 import * as fs from 'fs-extra';
+import httpProxy from 'http-proxy';
+import WebSocket from 'ws';
+
+import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
+
+import { injector } from './inject';
+import { defaultName } from './mock.service';
+import { createProxyServer, createWsServer, resetPort } from './proxy';
+import { delay } from './utils';
+
 
 function createDOMContainer() {
   const div = document.createElement('div');

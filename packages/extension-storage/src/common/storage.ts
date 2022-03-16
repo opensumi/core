@@ -1,6 +1,7 @@
-import { KeysToAnyValues, KeysToKeysToAnyValue } from './types';
-import { FileStat } from '@opensumi/ide-file-service';
 import { Uri } from '@opensumi/ide-core-common';
+import { FileStat } from '@opensumi/ide-file-service';
+
+import { KeysToAnyValues, KeysToKeysToAnyValue } from './types';
 
 export const IExtensionStorageServer = Symbol('ExtensionStorageServer');
 

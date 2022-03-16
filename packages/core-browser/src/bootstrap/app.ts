@@ -3,11 +3,11 @@
  * 并且 editor.main 也包含对 editor.all 的导入
  */
 import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
+import ResizeObserver from 'resize-observer-polyfill';
+
 import { Injector, ConstructorOf } from '@opensumi/di';
-import { BrowserModule, IClientApp } from '../browser-module';
-import { AppConfig } from '../react-providers';
-import { injectInnerProviders } from './inner-providers';
-import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
+import { RPCMessageConnection } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   CommandRegistry,
   isOSX,
@@ -31,10 +31,22 @@ import {
   IDisposable,
   Deferred,
 } from '@opensumi/ide-core-common';
+import {
+  DEFAULT_APPLICATION_DESKTOP_HOST,
+  DEFAULT_APPLICATION_NAME,
+  DEFAULT_APPLICATION_WEB_HOST,
+  DEFAULT_URI_SCHEME,
+} from '@opensumi/ide-core-common/lib/const/application';
+import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+
 import { ClientAppStateService } from '../application';
+import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
-import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import { RPCMessageConnection, WSChannelHandler } from '@opensumi/ide-connection';
+import { CorePreferences } from '../core-preferences';
+import { injectCorePreferences } from '../core-preferences';
+import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
+import { RenderedEvent } from '../layout';
+import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
 import {
   PreferenceProviderProvider,
   injectPreferenceSchemaProvider,
@@ -46,21 +58,13 @@ import {
   getPreferenceLanguageId,
   registerLocalStorageProvider,
 } from '../preferences';
-import { injectCorePreferences } from '../core-preferences';
-import { CorePreferences } from '../core-preferences';
-import { renderClientApp, IAppRenderer } from './app.view';
-import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
-import {
-  DEFAULT_APPLICATION_DESKTOP_HOST,
-  DEFAULT_APPLICATION_NAME,
-  DEFAULT_APPLICATION_WEB_HOST,
-  DEFAULT_URI_SCHEME,
-} from '@opensumi/ide-core-common/lib/const/application';
-import { electronEnv } from '../utils';
-import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
+import { AppConfig } from '../react-providers';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
-import ResizeObserver from 'resize-observer-polyfill';
-import { RenderedEvent } from '../layout';
+import { electronEnv } from '../utils';
+
+import { renderClientApp, IAppRenderer } from './app.view';
+import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
+import { injectInnerProviders } from './inner-providers';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;

@@ -1,5 +1,9 @@
 import { observable, computed, action } from 'mobx';
+
 import { Injectable } from '@opensumi/di';
+import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
+import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+
 import {
   IAutoFocus,
   IQuickOpenCallbacks,
@@ -7,8 +11,6 @@ import {
   IQuickOpenWidget,
   QuickOpenInputOptions,
 } from './quick-open.type';
-import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
-import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
 @Injectable({ multiple: true })
 export class QuickOpenWidget implements IQuickOpenWidget {
@@ -116,6 +118,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._canSelectMany = options.canSelectMany;
     this.renderTab = options.renderTab;
     this.toggleTab = options.toggleTab;
+    // 获取第一次要展示的内容
     this.callbacks.onType(prefix);
   }
 
@@ -136,6 +139,18 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     }
 
     this.callbacks.onHide(reason!);
+  }
+
+  @action
+  blur() {
+    if (!this._isShow) {
+      return;
+    }
+    // 判断移出焦点后是否需要关闭组件
+    const keepShow = this.callbacks.onFocusLost();
+    if (!keepShow) {
+      this.hide(HideReason.FOCUS_LOST);
+    }
   }
 
   @action

@@ -3,14 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CommandsConverter } from './ext.host.command';
+import type * as vscode from 'vscode';
+
+import { Uri as URI } from '@opensumi/ide-core-common';
+import { isFalsyOrEmpty } from '@opensumi/ide-core-common/lib/arrays';
+import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
+
 import * as typeConverters from '../../../common/vscode/converter';
 import * as types from '../../../common/vscode/ext-types';
 import * as modes from '../../../common/vscode/model.api';
-import { Uri as URI } from '@opensumi/ide-core-common';
-import { isFalsyOrEmpty } from '@opensumi/ide-core-common/lib/arrays';
-import type * as vscode from 'vscode';
-import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
+
+
+import { CommandsConverter } from './ext.host.command';
 
 type IPosition = modes.Position;
 type IRange = modes.Range;

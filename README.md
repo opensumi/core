@@ -52,6 +52,12 @@ Read through our [contributing guidelines](./CONTRIBUTING.md) to learn about our
 
 Want to report a bug, contribute some code, or improve documentation? Excellent! Read up on our [guidelines](<(./CONTRIBUTING.md)>) for contributing and then check out one of our issues labeled as help wanted or good first issue.
 
+## DingTalk Group
+
+use [DingTalk](https://www.dingtalk.com/) APP scan or join the group with the number `34355491`
+
+![dingtalk](https://img.alicdn.com/imgextra/i1/O1CN01k3gCmL1HWPjLchVv7_!!6000000000765-0-tps-200-199.jpg)
+
 ## License
 
 Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.

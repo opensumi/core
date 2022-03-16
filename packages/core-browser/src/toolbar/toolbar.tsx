@@ -1,6 +1,17 @@
+import classnames from 'classnames';
+import throttle = require('lodash.throttle');
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import { IEventBus, Disposable, Emitter } from '@opensumi/ide-core-common';
+
+import { DomListener } from '../dom';
+import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
+import { PreferenceService } from '../preferences';
 import { useInjectable } from '../react-hooks';
+import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
+import { getIcon } from '../style/icon/icon';
+
 import {
   IToolbarRegistry,
   ToolbarActionGroupsChangedEvent,
@@ -12,14 +23,7 @@ import {
   IToolbarActionElementProps,
   ToolbarRegistryReadyEvent,
 } from './types';
-import { IEventBus, Disposable, Emitter } from '@opensumi/ide-core-common';
-import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
-import { getIcon } from '../style/icon/icon';
-import { DomListener } from '../dom';
-import classnames from 'classnames';
-import { PreferenceService } from '../preferences';
-import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
-import throttle = require('lodash.throttle');
+
 
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;
 export const DEFAULT_TOOLBAR_MORE_WIDTH = 14;

@@ -1,3 +1,11 @@
+import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
+import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
+import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
+import { UntitledSchemeDocumentProvider } from '@opensumi/ide-editor/lib/browser/untitled-resource';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
   ResourceService,
@@ -9,13 +17,6 @@ import {
   WorkbenchEditorService,
 } from '../../src';
 import { ResourceServiceImpl } from '../../src/browser/resource.service';
-import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
-import { UntitledSchemeDocumentProvider } from '@opensumi/ide-editor/lib/browser/untitled-resource';
-import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
-import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
 
 describe('resource service tests', () => {
   const injector = createBrowserInjector([]);

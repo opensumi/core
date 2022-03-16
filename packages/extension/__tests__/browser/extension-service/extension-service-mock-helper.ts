@@ -1,23 +1,11 @@
-import { Injectable, Provider } from '@opensumi/di';
-import path from 'path';
 import fs from 'fs';
-import {
-  ExtensionService,
-  IExtensionNodeClientService,
-  IExtraMetaData,
-  IExtensionMetaData,
-  IExtension,
-  IExtensionProps,
-  ExtensionNodeServiceServerPath,
-  IExtCommandManagement,
-  AbstractExtensionManagementService,
-  IRequireInterceptorService,
-  RequireInterceptorService,
-  RequireInterceptorContribution,
-} from '../../../src/common';
-import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
+import path from 'path';
+
+import { Injectable, Provider } from '@opensumi/di';
+import { ICommentsService } from '@opensumi/ide-comments';
+import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
+import { WSChannel } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   IContextKeyService,
   ILoggerManagerClient,
@@ -42,56 +30,73 @@ import {
   ICredentialsService,
   Emitter,
 } from '@opensumi/ide-core-browser';
-import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
-import { IThemeService, IIconService } from '@opensumi/ide-theme/lib/common';
-import { IconService } from '@opensumi/ide-theme/lib/browser';
-import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';
-import { IWorkspaceStorageServer, IGlobalStorageServer } from '@opensumi/ide-storage';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { MockPreferenceProvider } from '@opensumi/ide-core-browser/__mocks__/preference';
+import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { WSChanneHandler, WSChannel } from '@opensumi/ide-connection';
 import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   IEditorActionRegistry,
 } from '@opensumi/ide-editor/lib/browser';
-import { MockPreferenceProvider } from '@opensumi/ide-core-browser/__mocks__/preference';
-import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
-import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/src/menu/next';
 import { EditorActionRegistryImpl } from '@opensumi/ide-editor/lib/browser/menu/editor.menu';
-import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
-import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
-import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
-import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
-import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
+import { BrowserRequireInterceptorContribution } from '@opensumi/ide-extension/lib/browser/require-interceptor.contribution';
 import {
   AbstractExtInstanceManagementService,
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
-import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
+import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
+import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
+import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
+import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { IWorkspaceStorageServer, IGlobalStorageServer } from '@opensumi/ide-storage';
+import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
+import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
+import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
+import { IThemeService, IIconService } from '@opensumi/ide-theme/lib/common';
+import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { IWebviewService } from '@opensumi/ide-webview';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
+import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+
+import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
+import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
+import { MockWorker, MessagePort } from '../../../__mocks__/worker';
 import { ExtCommandManagementImpl } from '../../../src/browser/extension-command-management';
 import { ExtInstanceManagementService } from '../../../src/browser/extension-instance-management';
 import { ExtensionManagementService } from '../../../src/browser/extension-management.service';
+import { NodeExtProcessService } from '../../../src/browser/extension-node.service';
+import { ViewExtProcessService } from '../../../src/browser/extension-view.service';
+import { WorkerExtProcessService } from '../../../src/browser/extension-worker.service';
+import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
+import {
+  ExtensionService,
+  IExtensionNodeClientService,
+  IExtraMetaData,
+  IExtensionMetaData,
+  IExtension,
+  IExtensionProps,
+  ExtensionNodeServiceServerPath,
+  IExtCommandManagement,
+  AbstractExtensionManagementService,
+  IRequireInterceptorService,
+  RequireInterceptorService,
+  RequireInterceptorContribution,
+} from '../../../src/common';
 import {
   AbstractNodeExtProcessService,
   AbstractViewExtProcessService,
   AbstractWorkerExtProcessService,
 } from '../../../src/common/extension.service';
-import { NodeExtProcessService } from '../../../src/browser/extension-node.service';
-import { WorkerExtProcessService } from '../../../src/browser/extension-worker.service';
-import { ViewExtProcessService } from '../../../src/browser/extension-view.service';
-import { MockWorker, MessagePort } from '../../../__mocks__/worker';
-import { IWebviewService } from '@opensumi/ide-webview';
-import { ICommentsService } from '@opensumi/ide-comments';
-import { CommentsService } from '@opensumi/ide-comments/lib/browser/comments.service';
-import { BrowserRequireInterceptorContribution } from '@opensumi/ide-extension/lib/browser/require-interceptor.contribution';
-import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
-import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -313,10 +318,6 @@ function mockGlobals() {
     text: async () => fs.readFileSync(path.join(__dirname, '../../../__mocks__/extension/browser-new.js'), 'utf8'),
   });
 
-  (global as any).amdLoader = require('../../../../../tools/dev-tool/vendor/loader.js');
-  (global as any).amdLoader.require = (global as any).amdLoader;
-  (global as any).amdLoader.require.config = (global as any).amdLoader.config;
-
   (global as any).Worker = MockWorker;
   (global as any).MessagePort = MessagePort;
 }
@@ -522,7 +523,7 @@ export function setupExtensionServiceInjector() {
       useClass: MockPreferenceProvider,
     },
     {
-      token: WSChanneHandler,
+      token: WSChannelHandler,
       useValue: {
         clientId: 'mock_id' + Math.random(),
         openChannel() {
@@ -548,6 +549,10 @@ export function setupExtensionServiceInjector() {
     {
       token: IRequireInterceptorService,
       useClass: RequireInterceptorService,
+    },
+    {
+      token: IWorkspaceFileService,
+      useClass: WorkspaceFileService,
     },
     BrowserRequireInterceptorContribution,
   );

@@ -1,8 +1,11 @@
 import WebSocket from 'ws';
 import { Terminal } from 'xterm';
+
+import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { uuid, URI, Emitter, IDisposable, PreferenceScope } from '@opensumi/ide-core-common';
 import { OS } from '@opensumi/ide-core-common/lib/platform';
-import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
+
 import {
   ITerminalService,
   ITerminalConnection,
@@ -16,9 +19,10 @@ import {
   IRegisterContributedProfileArgs,
   ITerminalProfileInternalService,
 } from '../../src/common';
+
 import { getPort, localhost, MessageMethod } from './proxy';
 import { delay } from './utils';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+
 // Ref: https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

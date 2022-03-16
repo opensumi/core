@@ -1,14 +1,14 @@
-import { IThemeService, ITheme } from '@opensumi/ide-theme';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { Disposable } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { Disposable } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { IThemeService, ITheme } from '@opensumi/ide-theme';
 
-import { IWebviewService } from '../../src/browser';
-import { WebviewServiceImpl } from '../../src/browser/webview.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { IWebviewService } from '../../src/browser';
+import { WebviewServiceImpl } from '../../src/browser/webview.service';
 
 let injector: MockInjector;
 const providers = [

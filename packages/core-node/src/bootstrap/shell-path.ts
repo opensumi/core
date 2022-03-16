@@ -1,5 +1,6 @@
-import { isWindows, stripAnsi } from '@opensumi/ide-core-common';
 import { spawn } from 'child_process';
+
+import { isWindows, stripAnsi } from '@opensumi/ide-core-common';
 
 // 成功过一次后，取 PATH 的超时时间
 const MAX_WAIT_AFTER_SUCCESS = 3 * 1000;

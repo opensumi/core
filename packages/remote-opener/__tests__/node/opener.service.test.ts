@@ -1,11 +1,11 @@
-import { RemoteOpenerServiceImpl } from '@opensumi/ide-remote-opener/lib/node/opener.service';
-import { RemoteOpenerClientImpl } from '@opensumi/ide-remote-opener/lib/node/opener.client';
 import {
   IRemoteOpenerClient,
   IRemoteOpenerService,
   RemoteOpenerClientToken,
   RemoteOpenerServiceToken,
 } from '@opensumi/ide-remote-opener/lib/common';
+import { RemoteOpenerClientImpl } from '@opensumi/ide-remote-opener/lib/node/opener.client';
+import { RemoteOpenerServiceImpl } from '@opensumi/ide-remote-opener/lib/node/opener.service';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 

@@ -1,3 +1,6 @@
+import { debounce } from 'lodash';
+import { action, observable } from 'mobx';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   View,
@@ -15,11 +18,12 @@ import {
   Emitter,
   IScopedContextKeyService,
 } from '@opensumi/ide-core-browser';
-import { action, observable } from 'mobx';
+import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
 import {
   SplitPanelManager,
   SplitPanelService,
 } from '@opensumi/ide-core-browser/lib/components/layout/split-panel.service';
+import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
   AbstractContextMenuService,
   AbstractMenuService,
@@ -28,11 +32,10 @@ import {
   ICtxMenuRenderer,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { RESIZE_LOCK } from '@opensumi/ide-core-browser/lib/components';
-import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+
 import { ViewCollapseChangedEvent } from '../../common';
-import { debounce } from 'lodash';
+
 
 export interface SectionState {
   collapsed: boolean;

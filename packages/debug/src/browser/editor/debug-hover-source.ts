@@ -1,3 +1,7 @@
+import { Injectable, Autowired } from '@opensumi/di';
+import { Event, Emitter } from '@opensumi/ide-core-browser';
+
+import { IDebugSessionManager } from '../../common';
 import { DebugSessionManager } from '../debug-session-manager';
 import {
   DebugVariable,
@@ -5,9 +9,7 @@ import {
   DebugVariableContainer,
   DebugHoverVariableRoot,
 } from '../tree/debug-tree-node.define';
-import { Injectable, Autowired } from '@opensumi/di';
-import { IDebugSessionManager } from '../../common';
-import { Event, Emitter } from '@opensumi/ide-core-browser';
+
 
 export type ExpressionVariable = DebugHoverVariableRoot | DebugVariable | DebugVariableContainer | undefined;
 

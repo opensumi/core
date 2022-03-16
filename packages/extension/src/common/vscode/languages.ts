@@ -1,3 +1,4 @@
+import globToRegExp = require('glob-to-regexp');
 import {
   DocumentSelector,
   CompletionItemProvider,
@@ -12,6 +13,25 @@ import {
   CallHierarchyProvider,
   InlayHintsProvider,
 } from 'vscode';
+import { SymbolInformation } from 'vscode-languageserver-types';
+
+import { IMarkerData, IRange, Uri, UriComponents, IMarkdownString } from '@opensumi/ide-core-common';
+import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
+import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
+import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
+// eslint-disable-next-line import/no-restricted-paths
+import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import type {
+  CodeActionContext,
+  SignatureHelpContext,
+  Command,
+  CompletionItemLabel,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+
+import { Disposable } from './ext-types';
+import { IExtensionDescription } from './extension';
 import {
   SerializedDocumentFilter,
   Hover,
@@ -42,7 +62,6 @@ import {
   SemanticTokensLegend,
   WithDuration,
   CompletionItemInsertTextRule,
-  IMarkdownString,
   CompletionItemKind,
   CompletionItemTag,
   ChainedCacheId,
@@ -53,24 +72,7 @@ import {
   ILinksListDto,
   SerializedRegExp,
 } from './model.api';
-import type {
-  CodeActionContext,
-  SignatureHelpContext,
-  Command,
-  CompletionItemLabel,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { Disposable } from './ext-types';
-import { SymbolInformation } from 'vscode-languageserver-types';
-import globToRegExp = require('glob-to-regexp');
-import { IMarkerData, IRange, Uri, UriComponents } from '@opensumi/ide-core-common';
 import { CompletionContext } from './model.api';
-import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
-import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
-import { IExtensionDescription } from './extension';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;

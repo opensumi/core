@@ -1,9 +1,11 @@
-import { IExtensionStorageService, IExtensionStoragePathServer, IExtensionStorageServer } from '../common';
 import { Provider, Autowired } from '@opensumi/di';
 import { BrowserModule, EffectDomain, ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
-import { ExtensionStorageService } from './storage.service';
-import { ExtensionStoragePathServer } from './storage-path';
+
+import { IExtensionStorageService, IExtensionStoragePathServer, IExtensionStorageServer } from '../common';
+
 import { ExtensionStorageServer } from './storage';
+import { ExtensionStoragePathServer } from './storage-path';
+import { ExtensionStorageService } from './storage.service';
 
 const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)

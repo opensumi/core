@@ -1,3 +1,10 @@
+import { CustomDocumentOpenContext } from 'vscode';
+
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { IDisposable, CancellationToken, IExtensionInfo, Emitter, Schemas } from '@opensumi/ide-core-common';
+import { iconvEncode } from '@opensumi/ide-core-common/lib/encoding';
+import { UriComponents } from '@opensumi/ide-editor';
+
 import {
   IExtHostCustomEditor,
   IMainThreadCustomEditor,
@@ -7,11 +14,6 @@ import {
   IWebviewPanelOptions,
   TCustomEditorProvider,
 } from '../../../common/vscode';
-import { UriComponents } from '@opensumi/ide-editor';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ExtHostWebviewService } from './ext.host.api.webview';
-import { IDisposable, CancellationToken, IExtensionInfo, Emitter, Schemas } from '@opensumi/ide-core-common';
-import { Uri } from '../../../common/vscode/ext-types';
 import {
   CustomEditorProvider,
   CustomReadonlyEditorProvider,
@@ -20,8 +22,10 @@ import {
   CustomDocumentEditEvent,
   CustomDocumentContentChangeEvent,
 } from '../../../common/vscode/custom-editor';
-import { CustomDocumentOpenContext } from 'vscode';
-import { iconvEncode } from '@opensumi/ide-core-common/lib/encoding';
+import { Uri } from '../../../common/vscode/ext-types';
+
+import { ExtHostWebviewService } from './ext.host.api.webview';
+
 
 export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
   private proxy: IMainThreadCustomEditor;

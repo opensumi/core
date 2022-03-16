@@ -1,4 +1,5 @@
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import { quickEvent, quickFireEvent, partialMock } from './common/util';
 import { MockedStandaloneCodeEditor } from './editor/code-editor';
 import { MockedDiffEditor, MockedDiffNavigator } from './editor/diff-editor';

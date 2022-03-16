@@ -1,21 +1,4 @@
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
-import {
-  ContextKeyExpression,
-  IContextKeyServiceTarget,
-  ContextKeyExpr,
-} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
-import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
-import { KeybindingResolver } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
-import {
-  ConfigurationTarget,
-  IConfigurationChangeEvent,
-  IConfigurationService,
-  IConfigurationOverrides,
-  IConfigurationData,
-  IConfigurationValue,
-} from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
-
-import { Emitter as EventEmitter } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
+import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   IContextKey,
   Event,
@@ -31,9 +14,25 @@ import {
   createPreferenceProxy,
 } from '@opensumi/ide-core-browser';
 import { Disposable, ILogger } from '@opensumi/ide-core-common';
-import { Optional, Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { Emitter as EventEmitter } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
+import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import {
+  ConfigurationTarget,
+  IConfigurationChangeEvent,
+  IConfigurationService,
+  IConfigurationOverrides,
+  IConfigurationData,
+  IConfigurationValue,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
+import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import {
+  ContextKeyExpression,
+  IContextKeyServiceTarget,
+  ContextKeyExpr,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { KeybindingResolver } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
+import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
 
 // 新版本这个 magic string 没有导出了
 const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';

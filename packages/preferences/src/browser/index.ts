@@ -1,28 +1,31 @@
 import { Provider, Injector, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
-import { PreferenceContribution } from './preference-contribution';
-import { FoldersPreferencesProvider } from './folders-preferences-provider';
-import { WorkspacePreferenceProvider } from './workspace-preference-provider';
-import { UserPreferenceProvider } from './user-preference-provider';
 import {
   PreferenceScope,
   PreferenceConfigurations,
   PreferenceProvider,
   IPreferenceSettingsService,
 } from '@opensumi/ide-core-browser/lib/preferences';
+
+import { IUserStorageService, SettingContribution } from '../common';
+
 import {
   FolderPreferenceProviderFactory,
   FolderPreferenceProviderOptions,
   FolderPreferenceProvider,
 } from './folder-preference-provider';
+import { FoldersPreferencesProvider } from './folders-preferences-provider';
+import { PreferenceContribution } from './preference-contribution';
+import { PreferenceSettingsService } from './preference-settings.service';
+import { UserPreferenceProvider } from './user-preference-provider';
+import { UserStorageContribution, UserStorageServiceImpl } from './userstorage';
 import {
   WorkspaceFilePreferenceProviderFactory,
   WorkspaceFilePreferenceProviderOptions,
   WorkspaceFilePreferenceProvider,
 } from './workspace-file-preference-provider';
-import { PreferenceSettingsService } from './preference-settings.service';
-import { UserStorageContribution, UserStorageServiceImpl } from './userstorage';
-import { IUserStorageService, SettingContribution } from '../common';
+import { WorkspacePreferenceProvider } from './workspace-preference-provider';
+
 
 @Injectable()
 export class PreferencesModule extends BrowserModule {

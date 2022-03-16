@@ -1,7 +1,7 @@
 import type { Uri as URI, IRange, SymbolTag, IPosition, CancellationToken } from '@opensumi/ide-core-common';
-import type { ProviderResult, SymbolKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import type { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type { ProviderResult, SymbolKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 
 export interface CallHierarchyItem {

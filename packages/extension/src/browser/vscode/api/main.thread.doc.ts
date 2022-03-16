@@ -1,3 +1,7 @@
+import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { PreferenceService } from '@opensumi/ide-core-browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
   WithEventBus,
   OnEvent,
@@ -9,10 +13,6 @@ import {
   Emitter,
   LRUMap,
 } from '@opensumi/ide-core-common';
-import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Schemas } from '../../../common/vscode/ext-types';
 import { ResourceService } from '@opensumi/ide-editor';
 import {
   EditorComponentRegistry,
@@ -27,9 +27,10 @@ import {
   EditorDocumentModelOptionChangedEvent,
   EditorDocumentModelWillSaveEvent,
 } from '@opensumi/ide-editor/lib/browser';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { PreferenceService } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
+
+import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
+import { Schemas } from '../../../common/vscode/ext-types';
 
 const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce

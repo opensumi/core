@@ -1,23 +1,25 @@
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { WorkbenchEditorService, ResourceDecorationChangeEvent, IResource } from '@opensumi/ide-editor';
-import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
-import { IDecorationsService } from '@opensumi/ide-decoration';
-import { OpenedEditorModule } from '../../src/browser';
-import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
-import { URI, IEventBus, Emitter } from '@opensumi/ide-core-common';
-import { IThemeService } from '@opensumi/ide-theme';
-import { MockThemeService } from '@opensumi/ide-theme/lib/common/mocks/theme.service';
+import cls from 'classnames';
+
+import { TreeNodeType } from '@opensumi/ide-components';
 import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { URI, IEventBus, Emitter } from '@opensumi/ide-core-common';
+import { IDecorationsService } from '@opensumi/ide-decoration';
+import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
+import { WorkbenchEditorService, ResourceDecorationChangeEvent, IResource } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, ResourceService } from '@opensumi/ide-editor/lib/browser';
+import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { EditorFile, OpenedEditorData } from '@opensumi/ide-opened-editor/lib/browser/opened-editor-node.define';
 import { OpenedEditorModelService } from '@opensumi/ide-opened-editor/lib/browser/services/opened-editor-model.service';
 import { OpenedEditorService } from '@opensumi/ide-opened-editor/lib/browser/services/opened-editor-tree.service';
-import { TreeNodeType } from '@opensumi/ide-components';
-import { EditorFile, OpenedEditorData } from '@opensumi/ide-opened-editor/lib/browser/opened-editor-node.define';
-import cls from 'classnames';
+import { IThemeService } from '@opensumi/ide-theme';
+import { MockThemeService } from '@opensumi/ide-theme/lib/common/mocks/theme.service';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { OpenedEditorModule } from '../../src/browser';
 import styles from '../src/browser/opened-editor-node.module.less';
 
 describe('OpenedEditorModelService should be work', () => {

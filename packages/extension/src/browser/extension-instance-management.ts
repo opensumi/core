@@ -14,6 +14,7 @@ import {
   IExtensionMetaData,
   IExtensionNodeClientService,
 } from '../common';
+
 import { Extension } from './extension';
 import { AbstractExtInstanceManagementService } from './types';
 
@@ -52,6 +53,14 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
     }
 
     this.extensionMap = new Map();
+  }
+
+  public disposeExtensionInstancesByPath(paths: string[]) {
+    paths.forEach((path) => {
+      if (this.extensionMap.has(path)) {
+        this.extensionMap.get(path)!.dispose();
+      }
+    });
   }
 
   public resetExtensionInstances() {

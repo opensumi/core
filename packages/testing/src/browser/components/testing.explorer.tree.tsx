@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-browser';
-import { BasicRecycleTree, IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components/lib/recycle-tree';
+import React, { useEffect, useState } from 'react';
 
-import { ITestTreeData, ITestTreeItem, TestTreeViewModelToken } from '../../common/tree-view.model';
-import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
-import { DebugTestCommand, GoToTestCommand, RuntTestCommand } from '../../common/commands';
-import { ITestService, TestServiceToken } from '../../common';
-import { getIconWithColor } from '../icons/icons';
+import { BasicRecycleTree, IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components/lib/recycle-tree';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
+import { CommandService, Event, map, useInjectable } from '@opensumi/ide-core-browser';
+
+import { ITestService, TestServiceToken } from '../../common';
+import { DebugTestCommand, GoToTestCommand, RuntTestCommand } from '../../common/commands';
+import { TestItemExpandState, TestRunProfileBitset } from '../../common/testCollection';
 import { TestingExplorerInlineMenus } from '../../common/testing-view';
+import { ITestTreeData, ITestTreeItem, TestTreeViewModelToken } from '../../common/tree-view.model';
+import { getIconWithColor } from '../icons/icons';
+import { TestTreeViewModelImpl } from '../test-tree-view.model';
 
 import styles from './testing.module.less';
-import { TestTreeViewModelImpl } from '../test-tree-view.model';
 
 export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const testViewModel = useInjectable<TestTreeViewModelImpl>(TestTreeViewModelToken);

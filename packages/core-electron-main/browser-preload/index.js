@@ -1,5 +1,6 @@
 const net = require('net');
 const os = require('os');
+
 const { ipcRenderer } = require('electron');
 
 const electronEnv = {};
@@ -8,7 +9,7 @@ const urlParams = new URLSearchParams(decodeURIComponent(window.location.search)
 window.id = Number(urlParams.get('windowId'));
 const webContentsId = Number(urlParams.get('webContentsId'));
 
-async function createRPCNetConnection() {
+function createRPCNetConnection() {
   const rpcListenPath = ipcRenderer.sendSync('window-rpc-listen-path', electronEnv.currentWindowId);
   return net.createConnection(rpcListenPath);
 }
@@ -17,9 +18,22 @@ function createNetConnection(connectPath) {
   return net.createConnection(connectPath);
 }
 
+function getSocketConnection(connectPath) {
+  let socket;
+  if (connectPath) {
+    socket = createNetConnection(connectPath);
+  } else {
+    socket = createRPCNetConnection();
+  }
+  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
+  return createSocketConnection(socket);
+}
+
 electronEnv.ElectronIpcRenderer = ipcRenderer;
 electronEnv.createNetConnection = createNetConnection;
 electronEnv.createRPCNetConnection = createRPCNetConnection;
+electronEnv.getSocketConnection = getSocketConnection;
+
 electronEnv.platform = os.platform();
 
 electronEnv.isElectronRenderer = true;

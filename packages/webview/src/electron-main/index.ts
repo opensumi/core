@@ -1,9 +1,12 @@
-import { ElectronMainContribution, ElectronMainModule } from '@opensumi/ide-core-electron-main';
-import { Domain } from '@opensumi/ide-core-common';
 import { protocol } from 'electron';
-import { ProtocolElectronMainContribution } from '@opensumi/ide-core-electron-main/lib/bootstrap/services/protocol';
-import { WebviewScheme } from '../common';
+
 import { Injectable } from '@opensumi/di';
+import { Domain } from '@opensumi/ide-core-common';
+import { ElectronMainContribution, ElectronMainModule } from '@opensumi/ide-core-electron-main';
+import { ProtocolElectronMainContribution } from '@opensumi/ide-core-electron-main/lib/bootstrap/services/protocol';
+
+import { WebviewScheme } from '../common';
+
 
 ProtocolElectronMainContribution.schemePrivileges.push({
   scheme: WebviewScheme,

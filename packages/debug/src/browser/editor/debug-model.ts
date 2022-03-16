@@ -1,15 +1,17 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@opensumi/ide-core-common';
-import { Injector, Injectable, Autowired } from '@opensumi/di';
-import { DebugSessionManager } from '../debug-session-manager';
-import { DebugBreakpointWidget } from './debug-breakpoint-widget';
-import { BreakpointManager } from '../breakpoint';
-import { DebugEditor } from '../../common/debug-editor';
-import { IDebugSessionManager } from '../../common/debug-session';
-import { DebugHoverWidget } from './debug-hover-widget';
 import debounce = require('lodash.debounce');
-import * as options from './debug-styles';
-import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
+
+import { Injector, Injectable, Autowired } from '@opensumi/di';
+import { DomListener, IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
+import {
+  ICtxMenuRenderer,
+  generateMergedCtxMenu,
+  IMenu,
+  MenuId,
+  AbstractMenuService,
+} from '@opensumi/ide-core-browser/lib/menu/next';
+import { URI, DisposableCollection, isOSX, memoize, Disposable, uuid } from '@opensumi/ide-core-common';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 import {
   IDebugModel,
   DEBUG_REPORT_NAME,
@@ -18,15 +20,17 @@ import {
   DebugBreakpointWidgetContext,
   IDebugBreakpoint,
 } from '../../common';
-import {
-  ICtxMenuRenderer,
-  generateMergedCtxMenu,
-  IMenu,
-  MenuId,
-  AbstractMenuService,
-} from '@opensumi/ide-core-browser/lib/menu/next';
-import { DomListener, IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
+import { DebugEditor } from '../../common/debug-editor';
+import { IDebugSessionManager } from '../../common/debug-session';
+import { BreakpointManager } from '../breakpoint';
+import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
+import { DebugSessionManager } from '../debug-session-manager';
+
+import { DebugBreakpointWidget } from './debug-breakpoint-widget';
+import { DebugHoverWidget } from './debug-hover-widget';
+import * as options from './debug-styles';
+
 
 @Injectable()
 export class DebugModel implements IDebugModel {

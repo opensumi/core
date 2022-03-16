@@ -5,7 +5,9 @@ import {
   Event,
   StatusBarHoverCommand,
 } from '@opensumi/ide-core-common';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
+import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
 import { LanguageSelector } from './language';
 
 export const ILanguageStatusService = Symbol('ILanguageStatusService');

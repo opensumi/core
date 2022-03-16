@@ -1,4 +1,5 @@
 import { localize } from '@opensumi/ide-core-common';
+
 import { registerColor } from '../../color-registry';
 import { NOTIFICATIONS_BACKGROUND, NOTIFICATIONS_FOREGROUND } from '../notification';
 

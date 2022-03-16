@@ -1,5 +1,5 @@
-import * as paths from '../../src/utils/paths';
 import { URI } from '../../src/uri';
+import * as paths from '../../src/utils/paths';
 
 describe('paths', () => {
   // 测试 uri#toString 传入 skipEncoding#true 时

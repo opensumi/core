@@ -1,6 +1,8 @@
-import { Event, IExtensionInfo, Uri, CancellationToken, BasicEvent } from '@opensumi/ide-core-common';
-import { ViewColumn } from './editor';
 import type vscode from 'vscode';
+
+import { Event, IExtensionInfo, Uri, CancellationToken, BasicEvent } from '@opensumi/ide-core-common';
+
+import { ViewColumn } from './editor';
 
 export interface WebviewPanelShowOptions {
   readonly viewColumn?: number;
@@ -14,6 +16,7 @@ export interface IWebviewPanelOptions {
 
 export interface IWebviewOptions {
   readonly enableScripts?: boolean;
+  readonly enableForms?: boolean;
   readonly enableCommandUris?: boolean;
   readonly localResourceRoots?: ReadonlyArray<vscode.Uri>;
 }

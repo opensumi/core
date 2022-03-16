@@ -1,3 +1,6 @@
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { getDebugLogger } from '@opensumi/ide-core-common';
+
 import {
   IExtHostConnectionService,
   IMainThreadConnection,
@@ -6,8 +9,6 @@ import {
   ExtensionMessageReader,
   ExtensionMessageWriter,
 } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { getDebugLogger } from '@opensumi/ide-core-common';
 
 export class ExtHostConnection implements IExtHostConnectionService {
   private proxy: IMainThreadConnection;

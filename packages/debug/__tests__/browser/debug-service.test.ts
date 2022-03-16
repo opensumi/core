@@ -1,7 +1,8 @@
 import { IDebugService } from '@opensumi/ide-debug';
+import { DebugService } from '@opensumi/ide-debug/lib/browser/debug-service';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DebugService } from '@opensumi/ide-debug/lib/browser/debug-service';
 
 describe('DebugService', () => {
   let debugService: IDebugService;

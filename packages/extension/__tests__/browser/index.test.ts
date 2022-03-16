@@ -1,4 +1,4 @@
-import { WSChannelHandler } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   CommandRegistry,
   CommandService,
@@ -19,6 +19,7 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../../src';
 import { ExtensionClientAppContribution, ExtensionCommandContribution } from '../../src/browser/extension.contribution';
+
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
 
 describe(__filename, () => {

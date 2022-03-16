@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IDecorationsService } from '@opensumi/ide-decoration';
 import {
   URI,
   Uri,
@@ -8,6 +7,7 @@ import {
   Emitter,
   DisposableCollection,
 } from '@opensumi/ide-core-browser';
+import { IDecorationsService } from '@opensumi/ide-decoration';
 import { IThemeService } from '@opensumi/ide-theme';
 
 @Injectable()

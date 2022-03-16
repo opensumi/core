@@ -5,8 +5,9 @@ import {
   IFileServiceClient,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
-import { DebugModel, DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
+import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { DebugSessionOptions, IDebugSessionManager } from '@opensumi/ide-debug';
 import {
   DebugModule,
   DebugStackFrame,
@@ -15,15 +16,15 @@ import {
   DebugSessionConnection,
   BreakpointManager,
 } from '@opensumi/ide-debug/lib/browser';
-import { DebugSessionOptions, IDebugSessionManager } from '@opensumi/ide-debug';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
-import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
+import { DebugModel, DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
 import { IMessageService } from '@opensumi/ide-overlay';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 
 process.on('unhandledRejection', (reason, promise) => {
   // console.error(reason);

@@ -1,7 +1,8 @@
+import Ajv from 'ajv';
+
+import { StorageService } from '@opensumi/ide-core-browser/lib/services';
 import { URI, Event } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
-import Ajv from 'ajv';
-import { StorageService } from '@opensumi/ide-core-browser/lib/services';
 
 export const DEFAULT_WORKSPACE_SUFFIX_NAME = 'sumi-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.sumi';

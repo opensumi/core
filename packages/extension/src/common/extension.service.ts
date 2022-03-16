@@ -1,9 +1,10 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { Deferred } from '@opensumi/ide-core-common';
+
 import { ActivatedExtensionJSON } from './activator';
+import type { SumiWorkerExtensionService, VSCodeExtensionService } from './vscode';
 
 import { IExtension } from './index';
-import type { SumiWorkerExtensionService, VSCodeExtensionService } from './vscode';
 
 type ExtensionChangeKind = 'install' | 'uninstall' | 'upgrade' | 'enable' | 'disable';
 
@@ -49,6 +50,8 @@ export abstract class AbstractWorkerExtProcessService<T = any>
 }
 
 export abstract class AbstractViewExtProcessService {
+  activatedViewExtensionMap: Map<string, IExtension>;
+
   abstract getPortalShadowRoot(extensionId: string): ShadowRoot | undefined;
   abstract activate(): void;
   abstract initExtension(extensions: IExtension[]): void;

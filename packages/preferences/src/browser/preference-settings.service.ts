@@ -1,5 +1,7 @@
-import { Injectable, Autowired } from '@opensumi/di';
 import { observable, action } from 'mobx';
+
+import { Injectable, Autowired } from '@opensumi/di';
+import { IRecycleListHandler } from '@opensumi/ide-components';
 import {
   IPreferenceViewDesc,
   IPreferenceSettingsService,
@@ -23,9 +25,10 @@ import {
   replaceLocalizePlaceholder,
   ThrottledDelayer,
 } from '@opensumi/ide-core-browser';
-import { toPreferenceReadableName, PreferenceSettingId } from '../common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IRecycleListHandler } from '@opensumi/ide-components';
+
+import { toPreferenceReadableName, PreferenceSettingId } from '../common';
+
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
 @Injectable()

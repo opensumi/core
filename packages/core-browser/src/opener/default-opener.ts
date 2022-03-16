@@ -1,8 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Schemas, isElectronRenderer } from '@opensumi/ide-core-common';
-import { IOpener } from '.';
+
 import { AppConfig } from '../react-providers';
 import { IWindowService } from '../window';
+
+import { IOpener } from '.';
 
 @Injectable()
 export class DefaultOpener implements IOpener {

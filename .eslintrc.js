@@ -5,8 +5,23 @@ module.exports = {
     node: true,
   },
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint'],
-  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
+  plugins: ['@typescript-eslint', 'eslint-plugin-import'],
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    // 后续可开启eslint-plugin-import的推荐规则
+    // 'plugin:eslint-plugin-import/recommended',
+    // 'plugin:eslint-plugin-import/typescript',
+    'prettier',
+  ],
+  settings: {
+    'import/resolver': {
+      typescript: {
+        project: './tsconfig.json',
+      },
+    },
+    'import/internal-regex': '^@opensumi/',
+  },
   rules: {
     '@typescript-eslint/adjacent-overload-signatures': 'error',
     '@typescript-eslint/array-type': 'off',
@@ -132,5 +147,44 @@ module.exports = {
     'no-prototype-builtins': 'warn',
     'prefer-rest-params': 'warn',
     'no-control-regex': 'warn',
+    // 让 import 中的内部包和外部包分组，看起来更美观
+    'import/order': [
+      'error',
+      {
+        groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'unknown'],
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
+        'newlines-between': 'always',
+      },
+    ],
+    'import/no-restricted-paths': [
+      'error',
+      {
+        zones: [
+          {
+            target: './packages/**/*/!(__tests__)/browser/**/*',
+            from: './packages/**/*/node/**/*',
+            message: 'browser 不应该引用 node 下模块',
+          },
+          {
+            target: './packages/**/*/!(__tests__)/node/**/*',
+            from: './packages/**/*/browser/**/*',
+            message: 'node 不应该引用 browser 下模块',
+          },
+          {
+            target: './packages/**/*/!(__tests__)/common/**/*',
+            from: './packages/**/*/node/**/*',
+            message: 'common 不应该引用 node 下模块',
+          },
+          {
+            target: './packages/**/*/!(__tests__)/common/**/*',
+            from: './packages/**/*/browser/**/*',
+            message: 'common 不应该引用 browser 下模块',
+          },
+        ],
+      },
+    ],
   },
 };

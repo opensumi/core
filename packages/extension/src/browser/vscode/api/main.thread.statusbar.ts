@@ -1,11 +1,12 @@
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IThemeColor } from '@opensumi/ide-core-common';
 import { Injectable, Autowired, Optional } from '@opensumi/di';
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CommandService, Disposable, IAccessibilityInformation } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
-import * as types from '../../../common/vscode/ext-types';
-import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
+import { IMarkdownString, IThemeColor } from '@opensumi/ide-core-common';
 import { getCodiconAriaLabel } from '@opensumi/monaco-editor-core/esm/vs/base/common/codicons';
+
+import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
+import * as types from '../../../common/vscode/ext-types';
 
 @Injectable({ multiple: true })
 export class MainThreadStatusBar implements IMainThreadStatusBar {
@@ -62,7 +63,7 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
     alignment: number,
     color: IThemeColor | string | undefined,
     backgroundColor: IThemeColor | string | undefined,
-    tooltip: string | undefined,
+    tooltip: string | IMarkdownString | undefined,
     accessibilityInformation: IAccessibilityInformation | undefined,
     command: string | undefined,
     commandArgs: any[] | undefined,

@@ -1,5 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+
 import { TerminalNodePtyModule } from '../../src/node';
 import { TerminalProfileServiceNode } from '../../src/node/terminal.profile.service';
 

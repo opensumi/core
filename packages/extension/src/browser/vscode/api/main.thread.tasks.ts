@@ -1,6 +1,38 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
+  ILogger,
+  IDisposable,
+  uuid,
+  formatLocalize,
+  Uri,
+  withNullAsUndefined,
+  ITaskDefinitionRegistry,
+  isString,
+  URI,
+  Disposable,
+} from '@opensumi/ide-core-common';
+import { ITaskService, ITaskProvider, IWorkspaceFolder } from '@opensumi/ide-task/lib/common';
+import { KeyedTaskIdentifier, TaskEventKind, TaskExecution } from '@opensumi/ide-task/lib/common/task';
+import {
+  PresentationOptions,
+  RunOptions,
+  CommandOptions,
+  CommandConfiguration,
+  RuntimeType,
+  TaskSource,
+  TaskSourceKind,
+  ExtensionTaskSource,
+  TaskScope,
+  Task,
+  ConfiguringTask,
+  CustomTask,
+  ContributedTask,
+} from '@opensumi/ide-task/lib/common/task';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import {
   IMainThreadTasks,
   IExtHostTasks,
   RunOptionsDTO,
@@ -20,37 +52,6 @@ import {
   TaskProcessStartedDTO,
   TaskProcessEndedDTO,
 } from '../../../common/vscode/tasks';
-import { ExtHostAPIIdentifier } from '../../../common/vscode';
-import {
-  ILogger,
-  IDisposable,
-  uuid,
-  formatLocalize,
-  Uri,
-  withNullAsUndefined,
-  ITaskDefinitionRegistry,
-  isString,
-  URI,
-  Disposable,
-} from '@opensumi/ide-core-common';
-import { ITaskService, ITaskProvider, IWorkspaceFolder } from '@opensumi/ide-task/lib/common';
-import { KeyedTaskIdentifier, TaskEventKind, TaskExecution } from '@opensumi/ide-task/lib/common/task';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import {
-  PresentationOptions,
-  RunOptions,
-  CommandOptions,
-  CommandConfiguration,
-  RuntimeType,
-  TaskSource,
-  TaskSourceKind,
-  ExtensionTaskSource,
-  TaskScope,
-  Task,
-  ConfiguringTask,
-  CustomTask,
-  ContributedTask,
-} from '@opensumi/ide-task/lib/common/task';
 
 namespace TaskHandleDTO {
   export function is(value: any): value is TaskHandleDTO {

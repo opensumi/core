@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { OS, IApplicationService, CommonServerPath, ICommonServer, Deferred } from '@opensumi/ide-core-common';
+
 import { AppConfig } from '../react-providers';
 
 @Injectable()

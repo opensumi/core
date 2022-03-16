@@ -1,6 +1,5 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IMainThreadUrls, IExtHostUrls, ExtHostAPIIdentifier } from '../../../common/vscode';
 import {
   IOpenerService,
   IDisposable,
@@ -10,6 +9,8 @@ import {
   ILogger,
   AppConfig,
 } from '@opensumi/ide-core-browser';
+
+import { IMainThreadUrls, IExtHostUrls, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { IActivationEventService } from '../../types';
 
 class ExtennsionUrlHandler {

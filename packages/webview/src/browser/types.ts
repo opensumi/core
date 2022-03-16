@@ -1,6 +1,6 @@
 import { Event, URI, IDisposable, MaybeNull, MaybePromise } from '@opensumi/ide-core-common';
-import { ITheme } from '@opensumi/ide-theme';
 import { IEditorGroup } from '@opensumi/ide-editor';
+import { ITheme } from '@opensumi/ide-theme';
 
 export const EDITOR_WEBVIEW_SCHEME = 'editor-webview';
 /**
@@ -75,6 +75,7 @@ export interface IWebview extends IDisposable {
 
 export interface IWebviewContentOptions {
   readonly allowScripts?: boolean;
+  readonly allowForms?: boolean;
   readonly svgWhiteList?: string[];
   readonly localResourceRoots?: ReadonlyArray<URI>;
   readonly longLive?: boolean;

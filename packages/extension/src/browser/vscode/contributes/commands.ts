@@ -1,7 +1,8 @@
-import { VSCodeContributePoint, Contributes, ExtensionService, IExtCommandManagement } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
 import { ThemeType, IIconService, IconType } from '@opensumi/ide-theme';
+
+import { VSCodeContributePoint, Contributes, ExtensionService, IExtCommandManagement } from '../../../common';
 
 export interface CommandFormat {
   command: string;

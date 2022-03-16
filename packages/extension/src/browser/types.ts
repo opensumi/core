@@ -1,6 +1,8 @@
 import { Injectable } from '@opensumi/di';
 import { BasicEvent, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
+
 import { IExtension, IExtensionMetaData } from '../common';
+
 import { Extension } from './extension';
 
 export type Serializable = any;
@@ -28,6 +30,12 @@ export abstract class IActivationEventService {
  */
 export abstract class AbstractExtInstanceManagementService {
   abstract dispose(): void;
+
+  /**
+   * 通过路径销毁插件实例 dispose
+   */
+  abstract disposeExtensionInstancesByPath(paths: Array<string>): void;
+
   /**
    * 获取所有插件实例
    */

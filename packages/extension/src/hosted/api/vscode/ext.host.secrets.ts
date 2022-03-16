@@ -1,13 +1,14 @@
 import type vscode from 'vscode';
 
+import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, IExtensionProps } from '@opensumi/ide-core-common';
+
 import {
   ExtensionIdentifier,
   IExtHostSecret,
   IMainThreadSecret,
   MainThreadAPIIdentifier,
 } from '../../../common/vscode';
-import { IRPCProtocol } from '@opensumi/ide-connection';
 
 export class ExtensionSecrets implements vscode.SecretStorage {
   protected readonly _id: string;

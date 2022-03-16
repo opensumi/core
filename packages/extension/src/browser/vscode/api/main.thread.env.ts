@@ -1,9 +1,8 @@
 import type vscode from 'vscode';
+
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
-import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
-import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
-import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
+import { IRPCProtocol } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   IOpenerService,
   IClipboardService,
@@ -11,8 +10,13 @@ import {
   IExternalUriService,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { getLanguageId, URI, firstSessionDateStorageKey } from '@opensumi/ide-core-common';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
+import { getCodeLanguage, URI, firstSessionDateStorageKey } from '@opensumi/ide-core-common';
+import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
+
+import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { UIKind, UriComponents } from '../../../common/vscode/ext-types';
+
 import { MainThreadStorage } from './main.thread.storage';
 
 @Injectable({ multiple: true })
@@ -64,7 +68,7 @@ export class MainThreadEnv implements IMainThreadEnv {
       uriScheme,
       appHost,
       appRoot: workspaceDir,
-      language: getLanguageId(),
+      language: getCodeLanguage(),
       uiKind: this.appConfig.isElectronRenderer ? UIKind.Desktop : UIKind.Web,
       firstSessionDate: firstSessionDateValue?.date,
     });

@@ -1,8 +1,10 @@
-import { TreeModel, IOptionalMetaData, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { Directory } from '../common/file-tree-node.define';
+import { TreeModel, IOptionalMetaData, TreeNodeEvent, CompositeTreeNode } from '@opensumi/ide-components';
 import { URI, ThrottledDelayer, Emitter, Event } from '@opensumi/ide-core-browser';
 import { FileStat } from '@opensumi/ide-file-service';
+
+import { Directory } from '../common/file-tree-node.define';
+
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 
 export interface IFileTreeMetaData extends IOptionalMetaData {

@@ -1,3 +1,4 @@
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   URI,
   IRef,
@@ -14,8 +15,11 @@ import {
   ReadyEvent,
   memoize,
 } from '@opensumi/ide-core-browser';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { mapToSerializable, serializableToMap } from '@opensumi/ide-core-common/lib/map';
+import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
+import { EditorDocumentModel } from './editor-document-model';
 import {
   IEditorDocumentModel,
   IEditorDocumentModelContentRegistry,
@@ -24,10 +28,6 @@ import {
   EditorDocumentModelCreationEvent,
   IPreferredModelOptions,
 } from './types';
-import { EditorDocumentModel } from './editor-document-model';
-import { mapToSerializable, serializableToMap } from '@opensumi/ide-core-common/lib/map';
-import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
 export const EDITOR_DOCUMENT_MODEL_STORAGE: URI = new URI('editor-doc').withScheme(STORAGE_SCHEMA.SCOPE);
 

@@ -1,5 +1,5 @@
-import { IResourceProvider, IResource } from '@opensumi/ide-editor';
 import { URI, Emitter } from '@opensumi/ide-core-common';
+import { IResourceProvider, IResource } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelContentProvider,
   IEditorComponentResolver,

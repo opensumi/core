@@ -1,8 +1,9 @@
-import { Emitter } from '@opensumi/ide-core-common';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { AppConfig, ICredentialsService, ICryptrService } from '@opensumi/ide-core-browser/src';
+import { Emitter } from '@opensumi/ide-core-common';
 import { MainThreadSecret } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.secret';
+
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 const onDidChangePasswordEmitter = new Emitter();
 const mockExtThreadSecretProxy = {

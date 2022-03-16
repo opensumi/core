@@ -1,7 +1,9 @@
-import { Injectable, Autowired, ConstructorOf } from '@opensumi/di';
 import path from 'path';
-import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+
+import { Injectable, Autowired, ConstructorOf } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-core-common';
+import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+
 import {
   ILogService,
   LogLevel,
@@ -11,8 +13,9 @@ import {
   LoggerManagerInitOptions,
   Archive,
 } from '../common/';
-import { getLogFolder, cleanOldLogs, cleanAllLogs, cleanExpiredLogs, getLogZipArchiveByFolder } from './utils';
+
 import { LogService, DEFAULT_LOG_FOLDER } from './log.service';
+import { getLogFolder, cleanOldLogs, cleanAllLogs, cleanExpiredLogs, getLogZipArchiveByFolder } from './utils';
 
 @Injectable()
 export class LogServiceManager implements ILogServiceManager {

@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import { usePortal } from '../../react-hooks';
 
 const Portal: React.FC<{

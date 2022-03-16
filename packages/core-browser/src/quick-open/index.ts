@@ -1,7 +1,9 @@
+import { observable } from 'mobx';
 import React from 'react';
+
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
 import { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
-import { observable } from 'mobx';
+
 import { Keybinding } from '../keybinding';
 
 export enum Mode {
@@ -35,10 +37,12 @@ export interface Highlight {
 export { Mode as QuickOpenMode };
 
 export interface QuickTitleButton {
+  iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
   icon: string; // a background image coming from a url
   iconClass?: string; // a class such as one coming from font awesome
-  tooltip?: string | undefined;
-  side: QuickTitleButtonSide;
+  tooltip?: string;
+  // undefined 在 QuickTitleBar 中视为为右侧
+  side?: QuickTitleButtonSide;
 }
 
 /**
@@ -104,6 +108,7 @@ export interface QuickOpenItemOptions {
   /**
    * 点击 QuickOpen 要执行的方法
    * @param mode
+   * @returns 执行后是否要隐藏面板, mode 为 PREVIEW 时不判断该值
    */
   run?(mode: Mode): boolean;
   value?: any;
@@ -519,14 +524,6 @@ export class ThemeIcon {
   static readonly Folder: ThemeIcon = new ThemeIcon('folder');
 
   private constructor(public id: string) {}
-}
-
-export interface QuickTitleButton {
-  iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
-  icon: string; // a background image coming from a url
-  iconClass?: string; // a class such as one coming from font awesome
-  tooltip?: string | undefined;
-  side: QuickTitleButtonSide;
 }
 
 export const QuickOpenContribution = Symbol('QuickOpenContribution');

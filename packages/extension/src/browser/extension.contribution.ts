@@ -1,5 +1,7 @@
+import type vscode from 'vscode';
+
 import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   EDITOR_COMMANDS,
   UriComponents,
@@ -30,13 +32,11 @@ import {
   StatusBarAlignment,
   StatusBarEntryAccessor,
 } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
+import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
-import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
-import type vscode from 'vscode';
 import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
-import { TextDocumentShowOptions, ViewColumn, CUSTOM_EDITOR_SCHEME } from '../common/vscode';
 import {
   ExtensionNodeServiceServerPath,
   IExtensionNodeClientService,
@@ -47,7 +47,9 @@ import {
   ExtensionHostTypeUpperCase,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
-import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
+import { TextDocumentShowOptions, ViewColumn, CUSTOM_EDITOR_SCHEME } from '../common/vscode';
+import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
+
 import {
   AbstractExtInstanceManagementService,
   ExtensionApiReadyEvent,
@@ -55,7 +57,7 @@ import {
   IActivationEventService,
   Serializable,
 } from './types';
-import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
+import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;

@@ -1,5 +1,3 @@
-import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
-import { ElectronBasicContribution } from '../src/browser';
 import {
   AppConfig,
   SlotLocation,
@@ -10,15 +8,19 @@ import {
   addElement,
   electronEnv,
 } from '@opensumi/ide-core-browser';
-import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
-import { IMessageService } from '@opensumi/ide-overlay/lib/common';
-import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ElectronNativeDialogService } from '../src/browser/dialog';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
+import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { WorkbenchEditorService, ResourceService } from '@opensumi/ide-editor';
-import { WelcomeContribution } from '../src/browser/welcome/contribution';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { IMessageService } from '@opensumi/ide-overlay/lib/common';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
+import { ElectronBasicContribution } from '../src/browser';
+import { ElectronNativeDialogService } from '../src/browser/dialog';
+import { WelcomeContribution } from '../src/browser/welcome/contribution';
+
 
 function mockService(target) {
   return new Proxy(target, {

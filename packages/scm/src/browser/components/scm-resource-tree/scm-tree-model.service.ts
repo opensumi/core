@@ -1,3 +1,6 @@
+import { observable } from 'mobx';
+import pSeries from 'p-series';
+
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
 import {
@@ -18,11 +21,11 @@ import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IIconService, IIconTheme } from '@opensumi/ide-theme';
-import { observable } from 'mobx';
-import pSeries from 'p-series';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ISCMRepository, ISCMResource, scmResourceViewId } from '../../../common';
 import { ViewModelContext } from '../../scm-model';
+
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { SCMTreeModel } from './scm-tree-model';
 import {
@@ -32,10 +35,9 @@ import {
   SCMResourceRoot,
   SCMResourceNotRoot,
 } from './scm-tree-node';
+import styles from './scm-tree-node.module.less';
 import { SCMTreeService } from './scm-tree.service';
 
-import styles from './scm-tree-node.module.less';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

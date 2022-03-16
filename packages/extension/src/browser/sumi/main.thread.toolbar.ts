@@ -13,12 +13,14 @@ import {
   ExtensionActivateEvent,
   IToolbarPopoverRegistry,
 } from '@opensumi/ide-core-browser';
-import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
-import { IIconService, IconType } from '@opensumi/ide-theme';
-import { EMIT_EXT_HOST_EVENT } from '../../common';
 import { Disposable } from '@opensumi/ide-core-browser';
+import { IIconService, IconType } from '@opensumi/ide-theme';
+
+import { EMIT_EXT_HOST_EVENT } from '../../common';
 import { IMainThreadToolbar } from '../../common/sumi/toolbar';
 import { ExtensionLoadingView } from '../components';
+
+import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
 
 @Injectable()
 export class KaitianExtensionToolbarService {

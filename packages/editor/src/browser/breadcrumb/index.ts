@@ -1,8 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IBreadCrumbService, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
 import { IDisposable, URI, addElement, MaybeNull, Emitter } from '@opensumi/ide-core-browser';
-import { DefaultBreadCrumbProvider } from './default';
+
 import { IEditor } from '../../common';
+import { IBreadCrumbService, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
+
+import { DefaultBreadCrumbProvider } from './default';
+
 
 @Injectable()
 export class BreadCrumbServiceImpl implements IBreadCrumbService {

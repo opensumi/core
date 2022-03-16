@@ -1,21 +1,9 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
 /**
  * 用于快速打开，检索文件
  */
 import fuzzy from 'fuzzy';
+
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import {
-  CommandContribution,
-  CommandRegistry,
-  Command,
-  CancellationTokenSource,
-  Schemas,
-  CancellationToken,
-  IRange,
-  IReporterService,
-  REPORT_NAME,
-} from '@opensumi/ide-core-common';
 import {
   localize,
   formatLocalize,
@@ -29,29 +17,42 @@ import {
   Highlight,
   Mode,
 } from '@opensumi/ide-core-browser';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@opensumi/ide-core-browser';
+import { getIcon } from '@opensumi/ide-core-browser';
+import { RecentFilesManager } from '@opensumi/ide-core-browser';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import {
+  CommandContribution,
+  CommandRegistry,
+  Command,
+  CancellationTokenSource,
+  Schemas,
+  CancellationToken,
+  IRange,
+  IReporterService,
+  REPORT_NAME,
+} from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import {
-  QuickOpenContribution,
-  QuickOpenHandlerRegistry,
-} from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
-import {
-  QuickOpenModel,
-  QuickOpenOptions,
-  PrefixQuickOpenService,
-  QuickOpenBaseAction,
-} from '@opensumi/ide-quick-open';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { EditorGroupSplitAction, WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   DocumentSymbolStore,
   IDummyRoot,
   INormalizedDocumentSymbol,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { getIcon } from '@opensumi/ide-core-browser';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
-import { RecentFilesManager } from '@opensumi/ide-core-browser';
+import {
+  QuickOpenModel,
+  QuickOpenOptions,
+  PrefixQuickOpenService,
+  QuickOpenBaseAction,
+} from '@opensumi/ide-quick-open';
+import {
+  QuickOpenContribution,
+  QuickOpenHandlerRegistry,
+} from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 const DEFAULT_FILE_SEARCH_LIMIT = 200;
 
@@ -72,7 +73,7 @@ export const quickGoToSymbol: Command = {
 // support /some/file.js#L73
 // support /some/file.js:73
 // support /some/file.js:73:84
-export const matchLineReg = /^([^:#\(]*)[:#\(]?L?(\d+)?[:,]?(\d+)?\)?/;
+export const matchLineReg = /^([^:#(]*)[:#(]?L?(\d+)?[:,]?(\d+)?\)?/;
 
 function getRangeByInput(input = ''): monaco.Range | undefined {
   const matchList = input.match(matchLineReg) || [];

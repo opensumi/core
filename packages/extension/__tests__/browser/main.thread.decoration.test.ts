@@ -1,22 +1,22 @@
+import type vscode from 'vscode';
+
 import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.window.api.impl';
+import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@opensumi/ide-core-common';
+import { IDecorationsService } from '@opensumi/ide-decoration';
+import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
 import { MainThreadDecorations } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.decoration';
 import {
   IMainThreadEnv,
   MainThreadAPIIdentifier,
   ExtHostAPIIdentifier,
 } from '@opensumi/ide-extension/lib/common/vscode';
-import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
-import { IDecorationsService } from '@opensumi/ide-decoration';
-import type vscode from 'vscode';
-import { Event, Uri, Emitter, DisposableCollection, CancellationToken } from '@opensumi/ide-core-common';
+import { createWindowApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.window.api.impl';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-
-import ExtensionHostextWindowAPIImpl from '../../src/hosted/ext.host';
-import { ExtHostDecorations } from '../../src/hosted/api/vscode/ext.host.decoration';
 import { mockExtensions } from '../../__mocks__/extensions';
+import { ExtHostDecorations } from '../../src/hosted/api/vscode/ext.host.decoration';
+import ExtensionHostextWindowAPIImpl from '../../src/hosted/ext.host';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -73,6 +73,7 @@ describe('MainThreadDecorationAPI Test Suites ', () => {
         {} as any,
         {} as any,
         extHostDecorations,
+        {} as any,
         {} as any,
         {} as any,
         {} as any,

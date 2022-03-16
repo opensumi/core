@@ -1,12 +1,13 @@
-import React from 'react';
 import cls from 'classnames';
-import { localize } from '@opensumi/ide-core-common/lib/localize';
-import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@opensumi/ide-components';
-import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
-import { ConfigContext } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
+import React from 'react';
 
-import { ContentSearchClientService } from './search.service';
+import { Input, CheckBox, Popover, PopoverTriggerType, PopoverPosition } from '@opensumi/ide-components';
+import { ConfigContext } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
+import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
+import { localize } from '@opensumi/ide-core-common/lib/localize';
+
 import styles from './search.module.less';
+import { ContentSearchClientService } from './search.service';
 
 const IncludeRuleContent = () => (
   <div className={cls(styles.include_rule_content)}>

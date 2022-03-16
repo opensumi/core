@@ -1,5 +1,4 @@
 import { Injector } from '@opensumi/di';
-import { INodeLogger, NodeLogger } from '../logger/node-logger';
 import {
   IReporter,
   DefaultReporter,
@@ -12,6 +11,8 @@ import {
   HashCalculateServiceImpl,
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+
+import { INodeLogger, NodeLogger } from '../logger/node-logger';
 
 export function injectInnerProviders(injector: Injector) {
   injector.addProviders(

@@ -1,7 +1,8 @@
-import { VSCodeContributePoint, Contributes } from '../../../common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-common';
 import { ITerminalContributions, ITerminalContributionService } from '@opensumi/ide-terminal-next/lib/common';
+
+import { VSCodeContributePoint, Contributes } from '../../../common';
 
 @Injectable()
 @Contributes('terminal')

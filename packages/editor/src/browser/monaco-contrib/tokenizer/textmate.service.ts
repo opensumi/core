@@ -1,12 +1,4 @@
-import { IThemeData } from '@opensumi/ide-theme';
-import { Injectable, Autowired } from '@opensumi/di';
-import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import { URI, Disposable } from '@opensumi/ide-core-common';
-import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { OnigScanner, loadWASM, OnigString } from 'vscode-oniguruma';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
-import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
 import {
   Registry,
   IRawGrammar,
@@ -16,20 +8,8 @@ import {
   ITokenTypeMap,
   INITIAL,
 } from 'vscode-textmate';
-import {
-  CommentRule,
-  GrammarsContribution,
-  ITextmateTokenizerService,
-  LanguagesContribution,
-  ScopeMap,
-} from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
-import {
-  FoldingRules,
-  IAutoClosingPair,
-  IAutoClosingPairConditional,
-  IndentationRule,
-  LanguageConfiguration,
-} from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   WithEventBus,
   parseWithComments,
@@ -41,9 +21,31 @@ import {
   electronEnv,
   AppConfig,
 } from '@opensumi/ide-core-browser';
+import { URI, Disposable } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import {
+  CommentRule,
+  GrammarsContribution,
+  ITextmateTokenizerService,
+  LanguagesContribution,
+  ScopeMap,
+} from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import {
+  FoldingRules,
+  IAutoClosingPair,
+  IAutoClosingPairConditional,
+  IndentationRule,
+  LanguageConfiguration,
+} from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IThemeData } from '@opensumi/ide-theme';
+import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
+import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
+import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
+
+import { IEditorDocumentModelService } from '../../doc-model/types';
 
 import { TextmateRegistry } from './textmate-registry';
-import { IEditorDocumentModelService } from '../../doc-model/types';
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
 
 let wasmLoaded = false;

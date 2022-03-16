@@ -286,7 +286,7 @@ function factory(nodeRequire, path, fs) {
   };
 }
 
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 
 module.exports = factory(require, path, fs);

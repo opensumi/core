@@ -1,7 +1,9 @@
 import { Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
-import { LogServiceManager } from './log-manager';
+
 import { LogServiceForClientPath, ILogServiceForClient, ILogServiceManager } from '../common/';
+
+import { LogServiceManager } from './log-manager';
 import { LogServiceForClient } from './log.service';
 
 export * from '../common/';

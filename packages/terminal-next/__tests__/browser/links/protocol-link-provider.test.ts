@@ -1,6 +1,7 @@
 import { Terminal, ILink } from 'xterm';
-import { TerminalProtocolLinkProvider } from '../../../src/browser/links/protocol-link-provider';
+
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
+import { TerminalProtocolLinkProvider } from '../../../src/browser/links/protocol-link-provider';
 
 describe('Workbench - TerminalWebLinkProvider', () => {
   const injector = createBrowserInjector([]);

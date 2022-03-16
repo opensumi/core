@@ -1,19 +1,25 @@
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
-import { maxPriority, parseMarkdownText } from './../common/testingStates';
-import { labelForTestInState, testMessageSeverityColors } from './../common/constants';
-import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { TestResultImpl, TestResultServiceToken } from './../common/test-result';
-import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { Disposable, IDisposable, IRange, URI, uuid } from '@opensumi/ide-core-common';
-import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
-import { TestServiceToken } from '../common';
-import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { Event, IContextKeyService, MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
+import {
+  AbstractMenuService,
+  generateMergedCtxMenu,
+  ICtxMenuRenderer,
+  IMenu,
+  MenuId,
+} from '@opensumi/ide-core-browser/lib/menu/next';
+import { Disposable, IDisposable, IRange, URI, uuid } from '@opensumi/ide-core-common';
+import { removeAnsiEscapeCodes } from '@opensumi/ide-core-common';
+import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
+import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
+import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
+import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import * as editorCommon from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
+import { IModelDeltaDecoration } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
+import { TestServiceToken } from '../common';
 import {
   IncrementalTestCollectionItem,
   InternalTestItem,
@@ -25,6 +31,12 @@ import {
   TestRunProfileBitset,
   TestsDiff,
 } from '../common/testCollection';
+import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
+import { buildTestUri, TestUriType } from '../common/testingUri';
+
+import { labelForTestInState, testMessageSeverityColors } from './../common/constants';
+import { TestResultImpl, TestResultServiceToken } from './../common/test-result';
+import { maxPriority, parseMarkdownText } from './../common/testingStates';
 import {
   defaultIconColor,
   testingRunAllIcon,
@@ -32,19 +44,10 @@ import {
   testingStatesToIcons,
   testStatesToIconColors,
 } from './icons/icons';
-import { TestServiceImpl } from './test.service';
-import { removeAnsiEscapeCodes } from '@opensumi/ide-core-common';
-import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
-import { buildTestUri, TestUriType } from '../common/testingUri';
 import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.service';
-import { TestingPeekOpenerServiceToken } from '../common/testingPeekOpener';
-import {
-  AbstractMenuService,
-  generateMergedCtxMenu,
-  ICtxMenuRenderer,
-  IMenu,
-  MenuId,
-} from '@opensumi/ide-core-browser/lib/menu/next';
+import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
+import { TestServiceImpl } from './test.service';
+
 
 interface ITestDecoration extends IDisposable {
   id: string;
@@ -76,7 +79,7 @@ const createRunTestDecoration = (
   }
 
   let computedState = TestResultState.Unset;
-  let hoverMessageParts: string[] = [];
+  const hoverMessageParts: string[] = [];
   let testIdWithMessages: string | undefined;
   let retired = false;
   for (let i = 0; i < tests.length; i++) {

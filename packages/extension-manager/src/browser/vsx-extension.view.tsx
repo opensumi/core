@@ -1,16 +1,19 @@
+import debounce from 'lodash/debounce';
+import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import { useState, useCallback } from 'react';
-import { observer } from 'mobx-react-lite';
-import { localize } from '@opensumi/ide-core-common';
-import { useInjectable } from '@opensumi/ide-core-browser';
+
 import { Tabs } from '@opensumi/ide-components';
-import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
+import { useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import debounce from 'lodash/debounce';
+import { localize } from '@opensumi/ide-core-common';
+import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
+
 
 import { IVSXExtensionService, TabActiveKey, VSXExtension, VSXExtensionServiceToken } from '../common';
-import { Extension } from './extension';
+
 import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID } from './const';
+import { Extension } from './extension';
 import styles from './vsx-extension.module.less';
 
 const tabMap = [TabActiveKey.MARKETPLACE, TabActiveKey.INSTALLED];

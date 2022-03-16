@@ -1,5 +1,5 @@
-import React from 'react';
 import clx from 'classnames';
+import React from 'react';
 
 import './styles.less';
 import { Button } from '../button';
@@ -22,7 +22,7 @@ function noop() {}
 export const Popover: React.FC<{
   id: string;
   insertClass?: string;
-  content?: React.ReactElement;
+  content?: React.ReactNode;
   trigger?: PopoverTriggerType;
   display?: boolean; // 使用程序控制的是否显示
   [key: string]: any;

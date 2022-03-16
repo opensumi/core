@@ -1,14 +1,9 @@
-import { Injectable, Autowired } from '@opensumi/di';
-import {
-  QuickInputOptions,
-  IQuickInputService,
-  QuickOpenItem,
-  QuickOpenService,
-  Mode,
-} from '@opensumi/ide-core-browser/lib/quick-open';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { QuickInputOptions, IQuickInputService, QuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
+import { Deferred, Emitter, Event, withNullAsUndefined } from '@opensumi/ide-core-common';
+
 import { QuickTitleBar } from './quick-title-bar';
-import { Deferred, localize, Emitter, Event } from '@opensumi/ide-core-common';
-import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+import { InputBoxImpl } from './quickInput.inputBox';
 
 @Injectable()
 export class QuickInputService implements IQuickInputService {
@@ -18,73 +13,46 @@ export class QuickInputService implements IQuickInputService {
   @Autowired(QuickTitleBar)
   protected readonly quickTitleBar: QuickTitleBar;
 
-  open(options: QuickInputOptions): Promise<string | undefined> {
-    const result = new Deferred<string | undefined>();
-    const prompt = this.createPrompt(options.prompt);
-    let label = prompt;
-    let currentText = '';
-    const validateInput = options && options.validateInput;
+  @Autowired(INJECTOR_TOKEN)
+  protected injector: Injector;
 
-    if (options && this.quickTitleBar.shouldShowTitleBar(options.title, options.step, options.buttons)) {
-      this.quickTitleBar.attachTitleBar(options.title, options.step, options.totalSteps, options.buttons);
+  inputBox?: InputBoxImpl;
+
+  open(options: QuickInputOptions): Promise<string | undefined> {
+    if (this.inputBox) {
+      this.inputBox.hide();
     }
 
-    this.quickOpenService.open(
-      {
-        onType: async (lookFor, acceptor) => {
-          this.onDidChangeValueEmitter.fire(lookFor);
-          const error = validateInput && lookFor !== undefined ? await validateInput(lookFor) : undefined;
-          label = error || prompt;
-          if (error) {
-            this.quickOpenService.showDecoration(VALIDATE_TYPE.ERROR);
-          } else {
-            this.quickOpenService.hideDecoration();
-          }
-          acceptor([
-            new QuickOpenItem({
-              label,
-              run: (mode) => {
-                if (!error && mode === Mode.OPEN) {
-                  result.resolve(currentText);
-                  this.onDidAcceptEmitter.fire(undefined);
-                  this.quickTitleBar.hide();
-                  return true;
-                }
-                return false;
-              },
-            }),
-          ]);
-          currentText = lookFor;
-        },
-      },
-      {
-        prefix: options.value,
-        placeholder: options.placeHolder,
-        password: options.password,
-        ignoreFocusOut: options.ignoreFocusOut,
-        enabled: options.enabled,
-        valueSelection: options.valueSelection,
-        onClose: () => {
-          result.resolve(undefined);
-          this.quickTitleBar.hide();
-        },
-      },
-    );
+    const result = new Deferred<string | undefined>();
+    const validateInput = options && options.validateInput;
+
+    const inputBox = this.injector.get(InputBoxImpl, [options]);
+    inputBox.onDidAccept((v) => {
+      result.resolve(v);
+      this.onDidAcceptEmitter.fire();
+    });
+    inputBox.onDidChangeValue(async (v) => {
+      this.onDidChangeValueEmitter.fire(v);
+      const error = validateInput && v !== undefined ? withNullAsUndefined(await validateInput(v)) : undefined;
+      // 每次都要设置一下，因为 error 为空说明没有错
+      inputBox.updateOptions({
+        validationMessage: error,
+      });
+    });
+    inputBox.onDidHide(() => {
+      result.resolve(undefined);
+    });
+    inputBox.open();
+    this.inputBox = inputBox;
     return result.promise;
   }
 
   refresh() {
-    this.quickOpenService.refresh();
+    this.inputBox?.refresh();
   }
 
   hide(): void {
-    this.quickOpenService.hideDecoration();
-    this.quickOpenService.hide();
-  }
-
-  protected createPrompt(prompt?: string): string {
-    const defaultPrompt = localize('quickopen.quickinput.prompt');
-    return prompt ? `${prompt} (${defaultPrompt})` : defaultPrompt;
+    this.inputBox?.hide();
   }
 
   readonly onDidAcceptEmitter: Emitter<void> = new Emitter();

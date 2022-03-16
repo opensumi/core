@@ -1,6 +1,8 @@
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { QuickPickService } from '@opensumi/ide-core-browser';
+import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable, IFileServiceClient } from '@opensumi/ide-core-common';
-import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
 import {
   IDebugSessionManager,
   IDebugSession,
@@ -8,32 +10,32 @@ import {
   DebugModelFactory,
   IDebugServer,
 } from '@opensumi/ide-debug';
-import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
-import { ICtxMenuRenderer, AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
-import styles from '../../../../src/browser/view/console/debug-console.module.less';
-import {
-  DebugConsoleModelService,
-  IDebugConsoleModel,
-} from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
 import {
   DebugSessionFactory,
   DefaultDebugSessionFactory,
   DebugPreferences,
   DebugSessionContributionRegistry,
 } from '@opensumi/ide-debug/lib/browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IMessageService } from '@opensumi/ide-overlay';
-import { ITerminalApiService } from '@opensumi/ide-terminal-next';
-import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { QuickPickService } from '@opensumi/ide-core-browser';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { WSChannelHandler } from '@opensumi/ide-connection';
-import { IVariableResolverService } from '@opensumi/ide-variable';
-import { ITaskService } from '@opensumi/ide-task';
-import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
 import { DebugContextKey } from '@opensumi/ide-debug/lib/browser/contextkeys/debug-contextkey.service';
+import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
+import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
+import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
+import {
+  DebugConsoleModelService,
+  IDebugConsoleModel,
+} from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { IMessageService } from '@opensumi/ide-overlay';
+import { ITaskService } from '@opensumi/ide-task';
+import { ITerminalApiService } from '@opensumi/ide-terminal-next';
+import { IVariableResolverService } from '@opensumi/ide-variable';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
+
+import styles from '../../../../src/browser/view/console/debug-console.module.less';
+
 
 describe('Debug Console Tree Model', () => {
   const mockInjector = createBrowserInjector([]);

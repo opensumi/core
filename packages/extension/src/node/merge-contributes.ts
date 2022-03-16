@@ -2,10 +2,11 @@
  * handle `kaitianContributes` and `contributes`
  */
 import mergeWith = require('lodash/mergeWith');
+
 import { asArray } from '@opensumi/ide-core-common';
 
-import { IExtensionContributions } from '../common/vscode/extension';
 import { ISumiExtensionContributions } from '../common/sumi/extension';
+import { IExtensionContributions } from '../common/vscode/extension';
 
 export function mergeContributes(
   contributes: IExtensionContributions | undefined,

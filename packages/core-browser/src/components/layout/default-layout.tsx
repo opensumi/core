@@ -1,6 +1,8 @@
 import React from 'react';
-import { BoxPanel } from './box-panel';
+
 import { SlotRenderer } from '../../react-providers';
+
+import { BoxPanel } from './box-panel';
 import { SplitPanel } from './split-panel';
 
 export const getStorageValue = () => {

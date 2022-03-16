@@ -1,7 +1,7 @@
 // eslint-disable no-console
 import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IRPCProtocol } from '@opensumi/ide-connection';
+import { Logger } from '@opensumi/ide-core-browser';
 import {
   CancellationToken,
   Disposable,
@@ -10,6 +10,13 @@ import {
   URI,
 } from '@opensumi/ide-core-common';
 import { ITestController, ITestService, TestServiceToken } from '@opensumi/ide-testing';
+import { ITestProfileService, TestProfileServiceToken } from '@opensumi/ide-testing/lib/common/test-profile';
+import {
+  ITestResult,
+  ITestResultService,
+  TestResultImpl,
+  TestResultServiceToken,
+} from '@opensumi/ide-testing/lib/common/test-result';
 import {
   ITestRunProfile,
   ResolvedTestRunRequest,
@@ -22,16 +29,9 @@ import {
   ITestItem,
   TestDiffOpType,
 } from '@opensumi/ide-testing/lib/common/testCollection';
-import { ITestProfileService, TestProfileServiceToken } from '@opensumi/ide-testing/lib/common/test-profile';
+import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { ExtHostAPIIdentifier, IExtHostTests, IMainThreadTesting } from '../../../common/vscode';
-import {
-  ITestResult,
-  ITestResultService,
-  TestResultImpl,
-  TestResultServiceToken,
-} from '@opensumi/ide-testing/lib/common/test-result';
-import { Logger } from '@opensumi/ide-core-browser';
 
 const reviveDiff = (diff: TestsDiff) => {
   for (const entry of diff) {

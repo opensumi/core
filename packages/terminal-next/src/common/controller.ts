@@ -1,15 +1,13 @@
-import { Event, Disposable, Deferred, IDisposable } from '@opensumi/ide-core-common';
-import {
-  ITerminalLaunchError,
-  ITerminalProcessExtHostProxy,
-  IStartExtensionTerminalRequest,
-  ITerminalProfileProvider,
-} from './extension';
-import { IWidgetGroup, IWidget } from './resize';
-import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
-import { TerminalOptions, ITerminalInfo } from './pty';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { Event, Disposable, Deferred, IDisposable } from '@opensumi/ide-core-common';
+
+// eslint-disable-next-line import/no-restricted-paths
 import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
+
+import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
+import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
+import { TerminalOptions, ITerminalInfo } from './pty';
+import { IWidgetGroup, IWidget } from './resize';
 
 export interface ITerminalExternalClient {
   readonly id: string;

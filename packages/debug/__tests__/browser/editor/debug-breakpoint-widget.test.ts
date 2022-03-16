@@ -1,11 +1,11 @@
+import { Disposable, IFileServiceClient } from '@opensumi/ide-core-browser';
+import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { DebugEditor, IDebugSessionManager } from '@opensumi/ide-debug';
+import { DebugBreakpointWidget } from '@opensumi/ide-debug/lib/browser/editor';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import type { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { Disposable, IFileServiceClient } from '@opensumi/ide-core-browser';
-import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { DebugBreakpointWidget } from '@opensumi/ide-debug/lib/browser/editor';
-import { DebugEditor, IDebugSessionManager } from '@opensumi/ide-debug';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 
 describe('Debug Breakpoint Widget', () => {
   const mockInjector = createBrowserInjector([]);

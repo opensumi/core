@@ -1,17 +1,27 @@
+import type cp from 'child_process';
 import net from 'net';
 import path from 'path';
 import util from 'util';
+
 import * as fs from 'fs-extra';
-import type cp from 'child_process';
+
 import { Injectable, Autowired } from '@opensumi/di';
-import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { WSChannel } from '@opensumi/ide-connection';
 import { WebSocketMessageReader, WebSocketMessageWriter } from '@opensumi/ide-connection/lib/common/message';
+import { commonChannelPathHandler, SocketMessageReader, SocketMessageWriter } from '@opensumi/ide-connection/lib/node';
 import {
-  commonChannelPathHandler,
-  SocketMessageReader,
-  SocketMessageWriter,
-  WSChannel,
-} from '@opensumi/ide-connection';
+  Event,
+  Emitter,
+  timeout,
+  isUndefined,
+  findFreePort,
+  IReporterTimer,
+  getDebugLogger,
+  SupportLogNamespace,
+  ExtensionConnectOption,
+  ExtensionConnectModeOption,
+} from '@opensumi/ide-core-common';
+import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 import {
   Deferred,
   isWindows,
@@ -27,20 +37,7 @@ import {
   IReporterService,
   ReporterProcessMessage,
 } from '@opensumi/ide-core-node';
-import {
-  Event,
-  Emitter,
-  timeout,
-  isUndefined,
-  findFreePort,
-  IReporterTimer,
-  getDebugLogger,
-  SupportLogNamespace,
-  ExtensionConnectOption,
-  ExtensionConnectModeOption,
-} from '@opensumi/ide-core-common';
 
-import { ExtensionScanner } from './extension.scanner';
 import {
   OutputType,
   IExtraMetaData,
@@ -53,6 +50,8 @@ import {
   KT_PROCESS_SOCK_OPTION_KEY,
   IExtensionNodeClientService,
 } from '../common';
+
+import { ExtensionScanner } from './extension.scanner';
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService {

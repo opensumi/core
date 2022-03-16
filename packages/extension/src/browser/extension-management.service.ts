@@ -10,6 +10,7 @@ import {
   IExtensionProps,
   IExtraMetaData,
 } from '../common';
+
 import { Extension } from './extension';
 import { AbstractExtInstanceManagementService, ExtensionDidEnabledEvent, ExtensionDidUninstalledEvent } from './types';
 

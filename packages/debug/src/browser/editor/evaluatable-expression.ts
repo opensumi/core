@@ -1,6 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IDisposable } from '@opensumi/ide-core-common';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 
 import { EvaluatableExpressionProvider } from '../../common/evaluatable-expression';

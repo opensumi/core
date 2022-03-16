@@ -1,3 +1,4 @@
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   IApplicationService,
   URI,
@@ -21,33 +22,35 @@ import {
   WORKSPACE_COMMANDS,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { FileTreeService } from './file-tree.service';
-import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
-import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
-import { FileTree } from './file-tree';
-import { SymlinkDecorationsProvider } from './symlink-file-decoration';
-import { IDecorationsService } from '@opensumi/ide-decoration';
+import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
+import {
+  FilesExplorerFocusedContext,
+  FilesExplorerInputFocusedContext,
+} from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
   MenuContribution,
   IMenuRegistry,
   MenuId,
   ExplorerContextCallback,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { FileTreeModelService } from './services/file-tree-model.service';
-import { Directory } from '../common/file-tree-node.define';
+import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
-import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
-import {
-  FilesExplorerFocusedContext,
-  FilesExplorerInputFocusedContext,
-} from '@opensumi/ide-core-browser/lib/contextkey/explorer';
-import { IFileTreeService, PasteTypes } from '../common';
-import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
+import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
+import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
+import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
+import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
+
+import { IFileTreeService, PasteTypes } from '../common';
+import { Directory } from '../common/file-tree-node.define';
+
+import { FileTree } from './file-tree';
+import { FileTreeService } from './file-tree.service';
+import { FileTreeModelService } from './services/file-tree-model.service';
+import { SymlinkDecorationsProvider } from './symlink-file-decoration';
+
 
 export const ExplorerResourceViewId = 'file-explorer-next';
 

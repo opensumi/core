@@ -1,8 +1,8 @@
-import { parse, IExpression, ParsedExpression } from '@opensumi/ide-core-common/lib/utils/glob';
+import { equalsIgnoreCase, URI, isWindows, isLinux } from '@opensumi/ide-core-common';
 import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';
 import { Schemas } from '@opensumi/ide-core-common/lib/network';
-import { equalsIgnoreCase, URI, isWindows, isLinux } from '@opensumi/ide-core-common';
 import * as paths from '@opensumi/ide-core-common/lib/path';
+import { parse, IExpression, ParsedExpression } from '@opensumi/ide-core-common/lib/utils/glob';
 import * as extpath from '@opensumi/ide-core-common/lib/utils/paths';
 
 export class ResourceGlobMatcher {
