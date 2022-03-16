@@ -15,11 +15,12 @@ export interface ITerminalPreference {
 
 export interface DefaultOptions {
   allowTransparency: boolean;
-  macOptionIsMeta: false;
-  cursorBlink: false;
+  macOptionIsMeta: boolean;
+  cursorBlink: boolean;
   scrollback: number;
   tabStopWidth: number;
   fontSize: number;
+  copyOnSelection: boolean;
 }
 
 export const OptionTypeName = {
@@ -31,6 +32,8 @@ export const OptionTypeName = {
   cursorBlink: 'cursorBlink',
   scrollback: 'scrollback',
 };
+
+export const CodeCompatibleOption = new Set(['copyOnSelection']);
 
 export const DefaultOptionValue = {
   fontFamily: 'courier-new, courier, monospace',
@@ -298,6 +301,14 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       ),
       type: ['string', 'null'],
       default: null,
+    },
+    [CodeTerminalSettingId.CopyOnSelection]: {
+      type: 'boolean',
+      markdownDescription: localize(
+        'terminal.integrated.defaultProfile.windows',
+        'The default profile used on Windows. This setting will currently be ignored if either {0} or {1} are set.',
+      ),
+      default: false,
     },
   },
 };

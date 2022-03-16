@@ -534,6 +534,7 @@ export const defaultSettingSections: {
         { id: 'terminal.scrollback', localized: 'preference.terminal.scrollback' },
         // 命令行参数
         { id: 'terminal.integrated.shellArgs.linux', localized: 'preference.terminal.integrated.shellArgs.linux' },
+        { id: 'terminal.integrated.copyOnSelection', localized: 'preference.terminal.integrated.copyOnSelection' },
       ],
     },
   ],
@@ -551,7 +552,7 @@ export const defaultSettingSections: {
         { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },
         { id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight' },
         { id: 'output.enableSmartScroll', localized: 'output.enableSmartScroll' },
-        // 调试
+        // 调试
         // 由于筛选器的匹配模式搜索存在性能、匹配难度大等问题，先暂时隐藏
         // { id: 'debug.console.filter.mode', localized: 'preference.debug.console.filter.mode' },
         { id: 'debug.console.wordWrap', localized: 'preference.debug.console.wordWrap' },

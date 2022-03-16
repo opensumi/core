@@ -46,7 +46,7 @@ import {
   TerminalIcon,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import { ITerminalPreference } from '../common/preference';
+import { DefaultOptions, ITerminalPreference } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
@@ -167,6 +167,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           ...this.internalService.getOptions(),
         },
       },
+      this.preference.toJSON(),
     ]);
 
     this.addDispose(this.xterm);
@@ -220,6 +221,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           await this._show.promise;
         }
         this._setOption(name, value);
+        this.xterm.updatePreferences({
+          [name]: value,
+        } as unknown as DefaultOptions);
       }),
     );
 
