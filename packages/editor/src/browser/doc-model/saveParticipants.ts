@@ -12,6 +12,7 @@ import {
   MonacoOverrideServiceRegistry,
   Progress,
 } from '@opensumi/ide-core-browser';
+import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import {
@@ -24,7 +25,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { SaveReason } from '../types';
 
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
-
 
 @Injectable()
 export class CodeActionOnSaveParticipant extends WithEventBus {
@@ -61,24 +61,28 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
       return;
     }
 
-    const preferenceActions = this.preferenceService.get<any>(
-      'editor.codeActionsOnSave',
-      undefined,
-      e.payload.uri.toString(),
-      e.payload.language,
-    );
+    const preferenceActions = this.preferenceService.get<{
+      [prop: string]: any;
+    }>('editor.codeActionsOnSave', undefined, e.payload.uri.toString(), e.payload.language);
     if (!preferenceActions) {
       return undefined;
     }
-
     const codeActionsOnSave: CodeActionKind[] = [];
 
-    if (preferenceActions['source.fixAll']) {
-      codeActionsOnSave.push(CodeActionKind.SourceFixAll);
+    for (const k of Object.keys(preferenceActions).map((p) => new CodeActionKind(p))) {
+      // source.fixAll
+      // source.fixAll.eslint
+      // source.fixAll.stylelint
+      if (CodeActionKind.SourceFixAll.equals(k) || CodeActionKind.SourceFixAll.contains(k)) {
+        codeActionsOnSave.push(CodeActionKind.SourceFixAll);
+      }
+
+      // source.organizeImports
+      if (CodeActionKind.SourceOrganizeImports.equals(k)) {
+        codeActionsOnSave.push(CodeActionKind.SourceOrganizeImports);
+      }
     }
-    if (preferenceActions['source.organizeImports']) {
-      codeActionsOnSave.push(CodeActionKind.SourceOrganizeImports);
-    }
+
     if (codeActionsOnSave.length === 0) {
       return;
     }
@@ -128,7 +132,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
   private async applyCodeActions(actionsToRun: readonly CodeActionItem[]) {
     for (const actionItem of actionsToRun) {
       if (actionItem.action.edit) {
-        await this.bulkEditService?.apply(actionItem.action.edit);
+        await this.bulkEditService?.apply(ResourceEdit.convert(actionItem.action.edit));
       }
       if (actionItem.action.command) {
         await this.commandService.executeCommand(

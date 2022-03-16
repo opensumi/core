@@ -22,7 +22,6 @@ function reviveWorkspaceEditDto2(data: ResourceEdit[] | undefined): ResourceEdit
   if (!data || data.length === 0) {
     return [];
   }
-
   const result: ResourceEdit[] = [];
   for (const edit of revive(data)) {
     if (isResourceFileEdit(edit)) {
