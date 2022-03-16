@@ -284,6 +284,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   private queuedRefreshPromise: Promise<any> | null;
   private queuedRefreshPromiseFactory: (() => Promise<any>) | null;
 
+  private _lock = false;
+
   private watchTerminator: (path: string) => void;
   public watchEvents: Map<string, IWatcherInfo>;
 
@@ -445,6 +447,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     return this._flattenedBranch;
   }
 
+  get lock() {
+    return this._lock;
+  }
+
   /**
    * 确保此“目录”的子级已加载（不影响“展开”状态）
    * 如果子级已经加载，则返回的Promise将立即解决
@@ -472,7 +478,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       !quiet && this._watcher.notifyWillResolveChildren(this, this.isExpanded);
       await this.hardReloadChildren();
       !quiet && this._watcher.notifyDidResolveChildren(this, this.isExpanded);
-      // 检查其是否展开；可能同时执行了setCollapsed方法
+      // 检查其是否展开；可能同时执行了 setCollapsed 方法
       if (!this.isExpanded) {
         return;
       }
@@ -838,11 +844,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 设置扁平化的分支信息
    */
   protected setFlattenedBranch(leaves: number[] | null, withoutNotify?: boolean) {
+    this._lock = true;
     this._flattenedBranch = leaves;
     // Root节点才通知更新
     if (CompositeTreeNode.isRoot(this) && !withoutNotify) {
       this.watcher.notifyDidUpdateBranch();
     }
+    this._lock = false;
   }
 
   /**
@@ -865,12 +873,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         // 最终导致此处查询不到对应节点，下面的shrinkBranch同样可能有相同问题，如点击折叠全部功能时
         return;
       }
-      this.setFlattenedBranch(
-        spliceArray(this._flattenedBranch, injectionStartIdx, 0, branch._flattenedBranch),
-        withoutNotify,
-      );
+      if (!this.lock) {
+        this.setFlattenedBranch(
+          spliceArray(this._flattenedBranch, injectionStartIdx, 0, branch._flattenedBranch),
+          withoutNotify,
+        );
+      }
       // 取消展开分支对于分支的所有权，即最终只会有顶部Root拥有所有分支信息
-      branch.setFlattenedBranch(null, withoutNotify);
+      if (!branch.lock) {
+        branch.setFlattenedBranch(null, withoutNotify);
+      }
     } else if (this.parent) {
       (this.parent as CompositeTreeNode).expandBranch(branch, withoutNotify);
     }
@@ -892,19 +904,23 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         // 中途发生了branch更新事件，此时的_flattenedBranch可能已被更新，即查找不到branch.id
         return;
       }
-      // 返回分支对于分支信息所有权，即将折叠的节点信息再次存储于折叠了的节点中
-      branch.setFlattenedBranch(
-        this._flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize),
-        withoutNotify,
-      );
-      this.setFlattenedBranch(
-        spliceArray(
-          this._flattenedBranch,
-          removalStartIdx,
-          branch._flattenedBranch ? branch._flattenedBranch.length : 0,
-        ),
-        withoutNotify,
-      );
+      if (!branch.lock) {
+        // 返回分支对于分支信息所有权，即将折叠的节点信息再次存储于折叠了的节点中
+        branch.setFlattenedBranch(
+          this._flattenedBranch.slice(removalStartIdx, removalStartIdx + branch._branchSize),
+          withoutNotify,
+        );
+      }
+      if (!this.lock) {
+        this.setFlattenedBranch(
+          spliceArray(
+            this._flattenedBranch,
+            removalStartIdx,
+            branch._flattenedBranch ? branch._flattenedBranch.length : 0,
+          ),
+          withoutNotify,
+        );
+      }
     } else if (this.parent) {
       (this.parent as CompositeTreeNode).shrinkBranch(branch, withoutNotify);
     }
@@ -1069,6 +1085,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   private async doRefresh() {
     const tasks = this.refreshTasks.slice(0);
+    this.refreshTasks = [];
     const paths = this.mergeExpandedPaths(tasks);
     return await this.forceReloadChildrenQuiet(paths);
   }
