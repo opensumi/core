@@ -33,8 +33,8 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
   @Autowired()
   private readonly ktExtFsProvider: ExtFsProvider;
 
-  onFileServiceReady() {
-    this.httpImpl.initWorkspace(Uri.file(this.appConfig.workspaceDir!));
+  async onFileServiceReady() {
+    await this.httpImpl.initWorkspace(Uri.file(this.appConfig.workspaceDir!));
   }
 
   registerProvider(registry: IFileServiceClient) {

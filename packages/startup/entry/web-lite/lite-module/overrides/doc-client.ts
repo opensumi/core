@@ -3,7 +3,7 @@ import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@opensumi/
 import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@opensumi/ide-core-browser';
 import { IFileServiceClient, TextDocumentContentChangeEvent } from '@opensumi/ide-file-service';
 import { Range } from 'vscode-languageserver-types';
-import * as md5 from 'md5';
+import md5 from 'md5';
 
 /**
  * todo: 重写文档保存逻辑
