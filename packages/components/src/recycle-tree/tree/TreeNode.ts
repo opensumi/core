@@ -924,7 +924,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this.hardReloadPResolver = null;
     });
 
-    const rawItems = (await this._tree.resolveChildren(this)) || [];
+    let rawItems;
+
+    try {
+      rawItems = (await this._tree.resolveChildren(this)) || [];
+    } catch (e) {
+      rawItems = [];
+    }
 
     if (this._children) {
       // 重置节点分支
