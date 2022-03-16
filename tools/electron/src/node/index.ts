@@ -4,10 +4,10 @@ import { ServerCommonModule } from '@opensumi/ide-core-node';
 import { OpenVsxExtensionManagerModule } from '@opensumi/ide-extension-manager';
 import { ExtensionModule } from '@opensumi/ide-extension/lib/node';
 import { FileSchemeNodeModule } from '@opensumi/ide-file-scheme/lib/node';
-import { FileSearchModule } from '@opensumi/ide-file-search';
+import { FileSearchModule } from '@opensumi/ide-file-search/lib/node';
 import { FileServiceModule } from '@opensumi/ide-file-service/lib/node';
 import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
-import { ProcessModule } from '@opensumi/ide-process';
+import { ProcessModule } from '@opensumi/ide-process/lib/node';
 import { SearchModule } from '@opensumi/ide-search';
 import { TerminalNodePtyModule } from '@opensumi/ide-terminal-next/lib/node';
 
