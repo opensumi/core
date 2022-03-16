@@ -11,7 +11,7 @@ import {
   AppConfig,
 } from '@opensumi/ide-core-browser';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
-import { getLanguageId, URI, firstSessionDateStorageKey } from '@opensumi/ide-core-common';
+import { getCodeLanguage, URI, firstSessionDateStorageKey } from '@opensumi/ide-core-common';
 import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
 
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
@@ -68,7 +68,7 @@ export class MainThreadEnv implements IMainThreadEnv {
       uriScheme,
       appHost,
       appRoot: workspaceDir,
-      language: getLanguageId(),
+      language: getCodeLanguage(),
       uiKind: this.appConfig.isElectronRenderer ? UIKind.Desktop : UIKind.Web,
       firstSessionDate: firstSessionDateValue?.date,
     });
