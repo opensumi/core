@@ -304,10 +304,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     },
     [CodeTerminalSettingId.CopyOnSelection]: {
       type: 'boolean',
-      markdownDescription: localize(
-        'terminal.integrated.defaultProfile.windows',
-        'The default profile used on Windows. This setting will currently be ignored if either {0} or {1} are set.',
-      ),
+      description: '%preference.terminal.integrated.copyOnSelectionDesc%',
       default: false,
     },
   },
