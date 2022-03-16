@@ -1,4 +1,5 @@
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { INodeLogger } from '@opensumi/ide-core-node';
 import {
   IRemoteOpenerClient,
   IRemoteOpenerService,
@@ -8,6 +9,7 @@ import { RemoteOpenerClientImpl } from '@opensumi/ide-remote-opener/lib/node/ope
 
 describe('packages/remote-opener/src/node/opener.client.ts', () => {
   let remoteOpenerClient: IRemoteOpenerClient;
+  let logger: INodeLogger;
 
   beforeEach(() => {
     const injector = createNodeInjector([]);
@@ -15,6 +17,7 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
       token: RemoteOpenerClientToken,
       useClass: RemoteOpenerClientImpl,
     });
+    logger = injector.get(INodeLogger);
     remoteOpenerClient = injector.get(RemoteOpenerClientToken);
   });
 
@@ -27,9 +30,9 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
     remoteOpenerClient.setRemoteOpenerServiceInstance('mock_clientId', service);
     expect(remoteOpenerClient['remoteOpenerServices'].has('mock_clientId')).toBeTruthy();
     expect(remoteOpenerClient['remoteOpenerServices'].get('mock_clientId')).toBe(service);
-    expect(() => remoteOpenerClient.setRemoteOpenerServiceInstance('mock_clientId', service)).toThrow(
-      new Error('Remote opener service instance for client mock_clientId already set.'),
-    );
+    const spyErrorLog = jest.spyOn(logger, 'error');
+    remoteOpenerClient.setRemoteOpenerServiceInstance('mock_clientId', service);
+    expect(spyErrorLog).toBeCalledWith('Remote opener service instance for client mock_clientId already set.');
   });
 
   it('removeRemoteOpenerServiceInstance should be work', () => {
