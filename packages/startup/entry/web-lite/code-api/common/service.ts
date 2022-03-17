@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { ClientAppStateService } from '@opensumi/ide-core-browser';
 import {
   StorageProvider,
   IStorage,
@@ -9,11 +10,11 @@ import {
   MessageType,
   localize,
 } from '@opensumi/ide-core-common';
-import { ClientAppStateService } from '@opensumi/ide-core-browser';
 import { IMessageService } from '@opensumi/ide-overlay';
+
+import { CODE_PLATFORM_CONFIG } from './config';
 import { GITHUB_OAUTH_TOKEN } from './constant';
 import { ICodePlatform } from './types';
-import { CODE_PLATFORM_CONFIG } from './config';
 
 /**
  * 使用 localStorage 存储 token 够用了

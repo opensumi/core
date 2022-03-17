@@ -2,13 +2,15 @@ import '@opensumi/ide-i18n/lib/browser';
 import * as React from 'react';
 
 import { SlotLocation } from '@opensumi/ide-core-browser';
+
 import { SampleModule } from '../sample-modules';
+
 import { CodeAPIModule } from './code-api';
 import { ICodePlatform, IRepositoryModel, CodePlatform } from './code-api/common/types';
-import { parseUri, DEFAULT_URL } from './utils';
 import { CommonBrowserModules } from './common-modules';
 import { WebLiteModule } from './lite-module';
 import { renderApp } from './render-app';
+import { parseUri, DEFAULT_URL } from './utils';
 
 // 引入公共样式文件
 import '@opensumi/ide-core-browser/lib/style/index.less';

@@ -1,7 +1,8 @@
 import { Autowired, Injector, INJECTOR_TOKEN, ConstructorOf } from '@opensumi/di';
-import { Deferred } from '@opensumi/ide-core-common';
 import { SlotLocation, getIcon, Domain, ClientAppContribution, getExternalIcon } from '@opensumi/ide-core-browser';
+import { Deferred } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+
 import { ICodePlatform, ICodeAPIProvider, ICodeAPIService, CodePlatform } from './common/types';
 import { GitHubAPIService } from './github/github.service';
 import { GitHubView } from './github/github.view';

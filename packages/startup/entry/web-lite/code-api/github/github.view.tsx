@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { localize } from '@opensumi/ide-core-common';
-import { useInjectable, getOctIcon } from '@opensumi/ide-core-browser';
-import { Input, Button } from '@opensumi/ide-components';
 import { observer } from 'mobx-react-lite';
-import { ICodeAPIProvider } from '../common/types';
+import React, { useState, useEffect } from 'react';
+
+import { Input, Button } from '@opensumi/ide-components';
+import { useInjectable, getOctIcon } from '@opensumi/ide-core-browser';
+import { localize } from '@opensumi/ide-core-common';
+
 import type { CodeAPIProvider } from '../code-api.provider';
+import { ICodeAPIProvider } from '../common/types';
+
 import styles from './github.module.less';
 
 export const GitHubView: React.FC = observer(() => {
@@ -15,7 +18,9 @@ export const GitHubView: React.FC = observer(() => {
   const [syncing, setSyncing] = useState(false);
 
   const validateToken = async () => {
-    if (!tokenValue) {return;}
+    if (!tokenValue) {
+      return;
+    }
     setValidating(true);
     try {
       await github.validateToken(tokenValue);
@@ -58,41 +63,41 @@ export const GitHubView: React.FC = observer(() => {
   };
 
   const renderNoToken = () => (
-      <div>
-        <div className={styles.title}>
-          {localize('github.auth-title')}
-          <a
-            href='https://github.com/settings/tokens/new?scopes=repo&description=Ant%20Codespaces'
-            target='_blank'
-            style={{ marginLeft: 8 }}
-          >
-            <i className={getOctIcon('link')}></i> {localize('github.auth-goto')}
-          </a>
-        </div>
-        <div className={styles.authTip}>
-          {localize('github.auth-tip')}{' '}
-          <a href='https://docs.github.com/en/rest/overview/resources-in-the-rest-api#authentication' target='_blank'>
-            {localize('common.ref-doc')}
-          </a>
-        </div>
-        <div className={styles.authInput}>
-          <Input
-            size='small'
-            placeholder={`${localize('github.auth-input')} OAuth Token`}
-            value={tokenValue}
-            onChange={(e) => setTokenValue(e.target.value)}
-          />
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <Button size='small' style={{ marginRight: 8 }} onClick={() => validateToken()} loading={validating}>
-            {localize('common.save')}
-          </Button>
-          <Button size='small' onClick={() => setTokenValue('')} loading={validating} type='default'>
-            {localize('common.reset')}
-          </Button>
-        </div>
+    <div>
+      <div className={styles.title}>
+        {localize('github.auth-title')}
+        <a
+          href='https://github.com/settings/tokens/new?scopes=repo&description=Ant%20Codespaces'
+          target='_blank'
+          style={{ marginLeft: 8 }}
+        >
+          <i className={getOctIcon('link')}></i> {localize('github.auth-goto')}
+        </a>
       </div>
-    );
+      <div className={styles.authTip}>
+        {localize('github.auth-tip')}{' '}
+        <a href='https://docs.github.com/en/rest/overview/resources-in-the-rest-api#authentication' target='_blank'>
+          {localize('common.ref-doc')}
+        </a>
+      </div>
+      <div className={styles.authInput}>
+        <Input
+          size='small'
+          placeholder={`${localize('github.auth-input')} OAuth Token`}
+          value={tokenValue}
+          onChange={(e) => setTokenValue(e.target.value)}
+        />
+      </div>
+      <div style={{ marginTop: 8 }}>
+        <Button size='small' style={{ marginRight: 8 }} onClick={() => validateToken()} loading={validating}>
+          {localize('common.save')}
+        </Button>
+        <Button size='small' onClick={() => setTokenValue('')} loading={validating} type='default'>
+          {localize('common.reset')}
+        </Button>
+      </div>
+    </div>
+  );
 
   const renderHasToken = () => {
     const token = github.OAUTH_TOKEN!;
@@ -131,7 +136,9 @@ export const GitHubView: React.FC = observer(() => {
 });
 
 function formateTime(n: number) {
-  if (n <= 0) {return '-';}
+  if (n <= 0) {
+    return '-';
+  }
   const date = new Date(n);
   return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date
     .getSeconds()

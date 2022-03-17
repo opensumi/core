@@ -1,7 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, Uri, AppConfig } from '@opensumi/ide-core-browser';
 
-import { AbstractHttpFileService } from './browser-fs-provider';
 import {
   ICodeAPIProvider,
   ICodePlatform,
@@ -10,6 +9,8 @@ import {
   TreeEntry,
 } from '../../code-api/common/types';
 import { DEFAULT_URL, parseUri } from '../../utils';
+
+import { AbstractHttpFileService } from './browser-fs-provider';
 
 const PathSeperator = '/';
 const HEAD = 'HEAD';
