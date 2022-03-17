@@ -221,14 +221,14 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           const alt = item.alt && this.commandRegistry.getRawCommand(item.alt);
 
           if (!command) {
-            collector.error(formatLocalize('missing.command', item.command));
+            collector.error(formatLocalize('menu.missing.command', menuId, item.command));
             continue;
           }
           if (item.alt && !alt) {
-            collector.warn(formatLocalize('missing.altCommand', item.alt));
+            collector.warn(formatLocalize('menu.missing.altCommand', menuId, item.alt));
           }
           if (item.command === item.alt) {
-            collector.info(formatLocalize('dupe.command'));
+            collector.info(formatLocalize('menu.dupe.command', menuId, item.command, item.alt));
           }
 
           const [group, order] = parseMenuGroup(item.group);
