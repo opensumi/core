@@ -173,6 +173,7 @@ export const localizationBundle = {
     'quickopen.tab.class': 'Class',
     'quickopen.tab.symbol': 'Symbol',
     'quickopen.tab.command': 'Command',
+    'quickopen.tab.goToLine': 'Go To Line',
     'quickopen.tab.tip.prefix': 'Press',
     'quickopen.tab.tip.suffix': 'to switch',
     'quickOpen.openSide': 'Open on the side',

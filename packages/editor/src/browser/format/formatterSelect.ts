@@ -42,10 +42,9 @@ export class FormattingSelector {
     });
 
     if (preferred) {
-      if (elements[preferred]) {
-        return elements[preferred];
-      } else {
-        // 喜好的插件已经不存在，进入选择
+      const idx = formatters.findIndex((provider: IProvider) => provider.extensionId === preferred);
+      if (idx >= 0) {
+        return formatters[idx];
       }
     } else if (formatters.length < 2) {
       return formatters[0];

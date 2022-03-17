@@ -6,7 +6,13 @@ import { getExternalIcon, IOpenerService, toMarkdown } from '@opensumi/ide-core-
 import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
-import { IThemeColor, isThemeColor, CommandService, StatusBarHoverCommand, IMarkdownString } from '@opensumi/ide-core-common';
+import {
+  IThemeColor,
+  isThemeColor,
+  CommandService,
+  StatusBarHoverCommand,
+  IMarkdownString,
+} from '@opensumi/ide-core-common';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import styles from './status-bar.module.less';

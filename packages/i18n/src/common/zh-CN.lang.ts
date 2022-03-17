@@ -140,6 +140,7 @@ export const localizationBundle = {
     'quickopen.tab.class': '类',
     'quickopen.tab.symbol': '符号',
     'quickopen.tab.command': '指令',
+    'quickopen.tab.goToLine': '转到行',
     'quickopen.tab.tip.prefix': '按',
     'quickopen.tab.tip.suffix': '切换搜索类别',
     'quickOpen.openSide': '在侧边打开',

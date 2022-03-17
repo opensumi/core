@@ -13,8 +13,6 @@ import {
   getIcon,
   KeybindingContribution,
   KeybindingRegistry,
-  KeybindingScope,
-  KeybindingWeight,
   MaybePromise,
   TabBarToolbarContribution,
   ToolbarRegistry,

@@ -15,7 +15,7 @@ export class RemoteOpenerClientImpl implements IRemoteOpenerClient {
 
   setRemoteOpenerServiceInstance(clientId: string, service: IRemoteOpenerService): void {
     if (this.remoteOpenerServices.has(clientId)) {
-      throw new Error(`Remote opener service instance for client ${clientId} already set.`);
+      this.logger.error(`Remote opener service instance for client ${clientId} already set.`);
     }
     this.remoteOpenerServices.set(clientId, service);
   }
