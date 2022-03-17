@@ -100,18 +100,27 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(ExtensionService)
   private readonly extensionService: ExtensionService;
 
-  async initialize() {
-    await this.extensionService.activate();
-    const disposer = this.webviewService.registerWebviewReviver({
-      handles: (_: string) => 0,
-      revive: async (id: string) =>
-        new Promise<void>((resolve) => {
-          this.eventBus.on(ExtensionApiReadyEvent, () => {
-            disposer.dispose();
-            resolve(this.webviewService.tryReviveWebviewComponent(id));
-          });
-        }),
-    });
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  initialize() {
+    this.extensionService
+      .activate()
+      .catch((err) => {
+        this.logger.error(err);
+      })
+      .finally(() => {
+        const disposer = this.webviewService.registerWebviewReviver({
+          handles: () => 0,
+          revive: async (id: string) =>
+            new Promise<void>((resolve) => {
+              this.eventBus.on(ExtensionApiReadyEvent, () => {
+                disposer.dispose();
+                resolve(this.webviewService.tryReviveWebviewComponent(id));
+              });
+            }),
+        });
+      });
   }
 
   async onStart() {
