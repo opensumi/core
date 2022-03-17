@@ -948,5 +948,9 @@ export const localizationBundle = {
     'test.result.runFinished': '测试运行完成于 {0}',
     'test.task.unnamed': '未命名任务',
     // #endregion
+
+    'menu.missing.command': '菜单{0} 要执行的命令不存在：{1}',
+    'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
+    'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
   },
 };
