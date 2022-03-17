@@ -205,8 +205,7 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
 
   private async doLoadURL(): Promise<void> {
     return new Promise<void>(async (resolve) => {
-      await this.webviewDomReady.promise;
-      this.webview!.loadURL(this.url!);
+      this.webview!.src = this.url!;
       const disposer = this.addDispose(
         new DomListener(this.webview!, 'did-finish-load', () => {
           disposer.dispose();
