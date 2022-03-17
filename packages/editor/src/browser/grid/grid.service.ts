@@ -13,9 +13,13 @@ export class EditorGrid implements IDisposable {
 
   public splitDirection: SplitDirection | undefined;
 
-  public readonly _onDidGridStateChange = new Emitter<void>();
+  protected readonly _onDidGridStateChange = new Emitter<void>();
 
   public readonly onDidGridStateChange = this._onDidGridStateChange.event;
+
+  protected readonly _onDidGridAndDesendantStateChange = new Emitter<void>();
+
+  public readonly onDidGridAndDesendantStateChange = this._onDidGridAndDesendantStateChange.event;
 
   public readonly uid: string;
 
@@ -26,6 +30,10 @@ export class EditorGrid implements IDisposable {
     }
     this.uid = uid;
     editorGridUid.add(uid);
+    this.onDidGridStateChange(() => {
+      this._onDidGridAndDesendantStateChange.fire();
+      this.parent?._onDidGridAndDesendantStateChange.fire();
+    });
   }
 
   setEditorGroup(editorGroup: IGridEditorGroup) {

@@ -43,10 +43,10 @@ export class OpenedEditorService extends Tree {
       // 重制isGroupTree状态
       this.isGroupTree = false;
       let groupOrResource: OpenedEditorData[] = [];
-      if (this.workbenchEditorService.editorGroups.length <= 1) {
-        groupOrResource = this.workbenchEditorService.editorGroups[0].resources.slice();
+      if (this.workbenchEditorService.sortedEditorGroups.length <= 1) {
+        groupOrResource = this.workbenchEditorService.sortedEditorGroups[0].resources.slice();
       } else {
-        groupOrResource = this.workbenchEditorService.editorGroups;
+        groupOrResource = this.workbenchEditorService.sortedEditorGroups;
       }
       for (const item of groupOrResource) {
         if (!(item as IEditorGroup).resources) {
