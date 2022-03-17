@@ -15,7 +15,6 @@ import {
   ICreateProcessOptions,
 } from '../common';
 
-
 import * as lp from './languagePack';
 
 export const DEFAULT_NLS_CONFIG_DIR = path.join(os.homedir(), '.sumi');

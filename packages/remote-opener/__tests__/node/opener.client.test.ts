@@ -1,3 +1,4 @@
+import { INodeLogger } from '@opensumi/ide-core-node';
 import {
   IRemoteOpenerClient,
   IRemoteOpenerService,
