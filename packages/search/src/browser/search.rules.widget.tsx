@@ -130,7 +130,7 @@ const ExcludeInput = React.memo(
           />
           <Popover
             title={localize('search.help.excludeList')}
-            className={cls(styles.search_excludes_description)}
+            insertClass={cls(styles.search_excludes_description)}
             id={'search_excludes'}
             action={localize('search.help.modify')}
             onClickAction={onOpenPreference}
@@ -139,7 +139,7 @@ const ExcludeInput = React.memo(
             delay={500}
             position={PopoverPosition.right}
           >
-            <span className={cls(getIcon('question-circle'))} style={{ opacity: '0.7', cursor: 'pointer' }}></span>
+            <span className={cls(getIcon('question-circle'))} style={{ opacity: '0.7', cursor: 'pointer' }} />
           </Popover>
         </div>
       </div>

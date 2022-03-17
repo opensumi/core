@@ -38,11 +38,6 @@ export class OpenedEditorEventService extends WithEventBus {
     this._onDidActiveChange.fire(e.payload);
   }
 
-  @OnEvent(EditorGroupChangeEvent)
-  onEditorGroupChangeEvent() {
-    this._onDidChange.fire(null);
-  }
-
   @OnEvent(EditorGroupCloseEvent)
   onEditorGroupCloseEvent() {
     this._onDidChange.fire(null);

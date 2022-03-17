@@ -53,18 +53,18 @@ export const BaseTabPanelView: React.FC<{
     <div
       className={clsx(styles.tab_panel, {
         [styles.tab_panel_hidden]: !currentContainerId || currentContainerId === '',
-      })}>
+      })}
+    >
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
         return (
           <div
             key={containerId}
-            className={
-              clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */
-            }
+            className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
-            style={currentContainerId === containerId ? panelVisible : panelInVisible}>
+            style={currentContainerId === containerId ? panelVisible : panelInVisible}
+          >
             <ErrorBoundary>
               <NoUpdateBoundary visible={currentContainerId === containerId}>
                 <PanelView titleMenu={titleMenu} side={side} component={component} />
@@ -99,16 +99,11 @@ const ContainerView: React.FC<{
     <div ref={containerRef} className={styles.view_container}>
       {!CustomComponent && (
         <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
-          {!title ? null : (
-            <TitleBar title={title!} menubar={<InlineActionBar menus={titleMenu} />} />
-          )}
+          {!title ? null : <TitleBar title={title!} menubar={<InlineActionBar menus={titleMenu} />} />}
           {titleComponent && (
             <div className={styles.panel_component}>
               <ConfigProvider value={configContext}>
-                <ComponentRenderer
-                  Component={titleComponent}
-                  initialProps={component.options?.titleProps}
-                />
+                <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
               </ConfigProvider>
             </div>
           )}
@@ -124,10 +119,7 @@ const ContainerView: React.FC<{
             />
           </ConfigProvider>
         ) : (
-          <AccordionContainer
-            views={component.views}
-            containerId={component.options!.containerId}
-          />
+          <AccordionContainer views={component.views} containerId={component.options!.containerId} />
         )}
       </div>
     </div>
@@ -146,15 +138,10 @@ const PanelView: React.FC<{
       <div className={styles.float_container}>
         {titleComponent && (
           <div className={styles.toolbar_container}>
-            <ComponentRenderer
-              Component={titleComponent}
-              initialProps={component.options?.titleProps}
-            />
+            <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
           </div>
         )}
-        <div className='toolbar_container'>
-          {titleMenu && <InlineActionBar menus={titleMenu} />}
-        </div>
+        <div className='toolbar_container'>{titleMenu && <InlineActionBar menus={titleMenu} />}</div>
       </div>
       <ComponentRenderer
         initialProps={component.options && component.options.initialProps}
@@ -183,10 +170,7 @@ const NextPanelView: React.FC<{
         <h1>{component.options!.title}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (
-            <ComponentRenderer
-              Component={titleComponent}
-              initialProps={component.options?.titleProps}
-            />
+            <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
           )}
         </div>
         <div className={styles.panel_toolbar_container}>
@@ -198,11 +182,7 @@ const NextPanelView: React.FC<{
         <ProgressBar progressModel={indicator.progressModel} />
         <ComponentRenderer
           initialProps={{ viewState, ...component.options!.initialProps }}
-          Component={
-            component.options!.component
-              ? component.options!.component
-              : component.views[0].component!
-          }
+          Component={component.options!.component ? component.options!.component : component.views[0].component!}
         />
       </div>
     </div>

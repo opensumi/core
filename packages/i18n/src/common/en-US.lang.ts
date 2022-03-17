@@ -173,6 +173,7 @@ export const localizationBundle = {
     'quickopen.tab.class': 'Class',
     'quickopen.tab.symbol': 'Symbol',
     'quickopen.tab.command': 'Command',
+    'quickopen.tab.goToLine': 'Go To Line',
     'quickopen.tab.tip.prefix': 'Press',
     'quickopen.tab.tip.suffix': 'to switch',
     'quickOpen.openSide': 'Open on the side',
@@ -891,5 +892,8 @@ export const localizationBundle = {
     'test.result.runFinished': 'Test run at {0}',
     'test.task.unnamed': 'Unnamed Task',
     // #endregion
+    'menu.missing.command': 'menuId {0} register command not exist: {1}',
+    'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',
+    'menu.dupe.command': 'menuId {0} register command({1}) is duplicated with alt({2})',
   },
 };

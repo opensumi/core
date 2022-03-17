@@ -1,5 +1,6 @@
 import { IDisposable } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
 
@@ -64,6 +65,7 @@ export const electronEnv: {
   ipcRenderer: IElectronIpcRenderer;
   webviewPreload: string;
   plainWebviewPreload: string;
+  getSocketConnection: (connectPath?: any) => MessageConnection;
   [key: string]: any;
 } = (global as any) || {};
 

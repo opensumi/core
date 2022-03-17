@@ -140,6 +140,7 @@ export const localizationBundle = {
     'quickopen.tab.class': '类',
     'quickopen.tab.symbol': '符号',
     'quickopen.tab.command': '指令',
+    'quickopen.tab.goToLine': '转到行',
     'quickopen.tab.tip.prefix': '按',
     'quickopen.tab.tip.suffix': '切换搜索类别',
     'quickOpen.openSide': '在侧边打开',
@@ -947,5 +948,9 @@ export const localizationBundle = {
     'test.result.runFinished': '测试运行完成于 {0}',
     'test.task.unnamed': '未命名任务',
     // #endregion
+
+    'menu.missing.command': '菜单{0} 要执行的命令不存在：{1}',
+    'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
+    'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
   },
 };

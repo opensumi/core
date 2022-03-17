@@ -103,8 +103,8 @@ export const TabbarViewBase: React.FC<{
                     document.body.appendChild(dragImage);
                     e.persist();
                     requestAnimationFrame(() => {
-                        e.dataTransfer.setDragImage(dragImage, 0, 0);
-                        document.body.removeChild(dragImage);
+                      e.dataTransfer.setDragImage(dragImage, 0, 0);
+                      document.body.removeChild(dragImage);
                     });
                   }
                   tabbarService.handleDragStart(e, containerId);
