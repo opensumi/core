@@ -5,6 +5,7 @@ import {
   MaybePromise,
   WithEventBus,
   localize,
+  formatLocalize,
   MessageType,
   LRUMap,
   IApplicationService,
@@ -173,7 +174,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
     };
     const selection = await this.dialogService.open(
-      localize('saveChangesMessage').replace('{0}', resource.name),
+      formatLocalize('saveChangesMessage', resource.name),
       MessageType.Info,
       Object.keys(buttons),
     );
