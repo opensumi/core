@@ -15,7 +15,7 @@ import {
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
-import { IMarkerData, IRange, Uri, UriComponents } from '@opensumi/ide-core-common';
+import { IMarkerData, IRange, Uri, UriComponents, IMarkdownString } from '@opensumi/ide-core-common';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
 import { InlineValueContext, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import { ILanguageStatus, ISingleEditOperation } from '@opensumi/ide-editor';
@@ -62,7 +62,6 @@ import {
   SemanticTokensLegend,
   WithDuration,
   CompletionItemInsertTextRule,
-  IMarkdownString,
   CompletionItemKind,
   CompletionItemTag,
   ChainedCacheId,

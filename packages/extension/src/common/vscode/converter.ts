@@ -18,6 +18,7 @@ import {
   isDefined,
   coalesce,
   asArray,
+  IMarkdownString,
 } from '@opensumi/ide-core-common';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
@@ -31,8 +32,7 @@ import {
   LanguageFilter,
 } from '@opensumi/ide-editor/lib/common';
 import { FileStat, FileType } from '@opensumi/ide-file-service';
-// eslint-disable-next-line import/no-restricted-paths
-import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EndOfLineSequence, CodeActionTriggerType } from '@opensumi/ide-monaco/lib/common/types';
 import { TestId } from '@opensumi/ide-testing/lib/common';
 import {
   CoverageDetails,
@@ -59,7 +59,7 @@ import * as types from './ext-types';
 import { IRelativePattern } from './glob';
 import { IInlineValueContextDto } from './languages';
 import * as model from './model.api';
-import { isMarkdownString, IMarkdownString, parseHrefAndDimensions } from './models';
+import { isMarkdownString, parseHrefAndDimensions } from './models';
 import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
@@ -272,7 +272,7 @@ export namespace MarkdownString {
     return result;
   }
 
-  export function fromStrict(value: string | vscode.MarkdownString): undefined | string | IMarkdownString {
+  export function fromStrict(value: string | vscode.MarkdownString | undefined): undefined | string | IMarkdownString {
     if (!value) {
       return undefined;
     }

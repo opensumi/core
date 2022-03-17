@@ -11,6 +11,7 @@ import {
   ILineChange,
   IPosition,
   IThemeColor,
+  IMarkdownString,
 } from '@opensumi/ide-core-common';
 // eslint-disable-next-line import/no-restricted-paths
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -622,13 +623,6 @@ export interface IDecorationApplyOptions {
   range: IRange;
 
   renderOptions?: IDecorationRenderOptions;
-}
-export interface IMarkdownString {
-  value: string;
-  isTrusted?: boolean;
-  uris?: {
-    [href: string]: UriComponents;
-  };
 }
 
 export type IHoverMessage = IMarkdownString | IMarkdownString[] | string;

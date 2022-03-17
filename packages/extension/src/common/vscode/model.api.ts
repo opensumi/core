@@ -9,6 +9,7 @@ import {
   SymbolTag,
   CancellationToken,
   Event,
+  IMarkdownString,
 } from '@opensumi/ide-core-common';
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 // eslint-disable-next-line import/no-restricted-paths
@@ -20,8 +21,6 @@ import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/edit
 // 内置的api类型声明
 
 import { IndentAction, SymbolKind } from './ext-types';
-import { IMarkdownString } from './models/html-content';
-
 export { IMarkdownString, SymbolTag, CallHierarchyItem };
 
 export interface IRawColorInfo {
