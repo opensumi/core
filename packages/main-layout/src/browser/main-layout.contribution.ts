@@ -27,9 +27,7 @@ import { CommandContribution, CommandRegistry, Command, CommandService } from '@
 
 import { IMainLayoutService } from '../common';
 
-
 import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
-
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -68,7 +66,7 @@ export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
 export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.toggle',
   iconClass: getIcon('minus'),
-  label: localize('layout.tabbar.hide', '收起面板'),
+  label: localize('layout.tabbar.toggle'),
 };
 export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.is-visible',
@@ -84,12 +82,12 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
 };
 export const EXPAND_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.expand',
-  label: localize('layout.tabbar.expand', '最大化面板'),
+  label: localize('layout.tabbar.expand'),
   iconClass: getIcon('expand'),
 };
 export const RETRACT_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.retract',
-  label: localize('layout.tabbar.retract', '恢复面板'),
+  label: localize('layout.tabbar.retract'),
   iconClass: getIcon('shrink'),
 };
 
@@ -318,6 +316,16 @@ export class MainLayoutModuleContribution
     this.keybindingRegistry.registerKeybinding({
       keybinding: 'ctrlcmd+j',
       command: TOGGLE_BOTTOM_PANEL_COMMAND.id,
+    });
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+shift+j',
+      command: EXPAND_BOTTOM_PANEL.id,
+      when: '!bottomFullExpanded',
+    });
+    this.keybindingRegistry.registerKeybinding({
+      keybinding: 'ctrlcmd+shift+j',
+      command: RETRACT_BOTTOM_PANEL.id,
+      when: 'bottomFullExpanded',
     });
   }
 }

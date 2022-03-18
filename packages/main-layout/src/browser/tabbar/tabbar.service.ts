@@ -141,7 +141,7 @@ export class TabbarService extends WithEventBus {
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerGlobalToggleCommand(),
-        label: localize('layout.tabbar.hide', '隐藏'),
+        label: localize('layout.tabbar.toggle'),
       },
       group: '0_global',
       when: 'triggerWithTab == true',
