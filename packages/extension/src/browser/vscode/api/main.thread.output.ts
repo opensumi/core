@@ -22,6 +22,15 @@ export class MainThreadOutput implements IMainThreadOutput {
     this.channels.clear();
   }
 
+  $replace(channelName: string, value: string): PromiseLike<void> {
+    const outputChannel = this.getChannel(channelName);
+    if (outputChannel) {
+      outputChannel.clear();
+      outputChannel.append(value);
+    }
+    return Promise.resolve();
+  }
+
   $append(channelName: string, value: string): PromiseLike<void> {
     const outputChannel = this.getChannel(channelName);
     if (outputChannel) {

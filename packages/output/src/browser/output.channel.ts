@@ -192,6 +192,12 @@ export class OutputChannel extends Disposable {
     }
   }
 
+  replace(value: string): void {
+    this.outputLines = [];
+    this.modelReady.promise.then(() => this.monacoModel.setValue(''));
+    this.append(value);
+  }
+
   clear(): void {
     this.outputLines = [];
     this.modelReady.promise.then(() => this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出')));
