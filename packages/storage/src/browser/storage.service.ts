@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Deferred, URI, Emitter, Event, ILogger } from '@opensumi/ide-core-common';
+import { Deferred, URI, Emitter, Event, ILogger, STORAGE_SCHEMA } from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
@@ -18,17 +18,17 @@ export abstract class StorageServer implements IStorageServer {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
-  public deferredStorageDirPath = new Deferred<string | undefined>();
-  public databaseStorageDirPath: string | undefined;
+  abstract deferredStorageDirPath: Deferred<string | undefined>;
+  abstract databaseStorageDirPath: string | undefined;
 
   public _cache: any = {};
+
+  private cachedStoragePath = new Map<string, string | undefined>();
 
   public onDidChangeEmitter = new Emitter<StorageChange>();
   readonly onDidChange: Event<StorageChange> = this.onDidChangeEmitter.event;
 
   abstract init(storageDirName?: string, workspaceNamespace?: string): Promise<string | undefined>;
-  abstract setupDirectories(storageDirName: string): Promise<string | undefined>;
-  abstract getStoragePath(storageName: string): Promise<string | undefined>;
   abstract getItems(storageName: string): Promise<StringKeyToAnyValue>;
   abstract updateItems(storageName: string, request: IUpdateRequest): Promise<void>;
 
@@ -46,31 +46,39 @@ export abstract class StorageServer implements IStorageServer {
     }
     return await this.storageExistPromises.get(storagePath);
   }
-}
 
-@Injectable()
-export class WorkspaceStorageServer extends StorageServer {
-  private workspaceNamespace: string | undefined;
-
-  public async init(storageDirName?: string, workspaceNamespace?: string) {
-    this.workspaceNamespace = workspaceNamespace;
-    return await this.setupDirectories(storageDirName);
+  async setupDirectories(scope: string, storageDirName?: string) {
+    if (!this.deferredStorageDirPath) {
+      this.deferredStorageDirPath = new Deferred<string | undefined>();
+      let fn;
+      if (scope === STORAGE_SCHEMA.GLOBAL) {
+        fn = this.dataStoragePathServer.provideGlobalStorageDirPath;
+      } else {
+        fn = this.dataStoragePathServer.provideWorkspaceStorageDirPath;
+      }
+      const storagePath = await fn.apply(this.dataStoragePathServer, [storageDirName]);
+      this.deferredStorageDirPath.resolve(storagePath);
+      this.databaseStorageDirPath = storagePath;
+      return storagePath;
+    }
+    return this.databaseStorageDirPath;
   }
 
-  async setupDirectories(storageDirName?: string) {
-    const storagePath = await this.dataStoragePathServer.provideWorkspaceStorageDirPath(storageDirName);
-    this.deferredStorageDirPath.resolve(storagePath);
-    this.databaseStorageDirPath = storagePath;
-    return storagePath;
-  }
-
-  async getStoragePath(storageName: string): Promise<string | undefined> {
+  async getStoragePath(scope: string, storageName): Promise<string | undefined> {
     if (!this.databaseStorageDirPath) {
       await this.deferredStorageDirPath.promise;
     }
+
     const hasSlash = storageName.indexOf(Path.separator) >= 0;
 
-    const storagePath = await this.dataStoragePathServer.getLastWorkspaceStoragePath();
+    let fn;
+    if (scope === STORAGE_SCHEMA.GLOBAL) {
+      fn = this.dataStoragePathServer.getLastGlobalStoragePath;
+    } else {
+      fn = this.dataStoragePathServer.getLastWorkspaceStoragePath;
+    }
+
+    const storagePath = await fn.apply(this.dataStoragePathServer);
 
     if (hasSlash) {
       const storagePaths = new Path(storageName);
@@ -81,13 +89,30 @@ export class WorkspaceStorageServer extends StorageServer {
       }
       return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
     }
+
     return storagePath ? new URI(storagePath).resolve(`${storageName}.json`).toString() : undefined;
+  }
+}
+
+@Injectable()
+export class WorkspaceStorageServer extends StorageServer {
+  private workspaceNamespace: string | undefined;
+  public deferredStorageDirPath: Deferred<string | undefined>;
+  public databaseStorageDirPath: string | undefined;
+
+  public async init(storageDirName?: string, workspaceNamespace?: string) {
+    this.workspaceNamespace = workspaceNamespace;
+    return await this.setupDirectories(STORAGE_SCHEMA.SCOPE, storageDirName);
   }
 
   async getItems(storageName: string) {
+    if (this._cache[storageName]) {
+      return this._cache[storageName];
+    }
+
     let items = {};
     const workspaceNamespace = this.workspaceNamespace;
-    const storagePath = await this.getStoragePath(storageName);
+    const storagePath = await this.getStoragePath(STORAGE_SCHEMA.SCOPE, storageName);
 
     if (!storagePath) {
       this.logger.error(`Storage [${storageName}] is invalid.`);
@@ -154,7 +179,7 @@ export class WorkspaceStorageServer extends StorageServer {
 
     this._cache[storageName] = raw;
 
-    const storagePath = await this.getStoragePath(storageName);
+    const storagePath = await this.getStoragePath(STORAGE_SCHEMA.SCOPE, storageName);
 
     if (storagePath) {
       const uriString = new URI(storagePath).toString();
@@ -174,41 +199,20 @@ export class WorkspaceStorageServer extends StorageServer {
 
 @Injectable()
 export class GlobalStorageServer extends StorageServer {
+  public deferredStorageDirPath: Deferred<string | undefined>;
+  public databaseStorageDirPath: string | undefined;
+
   public async init(storageDirName: string) {
-    return await this.setupDirectories(storageDirName);
-  }
-
-  async setupDirectories(storageDirName: string) {
-    const storagePath = await this.dataStoragePathServer.provideGlobalStorageDirPath(storageDirName);
-    this.deferredStorageDirPath.resolve(storagePath);
-    this.databaseStorageDirPath = storagePath;
-    return storagePath;
-  }
-
-  async getStoragePath(storageName: string): Promise<string | undefined> {
-    if (!this.databaseStorageDirPath) {
-      await this.deferredStorageDirPath.promise;
-    }
-    const hasSlash = storageName.indexOf(Path.separator) >= 0;
-
-    const storagePath = await this.dataStoragePathServer.getLastGlobalStoragePath();
-
-    if (hasSlash) {
-      const storagePaths = new Path(storageName);
-      storageName = storagePaths.name;
-      const uriString = new URI(storagePath!).resolve(storagePaths.dir).toString();
-      if (!(await this.asAccess(uriString))) {
-        await this.fileSystem.createFolder(uriString);
-      }
-      return storagePath ? new URI(uriString).resolve(`${storageName}.json`).toString() : undefined;
-    }
-
-    return storagePath ? new URI(storagePath).resolve(`${storageName}.json`).toString() : undefined;
+    return await this.setupDirectories(STORAGE_SCHEMA.GLOBAL, storageDirName);
   }
 
   async getItems(storageName: string) {
+    if (this._cache[storageName]) {
+      return this._cache[storageName];
+    }
+
     let items = {};
-    const storagePath = await this.getStoragePath(storageName);
+    const storagePath = await this.getStoragePath(STORAGE_SCHEMA.GLOBAL, storageName);
 
     if (!storagePath) {
       this.logger.error(`Storage [${storageName}] is invalid.`);
@@ -254,7 +258,7 @@ export class GlobalStorageServer extends StorageServer {
     }
 
     this._cache[storageName] = raw;
-    const storagePath = await this.getStoragePath(storageName);
+    const storagePath = await this.getStoragePath(STORAGE_SCHEMA.GLOBAL, storageName);
 
     if (storagePath) {
       let storageFile = await this.fileSystem.getFileStat(storagePath);
