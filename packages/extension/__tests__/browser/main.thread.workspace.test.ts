@@ -30,6 +30,7 @@ import {
   DisposableCollection,
   IFileServiceClient,
 } from '@opensumi/ide-core-common';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -252,8 +253,11 @@ describe('MainThreadWorkspace API Test Suite', () => {
   );
   injectMockPreferences(injector);
   useMockStorage(injector);
+  const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
+
   beforeAll(async () => {
     const root = FileUri.create(fs.realpathSync(temp.mkdirSync('extension-storage-test')));
+    await hashImpl.initialize();
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
     injector.mock(ILoggerManagerClient, 'getLogFolder', () => root.path.toString());
