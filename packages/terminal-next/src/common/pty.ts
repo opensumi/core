@@ -1,4 +1,5 @@
 import { IPty as INodePty } from 'node-pty';
+import * as pty from 'node-pty';
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 
@@ -9,7 +10,6 @@ import { ITerminalError } from './error';
 import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } from './extension';
 import { IDetectProfileOptions, ITerminalProfile } from './profile';
 import { WindowsShellType } from './shell';
-import * as pty from 'node-pty';
 
 export interface IPtyProcess extends INodePty {
   /**
@@ -32,12 +32,14 @@ export interface IPtyProxyRPCService {
    * @param file 启动的程序 如/bin/bash
    * @param args 启动参数 argv (具体参考node-pty参数文档)
    * @param options 启动终端options (具体参考node-pty参数文档)
+   * @param sessionId (可选)传入启动终端的sessionId，通常用于terminal重连的场景
    * @returns 返回符合IPty接口的远程执行RPC对象，实际上内容是IPty的静态常量，没有function，需要做二次包装
    */
   $spawn(
     file: string,
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
+    sessionId?: string,
   ): Promise<pty.IPty>;
   /**
    * pty数据onData回调代理
@@ -250,6 +252,7 @@ export interface ITerminalNodeService {
   setClient(clientId: string, client: ITerminalServiceClient): void;
   closeClient(clientId: string): void;
   ensureClientTerminal(clientId: string, terminalIdArr: string[]): boolean;
+  getServiceClientMap(): Map<string, ITerminalServiceClient>;
 }
 
 export const ITerminalProcessService = Symbol('ITerminalProcessService');

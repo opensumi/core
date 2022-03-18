@@ -1,8 +1,12 @@
 /* eslint-disable no-console */
 import net from 'net';
+
 import * as pty from 'node-pty';
+
 import { Injectable } from '@opensumi/di';
-import { RPCServiceCenter, createSocketConnection, initRPCService } from '@opensumi/ide-connection';
+import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
+import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+
 import {
   IPtyProxyRPCService,
   PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
@@ -61,8 +65,9 @@ export class PtyServiceManager {
     file: string,
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
+    sessionId?: string,
   ): Promise<pty.IPty> {
-    const iPtyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options)) as pty.IPty;
+    const iPtyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options, sessionId)) as pty.IPty;
     // 局部功能的Ipty, 代理所有常量
     // TODO 改造ptyServiceProxy，支持常量的返回 以及方法的代理
     return new PtyProcessProxy(iPtyRemoteProxy, this);
@@ -102,6 +107,7 @@ export class PtyServiceManager {
   }
 }
 
+// Pty进程的Remote代理
 class PtyProcessProxy implements pty.IPty {
   private ptyServiceManager: PtyServiceManager;
   constructor(iptyProxy: pty.IPty, ptyServiceManager: PtyServiceManager) {

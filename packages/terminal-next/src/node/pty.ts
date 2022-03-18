@@ -44,6 +44,8 @@ export class PtyService extends Disposable {
   private readonly _onExit = new Emitter<IProcessExitEvent>();
   readonly onExit = this._onExit.event;
   private readonly ptyServiceManager = new PtyServiceManager();
+  // 终端的sessionId，也就是构造函数传入的id
+  private readonly sessionId: string;
 
   private readonly _onProcessChange = new Emitter<string>();
   readonly onProcessChange = this._onProcessChange.event;
@@ -73,6 +75,7 @@ export class PtyService extends Disposable {
       cols,
       rows,
     };
+    this.sessionId = id;
   }
 
   async kill(): Promise<void> {
@@ -199,8 +202,13 @@ export class PtyService extends Disposable {
     const options = this.shellLaunchConfig;
 
     const args = options.args || [];
-    const ptyProcess = await this.ptyServiceManager.spawn(options.executable as string, args, this._ptyOptions);
-    // const ptyProcess1 = pty.spawn(options.executable as string, args, this._ptyOptions);
+    const ptyProcess = await this.ptyServiceManager.spawn(
+      options.executable as string,
+      args,
+      this._ptyOptions,
+      this.sessionId,
+    );
+    // const ptyProcess = pty.spawn(options.executable as string, args, this._ptyOptions);
 
     this.addDispose(
       ptyProcess.onData((e) => {
