@@ -8,6 +8,8 @@ import {
   DefaultOptions,
   OptionTypeName,
   DefaultOptionValue,
+  CodeTerminalSettingId,
+  CodeCompatibleOption,
 } from '../common/preference';
 
 @Injectable()
@@ -19,6 +21,7 @@ export class TerminalPreference implements ITerminalPreference {
     scrollback: 2500,
     tabStopWidth: 8,
     fontSize: 12,
+    copyOnSelection: false,
   };
 
   private _onChange = new Emitter<IPreferenceValue>();
@@ -28,7 +31,11 @@ export class TerminalPreference implements ITerminalPreference {
   service: PreferenceService;
 
   protected _prefToOption(pref: string): string {
-    return pref.replace('terminal.', '');
+    if (pref.startsWith('terminal.integrated.')) {
+      return pref.replace('terminal.integrated.', '');
+    } else {
+      return pref.replace('terminal.', '');
+    }
   }
 
   protected _optionToPref(option: string): string {
@@ -50,14 +57,25 @@ export class TerminalPreference implements ITerminalPreference {
       if (newValue === oldValue) {
         return;
       }
-      if (!OptionTypeName[name]) {
-        return;
+      if (OptionTypeName[name] || CodeCompatibleOption.has(name)) {
+        this._onChange.fire({
+          name,
+          value: this._valid(name, newValue),
+        });
       }
-      this._onChange.fire({
-        name,
-        value: this._valid(name, newValue),
-      });
     });
+  }
+
+  getCodeCompatibleOption(): Partial<DefaultOptions> {
+    return {
+      copyOnSelection: this.service.get(CodeTerminalSettingId.CopyOnSelection, false),
+      cursorBlink: this.service.get(
+        CodeTerminalSettingId.CursorBlinking,
+        TerminalPreference.defaultOptions.cursorBlink,
+      ),
+      fontSize: this.service.get(CodeTerminalSettingId.FontSize, TerminalPreference.defaultOptions.fontSize),
+      scrollback: this.service.get(CodeTerminalSettingId.Scrollback, TerminalPreference.defaultOptions.scrollback),
+    };
   }
 
   /**
@@ -81,8 +99,10 @@ export class TerminalPreference implements ITerminalPreference {
       }
     });
 
+    // Code 兼容设置项优先级低于 Sumi 设置项
     return {
       ...TerminalPreference.defaultOptions,
+      ...this.getCodeCompatibleOption(),
       ...options,
     };
   }

@@ -424,7 +424,14 @@ export const localizationBundle = {
     'preference.terminal.lineHeight': 'Terminal Line Height',
     'preference.terminal.cursorBlink': 'Terminal Cursor Link',
     'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
-    'preference.terminal.integrated.shellArgs.linux': 'The command line arguments to use when on the Linux terminal. ',
+    'preference.terminal.integrated.shellArgs.linux': 'Terminal Shell Args Linux',
+    'preference.terminal.integrated.shellArgs.linuxDesc':
+      'The command line arguments to use when on the Linux terminal. ',
+
+    'preference.terminal.integrated.copyOnSelection': 'Terminal Copy On Selection',
+    'preference.terminal.integrated.copyOnSelectionDesc':
+      'Controls whether text selected in the terminal will be copied to the clipboard.',
+
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
     'common.about': 'About',

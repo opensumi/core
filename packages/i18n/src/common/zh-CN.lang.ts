@@ -407,6 +407,9 @@ export const localizationBundle = {
     'preference.terminal.integrated.shellArgs.linux': 'Linux 终端命令行参数',
     'preference.terminal.integrated.shellArgs.linuxDesc': '配置在 Linux 终端上时要使用的命令行参数。',
 
+    'preference.terminal.integrated.copyOnSelection': '终端选中复制',
+    'preference.terminal.integrated.copyOnSelectionDesc': '将终端中选中的文本立即复制到剪贴板。',
+
     'settings.group.general': '常规',
     'settings.group.shortcut': '快捷键',
     'settings.group.editor': '编辑器',
