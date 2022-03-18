@@ -66,6 +66,10 @@
   border-top: 1px solid var(--sideBar-border);
 }
 
+.tab_panel_hidden {
+  border-top: none;
+}
+
 :global(.left-slot) {
   .tab_panel {
     border-right: 1px solid var(--sideBar-border);
@@ -128,12 +132,6 @@
   height: 100%;
 }
 
-:global(.bottom-slot) {
-  .panel_wrap {
-    border-top: 1px solid var(--sideBar-border);
-  }
-}
-
 :global(.right-slot) {
   height: 100%;
 }
@@ -175,7 +173,7 @@
   user-select: none;
   height: 28px;
   align-items: center;
-  border-bottom: 1px solid var(--kt-panelTab-border);
+  border-bottom: 1px solid var(--sideBar-border);
   box-sizing: border-box;
   h1 {
     margin: 0;
@@ -360,9 +358,10 @@
   align-items: center;
   z-index: 1;
   border-top: 1px solid var(--sideBar-border);
-  box-sizing: border-box;
+  box-sizing: content-box;
   height: 24px;
 }
+
 .split_line {
   border-left: 1px solid #202224;
   height: 14px;

@@ -14,6 +14,12 @@ export interface PromptValidateMessage {
   type: PROMPT_VALIDATE_TYPE;
 }
 
+export enum VALIDATE_CLASS_NAME {
+  INFO = 'validate-error',
+  ERROR = 'validate-error',
+  WARNING = 'validate-warning',
+}
+
 /**
  * 输入输出框需要在外部手动进行管理，由于我们使用的是虚拟的react节点渲染，一旦用户向上或向下滚动超出渲染访问，相关的React组件会被回收
  * 故这里在外部手动维护输入框对象
@@ -134,16 +140,21 @@ export abstract class PromptHandle {
     }
     let validateBoxClassName = 'validate-message popup ';
     if (validateMessage && validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
-      this._validateClassName = 'validate-error';
+      this._validateClassName = VALIDATE_CLASS_NAME.ERROR;
     } else if (validateMessage && validateMessage.type === PROMPT_VALIDATE_TYPE.WARNING) {
-      this._validateClassName = 'validate-warning';
+      this._validateClassName = VALIDATE_CLASS_NAME.WARNING;
     } else {
-      this._validateClassName = 'validate-info';
+      this._validateClassName = VALIDATE_CLASS_NAME.INFO;
     }
     validateBoxClassName += this._validateClassName;
 
     this.$validate.classList.value = validateBoxClassName;
     this.$validate.innerText = validateMessage.message || '';
+    this.$.parentElement?.parentElement?.classList.remove(
+      VALIDATE_CLASS_NAME.INFO,
+      VALIDATE_CLASS_NAME.ERROR,
+      VALIDATE_CLASS_NAME.WARNING,
+    );
     this.$.parentElement?.parentElement?.classList.add(this._validateClassName);
   }
 

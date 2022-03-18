@@ -82,8 +82,6 @@ export const TabbarViewBase: React.FC<{
     hideContainers.forEach((componentInfo) => {
       tabbarService.updateTabInMoreKey(componentInfo.options!.containerId, true);
     });
-    // tslint:disable-next-line:no-unused-variable
-    const forceUpdate = tabbarService.forceUpdate;
 
     return (
       <div className={clsx([styles.tab_bar, className])}>
@@ -105,8 +103,8 @@ export const TabbarViewBase: React.FC<{
                     document.body.appendChild(dragImage);
                     e.persist();
                     requestAnimationFrame(() => {
-                        e.dataTransfer.setDragImage(dragImage, 0, 0);
-                        document.body.removeChild(dragImage);
+                      e.dataTransfer.setDragImage(dragImage, 0, 0);
+                      document.body.removeChild(dragImage);
                     });
                   }
                   tabbarService.handleDragStart(e, containerId);
@@ -264,7 +262,6 @@ export const BottomTabbarRenderer: React.FC = () => (
 export const NextBottomTabbarRenderer: React.FC = () => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
-
   return (
     <div
       onContextMenu={tabbarService.handleContextMenu}

@@ -30,6 +30,9 @@ const NoUpdateBoundary: React.FC<{ visible: boolean; children: React.ReactElemen
   (prev, next) => !(prev.visible || next.visible),
 );
 
+const panelVisible = { zIndex: 1, display: 'block' };
+const panelInVisible = { zIndex: -1, display: 'none' };
+
 export const BaseTabPanelView: React.FC<{
   PanelView: React.FC<{ component: ComponentRegistryInfo; side: string; titleMenu: IMenu }>;
   // tabPanel的尺寸（横向为宽，纵向高）
@@ -40,17 +43,18 @@ export const BaseTabPanelView: React.FC<{
   const appConfig: AppConfig = useInjectable(AppConfig);
   const customPanelSize = appConfig.panelSizes && appConfig.panelSizes[side];
   const { currentContainerId } = tabbarService;
-  const panelVisible = { zIndex: 1, display: 'block' };
-  const panelInVisible = { zIndex: -1, display: 'none' };
+
   React.useEffect(() => {
     // panelSize = 384-1-48
     tabbarService.panelSize = customPanelSize || panelSize || 335;
   }, []);
-  // tslint:disable-next-line:no-unused-variable
-  const forceUpdate = tabbarService.forceUpdate;
 
   return (
-    <div className={styles.tab_panel}>
+    <div
+      className={clsx(styles.tab_panel, {
+        [styles.tab_panel_hidden]: !currentContainerId || currentContainerId === '',
+      })}
+    >
       {tabbarService.visibleContainers.map((component) => {
         const containerId = component.options!.containerId;
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);

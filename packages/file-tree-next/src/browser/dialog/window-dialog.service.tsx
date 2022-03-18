@@ -2,13 +2,13 @@ import React from 'react';
 
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import {
-  isElectronRenderer,
   electronEnv,
   URI,
   MessageType,
   StorageProvider,
   IStorage,
   STORAGE_NAMESPACE,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { isMacintosh } from '@opensumi/ide-core-common/lib/platform';
@@ -33,9 +33,11 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
 
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   private recentGlobalStorage: IStorage;
 
-  private _userHome: URI;
   private _whenReady: Promise<void>;
   private _defaultUri: URI;
 
@@ -75,7 +77,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       canSelectFolders: false,
       canSelectMany: false,
     };
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
       const properties: Array<
         | 'openFile'
@@ -145,7 +147,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
   // https://code.visualstudio.com/api/references/vscode-api#SaveDialogOptions
   async showSaveDialog(options: ISaveDialogOptions = {}): Promise<URI | undefined> {
     await this.whenReady;
-    if (isElectronRenderer()) {
+    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       const defaultUri = options.defaultUri || this.defaultUri;
       const electronUi = this.injector.get(IElectronMainUIService) as IElectronMainUIService;
       const res = await electronUi.showSaveDialog(electronEnv.currentWindowId, {

@@ -151,7 +151,7 @@ describe('MainThreadEnvAPI Test Suites ', () => {
   it('should hava correct env', (done) => {
     expect(extHostEnvAPI.appName).toBe(appConfig.appName);
     expect(extHostEnvAPI.uriScheme).toBe(appConfig.uriScheme);
-    expect(extHostEnvAPI.language).toBe(getLanguageId());
+    expect(extHostEnvAPI.language).toBe(getLanguageId().toLowerCase());
     expect(extHostEnvAPI.sessionId).toBe(envValue.sessionId);
     expect(extHostEnvAPI.machineId).toBe(envValue.machineId);
     done();

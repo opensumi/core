@@ -64,7 +64,7 @@ export const MenuActionList: React.FC<{
       }
 
       // hacky: read MenuNode from MenuItem.children.props
-      const menuItem = item.props.children.props.data as MenuNode;
+      const menuItem = item.props.children[0].props.data as MenuNode;
       if (!menuItem) {
         return;
       }

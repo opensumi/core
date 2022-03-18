@@ -30,7 +30,7 @@ export interface SearchInputWidgetProps {
 const SearchRuleCheckout = React.memo(
   ({ isDetailOpen, onDetailToggle }: Pick<SearchInputWidgetProps, 'isDetailOpen' | 'onDetailToggle'>) => (
     <p className={styles.search_input_title}>
-      {localize('search.input.title')}
+      <span className={styles.search_title}>{localize('search.input.title')}</span>
       <CheckBox
         className={cls(styles.checkbox)}
         label={localize('search.input.checkbox')}

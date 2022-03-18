@@ -1,9 +1,14 @@
 import type vscode from 'vscode';
 
-import { QuickTitleButton } from '@opensumi/ide-core-browser/lib/quick-open';
-import { CancellationToken, MessageType, MaybePromise } from '@opensumi/ide-core-common';
-import { Event, IThemeColor } from '@opensumi/ide-core-common';
-import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
+import {
+  CancellationToken,
+  MessageType,
+  MaybePromise,
+  IMarkdownString,
+  IThemeColor,
+  Event,
+} from '@opensumi/ide-core-common';
+import { QuickPickItem, QuickPickOptions, QuickInputOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
 
 import * as types from './ext-types';
 import { UriComponents, QuickInputButton } from './ext-types';
@@ -154,7 +159,7 @@ export interface IMainThreadStatusBar {
     alignment: number,
     color: IThemeColor | string | undefined,
     backgroundColor: IThemeColor | undefined,
-    tooltip: string | undefined,
+    tooltip: string | IMarkdownString | undefined,
     accessibilityInformation: vscode.AccessibilityInformation | undefined,
     command: string | undefined,
     commandArgs: any[] | undefined,
