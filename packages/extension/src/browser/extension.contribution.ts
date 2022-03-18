@@ -130,11 +130,6 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
     this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
   }
 
-  onContextKeyServiceReady(contextKeyService: IContextKeyService) {
-    // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
-    contextKeyService.createKey('listFocus', true);
-  }
-
   /**
    * 当前客户端 id
    */

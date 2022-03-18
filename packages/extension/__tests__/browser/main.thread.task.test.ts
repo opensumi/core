@@ -45,7 +45,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { mockExtensions } from '../../__mocks__/extensions';
 
-
 const extension = Object.assign({}, mockExtensions[0], {
   packageJSON: {
     ...mockExtensions[0].packageJSON,
@@ -212,7 +211,6 @@ describe('MainThreadTask Test Suite', () => {
   });
   beforeAll(async () => {
     const monacoService = injector.get(MonacoService);
-    await monacoService.loadMonaco();
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     const extHostDocs = rpcProtocolExt.set(
       ExtHostAPIIdentifier.ExtHostDocuments,

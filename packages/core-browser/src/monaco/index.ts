@@ -5,10 +5,11 @@ import type {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import * as suggest from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';
+import { Event, IJSONSchema, IDisposable, BasicEvent } from '..';
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
   TEXT_MODEL_SERVICE = 'textModelService',
@@ -20,16 +21,11 @@ export enum ServiceNames {
 }
 
 export abstract class MonacoService {
-  public abstract onMonacoLoaded: Event<boolean>;
-  public abstract monacoLoaded: Promise<void>;
-
   public abstract createCodeEditor(
     monacoContainer: HTMLElement,
     options?: IEditorConstructionOptions,
     overrides?: { [key: string]: any },
   ): ICodeEditor;
-
-  public abstract loadMonaco(): Promise<void>;
 
   public abstract createDiffEditor(
     monacoContainer: HTMLElement,
@@ -62,20 +58,9 @@ export type FormattingSelectorType = (
 ) => monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
 
 export interface MonacoContribution {
-  /**
-   * @deprecated 请勿依赖 onMonacoLoaded
-   * @param monacoService
-   */
-  onMonacoLoaded?(monacoService: MonacoService);
-  /**
-   * @deprecated 请勿依赖 onContextKeyServiceReady
-   * @param contextKeyService
-   */
-  onContextKeyServiceReady?(contextKeyService: IContextKeyService);
-
   registerOverrideService?(registry: MonacoOverrideServiceRegistry): void;
 
-  registerMonacoDefaultFormattingSelector?(registry: (selector: FormattingSelectorType) => void): void;
+  registerMonacoDefaultFormattingSelector?(registry: (selector: IFormattingEditProviderSelector) => void): void;
 }
 
 export const Extensions = {

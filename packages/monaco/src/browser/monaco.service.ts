@@ -6,7 +6,6 @@ import {
   ServiceNames,
   ILogger,
 } from '@opensumi/ide-core-browser';
-import { Deferred, Emitter as EventEmitter, Event } from '@opensumi/ide-core-common';
 import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import {
@@ -43,16 +42,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
-
-  private loadingPromise!: Promise<any>;
-
-  private _onMonacoLoaded = new EventEmitter<boolean>();
-  public onMonacoLoaded: Event<boolean> = this._onMonacoLoaded.event;
-
-  private readonly _monacoLoaded = new Deferred<void>();
-  get monacoLoaded(): Promise<void> {
-    return this._monacoLoaded.promise;
-  }
 
   get monacoBaseOptions() {
     return {
@@ -221,18 +210,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       'MonacoService#getOverride will be deprecated, please use MonacoOverrideServiceRegistry#getRegisteredService instead.',
     );
     return this.overrideServiceRegistry.getRegisteredService(serviceName);
-  }
-
-  /**
-   * 加载monaco代码，这里只保留空实现
-   */
-  public async loadMonaco() {
-    if (!this.loadingPromise) {
-      this.loadingPromise = Promise.resolve();
-      this._onMonacoLoaded.fire(true);
-      this._monacoLoaded.resolve();
-    }
-    return this.loadingPromise;
   }
 
   public testTokenize(text: string, languageId: string) {

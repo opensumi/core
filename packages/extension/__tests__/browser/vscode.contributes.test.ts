@@ -106,12 +106,6 @@ describe('VSCodeContributeRunner', () => {
           useClass: MockLoggerManageClient,
         },
         {
-          token: MonacoService,
-          useValue: {
-            monacoLoaded: Promise.resolve(),
-          },
-        },
-        {
           token: IFileServiceClient,
           useValue: {
             resolveContent: (uri) => ({
