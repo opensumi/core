@@ -103,7 +103,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
         const session = {
           id: id++ + '',
           accessToken: 'this_is_github_token',
-          account: { label: '蛋总', id: 'xinglong.wangwxl' },
+          account: { label: 'OpenSumi', id: 'opensumi' },
           scopes: scopeList,
         };
         const sessionIndex = sessions.findIndex((s) => s.id === session.id);
@@ -171,7 +171,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     expect(session).toStrictEqual({
       id: '1',
       accessToken: 'this_is_github_token',
-      account: { label: '蛋总', id: 'xinglong.wangwxl' },
+      account: { label: 'OpenSumi', id: 'opensumi' },
       scopes: ['getRepo'],
     });
   });
@@ -180,7 +180,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const session = {
       id: 'test',
       accessToken: 'this_is_gitlab_token',
-      account: { label: '蛋总', id: 'xinglong.wangwxl' },
+      account: { label: 'OpenSumi', id: 'opensumi' },
       scopes: ['getRepo'],
     };
     // mock
@@ -206,7 +206,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const session = {
       id: 'test',
       accessToken: 'this_is_gitlab_token',
-      account: { label: '蛋总', id: 'xinglong.wangwxl' },
+      account: { label: 'OpenSumi', id: 'opensumi' },
       scopes: ['getRepo'],
     };
     // mock
@@ -224,7 +224,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const session = {
       id: 'test',
       accessToken: 'this_is_gitlab_token',
-      account: { label: '蛋总', id: 'xinglong.wangwxl' },
+      account: { label: 'OpenSumi', id: 'opensumi' },
       scopes: ['getRepo'],
     };
     // mock
@@ -249,7 +249,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const session = {
       id: 'test',
       accessToken: 'this_is_gitlab_token',
-      account: { label: '蛋总', id: 'xinglong.wangwxl' },
+      account: { label: 'OpenSumi', id: 'opensumi' },
       scopes: ['getRepo'],
     };
     jest.spyOn(authenticationProvider, 'getSessions').mockReturnValue(Promise.resolve([session]));
@@ -326,7 +326,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
         const session = {
           id: 'test',
           accessToken: 'this_is_gitlab_token',
-          account: { label: '蛋总', id: 'xinglong.wangwxl' },
+          account: { label: 'OpenSumi', id: 'opensumi' },
           scopes: scopeList,
         };
         return session;
