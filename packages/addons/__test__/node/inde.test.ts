@@ -1,6 +1,6 @@
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { AddonsModule } from '../../src';
+import { AddonsModule } from '../../src/node';
 
 describe('test for ', () => {
   let injector: MockInjector;

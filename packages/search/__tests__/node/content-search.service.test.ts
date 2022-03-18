@@ -12,7 +12,8 @@ import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
 import { ProcessModule } from '@opensumi/ide-process/lib/node';
 
-import { SearchModule, IContentSearchServer, ContentSearchResult, SEARCH_STATE } from '../../src';
+import { IContentSearchServer, ContentSearchResult, SEARCH_STATE } from '../../src';
+import { SearchModule } from '../../src/node';
 
 // Allow creating temporary files, but remove them when we are done.
 const track = temp.track();
