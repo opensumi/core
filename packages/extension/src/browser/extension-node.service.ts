@@ -166,7 +166,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
         electronEnv.metadata.windowClientId,
       );
       this.logger.verbose('electron initExtProtocol connectPath', connectPath);
-      mainThreadCenter.setConnection(electronEnv.getSocketConnection());
+      mainThreadCenter.setConnection(electronEnv.getSocketConnection(connectPath));
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
       const channel = await WSChannelHandler.openChannel('ExtMainThreadConnection');
