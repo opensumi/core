@@ -143,7 +143,7 @@
     "rimraf": "^3.0.2",
     "runscript": "^1.4.0",
     "semver": "^6.3.0",
-    "simple-git": "^2.34.2",
+    "simple-git": "^3.3.0",
     "strip-html-comments": "^1.0.0",
     "temp": "^0.9.0",
     "text-encoding": "^0.7.0",
