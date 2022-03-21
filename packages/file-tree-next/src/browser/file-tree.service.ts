@@ -297,7 +297,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     } else {
       // 根节点加载子节点
       if (Directory.isRoot(parent) && this.isMultipleWorkspace) {
-        // 加载根目录
+        // 加载根目录
         const roots = await this.workspaceService.roots;
         for (const fileStat of roots) {
           const child = this.fileTreeAPI.toNode(
