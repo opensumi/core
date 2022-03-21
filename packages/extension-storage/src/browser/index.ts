@@ -30,7 +30,7 @@ export class ExtensionStorageModule extends BrowserModule {
 @Domain(ClientAppContribution)
 export class ExtensionStorageContribution implements ClientAppContribution {
   @Autowired(IExtensionStorageService)
-  private extensionStorageService;
+  private extensionStorageService: IExtensionStorageService;
 
   onReconnect() {
     this.extensionStorageService.reConnectInit();
