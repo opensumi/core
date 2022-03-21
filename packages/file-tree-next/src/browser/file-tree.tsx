@@ -324,6 +324,8 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     [],
   );
 
+  const handleKeyDown = useCallback(() => {}, []);
+
   return (
     <div
       className={cls(styles.file_tree, outerDragOver && styles.outer_drag_over, outerActive && styles.outer_active)}
@@ -338,6 +340,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       onDragLeave={handleOuterDragLeave}
       onDragOver={handleOuterDragOver}
       onDrop={handleOuterDrop}
+      onKeyDown={handleKeyDown}
     >
       <FileTreeView
         isLoading={isLoading}

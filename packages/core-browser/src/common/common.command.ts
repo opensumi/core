@@ -89,6 +89,11 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
   };
 
+  export const SELECT_CURRENT_NODE: Command = {
+    id: 'filetree.selectCurrentNode',
+    category: CATEGORY,
+  };
+
   export const LOCATION: Command = {
     id: 'filetree.location',
     category: CATEGORY,
