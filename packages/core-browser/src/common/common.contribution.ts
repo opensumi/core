@@ -9,6 +9,7 @@ import {
   Event,
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
+import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 
 import { IContextKeyService, IContextKey } from '../context-key';
 import { corePreferenceSchema } from '../core-preferences';
@@ -101,6 +102,7 @@ export class ClientCommonContribution
     menus.registerMenubarItem(MenuId.MenubarSelectionMenu, { label: localize('menu-bar.title.selection'), order: 3 });
     menus.registerMenubarItem(MenuId.MenubarViewMenu, { label: localize('menu-bar.title.view'), order: 4 });
     menus.registerMenubarItem(MenuId.MenubarGoMenu, { label: localize('menu-bar.title.go'), order: 5 });
+    menus.registerMenubarItem(MenuId.MenubarTerminalMenu, { label: localize('menu-bar.title.terminal'), order: 5 });
     menus.registerMenubarItem(MenuId.MenubarHelpMenu, { label: localize('menu-bar.title.help'), order: 999 });
 
     // File 菜单
@@ -182,6 +184,22 @@ export class ClientCommonContribution
           label: localize('editor.goToLine'),
         },
         group: '3_go_line',
+      },
+    ]);
+    menus.registerMenuItems(MenuId.MenubarTerminalMenu, [
+      {
+        command: {
+          id: TERMINAL_COMMANDS.ADD.id,
+          label: TERMINAL_COMMANDS.ADD.label,
+        },
+        group: '1_terminal',
+      },
+      {
+        command: {
+          id: TERMINAL_COMMANDS.SPLIT.id,
+          label: TERMINAL_COMMANDS.SPLIT.label,
+        },
+        group: '1_terminal',
       },
     ]);
 

@@ -45,5 +45,9 @@ export class TerminalKeybindinngContribution implements KeybindingContribution {
       keybinding: 'ctrlcmd+\\',
       when: IsTerminalFocused.raw,
     });
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.ADD.id,
+      keybinding: 'ctrl+shift+`',
+    });
   }
 }
