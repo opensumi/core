@@ -111,10 +111,10 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.ADD, {
       execute: async () => {
-        this.terminalController.showTerminalPanel();
         await this.terminalController.createClientWithWidget2({
           terminalOptions: {},
         });
+        this.terminalController.showTerminalPanel();
       },
     });
 
