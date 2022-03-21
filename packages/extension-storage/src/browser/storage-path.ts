@@ -1,8 +1,7 @@
-import crypto from 'crypto';
-
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
 import { isWindows, URI, Deferred, StoragePaths } from '@opensumi/ide-core-common';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
 import { ILoggerManagerClient } from '@opensumi/ide-logs';
@@ -13,7 +12,6 @@ import {
 } from '@opensumi/ide-workspace';
 
 import { IExtensionStoragePathServer } from '../common';
-
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
@@ -35,6 +33,9 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
+
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
 
   constructor() {
     this.deferredWorkspaceStoragePath = new Deferred();
@@ -108,6 +109,10 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     return this.deferredStoragePath.promise;
   }
 
+  doHash(content: string) {
+    return this.hashCalculateService.calculate(content);
+  }
+
   /**
    * 根据传入的参数构建Workspace ID
    * @param {FileStat} workspace
@@ -134,7 +139,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     if (!workspace) {
       const untitled = getTemporaryWorkspaceUri(new URI(homeDir));
       // 当不存在工作区信息时，使用 `UNTITLED_WORKSPACE` 作为工作区
-      return crypto.createHash('md5').update(untitled.toString()).digest('hex');
+      return this.doHash(untitled.toString());
     }
     const untitledWorkspace = getTemporaryWorkspaceFileUri(new URI(homeDir));
     if (untitledWorkspace.toString() === workspace.uri) {
@@ -145,10 +150,10 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
         .map((root) => root.uri)
         .sort()
         .join(',');
-      return crypto.createHash('md5').update(rootsStr).digest('hex');
+      return this.doHash(rootsStr);
     } else {
       const uri = new URI(workspace.uri);
-      return crypto.createHash('md5').update(uri.toString()).digest('hex');
+      return this.doHash(uri.toString());
     }
   }
 
