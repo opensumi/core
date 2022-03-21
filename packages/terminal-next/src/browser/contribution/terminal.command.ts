@@ -28,7 +28,6 @@ import { TerminalKeyBoardInputService } from '../terminal.input';
 
 import { EnvironmentVariableServiceToken } from './../../common/environmentVariable';
 
-
 @Domain(CommandContribution)
 export class TerminalCommandContribution implements CommandContribution {
   @Autowired(ITerminalController)
@@ -104,16 +103,20 @@ export class TerminalCommandContribution implements CommandContribution {
     );
 
     // 删除所有终端
-    registry.registerCommand(
-      {
-        ...TERMINAL_COMMANDS.CLEAR,
+    registry.registerCommand(TERMINAL_COMMANDS.CLEAR, {
+      execute: () => {
+        this.view.clear();
       },
-      {
-        execute: () => {
-          this.view.clear();
-        },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.ADD, {
+      execute: async () => {
+        this.terminalController.showTerminalPanel();
+        await this.terminalController.createClientWithWidget2({
+          terminalOptions: {},
+        });
       },
-    );
+    });
 
     registry.registerCommand(TERMINAL_COMMANDS.SEARCH_NEXT, {
       execute: () => {

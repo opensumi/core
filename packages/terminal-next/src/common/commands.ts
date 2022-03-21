@@ -39,7 +39,6 @@ export namespace TERMINAL_COMMANDS {
 
   export const OPEN_WITH_PATH = {
     id: 'terminal.openWithPath',
-    label: '%terminal.openWithPath%',
     category: CATEGORY,
   };
 

@@ -139,8 +139,8 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
   };
 
-  export const OPEN_WITH_PATH: Command = {
-    id: 'filetree.openWithPath',
+  export const OPEN_TERMINAL_WITH_PATH: Command = {
+    id: 'filetree.openTerminalWithPath',
     category: CATEGORY,
   };
 
