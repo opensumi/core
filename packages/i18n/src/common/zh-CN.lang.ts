@@ -854,6 +854,7 @@ export const localizationBundle = {
     'authentication.getSessionPlaceholder': "选择一个账户给 '{0}' 使用",
     'authentication.confirmAuthenticationAccess': "扩展 '{0}' 将要使用 '{2}' 访问 {1}",
     'authentication.confirmLogin': "扩展 '{0}' 将要使用 {1} 登录",
+    'authentication.confirmReLogin': "扩展 '{0}' 将要使用 {1} 再次登录",
     'authentication.signInRequests': '登录 {0}',
     'authentication.signOut': '退出 {0}',
     'authentication.noAccounts': '目前没有登录任何账户',

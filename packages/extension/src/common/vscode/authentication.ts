@@ -17,7 +17,7 @@ export interface IMainThreadAuthentication {
     extensionName: string,
     options: { createIfNone?: boolean; clearSessionPreference?: boolean },
   ): Promise<AuthenticationSession | undefined>;
-  $selectSession(
+  selectSession(
     providerId: string,
     providerName: string,
     extensionId: string,
@@ -33,7 +33,12 @@ export interface IMainThreadAuthentication {
     extensionId: string,
     extensionName: string,
   ): Promise<boolean>;
-  $loginPrompt(providerName: string, extensionName: string): Promise<boolean>;
+  loginPrompt(
+    providerName: string,
+    extensionName: string,
+    recreatingSession: boolean,
+    detail?: string,
+  ): Promise<boolean>;
   $setTrustedExtensionAndAccountPreference(
     providerId: string,
     accountName: string,
@@ -41,7 +46,6 @@ export interface IMainThreadAuthentication {
     extensionName: string,
     sessionId: string,
   ): Promise<void>;
-  $requestNewSession(providerId: string, scopes: string[], extensionId: string, extensionName: string): Promise<void>;
 
   $getSessions(providerId: string): Promise<ReadonlyArray<AuthenticationSession>>;
   $login(providerId: string, scopes: string[]): Promise<AuthenticationSession>;

@@ -103,7 +103,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
         const session = {
           id: id++ + '',
           accessToken: 'this_is_github_token',
-          account: { label: '蛋总', id: 'xinglong.wangwxl' },
+          account: { label: 'OpenSumi', id: 'opensumi' },
           scopes: scopeList,
         };
         const sessionIndex = sessions.findIndex((s) => s.id === session.id);
@@ -137,7 +137,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
   it('get session by default option', async () => {
     const $ensureProvider = jest.spyOn(mainThreadAuthentication, '$ensureProvider');
     const $getSession = jest.spyOn(mainThreadAuthentication, '$getSession');
-    const $requestNewSession = jest.spyOn(mainThreadAuthentication, '$requestNewSession');
+    const $requestNewSession = jest.spyOn(authenticationService, 'requestNewSession');
     const session = await authenticationAPI.getSession('github', ['getRepo']);
     expect($ensureProvider).toBeCalledWith('github');
     expect($getSession).toBeCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', {});
@@ -160,18 +160,18 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const $ensureProvider = jest.spyOn(mainThreadAuthentication, '$ensureProvider');
     const $getSession = jest.spyOn(mainThreadAuthentication, '$getSession');
     // 默认点击允许
-    const $loginPrompt = jest.spyOn(mainThreadAuthentication, '$loginPrompt').mockReturnValue(Promise.resolve(true));
+    const loginPrompt = jest.spyOn(mainThreadAuthentication, 'loginPrompt').mockReturnValue(Promise.resolve(true));
     const session = await authenticationAPI.getSession('github', ['getRepo'], {
       createIfNone: true,
     });
     expect(loginSpy).toBeCalledWith(['getRepo']);
     expect($ensureProvider).toBeCalledWith('github');
     expect($getSession).toBeCalledWith('github', ['getRepo'], 'vscode.vim', 'Vim', { createIfNone: true });
-    expect($loginPrompt).toBeCalled();
+    expect(loginPrompt).toBeCalled();
     expect(session).toStrictEqual({
       id: '1',
       accessToken: 'this_is_github_token',
-      account: { label: '蛋总', id: 'xinglong.wangwxl' },
+      account: { label: 'OpenSumi', id: 'opensumi' },
       scopes: ['getRepo'],
     });
   });
@@ -180,34 +180,120 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     const session = {
       id: 'test',
       accessToken: 'this_is_gitlab_token',
-      account: { label: '蛋总', id: 'xinglong.wangwxl' },
+      account: { label: 'OpenSumi', id: 'opensumi' },
       scopes: ['getRepo'],
     };
     // mock
     jest.spyOn(authenticationProvider, 'getSessions').mockReturnValue(Promise.resolve([session]));
-    const $selectSession = jest.spyOn(mainThreadAuthentication, '$selectSession');
+    const $selectSession = jest.spyOn(mainThreadAuthentication, 'selectSession');
     const authenticationService: IAuthenticationService = injector.get(IAuthenticationService);
     const removeExtensionSessionId = jest.spyOn(authenticationService, 'removeExtensionSessionId');
     jest.spyOn(authenticationService, 'supportsMultipleAccounts').mockReturnValue(true);
+    const $loginPrompt = jest.spyOn(mainThreadAuthentication, 'loginPrompt').mockReturnValue(Promise.resolve(true));
     const quickPickService: QuickPickService = injector.get(QuickPickService);
     jest.spyOn(quickPickService, 'show').mockReturnValue(Promise.resolve(session));
     await authenticationAPI.getSession('github', ['getRepo'], {
       clearSessionPreference: true,
+      createIfNone: true,
     });
+    expect($loginPrompt).toBeCalled();
     expect($selectSession).toBeCalled();
     // 会清空 session
     expect(removeExtensionSessionId).toBeCalled();
+  });
+
+  it('get session with forceNewSession', async () => {
+    const session = {
+      id: 'test',
+      accessToken: 'this_is_gitlab_token',
+      account: { label: 'OpenSumi', id: 'opensumi' },
+      scopes: ['getRepo'],
+    };
+    // mock
+    jest.spyOn(authenticationProvider, 'getSessions').mockReturnValue(Promise.resolve([session]));
+    jest.spyOn(mainThreadAuthentication, 'selectSession').mockReturnValue(Promise.resolve(session));
+    const $loginPrompt = jest.spyOn(mainThreadAuthentication, 'loginPrompt').mockReturnValue(Promise.resolve(true));
+    await authenticationAPI.getSession('github', ['getRepo'], {
+      forceNewSession: true,
+    });
+    expect($loginPrompt).toBeCalled();
+    expect($loginPrompt.mock.calls[0][2]).toBe(true);
+  });
+
+  it.only('get session with silent', async () => {
+    const session = {
+      id: 'test',
+      accessToken: 'this_is_gitlab_token',
+      account: { label: 'OpenSumi', id: 'opensumi' },
+      scopes: ['getRepo'],
+    };
+    // mock
+    jest.spyOn(authenticationProvider, 'getSessions').mockReturnValue(Promise.resolve([session]));
+    const $requestNewSession = jest.spyOn(authenticationService, 'requestNewSession');
+    await authenticationAPI.getSession('github', ['getRepo'], {
+      silent: true,
+    });
+    expect($requestNewSession).not.toBeCalled();
+  });
+
+  it('get session errorCase', async () => {
+    jest.spyOn(mainThreadAuthentication, 'loginPrompt').mockReturnValue(Promise.resolve(true));
+    jest.spyOn(authenticationProvider, 'getSessions').mockReturnValue(Promise.resolve([]));
+    try {
+      await authenticationAPI.getSession('github', ['getRepo'], {
+        forceNewSession: true,
+      });
+    } catch (e) {
+      expect(e).toEqual(new Error('No existing sessions found.'));
+    }
+    const session = {
+      id: 'test',
+      accessToken: 'this_is_gitlab_token',
+      account: { label: 'OpenSumi', id: 'opensumi' },
+      scopes: ['getRepo'],
+    };
+    jest.spyOn(authenticationProvider, 'getSessions').mockReturnValue(Promise.resolve([session]));
+    try {
+      await authenticationAPI.getSession('github', ['getRepo'], {
+        forceNewSession: true,
+        createIfNone: true,
+      });
+    } catch (e) {
+      expect(e).toEqual(
+        new Error('Invalid combination of options. Please remove one of the following: forceNewSession, createIfNone'),
+      );
+    }
+    try {
+      await authenticationAPI.getSession('github', ['getRepo'], {
+        forceNewSession: true,
+        silent: true,
+      });
+    } catch (e) {
+      expect(e).toEqual(
+        new Error('Invalid combination of options. Please remove one of the following: forceNewSession, silent'),
+      );
+    }
+    try {
+      await authenticationAPI.getSession('github', ['getRepo'], {
+        createIfNone: true,
+        silent: true,
+      });
+    } catch (e) {
+      expect(e).toEqual(
+        new Error('Invalid combination of options. Please remove one of the following: createIfNone, silent'),
+      );
+    }
   });
 
   it('logout', async () => {
     // 默认点击允许
     const logoutSpy = jest.spyOn(authenticationProvider, 'removeSession');
     const $logout = jest.spyOn(mainThreadAuthentication, '$logout');
-    const $loginPrompt = jest.spyOn(mainThreadAuthentication, '$loginPrompt').mockReturnValue(Promise.resolve(true));
+    const loginPrompt = jest.spyOn(mainThreadAuthentication, 'loginPrompt').mockReturnValue(Promise.resolve(true));
     const session = await authenticationAPI.getSession('github', ['getRepo'], {
       createIfNone: true,
     });
-    expect($loginPrompt).toBeCalled();
+    expect(loginPrompt).toBeCalled();
     await authenticationAPI.logout('github', session.id);
     expect(logoutSpy).toBeCalled();
     expect($logout).toBeCalledWith('github', session.id);
@@ -215,7 +301,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
 
   it('onDidChangeSessions', (done) => {
     // 默认点击允许
-    jest.spyOn(mainThreadAuthentication, '$loginPrompt').mockReturnValue(Promise.resolve(true));
+    jest.spyOn(mainThreadAuthentication, 'loginPrompt').mockReturnValue(Promise.resolve(true));
     authenticationAPI.onDidChangeSessions((e) => {
       expect(e.provider.id).toBe('github');
       expect(e.provider.label).toBe('GitHub');
@@ -240,7 +326,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
         const session = {
           id: 'test',
           accessToken: 'this_is_gitlab_token',
-          account: { label: '蛋总', id: 'xinglong.wangwxl' },
+          account: { label: 'OpenSumi', id: 'opensumi' },
           scopes: scopeList,
         };
         return session;
