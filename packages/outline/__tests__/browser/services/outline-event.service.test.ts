@@ -33,21 +33,21 @@ describe('OutlineEventService', () => {
     expect(typeof outlineEventService.onDidSelectionChange).toBe('function');
   });
 
-  it('EditorActiveResourceStateChangedEvent event should be handle', async (done) => {
+  it('EditorActiveResourceStateChangedEvent event should be handle', (done) => {
     outlineEventService.onDidActiveChange(() => {
       done();
     });
     eventBus.fireAndAwait(new EditorActiveResourceStateChangedEvent({} as any));
   });
 
-  it('EditorSelectionChangeEvent event should be handle', async (done) => {
+  it('EditorSelectionChangeEvent event should be handle', (done) => {
     outlineEventService.onDidSelectionChange(() => {
       done();
     });
     eventBus.fireAndAwait(new EditorSelectionChangeEvent({} as any));
   });
 
-  it('DocumentSymbolChangedEvent event should be handle', async (done) => {
+  it('DocumentSymbolChangedEvent event should be handle', (done) => {
     outlineEventService.onDidChange(() => {
       done();
     });

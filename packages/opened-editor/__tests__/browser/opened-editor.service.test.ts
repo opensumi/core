@@ -38,7 +38,7 @@ describe('OpenedEditorModelService should be work', () => {
     getResourceDecoration: () => ({ dirty: true }),
   };
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([OpenedEditorModule]);
 
     injector.addProviders(
@@ -146,7 +146,6 @@ describe('OpenedEditorModelService should be work', () => {
     openedEditorService = injector.get(OpenedEditorService);
     await openedEditorModelService.whenReady;
     await openedEditorModelService.treeModel.root.ensureLoaded();
-    done();
   });
 
   afterEach(() => {
@@ -182,12 +181,11 @@ describe('OpenedEditorModelService should be work', () => {
   });
 
   describe('02 #API should be worked.', () => {
-    it('The tree data should no be empty', async (done) => {
+    it('The tree data should no be empty', async () => {
       expect(openedEditorModelService.treeModel.root.branchSize > 0).toBeTruthy();
-      done();
     });
 
-    it('File should be dirty while file change', async (done) => {
+    it('File should be dirty while file change', async () => {
       const eventBus = injector.get(IEventBus);
       eventBus.fire(
         new ResourceDecorationChangeEvent({
@@ -201,10 +199,9 @@ describe('OpenedEditorModelService should be work', () => {
       expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(
         styles.mod_dirty,
       );
-      done();
     });
 
-    it('Select file should be work', async (done) => {
+    it('Select file should be work', async () => {
       const openFile = jest.fn();
       const node = openedEditorService.getEditorNodeByUri(testFileUri);
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openFile);
@@ -213,16 +210,14 @@ describe('OpenedEditorModelService should be work', () => {
       expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(
         cls(styles.mod_dirty, styles.mod_selected, styles.mod_focused),
       );
-      done();
     });
 
-    it('Close file should be work', async (done) => {
+    it('Close file should be work', async () => {
       const closeFile = jest.fn();
       const node = openedEditorService.getEditorNodeByUri(testFileUri);
       injector.mockCommand(EDITOR_COMMANDS.CLOSE.id, closeFile);
       openedEditorModelService.closeFile(node as EditorFile);
       expect(closeFile).toBeCalledTimes(1);
-      done();
     });
   });
 });

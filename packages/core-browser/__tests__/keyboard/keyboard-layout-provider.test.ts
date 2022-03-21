@@ -22,7 +22,7 @@ describe('BrowserKeyboardLayoutService should be work', () => {
     getData: (key) => storage[key],
   };
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     injector = createBrowserInjector(
       [],
       new MockInjector([
@@ -40,7 +40,6 @@ describe('BrowserKeyboardLayoutService should be work', () => {
     keyboardNativeLayoutService = injector.get(KeyboardNativeLayoutService);
 
     await keyboardNativeLayoutService.whenReady;
-    done();
   });
 
   afterAll(() => {
@@ -60,7 +59,7 @@ describe('BrowserKeyboardLayoutService should be work', () => {
   });
 
   describe('#use keyboard by user choose', () => {
-    it('choose first layout as current keyboard layout', async (done) => {
+    it('choose first layout as current keyboard layout', (done) => {
       const firstLayout = keyboardNativeLayoutService.allLayoutData[0];
       const disposable = keyboardNativeLayoutService.onDidChangeNativeLayout((info) => {
         expect(keyboardNativeLayoutService.currentLayoutSource).toBe('user-choice');
@@ -68,7 +67,7 @@ describe('BrowserKeyboardLayoutService should be work', () => {
         disposable.dispose();
         done();
       });
-      await keyboardNativeLayoutService.setLayoutData(firstLayout);
+      keyboardNativeLayoutService.setLayoutData(firstLayout);
     });
 
     it('get current layout should be first layout', async () => {

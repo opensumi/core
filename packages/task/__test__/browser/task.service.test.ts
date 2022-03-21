@@ -140,7 +140,7 @@ describe('TaskService Test Suite', () => {
     expect(task?._label).toBe('Echo Hello');
   });
 
-  it('runtask command should be work', async (done) => {
+  it('runtask command should be work', (done) => {
     injector.mock(QuickOpenService, 'open', (model) => {
       done();
     });

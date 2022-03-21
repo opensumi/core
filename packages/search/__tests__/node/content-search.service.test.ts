@@ -747,7 +747,7 @@ describe('ripgrep-search-in-workspace-server', () => {
     contentSearchServer.search(pattern, [rootDirAUri, rootSubdirAUri]);
   });
 
-  it('出错时可以正常抛出', async (done): Promise<void> => {
+  it('出错时可以正常抛出', (done) => {
     const errorMessage = 'A error!';
     const id = 9;
 

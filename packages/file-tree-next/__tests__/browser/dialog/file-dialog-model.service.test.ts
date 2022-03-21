@@ -48,7 +48,7 @@ describe('FileDialogModel should be work', () => {
     directory.constructor = new TempDirectory().constructor;
     return directory;
   };
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
 
     injector.overrideProviders(
@@ -81,7 +81,6 @@ describe('FileDialogModel should be work', () => {
     mockFileTreeDialogService.resolveRoot.mockResolvedValue([root]);
     fileTreeDialogModel = FileTreeDialogModel.createModel(injector, mockFileTreeDialogService);
     await fileTreeDialogModel.whenReady;
-    done();
   });
 
   afterEach(() => {
@@ -97,10 +96,9 @@ describe('FileDialogModel should be work', () => {
     expect(fileTreeDialogModel.treeModel).toBeDefined();
   });
 
-  it('updateTreeModel method should be work', async (done) => {
+  it('updateTreeModel method should be work', async () => {
     await fileTreeDialogModel.updateTreeModel(rootUri.resolve('test').toString());
     expect(mockFileTreeDialogService.resolveRoot).toBeCalledTimes(1);
-    done();
   });
 
   it('getDirectoryList method should be work', () => {

@@ -53,7 +53,7 @@ describe('Extension Worker Thread Test Suites', () => {
     onMessage: (fn) => handler.resolve(fn),
   };
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     const injector = new Injector();
     injector.addProviders({
       token: IReporter,
@@ -61,7 +61,6 @@ describe('Extension Worker Thread Test Suites', () => {
     });
     rpcProtocol = await initMockRPCProtocol(mockClient);
     extHostImpl = new ExtensionWorkerHost(rpcProtocol, injector);
-    done();
   });
 
   it('init extensions', async () => {

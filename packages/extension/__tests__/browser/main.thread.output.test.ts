@@ -72,13 +72,12 @@ describe('MainThreadOutput Test Suites', () => {
     expect(typeof outputChannel.show).toBe('function');
   });
 
-  it('should append text', async (done) => {
+  it('should append text', async () => {
     const name = 'test-output-3';
     const outputChannel = extOutput.createOutputChannel(name);
     disposables.push(outputChannel);
     outputChannel.appendLine('text');
     expect(service.getChannel(name)).toBeDefined();
-    done();
   });
 
   it('should hide/show work', async () => {
@@ -89,12 +88,11 @@ describe('MainThreadOutput Test Suites', () => {
     expect(service.getChannel(name).isVisible).toBeTruthy();
   });
 
-  it('can dispose output', async (done) => {
+  it('can dispose output', async () => {
     const name = 'test-output-5';
     const outputChannel = extOutput.createOutputChannel(name);
     outputChannel.dispose();
     const existing = service.getChannels().find((c) => c.name === name);
     expect(existing).toBeUndefined();
-    done();
   });
 });

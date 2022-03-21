@@ -70,7 +70,7 @@ describe('breadcrumb test', () => {
     injector.disposeAll();
   });
 
-  it('breadcrumb test', async (done) => {
+  it('breadcrumb test', async () => {
     injector.mockService(WorkbenchEditorService, {});
 
     const labelService = injector.get(LabelService);
@@ -222,8 +222,6 @@ describe('breadcrumb test', () => {
 
       const c = await sib.parts[1].getChildren!();
       expect(c.length).toBe(1);
-
-      done();
     });
   });
 });

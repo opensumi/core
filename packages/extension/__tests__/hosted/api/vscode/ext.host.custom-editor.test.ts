@@ -51,7 +51,7 @@ describe('vscode extHost CustomEditor Test', () => {
     mainThread = rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadCustomEditor, mockService({}));
   });
 
-  it('customTextEditor Test', async (done) => {
+  it('customTextEditor Test', async () => {
     const viewType = 'test CustomTextEditor';
 
     const customTextEditorProvider: CustomTextEditorProvider = {
@@ -116,11 +116,9 @@ describe('vscode extHost CustomEditor Test', () => {
       },
       expect.anything(),
     );
-
-    done();
   });
 
-  it('customEditor Test', async (done) => {
+  it('customEditor Test', async () => {
     const viewType = 'test CustomEditor';
 
     const _onDidChangeCustomDocument = new Emitter<
@@ -277,8 +275,6 @@ describe('vscode extHost CustomEditor Test', () => {
     await waitIPC();
     expect(mainThread.$acceptCustomDocumentDirty).toBeCalledWith(expect.objectContaining({ path: docUri.path }), false);
     (mainThread.$acceptCustomDocumentDirty as jest.Mock).mockClear();
-
-    done();
   });
 });
 

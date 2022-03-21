@@ -242,29 +242,28 @@ describe('ExtHostTask API', () => {
 
   extHostWorkspace['folders'] = [{ uri: Uri.file(__dirname), name: 'Test Workspace', index: 0 }];
 
-  it('register custombuildscript taskProvider', async (done) => {
+  it('register custombuildscript taskProvider', async () => {
     expect(mainThreadTask['providers'].size).toBe(1);
     const taskHandler = mainThreadTask['providers'].get(1);
     expect(taskHandler).toBeDefined();
-    done();
   });
 
-  it('provide tasks', async (done) => {
+  it('provide tasks', async () => {
     const taskHandler = mainThreadTask['providers'].get(1);
     const taskSet = await taskHandler?.provider.provideTasks({ custombuildscript: true });
     expect(taskSet).toBeDefined();
     expect(taskSet?.type).toBe('custombuildscript');
     expect(taskSet?.tasks.length).toBe(6);
-    done();
   });
 
-  it('run custombuild task', async (done) => {
-    const taskSet = await taskService['getGroupedTasks']();
-    taskService.run(taskSet[0].tasks[0]);
-    extHostTask.onDidStartTask((e) => {
-      expect(e.execution.task.definition.type).toBe('custombuildscript');
-      expect(e.execution.task.name).toBe('32 watch incremental');
-      done();
-    });
-  }, 5000);
+  it('run custombuild task', () =>
+    new Promise<void>(async (done) => {
+      const taskSet = await taskService['getGroupedTasks']();
+      taskService.run(taskSet[0].tasks[0]);
+      extHostTask.onDidStartTask((e) => {
+        expect(e.execution.task.definition.type).toBe('custombuildscript');
+        expect(e.execution.task.name).toBe('32 watch incremental');
+        done();
+      });
+    }));
 });

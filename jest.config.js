@@ -1,5 +1,3 @@
-const os = require('os');
-
 const { pathsToModuleNameMapper } = require('ts-jest');
 
 const tsconfig = require('./configs/ts/tsconfig.resolve.json');
@@ -11,7 +9,8 @@ module.exports = {
   testRunner: 'jest-jasmine2',
   testEnvironment: 'node',
   coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
-  maxWorkers: process.env.SIGMA_MAX_PROCESSORS_LIMIT || os.cpus().length,
+  // https://dev.to/vantanev/make-your-jest-tests-up-to-20-faster-by-changing-a-single-setting-i36
+  maxWorkers: '50%',
   setupFiles: ['./jest.setup.js'],
   collectCoverageFrom: [
     'packages/*/src/**/*.ts',

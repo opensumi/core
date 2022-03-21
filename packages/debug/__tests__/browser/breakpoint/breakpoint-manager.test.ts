@@ -59,7 +59,7 @@ describe('Breakpoints Manager', () => {
     expect(typeof breakpointManager.updateExceptionBreakpoints).toBe('function');
   });
 
-  it('setBreakpoints should be work', async (done) => {
+  it('setBreakpoints should be work', (done) => {
     const breakpoints = [lineOneBreakpoint];
     const dispose = breakpointManager.onDidChangeBreakpoints((event) => {
       expect(event.added.length).toBe(1);
@@ -82,7 +82,7 @@ describe('Breakpoints Manager', () => {
     expect(breakpoints).toBeDefined();
   });
 
-  it('addBreakpoint should be work', async (done) => {
+  it('addBreakpoint should be work', (done) => {
     const dispose = breakpointManager.onDidChangeBreakpoints((event) => {
       expect(event.added.length).toBe(1);
       expect(event.changed[0].uri).toBe(testUri.toString());
@@ -100,7 +100,7 @@ describe('Breakpoints Manager', () => {
     expect(breakpoints.length).toBe(1);
   });
 
-  it('clearBreakpoints should be work', async (done) => {
+  it('clearBreakpoints should be work', (done) => {
     const breakpoints = breakpointManager.getBreakpoints(testUri);
     expect(breakpoints.length).toBe(1);
     const dispose = breakpointManager.onDidChangeBreakpoints((event) => {
@@ -114,7 +114,7 @@ describe('Breakpoints Manager', () => {
     breakpointManager.clearBreakpoints();
   });
 
-  it('updateBreakpoints should be work', async (done) => {
+  it('updateBreakpoints should be work', (done) => {
     const dispose = breakpointManager.onDidChangeBreakpoints((event) => {
       expect(event.affected.length).toBe(1);
       expect(event.changed.length).toBe(2);
@@ -127,7 +127,7 @@ describe('Breakpoints Manager', () => {
     breakpointManager.updateBreakpoints([lineOneBreakpoint, lineTwoBreakpoint]);
   });
 
-  it('updateBreakpoint should be work', async (done) => {
+  it('updateBreakpoint should be work', (done) => {
     const dispose = breakpointManager.onDidChangeBreakpoints((event) => {
       expect(event.affected.length).toBe(1);
       expect(event.changed.length).toBe(1);
@@ -140,7 +140,7 @@ describe('Breakpoints Manager', () => {
     breakpointManager.updateBreakpoint(lineThreeBreakpoint);
   });
 
-  it('enableAllBreakpoints should be work', async (done) => {
+  it('enableAllBreakpoints should be work', (done) => {
     const dispose = breakpointManager.onDidChangeMarkers((event) => {
       expect(event.toString()).toBe(testUri.toString());
       dispose.dispose();
@@ -156,19 +156,17 @@ describe('Breakpoints Manager', () => {
     expect(breakpointManager.breakpointsEnabled).toBeFalsy();
   });
 
-  it('load should be work', async (done) => {
+  it('load should be work', async () => {
     await breakpointManager.load();
     expect(getFn).toBeCalledTimes(1);
-    done();
   });
 
-  it('save should be work', async (done) => {
+  it('save should be work', async () => {
     await breakpointManager.save();
     expect(setFn).toBeCalledTimes(1);
-    done();
   });
 
-  it('setExceptionBreakpoints should be work', async (done) => {
+  it('setExceptionBreakpoints should be work', (done) => {
     const filter = [{ filter: 'testFilter', label: 'test' }];
     const dispose = breakpointManager.onDidChangeExceptionsBreakpoints(() => {
       dispose.dispose();
@@ -177,15 +175,14 @@ describe('Breakpoints Manager', () => {
     breakpointManager.setExceptionBreakpoints(filter);
   });
 
-  it('getExceptionBreakpoints should be work', async (done) => {
+  it('getExceptionBreakpoints should be work', async () => {
     const filter = [{ filter: 'testFilter', label: 'test' }];
     breakpointManager.setExceptionBreakpoints(filter);
     const breakpoints = breakpointManager.getExceptionBreakpoints();
     expect(breakpoints.length).toBe(1);
-    done();
   });
 
-  it('updateExceptionBreakpoints should be work', async (done) => {
+  it('updateExceptionBreakpoints should be work', (done) => {
     const filter = [{ filter: 'testFilter', label: 'test' }];
     const dispose = breakpointManager.onDidChangeExceptionsBreakpoints(() => {
       dispose.dispose();

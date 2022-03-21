@@ -198,7 +198,7 @@ describe('MainThreadExtensions Test Suites', () => {
     }
   });
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     injector.get(WorkbenchEditorService);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
     extensionHostService = new ExtensionHostServiceImpl(
@@ -215,7 +215,6 @@ describe('MainThreadExtensions Test Suites', () => {
     await extensionHostService.init();
     await extensionHostService.$updateExtHostData();
     extHostExtension = createExtensionsApiFactory(extensionHostService);
-    done();
   });
 
   it('should get all extension by extHostExtensionApi', (done) => {
@@ -223,14 +222,13 @@ describe('MainThreadExtensions Test Suites', () => {
     done();
   });
 
-  it('should get a extension by extHostExtensionApi', async (done) => {
+  it('should get a extension by extHostExtensionApi', async () => {
     const extension = extHostExtension.getExtension('test.sumi-extension');
     expect(extension).toBeDefined();
     expect(extension?.isActive).toBeFalsy();
-    done();
   });
 
-  it('should receive onDidChangeEvent when extension has changed', async (done) => {
+  it('should receive onDidChangeEvent when extension has changed', (done) => {
     extHostExtension.onDidChange(() => {
       done();
     });

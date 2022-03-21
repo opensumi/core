@@ -16,7 +16,7 @@ describe('EmptyDocCacheImpl', () => {
   let content: string;
   let hashCalculateService: IHashCalculateService;
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
     injector.addProviders({
       token: IDocPersistentCacheProvider,
@@ -27,7 +27,6 @@ describe('EmptyDocCacheImpl', () => {
     content = uniqueId('content');
     hashCalculateService = injector.get(IHashCalculateService);
     await hashCalculateService.initialize();
-    done();
   });
 
   it('call hasCache during DocumentModel constructing', () => {

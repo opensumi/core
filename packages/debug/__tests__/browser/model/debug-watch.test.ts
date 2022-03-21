@@ -74,55 +74,49 @@ describe('DebugWatch Model', () => {
       debugManager.onDidChangeActiveDebugSession.mockReset();
     });
 
-    it('Should have enough values', async (done) => {
+    it('Should have enough values', async () => {
       await debugWatch.whenReady;
       expect(debugManager.onDidStopDebugSession).toBeCalledTimes(1);
       expect(debugManager.onDidDestroyDebugSession).toBeCalledTimes(1);
       expect(debugManager.onDidChangeActiveDebugSession).toBeCalledTimes(1);
-      done();
     });
 
-    it('addWatchExpression method should be work', async (done) => {
+    it('addWatchExpression method should be work', async () => {
       await debugWatch.addWatchExpression('a');
       const root = await debugWatch.getRoot();
       expect(root.branchSize).toBe(0);
       expect(root.presetChildren.length).toBe(1);
-      done();
     });
 
-    it('updateWatchExpressions method should be work', async (done) => {
+    it('updateWatchExpressions method should be work', async () => {
       await debugWatch.updateWatchExpressions(['a', 'b']);
       const root = await debugWatch.getRoot();
       expect(root.branchSize).toBe(0);
       expect(root.presetChildren.length).toBe(2);
-      done();
     });
 
-    it('renameWatchExpression method should be work', async (done) => {
+    it('renameWatchExpression method should be work', async () => {
       await debugWatch.updateWatchExpressions(['a', 'b']);
       await debugWatch.renameWatchExpression('a', 'a2');
       const root = await debugWatch.getRoot();
       expect(root.branchSize).toBe(0);
       expect(root.presetChildren.length).toBe(2);
-      done();
     });
 
-    it('removeWatchExpression method should be work', async (done) => {
+    it('removeWatchExpression method should be work', async () => {
       await debugWatch.updateWatchExpressions(['a', 'b']);
       await debugWatch.removeWatchExpression('b');
       const root = await debugWatch.getRoot();
       expect(root.branchSize).toBe(0);
       expect(root.presetChildren.length).toBe(1);
-      done();
     });
 
-    it('clear method should be work', async (done) => {
+    it('clear method should be work', async () => {
       await debugWatch.updateWatchExpressions(['a', 'b']);
       await debugWatch.clear();
       const root = await debugWatch.getRoot();
       expect(root.branchSize).toBe(0);
       expect(root.presetChildren.length).toBe(0);
-      done();
     });
   });
 });

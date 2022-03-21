@@ -115,12 +115,11 @@ describe('Debug Breakpoints Service', () => {
     expect(mockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(1);
   });
 
-  it('updateRoots method should be work', async (done) => {
+  it('updateRoots method should be work', async () => {
     await debugBreakpointsService.updateRoots();
-    done();
   });
 
-  it('toggleBreakpointEnable method should be work', async (done) => {
+  it('toggleBreakpointEnable method should be work', async () => {
     // DebugBreakpoint
     const breakpoint = DebugBreakpoint.create(URI.file('test.js'), { line: 1 });
     mockBreakpointManager.getBreakpoint.mockReturnValueOnce(breakpoint as any);
@@ -130,7 +129,6 @@ describe('Debug Breakpoints Service', () => {
     const exceptionBreakpoint = { filter: 'test' };
     await debugBreakpointsService.toggleBreakpointEnable(exceptionBreakpoint as any);
     expect(mockBreakpointManager.updateExceptionBreakpoints).toBeCalledTimes(1);
-    done();
   });
 
   it('extractNodes method should be work', () => {
@@ -152,15 +150,13 @@ describe('Debug Breakpoints Service', () => {
     expect(debugBreakpointsService.enable).toBeTruthy();
   });
 
-  it('onRenameFile should be work', async (done) => {
+  it('onRenameFile should be work', async () => {
     await eventBus.fireAndAwait(new WorkspaceEditDidRenameFileEvent({ oldUri: URI.file('test.js') } as any));
     expect(mockBreakpointManager.cleanAllMarkers).toBeCalledTimes(1);
-    done();
   });
 
-  it('onDeleteFile should be work', async (done) => {
+  it('onDeleteFile should be work', async () => {
     await eventBus.fireAndAwait(new WorkspaceEditDidDeleteFileEvent({ oldUri: URI.file('test.js') } as any));
     expect(mockBreakpointManager.cleanAllMarkers).toBeCalledTimes(2);
-    done();
   });
 });

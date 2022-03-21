@@ -49,7 +49,7 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
     expect(remoteOpenerClient['remoteOpenerServices'].has('mock_clientId_removeable')).toBeFalsy();
   });
 
-  it('openExternal should be work', async (done) => {
+  it('openExternal should be work', async () => {
     const service: IRemoteOpenerService = {
       openExternal: jest.fn(),
       removeConnectionClientId: jest.fn(),
@@ -72,11 +72,9 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
       type: 'file',
       clientId: 'mock_clientId_2',
     });
-
-    done();
   });
 
-  it('openExternal fallback should be work', async (done) => {
+  it('openExternal fallback should be work', async () => {
     const service: IRemoteOpenerService = {
       openExternal: jest.fn(),
       removeConnectionClientId: jest.fn(),
@@ -100,7 +98,5 @@ describe('packages/remote-opener/src/node/opener.client.ts', () => {
       type: 'file',
       clientId: 'mock_clientId_3', // 被fallback到了mock_clientId_3
     });
-
-    done();
   });
 });

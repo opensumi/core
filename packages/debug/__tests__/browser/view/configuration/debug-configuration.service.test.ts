@@ -76,7 +76,7 @@ describe('Debug Configuration Service', () => {
 
   const mockStorageProvider = () => mockStorage;
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     mockInjector.overrideProviders({
       token: IDebugSessionManager,
       useValue: mockDebugSessionManager,
@@ -111,7 +111,6 @@ describe('Debug Configuration Service', () => {
     });
     debugConfigurationService = mockInjector.get(DebugConfigurationService);
     await debugConfigurationService.whenReady;
-    done();
   });
 
   it('should have enough API', () => {

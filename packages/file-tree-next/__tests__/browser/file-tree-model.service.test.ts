@@ -105,7 +105,7 @@ describe('FileTreeModelService should be work', () => {
       return contextKey;
     },
   };
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
 
     injector.overrideProviders(
@@ -182,7 +182,6 @@ describe('FileTreeModelService should be work', () => {
     fileTreeModelService = injector.get(FileTreeModelService);
     fileTreeModelService.initTreeModel();
     await fileTreeModelService.whenReady;
-    done();
   });
 
   afterEach(() => {
@@ -355,7 +354,7 @@ describe('FileTreeModelService should be work', () => {
     expect(decoration!.classlist).toEqual([]);
   });
 
-  it('toggleDirectory method should be work', async (done) => {
+  it('toggleDirectory method should be work', async () => {
     const errorEmitter = new Emitter();
     const treeHandle = { collapseNode: jest.fn(), expandNode: jest.fn(), onError: errorEmitter.event } as any;
     let mockNode = { expanded: false };
@@ -365,7 +364,6 @@ describe('FileTreeModelService should be work', () => {
     mockNode = { expanded: true };
     await fileTreeModelService.toggleDirectory(mockNode as any);
     expect(treeHandle.collapseNode).toBeCalledTimes(1);
-    done();
   });
 
   it('handleContextMenu method should be work', () => {

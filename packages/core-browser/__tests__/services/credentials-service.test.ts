@@ -43,28 +43,30 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
     expect(mockNativeCredentialService.getPassword).toBeCalledWith(testData.service, testData.account);
   });
 
-  it('setPassword', async (done) => {
-    const password = 'password';
-    const disposable = credentialsService.onDidChangePassword((event) => {
-      expect(event.service).toBe(testData.service);
-      expect(event.account).toBe(testData.account);
-      disposable.dispose();
-      done();
-    });
-    await credentialsService.setPassword(testData.service, testData.account, password);
-    expect(mockNativeCredentialService.setPassword).toBeCalledWith(testData.service, testData.account, password);
-  });
+  it('setPassword', () =>
+    new Promise<void>(async (done) => {
+      const password = 'password';
+      const disposable = credentialsService.onDidChangePassword((event) => {
+        expect(event.service).toBe(testData.service);
+        expect(event.account).toBe(testData.account);
+        disposable.dispose();
+        done();
+      });
+      await credentialsService.setPassword(testData.service, testData.account, password);
+      expect(mockNativeCredentialService.setPassword).toBeCalledWith(testData.service, testData.account, password);
+    }));
 
-  it('deletePassword', async (done) => {
-    const disposable = credentialsService.onDidChangePassword((event) => {
-      expect(event.service).toBe(testData.service);
-      expect(event.account).toBe(testData.account);
-      disposable.dispose();
-      done();
-    });
-    await credentialsService.deletePassword(testData.service, testData.account);
-    expect(mockNativeCredentialService.deletePassword).toBeCalledWith(testData.service, testData.account);
-  });
+  it('deletePassword', () =>
+    new Promise<void>(async (done) => {
+      const disposable = credentialsService.onDidChangePassword((event) => {
+        expect(event.service).toBe(testData.service);
+        expect(event.account).toBe(testData.account);
+        disposable.dispose();
+        done();
+      });
+      await credentialsService.deletePassword(testData.service, testData.account);
+      expect(mockNativeCredentialService.deletePassword).toBeCalledWith(testData.service, testData.account);
+    }));
 
   it('findPassword', async () => {
     await credentialsService.findPassword(testData.service);

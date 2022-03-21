@@ -47,28 +47,27 @@ describe('Extension service', () => {
   });
 
   describe('activate', () => {
-    it('should activate extension service.', async (done) => {
+    it('should activate extension service.', async () => {
       await extensionService.activate();
-      done();
     });
 
-    it('emit event before activate', async (done) => {
+    it('emit event before activate', (done) => {
       // @ts-ignore
       extensionService.eventBus.on(ExtensionBeforeActivateEvent, () => {
         done();
       });
 
       // @ts-ignore
-      await extensionService.doActivate();
+      extensionService.doActivate();
     });
 
-    it('emit onStartupFinished activationEvent after activate', async (done) => {
+    it('emit onStartupFinished activationEvent after activate', (done) => {
       const activationEventService = injector.get<IActivationEventService>(IActivationEventService);
       activationEventService.onEvent('onStartupFinished', () => {
         done();
       });
       // @ts-ignore
-      await extensionService.doActivate();
+      extensionService.doActivate();
     });
   });
 
@@ -104,14 +103,13 @@ describe('Extension service', () => {
   });
 
   describe('activate extension', () => {
-    it('should activate mock browser extension without ext process', async (done) => {
+    it('should activate mock browser extension without ext process', async () => {
       await extensionService.activeExtension(MOCK_EXTENSIONS[0]);
       const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
       const tabbarService: TabbarService = layoutService.getTabbarService('left');
       const containerInfo = tabbarService.getContainer('test.sumi-extension:Leftview');
       expect(containerInfo?.options?.titleComponent).toBeDefined();
       expect(containerInfo?.options?.titleProps).toBeDefined();
-      done();
       // setTimeout(() => {
       // }, 1000);
     });
@@ -139,7 +137,7 @@ describe('Extension service', () => {
       expect(commandRegistry.getCommand('HelloKaitian')).toBeDefined();
     });
 
-    it('should register menus in editor/title and editor/context position', (done) => {
+    it('should register menus in editor/title and editor/context position', () => {
       const newMenuRegistry: MenuRegistryImpl = injector.get(IMenuRegistry);
       const contextMenu = newMenuRegistry.getMenuItems('editor/context');
       expect(contextMenu.length).toBe(1);
@@ -147,69 +145,61 @@ describe('Extension service', () => {
       const actionMenu = newMenuRegistry.getMenuItems('editor/title');
       expect(actionMenu.length).toBe(1);
       expect(actionMenu.findIndex((item) => (item as IMenuItem).command === 'HelloKaitian')).toBeGreaterThan(-1);
-      done();
     });
 
-    it('should register viewContainer in activityBar', (done) => {
+    it('should register viewContainer in activityBar', () => {
       const layoutService: LayoutService = injector.get(IMainLayoutService);
       const handler = layoutService.getTabbarHandler('package-explorer');
       expect(handler).toBeDefined();
       const holdHandler = layoutService.getTabbarHandler('hold-container');
       expect(holdHandler).toBeUndefined();
-      done();
     });
 
-    it('should register extension configuration', (done) => {
+    it('should register extension configuration', () => {
       const preferenceSettingsService: PreferenceSettingsService = injector.get(IPreferenceSettingsService);
       const preferences = preferenceSettingsService.getSections('extension', PreferenceScope.Default);
       expect(preferences.length).toBe(1);
       expect(preferences[0].title).toBe('Mock Extension Config');
-      done();
     });
 
-    it('should register browserView', (done) => {
+    it('should register browserView', () => {
       const layoutService: LayoutService = injector.get(IMainLayoutService);
       const tabbar = layoutService.getTabbarHandler('test.sumi-extension:KaitianViewContribute');
       expect(tabbar).toBeDefined();
       expect(tabbar?.containerId).toBe('test.sumi-extension:KaitianViewContribute');
-      done();
     });
 
-    it('should register browserView', (done) => {
+    it('should register browserView', () => {
       const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
       const tabbar = layoutService.getTabbarHandler('test.sumi-extension:KaitianViewContribute');
       expect(tabbar).toBeDefined();
-      done();
     });
 
-    it('should register keybinding for HelloKaitian command', (done) => {
+    it('should register keybinding for HelloKaitian command', () => {
       const keyBinding: KeybindingRegistryImpl = injector.get(KeybindingRegistry);
       const commandKeyBindings = keyBinding.getKeybindingsForCommand('HelloKaitian');
       expect(commandKeyBindings.length).toBe(1);
       expect(typeof commandKeyBindings[0].keybinding).toBe('string');
-      done();
     });
 
-    it('should register mock color', async (done) => {
+    it('should register mock color', async () => {
       const themeService: WorkbenchThemeService = injector.get(IThemeService);
       const colorRegister = getColorRegistry();
       const theme = await themeService.getCurrentTheme();
       const color = colorRegister.resolveDefaultColor('mock.superstatus.error', theme);
       expect(color).toBeDefined();
       expect(color?.toString()).toBe('#ff004f');
-      done();
     });
   });
 
   describe('extension host commands', () => {
-    it("should define a command in 'node' host.", async (done) => {
+    it("should define a command in 'node' host.", async () => {
       const commandId = 'mock_command';
       const disposable = extCommandManagement.registerExtensionCommandEnv(commandId, 'node');
       const env = extCommandManagement.getExtensionCommandEnv(commandId);
       expect(env).toBe('node');
       disposable.dispose();
       expect(extCommandManagement.getExtensionCommandEnv(commandId)).toBe(undefined);
-      done();
     });
   });
 

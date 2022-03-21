@@ -147,7 +147,7 @@ describe('Debug Hover Model', () => {
     expect(treeHandle.collapseNode).toBeCalledTimes(1);
   });
 
-  it('refresh method should be work', async (done) => {
+  it('refresh method should be work', (done) => {
     debugHoverTreeModelService.onDidRefreshed(() => {
       expect(mockWatcher.callback).toBeCalledTimes(1);
       done();

@@ -115,34 +115,35 @@ describe('DebugSessionConnection', () => {
     mockConnection.send.mockClear();
   });
 
-  it('send continue command', async (done) => {
-    debugSessionConnection.on('continued', (event) => {
-      expect(event.event).toBe('continued');
-      done();
-    });
-    await debugSessionConnection.sendRequest(
-      'continue',
-      { threadId: 1000001 },
-      {
-        type: 'node',
-        name: 'test',
-        request: 'node-debug',
-      },
-    );
-    expect(mockConnection.send).toBeCalledTimes(1);
-    mockConnection.send.mockClear();
-  });
+  it('send continue command', () =>
+    new Promise<void>(async (done) => {
+      debugSessionConnection.on('continued', (event) => {
+        expect(event.event).toBe('continued');
+        done();
+      });
+      await debugSessionConnection.sendRequest(
+        'continue',
+        { threadId: 1000001 },
+        {
+          type: 'node',
+          name: 'test',
+          request: 'node-debug',
+        },
+      );
+      expect(mockConnection.send).toBeCalledTimes(1);
+      mockConnection.send.mockClear();
+    }));
 
   it('send custom request', async () => {
     await debugSessionConnection.sendCustomRequest('abc', {});
     expect(mockConnection.send).toBeCalledTimes(1);
   });
 
-  it('handle request message', async (done) => {
+  it('handle request message', (done) => {
     debugSessionConnection.onRequest('abc', () => {
       done();
     });
-    await messageEmitter.fire(
+    messageEmitter.fire(
       JSON.stringify({
         type: 'request',
         command: 'abc',
@@ -178,7 +179,7 @@ describe('DebugSessionConnection', () => {
     );
   });
 
-  it('handle cancel request', async (done) => {
+  it('handle cancel request', async () => {
     jest.setTimeout(20000);
     const threadId = 10086;
     const delayDebugSessionConnection = injector.get(DebugSessionConnection, [
@@ -245,6 +246,5 @@ describe('DebugSessionConnection', () => {
 
     cancellationRequestMap.forEach((c) => c.forEach((t) => t.cancel()));
     cancellationRequestMap.clear();
-    done();
   });
 });

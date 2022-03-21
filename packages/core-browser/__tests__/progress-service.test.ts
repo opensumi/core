@@ -45,7 +45,7 @@ describe('progress service test', () => {
     );
   });
 
-  it('progress with window should work', async (done) => {
+  it('progress with window should work', async () => {
     service.withProgress(
       {
         location: ProgressLocation.Window,
@@ -68,10 +68,9 @@ describe('progress service test', () => {
     expect(mockEntryMap.get('status.progress')!.text).toEqual('$(sync~spin) progressTitle: progressMessage');
     jest.advanceTimersByTime(200);
     await flushPromises();
-    done();
   });
 
-  it('progress with indicator should work', async (done) => {
+  it('progress with indicator should work', async () => {
     service.registerProgressIndicator('scm');
     service.withProgress(
       {
@@ -103,10 +102,9 @@ describe('progress service test', () => {
     await flushPromises();
     expect(indicator?.progressModel.worked).toEqual(50);
     jest.advanceTimersByTime(200);
-    done();
   });
 
-  it('infinite progress with indicator should work', async (done) => {
+  it('infinite progress with indicator should work', async () => {
     service.registerProgressIndicator('explorer');
     service.withProgress(
       {
@@ -120,6 +118,5 @@ describe('progress service test', () => {
     jest.advanceTimersByTime(400);
     await flushPromises();
     expect(indicator?.progressModel.show).toBeFalsy();
-    done();
   });
 });

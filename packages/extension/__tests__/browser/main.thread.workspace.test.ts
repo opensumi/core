@@ -18,7 +18,6 @@ import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
   Uri as vscodeUri,
   Emitter,
-  IFileServiceClient,
   URI,
   Uri,
   IEventBus,
@@ -29,6 +28,7 @@ import {
   OS,
   IApplicationService,
   DisposableCollection,
+  IFileServiceClient,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -252,7 +252,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
   );
   injectMockPreferences(injector);
   useMockStorage(injector);
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     const root = FileUri.create(fs.realpathSync(temp.mkdirSync('extension-storage-test')));
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
@@ -314,7 +314,6 @@ describe('MainThreadWorkspace API Test Suite', () => {
     workspaceService = injector.get(IWorkspaceService);
     eventBus = injector.get(IEventBus);
     await (injector.get(IEditorDocumentModelService) as EditorDocumentModelServiceImpl).initialize();
-    done();
   });
   afterAll(() => {
     track.cleanupSync();
@@ -347,17 +346,16 @@ describe('MainThreadWorkspace API Test Suite', () => {
       expect(result).toEqual(fsResult.map((v: string) => [v, getFileStatType(fs.statSync(path.join(__dirname, v)))]));
     });
 
-    it('should able to get filestat', async (done) => {
+    it('should able to get filestat', async () => {
       const filestat = await extHostWorkspaceAPI.fs.stat(
         vscodeUri.file(path.join(__dirname, 'main.thread.output.test.ts')),
       );
       const nativeFileStat = fs.statSync(path.join(__dirname, 'main.thread.output.test.ts'));
       expect(nativeFileStat.size).toBe(filestat.size);
       expect(filestat.type).toBe(1);
-      done();
     });
 
-    it('should able to writefile', async (done) => {
+    it('should able to writefile', async () => {
       const filepath = path.join(os.tmpdir(), Math.floor(Math.random() * 1000) + '', 'hello.ts');
       const encoder = new util.TextEncoder();
       await extHostWorkspaceAPI.fs.writeFile(
@@ -366,11 +364,10 @@ describe('MainThreadWorkspace API Test Suite', () => {
       );
       expect(fs.existsSync(filepath)).toBeTruthy();
       expect(fs.readFileSync(filepath).toString()).toBe('hello opensumi');
-      done();
     });
   });
 
-  it('should be able to updateWorkspaceFolders', async (done) => {
+  it('should be able to updateWorkspaceFolders', (done) => {
     const rawUri = vscodeUri.file(path.join(__dirname));
     extHostWorkspaceAPI.updateWorkspaceFolders(0, 0, { uri: rawUri });
     setTimeout(() => {
@@ -381,7 +378,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     });
   });
 
-  it('should be able to openTextDocument', async (done) => {
+  it('should be able to openTextDocument', (done) => {
     const filePath = path.join(__dirname, 'main.thread.output.test.ts');
     const disposeable = eventBus.on(EditorDocumentModelCreationEvent, (e) => {
       expect(e.payload.content).toBe(fs.readFileSync(filePath).toString());
@@ -392,14 +389,12 @@ describe('MainThreadWorkspace API Test Suite', () => {
     extHostWorkspaceAPI.openTextDocument(vscodeUri.file(filePath));
   });
 
-  it('should be able to getConfiguration and use default value', async (done) => {
+  it('should be able to getConfiguration and use default value', async () => {
     const config = extHostWorkspaceAPI.getConfiguration('a.b', '', '');
     expect(config.get('mockobj.key', 'defaultvalue')).toBe('defaultvalue');
-
-    done();
   });
 
-  it('should be able to registerTextDocumentContentProvider', async (done) => {
+  it('should be able to registerTextDocumentContentProvider', async () => {
     const emitter = new Emitter<any>();
     const testcase = 'testcontent';
     const testuri = vscodeUri.file('/path/to/content').with({ scheme: 'test1' });
@@ -411,10 +406,9 @@ describe('MainThreadWorkspace API Test Suite', () => {
     expect(content.getText()).toBe(testcase);
     expect(content.uri.toString()).toBe(testuri.toString());
     disposeable.dispose();
-    done();
   });
 
-  it('should receive onDidOpenTextDocument event when called openTextDocument', async (done) => {
+  it('should receive onDidOpenTextDocument event when called openTextDocument', (done) => {
     const filePath = path.join(__dirname, 'activation.service.test.ts'); // use other
     const disposable = extHostWorkspaceAPI.onDidOpenTextDocument((e) => {
       expect(e.uri.path).toBe(filePath);
@@ -425,7 +419,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     extHostWorkspaceAPI.openTextDocument(vscodeUri.file(filePath));
   });
 
-  it('should reveive onWillCreateFiles/onDidCreateFiles event', async (done) => {
+  it('should reveive onWillCreateFiles/onDidCreateFiles event', async () => {
     const newUri = testEventDir.withPath(testEventDir.path.join('./test-create')).codeUri;
     let onWillCreate: vscode.FileWillCreateEvent | undefined;
     let onDidCreate: vscode.FileCreateEvent | undefined;
@@ -443,10 +437,9 @@ describe('MainThreadWorkspace API Test Suite', () => {
 
     expect(onDidCreate?.files.length).toEqual(1);
     expect(onDidCreate?.files[0].toString()).toEqual(newUri.toString());
-    done();
   });
 
-  it.skip('should be able to make changes before file create', async (done) => {
+  it.skip('should be able to make changes before file create', async () => {
     const randomFile = path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5));
     fs.writeFileSync(randomFile, '');
     const doc = await extHostWorkspaceAPI.openTextDocument(randomFile);
@@ -468,10 +461,9 @@ describe('MainThreadWorkspace API Test Suite', () => {
     expect(success).toBeTruthy();
 
     expect(doc?.getText()).toEqual('HELLO');
-    done();
   });
 
-  it('should reveive onWillDeleteFiles/onDidDeleteFiles event', async (done) => {
+  it('should reveive onWillDeleteFiles/onDidDeleteFiles event', async () => {
     const newUri = testEventDir.withPath(testEventDir.path.join('./test-create3')).codeUri;
     fs.writeFileSync(newUri.fsPath, '');
     let onWillCreate: vscode.FileWillDeleteEvent | undefined;
@@ -490,10 +482,9 @@ describe('MainThreadWorkspace API Test Suite', () => {
 
     expect(onDidCreate?.files.length).toEqual(1);
     expect(onDidCreate?.files[0].toString()).toEqual(newUri.toString());
-    done();
   });
 
-  it('should be able to make changes before file delete', async (done) => {
+  it('should be able to make changes before file delete', async () => {
     const randomFile = path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5));
     const randomFile2 = path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5));
     fs.writeFileSync(randomFile, '');
@@ -514,10 +505,9 @@ describe('MainThreadWorkspace API Test Suite', () => {
 
     const success = await extHostWorkspaceAPI.applyEdit(edit2);
     expect(success).toBeTruthy();
-    done();
   });
 
-  it('should reveive onWillRenameFiles/onDidRenameFiles event', async (done) => {
+  it('should reveive onWillRenameFiles/onDidRenameFiles event', async () => {
     const oldUri = Uri.file(path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5)));
     const newUri = Uri.file(path.join(testEventDir.codeUri.fsPath, Math.random().toString(18).slice(2, 5)));
     fs.writeFileSync(oldUri.fsPath, '');
@@ -543,17 +533,17 @@ describe('MainThreadWorkspace API Test Suite', () => {
     expect(onDidRename?.files.length).toEqual(1);
     expect(onDidRename?.files[0].oldUri.toString()).toEqual(oldUri.toString());
     expect(onDidRename?.files[0].newUri.toString()).toEqual(newUri.toString());
-    done();
   });
 
-  it('should receive onDidChangeWorkspaceFolders when workspace folder has changed', async (done) => {
-    extHostWorkspaceAPI.onDidChangeWorkspaceFolders((e) => {
-      expect(e.added.length).toBe(1);
-      expect(e.added[0].name).toBe(path.basename(__dirname));
-      done();
-    });
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
-    const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
-    workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
-  });
+  it('should receive onDidChangeWorkspaceFolders when workspace folder has changed', () =>
+    new Promise<void>(async (done) => {
+      extHostWorkspaceAPI.onDidChangeWorkspaceFolders((e) => {
+        expect(e.added.length).toBe(1);
+        expect(e.added[0].name).toBe(path.basename(__dirname));
+        done();
+      });
+      const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+      const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
+      workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
+    }));
 });
