@@ -27,7 +27,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { toPreferenceReadableName, PreferenceSettingId } from '../common';
+import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel } from '../common';
 
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
@@ -231,8 +231,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
           const prefId = typeof pref === 'string' ? pref : pref.id;
           const schema = this.schemaProvider.getPreferenceProperty(prefId);
-          const prefLabel =
-            typeof pref !== 'string' && pref.localized ? localize(pref.localized) : toPreferenceReadableName(prefId);
+          const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : getPreferenceItemLabel(pref);
           const description = schema && replaceLocalizePlaceholder(schema.description);
           return (
             this.isContainSearchValue(prefId, search) ||
