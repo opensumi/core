@@ -104,6 +104,12 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   private readonly logger: ILogger;
 
   initialize() {
+    /**
+     * 这里不需要阻塞 initialize 流程
+     * 因为其他 contribution 唯一依赖
+     * 的是主题信息，目前主题注册成功以
+     * 后会发送对应事件
+     */
     this.extensionService
       .activate()
       .catch((err) => {
