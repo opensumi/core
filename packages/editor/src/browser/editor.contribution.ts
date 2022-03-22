@@ -1193,8 +1193,8 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
                 const docRef = this.editorDocumentService.getModelReference(oldUri, 'editor-focus-autosave');
                 if (docRef && !docRef.instance.closeAutoSave && docRef.instance.dirty && docRef.instance.savable) {
                   docRef.instance.save(undefined, SaveReason.FocusOut);
-                  docRef.dispose();
                 }
+                docRef?.dispose();
               }
             }
           }),

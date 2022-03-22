@@ -149,6 +149,7 @@ export class CallHierarchyService implements ICallHierarchyService {
       });
       return [model.root];
     } finally {
+      textModel?.dispose();
       textModelReference?.dispose();
     }
   }
