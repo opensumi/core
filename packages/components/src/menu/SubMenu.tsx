@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { SubMenu as RcSubMenu } from 'rc-menu';
+import { SubMenu as RcSubMenu, SubMenuProps as RCSubMenuProps } from 'rc-menu';
 import React from 'react';
 
 interface TitleEventEntity {
@@ -7,7 +7,7 @@ interface TitleEventEntity {
   domEvent: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
 }
 
-export interface SubMenuProps {
+export interface SubMenuProps extends RCSubMenuProps {
   rootPrefixCls?: string;
   className?: string;
   disabled?: boolean;

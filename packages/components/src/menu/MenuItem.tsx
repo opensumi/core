@@ -1,4 +1,4 @@
-import { Item } from 'rc-menu';
+import { Item, MenuItemProps as RCMenuItemProps } from 'rc-menu';
 import React from 'react';
 
 import MenuContext, { MenuContextProps } from './MenuContext';
@@ -6,7 +6,8 @@ import MenuContext, { MenuContextProps } from './MenuContext';
 import { ClickParam } from '.';
 
 export interface MenuItemProps
-  extends Omit<React.HTMLAttributes<HTMLLIElement>, 'title' | 'onClick' | 'onMouseEnter' | 'onMouseLeave'> {
+  extends Omit<React.HTMLAttributes<HTMLLIElement>, 'title' | 'onClick' | 'onMouseEnter' | 'onMouseLeave'>,
+    RCMenuItemProps {
   rootPrefixCls?: string;
   disabled?: boolean;
   level?: number;
