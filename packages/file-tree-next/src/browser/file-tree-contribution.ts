@@ -51,7 +51,6 @@ import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 
-
 export const ExplorerResourceViewId = 'file-explorer-next';
 
 @Domain(
@@ -607,6 +606,28 @@ export class FileTreeContribution
           )),
     });
 
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.SELECT_CURRENT_NODE, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          this.fileTreeModelService.selectChildNode(uris);
+        } else {
+          const selectedUris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
+          if (selectedUris && selectedUris.length) {
+            this.fileTreeModelService.selectChildNode(selectedUris);
+          }
+        }
+      },
+      isVisible: () =>
+        (!!this.fileTreeModelService.contextMenuFile &&
+          !this.fileTreeModelService.contextMenuFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )) ||
+        (!!this.fileTreeModelService.focusedFile &&
+          !this.fileTreeModelService.focusedFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )),
+    });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
       execute: (_, uris) => {
         if (uris && uris.length) {
@@ -829,6 +850,11 @@ export class FileTreeContribution
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
+    });
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.SELECT_CURRENT_NODE.id,
+      keybinding: 'ctrlcmd+a',
       when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
