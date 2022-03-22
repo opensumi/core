@@ -1659,6 +1659,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.previewMode': {
     type: 'boolean',
     default: true,
+    description: '%editor.configuration.previewMode%',
   },
   'editor.wrapTab': {
     type: 'boolean',
