@@ -13,7 +13,7 @@ export interface ITerminalPreference {
   toJSON(): any;
 }
 
-export interface DefaultOptions {
+export interface SupportedOptions {
   allowTransparency: boolean;
   macOptionIsMeta: boolean;
   cursorBlink: boolean;
@@ -21,9 +21,10 @@ export interface DefaultOptions {
   tabStopWidth: number;
   fontSize: number;
   copyOnSelection: boolean;
+  fontFamily: string;
 }
 
-export const OptionTypeName = {
+export const SupportedOptionsName = {
   type: 'type',
   fontFamily: 'fontFamily',
   fontSize: 'fontSize',
@@ -31,13 +32,7 @@ export const OptionTypeName = {
   lineHeight: 'lineHeight',
   cursorBlink: 'cursorBlink',
   scrollback: 'scrollback',
-};
-
-export const CodeCompatibleOption = new Set(['copyOnSelection']);
-
-export const DefaultOptionValue = {
-  fontFamily: 'courier-new, courier, monospace',
-  fontSize: 12,
+  copyOnSelection: 'copyOnSelection',
 };
 
 export const enum CodeTerminalSettingPrefix {

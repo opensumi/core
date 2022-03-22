@@ -46,7 +46,7 @@ import {
   TerminalIcon,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import { DefaultOptions, ITerminalPreference } from '../common/preference';
+import { SupportedOptions, ITerminalPreference } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
@@ -223,7 +223,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         this._setOption(name, value);
         this.xterm.updatePreferences({
           [name]: value,
-        } as unknown as DefaultOptions);
+        } as unknown as SupportedOptions);
       }),
     );
 
