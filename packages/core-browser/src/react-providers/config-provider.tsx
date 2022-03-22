@@ -1,9 +1,9 @@
 import React from 'react';
 
-import { Injector } from '@opensumi/di';
-import { ExtensionCandidate, ExtensionConnectOption } from '@opensumi/ide-core-common';
+import type { Injector } from '@opensumi/di';
+import type { ExtensionCandidate, ExtensionConnectOption } from '@opensumi/ide-core-common';
 
-import { IPreferences, LayoutConfig } from '../bootstrap';
+import type { IPreferences, LayoutConfig } from '../bootstrap';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
