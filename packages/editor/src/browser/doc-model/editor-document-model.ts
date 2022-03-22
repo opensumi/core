@@ -48,7 +48,6 @@ import {
   EditorDocumentModelWillSaveEvent,
 } from './types';
 
-
 export interface EditorDocumentModelConstructionOptions {
   eol?: EOL;
   encoding?: string;
@@ -182,17 +181,19 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   private listenTo(monacoModel: ITextModel) {
-    monacoModel.onDidChangeContent((e) => {
-      if (e.changes && e.changes.length > 0) {
-        this.dirtyChanges.push({
-          fromVersionId: this._previousVersionId,
-          toVersionId: e.versionId,
-          changes: e.changes,
-        });
-      }
-      this._previousVersionId = e.versionId;
-      this.notifyChangeEvent(e.changes, e.isRedoing, e.isUndoing);
-    });
+    this.addDispose(
+      monacoModel.onDidChangeContent((e) => {
+        if (e.changes && e.changes.length > 0) {
+          this.dirtyChanges.push({
+            fromVersionId: this._previousVersionId,
+            toVersionId: e.versionId,
+            changes: e.changes,
+          });
+        }
+        this._previousVersionId = e.versionId;
+        this.notifyChangeEvent(e.changes, e.isRedoing, e.isUndoing);
+      }),
+    );
 
     this.addDispose(monacoModel);
   }
@@ -338,10 +339,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     );
     if (!this.editorPreferences['editor.askIfDiff']) {
       force = true;
-    }
-    // 新建的文件也可以保存
-    if (!this.dirty) {
-      return false;
     }
     const versionId = this.monacoModel.getVersionId();
     const lastSavingTask = this.savingTasks[this.savingTasks.length - 1];

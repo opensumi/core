@@ -82,11 +82,6 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     return false;
   }
 
-  isAlwaysDirty(uri: URI): boolean {
-    // untitled 文件允许新建后就可以保存
-    return true;
-  }
-
   closeAutoSave(uri: URI): boolean {
     return true;
   }
