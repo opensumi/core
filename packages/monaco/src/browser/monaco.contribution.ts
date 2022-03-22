@@ -18,10 +18,8 @@ import {
   ServiceNames,
   KeybindingContribution,
   KeybindingRegistry,
-  IContextKeyService,
   IOpenerService,
   MonacoOverrideServiceRegistry,
-  FormattingSelectorType,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuRegistry,
@@ -37,8 +35,10 @@ import {
   parseClassifierString,
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
+import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { CompletionProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import {
@@ -55,12 +55,14 @@ import {
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 
 import {
+  EditorExtensionsRegistry,
   ICommandServiceToken,
   IMonacoActionRegistry,
   IMonacoCommandService,
   IMonacoCommandsRegistry,
 } from './contrib/command';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
+import { ICodeEditor } from './monaco-api/editor';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
@@ -126,21 +128,39 @@ export class MonacoClientContribution
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
+  get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
+    return EditorExtensionsRegistry;
+  }
+
   async initialize() {
     // 注册 monaco 模块原有的 override services
     // 由于历史原因，这部分实现在 monaco 模块，后需要迁移到 editor 模块
     this.registerOverrideServices();
 
     // 执行所有 MonacoContribution
-    for (const contribution of this.monacoContributionProvider.getContributions()) {
+    for (const contrib of this.monacoContributionProvider.getContributions()) {
       // 执行所有 MonacoContribution 的 registerOverrideService 方法，用来注册 overrideService
-      if (contribution.registerOverrideService) {
-        contribution.registerOverrideService(this.overrideServicesRegistry);
+      if (contrib.registerOverrideService) {
+        contrib.registerOverrideService(this.overrideServicesRegistry);
       }
 
-      // 注册 Monaco 内置的格式化选择器，触发 Select 操作时使用 KAITIAN 自己实现的选择器
-      if (contribution.registerMonacoDefaultFormattingSelector) {
-        contribution.registerMonacoDefaultFormattingSelector(this.registryDefaultFormattingSelector);
+      // 注册 Monaco 内置的格式化选择器，触发 Select 操作时使用 OpenSumi 自己实现的选择器
+      if (contrib.registerMonacoDefaultFormattingSelector) {
+        contrib.registerMonacoDefaultFormattingSelector(this.registryDefaultFormattingSelector);
+      }
+
+      // 注册/覆盖一些 monaco 内置的 EditorExtensionContribution，例如 ContextMenu
+      if (contrib.registerEditorExtensionContribution) {
+        contrib.registerEditorExtensionContribution(
+          (id: string, contribCtor: new (editor: ICodeEditor, ...services: any) => IEditorContribution) => {
+            const existContrib = this.editorExtensionsRegistry.getSomeEditorContributions([id]);
+            if (existContrib.length === 0) {
+              registerEditorContribution(id, contribCtor);
+            } else {
+              existContrib[0].ctor = contribCtor;
+            }
+          },
+        );
       }
     }
 

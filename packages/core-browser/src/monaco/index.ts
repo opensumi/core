@@ -4,10 +4,12 @@ import type {
   IEditorConstructionOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import type { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import * as suggest from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type { BrandedService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 
 import { Event, IJSONSchema, IDisposable, BasicEvent } from '..';
 export enum ServiceNames {
@@ -61,6 +63,13 @@ export interface MonacoContribution {
   registerOverrideService?(registry: MonacoOverrideServiceRegistry): void;
 
   registerMonacoDefaultFormattingSelector?(registry: (selector: IFormattingEditProviderSelector) => void): void;
+
+  registerEditorExtensionContribution?<Services extends BrandedService[]>(
+    register: (
+      id: string,
+      contribCtor: new (editor: ICodeEditor, ...services: Services) => IEditorContribution,
+    ) => void,
+  ): void;
 }
 
 export const Extensions = {

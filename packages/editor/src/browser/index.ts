@@ -35,7 +35,6 @@ import { FileSystemResourceContribution } from './fs-resource';
 import { LanguageStatusContribution } from './language/language-status.contribution';
 import { LanguageStatusService } from './language/language-status.service';
 import { LanguageService } from './language/language.service';
-import { EditorContextMenuBrowserEditorContribution } from './menu/editor.context';
 import { EditorActionRegistryImpl } from './menu/editor.menu';
 import { CallHierarchyContribution, CallHierarchyService } from './monaco-contrib';
 import {
@@ -157,7 +156,7 @@ export class EditorModule extends BrowserModule {
     EditorClientAppContribution,
     EditorContribution,
     CompareEditorContribution,
-    EditorContextMenuBrowserEditorContribution,
+    // EditorContextMenuBrowserEditorContribution,
     EditorAutoSaveEditorContribution,
     SaveParticipantsContribution,
     FileSystemResourceContribution,
