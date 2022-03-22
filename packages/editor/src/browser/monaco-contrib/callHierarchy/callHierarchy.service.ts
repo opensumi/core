@@ -3,6 +3,7 @@ import {
   CancellationToken,
   IDisposable,
   IPosition,
+  isFunction,
   isNonEmptyArray,
   onUnexpectedExternalError,
   URI,
@@ -149,7 +150,9 @@ export class CallHierarchyService implements ICallHierarchyService {
       });
       return [model.root];
     } finally {
-      textModel?.dispose();
+      if (isFunction(textModel?.dispose)) {
+        textModel.dispose();
+      }
       textModelReference?.dispose();
     }
   }
