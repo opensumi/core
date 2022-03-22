@@ -156,7 +156,6 @@ export class EditorModule extends BrowserModule {
     EditorClientAppContribution,
     EditorContribution,
     CompareEditorContribution,
-    // EditorContextMenuBrowserEditorContribution,
     EditorAutoSaveEditorContribution,
     SaveParticipantsContribution,
     FileSystemResourceContribution,

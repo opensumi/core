@@ -218,6 +218,7 @@ export class EditorContribution
        * 这里借用 monaco 内置的 DI 注入方式，将依赖的 Services 通过参数传递进去
        * 在内部重新实例化时会拼接两份参数，对于 EditorContextMenuController
        * monaco 将会自动补充另一个 editor 实例作为参数
+       * ref: https://github.com/microsoft/vscode/blob/3820f34dcabb3060715e24abfd05ec2455e71786/src/vs/platform/instantiation/common/instantiationService.ts#L73
        */
       new SyncDescriptor(EditorContextMenuController, [
         this.contextMenuService,
