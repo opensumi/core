@@ -65,11 +65,11 @@ export async function createClientConnection2(
 
 /**
  * electron 环境下不要调用这个函数，该函数的 createSocketConnection 是 browser 环境下的
- * electron 环境下请使用 `electronEnv.getSocketConnection()` 来获得与后端的连接
  */
 export async function createNetClientConnection(injector: Injector, modules: ModuleConstructor[], connection: any) {
   bindConnectionService(injector, modules, createSocketConnection(connection));
 }
+
 export async function bindConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],

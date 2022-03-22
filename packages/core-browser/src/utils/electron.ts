@@ -65,7 +65,6 @@ export const electronEnv: {
   ipcRenderer: IElectronIpcRenderer;
   webviewPreload: string;
   plainWebviewPreload: string;
-  getSocketConnection: (connectPath?: any) => MessageConnection;
   [key: string]: any;
 } = (global as any) || {};
 
@@ -80,3 +79,14 @@ export interface IElectronNativeDialogService {
 }
 
 export const IElectronNativeDialogService = Symbol('IElectronNativeDialogService');
+
+export function createElectronClientConnection(connectPath?: string): MessageConnection {
+  let socket;
+  if (connectPath) {
+    socket = electronEnv.createNetConnection(connectPath);
+  } else {
+    socket = electronEnv.createRPCNetConnection();
+  }
+  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node/connect');
+  return createSocketConnection(socket);
+}

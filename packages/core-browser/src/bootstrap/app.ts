@@ -39,6 +39,7 @@ import {
 } from '@opensumi/ide-core-common/lib/const/application';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 
+import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { ClientAppContribution } from '../common';
@@ -239,7 +240,7 @@ export class ClientApp implements IClientApp, IDisposable {
       await bindConnectionService(this.injector, this.modules, connection);
     } else {
       if (type === 'electron') {
-        await bindConnectionService(this.injector, this.modules, await electronEnv.getSocketConnection());
+        await bindConnectionService(this.injector, this.modules, createElectronClientConnection());
       } else if (type === 'web') {
         await createClientConnection2(
           this.injector,
