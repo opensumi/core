@@ -13,7 +13,6 @@ import { DecorationModule } from '@opensumi/ide-decoration/lib/browser';
 import { EditorModule } from '@opensumi/ide-editor/lib/browser';
 import { ElectronBasicModule } from '@opensumi/ide-electron-basic/lib/browser';
 import { ExplorerModule } from '@opensumi/ide-explorer/lib/browser';
-// import { Terminal2Module } from '@opensumi/ide-terminal2/lib/browser';
 import { OpenVsxExtensionManagerModule } from '@opensumi/ide-extension-manager/lib/browser';
 import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
 import { ExtensionModule } from '@opensumi/ide-extension/lib/browser';
