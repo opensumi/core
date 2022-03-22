@@ -5,16 +5,14 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 import {
   ITerminalPreference,
   IPreferenceValue,
-  DefaultOptions,
-  OptionTypeName,
-  DefaultOptionValue,
+  SupportedOptions,
+  SupportedOptionsName,
   CodeTerminalSettingId,
-  CodeCompatibleOption,
 } from '../common/preference';
 
 @Injectable()
 export class TerminalPreference implements ITerminalPreference {
-  static defaultOptions: DefaultOptions = {
+  static defaultOptions: SupportedOptions = {
     allowTransparency: true,
     macOptionIsMeta: false,
     cursorBlink: false,
@@ -22,6 +20,7 @@ export class TerminalPreference implements ITerminalPreference {
     tabStopWidth: 8,
     fontSize: 12,
     copyOnSelection: false,
+    fontFamily: "Menlo, Monaco, 'Courier New', monospace",
   };
 
   private _onChange = new Emitter<IPreferenceValue>();
@@ -44,10 +43,10 @@ export class TerminalPreference implements ITerminalPreference {
 
   protected _valid(option: string, value: any): any {
     switch (option) {
-      case OptionTypeName.fontSize:
+      case SupportedOptionsName.fontSize:
         return value > 5 ? value : 5;
       default:
-        return value || DefaultOptionValue[option];
+        return value || TerminalPreference.defaultOptions[option];
     }
   }
 
@@ -57,7 +56,7 @@ export class TerminalPreference implements ITerminalPreference {
       if (newValue === oldValue) {
         return;
       }
-      if (OptionTypeName[name] || CodeCompatibleOption.has(name)) {
+      if (SupportedOptionsName[name]) {
         this._onChange.fire({
           name,
           value: this._valid(name, newValue),
@@ -66,7 +65,7 @@ export class TerminalPreference implements ITerminalPreference {
     });
   }
 
-  getCodeCompatibleOption(): Partial<DefaultOptions> {
+  getCodeCompatibleOption(): Partial<SupportedOptions> {
     return {
       copyOnSelection: this.service.get(CodeTerminalSettingId.CopyOnSelection, false),
       cursorBlink: this.service.get(
@@ -75,6 +74,10 @@ export class TerminalPreference implements ITerminalPreference {
       ),
       fontSize: this.service.get(CodeTerminalSettingId.FontSize, TerminalPreference.defaultOptions.fontSize),
       scrollback: this.service.get(CodeTerminalSettingId.Scrollback, TerminalPreference.defaultOptions.scrollback),
+      fontFamily:
+        this.service.get(CodeTerminalSettingId.FontFamily) ||
+        this.service.get('editor.fontFamily') ||
+        TerminalPreference.defaultOptions.fontFamily,
     };
   }
 
@@ -82,14 +85,17 @@ export class TerminalPreference implements ITerminalPreference {
    * @param option 终端的 option 选项名
    */
   get<T = any>(option: string): T {
-    const val = this.service.get<T>(this._optionToPref(option), DefaultOptionValue[option]);
+    const val = this.service.get<T>(this._optionToPref(option), TerminalPreference.defaultOptions[option]);
     return this._valid(option, val);
   }
 
-  toJSON() {
+  /**
+   * 遍历所有支持项，用户没有设置该项则返回默认值
+   */
+  getOptions() {
     const options = {};
 
-    Object.entries(OptionTypeName).forEach(([name]) => {
+    Object.entries(SupportedOptionsName).forEach(([name]) => {
       if (!name) {
         return;
       }
@@ -98,12 +104,15 @@ export class TerminalPreference implements ITerminalPreference {
         options[name] = val;
       }
     });
+    return options;
+  }
 
-    // Code 兼容设置项优先级低于 Sumi 设置项
+  toJSON() {
     return {
       ...TerminalPreference.defaultOptions,
+      ...this.getOptions(),
+      // 获取 Code 兼容的设置项的函数要放最后以覆盖默认值
       ...this.getCodeCompatibleOption(),
-      ...options,
     };
   }
 }

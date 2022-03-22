@@ -7,7 +7,7 @@ import { IClipboardService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 
-import { DefaultOptions } from '../common/preference';
+import { SupportedOptions } from '../common/preference';
 
 import styles from './component/terminal.module.less';
 
@@ -36,7 +36,7 @@ export class XTerm extends Disposable {
   private _searchAddon: SearchAddon;
   /** end */
 
-  constructor(public options?: XTermOptions, public preferences?: DefaultOptions) {
+  constructor(public options?: XTermOptions, public preferences?: SupportedOptions) {
     super();
 
     this.container = document.createElement('div');
@@ -59,7 +59,7 @@ export class XTerm extends Disposable {
       this.raw.setOption('theme', theme);
     }
   }
-  updatePreferences(preferences: DefaultOptions) {
+  updatePreferences(preferences: SupportedOptions) {
     this.preferences = {
       ...this.preferences,
       ...preferences,
