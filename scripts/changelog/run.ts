@@ -203,7 +203,7 @@ export async function run(from: string, to: string, options: { isRemote?: boolea
     logs = await readLogs(tagA, tagB);
   }
 
-  if (process.env.GITHUB_SHA) {
+  if (process.env.GITHUB_SHA && !isRelease) {
     compareLink = Github.getCompareLink(VERSION_COMMIT_MAP.get(tagB), process.env.GITHUB_SHA);
     releaseTitle = [`### [${process.env.GITHUB_SHA}](${compareLink})`, `> ${prettyDate(logs.latest?.date)}`];
   } else {
