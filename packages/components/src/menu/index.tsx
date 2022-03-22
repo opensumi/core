@@ -194,7 +194,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     // submenu should hide without animation
     return {
       motion: {
-        motionName: this.state.switchingModeFromInline ? '' : 'zoom-big',
+        motionName: '',
       },
     };
   }

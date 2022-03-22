@@ -123,7 +123,7 @@ export const MenuActionList: React.FC<{
     <Menu
       className='kt-menu'
       selectable={false}
-      motion={{ enter: () => null, leave: () => null }}
+      motion={{ motionLeave: false, motionEnter: false }}
       {...({ builtinPlacements: placements } as any)}
       onClick={handleClick}
     >
