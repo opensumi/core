@@ -1,4 +1,5 @@
-import { Command, localize } from '..';
+import { localize, Command } from '@opensumi/ide-core-common';
+
 import { getIcon } from '../style/icon/icon';
 
 export namespace FILE_COMMANDS {
@@ -144,8 +145,8 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
   };
 
-  export const OPEN_WITH_PATH: Command = {
-    id: 'filetree.openWithPath',
+  export const OPEN_TERMINAL_WITH_PATH: Command = {
+    id: 'filetree.openTerminalWithPath',
     category: CATEGORY,
   };
 
@@ -740,5 +741,124 @@ export namespace KEYBOARD_COMMANDS {
     id: 'keyboard.chooseKeyboardLayout',
     label: '%keyboard.chooseKeyboardLayout%',
     category: CATEGORY,
+  };
+}
+
+export namespace TERMINAL_COMMANDS {
+  const CATEGORY = '%terminal.name%';
+
+  export const SPLIT = {
+    id: 'terminal.split',
+    label: '%terminal.split%',
+    category: CATEGORY,
+  };
+
+  export const ADD = {
+    id: 'terminal.add',
+    label: '%terminal.new%',
+    category: CATEGORY,
+  };
+
+  export const REMOVE = {
+    id: 'terminal.remove',
+    label: '%terminal.remove%',
+    category: CATEGORY,
+  };
+
+  export const CLEAR = {
+    id: 'terminal.clear',
+    label: '%terminal.clear%',
+    category: CATEGORY,
+  };
+
+  export const OPEN_SEARCH = {
+    id: 'terminal.search',
+    label: '%terminal.search%',
+    category: CATEGORY,
+  };
+
+  export const SEARCH_NEXT = {
+    id: 'terminal.search.next',
+    label: '%terminal.search.next%',
+    category: CATEGORY,
+  };
+
+  export const OPEN_WITH_PATH = {
+    id: 'terminal.openWithPath',
+    category: CATEGORY,
+  };
+
+  export const CLEAR_CONTENT = {
+    id: 'terminal.clearContent',
+    label: '%terminal.menu.clearCurrentContent%',
+    category: CATEGORY,
+  };
+
+  export const CLEAR_ALL_CONTENT = {
+    id: 'terminal.clearAllContent',
+    label: '%terminal.menu.clearAllContents%',
+  };
+
+  export const TAB_RENAME = {
+    id: 'terminal.tabRename',
+  };
+
+  export const SELECT_ALL_CONTENT = {
+    id: 'terminal.selectAllContent',
+    label: '%terminal.menu.selectAllContent%',
+  };
+
+  export const MORE_SETTINGS = {
+    id: 'terminal.moreSettings',
+    label: '%terminal.menu.moreSettings%',
+  };
+
+  export const SELECT_TYPE = {
+    id: 'terminal.selectType',
+  };
+
+  export const SELECT_ZSH = {
+    id: 'terminal.selectTypeZsh',
+    label: 'zsh',
+  };
+
+  export const SELECT_BASH = {
+    id: 'terminal.selectTypeBash',
+    label: 'bash',
+  };
+
+  export const SELECT_SH = {
+    id: 'terminal.selectTypeSh',
+    label: 'sh',
+  };
+
+  export const SELECT_CMD = {
+    id: 'terminal.selectTypeCMD',
+    label: 'cmd',
+  };
+
+  export const SELECT_POWERSHELL = {
+    id: 'terminal.selectTypePowerShell',
+    label: 'powershell',
+  };
+
+  export const COPY = {
+    id: 'terminal.copy',
+    label: '%edit.copy%',
+  };
+
+  export const PASTE = {
+    id: 'terminal.paste',
+    label: '%edit.paste%',
+  };
+
+  export const SELECT_ALL = {
+    id: 'terminal.selectAll',
+    label: '%terminal.menu.selectCurrentContent%',
+    category: CATEGORY,
+  };
+
+  export const RE_LAUNCH = {
+    id: 'terminal.relaunch',
   };
 }

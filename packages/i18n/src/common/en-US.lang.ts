@@ -58,7 +58,7 @@ export const localizationBundle = {
     'file.search.folder': 'Search on this folder',
     'file.focus.files': 'Focus on Files Explorer',
     'file.filetree.filter': 'Filter on opened files',
-    'file.filetree.openWithPath': 'Open In The Terminal',
+    'file.filetree.openTerminalWithPath': 'Open In The Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
     'file.resource-deleted': '(Deleted)',
 

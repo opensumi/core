@@ -138,6 +138,11 @@ export const TOGGLE_WORKBENCH_VIEW_TERMINAL: Command = {
   delegate: 'workbench.view.terminal',
 };
 
+export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {
+  id: 'workbench.action.terminal.new',
+  delegate: TERMINAL_COMMANDS.ADD.id,
+};
+
 // 在资源管理器中聚焦文件
 export const WORKBENCH_FOCUS_FILES_EXPLORER: Command = {
   id: 'workbench.files.action.focusFilesExplorer',

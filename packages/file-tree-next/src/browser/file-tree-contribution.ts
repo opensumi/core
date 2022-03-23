@@ -245,8 +245,8 @@ export class FileTreeContribution
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
-        id: FILE_COMMANDS.OPEN_WITH_PATH.id,
-        label: localize('file.filetree.openWithPath'),
+        id: FILE_COMMANDS.OPEN_TERMINAL_WITH_PATH.id,
+        label: localize('file.filetree.openTerminalWithPath'),
       },
       when: 'workbench.panel.terminal',
       order: 3,
@@ -337,7 +337,7 @@ export class FileTreeContribution
   }
 
   registerCommands(commands: CommandRegistry) {
-    commands.registerCommand(FILE_COMMANDS.OPEN_WITH_PATH, {
+    commands.registerCommand(FILE_COMMANDS.OPEN_TERMINAL_WITH_PATH, {
       execute: (uri?: URI) => {
         let directory = uri;
 
