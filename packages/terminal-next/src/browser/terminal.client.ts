@@ -593,7 +593,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
 
     this._attachAddon.setConnection(connection);
-    this.name = this.name || connection.name || 'shell';
     this._ready = true;
     this._attached.resolve();
     this._widget.name = this.name;

@@ -26,7 +26,7 @@ export default observer(() => {
               key={group.id}
               id={group.id}
               editable={group.editable}
-              name={group.snapshot || 'init...'}
+              name={group.snapshot}
               selected={view.currentGroup && view.currentGroup.id === group.id}
               onInputBlur={() => group.unedit()}
               onInputEnter={(_: string, name: string) => group.rename(name)}
