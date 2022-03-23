@@ -1,4 +1,5 @@
-import { Command, localize } from '..';
+import { localize, Command } from '@opensumi/ide-core-common';
+
 import { getIcon } from '../style/icon/icon';
 
 export namespace FILE_COMMANDS {
