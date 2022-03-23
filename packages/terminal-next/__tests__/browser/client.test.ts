@@ -19,7 +19,6 @@ import { defaultName } from './mock.service';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import { delay } from './utils';
 
-
 function createDOMContainer() {
   const div = document.createElement('div');
   div.style.width = '400px';
@@ -98,7 +97,7 @@ describe('Terminal Client', () => {
   });
 
   it('Terminal Pid And Name', () => {
-    expect(client.name).toEqual(defaultName);
+    expect(client.name).toEqual('');
   });
 
   it('Focus Terminal which is ready', async () => {

@@ -1,16 +1,17 @@
 import clx from 'classnames';
-import debouce from 'lodash/debounce';
+import debounce from 'lodash/debounce';
 import React from 'react';
 
 import { getIcon } from '@opensumi/ide-core-browser';
+import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 
 import { ItemProps, ItemType } from '../../common';
 
 import styles from './tab.module.less';
 
 export function renderInfoItem(props: ItemProps) {
-  const handleSelect = debouce(() => props.onClick && props.onClick(), 20);
-  const handleClose = debouce(() => props.onClose && props.onClose(), 20);
+  const handleSelect = debounce(() => props.onClick && props.onClick(), 20);
+  const handleClose = debounce(() => props.onClose && props.onClose(), 20);
 
   const handleOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && props.onInputEnter && props.id) {
@@ -48,7 +49,7 @@ export function renderInfoItem(props: ItemProps) {
         ></input>
       ) : (
         <div id={props.id} className={styles.item_info_name} title={props.name}>
-          {props.name}
+          {props.name !== '' ? props.name : <Loading />}
         </div>
       )}
       {props.editable ? (
@@ -67,7 +68,7 @@ export function renderInfoItem(props: ItemProps) {
 }
 
 export function renderAddItem(props: ItemProps) {
-  const handleAdd = debouce(() => props.onClick && props.onClick(), 20);
+  const handleAdd = debounce(() => props.onClick && props.onClick(), 20);
 
   return (
     <div
