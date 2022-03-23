@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -39,7 +39,6 @@ import {
 import { AccordionService } from './accordion/accordion.service';
 import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
-
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {

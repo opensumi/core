@@ -1,4 +1,4 @@
-import { isEqual } from 'lodash';
+import isEqual from 'lodash/isEqual';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -19,7 +19,6 @@ import {
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
-
 
 import { DebugSession } from '../../debug-session';
 import {

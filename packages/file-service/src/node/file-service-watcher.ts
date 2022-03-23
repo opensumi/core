@@ -1,7 +1,7 @@
 import paths from 'path';
 
 import * as fs from 'fs-extra';
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import nsfw from 'nsfw';
 
 import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@opensumi/ide-core-common';

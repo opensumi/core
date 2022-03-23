@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -26,7 +26,6 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugExpressionProvider } from './debug-expression-provider';
 import { DebugHoverSource } from './debug-hover-source';
 import { DebugHoverView } from './debug-hover.view';
-
 
 @Injectable()
 export class DebugHoverWidget implements IDebugHoverWidget {

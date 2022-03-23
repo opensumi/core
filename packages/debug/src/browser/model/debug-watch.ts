@@ -1,4 +1,4 @@
-import throttle = require('lodash.throttle');
+import throttle from 'lodash/throttle';
 
 import { DisposableCollection, Emitter, Event, IReporterService } from '@opensumi/ide-core-browser';
 

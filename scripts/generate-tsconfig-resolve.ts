@@ -1,6 +1,5 @@
 import fse from 'fs-extra';
 import path from 'path';
-import _ from 'lodash';
 
 const packagesPath = path.join(__dirname, '../packages');
 const referenceDirPath = path.join(__dirname, '../configs/ts/references');

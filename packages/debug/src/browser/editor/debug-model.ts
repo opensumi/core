@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 
 import { Injector, Injectable, Autowired } from '@opensumi/di';
 import { DomListener, IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
@@ -30,7 +30,6 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { DebugHoverWidget } from './debug-hover-widget';
 import * as options from './debug-styles';
-
 
 @Injectable()
 export class DebugModel implements IDebugModel {

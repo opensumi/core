@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -9,7 +9,6 @@ import { Key } from '@opensumi/ide-core-browser';
 
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import styles from './debug-console.module.less';
-
 
 /**
  * 调试控制台筛选器

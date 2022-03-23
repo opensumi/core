@@ -1,6 +1,6 @@
 import { promisify } from 'util';
 
-import { uniqueId } from 'lodash';
+import uniqueId from 'lodash/uniqueId';
 
 import { ILoggerManagerClient, URI } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';

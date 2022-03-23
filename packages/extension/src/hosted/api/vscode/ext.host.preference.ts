@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/plugin-ext/src/plugin/preference-registry.ts
 
-import cloneDeep = require('lodash.clonedeep');
+import cloneDeep from 'lodash/cloneDeep';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Event, PreferenceScope, isObject, mixin, isUndefined } from '@opensumi/ide-core-common';
@@ -33,7 +33,6 @@ import {
 import { Uri } from '../../../common/vscode/ext-types';
 
 import { Configuration, ConfigurationChangeEvent, ConfigurationModel } from './preferences';
-
 
 interface ConfigurationInspect<T> {
   key: string;

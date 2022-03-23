@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 

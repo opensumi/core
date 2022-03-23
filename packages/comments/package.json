@@ -17,8 +17,6 @@
   },
   "dependencies": {
     "@opensumi/ide-core-common": "2.16.1",
-    "lodash.flattendeep": "^4.4.0",
-    "lodash.groupby": "^4.6.0",
     "marked": "4.0.10",
     "react-mentions": "^3.3.1"
   },
