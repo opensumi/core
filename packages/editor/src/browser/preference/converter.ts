@@ -4,7 +4,6 @@ import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platf
 
 import { IConvertedMonacoOptions } from '../types';
 
-
 /**
  * 计算由ConfigurationService设置值带来的monaco编辑器的属性
  * @param configurationService IConfigurationService

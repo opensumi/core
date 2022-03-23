@@ -252,7 +252,7 @@ export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index:
       <NextPreferenceItem
         key={`${index} - ${data.preference.id} - ${data.scope}`}
         preferenceName={data.preference.id}
-        localizedName={localize(data.preference.localized)}
+        localizedName={data.preference.localized ? localize(data.preference.localized) : ''}
         scope={data.scope}
       />
     );

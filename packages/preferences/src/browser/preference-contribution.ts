@@ -47,7 +47,6 @@ import { PreferenceView } from './preferences.view';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 
-
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
 @Injectable()

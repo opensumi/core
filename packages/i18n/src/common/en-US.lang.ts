@@ -502,13 +502,12 @@ export const localizationBundle = {
     'preference.editor.largeFile': 'Large File Size',
     'preference.editor.formatOnPaste': 'Format On Paste',
     'preference.files.eol': 'Files EOL',
+
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.wrapTab': 'Wrap Editor Tabs',
-    'preference.editor.enablePreviewFromCodeNavigation':
-      'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'preference.editor.preferredFormatter': 'Default Formatter',
-    'preference.editor.previewMode': 'Preview Mode',
+    'editor.configuration.previewMode': 'Enable Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.editor.minimap': 'minimap',
     'preference.editor.forceReadOnly': 'readOnly',
@@ -522,6 +521,8 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} is not a valid option',
 
+    'editor.configuration.enablePreviewFromCodeNavigation':
+      'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'editor.configuration.wrapTab':
       'Controls whether to wrap editor tabs instead of scroll mode when tabs are beyond the visible area.',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',

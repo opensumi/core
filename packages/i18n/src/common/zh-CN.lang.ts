@@ -432,7 +432,7 @@ export const localizationBundle = {
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': '重构确认方式',
 
     'preference.editor.wrapTab': '编辑器 Tab 自动换行',
-    'preference.editor.previewMode': '使用预览模式打开',
+    'editor.configuration.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.minimap': '显示 Minimap',
     'preference.editor.forceReadOnly': '只读模式',

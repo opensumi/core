@@ -17,11 +17,10 @@ import {
   formatLocalize,
 } from '@opensumi/ide-core-browser';
 
-import { toPreferenceReadableName } from '../common';
+import { toPreferenceReadableName, getPreferenceItemLabel } from '../common';
 
 import { PreferenceSettingsService } from './preference-settings.service';
 import styles from './preferences.module.less';
-
 
 interface IPreferenceItemProps {
   preferenceName: string;
@@ -175,7 +174,7 @@ const renderDescriptionExpression = (des: string) => {
   const { 0: expression, 1: preferenceId } = match;
   const preference = preferenceSettingService.getSectionByPreferenceId(preferenceId);
   if (preference) {
-    const preferenceTitle = localize(preference.localized);
+    const preferenceTitle = getPreferenceItemLabel(preference);
     const others: any[] = description
       .split(expression)
       .map((des: string, index: number) => <span key={`${preferenceId}-${index}`}>{des}</span>);

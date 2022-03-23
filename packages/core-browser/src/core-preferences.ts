@@ -197,6 +197,18 @@ export const corePreferenceSchema: PreferenceSchema = {
       enum: ['\n', '\r\n', 'auto'],
       default: 'auto',
     },
+    'files.trimFinalNewlines': {
+      type: 'boolean',
+      default: false,
+    },
+    'files.trimTrailingWhitespace': {
+      type: 'boolean',
+      default: false,
+    },
+    'files.insertFinalNewline': {
+      type: 'boolean',
+      default: false,
+    },
     'files.autoGuessEncoding': {
       type: 'boolean',
       default: false,
