@@ -174,6 +174,10 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   private currentLookFor = '';
 
   open(prefix: string): void {
+    if (!this.activePrefix || this.activePrefix !== prefix) {
+      this.activePrefix = prefix;
+    }
+
     this.onChangeTab(prefix);
   }
 
@@ -246,6 +250,7 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
       ? 0
       : (this.handlers.getTabByHandler(handler, prefix)?.prefix ?? handler.prefix).length;
     const handlerOptions = handler.getOptions();
+
     this.doOpen({
       prefix: optionsPrefix,
       skipPrefix,
@@ -330,11 +335,6 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
         },
         this.cancellationTokenSource?.token,
       );
-      this.setActivePrefix(handler, lookFor);
     }
-  }
-
-  private setActivePrefix(handler: QuickOpenHandler, lookFor: string) {
-    this.activePrefix = this.handlers.getTabByHandler(handler, lookFor)?.prefix ?? '';
   }
 }
