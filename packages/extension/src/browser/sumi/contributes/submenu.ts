@@ -46,7 +46,7 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
   private readonly menuRegistry: IMenuRegistry;
 
   @Autowired(IIconService)
-  private readonly iconService: IIconService;
+  protected readonly iconService: IIconService;
 
   schema = {
     description: localize('kaitianContributes.submenu', 'Contributes extension defined submenu'),

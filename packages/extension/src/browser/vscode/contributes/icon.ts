@@ -10,7 +10,7 @@ export type ThemesSchema = Array<ThemeContribution>;
 @Contributes('iconThemes')
 export class IconThemesContributionPoint extends VSCodeContributePoint<ThemesSchema> {
   @Autowired(IIconService)
-  private readonly iconService: IIconService;
+  protected readonly iconService: IIconService;
 
   contribute() {
     const themes = this.json.map((t) => ({

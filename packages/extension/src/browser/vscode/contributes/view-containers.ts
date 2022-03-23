@@ -35,7 +35,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
           const handlerId = this.mainlayoutService.collectTabbarComponent(
             [],
             {
-              iconClass: this.iconService.fromIcon(this.extension.path, container.icon),
+              iconClass: this.toIconClass(container.icon),
               title: this.getLocalizeFromNlsJSON(container.title),
               containerId: container.id,
               // 插件注册的视图默认在最后

@@ -14,7 +14,7 @@ import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-co
 import { IEditorGroup } from '@opensumi/ide-editor';
 import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType } from '@opensumi/ide-theme';
-import { IconType, IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
+import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
@@ -172,7 +172,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   contextKeyService: IContextKeyService;
 
   @Autowired(IIconService)
-  private readonly iconService: IIconService;
+  iconService: IIconService;
 
   protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string): string {
     const command = menu.command;
@@ -183,20 +183,6 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       index++;
     }
     return id;
-  }
-
-  static VAR_REGEXP = /\$\(.*?\)/g;
-
-  private toIconClass(iconContrib: { [index in ThemeType]: string } | string): string | undefined {
-    if (typeof iconContrib === 'object') {
-      const iconClass = this.iconService.fromIcon(this.extension.path, iconContrib, IconType.Background);
-      return iconClass;
-    }
-    const parsedName = MenusContributionPoint.VAR_REGEXP.exec(iconContrib);
-    if (parsedName && parsedName[1]) {
-      return this.iconService.fromString(parsedName[1]);
-    }
-    return this.iconService.fromString(iconContrib);
   }
 
   contribute() {

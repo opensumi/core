@@ -31,7 +31,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   private readonly extensionCommandManager: IExtCommandManagement;
 
   @Autowired(IIconService)
-  private readonly iconService: IIconService;
+  protected readonly iconService: IIconService;
 
   @Autowired(AppConfig)
   private readonly config: AppConfig;
