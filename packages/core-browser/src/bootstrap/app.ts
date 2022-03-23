@@ -30,6 +30,7 @@ import {
   IApplicationService,
   IDisposable,
   Deferred,
+  isUndefined,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -163,19 +164,19 @@ export class ClientApp implements IClientApp, IDisposable {
     this.modules.forEach((m) => this.resolveModuleDeps(m));
     // moduleInstance必须第一个是layout模块
     this.browserModules = opts.modulesInstances || [];
-
+    const isDesktop = opts.isElectronRenderer || isElectronRenderer();
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
-      appHost: isElectronRenderer() ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
+      appHost: isDesktop ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
+      appRoot: isUndefined(opts.appRoot) ? (isDesktop ? electronEnv.appPath : '') : opts.appRoot,
       uriScheme: DEFAULT_URI_SCHEME,
       // 如果通过 config 传入了 appName 及 uriScheme，则优先使用
       ...restOpts,
       // 一些转换和 typo 修复
-      isElectronRenderer: opts.isElectronRenderer || isElectronRenderer(),
+      isElectronRenderer: isDesktop,
       workspaceDir: opts.workspaceDir || '',
       extensionDir:
-        opts.extensionDir ||
-        (opts.isElectronRenderer || isElectronRenderer() ? electronEnv.metadata?.extensionDir : ''),
+        opts.extensionDir || (opts.isElectronRenderer || isDesktop ? electronEnv.metadata?.extensionDir : ''),
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://0.0.0.0:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,

@@ -19,6 +19,15 @@ export interface AppConfig {
    */
   appHost?: string;
   /**
+   * 应用绝对安装路径
+   *
+   * 部分插件，如 `typescript-vue-language-features` 可能会基于该路径获取相关依赖地址
+   * refs: https://github.com/search?q=getVscodeTypescriptPath&type=code
+   *
+   * 注意: 在没有应用绝对安装路径的环境中运行时，该值是空字符
+   */
+  appRoot?: string;
+  /**
    * 默认内部的 uriScheme，用于桌面版 app 的唤起
    * 同时也默认为 vscode.env.uriScheme 的值
    * 默认值为 `ClientApp.DEFAULT_URI_SCHEME` 即 `sumi`
