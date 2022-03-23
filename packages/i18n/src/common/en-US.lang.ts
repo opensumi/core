@@ -905,5 +905,8 @@ export const localizationBundle = {
     'menu.missing.command': 'menuId {0} register command not exist: {1}',
     'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',
     'menu.dupe.command': 'menuId {0} register command({1}) is duplicated with alt({2})',
+
+    'connection.start.rtt': 'Developer Tool: Measure Connection RTT',
+    'connection.stop.rtt': 'Developer Tool: Stop Connection RTT',
   },
 };

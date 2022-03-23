@@ -958,5 +958,8 @@ export const localizationBundle = {
     'menu.missing.command': '菜单{0} 要执行的命令不存在：{1}',
     'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
     'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
+
+    'connection.start.rtt': '开发人员工具：查看通信延迟',
+    'connection.stop.rtt': '开发人员工具：关闭通信延迟检查',
   },
 };
