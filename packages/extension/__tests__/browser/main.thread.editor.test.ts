@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { isEqual } from 'lodash';
+import isEqual from 'lodash/isEqual';
 
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { URI, IContextKeyService } from '@opensumi/ide-core-browser';

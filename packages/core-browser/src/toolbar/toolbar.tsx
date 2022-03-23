@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import throttle = require('lodash.throttle');
+import throttle from 'lodash/throttle';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -23,7 +23,6 @@ import {
   IToolbarActionElementProps,
   ToolbarRegistryReadyEvent,
 } from './types';
-
 
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;
 export const DEFAULT_TOOLBAR_MORE_WIDTH = 14;

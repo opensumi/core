@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -24,7 +24,6 @@ import {
 import { Uri, Position, Range, Selection, TextEditorLineNumbersStyle } from '../../../../common/vscode/ext-types';
 
 import { TextEditorEdit } from './edit.builder';
-
 
 export class ExtensionHostEditorService implements IExtensionHostEditorService {
   private _editors: Map<string, TextEditorData> = new Map();

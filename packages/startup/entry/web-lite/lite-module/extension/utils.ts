@@ -1,4 +1,4 @@
-import { mergeWith } from 'lodash';
+import mergeWith from 'lodash/mergeWith';
 
 import { Uri, asArray } from '@opensumi/ide-core-common';
 import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';

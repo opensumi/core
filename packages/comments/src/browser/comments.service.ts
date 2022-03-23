@@ -1,6 +1,6 @@
-import debounce = require('lodash.debounce');
-import flattenDeep from 'lodash.flattendeep';
-import groupBy from 'lodash.groupby';
+import debounce from 'lodash/debounce';
+import flattenDeep from 'lodash/flattenDeep';
+import groupBy from 'lodash/groupBy';
 import { observable, computed, action } from 'mobx';
 
 import { INJECTOR_TOKEN, Injector, Injectable, Autowired } from '@opensumi/di';
@@ -45,7 +45,6 @@ import {
 
 import { CommentsPanel } from './comments-panel.view';
 import { CommentsThread } from './comments-thread';
-
 
 @Injectable()
 export class CommentsService extends Disposable implements ICommentsService {
@@ -432,7 +431,7 @@ export class CommentsService extends Disposable implements ICommentsService {
     // 消除 document 引用
     model?.dispose();
     // 拍平，去掉 undefined
-    const flattenRange: IRange[] = flattenDeep(res).filter(Boolean);
+    const flattenRange: IRange[] = flattenDeep(res).filter(Boolean) as IRange[];
     deferredRes.resolve(flattenRange);
     return flattenRange;
   }

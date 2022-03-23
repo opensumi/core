@@ -1,10 +1,9 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-browser';
 import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
-
 
 export abstract class AbstractMenubarStore extends Disposable {
   menubarItems: IMenubarItem[];

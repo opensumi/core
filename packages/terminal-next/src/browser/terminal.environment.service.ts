@@ -1,5 +1,5 @@
-import debounce = require('lodash.debounce');
-import throttle = require('lodash.throttle');
+import debounce from 'lodash/debounce';
+import throttle from 'lodash/throttle';
 import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -24,7 +24,6 @@ import {
 import { MergedEnvironmentVariableCollection } from '../common/environmentVariableCollection';
 
 import { TerminalVariable } from './component/terminal.variable';
-
 
 export const ENVIRONMENT_VARIABLE_COLLECTIONS_KEY = 'terminal.integrated.environmentVariableCollections';
 

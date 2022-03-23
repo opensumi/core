@@ -1,4 +1,4 @@
-import throttle = require('lodash.throttle');
+import throttle from 'lodash/throttle';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
@@ -11,7 +11,6 @@ import { DebugSession } from '../../debug-session';
 import { ExpressionContainer, AnsiConsoleNode, DebugConsoleNode, DebugVariableContainer } from '../../tree';
 
 import { DebugConsoleTreeModel } from './debug-console-model';
-
 
 type ConsoleNodes = DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer;
 

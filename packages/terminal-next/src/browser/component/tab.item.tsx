@@ -1,11 +1,10 @@
 import clx from 'classnames';
-import debouce = require('lodash.debounce');
+import debouce from 'lodash/debounce';
 import React from 'react';
 
 import { getIcon } from '@opensumi/ide-core-browser';
 
 import { ItemProps, ItemType } from '../../common';
-
 
 import styles from './tab.module.less';
 

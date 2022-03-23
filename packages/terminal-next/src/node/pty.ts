@@ -8,7 +8,7 @@
 import { promises } from 'fs';
 import os from 'os';
 
-import omit from 'lodash.omit';
+import omit from 'lodash/omit';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 
@@ -23,7 +23,6 @@ import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
 import { IPtyProcess } from '../common/pty';
 
 import { findExecutable } from './shell';
-
 
 export const IPtyService = Symbol('IPtyService');
 

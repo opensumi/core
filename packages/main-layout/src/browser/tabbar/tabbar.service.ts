@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import { observable, action, observe, computed } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';

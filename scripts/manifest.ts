@@ -1,11 +1,10 @@
 import { join } from 'path';
-import * as _ from 'lodash';
 import * as fs from 'fs';
 import Package from './pkg';
 
 /**
  * 生成对应版本号的 manifest.json，包括:
-*/
+ */
 export async function generateManifest(pkgList: Package[], version: string) {
   const manifest = {
     meta: await collectPkgContains(pkgList, version),
@@ -19,7 +18,7 @@ export async function generateManifest(pkgList: Package[], version: string) {
  * packages 字段，包含所有包名和对应的版本号
  */
 export function collectPkgVersionList(pkgList: Package[], version: string) {
-  return Array.from(pkgList.map(p => p.name)).reduce((prev, cur) => {
+  return Array.from(pkgList.map((p) => p.name)).reduce((prev, cur) => {
     prev[cur] = version;
     return prev;
   }, {} as { [key: string]: string });
@@ -42,11 +41,7 @@ export async function collectPkgContains(pkgList: Package[], version: string) {
     };
 
     const entries: string[] = [];
-    for (const entryIdentifier of [
-      'node',
-      'browser',
-      'common',
-    ]) {
+    for (const entryIdentifier of ['node', 'browser', 'common']) {
       const existed = await exists(join(pkgSrcPath, entryIdentifier, 'index.ts'));
       if (existed) {
         entries.push(entryIdentifier);
@@ -62,11 +57,8 @@ export async function collectPkgContains(pkgList: Package[], version: string) {
 }
 
 function exists(filePath: string) {
-  return fs.promises.access(filePath)
+  return fs.promises
+    .access(filePath)
     .then(() => true)
     .catch(() => false);
-}
-
-function trim4Obj(obj: object) {
-  return _.pickBy(obj, _.identity);
 }

@@ -1,4 +1,4 @@
-import throttle = require('lodash.throttle');
+import throttle from 'lodash/throttle';
 
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
