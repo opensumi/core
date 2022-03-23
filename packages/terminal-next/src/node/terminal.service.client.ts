@@ -88,6 +88,10 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
       if (pty) {
         this.terminalService.setClient(this.clientId, this);
         this.logger.log(`client ${id} create ${pty.pid} with options `, launchConfig);
+        this.logger.log(
+          `terminal client ${id} and clientID: ${this.clientId} create ${pty.pid} with options `,
+          launchConfig,
+        );
         this.terminalMap.set(id, pty);
         return {
           id,

@@ -1,7 +1,6 @@
 /* eslint-disable no-console */
 import net from 'net';
 
-import { pick } from 'lodash';
 import * as pty from 'node-pty';
 
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
@@ -15,6 +14,30 @@ import {
   PTY_SERVICE_PROXY_SERVER_PORT,
 } from '../common';
 
+class PtyLineDataCache {
+  private size: number;
+  private dataArray: string[] = [];
+
+  constructor(size = 100) {
+    this.size = size;
+  }
+
+  public get data(): string[] {
+    return this.dataArray;
+  }
+
+  public add(data: string): void {
+    if (this.dataArray.length >= this.size) {
+      this.dataArray.shift();
+    }
+    this.dataArray.push(data);
+  }
+
+  public clear(): void {
+    this.dataArray = [];
+  }
+}
+
 // 在DEV容器中远程运行，与IDE Server通信
 
 type PID = number;
@@ -25,6 +48,7 @@ class PtyServiceProxy {
   // Map <pid, pty>
   private ptyInstanceMap = new Map<PID, pty.IPty>();
   private ptySessionMap = new Map<SessionId, PID>();
+  private ptyDataCacheMap = new Map<PID, PtyLineDataCache>();
   private readonly debugLogger = getDebugLogger();
 
   constructor() {
@@ -42,8 +66,9 @@ class PtyServiceProxy {
         file: string,
         args: string[] | string,
         options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
-        sessionId?: string,
+        longSessionId?: string,
       ): any {
+        const sessionId = longSessionId?.split('|')?.[1];
         self.debugLogger.log('ptyServiceProxy: spawn sessionId:', sessionId);
         let ptyInstance: pty.IPty | undefined;
         if (sessionId) {
@@ -67,6 +92,12 @@ class PtyServiceProxy {
         if (sessionId) {
           self.ptySessionMap.set(sessionId, ptyInstance.pid);
         }
+        const pid = ptyInstance.pid;
+        // 初始化PtyLineCache
+        if (!self.ptyDataCacheMap.has(pid)) {
+          self.ptyDataCacheMap.set(pid, new PtyLineDataCache());
+        }
+
         // 走RPC序列化的部分，function不走序列化，走单独的RPC调用
         const ptyInstanceSimple = {
           pid: ptyInstance.pid,
@@ -79,10 +110,19 @@ class PtyServiceProxy {
         return ptyInstanceSimple;
       },
       $onData(callId: number, pid: number): void {
+        self.debugLogger.debug('ptyServiceCenter $onData: callId: ', callId, ' pid: ', pid);
         const ptyInstance = self.ptyInstanceMap.get(pid);
-        $callback(callId, 'TERMINAL TEST');
+        const cache = self.ptyDataCacheMap.get(pid);
+        cache?.data.forEach((value) => {
+          $callback(callId, value);
+        });
+        if (cache?.data.length && cache?.data.length > 0) {
+          // $callback(callId, 'TERMINAL RESTORE/n');
+        }
+
         ptyInstance?.onData((e) => {
           self.debugLogger.debug('ptyServiceCenter: onData', e, 'pid:', pid, 'callId', callId);
+          cache?.add(e);
           $callback(callId, e);
         });
       },
@@ -109,10 +149,12 @@ class PtyServiceProxy {
         ptyInstance?.write(data);
       },
       $kill(pid: number, signal?: string): void {
-        // self.debugLogger.debug('ptyServiceCenter: kill', 'pid:', pid);
+        self.debugLogger.debug('ptyServiceCenter: kill', 'pid:', pid);
+        // TODO: 因为要保活，暂时屏蔽Kill，后续寻找更好的办法
         // const ptyInstance = self.ptyInstanceMap.get(pid);
         // ptyInstance?.kill(signal);
         // self.ptyInstanceMap.delete(pid);
+        // self.ptyDataCacheMap.delete(pid);
       },
       $pause(pid: number): void {
         const ptyInstance = self.ptyInstanceMap.get(pid);

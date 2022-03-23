@@ -22,7 +22,7 @@ import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
 import { IPtyProcess } from '../common/pty';
 
-import { PtyServiceManager } from './pty.manager';
+import { PtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
 
 export const IPtyService = Symbol('IPtyService');
@@ -31,6 +31,9 @@ export const IPtyService = Symbol('IPtyService');
 export class PtyService extends Disposable {
   @Autowired(INodeLogger)
   private readonly logger: INodeLogger;
+
+  @Autowired(PtyServiceManagerToken)
+  private readonly ptyServiceManager: PtyServiceManager;
 
   private readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
   private _ptyProcess: IPtyProcess | undefined;
@@ -43,7 +46,7 @@ export class PtyService extends Disposable {
 
   private readonly _onExit = new Emitter<IProcessExitEvent>();
   readonly onExit = this._onExit.event;
-  private readonly ptyServiceManager = new PtyServiceManager();
+  // private readonly ptyServiceManager = new PtyServiceManager();
   // 终端的sessionId，也就是构造函数传入的id
   private readonly sessionId: string;
 
