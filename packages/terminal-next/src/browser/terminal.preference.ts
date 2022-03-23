@@ -1,3 +1,5 @@
+import { ITerminalOptions } from 'xterm';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, Event } from '@opensumi/ide-core-common';
@@ -12,7 +14,7 @@ import {
 
 @Injectable()
 export class TerminalPreference implements ITerminalPreference {
-  static defaultOptions: SupportedOptions = {
+  static defaultOptions: SupportedOptions & ITerminalOptions = {
     allowTransparency: true,
     macOptionIsMeta: false,
     cursorBlink: false,
@@ -42,12 +44,7 @@ export class TerminalPreference implements ITerminalPreference {
   }
 
   protected _valid(option: string, value: any): any {
-    switch (option) {
-      case SupportedOptionsName.fontSize:
-        return value > 5 ? value : 5;
-      default:
-        return value || TerminalPreference.defaultOptions[option];
-    }
+    return this.toValidOption(option, value) || TerminalPreference.defaultOptions[option];
   }
 
   constructor() {
@@ -65,19 +62,20 @@ export class TerminalPreference implements ITerminalPreference {
     });
   }
 
-  getCodeCompatibleOption(): Partial<SupportedOptions> {
+  getCodeCompatibleOption(): Partial<SupportedOptions & ITerminalOptions> {
     return {
-      copyOnSelection: this.service.get(CodeTerminalSettingId.CopyOnSelection, false),
-      cursorBlink: this.service.get(
-        CodeTerminalSettingId.CursorBlinking,
-        TerminalPreference.defaultOptions.cursorBlink,
-      ),
-      fontSize: this.service.get(CodeTerminalSettingId.FontSize, TerminalPreference.defaultOptions.fontSize),
-      scrollback: this.service.get(CodeTerminalSettingId.Scrollback, TerminalPreference.defaultOptions.scrollback),
-      fontFamily:
-        this.service.get(CodeTerminalSettingId.FontFamily) ||
-        this.service.get('editor.fontFamily') ||
-        TerminalPreference.defaultOptions.fontFamily,
+      copyOnSelection: this.service.get(CodeTerminalSettingId.CopyOnSelection),
+      cursorBlink: this.service.get(CodeTerminalSettingId.CursorBlinking),
+      fontSize: this.service.get(CodeTerminalSettingId.FontSize),
+      scrollback: this.service.get(CodeTerminalSettingId.Scrollback),
+      fontFamily: this.service.get(CodeTerminalSettingId.FontFamily) || this.service.get('editor.fontFamily'),
+      fontWeight: this.service.get(CodeTerminalSettingId.FontWeight),
+      fontWeightBold: this.service.get(CodeTerminalSettingId.FontWeightBold),
+      cursorStyle: this.service.get(CodeTerminalSettingId.CursorStyle),
+      cursorWidth: this.service.get(CodeTerminalSettingId.CursorWidth),
+      lineHeight: this.service.get(CodeTerminalSettingId.LineHeight),
+      letterSpacing: this.service.get(CodeTerminalSettingId.LetterSpacing),
+      fastScrollSensitivity: this.service.get(CodeTerminalSettingId.FastScrollSensitivity),
     };
   }
 
@@ -90,7 +88,24 @@ export class TerminalPreference implements ITerminalPreference {
   }
 
   /**
-   * 遍历所有支持项，用户没有设置该项则返回默认值
+   * @param option 终端的 option 选项名
+   */
+  getOrUndefined<T = any>(option: string): T | undefined {
+    const val = this.service.get<T>(this._optionToPref(option));
+    return val;
+  }
+
+  toValidOption(option: string, value: any) {
+    switch (option) {
+      case SupportedOptionsName.fontSize:
+        return value > 5 ? value : 5;
+      default:
+        return value;
+    }
+  }
+
+  /**
+   * 遍历所有支持项，用户没有设置该项则返回空
    */
   getOptions() {
     const options = {};
@@ -99,7 +114,7 @@ export class TerminalPreference implements ITerminalPreference {
       if (!name) {
         return;
       }
-      const val = this.get(name);
+      const val = this.getOrUndefined(name);
       if (val) {
         options[name] = val;
       }
@@ -107,12 +122,11 @@ export class TerminalPreference implements ITerminalPreference {
     return options;
   }
 
-  toJSON() {
+  toJSON(): SupportedOptions & ITerminalOptions {
     return {
       ...TerminalPreference.defaultOptions,
-      ...this.getOptions(),
-      // 获取 Code 兼容的设置项的函数要放最后以覆盖默认值
       ...this.getCodeCompatibleOption(),
+      ...this.getOptions(),
     };
   }
 }
