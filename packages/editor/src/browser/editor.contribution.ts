@@ -34,10 +34,13 @@ import {
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
+import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {
   WorkbenchEditorService,
@@ -61,6 +64,7 @@ import { EditorStatusBarService } from './editor.status-bar.service';
 import { EditorView } from './editor.view';
 import { FormattingSelector } from './format/formatterSelect';
 import { EditorHistoryService } from './history';
+import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
@@ -192,9 +196,36 @@ export class EditorContribution
     registry.registerOverrideService(ServiceNames.TEXT_MODEL_SERVICE, this.injector.get(MonacoTextModelService));
   }
 
+  @Autowired(AbstractContextMenuService)
+  private readonly contextMenuService: AbstractContextMenuService;
+
+  @Autowired(IContextKeyService)
+  private readonly globalContextKeyService: IContextKeyService;
+
+  @Autowired(ICtxMenuRenderer)
+  private readonly contextMenuRenderer: ICtxMenuRenderer;
+
   registerMonacoDefaultFormattingSelector(register): void {
     const formatSelector = this.injector.get(FormattingSelector);
     register(formatSelector.select.bind(formatSelector));
+  }
+
+  registerEditorExtensionContribution(register): void {
+    register(
+      EditorContextMenuController.ID,
+      /**
+       * 如果使用 common-di 的 Injectable 装饰，在内部会无法被 monaco 实例化
+       * 这里借用 monaco 内置的 DI 注入方式，将依赖的 Services 通过参数传递进去
+       * 在内部重新实例化时会拼接两份参数，对于 EditorContextMenuController
+       * monaco 将会自动补充另一个 editor 实例作为参数
+       * ref: https://github.com/microsoft/vscode/blob/3820f34dcabb3060715e24abfd05ec2455e71786/src/vs/platform/instantiation/common/instantiationService.ts#L73
+       */
+      new SyncDescriptor(EditorContextMenuController, [
+        this.contextMenuService,
+        this.globalContextKeyService,
+        this.contextMenuRenderer,
+      ]),
+    );
   }
 
   protected async interceptOpen(uri: URI) {

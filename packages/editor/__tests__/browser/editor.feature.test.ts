@@ -17,10 +17,12 @@ import {
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
 import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatterSelect';
 import { EditorHistoryService } from '@opensumi/ide-editor/lib/browser/history';
-import { EditorContextMenuBrowserEditorContribution } from '@opensumi/ide-editor/lib/browser/menu/editor.context';
+import { EditorContextMenuController } from '@opensumi/ide-editor/lib/browser/menu/editor.context';
 import { TabTitleMenuService } from '@opensumi/ide-editor/lib/browser/menu/title-context.menu';
 import { EditorTopPaddingContribution } from '@opensumi/ide-editor/lib/browser/view/topPadding';
+import { EditorExtensionsRegistry } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -421,7 +423,7 @@ describe('editor menu test', () => {
     injector = createBrowserInjector([]);
     injector.mockService(AbstractContextMenuService, {
       createMenu: () => ({
-        getMergedMenuNodes: jest.fn(),
+        getMergedMenuNodes: () => ['Menu1', 'Menu2'],
         dispose: () => null,
       }),
     });
@@ -448,7 +450,16 @@ describe('editor menu test', () => {
     injector.disposeAll();
   });
 
-  it.skip('editor context menu test', () => {
+  it('editor context menu test', () => {
+    const [ctxController] = EditorExtensionsRegistry.getSomeEditorContributions([EditorContextMenuController.ID]);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    ctxController.ctor = new SyncDescriptor(EditorContextMenuController, [
+      injector.get(AbstractContextMenuService),
+      injector.get(IContextKeyService),
+      injector.get(ICtxMenuRenderer),
+    ]);
+
     const monacoEditor = monaco.editor.create(document.createElement('div'));
     const model = monaco.editor.createModel('test');
     monacoEditor.setModel(model);
@@ -457,20 +468,12 @@ describe('editor menu test', () => {
       monacoEditor,
       currentDocumentModel: {},
     };
-    const contribution = injector.get(EditorContextMenuBrowserEditorContribution);
-    contribution.registerEditorFeature({
-      registerEditorFeatureContribution: jest.fn((contri) => {
-        contri.contribute(editor as any);
-        return new Disposable();
-      }),
-      runContributions: jest.fn(),
-      runProvideEditorOptionsForUri: jest.fn(),
-    });
 
     editor.monacoEditor['_onContextMenu'].fire({
       target: { type: 1 } as any,
       event: {
         preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
         posx: 0,
         posy: 0,
       } as any,
