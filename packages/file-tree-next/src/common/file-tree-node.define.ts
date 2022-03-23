@@ -31,27 +31,38 @@ export class Directory extends CompositeTreeNode {
     return this._displayName || this.name;
   }
 
-  updateName(name: string) {
-    this.name = name;
-    TreeNode.removeTreeNode(this._uid, this.path);
-    // 更新name后需要重设节点路径索引
-    TreeNode.setTreeNode(this._uid, this.path, this);
+  private updateName(name: string) {
+    if (this.name !== name) {
+      TreeNode.removeTreeNode(this._uid, this.path);
+      this.name = name;
+      // 更新name后需要重设节点路径索引
+      TreeNode.setTreeNode(this._uid, this.path, this);
+    }
   }
 
-  updateDisplayName(name: string) {
+  private updateDisplayName(name: string) {
     this._displayName = name;
   }
 
-  updateURI(uri: URI) {
+  private updateURI(uri: URI) {
     this.uri = uri;
   }
 
-  updateFileStat(filestat: FileStat) {
+  private updateFileStat(filestat: FileStat) {
     this.filestat = filestat;
   }
 
-  updateToolTip(tooltip: string) {
+  private updateToolTip(tooltip: string) {
     this.tooltip = tooltip;
+  }
+
+  updateMetaData(meta: { fileStat: FileStat; tooltip: string; name: string; displayName: string; uri: URI }) {
+    const { fileStat, tooltip, name, displayName, uri } = meta;
+    this.updateDisplayName(displayName);
+    this.updateName(name);
+    this.updateFileStat(fileStat);
+    this.updateURI(uri);
+    this.updateToolTip(tooltip);
   }
 
   dispose() {
@@ -83,7 +94,7 @@ export class File extends TreeNode {
     return this._displayName || this.name;
   }
 
-  updateName(name: string) {
+  private updateName(name: string) {
     if (this.name !== name) {
       TreeNode.removeTreeNode(this._uid, this.path);
       this.name = name;
@@ -92,20 +103,29 @@ export class File extends TreeNode {
     }
   }
 
-  updateDisplayName(name: string) {
+  private updateDisplayName(name: string) {
     this._displayName = name;
   }
 
-  updateURI(uri: URI) {
+  private updateURI(uri: URI) {
     this.uri = uri;
   }
 
-  updateFileStat(filestat: FileStat) {
+  private updateFileStat(filestat: FileStat) {
     this.filestat = filestat;
   }
 
-  updateToolTip(tooltip: string) {
+  private updateToolTip(tooltip: string) {
     this.tooltip = tooltip;
+  }
+
+  updateMetaData(meta: { fileStat: FileStat; tooltip: string; name: string; displayName: string; uri: URI }) {
+    const { fileStat, tooltip, name, displayName, uri } = meta;
+    this.updateDisplayName(displayName);
+    this.updateName(name);
+    this.updateFileStat(fileStat);
+    this.updateURI(uri);
+    this.updateToolTip(tooltip);
   }
 
   dispose() {

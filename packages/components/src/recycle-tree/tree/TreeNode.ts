@@ -1018,8 +1018,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
     } else {
-      // 预存展开目录
-      const expandedPaths = this.getAllExpandedNodePath();
       //  Changed事件，表示节点有较多的变化时，重新更新当前Tree节点
       if (this.children) {
         for (const child of this.children) {
@@ -1032,12 +1030,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         this._children = null;
       } else {
         // needReload --- 判断根目录是否需要进行一次刷新，部分情况，如压缩目录下的文件创建后不应该刷新
-        await this.refresh(expandedPaths);
+        await this.refresh();
       }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);
   };
 
+  // 当没有传入具体路径时，使用当前展开目录作为刷新路径
   public async refresh(paths: string[] = this.getAllExpandedNodePath()) {
     this.refreshTasks.push(paths);
     return await this.queue(this.doRefresh.bind(this));

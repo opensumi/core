@@ -41,7 +41,6 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, FileChangeType } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
-
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeModel } from '../file-tree-model';
@@ -1153,16 +1152,18 @@ export class FileTreeModelService {
           this.willSelectedNodePath = newPath;
         } else {
           // 更新压缩目录展示名称
-          target.updateDisplayName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
-          target.updateName(newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator));
           // 由于节点移动时默认仅更新节点路径
           // 我们需要自己更新额外的参数，如uri, filestat等
-          target.updateURI(to);
-          target.updateFileStat({
-            ...target.filestat,
-            uri: to.toString(),
+          target.updateMetaData({
+            displayName: newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator),
+            name: newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator),
+            uri: to,
+            fileStat: {
+              ...target.filestat,
+              uri: to.toString(),
+            },
+            tooltip: this.fileTreeAPI.getReadableTooltip(to),
           });
-          target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
           this.treeModel.dispatchChange();
           if ((target.parent as Directory).children?.find((child) => target.path.indexOf(child.path) >= 0)) {
             // 当重命名后的压缩节点在父节点中存在子集节点时，刷新父节点
@@ -1226,14 +1227,16 @@ export class FileTreeModelService {
                 // Re-cache TreeNode
                 this.fileTreeService.removeNodeCacheByPath(prePath);
                 const newNodeName = [parent.name].concat(newName).join(Path.separator);
-                parent.updateName(newNodeName);
-                parent.updateDisplayName(newNodeName);
-                parent.updateURI(parent.uri.resolve(newName));
-                parent.updateFileStat({
-                  ...parent.filestat,
-                  uri: parent.uri.resolve(newName).toString(),
+                parent.updateMetaData({
+                  name: newNodeName,
+                  displayName: newNodeName,
+                  uri: parent.uri.resolve(newName),
+                  fileStat: {
+                    ...parent.filestat,
+                    uri: parent.uri.resolve(newName).toString(),
+                  },
+                  tooltip: this.fileTreeAPI.getReadableTooltip(parent.uri.resolve(newName)),
                 });
-                parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parent.uri.resolve(newName)));
                 // Re-cache TreeNode
                 this.fileTreeService.reCacheNode(parent, prePath);
                 selectNodeIfNodeExist(parent.path);
@@ -1251,14 +1254,16 @@ export class FileTreeModelService {
               this.fileTreeService.removeNodeCacheByPath(prePath);
               const parentUri = parent.uri.resolve(parentAddonPath);
               const newNodeName = [parent.name].concat(parentAddonPath).join(Path.separator);
-              parent.updateDisplayName(newNodeName);
-              parent.updateName(newNodeName);
-              parent.updateURI(parentUri);
-              parent.updateFileStat({
-                ...parent.filestat,
-                uri: parentUri.toString(),
+              parent.updateMetaData({
+                displayName: newNodeName,
+                name: newNodeName,
+                uri: parentUri,
+                fileStat: {
+                  ...parent.filestat,
+                  uri: parentUri.toString(),
+                },
+                tooltip: this.fileTreeAPI.getReadableTooltip(parentUri),
               });
-              parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentUri));
               // Re-cache TreeNode
               this.fileTreeService.reCacheNode(parent, prePath);
 
@@ -1278,14 +1283,16 @@ export class FileTreeModelService {
             this.fileTreeService.removeNodeCacheByPath(prePath);
             const parentUri = parent.uri.resolve(newName);
             const newNodeName = [parent.name].concat(newName).join(Path.separator);
-            parent.updateName(newNodeName);
-            parent.updateDisplayName(newNodeName);
-            parent.updateURI(parentUri);
-            parent.updateFileStat({
-              ...parent.filestat,
-              uri: parentUri.toString(),
+            parent.updateMetaData({
+              displayName: newNodeName,
+              name: newNodeName,
+              uri: parentUri,
+              fileStat: {
+                ...parent.filestat,
+                uri: parentUri.toString(),
+              },
+              tooltip: this.fileTreeAPI.getReadableTooltip(parentUri),
             });
-            parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentUri));
             // Re-cache TreeNode
             this.fileTreeService.reCacheNode(parent, prePath);
             selectNodeIfNodeExist(parent.path);
@@ -1435,13 +1442,15 @@ export class FileTreeModelService {
         }
       }
       // 更新目标节点信息
-      targetNode.updateName(relativeName!.toString());
-      targetNode.updateDisplayName(relativeName!.toString());
-      targetNode.updateURI(newTargetUri);
-      targetNode.updateToolTip(this.fileTreeAPI.getReadableTooltip(newTargetUri));
-      targetNode.updateFileStat({
-        ...targetNode.filestat,
-        uri: newTargetUri.toString(),
+      targetNode.updateMetaData({
+        name: relativeName?.toString(),
+        displayName: relativeName?.toString(),
+        uri: newTargetUri,
+        tooltip: this.fileTreeAPI.getReadableTooltip(newTargetUri),
+        fileStat: {
+          ...targetNode.filestat,
+          uri: newTargetUri.toString(),
+        },
       });
       this.fileTreeService.reCacheNode(targetNode, prePath);
       this.fileTreeService.addNode(targetNode as Directory, tempFileName, TreeNodeType.CompositeTreeNode);
