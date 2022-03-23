@@ -1,3 +1,4 @@
+import pickBy from 'lodash/pickBy';
 import { ITerminalOptions } from 'xterm';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -63,7 +64,7 @@ export class TerminalPreference implements ITerminalPreference {
   }
 
   getCodeCompatibleOption(): Partial<SupportedOptions & ITerminalOptions> {
-    return {
+    const options = {
       copyOnSelection: this.service.get(CodeTerminalSettingId.CopyOnSelection),
       cursorBlink: this.service.get(CodeTerminalSettingId.CursorBlinking),
       fontSize: this.service.get(CodeTerminalSettingId.FontSize),
@@ -77,6 +78,7 @@ export class TerminalPreference implements ITerminalPreference {
       letterSpacing: this.service.get(CodeTerminalSettingId.LetterSpacing),
       fastScrollSensitivity: this.service.get(CodeTerminalSettingId.FastScrollSensitivity),
     };
+    return pickBy(options, (val) => val !== undefined);
   }
 
   /**
