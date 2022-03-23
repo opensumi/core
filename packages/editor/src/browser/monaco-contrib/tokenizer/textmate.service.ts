@@ -209,6 +209,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
             this.activateLanguage(langId);
           }
         }
+        model?.dispose();
       }
     }
   }

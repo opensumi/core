@@ -44,7 +44,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -366,6 +365,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
         // 更新结果树
         this.searchResults.set(uriString, resultData.result);
       }
+      docModel.dispose();
     });
   }
 

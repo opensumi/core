@@ -372,9 +372,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       let result: string | null = null;
       const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
       if (modelRef) {
-        if (modelRef) {
-          result = modelRef.instance.languageId;
-        }
+        result = modelRef.instance.languageId;
         modelRef.dispose();
       }
       return result;
