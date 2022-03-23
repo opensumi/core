@@ -229,8 +229,6 @@ describe('resource service tests', () => {
 
     expect(provider.isReadonly(untitledURI)).toBeFalsy();
 
-    expect(provider.isAlwaysDirty(untitledURI)).toBeTruthy();
-
     expect(provider.handlesScheme(Schemas.untitled)).toBeTruthy();
     expect(provider.handlesScheme(Schemas.file)).toBeFalsy();
 
