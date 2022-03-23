@@ -13,7 +13,9 @@ import styles from './component/terminal.module.less';
 
 export interface XTermOptions {
   cwd?: string;
-  xtermOptions?: Partial<ITerminalOptions>;
+  // 要传给 xterm 的参数和一些我们自己的参数（如 copyOnSelection）
+  // 现在混在一起，也不太影响使用
+  xtermOptions: SupportedOptions & ITerminalOptions;
 }
 
 @Injectable({ multiple: true })
@@ -31,18 +33,22 @@ export class XTerm extends Disposable {
 
   raw: Terminal;
 
+  xtermOptions: ITerminalOptions & SupportedOptions;
+
   /** addons */
   private _fitAddon: FitAddon;
   private _searchAddon: SearchAddon;
   /** end */
 
-  constructor(public options?: XTermOptions, public preferences?: SupportedOptions) {
+  constructor(public options: XTermOptions) {
     super();
 
     this.container = document.createElement('div');
     this.container.className = styles.terminalInstance;
 
-    this.raw = new Terminal(options?.xtermOptions);
+    this.xtermOptions = options.xtermOptions;
+
+    this.raw = new Terminal(this.xtermOptions);
     this._prepareAddons();
     this.raw.onSelectionChange(this.onSelectionChange.bind(this));
   }
@@ -57,25 +63,34 @@ export class XTerm extends Disposable {
   updateTheme(theme: ITheme | undefined) {
     if (theme) {
       this.raw.setOption('theme', theme);
+      this.xtermOptions = {
+        ...this.xtermOptions,
+        theme,
+      };
     }
   }
-  updatePreferences(preferences: SupportedOptions) {
-    this.preferences = {
-      ...this.preferences,
-      ...preferences,
+
+  updatePreferences(options: SupportedOptions) {
+    this.xtermOptions = {
+      ...this.xtermOptions,
+      ...options,
     };
   }
+
   findNext(text: string) {
     return this._searchAddon.findNext(text);
   }
+
   open() {
     this.raw.open(this.container);
   }
+
   fit() {
     this._fitAddon.fit();
   }
+
   async onSelectionChange() {
-    if (this.preferences?.copyOnSelection) {
+    if (this.xtermOptions?.copyOnSelection) {
       if (this.raw.hasSelection()) {
         await this.copySelection();
       }

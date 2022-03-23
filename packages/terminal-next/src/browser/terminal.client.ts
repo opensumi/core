@@ -163,11 +163,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       {
         xtermOptions: {
           theme: this.theme.terminalTheme,
-          ...this.preference.toJSON(),
           ...this.internalService.getOptions(),
+          ...this.preference.toJSON(),
         },
       },
-      this.preference.toJSON(),
     ]);
 
     this.addDispose(this.xterm);
@@ -480,6 +479,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   _doResize() {
+    // TODO: debounce
     this.internalService.resize(this.id, this.xterm.raw.cols, this.xterm.raw.rows);
   }
 
