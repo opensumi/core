@@ -252,7 +252,6 @@ export interface ITerminalNodeService {
   setClient(clientId: string, client: ITerminalServiceClient): void;
   closeClient(clientId: string): void;
   ensureClientTerminal(clientId: string, terminalIdArr: string[]): boolean;
-  getServiceClientMap(): Map<string, ITerminalServiceClient>;
 }
 
 export const ITerminalProcessService = Symbol('ITerminalProcessService');

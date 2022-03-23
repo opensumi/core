@@ -82,8 +82,8 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async check(ids: string[]) {
-    const ensureResult = await this.serviceClientRPC.ensureTerminal(ids);
-    return ensureResult;
+    // TODO: 真正使用PtyServiceProxy检查SessionId/Pid存活，暂时先无脑true
+    return true;
   }
 
   private _createCustomWebSocket = (sessionId: string, pty: INodePtyInstance): ITerminalConnection => ({

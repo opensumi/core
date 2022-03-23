@@ -54,8 +54,7 @@
       "../../packages"
     ],
     "events": {
-      "restart": "lsof -i :8000 -t | xargs kill",
-      "crash": "lsof -i :8000 -t | xargs kill"
+      "crash": "kill -9 $(lsof -t -i:8080 -sTCP:LISTEN)"
     },
     "ext": "js,json,ts",
     "delay": "2000"

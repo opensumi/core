@@ -21,6 +21,7 @@ export const PtyServiceManagerToken = Symbol('PtyServiceManager');
 export class PtyServiceManager {
   private callId = 0;
   private callbackMap = new Map<number, (...args: any[]) => void>();
+  // Pty终端服务的代理，在双容器模式下采用RPC连接，单容器模式下直连
   private ptyServiceProxy: IPtyProxyRPCService;
 
   constructor() {
@@ -39,7 +40,6 @@ export class PtyServiceManager {
     createRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL, {
       $callback: async (callId, ...args) => {
         const callback = this.callbackMap.get(callId);
-        console.log(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL, callId, args);
         if (!callback) {
           return Promise.reject(new Error(`no found callback: ${callId}`));
         }
