@@ -1038,6 +1038,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     this.watcher.notifyDidProcessWatchEvent(this, event);
   };
 
+  // 当没有传入具体路径时，使用当前展开目录作为刷新路径
   public async refresh(paths: string[] = this.getAllExpandedNodePath()) {
     this.refreshTasks.push(paths);
     return await this.queue(this.doRefresh.bind(this));

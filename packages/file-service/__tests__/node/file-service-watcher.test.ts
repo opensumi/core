@@ -4,13 +4,11 @@ import * as fs from 'fs-extra';
 import mv from 'mv';
 import temp from 'temp';
 
-
 import { URI } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
-// tslint:disable:no-unused-expression
 
 function createNsfwFileSystemWatcherServer() {
   return new NsfwFileSystemWatcherServer({
@@ -242,7 +240,6 @@ describe('测试重命名、移动、新建相关', () => {
     expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
 
-  // 移除了 efsw 后，新建 `中文文件` 后接收不懂 ADDED
   it.skip('新建中文文件，需要收到新文件的ADDED', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
@@ -279,7 +276,6 @@ describe('测试重命名、移动、新建相关', () => {
   });
 });
 
-// tslint:disable-next-line:no-any
 process.on('unhandledRejection', (reason: any) => {
   // eslint-disable-next-line no-console
   console.error('Unhandled promise rejection: ' + reason);

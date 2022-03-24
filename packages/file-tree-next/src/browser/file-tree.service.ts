@@ -22,6 +22,7 @@ import {
   Emitter,
   OS,
   IApplicationService,
+  ILogger,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -91,6 +92,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
   private fileContextKey: FileContextKey;
 
@@ -285,7 +289,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
             // 根据workspace更新Root名称
             const rootName = this.workspaceService.getWorkspaceName(child.uri);
             if (rootName && rootName !== child.name) {
-              child.updateDisplayName(rootName);
+              child.updateMetaData({
+                displayName: rootName,
+              });
             }
           });
           this.watchFilesChange(new URI(this._roots[0].uri));
@@ -337,10 +343,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
             if (parentName && parentName !== parent.name) {
               const prePath = parent.path;
               this.removeNodeCacheByPath(prePath);
-              parent.updateName(parentName);
-              parent.updateURI(parentURI);
-              parent.updateFileStat(childrenParentStat);
-              parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentURI));
+              parent.updateMetaData({
+                name: parentName,
+                uri: parentURI,
+                tooltip: this.fileTreeAPI.getReadableTooltip(parentURI),
+                fileStat: childrenParentStat,
+              });
               // Re-Cache Node
               this.reCacheNode(parent, prePath);
             }
@@ -753,7 +761,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
    * 刷新指定下的所有子节点
    */
   async refresh(node: Directory = this.root as Directory) {
-    this.willRefreshDeferred = new Deferred();
+    // 如果正在刷新，就不要创建新的 Defer
+    // 否则会导致下面的 callback 闭包 resolve 的仍然是之前捕获的旧 defer
+    if (!this.willRefreshDeferred) {
+      this.willRefreshDeferred = new Deferred();
+    }
     if (!node) {
       return;
     }
@@ -764,7 +776,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       // 根目录刷新时情况忽略队列
       this._cacheIgnoreFileEvent.clear();
     }
-    // 这里也可以直接调用node.refresh，但由于文件树刷新事件可能会较多
+    // 这里也可以直接调用 node.refresh，但由于文件树刷新事件可能会较多
     // 队列化刷新动作减少更新成本
     this.queueChangeEvent(node.path, () => {
       this.onNodeRefreshedEmitter.fire(node);
@@ -779,12 +791,17 @@ export class FileTreeService extends Tree implements IFileTreeService {
       clearTimeout(this._eventFlushTimeout);
       this._eventFlushTimeout = setTimeout(async () => {
         this.flushEventQueueDeferred = new Deferred<void>();
-        // 询问是否此时可进行刷新事件
-        await this.requestFlushEventSignalEmitter.fireAndAwait();
-        await this.flushEventQueue();
-        this.flushEventQueueDeferred?.resolve();
-        this.flushEventQueueDeferred = null;
-        callback();
+        try {
+          // 询问是否此时可进行刷新事件
+          await this.requestFlushEventSignalEmitter.fireAndAwait();
+          await this.flushEventQueue();
+        } catch (error) {
+          this.logger.error('flush file change event queue error:', error);
+        } finally {
+          this.flushEventQueueDeferred?.resolve();
+          this.flushEventQueueDeferred = null;
+          callback();
+        }
       }, FileTreeService.DEFAULT_FLUSH_FILE_EVENT_DELAY) as any;
     }
     if (this._changeEventDispatchQueue.indexOf(path) === -1) {
