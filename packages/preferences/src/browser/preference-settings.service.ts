@@ -21,7 +21,6 @@ import {
   addElement,
   getAvailableLanguages,
   PreferenceService,
-  localize,
   replaceLocalizePlaceholder,
   ThrottledDelayer,
 } from '@opensumi/ide-core-browser';
@@ -481,6 +480,7 @@ export const defaultSettingSections: {
         { id: 'editor.tabSize', localized: 'preference.editor.tabSize' },
         { id: 'editor.insertSpaces', localized: 'preference.editor.insertSpace' },
         // 显示
+        { id: 'editor.wrapTab', localized: 'preference.editor.wrapTab' },
         { id: 'editor.wordWrap', localized: 'preference.editor.wordWrap' },
         { id: 'editor.renderLineHighlight', localized: 'preference.editor.renderLineHighlight' },
         { id: 'editor.renderWhitespace', localized: 'preference.editor.renderWhitespace' },
@@ -495,19 +495,9 @@ export const defaultSettingSections: {
         // 文件
         // `forceReadOnly` 选项暂时不对用户暴露
         // {id: 'editor.forceReadOnly', localized: 'preference.editor.forceReadOnly'},
-
-        { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },
-        { id: 'files.encoding', localized: 'preference.files.encoding.title' },
-        { id: 'files.eol', localized: 'preference.files.eol' },
-        { id: 'files.trimFinalNewlines' },
-        { id: 'files.trimTrailingWhitespace' },
-        { id: 'files.insertFinalNewline' },
-        { id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles' },
-        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
-        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
-        { id: 'files.associations', localized: 'preference.files.associations.title' },
         { id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength' },
         { id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
+        { id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles' },
         {
           id: 'editor.bracketPairColorization.enabled',
           localized: 'preference.editor.bracketPairColorization.enabled',
@@ -515,6 +505,17 @@ export const defaultSettingSections: {
         // Diff 编辑器
         { id: 'diffEditor.renderSideBySide', localized: 'preference.diffEditor.renderSideBySide' },
         { id: 'diffEditor.ignoreTrimWhitespace', localized: 'preference.diffEditor.ignoreTrimWhitespace' },
+        { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },
+        { id: 'files.encoding', localized: 'preference.files.encoding.title' },
+        { id: 'files.eol' },
+        { id: 'files.trimFinalNewlines' },
+        { id: 'files.trimTrailingWhitespace' },
+        { id: 'files.insertFinalNewline' },
+        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
+        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
+        { id: 'files.associations', localized: 'preference.files.associations.title' },
+        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
+        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
       ],
     },
   ],
@@ -546,8 +547,7 @@ export const defaultSettingSections: {
         { id: 'explorer.autoReveal', localized: 'preference.explorer.autoReveal' },
         // 搜索
         { id: 'search.exclude', localized: 'preference.search.exclude.title' },
-        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
-        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
+
         // 输出
         { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },
         { id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight' },
@@ -563,8 +563,6 @@ export const defaultSettingSections: {
   view: [
     {
       preferences: [
-        // 编辑器外观
-        { id: 'editor.wrapTab', localized: 'preference.editor.wrapTab' },
         // 资源管理器
         { id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title' },
         { id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title' },

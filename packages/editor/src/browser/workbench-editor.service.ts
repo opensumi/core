@@ -908,6 +908,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (this._restoringState) {
       return;
     }
+
     this._onDidEditorGroupTabChanged.fire();
   }
 
