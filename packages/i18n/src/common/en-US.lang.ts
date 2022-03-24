@@ -624,6 +624,9 @@ export const localizationBundle = {
     'terminal.focusFolder': 'Focus folder in explorer',
     'terminal.openFolder': 'Open folder in new window',
 
+    'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
+    'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
+
     'deugger.menu.setValue': 'Set Value',
     'deugger.menu.setValue.param': 'Please input the value of this variable',
 
