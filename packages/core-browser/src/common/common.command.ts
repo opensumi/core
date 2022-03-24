@@ -747,6 +747,18 @@ export namespace KEYBOARD_COMMANDS {
 export namespace TERMINAL_COMMANDS {
   const CATEGORY = '%terminal.name%';
 
+  export const FOCUS_NEXT_TERMINAL = {
+    id: 'workbench.action.terminal.focusNextPane',
+    label: '%terminal.focusNext.inTerminalGroup%',
+    category: CATEGORY,
+  };
+
+  export const FOCUS_PREVIOUS_TERMINAL = {
+    id: 'workbench.action.terminal.focusPreviousPane',
+    label: '%terminal.focusPrevious.inTerminalGroup%',
+    category: CATEGORY,
+  };
+
   export const SPLIT = {
     id: 'terminal.split',
     label: '%terminal.split%',

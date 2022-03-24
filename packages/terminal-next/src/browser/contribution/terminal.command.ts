@@ -22,6 +22,7 @@ import {
   ITerminalSearchService,
   ITerminalApiService,
   TERMINAL_COMMANDS,
+  ITerminalClient,
 } from '../../common';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';
@@ -289,5 +290,42 @@ export class TerminalCommandContribution implements CommandContribution {
         return env;
       },
     });
+
+    registry.registerCommand(TERMINAL_COMMANDS.FOCUS_NEXT_TERMINAL, {
+      execute: () => {
+        const group = this.view.currentGroup;
+        if (group.widgets.length <= 1) {
+          return;
+        }
+        const client = this.getNextOrPrevTerminalClient('next');
+        client?.focus();
+      },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.FOCUS_PREVIOUS_TERMINAL, {
+      execute: () => {
+        const group = this.view.currentGroup;
+        if (group.widgets.length <= 1) {
+          return;
+        }
+        const client = this.getNextOrPrevTerminalClient('prev');
+        client?.focus();
+      },
+    });
+  }
+
+  private getNextOrPrevTerminalClient(kind: 'next' | 'prev'): ITerminalClient | undefined {
+    const group = this.view.currentGroup;
+    const currentIdx = group.widgets.findIndex((w) => w.id === this.view.currentWidgetId);
+
+    let index;
+    if (kind === 'next') {
+      index = currentIdx === group.widgets.length - 1 ? 0 : currentIdx + 1;
+    } else {
+      index = currentIdx === 0 ? group.widgets.length - 1 : currentIdx - 1;
+    }
+
+    const widget = group.widgets[index];
+    return this.terminalController.findClientFromWidgetId(widget.id);
   }
 }

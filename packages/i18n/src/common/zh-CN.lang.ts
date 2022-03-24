@@ -659,6 +659,9 @@ export const localizationBundle = {
     'terminal.focusFolder': '聚焦资源管理器中的文件夹',
     'terminal.openFolder': '在新窗口中打开文件夹',
 
+    'terminal.focusNext.inTerminalGroup': '终端：聚焦当前终端组中的下一个终端',
+    'terminal.focusPrevious.inTerminalGroup': '终端：聚焦当前终端组中的上一个终端',
+
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
 
