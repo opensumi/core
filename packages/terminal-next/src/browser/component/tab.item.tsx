@@ -2,7 +2,8 @@ import clx from 'classnames';
 import debounce from 'lodash/debounce';
 import React from 'react';
 
-import { getIcon } from '@opensumi/ide-core-browser';
+import { Icon } from '@opensumi/ide-components/lib/icon/icon';
+import { getIcon, getIconClass } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 
 import { ItemProps, ItemType } from '../../common';
@@ -49,7 +50,14 @@ export function renderInfoItem(props: ItemProps) {
         ></input>
       ) : (
         <div id={props.id} className={styles.item_info_name} title={props.name}>
-          {props.name !== '' ? props.name : <Loading />}
+          {props.name !== '' ? (
+            <>
+              <Icon icon={'terminal'} size='small' style={{ marginRight: 4, color: 'inherit' }} />
+              <span className={styles.item_title}>{props.name}</span>
+            </>
+          ) : (
+            <Loading />
+          )}
         </div>
       )}
       {props.editable ? (
@@ -61,7 +69,7 @@ export function renderInfoItem(props: ItemProps) {
             event.stopPropagation();
             handleClose();
           }}
-        ></div>
+        />
       )}
     </div>
   );
@@ -77,7 +85,7 @@ export function renderAddItem(props: ItemProps) {
         [styles.item_add]: true,
       })}
       onClick={() => handleAdd()}
-    ></div>
+    />
   );
 }
 

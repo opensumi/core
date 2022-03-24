@@ -511,6 +511,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     queueMicrotask(() => {
       this._layout();
       this.attach();
+      this.focus();
       if (!this.widget.show) {
         this._show?.promise.then(async () => {
           this._show = new Deferred<void>();
