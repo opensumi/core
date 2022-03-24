@@ -41,6 +41,7 @@
       "**/__tests__/**",
       "**/src/browser/**",
       "**/core-browser/**",
+      "**/extensions/common/**",
       "**/theme/**",
       "**/src/hosted/**",
       "**/*.d.ts"
