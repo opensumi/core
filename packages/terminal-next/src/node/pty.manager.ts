@@ -14,11 +14,37 @@ import {
   PTY_SERVICE_PROXY_SERVER_PORT,
 } from '../common';
 
+import { PtyServiceProxy } from './pty.proxy';
+
 export const PtyServiceManagerToken = Symbol('PtyServiceManager');
 
-// 在IDE容器中远程运行，与DEV Server通信
+/**
+ * 在IDE容器中运行，具体分为两类实现。通过DI注入替换来做到两种模式的替换
+ * 1.与远程容器通信，完成终端的创建连接一些列事情 - 双容器架构
+ * 2.直接走同进程调用，操作终端 - 传统架构
+ */
+interface IPtyServiceManager {
+  spawn(
+    file: string,
+    args: string[] | string,
+    options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
+    sessionId?: string,
+  ): Promise<pty.IPty>;
+  onData(pid: number, listener: (e: string) => any): void;
+  onExit(pid: number, listener: (e: { exitCode: number; signal?: number }) => any): void;
+  on(pid: number, event: 'data', listener: (data: string) => void): void;
+  on(pid: number, event: 'exit', listener: (exitCode: number, signal?: number) => void): void;
+  on(pid: number, event: any, listener: (data: any) => void): void;
+  resize(pid: number, columns: number, rows: number): void;
+  write(pid: number, data: string): void;
+  pause(pid: number): void;
+  resume(pid: number): void;
+  kill(pid: number, signal?: string): void;
+}
+
+// 双容器架构 - 在IDE容器中远程运行，与DEV Server上的PtyService通信
 @Injectable()
-export class PtyServiceManager {
+export class PtyServiceManager implements IPtyServiceManager {
   private callId = 0;
   private callbackMap = new Map<number, (...args: any[]) => void>();
   // Pty终端服务的代理，在双容器模式下采用RPC连接，单容器模式下直连
@@ -54,7 +80,79 @@ export class PtyServiceManager {
     return getService;
   }
 
-  addNewCallback(pid: number, callback: (...args: any[]) => void) {
+  private addNewCallback(pid: number, callback: (...args: any[]) => void) {
+    const callId = this.callId++;
+    this.callbackMap.set(callId, callback);
+    return callId;
+    // TODO: dispose 逻辑
+  }
+
+  async spawn(
+    file: string,
+    args: string[] | string,
+    options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
+    sessionId?: string,
+  ): Promise<pty.IPty> {
+    const iPtyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options, sessionId)) as pty.IPty;
+    // 局部功能的Ipty, 代理所有常量
+    // TODO 改造ptyServiceProxy，支持常量的返回 以及方法的代理
+    return new PtyProcessProxy(iPtyRemoteProxy, this);
+  }
+
+  // 实现Ipty的需要回调的逻辑接口，同时注入
+  onData(pid: number, listener: (e: string) => any) {
+    const callId = this.addNewCallback(pid, listener);
+    this.ptyServiceProxy.$onData(callId, pid);
+  }
+  onExit(pid: number, listener: (e: { exitCode: number; signal?: number }) => any) {
+    const callId = this.addNewCallback(pid, listener);
+    this.ptyServiceProxy.$onExit(callId, pid);
+  }
+
+  on(pid: number, event: 'data', listener: (data: string) => void): void;
+  on(pid: number, event: 'exit', listener: (exitCode: number, signal?: number) => void): void;
+  on(pid: number, event: any, listener: (data: any) => void): void {
+    const callId = this.addNewCallback(pid, listener);
+    this.ptyServiceProxy.$on(callId, pid, event);
+  }
+
+  resize(pid: number, columns: number, rows: number): void {
+    this.ptyServiceProxy.$resize(pid, columns, rows);
+  }
+  write(pid: number, data: string): void {
+    this.ptyServiceProxy.$write(pid, data);
+  }
+  kill(pid: number, signal?: string): void {
+    this.ptyServiceProxy.$kill(pid, signal);
+  }
+  pause(pid: number): void {
+    this.ptyServiceProxy.$pause(pid);
+  }
+  resume(pid: number): void {
+    this.ptyServiceProxy.$resume(pid);
+  }
+}
+
+// 标准单容器架构 - 在IDE容器中运行，PtyService也在IDE进程中运行
+@Injectable()
+export class PtyServiceManagerLocal implements IPtyServiceManager {
+  private callId = 0;
+  private callbackMap = new Map<number, (...args: any[]) => void>();
+  // Pty终端服务的代理，在双容器模式下采用RPC连接，单容器模式下直连
+  private ptyServiceProxy: PtyServiceProxy;
+
+  constructor() {
+    const callback = async (callId, ...args) => {
+      const callback = this.callbackMap.get(callId);
+      if (!callback) {
+        return Promise.reject(new Error(`no found callback: ${callId}`));
+      }
+      callback(...args);
+    };
+    this.ptyServiceProxy = new PtyServiceProxy(callback);
+  }
+
+  private addNewCallback(pid: number, callback: (...args: any[]) => void) {
     const callId = this.callId++;
     this.callbackMap.set(callId, callback);
     return callId;
@@ -109,8 +207,8 @@ export class PtyServiceManager {
 
 // Pty进程的Remote代理
 class PtyProcessProxy implements pty.IPty {
-  private ptyServiceManager: PtyServiceManager;
-  constructor(iptyProxy: pty.IPty, ptyServiceManager: PtyServiceManager) {
+  private ptyServiceManager: IPtyServiceManager;
+  constructor(iptyProxy: pty.IPty, ptyServiceManager: IPtyServiceManager) {
     this.ptyServiceManager = ptyServiceManager;
     this.pid = iptyProxy.pid;
     this.cols = iptyProxy.cols;

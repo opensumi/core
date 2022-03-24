@@ -43,130 +43,16 @@ class PtyLineDataCache {
 type PID = number;
 type SessionId = string;
 
-class PtyServiceProxy {
-  private readonly ptyServiceCenter: RPCServiceCenter;
+export class PtyServiceProxy implements IPtyProxyRPCService {
   // Map <pid, pty>
   private ptyInstanceMap = new Map<PID, pty.IPty>();
   private ptySessionMap = new Map<SessionId, PID>();
   private ptyDataCacheMap = new Map<PID, PtyLineDataCache>();
   private readonly debugLogger = getDebugLogger();
+  private $callback: (callId: number, ...args) => void = () => {};
 
-  constructor() {
-    this.ptyServiceCenter = new RPCServiceCenter();
-    const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
-
-    const $callback: (callId: number, ...args) => void = (getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL) as any)
-      .$callback;
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const self = this;
-
-    // Pty 服务的RPC Service创建
-    const ptyServiceProxyInstance: IPtyProxyRPCService = {
-      $spawn(
-        file: string,
-        args: string[] | string,
-        options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
-        longSessionId?: string,
-      ): any {
-        const sessionId = longSessionId?.split('|')?.[1];
-        self.debugLogger.log('ptyServiceProxy: spawn sessionId:', sessionId);
-        let ptyInstance: pty.IPty | undefined;
-        if (sessionId) {
-          // 查询SessionId对应的Pid
-          const pid = self.ptySessionMap.get(sessionId) || -10;
-          // 查询Pid是否存活
-          const checkResult = pid > 0 ? self.checkProcess(pid) : false;
-          self.debugLogger.debug('ptyServiceProxy: check process result:', pid, checkResult);
-          if (checkResult) {
-            ptyInstance = self.ptyInstanceMap.get(pid);
-          } else {
-            self.ptyInstanceMap.delete(pid);
-          }
-        }
-
-        if (!ptyInstance) {
-          ptyInstance = pty.spawn(file, args, options);
-        }
-
-        self.ptyInstanceMap.set(ptyInstance.pid, ptyInstance);
-        if (sessionId) {
-          self.ptySessionMap.set(sessionId, ptyInstance.pid);
-        }
-        const pid = ptyInstance.pid;
-        // 初始化PtyLineCache
-        if (!self.ptyDataCacheMap.has(pid)) {
-          self.ptyDataCacheMap.set(pid, new PtyLineDataCache());
-        }
-
-        // 走RPC序列化的部分，function不走序列化，走单独的RPC调用
-        const ptyInstanceSimple = {
-          pid: ptyInstance.pid,
-          cols: ptyInstance.cols,
-          rows: ptyInstance.rows,
-          process: ptyInstance.process,
-          handleFlowControl: ptyInstance.handleFlowControl,
-        };
-        self.debugLogger.log('ptyServiceProxy: spawn', ptyInstanceSimple);
-        return ptyInstanceSimple;
-      },
-      $onData(callId: number, pid: number): void {
-        self.debugLogger.debug('ptyServiceCenter $onData: callId: ', callId, ' pid: ', pid);
-        const ptyInstance = self.ptyInstanceMap.get(pid);
-        const cache = self.ptyDataCacheMap.get(pid);
-        cache?.data.forEach((value) => {
-          $callback(callId, value);
-        });
-        if (cache?.data.length && cache?.data.length > 0) {
-          // $callback(callId, 'TERMINAL RESTORE/n');
-        }
-
-        ptyInstance?.onData((e) => {
-          self.debugLogger.debug('ptyServiceCenter: onData', e, 'pid:', pid, 'callId', callId);
-          cache?.add(e);
-          $callback(callId, e);
-        });
-      },
-      $onExit(callId: number, pid: number): void {
-        const ptyInstance = self.ptyInstanceMap.get(pid);
-        ptyInstance?.onExit((e) => {
-          self.debugLogger.debug('ptyServiceCenter: onExit', 'pid:', pid, e);
-          $callback(callId, e);
-        });
-      },
-      $on(callId: number, pid: number, event: any): void {
-        const ptyInstance = self.ptyInstanceMap.get(pid);
-        ptyInstance?.on(event, (e) => {
-          $callback(callId, e);
-        });
-      },
-      $resize(pid: number, columns: number, rows: number): void {
-        const ptyInstance = self.ptyInstanceMap.get(pid);
-        ptyInstance?.resize(columns, rows);
-      },
-      $write(pid: number, data: string): void {
-        const ptyInstance = self.ptyInstanceMap.get(pid);
-        self.debugLogger.debug('ptyServiceCenter: write', data, 'pid:', pid);
-        ptyInstance?.write(data);
-      },
-      $kill(pid: number, signal?: string): void {
-        self.debugLogger.debug('ptyServiceCenter: kill', 'pid:', pid);
-        // TODO: 因为要保活，暂时屏蔽Kill，后续寻找更好的办法
-        // const ptyInstance = self.ptyInstanceMap.get(pid);
-        // ptyInstance?.kill(signal);
-        // self.ptyInstanceMap.delete(pid);
-        // self.ptyDataCacheMap.delete(pid);
-      },
-      $pause(pid: number): void {
-        const ptyInstance = self.ptyInstanceMap.get(pid);
-        ptyInstance?.pause();
-      },
-      $resume(pid: number): void {
-        const ptyInstance = self.ptyInstanceMap.get(pid);
-        ptyInstance?.resume();
-      },
-    };
-
-    createRPCService(PTY_SERVICE_PROXY_PROTOCOL, ptyServiceProxyInstance);
+  constructor(callback: (callId: number, ...args) => void) {
+    this.$callback = callback;
   }
 
   // 检查Pty的PID是否存活
@@ -177,6 +63,139 @@ class PtyServiceProxy {
     } catch (e) {
       return false;
     }
+  }
+
+  // setCallback(value: (callId: number, ...args) => void) {
+  //   this.$callback = value;
+  // }
+
+  $spawn(
+    file: string,
+    args: string[] | string,
+    options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
+    longSessionId?: string,
+  ): any {
+    const sessionId = longSessionId?.split('|')?.[1];
+    this.debugLogger.log('ptyServiceProxy: spawn sessionId:', sessionId);
+    let ptyInstance: pty.IPty | undefined;
+    if (sessionId) {
+      // 查询SessionId对应的Pid
+      const pid = this.ptySessionMap.get(sessionId) || -10;
+      // 查询Pid是否存活
+      const checkResult = pid > 0 ? this.checkProcess(pid) : false;
+      this.debugLogger.debug('ptyServiceProxy: check process result:', pid, checkResult);
+      if (checkResult) {
+        ptyInstance = this.ptyInstanceMap.get(pid);
+      } else {
+        this.ptyInstanceMap.delete(pid);
+      }
+    }
+
+    if (!ptyInstance) {
+      ptyInstance = pty.spawn(file, args, options);
+    }
+
+    this.ptyInstanceMap.set(ptyInstance.pid, ptyInstance);
+    if (sessionId) {
+      this.ptySessionMap.set(sessionId, ptyInstance.pid);
+    }
+    const pid = ptyInstance.pid;
+    // 初始化PtyLineCache
+    if (!this.ptyDataCacheMap.has(pid)) {
+      this.ptyDataCacheMap.set(pid, new PtyLineDataCache());
+    }
+
+    // 走RPC序列化的部分，function不走序列化，走单独的RPC调用
+    const ptyInstanceSimple = {
+      pid: ptyInstance.pid,
+      cols: ptyInstance.cols,
+      rows: ptyInstance.rows,
+      process: ptyInstance.process,
+      handleFlowControl: ptyInstance.handleFlowControl,
+    };
+    this.debugLogger.log('ptyServiceProxy: spawn', ptyInstanceSimple);
+    return ptyInstanceSimple;
+  }
+
+  // FIXME: 因为onData的Dispose逻辑还不完善，所以会导致新的ptyInstance.onData被注册的时候，旧的ptyInstance.onData依然在运行，此时CacheMap里面就会有两份记录
+  $onData(callId: number, pid: number): void {
+    this.debugLogger.debug('ptyServiceCenter $onData: callId: ', callId, ' pid: ', pid);
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    const cache = this.ptyDataCacheMap.get(pid);
+    cache?.data.forEach((value) => {
+      this.$callback(callId, value);
+    });
+    if (cache?.data.length && cache?.data.length > 0) {
+      this.$callback(callId, '\r\r\n\u001b[1;\x1B[32m[terminal restore]\x1B[00m \r\n');
+    }
+
+    ptyInstance?.onData((e) => {
+      this.debugLogger.debug('ptyServiceCenter: onData', JSON.stringify(e), 'pid:', pid, 'callId', callId);
+      cache?.add(e);
+      this.$callback(callId, e);
+    });
+  }
+
+  $onExit(callId: number, pid: number): void {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    ptyInstance?.onExit((e) => {
+      this.debugLogger.debug('ptyServiceCenter: onExit', 'pid:', pid, e);
+      this.$callback(callId, e);
+    });
+  }
+
+  $on(callId: number, pid: number, event: any): void {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    ptyInstance?.on(event, (e) => {
+      this.$callback(callId, e);
+    });
+  }
+
+  $resize(pid: number, columns: number, rows: number): void {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    ptyInstance?.resize(columns, rows);
+  }
+
+  $write(pid: number, data: string): void {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    this.debugLogger.debug('ptyServiceCenter: write', data, 'pid:', pid);
+    ptyInstance?.write(data);
+  }
+
+  $kill(pid: number, signal?: string): void {
+    this.debugLogger.debug('ptyServiceCenter: kill', 'pid:', pid);
+    // TODO: 因为要保活，暂时屏蔽Kill，后续寻找更好的办法
+    // const ptyInstance = this.ptyInstanceMap.get(pid);
+    // ptyInstance?.kill(signal);
+    // this.ptyInstanceMap.delete(pid);
+    // this.ptyDataCacheMap.delete(pid);
+  }
+
+  $pause(pid: number): void {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    ptyInstance?.pause();
+  }
+
+  $resume(pid: number): void {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    ptyInstance?.resume();
+  }
+}
+
+class PtyServiceProxyRPCProvider {
+  private ptyServiceProxy: PtyServiceProxy;
+  private readonly ptyServiceCenter: RPCServiceCenter;
+  private readonly debugLogger = getDebugLogger();
+
+  constructor() {
+    this.ptyServiceCenter = new RPCServiceCenter();
+    const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
+    const $callback: (callId: number, ...args) => void = (getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL) as any)
+      .$callback;
+
+    this.ptyServiceProxy = new PtyServiceProxy($callback);
+
+    createRPCService(PTY_SERVICE_PROXY_PROTOCOL, this.ptyServiceProxy);
   }
 
   public initServer() {
@@ -200,8 +219,12 @@ class PtyServiceProxy {
       this.ptyServiceCenter.removeConnection(serverConnection);
     });
   }
+
+  public get $ptyServiceProxy(): PtyServiceProxy {
+    return this.ptyServiceProxy;
+  }
 }
 
-const proxy = new PtyServiceProxy();
-proxy.initServer();
-console.log('ptyServiceCenter: init');
+// const proxy = new PtyServiceProxy();
+// proxy.initServer();
+// console.log('ptyServiceCenter: init');
