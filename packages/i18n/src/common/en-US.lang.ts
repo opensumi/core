@@ -488,6 +488,7 @@ export const localizationBundle = {
 
     'preference.tab.name': 'Settings',
     'preference.noResults': "No Setting Found Containing '{0}'",
+    'preference.empty': 'Loading Settings...',
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
     'preference.overwrittenInUser': '（Set in User Settings）',

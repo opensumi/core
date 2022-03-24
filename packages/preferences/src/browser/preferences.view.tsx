@@ -51,19 +51,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const tabList = userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
 
   const [tabIndex, setTabIndex] = React.useState<number>(0);
-  const currentScope = React.useMemo<PreferenceScope>(() => (tabList[tabIndex] || tabList[0]).id, [tabList, tabIndex]);
 
   const { currentSearch: doSearchValue, currentGroup } = preferenceService;
 
-  const [currentSearch, setCurrentSearch] = React.useState<string>('');
-
-  const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
+  const currentScope = React.useMemo<PreferenceScope>(() => (tabList[tabIndex] || tabList[0]).id, [tabList, tabIndex]);
+  const [currentSearch, setCurrentSearch] = React.useState<string>(doSearchValue);
+  const [groups, setGroups] = React.useState<ISettingGroup[]>([]);
 
   const inputRef = React.useRef<HTMLInputElement | null>(null);
-
-  if (groups.length > 0 && groups.findIndex((g) => g.id === preferenceService.currentGroup) === -1) {
-    preferenceService.setCurrentGroup(groups[0].id);
-  }
 
   const debouncedSearch = debounce(
     (value) => {
@@ -76,6 +71,22 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const search = (value: string) => {
     debouncedSearch(value);
   };
+
+  React.useEffect(() => {
+    const doGetGroups = () => {
+      const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
+      if (groups.length > 0 && groups.findIndex((g) => g.id === currentGroup) === -1) {
+        preferenceService.setCurrentGroup(groups[0].id);
+      }
+      setGroups(groups);
+    };
+    const toDispose = preferenceService.onDidSettingsChange(() => {
+      doGetGroups();
+    });
+    return () => {
+      toDispose?.dispose();
+    };
+  }, []);
 
   React.useEffect(() => {
     setCurrentSearch(doSearchValue);
@@ -102,7 +113,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   );
 
   const items = React.useMemo(() => {
-    const sections = preferenceService.getSections(preferenceService.currentGroup, currentScope, currentSearch);
+    const sections = preferenceService.getSections(currentGroup, currentScope, currentSearch);
     let items: ISectionItemData[] = [];
     for (const section of sections) {
       if (section.title) {
@@ -155,7 +166,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             </div>
           </div>
         ) : (
-          <div className={styles.preference_noResults}>{formatLocalize('preference.noResults', currentSearch)}</div>
+          <div className={styles.preference_noResults}>
+            {currentSearch ? formatLocalize('preference.noResults', currentSearch) : formatLocalize('preference.empty')}
+          </div>
         )}
       </div>
     </ComponentContextProvider>

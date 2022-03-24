@@ -78,6 +78,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private onDidEnumLabelsChangeEmitter: Emitter<void> = new Emitter();
   private enumLabelsChangeDelayer = new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY);
 
+  private onDidSettingsChangeEmitter: Emitter<void> = new Emitter();
+
   constructor() {
     this.setEnumLabels(
       'general.language',
@@ -97,6 +99,14 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   get onDidEnumLabelsChange() {
     return this.onDidEnumLabelsChangeEmitter.event;
+  }
+
+  get onDidSettingsChange() {
+    return this.onDidSettingsChangeEmitter.event;
+  }
+
+  fireDidSettingsChange() {
+    this.onDidSettingsChangeEmitter.fire();
   }
 
   private isContainSearchValue(value: string, search: string) {

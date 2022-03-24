@@ -43,7 +43,7 @@ const NONE_SELECT_OPTION = 'none';
  *    不含有 enum - 输入框
  *  number: 输入框
  *  array:
- *    只允许 string类 - 可视化编辑项
+ *    只允许 string类 - 可视化编辑项
  *  object:
  *    暂不支持
  */

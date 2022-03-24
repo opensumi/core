@@ -174,6 +174,8 @@ export class PreferenceContribution
      */
     this.registerSettings();
     this.registerSettingSections();
+
+    this.preferenceService.fireDidSettingsChange();
   }
 
   registerCommands(commands: CommandRegistry) {
@@ -393,7 +395,7 @@ export class PreferenceContribution
     });
 
     editorComponentRegistry.registerEditorComponentResolver(PREF_SCHEME, (_, __, resolve) => {
-      resolve!([
+      resolve([
         {
           type: 'component',
           componentId: PREF_PREVIEW_COMPONENT_ID,

@@ -25,9 +25,7 @@ export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');
 export interface ISettingGroup {
   // 唯一
   id: string;
-
   title: string;
-
   iconClass: string;
 }
 
