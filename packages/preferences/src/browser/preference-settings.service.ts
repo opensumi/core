@@ -164,6 +164,16 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     return groups.filter((g) => this.getSections(g.id, scope, search).length > 0);
   }
 
+  async hasThisScopeSetting(scope: PreferenceScope) {
+    const url = await this.getPreferenceUrl(scope);
+    if (!url) {
+      return;
+    }
+
+    const exist = await this.fileServiceClient.access(url);
+    return exist;
+  }
+
   /**
    * 注册配置组
    * @param group 配置组

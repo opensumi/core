@@ -48,7 +48,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     [],
   );
   const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
-  const tabList = userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
+  const _tabList = userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
+
+  const [tabList, setTabList] = React.useState<
+    {
+      id: PreferenceScope;
+      label: string;
+    }[]
+  >(_tabList);
 
   const [tabIndex, setTabIndex] = React.useState<number>(0);
 
@@ -71,15 +78,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const search = (value: string) => {
     debouncedSearch(value);
   };
-
   React.useEffect(() => {
-    const doGetGroups = () => {
+    const doGetGroups = async () => {
       const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
       if (groups.length > 0 && groups.findIndex((g) => g.id === currentGroup) === -1) {
         preferenceService.setCurrentGroup(groups[0].id);
       }
       setGroups(groups);
+      const hasWorkspaceSettings = await preferenceService.hasThisScopeSetting(PreferenceScope.Workspace);
+      setTabList(hasWorkspaceSettings ? [WorkspaceScope, UserScope] : [UserScope, WorkspaceScope]);
     };
+    doGetGroups();
     const toDispose = preferenceService.onDidSettingsChange(() => {
       doGetGroups();
     });
