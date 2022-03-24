@@ -152,16 +152,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
   @computed
   get snapshot() {
-    if (this.name) {
-      return this.name;
-    } else {
-      let name = '';
-      const length = this.length;
-      this.widgets.forEach((widget, index) => {
-        name += `${widget.name}${index !== length - 1 ? ', ' : ''}`;
-      });
-      return name;
-    }
+    return this.current?.name || this.name;
   }
 
   addWidget(widget: Widget) {
