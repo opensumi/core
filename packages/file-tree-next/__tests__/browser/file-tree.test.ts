@@ -41,7 +41,6 @@ import { FileTreeModelService } from '../../src/browser/services/file-tree-model
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { Directory, File } from '../../src/common/file-tree-node.define';
 
-
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
@@ -426,7 +425,7 @@ describe('FileTree should be work while on single workspace model', () => {
       fileTreeModelService.activeFileFocusedDecoration(fileNode);
       expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode.uri.toString());
       fileTreeModelService.moveToNext();
-      expect(fileTreeModelService.contextMenuFile?.uri.toString()).toBe(fileNode2.uri.toString());
+      expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode2.uri.toString());
     });
 
     it('Move to prev file node should be work', () => {
@@ -437,7 +436,7 @@ describe('FileTree should be work while on single workspace model', () => {
       fileTreeModelService.activeFileFocusedDecoration(fileNode2);
       expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode2.uri.toString());
       fileTreeModelService.moveToPrev();
-      expect(fileTreeModelService.contextMenuFile?.uri.toString()).toBe(fileNode.uri.toString());
+      expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode.uri.toString());
     });
 
     it('Expand current file node should be work', async (done) => {
@@ -644,8 +643,9 @@ describe('FileTree should be work while on single workspace model', () => {
         return true;
       });
       fileTreeService.isCompactMode = true;
+      expect(directoryNode.expanded).toBeTruthy();
       fs.ensureDirSync(testFile);
-      const dispose = fileTreeService.onNodeRefreshed(async () => {
+      const dispose = fileTreeService.onNodeRefreshed(() => {
         const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
         expect(directoryNode.expanded).toBeTruthy();
         // cause the directory was compressed, branchSize will not increase

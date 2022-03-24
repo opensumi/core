@@ -289,7 +289,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
             // 根据workspace更新Root名称
             const rootName = this.workspaceService.getWorkspaceName(child.uri);
             if (rootName && rootName !== child.name) {
-              child.updateDisplayName(rootName);
+              child.updateMetaData({
+                displayName: rootName,
+              });
             }
           });
           this.watchFilesChange(new URI(this._roots[0].uri));
@@ -341,10 +343,12 @@ export class FileTreeService extends Tree implements IFileTreeService {
             if (parentName && parentName !== parent.name) {
               const prePath = parent.path;
               this.removeNodeCacheByPath(prePath);
-              parent.updateName(parentName);
-              parent.updateURI(parentURI);
-              parent.updateFileStat(childrenParentStat);
-              parent.updateToolTip(this.fileTreeAPI.getReadableTooltip(parentURI));
+              parent.updateMetaData({
+                name: parentName,
+                uri: parentURI,
+                tooltip: this.fileTreeAPI.getReadableTooltip(parentURI),
+                fileStat: childrenParentStat,
+              });
               // Re-Cache Node
               this.reCacheNode(parent, prePath);
             }

@@ -32,7 +32,6 @@ import styles from './file-tree.module.less';
 import { FileTreeService, ITreeIndent } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 
-
 export const FILTER_AREA_HEIGHT = 30;
 export const FILE_TREE_FILTER_DELAY = 500;
 
@@ -44,7 +43,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
   const [outerActive, setOuterActive] = useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = useState<boolean>(false);
   const [model, setModel] = useState<TreeModel>();
-  const wrapperRef: RefObject<HTMLDivElement> = createRef();
+  const wrapperRef: RefObject<HTMLDivElement> = useRef(null);
   const disposableRef: RefObject<DisposableCollection> = useRef(new DisposableCollection());
 
   const { height } = viewState;
@@ -173,17 +172,39 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     };
   }, []);
 
-  useEffect(() => {
-    const handleBlur = () => {
+  const isChildOf = useCallback((child, parent) => {
+    let parentNode;
+    if (child && parent) {
+      parentNode = child.parentNode;
+      while (parentNode) {
+        if (parent === parentNode) {
+          return true;
+        }
+        parentNode = parentNode.parentNode;
+      }
+    }
+    return false;
+  }, []);
+
+  const handleBlur = useCallback(
+    (e) => {
+      // 当失去焦点的节点为子节点或 null 时，忽略该事件
+      if (isChildOf(e.relatedTarget, wrapperRef.current) || !e.relatedTarget) {
+        return;
+      }
       setOuterActive(false);
       fileTreeModelService.handleTreeBlur();
-    };
+    },
+    [wrapperRef.current],
+  );
+
+  useEffect(() => {
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
     if (wrapperRef.current) {
       fileTreeService.initContextKey(wrapperRef.current);
     }
     return () => {
-      wrapperRef.current?.removeEventListener('blur', handleBlur, true);
+      wrapperRef.current?.removeEventListener('blur', handleBlur);
       fileTreeModelService.handleTreeBlur();
     };
   }, [wrapperRef.current]);
