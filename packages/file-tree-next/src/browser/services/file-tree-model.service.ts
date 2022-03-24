@@ -510,6 +510,20 @@ export class FileTreeModelService {
     this.treeModel.dispatchChange();
   };
 
+  // 右键菜单焦点态切换
+  activateFileFocusedDecoration = (target: File | Directory) => {
+    if (this.focusedFile) {
+      this.focusedDecoration.removeTarget(this.focusedFile);
+    }
+    if (this.contextMenuFile) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+      this.contextMenuFile = undefined;
+    }
+    this.focusedDecoration.addTarget(target);
+    this.focusedFile = target;
+    this.treeModel.dispatchChange();
+  };
+
   // 清空其他焦点态节点，更新当前焦点节点，
   // removePreFocusedDecoration 表示更新焦点节点时如果此前已存在焦点节点，之前的节点装饰器将会被移除
   activeFileFocusedDecoration = (target: File | Directory, removePreFocusedDecoration = false) => {
@@ -839,7 +853,7 @@ export class FileTreeModelService {
     if (!nextFileNode) {
       return;
     }
-    this.activateFileActivedDecoration(nextFileNode as File);
+    this.activateFileFocusedDecoration(nextFileNode as File);
     if (offsetHeight > height) {
       this.fileTreeHandle.ensureVisible(nextFileNode as File, 'end');
     }
@@ -867,7 +881,7 @@ export class FileTreeModelService {
     }
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     const offsetHeight = prevIndex * FILE_TREE_NODE_HEIGHT;
-    this.activateFileActivedDecoration(prevFileNode as File);
+    this.activateFileFocusedDecoration(prevFileNode as File);
     if ((snapshot.scrollPosition || 0) > offsetHeight) {
       this.fileTreeHandle.ensureVisible(prevFileNode as File, 'start');
     }
@@ -1353,12 +1367,14 @@ export class FileTreeModelService {
       this.contextKey?.filesExplorerInputFocused.set(true);
     };
     const handleDestroy = () => {
+      this.contextKey?.filesExplorerInputFocused.set(false);
       if (this.contextMenuFile) {
         // 卸载输入框时及时更新选中态
         this.selectFileDecoration(this.contextMenuFile, true);
       }
     };
     const handleCancel = () => {
+      this.contextKey?.filesExplorerInputFocused.set(false);
       if (this.fileTreeService.isCompactMode) {
         if (promptHandle instanceof NewPromptHandle) {
           this.fileTreeService.refresh(promptHandle.parent as Directory);
@@ -1400,6 +1416,8 @@ export class FileTreeModelService {
     if (uri.isEqual((this.treeModel.root as Directory).uri)) {
       // 可能为空白区域点击, 即选中的对象为根目录
       targetNode = await this.fileTreeService.getNodeByPathOrUri(uri)!;
+    } else if (this.focusedFile) {
+      targetNode = this.focusedFile;
     } else if (this.contextMenuFile) {
       targetNode = this.contextMenuFile;
     } else if (this.selectedFiles.length > 0) {

@@ -55,11 +55,13 @@ export class FileTreeAPI implements IFileTreeAPI {
           if (parentName && parentName !== parent.name) {
             const prePath = parent.path;
             tree.removeNodeCacheByPath(prePath);
-            parent.updateName(parentName);
-            parent.updateDisplayName(parentName);
-            parent.updateURI(parentURI);
-            parent.updateFileStat(file.children[0]);
-            parent.updateToolTip(this.getReadableTooltip(parentURI));
+            parent.updateMetaData({
+              name: parentName,
+              displayName: parentName,
+              uri: parentURI,
+              fileStat: file.children[0],
+              tooltip: this.getReadableTooltip(parentURI),
+            });
             // Re-Cache Node
             tree.reCacheNode(parent, prePath);
           }

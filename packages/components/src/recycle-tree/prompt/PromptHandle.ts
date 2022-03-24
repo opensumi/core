@@ -170,6 +170,8 @@ export abstract class PromptHandle {
     if (this._destroyed) {
       return;
     }
+    // 获取最顶层的父级焦点容器
+    let element = this.focusPrevActiveElement();
     this._destroyed = true;
     this.$.removeEventListener('click', this.handleClick);
     this.$.removeEventListener('keyup', this.handleKeyup);
@@ -181,6 +183,20 @@ export abstract class PromptHandle {
     this.$.disabled = false;
     this.onDestroyEmitter.fire(this.$.value);
     this.disposables.dispose();
+    requestAnimationFrame(() => {
+      element?.focus();
+    });
+  }
+
+  private focusPrevActiveElement() {
+    let parentElement = this.$.parentElement;
+    while (parentElement) {
+      if (typeof parentElement.attributes['tabindex'] !== 'undefined') {
+        break;
+      }
+      parentElement = parentElement?.parentElement;
+    }
+    return parentElement;
   }
 
   private handleClick = (ev) => {

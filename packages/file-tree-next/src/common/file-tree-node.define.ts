@@ -56,13 +56,13 @@ export class Directory extends CompositeTreeNode {
     this.tooltip = tooltip;
   }
 
-  updateMetaData(meta: { fileStat: FileStat; tooltip: string; name: string; displayName: string; uri: URI }) {
+  updateMetaData(meta: { fileStat?: FileStat; tooltip?: string; name?: string; displayName?: string; uri?: URI }) {
     const { fileStat, tooltip, name, displayName, uri } = meta;
-    this.updateDisplayName(displayName);
-    this.updateName(name);
-    this.updateFileStat(fileStat);
-    this.updateURI(uri);
-    this.updateToolTip(tooltip);
+    displayName && this.updateDisplayName(displayName);
+    name && this.updateName(name);
+    fileStat && this.updateFileStat(fileStat);
+    uri && this.updateURI(uri);
+    tooltip && this.updateToolTip(tooltip);
   }
 
   dispose() {
@@ -119,13 +119,13 @@ export class File extends TreeNode {
     this.tooltip = tooltip;
   }
 
-  updateMetaData(meta: { fileStat: FileStat; tooltip: string; name: string; displayName: string; uri: URI }) {
+  updateMetaData(meta: { fileStat?: FileStat; tooltip?: string; name?: string; displayName?: string; uri?: URI }) {
     const { fileStat, tooltip, name, displayName, uri } = meta;
-    this.updateDisplayName(displayName);
-    this.updateName(name);
-    this.updateFileStat(fileStat);
-    this.updateURI(uri);
-    this.updateToolTip(tooltip);
+    displayName && this.updateDisplayName(displayName);
+    name && this.updateName(name);
+    fileStat && this.updateFileStat(fileStat);
+    uri && this.updateURI(uri);
+    tooltip && this.updateToolTip(tooltip);
   }
 
   dispose() {
