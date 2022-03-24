@@ -1,0 +1,62 @@
+name: Workflow dispatch Next Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "The release branch, eg: v2.14, main"
+        required: true
+        default: 'main'
+
+jobs:
+  next-version:
+    name: Next Version
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      # 判断用户是否有写权限
+      - name: "Check if user has write access"
+        uses: "lannonbr/repo-permission-check-action@2.0.0"
+        with:
+          permission: "write"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Checkout 到
+      - uses: actions/checkout@v2
+        if: success()
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
+      # 安装依赖并构建
+      - name: Install dependencies & Build
+        run: |
+          npm i
+          npm run init
+
+      # 发布 next 版本，并在 issue 中回复
+      # 使用 lerna publish 命令
+      # --preid 指定前缀，确保版本唯一，前缀使用 $(date +%s) 生成类似  2.12.1-1640328423.0
+      # --dist-tag 指定发布的 tag，默认是 latest
+      # --no-push 指定不推送到远程仓库
+      # --no-git-tag-version 不生成 git tag
+      # --prepatch 指定发布的版本为 prepatch 版本, 只更新 patch 版本
+      # --ignore-scripts 指定不执行脚本
+      # --ignore-prepublish 忽略 pre-publish 脚本
+      - name: Publish prepatch version
+        run: |
+          lerna publish --exact --preid rc-$(date +%s) --dist-tag rc --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --ignore-scripts --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
