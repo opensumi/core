@@ -10,7 +10,7 @@ import {
 } from '../common';
 
 import { PtyService, IPtyService } from './pty';
-import { PtyServiceManagerToken, PtyServiceManagerLocal } from './pty.manager';
+import { PtyServiceManagerToken, PtyServiceManager } from './pty.manager';
 import { TerminalProcessServiceImpl } from './terminal.process.service';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 import { TerminalServiceImpl } from './terminal.service';
@@ -41,7 +41,7 @@ export class TerminalNodePtyModule extends NodeModule {
     },
     {
       token: PtyServiceManagerToken,
-      useClass: PtyServiceManagerLocal,
+      useClass: PtyServiceManager,
     },
   ];
 

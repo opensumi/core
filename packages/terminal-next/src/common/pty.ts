@@ -90,6 +90,8 @@ export interface IPtyProxyRPCService {
    * @param pid pty进程的pid，用于辨识pty进程
    */
   $resume(pid: number): void;
+
+  $getProcess(pid: number): string;
 }
 
 export interface Terminal {
