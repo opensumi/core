@@ -1,7 +1,6 @@
 name: Pull Request Next Release
 
 on:
-  workflow_dispatch:
   issue_comment:
 
 jobs:
