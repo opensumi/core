@@ -181,6 +181,9 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   @OnEvent(EditorDocumentModelOptionExternalUpdatedEvent)
   async acceptExternalChange(e: EditorDocumentModelOptionExternalUpdatedEvent) {
+    if (!this.hashCalculateService.initialized) {
+      await this.hashCalculateService.initialize();
+    }
     const doc = this.editorDocModels.get(e.payload.toString());
     if (doc) {
       if (doc.dirty) {

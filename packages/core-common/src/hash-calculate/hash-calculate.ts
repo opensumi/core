@@ -1,5 +1,7 @@
 import { Injectable } from '@opensumi/di';
 
+import { memoize } from '../utils';
+
 import { lockedCreate } from './lockedCreate';
 import wasmJson from './md5.wasm.json';
 import { Mutex } from './mutex';
@@ -11,6 +13,8 @@ export interface IHashCalculateService {
   initialize(): Promise<void>;
 
   calculate(content: IDataType): string;
+
+  readonly initialized: boolean;
 }
 
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T;
@@ -26,13 +30,18 @@ function md5WasmCalculatorFactory() {
 export class HashCalculateServiceImpl implements IHashCalculateService {
   private cachedCalculator?: Calculator;
 
-  private initialized = false;
+  private _initialized = false;
 
+  public get initialized() {
+    return this._initialized;
+  }
+
+  @memoize
   async initialize(): Promise<void> {
     if (!this.cachedCalculator) {
       this.cachedCalculator = await md5WasmCalculatorFactory();
     }
-    this.initialized = true;
+    this._initialized = true;
   }
 
   calculate(content: IDataType): string {
