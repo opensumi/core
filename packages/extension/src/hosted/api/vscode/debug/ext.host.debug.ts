@@ -318,16 +318,16 @@ export class ExtHostDebug implements IExtHostDebugService {
   ): vscode.Disposable {
     const providers = this.configurationProviders.get(type) || new Set<IDebugConfigurationProvider>();
     this.configurationProviders.set(type, providers);
-
     /**
      * ********
      * 由于目前还未实现 debugQuickAccess [https://github.com/microsoft/vscode/blob/414e5dbf1f870bc527ebc587cbbb5f6eee9bfba6/src/vs/workbench/contrib/debug/browser/debugQuickAccess.ts#L19]
      * 所以对于 DebugConfigurationProviderTriggerKind 的配置不作任何处理
      */
-    provider['type'] = type;
-    provider['triggerKind'] = trigger;
-
-    providers.add(provider as IDebugConfigurationProvider);
+    providers.add({
+      ...provider,
+      type,
+      triggerKind: trigger,
+    } as IDebugConfigurationProvider);
 
     return Disposable.create(() => {
       const providers = this.configurationProviders.get(type);
@@ -405,6 +405,9 @@ export class ExtHostDebug implements IExtHostDebugService {
     const { configuration, parent } = debugConfigurationDTO;
     const sessionId = uuid();
 
+    // TODO: 再通过 `debuggers.variables` 处理一遍 `configuration`
+    // 否则如 `PickProcess` 等一些调试变量将不可用
+
     const debugSession: ExtHostDebugSession = new ExtHostDebugSession(
       this.proxy,
       sessionId,
@@ -417,11 +420,12 @@ export class ExtHostDebug implements IExtHostDebugService {
 
     const tracker = await this.createDebugAdapterTracker(debugSession);
     const communicationProvider = await this.createCommunicationProvider(debugSession, configuration);
-
     const debugAdapterSession = new ExtensionDebugAdapterSession(communicationProvider, tracker, debugSession);
+
     this.sessions.set(sessionId, debugAdapterSession);
 
-    const connection = await this.extHostConnectionService!.ensureConnection(sessionId);
+    const connection = await this.extHostConnectionService.ensureConnection(sessionId);
+
     debugAdapterSession.start(new ExtensionWSChannel(connection));
 
     return sessionId;
@@ -599,7 +603,7 @@ export class ExtHostDebug implements IExtHostDebugService {
       }
     }
 
-    if ('debugServer' in debugConfiguration) {
+    if (typeof debugConfiguration.debugServer === 'number') {
       return connectDebugAdapter({ port: debugConfiguration.debugServer });
     } else {
       if (!executable) {
