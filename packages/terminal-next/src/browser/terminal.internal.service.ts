@@ -14,6 +14,7 @@ import {
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalConnection,
+  IPtyProcessChangeEvent,
 } from '../common';
 
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
@@ -111,18 +112,26 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.onExit(handler);
   }
 
+  onProcessChange(handler: (event: IPtyProcessChangeEvent) => void) {
+    return this.service.onProcessChange(handler);
+  }
+
   async getOs(): Promise<OperatingSystem> {
     return await this.service.getOs();
   }
+
   async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
     return await this.service.getProfiles(autoDetect);
   }
+
   async getDefaultSystemShell(): Promise<string> {
     return await this.service.getDefaultSystemShell();
   }
+
   async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
     return await this.service.getCodePlatformKey();
   }
+
   async attachByLaunchConfig(
     sessionId: string,
     cols: number,

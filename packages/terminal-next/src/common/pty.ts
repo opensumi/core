@@ -221,6 +221,7 @@ export interface ITerminalServiceClient {
       | number,
     signal?: number,
   ): void;
+  processChange(clientId: string, processName: string): void;
   setConnectionClientId(clientId: string): void;
   dispose(): void;
   getShellName(id: string): string;

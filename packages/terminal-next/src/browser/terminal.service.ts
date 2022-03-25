@@ -21,6 +21,7 @@ import {
   ITerminalProfile,
   IShellLaunchConfig,
   IDetectProfileOptionsPreference,
+  IPtyProcessChangeEvent,
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 import { ShellType, WindowsShellType } from '../common/shell';
@@ -54,6 +55,9 @@ export class NodePtyTerminalService implements ITerminalService {
 
   private _onExit = new Emitter<IPtyExitEvent>();
   public onExit: Event<IPtyExitEvent> = this._onExit.event;
+
+  private _onProcessChange = new Emitter<IPtyProcessChangeEvent>();
+  public onProcessChange = this._onProcessChange.event;
 
   private _onDataDispatcher = new Dispatcher<void, { [key: string]: string }>();
   private _onExitDispatcher = new Dispatcher<
@@ -269,6 +273,10 @@ export class NodePtyTerminalService implements ITerminalService {
       this._onExitDispatcher.emit(sessionId, { code: data.code, signal: data.signal });
       this._onExit.fire({ sessionId, code: data.code, signal: data.signal });
     }
+  }
+
+  $processChange(sessionId: string, processName: string) {
+    this._onProcessChange.fire({ sessionId, processName });
   }
 
   async getOs() {

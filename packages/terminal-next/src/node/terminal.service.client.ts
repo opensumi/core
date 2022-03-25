@@ -17,12 +17,12 @@ import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/she
 import { findExecutable, findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 
-
 /**
  * this RPC target: NodePtyTerminalService
  */
 interface IRPCTerminalService {
   closeClient(id: string, data: ITerminalError | { code?: number; signal?: number } | number, signal?: number): void;
+  $processChange(id: string, processName: string): void;
   onMessage(id: string, msg: string): void;
 }
 
@@ -63,6 +63,12 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
       this.client.closeClient(id, data, signal);
     } else {
       this.logger.warn(`clientMessage ${id} rpcClient not found`);
+    }
+  }
+
+  processChange(clientId: string, processName: string): void {
+    if (this.client) {
+      this.client.$processChange(clientId, processName);
     }
   }
 
