@@ -324,7 +324,10 @@ export class ExtHostDebug implements IExtHostDebugService {
      * 所以对于 DebugConfigurationProviderTriggerKind 的配置不作任何处理
      */
     providers.add({
-      ...provider,
+      resolveDebugConfiguration: provider.resolveDebugConfiguration?.bind(provider),
+      provideDebugConfigurations: provider.provideDebugConfigurations?.bind(provider),
+      resolveDebugConfigurationWithSubstitutedVariables:
+        provider.resolveDebugConfigurationWithSubstitutedVariables?.bind(provider),
       type,
       triggerKind: trigger,
     } as IDebugConfigurationProvider);
@@ -496,7 +499,7 @@ export class ExtHostDebug implements IExtHostDebugService {
         if (provider.resolveDebugConfiguration) {
           const next = await provider.resolveDebugConfiguration(
             this.toWorkspaceFolder(workspaceFolderUri),
-            current!,
+            current,
             token,
           );
           // 对齐 VS Code 实现，当 resolveDebugConfiguration 返回值为 `undefined` 时，中断调试进程

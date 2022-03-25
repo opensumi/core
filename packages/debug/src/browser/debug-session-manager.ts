@@ -363,6 +363,7 @@ export class DebugSessionManager implements IDebugSessionManager {
       return options;
     }
     const { workspaceFolderUri, index, noDebug, parentSession, repl, compact, lifecycleManagedByParent } = options;
+
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
     if (resolvedConfiguration && !('cwd' in resolvedConfiguration)) {
       // 当调试配置不存在配置项时，提供默认的 `cwd` 选项
