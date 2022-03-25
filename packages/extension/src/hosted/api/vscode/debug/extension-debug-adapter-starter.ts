@@ -65,7 +65,10 @@ export function startDebugAdapter(
  * 链接远程调试服务
  */
 export function connectDebugAdapter(server: vscode.DebugAdapterServer): DebugStreamConnection {
-  const socket = net.createConnection(server.port, server.host);
+  const socket = net.createConnection({
+    port: server.port,
+    host: server.host,
+  });
   return {
     input: socket,
     output: socket,
