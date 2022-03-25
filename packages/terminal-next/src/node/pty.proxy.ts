@@ -5,7 +5,7 @@ import * as pty from 'node-pty';
 
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
-import { getDebugLogger } from '@opensumi/ide-core-node';
+import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
 
 import {
   IPtyProxyRPCService,
@@ -43,12 +43,22 @@ class PtyLineDataCache {
 type PID = number;
 type SessionId = string;
 
+/**
+ * NOTE: 这里面的Session通常是短Session  也就是OpenSumi里面Session `${clientId}|${sessionId}` 的sessionId部分
+ * 因为ClientId在每次刷新都会变化，而SessionId可以被持久化保存，后续按照之前的SessionID连接Pty的时候就可以做到Terminal Resume
+ *
+ * PtyServiceProxy是真实运行的托管着NodePty的代理
+ */
 export class PtyServiceProxy implements IPtyProxyRPCService {
-  // Map <pid, pty>
+  // Map <pid, pty> 存放进程Pid和Pty实例的映射
   private ptyInstanceMap = new Map<PID, pty.IPty>();
-  private ptySessionMap = new Map<SessionId, PID>();
+  // 存放Pid和对应Pty产生数据的记录
   private ptyDataCacheMap = new Map<PID, PtyLineDataCache>();
-  private readonly debugLogger = getDebugLogger();
+  // 存放Session和Pid的映射
+  private ptySessionMap = new Map<SessionId, PID>();
+  private ptyDisposableMap = new Map<PID, DisposableCollection>();
+
+  private readonly debugLogger = getDebugLogger('PtyServiceProxy');
   private $callback: (callId: number, ...args) => void = () => {};
 
   constructor(callback: (callId: number, ...args) => void) {
@@ -65,16 +75,13 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     }
   }
 
-  // setCallback(value: (callId: number, ...args) => void) {
-  //   this.$callback = value;
-  // }
-
   $spawn(
     file: string,
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     longSessionId?: string,
   ): any {
+    // 切割sessionId到短Id
     const sessionId = longSessionId?.split('|')?.[1];
     this.debugLogger.log('ptyServiceProxy: spawn sessionId:', sessionId);
     let ptyInstance: pty.IPty | undefined;
@@ -91,6 +98,7 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
       }
     }
 
+    // 如果不存在ptyInstance或者已经被Kill掉的话，则重新创建一个
     if (!ptyInstance) {
       ptyInstance = pty.spawn(file, args, options);
     }
@@ -99,10 +107,18 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     if (sessionId) {
       this.ptySessionMap.set(sessionId, ptyInstance.pid);
     }
+
     const pid = ptyInstance.pid;
     // 初始化PtyLineCache
     if (!this.ptyDataCacheMap.has(pid)) {
       this.ptyDataCacheMap.set(pid, new PtyLineDataCache());
+    }
+    // 初始化ptyDisposableMap
+    if (!this.ptyDisposableMap.has(pid)) {
+      this.ptyDisposableMap.set(pid, new DisposableCollection());
+    } else {
+      // 如果已经存在DisposableCollection说明之前已经注册过，此时就需要取消注册，因为一会还要注册一遍
+      this.ptyDisposableMap.get(pid)?.dispose();
     }
 
     // 走RPC序列化的部分，function不走序列化，走单独的RPC调用
@@ -129,19 +145,26 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
       this.$callback(callId, '\r\r\n\u001b[1;\x1B[32m[terminal restore]\x1B[00m \r\n');
     }
 
-    ptyInstance?.onData((e) => {
+    const onDataDisposable = ptyInstance?.onData((e) => {
       this.debugLogger.debug('ptyServiceCenter: onData', JSON.stringify(e), 'pid:', pid, 'callId', callId);
       cache?.add(e);
       this.$callback(callId, e);
     });
+
+    if (onDataDisposable) {
+      this.ptyDisposableMap.get(pid)?.push(onDataDisposable);
+    }
   }
 
   $onExit(callId: number, pid: number): void {
     const ptyInstance = this.ptyInstanceMap.get(pid);
-    ptyInstance?.onExit((e) => {
+    const onExitDisposable = ptyInstance?.onExit((e) => {
       this.debugLogger.debug('ptyServiceCenter: onExit', 'pid:', pid, e);
       this.$callback(callId, e);
     });
+    if (onExitDisposable) {
+      this.ptyDisposableMap.get(pid)?.push(onExitDisposable);
+    }
   }
 
   $on(callId: number, pid: number, event: any): void {
@@ -180,9 +203,14 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     const ptyInstance = this.ptyInstanceMap.get(pid);
     ptyInstance?.resume();
   }
+
+  $getProcess(pid: number): string {
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    return ptyInstance?.process || '';
+  }
 }
 
-class PtyServiceProxyRPCProvider {
+export class PtyServiceProxyRPCProvider {
   private ptyServiceProxy: PtyServiceProxy;
   private readonly ptyServiceCenter: RPCServiceCenter;
   private readonly debugLogger = getDebugLogger();

@@ -14,7 +14,7 @@
     "build:components": "cd packages/components && npm run build:dist",
     "start:lite": "cross-env NODE_ENV=development ts-node ./scripts/start --script=start:lite",
     "bundle:lite": "ts-node ./scripts/start --script=bundle:lite",
-    "start:pty-service": "KTLOG_SHOW_DEBUG=1 npx ts-node packages/terminal-next/src/node/pty.proxy.ts",
+    "start:pty-service": "KTLOG_SHOW_DEBUG=1 npx ts-node packages/terminal-next/src/node/pty.proxy.remote.exec.ts",
     "create": "ts-node ./scripts/create",
     "add:node": "ts-node ./scripts/add-node",
     "add:browser": "ts-node ./scripts/add-browser",
