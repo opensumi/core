@@ -244,7 +244,7 @@ export interface IExtension extends IExtensionProps {
   toJSON(): IExtensionProps;
 }
 
-const VAR_REGEXP = /\$\(.*?\)/g;
+const VAR_REGEXP = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
 
 //  VSCode Types
 export abstract class VSCodeContributePoint<T extends JSONType = JSONType> extends Disposable {
@@ -264,15 +264,10 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
   abstract contribute();
 
   protected toIconClass(iconContrib: { [index in ThemeType]: string } | string): string | undefined {
-    if (typeof iconContrib === 'object') {
-      const iconClass = this.iconService?.fromIcon(this.extension.path, iconContrib, IconType.Background);
-      return iconClass;
+    if (typeof iconContrib === 'string' && VAR_REGEXP.test(iconContrib)) {
+      return this.iconService?.fromString(iconContrib);
     }
-    const parsedName = VAR_REGEXP.exec(iconContrib);
-    if (parsedName && parsedName[1]) {
-      return this.iconService?.fromString(parsedName[1]);
-    }
-    return this.iconService?.fromString(iconContrib);
+    return this.iconService?.fromIcon(this.extension.path, iconContrib, IconType.Mask);
   }
 
   protected getLocalizeFromNlsJSON(title: string): string {
