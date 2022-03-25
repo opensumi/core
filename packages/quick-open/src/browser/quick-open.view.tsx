@@ -72,7 +72,7 @@ export const QuickOpenHeader = observer(() => {
     [quickTitleBar.fireDidTriggerButton],
   );
 
-  return quickTitleBar.isAttached ? (
+  return quickTitleBar.isAttached && titleText ? (
     <div className={styles.title_bar}>
       <div className={styles.title_bar_button}>
         {quickTitleBar.leftButtons.map((button) => (
@@ -230,7 +230,8 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           onChange={(event) => (data.checked = (event.target as HTMLInputElement).checked)}
         />
       )}
-      <div className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
+      {/* tabIndex is needed here, pls see https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null */}
+      <div tabIndex={0} className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
         <div className={styles.item_label}>
           {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
           <HighlightLabel
@@ -327,12 +328,7 @@ export const QuickOpenView = observer(() => {
 
   const onBlur = React.useCallback(
     (event: React.FocusEvent) => {
-      // 要判断 nativeEvent，不然可能在 React 重绘时导致判断会出错
-      // 目前遇到的一个 case 是：
-      //   GoToLineQuickOpenHandler:
-      //     按 enter 后 hide 面板，但不知道为什么这里的 onBlur 也会生效，导致二次触发 onClose
-      //     这里改成 nativeEvent 后不再有该问题
-      if (focusInCurrentTarget(event.nativeEvent)) {
+      if (focusInCurrentTarget(event)) {
         // 判断触发事件的元素是否在父元素内，如果在父元素内就不做处理
         return;
       }

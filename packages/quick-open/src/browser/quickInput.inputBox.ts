@@ -46,6 +46,8 @@ export class InputBoxImpl {
 
   open() {
     let preLookFor = '';
+    let triggeredInput = false;
+
     this.quickTitleBar.onDidTriggerButton((e) => {
       this.onDidTriggerButtonEmitter.fire((e as unknown as { handler: number }).handler);
     });
@@ -67,9 +69,11 @@ export class InputBoxImpl {
               this.options.buttons,
             );
           }
+
           if (preLookFor !== lookFor) {
             this.onDidChangeValueEmitter.fire(lookFor);
             preLookFor = lookFor;
+            triggeredInput = true;
           }
 
           const error = this.options.validationMessage;
@@ -82,6 +86,10 @@ export class InputBoxImpl {
           label = error || label;
           const itemOptions: QuickOpenItemOptions = {
             run: (mode) => {
+              // 如果用户打开输入框后没有任何输入，不允许 accept
+              if (!triggeredInput) {
+                return false;
+              }
               if (!error && mode === Mode.OPEN) {
                 this.onDidAcceptEmitter.fire(lookFor);
                 this.quickTitleBar.hide();
@@ -92,6 +100,7 @@ export class InputBoxImpl {
           };
 
           if (label) {
+            // 用 detail 展示默认提示信息
             itemOptions.label = label;
             itemOptions.detail = defaultPrompt;
           } else {
