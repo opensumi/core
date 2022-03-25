@@ -246,7 +246,7 @@ export interface FileCopyOptions {
 
 export namespace FileSystemError {
   export const FileNotFound = ApplicationError.declare(-33000, (uri: string, prefix?: string) => ({
-    message: `${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`,
+    message: `${prefix ? prefix + ' ' : ''} '${uri}' is not found.`,
     data: { uri },
   }));
   export const FileExists = ApplicationError.declare(-33001, (uri: string, prefix?: string) => ({

@@ -4,7 +4,6 @@ import { CompositeTreeNode, TreeNode } from '../TreeNode';
 
 import { ISerializableState, TreeStateManager, TreeStateWatcher } from './treeState';
 
-
 export class TreeModel {
   private _state: TreeStateManager;
   private _root: CompositeTreeNode;
