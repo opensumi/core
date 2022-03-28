@@ -741,8 +741,8 @@ export class FileTreeContribution
         if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
           handler?.setCollapsed(ExplorerResourceViewId, false);
         }
-        if (!uri && this.workbenchEditorService.currentEditor) {
-          uri = this.workbenchEditorService.currentEditor.currentUri!;
+        if (!uri && this.workbenchEditorService.currentEditor?.currentUri) {
+          uri = this.workbenchEditorService.currentEditor.currentUri;
         }
         if (uri) {
           this.fileTreeModelService.location(uri);

@@ -1,4 +1,5 @@
-import pSeries = require('p-series');
+import throttle from 'lodash/throttle';
+import pSeries from 'p-series';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
@@ -8,6 +9,7 @@ import {
   ITreeNodeOrCompositeTreeNode,
   IWatcherEvent,
   TreeNodeType,
+  CompositeTreeNode,
 } from '@opensumi/ide-components';
 import {
   CommandService,
@@ -55,7 +57,7 @@ export interface ITreeIndent {
 
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
-  private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 500;
+  private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 300;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -105,10 +107,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private _cacheIgnoreFileEvent: Map<string, FileChangeType> = new Map();
   private _cacheIgnoreFileEventOnce: URI | null;
 
-  // 用于记录文件系统Change事件的定时器
-  private _eventFlushTimeout: number;
   // 文件系统Change事件队列
-  private _changeEventDispatchQueue: string[] = [];
+  private _changeEventDispatchQueue = new Set<string>();
 
   private _roots: FileStat[] | null;
 
@@ -593,7 +593,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
     for (const node of nodes) {
       // 一旦更新队列中已包含该文件，临时剔除删除事件传递
-      if (!node?.parent || this._changeEventDispatchQueue.indexOf(node?.parent.path) >= 0) {
+      if (!node?.parent || this._changeEventDispatchQueue.has(node?.parent.path)) {
         continue;
       }
       await this.deleteAffectedNodeByPath(node.path);
@@ -728,7 +728,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
     if (a.constructor === b.constructor) {
       // numeric 参数确保数字为第一排序优先级
-      return a.name.localeCompare(b.name, 'kn', { numeric: true }) as any;
+      return a.name.localeCompare(b.name, 'en', { numeric: true }) as any;
     }
     return a.type === TreeNodeType.CompositeTreeNode ? -1 : b.type === TreeNodeType.CompositeTreeNode ? 1 : 0;
   }
@@ -776,69 +776,89 @@ export class FileTreeService extends Tree implements IFileTreeService {
       // 根目录刷新时情况忽略队列
       this._cacheIgnoreFileEvent.clear();
     }
-    // 这里也可以直接调用 node.refresh，但由于文件树刷新事件可能会较多
+
     // 队列化刷新动作减少更新成本
-    this.queueChangeEvent(node.path, () => {
-      this.onNodeRefreshedEmitter.fire(node);
-      this.willRefreshDeferred?.resolve();
-      this.willRefreshDeferred = null;
-    });
+    this._changeEventDispatchQueue.add(node.path);
+    this.doHandleQueueChange();
   }
 
-  // 队列化Changed事件
-  private queueChangeEvent(path: string, callback: any) {
-    if (!this.flushEventQueueDeferred) {
-      clearTimeout(this._eventFlushTimeout);
-      this._eventFlushTimeout = setTimeout(async () => {
-        this.flushEventQueueDeferred = new Deferred<void>();
-        try {
-          // 询问是否此时可进行刷新事件
-          await this.requestFlushEventSignalEmitter.fireAndAwait();
-          await this.flushEventQueue();
-        } catch (error) {
-          this.logger.error('flush file change event queue error:', error);
-        } finally {
-          this.flushEventQueueDeferred?.resolve();
-          this.flushEventQueueDeferred = null;
-          callback();
+  private doHandleQueueChange = throttle(
+    async () => {
+      try {
+        // 询问是否此时可进行刷新事件
+        await this.requestFlushEventSignalEmitter.fireAndAwait();
+        await this.flushEventQueue();
+      } catch (error) {
+        this.logger.error('flush file change event queue error:', error);
+      } finally {
+        this.willRefreshDeferred?.resolve();
+        this.willRefreshDeferred = null;
+      }
+    },
+    FileTreeService.DEFAULT_FLUSH_FILE_EVENT_DELAY,
+    {
+      leading: true,
+      trailing: true,
+    },
+  );
+
+  /**
+   * 将文件排序并删除多余文件（指已有父文件夹将被删除）
+   */
+  public sortPaths(_paths: (string | URI)[]) {
+    const paths = _paths.slice();
+    const nodes = paths.map((path) => this.getNodeByPathOrUri(path)).filter(Boolean) as (Directory | File)[];
+    nodes.sort((pathA, pathB) => {
+      // 直接获取节点深度比通过path取深度更可靠
+      const pathADepth = pathA.depth || 0;
+      const pathBDepth = pathB.depth || 0;
+      return pathADepth - pathBDepth;
+    });
+
+    const roots = [] as (Directory | File)[];
+    for (let index = nodes.length - 1; index >= 0; index--) {
+      // 从后往前遍历整个列表
+      const later = nodes[index];
+      let canRemove = false;
+      for (let j = 0; j < index; j++) {
+        const former = nodes[j];
+        // 如果树的某个父节点包括了当前项
+        if (Directory.is(former) && later.path.startsWith(former.path)) {
+          canRemove = true;
         }
-      }, FileTreeService.DEFAULT_FLUSH_FILE_EVENT_DELAY) as any;
+      }
+      if (!canRemove) {
+        roots.push(later);
+      }
     }
-    if (this._changeEventDispatchQueue.indexOf(path) === -1) {
-      this._changeEventDispatchQueue.push(path);
-    }
+    return roots;
   }
 
   public flushEventQueue = () => {
-    let promise: Promise<any>;
-    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
+    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.size === 0) {
       return;
     }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      // 直接获取节点深度比通过path取深度更可靠
-      const pathADepth = this.getNodeByPathOrUri(pathA)?.depth || 0;
-      const pathBDepth = this.getNodeByPathOrUri(pathB)?.depth || 0;
-      return pathADepth - pathBDepth;
-    });
-    const roots = [this._changeEventDispatchQueue[0]];
-    for (const path of this._changeEventDispatchQueue) {
-      if (roots.some((root) => path.indexOf(root) === 0)) {
-        continue;
-      } else {
-        roots.push(path);
-      }
-    }
-    promise = pSeries(
-      roots.map((path) => async () => {
+
+    const queue = Array.from(this._changeEventDispatchQueue);
+    this.logger.log('flush file change event queue:', queue);
+
+    const roots = this.sortPaths(queue);
+
+    const promise = pSeries(
+      roots.map((node) => async () => {
+        if (Directory.is(node)) {
+          this.onNodeRefreshedEmitter.fire(node as CompositeTreeNode);
+        }
+
+        const path = node.path;
         const watcher = this.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
           await watcher.callback({ type: WatchEvent.Changed, path });
         }
-        return null;
       }),
     );
     // 重置更新队列
-    this._changeEventDispatchQueue = [];
+    this._changeEventDispatchQueue.clear();
     return promise;
   };
 
