@@ -3,10 +3,6 @@ import { observable, transaction, action } from 'mobx';
 import React from 'react';
 import { createRef } from 'react';
 
-/**
- * 用于文件内容搜索
- */
-
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import {
@@ -82,6 +78,9 @@ function splitOnComma(patterns: string): string[] {
 
 const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0 });
 
+/**
+ * 用于文件内容搜索
+ */
 @Injectable()
 export class ContentSearchClientService implements IContentSearchClientService {
   protected titleStateEmitter: Emitter<void> = new Emitter();
