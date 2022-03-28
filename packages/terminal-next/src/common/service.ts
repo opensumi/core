@@ -14,6 +14,11 @@ export interface IPtyExitEvent {
   signal?: number;
 }
 
+export interface IPtyProcessChangeEvent {
+  sessionId: string;
+  processName: string;
+}
+
 export const ITerminalService = Symbol('ITerminalService');
 export interface ITerminalService {
   /**
@@ -92,6 +97,9 @@ export interface ITerminalService {
    * @param sessionid
    */
   onExit(handler: (event: IPtyExitEvent) => void): IDisposable;
+
+  onProcessChange(handler: (event: IPtyProcessChangeEvent) => void): IDisposable;
+
   /**
    * 返回终端环境的 OS
    */

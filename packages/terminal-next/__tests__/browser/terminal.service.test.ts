@@ -157,4 +157,17 @@ describe('terminal service test cases', () => {
     await terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig);
     expect(launchConfig?.executable).toEqual(shellPath);
   });
+
+  it('terminal process name', () => {
+    terminalService.onProcessChange((e) => {
+      const launchConfig: IShellLaunchConfig = {
+        executable: shellPath,
+      };
+      terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig);
+      terminalService.onProcessChange((e) => {
+        expect(e.sessionId).toBe(sessionId);
+        expect(e.processName).toBe('zsh');
+      });
+    });
+  });
 });

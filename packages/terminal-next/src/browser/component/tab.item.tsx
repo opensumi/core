@@ -52,7 +52,10 @@ export function renderInfoItem(props: ItemProps) {
         <div id={props.id} className={styles.item_info_name} title={props.name}>
           {props.name !== '' ? (
             <>
-              <Icon icon={'terminal'} size='small' style={{ marginRight: 4, color: 'inherit' }} />
+              <Icon
+                iconClass={getIcon(props.name?.toLowerCase() || 'terminal') || getIcon('terminal')}
+                style={{ marginRight: 4, color: 'inherit', fontSize: 14 }}
+              />
               <span className={styles.item_title}>{props.name}</span>
             </>
           ) : (

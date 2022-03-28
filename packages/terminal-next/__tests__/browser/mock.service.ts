@@ -18,6 +18,7 @@ import {
   IExtensionTerminalProfile,
   IRegisterContributedProfileArgs,
   ITerminalProfileInternalService,
+  IPtyProcessChangeEvent,
 } from '../../src/common';
 
 import { getPort, localhost, MessageMethod } from './proxy';
@@ -50,6 +51,11 @@ export class MockSocketService implements ITerminalService {
     this._socks = new Map();
     this._response = new Map();
   }
+
+  private _onProcessChange: Emitter<IPtyProcessChangeEvent> = new Emitter();
+
+  onProcessChange = this._onProcessChange.event;
+
   async attachByLaunchConfig(
     sessionId: string,
     cols: number,
@@ -64,6 +70,8 @@ export class MockSocketService implements ITerminalService {
     this._handleMethod(sessionId);
 
     await this._doMethod(sessionId, MessageMethod.create, { sessionId, cols, rows });
+
+    this._onProcessChange.fire({ sessionId, processName: 'zsh' });
 
     return this._customConnection(sessionId);
   }

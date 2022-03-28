@@ -191,6 +191,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         }
       }),
     );
+    this.addDispose(
+      this.internalService.onProcessChange((e) => {
+        if (e.sessionId === this.id) {
+          this.widget.processName = e.processName;
+        }
+      }),
+    );
   }
 
   private onWidgetShow() {
