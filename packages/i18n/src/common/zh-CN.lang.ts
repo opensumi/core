@@ -356,6 +356,8 @@ export const localizationBundle = {
     'preference.files.watcherExclude.title': '排除文件监听',
     'preference.search.exclude.title': '搜索排除文件',
     'preference.search.useReplacePreview': '控制搜索替换打开编辑器时，是否打开“替换预览”。',
+    'preference.search.searchOnType': '控制是否在搜索框中输入时自动搜索。',
+    'preference.search.searchOnTypeDebouncePeriod': '控制输入时自动搜索的延迟时间（毫秒）。',
     'preference.files.exclude.title': '排除文件显示',
     'preference.debug.internalConsoleOptions': '控制何时打开内部调试控制台。',
     'preference.debug.openDebug': '控制何时打开调试视图。',

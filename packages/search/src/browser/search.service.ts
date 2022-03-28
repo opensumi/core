@@ -1,3 +1,4 @@
+import debounce from 'lodash/debounce';
 import { observable, transaction, action } from 'mobx';
 import React from 'react';
 import { createRef } from 'react';
@@ -31,6 +32,7 @@ import {
   REPORT_NAME,
 } from '@opensumi/ide-core-common';
 import * as arrays from '@opensumi/ide-core-common/lib/arrays';
+import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -189,9 +191,23 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   private reporter: { timer: IReporterTimer; value: string } | null = null;
 
+  searchDebounce: () => void;
+  searchOnType: boolean;
+
   constructor() {
     this.setDefaultIncludeValue();
     this.recoverUIState();
+
+    this.searchOnType = this.searchPreferences.get(SearchSettingId.SearchOnType, true);
+    this.searchDebounce = debounce(
+      () => {
+        this.search();
+      },
+      this.searchPreferences.get(SearchSettingId.SearchOnTypeDebouncePeriod, 300),
+      {
+        trailing: true,
+      },
+    );
   }
 
   search = (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
@@ -493,6 +509,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
     this.isShowValidateMessage = false;
+    if (this.searchOnType && this.searchValue) {
+      this.searchDebounce();
+    }
   };
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -534,13 +553,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
     return this.titleStateEmitter.event;
   }
 
-  private shouldSearch = (uiState: Partial<typeof this.UIState>) =>
-    uiState.isWholeWord ||
-    uiState.isMatchCase ||
-    uiState.isUseRegexp ||
-    uiState.isIncludeIgnored ||
-    uiState.isOnlyOpenEditors;
-
   updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent | React.MouseEvent) => {
     if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
       this.searchContextKey.searchInputFocused.set(obj.isSearchFocus);
@@ -551,9 +563,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
     const newUIState = Object.assign({}, this.UIState, obj);
     this.UIState = newUIState;
     this.browserStorageService.setData('search.UIState', newUIState);
-    if (!this.shouldSearch(obj)) {
-      return;
-    }
+
+    // 有状态更新就应该重新搜索
     this.search(e, newUIState);
   };
 

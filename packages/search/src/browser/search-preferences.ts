@@ -6,6 +6,7 @@ import {
   PreferenceSchema,
   localize,
 } from '@opensumi/ide-core-browser';
+import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 
 // 编写好 preference schema 配置
 // 包括分组和选型
@@ -15,31 +16,50 @@ export const searchPreferenceSchema: PreferenceSchema = {
   title: localize('Search', '搜索'),
   type: 'object',
   properties: {
-    'search.exclude': {
+    [SearchSettingId.Exclude]: {
       type: 'object',
       description: '%preference.search.exclude%',
       default: {
         '**/node_modules': true,
         '**/bower_components': true,
+        '**/.git': true,
+        '**/.svn': true,
+        '**/.hg': true,
+        '**/CVS': true,
+        '**/.DS_Store': true,
+        '**/Thumbs.db': true,
       },
     },
-    'search.include': {
+    [SearchSettingId.Include]: {
       type: 'object',
       description: '%preference.search.include%',
       default: {},
     },
-    'search.useReplacePreview': {
+    [SearchSettingId.UseReplacePreview]: {
       type: 'boolean',
       description: localize('preference.search.useReplacePreview'),
       default: true,
+    },
+    [SearchSettingId.SearchOnType]: {
+      type: 'boolean',
+      description: localize('preference.search.searchOnType'),
+      default: true,
+    },
+    [SearchSettingId.SearchOnTypeDebouncePeriod]: {
+      type: 'number',
+      description: localize('preference.search.searchOnTypeDebouncePeriod'),
+      default: 300,
     },
   },
 };
 
 // 给 preference 项的值添加类型定义
 export interface SearchConfiguration {
-  'search.exclude': { [key: string]: boolean };
-  'search.include': { [key: string]: boolean };
+  [SearchSettingId.Exclude]: { [key: string]: boolean };
+  [SearchSettingId.Include]: { [key: string]: boolean };
+  [SearchSettingId.UseReplacePreview]: boolean;
+  [SearchSettingId.SearchOnType]: boolean;
+  [SearchSettingId.SearchOnTypeDebouncePeriod]: number;
 }
 
 export const SearchPreferences = Symbol('SearchPreferences');
