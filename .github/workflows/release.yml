@@ -123,9 +123,16 @@ jobs:
 
       # 在 main 分支运行时，自动基于 Release 分支创建 PR
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        if: github.event.ref == 'refs/heads/main' && github.event.inputs.release_branch != ''
+        uses: actions/github-script@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.event.inputs.release_branch }}
-          title: "chore: v${{ github.event.inputs.version }}"
-          body: ""
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.pullRequest.create({
+              owner: github.repository.owner.login,
+              repo: github.repository.name,
+              title: 'chore: v${{ github.event.inputs.version }}',
+              head: '{{ github.event.inputs.release_branch }}',
+              base: 'main',
+              body: ''
+            })
