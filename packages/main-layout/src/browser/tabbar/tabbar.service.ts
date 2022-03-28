@@ -382,23 +382,28 @@ export class TabbarService extends WithEventBus {
   }
 
   doExpand(expand: boolean) {
-    const { setRelativeSize } = this.resizeHandle!;
-    if (expand) {
-      if (!this.isLatter) {
-        setRelativeSize(1, 0);
+    if (this.resizeHandle) {
+      const { setRelativeSize } = this.resizeHandle;
+      if (expand) {
+        if (!this.isLatter) {
+          setRelativeSize(1, 0);
+        } else {
+          setRelativeSize(0, 1);
+        }
       } else {
-        setRelativeSize(0, 1);
+        // FIXME 底部需要额外的字段记录展开前的尺寸
+        setRelativeSize(2, 1);
       }
-    } else {
-      // FIXME 底部需要额外的字段记录展开前的尺寸
-      setRelativeSize(2, 1);
     }
   }
 
   get isExpanded(): boolean {
-    const { getRelativeSize } = this.resizeHandle!;
-    const relativeSizes = getRelativeSize().join(',');
-    return this.isLatter ? relativeSizes === '0,1' : relativeSizes === '1,0';
+    if (this.resizeHandle) {
+      const { getRelativeSize } = this.resizeHandle;
+      const relativeSizes = getRelativeSize().join(',');
+      return this.isLatter ? relativeSizes === '0,1' : relativeSizes === '1,0';
+    }
+    return false;
   }
 
   @action.bound handleTabClick(e: React.MouseEvent, forbidCollapse?: boolean) {
@@ -682,7 +687,12 @@ export class TabbarService extends WithEventBus {
   }
 
   private handleChange(currentId, previousId) {
-    const { getSize, setSize, lockSize } = this.resizeHandle!;
+    // 这里的 handleChange 是会在 registerResizeHandle 后才会执行
+    // 这里的判断只是防御行为
+    if (!this.resizeHandle) {
+      return;
+    }
+    const { getSize, setSize, lockSize } = this.resizeHandle;
     this.onCurrentChangeEmitter.fire({ previousId, currentId });
     const isCurrentExpanded = this.shouldExpand(currentId);
     if (this.shouldExpand(this.previousContainerId) || isCurrentExpanded) {
@@ -725,7 +735,10 @@ export class TabbarService extends WithEventBus {
   }
 
   protected handleFullExpanded(currentId: string, isCurrentExpanded?: boolean) {
-    const { setRelativeSize, setSize } = this.resizeHandle!;
+    if (!this.resizeHandle) {
+      return;
+    }
+    const { setRelativeSize, setSize } = this.resizeHandle;
     if (currentId) {
       if (isCurrentExpanded) {
         if (!this.isLatter) {
