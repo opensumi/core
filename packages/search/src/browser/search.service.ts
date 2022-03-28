@@ -509,7 +509,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
     this.isShowValidateMessage = false;
-    if (this.searchOnType && this.searchValue) {
+    if (this.searchOnType) {
       this.searchDebounce();
     }
   };
