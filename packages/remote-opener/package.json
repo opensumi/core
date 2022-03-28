@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-remote-opener",
-  "version": "2.16.2",
+  "version": "2.16.3",
   "files": [
     "lib"
   ],
@@ -16,12 +16,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.16.2",
-    "@opensumi/ide-core-common": "2.16.2",
-    "@opensumi/ide-core-node": "2.16.2"
+    "@opensumi/ide-connection": "2.16.3",
+    "@opensumi/ide-core-common": "2.16.3",
+    "@opensumi/ide-core-node": "2.16.3"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.16.2",
-    "@opensumi/ide-editor": "2.16.2"
+    "@opensumi/ide-core-browser": "2.16.3",
+    "@opensumi/ide-editor": "2.16.3"
   }
 }
