@@ -5,6 +5,7 @@ import temp from 'temp';
 
 import { TreeNodeEvent, TreeNodeType } from '@opensumi/ide-components';
 import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService } from '@opensumi/ide-core-browser';
+import { ILogger } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
@@ -55,6 +56,12 @@ describe('FileTree should be work while on single workspace model', () => {
   let mockFileTreeApi;
   let mockTreeHandle;
   const mockGetContextValue = jest.fn();
+  const mockConsole = {
+    debug: () => {},
+    log: () => {},
+    info: () => {},
+    error: () => {},
+  };
   const mockCorePreference = {
     'workbench.list.openMode': 'singleClick',
     'editor.previewMode': true,
@@ -134,10 +141,12 @@ describe('FileTree should be work while on single workspace model', () => {
         useValue: mockCorePreference,
       },
       {
+        token: ILogger,
+        useValue: mockConsole,
+      },
+      {
         token: INodeLogger,
-        useValue: {
-          debug: () => {},
-        },
+        useValue: mockConsole,
       },
       {
         token: StorageProvider,
@@ -266,28 +275,27 @@ describe('FileTree should be work while on single workspace model', () => {
       await fs.remove(path.join(directoryNode.uri.path.toString(), 'child_file'));
     });
 
-    it('Symbolic file should be create with correct decoration and file stat', () =>
-      new Promise<void>(async (done) => {
-        // cause the contribution do not work while testing
-        // we should register symlinkDecorationProvider on this case
-        const fileTreeContribution = injector.get(FileTreeContribution);
-        await fileTreeContribution.onDidStart();
-        const decorationService = injector.get(IDecorationsService);
-        // create symlink file
-        await fs.ensureSymlink(filesMap[1].path, path.join(root.path.toString(), '0_symbolic_file'));
-        const dispose = fileTreeService.onNodeRefreshed(async () => {
-          const rootNode = fileTreeModelService.treeModel.root;
-          const symbolicNode = rootNode.children?.find((child: File) => child.filestat.isSymbolicLink) as File;
-          const decoration = await decorationService.getDecoration(symbolicNode.uri, symbolicNode.filestat.isDirectory);
-          expect(rootNode.branchSize).toBe(filesMap.length + 1);
-          expect(decoration.color).toBe('gitDecoration.ignoredResourceForeground');
-          expect(decoration.badge).toBe('⤷');
-          await fs.remove(path.join(root.path.toString(), '0_symbolic_file'));
-          dispose.dispose();
-          done();
-        });
-        await fileTreeService.refresh();
-      }));
+    it('Symbolic file should be create with correct decoration and file stat', (done) => {
+      // cause the contribution do not work while testing
+      // we should register symlinkDecorationProvider on this case
+      const fileTreeContribution = injector.get(FileTreeContribution);
+      fileTreeContribution.onDidStart();
+      const decorationService = injector.get(IDecorationsService);
+      // create symlink file
+      fs.ensureSymlinkSync(filesMap[1].path, path.join(root.path.toString(), '0_symbolic_file'));
+      const dispose = fileTreeService.onNodeRefreshed(() => {
+        dispose.dispose();
+        const rootNode = fileTreeModelService.treeModel.root;
+        const symbolicNode = rootNode.children?.find((child: File) => child.filestat.isSymbolicLink) as File;
+        const decoration = decorationService.getDecoration(symbolicNode.uri, symbolicNode.filestat.isDirectory);
+        expect(rootNode.branchSize).toBe(filesMap.length + 1);
+        expect(decoration.color).toBe('gitDecoration.ignoredResourceForeground');
+        expect(decoration.badge).toBe('⤷');
+        fs.removeSync(path.join(root.path.toString(), '0_symbolic_file'));
+        done();
+      });
+      fileTreeService.refresh();
+    });
 
     it('Style decoration should be right while click the item', async () => {
       const { handleItemClick, decorations } = fileTreeModelService;
@@ -629,12 +637,12 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(directoryNode.expanded).toBeTruthy();
       fs.ensureDirSync(testFile);
       const dispose = fileTreeService.onNodeRefreshed(() => {
+        dispose.dispose();
         const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
         expect(directoryNode.expanded).toBeTruthy();
         // cause the directory was compressed, branchSize will not increase
         expect(rootNode.branchSize).toBe(filesMap.length);
         expect(directoryNode.name).toBe(`${preNodeName}/a/b`);
-        dispose.dispose();
         done();
       });
       fileTreeService.refresh();
