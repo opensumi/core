@@ -197,12 +197,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.setDefaultIncludeValue();
     this.recoverUIState();
 
-    this.searchOnType = this.searchPreferences.get(SearchSettingId.SearchOnType, true);
+    this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
     this.searchDebounce = debounce(
       () => {
         this.search();
       },
-      this.searchPreferences.get(SearchSettingId.SearchOnTypeDebouncePeriod, 300),
+      this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300,
       {
         trailing: true,
       },
