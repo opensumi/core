@@ -194,7 +194,7 @@ export const localizationBundle = {
     fileSymbolResults: '符号（{0}）',
     'fileSymbolResults.notfound': '没有匹配的符号',
     historyMatches: '最近打开',
-    'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
+    'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为 “{2}”。',
     'search.replace.toggle.button.title': '切换替换',
     caseDescription: '区分大小写',
     wordsDescription: '全字匹配',
