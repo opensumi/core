@@ -51,7 +51,6 @@ import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 
-
 export const ExplorerResourceViewId = 'file-explorer-next';
 
 @Domain(
@@ -720,8 +719,8 @@ export class FileTreeContribution
         if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
           handler?.setCollapsed(ExplorerResourceViewId, false);
         }
-        if (!uri && this.workbenchEditorService.currentEditor) {
-          uri = this.workbenchEditorService.currentEditor.currentUri!;
+        if (!uri && this.workbenchEditorService.currentEditor?.currentUri) {
+          uri = this.workbenchEditorService.currentEditor.currentUri;
         }
         if (uri) {
           this.fileTreeModelService.location(uri);
