@@ -552,6 +552,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
     return this.titleStateEmitter.event;
   }
 
+  private shouldSearch = (uiState: Partial<typeof this.UIState>) =>
+    ['isWholeWord', 'isMatchCase', 'isUseRegexp', 'isIncludeIgnored', 'isOnlyOpenEditors'].some(
+      (v) => uiState[v] !== undefined && uiState[v] !== this.UIState[v],
+    );
+
   updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent | React.MouseEvent) => {
     if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
       this.searchContextKey.searchInputFocused.set(obj.isSearchFocus);
@@ -559,12 +564,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.searchHistory.reset();
       this.isShowValidateMessage = false;
     }
+
     const newUIState = Object.assign({}, this.UIState, obj);
+
+    if (this.shouldSearch(obj)) {
+      this.search(e, newUIState);
+    }
+
     this.UIState = newUIState;
     this.browserStorageService.setData('search.UIState', newUIState);
-
-    // 有状态更新就应该重新搜索
-    this.search(e, newUIState);
   };
 
   getPreferenceSearchExcludes(): string[] {
