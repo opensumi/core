@@ -41,16 +41,19 @@ export default observer(() => {
                 ></TabItem>
               );
             })}
-            <TabItem
-              type={ItemType.add}
-              onClick={() => {
-                const index = view.createGroup();
-                const group = view.getGroup(index);
-                view.createWidget(group);
-                view.selectGroup(index);
-              }}
-              provider={provider}
-            />
+            <div className={styles.button}>
+              <TabItem
+                type={ItemType.add}
+                onClick={() => {
+                  const index = view.createGroup();
+                  const group = view.getGroup(index);
+                  view.createWidget(group);
+                  view.selectGroup(index);
+                }}
+                onDropdown={(event) => menuService.onDropDownContextMenu(event)}
+                provider={provider}
+              />
+            </div>
           </div>
         </Scroll>
       </div>

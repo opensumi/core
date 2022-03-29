@@ -82,13 +82,22 @@ export function renderAddItem(props: ItemProps) {
   const handleAdd = debounce(() => props.onClick && props.onClick(), 20);
 
   return (
-    <div
-      className={clx({
-        [getIcon('plus')]: true,
-        [styles.item_add]: true,
-      })}
-      onClick={() => handleAdd()}
-    />
+    <div className={styles.item_wrapper}>
+      <div
+        className={clx({
+          [getIcon('plus')]: true,
+          [styles.item_add]: true,
+        })}
+        onClick={() => handleAdd()}
+      />
+      <div
+        className={clx({
+          [getIcon('down')]: true,
+          [styles.item_more]: true,
+        })}
+        onClick={props.onDropdown}
+      />
+    </div>
   );
 }
 

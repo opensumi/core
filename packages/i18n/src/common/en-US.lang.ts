@@ -919,5 +919,7 @@ export const localizationBundle = {
 
     'connection.start.rtt': 'Developer Tool: Measure Connection RTT',
     'connection.stop.rtt': 'Developer Tool: Stop Connection RTT',
+
+    'debug.terminal.label': 'Javascript Debug Terminal',
   },
 };

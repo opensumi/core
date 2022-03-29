@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
+import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   Disposable,
   Emitter,
@@ -10,6 +11,10 @@ import {
   arrays,
   AutoOpenBarrier,
   PreferenceScope,
+  ILogger,
+  CommandRegistry,
+  DisposableCollection,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 
 import {
@@ -23,6 +28,7 @@ import {
   ITerminalProfileService,
   ITerminalService,
   terminalProfileArgsMatch,
+  ICreateContributedTerminalProfileOptions,
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 
@@ -30,18 +36,27 @@ const { equals } = arrays;
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {
-  private _availableProfiles: ITerminalProfile[] | undefined;
-
   @Autowired(ITerminalService)
-  private terminalService: ITerminalService;
+  private readonly terminalService: ITerminalService;
 
   @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(ITerminalContributionService)
-  terminalContributionService: ITerminalContributionService;
+  private readonly terminalContributionService: ITerminalContributionService;
 
-  private _profilesReadyBarrier: AutoOpenBarrier;
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
+
+  @Autowired(IMenuRegistry)
+  private readonly menuRegistry: IMenuRegistry;
+
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  private readonly _profilesReadyBarrier: AutoOpenBarrier;
+
+  private commandAndMenuDisposeCollection: DisposableCollection;
 
   get profilesReady(): Promise<void> {
     return this._profilesReadyBarrier.wait().then(() => {});
@@ -63,6 +78,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   private readonly _profileProviders: Map</* ext id*/ string, Map</* provider id*/ string, ITerminalProfileProvider>> =
     new Map();
 
+  private _availableProfiles: ITerminalProfile[] | undefined;
   get availableProfiles(): ITerminalProfile[] {
     return this._availableProfiles || [];
   }
@@ -86,6 +102,23 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined {
     const extMap = this._profileProviders.get(extensionIdentifier);
     return extMap?.get(id);
+  }
+
+  async createContributedTerminalProfile(
+    extensionIdentifier: string,
+    id: string,
+    options: ICreateContributedTerminalProfileOptions,
+  ): Promise<void> {
+    const profileProvider = this.getContributedProfileProvider(extensionIdentifier, id);
+    if (!profileProvider) {
+      this.logger.error(`No terminal profile provider registered for id "${id}"`);
+      return;
+    }
+    try {
+      await profileProvider.createContributedTerminalProfile(options);
+    } catch (e) {
+      this.logger.error(e.message);
+    }
   }
 
   public registerTerminalProfileProvider(
@@ -135,12 +168,44 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     const profiles = await this._detectProfiles(true);
     const profilesChanged = !equals(profiles, this._availableProfiles, profilesEqual);
     const contributedProfilesChanged = await this._updateContributedProfiles();
-
+    if (contributedProfilesChanged) {
+      this.registerContributedProfilesCommandAndMenu();
+    }
     if (profilesChanged || contributedProfilesChanged) {
       this._availableProfiles = profiles;
       this._profilesReadyBarrier.open();
       this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
     }
+  }
+
+  private registerContributedProfilesCommandAndMenu() {
+    if (this.commandAndMenuDisposeCollection) {
+      this.commandAndMenuDisposeCollection.dispose();
+    }
+    this.commandAndMenuDisposeCollection = new DisposableCollection();
+    this.contributedProfiles.forEach((profile) => {
+      const id = `TerminalProfilesCommand:${profile.extensionIdentifier}:${profile.id}`;
+      this.commandAndMenuDisposeCollection.push(
+        this.commandRegistry.registerCommand(
+          {
+            id,
+          },
+          {
+            execute: async () => {
+              await this.createContributedTerminalProfile(profile.extensionIdentifier, profile.id, {});
+            },
+          },
+        ),
+      );
+      this.commandAndMenuDisposeCollection.push(
+        this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
+          command: {
+            id,
+            label: replaceLocalizePlaceholder(profile.title) || '',
+          },
+        }),
+      );
+    });
   }
 
   async getContributedDefaultProfile(
