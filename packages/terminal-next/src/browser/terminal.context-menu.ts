@@ -5,11 +5,11 @@ import {
   IMenu,
   ICtxMenuRenderer,
   generateMergedCtxMenu,
+  MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Disposable } from '@opensumi/ide-core-common';
 
 import { ITerminalController } from '../common';
-import { MenuId } from '../common/menu';
 
 @Injectable()
 export class TerminalContextMenuService extends Disposable {
@@ -27,7 +27,7 @@ export class TerminalContextMenuService extends Disposable {
 
   @memoize get contextMenu(): IMenu {
     const contributedContextMenu = this.menuService.createMenu(
-      MenuId.TermPanel,
+      MenuId.TerminalPanelContext,
       this.controller.contextKeyService || this.contextKeyService,
     );
     this.addDispose(contributedContextMenu);
@@ -49,14 +49,35 @@ export class TerminalContextMenuService extends Disposable {
   }
 
   @memoize get tabContextMenu(): IMenu {
-    const contributedContextMenu = this.menuService.createMenu(MenuId.TermTab, this.contextKeyService);
+    const contributedContextMenu = this.menuService.createMenu(MenuId.TerminalTabContext, this.contextKeyService);
     this.addDispose(contributedContextMenu);
     return contributedContextMenu;
   }
 
-  onTabContextMenu(event: React.MouseEvent<HTMLElement>, index: number) {
+  @memoize get tabDropDownContextMenu(): IMenu {
+    const contributedContextMenu = this.menuService.createMenu(
+      MenuId.TerminalNewDropdownContext,
+      this.contextKeyService,
+    );
+    this.addDispose(contributedContextMenu);
+    return contributedContextMenu;
+  }
+
+  onDropDownContextMenu(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault();
 
+    const { x, y } = event.nativeEvent;
+    const menus = this.tabDropDownContextMenu;
+    const menuNodes = generateMergedCtxMenu({ menus });
+
+    this.ctxMenuRenderer.show({
+      anchor: { x, y },
+      menuNodes,
+      args: [event.target],
+    });
+  }
+
+  onTabContextMenu(event: React.MouseEvent<HTMLElement>, index: number) {
     const { x, y } = event.nativeEvent;
     const menus = this.tabContextMenu;
     const menuNodes = generateMergedCtxMenu({ menus });

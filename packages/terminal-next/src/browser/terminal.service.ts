@@ -1,5 +1,4 @@
 import { Emitter as Dispatcher } from 'event-kit';
-import { Terminal } from 'xterm';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
@@ -16,7 +15,6 @@ import {
   IPtyExitEvent,
   INodePtyInstance,
   isTerminalError,
-  TerminalOptions,
   ITerminalProfile,
   IShellLaunchConfig,
   IDetectProfileOptionsPreference,

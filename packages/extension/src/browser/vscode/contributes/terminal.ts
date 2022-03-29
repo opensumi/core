@@ -139,6 +139,6 @@ export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalCo
   @Autowired(ITerminalContributionService)
   terminalContributionService: ITerminalContributionService;
   contribute() {
-    this.terminalContributionService.add(this.extension.extensionId, this.json);
+    this.terminalContributionService.add(this.extension.id, this.json);
   }
 }

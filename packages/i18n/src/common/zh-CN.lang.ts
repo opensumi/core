@@ -979,5 +979,7 @@ export const localizationBundle = {
 
     'connection.start.rtt': '开发人员工具：查看通信延迟',
     'connection.stop.rtt': '开发人员工具：关闭通信延迟检查',
+
+    'debug.terminal.label': '创建 Javascript Debug Terminal',
   },
 };
