@@ -234,6 +234,11 @@ export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
   delegate: 'core.openpreference',
 };
 
+export const SETTINGS_COMMAND_OPEN_SETTINGS_JSON: Command = {
+  id: 'workbench.action.openSettingsJson',
+  delegate: 'preference.open.source',
+};
+
 export const EDITOR_NAVIGATE_BACK: Command = {
   id: 'workbench.action.navigateBack',
   delegate: EDITOR_COMMANDS.GO_BACK.id,
