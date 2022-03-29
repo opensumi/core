@@ -194,7 +194,7 @@ export class DebugSession implements IDebugSession {
         }
 
         reportTime('stopped');
-        // action 结束后需要清除
+        // action 结束后需要清除
         const extra = this.sessionManager.getExtra(this.id, threadId);
         if (threadId && extra && extra.action) {
           extra.action = undefined;
@@ -255,7 +255,6 @@ export class DebugSession implements IDebugSession {
           this.clearThreads();
           await this.updateThreads(this.stoppedDetails);
         }
-
         this.fireDidChange();
       }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
