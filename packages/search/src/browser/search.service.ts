@@ -1,10 +1,7 @@
+import debounce from 'lodash/debounce';
 import { observable, transaction, action } from 'mobx';
 import React from 'react';
 import { createRef } from 'react';
-
-/**
- * 用于文件内容搜索
- */
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
@@ -31,6 +28,7 @@ import {
   REPORT_NAME,
 } from '@opensumi/ide-core-common';
 import * as arrays from '@opensumi/ide-core-common/lib/arrays';
+import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -80,6 +78,9 @@ function splitOnComma(patterns: string): string[] {
 
 const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0 });
 
+/**
+ * 用于文件内容搜索
+ */
 @Injectable()
 export class ContentSearchClientService implements IContentSearchClientService {
   protected titleStateEmitter: Emitter<void> = new Emitter();
@@ -189,9 +190,23 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   private reporter: { timer: IReporterTimer; value: string } | null = null;
 
+  searchDebounce: () => void;
+  searchOnType: boolean;
+
   constructor() {
     this.setDefaultIncludeValue();
     this.recoverUIState();
+
+    this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
+    this.searchDebounce = debounce(
+      () => {
+        this.search();
+      },
+      this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300,
+      {
+        trailing: true,
+      },
+    );
   }
 
   search = (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
@@ -493,6 +508,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
     this.isShowValidateMessage = false;
+    if (this.searchOnType) {
+      this.searchDebounce();
+    }
   };
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -535,11 +553,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   private shouldSearch = (uiState: Partial<typeof this.UIState>) =>
-    uiState.isWholeWord ||
-    uiState.isMatchCase ||
-    uiState.isUseRegexp ||
-    uiState.isIncludeIgnored ||
-    uiState.isOnlyOpenEditors;
+    ['isWholeWord', 'isMatchCase', 'isUseRegexp', 'isIncludeIgnored', 'isOnlyOpenEditors'].some(
+      (v) => uiState[v] !== undefined && uiState[v] !== this.UIState[v],
+    );
 
   updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent | React.MouseEvent) => {
     if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
@@ -548,13 +564,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.searchHistory.reset();
       this.isShowValidateMessage = false;
     }
+
     const newUIState = Object.assign({}, this.UIState, obj);
+
+    if (this.shouldSearch(obj)) {
+      this.search(e, newUIState);
+    }
+
     this.UIState = newUIState;
     this.browserStorageService.setData('search.UIState', newUIState);
-    if (!this.shouldSearch(obj)) {
-      return;
-    }
-    this.search(e, newUIState);
   };
 
   getPreferenceSearchExcludes(): string[] {

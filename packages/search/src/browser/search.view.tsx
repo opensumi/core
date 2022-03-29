@@ -6,7 +6,6 @@ import { ViewState } from '@opensumi/ide-core-browser';
 import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 
-
 import { SEARCH_STATE } from '../common/';
 
 import { SearchTree } from './search-tree.view';

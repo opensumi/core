@@ -24,6 +24,7 @@ import {
   replaceLocalizePlaceholder,
   ThrottledDelayer,
 } from '@opensumi/ide-core-browser';
+import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel } from '../common';
@@ -565,8 +566,22 @@ export const defaultSettingSections: {
         // 树/列表项
         { id: 'workbench.list.openMode', localized: 'preference.workbench.list.openMode.title' },
         { id: 'explorer.autoReveal', localized: 'preference.explorer.autoReveal' },
+
         // 搜索
-        { id: 'search.exclude', localized: 'preference.search.exclude.title' },
+        { id: SearchSettingId.Include },
+        { id: SearchSettingId.Exclude, localized: 'preference.search.exclude.title' },
+        { id: SearchSettingId.UseReplacePreview },
+        // { id: 'search.maxResults' },
+        { id: SearchSettingId.SearchOnType },
+        { id: SearchSettingId.SearchOnTypeDebouncePeriod },
+        // { id: 'search.showLineNumbers' },
+        // { id: 'search.smartCase' },
+        // { id: 'search.useGlobalIgnoreFiles' },
+        // { id: 'search.useIgnoreFiles' },
+        // { id: 'search.useParentIgnoreFiles' },
+
+        // { id: 'search.quickOpen.includeHistory' },
+        // { id: 'search.quickOpen.includeSymbols' },
 
         // 输出
         { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },

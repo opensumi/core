@@ -385,6 +385,9 @@ export const localizationBundle = {
     'preference.search.exclude.title': 'Search exclusion file `search.exclude`',
     'preference.search.useReplacePreview':
       'Controls whether to open Replace Preview when selecting or replacing a match.',
+    'preference.search.searchOnType': 'Controls whether to search as you type',
+    'preference.search.searchOnTypeDebouncePeriod':
+      'Controls the debounce period of search as you type in milliseconds.',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
     'preference.array.additem': 'Add',
     'preference.files.associations.title': 'File Association',
