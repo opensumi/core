@@ -27,13 +27,12 @@ import {
 } from '@opensumi/ide-core-common';
 import { parseLinkedText } from '@opensumi/ide-core-common/lib/linkedText';
 
-import { timeout, IDisposable } from '..';
+import { timeout, IDisposable, IOpenerService, toMarkdown } from '..';
 import { open } from '../components';
 import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
 
 import { ProgressBar } from './progress-bar';
 import { ProgressIndicator } from './progress-indicator';
-
 
 import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
 
@@ -388,7 +387,8 @@ export class ProgressService implements IProgressService {
           updateProgress(step.increment);
         }
         if (titleAndMessage) {
-          update(notificationKey, titleAndMessage);
+          const openner = this.injector.get(IOpenerService);
+          update(notificationKey, toMarkdown(titleAndMessage, openner));
         }
       }
     };
