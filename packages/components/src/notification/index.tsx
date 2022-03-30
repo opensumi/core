@@ -79,7 +79,7 @@ export function close(key: string) {
   notification.close(key);
 }
 
-export function update(key: string, message: string) {
+export function update(key: string, message: string | React.ReactNode) {
   const args = cachedArgs.get(key)!;
   doOpenNotification(args[0], {
     ...args[1],

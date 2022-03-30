@@ -5,18 +5,18 @@ import { IOpenerService } from '../opener';
 
 const DATA_SET_COMMAND = 'data-command';
 
-const RenderWrapper = (props: { html: HTMLElement; opener?: IOpenerService }) => {
+const RenderWrapper = (props: { html: string; opener?: IOpenerService }) => {
   const ref = useRef<HTMLDivElement | undefined>();
   const { html, opener } = props;
 
   useEffect(() => {
     if (ref && ref.current) {
-      html.addEventListener('click', listenClick);
-      ref.current.appendChild(html);
+      ref.current.addEventListener('click', listenClick);
     }
     return () => {
-      ref.current?.removeChild(html);
-      html.removeEventListener('click', listenClick);
+      if (ref && ref.current) {
+        ref.current.removeEventListener('click', listenClick);
+      }
     };
   }, []);
 
@@ -25,7 +25,7 @@ const RenderWrapper = (props: { html: HTMLElement; opener?: IOpenerService }) =>
    */
   const listenClick = (event: PointerEvent) => {
     const target = event.target as HTMLElement;
-    if (target.tagName === 'a' && target.hasAttribute(DATA_SET_COMMAND)) {
+    if (target.tagName.toLowerCase() === 'a' && target.hasAttribute(DATA_SET_COMMAND)) {
       const dataCommand = target.getAttribute(DATA_SET_COMMAND);
       if (dataCommand && opener) {
         opener.open(dataCommand);
@@ -33,7 +33,7 @@ const RenderWrapper = (props: { html: HTMLElement; opener?: IOpenerService }) =>
     }
   };
 
-  return <div ref={ref as unknown as RefObject<HTMLDivElement>}></div>;
+  return <div dangerouslySetInnerHTML={{ __html: html }} ref={ref as unknown as RefObject<HTMLDivElement>}></div>;
 };
 
 export const toMarkdown = (message: string | React.ReactNode, opener: IOpenerService): React.ReactNode => {
@@ -45,20 +45,15 @@ export const toMarkdown = (message: string | React.ReactNode, opener: IOpenerSer
   return typeof message === 'string' ? (
     <RenderWrapper
       opener={opener}
-      html={
-        new DOMParser().parseFromString(
-          marked(message, {
-            gfm: true,
-            breaks: false,
-            pedantic: false,
-            sanitize: true,
-            smartLists: true,
-            smartypants: false,
-            renderer,
-          }),
-          'text/xml',
-        ).documentElement
-      }
+      html={marked(message, {
+        gfm: true,
+        breaks: false,
+        pedantic: false,
+        sanitize: true,
+        smartLists: true,
+        smartypants: false,
+        renderer,
+      })}
     ></RenderWrapper>
   ) : (
     message
