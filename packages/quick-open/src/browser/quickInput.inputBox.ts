@@ -1,3 +1,5 @@
+import debounce from 'lodash/debounce';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
@@ -19,17 +21,39 @@ export class InputBoxImpl {
     this._options = options;
   }
 
-  updateOptions(_options: QuickInputOptions) {
-    this._options = {
-      ...this._options,
-      ..._options,
-    };
-    this.refresh();
+  shouldUpdate(oldOptions: Partial<QuickInputOptions>) {
+    return (
+      (oldOptions.value !== undefined && this.options.value !== oldOptions.value) ||
+      (oldOptions.prompt !== undefined && this.options.prompt !== oldOptions.prompt) ||
+      (oldOptions.placeHolder !== undefined && this.options.placeHolder !== oldOptions.placeHolder) ||
+      (oldOptions.password !== undefined && this.options.password !== oldOptions.password) ||
+      (oldOptions.ignoreFocusOut !== undefined && this.options.ignoreFocusOut !== oldOptions.ignoreFocusOut) ||
+      (oldOptions.enabled !== undefined && this.options.enabled !== oldOptions.enabled) ||
+      (oldOptions.valueSelection !== undefined && this.options.valueSelection !== oldOptions.valueSelection) ||
+      (oldOptions.title !== undefined && this.options.title !== oldOptions.title) ||
+      (oldOptions.step !== undefined && this.options.step !== oldOptions.step) ||
+      (oldOptions.totalSteps !== undefined && this.options.totalSteps !== oldOptions.totalSteps) ||
+      (oldOptions.buttons !== undefined && this.options.buttons !== oldOptions.buttons) ||
+      (oldOptions.validationMessage !== undefined && this.options.validationMessage !== oldOptions.validationMessage)
+    );
   }
 
-  refresh() {
-    this.quickOpenService.refresh();
+  updateOptions(_options: QuickInputOptions) {
+    /**
+     * 这里的刷新是有必要的，因为用户可能会更新 options 的值
+     * 每次刷新会触发 onType，从而使页面的展示更新
+     */
+    if (this.shouldUpdate(_options)) {
+      this._options = {
+        ...this._options,
+        ..._options,
+      };
+      this.refresh();
+    }
   }
+
+  refresh = debounce(() => this.quickOpenService.refresh(), 300);
+
   get options() {
     return this._options;
   }
@@ -71,8 +95,8 @@ export class InputBoxImpl {
           }
 
           if (preLookFor !== lookFor) {
-            this.onDidChangeValueEmitter.fire(lookFor);
             preLookFor = lookFor;
+            this.onDidChangeValueEmitter.fire(lookFor);
             triggeredInput = true;
           }
 
@@ -106,6 +130,7 @@ export class InputBoxImpl {
           } else {
             itemOptions.label = defaultPrompt;
           }
+
           acceptor([new QuickOpenItem(itemOptions)]);
         },
       },

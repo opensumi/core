@@ -27,6 +27,8 @@ export class QuickInputService implements IQuickInputService {
     const validateInput = options && options.validateInput;
 
     const inputBox = this.injector.get(InputBoxImpl, [options]);
+    this.inputBox = inputBox;
+
     inputBox.onDidAccept((v) => {
       result.resolve(v);
       this.onDidAcceptEmitter.fire();
@@ -43,7 +45,6 @@ export class QuickInputService implements IQuickInputService {
       result.resolve(undefined);
     });
     inputBox.open();
-    this.inputBox = inputBox;
     return result.promise;
   }
 
