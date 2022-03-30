@@ -320,13 +320,13 @@ export class FileTreeModelService {
       }),
     );
     this.disposableCollection.push(
-      this.fileTreeService.onNodeRefreshed((node) => {
+      this.fileTreeService.onNodeRefreshed(() => {
         if (!this.refreshedActionDelayer.isTriggered) {
           this.refreshedActionDelayer.cancel();
         }
         this.refreshedActionDelayer.trigger(async () => {
           // 当无选中节点时，选中编辑器中激活的节点
-          if (Directory.isRoot(node) && this.selectedFiles.length === 0) {
+          if (this.selectedFiles.length === 0) {
             const currentEditor = this.editorService.currentEditor;
             if (currentEditor && currentEditor.currentUri) {
               this.location(currentEditor.currentUri);

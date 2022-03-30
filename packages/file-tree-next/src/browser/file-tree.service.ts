@@ -120,7 +120,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private _isCompactMode: boolean;
 
   private willRefreshDeferred: Deferred<void> | null;
-  private flushEventQueueDeferred: Deferred<void> | null;
 
   private requestFlushEventSignalEmitter: Emitter<void> = new Emitter();
 
@@ -791,6 +790,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       } catch (error) {
         this.logger.error('flush file change event queue error:', error);
       } finally {
+        this.onNodeRefreshedEmitter.fire();
         this.willRefreshDeferred?.resolve();
         this.willRefreshDeferred = null;
       }
@@ -840,16 +840,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
 
     const queue = Array.from(this._changeEventDispatchQueue);
-    this.logger.log('flush file change event queue:', queue);
 
     const roots = this.sortPaths(queue);
 
     const promise = pSeries(
       roots.map((node) => async () => {
-        if (Directory.is(node)) {
-          this.onNodeRefreshedEmitter.fire(node as CompositeTreeNode);
-        }
-
         const path = node.path;
         const watcher = this.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
