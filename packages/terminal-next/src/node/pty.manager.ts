@@ -9,7 +9,9 @@ import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
 import {
+  IPtyProcessProxy,
   IPtyProxyRPCService,
+  IShellLaunchConfig,
   PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
   PTY_SERVICE_PROXY_PROTOCOL,
   PTY_SERVICE_PROXY_SERVER_PORT,
@@ -122,7 +124,7 @@ export class PtyServiceManager implements IPtyServiceManager {
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
-  ): Promise<pty.IPty> {
+  ): Promise<IPtyProcessProxy> {
     const iPtyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options, sessionId)) as pty.IPty;
     // 局部功能的Ipty, 代理所有常量
     return new PtyProcessProxy(iPtyRemoteProxy, this);
@@ -169,7 +171,7 @@ export class PtyServiceManager implements IPtyServiceManager {
 }
 
 // Pty进程的Remote代理
-class PtyProcessProxy implements pty.IPty {
+class PtyProcessProxy implements IPtyProcessProxy {
   private ptyServiceManager: IPtyServiceManager;
   constructor(iptyProxy: pty.IPty, ptyServiceManager: IPtyServiceManager) {
     this.ptyServiceManager = ptyServiceManager;
@@ -183,6 +185,16 @@ class PtyProcessProxy implements pty.IPty {
     this.onExit = (listener: (e: { exitCode: number; signal?: number }) => any) =>
       this.ptyServiceManager.onExit(this.pid, listener);
   }
+
+  /**
+   * @deprecated 请使用 `IPty.launchConfig` 的 shellPath 字段
+   */
+  bin: string;
+
+  launchConfig: IShellLaunchConfig;
+
+  parsedName: string;
+
   pid: number;
   cols: number;
   rows: number;
