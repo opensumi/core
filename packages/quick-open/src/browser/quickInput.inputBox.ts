@@ -19,6 +19,8 @@ export class InputBoxImpl {
     this._options = options;
   }
 
+  valueWillChange: ((value: string) => Promise<QuickInputOptions | undefined>) | undefined;
+
   shouldUpdate(newOptions: Partial<QuickInputOptions>, oldOptions: QuickInputOptions) {
     return (
       oldOptions.value !== newOptions.value ||
@@ -36,13 +38,21 @@ export class InputBoxImpl {
     );
   }
 
-  updateOptions(newOptions: QuickInputOptions) {
+  updateOptions(newOptions: QuickInputOptions | undefined, noRefresh = false) {
+    if (!newOptions) {
+      return;
+    }
+
     const oldOptions = Object.assign({}, this._options);
 
     this._options = {
       ...this._options,
       ...newOptions,
     };
+
+    if (noRefresh) {
+      return;
+    }
 
     /**
      * 这里的刷新是有必要的，因为用户可能会更新 options 的值
@@ -82,6 +92,16 @@ export class InputBoxImpl {
     this.quickOpenService.open(
       {
         onType: async (lookFor, acceptor) => {
+          if (preLookFor !== lookFor) {
+            preLookFor = lookFor;
+            if (this.valueWillChange) {
+              const newOptions = await this.valueWillChange(lookFor);
+              this.updateOptions(newOptions, true);
+            }
+            this.onDidChangeValueEmitter.fire(lookFor);
+            triggeredInput = true;
+          }
+
           let label = this.options.prompt;
           const defaultPrompt = localize('quickopen.quickinput.prompt');
 
@@ -95,12 +115,6 @@ export class InputBoxImpl {
               this.options.totalSteps,
               this.options.buttons,
             );
-          }
-
-          if (preLookFor !== lookFor) {
-            preLookFor = lookFor;
-            this.onDidChangeValueEmitter.fire(lookFor);
-            triggeredInput = true;
           }
 
           const error = this.options.validationMessage;
