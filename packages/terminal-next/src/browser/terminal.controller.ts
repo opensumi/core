@@ -1,6 +1,7 @@
 import { observable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
@@ -109,6 +110,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(ICtxMenuRenderer)
   private ctxMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired(WSChannelHandler)
+  protected readonly wsChannelHandler: WSChannelHandler;
+
   private terminalContextKey: TerminalContextKey;
 
   @observable
@@ -215,12 +219,29 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async recovery(history: ITerminalBrowserHistory) {
+    // HACK: 因为现在的终端重连是有问题的，是ClientID机制导致的，因此在拿出记录恢复终端的时候，需要把里面的ClientID替换为当前活跃窗口的ClientID
+    // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
+
+    const currentClientId = this.wsChannelHandler.clientId;
+    const currentRealSessionId = history.current?.split('|')?.[1];
+    if (history.current) {
+      history.current = `${currentClientId}|${currentRealSessionId}`;
+    }
+    history.groups = history.groups.map((group) => {
+      if (Array.isArray(group)) {
+        // 替换clientId为当前窗口ClientID
+        return group.map((item) => `${currentClientId}|${(item as string)?.split('|')?.[1]}`);
+      } else {
+        return group;
+      }
+    });
+
     let currentWidgetId = '';
     const { groups, current } = history;
 
     const ids: (string | { clientId: string })[] = [];
 
-    groups.forEach((widgets) => ids.concat(widgets));
+    groups.forEach((widgets) => ids.push(...widgets));
     const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
 
     if (!checked) {
