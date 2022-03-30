@@ -5,7 +5,7 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { AppConfig, electronEnv, PreferenceService } from '@opensumi/ide-core-browser';
 import { Emitter, ILogger, Event } from '@opensumi/ide-core-common';
-import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
+import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 import {
   generateSessionId,
