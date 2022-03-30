@@ -1,7 +1,6 @@
 // tslint:disable:no-var-requires
 const path = require('path');
 
-const CopyPlugin = require('copy-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const fse = require('fs-extra');
@@ -224,7 +223,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         contentBase: dir + '/dist',
         port: PORT,
         disableHostCheck: true,
-        host: '0.0.0.0',
+        host: process.env.HOST,
         proxy: {
           '/api': {
             target: 'http://localhost:8000',
@@ -316,7 +315,7 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
       contentBase: dir + '/public',
       disableHostCheck: true,
       port,
-      host: '0.0.0.0',
+      host: HOST,
       quiet: true,
       overlay: true,
       open: false,
