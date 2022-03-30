@@ -1,5 +1,3 @@
-import debounce from 'lodash/debounce';
-
 import { Injectable, Autowired } from '@opensumi/di';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
@@ -21,38 +19,43 @@ export class InputBoxImpl {
     this._options = options;
   }
 
-  shouldUpdate(oldOptions: Partial<QuickInputOptions>) {
+  shouldUpdate(newOptions: Partial<QuickInputOptions>, oldOptions: QuickInputOptions) {
     return (
-      (oldOptions.value !== undefined && this.options.value !== oldOptions.value) ||
-      (oldOptions.prompt !== undefined && this.options.prompt !== oldOptions.prompt) ||
-      (oldOptions.placeHolder !== undefined && this.options.placeHolder !== oldOptions.placeHolder) ||
-      (oldOptions.password !== undefined && this.options.password !== oldOptions.password) ||
-      (oldOptions.ignoreFocusOut !== undefined && this.options.ignoreFocusOut !== oldOptions.ignoreFocusOut) ||
-      (oldOptions.enabled !== undefined && this.options.enabled !== oldOptions.enabled) ||
-      (oldOptions.valueSelection !== undefined && this.options.valueSelection !== oldOptions.valueSelection) ||
-      (oldOptions.title !== undefined && this.options.title !== oldOptions.title) ||
-      (oldOptions.step !== undefined && this.options.step !== oldOptions.step) ||
-      (oldOptions.totalSteps !== undefined && this.options.totalSteps !== oldOptions.totalSteps) ||
-      (oldOptions.buttons !== undefined && this.options.buttons !== oldOptions.buttons) ||
-      (oldOptions.validationMessage !== undefined && this.options.validationMessage !== oldOptions.validationMessage)
+      oldOptions.value !== newOptions.value ||
+      oldOptions.prompt !== newOptions.prompt ||
+      oldOptions.placeHolder !== newOptions.placeHolder ||
+      oldOptions.password !== newOptions.password ||
+      oldOptions.ignoreFocusOut !== newOptions.ignoreFocusOut ||
+      oldOptions.enabled !== newOptions.enabled ||
+      oldOptions.valueSelection !== newOptions.valueSelection ||
+      oldOptions.title !== newOptions.title ||
+      oldOptions.step !== newOptions.step ||
+      oldOptions.totalSteps !== newOptions.totalSteps ||
+      oldOptions.buttons !== newOptions.buttons ||
+      oldOptions.validationMessage !== newOptions.validationMessage
     );
   }
 
-  updateOptions(_options: QuickInputOptions) {
+  updateOptions(newOptions: QuickInputOptions) {
+    const oldOptions = Object.assign({}, this._options);
+
+    this._options = {
+      ...this._options,
+      ...newOptions,
+    };
+
     /**
      * 这里的刷新是有必要的，因为用户可能会更新 options 的值
      * 每次刷新会触发 onType，从而使页面的展示更新
      */
-    if (this.shouldUpdate(_options)) {
-      this._options = {
-        ...this._options,
-        ..._options,
-      };
+    if (this.shouldUpdate(newOptions, oldOptions)) {
       this.refresh();
     }
   }
 
-  refresh = debounce(() => this.quickOpenService.refresh(), 300);
+  refresh() {
+    this.quickOpenService.refresh();
+  }
 
   get options() {
     return this._options;
