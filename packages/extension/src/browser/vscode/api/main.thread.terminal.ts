@@ -66,10 +66,10 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   @Autowired(IActivationEventService)
   protected readonly activationEventService: IActivationEventService;
 
-  private disposable = new Disposable();
-
   @Autowired(ILogger)
-  logger: ILogger;
+  protected readonly logger: ILogger;
+
+  private disposable = new Disposable();
 
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTerminal);
@@ -94,6 +94,14 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     );
     this.disposable.addDispose(
       this.terminalApi.onDidOpenTerminal((info: ITerminalInfo) => {
+        const client = this.controller.clients.get(info.id);
+        if (client) {
+          client.addDispose(
+            (client as any).xterm.raw.onData(() => {
+              this.proxy.$acceptTerminalInteraction(info.id);
+            }),
+          );
+        }
         this.proxy.$onDidOpenTerminal(info);
       }),
     );
@@ -130,6 +138,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   $sendText(id: string, text: string, addNewLine?: boolean) {
+    this.proxy.$acceptTerminalInteraction(id);
     return this.terminalApi.sendText(id, text, addNewLine);
   }
 
@@ -153,7 +162,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     await this.controller.ready.promise;
     const terminal = await this.terminalApi.createTerminal(options);
     if (!terminal) {
-      return this.logger.error('创建终端失败');
+      return this.logger.error('Create Terminal fail.');
     }
     return terminal.id;
   }
@@ -174,10 +183,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
     this.proxy.$startExtensionTerminal(proxy.terminalId, initialDimensions).then(request.callback);
 
-    proxy.onInput((data) => {
-      this.proxy.$acceptProcessInput(proxy.terminalId, data);
-      this.proxy.$acceptTerminalInteraction(proxy.terminalId);
-    });
+    proxy.onInput((data) => this.proxy.$acceptProcessInput(proxy.terminalId, data));
     proxy.onShutdown((immediate) => this.proxy.$acceptProcessShutdown(proxy.terminalId, immediate));
     proxy.onRequestCwd(() => this.proxy.$acceptProcessRequestCwd(proxy.terminalId));
     proxy.onRequestInitialCwd(() => this.proxy.$acceptProcessRequestInitialCwd(proxy.terminalId));

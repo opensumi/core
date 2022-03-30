@@ -593,7 +593,12 @@ export class Terminal implements vscode.Terminal {
   public __id: string;
 
   private _exitStatus: vscode.TerminalExitStatus | undefined;
-  private _state: vscode.TerminalState = { isInteractedWith: false };
+  /**
+   * FIXME: 这里默认值应该为 { isInteractedWith: false }
+   * 由于终端重连在前端往后端重新初始化了 Terminal，插件进程获取到的 Terminal 与前端 Terminal 仅有 id 等部分信息关联
+   * 导致状态丢失
+   */
+  private _state: vscode.TerminalState = { isInteractedWith: true };
 
   private createdPromiseResolve;
 
@@ -692,7 +697,7 @@ export class Terminal implements vscode.Terminal {
 
   public setInteractedWith() {
     if (!this._state.isInteractedWith) {
-      this._state = { isInteractedWith: true };
+      (this._state as any).isInteractedWith = true;
       return true;
     }
     return false;
