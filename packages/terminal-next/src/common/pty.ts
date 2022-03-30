@@ -3,7 +3,7 @@ import * as pty from 'node-pty';
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 
-import { Uri } from '@opensumi/ide-core-common';
+import { MaybePromise, Uri } from '@opensumi/ide-core-common';
 import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
 
 import { ITerminalError } from './error';
@@ -18,6 +18,10 @@ export interface IPtyProcess extends INodePty {
   bin: string;
   launchConfig: IShellLaunchConfig;
   parsedName: string;
+}
+
+export interface IPtyProcessProxy extends IPtyProcess {
+  getProcessDynamically(): MaybePromise<string>;
 }
 
 export const ITerminalServicePath = 'ITerminalServicePath';

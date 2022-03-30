@@ -214,10 +214,9 @@ export class PtyService extends Disposable {
     // const ptyProcess = pty.spawn(options.executable as string, args, this._ptyOptions);
 
     this.addDispose(
-      ptyProcess.onData((e) => {
+      ptyProcess.onData(async (e) => {
         this._onData.fire(e);
-
-        const processName = ptyProcess.process;
+        const processName = await ptyProcess.getProcessDynamically();
         if (processName !== this.previouslyProcess) {
           this.previouslyProcess = processName;
           this._onProcessChange.fire(processName);
