@@ -219,6 +219,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   return (
     <div
+      tabIndex={0}
       className={clx(styles.item, {
         [styles.item_selected]: widget.selectIndex === index,
         [styles.item_border]: showBorder,
@@ -226,6 +227,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
     >
       {widget.canSelectMany && (
         <CheckBox
+          wrapTabIndex={0}
           checked={data.checked}
           onChange={(event) => (data.checked = (event.target as HTMLInputElement).checked)}
         />
