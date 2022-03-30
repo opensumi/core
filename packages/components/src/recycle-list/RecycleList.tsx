@@ -253,7 +253,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     };
 
     return (
-      <div style={style} role='listitem' {...ariaInfo}>
+      <div tabIndex={0} style={style} role='listitem' {...ariaInfo}>
         <Template data={node} index={index} />
       </div>
     );
