@@ -32,6 +32,8 @@ export class ActivationEventServiceImpl implements IActivationEventService {
     let listeners: IActivationEventListener[] | undefined;
     if (this.wildCardTopics.has(topic)) {
       listeners = this.eventListeners.get(topic);
+    } else if (this.eventListeners.has(topic)) {
+      listeners = this.eventListeners.get(topic);
     } else {
       listeners = this.eventListeners.get(topic + ':' + data);
     }
