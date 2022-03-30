@@ -141,9 +141,6 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     cache?.data.forEach((value) => {
       this.$callback(callId, value);
     });
-    if (cache?.data.length && cache?.data.length > 0) {
-      this.$callback(callId, '\r\r\n\u001b[1;\x1B[32m[terminal restore]\x1B[00m \r\n');
-    }
 
     const onDataDisposable = ptyInstance?.onData((e) => {
       this.debugLogger.debug('ptyServiceCenter: onData', JSON.stringify(e), 'pid:', pid, 'callId', callId);
