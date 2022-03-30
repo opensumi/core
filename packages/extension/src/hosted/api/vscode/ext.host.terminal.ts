@@ -39,7 +39,6 @@ import {
   IExtensionDescription,
 } from '../../../common/vscode';
 
-
 const debugLog = getDebugLogger();
 
 let nextLinkId = 1;
@@ -54,6 +53,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private changeActiveTerminalEvent: Emitter<Terminal | undefined> = new Emitter();
   private closeTerminalEvent: Emitter<Terminal> = new Emitter();
   private openTerminalEvent: Emitter<Terminal> = new Emitter();
+  private terminalStateChangeEvent: Emitter<Terminal> = new Emitter();
   private terminalsMap: Map<string, Terminal> = new Map();
   private _terminalDeferreds: Map<string, Deferred<Terminal | undefined>> = new Map();
   private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
@@ -133,6 +133,10 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   get shellPath() {
     return this._defaultProfile?.path || process.env.SHELL || userInfo().shell;
+  }
+
+  get onDidChangeTerminalState(): Event<Terminal> {
+    return this.terminalStateChangeEvent.event;
   }
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
@@ -461,9 +465,15 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   public $acceptTerminalTitleChange(terminalId: string, name: string) {
     const terminal = this.terminalsMap.get(terminalId);
-
     if (terminal) {
       terminal.setName(name);
+    }
+  }
+
+  public $acceptTerminalInteraction(terminalId: string) {
+    const terminal = this.terminalsMap.get(terminalId);
+    if (terminal?.setInteractedWith()) {
+      this.terminalStateChangeEvent.fire(terminal);
     }
   }
 
@@ -583,6 +593,7 @@ export class Terminal implements vscode.Terminal {
   public __id: string;
 
   private _exitStatus: vscode.TerminalExitStatus | undefined;
+  private _state: vscode.TerminalState = { isInteractedWith: false };
 
   private createdPromiseResolve;
 
@@ -603,6 +614,10 @@ export class Terminal implements vscode.Terminal {
 
   get name() {
     return this._name;
+  }
+
+  get state(): vscode.TerminalState {
+    return this._state;
   }
 
   get exitStatus() {
@@ -673,6 +688,14 @@ export class Terminal implements vscode.Terminal {
 
   public setName(name: string) {
     this._name = name;
+  }
+
+  public setInteractedWith() {
+    if (!this._state.isInteractedWith) {
+      this._state = { isInteractedWith: true };
+      return true;
+    }
+    return false;
   }
 }
 

@@ -61,6 +61,8 @@ export interface IExtHostTerminal {
 
   onDidOpenTerminal: Event<vscode.Terminal>;
 
+  onDidChangeTerminalState: Event<vscode.Terminal>;
+
   $setTerminals(idList: ITerminalInfo[]);
 
   $onDidChangeActiveTerminal(id: string);
@@ -80,6 +82,7 @@ export interface IExtHostTerminal {
   $acceptProcessRequestInitialCwd(id: string): void;
   $acceptProcessRequestCwd(id: string): void;
   $acceptTerminalTitleChange(id: string, name: string): void;
+  $acceptTerminalInteraction(terminalId: string);
 
   registerLinkProvider(provider: vscode.TerminalLinkProvider): IDisposable;
   $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]>;

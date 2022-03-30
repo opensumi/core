@@ -20,6 +20,7 @@ export interface ITerminalProfileService {
   readonly contributedProfiles: IExtensionTerminalProfile[];
   readonly profilesReady: Promise<void>;
   onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
+  onTerminalProfileResolved: Event<string>;
   getDefaultProfileName(): string | undefined;
   getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined>;
   getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined;

@@ -26,6 +26,7 @@ import { deserializeEnvironmentVariableCollection } from '@opensumi/ide-terminal
 import { ITerminalProfileService } from '@opensumi/ide-terminal-next/lib/common/profile';
 
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { IActivationEventService } from '../../types';
 
 @Injectable({ multiple: true })
 export class MainThreadTerminal implements IMainThreadTerminal {
@@ -61,6 +62,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
   @Autowired(PreferenceService)
   protected readonly preference: PreferenceService;
+
+  @Autowired(IActivationEventService)
+  protected readonly activationEventService: IActivationEventService;
 
   private disposable = new Disposable();
 
@@ -99,6 +103,11 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     this.disposable.addDispose(
       this.profileSerivce.onDidChangeAvailableProfiles(() => {
         this._updateDefaultProfile();
+      }),
+    );
+    this.disposable.addDispose(
+      this.profileSerivce.onTerminalProfileResolved(async (id: string) => {
+        await this.activationEventService.fireEvent(`onTerminalProfile:${id}`);
       }),
     );
   }
@@ -165,7 +174,10 @@ export class MainThreadTerminal implements IMainThreadTerminal {
 
     this.proxy.$startExtensionTerminal(proxy.terminalId, initialDimensions).then(request.callback);
 
-    proxy.onInput((data) => this.proxy.$acceptProcessInput(proxy.terminalId, data));
+    proxy.onInput((data) => {
+      this.proxy.$acceptProcessInput(proxy.terminalId, data);
+      this.proxy.$acceptTerminalInteraction(proxy.terminalId);
+    });
     proxy.onShutdown((immediate) => this.proxy.$acceptProcessShutdown(proxy.terminalId, immediate));
     proxy.onRequestCwd(() => this.proxy.$acceptProcessRequestCwd(proxy.terminalId));
     proxy.onRequestInitialCwd(() => this.proxy.$acceptProcessRequestInitialCwd(proxy.terminalId));
@@ -229,7 +241,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     this._profileProviders.set(
       id,
       this.profileSerivce.registerTerminalProfileProvider(extensionIdentifier, id, {
-        createContributedTerminalProfile: async (options) => this.proxy.$createContributedProfileTerminal(id, options),
+        createContributedTerminalProfile: async (options) => {
+          this.proxy.$createContributedProfileTerminal(id, options);
+        },
       }),
     );
   }
