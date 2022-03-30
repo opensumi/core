@@ -19,7 +19,7 @@ export class InputBoxImpl {
     this._options = options;
   }
 
-  valueWillChange: ((value: string) => Promise<QuickInputOptions | undefined>) | undefined;
+  getDerivedOptionsFromValue: ((value: string) => Promise<QuickInputOptions | undefined>) | undefined;
 
   shouldUpdate(newOptions: Partial<QuickInputOptions>, oldOptions: QuickInputOptions) {
     return (
@@ -94,8 +94,8 @@ export class InputBoxImpl {
         onType: async (lookFor, acceptor) => {
           if (preLookFor !== lookFor) {
             preLookFor = lookFor;
-            if (this.valueWillChange) {
-              const newOptions = await this.valueWillChange(lookFor);
+            if (this.getDerivedOptionsFromValue) {
+              const newOptions = await this.getDerivedOptionsFromValue(lookFor);
               this.updateOptions(newOptions, true);
             }
             this.onDidChangeValueEmitter.fire(lookFor);

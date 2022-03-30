@@ -34,7 +34,7 @@ export class QuickInputService implements IQuickInputService {
       this.onDidAcceptEmitter.fire();
     });
 
-    inputBox.valueWillChange = async (v) => {
+    inputBox.getDerivedOptionsFromValue = async (v) => {
       const error = validateInput && v !== undefined ? withNullAsUndefined(await validateInput(v)) : undefined;
       // 每次都要设置一下，因为 error 为空说明没有错
       return {
