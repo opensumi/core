@@ -267,7 +267,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           group,
           typeof sessionId === 'string' ? sessionId : sessionId.clientId,
         );
-        const client = await this.clientFactory(widget, {});
+        const client = await this.clientFactory2(widget, {});
         this._clients.set(client.id, client);
 
         if (current === client.id) {
