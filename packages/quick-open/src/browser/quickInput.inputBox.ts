@@ -19,17 +19,54 @@ export class InputBoxImpl {
     this._options = options;
   }
 
-  updateOptions(_options: QuickInputOptions) {
+  getDerivedOptionsFromValue: ((value: string) => Promise<QuickInputOptions | undefined>) | undefined;
+
+  shouldUpdate(newOptions: Partial<QuickInputOptions>, oldOptions: QuickInputOptions) {
+    return (
+      oldOptions.value !== newOptions.value ||
+      oldOptions.prompt !== newOptions.prompt ||
+      oldOptions.placeHolder !== newOptions.placeHolder ||
+      oldOptions.password !== newOptions.password ||
+      oldOptions.ignoreFocusOut !== newOptions.ignoreFocusOut ||
+      oldOptions.enabled !== newOptions.enabled ||
+      oldOptions.valueSelection !== newOptions.valueSelection ||
+      oldOptions.title !== newOptions.title ||
+      oldOptions.step !== newOptions.step ||
+      oldOptions.totalSteps !== newOptions.totalSteps ||
+      oldOptions.buttons !== newOptions.buttons ||
+      oldOptions.validationMessage !== newOptions.validationMessage
+    );
+  }
+
+  updateOptions(newOptions: QuickInputOptions | undefined, noRefresh = false) {
+    if (!newOptions) {
+      return;
+    }
+
+    const oldOptions = Object.assign({}, this._options);
+
     this._options = {
       ...this._options,
-      ..._options,
+      ...newOptions,
     };
-    this.refresh();
+
+    if (noRefresh) {
+      return;
+    }
+
+    /**
+     * 这里的刷新是有必要的，因为用户可能会更新 options 的值
+     * 每次刷新会触发 onType，从而使页面的展示更新
+     */
+    if (this.shouldUpdate(newOptions, oldOptions)) {
+      this.refresh();
+    }
   }
 
   refresh() {
     this.quickOpenService.refresh();
   }
+
   get options() {
     return this._options;
   }
@@ -55,6 +92,16 @@ export class InputBoxImpl {
     this.quickOpenService.open(
       {
         onType: async (lookFor, acceptor) => {
+          if (preLookFor !== lookFor) {
+            preLookFor = lookFor;
+            if (this.getDerivedOptionsFromValue) {
+              const newOptions = await this.getDerivedOptionsFromValue(lookFor);
+              this.updateOptions(newOptions, true);
+            }
+            this.onDidChangeValueEmitter.fire(lookFor);
+            triggeredInput = true;
+          }
+
           let label = this.options.prompt;
           const defaultPrompt = localize('quickopen.quickinput.prompt');
 
@@ -68,12 +115,6 @@ export class InputBoxImpl {
               this.options.totalSteps,
               this.options.buttons,
             );
-          }
-
-          if (preLookFor !== lookFor) {
-            this.onDidChangeValueEmitter.fire(lookFor);
-            preLookFor = lookFor;
-            triggeredInput = true;
           }
 
           const error = this.options.validationMessage;
@@ -106,6 +147,7 @@ export class InputBoxImpl {
           } else {
             itemOptions.label = defaultPrompt;
           }
+
           acceptor([new QuickOpenItem(itemOptions)]);
         },
       },
