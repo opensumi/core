@@ -11,3 +11,4 @@ export * from './decorators';
 export * from './file-uri';
 export * from './paths';
 export * from './ansi';
+export * from './markdown';
