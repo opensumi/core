@@ -134,7 +134,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  workbenchEditorService: WorkbenchEditorService;
+  @Autowired(WorkbenchEditorService)
+  private readonly editorService: WorkbenchEditorService;
 
   @observable
   replaceValue = '';
@@ -232,10 +233,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
       return this.cleanOldSearch();
     }
 
-    if (!this.workbenchEditorService) {
-      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
-    }
-
     // 记录搜索历史
     this.searchHistory.setSearchHistory(value);
 
@@ -268,7 +265,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (this.UIState.isOnlyOpenEditors) {
       rootDirs = [];
       const openResources = arrays.coalesce(
-        arrays.flatten(this.workbenchEditorService.editorGroups.map((group) => group.resources)),
+        arrays.flatten(this.editorService.editorGroups.map((group) => group.resources)),
       );
       const includeMatcherList = searchOptions.include?.map((str) => parse(anchorGlob(str))) || [];
       const excludeMatcherList = searchOptions.exclude?.map((str) => parse(anchorGlob(str))) || [];
@@ -308,7 +305,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       searchValue: value,
       searchOptions,
       documentModelManager: this.documentModelManager,
-      workbenchEditorService: this.workbenchEditorService,
+      workbenchEditorService: this.editorService,
       rootDirs,
     });
 
@@ -529,11 +526,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   };
 
   setSearchValueFromActivatedEditor = () => {
-    if (!this.workbenchEditorService) {
-      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
-    }
-
-    const currentEditor = this.workbenchEditorService.currentEditor;
+    const currentEditor = this.editorService.currentEditor;
     if (currentEditor) {
       const selections = currentEditor.getSelections();
       if (selections && selections.length > 0 && currentEditor.currentDocumentModel) {
