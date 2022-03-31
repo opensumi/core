@@ -43,9 +43,7 @@ import {
 } from '../common/task';
 import { CustomTask } from '../common/task';
 
-
 import { ProblemCollector } from './problem-collector';
-
 
 enum TaskStatus {
   PROCESS_INIT,
@@ -173,22 +171,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     );
   }
 
-  private async createTerminal(reuse?: boolean) {
-    if (reuse && this.terminalClient) {
-      this.terminalClient.updateOptions(this.terminalOptions);
-      this.terminalClient.reset();
-    } else {
-      this.terminalClient = await this.terminalController.createClientWithWidget2({
-        terminalOptions: this.terminalOptions,
-        closeWhenExited: false,
-        beforeCreate: (terminalId) => {
-          this._onDidTerminalCreated.fire(terminalId);
-        },
-      });
-    }
-
-    this.terminalController.showTerminalPanel();
-
+  private bindTerminalClientEvent() {
     this.addDispose(
       this.terminalClient.onOutput((e) => {
         const output = removeAnsiEscapeCodes(e.data.toString());
@@ -247,18 +230,50 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     );
   }
 
+  private async createTerminal(reuse?: boolean) {
+    if (reuse && this.terminalClient) {
+      this.terminalClient.updateOptions(this.terminalOptions);
+      this.terminalClient.reset();
+    } else {
+      this.terminalClient = await this.terminalController.createClientWithWidget2({
+        terminalOptions: this.terminalOptions,
+        closeWhenExited: false,
+        beforeCreate: (terminalId) => {
+          this._onDidTerminalCreated.fire(terminalId);
+        },
+      });
+    }
+
+    this.terminalController.showTerminalPanel();
+    this.bindTerminalClientEvent();
+  }
+
+  async attach(terminalClient: ITterminalClient): Promise<{ exitCode?: number }> {
+    this.taskStatus = TaskStatus.PROCESS_READY;
+    this.terminalClient = terminalClient;
+    this.terminalOptions = terminalClient.options;
+    this.bindTerminalClientEvent();
+    this.taskStatus = TaskStatus.PROCESS_RUNNING;
+    this.pid = await this.terminalClient?.pid;
+    this.processReady.resolve();
+
+    this._onDidTerminalCreated.fire(terminalClient.id);
+
+    return this.exitDefer.promise;
+  }
+
   async execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }> {
     this.taskStatus = TaskStatus.PROCESS_READY;
 
     await this.createTerminal(reuse);
 
-    this.terminalClient?.term.writeln(`\x1b[1m> Executing task: ${task._label} <\x1b[0m\n`);
+    this.terminalClient?.term.writeln(`\x1b[3m> Executing task: ${task._label} <\x1b[0m\n`);
     const { shellArgs } = this.terminalOptions;
 
     // extensionTerminal 由插件自身接管，不需要执行和输出 Command
     if (!this.terminalOptions.isExtensionTerminal && shellArgs) {
       this.terminalClient?.term.writeln(
-        `\x1b[1m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs[1]} <\x1b[0m\n`,
+        `\x1b[3m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs[1]} <\x1b[0m\n`,
       );
     }
 
@@ -335,6 +350,11 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     return this.executeTask(task);
   }
 
+  attach(task: CustomTask | ContributedTask, terminalClient: ITerminalClient): Promise<ITaskExecuteResult> {
+    this.currentTask = task;
+    return this.attachTask(task, terminalClient);
+  }
+
   private async buildShellConfig(command: CommandConfiguration) {
     let subCommand = '';
     const commandName = command.name;
@@ -376,6 +396,29 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     return this.taskExecutors.find((e) => e.taskStatus === TaskStatus.PROCESS_EXITED);
   }
 
+  private async createTaskExecutor(task: CustomTask | ContributedTask, options: TerminalOptions) {
+    const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
+    const collector = new ProblemCollector(matchers);
+    const executor = this.injector.get(TerminalTaskExecutor, [options, collector, this.executorId]);
+    this.executorId += 1;
+    this.taskExecutors.push(executor);
+    this.addDispose(
+      executor.onDidTerminalWidgetRemove(() => {
+        this.taskExecutors = this.taskExecutors.filter((t) => t.executorId !== executor.executorId);
+      }),
+    );
+
+    return executor;
+  }
+
+  private async attachTask(
+    task: CustomTask | ContributedTask,
+    terminalClient: ITerminalClient,
+  ): Promise<ITaskExecuteResult> {
+    const taskExecutor = await this.createTaskExecutor(task);
+    return taskExecutor.attach(terminalClient);
+  }
+
   private async executeTask(task: CustomTask | ContributedTask): Promise<ITaskExecuteResult> {
     // CustomExecution
     const isCustomExecution = task.command && task.command.runtime === RuntimeType.CustomExecution;
@@ -397,14 +440,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     let executor: TerminalTaskExecutor | undefined = this.findAvailableExecutor();
     let reuse = false;
     if (!executor) {
-      executor = this.injector.get(TerminalTaskExecutor, [terminalOptions, collector, this.executorId]);
-      this.executorId += 1;
-      this.taskExecutors.push(executor);
-      this.addDispose(
-        executor.onDidTerminalWidgetRemove(() => {
-          this.taskExecutors = this.taskExecutors.filter((t) => t.executorId !== executor!.executorId);
-        }),
-      );
+      executor = await this.createTaskExecutor(task, terminalOptions);
     } else {
       reuse = true;
       executor.updateProblemCollector(collector);
