@@ -18,6 +18,7 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
+import { ITaskService } from '@opensumi/ide-task/lib/common';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import {
@@ -97,6 +98,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
+
+  @Autowired(ITaskService)
+  protected readonly taskService: ITaskService;
 
   @Autowired(AppConfig)
   config: AppConfig;
@@ -230,7 +234,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     history.groups = history.groups.map((group) => {
       if (Array.isArray(group)) {
         // 替换clientId为当前窗口ClientID
-        return group.map((item) => `${currentClientId}|${(item as string)?.split('|')?.[1]}`);
+        return group.map(({ client, ...other }) => ({
+          client: `${currentClientId}|${(client as string)?.split('|')?.[1]}`,
+          ...other,
+        }));
       } else {
         return group;
       }
@@ -241,7 +248,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     const ids: (string | { clientId: string })[] = [];
 
-    groups.forEach((widgets) => ids.push(...widgets));
+    groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
+
     const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
 
     if (!checked) {
@@ -255,18 +263,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         continue;
       }
 
-      for (const sessionId of widgets) {
-        if (!sessionId) {
+      for (const session of widgets) {
+        if (!session) {
           continue;
         }
 
         /**
          * widget 创建完成后会同时创建 client
          */
-        const widget = this.terminalView.createWidget(
-          group,
-          typeof sessionId === 'string' ? sessionId : sessionId.clientId,
-        );
+        const widget = this.terminalView.createWidget(group, typeof session === 'string' ? session : session.client);
         const client = await this.clientFactory2(widget, {});
         this._clients.set(client.id, client);
 
@@ -280,6 +285,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         client.attached.promise.then(() => {
           widget.name = client.name;
           client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
+
+          if (session.task) {
+            this.taskService.attach(session.task, client);
+          }
           /**
            * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
            */
@@ -437,18 +446,22 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   toJSON() {
-    const groups: string[][] = [];
+    const groups: { client: string; task?: string }[][] = [];
     const cClient = this._clients.get(this.terminalView.currentWidgetId);
     this.terminalView.groups.forEach((wGroup) => {
-      const group: string[] = [];
+      const group: { client: string; task?: string }[] = [];
+
       wGroup.widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
 
         if (!client) {
           return;
         }
-
-        group.push(client.id);
+        const record: { client: string; task?: string } = { client: client.id };
+        if (client.isTaskExecutor) {
+          record.task = client.taskId;
+        }
+        group.push(record);
       });
 
       if (group.length > 0) {
@@ -491,7 +504,13 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       options.beforeCreate(widgetId);
     }
 
-    return await this._createClient(widget, options.terminalOptions);
+    const client = await this._createClient(widget, options.terminalOptions);
+
+    if (options.isTaskExecutor) {
+      client.isTaskExecutor = true;
+      client.taskId = options.taskId;
+    }
+    return client;
   }
 
   clearCurrentGroup() {
