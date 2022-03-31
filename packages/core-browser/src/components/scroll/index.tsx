@@ -42,6 +42,9 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
 
   private trackH!: HTMLDivElement;
 
+  private decorationL: HTMLDivElement;
+  private decorationR: HTMLDivElement;
+
   private size: ScrollSizes;
 
   private position: ScrollPosition = {
@@ -83,6 +86,20 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
     } else if (this.isAtTop && this.ref.scrollTop !== 0) {
       this.isAtTop = false;
       this.setCss();
+    }
+
+    if (this.ref.scrollLeft > 0) {
+      this.decorationL.style.opacity = String(1);
+      this.decorationR.style.opacity = String(1);
+    } else {
+      this.decorationL.style.opacity = String(0);
+    }
+
+    if (
+      this.ref.scrollWidth === this.ref.offsetWidth ||
+      this.ref.scrollLeft === this.ref.scrollWidth - this.ref.offsetWidth
+    ) {
+      this.decorationR.style.opacity = String(0);
     }
   }
 
@@ -180,7 +197,7 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
   onMousewheel = (e: WheelEvent) => {
     // 鼠标滚动滚轮只在有横向滚动条的情况下
     // 页面有缩放的时候，scrollHeight 可能会小于 clientHeight / offsetHeight
-    if (this.ref.clientHeight >= this.ref.scrollHeight) {
+    if (this.ref.clientHeight >= this.ref.scrollHeight && e.deltaY !== 0) {
       // scrollLeft 内部有边界判断
       this.ref.scrollLeft += e.deltaY;
     }
@@ -337,6 +354,8 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
         >
           {this.props.children}
         </div>
+        <div className={styles['scrollbar-decoration-vertical-l']} ref={(e) => e && (this.decorationL = e)} />
+        <div className={styles['scrollbar-decoration-vertical-r']} ref={(e) => e && (this.decorationR = e)} />
         <div className={styles['scroll-horizontal']}>
           <div
             className={styles['track-horizontal']}

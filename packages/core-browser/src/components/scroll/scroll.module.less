@@ -74,6 +74,28 @@
     height: 100%;
     width: 100%;
   }
+
+  .scrollbar-decoration-vertical-l,
+  .scrollbar-decoration-vertical-r {
+    position: absolute;
+    width: 6px;
+    height: 100%;
+    z-index: 999;
+    top: 0px;
+    opacity: 0;
+  }
+  // rgba(106, 115, 125, 0.2) 0 6px 6px -6px inset
+  .scrollbar-decoration-vertical-l {
+    left: 0px;
+    border-left: 1px solid var(--kt-panelTab-border);
+    box-shadow: 6px 0 4px -4px rgba(106, 115, 125, 0.2) inset;
+  }
+
+  .scrollbar-decoration-vertical-r {
+    right: 0px;
+    border-right: 1px solid var(--kt-panelTab-border);
+    box-shadow: -6px 0 4px -4px rgba(106, 115, 125, 0.2) inset;
+  }
 }
 
 .hide-thumb {
