@@ -68,7 +68,6 @@ export interface SearchAllFromDocModelOptions {
   searchValue: string;
   searchOptions: ContentSearchOptions;
   documentModelManager: IEditorDocumentModelService;
-  workbenchEditorService: WorkbenchEditorService;
   rootDirs: string[];
 }
 
@@ -134,7 +133,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  private workbenchEditorService: WorkbenchEditorService;
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   @observable
   replaceValue = '';
@@ -234,10 +234,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
       return;
     }
 
-    if (!this.workbenchEditorService) {
-      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
-    }
-
     // 记录搜索历史
     this.searchHistory.setSearchHistory(value);
 
@@ -311,7 +307,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
       searchValue: value,
       searchOptions,
       documentModelManager: this.documentModelManager,
-      workbenchEditorService: this.workbenchEditorService,
       rootDirs,
     });
 
@@ -784,13 +779,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
     const searchValue = options.searchValue;
     const searchOptions = options.searchOptions;
     const documentModelManager = options.documentModelManager;
-    const workbenchEditorService = options.workbenchEditorService;
     const rootDirs = options.rootDirs;
 
     let result: ContentSearchResult[] = [];
     let searchedList: string[] = [];
     const docModels = documentModelManager.getAllModels();
-    const group = workbenchEditorService.currentEditorGroup;
+    const group = this.workbenchEditorService.currentEditorGroup;
 
     const filterFileWithGlobRelativePath = new FilterFileWithGlobRelativePath(rootDirs, searchOptions.include || []);
 
