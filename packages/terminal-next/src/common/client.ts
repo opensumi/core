@@ -72,6 +72,16 @@ export interface ITerminalClient extends Disposable {
   widget: IWidget;
 
   /**
+   * 是否作为 TaskExecutor
+   */
+  isTaskExecutor?: boolean;
+
+  /**
+   * 作为 TaskExecutor 时对应的 taskId
+   */
+  taskId?: string;
+
+  /**
    * 终端客户端获取输入焦点
    */
   focus(): void;

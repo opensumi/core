@@ -23,6 +23,7 @@ import {
 import { platform } from '@opensumi/ide-core-common/lib/platform';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { ITerminalClient } from '@opensumi/ide-terminal-next/lib/common/client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
@@ -39,7 +40,6 @@ import {
 
 import { ValidationState, ValidationStatus } from './parser';
 import { parse, IProblemReporter, createCustomTask } from './task-config';
-
 
 class ProblemReporter implements IProblemReporter {
   private _validationStatus: ValidationStatus;
@@ -152,6 +152,13 @@ export class TaskService extends Disposable implements ITaskService {
 
   public run(task: Task) {
     return this.runTask(task);
+  }
+
+  public async attach(taskId: string, terminal: ITerminalClient) {
+    const task = await this.getTask(this.workspaceFolders[0], taskId);
+    if (task) {
+      this.taskSystem.attach(task, terminal);
+    }
   }
 
   public async terminateTask(taskId: string) {
