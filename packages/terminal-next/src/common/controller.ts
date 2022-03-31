@@ -31,6 +31,16 @@ export interface ICreateClientWithWidgetOptions {
   closeWhenExited?: boolean;
 
   /**
+   * 是否为 TaskExecutor
+   */
+  isTaskExecutor?: boolean;
+
+  /**
+   * 作为 TaskExecutor 时对应的 taskId
+   */
+  taskId?: string;
+
+  /**
    * 自定义的参数，由上层集成方自行控制
    */
   args?: any;
@@ -120,7 +130,7 @@ export interface ITerminalGroupViewService {
 
 export interface ITerminalBrowserHistory {
   current: string | undefined;
-  groups: (string[] | { clientId: string }[])[];
+  groups: { client: string; task?: string }[][];
 }
 
 export const ITerminalHoverManagerService = Symbol('ITerminalHoverManagerService');

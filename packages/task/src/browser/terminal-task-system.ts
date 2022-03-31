@@ -121,6 +121,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   public taskStatus: TaskStatus = TaskStatus.PROCESS_INIT;
 
   constructor(
+    private task: Task,
     private terminalOptions: TerminalOptions,
     private collector: ProblemCollector,
     public executorId: number,
@@ -173,7 +174,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   private bindTerminalClientEvent() {
     this.addDispose(
-      this.terminalClient.onOutput((e) => {
+      this.terminalClient?.onOutput((e) => {
         const output = removeAnsiEscapeCodes(e.data.toString());
         const isBegin = this.collector.matchBeginMatcher(output);
         if (isBegin) {
@@ -203,18 +204,18 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
         if (isEnd) {
           this._onDidBackgroundTaskEnd.fire();
         }
-      }),
+      }) || Disposable.NULL,
     );
 
     this.disposableCollection.push(
-      this.terminalClient.onExit(async (e) => {
+      this.terminalClient?.onExit(async (e) => {
         if (e.id === this.terminalClient?.id) {
           this.onTaskExit(e.code);
           this.processExited = true;
           this.taskStatus = TaskStatus.PROCESS_EXITED;
           this.exitDefer.resolve({ exitCode: e.code });
         }
-      }),
+      }) || Disposable.NULL,
     );
 
     this.disposableCollection.push(
@@ -238,6 +239,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       this.terminalClient = await this.terminalController.createClientWithWidget2({
         terminalOptions: this.terminalOptions,
         closeWhenExited: false,
+        isTaskExecutor: true,
+        taskId: this.task._id,
         beforeCreate: (terminalId) => {
           this._onDidTerminalCreated.fire(terminalId);
         },
@@ -248,7 +251,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.bindTerminalClientEvent();
   }
 
-  async attach(terminalClient: ITterminalClient): Promise<{ exitCode?: number }> {
+  async attach(terminalClient: ITerminalClient): Promise<{ exitCode?: number }> {
     this.taskStatus = TaskStatus.PROCESS_READY;
     this.terminalClient = terminalClient;
     this.terminalOptions = terminalClient.options;
@@ -399,7 +402,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   private async createTaskExecutor(task: CustomTask | ContributedTask, options: TerminalOptions) {
     const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
     const collector = new ProblemCollector(matchers);
-    const executor = this.injector.get(TerminalTaskExecutor, [options, collector, this.executorId]);
+    const executor = this.injector.get(TerminalTaskExecutor, [task, options, collector, this.executorId]);
     this.executorId += 1;
     this.taskExecutors.push(executor);
     this.addDispose(
@@ -415,8 +418,13 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     task: CustomTask | ContributedTask,
     terminalClient: ITerminalClient,
   ): Promise<ITaskExecuteResult> {
-    const taskExecutor = await this.createTaskExecutor(task);
-    return taskExecutor.attach(terminalClient);
+    const taskExecutor = await this.createTaskExecutor(task, terminalClient.options);
+    const p = taskExecutor.attach(terminalClient);
+    return {
+      task,
+      kind: TaskExecuteKind.Started,
+      promise: p,
+    };
   }
 
   private async executeTask(task: CustomTask | ContributedTask): Promise<ITaskExecuteResult> {

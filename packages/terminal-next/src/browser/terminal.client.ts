@@ -66,6 +66,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _linkManager: TerminalLinkManager;
   /** end */
 
+  isTaskExecutor = false;
+  taskId: string | undefined;
+
   /** status */
   private _ready = false;
   private _attached: Deferred<void>;
