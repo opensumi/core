@@ -376,6 +376,10 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     widget.dispose();
     this._onWidgetDisposed.fire(widget);
     this._checkIfGroupEmpty(groupIndex);
+
+    if (group.current) {
+      this._onWidgetSelected.fire(group.current);
+    }
   }
 
   resize() {
