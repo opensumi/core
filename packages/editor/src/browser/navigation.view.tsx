@@ -5,10 +5,10 @@ import React from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { Icon } from '@opensumi/ide-components';
-import { useInjectable, DomListener, Disposable, useUpdateOnEvent, URI } from '@opensumi/ide-core-browser';
+import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { IScrollDelegate, Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 
-import { Scroll, IScrollDelegate } from './component/scroll/scroll';
 import styles from './navigation.module.less';
 import { IBreadCrumbService, IBreadCrumbPart } from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';

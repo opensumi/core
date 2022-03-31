@@ -18,8 +18,8 @@ import {
   URI,
   LabelService,
 } from '@opensumi/ide-core-browser';
+import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
-import { Scroll } from '@opensumi/ide-editor/lib/browser/component/scroll/scroll';
 
 import { ISectionItemData, toNormalCase } from '../common';
 

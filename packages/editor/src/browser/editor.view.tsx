@@ -23,13 +23,12 @@ import {
   ResizeHandleHorizontal,
   ResizeHandleVertical,
 } from '@opensumi/ide-core-browser/lib/components';
+import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
-
 
 import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
 
 import { EditorComponentRegistryImpl } from './component';
-import { Scroll } from './component/scroll/scroll';
 import styles from './editor.module.less';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import { NavigationBar } from './navigation.view';

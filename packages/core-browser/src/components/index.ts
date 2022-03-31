@@ -4,6 +4,7 @@ export * from './tree';
 export * from './portal';
 export * from './resize/resize';
 export * from './layout';
+export * from './scroll';
 export { Select as NativeSelect } from './select';
 
 /**

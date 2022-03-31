@@ -106,7 +106,6 @@
 
   .kt_editor_tabs_scroll {
     overflow-y: hidden;
-    display: flex;
     background: var(--editorGroupHeader-tabsBackground);
     &::before {
       content: '';
@@ -160,6 +159,7 @@
     flex-grow: 1;
   }
   .kt_editor_tabs_content {
+    overflow-y: hidden;
     display: inline-flex;
     position: relative;
     &.kt_on_drag_over {
