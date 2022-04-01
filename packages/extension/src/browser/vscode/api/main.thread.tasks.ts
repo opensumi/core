@@ -12,9 +12,11 @@ import {
   URI,
   Disposable,
 } from '@opensumi/ide-core-common';
-import { ITaskService, ITaskProvider, IWorkspaceFolder } from '@opensumi/ide-task/lib/common';
-import { KeyedTaskIdentifier, TaskEventKind, TaskExecution } from '@opensumi/ide-task/lib/common/task';
+import { ITaskService, ITaskProvider, IWorkspaceFolder } from '@opensumi/ide-core-common/lib/tasks';
 import {
+  KeyedTaskIdentifier,
+  TaskEventKind,
+  TaskExecution,
   PresentationOptions,
   RunOptions,
   CommandOptions,
@@ -28,7 +30,7 @@ import {
   ConfiguringTask,
   CustomTask,
   ContributedTask,
-} from '@opensumi/ide-task/lib/common/task';
+} from '@opensumi/ide-core-common/lib/tasks/task';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ExtHostAPIIdentifier } from '../../../common/vscode';

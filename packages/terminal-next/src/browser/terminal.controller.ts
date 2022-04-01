@@ -15,10 +15,10 @@ import {
   DisposableStore,
   ILogger,
 } from '@opensumi/ide-core-common';
+import { ITaskService } from '@opensumi/ide-core-common/lib/tasks';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
-import { ITaskService } from '@opensumi/ide-task/lib/common';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import {

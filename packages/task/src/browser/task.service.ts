@@ -21,12 +21,13 @@ import {
   Emitter,
 } from '@opensumi/ide-core-common';
 import { platform } from '@opensumi/ide-core-common/lib/platform';
-import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
-import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
-import { ITerminalClient } from '@opensumi/ide-terminal-next/lib/common/client';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-
-import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
+import {
+  ITaskService,
+  WorkspaceFolderTaskResult,
+  ITaskProvider,
+  ITaskSystem,
+  ITaskSummary,
+} from '@opensumi/ide-core-common/lib/tasks';
 import {
   ConfiguringTask,
   TaskSet,
@@ -36,7 +37,11 @@ import {
   TaskIdentifier,
   KeyedTaskIdentifier,
   TaskEvent,
-} from '../common/task';
+} from '@opensumi/ide-core-common/lib/tasks/task';
+import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
+import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { ITerminalClient } from '@opensumi/ide-terminal-next/lib/common/client';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ValidationState, ValidationStatus } from './parser';
 import { parse, IProblemReporter, createCustomTask } from './task-config';

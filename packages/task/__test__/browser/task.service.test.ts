@@ -2,6 +2,7 @@ import path from 'path';
 
 import { PreferenceService, IJSONSchemaRegistry, ISchemaStore, QuickOpenService } from '@opensumi/ide-core-browser';
 import { FileUri, Uri } from '@opensumi/ide-core-common';
+import { ITaskService, ITaskSystem, ITaskProvider } from '@opensumi/ide-core-common/lib/tasks';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -11,7 +12,6 @@ import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/
 import { taskSchemaUri, schema } from '@opensumi/ide-task/lib/browser/task.schema';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
-import { ITaskService, ITaskSystem, ITaskProvider } from '@opensumi/ide-task/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 

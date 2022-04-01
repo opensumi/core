@@ -24,9 +24,8 @@ import {
   NamedProblemPattern,
 } from '@opensumi/ide-core-common';
 import { Platform } from '@opensumi/ide-core-common/lib/platform';
-
-import { IWorkspaceFolder } from '../common';
-import * as TaskTypes from '../common/task';
+import { IWorkspaceFolder } from '@opensumi/ide-core-common/lib/tasks';
+import * as TaskTypes from '@opensumi/ide-core-common/lib/tasks/task';
 
 import { IProblemReporterBase, ValidationStatus, ProblemMatcherParser, Config } from './parser';
 

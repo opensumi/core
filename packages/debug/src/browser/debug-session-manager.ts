@@ -33,9 +33,9 @@ import {
   CommandService,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { ITaskService } from '@opensumi/ide-core-common/lib/tasks';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
-import { ITaskService } from '@opensumi/ide-task/lib/common';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 
 import {

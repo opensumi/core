@@ -11,6 +11,7 @@ import {
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
 } from '@opensumi/ide-core-common';
+import { ITaskService, ITaskSystem } from '@opensumi/ide-core-common/lib/tasks';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { ExtensionService } from '@opensumi/ide-extension';
@@ -33,7 +34,6 @@ import { MonacoService } from '@opensumi/ide-monaco';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
-import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import { ITerminalInternalService, ITerminalController } from '@opensumi/ide-terminal-next';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';

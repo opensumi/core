@@ -16,20 +16,20 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/node/task-abstract-line-matcher.ts
 
-import { Diagnostic, DiagnosticSeverity, Range } from 'vscode';
+import type { Diagnostic, DiagnosticSeverity, Range } from 'vscode';
 
+import { isWindows } from './platform';
+import { ProblemMatcher } from './problem-matcher';
 import {
-  isWindows,
   ProblemLocationKind,
   ProblemPattern,
-  ProblemMatcher,
   ProblemMatch,
   ProblemMatchData,
   Severity,
   FileLocationKind,
-  URI,
   WatchingPattern,
-} from '@opensumi/ide-core-common';
+} from './problem-pattern';
+import { URI } from './uri';
 
 const endOfLine: string = isWindows ? '\r\n' : '\n';
 

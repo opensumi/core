@@ -1,5 +1,5 @@
+import { ITaskSystem } from '@opensumi/ide-core-common/lib/tasks';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
-import { ITaskSystem } from '@opensumi/ide-task/lib/common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

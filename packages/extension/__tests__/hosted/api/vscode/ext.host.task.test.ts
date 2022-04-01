@@ -12,6 +12,7 @@ import {
   IFileServiceClient,
 } from '@opensumi/ide-core-common';
 import { ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common/lib/task-definition';
+import { ITaskService, ITaskSystem } from '@opensumi/ide-core-common/lib/tasks';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
 import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
@@ -21,7 +22,6 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-la
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
-import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import {
   ITerminalApiService,
   ITerminalClientFactory,
@@ -57,9 +57,7 @@ import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/c
 import { ExtHostTerminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { ExtHostTasks } from '../../../../src/hosted/api/vscode/tasks/ext.host.tasks';
 
-
 import { CustomBuildTaskProvider } from './__mock__/taskProvider';
-
 
 const extension = mockExtensionProps;
 

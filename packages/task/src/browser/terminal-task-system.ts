@@ -15,6 +15,25 @@ import {
   ProblemMatchData,
 } from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-core-common/lib/path';
+import { ProblemCollector } from '@opensumi/ide-core-common/lib/problem-collector';
+import {
+  ITaskSystem,
+  ITaskExecuteResult,
+  ITaskExecutor,
+  TaskExecuteKind,
+  IActivateTaskExecutorData,
+  TaskTerminateResponse,
+} from '@opensumi/ide-core-common/lib/tasks';
+import {
+  Task,
+  CustomTask,
+  ContributedTask,
+  CommandString,
+  CommandConfiguration,
+  TaskEvent,
+  TaskEventKind,
+  RuntimeType,
+} from '@opensumi/ide-core-common/lib/tasks/task';
 import {
   TerminalOptions,
   ITerminalController,
@@ -23,27 +42,6 @@ import {
   ITerminalService,
 } from '@opensumi/ide-terminal-next/lib/common';
 import { IVariableResolverService } from '@opensumi/ide-variable';
-
-import {
-  ITaskSystem,
-  ITaskExecuteResult,
-  ITaskExecutor,
-  TaskExecuteKind,
-  IActivateTaskExecutorData,
-  TaskTerminateResponse,
-} from '../common';
-import {
-  Task,
-  ContributedTask,
-  CommandString,
-  CommandConfiguration,
-  TaskEvent,
-  TaskEventKind,
-  RuntimeType,
-} from '../common/task';
-import { CustomTask } from '../common/task';
-
-import { ProblemCollector } from './problem-collector';
 
 enum TaskStatus {
   PROCESS_INIT,
@@ -590,7 +588,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     return { task, success };
   }
 
-  rerun(): import('../common').ITaskExecuteResult | undefined {
+  rerun(): import('@opensumi/ide-core-common/lib/tasks').ITaskExecuteResult | undefined {
     throw new Error('Method not implemented.');
   }
   isActive(): Promise<boolean> {
@@ -600,20 +598,20 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     throw new Error('Method not implemented.');
   }
 
-  getBusyTasks(): import('../common/task').Task[] {
+  getBusyTasks(): Task[] {
     throw new Error('Method not implemented.');
   }
   canAutoTerminate(): boolean {
     throw new Error('Method not implemented.');
   }
 
-  terminateAll(): Promise<import('../common').TaskTerminateResponse[]> {
+  terminateAll(): Promise<import('@opensumi/ide-core-common/lib/tasks').TaskTerminateResponse[]> {
     throw new Error('Method not implemented.');
   }
-  revealTask(task: import('../common/task').Task): boolean {
+  revealTask(_task: Task): boolean {
     throw new Error('Method not implemented.');
   }
-  customExecutionComplete(task: import('../common/task').Task, result: number): Promise<void> {
+  customExecutionComplete(task: Task, result: number): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

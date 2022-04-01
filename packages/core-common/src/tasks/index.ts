@@ -1,10 +1,11 @@
-import { IJSONSchemaMap } from '@opensumi/ide-core-browser';
-import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred } from '@opensumi/ide-core-common';
-import { UriComponents } from '@opensumi/ide-editor';
-import { ITerminalClient, TerminalOptions } from '@opensumi/ide-terminal-next/lib/common';
-
 // eslint-disable-next-line import/no-restricted-paths
-import type { ProblemCollector } from '../browser/problem-collector';
+import { IDisposable } from '../disposable';
+import { Event } from '../event';
+import { IJSONSchemaMap } from '../json-schema';
+import type { ProblemCollector } from '../problem-collector';
+import { TaskIdentifier } from '../task-definition';
+import { URI, Uri, UriComponents } from '../uri';
+import { Deferred } from '../utils/promise-util';
 
 import { Task, ConfiguringTask, ContributedTask, TaskSet, KeyedTaskIdentifier, TaskEvent } from './task';
 
@@ -113,7 +114,7 @@ export interface ITaskExecutor {
   execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }>;
   reset(): void;
   terminate(): Promise<{ success: boolean }>;
-  updateTerminalOptions(options: TerminalOptions): void;
+  updateTerminalOptions(options: Record<string, any>): void;
   updateProblemCollector(collector: ProblemCollector): void;
   onDidTerminalWidgetRemove: Event<void>;
   onDidTaskProcessExit: Event<number | undefined>;
@@ -129,7 +130,7 @@ export interface ITaskSystem {
   onDidBackgroundTaskBegin: Event<TaskEvent>;
   onDidBackgroundTaskEnded: Event<TaskEvent>;
   onDidProblemMatched: Event<TaskEvent>;
-  attach(task: Task | ConfiguringTask, terminalClient: ITerminalClient): Promise<ITaskExecuteResult>;
+  attach(task: Task | ConfiguringTask, terminalClient: any): Promise<ITaskExecuteResult>;
   run(task: Task | ConfiguringTask): Promise<ITaskExecuteResult>;
   rerun(): ITaskExecuteResult | undefined;
   isActive(): Promise<boolean>;
@@ -144,7 +145,7 @@ export interface ITaskSystem {
 }
 
 export interface ITaskService {
-  attach(taskId: string, terminal: ITerminalClient): Promise<void>;
+  attach(taskId: string, terminal: any): Promise<void>;
 
   run(task: Task | ConfiguringTask): Promise<ITaskSummary>;
 

@@ -1,8 +1,7 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
+import { ITaskService, ITaskSystem } from '@opensumi/ide-core-common/lib/tasks';
 import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
-
-import { ITaskService, ITaskSystem } from '../common';
 
 import { TaskPreferencesContribution } from './task-preferences.contribution';
 import { TaskFolderPreferenceProvider } from './task-preferences.provider';
