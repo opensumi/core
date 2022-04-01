@@ -112,7 +112,7 @@ export class TaskService extends Disposable implements ITaskService {
   private _workspaceFolders: Uri[];
 
   private providers: Map<number, ITaskProvider>;
-  private providerTypes: Map<number, string>;
+  private providerTypes: Map<string, number>;
 
   constructor() {
     super();
@@ -155,9 +155,27 @@ export class TaskService extends Disposable implements ITaskService {
   }
 
   public async attach(taskId: string, terminal: ITerminalClient) {
-    const task = await this.getTask(this.workspaceFolders[0], taskId);
-    if (task) {
-      this.taskSystem.attach(task, terminal);
+    const [, , , taskType] = taskId.split(',');
+    if (!taskType) {
+      return;
+    }
+
+    if (this.providerTypes.has(taskType)) {
+      const task = await this.getTask(this.workspaceFolders[0], taskId);
+      if (task) {
+        this.taskSystem.attach(task, terminal);
+      }
+    } else {
+      // wait for task provider to be registered
+      const disposable = this._onDidRegisterTaskProvider.event(async (e) => {
+        if (e === taskType) {
+          const task = await this.getTask(this.workspaceFolders[0], taskId);
+          if (task) {
+            this.taskSystem.attach(task, terminal);
+            disposable.dispose();
+          }
+        }
+      });
     }
   }
 
@@ -446,13 +464,13 @@ export class TaskService extends Disposable implements ITaskService {
   public registerTaskProvider(provider: ITaskProvider, type: string): IDisposable {
     const handler = (this.providerHandler += 1);
     this.providers.set(handler, provider);
-    this.providerTypes.set(handler, type);
+    this.providerTypes.set(type, handler);
     this._onDidRegisterTaskProvider.fire(type);
 
     return {
       dispose: () => {
         this.providers.delete(handler);
-        this.providerTypes.delete(handler);
+        this.providerTypes.delete(type);
       },
     };
   }

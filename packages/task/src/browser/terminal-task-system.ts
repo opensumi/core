@@ -463,7 +463,8 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     } else {
       this.addDispose(
         executor.onDidTerminalCreated((terminalId) => {
-          // 当 task 使用 CustomExecution 时，发出 TaskEventKind.Start 事件后，插件进程将尝试 attach 这个 Pseudoterminal (ext.host.task.ts#$onDidStartTask)
+          // 当 task 使用 CustomExecution 时，发出 TaskEventKind.Start 事件后
+          // 插件进程将尝试 attach 这个 Pseudoterminal (ext.host.task.ts#$onDidStartTask)
           // attach 成功便会创建一个 ExtensionTerminal 实例
           // 确保后续调用 $startExtensionTerminal 时已经建立了连接
           this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.Start, task, terminalId));
