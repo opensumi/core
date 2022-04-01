@@ -72,7 +72,7 @@ describe('Editor Hover Contribution', () => {
 
   it('should have enough API', () => {
     expect(typeof contribution.contribute).toBe('function');
-    expect(typeof contribution.toggleHoverEnabled).toBe('function');
+    expect(typeof contribution.setHoverEnabled).toBe('function');
   });
 
   it('contribute method should be work', () => {
