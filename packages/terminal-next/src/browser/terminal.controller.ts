@@ -273,6 +273,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          */
         const widget = this.terminalView.createWidget(group, typeof session === 'string' ? session : session.client);
         const client = await this.clientFactory2(widget, {});
+
+        if (session.task) {
+          client.isTaskExecutor = true;
+          client.taskId = session.task;
+        }
+
         this._clients.set(client.id, client);
 
         if (current === client.id) {
