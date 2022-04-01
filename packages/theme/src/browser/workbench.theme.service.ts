@@ -45,10 +45,8 @@ import {
   colorIdPattern,
 } from '../common/theme.service';
 
-
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
-
 
 export const CUSTOM_WORKBENCH_COLORS_SETTING = 'workbench.colorCustomizations';
 export const CUSTOM_EDITOR_COLORS_SETTING = 'editor.tokenColorCustomizations';
@@ -72,6 +70,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   public currentThemeId: string;
   private currentTheme?: Theme;
+  private latestApplyTheme: string;
 
   private themes: Map<string, ThemeData> = new Map();
   private themeContributionRegistry: Map<string, { contribution: ThemeContribution; basePath: URI }> = new Map();
@@ -168,8 +167,20 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
     const prevThemeType = this.currentTheme ? this.currentTheme.type : 'dark';
     this.currentThemeId = themeId;
-
+    /**
+     * 这里 `applyTheme` 默认应该按照最后一个应用的主题进行加载
+     * 但由于 `getTheme` 存在时序问题，例如：
+     * 主题 A，E，分别由插件 A，E 贡献
+     * 这里先调用 applyTheme(E), 再调用 applyTheme(A)
+     * 旧的逻辑由于插件 A ... E 的加载顺序问题，会存在 A 比 E 快加载的情况导致最终应用了错误的主题
+     *
+     * 故这里增加额外判断，保障最后一个加载的主题应用
+     */
+    this.latestApplyTheme = themeId;
     const theme = await this.getTheme(themeId);
+    if (this.latestApplyTheme !== themeId) {
+      return;
+    }
     const themeType = getThemeType(theme.base);
 
     this.currentTheme = new Theme(themeType, theme);

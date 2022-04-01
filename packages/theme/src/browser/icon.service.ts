@@ -25,7 +25,6 @@ import {
   IconThemeInfo,
 } from '../common';
 
-
 import { IconThemeStore } from './icon-theme-store';
 
 import './icon.less';
@@ -62,6 +61,7 @@ export class IconService implements IIconService {
 
   public currentThemeId: string;
   public currentTheme: IIconTheme;
+  private latestApplyTheme: string;
 
   private iconMap: Map<string, string> = new Map();
 
@@ -321,9 +321,22 @@ export class IconService implements IIconService {
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
     }
+    /**
+     * 这里 `applyTheme` 默认应该按照最后一个应用的主题进行加载
+     * 但由于 `getIconTheme` 存在时序问题，例如：
+     * 主题 A，E，分别由插件 A，E 贡献
+     * 这里先调用 applyTheme(E), 再调用 applyTheme(A)
+     * 旧的逻辑由于插件 A ... E 的加载顺序问题，会存在 A 比 E 快加载的情况导致最终应用了错误的主题
+     *
+     * 故这里增加额外判断，保障最后一个加载的主题应用
+     */
+    this.latestApplyTheme = themeId;
     const iconThemeData = await this.getIconTheme(themeId);
+    if (this.latestApplyTheme !== themeId) {
+      return;
+    }
     if (!iconThemeData) {
-      this.logger.warn('没有检测到目标图标主题插件，使用内置图标！');
+      this.logger.warn('Target IconTheme extension not detected, use built-in icons.');
       document.getElementsByTagName('body')[0].classList.add('default-file-icons');
       return;
     }
