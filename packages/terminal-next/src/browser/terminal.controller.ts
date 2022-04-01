@@ -250,11 +250,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
 
-    const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
+    // const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
 
-    if (!checked) {
-      return;
-    }
+    // if (!checked) {
+    //   return;
+    // }
 
     for (const widgets of groups) {
       const { group } = this._createOneGroup();

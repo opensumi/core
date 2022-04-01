@@ -5,6 +5,7 @@ import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient } from
 import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
 
 import { PtyService } from './pty';
+import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 
 // ref: https://github.com/vercel/hyper/blob/4c90d7555c79fb6dc438fa9549f1d0ef7c7a5aa7/app/session.ts#L27-L32
 // 批处理字符最大长度
@@ -22,7 +23,6 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   private terminalProcessMap: Map<string, PtyService> = new Map();
   private clientTerminalMap: Map<string, Map<string, PtyService>> = new Map();
-  private clientTerminalThresholdMap: Map<string, NodeJS.Timeout> = new Map();
 
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
 
@@ -35,6 +35,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
+  @Autowired(PtyServiceManagerToken)
+  private readonly ptyServiceManager: IPtyServiceManager;
+
   private batchedPtyDataMap: Map<string, string> = new Map();
   private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
 
@@ -42,13 +45,22 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     this.serviceClientMap.set(clientId, client);
   }
 
-  public ensureClientTerminal(clientId: string, terminalIdArr: string[]) {
-    if (this.clientTerminalThresholdMap.has(clientId)) {
-      clearTimeout(this.clientTerminalThresholdMap.get(clientId) as NodeJS.Timeout);
-      this.logger.debug(`重连 clientId ${clientId} 窗口的 pty 进程`);
-    }
+  // 检查SessionId是否存活，但是因为之前接口设计有问题只返回了boolean，所以不能批量返回SessionId的检查结果
+  // 可以通过多次调用来达成目的，每次调用terminalIdArr只传入一个东西
+  public async ensureClientTerminal(clientId: string, terminalIdArr: string[]) {
+    const sessionIdArray = terminalIdArr.map((id) => id.split('|')[1]);
+    const sessionCheckResArray = await Promise.all(
+      sessionIdArray.map((sessionId) => this.ptyServiceManager.checkSession(sessionId)),
+    );
+    this.logger.log(`ensureClientTerminal ${clientId} ${terminalIdArr} ${sessionCheckResArray}`);
 
-    return this.clientTerminalMap.has(clientId);
+    // 有一个存活就true，所以为了准确使用，每次调用terminalIdArr只传入一个东西
+    for (const sessionCheckRes of sessionCheckResArray) {
+      if (sessionCheckRes) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public closeClient(clientId: string) {
@@ -56,12 +68,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       () => {
         this.disposeClient(clientId);
         this.logger.debug(`删除 clientId ${clientId} 窗口的 pty 进程`);
-        this.clientTerminalThresholdMap.delete(clientId);
       },
       isDevelopment() ? 0 : this.appConfig.terminalPtyCloseThreshold || TerminalServiceImpl.TerminalPtyCloseThreshold,
     );
-
-    this.clientTerminalThresholdMap.set(clientId, closeTimer);
   }
 
   public disposeClient(clientId: string) {

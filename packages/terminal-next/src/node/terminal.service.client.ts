@@ -72,9 +72,9 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     }
   }
 
-  // 完成创建之后，前端进行状态同步
-  ensureTerminal(terminalIdArr: string[]): boolean {
-    return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
+  // 检查终端状态，终端是否存活
+  async ensureTerminal(terminalIdArr: string[]): Promise<boolean> {
+    return await this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
   async create2(

@@ -26,13 +26,13 @@ export const PtyServiceManagerToken = Symbol('PtyServiceManager');
  * 1.与远程容器通信，完成终端的创建连接一些列事情 - 双容器架构
  * 2.直接走同进程调用，操作终端 - 传统架构
  */
-interface IPtyServiceManager {
+export interface IPtyServiceManager {
   spawn(
     file: string,
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
-  ): Promise<pty.IPty>;
+  ): Promise<IPtyProcessProxy>;
   onData(pid: number, listener: (e: string) => any): pty.IDisposable;
   onExit(pid: number, listener: (e: { exitCode: number; signal?: number }) => any): pty.IDisposable;
   on(pid: number, event: 'data', listener: (data: string) => void): void;
@@ -44,6 +44,7 @@ interface IPtyServiceManager {
   resume(pid: number): void;
   kill(pid: number, signal?: string): void;
   getProcess(pid): Promise<string>;
+  checkSession(sessionId: string): Promise<boolean>;
 }
 
 // 双容器架构 - 在IDE容器中远程运行，与DEV Server上的PtyService通信
@@ -156,17 +157,25 @@ export class PtyServiceManager implements IPtyServiceManager {
   resize(pid: number, columns: number, rows: number): void {
     this.ptyServiceProxy.$resize(pid, columns, rows);
   }
+
   write(pid: number, data: string): void {
     this.ptyServiceProxy.$write(pid, data);
   }
+
   kill(pid: number, signal?: string): void {
     this.ptyServiceProxy.$kill(pid, signal);
   }
+
   pause(pid: number): void {
     this.ptyServiceProxy.$pause(pid);
   }
+
   resume(pid: number): void {
     this.ptyServiceProxy.$resume(pid);
+  }
+
+  async checkSession(sessionId: string): Promise<boolean> {
+    return await this.ptyServiceProxy.$checkSession(sessionId);
   }
 }
 
