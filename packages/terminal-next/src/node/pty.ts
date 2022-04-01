@@ -22,7 +22,7 @@ import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
 import { IPtyProcess } from '../common/pty';
 
-import { PtyServiceManager, PtyServiceManagerToken } from './pty.manager';
+import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
 
 export const IPtyService = Symbol('IPtyService');
@@ -33,7 +33,7 @@ export class PtyService extends Disposable {
   private readonly logger: INodeLogger;
 
   @Autowired(PtyServiceManagerToken)
-  private readonly ptyServiceManager: PtyServiceManager;
+  private readonly ptyServiceManager: IPtyServiceManager;
 
   private readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
   private _ptyProcess: IPtyProcess | undefined;
@@ -270,6 +270,7 @@ export class PtyService extends Disposable {
     }
     return true;
   }
+
   onMessage(data: string) {
     this._ptyProcess?.write(data);
   }

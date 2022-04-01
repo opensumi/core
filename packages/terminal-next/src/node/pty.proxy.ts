@@ -75,6 +75,15 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     }
   }
 
+  $checkSession(sessionId: string): boolean {
+    const pid = this.ptySessionMap.get(sessionId);
+    if (pid) {
+      return this.checkProcess(pid);
+    } else {
+      return false;
+    }
+  }
+
   $spawn(
     file: string,
     args: string[] | string,
@@ -133,7 +142,6 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     return ptyInstanceSimple;
   }
 
-  // FIXME: 因为onData的Dispose逻辑还不完善，所以会导致新的ptyInstance.onData被注册的时候，旧的ptyInstance.onData依然在运行，此时CacheMap里面就会有两份记录
   $onData(callId: number, pid: number): void {
     this.debugLogger.debug('ptyServiceCenter $onData: callId: ', callId, ' pid: ', pid);
     const ptyInstance = this.ptyInstanceMap.get(pid);
