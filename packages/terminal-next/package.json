@@ -20,6 +20,7 @@
     "@opensumi/ide-core-common": "2.16.3",
     "@opensumi/ide-core-node": "2.16.3",
     "@opensumi/ide-file-service": "2.16.3",
+    "@opensumi/ide-task": "2.16.3",
     "event-kit": "^2.5.3",
     "node-pty": "0.10.0",
     "os-locale": "^4.0.0",
