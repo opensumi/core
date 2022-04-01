@@ -33,7 +33,7 @@
     "@opensumi/ide-task": "2.16.3",
     "@opensumi/ide-terminal-next": "2.16.3",
     "@opensumi/ide-webview": "2.16.3",
-    "@opensumi/vscode-jsonrpc": "^6.1.1-beta.1",
+    "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
     "address": "^1.1.2",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
