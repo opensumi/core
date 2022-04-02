@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-preferences",
-  "version": "2.16.4",
+  "version": "2.16.5",
   "files": [
     "lib"
   ],
@@ -16,14 +16,14 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.16.4"
+    "@opensumi/ide-core-common": "2.16.5"
   },
   "devDependencies": {
-    "@opensumi/ide-components": "2.16.4",
-    "@opensumi/ide-core-browser": "2.16.4",
+    "@opensumi/ide-components": "2.16.5",
+    "@opensumi/ide-core-browser": "2.16.5",
     "@opensumi/ide-dev-tool": "^1.3.1",
-    "@opensumi/ide-editor": "2.16.4",
-    "@opensumi/ide-file-service": "2.16.4",
-    "@opensumi/ide-workspace": "2.16.4"
+    "@opensumi/ide-editor": "2.16.5",
+    "@opensumi/ide-file-service": "2.16.5",
+    "@opensumi/ide-workspace": "2.16.5"
   }
 }
