@@ -1,1 +1,1 @@
-export { TERMINAL_COMMANDS } from '@opensumi/ide-core-browser/lib/common/common.command';
+export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';
