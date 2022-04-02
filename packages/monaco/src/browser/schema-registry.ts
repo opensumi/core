@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Event, IJSONSchemaRegistry, ISchemaContributions, IJSONSchema } from '@opensumi/ide-core-browser';
-import { IDisposable, Disposable } from '@opensumi/ide-core-common/lib/disposable';
+import { IDisposable, Disposable } from '@opensumi/ide-core-common';
 
 import { ISchemaStore, JsonSchemaConfiguration } from '../common';
 

@@ -1,6 +1,5 @@
 import { Injectable } from '@opensumi/di';
-
-import { memoize } from '../utils';
+import { memoize } from '@opensumi/ide-utils';
 
 import { lockedCreate } from './lockedCreate';
 import wasmJson from './md5.wasm.json';

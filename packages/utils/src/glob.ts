@@ -7,10 +7,9 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/glob.ts
 
-import { CharCode } from '../charCode';
-import { LRUCache } from '../map';
-
-import * as paths from './paths';
+import { CharCode } from './charCode';
+import { LRUCache } from './map';
+import { Path, basename as getBaseName, extname } from './path';
 import * as strings from './strings';
 
 export interface IExpression {
@@ -345,10 +344,12 @@ function wrapRelativePattern(parsedPattern: ParsedStringPattern, arg2: string | 
   }
 
   return function (path, basename) {
-    if (!paths.isEqualOrParent(path, arg2.base)) {
+    const base = new Path(arg2.base);
+    const target = new Path(path);
+    if (!target.isEqualOrParent(base)) {
       return null;
     }
-    return parsedPattern(paths.relative(arg2.base, path), basename);
+    return parsedPattern(target.relative(base)?.toString() || '', basename);
   };
 }
 
@@ -417,8 +418,8 @@ function trivia3(pattern: string, options: IGlobOptions): ParsedStringPattern {
 
 // common patterns: **/something/else just need endsWith check, something/else just needs and equals check
 function trivia4and5(path: string, pattern: string, matchPathEnds: boolean): ParsedStringPattern {
-  const nativePath = paths.sep !== paths.nativeSep ? path.replace(ALL_FORWARD_SLASHES, paths.sep) : path;
-  const nativePathEnd = paths.sep + nativePath;
+  const nativePath = Path.separator !== Path.nativeSeparator ? path.replace(ALL_FORWARD_SLASHES, Path.separator) : path;
+  const nativePathEnd = Path.separator + nativePath;
   const parsedPattern: ParsedStringPattern = matchPathEnds
     ? function (path, basename) {
         return typeof path === 'string' && (path === nativePath || path.endsWith(nativePathEnd)) ? pattern : null;
@@ -465,7 +466,7 @@ export function match(
     return false;
   }
 
-  return parse(<IExpression>arg1)(path, undefined, hasSibling);
+  return parseGlob(<IExpression>arg1)(path, undefined, hasSibling);
 }
 
 /**
@@ -476,9 +477,9 @@ export function match(
  * - simple brace expansion ({js,ts} => js or ts)
  * - character ranges (using [...])
  */
-export function parse(pattern: string | IRelativePattern, options?: IGlobOptions): ParsedPattern;
-export function parse(expression: IExpression, options?: IGlobOptions): ParsedExpression;
-export function parse(
+export function parseGlob(pattern: string | IRelativePattern, options?: IGlobOptions): ParsedPattern;
+export function parseGlob(expression: IExpression, options?: IGlobOptions): ParsedExpression;
+export function parseGlob(
   arg1: string | IExpression | IRelativePattern,
   options: IGlobOptions = {},
 ): ParsedPattern | ParsedExpression {
@@ -619,10 +620,10 @@ function parsedExpression(expression: IExpression, options: IGlobOptions): Parse
       const parsedPattern = <ParsedExpressionPattern>parsedPatterns[i];
       if (parsedPattern.requiresSiblings && hasSibling) {
         if (!basename) {
-          basename = paths.basename(path);
+          basename = getBaseName(path);
         }
         if (!name) {
-          name = basename.substr(0, basename.length - paths.extname(path).length);
+          name = basename.substr(0, basename.length - extname(path).length);
         }
       }
       const result = parsedPattern(path, basename, name, hasSibling);

@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
+import { isOSX } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
-import { isOSX } from '@opensumi/ide-core-common';
 
 import { ViewModelContext } from '../../scm-model';
 
@@ -13,7 +13,6 @@ import { SCMTreeModelService } from './scm-tree-model.service';
 import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceNotRoot } from './scm-tree-node';
 import { ISCMTreeNodeProps, SCMTreeNode, SCM_TREE_NODE_HEIGHT } from './scm-tree-node.view';
 import { SCMTreeService } from './scm-tree.service';
-
 
 export const TREE_FIELD_NAME = 'SCM_TREE_TREE_FIELD';
 

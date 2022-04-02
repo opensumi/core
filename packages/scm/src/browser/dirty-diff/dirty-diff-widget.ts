@@ -1,12 +1,10 @@
 import { getIcon } from '@opensumi/ide-core-browser';
+import { URI, path, CommandService } from '@opensumi/ide-core-browser';
 import { ScmChangeTitleCallback } from '@opensumi/ide-core-browser/lib/menu/next';
-import { URI, CommandService } from '@opensumi/ide-core-common';
-import { basename } from '@opensumi/ide-core-common/lib/utils/paths';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
-
 
 export enum DirtyDiffWidgetActionType {
   close,
@@ -81,7 +79,7 @@ export class DirtyDiffWidget extends ZoneWidget {
       throw new Error('Not found model');
     }
 
-    this._title.innerText = basename(model.uri.path);
+    this._title.innerText = path.basename(model.uri.path);
     this._title.className = 'file-name';
     this._actions.className = 'file-actions';
 

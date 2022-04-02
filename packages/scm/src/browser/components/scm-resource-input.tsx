@@ -1,10 +1,10 @@
 import React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { strings, isMacintosh, DisposableStore } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { useHotKey } from '@opensumi/ide-core-browser/lib/react-hooks/hot-key';
-import { isOSX, CommandService, DisposableStore } from '@opensumi/ide-core-common';
-import { format } from '@opensumi/ide-core-common/lib/utils/strings';
+import { CommandService } from '@opensumi/ide-core-common';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
 import { ISCMRepository, InputValidationType, ISCMProvider, scmContainerId } from '../../common';
@@ -17,7 +17,7 @@ export function convertValidationType(type: InputValidationType) {
 }
 
 function getPlaceholder(repository: ISCMRepository) {
-  return format(repository.input.placeholder, isOSX ? '⌘Enter' : 'Ctrl+Enter');
+  return strings.format(repository.input.placeholder, isMacintosh ? '⌘Enter' : 'Ctrl+Enter');
 }
 
 export const SCMResourceInput: React.FC<{
@@ -73,7 +73,7 @@ export const SCMResourceInput: React.FC<{
     });
   }, [repository]);
 
-  const { onKeyDown, onKeyUp } = useHotKey([isOSX ? 'command' : 'ctrl', 'enter'], handleCommit);
+  const { onKeyDown, onKeyUp } = useHotKey([isMacintosh ? 'command' : 'ctrl', 'enter'], handleCommit);
 
   const inputMenu = React.useMemo(() => {
     const menus = viewModel.menus.getRepositoryMenus(repository.provider);

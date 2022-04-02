@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IDisposable, Event, Emitter, IContextKeyService, toDisposable } from '@opensumi/ide-core-browser';
-import { SetMap } from '@opensumi/ide-core-common/lib/map';
+import { SetMap } from '@opensumi/ide-core-common';
 
 import { IViewContentDescriptor } from '..';
 import { IViewsRegistry } from '../common';

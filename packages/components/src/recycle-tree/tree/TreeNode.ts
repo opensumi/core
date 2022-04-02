@@ -1,4 +1,5 @@
-import { Event, Emitter, DisposableCollection, Path } from '../../utils';
+import { Event, Emitter, DisposableCollection, path } from '@opensumi/ide-utils';
+
 import {
   IWatcherCallback,
   IWatchTerminator,
@@ -17,6 +18,7 @@ import {
   IAccessibilityInformation,
 } from '../types';
 
+const { Path } = path;
 /**
  * 裁剪数组
  *

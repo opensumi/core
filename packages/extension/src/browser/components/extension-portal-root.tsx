@@ -1,8 +1,8 @@
 import clx from 'classnames';
 import React from 'react';
 
-import { DisposableCollection } from '@opensumi/ide-components/lib/utils/disposable';
 import { useInjectable } from '@opensumi/ide-core-browser';
+import { DisposableCollection } from '@opensumi/ide-core-browser';
 import { getThemeTypeSelector, IThemeService, ThemeType } from '@opensumi/ide-theme/lib/common';
 
 import { AbstractViewExtProcessService } from '../../common/extension.service';

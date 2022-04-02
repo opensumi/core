@@ -1,5 +1,5 @@
-import { DomListener } from '@opensumi/ide-core-browser';
-import { Disposable, IDisposable, Event, Emitter, IRange, uuid } from '@opensumi/ide-core-common';
+import { DomListener, IRange } from '@opensumi/ide-core-browser';
+import { Disposable, IDisposable, Event, Emitter, uuid } from '@opensumi/ide-core-browser';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import {
   Sash,

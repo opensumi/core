@@ -1,6 +1,6 @@
 import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
-import { endsWith, startsWith, Command, URI } from '@opensumi/ide-core-common';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
+import { Command } from '@opensumi/ide-core-common';
+import { parseGlob, ParsedPattern, URI, strings } from '@opensumi/ide-core-common';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 
@@ -162,11 +162,11 @@ export interface ResultTotal {
 export function anchorGlob(glob: string, isApplyPre?: boolean): string {
   const pre = isApplyPre === false ? '' : '**/';
 
-  if (startsWith(glob, './')) {
+  if (strings.startsWith(glob, './')) {
     // 相对路径转换
     glob = glob.replace(/^.\//, '');
   }
-  if (endsWith(glob, '/')) {
+  if (strings.endsWith(glob, '/')) {
     // 普通目录
     return `${pre}${glob}**`;
   }
@@ -174,7 +174,7 @@ export function anchorGlob(glob: string, isApplyPre?: boolean): string {
     // 不包含 Glob 特殊字符的普通目录
     return `${pre}${glob}/**`;
   }
-  if (!startsWith(glob, pre)) {
+  if (!strings.startsWith(glob, pre)) {
     return `${pre}${glob}`;
   }
   return glob;
@@ -264,15 +264,15 @@ export class FilterFileWithGlobRelativePath {
       const rootUri = new URI(root);
 
       globs.forEach((glob) => {
-        if (startsWith(glob, './')) {
+        if (strings.startsWith(glob, './')) {
           // 处理相对路径
-          const relative = parse(anchorGlob(glob));
+          const relative = parseGlob(anchorGlob(glob));
           glob = glob.slice(2, glob.length);
 
           const pathStrWithExclude = rootUri.resolve(anchorGlob(glob, false)).path.toString();
           this.matcherList.push({
             relative,
-            absolute: parse(pathStrWithExclude),
+            absolute: parseGlob(pathStrWithExclude),
           });
         }
       });

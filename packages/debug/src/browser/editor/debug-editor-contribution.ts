@@ -4,6 +4,7 @@ import {
   PreferenceService,
   MonacoOverrideServiceRegistry,
   ServiceNames,
+  Position,
 } from '@opensumi/ide-core-browser';
 import {
   IDisposable,
@@ -11,13 +12,12 @@ import {
   RunOnceScheduler,
   CancellationTokenSource,
   onUnexpectedExternalError,
-  Position,
   createMemoizer,
   Event,
-} from '@opensumi/ide-core-common';
-import { flatten } from '@opensumi/ide-core-common/lib/arrays';
-import { Constants } from '@opensumi/ide-core-common/lib/uint';
-import * as strings from '@opensumi/ide-core-common/lib/utils/strings';
+  arrays,
+  Constants,
+  strings,
+} from '@opensumi/ide-core-browser';
 import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';
 import { IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
@@ -27,19 +27,12 @@ import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/co
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
-
 import { DebugContextKey } from '../contextkeys/debug-contextkey.service';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
 
-import {
-  CONTEXT_DEBUG_STOPPED_KEY,
-  DebugState,
-  IDebugSessionManager,
-  CONTEXT_IN_DEBUG_MODE,
-  CONTEXT_IN_DEBUG_MODE_KEY,
-} from './../../common';
+import { CONTEXT_DEBUG_STOPPED_KEY, DebugState, IDebugSessionManager } from './../../common';
 import { InlineValueContext } from './../../common/inline-values';
 import { DEFAULT_WORD_REGEXP } from './../debugUtils';
 import { DebugModelManager } from './debug-model-manager';
@@ -49,6 +42,8 @@ const INLINE_VALUE_DECORATION_KEY = 'inlinevaluedecoration';
 const MAX_NUM_INLINE_VALUES = 100;
 const MAX_INLINE_DECORATOR_LENGTH = 150; // 调试时每个内联修饰符的最大字符串长度。超过这个值就在后面显示 ...
 const MAX_TOKENIZATION_LINE_LEN = 500; // 如果这行太长了，则跳过该行的内联值
+
+const { flatten } = arrays;
 
 class InlineSegment {
   constructor(public column: number, public text: string) {}

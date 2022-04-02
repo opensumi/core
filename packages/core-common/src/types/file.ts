@@ -1,4 +1,4 @@
-import { Event, Uri } from '..';
+import { Event, Uri } from '@opensumi/ide-utils';
 
 import { FileChangeEvent } from './file-watch';
 

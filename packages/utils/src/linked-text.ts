@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/linkedText.ts
 
-import { memoize } from './utils';
+import { memoize } from './decorators';
 
 export interface ILink {
   readonly label: string;

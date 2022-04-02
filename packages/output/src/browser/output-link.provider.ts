@@ -1,9 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable } from '@opensumi/ide-core-common/lib';
-import { join } from '@opensumi/ide-core-common/lib/path';
-import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
-import { rtrim, escapeRegExpCharacters, multiRightTrim } from '@opensumi/ide-core-common/lib/utils/strings';
-import { format } from '@opensumi/ide-core-common/lib/utils/strings';
+import { Disposable, path, Uri, URI, strings } from '@opensumi/ide-core-browser';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -52,12 +48,18 @@ class OutputLinkComputer {
 
     // Example: /workspaces/express/server.js on line 8, column 13
     patterns.push(
-      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`, 'gi'),
+      new RegExp(
+        strings.escapeRegExpCharacters(workspaceUri) + `(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`,
+        'gi',
+      ),
     );
 
     // Example: /workspaces/express/server.js:line 8, column 13
     patterns.push(
-      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern}):line ((\\d+)(, column (\\d+))?)`, 'gi'),
+      new RegExp(
+        strings.escapeRegExpCharacters(workspaceUri) + `(${pathPattern}):line ((\\d+)(, column (\\d+))?)`,
+        'gi',
+      ),
     );
 
     // Example: /workspaces/mankala/Features.ts(45): error
@@ -66,14 +68,14 @@ class OutputLinkComputer {
     // Example: /workspaces/mankala/Features.ts (45,18): error
     // Example: /workspaces/mankala/Features Special.ts (45,18): error
     patterns.push(
-      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${pathPattern})(\\s?\\((\\d+)(,(\\d+))?)\\)`, 'gi'),
+      new RegExp(strings.escapeRegExpCharacters(workspaceUri) + `(${pathPattern})(\\s?\\((\\d+)(,(\\d+))?)\\)`, 'gi'),
     );
 
     // Example: at /workspaces/mankala/Game.ts
     // Example: at /workspaces/mankala/Game.ts:336
     // Example: at /workspaces/mankala/Game.ts:336:9
     patterns.push(
-      new RegExp(escapeRegExpCharacters(workspaceUri) + `(${strictPathPattern})(:(\\d+))?(:(\\d+))?`, 'gi'),
+      new RegExp(strings.escapeRegExpCharacters(workspaceUri) + `(${strictPathPattern})(:(\\d+))?(:(\\d+))?`, 'gi'),
     );
     return patterns;
   }
@@ -87,7 +89,7 @@ class OutputLinkComputer {
       const resourceCreator: IResourceCreator = {
         toResource: (folderRelativePath: string): string | undefined => {
           if (typeof folderRelativePath === 'string') {
-            return URI.parse(join(folderUri, folderRelativePath)).withScheme('file').toString();
+            return URI.parse(path.join(folderUri, folderRelativePath)).withScheme('file').toString();
           }
 
           return undefined;
@@ -110,7 +112,7 @@ class OutputLinkComputer {
       let match: RegExpExecArray | null;
       let offset = 0;
       while ((match = pattern.exec(line)) !== null) {
-        const folderRelativePath = rtrim(match[1], '.').replace(/\\/g, '/');
+        const folderRelativePath = strings.rtrim(match[1], '.').replace(/\\/g, '/');
         let resourceString: string | undefined;
         try {
           resourceString = resourceCreator.toResource(folderRelativePath);
@@ -122,13 +124,13 @@ class OutputLinkComputer {
 
           if (match[5]) {
             const columnNumber = match[5];
-            resourceString = format('{0}#{1},{2}', resourceString, lineNumber, columnNumber);
+            resourceString = strings.format('{0}#{1},{2}', resourceString, lineNumber, columnNumber);
           } else {
-            resourceString = format('{0}#{1}', resourceString, lineNumber);
+            resourceString = strings.format('{0}#{1}', resourceString, lineNumber);
           }
         }
 
-        const fullMatch = multiRightTrim(match[0], ["'", ';', '.', '。']);
+        const fullMatch = strings.multiRightTrim(match[0], ["'", ';', '.', '。']);
         const index = line.indexOf(fullMatch, offset);
         offset += index + fullMatch.length;
 
@@ -145,7 +147,7 @@ class OutputLinkComputer {
 
         links.push({
           range: linkRange,
-          url: multiRightTrim(resourceString!, ["'", ';', '.', '。']),
+          url: strings.multiRightTrim(resourceString!, ["'", ';', '.', '。']),
         });
       }
     });

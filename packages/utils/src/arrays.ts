@@ -1,6 +1,11 @@
-import { IDisposable } from '../disposable';
-import { Emitter, Event } from '../event';
-import { ISplice } from '../sequence';
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/arrays.ts
+
+import { IDisposable } from './disposable';
+import { ISplice } from './sequence';
 
 export function isNonEmptyArray<T>(obj: ReadonlyArray<T> | undefined | null): obj is Array<T> {
   return Array.isArray(obj) && obj.length > 0;
@@ -157,138 +162,6 @@ export function addMapElement<K, T>(map: Map<K, T>, key: K, element: T): IDispos
   };
 }
 
-export interface ILRULinkListNode<K> {
-  key: K | undefined;
-  next: ILRULinkListNode<K> | undefined;
-  prev: ILRULinkListNode<K> | undefined;
-}
-
-/**
- * 自带LRU清理的Map
- * 双向链表 + Map
- */
-export class LRUMap<K, V> extends Map<K, V> {
-  private _onDidDelete = new Emitter<{ key: K; value: V }>();
-
-  public readonly onDidDelete: Event<{ key: K; value: V }> = this._onDidDelete.event;
-
-  private head: ILRULinkListNode<K> = { key: undefined, prev: undefined, next: undefined };
-
-  private tail: ILRULinkListNode<K> = { key: undefined, prev: undefined, next: undefined };
-
-  private map: Map<K, ILRULinkListNode<K>> = new Map();
-
-  constructor(private hardLimit: number, private softLimit: number) {
-    super();
-    if (hardLimit <= softLimit) {
-      throw new Error('hardLimit 必须比 softLimit大');
-    }
-    this.head.next = this.tail;
-    this.tail.prev = this.head;
-  }
-
-  private markRecentUsed(key: K) {
-    if (!this.map.get(key)) {
-      this.map.set(key, { key, prev: undefined, next: undefined });
-    }
-    this.putHead(this.map.get(key)!);
-  }
-
-  get(key: K): V | undefined {
-    const v = super.get(key);
-    if (v) {
-      this.markRecentUsed(key);
-    }
-    return v;
-  }
-
-  set(key: K, value: V): this {
-    this.markRecentUsed(key);
-    super.set(key, value);
-    if (this.size > this.hardLimit) {
-      this.shrink();
-    }
-    return this;
-  }
-
-  putHead(node: ILRULinkListNode<K>) {
-    this.deleteNodeFromList(node);
-    const lastHead = this.head.next;
-    this.head.next = node;
-    node.next = lastHead;
-    node.prev = undefined;
-    if (lastHead) {
-      lastHead.prev = node;
-    }
-  }
-
-  protected deleteNodeFromList(node: ILRULinkListNode<K>) {
-    if (node.prev) {
-      node.prev.next = node.next;
-    }
-    if (node.next) {
-      node.next.prev = node.prev;
-    }
-  }
-
-  delete(key: K) {
-    const node = this.map.get(key);
-    if (node) {
-      this.deleteNodeFromList(node);
-    }
-    const value = super.get(key);
-    this._onDidDelete.fire({
-      key,
-      value: value!,
-    });
-    return super.delete(key);
-  }
-
-  shrink() {
-    const toDelete = this.size - this.softLimit;
-    let toDeleteNode: ILRULinkListNode<K> = this.tail;
-    for (let i = 0; i < toDelete; i++) {
-      toDeleteNode = this.tail.prev!;
-      if (!toDeleteNode || toDeleteNode === this.head) {
-        break;
-      } else {
-        this.delete(toDeleteNode.key!);
-      }
-    }
-  }
-}
-
-const NOW = Symbol('now');
-/**
- * 支持过期时间
- */
-export class StaleLRUMap<K, V> extends LRUMap<K, V> {
-  constructor(hardLimit: number, softLimit: number, private maxAge: number) {
-    super(hardLimit, softLimit);
-  }
-
-  get(key: K): V | undefined {
-    const v = super.get(key);
-    if (v) {
-      if (!this._isStale(v)) {
-        return v;
-      }
-      // 过期则删除该条记录
-      this.delete(key);
-    }
-    return undefined;
-  }
-
-  set(key: K, value: V): this {
-    value[NOW] = Date.now();
-    return super.set(key, value);
-  }
-
-  private _isStale(value: V): boolean {
-    return value[NOW] + this.maxAge <= Date.now();
-  }
-}
-
 type NonFunctional<T> = T extends Function ? never : T;
 
 // 枚举 value 转数组值
@@ -297,4 +170,49 @@ export function enumValueToArray<T>(enumeration: T): NonFunctional<T[keyof T]>[]
     .filter((key) => isNaN(Number(key)))
     .map((key) => enumeration[key])
     .filter((val) => typeof val === 'number' || typeof val === 'string');
+}
+
+/**
+ * @returns false if the provided object is an array and not empty.
+ */
+export function isFalsyOrEmpty(obj: any): boolean {
+  return !Array.isArray(obj) || obj.length === 0;
+}
+
+export function flatten<T>(arr: T[][]): T[] {
+  return ([] as T[]).concat(...arr);
+}
+
+export function range(to: number): number[];
+export function range(arg: number, to?: number): number[] {
+  let from = typeof to === 'number' ? arg : 0;
+
+  if (typeof to === 'number') {
+    from = arg;
+  } else {
+    from = 0;
+    to = arg;
+  }
+
+  const result: number[] = [];
+
+  if (from <= to) {
+    for (let i = from; i < to; i++) {
+      result.push(i);
+    }
+  } else {
+    for (let i = from; i > to; i--) {
+      result.push(i);
+    }
+  }
+
+  return result;
+}
+
+export function fill<T>(num: number, value: T, arr: T[] = []): T[] {
+  for (let i = 0; i < num; i++) {
+    arr[i] = value;
+  }
+
+  return arr;
 }

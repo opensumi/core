@@ -24,7 +24,7 @@ interface INodeProcess {
   platform: string;
   env: IProcessEnvironment;
   getuid(): number;
-  nextTick: Function;
+  nextTick: any;
   versions?: {
     electron?: string;
   };
@@ -108,6 +108,7 @@ if (_isNative) {
 
 export const isWindows = _isWindows;
 export const isMacintosh = _isMacintosh;
+export const isOSX = _isMacintosh;
 export const isLinux = _isLinux;
 export const isNative = _isNative;
 export const isWeb = _isWeb;
@@ -179,8 +180,3 @@ export enum OperatingSystem {
   Macintosh = 2,
   Linux = 3,
 }
-export const OS = _isMacintosh
-  ? OperatingSystem.Macintosh
-  : _isWindows
-  ? OperatingSystem.Windows
-  : OperatingSystem.Linux;

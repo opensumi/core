@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, Disposable } from '@opensumi/ide-core-common/lib/disposable';
-import { Event, Emitter } from '@opensumi/ide-core-common/lib/event';
+import { IDisposable, Disposable, Event, Emitter } from '@opensumi/ide-core-common';
 
 import { IMenubarItem, IMenuRegistry, MenuNode } from './base';
 import { generateMergedCtxMenu } from './menu-util';

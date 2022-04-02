@@ -2,17 +2,16 @@ import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils/warning';
 import { IRPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import { AppConfig, IToolbarPopoverRegistry } from '@opensumi/ide-core-browser';
+import { path, URI } from '@opensumi/ide-core-browser';
 import {
   ContributionProvider,
   IExtensionProps,
   ILogger,
   replaceLocalizePlaceholder,
-  URI,
   IReporterService,
   REPORT_NAME,
   getDebugLogger,
 } from '@opensumi/ide-core-common';
-import { Path, posix } from '@opensumi/ide-core-common/lib/path';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {
@@ -39,6 +38,7 @@ import { SumiBrowserContributionRunner } from './sumi-browser/contribution';
 import { ISumiBrowserContributions } from './sumi-browser/types';
 import { KtViewLocation } from './sumi/contributes/browser-views';
 
+const { Path, posix } = path;
 const LOAD_FAILED_CODE = 'load';
 
 @Injectable()

@@ -1,23 +1,25 @@
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { FilesChangeEvent, ExtensionActivateEvent, AppConfig } from '@opensumi/ide-core-browser';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   URI,
   Emitter,
   Event,
-  IEventBus,
   FileUri,
   DisposableCollection,
   IDisposable,
-  FileSystemProviderCapabilities,
+  BinaryBuffer,
+  parseGlob,
+  ParsedPattern,
   Deferred,
-} from '@opensumi/ide-core-common';
-import { Uri } from '@opensumi/ide-core-common';
+  Uri,
+  FilesChangeEvent,
+  ExtensionActivateEvent,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
+import { FileSystemProviderCapabilities, IEventBus } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import {
@@ -48,7 +50,6 @@ import {
 } from '../common';
 
 import { FileSystemWatcher } from './watcher';
-
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
@@ -507,10 +508,10 @@ export class FileServiceClient implements IFileServiceClient {
         this.workspaceRoots.forEach((root: string) => {
           const uri = new URI(root);
           const pathStrWithExclude = uri.resolve(str).path.toString();
-          this.filesExcludesMatcherList.push(parse(pathStrWithExclude));
+          this.filesExcludesMatcherList.push(parseGlob(pathStrWithExclude));
         });
       } else {
-        this.filesExcludesMatcherList.push(parse(str));
+        this.filesExcludesMatcherList.push(parseGlob(str));
       }
     });
   }

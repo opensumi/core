@@ -1,10 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { IDisposable, MaybePromise, Event, URI } from '@opensumi/ide-utils';
 
-import { MaybePromise } from './async';
 import { ContributionProvider } from './contribution-provider';
-import { IDisposable } from './disposable';
-import { Event } from './event';
-import { URI } from './uri';
 
 export const StorageProvider = Symbol('StorageProvider');
 export type StorageProvider = (storageId: URI) => Promise<IStorage>;

@@ -6,19 +6,14 @@ import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, Watch
 import {
   CommandService,
   CorePreferences,
-  Deferred,
-  DisposableCollection,
-  Emitter,
-  Event,
-  URI,
   PreferenceService,
   EDITOR_COMMANDS,
   ILogger,
 } from '@opensumi/ide-core-browser';
+import { path, Deferred, DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IIconService, IIconTheme } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -38,6 +33,7 @@ import {
 import styles from './scm-tree-node.module.less';
 import { SCMTreeService } from './scm-tree.service';
 
+const { Path } = path;
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

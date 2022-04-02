@@ -13,25 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-
-function is(userAgent: string, platform: string): boolean {
-  if (global.hasOwnProperty('platform')) {
-    return (global as any).platform === platform;
-  }
-  if (typeof process !== 'undefined' && (process.platform as any) !== 'browser') {
-    return process.platform === platform;
-  }
-  if (typeof navigator !== 'undefined') {
-    if (navigator.userAgent && navigator.userAgent.indexOf(userAgent) >= 0) {
-      return true;
-    }
-  }
-  return false;
-}
-
-export const isWindows = is('Windows', 'win32');
-export const isOSX = is('Mac', 'darwin');
-export const isLinux = is('Linux', 'linux');
+import { isWindows, isMacintosh } from './platform';
 
 export type CMD = [string, string[]];
 export function cmd(command: string, ...args: string[]): CMD {
@@ -56,7 +38,7 @@ export namespace OS {
     if (isWindows) {
       return Type.Windows;
     }
-    if (isOSX) {
+    if (isMacintosh) {
       return Type.OSX;
     }
     return Type.Linux;

@@ -6,7 +6,7 @@
 
 import { CharCode } from './charCode';
 import { LRUCache } from './map';
-import * as strings from './utils/strings';
+import { startsWithIgnoreCase, convertSimple2RegExpPattern } from './strings';
 
 // Returns null if word doesn't match.
 export type IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null;
@@ -48,7 +48,7 @@ function _matchesPrefix(ignoreCase: boolean, word: string, wordToMatchAgainst: s
 
   let matches: boolean;
   if (ignoreCase) {
-    matches = strings.startsWithIgnoreCase(wordToMatchAgainst, word);
+    matches = startsWithIgnoreCase(wordToMatchAgainst, word);
   } else {
     matches = wordToMatchAgainst.indexOf(word) === 0;
   }
@@ -360,7 +360,7 @@ export function matchesFuzzy(
   // Form RegExp for wildcard matches
   let regexp = fuzzyRegExpCache.get(word);
   if (!regexp) {
-    regexp = new RegExp(strings.convertSimple2RegExpPattern(word), 'i');
+    regexp = new RegExp(convertSimple2RegExpPattern(word), 'i');
     fuzzyRegExpCache.set(word, regexp);
   }
 

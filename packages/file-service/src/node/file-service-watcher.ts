@@ -4,9 +4,17 @@ import * as fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import nsfw from 'nsfw';
 
-import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@opensumi/ide-core-common';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
-import { FileUri } from '@opensumi/ide-core-node';
+import {
+  FileUri,
+  parseGlob,
+  ParsedPattern,
+  IDisposable,
+  Disposable,
+  DisposableCollection,
+  isWindows,
+  URI,
+  isLinux,
+} from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, FileSystemWatcherServer, WatchOptions } from '..';
 import { INsfw } from '../common/watcher';
@@ -265,7 +273,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       }),
     );
     this.watcherOptions.set(watcherId, {
-      excludesPattern: options.excludes.map((pattern) => parse(pattern)),
+      excludesPattern: options.excludes.map((pattern) => parseGlob(pattern)),
       excludes: options.excludes,
     });
   }

@@ -6,21 +6,8 @@
 
 'use strict';
 
-import { CharCode } from '../charCode';
-import { posix } from '../path';
-import { isWindows } from '../platform';
-
-import { startsWithIgnoreCase } from './strings';
-
-/**
- * The forward slash path separator.
- */
-export const sep = '/';
-
-/**
- * The native path separator depending on the OS.
- */
-export const nativeSep = isWindows ? '\\' : '/';
+import { strings, isWindows, path, CharCode } from '@opensumi/ide-utils';
+const { posix, Path } = path;
 
 const _posixBadPath = /(\/\.\.?\/)|(\/\.\.?)$|^(\.\.?\/)|(\/\/+)|(\\)/;
 const _winBadPath = /(\\\.\.?\\)|(\\\.\.?)$|^(\.\.?\\)|(\\\\+)|(\/)/;
@@ -212,7 +199,7 @@ export function isEqualOrParent(path: string, candidate: string, ignoreCase?: bo
   }
 
   if (ignoreCase) {
-    const beginsWith = startsWithIgnoreCase(path, candidate);
+    const beginsWith = strings.startsWithIgnoreCase(path, candidate);
     if (!beginsWith) {
       return false;
     }
@@ -222,15 +209,15 @@ export function isEqualOrParent(path: string, candidate: string, ignoreCase?: bo
     }
 
     let sepOffset = candidate.length;
-    if (candidate.charAt(candidate.length - 1) === nativeSep) {
+    if (candidate.charAt(candidate.length - 1) === Path.nativeSeparator) {
       sepOffset--; // adjust the expected sep offset in case our candidate already ends in separator character
     }
 
-    return path.charAt(sepOffset) === nativeSep;
+    return path.charAt(sepOffset) === Path.nativeSeparator;
   }
 
-  if (candidate.charAt(candidate.length - 1) !== nativeSep) {
-    candidate += nativeSep;
+  if (candidate.charAt(candidate.length - 1) !== Path.nativeSeparator) {
+    candidate += Path.nativeSeparator;
   }
 
   return path.indexOf(candidate) === 0;
@@ -242,15 +229,15 @@ export function resolve(...paths: string[]): string {
     if (typeof p !== 'string') {
       throw new TypeError('Invalid argument type to path.join: ' + typeof p);
     } else if (p !== '') {
-      if (p.charAt(0) === sep) {
+      if (p.charAt(0) === Path.separator) {
         processed = [];
       }
       processed.push(p);
     }
   }
 
-  const resolved = normalize(processed.join(sep));
-  if (resolved.length > 1 && resolved.charAt(resolved.length - 1) === sep) {
+  const resolved = normalize(processed.join(Path.separator));
+  if (resolved.length > 1 && resolved.charAt(resolved.length - 1) === Path.separator) {
     return resolved.substr(0, resolved.length - 1);
   }
 
@@ -262,8 +249,8 @@ export function relative(from: string, to: string): string {
 
   from = resolve(from);
   to = resolve(to);
-  const fromSegments = from.split(sep);
-  const toSegments = to.split(sep);
+  const fromSegments = from.split(Path.separator);
+  const toSegments = to.split(Path.separator);
 
   toSegments.shift();
   fromSegments.shift();
@@ -295,9 +282,9 @@ export function relative(from: string, to: string): string {
   for (i = 0; i < upCount; i++) {
     rv += '../';
   }
-  rv += downSegments.join(sep);
+  rv += downSegments.join(Path.separator);
 
-  if (rv.length > 1 && rv.charAt(rv.length - 1) === sep) {
+  if (rv.length > 1 && rv.charAt(rv.length - 1) === Path.separator) {
     rv = rv.substr(0, rv.length - 1);
   }
   return rv;

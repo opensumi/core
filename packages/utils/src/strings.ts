@@ -1,7 +1,6 @@
-import { CharCode } from '../charCode';
-import { Constants } from '../uint';
-
-import { isOSX, isWindows } from './os';
+import { CharCode } from './charCode';
+import { isMacintosh, isWindows } from './platform';
+import { Constants } from './uint';
 /**
  * The empty string.
  */
@@ -66,7 +65,7 @@ export function format(value: string, ...args: any[]): string {
  * -   macOS: Unsupported (replace && with empty string)
  */
 export function mnemonicButtonLabel(label: string, forceDisableMnemonics?: boolean): string {
-  if (isOSX || forceDisableMnemonics) {
+  if (isMacintosh || forceDisableMnemonics) {
     return label.replace(/\(&&\w\)|&&/g, '');
   }
 

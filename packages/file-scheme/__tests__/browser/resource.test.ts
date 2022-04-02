@@ -1,19 +1,11 @@
-import {
-  Disposable,
-  URI,
-  localize,
-  IJSONSchemaRegistry,
-  ISchemaStore,
-  OS,
-  IApplicationService,
-} from '@opensumi/ide-core-browser';
+import { localize, IJSONSchemaRegistry, ISchemaStore, IApplicationService } from '@opensumi/ide-core-browser';
 import { DefaultUriLabelProvider } from '@opensumi/ide-core-browser/lib/services';
 import { CommonServerPath } from '@opensumi/ide-core-common';
+import { BinaryBuffer, Disposable, URI, OS } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { EditorPreferences } from '@opensumi/ide-editor/lib/browser';
 import { FileSystemResourceProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-resource';
@@ -28,7 +20,6 @@ import { IDialogService } from '@opensumi/ide-overlay';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { FileSchemeModule } from '../../src/browser';
-
 
 describe('file scheme tests', () => {
   const injector = createBrowserInjector([FileSchemeModule]);

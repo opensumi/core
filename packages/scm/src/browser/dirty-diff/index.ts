@@ -1,6 +1,6 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Event, IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
-import { Disposable, DisposableStore, DisposableCollection } from '@opensumi/ide-core-common/lib/disposable';
+import { Event, Disposable, DisposableStore, DisposableCollection } from '@opensumi/ide-core-browser';
+import { IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';

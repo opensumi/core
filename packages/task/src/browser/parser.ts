@@ -25,10 +25,12 @@ import {
   mixin,
   isUndefinedOrNull,
   isNumber,
-  deepClone,
+  objects,
 } from '@opensumi/ide-core-common';
 
 import { IProblemReporter, getProblemPatternFn, getProblemMatcherFn } from './task-config';
+
+const { deepClone } = objects;
 
 export const enum ValidationState {
   OK = 0,

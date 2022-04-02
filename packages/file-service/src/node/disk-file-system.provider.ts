@@ -10,9 +10,11 @@ import writeFileAtomic from 'write-file-atomic';
 
 import { Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { isLinux } from '@opensumi/ide-core-common/lib/platform';
-import { ParsedPattern, parse } from '@opensumi/ide-core-common/lib/utils/glob';
+import { getDebugLogger } from '@opensumi/ide-core-node';
 import {
+  ParsedPattern,
+  parseGlob,
+  isLinux,
   UriComponents,
   Uri,
   Event,
@@ -22,7 +24,6 @@ import {
   isUndefined,
   DisposableCollection,
   isWindows,
-  getDebugLogger,
   FileUri,
 } from '@opensumi/ide-core-node';
 
@@ -41,7 +42,6 @@ import {
 } from '../common/';
 
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
-
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -323,7 +323,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
     getDebugLogger().info('set watch file exclude:', watcherExcludes);
     this.watchFileExcludes = watcherExcludes;
-    this.watchFileExcludesMatcherList = watcherExcludes.map((pattern) => parse(pattern));
+    this.watchFileExcludesMatcherList = watcherExcludes.map((pattern) => parseGlob(pattern));
   }
 
   getWatchFileExcludes() {

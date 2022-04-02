@@ -1,4 +1,4 @@
-import { IDisposable } from '../../utils';
+import { IDisposable } from '@opensumi/ide-utils';
 
 import { ITreeNode, ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
 

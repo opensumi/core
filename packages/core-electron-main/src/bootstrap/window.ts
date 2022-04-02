@@ -6,8 +6,15 @@ import semver from 'semver';
 import treeKill from 'tree-kill';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { ExtensionCandidate } from '@opensumi/ide-core-common';
-import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
+import {
+  ExtensionCandidate,
+  getDebugLogger,
+  Disposable,
+  isMacintosh,
+  URI,
+  FileUri,
+  Deferred,
+} from '@opensumi/ide-core-common';
 import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
@@ -68,7 +75,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
         nodeIntegration: this.appConfig?.browserNodeIntegrated,
         preload: this.appConfig?.browserPreload,
       },
-      frame: isOSX,
+      frame: isMacintosh,
       titleBarStyle: 'hidden',
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,

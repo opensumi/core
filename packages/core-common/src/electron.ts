@@ -1,6 +1,7 @@
 import Electron from 'electron';
 
-import { IDisposable } from './disposable';
+import { IDisposable } from '@opensumi/ide-utils';
+
 import { ExtensionCandidate } from './types';
 
 export interface IElectronMainApi<Events> {

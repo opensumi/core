@@ -6,12 +6,12 @@ import {
   Event,
   URI,
   Deferred,
-  JSONUtils,
-  JSONValue,
   isEmptyObject,
   FileStat,
 } from '@opensumi/ide-core-common';
 import { PreferenceScope } from '@opensumi/ide-core-common/lib/preferences/preference-scope';
+
+import { JSONUtils, JSONValue } from '../utils';
 
 import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
 export interface IResolvedPreferences {

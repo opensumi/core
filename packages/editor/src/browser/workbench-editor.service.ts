@@ -37,8 +37,8 @@ import {
   ReadyEvent,
   IDisposable,
   Disposable,
+  makeRandomHexString,
 } from '@opensumi/ide-core-common';
-import { makeRandomHexString } from '@opensumi/ide-core-common/lib/functional';
 import { IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 

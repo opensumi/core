@@ -16,8 +16,8 @@ import {
   localize,
   formatLocalize,
   MessageType,
+  path,
 } from '@opensumi/ide-core-browser';
-import * as path from '@opensumi/ide-core-common/lib/path';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
 

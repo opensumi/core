@@ -1,4 +1,4 @@
-import { IDisposable } from '.';
+import { IDisposable } from './disposable';
 
 export enum ProgressLocation {
   Explorer = 1,

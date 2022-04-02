@@ -11,7 +11,7 @@ import {
   isString,
   CharCode,
   isBoolean,
-} from '@opensumi/ide-core-common';
+} from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 

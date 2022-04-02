@@ -3,7 +3,6 @@ import { isWindows, isMacintosh, setImmediate } from './platform';
 interface IProcess {
   platform: string;
   env: object;
-
   cwd(): string;
   nextTick(callback: (...args: any[]) => void): number;
 }

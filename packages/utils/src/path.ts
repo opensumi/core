@@ -1,5 +1,5 @@
+import { isWindows } from './platform';
 import * as process from './process';
-import { isWindows } from './utils';
 
 const SystemPathSeparatorRegex = isWindows ? /\\/g : /\//g;
 /**
@@ -21,6 +21,8 @@ const SystemPathSeparatorRegex = isWindows ? /\\/g : /\//g;
  */
 export class Path {
   static separator: '/' = '/';
+
+  static nativeSeparator = isWindows ? '\\' : '/';
 
   static isDrive(segment: string): boolean {
     return segment.endsWith(':');
@@ -1808,6 +1810,15 @@ export const posix: IPath = {
 
 posix.win32 = win32.win32 = win32;
 posix.posix = win32.posix = posix;
+
+/**
+ * Takes a Windows OS path and changes backward slashes to forward slashes.
+ * This should only be done for OS paths from Windows (or user provided paths potentially from Windows).
+ * Using it on a Linux or MaxOS path might change it.
+ */
+export function toSlashes(osPath: string) {
+  return osPath.replace(/[\\/]/g, posix.sep);
+}
 
 export const normalize = process.platform === 'win32' ? win32.normalize : posix.normalize;
 export const isAbsolute = process.platform === 'win32' ? win32.isAbsolute : posix.isAbsolute;

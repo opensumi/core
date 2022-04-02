@@ -1,7 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Emitter, Event, PreferenceScope } from '@opensumi/ide-core-common';
+import { Emitter, Event } from '@opensumi/ide-core-browser';
+import { PreferenceScope } from '@opensumi/ide-core-common';
 
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';
 

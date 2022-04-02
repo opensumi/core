@@ -3,9 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/arrays.ts
-
-import { toCanonicalName, iconvDecode, UTF8 } from '../encoding';
-
+import { toCanonicalName, iconvDecode, UTF8 } from './encoding';
 import * as strings from './strings';
 
 let textEncoder: TextEncoder | null;

@@ -1,11 +1,7 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Uri } from '@opensumi/ide-core-common';
-import { CancellationToken } from '@opensumi/ide-core-common';
-import { getDebugLogger } from '@opensumi/ide-core-common';
-import { toDisposable } from '@opensumi/ide-core-common/lib/disposable';
-import { asArray } from '@opensumi/ide-core-common/lib/utils/arrays';
+import { arrays, CancellationToken, Uri, toDisposable, getDebugLogger } from '@opensumi/ide-core-common';
 
 import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import {
@@ -58,13 +54,13 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
       this.logger.verbose('ExtHostDecoration#registerFileDecorationProvider', extensionId);
       if (provider.onDidChange) {
         listener = provider.onDidChange((e) => {
-          this.proxy.$onDidChange(handle, !e ? null : asArray(e));
+          this.proxy.$onDidChange(handle, !e ? null : arrays.asArray(e));
         });
       }
       // 1.55 API，后续被废弃掉了，为了兼容先保留
       if (provider.onDidChangeFileDecorations) {
         listener = provider.onDidChangeFileDecorations((e) => {
-          this.proxy.$onDidChange(handle, !e ? null : asArray(e));
+          this.proxy.$onDidChange(handle, !e ? null : arrays.asArray(e));
         });
       }
     } /* 这条分支后续可清理掉 */ else {
@@ -72,7 +68,7 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
       listener =
         provider.onDidChangeDecorations &&
         provider.onDidChangeDecorations((e) => {
-          this.proxy.$onDidChange(handle, !e ? null : asArray(e));
+          this.proxy.$onDidChange(handle, !e ? null : arrays.asArray(e));
         });
     }
 

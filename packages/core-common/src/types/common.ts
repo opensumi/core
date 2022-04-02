@@ -1,4 +1,4 @@
-import { OS } from '../utils';
+import { OS } from '@opensumi/ide-utils';
 
 export const CommonServerPath = 'CommonServerPath';
 

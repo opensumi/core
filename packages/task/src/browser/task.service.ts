@@ -19,8 +19,8 @@ import {
   Event,
   IProblemPatternRegistry,
   Emitter,
+  platform,
 } from '@opensumi/ide-core-common';
-import { platform } from '@opensumi/ide-core-common/lib/platform';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -39,7 +39,6 @@ import {
 
 import { ValidationState, ValidationStatus } from './parser';
 import { parse, IProblemReporter, createCustomTask } from './task-config';
-
 
 class ProblemReporter implements IProblemReporter {
   private _validationStatus: ValidationStatus;

@@ -1,5 +1,6 @@
+import { Uri } from '@opensumi/ide-utils';
+
 import { BasicEvent } from '../event-bus';
-import { Uri } from '../uri';
 
 export class ExtensionCandidate {
   path: string;

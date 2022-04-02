@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isLinux, isWindows } from '../utils/os';
+import { isLinux, isWindows } from '@opensumi/ide-utils';
 
 // https://github.com/microsoft/node-native-keymap/blob/master/index.d.ts
 

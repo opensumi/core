@@ -7,19 +7,21 @@ import * as fs from 'fs-extra';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Uri } from '@opensumi/ide-core-common';
+import { Schemas, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
 import {
   URI,
   Emitter,
+  Uri,
   Event,
-  Schemas,
+  FileUri,
   IDisposable,
   DisposableCollection,
   isArray,
   isEmptyObject,
-} from '@opensumi/ide-core-common';
-import { parse, ParsedPattern, match } from '@opensumi/ide-core-common/lib/utils/glob';
-import { FileUri, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
+  parseGlob,
+  ParsedPattern,
+  match,
+} from '@opensumi/ide-core-node';
 
 import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
 import {
@@ -465,10 +467,10 @@ export class FileService implements IFileService {
         this.workspaceRoots.forEach((root: string) => {
           const uri = new URI(root);
           const pathStrWithExclude = uri.resolve(str).path.toString();
-          this.filesExcludesMatcherList.push(parse(pathStrWithExclude));
+          this.filesExcludesMatcherList.push(parseGlob(pathStrWithExclude));
         });
       } else {
-        this.filesExcludesMatcherList.push(parse(str));
+        this.filesExcludesMatcherList.push(parseGlob(str));
       }
     });
   }

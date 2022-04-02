@@ -14,9 +14,9 @@ import {
   URI,
   WithEventBus,
   LRUMap,
+  path,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -26,6 +26,7 @@ import { EditorSelectionChangeEvent, IBreadCrumbPart, IBreadCrumbProvider } from
 
 import { DocumentSymbolChangedEvent, DocumentSymbolStore, INormalizedDocumentSymbol } from './document-symbol';
 
+const { Path } = path;
 @Injectable()
 export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCrumbProvider {
   private _onDidUpdateBreadCrumb = new Emitter<URI>();
@@ -63,7 +64,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
       ? new URI(this.workspaceService.workspace.uri)
       : undefined;
     let root: URI;
-    let relativePaths: Path;
+    let relativePaths: path.Path;
     if (workspaceRoot && workspaceRoot.isEqualOrParent(uri)) {
       root = workspaceRoot;
       relativePaths = workspaceRoot.relative(uri)!;

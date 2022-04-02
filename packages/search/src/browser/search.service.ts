@@ -7,29 +7,26 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import {
   Key,
-  URI,
   Schemas,
-  IDisposable,
   CommandService,
   COMMON_COMMANDS,
   RecentStorage,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
+import {
+  isUndefined,
+  strings,
+  parseGlob,
+  ParsedPattern,
+  Emitter,
+  IDisposable,
+  URI,
+  arrays,
+} from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
-import {
-  Emitter,
-  IEventBus,
-  trim,
-  isUndefined,
-  localize,
-  IReporterService,
-  IReporterTimer,
-  REPORT_NAME,
-} from '@opensumi/ide-core-common';
-import * as arrays from '@opensumi/ide-core-common/lib/arrays';
+import { IEventBus, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelService,
@@ -270,8 +267,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
       const openResources = arrays.coalesce(
         arrays.flatten(this.workbenchEditorService.editorGroups.map((group) => group.resources)),
       );
-      const includeMatcherList = searchOptions.include?.map((str) => parse(anchorGlob(str))) || [];
-      const excludeMatcherList = searchOptions.exclude?.map((str) => parse(anchorGlob(str))) || [];
+      const includeMatcherList = searchOptions.include?.map((str) => parseGlob(anchorGlob(str))) || [];
+      const excludeMatcherList = searchOptions.exclude?.map((str) => parseGlob(anchorGlob(str))) || [];
       const openResourcesInFilter = openResources.filter((resource) => {
         const uriString = resource.uri.toString();
         if (excludeMatcherList.length > 0 && excludeMatcherList.some((matcher) => matcher(uriString))) {
@@ -542,7 +539,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
           new monaco.Range(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn),
         );
 
-        const searchText = trim(selectionText) === '' ? this.searchValue : selectionText;
+        const searchText = strings.trim(selectionText) === '' ? this.searchValue : selectionText;
         this.searchValue = searchText;
       }
     }
@@ -718,7 +715,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (searchOptions.include && searchOptions.include.length > 0) {
       // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
-        matcherList.push(parse(anchorGlob(str)));
+        matcherList.push(parseGlob(anchorGlob(str)));
       });
       const isInclude = matcherList.some((matcher) => matcher(uriString));
       matcherList = [];
@@ -733,7 +730,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (searchOptions.exclude && searchOptions.exclude.length > 0) {
       // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
-        matcherList.push(parse(anchorGlob(str)));
+        matcherList.push(parseGlob(anchorGlob(str)));
       });
 
       const isExclude = matcherList.some((matcher) => matcher(uriString));

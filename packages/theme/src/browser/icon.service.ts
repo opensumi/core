@@ -8,9 +8,8 @@ import {
   Event,
   ILogger,
   CODICON_OWNER,
-  runWhenIdle,
+  path,
 } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {
@@ -28,6 +27,8 @@ import {
 import { IconThemeStore } from './icon-theme-store';
 
 import './icon.less';
+
+const { Path } = path;
 
 export const ICON_THEME_SETTING = 'general.icon';
 

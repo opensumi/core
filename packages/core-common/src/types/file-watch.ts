@@ -1,4 +1,4 @@
-import { URI } from '../';
+import { URI } from '@opensumi/ide-utils';
 export interface FileSystemWatcherServer {
   /**
    * 根据给定参数启动文件监听

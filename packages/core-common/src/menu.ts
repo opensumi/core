@@ -1,4 +1,5 @@
-import { IDisposable } from './disposable';
+import { IDisposable } from '@opensumi/ide-utils';
+
 import { IElectronMainApi } from './electron';
 
 export interface INativeMenuTemplate {

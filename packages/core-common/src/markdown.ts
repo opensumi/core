@@ -1,4 +1,4 @@
-import { IMarkdownString } from '../types/markdown';
+import { IMarkdownString } from './types/markdown';
 
 export function toMarkdownString(str: string, opts?: Omit<IMarkdownString, 'value'>): IMarkdownString {
   return {

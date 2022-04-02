@@ -1,7 +1,6 @@
 import { CancellationToken, CancellationTokenSource } from './cancellation';
 import { IDisposable, toDisposable } from './disposable';
 import { canceled } from './errors';
-import { getDebugLogger } from './log';
 
 export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
@@ -119,19 +118,19 @@ export class Throttler {
         };
 
         this.queuedPromise = new Promise((c) => {
-          this.activePromise!.then(onComplete, onComplete).then(c);
+          this.activePromise && this.activePromise.then(onComplete, onComplete).then(c);
         });
       }
 
       return new Promise((c, e) => {
-        this.queuedPromise!.then(c, e);
+        this.queuedPromise && this.queuedPromise.then(c, e);
       });
     }
 
     this.activePromise = promiseFactory();
 
     return new Promise((c, e) => {
-      this.activePromise!.then(
+      this.activePromise?.then(
         (result: any) => {
           this.activePromise = null;
           c(result);
@@ -195,27 +194,24 @@ export class Delayer<T> implements IDisposable {
     this.cancelTimeout();
 
     if (!this.completionPromise) {
-      this.completionPromise = new Promise((c, e) => {
+      this.completionPromise = new Promise<void>((c, e) => {
         this.doResolve = c;
         this.doReject = e;
       })
         .then(() => {
           this.completionPromise = null;
           this.doResolve = null;
-          const task = this.task!;
+          const task = this.task;
           this.task = null;
 
-          return task();
+          return task && task();
         })
-        .catch((err) => {
-          // 捕获 delayer cancel reject 掉的 promise
-          getDebugLogger().verbose('delayer cancelled:', err);
-        });
+        .catch();
     }
 
     this.timeout = setTimeout(() => {
       this.timeout = null;
-      this.doResolve!(null);
+      this.doResolve?.(null);
     }, delay);
 
     return this.completionPromise;
@@ -229,7 +225,7 @@ export class Delayer<T> implements IDisposable {
     this.cancelTimeout();
 
     if (this.completionPromise) {
-      this.doReject!(canceled());
+      this.doReject && this.doReject(canceled());
       this.completionPromise = null;
     }
   }
@@ -291,7 +287,7 @@ export class Barrier {
 
   constructor() {
     this._isOpen = false;
-    this._promise = new Promise<boolean>((c, e) => {
+    this._promise = new Promise<boolean>((c) => {
       this._completePromise = c;
     });
   }
@@ -446,7 +442,7 @@ export class IdleValue<T> {
     if (this._error) {
       throw this._error;
     }
-    return this._value!;
+    return this._value as T;
   }
 }
 

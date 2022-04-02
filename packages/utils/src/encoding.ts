@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import iconv from 'iconv-lite';
 
-import { BinaryBuffer } from '../utils/buffer';
+import { BinaryBuffer } from './buffer';
 
 export const UTF8 = 'utf8';
 export const UTF8_with_bom = 'utf8bom';
@@ -16,8 +16,6 @@ export const UTF16le_BOM = [0xff, 0xfe];
 export const UTF8_BOM = [0xef, 0xbb, 0xbf];
 
 const ZERO_BYTE_DETECTION_BUFFER_MAX_LEN = 512; // number of bytes to look at to decide about a file being binary or not
-const NO_ENCODING_GUESS_MIN_BYTES = 512; // when not auto guessing the encoding, small number of bytes are enough
-const AUTO_ENCODING_GUESS_MIN_BYTES = 512 * 8; // with auto guessing we want a lot more content to be read for guessing
 const AUTO_ENCODING_GUESS_MAX_BYTES = 512 * 128; // set an upper limit for the number of bytes we pass on to jschardet
 
 export function isUTF8(encoding: string | null) {

@@ -9,8 +9,8 @@ import {
   URI,
   isUndefined,
   isEmptyObject,
+  objects,
   LRUMap,
-  deepClone,
 } from '@opensumi/ide-core-common';
 
 import { PreferenceConfigurations } from './preference-configurations';
@@ -30,6 +30,8 @@ export interface PreferenceChange {
   readonly scope: PreferenceScope;
   affects(resourceUri?: string): boolean;
 }
+
+const { deepClone } = objects;
 
 export class PreferenceChangeImpl implements PreferenceChange {
   constructor(private change: PreferenceProviderDataChange) {}

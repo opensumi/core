@@ -1,6 +1,8 @@
-import { basename } from '@opensumi/ide-core-common/lib/path';
+import { path } from '@opensumi/ide-core-browser';
 
 import { ISCMResourceGroup, ISCMResource, ISCMRepository } from '../common';
+
+const { basename } = path;
 
 export function isSCMResource(element: ISCMResourceGroup | ISCMResource): element is ISCMResource {
   return !!(element as ISCMResource).sourceUri && isSCMResourceGroup((element as ISCMResource).resourceGroup);

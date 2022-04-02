@@ -1,6 +1,9 @@
 {
   "references": [
     {
+      "path": "./references/tsconfig.utils.json"
+    },
+    {
       "path": "./references/tsconfig.core-common.json"
     },
     {

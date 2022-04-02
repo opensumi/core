@@ -17,9 +17,9 @@ import {
   IDisposable,
   positionToRange,
   Deferred,
+  path,
+  LRUCache,
 } from '@opensumi/ide-core-browser';
-import { LRUCache } from '@opensumi/ide-core-common/lib/map';
-import { dirname } from '@opensumi/ide-core-common/lib/path';
 import { IEditor } from '@opensumi/ide-editor';
 import {
   IEditorDecorationCollectionService,
@@ -45,6 +45,8 @@ import {
 
 import { CommentsPanel } from './comments-panel.view';
 import { CommentsThread } from './comments-thread';
+
+const { dirname } = path;
 
 @Injectable()
 export class CommentsService extends Disposable implements ICommentsService {

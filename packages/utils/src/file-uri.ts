@@ -1,6 +1,5 @@
-import { URI, Uri } from '../uri';
-
-import { isWindows } from './os';
+import { isWindows } from './platform';
+import { URI, Uri } from './uri';
 
 export namespace FileUri {
   const windowsDriveRegex = /^([^:/?#]+?):$/;

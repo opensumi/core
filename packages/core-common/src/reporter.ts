@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@opensumi/di';
+import { IDisposable } from '@opensumi/ide-utils';
 
-import { IDisposable } from './disposable';
 import { getDebugLogger } from './log';
 import {
   IReporterService,

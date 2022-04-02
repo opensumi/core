@@ -4,7 +4,7 @@ import {
   IDisposable,
   IPosition,
   isFunction,
-  isNonEmptyArray,
+  arrays,
   onUnexpectedExternalError,
   URI,
   Uri,
@@ -20,6 +20,8 @@ import {
 import { ITextModel, Position } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
+
+const { isNonEmptyArray } = arrays;
 
 declare type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
 /* ---------------------------------------------------------------------------------------------
