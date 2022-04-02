@@ -9,7 +9,6 @@ import {
   ITreeNodeOrCompositeTreeNode,
   IWatcherEvent,
   TreeNodeType,
-  CompositeTreeNode,
 } from '@opensumi/ide-components';
 import {
   CommandService,

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-terminal-next",
-  "version": "2.16.4",
+  "version": "2.16.5",
   "files": [
     "lib"
   ],
@@ -16,10 +16,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.16.4",
-    "@opensumi/ide-core-common": "2.16.4",
-    "@opensumi/ide-core-node": "2.16.4",
-    "@opensumi/ide-file-service": "2.16.4",
+    "@opensumi/ide-connection": "2.16.5",
+    "@opensumi/ide-core-common": "2.16.5",
+    "@opensumi/ide-core-node": "2.16.5",
+    "@opensumi/ide-file-service": "2.16.5",
     "event-kit": "^2.5.3",
     "node-pty": "0.10.0",
     "os-locale": "^4.0.0",
@@ -28,16 +28,16 @@
     "xterm-addon-search": "^0.9.0-beta.3"
   },
   "devDependencies": {
-    "@opensumi/ide-components": "2.16.4",
-    "@opensumi/ide-core-browser": "2.16.4",
+    "@opensumi/ide-components": "2.16.5",
+    "@opensumi/ide-core-browser": "2.16.5",
     "@opensumi/ide-dev-tool": "^1.3.1",
-    "@opensumi/ide-editor": "2.16.4",
-    "@opensumi/ide-main-layout": "2.16.4",
-    "@opensumi/ide-overlay": "2.16.4",
-    "@opensumi/ide-status-bar": "2.16.4",
-    "@opensumi/ide-theme": "2.16.4",
-    "@opensumi/ide-variable": "2.16.4",
-    "@opensumi/ide-workspace": "2.16.4",
+    "@opensumi/ide-editor": "2.16.5",
+    "@opensumi/ide-main-layout": "2.16.5",
+    "@opensumi/ide-overlay": "2.16.5",
+    "@opensumi/ide-status-bar": "2.16.5",
+    "@opensumi/ide-theme": "2.16.5",
+    "@opensumi/ide-variable": "2.16.5",
+    "@opensumi/ide-workspace": "2.16.5",
     "@types/event-kit": "^2.4.0",
     "@types/http-proxy": "^1.17.2",
     "@types/puppeteer": "^2.0.0",
