@@ -1239,12 +1239,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
           if (previewMode) {
             if (this.previewURI) {
-              await this.close(this.previewURI, { treatAsNotCurrent: true });
+              await this.close(this.previewURI, { treatAsNotCurrent: true, force: options.forceClose });
             }
             this.previewURI = resource.uri;
           }
           if (options.replace && replaceResource) {
-            await this.close(replaceResource.uri, { treatAsNotCurrent: true });
+            await this.close(replaceResource.uri, { treatAsNotCurrent: true, force: options.forceClose });
           }
         }
         if (options.backend) {

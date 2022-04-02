@@ -56,6 +56,7 @@ export interface EditorDocumentModelConstructionOptions {
   savable?: boolean;
   alwaysDirty?: boolean;
   closeAutoSave?: boolean;
+  disposeEvenDirty?: boolean;
 }
 
 export interface IDirtyChange {
@@ -113,6 +114,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   public readonly closeAutoSave: boolean = false;
 
+  public readonly disposeEvenDirty: boolean = false;
+
   private _originalEncoding: string = this._encoding;
 
   private _persistVersionId = 0;
@@ -146,6 +149,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.readonly = !!options.readonly;
     this.savable = !!options.savable;
     this.alwaysDirty = !!options.alwaysDirty;
+    this.disposeEvenDirty = !!options.disposeEvenDirty;
     this.closeAutoSave = !!options.closeAutoSave;
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, MonacoURI.parse(uri.toString()));
@@ -339,6 +343,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     );
     if (!this.editorPreferences['editor.askIfDiff']) {
       force = true;
+    }
+    if (!this.dirty) {
+      return false;
     }
     const versionId = this.monacoModel.getVersionId();
     const lastSavingTask = this.savingTasks[this.savingTasks.length - 1];

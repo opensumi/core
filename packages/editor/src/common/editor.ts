@@ -476,6 +476,11 @@ export interface IResourceOpenOptions {
    * 如果当前 tab 的关闭被阻止（比如shouldClose)，则不继续 replace 操作而是正常打开
    */
   replace?: boolean;
+
+  /**
+   * 当关闭时指定 force 参数，用来跳过 shouldClose 等逻辑
+   */
+  forceClose?: boolean;
 }
 
 export interface IResourceOpenResult {

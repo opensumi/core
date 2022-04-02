@@ -13,11 +13,15 @@ import {
   IApplicationService,
   PreferenceService,
   getLanguageIdFromMonaco,
+  localize,
+  formatLocalize,
+  MessageType,
 } from '@opensumi/ide-core-browser';
 import * as path from '@opensumi/ide-core-common/lib/path';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IDialogService } from '@opensumi/ide-overlay';
 
-import { IResourceProvider, WorkbenchEditorService } from '../common';
+import { AskSaveResult, IResource, IResourceProvider, WorkbenchEditorService } from '../common';
 
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
 
@@ -82,6 +86,16 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     return false;
   }
 
+  isAlwaysDirty(uri: URI): boolean {
+    // untitled 文件允许新建后就可以保存
+    return true;
+  }
+
+  disposeEvenDirty(uri: URI): boolean {
+    // untitled 即便是 dirty 状态下，在关闭后也要被 dispose
+    return true;
+  }
+
   closeAutoSave(uri: URI): boolean {
     return true;
   }
@@ -111,10 +125,11 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
         ignoreDiff,
       );
       // TODO: 不依赖 workspaceEditor，先关闭再打开，等 fileSystemProvider 迁移到前端再做改造
-      await this.workbenchEditorService.close(uri);
       await this.workbenchEditorService.open(saveUri, {
         preview: false,
         focus: true,
+        replace: true,
+        forceClose: true,
       });
     }
     return {
@@ -128,6 +143,12 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
 export class UntitledSchemeResourceProvider extends WithEventBus implements IResourceProvider {
   readonly scheme: string = Schemas.untitled;
 
+  @Autowired(IDialogService)
+  protected dialogService: IDialogService;
+
+  @Autowired(IEditorDocumentModelService)
+  protected documentModelService: IEditorDocumentModelService;
+
   provideResource(uri: URI) {
     const { name } = uri.getParsedQuery();
     return {
@@ -136,5 +157,41 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
       icon: '',
       metadata: null,
     };
+  }
+
+  async shouldCloseResource(resource: IResource) {
+    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
+    if (!documentModelRef || !documentModelRef.instance.dirty) {
+      if (documentModelRef) {
+        documentModelRef.dispose();
+      }
+      return true;
+    }
+    // 询问用户是否保存
+    const buttons = {
+      [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
+      [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
+      [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
+    };
+    const selection = await this.dialogService.open(
+      formatLocalize('saveChangesMessage', resource.name),
+      MessageType.Info,
+      Object.keys(buttons),
+    );
+    const result = buttons[selection!];
+    if (result === AskSaveResult.SAVE) {
+      const res = await documentModelRef.instance.save();
+      documentModelRef.dispose();
+      return res;
+    } else if (result === AskSaveResult.REVERT) {
+      await documentModelRef.instance.revert();
+      documentModelRef.dispose();
+      return true;
+    } else if (!result || result === AskSaveResult.CANCEL) {
+      documentModelRef.dispose();
+      return false;
+    } else {
+      return true;
+    }
   }
 }
