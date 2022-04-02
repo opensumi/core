@@ -152,6 +152,7 @@ export class FileTreeModelService {
   private _isMultiSelected = false;
 
   private _loadSnapshotReady: Promise<void>;
+  private loadSnapshotDeferred: Deferred<void> = new Deferred();
 
   private _explorerStorage: IStorage;
 
@@ -171,6 +172,8 @@ export class FileTreeModelService {
   private treeStateWatcher: TreeStateWatcher;
   private willSelectedNodePath: string | null;
 
+  private _initTreeModelReady = false;
+
   get onDidFocusedFileChange() {
     return this.onDidFocusedFileChangeEmitter.event;
   }
@@ -188,7 +191,7 @@ export class FileTreeModelService {
   }
 
   get loadSnapshotReady() {
-    return this._loadSnapshotReady;
+    return this.loadSnapshotDeferred.promise;
   }
 
   get fileTreeHandle() {
@@ -285,7 +288,12 @@ export class FileTreeModelService {
     return this.fileTreeService.contextKey;
   }
 
+  get initTreeModelReady() {
+    return this._initTreeModelReady;
+  }
+
   async initTreeModel() {
+    this._initTreeModelReady = false;
     // 根据是否为多工作区创建不同根节点
     const root = (await this.fileTreeService.resolveChildren())[0];
     if (!root) {
@@ -293,13 +301,6 @@ export class FileTreeModelService {
       return;
     }
     this._treeModel = this.injector.get<any>(FileTreeModel, [root]);
-    this._explorerStorage = await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
-    // 获取上次文件树的状态
-    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
-    if (snapshot) {
-      // 初始化时。以右侧编辑器打开的文件进行定位
-      this._loadSnapshotReady = this.loadFileTreeSnapshot(snapshot);
-    }
     this.initDecorations(root);
     // _dndService依赖装饰器逻辑加载
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
@@ -321,6 +322,9 @@ export class FileTreeModelService {
     );
     this.disposableCollection.push(
       this.fileTreeService.onNodeRefreshed(() => {
+        if (!this.initTreeModelReady) {
+          return;
+        }
         if (!this.refreshedActionDelayer.isTriggered) {
           this.refreshedActionDelayer.cancel();
         }
@@ -346,6 +350,9 @@ export class FileTreeModelService {
     );
     this.disposableCollection.push(
       this.treeModel?.onWillUpdate(() => {
+        if (!this.initTreeModelReady) {
+          return;
+        }
         // 更新树前更新下选中节点
         if (this.willSelectedNodePath) {
           const node = this.fileTreeService.getNodeByPathOrUri(this.willSelectedNodePath);
@@ -375,6 +382,9 @@ export class FileTreeModelService {
     // 当labelService注册的对应节点图标变化时，通知视图更新
     this.disposableCollection.push(
       this.labelService.onDidChange(async () => {
+        if (this.initTreeModelReady) {
+          return;
+        }
         if (!this.labelChangedDelayer.isTriggered()) {
           this.labelChangedDelayer.cancel();
         }
@@ -393,13 +403,26 @@ export class FileTreeModelService {
         this.loadingDecoration.removeTarget(target);
       }),
     );
-    await this.loadSnapshotReady;
+    this._explorerStorage = await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
+    // 获取上次文件树的状态
+    const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+    if (snapshot) {
+      if (this.loadSnapshotDeferred) {
+        this.loadSnapshotDeferred.resolve();
+      }
+      this.loadSnapshotDeferred = new Deferred();
+      // 初始化时。以右侧编辑器打开的文件进行定位
+      this._loadSnapshotReady = this.loadFileTreeSnapshot(snapshot);
+    }
+    await this._loadSnapshotReady;
+    this.loadSnapshotDeferred.resolve();
     // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
     // 即找到插入节点位置为 0，导致重复问题
     this.fileTreeService.startWatchFileEvent();
     this.onFileTreeModelChangeEmitter.fire(this._treeModel);
 
     this._whenReady.resolve();
+    this._initTreeModelReady = true;
   }
 
   initDecorations(root) {
