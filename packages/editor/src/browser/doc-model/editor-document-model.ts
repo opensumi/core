@@ -56,6 +56,7 @@ export interface EditorDocumentModelConstructionOptions {
   savable?: boolean;
   alwaysDirty?: boolean;
   closeAutoSave?: boolean;
+  disposeEvenDirty?: boolean;
 }
 
 export interface IDirtyChange {
@@ -113,6 +114,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
 
   public readonly closeAutoSave: boolean = false;
 
+  public readonly disposeEvenDirty: boolean = false;
+
   private _originalEncoding: string = this._encoding;
 
   private _persistVersionId = 0;
@@ -146,6 +149,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.readonly = !!options.readonly;
     this.savable = !!options.savable;
     this.alwaysDirty = !!options.alwaysDirty;
+    this.disposeEvenDirty = !!options.disposeEvenDirty;
     this.closeAutoSave = !!options.closeAutoSave;
 
     this.monacoModel = monaco.editor.createModel(content, options.languageId, MonacoURI.parse(uri.toString()));
@@ -181,17 +185,19 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   private listenTo(monacoModel: ITextModel) {
-    monacoModel.onDidChangeContent((e) => {
-      if (e.changes && e.changes.length > 0) {
-        this.dirtyChanges.push({
-          fromVersionId: this._previousVersionId,
-          toVersionId: e.versionId,
-          changes: e.changes,
-        });
-      }
-      this._previousVersionId = e.versionId;
-      this.notifyChangeEvent(e.changes, e.isRedoing, e.isUndoing);
-    });
+    this.addDispose(
+      monacoModel.onDidChangeContent((e) => {
+        if (e.changes && e.changes.length > 0) {
+          this.dirtyChanges.push({
+            fromVersionId: this._previousVersionId,
+            toVersionId: e.versionId,
+            changes: e.changes,
+          });
+        }
+        this._previousVersionId = e.versionId;
+        this.notifyChangeEvent(e.changes, e.isRedoing, e.isUndoing);
+      }),
+    );
 
     this.addDispose(monacoModel);
   }
@@ -338,7 +344,6 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (!this.editorPreferences['editor.askIfDiff']) {
       force = true;
     }
-    // 新建的文件也可以保存
     if (!this.dirty) {
       return false;
     }

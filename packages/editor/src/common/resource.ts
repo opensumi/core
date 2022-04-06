@@ -117,3 +117,9 @@ export const DIFF_SCHEME = 'diff';
 export function isDiffResource(resource: IResource): resource is IDiffResource {
   return resource.uri.scheme === DIFF_SCHEME;
 }
+
+export enum AskSaveResult {
+  REVERT = 1,
+  SAVE = 2,
+  CANCEL = 3,
+}

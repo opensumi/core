@@ -231,6 +231,8 @@ describe('resource service tests', () => {
 
     expect(provider.isAlwaysDirty(untitledURI)).toBeTruthy();
 
+    expect(provider.disposeEvenDirty(untitledURI)).toBeTruthy();
+
     expect(provider.handlesScheme(Schemas.untitled)).toBeTruthy();
     expect(provider.handlesScheme(Schemas.file)).toBeFalsy();
 

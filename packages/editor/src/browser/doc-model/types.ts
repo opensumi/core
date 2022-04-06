@@ -71,6 +71,11 @@ export interface IEditorDocumentModel extends IDisposable {
   readonly alwaysDirty: boolean;
 
   /**
+   * 即便是 dirty 也要被 dispose
+   */
+  readonly disposeEvenDirty: boolean;
+
+  /**
    * 是否关闭自动保存功能
    */
   readonly closeAutoSave: boolean;
@@ -194,6 +199,11 @@ export interface IEditorDocumentModelContentProvider {
    * 猜测编码
    */
   guessEncoding?(uri: URI): Promise<string | undefined>;
+
+  /**
+   * 即便是 dirty 状态也要被 dispose
+   */
+  disposeEvenDirty?(uri: URI): MaybePromise<boolean>;
 }
 
 export interface IPreferredModelOptions {
