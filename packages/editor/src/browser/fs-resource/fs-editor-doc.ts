@@ -5,7 +5,7 @@ import {
   Event,
   IApplicationService,
   FileChangeType,
-  OS,
+  OperatingSystem,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
   PreferenceService,
@@ -95,7 +95,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     if (eol !== 'auto') {
       return eol;
     }
-    return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
+    return backendOS === OperatingSystem.Windows ? EOL.CRLF : EOL.LF;
   }
 
   async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string; content: string }> {

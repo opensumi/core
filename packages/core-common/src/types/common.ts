@@ -1,4 +1,4 @@
-import { OS } from '@opensumi/ide-utils';
+import { OperatingSystem } from '@opensumi/ide-utils';
 
 export const CommonServerPath = 'CommonServerPath';
 
@@ -8,5 +8,5 @@ export interface ICommonServer {
   /**
    * 获取后端 OS
    */
-  getBackendOS(): Promise<OS.Type>;
+  getBackendOS(): Promise<OperatingSystem>;
 }

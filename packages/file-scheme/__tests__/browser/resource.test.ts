@@ -1,7 +1,7 @@
 import { localize, IJSONSchemaRegistry, ISchemaStore, IApplicationService } from '@opensumi/ide-core-browser';
 import { DefaultUriLabelProvider } from '@opensumi/ide-core-browser/lib/services';
 import { CommonServerPath } from '@opensumi/ide-core-common';
-import { BinaryBuffer, Disposable, URI, OS } from '@opensumi/ide-core-common';
+import { BinaryBuffer, Disposable, URI, OperatingSystem } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
@@ -58,7 +58,7 @@ describe('file scheme tests', () => {
     {
       token: CommonServerPath,
       useValue: {
-        getBackendOS: jest.fn(() => OS.Type.Linux),
+        getBackendOS: jest.fn(() => OperatingSystem.Linux),
       },
     },
   );

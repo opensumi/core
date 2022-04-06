@@ -9,7 +9,7 @@ import {
   IEditorDocumentModelSaveResult,
   AppConfig,
   CommandService,
-  OS,
+  OperatingSystem,
   IApplicationService,
   PreferenceService,
   getLanguageIdFromMonaco,
@@ -75,7 +75,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     if (eol !== 'auto') {
       return eol;
     }
-    return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
+    return backendOS === OperatingSystem.Windows ? EOL.CRLF : EOL.LF;
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding?: string | undefined): Promise<string> {

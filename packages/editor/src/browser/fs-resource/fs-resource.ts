@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  OS,
+  OperatingSystem,
   URI,
   MaybePromise,
   WithEventBus,
@@ -52,7 +52,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   async init() {
     const os = await this.applicationService.getBackendOS();
-    this.involvedFiles = new FileTreeSet(os === OS.Type.Windows);
+    this.involvedFiles = new FileTreeSet(os === OperatingSystem.Windows);
   }
 
   handlesUri(uri: URI): number {

@@ -6,7 +6,7 @@
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Schemas, IOpenerService, OS, formatLocalize } from '@opensumi/ide-core-browser';
-import { URI, IRange, isWindows, isMacintosh, path as osPath } from '@opensumi/ide-core-common';
+import { URI, IRange, isWindows, isMacintosh, path as osPath, OperatingSystem } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
@@ -100,7 +100,7 @@ export class LinkDetector {
     this.decorateLink(link, async () => {
       if (uri.scheme === Schemas.file) {
         const fsPath = uri.toString();
-        const path = OS.type() === OS.Type.Windows ? osPath.win32 : osPath.posix;
+        const path = OS.type() === OperatingSystem.Windows ? osPath.win32 : osPath.posix;
         const fileUrl = osPath.normalize(
           path.sep === osPath.posix.sep && isWindows ? fsPath.replace(/\\/g, osPath.posix.sep) : fsPath,
         );

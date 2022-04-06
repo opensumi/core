@@ -7,7 +7,7 @@ import {
   URI,
   Uri,
   isWindows,
-  OS,
+  OperatingSystem,
   isLinux,
 } from '@opensumi/ide-core-browser';
 import { IApplicationService, uuid } from '@opensumi/ide-core-common';
@@ -77,7 +77,7 @@ describe(__filename, () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.Macintosh,
         },
       },
     );

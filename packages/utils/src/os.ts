@@ -13,7 +13,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import { isWindows, isMacintosh } from './platform';
+
+import { isWindows, isMacintosh, OperatingSystem } from './platform';
 
 export type CMD = [string, string[]];
 export function cmd(command: string, ...args: string[]): CMD {
@@ -21,27 +22,20 @@ export function cmd(command: string, ...args: string[]): CMD {
 }
 
 export namespace OS {
-  /**
-   * Enumeration of the supported operating systems.
-   */
   export enum Type {
-    Windows = 'Windows',
-    Linux = 'Linux',
-    OSX = 'OSX',
+    Windows = OperatingSystem.Windows,
+    Linux = OperatingSystem.Linux,
+    OSX = OperatingSystem.Macintosh,
   }
 
-  /**
-   * Returns with the type of the operating system. If it is neither [Windows](isWindows) nor [OS X](isOSX), then
-   * it always return with the `Linux` OS type.
-   */
-  export function type(): OS.Type {
+  export function type(): OperatingSystem {
     if (isWindows) {
-      return Type.Windows;
+      return OperatingSystem.Windows;
     }
     if (isMacintosh) {
-      return Type.OSX;
+      return OperatingSystem.Macintosh;
     }
-    return Type.Linux;
+    return OperatingSystem.Linux;
   }
 }
 

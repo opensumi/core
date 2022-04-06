@@ -30,7 +30,6 @@ import { FileTreeService } from '../../src/browser/file-tree.service';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { Directory, File } from '../../src/common/file-tree-node.define';
 
-
 class TempDirectory {}
 class TempFile {}
 
@@ -137,7 +136,7 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.OSX,
         },
       },
       {

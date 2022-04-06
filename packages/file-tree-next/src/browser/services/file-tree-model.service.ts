@@ -28,7 +28,7 @@ import {
   ThrottledDelayer,
   Emitter,
   Deferred,
-  OS,
+  OperatingSystem,
   IApplicationService,
   CommandService,
   FILE_COMMANDS,
@@ -1255,7 +1255,7 @@ export class FileTreeModelService {
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           if (this.fileTreeService.isCompactMode && isEmptyDirectory && !Directory.isRoot(parent)) {
             this.fileTreeService.ignoreFileEvent(parent.uri, FileChangeType.UPDATED);
-            if ((await this.appService.backendOS) === OS.Type.Windows) {
+            if ((await this.appService.backendOS) === OperatingSystem.Windows) {
               // Windows环境下会多触发一个UPDATED事件
               this.fileTreeService.ignoreFileEvent(parent.uri.resolve(newName), FileChangeType.UPDATED);
             }

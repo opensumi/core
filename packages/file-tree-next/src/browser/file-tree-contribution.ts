@@ -19,6 +19,7 @@ import {
   PreferenceService,
   formatLocalize,
   OS,
+  OperatingSystem,
   WORKSPACE_COMMANDS,
   AppConfig,
 } from '@opensumi/ide-core-browser';
@@ -549,7 +550,7 @@ export class FileTreeContribution
         const copyUri: URI = uri;
         let pathStr: string = decodeURIComponent(copyUri.path.toString());
         // windows下移除路径前的 /
-        if ((await this.appService.backendOS) === OS.Type.Windows) {
+        if ((await this.appService.backendOS) === OperatingSystem.Windows) {
           pathStr = pathStr.slice(1);
         }
         await this.clipboardService.writeText(pathStr);

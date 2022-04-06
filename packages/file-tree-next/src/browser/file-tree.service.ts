@@ -21,7 +21,7 @@ import {
   Deferred,
   Event,
   Emitter,
-  OS,
+  OperatingSystem,
   IApplicationService,
   ILogger,
   path,
@@ -525,7 +525,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     // 处理a/b/c/d这类目录
     if (namePaths.length > 1) {
       let tempUri = node.uri;
-      if ((await this.appService.backendOS) === OS.Type.Windows) {
+      if ((await this.appService.backendOS) === OperatingSystem.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.UPDATED);
       }
@@ -544,7 +544,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     } else {
       tempName = newName;
-      if ((await this.appService.backendOS) === OS.Type.Windows) {
+      if ((await this.appService.backendOS) === OperatingSystem.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.UPDATED);
       }
