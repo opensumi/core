@@ -14,6 +14,7 @@ import { PreferenceScope } from '@opensumi/ide-core-common/lib/preferences/prefe
 import { JSONUtils, JSONValue } from '../utils';
 
 import { getExternalPreferenceProvider, getAllExternalProviders } from './early-preferences';
+import { PreferenceResolveResult } from './types';
 export interface IResolvedPreferences {
   default: { [key: string]: any };
   languageSpecific: {
@@ -39,14 +40,6 @@ export interface ILanguagePreferenceProviderDataChanges {
   [languageId: string]: {
     [preferenceName: string]: PreferenceProviderDataChange;
   };
-}
-
-export interface PreferenceResolveResult<T> {
-  configUri?: URI;
-  value?: T;
-  scope?: PreferenceScope;
-  // 是否存在来自针对语言的设置
-  languageSpecific?: boolean;
 }
 
 function transformReverse(delegates: {

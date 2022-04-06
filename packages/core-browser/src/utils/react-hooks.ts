@@ -3,10 +3,11 @@ import { useState, useEffect, DependencyList } from 'react';
 
 import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';
 
-import { PreferenceService, useInjectable } from '..';
 import { MenuNode } from '../menu/next/base';
 import { generateInlineActions } from '../menu/next/menu-util';
 import { IMenu, IMenuSeparator, IContextMenu } from '../menu/next/menu.interface';
+import { PreferenceService } from '../preferences/types';
+import { useInjectable } from '../react-hooks/injectable-hooks';
 
 export function useDebounce(value, delay) {
   const [denouncedValue, setDenouncedValue] = useState(value);

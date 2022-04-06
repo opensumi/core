@@ -45,12 +45,13 @@ export class EncodingRegistry {
     } else if (preferredEncoding) {
       fileEncoding = preferredEncoding; // preferred encoding comes second
     } else {
-      fileEncoding = this.preferenceService.get<string>(
-        'files.encoding',
-        undefined,
-        resource.toString(),
-        getLanguageIdFromMonaco(resource)!,
-      )!;
+      fileEncoding =
+        this.preferenceService.get<string>(
+          'files.encoding',
+          undefined,
+          resource.toString(),
+          getLanguageIdFromMonaco(resource) || undefined,
+        ) || '';
     }
 
     if (!fileEncoding || !encodingExists(fileEncoding)) {

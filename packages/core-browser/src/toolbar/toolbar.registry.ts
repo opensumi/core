@@ -2,7 +2,6 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@opensumi/ide-core-common';
 
 import { ClientAppContribution } from '../common';
-import { PreferenceService } from '../preferences';
 
 import {
   IToolbarRegistry,
@@ -47,10 +46,7 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
   private _onActionAdded: Emitter<IToolbarAction> = new Emitter();
 
   @Autowired(ToolBarActionContribution)
-  contributions: ContributionProvider<ToolBarActionContribution>;
-
-  @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  private readonly contributions: ContributionProvider<ToolBarActionContribution>;
 
   private _inited = false;
 
