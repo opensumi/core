@@ -9,7 +9,7 @@ import {
   ILoggerManagerClient,
   IApplicationService,
   isWindows,
-  OS,
+  OperatingSystem,
   isLinux,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
@@ -136,7 +136,7 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.OSX,
+          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.Macintosh,
         },
       },
       {

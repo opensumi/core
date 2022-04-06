@@ -8,8 +8,14 @@ import {
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import {
+  IEventBus,
+  CommandService,
+  ILogger,
+  IFileServiceClient,
+  Disposable,
+  OperatingSystem,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -18,7 +24,6 @@ import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { TerminalProfileService } from '../../lib/browser/terminal.profile';
 import { createTerminalClientFactory, createTerminalClientFactory2 } from '../../src/browser/terminal.client';
 import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalInternalService } from '../../src/browser/terminal.internal.service';

@@ -287,7 +287,7 @@ function parsePattern(arg1: string | IRelativePattern, options: IGlobOptions): P
     return NULL;
   }
 
-  // Handle IRelativePattern
+  // Handle relative patterns
   let pattern: string;
   if (typeof arg1 !== 'string') {
     pattern = arg1.pattern;
@@ -305,14 +305,10 @@ function parsePattern(arg1: string | IRelativePattern, options: IGlobOptions): P
     return wrapRelativePattern(parsedPattern, arg1);
   }
 
-  // Check for Trivias
+  // Check for Trivials
   let match: RegExpExecArray | null;
   if (T1.test(pattern)) {
-    // common pattern: **/*.txt just need endsWith check
-    const base = pattern.substr(4); // '**/*'.length === 4
-    parsedPattern = function (path, basename) {
-      return typeof path === 'string' && path.endsWith(base) ? pattern : null;
-    };
+    parsedPattern = trivia1(pattern.substr(4), pattern); // common pattern: **/*.txt just need endsWith check
   } else if ((match = T2.exec(trimForExclusions(pattern, options)))) {
     // common pattern: **/some.txt just need basename check
     parsedPattern = trivia2(match[1], pattern);
@@ -346,15 +342,22 @@ function wrapRelativePattern(parsedPattern: ParsedStringPattern, arg2: string | 
   return function (path, basename) {
     const base = new Path(arg2.base);
     const target = new Path(path);
-    if (!target.isEqualOrParent(base)) {
+    if (!base.isEqualOrParent(target)) {
       return null;
     }
-    return parsedPattern(target.relative(base)?.toString() || '', basename);
+    return parsedPattern(base.relative(target)?.toString() || '', basename);
   };
 }
 
 function trimForExclusions(pattern: string, options: IGlobOptions): string {
   return options.trimForExclusions && pattern.endsWith('/**') ? pattern.substr(0, pattern.length - 2) : pattern; // dropping **, tailing / is dropped later
+}
+
+// common pattern: **/*.txt just need endsWith check
+function trivia1(base: string, pattern: string): ParsedStringPattern {
+  return function (path: string, basename?: string) {
+    return typeof path === 'string' && path.endsWith(base) ? pattern : null;
+  };
 }
 
 // common pattern: **/some.txt just need basename check

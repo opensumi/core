@@ -1,6 +1,5 @@
 import { IOpenerService } from '@opensumi/ide-core-browser/lib/opener';
-import { Disposable } from '@opensumi/ide-core-common';
-import { URI, Uri } from '@opensumi/ide-core-common/lib/uri';
+import { Disposable, URI, Uri } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common/editor';
 import { RemoteOpenerBrowserServiceImpl } from '@opensumi/ide-remote-opener/lib/browser';
 

@@ -1,15 +1,13 @@
 import fs from 'fs-extra';
 import temp from 'temp';
 
-import { FileUri } from '@opensumi/ide-core-common';
-import { UTF8 } from '@opensumi/ide-core-common/lib/encoding';
+import { FileUri, UTF8 } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
 import { IFileServiceClient, FileServicePath, IDiskFileProvider } from '../../src';
 import { FileServiceClientModule } from '../../src/browser';
-
 
 describe('FileServiceClient should be work', () => {
   const injector = createBrowserInjector([FileServiceClientModule]);
