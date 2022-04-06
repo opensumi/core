@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-utils",
-  "version": "2.16.5",
+  "version": "2.16.6",
   "files": [
     "lib"
   ],
@@ -16,7 +16,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "^2.16.5",
+    "@opensumi/ide-core-common": "^2.16.6",
     "shortid": "^2.2.14",
     "iconv-lite": "^0.6.0",
     "vscode-uri": "^3.0.2"
