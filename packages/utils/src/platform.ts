@@ -1,3 +1,9 @@
+/* ---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+// Some code copied and modified from https://github.com/microsoft/vscode/blob/01d1ea52e639615c4513689ce66576829438f748/src/vs/base/common/platform.ts
+
 const LANGUAGE_DEFAULT = 'en';
 
 let _isWindows = false;
@@ -82,6 +88,7 @@ export const enum Platform {
   Linux,
   Windows,
 }
+
 export function PlatformToString(platform: Platform) {
   switch (platform) {
     case Platform.Web:

@@ -1,7 +1,14 @@
-const { JSDOM } = require('jsdom');
+const { JSDOM, ResourceLoader } = require('jsdom');
 // new TextDecoder('ascii') is not supported in node12
 // use TextDecoder and TextEncoder from `text-encoding`
 const { TextDecoder, TextEncoder } = require('text-encoding');
+
+const resourceLoader = new ResourceLoader({
+  strictSSL: false,
+  userAgent: `Mozilla/5.0 (${
+    process.platform === 'darwin' ? 'Macintosh' : process.platform === 'win32' ? 'Windows' : 'Linux'
+  }) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/v16.7.0`,
+});
 
 const jsdom = new JSDOM('<div id="main"></div>', {
   // https://github.com/jsdom/jsdom#basic-options
@@ -10,6 +17,8 @@ const jsdom = new JSDOM('<div id="main"></div>', {
   // resources: 'usable',
   runScripts: 'dangerously',
   url: 'http://localhost/?id=1',
+  // 保障 `platform.ts` 中 isLinux 等平台信息判断准确性
+  resources: resourceLoader,
 });
 global.document = jsdom.window.document;
 let text = '';
