@@ -19,6 +19,7 @@ import {
   Event,
   IProblemPatternRegistry,
   Emitter,
+  WithEventBus,
 } from '@opensumi/ide-core-common';
 import { platform } from '@opensumi/ide-core-common/lib/platform';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
@@ -111,6 +112,8 @@ export class TaskService extends Disposable implements ITaskService {
 
   private _workspaceFolders: Uri[];
 
+  private runningTasks: Map<string, Task | ConfiguringTask> = new Map();
+
   private providers: Map<number, ITaskProvider>;
   private providerTypes: Map<string, number>;
 
@@ -155,6 +158,10 @@ export class TaskService extends Disposable implements ITaskService {
   }
 
   public async attach(taskId: string, terminal: ITerminalClient) {
+    if (this.runningTasks.has(taskId)) {
+      return;
+    }
+
     const [, , , taskType] = taskId.split(',');
     if (!taskType) {
       return;
@@ -164,6 +171,7 @@ export class TaskService extends Disposable implements ITaskService {
       const task = await this.getTask(this.workspaceFolders[0], taskId);
       if (task) {
         this.taskSystem.attach(task, terminal);
+        this.runningTasks.set(taskId, task);
       }
     } else {
       // wait for task provider to be registered
@@ -172,6 +180,7 @@ export class TaskService extends Disposable implements ITaskService {
           const task = await this.getTask(this.workspaceFolders[0], taskId);
           if (task) {
             this.taskSystem.attach(task, terminal);
+            this.runningTasks.set(taskId, task);
             disposable.dispose();
           }
         }
@@ -225,9 +234,16 @@ export class TaskService extends Disposable implements ITaskService {
 
   private async runTask(task: Task | ConfiguringTask): Promise<ITaskSummary> {
     const result = await this.taskSystem.run(task);
+
     result.promise.then((res) => {
+      if (this.runningTasks.has(task._id)) {
+        this.runningTasks.delete(task._id);
+      }
       this.outputChannel.appendLine(`task ${task._label} done, exit code ${res.exitCode}`);
     });
+
+    this.runningTasks.set(task._id, task);
+
     return Promise.resolve(result.promise);
   }
 

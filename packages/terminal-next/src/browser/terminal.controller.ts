@@ -18,7 +18,6 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { TabBarHandler } from '@opensumi/ide-main-layout/lib/browser/tabbar-handler';
-import { ITaskService } from '@opensumi/ide-task/lib/common';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import {
@@ -98,9 +97,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
-
-  @Autowired(ITaskService)
-  protected readonly taskService: ITaskService;
 
   @Autowired(AppConfig)
   config: AppConfig;
@@ -271,7 +267,11 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         /**
          * widget 创建完成后会同时创建 client
          */
-        const widget = this.terminalView.createWidget(group, typeof session === 'string' ? session : session.client);
+        const widget = this.terminalView.createWidget(
+          group,
+          typeof session === 'string' ? session : session.client,
+          !!session.task,
+        );
         const client = await this.clientFactory2(widget, {});
 
         if (session.task) {
@@ -292,9 +292,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           widget.name = client.name;
           client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
 
-          if (session.task) {
-            this.taskService.attach(session.task, client);
-          }
           /**
            * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
            */
@@ -504,7 +501,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
-    const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
+    const widget = this.terminalView.createWidget(
+      group,
+      widgetId,
+      options.isTaskExecutor || !options.closeWhenExited,
+      true,
+    );
 
     if (options.beforeCreate && typeof options.beforeCreate === 'function') {
       options.beforeCreate(widgetId);
