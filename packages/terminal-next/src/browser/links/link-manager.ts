@@ -10,9 +10,11 @@ import {
   isOSX,
   FileUri,
   localize,
+  path,
+  OperatingSystem,
+  isWindows,
+  isMacintosh,
 } from '@opensumi/ide-core-common';
-import { posix, win32, IPath } from '@opensumi/ide-core-common/lib/path';
-import { OperatingSystem, isWindows, isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
@@ -34,6 +36,7 @@ import {
   lineAndColumnClauseGroupCount,
 } from './validated-local-link-provider';
 
+const { posix, win32 } = path;
 
 export type XtermLinkMatcherHandler = (event: MouseEvent | undefined, link: string) => Promise<void>;
 
@@ -265,7 +268,7 @@ export class TerminalLinkManager extends Disposable {
     return isOSX ? event.metaKey : event.ctrlKey;
   }
 
-  private get osPath(): IPath {
+  private get osPath(): path.IPath {
     if (this._client.os === OperatingSystem.Windows) {
       return win32;
     }

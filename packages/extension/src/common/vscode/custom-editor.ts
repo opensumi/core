@@ -1,11 +1,10 @@
 import type { TextDocument } from 'vscode';
 
 import { Event, BasicEvent, URI, IExtensionInfo } from '@opensumi/ide-core-common';
-import type { CancellationToken } from '@opensumi/ide-core-common/lib/cancellation';
+import type { CancellationToken } from '@opensumi/ide-core-common';
 
 import { Uri, UriComponents } from './ext-types';
 import type { WebviewPanel, IWebviewPanelOptions } from './webview';
-
 
 /**
  * Provider for text based custom editors.

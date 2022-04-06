@@ -5,8 +5,7 @@
 
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariableCollection.ts
 
-import { OS } from '@opensumi/ide-core-common';
-import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
+import { OS, IProcessEnvironment } from '@opensumi/ide-core-common';
 
 import {
   IMergedEnvironmentVariableCollection,

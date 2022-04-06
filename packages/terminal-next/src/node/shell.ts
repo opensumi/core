@@ -10,8 +10,7 @@
 import fs from 'fs';
 import { userInfo, release } from 'os';
 
-import * as path from '@opensumi/ide-core-common/lib/path';
-import { IProcessEnvironment, isLinux, isMacintosh, OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { IProcessEnvironment, isLinux, isMacintosh, OperatingSystem, path } from '@opensumi/ide-core-common';
 import { isWindows } from '@opensumi/ide-core-node';
 
 export const WINDOWS_GIT_BASH_PATHS = [

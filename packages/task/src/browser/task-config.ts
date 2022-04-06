@@ -8,7 +8,7 @@ import {
   isString,
   ProblemMatcherType,
   NamedProblemMatcher,
-  deepClone,
+  objects,
   formatLocalize,
   isBoolean,
   isArray,
@@ -22,13 +22,15 @@ import {
   ITaskDefinitionRegistry,
   IProblemPatternRegistry,
   NamedProblemPattern,
+  Platform,
 } from '@opensumi/ide-core-common';
-import { Platform } from '@opensumi/ide-core-common/lib/platform';
 
 import { IWorkspaceFolder } from '../common';
 import * as TaskTypes from '../common/task';
 
 import { IProblemReporterBase, ValidationStatus, ProblemMatcherParser, Config } from './parser';
+
+const { deepClone } = objects;
 
 export interface CommandOptionsConfig {
   /**

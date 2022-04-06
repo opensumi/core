@@ -24,7 +24,7 @@ import {
   ContributionProvider,
   ISettingGroup,
   IDisposable,
-  addElement,
+  arrays,
   Command,
   getIcon,
   isString,
@@ -48,6 +48,7 @@ import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
+const { addElement } = arrays;
 
 @Injectable()
 export class PrefResourceProvider extends WithEventBus implements IResourceProvider {

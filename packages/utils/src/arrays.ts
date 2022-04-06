@@ -216,3 +216,89 @@ export function fill<T>(num: number, value: T, arr: T[] = []): T[] {
 
   return arr;
 }
+
+/**
+ * Takes a sorted array and a function p. The array is sorted in such a way that all elements where p(x) is false
+ * are located before all elements where p(x) is true.
+ * @returns the least x for which p(x) is true or array.length if no element fullfills the given function.
+ */
+export function findFirstInSorted<T>(array: ReadonlyArray<T>, p: (x: T) => boolean): number {
+  let low = 0;
+  let high = array.length;
+  if (high === 0) {
+    return 0; // no children
+  }
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (p(array[mid])) {
+      high = mid;
+    } else {
+      low = mid + 1;
+    }
+  }
+  return low;
+}
+
+type Compare<T> = (a: T, b: T) => number;
+
+function _merge<T>(a: T[], compare: Compare<T>, lo: number, mid: number, hi: number, aux: T[]): void {
+  let leftIdx = lo;
+  let rightIdx = mid + 1;
+  for (let i = lo; i <= hi; i++) {
+    aux[i] = a[i];
+  }
+  for (let i = lo; i <= hi; i++) {
+    if (leftIdx > mid) {
+      // left side consumed
+      a[i] = aux[rightIdx++];
+    } else if (rightIdx > hi) {
+      // right side consumed
+      a[i] = aux[leftIdx++];
+    } else if (compare(aux[rightIdx], aux[leftIdx]) < 0) {
+      // right element is less -> comes first
+      a[i] = aux[rightIdx++];
+    } else {
+      // left element comes first (less or equal)
+      a[i] = aux[leftIdx++];
+    }
+  }
+}
+
+function _sort<T>(a: T[], compare: Compare<T>, lo: number, hi: number, aux: T[]) {
+  if (hi <= lo) {
+    return;
+  }
+  const mid = (lo + (hi - lo) / 2) | 0;
+  _sort(a, compare, lo, mid, aux);
+  _sort(a, compare, mid + 1, hi, aux);
+  if (compare(a[mid], a[mid + 1]) <= 0) {
+    // left and right are sorted and if the last-left element is less
+    // or equals than the first-right element there is nothing else
+    // to do
+    return;
+  }
+  _merge(a, compare, lo, mid, hi, aux);
+}
+
+/**
+ * Like `Array#sort` but always stable. Usually runs a little slower `than Array#sort`
+ * so only use this when actually needing stable sort.
+ */
+export function mergeSort<T>(data: T[], compare: Compare<T>): T[] {
+  _sort(data, compare, 0, data.length - 1, []);
+  return data;
+}
+
+/**
+ * Returns the first mapped value of the array which is not undefined.
+ */
+export function mapFind<T, R>(array: Iterable<T>, mapFn: (value: T) => R | undefined): R | undefined {
+  for (const value of array) {
+    const mapped = mapFn(value);
+    if (mapped !== undefined) {
+      return mapped;
+    }
+  }
+
+  return undefined;
+}

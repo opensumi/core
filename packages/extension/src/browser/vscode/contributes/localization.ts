@@ -6,8 +6,8 @@ import {
   PreferenceService,
   parseWithComments,
   getLanguageId,
+  path,
 } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -18,6 +18,8 @@ import {
   ExtensionNodeServiceServerPath,
 } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
+
+const { Path } = path;
 
 export interface TranslationFormat {
   id: string;

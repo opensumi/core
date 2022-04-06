@@ -1,6 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, URI, FsProviderContribution, AppConfig, Uri } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { Domain, URI, FsProviderContribution, AppConfig, Uri, path } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import {
@@ -9,9 +8,11 @@ import {
 } from '@opensumi/ide-static-resource/lib/browser/static.definition';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { BrowserFsProvider, AbstractHttpFileService } from './browser-fs-provider';
+import { AbstractHttpFileService } from './browser-fs-provider';
 import { ExtFsProvider } from './ext-fs-provider';
 import { HttpFileService } from './http-file.service';
+
+const { Path } = path;
 
 const EXPRESS_SERVER_PATH = window.location.href;
 

@@ -3,11 +3,10 @@ import paths from 'path';
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationToken, Emitter, Event, MessageType } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { CancellationToken, Emitter, Event, MessageType, path } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
-import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
+import { WorkspaceRootsChangeEvent, IExtHostMessage } from '../../../common/vscode';
 import {
   MainThreadAPIIdentifier,
   IMainThreadWorkspace,
@@ -24,6 +23,8 @@ import { IExtHostTasks } from '../../../common/vscode/tasks';
 import { ExtHostFileSystem } from './ext.host.file-system';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
 import { ExtHostPreference } from './ext.host.preference';
+
+const { Path, relative, normalize } = path;
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
@@ -254,7 +255,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     if (includeWorkspaceFolder) {
       result = `${folder.name}/${result}`;
     }
-    return normalize(result, true);
+    return normalize(result);
   }
 
   updateWorkspaceFolders(

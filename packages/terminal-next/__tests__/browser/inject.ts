@@ -54,7 +54,6 @@ import {
   MockTerminalProfileInternalService,
 } from './mock.service';
 
-
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
 
@@ -176,7 +175,7 @@ export const injector = new Injector([
       getDefaultSystemShell() {
         return '/bin/sh';
       },
-      getOs() {
+      getOS() {
         return OperatingSystem.Macintosh;
       },
       detectAvailableProfiles() {

@@ -9,9 +9,9 @@ import {
   IStorage,
   STORAGE_NAMESPACE,
   AppConfig,
+  isMacintosh,
 } from '@opensumi/ide-core-browser';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { isMacintosh } from '@opensumi/ide-core-common/lib/platform';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
 

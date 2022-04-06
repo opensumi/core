@@ -108,7 +108,7 @@ export class MockSocketService implements ITerminalService {
     return {};
   }
 
-  async getOs() {
+  async getOS() {
     return OS;
   }
 

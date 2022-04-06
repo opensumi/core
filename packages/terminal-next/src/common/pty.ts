@@ -2,8 +2,7 @@ import { IPty as INodePty } from 'node-pty';
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 
-import { Uri } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { Uri, OperatingSystem } from '@opensumi/ide-core-common';
 
 import { ITerminalError } from './error';
 import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } from './extension';
@@ -233,7 +232,7 @@ export interface ITerminalServiceClient {
   $resolveShellPath(paths: string[]): Promise<string | undefined>;
   detectAvailableProfiles(options: IDetectProfileOptions): Promise<ITerminalProfile[]>;
   getDefaultSystemShell(os: OperatingSystem): Promise<string>;
-  getOs(): OperatingSystem;
+  getOS(): OperatingSystem;
   getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;
 }
 

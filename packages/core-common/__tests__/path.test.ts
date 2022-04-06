@@ -30,9 +30,9 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import * as path from '../src/path';
-import { Path } from '../src/path';
-import { isWindows } from '../src/platform';
+import { path, isWindows } from '@opensumi/ide-core-common';
+
+const { Path } = path;
 
 describe('Paths (Node Implementation)', () => {
   test('join', () => {

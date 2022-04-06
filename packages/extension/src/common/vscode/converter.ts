@@ -12,13 +12,13 @@ import {
   MarkerTag,
   MarkerSeverity,
   ProgressLocation as MainProgressLocation,
-  parse,
-  cloneAndChange,
+  path,
+  objects,
   IThemeColor,
   isDefined,
-  coalesce,
-  asArray,
+  arrays,
   IMarkdownString,
+  IRelativePattern,
 } from '@opensumi/ide-core-common';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
@@ -56,11 +56,14 @@ import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import { ExtensionDocumentDataManager } from './doc';
 import { ViewColumn as ViewColumnEnums } from './enums';
 import * as types from './ext-types';
-import { IRelativePattern } from './glob';
 import { IInlineValueContextDto } from './languages';
 import * as model from './model.api';
 import { isMarkdownString, parseHrefAndDimensions } from './models';
 import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
+
+const { parse } = path;
+const { cloneAndChange } = objects;
+const { coalesce, asArray } = arrays;
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
   background?: boolean;

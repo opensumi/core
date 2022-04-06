@@ -7,7 +7,7 @@ import {
   IDisposable,
   Event,
   throttle,
-  equals,
+  arrays,
   AutoOpenBarrier,
   PreferenceScope,
 } from '@opensumi/ide-core-common';
@@ -26,6 +26,7 @@ import {
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 
+const { equals } = arrays;
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {

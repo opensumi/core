@@ -1,8 +1,7 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet, path } from '@opensumi/ide-core-common';
 import {
   DebugConfiguration,
   DebugStreamConnection,
@@ -41,6 +40,8 @@ import {
   namedPipeDebugAdapter,
 } from './extension-debug-adapter-starter';
 import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
+
+const { Path } = path;
 
 export function createDebugApiFactory(extHostDebugService: IExtHostDebugService) {
   const debug: typeof vscode.debug = {

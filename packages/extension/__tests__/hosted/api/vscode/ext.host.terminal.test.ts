@@ -30,7 +30,6 @@ import {
   Terminal,
 } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 
-
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 
@@ -87,7 +86,7 @@ describe(__filename, () => {
         getDefaultSystemShell() {
           return '/bin/sh';
         },
-        getOs() {
+        getOS() {
           return OperatingSystem.Macintosh;
         },
         detectAvailableProfiles() {

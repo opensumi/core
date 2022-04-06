@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { INodeLogger, OperatingSystem, isWindows, isMacintosh } from '@opensumi/ide-core-node';
 
 import {
   IShellLaunchConfig,
@@ -171,7 +170,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
     // follow vscode
-    return this.getOs() === OperatingSystem.Macintosh ? 'osx' : OS === OperatingSystem.Windows ? 'windows' : 'linux';
+    return this.getOS() === OperatingSystem.Macintosh ? 'osx' : OperatingSystem.Windows ? 'windows' : 'linux';
   }
 
   async getDefaultSystemShell(os: OperatingSystem) {
@@ -204,8 +203,8 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return this.terminalService.getShellName(id);
   }
 
-  getOs(): OperatingSystem {
-    return OS;
+  getOS(): OperatingSystem {
+    return isWindows ? OperatingSystem.Windows : isMacintosh ? OperatingSystem.Macintosh : OperatingSystem.Linux;
   }
 
   dispose() {

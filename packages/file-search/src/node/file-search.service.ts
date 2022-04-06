@@ -1,15 +1,16 @@
-import path from 'path';
 import readline from 'readline';
 
 import fuzzy from 'fuzzy';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { CancellationToken, CancellationTokenSource, replaceAsarInPath } from '@opensumi/ide-core-common';
+import { CancellationToken, CancellationTokenSource, path } from '@opensumi/ide-core-common';
 import { URI, FileUri, INodeLogger } from '@opensumi/ide-core-node';
 import { IProcessFactory } from '@opensumi/ide-process';
 import { rgPath } from '@opensumi/vscode-ripgrep';
 
 import { IFileSearchService } from '../common';
+
+const { replaceAsarInPath } = path;
 
 @Injectable()
 export class FileSearchService implements IFileSearchService {

@@ -81,7 +81,7 @@ describe('terminal service test cases', () => {
         getDefaultSystemShell() {
           return '/bin/sh';
         },
-        getOs() {
+        getOS() {
           return OperatingSystem.Macintosh;
         },
         detectAvailableProfiles() {

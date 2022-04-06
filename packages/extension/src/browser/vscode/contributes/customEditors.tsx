@@ -2,7 +2,7 @@ import React = require('react');
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
-import { CancellationTokenSource, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, Disposable, ILogger, match } from '@opensumi/ide-core-common';
 import { EditorComponentRegistry, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
@@ -18,7 +18,6 @@ import {
   CustomEditorShouldRevertEvent,
   CustomEditorShouldEditEvent,
 } from '../../../common/vscode/custom-editor';
-import { match } from '../../../common/vscode/glob';
 import { IActivationEventService } from '../../types';
 
 @Injectable()

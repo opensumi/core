@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { CancellationTokenSource, coalesce, IRange } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, arrays, IRange } from '@opensumi/ide-core-common';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEvaluatableExpressionService } from './evaluatable-expression';
 
+const { coalesce } = arrays;
 
 @Injectable()
 export class DebugExpressionProvider {
@@ -30,10 +31,10 @@ export class DebugExpressionProvider {
 
       const results = await Promise.all(promises).then(coalesce);
       if (results.length > 0) {
-        matchingExpression = results[0].expression;
-        rng = results[0].range;
+        matchingExpression = results[0]?.expression;
+        rng = results[0]?.range;
 
-        if (!matchingExpression) {
+        if (!matchingExpression && rng) {
           const lineContent = model.getLineContent(pos.lineNumber);
           matchingExpression = lineContent.substring(rng.startColumn - 1, rng.endColumn - 1);
         }
