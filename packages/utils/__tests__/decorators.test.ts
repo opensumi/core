@@ -6,7 +6,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { memoize, throttle } from '../../src/utils/decorators';
+import { memoize, throttle } from '../src/decorators';
 
 describe('Decorators', () => {
   test('memoize should memoize methods', () => {

@@ -30,7 +30,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 // USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import { path, isWindows } from '@opensumi/ide-core-common';
+import { path, isWindows } from '../src';
 
 const { Path } = path;
 
@@ -180,7 +180,7 @@ describe('Paths (Node Implementation)', () => {
   });
 
   test('dirname', () => {
-    expect(path.dirname(path.normalize(__filename)).substr(-11)).toBe(isWindows ? 'n/__tests__' : 'n/__tests__');
+    expect(path.dirname(path.normalize(__filename)).substr(-10)).toBe(isWindows ? '/__tests__' : '/__tests__');
 
     expect(path.posix.dirname('/a/b/')).toBe('/a');
     expect(path.posix.dirname('/a/b')).toBe('/a');

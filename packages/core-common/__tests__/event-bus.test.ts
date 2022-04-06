@@ -6,7 +6,7 @@ describe('event-bus', () => {
   class AEvent extends BasicEvent<number> {}
   class BEvent extends BasicEvent<string> {}
 
-  it('event bus 能够正常执行', () => {
+  it('event bus work', () => {
     const eventBus = new EventBusImpl();
     const spyA = jest.fn();
     eventBus.on(AEvent, spyA);
@@ -25,7 +25,7 @@ describe('event-bus', () => {
     expect(spyB).toBeCalledWith(bEvent);
   });
 
-  it('event bus fireAndAwait能够正常执行', async () => {
+  it('event bus fireAndAwait should be work', async () => {
     const eventBus = new EventBusImpl();
     const spyA = jest.fn();
     eventBus.on(AEvent, spyA);
@@ -50,7 +50,7 @@ describe('event-bus', () => {
     expect(res[2].result).toBeUndefined;
   });
 
-  it('event bus 能够多次触发', () => {
+  it('event bus can be triggered multiple times', () => {
     const eventBus = new EventBusImpl();
     const spy = jest.fn();
     eventBus.on(AEvent, spy);
@@ -71,13 +71,13 @@ describe('event-bus', () => {
     expect(spy).toBeCalledWith(b1);
   });
 
-  it('没有注册监听函数的时候，fire 不会报错', () => {
+  it('fire will not report an error when no listener function is registered', () => {
     const eventBus = new EventBusImpl();
     const a1 = new AEvent(1);
     eventBus.fire(a1);
   });
 
-  it('使用 Decorator 去监听事件变化', () => {
+  it('use Decorator to listen for event changes', () => {
     const spy = jest.fn();
     class ResizeEvent extends BasicEvent<number> {}
     const resizeEvent = new ResizeEvent(1);
@@ -116,7 +116,7 @@ describe('event-bus', () => {
     expect(spy).toBeCalledWith(resizeEvent);
   });
 
-  it('event bus once 只能触发一次', () => {
+  it('event bus once can only be triggered once', () => {
     const eventBus = new EventBusImpl();
     const spy = jest.fn();
     eventBus.once(AEvent, spy);

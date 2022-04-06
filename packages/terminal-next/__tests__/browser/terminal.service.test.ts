@@ -6,8 +6,7 @@ import httpProxy from 'http-proxy';
 import WebSocket from 'ws';
 
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { Disposable, FileUri, URI, OperatingSystem } from '@opensumi/ide-core-common';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 

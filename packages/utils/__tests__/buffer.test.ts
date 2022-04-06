@@ -1,4 +1,4 @@
-import { BinaryBuffer } from '../../src/utils/buffer';
+import { BinaryBuffer } from '../src/buffer';
 
 const utf8BOM = [0xef, 0xbb, 0xbf];
 
@@ -37,7 +37,7 @@ describe('test BinaryBuffer', () => {
   test('disable Buffer: fromString', () => {
     (_globalThis as any).Buffer = undefined;
     jest.resetModules();
-    const { BinaryBuffer } = require('../../src/utils/buffer');
+    const { BinaryBuffer } = require('../src/buffer');
     const result = BinaryBuffer.fromString('你好');
     expect(result.toString('utf8bom')).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;
@@ -46,7 +46,7 @@ describe('test BinaryBuffer', () => {
   test('disable Buffer: wrap utf8', () => {
     (_globalThis as any).Buffer = undefined;
     jest.resetModules();
-    const { BinaryBuffer } = require('../../src/utils/buffer');
+    const { BinaryBuffer } = require('../src/buffer');
     const result = BinaryBuffer.wrap(helloUtf8);
     expect(result.toString()).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;
@@ -55,7 +55,7 @@ describe('test BinaryBuffer', () => {
   test('disable Buffer: wrap utf8bom', () => {
     (_globalThis as any).Buffer = undefined;
     jest.resetModules();
-    const { BinaryBuffer } = require('../../src/utils/buffer');
+    const { BinaryBuffer } = require('../src/buffer');
     const result = BinaryBuffer.wrap(helloWithBOM);
     expect(result.toString('utf8bom')).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;
@@ -68,7 +68,7 @@ describe('test BinaryBuffer', () => {
     // 而且在 web 端 hasBuffer 也是为 true 的，这是一个边缘 case
     (_globalThis as any).Buffer = undefined;
     jest.resetModules();
-    const { BinaryBuffer } = require('../../src/utils/buffer');
+    const { BinaryBuffer } = require('../src/buffer');
     const result = BinaryBuffer.wrap(helloGbk);
     expect(result.toString('gbk')).toBe('你好');
     (_globalThis as any).Buffer = _Buffer;

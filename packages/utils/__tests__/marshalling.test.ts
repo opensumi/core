@@ -7,7 +7,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { URI } from 'vscode-uri';
 
-import { parse, stringify } from '../../src/utils/marshalling';
+import { parse, stringify } from '../src/marshalling';
 
 describe('Marshalling', () => {
   test('RegExp', () => {

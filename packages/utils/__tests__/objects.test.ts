@@ -1,4 +1,4 @@
-import * as objects from '../../src/utils/objects';
+import * as objects from '../src/objects';
 
 describe('Objects', () => {
   test('cloneAndChange', () => {

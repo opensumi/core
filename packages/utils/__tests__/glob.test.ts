@@ -6,9 +6,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isWindows } from '../../src/platform';
-import * as glob from '../../src/utils/glob';
-import * as path from '../../src/utils/paths';
+import * as glob from '../src/glob';
+import * as path from '../src/path';
+import { isWindows } from '../src/platform';
 
 describe('Glob', () => {
   // it('perf', () => {
@@ -744,50 +744,50 @@ describe('Glob', () => {
   it('falsy expression/pattern', function () {
     expect(glob.match(null!, 'foo')).toBe(false);
     expect(glob.match('', 'foo')).toBe(false);
-    expect(glob.parse(null!)('foo')).toBe(false);
-    expect(glob.parse('')('foo')).toBe(false);
+    expect(glob.parseGlob(null!)('foo')).toBe(false);
+    expect(glob.parseGlob('')('foo')).toBe(false);
   });
 
   it('falsy path', function () {
-    expect(glob.parse('foo')(null!)).toBe(false);
-    expect(glob.parse('foo')('')).toBe(false);
-    expect(glob.parse('**/*.j?')(null!)).toBe(false);
-    expect(glob.parse('**/*.j?')('')).toBe(false);
-    expect(glob.parse('**/*.foo')(null!)).toBe(false);
-    expect(glob.parse('**/*.foo')('')).toBe(false);
-    expect(glob.parse('**/foo')(null!)).toBe(false);
-    expect(glob.parse('**/foo')('')).toBe(false);
-    expect(glob.parse('{**/baz,**/foo}')(null!)).toBe(false);
-    expect(glob.parse('{**/baz,**/foo}')('')).toBe(false);
-    expect(glob.parse('{**/*.baz,**/*.foo}')(null!)).toBe(false);
-    expect(glob.parse('{**/*.baz,**/*.foo}')('')).toBe(false);
+    expect(glob.parseGlob('foo')(null!)).toBe(false);
+    expect(glob.parseGlob('foo')('')).toBe(false);
+    expect(glob.parseGlob('**/*.j?')(null!)).toBe(false);
+    expect(glob.parseGlob('**/*.j?')('')).toBe(false);
+    expect(glob.parseGlob('**/*.foo')(null!)).toBe(false);
+    expect(glob.parseGlob('**/*.foo')('')).toBe(false);
+    expect(glob.parseGlob('**/foo')(null!)).toBe(false);
+    expect(glob.parseGlob('**/foo')('')).toBe(false);
+    expect(glob.parseGlob('{**/baz,**/foo}')(null!)).toBe(false);
+    expect(glob.parseGlob('{**/baz,**/foo}')('')).toBe(false);
+    expect(glob.parseGlob('{**/*.baz,**/*.foo}')(null!)).toBe(false);
+    expect(glob.parseGlob('{**/*.baz,**/*.foo}')('')).toBe(false);
   });
 
   it('expression/pattern basename', function () {
-    expect(glob.parse('**/foo')('bar/baz', 'baz')).toBe(false);
-    expect(glob.parse('**/foo')('bar/foo', 'foo')).toBe(true);
+    expect(glob.parseGlob('**/foo')('bar/baz', 'baz')).toBe(false);
+    expect(glob.parseGlob('**/foo')('bar/foo', 'foo')).toBe(true);
 
-    expect(glob.parse('{**/baz,**/foo}')('baz/bar', 'bar')).toBe(false);
-    expect(glob.parse('{**/baz,**/foo}')('baz/foo', 'foo')).toBe(true);
+    expect(glob.parseGlob('{**/baz,**/foo}')('baz/bar', 'bar')).toBe(false);
+    expect(glob.parseGlob('{**/baz,**/foo}')('baz/foo', 'foo')).toBe(true);
 
     const expr = { '**/*.js': { when: '$(basename).ts' } };
     const siblings = ['foo.ts', 'foo.js'];
     const hasSibling = (name: string) => siblings.indexOf(name) !== -1;
 
-    expect(glob.parse(expr)('bar/baz.js', 'baz.js', hasSibling)).toBe(null);
-    expect(glob.parse(expr)('bar/foo.js', 'foo.js', hasSibling)).toBe('**/*.js');
+    expect(glob.parseGlob(expr)('bar/baz.js', 'baz.js', hasSibling)).toBe(null);
+    expect(glob.parseGlob(expr)('bar/foo.js', 'foo.js', hasSibling)).toBe('**/*.js');
   });
 
   it('expression/pattern basename terms', function () {
-    expect(glob.getBasenameTerms(glob.parse('**/*.foo'))).toEqual([]);
-    expect(glob.getBasenameTerms(glob.parse('**/foo'))).toEqual(['foo']);
-    expect(glob.getBasenameTerms(glob.parse('**/foo/'))).toEqual(['foo']);
-    expect(glob.getBasenameTerms(glob.parse('{**/baz,**/foo}'))).toEqual(['baz', 'foo']);
-    expect(glob.getBasenameTerms(glob.parse('{**/baz/,**/foo/}'))).toEqual(['baz', 'foo']);
+    expect(glob.getBasenameTerms(glob.parseGlob('**/*.foo'))).toEqual([]);
+    expect(glob.getBasenameTerms(glob.parseGlob('**/foo'))).toEqual(['foo']);
+    expect(glob.getBasenameTerms(glob.parseGlob('**/foo/'))).toEqual(['foo']);
+    expect(glob.getBasenameTerms(glob.parseGlob('{**/baz,**/foo}'))).toEqual(['baz', 'foo']);
+    expect(glob.getBasenameTerms(glob.parseGlob('{**/baz/,**/foo/}'))).toEqual(['baz', 'foo']);
 
     expect(
       glob.getBasenameTerms(
-        glob.parse({
+        glob.parseGlob({
           '**/foo': true,
           '{**/bar,**/baz}': true,
           '{**/bar2/,**/baz2/}': true,
@@ -797,7 +797,7 @@ describe('Glob', () => {
     ).toEqual(['foo', 'bar', 'baz', 'bar2', 'baz2']);
     expect(
       glob.getBasenameTerms(
-        glob.parse({
+        glob.parseGlob({
           '**/foo': { when: '$(basename).zip' },
           '**/bar': true,
         }),
@@ -806,8 +806,8 @@ describe('Glob', () => {
   });
 
   it('expression/pattern optimization for basenames', function () {
-    expect(glob.getBasenameTerms(glob.parse('**/foo/**'))).toEqual([]);
-    expect(glob.getBasenameTerms(glob.parse('**/foo/**', { trimForExclusions: true }))).toEqual(['foo']);
+    expect(glob.getBasenameTerms(glob.parseGlob('**/foo/**'))).toEqual([]);
+    expect(glob.getBasenameTerms(glob.parseGlob('**/foo/**', { trimForExclusions: true }))).toEqual(['foo']);
 
     testOptimizationForBasenames('**/*.foo/**', [], [['baz/bar.foo/bar/baz', true]]);
     testOptimizationForBasenames(
@@ -865,7 +865,7 @@ describe('Glob', () => {
     matches: [string, string | boolean][],
     siblingsFns: ((name: string) => boolean)[] = [],
   ) {
-    const parsed = glob.parse(pattern as glob.IExpression, { trimForExclusions: true });
+    const parsed = glob.parseGlob(pattern as glob.IExpression, { trimForExclusions: true });
     expect(glob.getBasenameTerms(parsed)).toEqual(basenameTerms);
     matches.forEach(([text, result], i) => {
       expect(parsed(text, null!, siblingsFns[i])).toBe(result);
@@ -874,46 +874,48 @@ describe('Glob', () => {
 
   it('trailing slash', function () {
     // Testing existing (more or less intuitive) behavior
-    expect(glob.parse('**/foo/')('bar/baz', 'baz')).toBe(false);
-    expect(glob.parse('**/foo/')('bar/foo', 'foo')).toBe(true);
-    expect(glob.parse('**/*.foo/')('bar/file.baz', 'file.baz')).toBe(false);
-    expect(glob.parse('**/*.foo/')('bar/file.foo', 'file.foo')).toBe(true);
-    expect(glob.parse('{**/foo/,**/abc/}')('bar/baz', 'baz')).toBe(false);
-    expect(glob.parse('{**/foo/,**/abc/}')('bar/foo', 'foo')).toBe(true);
-    expect(glob.parse('{**/foo/,**/abc/}')('bar/abc', 'abc')).toBe(true);
-    expect(glob.parse('{**/foo/,**/abc/}', { trimForExclusions: true })('bar/baz', 'baz')).toBe(false);
-    expect(glob.parse('{**/foo/,**/abc/}', { trimForExclusions: true })('bar/foo', 'foo')).toBe(true);
-    expect(glob.parse('{**/foo/,**/abc/}', { trimForExclusions: true })('bar/abc', 'abc')).toBe(true);
+    expect(glob.parseGlob('**/foo/')('bar/baz', 'baz')).toBe(false);
+    expect(glob.parseGlob('**/foo/')('bar/foo', 'foo')).toBe(true);
+    expect(glob.parseGlob('**/*.foo/')('bar/file.baz', 'file.baz')).toBe(false);
+    expect(glob.parseGlob('**/*.foo/')('bar/file.foo', 'file.foo')).toBe(true);
+    expect(glob.parseGlob('{**/foo/,**/abc/}')('bar/baz', 'baz')).toBe(false);
+    expect(glob.parseGlob('{**/foo/,**/abc/}')('bar/foo', 'foo')).toBe(true);
+    expect(glob.parseGlob('{**/foo/,**/abc/}')('bar/abc', 'abc')).toBe(true);
+    expect(glob.parseGlob('{**/foo/,**/abc/}', { trimForExclusions: true })('bar/baz', 'baz')).toBe(false);
+    expect(glob.parseGlob('{**/foo/,**/abc/}', { trimForExclusions: true })('bar/foo', 'foo')).toBe(true);
+    expect(glob.parseGlob('{**/foo/,**/abc/}', { trimForExclusions: true })('bar/abc', 'abc')).toBe(true);
   });
 
   it('expression/pattern path', function () {
-    expect(glob.parse('**/foo/bar')(nativeSep('foo/baz'), 'baz')).toBe(false);
-    expect(glob.parse('**/foo/bar')(nativeSep('foo/bar'), 'bar')).toBe(true);
-    expect(glob.parse('**/foo/bar')(nativeSep('bar/foo/bar'), 'bar')).toBe(true);
-    expect(glob.parse('**/foo/bar/**')(nativeSep('bar/foo/bar'), 'bar')).toBe(true);
-    expect(glob.parse('**/foo/bar/**')(nativeSep('bar/foo/bar/baz'), 'baz')).toBe(true);
-    expect(glob.parse('**/foo/bar/**', { trimForExclusions: true })(nativeSep('bar/foo/bar'), 'bar')).toBe(true);
-    expect(glob.parse('**/foo/bar/**', { trimForExclusions: true })(nativeSep('bar/foo/bar/baz'), 'baz')).toBe(false);
+    expect(glob.parseGlob('**/foo/bar')(nativeSep('foo/baz'), 'baz')).toBe(false);
+    expect(glob.parseGlob('**/foo/bar')(nativeSep('foo/bar'), 'bar')).toBe(true);
+    expect(glob.parseGlob('**/foo/bar')(nativeSep('bar/foo/bar'), 'bar')).toBe(true);
+    expect(glob.parseGlob('**/foo/bar/**')(nativeSep('bar/foo/bar'), 'bar')).toBe(true);
+    expect(glob.parseGlob('**/foo/bar/**')(nativeSep('bar/foo/bar/baz'), 'baz')).toBe(true);
+    expect(glob.parseGlob('**/foo/bar/**', { trimForExclusions: true })(nativeSep('bar/foo/bar'), 'bar')).toBe(true);
+    expect(glob.parseGlob('**/foo/bar/**', { trimForExclusions: true })(nativeSep('bar/foo/bar/baz'), 'baz')).toBe(
+      false,
+    );
 
-    expect(glob.parse('foo/bar')(nativeSep('foo/baz'), 'baz')).toBe(false);
-    expect(glob.parse('foo/bar')(nativeSep('foo/bar'), 'bar')).toBe(true);
-    expect(glob.parse('foo/bar/baz')(nativeSep('foo/bar/baz'), 'baz')).toBe(true); // #15424
-    expect(glob.parse('foo/bar')(nativeSep('bar/foo/bar'), 'bar')).toBe(false);
-    expect(glob.parse('foo/bar/**')(nativeSep('foo/bar/baz'), 'baz')).toBe(true);
-    expect(glob.parse('foo/bar/**', { trimForExclusions: true })(nativeSep('foo/bar'), 'bar')).toBe(true);
-    expect(glob.parse('foo/bar/**', { trimForExclusions: true })(nativeSep('foo/bar/baz'), 'baz')).toBe(false);
+    expect(glob.parseGlob('foo/bar')(nativeSep('foo/baz'), 'baz')).toBe(false);
+    expect(glob.parseGlob('foo/bar')(nativeSep('foo/bar'), 'bar')).toBe(true);
+    expect(glob.parseGlob('foo/bar/baz')(nativeSep('foo/bar/baz'), 'baz')).toBe(true); // #15424
+    expect(glob.parseGlob('foo/bar')(nativeSep('bar/foo/bar'), 'bar')).toBe(false);
+    expect(glob.parseGlob('foo/bar/**')(nativeSep('foo/bar/baz'), 'baz')).toBe(true);
+    expect(glob.parseGlob('foo/bar/**', { trimForExclusions: true })(nativeSep('foo/bar'), 'bar')).toBe(true);
+    expect(glob.parseGlob('foo/bar/**', { trimForExclusions: true })(nativeSep('foo/bar/baz'), 'baz')).toBe(false);
   });
 
   it('expression/pattern paths', function () {
-    expect(glob.getPathTerms(glob.parse('**/*.foo'))).toStrictEqual([]);
-    expect(glob.getPathTerms(glob.parse('**/foo'))).toStrictEqual([]);
-    expect(glob.getPathTerms(glob.parse('**/foo/bar'))).toStrictEqual(['*/foo/bar']);
-    expect(glob.getPathTerms(glob.parse('**/foo/bar/'))).toStrictEqual(['*/foo/bar']);
+    expect(glob.getPathTerms(glob.parseGlob('**/*.foo'))).toStrictEqual([]);
+    expect(glob.getPathTerms(glob.parseGlob('**/foo'))).toStrictEqual([]);
+    expect(glob.getPathTerms(glob.parseGlob('**/foo/bar'))).toStrictEqual(['*/foo/bar']);
+    expect(glob.getPathTerms(glob.parseGlob('**/foo/bar/'))).toStrictEqual(['*/foo/bar']);
     // Not supported
-    // expect(glob.getPathTerms(glob.parse('{**/baz/bar,**/foo/bar,**/bar}'))).toStrictEqual(['*/baz/bar', '*/foo/bar']);
-    // expect(glob.getPathTerms(glob.parse('{**/baz/bar/,**/foo/bar/,**/bar/}'))).toStrictEqual(['*/baz/bar', '*/foo/bar']);
+    // expect(glob.getPathTerms(glob.parseGlob('{**/baz/bar,**/foo/bar,**/bar}'))).toStrictEqual(['*/baz/bar', '*/foo/bar']);
+    // expect(glob.getPathTerms(glob.parseGlob('{**/baz/bar/,**/foo/bar/,**/bar/}'))).toStrictEqual(['*/baz/bar', '*/foo/bar']);
 
-    const parsed = glob.parse({
+    const parsed = glob.parseGlob({
       '**/foo/bar': true,
       '**/foo2/bar2': true,
       // Not supported
@@ -927,7 +929,7 @@ describe('Glob', () => {
     expect(glob.getBasenameTerms(parsed)).toEqual(['bulb', 'bulb2']);
     expect(
       glob.getPathTerms(
-        glob.parse({
+        glob.parseGlob({
           '**/foo/bar': { when: '$(basename).zip' },
           '**/bar/foo': true,
           '**/bar2/foo2': true,
@@ -937,8 +939,8 @@ describe('Glob', () => {
   });
 
   it('expression/pattern optimization for paths', function () {
-    expect(glob.getPathTerms(glob.parse('**/foo/bar/**'))).toEqual([]);
-    expect(glob.getPathTerms(glob.parse('**/foo/bar/**', { trimForExclusions: true }))).toEqual(['*/foo/bar']);
+    expect(glob.getPathTerms(glob.parseGlob('**/foo/bar/**'))).toEqual([]);
+    expect(glob.getPathTerms(glob.parseGlob('**/foo/bar/**', { trimForExclusions: true }))).toEqual(['*/foo/bar']);
 
     testOptimizationForPaths('**/*.foo/bar/**', [], [[nativeSep('baz/bar.foo/bar/baz'), true]]);
     testOptimizationForPaths(
@@ -992,7 +994,7 @@ describe('Glob', () => {
     matches: [string, string | boolean][],
     siblingsFns: ((name: string) => boolean)[] = [],
   ) {
-    const parsed = glob.parse(pattern as glob.IExpression, { trimForExclusions: true });
+    const parsed = glob.parseGlob(pattern as glob.IExpression, { trimForExclusions: true });
     expect(glob.getPathTerms(parsed)).toEqual(pathTerms);
     matches.forEach(([text, result], i) => {
       expect(parsed(text, null!, siblingsFns[i])).toBe(result);

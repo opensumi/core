@@ -32,6 +32,7 @@ export * from './types';
 export * from './uint';
 export * from './uri';
 export * from './uuid';
+export * from './const';
 export * as process from './process';
 export * as strings from './strings';
 export * as arrays from './arrays';

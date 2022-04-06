@@ -157,55 +157,6 @@ describe('Arrays', () => {
     deepEqual(d, [{ start: 0, deleteCount: 3, toInsert: [5, 9, 11] }]);
   });
 
-  test('delta sorted arrays', () => {
-    function compare(a: number, b: number): number {
-      return a - b;
-    }
-
-    let d = arrays.delta([1, 2, 4], [], compare);
-    deepEqual(d.removed, [1, 2, 4]);
-    deepEqual(d.added, []);
-
-    d = arrays.delta([], [1, 2, 4], compare);
-    deepEqual(d.removed, []);
-    deepEqual(d.added, [1, 2, 4]);
-
-    d = arrays.delta([1, 2, 4], [1, 2, 4], compare);
-    deepEqual(d.removed, []);
-    deepEqual(d.added, []);
-
-    d = arrays.delta([1, 2, 4], [2, 3, 4, 5], compare);
-    deepEqual(d.removed, [1]);
-    deepEqual(d.added, [3, 5]);
-
-    d = arrays.delta([2, 3, 4, 5], [1, 2, 4], compare);
-    deepEqual(d.removed, [3, 5]);
-    deepEqual(d.added, [1]);
-
-    d = arrays.delta([1, 3, 5, 7], [5, 9, 11], compare);
-    deepEqual(d.removed, [1, 3, 7]);
-    deepEqual(d.added, [9, 11]);
-
-    d = arrays.delta([1, 3, 7], [5, 9, 11], compare);
-    deepEqual(d.removed, [1, 3, 7]);
-    deepEqual(d.added, [5, 9, 11]);
-  });
-
-  test('binarySearch', () => {
-    function compare(a: number, b: number): number {
-      return a - b;
-    }
-    const array = [1, 4, 5, 7, 55, 59, 60, 61, 64, 69];
-
-    equal(arrays.binarySearch(array, 1, compare), 0);
-    equal(arrays.binarySearch(array, 5, compare), 2);
-
-    // insertion point
-    equal(arrays.binarySearch(array, 0, compare), ~0);
-    equal(arrays.binarySearch(array, 6, compare), ~3);
-    equal(arrays.binarySearch(array, 70, compare), ~10);
-  });
-
   test('distinct', () => {
     function compare(a: string): string {
       return a;
@@ -221,64 +172,6 @@ describe('Arrays', () => {
     ]);
     deepEqual(arrays.distinct(['32', '4', '5', '32', '4', '5', '32', '4', '5', '5'], compare), ['32', '4', '5']);
   });
-
-  test('top', () => {
-    const cmp = (a: number, b: number) => {
-      equal(typeof a, 'number');
-      equal(typeof b, 'number');
-      return a - b;
-    };
-
-    deepEqual(arrays.top([], cmp, 1), []);
-    deepEqual(arrays.top([1], cmp, 0), []);
-    deepEqual(arrays.top([1, 2], cmp, 1), [1]);
-    deepEqual(arrays.top([2, 1], cmp, 1), [1]);
-    deepEqual(arrays.top([1, 3, 2], cmp, 2), [1, 2]);
-    deepEqual(arrays.top([3, 2, 1], cmp, 3), [1, 2, 3]);
-    deepEqual(arrays.top([4, 6, 2, 7, 8, 3, 5, 1], cmp, 3), [1, 2, 3]);
-  });
-
-  test('topAsync', async () => {
-    const cmp = (a: number, b: number) => {
-      equal(typeof a, 'number');
-      equal(typeof b, 'number');
-      return a - b;
-    };
-
-    await testTopAsync(cmp, 1);
-    return testTopAsync(cmp, 2);
-  });
-
-  async function testTopAsync(cmp: any, m: number) {
-    {
-      const result = await arrays.topAsync([], cmp, 1, m);
-      deepEqual(result, []);
-    }
-    {
-      const result = await arrays.topAsync([1], cmp, 0, m);
-      deepEqual(result, []);
-    }
-    {
-      const result = await arrays.topAsync([1, 2], cmp, 1, m);
-      deepEqual(result, [1]);
-    }
-    {
-      const result = await arrays.topAsync([2, 1], cmp, 1, m);
-      deepEqual(result, [1]);
-    }
-    {
-      const result = await arrays.topAsync([1, 3, 2], cmp, 2, m);
-      deepEqual(result, [1, 2]);
-    }
-    {
-      const result = await arrays.topAsync([3, 2, 1], cmp, 3, m);
-      deepEqual(result, [1, 2, 3]);
-    }
-    {
-      const result = await arrays.topAsync([4, 6, 2, 7, 8, 3, 5, 1], cmp, 3, m);
-      deepEqual(result, [1, 2, 3]);
-    }
-  }
 
   test('coalesce', () => {
     const a: Array<number | null> = arrays.coalesce([null, 1, null, 2, 3]);
@@ -313,44 +206,6 @@ describe('Arrays', () => {
     equal(sparse.length, 1002);
 
     sparse = arrays.coalesce(sparse);
-    equal(sparse.length, 5);
-  });
-
-  test('coalesce - inplace', () => {
-    let a: Array<number | null | undefined> = [null, 1, null, 2, 3];
-    arrays.coalesceInPlace(a);
-    equal(a.length, 3);
-    equal(a[0], 1);
-    equal(a[1], 2);
-    equal(a[2], 3);
-
-    a = [null, 1, null, undefined, undefined, 2, 3];
-    arrays.coalesceInPlace(a);
-    equal(a.length, 3);
-    equal(a[0], 1);
-    equal(a[1], 2);
-    equal(a[2], 3);
-
-    const b: number[] = [];
-    b[10] = 1;
-    b[20] = 2;
-    b[30] = 3;
-    arrays.coalesceInPlace(b);
-    equal(b.length, 3);
-    equal(b[0], 1);
-    equal(b[1], 2);
-    equal(b[2], 3);
-
-    const sparse: number[] = [];
-    sparse[0] = 1;
-    sparse[1] = 1;
-    sparse[17] = 1;
-    sparse[1000] = 1;
-    sparse[1001] = 1;
-
-    equal(sparse.length, 1002);
-
-    arrays.coalesceInPlace(sparse);
     equal(sparse.length, 5);
   });
 });

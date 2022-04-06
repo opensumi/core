@@ -1,8 +1,8 @@
 import * as iconv from 'iconv-lite';
 
+import { BinaryBuffer } from '../src/buffer';
 import { SUPPORTED_ENCODINGS } from '../src/const';
 import { toIconvLiteEncoding, toCanonicalName, detectEncodingFromBuffer } from '../src/encoding';
-import { BinaryBuffer } from '../src/utils/buffer';
 
 const utf8BOM = [0xef, 0xbb, 0xbf];
 

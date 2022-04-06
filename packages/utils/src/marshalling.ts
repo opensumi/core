@@ -9,6 +9,12 @@ export function stringify(obj: any): string {
   return JSON.stringify(obj, replacer);
 }
 
+export function parse(text: string): any {
+  let data = JSON.parse(text);
+  data = revive(data, 0);
+  return data;
+}
+
 export interface MarshalledObject {
   $mid: number;
 }

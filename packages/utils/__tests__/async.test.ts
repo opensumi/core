@@ -249,10 +249,10 @@ describe('Async', () => {
 
     const p = delayer.trigger(factory).then(
       () => {
-        expect(!delayer.isTriggered()).toBeTruthy();
+        expect(delayer.isTriggered()).toBeTruthy();
       },
       () => {
-        expect(delayer.isTriggered()).toBeTruthy();
+        expect(!delayer.isTriggered()).toBeTruthy();
       },
     );
 
