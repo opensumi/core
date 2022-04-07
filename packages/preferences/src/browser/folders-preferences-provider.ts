@@ -6,6 +6,7 @@ import {
   PreferenceConfigurations,
   ILogger,
 } from '@opensumi/ide-core-browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
@@ -23,6 +24,9 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
 
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
   @Autowired(ILogger)
   protected readonly logger: ILogger;
@@ -74,6 +78,17 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
           }
         }
       }
+
+      this.fileSystem.watchFileChanges(folderUri).then((watcher) => {
+        watcher.onFilesChanged((e) => {
+          for (const file of e) {
+            if (this.providers.has(file.uri)) {
+              const p = this.providers.get(file.uri);
+              p?.updatePreferences();
+            }
+          }
+        });
+      });
     }
     // 去重，移除旧的配置文件Provider
     for (const key of toDelete) {
