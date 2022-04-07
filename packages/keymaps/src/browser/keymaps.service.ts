@@ -36,10 +36,9 @@ import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem, Keym
 
 import { KeymapsParser } from './keymaps-parser';
 
-
 @Injectable()
 export class KeymapService implements IKeymapService {
-  static DEFAULT_SEARCH_DELAY = 500;
+  static DEFAULT_SEARCH_DELAY = 100;
   static KEYMAP_FILE_URI: URI = new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME);
 
   @Autowired(KeybindingRegistry)

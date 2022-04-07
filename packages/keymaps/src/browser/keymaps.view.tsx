@@ -21,7 +21,6 @@ import { IKeymapService, KeybindingItem } from '../common';
 import styles from './keymaps.module.less';
 import { KeymapService } from './keymaps.service';
 
-
 export const KeymapsView: ReactEditorComponent<null> = observer(() => {
   const {
     keybindings,
@@ -107,7 +106,9 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     const renderOptionalActions = () => {
       const clear = () => {
         setValidateMessage(undefined);
-        setValue('');
+        if (value) {
+          setValue('');
+        }
         clearCovert();
       };
       const preventMouseDown = (event) => {
@@ -349,7 +350,10 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
   };
 
   const clearSearch = () => {
-    setSearch('');
+    if (search) {
+      setSearch('');
+      searchKeybindings('');
+    }
     clearCovert();
   };
 
