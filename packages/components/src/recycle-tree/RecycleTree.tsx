@@ -12,7 +12,6 @@ import { TreeModel } from './tree/model/TreeModel';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 
-
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 
 export interface IModelChange {
@@ -220,7 +219,7 @@ export interface IRecycleTreeHandle {
   onError: Event<IRecycleTreeError>;
 
   /**
-   * 自适应每条 item 的布局（暂时只计算高度）
+   * 自适应每条 item 的布局（暂时只计算高度）
    */
   layoutItem: () => void;
 }
@@ -279,12 +278,16 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private filterWatcherDisposeCollection = new DisposableCollection();
 
   private batchUpdatePromise: Promise<void> | null = null;
-  private batchUpdateResolver: any;
+  private delayedUpdatePromise: Promise<void> | null = null;
+
+  private batchUpdateQueue = 0;
+  private delayedUpdateResolver: any;
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
     let lastFrame: number | null;
-    const commitUpdate = () => {
+    const commitUpdate = (resolver: any) => {
+      const time = Date.now().toString().slice(0, -3);
       // 已经在 componentWillUnMount 中 disposed 了
       if (this.disposables.disposed) {
         return;
@@ -328,7 +331,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       this.idxToRendererPropsCache.clear();
       // 更新React组件
       this.forceUpdate(() => {
-        this.batchUpdateResolver();
+        resolver();
         // 如果存在过滤条件，同时筛选一下展示节点
         if (this.props.filter && this.props.filterProvider && this.props.filterProvider.filterAlways) {
           this.filterItems(this.props.filter);
@@ -336,23 +339,55 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       });
     };
     return () => {
-      // 如果上次更新队列未完成，直接使用上次更新队列作为最新结果
-      if (!this.batchUpdatePromise) {
-        this.batchUpdatePromise = new Promise((res) => (this.batchUpdateResolver = res));
-        this.batchUpdatePromise.then(() => {
-          this.batchUpdatePromise = null;
-          this.batchUpdateResolver = null;
-          this.onDidUpdateEmitter.fire();
-        });
+      const doUpdate = (batchUpdatePromise: any, batchUpdateResolver: any) => {
         // 更新批量更新返回的promise对象
         if (lastFrame) {
           window.cancelAnimationFrame(lastFrame);
         }
-        lastFrame = requestAnimationFrame(commitUpdate.bind(this));
+        lastFrame = requestAnimationFrame(() => {
+          commitUpdate(batchUpdateResolver);
+        });
+        return batchUpdatePromise;
+      };
+      if (!this.batchUpdatePromise) {
+        let batchUpdateResolver;
+        this.batchUpdatePromise = new Promise<void>((res) => (batchUpdateResolver = res));
+        this.batchUpdatePromise?.then(() => {
+          this.onDidUpdateEmitter.fire();
+          this.batchUpdatePromise = null;
+        });
+        doUpdate(this.batchUpdatePromise, batchUpdateResolver);
+        return this.batchUpdatePromise;
+      } else {
+        if (!this.delayedUpdatePromise) {
+          let delayedUpdateResolver;
+          this.delayedUpdatePromise = new Promise((resolve) => {
+            delayedUpdateResolver = resolve;
+          });
+          this.batchUpdatePromise.then(() => {
+            this.batchUpdatePromise = this.delayedUpdatePromise;
+            this.delayedUpdatePromise = null;
+            this.batchUpdatePromise?.then(() => {
+              this.onDidUpdateEmitter.fire();
+              this.batchUpdatePromise = null;
+            });
+            doUpdate(this.batchUpdatePromise, delayedUpdateResolver);
+            this.batchUpdateQueue = 0;
+          });
+        } else {
+          this.batchUpdateQueue++;
+        }
+        return this.delayedUpdatePromise;
       }
-      return this.batchUpdatePromise;
     };
   })();
+
+  private getUpdatePromise() {
+    if (this.delayedUpdatePromise) {
+      return this.delayedUpdatePromise;
+    }
+    return this.batchUpdatePromise;
+  }
 
   private getNewPromptInsertIndex(startIndex: number, parent: CompositeTreeNode) {
     const { root } = this.props.model;
@@ -557,7 +592,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return;
     }
     Event.once(this.props.model.onChange)(async () => {
-      await this.batchUpdatePromise;
+      await this.getUpdatePromise();
       if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
         this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
       } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
