@@ -203,6 +203,7 @@ export namespace MarkdownString {
       res = {
         value: markup.value,
         isTrusted: markup.isTrusted,
+        supportHtml: markup.supportHtml,
         supportThemeIcons: markup.supportThemeIcons,
       };
     } else if (typeof markup === 'string') {

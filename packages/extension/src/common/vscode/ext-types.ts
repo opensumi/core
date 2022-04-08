@@ -763,6 +763,7 @@ export enum CompletionItemTag {
 export class MarkdownString {
   value: string;
   isTrusted?: boolean;
+  supportHtml?: boolean;
   readonly supportThemeIcons?: boolean;
 
   constructor(value?: string, supportThemeIcons = false) {
