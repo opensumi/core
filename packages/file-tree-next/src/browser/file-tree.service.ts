@@ -54,6 +54,11 @@ export interface ITreeIndent {
   baseIndent: number;
 }
 
+export interface ISortNode {
+  node: Directory | File;
+  path: string | URI;
+}
+
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
   private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 300;
@@ -384,15 +389,15 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return change.type === FileChangeType.UPDATED && this.isContentFile(this.getNodeByPathOrUri(change.uri));
   }
 
-  private getAffectedUris(changes: FileChange[]): URI[] {
-    const affectUrisSet = new Set<string>();
+  private getAffectedChanges(changes: FileChange[]): FileChange[] {
+    const affectChange: FileChange[] = [];
     for (const change of changes) {
       const isFile = this.isFileContentChanged(change);
       if (!isFile) {
-        affectUrisSet.add(new URI(change.uri).toString());
+        affectChange.push(change);
       }
     }
-    return Array.from(affectUrisSet).map((uri) => new URI(uri));
+    return affectChange;
   }
 
   private isRootAffected(changes: FileChange[]): boolean {
@@ -434,7 +439,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     });
     // 处理除了删除/添加/移动事件外的异常事件
-    if (!(await this.refreshAffectedNodes(this.getAffectedUris(changes))) && this.isRootAffected(changes)) {
+    if (!(await this.refreshAffectedNodes(this.getAffectedChanges(changes))) && this.isRootAffected(changes)) {
       this.refresh();
     }
   }
@@ -606,20 +611,21 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
   }
 
-  async refreshAffectedNodes(uris: URI[]) {
-    const nodes = await this.getAffectedNodes(uris);
+  async refreshAffectedNodes(changes: FileChange[]) {
+    const nodes = await this.getAffectedNodes(changes);
     for (const node of nodes) {
       await this.refresh(node);
     }
     return nodes.length !== 0;
   }
 
-  private async getAffectedNodes(uris: URI[]): Promise<Directory[]> {
+  private async getAffectedNodes(changes: FileChange[]): Promise<Directory[]> {
     const nodes: Directory[] = [];
-    for (const uri of uris) {
-      const node = this.getNodeByPathOrUri(uri.parent);
-      if (node && Directory.is(node)) {
-        nodes.push(node as Directory);
+    for (const change of changes) {
+      const uri = new URI(change.uri);
+      const node = this.getNodeByPathOrUri(uri);
+      if (node && node.parent) {
+        nodes.push(node.parent as Directory);
       }
     }
     return nodes;
@@ -806,15 +812,21 @@ export class FileTreeService extends Tree implements IFileTreeService {
    */
   public sortPaths(_paths: (string | URI)[]) {
     const paths = _paths.slice();
-    const nodes = paths.map((path) => this.getNodeByPathOrUri(path)).filter(Boolean) as (Directory | File)[];
+    const nodes = paths
+      .map((path) => ({
+        node: this.getNodeByPathOrUri(path),
+        path,
+      }))
+      .filter((node) => node && !!node.node) as ISortNode[];
+
     nodes.sort((pathA, pathB) => {
       // 直接获取节点深度比通过path取深度更可靠
-      const pathADepth = pathA.depth || 0;
-      const pathBDepth = pathB.depth || 0;
+      const pathADepth = pathA.node?.depth || 0;
+      const pathBDepth = pathB.node?.depth || 0;
       return pathADepth - pathBDepth;
     });
 
-    const roots = [] as (Directory | File)[];
+    const roots = [] as ISortNode[];
     for (let index = nodes.length - 1; index >= 0; index--) {
       // 从后往前遍历整个列表
       const later = nodes[index];
@@ -822,7 +834,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       for (let j = 0; j < index; j++) {
         const former = nodes[j];
         // 如果树的某个父节点包括了当前项
-        if (Directory.is(former) && later.path.startsWith(former.path)) {
+        if (Directory.is(former) && later.node.path.startsWith(former.node.path)) {
           canRemove = true;
         }
       }
@@ -840,11 +852,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
     const queue = Array.from(this._changeEventDispatchQueue);
 
-    const roots = this.sortPaths(queue);
+    const effectedRoots = this.sortPaths(queue);
 
     const promise = pSeries(
-      roots.map((node) => async () => {
-        const path = node.path;
+      effectedRoots.map((root) => async () => {
+        const path = root.node.path;
         const watcher = this.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
           await watcher.callback({ type: WatchEvent.Changed, path });
