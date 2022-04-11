@@ -129,7 +129,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   private readonly searchContextKey: SearchContextKey;
 
   @Autowired(IReporterService)
-  reporterService: IReporterService;
+  private reporterService: IReporterService;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -791,7 +791,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
     let searchedList: string[] = [];
     const docModels = documentModelManager.getAllModels();
     const group = workbenchEditorService.currentEditorGroup;
-    const resources = group.resources;
 
     const filterFileWithGlobRelativePath = new FilterFileWithGlobRelativePath(rootDirs, searchOptions.include || []);
 
