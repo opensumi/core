@@ -694,13 +694,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (!this.isExpanded) {
       return;
     }
+    !quiet && this._watcher.notifyWillChangeExpansionState(this, false);
     if (this._children && this.parent) {
-      !quiet && this._watcher.notifyWillChangeExpansionState(this, false);
       // 从根节点裁剪分支
       this.shrinkBranch(this, quiet);
-      !quiet && this._watcher.notifyDidChangeExpansionState(this, false);
     }
     this.isExpanded = false;
+    !quiet && this._watcher.notifyDidChangeExpansionState(this, false);
   }
 
   public mv(to: ICompositeTreeNode, name: string = this.name) {
