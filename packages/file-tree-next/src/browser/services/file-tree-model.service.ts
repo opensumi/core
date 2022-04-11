@@ -1006,15 +1006,15 @@ export class FileTreeModelService {
       }
     }
 
-    const nodes = this.fileTreeService.sortPaths(uris);
+    const roots = this.fileTreeService.sortPaths(uris);
 
     const toPromise = [] as Promise<boolean>[];
 
-    nodes.forEach((node) => {
-      this.loadingDecoration.addTarget(node);
+    roots.forEach((root) => {
+      this.loadingDecoration.addTarget(root.node);
       toPromise.push(
-        this.deleteFile(node).then((v) => {
-          this.loadingDecoration.removeTarget(node);
+        this.deleteFile(root.node, root.path).then((v) => {
+          this.loadingDecoration.removeTarget(root.node);
           return v;
         }),
       );
@@ -1023,12 +1023,12 @@ export class FileTreeModelService {
     await Promise.all(toPromise);
   }
 
-  async deleteFile(node: File | Directory): Promise<boolean> {
-    const uri = node.uri;
+  async deleteFile(node: File | Directory, path: URI | string): Promise<boolean> {
+    const uri = typeof path === 'string' ? new URI(path) : (path as URI);
     // 提前缓存文件路径
     let targetPath: string | URI | undefined;
     // 当存在activeUri时，即存在压缩目录的子路径被删除
-    if (this.activeUri) {
+    if (path) {
       targetPath = uri;
     } else if (this.focusedFile) {
       // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
@@ -1063,7 +1063,7 @@ export class FileTreeModelService {
     processNode(node);
 
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
-    if (effectNode && effectNode.path !== node.path) {
+    if (effectNode && !effectNode.uri.isEqual(uri)) {
       processNode(effectNode);
     }
 
