@@ -281,13 +281,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private delayedUpdatePromise: Promise<void> | null = null;
 
   private batchUpdateQueue = 0;
-  private delayedUpdateResolver: any;
 
   // 批量更新Tree节点
   private batchUpdate = (() => {
     let lastFrame: number | null;
     const commitUpdate = (resolver: any) => {
-      const time = Date.now().toString().slice(0, -3);
       // 已经在 componentWillUnMount 中 disposed 了
       if (this.disposables.disposed) {
         return;
