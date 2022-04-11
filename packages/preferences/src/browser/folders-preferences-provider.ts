@@ -14,6 +14,7 @@ import {
   FolderPreferenceProviderFactory,
   FolderPreferenceProviderOptions,
 } from './folder-preference-provider';
+
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
   @Autowired(FolderPreferenceProviderFactory)

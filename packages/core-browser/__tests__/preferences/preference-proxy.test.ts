@@ -113,7 +113,7 @@ describe('Preference Proxy', () => {
     expect(Object.keys(proxy).join()).toBe(['my', 'my.pref'].join());
   });
 
-  it('it should forward change events', async (done) => {
+  it('it should forward change events', (done) => {
     const proxy = getProxy(undefined, { style: 'both' });
     let theChange: PreferenceChangeEvent<{ [key: string]: any }>;
     proxy.onPreferenceChanged((change) => {
@@ -132,7 +132,7 @@ describe('Preference Proxy', () => {
       expect(theSecondChange!.preferenceName).toBe('my.pref');
       done();
     });
-    await preferenceService.set('my.pref', 'bar', PreferenceScope.User);
+    preferenceService.set('my.pref', 'bar', PreferenceScope.User);
   });
 
   it('toJSON with deep', () => {

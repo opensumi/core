@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -27,12 +27,13 @@ import { DebugExpressionProvider } from './debug-expression-provider';
 import { DebugHoverSource } from './debug-hover-source';
 import { DebugHoverView } from './debug-hover.view';
 
-
 @Injectable()
 export class DebugHoverWidget implements IDebugHoverWidget {
   static ID = 'debug-hover-widget';
 
   protected readonly toDispose = new DisposableCollection();
+
+  public allowEditorOverflow = true;
 
   @Autowired(DebugEditor)
   protected readonly editor: DebugEditor;
@@ -52,7 +53,7 @@ export class DebugHoverWidget implements IDebugHoverWidget {
   @Autowired(IReporterService)
   protected readonly reporterService: IReporterService;
 
-  protected readonly domNode = document.createElement('div');
+  protected domNode: HTMLElement;
 
   constructor() {
     this.init();
@@ -80,6 +81,10 @@ export class DebugHoverWidget implements IDebugHoverWidget {
   }
 
   getDomNode() {
+    if (!this.domNode) {
+      this.domNode = document.createElement('div');
+      this.domNode.classList.add(DebugHoverWidget.ID);
+    }
     return this.domNode;
   }
 
@@ -133,7 +138,7 @@ export class DebugHoverWidget implements IDebugHoverWidget {
 
   protected doHide(): void {
     window.removeEventListener('mousewheel', this.handleWindowWheel, true);
-    if (this.domNode.contains(document.activeElement)) {
+    if (this.getDomNode().contains(document.activeElement)) {
       this.editor.focus();
     }
     this.hoverSource.dispose();

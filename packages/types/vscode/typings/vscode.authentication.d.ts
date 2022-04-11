@@ -60,6 +60,17 @@ declare module 'vscode' {
     createIfNone?: boolean;
 
     /**
+     * Whether we should attempt to reauthenticate even if there is already a session available.
+     *
+     * If true, a modal dialog will be shown asking the user to sign in again. This is mostly used for scenarios
+     * where the token needs to be re minted because it has lost some authorization.
+     *
+     * Defaults to false.
+     */
+    forceNewSession?: boolean | { detail: string };
+
+
+    /**
      * Whether the existing user session preference should be cleared.
      *
      * For authentication providers that support being signed into multiple accounts at once, the user will be
@@ -69,6 +80,18 @@ declare module 'vscode' {
      * Defaults to false.
      */
     clearSessionPreference?: boolean;
+
+    /**
+     * Whether we should show the indication to sign in in the Accounts menu.
+     *
+     * If false, the user will be shown a badge on the Accounts menu with an option to sign in for the extension.
+     * If true, no indication will be shown.
+     *
+     * Defaults to false.
+     *
+     * Note: you cannot use this option with any other options that prompt the user like {@link createIfNone}.
+     */
+    silent?: boolean;
   }
 
   /**

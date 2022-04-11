@@ -1,12 +1,11 @@
 import clx from 'classnames';
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { ToolbarLocation, Disposable } from '@opensumi/ide-core-browser';
 
 import styles from './toolbar.module.less';
-
 
 declare let ResizeObserver: any;
 

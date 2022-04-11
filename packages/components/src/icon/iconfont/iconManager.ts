@@ -48,6 +48,10 @@ class IconManager {
   }
 
   getIconClx(iconKey: string): string[] {
+    if (!iconKey) {
+      warning(false, 'not a valid icon key:' + iconKey);
+      return [];
+    }
     let lastIndex = this._ktIconPrefixes.length;
     while (!this._iconMap[this._ktIconPrefixes[--lastIndex]][iconKey]) {
       if (lastIndex === 0) { break; }

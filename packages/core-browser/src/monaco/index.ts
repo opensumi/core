@@ -3,12 +3,21 @@ import type {
   IDiffEditor,
   IEditorConstructionOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as suggest from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import type { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type {
+  DocumentFormattingEditProvider,
+  DocumentRangeFormattingEditProvider,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
+import type {
+  ISelectedSuggestion,
+  SuggestWidget,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
+import type { BrandedService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 
-import { Event, IJSONSchema, IContextKeyService, IDisposable, BasicEvent } from '..';
+import { Event, IJSONSchema, IDisposable, BasicEvent } from '..';
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
   TEXT_MODEL_SERVICE = 'textModelService',
@@ -20,16 +29,11 @@ export enum ServiceNames {
 }
 
 export abstract class MonacoService {
-  public abstract onMonacoLoaded: Event<boolean>;
-  public abstract monacoLoaded: Promise<void>;
-
   public abstract createCodeEditor(
     monacoContainer: HTMLElement,
     options?: IEditorConstructionOptions,
     overrides?: { [key: string]: any },
   ): ICodeEditor;
-
-  public abstract loadMonaco(): Promise<void>;
 
   public abstract createDiffEditor(
     monacoContainer: HTMLElement,
@@ -55,27 +59,21 @@ export abstract class MonacoOverrideServiceRegistry {
 export const MonacoContribution = Symbol('MonacoContribution');
 
 export type FormattingSelectorType = (
-  formatters: Array<
-    monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider
-  >,
+  formatters: Array<DocumentFormattingEditProvider | DocumentRangeFormattingEditProvider>,
   document: ITextModel,
-) => monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider;
+) => DocumentFormattingEditProvider | DocumentRangeFormattingEditProvider;
 
 export interface MonacoContribution {
-  /**
-   * @deprecated 请勿依赖 onMonacoLoaded
-   * @param monacoService
-   */
-  onMonacoLoaded?(monacoService: MonacoService);
-  /**
-   * @deprecated 请勿依赖 onContextKeyServiceReady
-   * @param contextKeyService
-   */
-  onContextKeyServiceReady?(contextKeyService: IContextKeyService);
-
   registerOverrideService?(registry: MonacoOverrideServiceRegistry): void;
 
-  registerMonacoDefaultFormattingSelector?(registry: (selector: FormattingSelectorType) => void): void;
+  registerMonacoDefaultFormattingSelector?(registry: (selector: IFormattingEditProviderSelector) => void): void;
+
+  registerEditorExtensionContribution?<Services extends BrandedService[]>(
+    register: (
+      id: string,
+      contribCtor: new (editor: ICodeEditor, ...services: Services) => IEditorContribution,
+    ) => void,
+  ): void;
 }
 
 export const Extensions = {
@@ -129,6 +127,6 @@ export interface IMimeService {
 
 export interface SuggestEventPayload {
   eventType: 'onDidSelect' | 'onDidHide' | 'onDidShow' | 'onDidFocus';
-  data: suggest.ISelectedSuggestion | suggest.SuggestWidget;
+  data: ISelectedSuggestion | SuggestWidget;
 }
 export class SuggestEvent extends BasicEvent<SuggestEventPayload> {}

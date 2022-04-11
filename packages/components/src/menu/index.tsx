@@ -24,7 +24,7 @@ export interface ClickParam {
   key: string;
   keyPath: Array<string>;
   item: any;
-  domEvent: Event;
+  domEvent: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
 }
 
 export type MenuMode = 'vertical' | 'vertical-left' | 'vertical-right' | 'horizontal' | 'inline';
@@ -53,7 +53,7 @@ export interface MenuProps {
   subMenuCloseDelay?: number;
   subMenuOpenDelay?: number;
   focusable?: boolean;
-  onMouseEnter?: (e: MouseEvent) => void;
+  onMouseEnter?: (e: React.MouseEvent<HTMLUListElement>) => void;
   getPopupContainer?: (triggerNode: HTMLElement) => HTMLElement;
   overflowedIndicator?: React.ReactNode;
   forceSubMenuRender?: boolean;
@@ -194,7 +194,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
     // submenu should hide without animation
     return {
       motion: {
-        motionName: this.state.switchingModeFromInline ? '' : 'zoom-big',
+        motionName: '',
       },
     };
   }
@@ -202,7 +202,7 @@ class InternalMenu extends React.Component<InternalMenuProps, MenuState> {
   // Restore vertical mode when menu is collapsed responsively when mounted
   // https://github.com/ant-design/ant-design/issues/13104
   // not a perfect solution, looking a new way to avoid setting switchingModeFromInline in this situation
-  handleMouseEnter = (e: MouseEvent) => {
+  handleMouseEnter = (e: React.MouseEvent<HTMLUListElement>) => {
     this.restoreModeVerticalFromInline();
     const { onMouseEnter } = this.props;
     if (onMouseEnter) {

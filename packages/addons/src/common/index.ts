@@ -36,3 +36,11 @@ export interface IWebkitDataTransferItemEntry {
 export interface IWebkitDataTransferItemEntryReader {
   readEntries(resolve: (file: IWebkitDataTransferItemEntry[]) => void, reject: () => void): void;
 }
+
+export const ConnectionBackServicePath = 'ConnectionBackServicePath';
+
+export const IConnectionBackService = Symbol('IConnectionBackService');
+
+export interface IConnectionBackService {
+  $measure(): Promise<void>;
+}

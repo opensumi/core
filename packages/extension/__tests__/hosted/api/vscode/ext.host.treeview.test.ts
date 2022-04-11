@@ -90,28 +90,28 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () =
       expect(mockTreeDataProvider.getChildren).toBeCalledTimes(1);
     });
 
-    it('$setExpanded method should be work while expand value to be true', async (done) => {
+    it('$setExpanded method should be work while expand value to be true', (done) => {
       treeView.onDidExpandElement(() => {
         done();
       });
       extHostTreeViews.$setExpanded(treeViewId, mockTreeViewItem.id, true);
     });
 
-    it('$setExpanded method should be work while expand value to be false', async (done) => {
+    it('$setExpanded method should be work while expand value to be false', (done) => {
       treeView.onDidCollapseElement(() => {
         done();
       });
       extHostTreeViews.$setExpanded(treeViewId, mockTreeViewItem.id, false);
     });
 
-    it('$setSelection method should be work', async (done) => {
+    it('$setSelection method should be work', (done) => {
       treeView.onDidChangeSelection(() => {
         done();
       });
       extHostTreeViews.$setSelection(treeViewId, [mockTreeViewItem.id]);
     });
 
-    it('$setVisible method should be work', async (done) => {
+    it('$setVisible method should be work', (done) => {
       treeView.onDidChangeVisibility(() => {
         done();
       });

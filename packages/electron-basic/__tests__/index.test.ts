@@ -106,7 +106,7 @@ describe('electron basic contribution test', () => {
     expect(registry.registerMenuItem).toBeCalled();
   });
 
-  it('command register', async (done) => {
+  it('command register', async () => {
     const contribution = injector.get(ElectronBasicContribution);
     const commands: { command: any; handler: { execute: () => any } }[] = [];
     const registry: CommandRegistry = {
@@ -130,8 +130,6 @@ describe('electron basic contribution test', () => {
         await c.handler.execute();
       }),
     );
-
-    done();
   });
 
   it('keyBinding register', () => {

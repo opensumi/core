@@ -73,7 +73,7 @@ describe('terminal.environment.service', () => {
     storageService = injector.get(IWorkspaceStorageService);
   });
 
-  it('TerminalEnvironmentService#initEnvironmentVariableCollections', async (done) => {
+  it('TerminalEnvironmentService#initEnvironmentVariableCollections', async () => {
     const mockGetDataFn = jest.spyOn(storageService, 'getData');
     await terminalEnvService.initEnvironmentVariableCollections();
     expect(mockGetDataFn).toBeCalled();
@@ -84,7 +84,6 @@ describe('terminal.environment.service', () => {
     expect(existingCollection).toBeDefined();
     expect(existingCollection?.persistent).toBeTruthy();
     expect(existingCollection?.map.get('FOO')).toEqual({ value: 'BAR', type: 1 });
-    done();
     terminalEnvService.delete(mockData[0].extensionIdentifier);
   });
 
@@ -135,7 +134,7 @@ describe('terminal.environment.service', () => {
     expect(terminalEnvService.collections.get('mock-extension')).toBeUndefined();
   });
 
-  it('TerminalEnvironmentService#onDidChangeCollections', async (done) => {
+  it('TerminalEnvironmentService#onDidChangeCollections', (done) => {
     const mockMap = new Map();
     mockMap.set('VARIABLE1', {
       value: 'VALUE1',

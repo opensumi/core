@@ -36,7 +36,7 @@ describe('OutlineTreeService', () => {
   const mockDocumentSymbolStore = {
     getDocumentSymbol: jest.fn(),
   };
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     mockInjector.overrideProviders({
       token: DocumentSymbolStore,
       useValue: mockDocumentSymbolStore,
@@ -65,8 +65,6 @@ describe('OutlineTreeService', () => {
     outlineTreeService = mockInjector.get(OutlineTreeService);
 
     await outlineTreeService.whenReady;
-
-    done();
   });
 
   afterAll(() => {
@@ -105,23 +103,22 @@ describe('OutlineTreeService', () => {
     expect(res).toBeGreaterThan(0);
   });
 
-  it('onDidChange should emit while sortType change', async (done) => {
+  it('onDidChange should emit while sortType change', (done) => {
     outlineTreeService.onDidChange(() => {
       done();
     });
     outlineTreeService.sortType = OutlineSortOrder.ByPosition;
   });
 
-  it('followCursor should emit while sortType change', async (done) => {
+  it('followCursor should emit while sortType change', (done) => {
     outlineTreeService.onDidChange(() => {
       done();
     });
     outlineTreeService.followCursor = true;
   });
 
-  it('resolveChildren should be work', async (done) => {
+  it('resolveChildren should be work', async () => {
     const [root] = await outlineTreeService.resolveChildren()!;
     expect(root).toBeDefined();
-    done();
   });
 });

@@ -20,7 +20,6 @@ import { MonacoService } from '../../../monaco';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-registry';
 
-
 const preferences: Map<string, any> = new Map();
 
 const mockedPreferenceService: any = {
@@ -89,8 +88,6 @@ describe('TaskService Test Suite', () => {
   );
 
   beforeAll(async () => {
-    const monacoService = injector.get(MonacoService);
-    await monacoService.loadMonaco();
     injector.overrideProviders({
       token: PreferenceService,
       useValue: {
@@ -143,7 +140,7 @@ describe('TaskService Test Suite', () => {
     expect(task?._label).toBe('Echo Hello');
   });
 
-  it('runtask command should be work', async (done) => {
+  it('runtask command should be work', (done) => {
     injector.mock(QuickOpenService, 'open', (model) => {
       done();
     });

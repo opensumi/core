@@ -50,7 +50,7 @@ describe('FileDialogService should be work', () => {
     resolveFileStat: jest.fn(),
     resolveChildren: jest.fn(),
   };
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
 
     injector.overrideProviders(
@@ -91,7 +91,6 @@ describe('FileDialogService should be work', () => {
     });
     fileTreeDialogService = injector.get(FileTreeDialogService, [rootUri.toString()]);
     await fileTreeDialogService.whenReady;
-    done();
   });
 
   afterEach(() => {
@@ -101,27 +100,24 @@ describe('FileDialogService should be work', () => {
     mockFileTreeAPI.resolveFileStat.mockReset();
   });
 
-  it('resolveChildren method should be work', async (done) => {
+  it('resolveChildren method should be work', async () => {
     const children = await fileTreeDialogService.resolveChildren();
     expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(1);
     expect(children.length > 0).toBeTruthy();
     await fileTreeDialogService.resolveChildren(children![0] as Directory);
     expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(2);
-    done();
   });
 
-  it('resolveRoot method should be work', async (done) => {
+  it('resolveRoot method should be work', async () => {
     await fileTreeDialogService.resolveRoot(rootUri.toString());
     expect(mockFileTreeAPI.resolveFileStat).toBeCalledTimes(2);
     expect(mockFileTreeAPI.resolveChildren).toBeCalledTimes(1);
-    done();
   });
 
-  it('getDirectoryList method should be work', async (done) => {
+  it('getDirectoryList method should be work', async () => {
     await fileTreeDialogService.resolveRoot(rootUri.toString());
     const directory = fileTreeDialogService.getDirectoryList();
     expect(directory.length === 1).toBeTruthy();
-    done();
   });
 
   it('sortComparator method should be work', () => {

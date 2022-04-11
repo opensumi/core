@@ -140,8 +140,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   async registerLanguages(languages: LanguagesContribution[], extPath: URI) {
-    await this.monacoService.monacoLoaded;
-
     this.dynamicLanguages.push(
       ...languages.map((language) => ({
         id: language.id,
@@ -211,6 +209,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
             this.activateLanguage(langId);
           }
         }
+        model?.dispose();
       }
     }
   }

@@ -77,7 +77,7 @@ describe('resource service tests', () => {
     }),
   };
 
-  it('should be able to resolve resource provided by provider', async (done) => {
+  it('should be able to resolve resource provided by provider', async () => {
     const service: ResourceService = injector.get(ResourceService);
     const disposer = service.registerResourceProvider(TestResourceProvider1);
     const disposer2 = service.registerResourceProvider(TestResourceProvider2);
@@ -110,15 +110,11 @@ describe('resource service tests', () => {
     expect(await service.getResource(new URI('test://testResource1'))).not.toBeNull(); // 存在缓存
     expect(await service.getResourceSubname(resource!, [])).toBeNull();
     expect(await service.getResource(new URI('test://testResource2'))).toBeNull();
-
-    done();
   });
 
-  it('should return null when resource is not provided', async (done) => {
+  it('should return null when resource is not provided', async () => {
     const service: ResourceService = injector.get(ResourceService);
     expect(await service.getResource(new URI('what://not-provided'))).toBeNull();
-
-    done();
   });
 
   it('should update resource decoration after events', () => {
@@ -168,7 +164,7 @@ describe('resource service tests', () => {
     disposer2.dispose();
   });
 
-  it('should be able to prevent resource close', async (done) => {
+  it('should be able to prevent resource close', async () => {
     const service: ResourceService = injector.get(ResourceService);
     const disposer = service.registerResourceProvider(TestResourceProvider1);
     const disposer2 = service.registerResourceProvider(TestResourceProvider2);
@@ -186,35 +182,34 @@ describe('resource service tests', () => {
 
     disposer.dispose();
     disposer2.dispose();
-
-    done();
   });
 
-  it('should fire need didUpdateEvent', async (done) => {
-    const service: ResourceService = injector.get(ResourceService);
-    const disposer = service.registerResourceProvider(TestResourceProvider1);
+  it('should fire need didUpdateEvent', () =>
+    new Promise<void>(async (done) => {
+      const service: ResourceService = injector.get(ResourceService);
+      const disposer = service.registerResourceProvider(TestResourceProvider1);
 
-    const resUri = new URI('test://testResource1');
-    const resource = await service.getResource(resUri);
+      const resUri = new URI('test://testResource1');
+      const resource = await service.getResource(resUri);
 
-    expect(resource!.metadata!.data).toBe(0);
+      expect(resource!.metadata!.data).toBe(0);
 
-    const eventBus: IEventBus = injector.get(IEventBus);
+      const eventBus: IEventBus = injector.get(IEventBus);
 
-    data++;
-    eventBus.fire(new ResourceNeedUpdateEvent(resUri));
+      data++;
+      eventBus.fire(new ResourceNeedUpdateEvent(resUri));
 
-    eventBus.on(ResourceDidUpdateEvent, async (e) => {
-      expect(e.payload.toString()).toEqual(resUri.toString());
-      const newResource = await service.getResource(resUri);
-      expect(newResource!.metadata!.data).toBe(1);
-      done();
-    });
+      eventBus.on(ResourceDidUpdateEvent, async (e) => {
+        expect(e.payload.toString()).toEqual(resUri.toString());
+        const newResource = await service.getResource(resUri);
+        expect(newResource!.metadata!.data).toBe(1);
+        done();
+      });
 
-    disposer.dispose();
-  });
+      disposer.dispose();
+    }));
 
-  it('untitled resource test', async (done) => {
+  it('untitled resource test', async () => {
     injector.mockService(IEditorDocumentModelService);
     injector.mockService(WorkbenchEditorService);
     injector.mockService(AppConfig, {
@@ -236,6 +231,8 @@ describe('resource service tests', () => {
 
     expect(provider.isAlwaysDirty(untitledURI)).toBeTruthy();
 
+    expect(provider.disposeEvenDirty(untitledURI)).toBeTruthy();
+
     expect(provider.handlesScheme(Schemas.untitled)).toBeTruthy();
     expect(provider.handlesScheme(Schemas.file)).toBeFalsy();
 
@@ -246,11 +243,9 @@ describe('resource service tests', () => {
     await provider.saveDocumentModel(untitledURI, 'test document', '', [], 'utf8');
 
     expect(mockSave).toBeCalled();
-
-    done();
   });
 
-  it('diff resource tests', async (done) => {
+  it('diff resource tests', async () => {
     injector.mockService(LabelService, {
       getIcon: jest.fn((uri) => uri.toString()),
     });
@@ -341,8 +336,6 @@ describe('resource service tests', () => {
     const res2 = await provider.provideResource(openingResource!);
     expect(res2.metadata!.original.toString()).toBe('file://path/to/a.ts');
     expect(res2.metadata!.modified.toString()).toBe('fileOnDisk://path/to/a.ts');
-
-    done();
   });
 
   afterAll(() => {

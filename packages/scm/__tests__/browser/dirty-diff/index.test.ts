@@ -87,7 +87,7 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     return fileTextModel;
   }
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector(
       [],
       new Injector([
@@ -140,7 +140,6 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     editorModel = await createModel(`/test/workspace/abc${Math.random()}.ts`);
     monacoEditor = monacoAPI.editor!.create(document.createElement('div'), { language: 'typescript' });
     monacoEditor.setModel(editorModel.getMonacoModel());
-    done();
   });
 
   afterEach(() => {

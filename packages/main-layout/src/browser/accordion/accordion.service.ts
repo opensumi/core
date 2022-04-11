@@ -1,4 +1,4 @@
-import { debounce } from 'lodash';
+import debounce from 'lodash/debounce';
 import { action, observable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -35,7 +35,6 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 import { ViewCollapseChangedEvent } from '../../common';
-
 
 export interface SectionState {
   collapsed: boolean;

@@ -6,7 +6,7 @@ describe('activation event test', () => {
   const injector = createBrowserInjector([ExtensionModule]);
   const service: IActivationEventService = injector.get(IActivationEventService);
 
-  it('normal event should be listened', async (done) => {
+  it('normal event should be listened', async () => {
     let executed = 0;
 
     const disposer = service.onEvent('onCommand:A', () => {
@@ -26,11 +26,9 @@ describe('activation event test', () => {
 
     await service.fireEvent('*');
     expect(executed).toEqual(2);
-
-    done();
   });
 
-  it('wildcard event should be listened', async (done) => {
+  it('wildcard event should be listened', async () => {
     let executed = 0;
 
     service.addWildCardTopic('wildCard');
@@ -58,7 +56,5 @@ describe('activation event test', () => {
 
     await service.fireEvent('wildCard', 'b/c/.a');
     expect(executed).toEqual(3);
-
-    done();
   });
 });

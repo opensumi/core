@@ -16,17 +16,11 @@ import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
 
-import { IResourceProvider, IResource, ResourceNeedUpdateEvent } from '../../common';
+import { IResourceProvider, IResource, ResourceNeedUpdateEvent, AskSaveResult } from '../../common';
 import { DIFF_SCHEME } from '../../common';
 import { IEditorDocumentModelService } from '../doc-model/types';
 
 import { FileTreeSet } from './file-tree-set';
-
-enum AskSaveResult {
-  REVERT = 1,
-  SAVE = 2,
-  CANCEL = 3,
-}
 
 @Injectable()
 export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {

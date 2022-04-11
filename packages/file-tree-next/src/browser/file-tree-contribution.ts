@@ -245,8 +245,8 @@ export class FileTreeContribution
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
-        id: FILE_COMMANDS.OPEN_WITH_PATH.id,
-        label: localize('file.filetree.openWithPath'),
+        id: FILE_COMMANDS.OPEN_TERMINAL_WITH_PATH.id,
+        label: localize('file.filetree.openTerminalWithPath'),
       },
       when: 'workbench.panel.terminal',
       order: 3,
@@ -337,7 +337,7 @@ export class FileTreeContribution
   }
 
   registerCommands(commands: CommandRegistry) {
-    commands.registerCommand(FILE_COMMANDS.OPEN_WITH_PATH, {
+    commands.registerCommand(FILE_COMMANDS.OPEN_TERMINAL_WITH_PATH, {
       execute: (uri?: URI) => {
         let directory = uri;
 
@@ -606,6 +606,28 @@ export class FileTreeContribution
           )),
     });
 
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.SELECT_CURRENT_NODE, {
+      execute: (_, uris) => {
+        if (uris && uris.length) {
+          this.fileTreeModelService.selectChildNode(uris);
+        } else {
+          const selectedUris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
+          if (selectedUris && selectedUris.length) {
+            this.fileTreeModelService.selectChildNode(selectedUris);
+          }
+        }
+      },
+      isVisible: () =>
+        (!!this.fileTreeModelService.contextMenuFile &&
+          !this.fileTreeModelService.contextMenuFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )) ||
+        (!!this.fileTreeModelService.focusedFile &&
+          !this.fileTreeModelService.focusedFile.uri.isEqual(
+            (this.fileTreeModelService.treeModel.root as Directory).uri,
+          )),
+    });
+
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.CUT_FILE, {
       execute: (_, uris) => {
         if (uris && uris.length) {
@@ -828,6 +850,11 @@ export class FileTreeContribution
     bindings.registerKeybinding({
       command: FILE_COMMANDS.CUT_FILE.id,
       keybinding: 'ctrlcmd+x',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
+    });
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.SELECT_CURRENT_NODE.id,
+      keybinding: 'ctrlcmd+a',
       when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 

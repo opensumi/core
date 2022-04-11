@@ -82,7 +82,7 @@ describe('connection', () => {
     server.close();
   });
 
-  it('RPCService', async (done) => {
+  it('RPCService', async () => {
     const wss = new WebSocket.Server({ port: 7788 });
     const notificationMock = jest.fn();
 
@@ -152,10 +152,9 @@ describe('connection', () => {
     expect(notificationMock.mock.calls.length).toBe(2);
 
     wss.close();
-    done();
   });
 
-  it('RPCProtocol', async (done) => {
+  it('RPCProtocol', async () => {
     const emitterA = new Emitter<string>();
     const emitterB = new Emitter<string>();
 
@@ -195,6 +194,5 @@ describe('connection', () => {
     expect(mockUriTestFn.mock.results[0].value).toBeInstanceOf(Uri);
     expect(mockUriTestFn.mock.results[0].value.toString()).toBe(testUri.toString());
     await expect(errorFunction()).rejects.toThrow(new Error('custom error'));
-    done();
   });
 });

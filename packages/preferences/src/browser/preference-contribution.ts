@@ -47,7 +47,6 @@ import { PreferenceView } from './preferences.view';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 
-
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
 @Injectable()
@@ -61,6 +60,7 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
     return {
+      supportsRevive: true,
       name: localize('preference.tab.name'),
       icon: getIcon('setting'),
       uri,
@@ -99,7 +99,6 @@ export namespace PREFERENCE_COMMANDS {
   export const OPEN_SOURCE_FILE: Command = {
     id: 'preference.open.source',
     label: localize('preference.editorTitle.openSource'),
-
     category: CATEGORY,
   };
 
@@ -175,6 +174,8 @@ export class PreferenceContribution
      */
     this.registerSettings();
     this.registerSettingSections();
+
+    this.preferenceService.fireDidSettingsChange();
   }
 
   registerCommands(commands: CommandRegistry) {
@@ -204,13 +205,13 @@ export class PreferenceContribution
     });
 
     commands.registerCommand(PREFERENCE_COMMANDS.OPEN_SOURCE_FILE, {
-      execute: async (scopeOrUrl?: PreferenceScope | URI, prefernceId?: string) => {
+      execute: async (scopeOrUrl?: PreferenceScope | URI, preferenceId?: string) => {
         // 这里可能被 Editor 的 Toolbar 调用
         // 传入 URI 及 EditorGroup
         if (!scopeOrUrl || typeof scopeOrUrl !== 'number') {
           this.openResource();
         } else {
-          this.openResource(scopeOrUrl as PreferenceScope, prefernceId);
+          this.openResource(scopeOrUrl as PreferenceScope, preferenceId);
         }
       },
     });
@@ -394,7 +395,7 @@ export class PreferenceContribution
     });
 
     editorComponentRegistry.registerEditorComponentResolver(PREF_SCHEME, (_, __, resolve) => {
-      resolve!([
+      resolve([
         {
           type: 'component',
           componentId: PREF_PREVIEW_COMPONENT_ID,

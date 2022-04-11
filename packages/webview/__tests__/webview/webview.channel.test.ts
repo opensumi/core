@@ -20,14 +20,13 @@ describe('electron webview test', () => {
     }
   };
 
-  it.skip('electron webview test', async (done) => {
+  it.skip('electron webview test', async () => {
     (manager as any).init();
     const styles = { test: 'red' };
     await ipcRenderer.emit('styles', {}, { styles });
     expect((manager as any).styles).toBe(styles);
     await ipcRenderer.emit('focus', {}, {});
     await ipcRenderer.emit('content', {}, { options: { allowScripts: true }, content: 'htmldata' });
-    done();
   });
 });
 

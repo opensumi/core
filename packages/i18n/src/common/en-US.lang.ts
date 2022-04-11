@@ -58,7 +58,7 @@ export const localizationBundle = {
     'file.search.folder': 'Search on this folder',
     'file.focus.files': 'Focus on Files Explorer',
     'file.filetree.filter': 'Filter on opened files',
-    'file.filetree.openWithPath': 'Open In The Terminal',
+    'file.filetree.openTerminalWithPath': 'Open In The Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
     'file.resource-deleted': '(Deleted)',
 
@@ -385,6 +385,9 @@ export const localizationBundle = {
     'preference.search.exclude.title': 'Search exclusion file `search.exclude`',
     'preference.search.useReplacePreview':
       'Controls whether to open Replace Preview when selecting or replacing a match.',
+    'preference.search.searchOnType': 'Controls whether to search as you type',
+    'preference.search.searchOnTypeDebouncePeriod':
+      'Controls the debounce period of search as you type in milliseconds.',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
     'preference.array.additem': 'Add',
     'preference.files.associations.title': 'File Association',
@@ -424,7 +427,14 @@ export const localizationBundle = {
     'preference.terminal.lineHeight': 'Terminal Line Height',
     'preference.terminal.cursorBlink': 'Terminal Cursor Link',
     'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
-    'preference.terminal.integrated.shellArgs.linux': 'The command line arguments to use when on the Linux terminal. ',
+    'preference.terminal.integrated.shellArgs.linux': 'Terminal Shell Args Linux',
+    'preference.terminal.integrated.shellArgs.linuxDesc':
+      'The command line arguments to use when on the Linux terminal. ',
+
+    'preference.terminal.integrated.copyOnSelection': 'Terminal Copy On Selection',
+    'preference.terminal.integrated.copyOnSelectionDesc':
+      'Controls whether text selected in the terminal will be copied to the clipboard.',
+
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
     'common.about': 'About',
@@ -481,6 +491,7 @@ export const localizationBundle = {
 
     'preference.tab.name': 'Settings',
     'preference.noResults': "No Setting Found Containing '{0}'",
+    'preference.empty': 'Loading Settings...',
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
     'preference.overwrittenInUser': '（Set in User Settings）',
@@ -495,13 +506,12 @@ export const localizationBundle = {
     'preference.editor.largeFile': 'Large File Size',
     'preference.editor.formatOnPaste': 'Format On Paste',
     'preference.files.eol': 'Files EOL',
+
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.wrapTab': 'Wrap Editor Tabs',
-    'preference.editor.enablePreviewFromCodeNavigation':
-      'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'preference.editor.preferredFormatter': 'Default Formatter',
-    'preference.editor.previewMode': 'Preview Mode',
+    'editor.configuration.previewMode': 'Enable Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.editor.minimap': 'minimap',
     'preference.editor.forceReadOnly': 'readOnly',
@@ -515,6 +525,8 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} is not a valid option',
 
+    'editor.configuration.enablePreviewFromCodeNavigation':
+      'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'editor.configuration.wrapTab':
       'Controls whether to wrap editor tabs instead of scroll mode when tabs are beyond the visible area.',
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
@@ -616,6 +628,9 @@ export const localizationBundle = {
     'terminal.focusFolder': 'Focus folder in explorer',
     'terminal.openFolder': 'Open folder in new window',
 
+    'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
+    'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
+
     'deugger.menu.setValue': 'Set Value',
     'deugger.menu.setValue.param': 'Please input the value of this variable',
 
@@ -667,7 +682,9 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.hide': 'HIDE',
+    'layout.tabbar.toggle': 'Toggle Panel',
+    'layout.tabbar.expand': 'Maximize Bottom Panel',
+    'layout.tabbar.retract': 'Retract Bottom Panel',
     'layout.view.hide': 'HIDE',
     'marketplace.extension.update.now': 'Update now',
     'marketplace.extension.update.delay': 'Update later',
@@ -862,6 +879,7 @@ export const localizationBundle = {
     'authentication.getSessionPlaceholder': "Select an account for '{0}' to use or Esc to cancel",
     'authentication.confirmAuthenticationAccess': "The extension '{0}' wants to access the {1} account '{2}'.",
     'authentication.confirmLogin': "The extension '{0}' wants to sign in using {1}.",
+    'authentication.confirmReLogin': "The extension '{0}' wants to sign in again using {1}.",
     'authentication.signInRequests': 'Sign in to use {0} (1)',
     'authentication.signOut': 'Sign out {0}',
     'authentication.noAccounts': 'You are not signed in to any accounts',
@@ -895,5 +913,8 @@ export const localizationBundle = {
     'menu.missing.command': 'menuId {0} register command not exist: {1}',
     'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',
     'menu.dupe.command': 'menuId {0} register command({1}) is duplicated with alt({2})',
+
+    'connection.start.rtt': 'Developer Tool: Measure Connection RTT',
+    'connection.stop.rtt': 'Developer Tool: Stop Connection RTT',
   },
 };

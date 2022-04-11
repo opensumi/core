@@ -44,7 +44,7 @@ async function delay(ms: number) {
 }
 
 describe('electron main menu tests', () => {
-  it('menu leak should not happen', async (done) => {
+  it('menu leak should not happen', async () => {
     if (isWindows) {
       return;
     }
@@ -104,7 +104,5 @@ describe('electron main menu tests', () => {
         }),
       ]),
     );
-
-    done();
   });
 });

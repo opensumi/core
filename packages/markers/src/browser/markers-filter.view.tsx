@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -12,7 +12,6 @@ import { FilterOptions } from './markers-filter.model';
 import styles from './markers-filter.module.less';
 import { MarkerService } from './markers-service';
 import Messages from './messages';
-
 
 /**
  * Marker过滤面板

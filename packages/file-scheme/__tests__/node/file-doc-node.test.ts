@@ -33,12 +33,11 @@ describe('node file doc service test', () => {
   );
   const hashCalculateService: IHashCalculateService = injector.get(IHashCalculateService);
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     await hashCalculateService.initialize();
-    done();
   });
 
-  it('file doc node service', async (done) => {
+  it('file doc node service', async () => {
     injector.addProviders({
       token: IFileSchemeDocNodeService,
       useClass: FileSchemeDocNodeServiceImpl,
@@ -209,8 +208,6 @@ describe('node file doc service test', () => {
     expect(res7.state).toBe('success');
 
     expect(decode(await readFile(file2), 'gbk')).toBe('测试\n\n测试');
-
-    done();
   });
 });
 

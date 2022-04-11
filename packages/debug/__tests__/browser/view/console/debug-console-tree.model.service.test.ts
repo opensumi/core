@@ -343,14 +343,14 @@ describe('Debug Console Tree Model', () => {
     expect(mockEvent.preventDefault).toBeCalledTimes(1);
   });
 
-  it('refresh method should be work', async (done) => {
+  it('refresh method should be work', (done) => {
     debugConsoleModelService.onDidRefreshed(() => {
       done();
     });
     debugConsoleModelService.refresh(debugConsoleModelService.treeModel?.root as any);
   });
 
-  it('repl merging', async (done) => {
+  it('repl merging', async () => {
     const treeHandle = { ensureVisible: () => {} } as any;
     debugConsoleModelService.handleTreeHandler(treeHandle);
     const getBranchSize = (repl: IDebugConsoleModel | undefined) => (repl ? repl.treeModel.root.branchSize : 0);
@@ -373,8 +373,6 @@ describe('Debug Console Tree Model', () => {
     expect(getBranchSize(child2Repl)).toBeGreaterThanOrEqual(0);
     expect(getBranchSize(grandChildRepl)).toBeGreaterThanOrEqual(0);
     expect(getBranchSize(child3Repl)).toEqual(0);
-
-    done();
   });
 
   it('repl filter service', () => {

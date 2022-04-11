@@ -4,6 +4,7 @@ import { Disposable } from '@opensumi/ide-core-common';
 export interface IWidget extends Disposable {
   id: string;
   name: string;
+  processName?: string;
   dynamic: number;
   shadowDynamic: number;
   element: HTMLDivElement;

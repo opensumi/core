@@ -219,6 +219,34 @@ export class AuthenticationService extends Disposable implements IAuthentication
     await this.storage.delete(storageKey);
   }
 
+  async updatedAllowedExtension(
+    providerId: string,
+    accountName: string,
+    extensionId: string,
+    extensionName: string,
+    isAllowed: boolean,
+  ) {
+    const allowList = await this.getAllowedExtensions(providerId, accountName);
+    const index = allowList.findIndex((extension) => extension.id === extensionId);
+    if (index === -1) {
+      allowList.push({ id: extensionId, name: extensionName, allowed: isAllowed });
+    } else {
+      allowList[index].allowed = isAllowed;
+    }
+    await this.setAllowedExtensions(providerId, accountName, allowList);
+  }
+
+  async isAccessAllowed(providerId: string, accountName: string, extensionId: string) {
+    const allowList = await this.getAllowedExtensions(providerId, accountName);
+    const extensionData = allowList.find((extension) => extension.id === extensionId);
+    if (extensionData) {
+      // This property didn't exist on this data previously, inclusion in the list at all indicates allowance
+      return extensionData.allowed !== undefined ? extensionData.allowed : true;
+    }
+    // TODO: Need to allow access to whitelist extension
+    return false;
+  }
+
   private async tryActivateProvider(providerId: string): Promise<IAuthenticationProvider> {
     await this.eventBus.fireAndAwait(new ExtensionActivateEvent({ topic: 'onView', data: providerId }));
     let provider = this._authenticationProviders.get(providerId);
@@ -393,8 +421,10 @@ export class AuthenticationService extends Disposable implements IAuthentication
       const authProvider =
         this._authenticationProviders.get(providerId) || (await this.tryActivateProvider(providerId));
       return await authProvider.login(scopes);
-    } catch (_) {
-      throw new Error(`No authentication provider '${providerId}' is currently registered.`);
+    } catch (err) {
+      throw new Error(
+        `No authentication provider '${providerId}' is currently registered, error messge: ${err.message}`,
+      );
     }
   }
   logout(providerId: string, sessionId: string): Promise<void> {

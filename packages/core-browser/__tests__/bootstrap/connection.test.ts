@@ -22,7 +22,7 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
     injector.disposeAll();
   });
 
-  it('handle WebSocket BrowserConnectionErrorEvent event', async (done) => {
+  it('handle WebSocket BrowserConnectionErrorEvent event', (done) => {
     const fakeWSURL = 'ws://localhost:8089';
     const mockServer = new Server(fakeWSURL);
     eventBus.on(BrowserConnectionErrorEvent, () => {
@@ -32,12 +32,12 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
     stateService = injector.get(ClientAppStateService);
     createClientConnection2(injector, [], fakeWSURL, () => {});
     stateService.state = 'core_module_initialized';
-    await new Promise<void>((resolve) => {
+    new Promise<void>((resolve) => {
       setTimeout(() => {
         resolve();
       }, 4000);
+    }).then(() => {
+      mockServer.simulate('error');
     });
-
-    mockServer.simulate('error');
   });
 });

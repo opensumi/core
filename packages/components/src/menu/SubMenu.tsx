@@ -1,13 +1,13 @@
 import PropTypes from 'prop-types';
-import { SubMenu as RcSubMenu } from 'rc-menu';
+import { SubMenu as RcSubMenu, SubMenuProps as RCSubMenuProps } from 'rc-menu';
 import React from 'react';
 
 interface TitleEventEntity {
   key: string;
-  domEvent: Event;
+  domEvent: React.MouseEvent<HTMLElement> | React.KeyboardEvent<HTMLElement>;
 }
 
-export interface SubMenuProps {
+export interface SubMenuProps extends RCSubMenuProps {
   rootPrefixCls?: string;
   className?: string;
   disabled?: boolean;
@@ -16,6 +16,7 @@ export interface SubMenuProps {
   onTitleClick?: (e: TitleEventEntity) => void;
   onTitleMouseEnter?: (e: TitleEventEntity) => void;
   onTitleMouseLeave?: (e: TitleEventEntity) => void;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLElement>) => void;
   popupOffset?: [number, number];
   popupClassName?: string;
 }
@@ -28,19 +29,9 @@ class SubMenu extends React.Component<SubMenuProps, any> {
   // fix issue:https://github.com/ant-design/ant-design/issues/8666
   static isSubMenu = 1;
 
-  private subMenu: any;
-
-  onKeyDown = (e: React.MouseEvent<HTMLElement>) => {
-    this.subMenu.onKeyDown(e);
-  };
-
-  saveSubMenu = (subMenu: any) => {
-    this.subMenu = subMenu;
-  };
-
   render() {
     const { popupClassName } = this.props;
-    return <RcSubMenu {...this.props} ref={this.saveSubMenu} popupClassName={popupClassName} />;
+    return <RcSubMenu {...this.props} popupClassName={popupClassName} />;
   }
 }
 

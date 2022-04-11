@@ -19,7 +19,6 @@ import styles from '../components/testing.module.less';
 import { TestDto } from './test-output-peek';
 import { TestingPeekMessageServiceImpl } from './test-peek-message.service';
 
-
 enum EContainerType {
   DIFF,
   PLANTTEXT,

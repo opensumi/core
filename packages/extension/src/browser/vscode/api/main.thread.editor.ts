@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -51,7 +51,6 @@ import {
 import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converter';
 
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
-
 
 @Injectable({ multiple: true })
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {

@@ -128,7 +128,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
   private _doDelete(uri: string) {
     const doc = this.editorDocModels.get(uri);
     // dirty 的 document 不 dispose
-    if (doc && !doc.dirty) {
+    if (doc && (!doc.dirty || doc.disposeEvenDirty)) {
       doc.dispose();
       this.editorDocModels.delete(uri);
       return doc;
@@ -181,6 +181,9 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
   @OnEvent(EditorDocumentModelOptionExternalUpdatedEvent)
   async acceptExternalChange(e: EditorDocumentModelOptionExternalUpdatedEvent) {
+    if (!this.hashCalculateService.initialized) {
+      await this.hashCalculateService.initialize();
+    }
     const doc = this.editorDocModels.get(e.payload.toString());
     if (doc) {
       if (doc.dirty) {
@@ -268,7 +271,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
 
     const preferredLanguage = preferedOptions && preferedOptions.languageId;
 
-    const [content, readonly, languageId, eol, alwaysDirty, closeAutoSave] = await Promise.all([
+    const [content, readonly, languageId, eol, alwaysDirty, closeAutoSave, disposeEvenDirty] = await Promise.all([
       (async () => provider.provideEditorDocumentModelContent(uri, encoding))(),
       (async () => (provider.isReadonly ? provider.isReadonly(uri) : undefined))(),
       (async () =>
@@ -280,6 +283,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
       (async () => preferedOptions?.eol || (provider.provideEOL ? provider.provideEOL(uri) : undefined))(),
       (async () => (provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false))(),
       (async () => (provider.closeAutoSave ? provider.closeAutoSave(uri) : false))(),
+      (async () => (provider.disposeEvenDirty ? provider.disposeEvenDirty(uri) : false))(),
     ] as const);
 
     // 优先使用 preferred encoding，然后用 detected encoding
@@ -300,6 +304,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         encoding,
         alwaysDirty,
         closeAutoSave,
+        disposeEvenDirty,
       },
     ]);
 

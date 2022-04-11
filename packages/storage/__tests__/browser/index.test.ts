@@ -197,7 +197,7 @@ describe('WorkspaceStorage should be work', () => {
   });
 
   describe('04 #Storage', () => {
-    it('Should be init correctly', async (done) => {
+    it('Should be init correctly', async () => {
       const scopedStorageUri = new URI('scope').withScheme(STORAGE_SCHEMA.SCOPE);
       const scopedStorage = await databaseStorageContribution.resolve(scopedStorageUri);
       expect(scopedStorage).toBeDefined();
@@ -208,7 +208,6 @@ describe('WorkspaceStorage should be work', () => {
       expect(globalStorage).toBeDefined();
       expect((globalStorage as Storage).whenReady).toBeDefined();
       expect(MockWorkspaceService.onWorkspaceChanged).toBeCalledTimes(2);
-      done();
     });
   });
 });

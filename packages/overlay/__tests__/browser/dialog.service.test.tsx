@@ -8,10 +8,9 @@ describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {
   let app: MockClientApp;
   let dialogService: IDialogService;
 
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     app = await createBrowserApp([OverlayModule]);
     dialogService = app.injector.get<IDialogService>(IDialogService);
-    done();
   });
 
   afterEach(() => {

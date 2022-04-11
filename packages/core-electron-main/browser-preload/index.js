@@ -23,6 +23,7 @@ electronEnv.createNetConnection = createNetConnection;
 electronEnv.createRPCNetConnection = createRPCNetConnection;
 
 electronEnv.platform = os.platform();
+electronEnv.osRelease = os.release();
 
 electronEnv.isElectronRenderer = true;
 electronEnv.BufferBridge = Buffer;

@@ -18,7 +18,6 @@ import MonacoServiceImpl from '../../src/browser/monaco.service';
 import { MonacoOverrideServiceRegistryImpl } from '../../src/browser/override.service.registry';
 import { MonacoService } from '../../src/common';
 
-
 describe(' monaco command service test', () => {
   let injector: MockInjector;
   let commandRegistry: CommandRegistry;
@@ -66,7 +65,6 @@ describe(' monaco command service test', () => {
     );
     commandRegistry = injector.get(CommandRegistry);
     const service: MonacoService = injector.get(MonacoService);
-    await service.loadMonaco();
     monacoCommandRegistry = injector.get(MonacoCommandRegistry);
     monacoCommandService = injector.get(MonacoCommandService);
     monacoActionRegistry = injector.get(MonacoActionRegistry);

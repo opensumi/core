@@ -26,7 +26,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.layout.test.ts',
     get: (r) => map.get(r),
   };
 
-  beforeAll(async () => {
+  beforeAll(() => {
     mainLayout = mockService({});
     const mainCommands = mockService({});
     rpcProtocol.set(MainThreadAPIIdentifier.MainThreadCommands, mainCommands);
@@ -42,7 +42,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.layout.test.ts',
     expect(tabbar.id).toBe(`${extension.id}:${viewId}`);
   });
 
-  it('setIcon', async (done) => {
+  it('setIcon', (done) => {
     mainLayout.$setIcon = jest.fn((id, iconPath) => {
       expect(id).toBe(`${extension.id}:${viewId}`);
       expect(iconPath).toBe('extension');
@@ -52,7 +52,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.layout.test.ts',
     tabbar.setIcon('extension');
   });
 
-  it('setTitle', async (done) => {
+  it('setTitle', (done) => {
     mainLayout.$setTitle = jest.fn((id, title) => {
       expect(id).toBe(`${extension.id}:${viewId}`);
       expect(title).toBe('New Title');
@@ -62,7 +62,7 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.layout.test.ts',
     tabbar.setTitle('New Title');
   });
 
-  it('setBadge', async (done) => {
+  it('setBadge', (done) => {
     mainLayout.$setBadge = jest.fn((id, badge) => {
       expect(id).toBe(`${extension.id}:${viewId}`);
       expect(badge).toBe('10');

@@ -57,7 +57,7 @@ export const localizationBundle = {
     'file.search.folder': '在文件夹中查找',
     'file.focus.files': '在资源管理器中聚焦文件',
     'file.filetree.filter': '在展开文件中查找',
-    'file.filetree.openWithPath': '在终端中打开',
+    'file.filetree.openTerminalWithPath': '在终端中打开',
     'file.tooltip.symbolicLink': '符号链接',
     'file.resource-deleted': '（已删除）',
 
@@ -194,7 +194,7 @@ export const localizationBundle = {
     fileSymbolResults: '符号（{0}）',
     'fileSymbolResults.notfound': '没有匹配的符号',
     historyMatches: '最近打开',
-    'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
+    'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为 “{2}”。',
     'search.replace.toggle.button.title': '切换替换',
     caseDescription: '区分大小写',
     wordsDescription: '全字匹配',
@@ -356,6 +356,8 @@ export const localizationBundle = {
     'preference.files.watcherExclude.title': '排除文件监听',
     'preference.search.exclude.title': '搜索排除文件',
     'preference.search.useReplacePreview': '控制搜索替换打开编辑器时，是否打开“替换预览”。',
+    'preference.search.searchOnType': '控制是否在搜索框中输入时自动搜索。',
+    'preference.search.searchOnTypeDebouncePeriod': '控制输入时自动搜索的延迟时间（毫秒）。',
     'preference.files.exclude.title': '排除文件显示',
     'preference.debug.internalConsoleOptions': '控制何时打开内部调试控制台。',
     'preference.debug.openDebug': '控制何时打开调试视图。',
@@ -407,6 +409,9 @@ export const localizationBundle = {
     'preference.terminal.integrated.shellArgs.linux': 'Linux 终端命令行参数',
     'preference.terminal.integrated.shellArgs.linuxDesc': '配置在 Linux 终端上时要使用的命令行参数。',
 
+    'preference.terminal.integrated.copyOnSelection': '终端选中复制',
+    'preference.terminal.integrated.copyOnSelectionDesc': '将终端中选中的文本立即复制到剪贴板。',
+
     'settings.group.general': '常规',
     'settings.group.shortcut': '快捷键',
     'settings.group.editor': '编辑器',
@@ -429,7 +434,7 @@ export const localizationBundle = {
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': '重构确认方式',
 
     'preference.editor.wrapTab': '编辑器 Tab 自动换行',
-    'preference.editor.previewMode': '使用预览模式打开',
+    'editor.configuration.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.minimap': '显示 Minimap',
     'preference.editor.forceReadOnly': '只读模式',
@@ -531,6 +536,7 @@ export const localizationBundle = {
 
     'preference.tab.name': '设置',
     'preference.noResults': "未找到包含 '{0}' 的设置项",
+    'preference.empty': '加载设置项...',
     'preference.editSettingsJson': '在 settings.json 中编辑',
     'preference.overwritten': '（已被下一级设置覆盖）',
     'preference.overwrittenInUser': '（已在全局设置中设置）',
@@ -656,6 +662,9 @@ export const localizationBundle = {
     'terminal.focusFolder': '聚焦资源管理器中的文件夹',
     'terminal.openFolder': '在新窗口中打开文件夹',
 
+    'terminal.focusNext.inTerminalGroup': '终端：聚焦当前终端组中的下一个终端',
+    'terminal.focusPrevious.inTerminalGroup': '终端：聚焦当前终端组中的上一个终端',
+
     'deugger.menu.setValue': '设置变量',
     'deugger.menu.setValue.param': '请输入你要改变变量的值',
 
@@ -706,7 +715,9 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.hide': '隐藏面板',
+    'layout.tabbar.toggle': '切换面板',
+    'layout.tabbar.expand': '最大化底部面板',
+    'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
     'status-bar.label.line': '行',
     'status-bar.label.column': '列',
@@ -849,6 +860,7 @@ export const localizationBundle = {
     'authentication.getSessionPlaceholder': "选择一个账户给 '{0}' 使用",
     'authentication.confirmAuthenticationAccess': "扩展 '{0}' 将要使用 '{2}' 访问 {1}",
     'authentication.confirmLogin': "扩展 '{0}' 将要使用 {1} 登录",
+    'authentication.confirmReLogin': "扩展 '{0}' 将要使用 {1} 再次登录",
     'authentication.signInRequests': '登录 {0}',
     'authentication.signOut': '退出 {0}',
     'authentication.noAccounts': '目前没有登录任何账户',
@@ -952,5 +964,8 @@ export const localizationBundle = {
     'menu.missing.command': '菜单{0} 要执行的命令不存在：{1}',
     'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
     'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
+
+    'connection.start.rtt': '开发人员工具：查看通信延迟',
+    'connection.stop.rtt': '开发人员工具：关闭通信延迟检查',
   },
 };

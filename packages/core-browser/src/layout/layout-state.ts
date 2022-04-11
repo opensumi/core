@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { StorageProvider, IStorage, STORAGE_NAMESPACE, DisposableCollection, ILogger } from '@opensumi/ide-core-common';

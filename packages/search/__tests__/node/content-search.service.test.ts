@@ -10,9 +10,10 @@ import { isWindows } from '@opensumi/ide-core-common';
 import { FileUri, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
-import { ProcessModule } from '@opensumi/ide-process';
+import { ProcessModule } from '@opensumi/ide-process/lib/node';
 
-import { SearchModule, IContentSearchServer, ContentSearchResult, SEARCH_STATE } from '../../src';
+import { IContentSearchServer, ContentSearchResult, SEARCH_STATE } from '../../src';
+import { SearchModule } from '../../src/node';
 
 // Allow creating temporary files, but remove them when we are done.
 const track = temp.track();
@@ -747,7 +748,7 @@ describe('ripgrep-search-in-workspace-server', () => {
     contentSearchServer.search(pattern, [rootDirAUri, rootSubdirAUri]);
   });
 
-  it('出错时可以正常抛出', async (done): Promise<void> => {
+  it('出错时可以正常抛出', (done) => {
     const errorMessage = 'A error!';
     const id = 9;
 

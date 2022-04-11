@@ -1,0 +1,53 @@
+name: Release a release on ref
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "A valid ref, eg: v2.14, main"
+        required: true
+        default: 'main'
+
+jobs:
+  next-version:
+    name: Next Version
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+      # 判断用户是否有写权限
+      - name: "Check if user has write access"
+        uses: "lannonbr/repo-permission-check-action@2.0.0"
+        with:
+          permission: "write"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Checkout 到
+      - uses: actions/checkout@v2
+        if: success()
+        with:
+          ref: ${{ github.event.inputs.ref }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
+      # 安装依赖并构建
+      - name: Install dependencies & Build
+        run: |
+          npm i
+          npm run init
+
+      - name: Publish prepatch version
+        run: |
+          lerna publish --exact --preid rc-$(date +%s) --dist-tag rc --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --ignore-scripts --no-private -y
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

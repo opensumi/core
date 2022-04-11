@@ -149,7 +149,6 @@ describe('textmate service test', () => {
   it('should be able to register language', async () => {
     textmateService = injector.get(TextmateService);
     monacoService = injector.get(MonacoService);
-    await monacoService.loadMonaco();
     await textmateService.registerLanguage(
       {
         id: 'html',

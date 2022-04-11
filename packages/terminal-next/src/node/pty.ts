@@ -8,7 +8,7 @@
 import { promises } from 'fs';
 import os from 'os';
 
-import omit from 'lodash.omit';
+import omit from 'lodash/omit';
 import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 
@@ -24,7 +24,6 @@ import { IPtyProcess } from '../common/pty';
 
 import { findExecutable } from './shell';
 
-
 export const IPtyService = Symbol('IPtyService');
 
 @Injectable({ multiple: true })
@@ -37,10 +36,17 @@ export class PtyService extends Disposable {
 
   private readonly _onData = new Emitter<string>();
   readonly onData = this._onData.event;
+
   private readonly _onReady = new Emitter<IProcessReadyEvent>();
   readonly onReady = this._onReady.event;
+
   private readonly _onExit = new Emitter<IProcessExitEvent>();
   readonly onExit = this._onExit.event;
+
+  private readonly _onProcessChange = new Emitter<string>();
+  readonly onProcessChange = this._onProcessChange.event;
+
+  private previouslyProcess: string | undefined;
 
   get pty() {
     return this._ptyProcess;
@@ -196,6 +202,12 @@ export class PtyService extends Disposable {
     this.addDispose(
       ptyProcess.onData((e) => {
         this._onData.fire(e);
+
+        const processName = ptyProcess.process;
+        if (processName !== this.previouslyProcess) {
+          this.previouslyProcess = processName;
+          this._onProcessChange.fire(processName);
+        }
       }),
     );
 

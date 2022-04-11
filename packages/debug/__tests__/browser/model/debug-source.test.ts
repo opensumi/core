@@ -80,16 +80,15 @@ describe('DebugSource Model', () => {
       expect(debugSource.inMemory).toBe(true);
     });
 
-    it('Load source should be work', async (done) => {
+    it('Load source should be work', async () => {
       await debugSource.load();
       expect(sessions.sendRequest).toBeCalledWith('source', {
         sourceReference: raw.sourceReference,
         source: raw,
       });
-      done();
     });
 
-    it('Open source should be work while file is memory file', async (done) => {
+    it('Open source should be work while file is memory file', async () => {
       const memoryFile = new URI('test.js').withScheme(DebugSource.SCHEME);
       const newRaw = {
         ...raw,
@@ -104,10 +103,9 @@ describe('DebugSource Model', () => {
         },
         '',
       );
-      done();
     });
 
-    it('Open source should be work while there has frame', async (done) => {
+    it('Open source should be work while there has frame', async () => {
       const frame = {
         raw: {
           line: 1,
@@ -120,13 +118,11 @@ describe('DebugSource Model', () => {
       await debugSource.open({}, frame as any);
       expect(workbenchEditorService.open).toBeCalledTimes(1);
       expect(model.focusStackFrame).toBeCalledWith();
-      done();
     });
 
-    it('Open source should be work with no frame and no memory file', async (done) => {
+    it('Open source should be work with no frame and no memory file', async () => {
       await debugSource.open({});
       expect(workbenchEditorService.open).toBeCalledTimes(1);
-      done();
     });
   });
 });

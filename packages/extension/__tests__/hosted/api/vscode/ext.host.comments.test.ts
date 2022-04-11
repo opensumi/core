@@ -200,74 +200,75 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     expect(commentsFeatureRegistry.getProviderFeature(id)?.placeholder).toBe('please comment from test');
   });
 
-  it('comment reactions', async (done) => {
-    const id = 'test_id';
-    const label = 'test_label';
-    const body = 'test_body';
-    const author = '蛋总';
-    const reaction = {
-      iconPath: Uri.file('test.png'),
-      label: '点赞',
-      count: 1,
-      authorHasReacted: false,
-    };
-    const eventBus: IEventBus = injector.get(IEventBus);
-    const $updateCommentControllerFeatures = jest.spyOn(mainThreadComments, '$updateCommentControllerFeatures');
-    const controller = vscodeComments.createCommentController(id, label);
+  it('comment reactions', () =>
+    new Promise<void>(async (done) => {
+      const id = 'test_id';
+      const label = 'test_label';
+      const body = 'test_body';
+      const author = '蛋总';
+      const reaction = {
+        iconPath: Uri.file('test.png'),
+        label: '点赞',
+        count: 1,
+        authorHasReacted: false,
+      };
+      const eventBus: IEventBus = injector.get(IEventBus);
+      const $updateCommentControllerFeatures = jest.spyOn(mainThreadComments, '$updateCommentControllerFeatures');
+      const controller = vscodeComments.createCommentController(id, label);
 
-    controller.reactionHandler = async (comment, reaction) => {
-      expect(comment.reactions).toHaveLength(1);
-      expect(reaction.label).toBe('点赞');
-      done();
-    };
+      controller.reactionHandler = async (comment, reaction) => {
+        expect(comment.reactions).toHaveLength(1);
+        expect(reaction.label).toBe('点赞');
+        done();
+      };
 
-    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [
-      {
-        body,
-        author: {
-          name: author,
-        },
-        mode: types.CommentMode.Preview,
-      },
-    ]);
-    thread.collapsibleState = types.CommentThreadCollapsibleState.Collapsed;
-    thread.contextValue = 'test';
-    thread.label = 'test';
-    thread.range = new types.Range(2, 1, 2, 1);
-    thread.comments = [
-      {
-        body: 'body2',
-        author: {
-          name: author,
-        },
-        mode: types.CommentMode.Preview,
-        reactions: [reaction],
-      },
-    ];
-    // 修改属性会加 100ms 的 debounce
-    await sleep(100);
-    expect($updateCommentControllerFeatures).toBeCalled();
-    const modelReaction = {
-      ...reaction,
-      iconPath: URI.parse(reaction.iconPath.toString()),
-    };
-
-    eventBus.fire(
-      new CommentReactionClick({
-        thread: mockService({
-          data: {
-            commentThreadHandle: 0,
+      const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), [
+        {
+          body,
+          author: {
+            name: author,
           },
+          mode: types.CommentMode.Preview,
+        },
+      ]);
+      thread.collapsibleState = types.CommentThreadCollapsibleState.Collapsed;
+      thread.contextValue = 'test';
+      thread.label = 'test';
+      thread.range = new types.Range(2, 1, 2, 1);
+      thread.comments = [
+        {
+          body: 'body2',
+          author: {
+            name: author,
+          },
+          mode: types.CommentMode.Preview,
+          reactions: [reaction],
+        },
+      ];
+      // 修改属性会加 100ms 的 debounce
+      await sleep(100);
+      expect($updateCommentControllerFeatures).toBeCalled();
+      const modelReaction = {
+        ...reaction,
+        iconPath: URI.parse(reaction.iconPath.toString()),
+      };
+
+      eventBus.fire(
+        new CommentReactionClick({
+          thread: mockService({
+            data: {
+              commentThreadHandle: 0,
+            },
+          }),
+          comment: mockService({
+            // 1 表示为第一个 comment
+            id: 1,
+            reactions: [modelReaction],
+          }),
+          reaction: modelReaction,
         }),
-        comment: mockService({
-          // 1 表示为第一个 comment
-          id: 1,
-          reactions: [modelReaction],
-        }),
-        reaction: modelReaction,
-      }),
-    );
-  });
+      );
+    }));
 
   it('comment canReply', async () => {
     const id = 'test_id';

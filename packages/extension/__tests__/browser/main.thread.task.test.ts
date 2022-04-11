@@ -45,7 +45,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { mockExtensions } from '../../__mocks__/extensions';
 
-
 const extension = Object.assign({}, mockExtensions[0], {
   packageJSON: {
     ...mockExtensions[0].packageJSON,
@@ -212,7 +211,6 @@ describe('MainThreadTask Test Suite', () => {
   });
   beforeAll(async () => {
     const monacoService = injector.get(MonacoService);
-    await monacoService.loadMonaco();
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     const extHostDocs = rpcProtocolExt.set(
       ExtHostAPIIdentifier.ExtHostDocuments,
@@ -245,7 +243,7 @@ describe('MainThreadTask Test Suite', () => {
       expect(Array.isArray(extHostTaskApi.taskExecutions)).toBeTruthy();
     });
 
-    it('registerTaskProvider should be work', async (done) => {
+    it('registerTaskProvider should be work', async () => {
       await workspaceService.setWorkspace({
         uri: rootUri,
         isDirectory: true,
@@ -253,17 +251,15 @@ describe('MainThreadTask Test Suite', () => {
       });
       const disposable = extHostTaskApi.registerTaskProvider('test-taskprovider', testProvider);
       expect(typeof disposable.dispose).toBe('function');
-      done();
     });
 
-    it('fetchTasks should be work', async (done) => {
+    it('fetchTasks should be work', async () => {
       const tasks = await extHostTaskApi.fetchTasks({ type: 'test-taskprovider' });
       expect(tasks.length).toBe(1);
       expect(tasks[0].name).toBe('Echo Task');
-      done();
     });
 
-    it.skip('executeTask should be work', async (done) => {
+    it.skip('executeTask should be work', async () => {
       const tasks = await extHostTaskApi.fetchTasks({ type: 'test-taskprovider' });
       const execution = await extHostTaskApi.executeTask(tasks[0]);
       expect(execution.task.name).toBe('Echo Task');

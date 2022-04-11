@@ -18,7 +18,7 @@ describe('WorkspaceVariableContribution should be work', () => {
   const mockCommandSetvice = {
     executeCommand: jest.fn(),
   };
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([WorkspaceModule]);
     injector.overrideProviders({
       token: IContextKeyService,
@@ -34,7 +34,6 @@ describe('WorkspaceVariableContribution should be work', () => {
     });
 
     workspaceVariableContribution = injector.get(WorkspaceVariableContribution);
-    done();
   });
 
   afterEach(() => {
@@ -42,7 +41,7 @@ describe('WorkspaceVariableContribution should be work', () => {
     mockWorkspaceService.getWorkspaceRootUri.mockReset();
   });
 
-  it('registerVariables contribution point should be work', async (done) => {
+  it('registerVariables contribution point should be work', async () => {
     const variables = {
       registerVariable: jest.fn((variable) => {
         variable.resolve();
@@ -50,26 +49,22 @@ describe('WorkspaceVariableContribution should be work', () => {
     };
     workspaceVariableContribution.registerVariables(variables as any);
     expect(variables.registerVariable).toBeCalledTimes(11);
-    done();
   });
 
-  it('getWorkspaceRootUri method should be work', async (done) => {
+  it('getWorkspaceRootUri method should be work', async () => {
     const workspaceUri = new URI('file://userhome/');
     workspaceVariableContribution.getWorkspaceRootUri(workspaceUri);
     expect(mockWorkspaceService.getWorkspaceRootUri).toBeCalledWith(workspaceUri);
-    done();
   });
 
-  it('getResourceUri method should be work', async (done) => {
+  it('getResourceUri method should be work', async () => {
     await workspaceVariableContribution.getResourceUri();
     expect(mockCommandSetvice.executeCommand).toBeCalledWith('editor.getCurrentResource');
-    done();
   });
 
-  it('getWorkspaceRelativePath method should be work', async (done) => {
+  it('getWorkspaceRelativePath method should be work', async () => {
     const workspaceUri = new URI('file://userhome/');
     workspaceVariableContribution.getWorkspaceRelativePath(workspaceUri);
     expect(mockWorkspaceService.getWorkspaceRootUri).toBeCalledWith(workspaceUri);
-    done();
   });
 });

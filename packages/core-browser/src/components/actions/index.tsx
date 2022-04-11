@@ -64,7 +64,8 @@ export const MenuActionList: React.FC<{
       }
 
       // hacky: read MenuNode from MenuItem.children.props
-      const menuItem = item.props.children.props.data as MenuNode;
+      const child = Array.isArray(item.props.children) ? item.props.children[0] : item.props.children;
+      const menuItem = child.props.data as MenuNode;
       if (!menuItem) {
         return;
       }
@@ -123,7 +124,7 @@ export const MenuActionList: React.FC<{
     <Menu
       className='kt-menu'
       selectable={false}
-      motion={{ enter: () => null, leave: () => null }}
+      motion={{ motionLeave: false, motionEnter: false }}
       {...({ builtinPlacements: placements } as any)}
       onClick={handleClick}
     >

@@ -6,11 +6,23 @@
 }
 
 .tabs {
-  display: flex;
+  flex-grow: 1;
+  width: 10px;
+
+  :global(.thumb-vertical) {
+    opacity: 0 !important;
+  }
+
   :first-child {
     &.item_container {
       border-left: 1px solid var(--kt-panelTab-border);
     }
+  }
+
+  .tab_contents {
+    overflow-y: hidden;
+    display: inline-flex;
+    position: relative;
   }
 }
 
@@ -18,27 +30,25 @@
   display: none;
 }
 
-.button {
-  flex: 1;
-}
-
 .item_container {
   padding: 0px 12px 0px 12px;
   cursor: pointer;
   user-select: none;
-  height: 28px;
+  height: var(--tabBar-height);
+  line-height: var(--tabBar-height);
+  font-size: var(--tab-fontSize);
+  min-width: var(--tab-min-size);
   display: flex;
   color: var(--kt-panelTab-inactiveForeground);
   background-color: var(--kt-panelTab-inactiveBackground);
   border-right: 1px solid var(--kt-panelTab-border);
-  max-width: 800px;
-  min-width: 105px;
+  border-top: 1px solid transparent;
   align-items: center;
   position: relative;
-  :last-child {
+  .close_icon {
     transition: opacity 0.2s ease-in-out;
     opacity: 0;
-    line-height: 24px;
+    line-height: var(--tabBar-height);
     border-right: 0;
   }
   &::before {
@@ -48,27 +58,31 @@
     bottom: 0;
     width: 100%;
     height: 1px;
-    background-color: var(--kt-panelTab-border);
+    background-color: var(--sideBar-border);
   }
 }
 
 .item_container:hover {
-  :last-child {
+  .close_icon {
     opacity: 1;
   }
 }
 
 .item_info_name {
-  flex: 1;
   margin-right: 8px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 20px;
-  height: 20px;
   position: relative;
-  text-indent: 1px;
-  max-width: 160px;
+  min-width: var(--tab-min-size);
+  display: flex;
+  align-items: center;
+
+  .item_title {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 20px;
+    height: 20px;
+  }
 }
 
 .item_info_input {
@@ -88,6 +102,8 @@
   color: var(--kt-panelTab-activeForeground);
   background-color: var(--kt-panelTab-activeBackground);
   position: relative;
+  border-top-color: var(--tab-activeBorderTop);
+
   &::before {
     content: '';
     position: absolute;
@@ -102,11 +118,15 @@
 .item_add {
   display: inline-block;
   padding: 0 6px;
-  line-height: 28px;
+  line-height: var(--tabBar-height);
   cursor: pointer;
   user-select: none;
 }
 
 .close_icon {
+  &::before {
+    font-size: 14px;
+  }
+
   color: var(--kt-panelTabActionIcon-foreground);
 }

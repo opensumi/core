@@ -2,21 +2,33 @@
 	<a href="https://github.com/opensumi/core"><img src="https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg" width="150" /></a>
 </p>
 
-<p align="center">
-  <a href="https://github.com/opensumi/core/actions/workflows/ci.yml">
-    <img src="https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg" alt="CI">
-  </a>
-  <a href="https://www.npmjs.com/package/@opensumi/ide-core-browser">
-    <img src="https://img.shields.io/npm/v/@opensumi/ide-core-common.svg" alt="npm version" >
-  </a>
-  <a href="https://github.com/opensumi/core/blob/master/LICENSE.md">
-    <img src="https://img.shields.io/npm/l/@opensumi/ide-core-common.svg" alt="license">
-  </a>
-  <a href="https://cla-assistant.io/opensumi/core"><img src="https://cla-assistant.io/readme/badge/opensumi/core" alt="CLA assistant" /></a>
-  <a href="https://codecov.io/gh/opensumi/core">
-    <img src="https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957" alt="Test Coverage">
-  </a>
-</p>
+<div align="center">
+ 
+[![CI][ci-image]][ci-url]
+[![NPM Version][npm-image]][npm-url]
+[![NPM downloads][download-image]][download-url]
+[![Test Coverage][test-image]][test-url]
+[![CLA assistant][cla-image]][cla-url]
+[![License][license-image]][license-url]
+[![Discussions][discussions-image]][discussions-url]
+
+[ci-image]: https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg
+[ci-url]: https://github.com/opensumi/core/actions/workflows/ci.yml
+[discussions-image]: https://img.shields.io/badge/discussions-on%20github-blue
+[discussions-url]: https://github.com/opensumi/core/discussions
+[npm-image]: https://img.shields.io/npm/v/@opensumi/ide-core-common.svg
+[npm-url]: https://www.npmjs.com/package/@opensumi/ide-core-common
+[download-image]: https://img.shields.io/npm/dm/@opensumi/ide-core-common.svg
+[download-url]: https://npmjs.org/package/@opensumi/ide-core-common
+[license-image]: https://img.shields.io/npm/l/@opensumi/ide-core-common.svg
+[license-url]: https://github.com/opensumi/core/blob/main/LICENSE
+[cla-image]: https://cla-assistant.io/readme/badge/opensumi/core
+[cla-url]: https://cla-assistant.io/opensumi/core
+[test-image]: https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957
+[test-url]: https://codecov.io/gh/opensumi/core
+
+</div>
+
 <h1 align="center">OpenSumi</h1>
 
 一款帮助你快速搭建 CloudIDE 及 桌面端 IDE 产品的底层框架。
@@ -32,8 +44,6 @@
 ```bash
 $ npm config set registry https://registry.npmmirror.com
 ```
-
-> 如果你使用 npm@^7 及以上版本，请使用 `npm install --legacy-peer-deps`
 
 由于 `canvas` 依赖 GitHub Release 资源，在国内网络环境下极易超时，故安装依赖时请加上对应的镜像地址如下：
 

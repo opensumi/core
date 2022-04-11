@@ -1,4 +1,4 @@
-import cloneDeep = require('lodash.clonedeep');
+import cloneDeep from 'lodash/cloneDeep';
 
 import { Uri, isObject } from '@opensumi/ide-core-common';
 

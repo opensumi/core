@@ -25,15 +25,17 @@ export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');
 export interface ISettingGroup {
   // 唯一
   id: string;
-
   title: string;
-
   iconClass: string;
 }
 
 export interface IPreferenceViewDesc {
   id: string;
-  localized: string;
+  /**
+   * 为空会根据 id 来生成展示的名字
+   * 如：`enablePreview` -> `Enable Preview`
+   */
+  localized?: string;
   /**
    * 在指定 scope 下不展示
    */

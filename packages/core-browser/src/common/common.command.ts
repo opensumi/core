@@ -1,4 +1,5 @@
-import { Command, localize } from '..';
+import { localize, Command } from '@opensumi/ide-core-common';
+
 import { getIcon } from '../style/icon/icon';
 
 export namespace FILE_COMMANDS {
@@ -89,6 +90,11 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
   };
 
+  export const SELECT_CURRENT_NODE: Command = {
+    id: 'filetree.selectCurrentNode',
+    category: CATEGORY,
+  };
+
   export const LOCATION: Command = {
     id: 'filetree.location',
     category: CATEGORY,
@@ -139,8 +145,8 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
   };
 
-  export const OPEN_WITH_PATH: Command = {
-    id: 'filetree.openWithPath',
+  export const OPEN_TERMINAL_WITH_PATH: Command = {
+    id: 'filetree.openTerminalWithPath',
     category: CATEGORY,
   };
 
@@ -737,3 +743,5 @@ export namespace KEYBOARD_COMMANDS {
     category: CATEGORY,
   };
 }
+
+export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';

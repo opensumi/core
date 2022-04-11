@@ -5,7 +5,6 @@ import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@o
 import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 
-
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';
 import {
   RightTabPanelRenderer,
@@ -15,7 +14,6 @@ import {
 } from './panel.view';
 import styles from './styles.module.less';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
-
 
 // TODO 将过深的prop挪到这里
 export const TabbarConfig = React.createContext<{
@@ -44,11 +42,11 @@ export const TabRendererBase: React.FC<{
   const rootRef = React.useRef<HTMLDivElement>(null);
   const [fullSize, setFullSize] = React.useState(0);
   React.useLayoutEffect(() => {
+    tabbarService.registerResizeHandle(resizeHandle);
     components.forEach((component) => {
       tabbarService.registerContainer(component.options!.containerId, component);
     });
     tabbarService.updatePanelVisibility();
-    tabbarService.registerResizeHandle(resizeHandle);
     tabbarService.viewReady.resolve();
   }, []);
   React.useEffect(() => {

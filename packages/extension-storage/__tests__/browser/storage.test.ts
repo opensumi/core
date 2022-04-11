@@ -5,6 +5,7 @@ import temp from 'temp';
 
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { IExtensionStorageServer, IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
@@ -46,7 +47,8 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
         useClass: DiskFileSystemProvider,
       },
     );
-
+    const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
+    await hashImpl.initialize();
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   };
@@ -62,7 +64,7 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
     injector.disposeAll();
   });
 
-  it('Extension Path Server should setup directory correctly', async (done) => {
+  it('Extension Path Server should setup directory correctly', async () => {
     const extensionStorage = injector.get(IExtensionStorageServer);
     const rootFileStat = {
       uri: root.toString(),
@@ -84,7 +86,6 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
         path.join(root.path.toString(), extensionStorageDirName, StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR),
       ),
     ).toBeTruthy();
-    done();
   });
 });
 
@@ -118,6 +119,8 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
 
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
+    const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
+    await hashImpl.initialize();
   };
 
   beforeEach(async () => {
@@ -142,7 +145,7 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
     injector.disposeAll();
   });
 
-  it('Global -- set value can be work', async (done) => {
+  it('Global -- set value can be work', async () => {
     const isGlobal = true;
     const key = 'test';
     const value = {
@@ -153,10 +156,9 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
     await extensionStorage.set(key, value, isGlobal);
     expect(await extensionStorage.get(key, isGlobal)).toEqual(value);
     expect(await extensionStorage.getAll(isGlobal)).toEqual(data);
-    done();
   });
 
-  it('Workspace -- set value can be work', async (done) => {
+  it('Workspace -- set value can be work', async () => {
     const isGlobal = false;
     const key = 'test';
     const value = {
@@ -167,6 +169,5 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
     await extensionStorage.set(key, value, isGlobal);
     expect(await extensionStorage.get(key, isGlobal)).toEqual(value);
     expect(await extensionStorage.getAll(isGlobal)).toEqual(data);
-    done();
   });
 });

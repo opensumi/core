@@ -1,9 +1,10 @@
-import { camelCase, upperFirst } from 'lodash';
 import * as path from 'path';
 import * as glob from 'glob';
 import * as fs from 'fs-extra';
 import { packagesDir, toolsDir } from './dir-constants';
 import { run } from './shell';
+import camelCase from 'lodash/camelCase';
+import upperFirst from 'lodash/upperFirst';
 
 const templateDir = path.join(toolsDir, '/template');
 const templatePattern = path.join(templateDir, '/**');
@@ -15,9 +16,7 @@ function createModuleTsConfig(name: string) {
       rootDir: `../../../packages/${name}/src`,
       outDir: `../../../packages/${name}/lib`,
     },
-    include: [
-      `../../../packages/${name}/src`,
-    ],
+    include: [`../../../packages/${name}/src`],
   };
 }
 

@@ -1,4 +1,4 @@
-import { capitalize } from 'lodash';
+import capitalize from 'lodash/capitalize';
 import type vscode from 'vscode';
 
 import { Injectable, Autowired } from '@opensumi/di';

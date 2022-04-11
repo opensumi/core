@@ -372,9 +372,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       let result: string | null = null;
       const modelRef = this.documentModelManager.getModelReference(uri, 'resourceContextKey');
       if (modelRef) {
-        if (modelRef) {
-          result = modelRef.instance.languageId;
-        }
+        result = modelRef.instance.languageId;
         modelRef.dispose();
       }
       return result;
@@ -910,6 +908,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (this._restoringState) {
       return;
     }
+
     this._onDidEditorGroupTabChanged.fire();
   }
 
@@ -1239,12 +1238,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
           if (previewMode) {
             if (this.previewURI) {
-              await this.close(this.previewURI, { treatAsNotCurrent: true });
+              await this.close(this.previewURI, { treatAsNotCurrent: true, force: options.forceClose });
             }
             this.previewURI = resource.uri;
           }
           if (options.replace && replaceResource) {
-            await this.close(replaceResource.uri, { treatAsNotCurrent: true });
+            await this.close(replaceResource.uri, { treatAsNotCurrent: true, force: options.forceClose });
           }
         }
         if (options.backend) {
@@ -1370,6 +1369,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       if (activeOpenType.type === 'code') {
         const documentRef = await this.getDocumentModelRef(resource.uri);
+        this.resolveTabChanged(_resource, this.currentResource);
         await this.codeEditorReady.onceReady(async () => {
           await this.codeEditor.open(documentRef);
 
@@ -1504,10 +1504,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         return; // other type not handled
       }
 
-      if (_resource !== this.currentResource) {
-        throw new EditorTabChangedError(); // 在打开过程中已经改变了
-      }
-
+      this.resolveTabChanged(_resource, this.currentResource);
       this._currentOpenType = activeOpenType;
       this.notifyBodyChanged();
 
@@ -1519,6 +1516,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
 
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
+    }
+  }
+
+  private resolveTabChanged(lastResource: IResource, curResource: MaybeNull<IResource>): void {
+    if (lastResource !== curResource) {
+      // 打开过程中改变了tab
+      throw new EditorTabChangedError();
     }
   }
 
@@ -1849,7 +1853,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   dispose() {
-    this.grid.dispose();
+    this.grid?.dispose();
     this.workbenchEditorService.removeGroup(this);
     super.dispose();
     this.codeEditor && this.codeEditor.dispose();

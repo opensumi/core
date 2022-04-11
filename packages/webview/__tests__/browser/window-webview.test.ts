@@ -14,7 +14,7 @@ describe('webview-window-test', () => {
       getWebContentsId: (windowId) => windowId + 1,
     },
   });
-  it('webview-window class test', async (done) => {
+  it('webview-window class test', async () => {
     mockElectronRenderer();
 
     const windowId = Math.floor(Math.random() * 10);
@@ -70,7 +70,5 @@ describe('webview-window-test', () => {
     expect((window as any)._closed).toBeTruthy();
     expect(window.disposed).toBeTruthy();
     expect(onClosed).toBeCalledTimes(1);
-
-    done();
   });
 });

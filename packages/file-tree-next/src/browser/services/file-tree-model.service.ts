@@ -32,6 +32,8 @@ import {
   Deferred,
   OS,
   IApplicationService,
+  CommandService,
+  FILE_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -111,6 +113,9 @@ export class FileTreeModelService {
 
   @Autowired(IApplicationService)
   private readonly appService: IApplicationService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private _isDisposed = false;
 
@@ -658,6 +663,10 @@ export class FileTreeModelService {
     this.decorations.removeDecoration(this.selectedDecoration);
     this.decorations.removeDecoration(this.focusedDecoration);
   }
+
+  handleDblClick = () => {
+    this.commandService.executeCommand(FILE_COMMANDS.NEW_FILE.id);
+  };
 
   handleContextMenu = (ev: React.MouseEvent, file?: File | Directory, activeUri?: URI) => {
     ev.stopPropagation();
@@ -1733,7 +1742,24 @@ export class FileTreeModelService {
       this._nextLocationTarget = undefined;
     }
   };
+  selectChildNode(uris: URI[]) {
+    for (const uri of uris) {
+      const file = this.fileTreeService.getNodeByPathOrUri(uri);
 
+      if (file) {
+        const children = Directory.isRoot(file) ? (file as Directory).children : file.parent?.children;
+
+        if (children) {
+          const first = children[0];
+          const last = children[children.length - 1];
+          const firstIndex = this.treeModel.root.getIndexAtTreeNode(first);
+          const lastIndex = this.treeModel.root.getIndexAtTreeNode(last);
+
+          this.activeFileDecorationByRange(firstIndex, lastIndex);
+        }
+      }
+    }
+  }
   dispose() {
     this._isDisposed = true;
   }

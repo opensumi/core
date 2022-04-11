@@ -5,7 +5,6 @@ import { app, BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions, Ip
 import semver from 'semver';
 import treeKill from 'tree-kill';
 
-
 import { Injectable, Autowired } from '@opensumi/di';
 import { ExtensionCandidate } from '@opensumi/ide-core-common';
 import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
@@ -290,14 +289,14 @@ export class KTNodeProcess {
           this._process.stdout.on('data', (data) => {
             data = data.toString();
             if (data.length > 500) {
-              data = data.substr(500) + '...';
+              data = data.slice(0, 500) + '...';
             }
             process.stdout.write('[node]' + data);
           });
           this._process.stderr.on('data', (data) => {
             data = data.toString();
             if (data.length > 500) {
-              data = data.substr(500) + '...';
+              data = data.slice(0, 500) + '...';
             }
             process.stdout.write('[node]' + data);
           });

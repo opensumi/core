@@ -13,15 +13,14 @@ import {
 } from '@opensumi/ide-core-common';
 import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { IconType, IIconService, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
 
-
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
 import { ISumiExtensionContributions } from './sumi/extension';
 import { IExtensionContributions, IMainThreadCommands } from './vscode';
-
 
 export { IExtensionProps } from '@opensumi/ide-core-common';
 
@@ -245,6 +244,8 @@ export interface IExtension extends IExtensionProps {
   toJSON(): IExtensionProps;
 }
 
+const VAR_REGEXP = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
+
 //  VSCode Types
 export abstract class VSCodeContributePoint<T extends JSONType = JSONType> extends Disposable {
   constructor(
@@ -258,7 +259,16 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
   }
   schema?: IJSONSchema;
 
+  protected readonly iconService?: IIconService;
+
   abstract contribute();
+
+  protected toIconClass(iconContrib: { [index in ThemeType]: string } | string): string | undefined {
+    if (typeof iconContrib === 'string' && VAR_REGEXP.test(iconContrib)) {
+      return this.iconService?.fromString(iconContrib);
+    }
+    return this.iconService?.fromIcon(this.extension.path, iconContrib, IconType.Mask);
+  }
 
   protected getLocalizeFromNlsJSON(title: string): string {
     return replaceNlsField(title, this.extension.id)!;

@@ -56,7 +56,7 @@ describe('MainThreadStatusBar API Test Suites', () => {
     done();
   });
 
-  it('should can create statusbar item', async (done) => {
+  it('should can create statusbar item', async () => {
     const statusbar = extHostStatusBar.createStatusBarItem(
       mockExtensionDescription,
       'test',
@@ -67,10 +67,9 @@ describe('MainThreadStatusBar API Test Suites', () => {
     statusbar.text = 'test';
     expect(statusbar).toBeDefined();
     statusbar.dispose();
-    done();
   });
 
-  it('should update statusbar', async (done) => {
+  it('should update statusbar', (done) => {
     const statusbar = extHostStatusBar.createStatusBarItem(
       mockExtensionDescription,
       'test',
@@ -96,7 +95,7 @@ describe('MainThreadStatusBar API Test Suites', () => {
     }, 50);
   });
 
-  it('can execute command via statusbar', async (done) => {
+  it('can execute command via statusbar', (done) => {
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
     commandRegistry.registerCommand(
       { id: 'test:statusbar' },

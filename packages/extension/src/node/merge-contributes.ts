@@ -1,7 +1,7 @@
 /**
  * handle `kaitianContributes` and `contributes`
  */
-import mergeWith = require('lodash/mergeWith');
+import mergeWith from 'lodash/mergeWith';
 
 import { asArray } from '@opensumi/ide-core-common';
 

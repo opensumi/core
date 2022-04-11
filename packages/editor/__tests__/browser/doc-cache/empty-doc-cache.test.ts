@@ -1,4 +1,4 @@
-import { uniqueId } from 'lodash';
+import uniqueId from 'lodash/uniqueId';
 
 import { URI } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -9,14 +9,13 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { EditorDocumentModel } from '../../../src/browser/doc-model/main';
 import { IDocPersistentCacheProvider } from '../../../src/common';
 
-
 describe('EmptyDocCacheImpl', () => {
   let injector: MockInjector;
   let uri: URI;
   let content: string;
   let hashCalculateService: IHashCalculateService;
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
     injector.addProviders({
       token: IDocPersistentCacheProvider,
@@ -27,7 +26,6 @@ describe('EmptyDocCacheImpl', () => {
     content = uniqueId('content');
     hashCalculateService = injector.get(IHashCalculateService);
     await hashCalculateService.initialize();
-    done();
   });
 
   it('call hasCache during DocumentModel constructing', () => {

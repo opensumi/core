@@ -6,7 +6,6 @@ import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
 
 import { PtyService } from './pty';
 
-
 // ref: https://github.com/vercel/hyper/blob/4c90d7555c79fb6dc438fa9549f1d0ef7c7a5aa7/app/session.ts#L27-L32
 // 批处理字符最大长度
 const BATCH_MAX_SIZE = 200 * 1024;
@@ -160,6 +159,16 @@ export class TerminalServiceImpl implements ITerminalNodeService {
             code: exitCode,
             signal,
           });
+        } else {
+          this.logger.warn(`terminal: pty ${clientId} on data not found`);
+        }
+      });
+
+      ptyService.onProcessChange((processName) => {
+        this.logger.debug(`Terminal process change (${processName})`);
+        if (this.serviceClientMap.has(clientId)) {
+          const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+          serviceClient.processChange(id, processName);
         } else {
           this.logger.warn(`terminal: pty ${clientId} on data not found`);
         }

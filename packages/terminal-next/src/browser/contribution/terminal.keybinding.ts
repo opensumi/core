@@ -45,5 +45,33 @@ export class TerminalKeybindinngContribution implements KeybindingContribution {
       keybinding: 'ctrlcmd+\\',
       when: IsTerminalFocused.raw,
     });
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.ADD.id,
+      keybinding: 'ctrl+shift+`',
+    });
+
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.FOCUS_NEXT_TERMINAL.id,
+      keybinding: 'ctrlcmd+alt+right',
+      when: IsTerminalFocused.raw,
+    });
+
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.FOCUS_NEXT_TERMINAL.id,
+      keybinding: 'ctrlcmd+alt+down',
+      when: IsTerminalFocused.raw,
+    });
+
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.FOCUS_PREVIOUS_TERMINAL.id,
+      keybinding: 'ctrlcmd+alt+left',
+      when: IsTerminalFocused.raw,
+    });
+
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.FOCUS_PREVIOUS_TERMINAL.id,
+      keybinding: 'ctrlcmd+alt+up',
+      when: IsTerminalFocused.raw,
+    });
   }
 }

@@ -68,80 +68,81 @@ describe('MainThread CustomEditor Test', () => {
     injector.disposeAll();
   });
 
-  it('resolve text editor', async (done) => {
-    const viewType = 'test viewType';
-    const testExtInfo = {
-      id: 'test-extension',
-      extensionId: 'test-extension',
-      isBuiltin: true,
-    };
+  it('resolve text editor', () =>
+    new Promise<void>(async (done) => {
+      const viewType = 'test viewType';
+      const testExtInfo = {
+        id: 'test-extension',
+        extensionId: 'test-extension',
+        isBuiltin: true,
+      };
 
-    const CustomEditorOptionChangeEventListener = jest.fn();
-    const eventBus: IEventBus = injector.get(IEventBus);
+      const CustomEditorOptionChangeEventListener = jest.fn();
+      const eventBus: IEventBus = injector.get(IEventBus);
 
-    eventBus.on(CustomEditorOptionChangeEvent, CustomEditorOptionChangeEventListener);
+      eventBus.on(CustomEditorOptionChangeEvent, CustomEditorOptionChangeEventListener);
 
-    await mainThread.$registerCustomEditor(viewType, CustomEditorType.TextEditor, {}, testExtInfo);
+      await mainThread.$registerCustomEditor(viewType, CustomEditorType.TextEditor, {}, testExtInfo);
 
-    expect(CustomEditorOptionChangeEventListener).toBeCalled();
+      expect(CustomEditorOptionChangeEventListener).toBeCalled();
 
-    const fileUri = new URI('file:///test/test1.json');
-    const webviewPanelId = 'test_webviewPanel_Id';
-    const openTypeId = 'vscode_customEditor_' + viewType;
+      const fileUri = new URI('file:///test/test1.json');
+      const webviewPanelId = 'test_webviewPanel_Id';
+      const openTypeId = 'vscode_customEditor_' + viewType;
 
-    const webview: any = {
-      id: webviewPanelId,
-    };
+      const webview: any = {
+        id: webviewPanelId,
+      };
 
-    mockWebviewService.getWebview = (id) => {
-      if (id === webviewPanelId) {
-        return webview;
-      } else {
-        return null;
-      }
-    };
+      mockWebviewService.getWebview = (id) => {
+        if (id === webviewPanelId) {
+          return webview;
+        } else {
+          return null;
+        }
+      };
 
-    mockEditorDocService.createModelReference = async (uri) => {
-      if (uri.isEqual(fileUri)) {
-        const ref = {
-          instance: {
-            uri,
-          } as any,
-          dispose: () => {},
-          hold: () => ref,
-        };
-        return ref as any;
-      } else {
-        throw new Error('no doc!');
-      }
-    };
+      mockEditorDocService.createModelReference = async (uri) => {
+        if (uri.isEqual(fileUri)) {
+          const ref = {
+            instance: {
+              uri,
+            } as any,
+            dispose: () => {},
+            hold: () => ref,
+          };
+          return ref as any;
+        } else {
+          throw new Error('no doc!');
+        }
+      };
 
-    // 用户打开指定文件后会发送 CustomEditorShouldDisplayEvent 事件，此时应该开始展示
-    await eventBus.fireAndAwait(
-      new CustomEditorShouldDisplayEvent({
-        uri: fileUri,
+      // 用户打开指定文件后会发送 CustomEditorShouldDisplayEvent 事件，此时应该开始展示
+      await eventBus.fireAndAwait(
+        new CustomEditorShouldDisplayEvent({
+          uri: fileUri,
+          viewType,
+          webviewPanelId,
+          openTypeId,
+          cancellationToken: new CancellationTokenSource().token,
+        }),
+      );
+
+      expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toBeCalledWith(
+        webview,
+        {
+          uri: fileUri,
+          openTypeId,
+        },
         viewType,
-        webviewPanelId,
-        openTypeId,
-        cancellationToken: new CancellationTokenSource().token,
-      }),
-    );
+        {},
+        testExtInfo,
+      );
 
-    expect(mainThreadWebviewMock.pipeBrowserHostedWebviewPanel).toBeCalledWith(
-      webview,
-      {
-        uri: fileUri,
-        openTypeId,
-      },
-      viewType,
-      {},
-      testExtInfo,
-    );
+      done();
+    }));
 
-    done();
-  });
-
-  it('resolve custom editor', async (done) => {
+  it('resolve custom editor', async () => {
     const viewType = 'test viewType 2';
     const testExtInfo = {
       id: 'test-extension',
@@ -268,7 +269,5 @@ describe('MainThread CustomEditor Test', () => {
         },
       }),
     );
-
-    done();
   });
 });

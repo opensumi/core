@@ -1,10 +1,18 @@
-import debounce = require('lodash.debounce');
-import throttle = require('lodash.throttle');
+import debounce from 'lodash/debounce';
+import throttle from 'lodash/throttle';
 import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { getIcon, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser';
-import { CommandService, Emitter, Event, ILogger, localize, raceTimeout } from '@opensumi/ide-core-common';
+import {
+  CommandService,
+  Emitter,
+  Event,
+  ILogger,
+  localize,
+  raceTimeout,
+  toMarkdownString,
+} from '@opensumi/ide-core-common';
 import { IDialogService } from '@opensumi/ide-overlay/lib/common';
 import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
@@ -24,7 +32,6 @@ import {
 import { MergedEnvironmentVariableCollection } from '../common/environmentVariableCollection';
 
 import { TerminalVariable } from './component/terminal.variable';
-
 
 export const ENVIRONMENT_VARIABLE_COLLECTIONS_KEY = 'terminal.integrated.environmentVariableCollections';
 
@@ -151,7 +158,7 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
       iconClass: getIcon('warning-circle-fill'),
       color: 'orange',
       alignment: StatusBarAlignment.RIGHT,
-      tooltip: localize('terminal.environment.changed') + '\n\n```\n' + changes.join('\n') + '\n```',
+      tooltip: toMarkdownString(localize('terminal.environment.changed') + '\n\n```\n' + changes.join('\n') + '\n```'),
       onClick: () => this.onDidClickStatusBarEntry(diff),
     });
   }

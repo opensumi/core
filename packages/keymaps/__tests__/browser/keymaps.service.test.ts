@@ -73,7 +73,7 @@ describe('KeymapsService should be work', () => {
   let userhome: URI | null;
 
   let onKeybindingsChanged;
-  beforeAll(async (done) => {
+  beforeAll(async () => {
     userhome = FileUri.create(path.join(os.tmpdir(), 'keymaps-service-test'));
 
     await fs.createFile(path.join(userhome.path.toString(), preferenceDirName, 'keymaps.json'));
@@ -129,8 +129,6 @@ describe('KeymapsService should be work', () => {
     keymapsService = injector.get(KeymapService);
 
     await keymapsService.init();
-
-    done();
   });
 
   afterAll(async () => {
@@ -142,7 +140,7 @@ describe('KeymapsService should be work', () => {
   });
 
   describe('01 #Init', () => {
-    it('should ready to work after init', async (done) => {
+    it('should ready to work after init', async () => {
       expect(typeof keymapsService.init).toBe('function');
       expect(typeof keymapsService.dispose).toBe('function');
       expect(typeof keymapsService.reconcile).toBe('function');
@@ -157,48 +155,42 @@ describe('KeymapsService should be work', () => {
       expect(typeof keymapsService.searchKeybindings).toBe('function');
       expect(typeof keymapsService.validateKeybinding).toBe('function');
       expect(typeof keymapsService.getRaw).toBe('function');
-      done();
     });
   });
 
   describe('02 #API should be work', () => {
-    it('open method should be work', async (done) => {
+    it('open method should be work', async () => {
       const open = jest.fn();
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, open);
       await keymapsService.open();
       expect(open).toBeCalledTimes(1);
-      done();
     });
 
-    it('openResource method should be work', async (done) => {
+    it('openResource method should be work', async () => {
       const openResource = jest.fn();
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, openResource);
       await keymapsService.openResource();
       expect(openResource).toBeCalledTimes(1);
-      done();
     });
 
-    it('fix method should be work', async (done) => {
+    it('fix method should be work', async () => {
       const open = jest.fn();
       injector.mockCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, open);
       await keymapsService.fixed();
       expect(open).toBeCalledTimes(1);
-      done();
     });
 
-    it('covert method should be work', async (done) => {
+    it('covert method should be work', async () => {
       await keymapsService.covert({} as any);
       expect(mockKeybindingService.convert).toBeCalledTimes(1);
-      done();
     });
 
-    it('clearConvert method should be work', async (done) => {
+    it('clearConvert method should be work', async () => {
       await keymapsService.clearCovert();
       expect(mockKeybindingService.clearConvert).toBeCalledTimes(1);
-      done();
     });
 
-    it('reconcile method should be work', async (done) => {
+    it('reconcile method should be work', async () => {
       const keybindings = [
         {
           command: 'test.command',
@@ -209,32 +201,28 @@ describe('KeymapsService should be work', () => {
       expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(3);
       expect(mockKeybindingRegistry.unregisterKeybinding).toBeCalledTimes(2);
       expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(3);
-      done();
     });
 
-    it('setKeybinding method should be work', async (done) => {
+    it('setKeybinding method should be work', async () => {
       const keybinding = {
         command: 'test.command',
         keybinding: 'cmd+c',
       };
       keymapsService.setKeybinding(keybinding);
       expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(4);
-      done();
     });
 
-    it('getKeybindings method should be work', (done) => {
+    it('getKeybindings method should be work', () => {
       keymapsService.getKeybindings();
-      done();
     });
 
-    it('resetKeybinding method should be work', async (done) => {
+    it('resetKeybinding method should be work', async () => {
       const keybinding = {
         command: 'test.command',
         keybinding: 'cmd+c',
       };
       await keymapsService.resetKeybinding(keybinding);
       expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(5);
-      done();
     });
 
     it('getWhen method should be work', () => {

@@ -62,7 +62,7 @@ describe('editor decoration service test', () => {
     expect(decorationServiceImpl.decorationProviders.get(provider.key)).toBeUndefined();
   });
 
-  it('should be able to correctly resolve decoration', async (done) => {
+  it('should be able to correctly resolve decoration', async () => {
     const disposer = decorationService.registerDecorationProvider(provider);
     const result = await decorationService.getDecorationFromProvider(new URI('file://test/test.js'));
     expect(result[provider.key]).not.toBeUndefined();
@@ -73,10 +73,9 @@ describe('editor decoration service test', () => {
     const anotherResult = await decorationService.getDecorationFromProvider(new URI('file://test/test.ts'));
     expect(anotherResult[provider.key]).toBeUndefined();
     disposer.dispose();
-    done();
   });
 
-  it('should be able to listen to event', async (done) => {
+  it('should be able to listen to event', async () => {
     const disposer = decorationService.registerDecorationProvider(provider);
     const uri = new URI('file://test/test.js');
     (injector.get(IEventBus) as IEventBus).on(EditorDecorationChangeEvent, async (e) => {
@@ -86,17 +85,15 @@ describe('editor decoration service test', () => {
         expect(result[provider.key][0]).not.toBeUndefined();
 
         expect(result[provider.key][0].options.className).toEqual(className);
-        done();
       }
     });
     className = 'testDecoration2';
     _decorationChange.fire(uri);
 
     disposer.dispose();
-    done();
   });
 
-  it('decoration applier test', async (done) => {
+  it('decoration applier test', async () => {
     injector.mockService(IThemeService, {
       getCurrentThemeSync: jest.fn(() => ({
         type: 'dark',
@@ -165,7 +162,6 @@ describe('editor decoration service test', () => {
 
     disposer.dispose();
     disposer2.dispose();
-    done();
   });
 
   afterAll(() => {

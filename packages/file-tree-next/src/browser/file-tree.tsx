@@ -302,6 +302,10 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     handleItemClick();
   }, []);
 
+  const handleOuterDblClick = useCallback(() => {
+    fileTreeModelService.handleDblClick();
+  }, []);
+
   const handleFocus = useCallback(() => {
     // 文件树焦点
     const { handleTreeFocus } = fileTreeModelService;
@@ -348,6 +352,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       tabIndex={-1}
       ref={wrapperRef}
       onClick={handleOuterClick}
+      onDoubleClick={handleOuterDblClick}
       onFocus={handleFocus}
       onContextMenu={handleOuterContextMenu}
       draggable={true}

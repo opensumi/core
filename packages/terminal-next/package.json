@@ -21,7 +21,6 @@
     "@opensumi/ide-core-node": "2.16.7",
     "@opensumi/ide-file-service": "2.16.7",
     "event-kit": "^2.5.3",
-    "lodash.omit": "^4.1.1",
     "node-pty": "0.10.0",
     "os-locale": "^4.0.0",
     "xterm": "4.13.0",

@@ -180,19 +180,18 @@ describe('FileTree Service should be work alone', () => {
     fileChangeWatcher.onFilesChanged.mockReset();
   });
 
-  it('Service should be init correctly', async (done) => {
+  it('Service should be init correctly', async () => {
     await fileTreeService.init();
     expect(onPreferenceChanged).toBeCalled();
     expect(fileTreeService.indent).toBe(6);
     expect(fileTreeService.baseIndent).toBe(6);
-    done();
   });
 
   it('ContextMenuContextKeyService should be existed', () => {
     expect(!!fileTreeService.contextMenuContextKeyService).toBeTruthy();
   });
 
-  it('File watch should be work', async (done) => {
+  it('File watch should be work', async () => {
     const workspaceService = injector.get(IWorkspaceService);
     const testUri = new URI(workspaceService.workspace.uri);
     fileChangeWatcher.onFilesChanged.mockImplementation((fileChangeHandle) => {
@@ -217,17 +216,15 @@ describe('FileTree Service should be work alone', () => {
     expect(fileChangeWatcher.onFilesChanged).toBeCalledTimes(1);
     expect(mockFileServiceClient.watchFileChanges).toBeCalled();
     await fileTreeService.flushEventQueue();
-    done();
   });
 
-  it('Re-watch should be work while re-connect', async (done) => {
+  it('Re-watch should be work while re-connect', async () => {
     const fileTreeContribution = injector.get(FileTreeContribution);
     const testUri = new URI('file://userhome/test.js');
     fileTreeService.startWatchFileEvent();
     await fileTreeService.watchFilesChange(testUri);
     await fileTreeContribution.onReconnect();
     expect(fileChangeWatcher.onFilesChanged).toBeCalledTimes(2);
-    done();
   });
 
   it('Commands should be work', () => {
@@ -382,7 +379,7 @@ describe('FileTree Service should be work alone on multiple workspace mode', () 
   });
 
   // 以下为工作区模式工具函数测试
-  it('getFileTreeNodePathByUri method should be work on multiple workspace mode', async (done) => {
+  it('getFileTreeNodePathByUri method should be work on multiple workspace mode', async () => {
     const workspaceService = injector.get(IWorkspaceService);
     workspaceService.isMultiRootWorkspaceOpened = true;
     await workspaceService.setWorkspace({
@@ -393,6 +390,5 @@ describe('FileTree Service should be work alone on multiple workspace mode', () 
     await workspaceService.spliceRoots(0, undefined, undefined, URI.file('folder1'), URI.file('folder2'));
     const path = await fileTreeService.getFileTreeNodePathByUri(URI.file('folder1').resolve('test'));
     expect(path).toBe('/folder1/test');
-    done();
   });
 });

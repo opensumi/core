@@ -39,7 +39,6 @@ export async function createBrowserApp(
 export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
   const injector = inj || new MockInjector();
   const app = new ClientApp({ modules, injector } as any);
-
   afterAll(() => {
     app.injector.disposeAll();
   });

@@ -13,16 +13,18 @@ export interface ITerminalPreference {
   toJSON(): any;
 }
 
-export interface DefaultOptions {
+export interface SupportedOptions {
   allowTransparency: boolean;
-  macOptionIsMeta: false;
-  cursorBlink: false;
+  macOptionIsMeta: boolean;
+  cursorBlink: boolean;
   scrollback: number;
   tabStopWidth: number;
   fontSize: number;
+  copyOnSelection: boolean;
+  fontFamily: string;
 }
 
-export const OptionTypeName = {
+export const SupportedOptionsName = {
   type: 'type',
   fontFamily: 'fontFamily',
   fontSize: 'fontSize',
@@ -30,11 +32,7 @@ export const OptionTypeName = {
   lineHeight: 'lineHeight',
   cursorBlink: 'cursorBlink',
   scrollback: 'scrollback',
-};
-
-export const DefaultOptionValue = {
-  fontFamily: 'courier-new, courier, monospace',
-  fontSize: 12,
+  copyOnSelection: 'copyOnSelection',
 };
 
 export const enum CodeTerminalSettingPrefix {
@@ -298,6 +296,11 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       ),
       type: ['string', 'null'],
       default: null,
+    },
+    [CodeTerminalSettingId.CopyOnSelection]: {
+      type: 'boolean',
+      description: '%preference.terminal.integrated.copyOnSelectionDesc%',
+      default: false,
     },
   },
 };

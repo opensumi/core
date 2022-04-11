@@ -4,9 +4,10 @@ import { CancellationTokenSource } from '@opensumi/ide-core-common';
 import { FileUri, URI, AppConfig, INodeLogger, NodeLogger } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
-import { ProcessModule } from '@opensumi/ide-process';
+import { ProcessModule } from '@opensumi/ide-process/lib/node';
 
-import { FileSearchModule, IFileSearchService } from '../../src';
+import { IFileSearchService } from '../../src';
+import { FileSearchModule } from '../../src/node';
 
 describe('search-service', () => {
   const injector = createNodeInjector([FileSearchModule, ProcessModule, LogServiceModule]);

@@ -1,4 +1,4 @@
-import debounce = require('lodash.debounce');
+import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Event, IJSONSchemaRegistry, ISchemaContributions, IJSONSchema } from '@opensumi/ide-core-browser';

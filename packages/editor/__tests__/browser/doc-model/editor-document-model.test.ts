@@ -1,4 +1,4 @@
-import { uniqueId } from 'lodash';
+import uniqueId from 'lodash/uniqueId';
 
 import { URI, IEventBus } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -6,7 +6,6 @@ import { EmptyDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { isMacintosh, isLinux } from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -18,12 +17,11 @@ import {
 } from '../../../src/browser/doc-model/types';
 import { IDocPersistentCacheProvider } from '../../../src/common';
 
-
 describe('EditorDocumentModel', () => {
   let injector: MockInjector;
   let hashCalculateService: IHashCalculateService;
 
-  beforeEach(async (done) => {
+  beforeEach(async () => {
     injector = createBrowserInjector([]);
     injector.addProviders({
       token: IDocPersistentCacheProvider,
@@ -32,7 +30,6 @@ describe('EditorDocumentModel', () => {
     hashCalculateService = injector.get(IHashCalculateService);
     await hashCalculateService.initialize();
     (global as any).monaco = createMockedMonaco() as any;
-    done();
   });
 
   afterEach(() => {

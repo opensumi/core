@@ -100,18 +100,33 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(ExtensionService)
   private readonly extensionService: ExtensionService;
 
-  async initialize() {
-    await this.extensionService.activate();
-    const disposer = this.webviewService.registerWebviewReviver({
-      handles: (_: string) => 0,
-      revive: async (id: string) =>
-        new Promise<void>((resolve) => {
-          this.eventBus.on(ExtensionApiReadyEvent, () => {
-            disposer.dispose();
-            resolve(this.webviewService.tryReviveWebviewComponent(id));
-          });
-        }),
-    });
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
+  initialize() {
+    /**
+     * 这里不需要阻塞 initialize 流程
+     * 因为其他 contribution 唯一依赖
+     * 的是主题信息，目前主题注册成功以
+     * 后会发送对应事件
+     */
+    this.extensionService
+      .activate()
+      .catch((err) => {
+        this.logger.error(err);
+      })
+      .finally(() => {
+        const disposer = this.webviewService.registerWebviewReviver({
+          handles: () => 0,
+          revive: async (id: string) =>
+            new Promise<void>((resolve) => {
+              this.eventBus.on(ExtensionApiReadyEvent, () => {
+                disposer.dispose();
+                resolve(this.webviewService.tryReviveWebviewComponent(id));
+              });
+            }),
+        });
+      });
   }
 
   async onStart() {
@@ -128,11 +143,6 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
      * 最好在这里直接关掉插件进程，调用链路太长可能导致请求调不到后端
      */
     this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
-  }
-
-  onContextKeyServiceReady(contextKeyService: IContextKeyService) {
-    // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
-    contextKeyService.createKey('listFocus', true);
   }
 
   /**
@@ -441,9 +451,11 @@ export class ExtensionCommandContribution implements CommandContribution {
       // terminal builtin commands
       VSCodeBuiltinCommands.CLEAR_TERMINAL,
       VSCodeBuiltinCommands.TOGGLE_WORKBENCH_VIEW_TERMINAL,
+      VSCodeBuiltinCommands.NEW_WORKBENCH_VIEW_TERMINAL,
       // others
       VSCodeBuiltinCommands.RELOAD_WINDOW,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS,
+      VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS_JSON,
     ].forEach((command) => {
       registry.registerCommand(command);
     });

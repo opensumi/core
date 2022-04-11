@@ -46,7 +46,7 @@ import {
   TerminalIcon,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import { ITerminalPreference } from '../common/preference';
+import { SupportedOptions, ITerminalPreference } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
@@ -163,8 +163,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       {
         xtermOptions: {
           theme: this.theme.terminalTheme,
-          ...this.preference.toJSON(),
           ...this.internalService.getOptions(),
+          ...this.preference.toJSON(),
         },
       },
     ]);
@@ -188,6 +188,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           this.updateOptions({
             name: 'error',
           });
+        }
+      }),
+    );
+    this.addDispose(
+      this.internalService.onProcessChange((e) => {
+        if (e.sessionId === this.id) {
+          this.widget.processName = e.processName;
         }
       }),
     );
@@ -220,6 +227,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
           await this._show.promise;
         }
         this._setOption(name, value);
+        this.xterm.updatePreferences({
+          [name]: value,
+        } as unknown as SupportedOptions);
       }),
     );
 
@@ -476,6 +486,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   _doResize() {
+    // TODO: debounce
     this.internalService.resize(this.id, this.xterm.raw.cols, this.xterm.raw.rows);
   }
 
@@ -507,6 +518,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     queueMicrotask(() => {
       this._layout();
       this.attach();
+      this.focus();
       if (!this.widget.show) {
         this._show?.promise.then(async () => {
           this._show = new Deferred<void>();
@@ -589,7 +601,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
 
     this._attachAddon.setConnection(connection);
-    this.name = this.name || connection.name || 'shell';
     this._ready = true;
     this._attached.resolve();
     this._widget.name = this.name;

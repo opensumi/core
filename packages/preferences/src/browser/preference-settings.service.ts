@@ -21,13 +21,13 @@ import {
   addElement,
   getAvailableLanguages,
   PreferenceService,
-  localize,
   replaceLocalizePlaceholder,
   ThrottledDelayer,
 } from '@opensumi/ide-core-browser';
+import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { toPreferenceReadableName, PreferenceSettingId } from '../common';
+import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel } from '../common';
 
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
@@ -79,6 +79,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private onDidEnumLabelsChangeEmitter: Emitter<void> = new Emitter();
   private enumLabelsChangeDelayer = new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY);
 
+  private onDidSettingsChangeEmitter: Emitter<void> = new Emitter();
+
   constructor() {
     this.setEnumLabels(
       'general.language',
@@ -98,6 +100,14 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   get onDidEnumLabelsChange() {
     return this.onDidEnumLabelsChangeEmitter.event;
+  }
+
+  get onDidSettingsChange() {
+    return this.onDidSettingsChangeEmitter.event;
+  }
+
+  fireDidSettingsChange() {
+    this.onDidSettingsChangeEmitter.fire();
   }
 
   private isContainSearchValue(value: string, search: string) {
@@ -153,6 +163,16 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     this.currentScope = scope;
     const groups = this.settingsGroups.slice();
     return groups.filter((g) => this.getSections(g.id, scope, search).length > 0);
+  }
+
+  async hasThisScopeSetting(scope: PreferenceScope) {
+    const url = await this.getPreferenceUrl(scope);
+    if (!url) {
+      return;
+    }
+
+    const exist = await this.fileServiceClient.access(url);
+    return exist;
   }
 
   /**
@@ -231,7 +251,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
           const prefId = typeof pref === 'string' ? pref : pref.id;
           const schema = this.schemaProvider.getPreferenceProperty(prefId);
-          const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : localize(pref.localized);
+          const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : getPreferenceItemLabel(pref);
           const description = schema && replaceLocalizePlaceholder(schema.description);
           return (
             this.isContainSearchValue(prefId, search) ||
@@ -407,10 +427,9 @@ export const defaultSettingSections: {
     {
       preferences: [
         // 预览模式
-        { id: 'editor.previewMode', localized: 'preference.editor.previewMode' },
+        { id: 'editor.previewMode' },
         {
           id: 'editor.enablePreviewFromCodeNavigation',
-          localized: 'preference.editor.enablePreviewFromCodeNavigation',
         },
         // 自动保存
         { id: 'editor.autoSave', localized: 'preference.editor.autoSave' },
@@ -427,46 +446,44 @@ export const defaultSettingSections: {
         { id: 'editor.fontWeight', localized: 'preference.editor.fontWeight' },
         { id: 'editor.fontFamily', localized: 'preference.editor.fontFamily' },
         { id: 'editor.lineHeight', localized: 'preference.editor.lineHeight' },
+        { id: 'editor.trimAutoWhitespace' },
         // 补全
-        { id: 'editor.suggest.insertMode', localized: 'preference.editor.suggest.insertMode' },
-        { id: 'editor.suggest.filterGraceful', localized: 'preference.editor.suggest.filterGraceful' },
-        { id: 'editor.suggest.localityBonus', localized: 'preference.editor.suggest.localityBonus' },
-        { id: 'editor.suggest.shareSuggestSelections', localized: 'preference.editor.suggest.shareSuggestSelections' },
-        {
-          id: 'editor.suggest.snippetsPreventQuickSuggestions',
-          localized: 'preference.editor.suggest.snippetsPreventQuickSuggestions',
-        },
-        { id: 'editor.suggest.showIcons', localized: 'preference.editor.suggest.showIcons' },
-        { id: 'editor.suggest.maxVisibleSuggestions', localized: 'preference.editor.suggest.maxVisibleSuggestions' },
-        { id: 'editor.suggest.showMethods', localized: 'preference.editor.suggest.showMethods' },
-        { id: 'editor.suggest.showFunctions', localized: 'preference.editor.suggest.showFunctions' },
-        { id: 'editor.suggest.showConstructors', localized: 'preference.editor.suggest.showConstructors' },
-        { id: 'editor.suggest.showFields', localized: 'preference.editor.suggest.showFields' },
-        { id: 'editor.suggest.showVariables', localized: 'preference.editor.suggest.showVariables' },
-        { id: 'editor.suggest.showClasses', localized: 'preference.editor.suggest.showClasses' },
-        { id: 'editor.suggest.showStructs', localized: 'preference.editor.suggest.showStructs' },
-        { id: 'editor.suggest.showInterfaces', localized: 'preference.editor.suggest.showInterfaces' },
-        { id: 'editor.suggest.showModules', localized: 'preference.editor.suggest.showModules' },
-        { id: 'editor.suggest.showProperties', localized: 'preference.editor.suggest.showProperties' },
-        { id: 'editor.suggest.showEvents', localized: 'preference.editor.suggest.showEvents' },
-        { id: 'editor.suggest.showOperators', localized: 'preference.editor.suggest.showOperators' },
-        { id: 'editor.suggest.showUnits', localized: 'preference.editor.suggest.showUnits' },
-        { id: 'editor.suggest.showValues', localized: 'preference.editor.suggest.showValues' },
-        { id: 'editor.suggest.showConstants', localized: 'preference.editor.suggest.showConstants' },
-        { id: 'editor.suggest.showEnums', localized: 'preference.editor.suggest.showEnums' },
-        { id: 'editor.suggest.showEnumMembers', localized: 'preference.editor.suggest.showEnumMembers' },
-        { id: 'editor.suggest.showKeywords', localized: 'preference.editor.suggest.showKeywords' },
-        { id: 'editor.suggest.showWords', localized: 'preference.editor.suggest.showWords' },
-        { id: 'editor.suggest.showColors', localized: 'preference.editor.suggest.showColors' },
-        { id: 'editor.suggest.showFiles', localized: 'preference.editor.suggest.showFiles' },
-        { id: 'editor.suggest.showReferences', localized: 'preference.editor.suggest.showReferences' },
-        { id: 'editor.suggest.showCustomcolors', localized: 'preference.editor.suggest.showCustomcolors' },
-        { id: 'editor.suggest.showFolders', localized: 'preference.editor.suggest.showFolders' },
-        { id: 'editor.suggest.showTypeParameters', localized: 'preference.editor.suggest.showTypeParameters' },
-        { id: 'editor.suggest.showSnippets', localized: 'preference.editor.suggest.showSnippets' },
-        { id: 'editor.suggest.showUsers', localized: 'preference.editor.suggest.showUsers' },
-        { id: 'editor.suggest.showIssues', localized: 'preference.editor.suggest.showIssues' },
-        { id: 'editor.suggest.preview', localized: 'preference.editor.suggest.preview' },
+        { id: 'editor.suggest.insertMode' },
+        { id: 'editor.suggest.filterGraceful' },
+        { id: 'editor.suggest.localityBonus' },
+        { id: 'editor.suggest.shareSuggestSelections' },
+        { id: 'editor.suggest.snippetsPreventQuickSuggestions' },
+        { id: 'editor.suggest.showIcons' },
+        { id: 'editor.suggest.maxVisibleSuggestions' },
+        { id: 'editor.suggest.showMethods' },
+        { id: 'editor.suggest.showFunctions' },
+        { id: 'editor.suggest.showConstructors' },
+        { id: 'editor.suggest.showFields' },
+        { id: 'editor.suggest.showVariables' },
+        { id: 'editor.suggest.showClasses' },
+        { id: 'editor.suggest.showStructs' },
+        { id: 'editor.suggest.showInterfaces' },
+        { id: 'editor.suggest.showModules' },
+        { id: 'editor.suggest.showProperties' },
+        { id: 'editor.suggest.showEvents' },
+        { id: 'editor.suggest.showOperators' },
+        { id: 'editor.suggest.showUnits' },
+        { id: 'editor.suggest.showValues' },
+        { id: 'editor.suggest.showConstants' },
+        { id: 'editor.suggest.showEnums' },
+        { id: 'editor.suggest.showEnumMembers' },
+        { id: 'editor.suggest.showKeywords' },
+        { id: 'editor.suggest.showWords' },
+        { id: 'editor.suggest.showColors' },
+        { id: 'editor.suggest.showFiles' },
+        { id: 'editor.suggest.showReferences' },
+        { id: 'editor.suggest.showCustomcolors' },
+        { id: 'editor.suggest.showFolders' },
+        { id: 'editor.suggest.showTypeParameters' },
+        { id: 'editor.suggest.showSnippets' },
+        { id: 'editor.suggest.showUsers' },
+        { id: 'editor.suggest.showIssues' },
+        { id: 'editor.suggest.preview' },
 
         // Guides
         { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },
@@ -484,6 +501,7 @@ export const defaultSettingSections: {
         { id: 'editor.tabSize', localized: 'preference.editor.tabSize' },
         { id: 'editor.insertSpaces', localized: 'preference.editor.insertSpace' },
         // 显示
+        { id: 'editor.wrapTab', localized: 'preference.editor.wrapTab' },
         { id: 'editor.wordWrap', localized: 'preference.editor.wordWrap' },
         { id: 'editor.renderLineHighlight', localized: 'preference.editor.renderLineHighlight' },
         { id: 'editor.renderWhitespace', localized: 'preference.editor.renderWhitespace' },
@@ -498,16 +516,9 @@ export const defaultSettingSections: {
         // 文件
         // `forceReadOnly` 选项暂时不对用户暴露
         // {id: 'editor.forceReadOnly', localized: 'preference.editor.forceReadOnly'},
-
-        { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },
-        { id: 'files.encoding', localized: 'preference.files.encoding.title' },
-        { id: 'files.eol', localized: 'preference.files.eol' },
-        { id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles' },
-        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
-        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
-        { id: 'files.associations', localized: 'preference.files.associations.title' },
         { id: 'editor.maxTokenizationLineLength', localized: 'preference.editor.maxTokenizationLineLength' },
         { id: 'editor.largeFile', localized: 'preference.editor.largeFile' },
+        { id: 'editor.readonlyFiles', localized: 'preference.editor.readonlyFiles' },
         {
           id: 'editor.bracketPairColorization.enabled',
           localized: 'preference.editor.bracketPairColorization.enabled',
@@ -515,6 +526,17 @@ export const defaultSettingSections: {
         // Diff 编辑器
         { id: 'diffEditor.renderSideBySide', localized: 'preference.diffEditor.renderSideBySide' },
         { id: 'diffEditor.ignoreTrimWhitespace', localized: 'preference.diffEditor.ignoreTrimWhitespace' },
+        { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },
+        { id: 'files.encoding', localized: 'preference.files.encoding.title' },
+        { id: 'files.eol' },
+        { id: 'files.trimFinalNewlines' },
+        { id: 'files.trimTrailingWhitespace' },
+        { id: 'files.insertFinalNewline' },
+        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
+        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
+        { id: 'files.associations', localized: 'preference.files.associations.title' },
+        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
+        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
       ],
     },
   ],
@@ -534,6 +556,7 @@ export const defaultSettingSections: {
         { id: 'terminal.scrollback', localized: 'preference.terminal.scrollback' },
         // 命令行参数
         { id: 'terminal.integrated.shellArgs.linux', localized: 'preference.terminal.integrated.shellArgs.linux' },
+        { id: 'terminal.integrated.copyOnSelection', localized: 'preference.terminal.integrated.copyOnSelection' },
       ],
     },
   ],
@@ -543,15 +566,28 @@ export const defaultSettingSections: {
         // 树/列表项
         { id: 'workbench.list.openMode', localized: 'preference.workbench.list.openMode.title' },
         { id: 'explorer.autoReveal', localized: 'preference.explorer.autoReveal' },
+
         // 搜索
-        { id: 'search.exclude', localized: 'preference.search.exclude.title' },
-        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
-        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
+        { id: SearchSettingId.Include },
+        { id: SearchSettingId.Exclude, localized: 'preference.search.exclude.title' },
+        { id: SearchSettingId.UseReplacePreview },
+        // { id: 'search.maxResults' },
+        { id: SearchSettingId.SearchOnType },
+        { id: SearchSettingId.SearchOnTypeDebouncePeriod },
+        // { id: 'search.showLineNumbers' },
+        // { id: 'search.smartCase' },
+        // { id: 'search.useGlobalIgnoreFiles' },
+        // { id: 'search.useIgnoreFiles' },
+        // { id: 'search.useParentIgnoreFiles' },
+
+        // { id: 'search.quickOpen.includeHistory' },
+        // { id: 'search.quickOpen.includeSymbols' },
+
         // 输出
         { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },
         { id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight' },
         { id: 'output.enableSmartScroll', localized: 'output.enableSmartScroll' },
-        // 调试
+        // 调试
         // 由于筛选器的匹配模式搜索存在性能、匹配难度大等问题，先暂时隐藏
         // { id: 'debug.console.filter.mode', localized: 'preference.debug.console.filter.mode' },
         { id: 'debug.console.wordWrap', localized: 'preference.debug.console.wordWrap' },
@@ -562,8 +598,6 @@ export const defaultSettingSections: {
   view: [
     {
       preferences: [
-        // 编辑器外观
-        { id: 'editor.wrapTab', localized: 'preference.editor.wrapTab' },
         // 资源管理器
         { id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title' },
         { id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title' },

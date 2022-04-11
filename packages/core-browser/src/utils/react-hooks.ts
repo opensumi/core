@@ -1,4 +1,4 @@
-import _debounce from 'lodash.debounce';
+import _debounce from 'lodash/debounce';
 import { useState, useEffect, DependencyList } from 'react';
 
 import { Disposable, DisposableStore, IDisposable } from '@opensumi/ide-core-common';

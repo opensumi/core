@@ -17,11 +17,10 @@ import {
   formatLocalize,
 } from '@opensumi/ide-core-browser';
 
-import { toPreferenceReadableName } from '../common';
+import { toPreferenceReadableName, getPreferenceItemLabel } from '../common';
 
 import { PreferenceSettingsService } from './preference-settings.service';
 import styles from './preferences.module.less';
-
 
 interface IPreferenceItemProps {
   preferenceName: string;
@@ -44,7 +43,7 @@ const NONE_SELECT_OPTION = 'none';
  *    不含有 enum - 输入框
  *  number: 输入框
  *  array:
- *    只允许 string类 - 可视化编辑项
+ *    只允许 string类 - 可视化编辑项
  *  object:
  *    暂不支持
  */
@@ -175,7 +174,7 @@ const renderDescriptionExpression = (des: string) => {
   const { 0: expression, 1: preferenceId } = match;
   const preference = preferenceSettingService.getSectionByPreferenceId(preferenceId);
   if (preference) {
-    const preferenceTitle = localize(preference.localized);
+    const preferenceTitle = getPreferenceItemLabel(preference);
     const others: any[] = description
       .split(expression)
       .map((des: string, index: number) => <span key={`${preferenceId}-${index}`}>{des}</span>);
