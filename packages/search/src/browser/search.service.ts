@@ -129,12 +129,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
   private readonly searchContextKey: SearchContextKey;
 
   @Autowired(IReporterService)
-  reporterService: IReporterService;
+  private reporterService: IReporterService;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  workbenchEditorService: WorkbenchEditorService;
+  private workbenchEditorService: WorkbenchEditorService;
 
   @observable
   replaceValue = '';
@@ -209,7 +209,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     );
   }
 
-  search = (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
+  search(e?: React.KeyboardEvent, insertUIState?: IUIState) {
     const state = insertUIState || this.UIState;
     const value = this.searchValue;
     const searchOptions: ContentSearchOptions = {
@@ -225,11 +225,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
 
-    if (e && (e as any).keyCode !== undefined && Key.ENTER.keyCode !== (e as any).keyCode) {
+    if (e && e.keyCode !== Key.ENTER.keyCode) {
       return;
     }
+
+    this.cleanOldSearch();
     if (!value) {
-      return this.cleanOldSearch();
+      return;
     }
 
     if (!this.workbenchEditorService) {
@@ -244,12 +246,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.isExpandAllResult = true;
 
     // Stop old search
-    if (this.currentSearchId) {
+    this.isSearchDoing = true;
+    if (this.currentSearchId > -1) {
       this.contentSearchServer.cancel(this.currentSearchId);
-      this.cleanOldSearch();
       this.currentSearchId = this.currentSearchId + 1;
       this.reporter = null;
     }
+
     let rootDirs: string[] = [];
     this.workspaceService.tryGetRoots().forEach((stat) => {
       const uri = new URI(stat.uri);
@@ -327,7 +330,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     transaction(() => {
       this.watchDocModelContentChange(searchOptions, rootDirs);
     });
-  };
+  }
 
   /**
    * 监听正在编辑文件变化，并同步结果
@@ -529,10 +532,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
   };
 
   setSearchValueFromActivatedEditor = () => {
-    if (!this.workbenchEditorService) {
-      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
-    }
-
     const currentEditor = this.workbenchEditorService.currentEditor;
     if (currentEditor) {
       const selections = currentEditor.getSelections();
@@ -557,7 +556,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       (v) => uiState[v] !== undefined && uiState[v] !== this.UIState[v],
     );
 
-  updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent | React.MouseEvent) => {
+  updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent) => {
     if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
       this.searchContextKey.searchInputFocused.set(obj.isSearchFocus);
       // 搜索框状态发现变化，重置搜索历史的当前位置
@@ -792,7 +791,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
     let searchedList: string[] = [];
     const docModels = documentModelManager.getAllModels();
     const group = workbenchEditorService.currentEditorGroup;
-    const resources = group.resources;
 
     const filterFileWithGlobRelativePath = new FilterFileWithGlobRelativePath(rootDirs, searchOptions.include || []);
 
