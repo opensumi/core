@@ -209,7 +209,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     );
   }
 
-  search = (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
+  search(e?: React.KeyboardEvent, insertUIState?: IUIState) {
     const state = insertUIState || this.UIState;
     const value = this.searchValue;
     const searchOptions: ContentSearchOptions = {
@@ -330,7 +330,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     transaction(() => {
       this.watchDocModelContentChange(searchOptions, rootDirs);
     });
-  };
+  }
 
   /**
    * 监听正在编辑文件变化，并同步结果
