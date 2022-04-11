@@ -79,7 +79,7 @@ export const Search = React.memo(
     return (
       <div className={styles.wrap} style={collapsePanelContainerStyle}>
         <div className={styles['loading-wrap']}>
-          <ProgressBar loading={isSearchDoing} />
+          <ProgressBar loading={searchState === SEARCH_STATE.doing} />
         </div>
         <div className={styles.search_options} ref={searchOptionRef}>
           <SearchInputWidget
