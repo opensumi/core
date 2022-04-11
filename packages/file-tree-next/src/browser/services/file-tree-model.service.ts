@@ -713,7 +713,7 @@ export class FileTreeModelService {
     menus.dispose();
 
     // 更新压缩节点对应的 ContextKey
-    this.setExplorerCompressedContextKey(node, activeUri);
+    this.updateExplorerCompressedContextKey(node, activeUri);
 
     const { x, y } = ev.nativeEvent;
 
@@ -724,7 +724,7 @@ export class FileTreeModelService {
     });
   };
 
-  setExplorerCompressedContextKey(node?: File | Directory, activeUri?: URI) {
+  updateExplorerCompressedContextKey(node?: File | Directory, activeUri?: URI) {
     if (node && activeUri) {
       this.contextKey?.explorerCompressedFocusContext.set(true);
       const compressedNamePath = new Path(node.name);
@@ -830,7 +830,7 @@ export class FileTreeModelService {
       item = this.treeModel.root as Directory | File;
     }
     // 更新压缩节点对应的Contextkey
-    this.setExplorerCompressedContextKey(item, activeUri);
+    this.updateExplorerCompressedContextKey(item, activeUri);
 
     this._isMultiSelected = false;
     if (this.fileTreeService.isCompactMode && activeUri) {
@@ -851,9 +851,17 @@ export class FileTreeModelService {
     if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
       if (type === TreeNodeType.CompositeTreeNode) {
         this.contextKey?.explorerResourceIsFolder.set(true);
+        if (item === this.treeModel.root) {
+          // 根节点情况下忽略后续操作
+          return;
+        }
         this.toggleDirectory(item as Directory);
       } else if (type === TreeNodeType.TreeNode) {
         this.contextKey?.explorerResourceIsFolder.set(false);
+        if (item === this.treeModel.root) {
+          // 根节点情况下忽略后续操作
+          return;
+        }
         // 对于文件的单击事件，走 openFile 去执行 editor.previewMode 配置项
         this.fileTreeService.openFile(item.uri);
       }
