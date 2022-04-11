@@ -888,7 +888,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @OnEvent(RegisterEditorComponentEvent)
   async onRegisterEditorComponentEvent() {
     if (this.currentResource) {
-      const openTypes = await this.editorComponentRegistry.resolveEditorComponent(this.currentResource);
+      const openTypes =
+        this.cachedResourcesOpenTypes.get(this.currentResource.uri.toString()) ||
+        (await this.editorComponentRegistry.resolveEditorComponent(this.currentResource));
       this.availableOpenTypes = openTypes;
       this.cachedResourcesOpenTypes.set(this.currentResource.uri.toString(), openTypes);
     }
