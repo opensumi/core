@@ -172,7 +172,7 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+          backendOS: OS.type(),
         },
       },
       {
