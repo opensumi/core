@@ -430,7 +430,9 @@ export class FileTreeContribution
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
         if (!uris) {
-          if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+          if (this.fileTreeModelService.focusedFile) {
+            uris = [this.fileTreeModelService.focusedFile.uri];
+          } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
             uris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
           } else {
             return;

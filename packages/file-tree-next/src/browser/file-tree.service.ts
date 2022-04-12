@@ -576,8 +576,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const node = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
       this.removeNodeCacheByPath(node.path);
-      // 压缩模式下，刷新父节点目录即可
-      if (this.isCompactMode && !notRefresh) {
+      // 压缩节点情况下，刷新父节点目录即可
+      if (node.displayName.indexOf(Path.separator) > 0 && !notRefresh) {
         this.refresh(node.parent as Directory);
       } else {
         this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.DELETED);
