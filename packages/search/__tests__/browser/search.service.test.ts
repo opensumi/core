@@ -118,8 +118,6 @@ describe('search.service.ts', () => {
     );
 
     searchService = injector.get(ContentSearchClientService);
-    // without docModel
-    (searchService as any).workbenchEditorService = true;
     (searchService as any).searchAllFromDocModel = () => ({
       result: null,
     });

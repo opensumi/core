@@ -32,6 +32,7 @@ import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
+  ICodeEditor,
   IEditorDocumentModelService,
   IEditorDocumentModel,
   EditorDocumentModelContentChangedEvent,
@@ -699,7 +700,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     docModel: IEditorDocumentModel,
     searchValue: string,
     rootDirs: string[],
-    codeEditor?,
+    codeEditor?: ICodeEditor,
   ): {
     result: ContentSearchResult[];
     searchedList: string[];
