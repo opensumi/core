@@ -1,7 +1,15 @@
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import qs from 'querystring';
 
-import { app, BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions, IpcMainEvent } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  BrowserWindowConstructorOptions,
+  IpcMainEvent,
+  WebPreferences,
+} from 'electron';
 import semver from 'semver';
 import treeKill from 'tree-kill';
 
@@ -17,9 +25,10 @@ const DEFAULT_WINDOW_WIDTH = 1000;
 
 let windowClientCount = 0;
 
-const defaultWebPreferences = {
+const defaultWebPreferences: WebPreferences = {
   webviewTag: true,
   contextIsolation: false,
+  defaultFontSize: 14,
 };
 
 @Injectable({ multiple: true })
