@@ -691,6 +691,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this.xterm.findNext(text);
   }
 
+  closeSearch() {
+    this.xterm.closeSearch();
+  }
+
   getSelection() {
     this._checkReady();
     if (this.xterm.raw.hasSelection()) {
