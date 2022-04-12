@@ -1,0 +1,51 @@
+import type { Uri as URI, IRange, SymbolTag, IPosition, CancellationToken } from '@opensumi/ide-core-common';
+import type { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type { ProviderResult, SymbolKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
+
+export const enum TypeHierarchyDirection {
+  Subtypes = 'subtypes',
+  Supertypes = 'supertypes',
+}
+
+export interface TypeHierarchyItem {
+  _sessionId: string;
+  _itemId: string;
+  kind: SymbolKind;
+  name: string;
+  detail?: string;
+  uri: URI;
+  range: IRange;
+  selectionRange: IRange;
+  tags?: SymbolTag[];
+}
+
+export interface TypeHierarchySession {
+  roots: TypeHierarchyItem[];
+  dispose(): void;
+}
+
+export interface TypeHierarchyProvider {
+  prepareTypeHierarchy(
+    document: ITextModel,
+    position: IPosition,
+    token: CancellationToken,
+  ): ProviderResult<TypeHierarchySession>;
+  provideSupertypes(item: TypeHierarchyItem, token: CancellationToken): ProviderResult<TypeHierarchyItem[]>;
+  provideSubtypes(item: TypeHierarchyItem, token: CancellationToken): ProviderResult<TypeHierarchyItem[]>;
+}
+
+export interface ITypeHierarchyService {
+  registerTypeHierarchyProvider: (selector: any, provider: TypeHierarchyProvider) => void;
+
+  prepareTypeHierarchyProvider: (resource: URI, position: Position) => Promise<TypeHierarchyItem[]>;
+
+  provideSupertypes: (item: TypeHierarchyItem) => Promise<TypeHierarchyItem[]>;
+
+  provideSubtypes: (item: TypeHierarchyItem) => Promise<TypeHierarchyItem[]>;
+}
+
+export const ITypeHierarchyService = Symbol('ICallHierarchyService');
+
+export const TypeHierarchyProviderRegistry = new LanguageFeatureRegistry<TypeHierarchyProvider>();

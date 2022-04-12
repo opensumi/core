@@ -2687,6 +2687,29 @@ export class CallHierarchyOutgoingCall {
   }
 }
 
+@es5ClassCompat
+export class TypeHierarchyItem {
+  _sessionId?: string;
+  _itemId?: string;
+
+  kind: SymbolKind;
+  tags?: SymbolTag[];
+  name: string;
+  detail?: string;
+  uri: Uri;
+  range: Range;
+  selectionRange: Range;
+
+  constructor(kind: SymbolKind, name: string, detail: string, uri: Uri, range: Range, selectionRange: Range) {
+    this.kind = kind;
+    this.name = name;
+    this.detail = detail;
+    this.uri = uri;
+    this.range = range;
+    this.selectionRange = selectionRange;
+  }
+}
+
 export enum ViewColumn {
   Active = -1,
   Beside = -2,

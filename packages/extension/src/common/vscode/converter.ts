@@ -1298,6 +1298,47 @@ export namespace CallHierarchyItem {
   }
 }
 
+export namespace TypeHierarchyItem {
+
+	export function to(item: model.ITypeHierarchyItemDto): types.TypeHierarchyItem {
+		const result = new types.TypeHierarchyItem(
+			SymbolKind.to(item.kind),
+			item.name,
+			item.detail || '',
+			URI.revive(item.uri),
+			Range.to(item.range),
+			Range.to(item.selectionRange)
+		);
+
+		result._sessionId = item._sessionId;
+		result._itemId = item._itemId;
+
+		return result;
+	}
+
+	export function from(item: vscode.TypeHierarchyItem, sessionId?: string, itemId?: string): model.ITypeHierarchyItemDto {
+
+		sessionId = sessionId ?? (item as types.TypeHierarchyItem)._sessionId;
+		itemId = itemId ?? (item as types.TypeHierarchyItem)._itemId;
+
+		if (sessionId === undefined || itemId === undefined) {
+			throw new Error('invalid item');
+		}
+
+		return {
+			_sessionId: sessionId,
+			_itemId: itemId,
+			kind: SymbolKind.from(item.kind),
+			name: item.name,
+			detail: item.detail ?? '',
+			uri: item.uri,
+			range: Range.from(item.range),
+			selectionRange: Range.from(item.selectionRange),
+			tags: item.tags?.map(SymbolTag.from),
+		};
+	}
+}
+
 export namespace CallHierarchyIncomingCall {
   export function to(item: model.IIncomingCallDto): types.CallHierarchyIncomingCall {
     return new types.CallHierarchyIncomingCall(

@@ -14,6 +14,8 @@ import {
 import { ISingleEditOperation } from '@opensumi/ide-editor';
 // eslint-disable-next-line import/no-restricted-paths
 import type { CallHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
+// eslint-disable-next-line import/no-restricted-paths
+import type { TypeHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import type { CompletionItemLabel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -21,7 +23,7 @@ import type { languages, editor } from '@opensumi/monaco-editor-core/esm/vs/edit
 // 内置的api类型声明
 
 import { IndentAction, SymbolKind } from './ext-types';
-export { IMarkdownString, SymbolTag, CallHierarchyItem };
+export { IMarkdownString, SymbolTag, CallHierarchyItem, TypeHierarchyItem };
 
 export interface IRawColorInfo {
   color: [number, number, number, number];
@@ -685,6 +687,8 @@ export enum CompletionItemTag {
 export type Dto<T> = T extends { toJSON(): infer U } ? U : T extends object ? { [k in keyof T]: Dto<T[k]> } : T;
 
 export type ICallHierarchyItemDto = Dto<CallHierarchyItem>;
+
+export type ITypeHierarchyItemDto = Dto<TypeHierarchyItem>;
 
 export interface IIncomingCallDto {
   from: ICallHierarchyItemDto;
