@@ -16,6 +16,7 @@ import {
   ITerminalConnection,
   IPtyProcessChangeEvent,
 } from '../common';
+import { IXTerm } from '../common/xterm';
 
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 
@@ -137,6 +138,7 @@ export class TerminalInternalService implements ITerminalInternalService {
     cols: number,
     rows: number,
     launchConfig: IShellLaunchConfig,
+    xterm: IXTerm,
   ): Promise<ITerminalConnection | undefined> {
     if (launchConfig.customPtyImplementation) {
       const proxy = launchConfig.customPtyImplementation(sessionId, cols, rows) as TerminalProcessExtHostProxy;
@@ -153,6 +155,6 @@ export class TerminalInternalService implements ITerminalInternalService {
         onExit: proxy.onProcessExit.bind(proxy),
       };
     }
-    return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
+    return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig, xterm);
   }
 }

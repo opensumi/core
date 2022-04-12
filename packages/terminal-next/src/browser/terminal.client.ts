@@ -586,7 +586,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.logger.log('attach terminal by launchConfig: ', this._launchConfig);
 
     try {
-      connection = await this.internalService.attachByLaunchConfig(sessionId, cols, rows, this._launchConfig);
+      connection = await this.internalService.attachByLaunchConfig(
+        sessionId,
+        cols,
+        rows,
+        this._launchConfig,
+        this.xterm,
+      );
     } catch (e) {
       this.logger.error(`attach ${sessionId} terminal failed, _launchConfig`, JSON.stringify(this._launchConfig), e);
     }
