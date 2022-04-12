@@ -255,6 +255,9 @@ export const MainTerminalThemeOnThemeChange = new Emitter<any>();
 
 export class MockThemeService {
   onThemeChange = MainTerminalThemeOnThemeChange.event;
+  getCurrentThemeSync = () => ({
+    getColor: () => '#ff004f',
+  });
 }
 /** End */
 

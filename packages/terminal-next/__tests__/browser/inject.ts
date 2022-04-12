@@ -18,7 +18,6 @@ import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { TerminalProfileService } from '../../lib/browser/terminal.profile';
 import { createTerminalClientFactory, createTerminalClientFactory2 } from '../../src/browser/terminal.client';
 import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalInternalService } from '../../src/browser/terminal.internal.service';
@@ -53,7 +52,6 @@ import {
   MockProfileService,
   MockTerminalProfileInternalService,
 } from './mock.service';
-
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
@@ -156,7 +154,8 @@ export const injector = new Injector([
   {
     token: EnvironmentVariableServiceToken,
     useValue: {
-      onDidChangeCollections: () => Disposable.create(() => {}),
+      mergedCollection: undefined,
+      onDidChangeCollections: () => Disposable.NULL,
     },
   },
   {
