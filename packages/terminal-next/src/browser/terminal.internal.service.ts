@@ -10,7 +10,6 @@ import {
   ITerminalError,
   IPtyExitEvent,
   ITerminalController,
-  TerminalOptions,
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalConnection,
@@ -44,32 +43,6 @@ export class TerminalInternalService implements ITerminalInternalService {
 
   private _getExtHostProxy(id: string) {
     return this._processExtHostProxies.get(id);
-  }
-
-  async attach(
-    sessionId: string,
-    xterm: XTermTerminal,
-    rows: number,
-    cols: number,
-    options: TerminalOptions = {},
-    type: string,
-  ) {
-    if (options.isExtensionTerminal) {
-      const proxy = new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
-      proxy.start();
-      proxy.onProcessExit(() => {
-        this._processExtHostProxies.delete(sessionId);
-      });
-      this._processExtHostProxies.set(sessionId, proxy);
-      return {
-        name: options.name || 'ExtensionTerminal-' + sessionId,
-        readonly: false,
-        onData: proxy.onProcessData.bind(proxy),
-        sendData: proxy.input.bind(proxy),
-        onExit: proxy.onProcessExit.bind(proxy),
-      };
-    }
-    return this.service.attach(sessionId, xterm, rows, cols, options, type);
   }
 
   async sendText(sessionId: string, message: string) {

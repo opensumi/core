@@ -38,6 +38,14 @@ export interface ITerminalService {
    * @param sessionIds
    */
   check?(sessionIds: string[]): Promise<boolean>;
+
+  /**
+   * @param sessionId 会话唯一标识
+   * @param rows 终端初始化使用的列数
+   * @param cols 终端初始化使用的行数
+   * @param launchConfig 创建一个新终端的进程选项
+   * @param xterm 创建的 xterm 实例
+   */
   attachByLaunchConfig(
     sessionId: string,
     cols: number,
