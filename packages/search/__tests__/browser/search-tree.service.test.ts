@@ -183,7 +183,6 @@ describe('search.service.ts', () => {
     searchService.resultTotal = { resultNum: 2, fileNum: 1 };
 
     // without docModel
-    (searchService as any).workbenchEditorService = true;
     (searchService as any).searchAllFromDocModel = () => ({
       result: null,
     });
