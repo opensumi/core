@@ -12,6 +12,7 @@ export interface IXTerm {
   open(): void;
   fit(): void;
   findNext(text: string): boolean;
+  closeSearch(): void;
   updatePreferences(options: SupportedOptions): void;
   updateTheme(theme: ITheme | undefined): void;
 }
