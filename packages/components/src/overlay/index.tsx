@@ -18,6 +18,7 @@ export interface IOverlayProps {
   title?: ModalProps['title'];
   footer?: JSX.Element[] | JSX.Element;
   getContainer?: string | HTMLElement | getContainerFunc | false | null;
+  keyboard?: boolean;
 }
 
 export const Overlay: React.FC<IOverlayProps> = ({
@@ -29,6 +30,7 @@ export const Overlay: React.FC<IOverlayProps> = ({
   footer,
   title,
   getContainer,
+  keyboard,
   ...restProps
 }) => (
   <Modal
@@ -39,6 +41,7 @@ export const Overlay: React.FC<IOverlayProps> = ({
     title={title}
     getContainer={getContainer}
     className={clsx('kt-overlay', className)}
+    keyboard={keyboard}
     {...restProps}
   >
     {children}
