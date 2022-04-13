@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Event } from '@opensumi/ide-core-common';
 
-import { ITerminalSearchService, ITerminalGroupViewService, ITerminalController } from '../common';
+import { ITerminalSearchService, ITerminalGroupViewService, ITerminalController, ITerminalClient } from '../common';
 
 @Injectable()
 export class TerminalSearchService implements ITerminalSearchService {
@@ -23,26 +23,26 @@ export class TerminalSearchService implements ITerminalSearchService {
 
   onOpen: Event<void> = this._onOpen.event;
 
+  get client(): ITerminalClient | undefined {
+    return this.controller.findClientFromWidgetId(this.terminalView.currentWidget.id);
+  }
+
   open() {
     this.show = true;
     this._onOpen.fire();
   }
 
   close() {
+    this.client?.closeSearch();
     this.show = false;
   }
 
   clear() {
+    this.client?.closeSearch();
     this.input = '';
   }
 
   search() {
-    const client = this.controller.findClientFromWidgetId(this.terminalView.currentWidget.id);
-
-    if (!client) {
-      throw new Error('client not found');
-    }
-
-    client.findNext(this.input);
+    this.client?.findNext(this.input);
   }
 }

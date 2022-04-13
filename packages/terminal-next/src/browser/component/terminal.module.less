@@ -54,8 +54,16 @@
     background: var(--kt-panelTitle-background);
     border: none;
     outline: none;
-    padding: 3px 0px 3px 8px;
+    height: 28px;
+    padding: 0px 8px;
     font-size: 12px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: transparent;
+
+    &:focus {
+      border-color: var(--focusBorder);
+    }
   }
 
   div {
