@@ -21,6 +21,7 @@ import {
   OS,
   WORKSPACE_COMMANDS,
   AppConfig,
+  Throttler,
 } from '@opensumi/ide-core-browser';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
@@ -113,6 +114,9 @@ export class FileTreeContribution
   private readonly appConfig: AppConfig;
 
   private isRendered = false;
+
+  private deleteThrottler: Throttler = new Throttler();
+  private willDeleteUris: URI[] = [];
 
   get workspaceSuffixName() {
     return this.appConfig.workspaceSuffixName || DEFAULT_WORKSPACE_SUFFIX_NAME;
@@ -430,13 +434,17 @@ export class FileTreeContribution
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
         if (!uris) {
-          if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
-            uris = this.fileTreeModelService.selectedFiles.map((file) => file.uri);
+          if (this.fileTreeModelService.focusedFile) {
+            this.willDeleteUris.push(this.fileTreeModelService.focusedFile.uri);
+          } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+            this.willDeleteUris = this.willDeleteUris.concat(
+              this.fileTreeModelService.selectedFiles.map((file) => file.uri),
+            );
           } else {
             return;
           }
         }
-        this.fileTreeModelService.deleteFileByUris(uris);
+        return this.deleteThrottler.queue<void>(this.doDelete.bind(this));
       },
       isVisible: () =>
         !!this.fileTreeModelService.contextMenuFile &&
@@ -964,5 +972,11 @@ export class FileTreeContribution
       viewId: ExplorerResourceViewId,
       order: 5,
     });
+  }
+
+  private doDelete() {
+    const uris = this.willDeleteUris.slice();
+    this.willDeleteUris = [];
+    return this.fileTreeModelService.deleteFileByUris(uris);
   }
 }

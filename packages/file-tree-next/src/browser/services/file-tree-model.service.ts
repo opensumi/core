@@ -365,22 +365,39 @@ export class FileTreeModelService {
             this.selectFileDecoration(node, false);
             this.willSelectedNodePath = null;
           }
-        } else if (this.contextMenuFile) {
+        }
+
+        if (this.contextMenuFile) {
           const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
           if (node) {
-            this.selectFileDecoration(node as File, false);
+            this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+            this.contextMenuFile = node as File;
+            this.contextMenuDecoration.addTarget(node);
           }
-        } else if (this.focusedFile) {
+        }
+
+        if (this.focusedFile) {
           const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
           if (node) {
-            this.activeFileDecoration(node as File, false);
+            this.focusedDecoration.removeTarget(this.focusedFile);
+            this.focusedFile = node as File;
+            this.focusedDecoration.addTarget(node);
           }
-        } else if (this.selectedFiles.length !== 0) {
-          // 仅处理一下单选情况
-          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-          if (node) {
-            this.selectFileDecoration(node as File, false);
+        }
+
+        if (this.selectedFiles.length !== 0) {
+          const nodes: (File | Directory)[] = [];
+          this.selectedFiles.forEach((file) => {
+            this.selectedDecoration.removeTarget(file);
+          });
+          for (const file of this.selectedFiles) {
+            const node = this.treeModel?.root.getTreeNodeByPath(file.path);
+            if (node) {
+              this.selectedDecoration.addTarget(node);
+              nodes.push(node as File);
+            }
           }
+          this._selectedFiles = nodes;
         }
       }),
     );
@@ -1015,6 +1032,26 @@ export class FileTreeModelService {
     }
 
     const roots = this.fileTreeService.sortPaths(uris);
+    let nextFocusedFile;
+    if (this.treeModel.root.branchSize === uris.length) {
+      nextFocusedFile = undefined;
+    } else if (
+      this.selectedFiles.length &&
+      !roots.find((root) => root.path.toString() === this.selectedFiles[0].uri.toString())
+    ) {
+      // 当存在选中的文件时，默认选中首个文件作为焦点
+      nextFocusedFile = this.selectedFiles[0];
+    } else {
+      const lastFile = roots[roots.length - 1].node;
+      const lastIndex = this.treeModel.root.getIndexAtTreeNode(lastFile);
+      let nextIndex = lastIndex + 1;
+      if (nextIndex >= this.treeModel.root.branchSize) {
+        const firstFile = roots[0].node;
+        const firstIndex = this.treeModel.root.getIndexAtTreeNode(firstFile);
+        nextIndex = firstIndex - 1;
+      }
+      nextFocusedFile = this.treeModel.root.getTreeNodeAtIndex(nextIndex);
+    }
 
     const toPromise = [] as Promise<boolean>[];
 
@@ -1029,23 +1066,14 @@ export class FileTreeModelService {
     });
     this.treeModel.dispatchChange();
     await Promise.all(toPromise);
+    // 删除文件后重置一下当前焦点
+    if (nextFocusedFile) {
+      this.activeFileDecoration(nextFocusedFile);
+    }
   }
 
   async deleteFile(node: File | Directory, path: URI | string): Promise<boolean> {
     const uri = typeof path === 'string' ? new URI(path) : (path as URI);
-    // 提前缓存文件路径
-    let targetPath: string | URI | undefined;
-    // 当存在activeUri时，即存在压缩目录的子路径被删除
-    if (path) {
-      targetPath = uri;
-    } else if (this.focusedFile) {
-      // 使用path能更精确的定位新建文件位置，因为软连接情况下可能存在uri一致的情况
-      targetPath = this.focusedFile.path;
-    } else if (this.selectedFiles.length > 0) {
-      targetPath = this.selectedFiles[this.selectedFiles.length - 1].path;
-    } else {
-      targetPath = uri;
-    }
 
     const error = await this.fileTreeAPI.delete(uri);
     if (error) {
@@ -1062,18 +1090,9 @@ export class FileTreeModelService {
       this.contextKey?.explorerCompressedFocusContext.set(false);
       this.contextKey?.explorerCompressedFirstFocusContext.set(false);
       this.contextKey?.explorerCompressedLastFocusContext.set(false);
-      // 说明是异常情况或子路径删除
-      this.fileTreeService.refresh(_node.parent as Directory);
-
-      this.loadingDecoration.removeTarget(_node);
     };
 
     processNode(node);
-
-    const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
-    if (effectNode && !effectNode.uri.isEqual(uri)) {
-      processNode(effectNode);
-    }
 
     return true;
   }
