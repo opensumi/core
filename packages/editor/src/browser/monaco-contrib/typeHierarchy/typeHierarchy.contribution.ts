@@ -8,8 +8,15 @@ import {
   IContextKey,
   Uri,
 } from '@opensumi/ide-core-browser';
-import { ITypeHierarchyService, TypeHierarchyItem } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
+import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
+import {
+  ITypeHierarchyService,
+  TypeHierarchyProviderRegistry,
+  TypeHierarchyItem,
+} from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
+
+import { BrowserEditorContribution, IEditor, IEditorFeatureRegistry } from '../../types';
 
 export const executePrepareTypeHierarchyCommand = {
   id: '_executePrepareTypeHierarchy',
@@ -23,8 +30,15 @@ export const executeProvideSubtypesCommand = {
   id: '_executeProvideSubtypes',
 };
 
-@Domain(CommandContribution)
-export class TypeHierarchyContribution implements CommandContribution {
+const _ctxHasCallHierarchyProvider = new RawContextKey<boolean>('editorHasCallHierarchyProvider', false);
+
+@Domain(CommandContribution, BrowserEditorContribution)
+export class TypeHierarchyContribution implements CommandContribution, BrowserEditorContribution {
+  private ctxHasProvider: IContextKey<boolean>;
+
+  @Autowired(IContextKeyService)
+  protected readonly contextKeyService: IContextKeyService;
+
   @Autowired(ITypeHierarchyService)
   protected readonly typeHierarchyService: ITypeHierarchyService;
 
@@ -40,6 +54,25 @@ export class TypeHierarchyContribution implements CommandContribution {
 
     commands.registerCommand(executeProvideSubtypesCommand, {
       execute: (item: TypeHierarchyItem) => this.typeHierarchyService.provideSubtypes(item),
+    });
+  }
+
+  registerEditorFeature(registry: IEditorFeatureRegistry) {
+    this.ctxHasProvider = _ctxHasCallHierarchyProvider.bind(this.contextKeyService);
+
+    registry.registerEditorFeatureContribution({
+      contribute: (editor: IEditor) => {
+        const monacoEditor = editor.monacoEditor;
+        return Event.any<any>(
+          monacoEditor.onDidChangeModel,
+          monacoEditor.onDidChangeModelLanguage,
+          TypeHierarchyProviderRegistry.onDidChange,
+        )(() => {
+          if (monacoEditor.hasModel()) {
+            this.ctxHasProvider.set(TypeHierarchyProviderRegistry.has(monacoEditor.getModel()));
+          }
+        });
+      },
     });
   }
 }
