@@ -14,7 +14,6 @@ import { ExtensionHostManager } from '../../src/node/extension.host.manager';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 
-
 describe('Extension Serivce', () => {
   let injector: Injector;
   let extensionService: IExtensionNodeService;
@@ -160,10 +159,10 @@ describe('Extension Serivce', () => {
   });
 
   describe('getElectronMainThreadListenPath', () => {
-    it('should create connect listenPath', () => {
+    it('should create connect listenPath', async () => {
       const mockExtClientId = 'mock_id' + Math.random();
 
-      const listenPath = extensionService.getElectronMainThreadListenPath2(mockExtClientId);
+      const listenPath = await extensionService.getElectronMainThreadListenPath2(mockExtClientId);
       expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'sumi-ipc'));
     });
   });
