@@ -394,6 +394,5 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
 }
 
 function normalizeAjvValidationError(error: Ajv.ErrorObject) {
-  // TODO 变成可阅读的错误
   return error.message;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   DisposableCollection,
   getIcon,
@@ -13,6 +13,7 @@ import {
   PreferenceService,
   replaceLocalizePlaceholder,
   useInjectable,
+  formatLocalize,
 } from '@opensumi/ide-core-browser';
 import styles from './preferences.module.less';
 import classnames from 'classnames';
@@ -127,7 +128,7 @@ export const NextPreferenceItem = ({
           if (renderSchema.enum) {
             return <SelectPreferenceItem {...props} />;
           } else {
-            return <InputPreferenceItem {...props} />;
+            return <InputPreferenceItem {...props} isNumber={true} />;
           }
         case 'string':
           if (renderSchema.enum) {
@@ -242,12 +243,11 @@ function InputPreferenceItem({
   }, [currentValue]);
 
   const handleValueChange = (value) => {
-    if (hasValidateError(value)) {
-      // scheme校验失败
+    if (hasValidateError(isNumber && /^[0-9]+$/.test(value) ? Number(value) : value)) {
       return;
     }
+
     preferenceService.set(preferenceName, value, scope);
-    setValue(value);
   };
 
   function hasValidateError(value): ValidateMessage | undefined {
@@ -281,9 +281,11 @@ function InputPreferenceItem({
           <ValidateInput
             type={isNumber ? 'number' : 'text'}
             validate={hasValidateError}
-            onBlur={(event) => {
-              const value = isNumber ? event.target.valueAsNumber : event.target.value;
+            onBlur={() => {
               handleValueChange(value);
+            }}
+            onValueChange={(value) => {
+              setValue(value);
             }}
             value={value}
           />
@@ -364,7 +366,6 @@ function SelectPreferenceItem({
     if (optionEnumDescriptions && optionEnum) {
       return optionEnumDescriptions[optionEnum.indexOf(currentValue)] || '';
     }
-
     return '';
   }, [schema]);
   const [description, setDescription] = React.useState<string>(defaultDescription);
@@ -373,50 +374,61 @@ function SelectPreferenceItem({
     setValue(currentValue);
   }, [currentValue]);
 
-  const handlerValueChange = (value) => {
-    setValue(value);
-    preferenceService.set(preferenceName, value, scope);
-  };
+  React.useEffect(() => {
+    if (!value && !!optionEnum) {
+      for (const item of optionEnum as (string | boolean | number)[]) {
+        if (!value && item === schema.default) {
+          setValue(String(item));
+        }
+      }
+    }
+  }, [schema, value]);
+
+  const handlerValueChange = useCallback(
+    (val) => {
+      preferenceService.set(preferenceName, val, scope);
+      setValue(val);
+    },
+    [value, preferenceService],
+  );
 
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
 
-  const renderEnumOptions = () =>
-    optionEnum?.map((item, idx) => {
-      if (typeof item === 'boolean') {
-        item = String(item);
-      }
+  const renderEnumOptions = useCallback(
+    () =>
+      optionEnum?.map((item, idx) => {
+        if (typeof item === 'boolean') {
+          item = String(item);
+        }
 
-      return (
-        <Option
-          value={item}
-          label={replaceLocalizePlaceholder((labels[item] || item).toString())}
-          key={`${idx} - ${item}`}
-          className={styles.select_option}
-        >
-          {replaceLocalizePlaceholder((labels[item] || item).toString())}
-          {item === config.default && (
-            <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
-          )}
-        </Option>
-      );
-    });
+        return (
+          <Option
+            value={item}
+            label={replaceLocalizePlaceholder((labels[item] || item).toString())}
+            key={`${idx} - ${item}`}
+            className={styles.select_option}
+          >
+            {replaceLocalizePlaceholder((labels[item] || item).toString())}
+            {item === config.default && (
+              <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
+            )}
+          </Option>
+        );
+      }),
+    [optionEnum],
+  );
 
-  const renderNoneOptions = () =>
-    isElectronRenderer() ? (
-      <option value={localize('preference.stringArray.none')} key={NONE_SELECT_OPTION} disabled>
-        {localize('preference.stringArray.none')}
-      </option>
-    ) : (
-      <Option
-        value={localize('preference.stringArray.none')}
-        key={NONE_SELECT_OPTION}
-        label={localize('preference.stringArray.none')}
-        disabled
-      >
-        {localize('preference.stringArray.none')}
-      </Option>
-    );
+  const renderNoneOptions = () => (
+    <Option
+      value={localize('preference.stringArray.none')}
+      key={NONE_SELECT_OPTION}
+      label={localize('preference.stringArray.none')}
+      disabled
+    >
+      {localize('preference.stringArray.none')}
+    </Option>
+  );
 
   const options = optionEnum && optionEnum.length > 0 ? renderEnumOptions() : renderNoneOptions();
 
@@ -459,6 +471,7 @@ function SelectPreferenceItem({
           className={styles.select_control}
           description={description}
           onMouseEnter={handleDescriptionChange}
+          notMatchWarning={hasValueInScope ? formatLocalize('preference.item.notValid', value) : ''}
         >
           {options}
         </Select>

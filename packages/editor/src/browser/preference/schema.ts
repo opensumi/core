@@ -319,9 +319,8 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.fontWeight': {
     type: 'string',
-    enum: ['normal', 'bold', '100', '200', '300', '400', '500', '600', '700', '800', '900'],
     default: EDITOR_FONT_DEFAULTS.fontWeight,
-    description: localize('fontWeight', 'Controls the font weight.'),
+    description: localize('editor.configuration.fontWeight'),
   },
   'editor.fontSize': {
     type: 'number',
@@ -1701,10 +1700,6 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.fontFamily': {
     type: 'string',
     default: EDITOR_FONT_DEFAULTS.fontFamily,
-  },
-  'editor.fontWeight': {
-    type: 'string',
-    default: EDITOR_FONT_DEFAULTS.fontWeight,
   },
   'editor.fontSize': {
     type: 'number',
