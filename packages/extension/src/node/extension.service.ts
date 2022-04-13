@@ -310,7 +310,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (options?.enableDebugExtensionHost || isDevelopment()) {
       // 开发模式下指定调试端口时，尝试从指定的端口开始寻找可用的空闲端口
       // 避免打开多个窗口(多个插件进程)时端口被占用
-      //
+
       const port = await this.extensionHostManager.findDebugPort(this.inspectPort, 10, 5000);
       forkOptions.execArgv.push('--nolazy');
       forkOptions.execArgv.push(`--inspect=${port}`);
@@ -361,9 +361,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 
-    this._getExtHostConnection2(clientId, options);
+    await this._getExtHostConnection2(clientId, options);
 
-    this.processHandshake(extProcessId, forkTimer, clientId);
+    await this.processHandshake(extProcessId, forkTimer, clientId);
   }
 
   public async ensureProcessReady(clientId: string): Promise<boolean> {
@@ -604,6 +604,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   private async _getExtHostConnection2(clientId: string, options?: ICreateProcessOptions) {
+    await new Promise<void>((res) => {
+      setTimeout(() => {
+        res();
+      }, 1000);
+    });
     const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
     // 先使用单个 server，再尝试单个 server 与多个进程进行连接
     const extServer = net.createServer();
