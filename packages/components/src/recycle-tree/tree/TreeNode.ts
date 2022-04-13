@@ -572,8 +572,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
       while ((forceLoadPath = expandedPaths.shift())) {
-        const relativePath = new Path(this.path).relative(new Path(forceLoadPath));
-        if (!relativePath) {
+        const isRelative = forceLoadPath.indexOf(this.path) >= 0;
+        if (!isRelative) {
           break;
         }
         const child = TreeNode.getTreeNodeByPath(forceLoadPath);
@@ -585,13 +585,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           for (const child of this.children) {
             if (forceLoadPath.indexOf(child.path) === 0 && CompositeTreeNode.is(child)) {
               // 包含压缩节点的情况
-              // 加载路径包含当前判断路径，尝试加载该节点再匹配
-              const resolved = await (child as CompositeTreeNode).hardReloadChildren(true);
-              if ((child as CompositeTreeNode).isExpanded || !resolved) {
+              if ((child as CompositeTreeNode).isExpanded) {
                 // 说明此时节点初始化时已默认展开或被裁切，不需要进一步处理
                 continue;
               }
               (child as CompositeTreeNode).isExpanded = true;
+              // 加载路径包含当前判断路径，尝试加载该节点再匹配
+              const resolved = await (child as CompositeTreeNode).hardReloadChildren(true);
+              if (!resolved) {
+                continue;
+              }
               if (expandedPaths.length > 0) {
                 // 不需要重新reload压缩节点的子节点内容
                 await (child as CompositeTreeNode).forceReloadChildrenQuiet(expandedPaths, false);
