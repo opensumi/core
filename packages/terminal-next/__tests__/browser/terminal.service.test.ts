@@ -93,9 +93,6 @@ describe('terminal service test cases', () => {
         $resolveUnixShellPath(p) {
           return p;
         },
-        $resolvePotentialUnixShellPath() {
-          return 'detectedBash';
-        },
       },
     });
 
@@ -123,7 +120,7 @@ describe('terminal service test cases', () => {
     expect(windowClientId).toMatch(/^test-window-client-id.*/);
   });
 
-  it('[attach] should be valid launchConfig with a valid shell path and ignore type', async () => {
+  it('[attachByLaunchConfig] should be valid launchConfig with a valid shell path and ignore type', async () => {
     await terminalService.attachByLaunchConfig(
       sessionId,
       200,
@@ -134,10 +131,6 @@ describe('terminal service test cases', () => {
       {} as any,
     );
     expect(launchConfig?.executable).toEqual(shellPath);
-  });
-  it('[attach] should be valid launchConfig with empty type or default', async () => {
-    await terminalService.attachByLaunchConfig(sessionId, 200, 200, {}, {} as any);
-    expect(launchConfig?.executable).toEqual('detectedBash');
   });
 
   it('[attachByLaunchConfig] can launch valid config', async () => {
