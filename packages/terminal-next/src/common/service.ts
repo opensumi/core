@@ -51,7 +51,7 @@ export interface ITerminalService {
     cols: number,
     rows: number,
     launchConfig: IShellLaunchConfig,
-    xterm: IXTerm,
+    xterm?: IXTerm,
   ): Promise<ITerminalConnection | undefined>;
   /**
    *
