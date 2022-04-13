@@ -21,7 +21,7 @@ import {
   ExtensionConnectOption,
   ExtensionConnectModeOption,
 } from '@opensumi/ide-core-common';
-import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import {
   Deferred,
   isWindows,
@@ -129,8 +129,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return await ExtensionScanner.getExtension(extensionPath, localization, extraMetaData);
   }
 
-  private getIPCHandlerPath(name: string) {
-    return normalizedIpcHandlerPath(name, true, this.appConfig.extHostIPCSockPath);
+  private async getIPCHandlerPath(name: string) {
+    return await normalizedIpcHandlerPathAsync(name, true, this.appConfig.extHostIPCSockPath);
   }
 
   public async getExtServerListenOption(
@@ -142,7 +142,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const options: net.ListenOptions = {};
 
       if (mode === ExtensionConnectModeOption.IPC) {
-        options.path = this.getIPCHandlerPath('ext_process');
+        options.path = await this.getIPCHandlerPath('ext_process');
       } else {
         options.port = await findFreePort(this.inspectPort, 10, 5000);
         options.host = host;
@@ -154,15 +154,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return this.extServerListenOptions.get(clientId)!;
   }
 
-  public getElectronMainThreadListenPath(clientId: string): string {
+  public async getElectronMainThreadListenPath(clientId: string): Promise<string> {
     if (!this.electronMainThreadListenPaths.has(clientId)) {
-      this.electronMainThreadListenPaths.set(clientId, this.getIPCHandlerPath('main_thread'));
+      this.electronMainThreadListenPaths.set(clientId, await this.getIPCHandlerPath('main_thread'));
     }
     return this.electronMainThreadListenPaths.get(clientId)!;
   }
 
-  public getElectronMainThreadListenPath2(clientId: string): string {
-    return this.getElectronMainThreadListenPath(clientId);
+  public async getElectronMainThreadListenPath2(clientId: string): Promise<string> {
+    return await this.getElectronMainThreadListenPath(clientId);
   }
 
   private setExtProcessConnectionForward() {
@@ -450,7 +450,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (process.env.KTELECTRON) {
       const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
       const mainThreadServer: net.Server = net.createServer();
-      const mainThreadListenPath = this.getElectronMainThreadListenPath2(clientId);
+      const mainThreadListenPath = await this.getElectronMainThreadListenPath2(clientId);
       this.logger.log('mainThreadListenPath', mainThreadListenPath);
 
       try {
@@ -458,15 +458,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           await fs.unlink(mainThreadListenPath);
         }
       } catch (e) {
-        this.logger.error(e);
+        this.logger.error('unlink mainThreadListenPath error', e);
       }
-
-      await new Promise<void>((resolve) => {
-        mainThreadServer.listen(mainThreadListenPath, () => {
-          this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
-          resolve();
-        });
-      });
 
       mainThreadServer.on('connection', (connection) => {
         this.logger.log(`electron ext main connected ${clientId}`);
@@ -483,6 +476,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           this.logger.log('close disposeClientExtProcess clientId', clientId);
           // electron 只要端口进程就杀死插件进程
           this.disposeClientExtProcess(clientId);
+        });
+      });
+
+      await new Promise<void>((resolve) => {
+        mainThreadServer.listen(mainThreadListenPath, () => {
+          this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
+          resolve();
         });
       });
     } else {

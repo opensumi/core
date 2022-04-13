@@ -8,7 +8,7 @@ import treeKill from 'tree-kill';
 import { Injectable, Autowired } from '@opensumi/di';
 import { ExtensionCandidate } from '@opensumi/ide-core-common';
 import { Disposable, getDebugLogger, isOSX, URI, FileUri, Deferred } from '@opensumi/ide-core-common';
-import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 
@@ -190,7 +190,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.windowClientId,
       this.appConfig.extensionDir,
     );
-    this.rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
+    this.rpcListenPath = await normalizedIpcHandlerPathAsync('electron-window', true);
     await this.node.start(this.rpcListenPath!, (this.workspace || '').toString());
     this._nodeReady.resolve();
   }
