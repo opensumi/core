@@ -604,11 +604,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   private async _getExtHostConnection2(clientId: string, options?: ICreateProcessOptions) {
-    await new Promise<void>((res) => {
-      setTimeout(() => {
-        res();
-      }, 1000);
-    });
     const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
     // 先使用单个 server，再尝试单个 server 与多个进程进行连接
     const extServer = net.createServer();
