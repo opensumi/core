@@ -374,6 +374,16 @@ function SelectPreferenceItem({
     setValue(currentValue);
   }, [currentValue]);
 
+  React.useEffect(() => {
+    if (!value && !!optionEnum) {
+      for (const item of optionEnum as (string | boolean | number)[]) {
+        if (!value && item === schema.default) {
+          setValue(String(item));
+        }
+      }
+    }
+  }, [schema, value]);
+
   const handlerValueChange = useCallback(
     (val) => {
       preferenceService.set(preferenceName, val, scope);
@@ -390,9 +400,6 @@ function SelectPreferenceItem({
       optionEnum?.map((item, idx) => {
         if (typeof item === 'boolean') {
           item = String(item);
-        }
-        if (!value && item === config.default) {
-          setValue(String(item));
         }
 
         return (
