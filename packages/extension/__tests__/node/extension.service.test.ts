@@ -115,6 +115,7 @@ describe('Extension Serivce', () => {
   });
 
   describe('extension host process', () => {
+    jest.setTimeout(10 * 1000);
     it('should create extension host process', async () => {
       const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);
