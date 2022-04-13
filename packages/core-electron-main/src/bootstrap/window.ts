@@ -28,7 +28,8 @@ let windowClientCount = 0;
 const defaultWebPreferences: WebPreferences = {
   webviewTag: true,
   contextIsolation: false,
-  defaultFontSize: 14,
+  defaultFontSize: 13,
+  minimumFontSize: 12,
 };
 
 @Injectable({ multiple: true })
