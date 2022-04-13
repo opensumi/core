@@ -248,6 +248,7 @@ export const localizationBundle = {
     'dialog.file.saveLabel': 'Save File:',
     'dialog.file.close': 'Close',
     'dialog.file.ok': 'OK',
+    'dialog.ensure': 'OK',
     'menu-bar.file.pref': 'Preference',
 
     'editorOpenType.code': 'Code',

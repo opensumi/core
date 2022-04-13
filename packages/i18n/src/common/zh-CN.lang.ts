@@ -217,6 +217,7 @@ export const localizationBundle = {
     'dialog.file.saveLabel': '保存文件：',
     'dialog.file.close': '关闭',
     'dialog.file.ok': '确定',
+    'dialog.ensure': '确定',
     'menu-bar.file.pref': '设置',
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',

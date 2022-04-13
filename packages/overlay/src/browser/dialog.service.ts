@@ -1,15 +1,20 @@
 import { observable, action } from 'mobx';
 
-import { Injectable } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { Deferred, MessageType } from '@opensumi/ide-core-common';
 
 import { IDialogService, AbstractMessageService, Icon } from '../common';
+
+import { DialogContextKey } from './dialog.contextkey';
 
 @Injectable()
 export class DialogService extends AbstractMessageService implements IDialogService {
   protected type: MessageType | undefined;
 
   protected deferred: Deferred<any>;
+
+  @Autowired(DialogContextKey)
+  private readonly contextkeyService: DialogContextKey;
 
   @observable
   protected visible = false;
@@ -37,6 +42,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this.type = type;
     this.message = message;
     this.visible = true;
+    this.contextkeyService.dialogViewVisibleContext.set(true);
     this.closable = closable;
     if (buttons) {
       this.buttons = buttons;
@@ -47,6 +53,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   @action
   hide<T = string>(value?: T): void {
     this.visible = false;
+    this.contextkeyService.dialogViewVisibleContext.set(false);
     this.deferred.resolve(value);
   }
 

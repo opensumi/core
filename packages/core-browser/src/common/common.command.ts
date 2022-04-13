@@ -744,4 +744,13 @@ export namespace KEYBOARD_COMMANDS {
   };
 }
 
+export namespace DIALOG_COMMANDS {
+  const CATEGORY = 'dialog';
+
+  export const ENSURE: Command = {
+    id: 'dialog.ensure',
+    category: CATEGORY,
+  };
+}
+
 export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';

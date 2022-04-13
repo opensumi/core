@@ -28,6 +28,7 @@ export interface IDialogProps extends IOverlayProps {
   okText?: string;
   cancelText?: string;
   getContainer?: string | HTMLElement | getContainerFunc | false | null;
+  keyboard?: boolean;
 }
 
 const DefaultButtons = ({ onCancel, onOk, cancelText, okText }) => (
@@ -57,6 +58,7 @@ export const Dialog: React.FC<IDialogProps> = ({
   okText,
   cancelText,
   getContainer,
+  keyboard,
 }) => {
   const { getIcon } = React.useContext(IconContext);
   return (
@@ -66,6 +68,7 @@ export const Dialog: React.FC<IDialogProps> = ({
       title={type === 'basic' ? title : null}
       closable={type === 'basic'}
       getContainer={getContainer}
+      keyboard={keyboard}
       footer={
         type === 'basic'
           ? buttons || <DefaultButtons onCancel={onCancel} onOk={onOk} okText={okText} cancelText={cancelText} />
