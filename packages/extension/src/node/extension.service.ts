@@ -361,9 +361,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 
-    await this._getExtHostConnection2(clientId, options);
+    await this._setupExtHostConnection(clientId, options);
 
-    await this.processHandshake(extProcessId, forkTimer, clientId);
+    // 不用 await，因为这个比较耗时并且不需要 await 返回
+    this.processHandshake(extProcessId, forkTimer, clientId);
   }
 
   public async ensureProcessReady(clientId: string): Promise<boolean> {
@@ -603,7 +604,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
   }
 
-  private async _getExtHostConnection2(clientId: string, options?: ICreateProcessOptions) {
+  private async _setupExtHostConnection(clientId: string, options?: ICreateProcessOptions) {
     const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
     // 先使用单个 server，再尝试单个 server 与多个进程进行连接
     const extServer = net.createServer();
@@ -618,7 +619,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     const extConnection = await new Promise((resolve) => {
       extServer.on('connection', (connection) => {
-        this.logger.log('_getExtHostConnection2 ext host connected');
+        this.logger.log('_setupExtHostConnection ext host connected');
 
         const connectionObj = {
           connection,
