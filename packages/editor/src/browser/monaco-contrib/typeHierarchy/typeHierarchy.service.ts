@@ -133,4 +133,24 @@ export class TypeHierarchyService implements ITypeHierarchyService {
       textModelReference?.dispose();
     }
   }
+
+  async provideSupertypes(item: TypeHierarchyItem) {
+    // find model
+    const model = this.models.get(item._sessionId);
+    if (!model) {
+      return undefined;
+    }
+
+    return model.provideSupertypes(item, CancellationToken.None);
+  }
+
+  async provideSubtypes(item: TypeHierarchyItem) {
+    // find model
+    const model = this.models.get(item._sessionId);
+    if (!model) {
+      return undefined;
+    }
+
+    return model.provideSubtypes(item, CancellationToken.None);
+  }
 }

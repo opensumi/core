@@ -41,11 +41,11 @@ export interface ITypeHierarchyService {
 
   prepareTypeHierarchyProvider: (resource: URI, position: Position) => Promise<TypeHierarchyItem[]>;
 
-  provideSupertypes: (item: TypeHierarchyItem) => Promise<TypeHierarchyItem[]>;
+  provideSupertypes: (item: TypeHierarchyItem) => ProviderResult<TypeHierarchyItem[]>;
 
-  provideSubtypes: (item: TypeHierarchyItem) => Promise<TypeHierarchyItem[]>;
+  provideSubtypes: (item: TypeHierarchyItem) => ProviderResult<TypeHierarchyItem[]>;
 }
 
-export const ITypeHierarchyService = Symbol('ICallHierarchyService');
+export const ITypeHierarchyService = Symbol('ITypeHierarchyService');
 
 export const TypeHierarchyProviderRegistry = new LanguageFeatureRegistry<TypeHierarchyProvider>();
