@@ -1033,7 +1033,9 @@ export class FileTreeModelService {
 
     const roots = this.fileTreeService.sortPaths(uris);
     let nextFocusedFile;
-    if (
+    if (this.treeModel.root.branchSize === uris.length) {
+      nextFocusedFile = undefined;
+    } else if (
       this.selectedFiles.length &&
       !roots.find((root) => root.path.toString() === this.selectedFiles[0].uri.toString())
     ) {
