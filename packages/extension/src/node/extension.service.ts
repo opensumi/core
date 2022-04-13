@@ -474,11 +474,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         });
       });
 
-      await new Promise<void>((resolve) => {
-        mainThreadServer.listen(mainThreadListenPath, () => {
-          this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
-          resolve();
-        });
+      mainThreadServer.listen(mainThreadListenPath, () => {
+        this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
       });
     } else {
       commonChannelPathHandler.register('ExtMainThreadConnection', {
@@ -609,7 +606,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       fs.unlink(extServerListenOptions.path).catch(() => {});
     }
 
-    await new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       extServer.on('connection', (connection) => {
         this.logger.log('_setupExtHostConnection ext host connected');
         this.clientExtProcessExtConnection.set(clientId, {
