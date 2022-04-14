@@ -38,7 +38,7 @@ export { Mode as QuickOpenMode };
 
 export interface QuickTitleButton {
   iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
-  icon: string; // a background image coming from a url
+  icon?: string; // a background image coming from a url
   iconClass?: string; // a class such as one coming from font awesome
   tooltip?: string;
   // undefined 在 QuickTitleBar 中视为为右侧
@@ -52,12 +52,29 @@ export interface QuickInputButton {
   /**
    * Icon for the button.
    */
-  readonly iconPath: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+  readonly iconPath: URI | { light: URI; dark: URI } | ThemeIcon;
 
   /**
    * An optional tooltip.
    */
   readonly tooltip?: string | undefined;
+
+  /**
+   * a class such as one coming from font awesome
+   */
+  readonly iconClass?: string;
+
+  /**
+   * An optional id for the button.
+   */
+  handle?: number;
+}
+
+export interface IQuickPickItemButtonEvent {
+  button: QuickInputButton;
+  item: {
+    handle: number;
+  };
 }
 
 /**
@@ -129,7 +146,7 @@ export interface QuickOpenItemOptions {
 
   value?: any;
 
-  buttons?: QuickTitleButton[];
+  buttons?: QuickInputButton[];
 }
 
 export class QuickOpenItem {
@@ -202,7 +219,7 @@ export class QuickOpenItem {
   getValue(): any {
     return this.options.value;
   }
-  getButtons(): QuickTitleButton[] {
+  getButtons(): QuickInputButton[] {
     return this.options.buttons || [];
   }
 }

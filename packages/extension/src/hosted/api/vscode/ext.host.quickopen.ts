@@ -200,6 +200,12 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   $onDidTriggerButton(btnHandler: number): void {
     return (this.createdQuicks.get(this.currentQuick) as ExtQuickPick<vscode.QuickPickItem>)?.attachBtn(btnHandler);
   }
+  $onDidTriggerItemButton(itemHandler: number, btnHandler: number): void {
+    return (this.createdQuicks.get(this.currentQuick) as ExtQuickPick<vscode.QuickPickItem>)?.attachItemBtn(
+      itemHandler,
+      btnHandler,
+    );
+  }
   showInputBox(
     options: vscode.InputBoxOptions = {},
     token: CancellationToken = CancellationToken.None,
@@ -238,11 +244,13 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   step: number | undefined;
   title: string | undefined;
   totalSteps: number | undefined;
-  value: string;
-  _buttons: [];
-  private _items: T[];
-  private _activeItems: T[];
-  private _placeholder: string | undefined;
+  value = '';
+  _buttons: [] = [];
+  private _items: T[] = [];
+  private _handlesToItems: Map<number, T> = new Map();
+  private _itemsToHandles: Map<T, number> = new Map();
+  private _activeItems: T[] = [];
+  private _placeholder: string | undefined = '';
   private disposableCollection: DisposableCollection;
   private readonly _onDidHideEmitter: Emitter<void>;
   private readonly _onDidAcceptEmitter: Emitter<void>;
@@ -258,11 +266,6 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   constructor(readonly quickOpen: IExtHostQuickOpen, quickPickIndex: number) {
     this.quickPickIndex = quickPickIndex;
-    this._items = [];
-    this._activeItems = [];
-    this._placeholder = '';
-    this._buttons = [];
-    this.value = '';
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push((this._onDidHideEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
@@ -279,6 +282,13 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   set items(activeItems: T[]) {
     this._items = activeItems;
+    this._handlesToItems.clear();
+    this._itemsToHandles.clear();
+    this._items.forEach((item, i) => {
+      this._handlesToItems.set(i, item);
+      this._itemsToHandles.set(item, i);
+    });
+
     // 说明是先 show，再设置 item
     if (this.didShow) {
       this.show();
@@ -348,6 +358,21 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   attachBtn(btnHandler: number): void {
     const btn = this.buttons[btnHandler];
     return this._onDidTriggerButtonEmitter.fire(btn);
+  }
+
+  attachItemBtn(itemhandler: number, btnHandler: number): void {
+    const item = this._handlesToItems.get(itemhandler);
+    if (!item || !item.buttons || !item.buttons.length) {
+      return;
+    }
+
+    const button = item.buttons[btnHandler];
+    if (button) {
+      return this._onDidTriggerItemButtonEmitter.fire({
+        button,
+        item,
+      });
+    }
   }
 
   hide(): void {

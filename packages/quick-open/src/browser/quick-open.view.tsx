@@ -13,6 +13,7 @@ import {
 import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
 import {
   HideReason,
+  QuickInputButton,
   QuickOpenAction,
   QuickOpenItem,
   QuickOpenMode,
@@ -23,6 +24,7 @@ import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base
 
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';
+import { QuickOpenItemService } from './quick-open-item.service';
 import { QuickOpenContext } from './quick-open.type';
 import { QuickTitleBar } from './quick-title-bar';
 import styles from './styles.module.less';
@@ -162,6 +164,7 @@ export const QuickOpenInput = observer(() => {
 
 const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index }) => {
   const { widget } = React.useContext(QuickOpenContext);
+  const quickOpenItemService = useInjectable<QuickOpenItemService>(QuickOpenItemService);
 
   const label = React.useMemo(() => data.getLabel(), [data]);
 
@@ -177,7 +180,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   const showBorder = React.useMemo(() => data.showBorder(), [data]);
 
-  const buttons = React.useMemo(() => data.getButtons(), [data]);
+  const buttons = React.useMemo(() => quickOpenItemService.getButtons(data.getButtons()), [data]);
 
   const [labelHighlights, descriptionHighlights, detailHighlights] = React.useMemo(() => data.getHighlights(), [data]);
 
@@ -214,11 +217,9 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
   );
 
   const onSelectButton = React.useCallback(
-    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickTitleButton) => {
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickInputButton) => {
       event.stopPropagation();
-      // eslint-disable-next-line no-console
-      console.log('xxxxx');
-      // quickTitleBar.fireDidTriggerButton(button);
+      quickOpenItemService.fireDidTriggerItemButton(index, button);
     },
     [data],
   );
@@ -296,7 +297,7 @@ export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => vo
   const getSize = React.useCallback(
     (index) => {
       const item = widget.items[index];
-      return item?.getDetail() ? 44 : 22;
+      return item?.getDetail() ? 40 : 22;
     },
     [widget.items],
   );
