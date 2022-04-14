@@ -11,7 +11,13 @@ import {
   isUndefined,
   Disposable,
 } from '@opensumi/ide-core-common';
-import { QuickInputOptions, QuickPickItem, QuickPickOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
+import {
+  QuickInputButton,
+  QuickInputOptions,
+  QuickPickItem,
+  QuickPickOptions,
+  QuickTitleButton,
+} from '@opensumi/ide-quick-open';
 
 import {
   MainThreadAPIIdentifier,
@@ -75,12 +81,12 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
           value: index,
         };
       } else {
-        const quickPickItem: any = {
+        const quickPickItem: QuickPickItem<number> = {
           label: item.label,
           description: item.description,
           detail: item.detail,
           value: index, // handle
-          buttons: item.buttons,
+          buttons: item.buttons as QuickInputButton[],
         };
 
         return quickPickItem;
