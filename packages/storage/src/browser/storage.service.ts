@@ -123,7 +123,9 @@ export class WorkspaceStorageServer extends StorageServer {
         try {
           items = JSON.parse(data.content.toString());
         } catch (error) {
-          this.logger.error(`Storage [${storageName}] content can not be parse. Error: ${error.stack}`);
+          this.logger.error(
+            `Storage [${storageName}] content can not be parse with path ${uriString}. Error: ${error.stack}`,
+          );
           items = {};
         }
       }
