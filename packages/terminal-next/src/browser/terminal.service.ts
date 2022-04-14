@@ -4,7 +4,7 @@ import { Emitter, ILogger, Event } from '@opensumi/ide-core-common';
 import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { Emitter as Dispatcher } from 'event-kit';
 import { AppConfig, electronEnv, PreferenceService } from '@opensumi/ide-core-browser';
-import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
+import { WSChannelHandler as IWSChanneHandler } from '@opensumi/ide-connection';
 import {
   generateSessionId,
   ITerminalService,
@@ -70,8 +70,8 @@ export class NodePtyTerminalService implements ITerminalService {
     if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
       return electronEnv.metadata.windowClientId + '|' + generateSessionId();
     } else {
-      const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      return WSChannelHandler.clientId + '|' + generateSessionId();
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      return WSChanneHandler.clientId + '|' + generateSessionId();
     }
   }
 

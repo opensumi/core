@@ -1,12 +1,13 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
+  createSocketConnection,
   initRPCService,
   IRPCProtocol,
   RPCProtocol,
   RPCServiceCenter,
-  createWebSocketConnection,
+  WSChannelHandler as IWSChannelHandler,
 } from '@opensumi/ide-connection';
-import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   AppConfig,
   Deferred,
@@ -171,7 +172,6 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       if ((window as any).getMessageConnection) {
         connection = (window as any).getMessageConnection();
       } else {
-        const { createSocketConnection } = require('@opensumi/ide-connection/lib/node');
         const socket = (window as any).createNetConnection(connectPath);
         connection = createSocketConnection(socket);
       }

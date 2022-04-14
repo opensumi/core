@@ -65,8 +65,9 @@ export class MockWorker {
           userAgent: 'Node.js Sandbox',
         },
         setTimeout,
-        attachEvent: () => {},
-        addEventListener: () => {},
+        attachEvent: (listener) => {
+          //
+        },
       };
 
       const context = vm.createContext({

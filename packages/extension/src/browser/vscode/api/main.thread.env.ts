@@ -1,7 +1,6 @@
 import type vscode from 'vscode';
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRPCProtocol } from '@opensumi/ide-connection';
-import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { IRPCProtocol, WSChannelHandler } from '@opensumi/ide-connection';
 import { ILoggerManagerClient } from '@opensumi/ide-logs/lib/browser';
 import { IMainThreadEnv, IExtHostEnv, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { UIKind, UriComponents } from '../../../common/vscode/ext-types';

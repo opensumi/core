@@ -11,8 +11,7 @@ import {
 } from '../common';
 import net from 'net';
 import { RPCServiceCenter, INodeLogger } from '@opensumi/ide-core-node';
-import { getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { createSocketConnection, getRPCService, RPCProtocol, IRPCProtocol } from '@opensumi/ide-connection';
 
 @Injectable()
 export class ExtensionHostProxyManager implements IExtensionHostManager {
