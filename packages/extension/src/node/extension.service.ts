@@ -229,6 +229,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.disposeClientExtProcess(killProcessClientId);
       this.logger.error(`Process count is over limit, max count is ${maxExtProcessCount}`);
     }
+
+    // 创建插件进程监听的 socket
+    const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
+    // 先使用单个 server，再尝试单个 server 与多个进程进行连接
+    const extServer = net.createServer();
+    this.clientExtProcessExtConnectionServer.set(clientId, extServer);
+
+    if (!isWindows && extServerListenOptions.path) {
+      fs.unlink(extServerListenOptions.path).catch(() => {});
+    }
+
+    // await this._createExtHostProcess(clientId, options);
+    await Promise.all([
+      this._createExtHostProcess(clientId, options),
+      this._setupExtHostConnection(clientId, extServer, extServerListenOptions),
+    ]);
+  }
+
+  private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
     let preloadPath;
     let forkOptions: cp.ForkOptions = {
       // 防止 childProcess.stdout 为 null
@@ -360,8 +379,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.logger.log('clientExtProcessMap.keys', this.clientExtProcessMap.keys());
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
-
-    await this._setupExtHostConnection(clientId, options);
 
     this.processHandshake(extProcessId, forkTimer, clientId);
   }
@@ -595,17 +612,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
   }
 
-  private async _setupExtHostConnection(clientId: string, options?: ICreateProcessOptions) {
-    // 创建插件进程监听的 socket
-    const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
-    // 先使用单个 server，再尝试单个 server 与多个进程进行连接
-    const extServer = net.createServer();
-    this.clientExtProcessExtConnectionServer.set(clientId, extServer);
-
-    if (!isWindows && extServerListenOptions.path) {
-      fs.unlink(extServerListenOptions.path).catch(() => {});
-    }
-
+  private async _setupExtHostConnection(clientId: string, extServer: net.Server, options: net.ListenOptions) {
     await new Promise<void>((resolve) => {
       extServer.on('connection', (connection) => {
         this.logger.log('_setupExtHostConnection ext host connected');
@@ -616,8 +623,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         resolve();
       });
 
-      extServer.listen(extServerListenOptions, () => {
-        this.logger.log(`${clientId} ext server listen on ${JSON.stringify(extServerListenOptions)}`);
+      extServer.listen(options, () => {
+        this.logger.log(`${clientId} ext server listen on ${JSON.stringify(options)}`);
       });
     });
   }
