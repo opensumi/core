@@ -35,6 +35,14 @@ declare module 'vscode' {
      * not implemented yet
      */
     alwaysShow?: boolean;
+
+    /**
+		 * Optional buttons that will be rendered on this particular item. These buttons will trigger
+		 * an {@link QuickPickItemButtonEvent} when clicked. Buttons are only rendered when using a quickpick
+		 * created by the {@link window.createQuickPick()} API. Buttons are not rendered when using
+		 * the {@link window.showQuickPick()} API.
+		 */
+		buttons?: QuickInputButton[];
   }
 
 
@@ -80,6 +88,13 @@ declare module 'vscode' {
      * An event signaling when a button was triggered.
      */
     readonly onDidTriggerButton: Event<QuickInputButton>;
+
+
+    /**
+     * An event signaling when a button in a particular {@link QuickPickItem} was triggered.
+     * This event does not fire for buttons in the title bar.
+     */
+    readonly onDidTriggerItemButton: Event<QuickPickItemButtonEvent<T>>;
 
     /**
      * Items to pick from.
@@ -130,9 +145,9 @@ declare module 'vscode' {
    */
   export interface QuickPickOptions {
 
-		/**
-		 * An optional string that represents the title of the quick pick.
-		 */
+    /**
+     * An optional string that represents the title of the quick pick.
+     */
     title?: string;
 
     /**
@@ -265,9 +280,9 @@ declare module 'vscode' {
   export interface InputBoxOptions {
 
     /**
-		 * An optional string that represents the title of the input box.
-		 */
-		title?: string;
+     * An optional string that represents the title of the input box.
+     */
+    title?: string;
 
     /**
      * The value to prefill in the input box.
@@ -482,6 +497,21 @@ declare module 'vscode' {
      * @hidden
      */
     private constructor();
+  }
+
+  /**
+   * An event signaling when a button in a particular {@link QuickPickItem} was triggered.
+   * This event does not fire for buttons in the title bar.
+   */
+  export interface QuickPickItemButtonEvent<T extends QuickPickItem> {
+    /**
+     * The button that was clicked.
+     */
+    readonly button: QuickInputButton;
+    /**
+     * The item that the button belongs to.
+     */
+    readonly item: T;
   }
 
 }

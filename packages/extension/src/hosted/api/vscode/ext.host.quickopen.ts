@@ -75,11 +75,12 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
           value: index,
         };
       } else {
-        const quickPickItem: QuickPickItem<number> = {
+        const quickPickItem: any = {
           label: item.label,
           description: item.description,
           detail: item.detail,
           value: index, // handle
+          buttons: item.buttons,
         };
 
         return quickPickItem;
@@ -249,6 +250,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   private readonly _onDidChangeSelectionEmitter: Emitter<T[]>;
   private readonly _onDidChangeValueEmitter: Emitter<string>;
   private readonly _onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  private readonly _onDidTriggerItemButtonEmitter: Emitter<vscode.QuickPickItemButtonEvent<T>>;
 
   private didShow = false;
 
@@ -268,6 +270,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     this.disposableCollection.push((this._onDidChangeSelectionEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidChangeValueEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidTriggerButtonEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidTriggerItemButtonEmitter = new Emitter()));
   }
 
   get items(): T[] {
@@ -323,6 +326,10 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   get onDidTriggerButton(): Event<vscode.QuickInputButton> {
     return this._onDidTriggerButtonEmitter.event;
+  }
+
+  get onDidTriggerItemButton(): Event<vscode.QuickPickItemButtonEvent<T>> {
+    return this._onDidTriggerItemButtonEmitter.event;
   }
 
   _fireDidChangeValue(value: string) {

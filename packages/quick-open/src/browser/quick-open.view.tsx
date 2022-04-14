@@ -32,12 +32,12 @@ interface IQuickOpenItemProps {
   index: number;
 }
 
-const QuickOpenHeaderButton: React.FC<
+const QuickOpenButton: React.FC<
   {
     button: QuickTitleButton;
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
 > = observer(({ button, ...props }) => (
-  <Button {...props} key={button.tooltip} type='icon' iconClass={button.iconClass} title={button.tooltip}></Button>
+  <Button {...props} key={button.tooltip} type='icon' iconClass={button.iconClass} title={button.tooltip} />
 ));
 
 export const QuickOpenHeader = observer(() => {
@@ -76,19 +76,13 @@ export const QuickOpenHeader = observer(() => {
     <div className={styles.title_bar}>
       <div className={styles.title_bar_button}>
         {quickTitleBar.leftButtons.map((button) => (
-          <QuickOpenHeaderButton
-            onMouseDown={(event) => onSelectButton(event, button)}
-            button={button}
-          ></QuickOpenHeaderButton>
+          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
         ))}
       </div>
       <div>{titleText}</div>
       <div className={styles.title_bar_button}>
         {quickTitleBar.rightButtons.map((button) => (
-          <QuickOpenHeaderButton
-            onMouseDown={(event) => onSelectButton(event, button)}
-            button={button}
-          ></QuickOpenHeaderButton>
+          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
         ))}
       </div>
     </div>
@@ -183,6 +177,8 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   const showBorder = React.useMemo(() => data.showBorder(), [data]);
 
+  const buttons = React.useMemo(() => data.getButtons(), [data]);
+
   const [labelHighlights, descriptionHighlights, detailHighlights] = React.useMemo(() => data.getHighlights(), [data]);
 
   const actions = React.useMemo(() => {
@@ -213,6 +209,16 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
     (action: QuickOpenAction) => {
       action.run(data);
       widget.hide(HideReason.ELEMENT_SELECTED);
+    },
+    [data],
+  );
+
+  const onSelectButton = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickTitleButton) => {
+      event.stopPropagation();
+      // eslint-disable-next-line no-console
+      console.log('xxxxx');
+      // quickTitleBar.fireDidTriggerButton(button);
     },
     [data],
   );
@@ -277,6 +283,9 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           className={clx(styles.item_action, action.class)}
         ></span>
       ))}
+      {buttons?.map((button) => (
+        <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
+      ))}
     </div>
   );
 });
@@ -334,7 +343,7 @@ export const QuickOpenView = observer(() => {
         // 判断触发事件的元素是否在父元素内，如果在父元素内就不做处理
         return;
       }
-      widget.blur();
+      // widget.blur();
     },
     [widget],
   );

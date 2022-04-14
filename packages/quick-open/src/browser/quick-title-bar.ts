@@ -2,10 +2,12 @@ import { observable, computed, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickTitleButton, QuickTitleButtonSide } from '@opensumi/ide-core-browser/lib/quick-open';
-import { Emitter, Event, isUndefined, URI } from '@opensumi/ide-core-common';
+import { Emitter, Event, isUndefined } from '@opensumi/ide-core-common';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import './quick-title-bar.less';
 import { IconType, IIconService, IThemeService } from '@opensumi/ide-theme';
+
+import { iconPath2URI } from '../common/icon';
 
 @Injectable()
 export class QuickTitleBar {
@@ -69,7 +71,7 @@ export class QuickTitleBar {
       return [];
     }
     return this._buttons.map((btn, i) => {
-      const iconUri = this.iconPath2URI(btn.iconPath);
+      const iconUri = iconPath2URI(btn.iconPath, this.themeService.getCurrentThemeSync().type);
       const iconPath = iconUri && this.staticResourceService.resolveStaticResource(iconUri).toString();
       const iconClass = iconPath && this.iconService.fromIcon('', iconPath, IconType.Background);
       return {
@@ -88,18 +90,6 @@ export class QuickTitleBar {
   @computed
   get rightButtons(): ReadonlyArray<QuickTitleButton> {
     return this.buttons.filter((btn) => btn.side === QuickTitleButtonSide.RIGHT || typeof btn.side === 'undefined');
-  }
-
-  private iconPath2URI(iconPath): URI | undefined {
-    if (URI.isUri(iconPath)) {
-      return iconPath;
-    }
-
-    if (iconPath.dark || iconPath.light) {
-      return this.themeService.getCurrentThemeSync().type === 'dark'
-        ? new URI(iconPath.dark.toString())
-        : new URI(iconPath.light.toString());
-    }
   }
 
   @action

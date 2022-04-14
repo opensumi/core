@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import React from 'react';
 
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
-import { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
+import { URI, Uri, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
 
 import { Keybinding } from '../keybinding';
 
@@ -43,6 +43,21 @@ export interface QuickTitleButton {
   tooltip?: string;
   // undefined 在 QuickTitleBar 中视为为右侧
   side?: QuickTitleButtonSide;
+}
+
+/**
+ * Button for an action in a {@link QuickPick} or {@link InputBox}.
+ */
+export interface QuickInputButton {
+  /**
+   * Icon for the button.
+   */
+  readonly iconPath: Uri | { light: Uri; dark: Uri } | ThemeIcon;
+
+  /**
+   * An optional tooltip.
+   */
+  readonly tooltip?: string | undefined;
 }
 
 /**
@@ -111,7 +126,10 @@ export interface QuickOpenItemOptions {
    * @returns 执行后是否要隐藏面板, mode 为 PREVIEW 时不判断该值
    */
   run?(mode: Mode): boolean;
+
   value?: any;
+
+  buttons?: QuickTitleButton[];
 }
 
 export class QuickOpenItem {
@@ -183,6 +201,9 @@ export class QuickOpenItem {
   }
   getValue(): any {
     return this.options.value;
+  }
+  getButtons(): QuickTitleButton[] {
+    return this.options.buttons || [];
   }
 }
 
@@ -345,6 +366,7 @@ export interface QuickPickItem<T> {
   description?: string;
   detail?: string;
   iconClass?: string;
+  buttons?: QuickInputButton[];
 }
 
 export interface QuickPickOptions extends QuickOpenOptions {
