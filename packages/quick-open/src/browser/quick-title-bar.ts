@@ -96,7 +96,7 @@ export class QuickTitleBar {
     }
 
     if (iconPath.dark || iconPath.light) {
-      return this.themeService.currentThemeId === 'ide-dark'
+      return this.themeService.getCurrentThemeSync().type === 'dark'
         ? new URI(iconPath.dark.toString())
         : new URI(iconPath.light.toString());
     }
