@@ -233,7 +233,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.disposeClientExtProcess(killProcessClientId);
       this.logger.error(`Process count is over limit, max count is ${maxExtProcessCount}`);
     }
+    await this._createExtServer(clientId, options);
+    await this._createExtHostProcess(clientId, options);
+  }
 
+  private async _createExtServer(clientId: string, options?: ICreateProcessOptions) {
     // 创建插件进程监听的 socket
     const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
     // 先使用单个 server，再尝试单个 server 与多个进程进行连接
@@ -254,11 +258,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
     this.clientExtProcessExtConnectionDeferredMap.set(clientId, new Deferred<void>());
 
-    extServer.listen(options, () => {
-      this.logger.log(`${clientId} ext server listen on ${JSON.stringify(options)}`);
+    extServer.listen(extServerListenOptions, () => {
+      this.logger.log(`${clientId} ext server listen on ${JSON.stringify(extServerListenOptions)}`);
     });
-
-    await this._createExtHostProcess(clientId, options);
   }
 
   private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
