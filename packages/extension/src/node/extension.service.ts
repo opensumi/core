@@ -81,6 +81,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessInspectPortMap: Map<string, number> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnection: Map<string, any> = new Map();
+  private clientExtProcessExtConnectionDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
@@ -169,6 +170,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     this.logger.log('setExtProcessConnectionForward', this.instanceId);
     this._setMainThreadConnection(async (connectionResult) => {
       const { connection: mainThreadConnection, clientId } = connectionResult;
+
+      await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
+
       const extProcessId = this.clientExtProcessMap.get(clientId);
       const notExistExtension =
         isUndefined(extProcessId) ||
@@ -240,15 +244,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       fs.unlink(extServerListenOptions.path).catch(() => {});
     }
 
-    // await this._createExtHostProcess(clientId, options);
-    await Promise.all([
-      this._createExtHostProcess(clientId, options),
-      this._setupExtHostConnection(clientId, extServer, extServerListenOptions),
-    ]);
+    extServer.on('connection', (connection) => {
+      this.logger.log('_setupExtHostConnection ext host connected');
+      this.clientExtProcessExtConnection.set(clientId, {
+        connection,
+      });
+      this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.resolve();
+    });
+
+    this.clientExtProcessExtConnectionDeferredMap.set(clientId, new Deferred<void>());
+
+    extServer.listen(options, () => {
+      this.logger.log(`${clientId} ext server listen on ${JSON.stringify(options)}`);
+    });
+
+    await this._createExtHostProcess(clientId, options);
   }
 
   private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
-    let preloadPath;
+    let preloadPath: string;
     let forkOptions: cp.ForkOptions = {
       // 防止 childProcess.stdout 为 null
       silent: true,
@@ -392,32 +406,28 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return true;
   }
 
-  private async processHandshake(extProcessId: number, forkTimer: IReporterTimer, clientId: string): Promise<void> {
-    const extProcessInitDeferred = this.clientExtProcessInitDeferredMap.get(clientId);
-    await new Promise<void>((resolve) => {
-      const initHandler = (msg) => {
-        if (msg === 'ready') {
-          const duration = forkTimer.timeEnd();
-          this.logger.log(`extension,fork,${clientId},${duration}ms`);
-          extProcessInitDeferred!.resolve();
-          this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
-          resolve();
-        } else if (msg === 'finish') {
-          const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId);
-          if (finishDeferred) {
-            finishDeferred.resolve();
-          }
-        } else if (typeof msg === 'object' && msg.type === ProcessMessageType.REPORTER) {
-          const reporterMessage: ReporterProcessMessage = msg.data;
-          if (reporterMessage.reportType === REPORT_TYPE.PERFORMANCE) {
-            this.reporter.performance(reporterMessage.name, reporterMessage.data as PerformanceData);
-          } else if (reporterMessage.reportType === REPORT_TYPE.POINT) {
-            this.reporter.point(reporterMessage.name, reporterMessage.data);
-          }
+  private processHandshake(extProcessId: number, forkTimer: IReporterTimer, clientId: string): void {
+    const initHandler = (msg) => {
+      if (msg === 'ready') {
+        const duration = forkTimer.timeEnd();
+        this.logger.log(`extension,fork,${clientId},${duration}ms`);
+        this.clientExtProcessInitDeferredMap.get(clientId)?.resolve();
+        this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
+      } else if (msg === 'finish') {
+        const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId);
+        if (finishDeferred) {
+          finishDeferred.resolve();
         }
-      };
-      this.extensionHostManager.onMessage(extProcessId, initHandler);
-    });
+      } else if (typeof msg === 'object' && msg.type === ProcessMessageType.REPORTER) {
+        const reporterMessage: ReporterProcessMessage = msg.data;
+        if (reporterMessage.reportType === REPORT_TYPE.PERFORMANCE) {
+          this.reporter.performance(reporterMessage.name, reporterMessage.data as PerformanceData);
+        } else if (reporterMessage.reportType === REPORT_TYPE.POINT) {
+          this.reporter.point(reporterMessage.name, reporterMessage.data);
+        }
+      }
+    };
+    this.extensionHostManager.onMessage(extProcessId, initHandler);
   }
 
   async tryEnableInspectPort(clientId: string, delay?: number): Promise<boolean> {
@@ -596,6 +606,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       }
 
       this.clientExtProcessExtConnection.delete(clientId);
+      this.clientExtProcessExtConnectionDeferredMap.delete(clientId);
       this.clientExtProcessExtConnectionServer.delete(clientId);
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
@@ -612,22 +623,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
   }
 
-  private async _setupExtHostConnection(clientId: string, extServer: net.Server, options: net.ListenOptions) {
-    await new Promise<void>((resolve) => {
-      extServer.on('connection', (connection) => {
-        this.logger.log('_setupExtHostConnection ext host connected');
-        this.clientExtProcessExtConnection.set(clientId, {
-          connection,
-        });
-
-        resolve();
-      });
-
-      extServer.listen(options, () => {
-        this.logger.log(`${clientId} ext server listen on ${JSON.stringify(options)}`);
-      });
-    });
-  }
   public async disposeAllClientExtProcess(): Promise<void> {
     await this.extensionHostManager.dispose();
   }
