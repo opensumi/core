@@ -21,7 +21,7 @@ import {
   ExtensionConnectOption,
   ExtensionConnectModeOption,
 } from '@opensumi/ide-core-common';
-import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 import {
   Deferred,
   isWindows,
@@ -81,6 +81,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   private clientExtProcessInspectPortMap: Map<string, number> = new Map();
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnection: Map<string, any> = new Map();
+  private clientExtProcessExtConnectionDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
@@ -129,8 +130,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return await ExtensionScanner.getExtension(extensionPath, localization, extraMetaData);
   }
 
-  private getIPCHandlerPath(name: string) {
-    return normalizedIpcHandlerPath(name, true, this.appConfig.extHostIPCSockPath);
+  private async getIPCHandlerPath(name: string) {
+    return await normalizedIpcHandlerPathAsync(name, true, this.appConfig.extHostIPCSockPath);
   }
 
   public async getExtServerListenOption(
@@ -142,7 +143,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const options: net.ListenOptions = {};
 
       if (mode === ExtensionConnectModeOption.IPC) {
-        options.path = this.getIPCHandlerPath('ext_process');
+        options.path = await this.getIPCHandlerPath('ext_process');
       } else {
         options.port = await findFreePort(this.inspectPort, 10, 5000);
         options.host = host;
@@ -154,21 +155,24 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     return this.extServerListenOptions.get(clientId)!;
   }
 
-  public getElectronMainThreadListenPath(clientId: string): string {
+  public async getElectronMainThreadListenPath(clientId: string): Promise<string> {
     if (!this.electronMainThreadListenPaths.has(clientId)) {
-      this.electronMainThreadListenPaths.set(clientId, this.getIPCHandlerPath('main_thread'));
+      this.electronMainThreadListenPaths.set(clientId, await this.getIPCHandlerPath('main_thread'));
     }
     return this.electronMainThreadListenPaths.get(clientId)!;
   }
 
-  public getElectronMainThreadListenPath2(clientId: string): string {
-    return this.getElectronMainThreadListenPath(clientId);
+  public async getElectronMainThreadListenPath2(clientId: string): Promise<string> {
+    return await this.getElectronMainThreadListenPath(clientId);
   }
 
   private setExtProcessConnectionForward() {
     this.logger.log('setExtProcessConnectionForward', this.instanceId);
     this._setMainThreadConnection(async (connectionResult) => {
       const { connection: mainThreadConnection, clientId } = connectionResult;
+
+      await this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.promise;
+
       const extProcessId = this.clientExtProcessMap.get(clientId);
       const notExistExtension =
         isUndefined(extProcessId) ||
@@ -178,7 +182,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       if (notExistExtension) {
         // 进程未调用启动直接连接
-        this.logger.log(`${clientId} clientId process connection set error`, extProcessId);
+        this.logger.error(`${clientId} clientId process connection set error`, extProcessId);
         /**
          * 如果前端与后端连接后发现没有对应的插件进程实例，那么通知前端重启插件进程
          * 一般这种情况出现在用户关闭电脑超过 ProcessCloseExitThreshold 设定的最大时间，插件进程被杀死后，前端再次建立连接时
@@ -217,19 +221,50 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
   }
 
   public async createProcess(clientId: string, options?: ICreateProcessOptions) {
-    this.logger.log('createProcess', this.instanceId);
+    this.logger.log('createProcess instanceId', this.instanceId);
     this.logger.log('appconfig exthost', this.appConfig.extHost);
     this.logger.log('createProcess clientId', clientId);
 
+    // 检查是否超过限制最大的进程数
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
     const maxExtProcessCount = this.appConfig.maxExtProcessCount || ExtensionNodeServiceImpl.MaxExtProcessCount;
     if (processClientIdArr.length >= maxExtProcessCount) {
       const killProcessClientId = processClientIdArr[0];
-      await this.disposeClientExtProcess(killProcessClientId);
+      this.disposeClientExtProcess(killProcessClientId);
       this.logger.error(`Process count is over limit, max count is ${maxExtProcessCount}`);
     }
+    await this._createExtServer(clientId, options);
+    await this._createExtHostProcess(clientId, options);
+  }
 
-    let preloadPath;
+  private async _createExtServer(clientId: string, options?: ICreateProcessOptions) {
+    // 创建插件进程监听的 socket
+    const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
+    // 先使用单个 server，再尝试单个 server 与多个进程进行连接
+    const extServer = net.createServer();
+    this.clientExtProcessExtConnectionServer.set(clientId, extServer);
+
+    if (!isWindows && extServerListenOptions.path) {
+      fs.unlink(extServerListenOptions.path).catch(() => {});
+    }
+
+    extServer.on('connection', (connection) => {
+      this.logger.log('_setupExtHostConnection ext host connected');
+      this.clientExtProcessExtConnection.set(clientId, {
+        connection,
+      });
+      this.clientExtProcessExtConnectionDeferredMap.get(clientId)?.resolve();
+    });
+
+    this.clientExtProcessExtConnectionDeferredMap.set(clientId, new Deferred<void>());
+
+    extServer.listen(extServerListenOptions, () => {
+      this.logger.log(`${clientId} ext server listen on ${JSON.stringify(extServerListenOptions)}`);
+    });
+  }
+
+  private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
+    let preloadPath: string;
     let forkOptions: cp.ForkOptions = {
       // 防止 childProcess.stdout 为 null
       silent: true,
@@ -310,7 +345,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (options?.enableDebugExtensionHost || isDevelopment()) {
       // 开发模式下指定调试端口时，尝试从指定的端口开始寻找可用的空闲端口
       // 避免打开多个窗口(多个插件进程)时端口被占用
-      //
+
       const port = await this.extensionHostManager.findDebugPort(this.inspectPort, 10, 5000);
       forkOptions.execArgv.push('--nolazy');
       forkOptions.execArgv.push(`--inspect=${port}`);
@@ -322,6 +357,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       ...forkOptions,
       ...this.appConfig.extHostForkOptions,
     });
+    this.logger.log('extProcess.pid', extProcessId);
+
     // 监听进程输出，用于获取调试端口
     this.extensionHostManager.onOutput(extProcessId, (output) => {
       const inspectorUrlMatch = output.data && output.data.match(/ws:\/\/([^\s]+:(\d+)\/[^\s]+)/);
@@ -339,7 +376,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       }
     });
 
-    this.logger.log('extProcess.pid', extProcessId);
     this.extensionHostManager.onExit(extProcessId, async (code: number, signal: string) => {
       this.logger.log('extProcess.pid exit', extProcessId, 'code', code, 'signal', signal);
       if (this.clientExtProcessMap.get(clientId) === extProcessId) {
@@ -356,12 +392,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     });
 
     this.clientExtProcessMap.set(clientId, extProcessId);
-
-    this.logger.log('createProcess', this.clientExtProcessMap.keys());
+    this.logger.log('clientExtProcessMap.keys', this.clientExtProcessMap.keys());
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
-
-    this._getExtHostConnection2(clientId, options);
 
     this.processHandshake(extProcessId, forkTimer, clientId);
   }
@@ -371,37 +404,32 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       return false;
     }
 
-    const initDeferred = this.clientExtProcessInitDeferredMap.get(clientId);
-    await initDeferred?.promise;
+    await this.clientExtProcessInitDeferredMap.get(clientId)?.promise;
     return true;
   }
 
-  private async processHandshake(extProcessId: number, forkTimer: IReporterTimer, clientId: string): Promise<void> {
-    const extProcessInitDeferred = this.clientExtProcessInitDeferredMap.get(clientId);
-    await new Promise<void>((resolve) => {
-      const initHandler = (msg) => {
-        if (msg === 'ready') {
-          const duration = forkTimer.timeEnd();
-          this.logger.log(`extension,fork,${clientId},${duration}ms`);
-          extProcessInitDeferred!.resolve();
-          this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
-          resolve();
-        } else if (msg === 'finish') {
-          const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId);
-          if (finishDeferred) {
-            finishDeferred.resolve();
-          }
-        } else if (typeof msg === 'object' && msg.type === ProcessMessageType.REPORTER) {
-          const reporterMessage: ReporterProcessMessage = msg.data;
-          if (reporterMessage.reportType === REPORT_TYPE.PERFORMANCE) {
-            this.reporter.performance(reporterMessage.name, reporterMessage.data as PerformanceData);
-          } else if (reporterMessage.reportType === REPORT_TYPE.POINT) {
-            this.reporter.point(reporterMessage.name, reporterMessage.data);
-          }
+  private processHandshake(extProcessId: number, forkTimer: IReporterTimer, clientId: string): void {
+    const initHandler = (msg) => {
+      if (msg === 'ready') {
+        const duration = forkTimer.timeEnd();
+        this.logger.log(`extension,fork,${clientId},${duration}ms`);
+        this.clientExtProcessInitDeferredMap.get(clientId)?.resolve();
+        this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
+      } else if (msg === 'finish') {
+        const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId);
+        if (finishDeferred) {
+          finishDeferred.resolve();
         }
-      };
-      this.extensionHostManager.onMessage(extProcessId, initHandler);
-    });
+      } else if (typeof msg === 'object' && msg.type === ProcessMessageType.REPORTER) {
+        const reporterMessage: ReporterProcessMessage = msg.data;
+        if (reporterMessage.reportType === REPORT_TYPE.PERFORMANCE) {
+          this.reporter.performance(reporterMessage.name, reporterMessage.data as PerformanceData);
+        } else if (reporterMessage.reportType === REPORT_TYPE.POINT) {
+          this.reporter.point(reporterMessage.name, reporterMessage.data);
+        }
+      }
+    };
+    this.extensionHostManager.onMessage(extProcessId, initHandler);
   }
 
   async tryEnableInspectPort(clientId: string, delay?: number): Promise<boolean> {
@@ -450,23 +478,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (process.env.KTELECTRON) {
       const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
       const mainThreadServer: net.Server = net.createServer();
-      const mainThreadListenPath = this.getElectronMainThreadListenPath2(clientId);
+      const mainThreadListenPath = await this.getElectronMainThreadListenPath2(clientId);
       this.logger.log('mainThreadListenPath', mainThreadListenPath);
 
-      try {
-        if (!isWindows) {
-          await fs.unlink(mainThreadListenPath);
-        }
-      } catch (e) {
-        this.logger.error(e);
+      if (!isWindows) {
+        fs.unlink(mainThreadListenPath).catch(() => {});
       }
-
-      await new Promise<void>((resolve) => {
-        mainThreadServer.listen(mainThreadListenPath, () => {
-          this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
-          resolve();
-        });
-      });
 
       mainThreadServer.on('connection', (connection) => {
         this.logger.log(`electron ext main connected ${clientId}`);
@@ -484,6 +501,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
           // electron 只要端口进程就杀死插件进程
           this.disposeClientExtProcess(clientId);
         });
+      });
+
+      mainThreadServer.listen(mainThreadListenPath, () => {
+        this.logger.log(`electron mainThread listen on ${mainThreadListenPath}`);
       });
     } else {
       commonChannelPathHandler.register('ExtMainThreadConnection', {
@@ -587,6 +608,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       }
 
       this.clientExtProcessExtConnection.delete(clientId);
+      this.clientExtProcessExtConnectionDeferredMap.delete(clientId);
       this.clientExtProcessExtConnectionServer.delete(clientId);
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
@@ -601,38 +623,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       }
       this.logger.log(`${clientId} extProcess dispose`);
     }
-  }
-
-  private async _getExtHostConnection2(clientId: string, options?: ICreateProcessOptions) {
-    const extServerListenOptions = await this.getExtServerListenOption(clientId, options?.extensionConnectOption);
-    // 先使用单个 server，再尝试单个 server 与多个进程进行连接
-    const extServer = net.createServer();
-
-    this.clientExtProcessExtConnectionServer.set(clientId, extServer);
-
-    try {
-      if (!isWindows && extServerListenOptions.path) {
-        await fs.unlink(extServerListenOptions.path);
-      }
-    } catch (e) {}
-
-    const extConnection = await new Promise((resolve) => {
-      extServer.on('connection', (connection) => {
-        this.logger.log('_getExtHostConnection2 ext host connected');
-
-        const connectionObj = {
-          connection,
-        };
-        resolve(connectionObj);
-      });
-
-      extServer.listen(extServerListenOptions, () => {
-        this.logger.log(`${clientId}  ext server listen on ${JSON.stringify(extServerListenOptions)}`);
-      });
-    });
-
-    this.clientExtProcessExtConnection.set(clientId, extConnection);
-    return extConnection;
   }
 
   public async disposeAllClientExtProcess(): Promise<void> {

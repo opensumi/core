@@ -77,8 +77,8 @@ export interface IExtensionNodeService {
   ): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string, options?: ICreateProcessOptions): Promise<void>;
   ensureProcessReady(clientId: string): Promise<boolean>;
-  getElectronMainThreadListenPath(clientId: string);
-  getElectronMainThreadListenPath2(clientId: string);
+  getElectronMainThreadListenPath(clientId: string): Promise<string>;
+  getElectronMainThreadListenPath2(clientId: string): Promise<string>;
   getExtServerListenOption(clientId: string);
   getExtension(
     extensionPath: string,

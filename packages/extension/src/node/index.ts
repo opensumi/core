@@ -54,7 +54,7 @@ export class ExtensionContribution implements ServerAppContribution {
   extensionNodeService: IExtensionNodeService;
 
   @Autowired(INodeLogger)
-  logger;
+  logger: INodeLogger;
 
   async initialize() {
     await this.extensionNodeService.initialize();
