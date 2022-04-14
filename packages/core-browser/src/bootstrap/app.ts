@@ -33,7 +33,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
-import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
+import { createClientConnection2, bindConnectionService } from './connection';
 import { RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
@@ -235,10 +235,7 @@ export class ClientApp implements IClientApp, IDisposable {
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
     } else {
-      if (type === 'electron') {
-        const netConnection = await (window as any).createRPCNetConnection();
-        await createNetClientConnection(this.injector, this.modules, netConnection);
-      } else if (type === 'web') {
+      if (type === 'web') {
         await createClientConnection2(
           this.injector,
           this.modules,

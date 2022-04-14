@@ -2,6 +2,9 @@ import { WSChannel, MessageString } from '../common/ws-channel';
 import shortid from 'shortid';
 import { stringify, parse } from '../common/utils';
 import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+// 由于 RAL 初始化的不确定性，导致这里需要提前引入文件执行 RAL.install
+// https://github.com/opensumi/vscode-jsonrpc/blob/c14609876acc956ddcfd08d7a70768bd0807295e/src/browser/ril.ts#L144
+import '@opensumi/vscode-jsonrpc/lib/node/main';
 
 let ReconnectingWebSocket = require('reconnecting-websocket');
 

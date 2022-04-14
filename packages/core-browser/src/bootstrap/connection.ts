@@ -1,5 +1,5 @@
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
-import { WSChannelHandler, createSocketConnection } from '@opensumi/ide-connection/lib/browser';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import { Injector, Provider } from '@opensumi/di';
 import {
@@ -61,10 +61,6 @@ export async function createClientConnection2(
   channel.onReOpen(() => onReconnect());
 
   bindConnectionService(injector, modules, createWebSocketConnection(channel));
-}
-
-export async function createNetClientConnection(injector: Injector, modules: ModuleConstructor[], connection: any) {
-  bindConnectionService(injector, modules, createSocketConnection(connection));
 }
 
 export async function bindConnectionService(
