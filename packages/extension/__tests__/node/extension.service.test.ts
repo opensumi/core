@@ -14,7 +14,7 @@ import { ExtensionHostManager } from '../../src/node/extension.host.manager';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 
-describe('Extension Serivce', () => {
+describe('Extension Service', () => {
   let injector: Injector;
   let extensionService: IExtensionNodeService;
   const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
@@ -45,9 +45,7 @@ describe('Extension Serivce', () => {
           },
           time() {
             return {
-              timeEnd: () => {
-                //
-              },
+              timeEnd: () => 1,
             };
           },
         },
@@ -124,7 +122,7 @@ describe('Extension Serivce', () => {
       await extensionService.disposeClientExtProcess(mockExtClientId, true);
     });
 
-    jest.setTimeout(20 * 1000);
+    // jest.setTimeout(20 * 1000);
 
     it('should create extension host process', async () => {
       await extensionService.createProcess(mockExtClientId);
