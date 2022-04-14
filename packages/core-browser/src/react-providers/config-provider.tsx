@@ -81,12 +81,12 @@ export interface AppConfig {
   wsPath: string;
   /**
    * 定义 IDE 各个布局区块默认加载的模块，可针对性对模块进行增删改
-   * 默认值可参考：https://github.com/opensumi/core/tree/main/packages/main-layout/lib/browser/default-config.tsx
+   * 默认值可参考：https://github.com/opensumi/core/tree/58b998d9e1f721928f576579f16ded46b7505e84/packages/main-layout/src/browser/default-config.ts
    */
   layoutConfig: LayoutConfig;
   /**
    * 定义 IDE 的整体布局，可以通过传入自定义布局的方式定义各个区块的默认大小及缩放选项等
-   * 默认值可参考：https://github.com/opensumi/core/tree/main/packages/startup/entry/web-lite/modules/view/custom-layout-component.tsx
+   * 默认值可参考：https://github.com/opensumi/core/blob/58b998d9e1f721928f576579f16ded46b7505e84/packages/core-browser/src/components/layout/default-layout.tsx
    */
   layoutComponent?: React.FC;
   /**
