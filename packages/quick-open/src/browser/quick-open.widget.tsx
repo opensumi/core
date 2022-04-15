@@ -42,6 +42,9 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   @observable
   private _isPassword?: boolean;
 
+  @observable
+  private _keepScrollPosition?: boolean;
+
   @computed
   get isPassword() {
     return this._isPassword;
@@ -102,6 +105,11 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     return this._autoFocus;
   }
 
+  @computed
+  get keepScrollPosition() {
+    return this._keepScrollPosition;
+  }
+
   public renderTab?: () => React.ReactNode;
   public toggleTab?: () => void;
 
@@ -116,6 +124,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._inputEnable = options.inputEnable;
     this._valueSelection = options.valueSelection;
     this._canSelectMany = options.canSelectMany;
+    this._keepScrollPosition = options.keepScrollPosition;
     this.renderTab = options.renderTab;
     this.toggleTab = options.toggleTab;
     // 获取第一次要展示的内容

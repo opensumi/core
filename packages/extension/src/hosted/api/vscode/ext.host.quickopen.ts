@@ -102,6 +102,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
         fuzzyMatchDescription: options.matchOnDescription,
         fuzzyMatchDetail: options.matchOnDetail,
         ignoreFocusOut: options.ignoreFocusOut,
+        keepScrollPosition: options.keepScrollPosition,
         title: (options as QuickPickOptions).title,
         buttons: (options as QuickPickOptions).buttons,
         step: (options as QuickPickOptions).step,
@@ -246,6 +247,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   ignoreFocusOut: boolean;
   matchOnDescription: boolean;
   matchOnDetail: boolean;
+  keepScrollPosition?: boolean | undefined;
   selectedItems: ReadonlyArray<T>;
   step: number | undefined;
   title: string | undefined;
@@ -409,6 +411,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
           placeHolder: this.placeholder,
           ignoreFocusOut: this.ignoreFocusOut,
           _sessionId: this.quickPickIndex,
+          keepScrollPosition: this.keepScrollPosition,
         } as QuickPickOptions,
       )
       .then((item) => {

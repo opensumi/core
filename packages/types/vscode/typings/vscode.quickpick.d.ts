@@ -37,12 +37,12 @@ declare module 'vscode' {
     alwaysShow?: boolean;
 
     /**
-		 * Optional buttons that will be rendered on this particular item. These buttons will trigger
-		 * an {@link QuickPickItemButtonEvent} when clicked. Buttons are only rendered when using a quickpick
-		 * created by the {@link window.createQuickPick()} API. Buttons are not rendered when using
-		 * the {@link window.showQuickPick()} API.
-		 */
-		buttons?: QuickInputButton[];
+     * Optional buttons that will be rendered on this particular item. These buttons will trigger
+     * an {@link QuickPickItemButtonEvent} when clicked. Buttons are only rendered when using a quickpick
+     * created by the {@link window.createQuickPick()} API. Buttons are not rendered when using
+     * the {@link window.showQuickPick()} API.
+     */
+    buttons?: QuickInputButton[];
   }
 
 
@@ -117,6 +117,11 @@ declare module 'vscode' {
      */
     matchOnDetail: boolean;
 
+    /*
+     * An optional flag to maintain the scroll position of the quick pick when the quick pick items are updated. Defaults to false.
+     */
+    keepScrollPosition?: boolean;
+
     /**
      * Active items. This can be read and updated by the extension.
      * not implemented yet
@@ -159,6 +164,11 @@ declare module 'vscode' {
      * An optional flag to include the detail when filtering the picks.
      */
     matchOnDetail?: boolean;
+
+    /*
+     * An optional flag to maintain the scroll position of the quick pick when the quick pick items are updated. Defaults to false.
+     */
+    keepScrollPosition?: boolean;
 
     /**
      * An optional string to show as place holder in the input box to guide the user what to pick on.

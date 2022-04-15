@@ -341,6 +341,11 @@ export namespace QuickOpenOptions {
      * 结果为空显示的 item，应该用此方法实现空占位，不用 accept，accept 结果可能会被 fuzzy 处理导致高亮
      */
     getPlaceholderItem?: (lookFor: string, originLookFor: string) => QuickOpenItem;
+
+    /**
+     * 内容更新后保持滚动区域不变
+     */
+    keepScrollPosition?: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     enabled: true,
@@ -426,6 +431,11 @@ export interface QuickPickOptions extends QuickOpenOptions {
    * The prefill value.
    */
   value?: string;
+
+  /*
+   * An optional flag to maintain the scroll position of the quick pick when the quick pick items are updated. Defaults to false.
+   */
+  keepScrollPosition?: boolean;
 }
 
 export const QuickPickService = Symbol('QuickPickService');

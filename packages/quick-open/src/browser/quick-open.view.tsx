@@ -1,6 +1,7 @@
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import type { ListOnScrollProps } from 'react-window';
 
 import {
   Button,
@@ -291,13 +292,16 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
   );
 });
 
-export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => void }> = observer(({ onReady }) => {
+export const QuickOpenList: React.FC<{
+  onReady: (api: IRecycleListHandler) => void;
+  onScroll: (props: ListOnScrollProps) => void;
+}> = observer(({ onReady, onScroll }) => {
   const { widget } = React.useContext(QuickOpenContext);
 
   const getSize = React.useCallback(
     (index) => {
       const item = widget.items[index];
-      return item?.getDetail() ? 40 : 22;
+      return item?.getDetail() ? 44 : 22;
     },
     [widget.items],
   );
@@ -305,6 +309,7 @@ export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => vo
   return widget.items.length > 0 ? (
     <RecycleList
       onReady={onReady}
+      onScroll={onScroll}
       className={clx(styles.quickopen_list, {
         [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
       })}
@@ -319,6 +324,8 @@ export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => vo
 export const QuickOpenView = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const listApi = React.useRef<IRecycleListHandler>();
+
+  const scrollOffsetBefore = React.useRef(0);
 
   // https://stackoverflow.com/questions/38019140/react-and-blur-event/38019906#38019906
   const focusInCurrentTarget = React.useCallback(({ relatedTarget, currentTarget }) => {
@@ -352,6 +359,13 @@ export const QuickOpenView = observer(() => {
   const onListReady = React.useCallback(
     (api: IRecycleListHandler) => {
       listApi.current = api;
+    },
+    [widget],
+  );
+
+  const onListScroll = React.useCallback(
+    (props: ListOnScrollProps) => {
+      scrollOffsetBefore.current = props.scrollOffset;
     },
     [widget],
   );
@@ -409,8 +423,13 @@ export const QuickOpenView = observer(() => {
   }, [widget.items, widget.autoFocus]);
 
   React.useEffect(() => {
-    // smart 效果可以还原 vscode quickopen 上下切换的效果
-    listApi.current?.scrollToIndex(widget.selectIndex, 'smart');
+    if (widget.keepScrollPosition) {
+      listApi.current?.scrollTo(scrollOffsetBefore.current);
+    } else {
+      // smart 效果可以还原 vscode quickopen 上下切换的效果
+      listApi.current?.scrollToIndex(widget.selectIndex, 'smart');
+    }
+
     if (widget.items.length === 0) {
       return;
     }
@@ -421,7 +440,7 @@ export const QuickOpenView = observer(() => {
     }
     item.run(QuickOpenMode.PREVIEW);
     widget.callbacks.onSelect(item, widget.selectIndex);
-  }, [widget.items, widget.selectIndex]);
+  }, [widget.items, widget.selectIndex, widget.keepScrollPosition]);
 
   const onKeydown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     // 处于 composition 的输入，不做处理，否则在按 enter 后会直接打开选择的第一个文件，并且快捷键完全失效
@@ -483,7 +502,7 @@ export const QuickOpenView = observer(() => {
       <QuickOpenHeader />
       <QuickOpenInput />
       {widget.renderTab?.()}
-      <QuickOpenList onReady={onListReady} />
+      <QuickOpenList onReady={onListReady} onScroll={onListScroll} />
     </div>
   ) : null;
 });

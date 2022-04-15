@@ -42,6 +42,7 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   onSelect?(item: QuickOpenItem, index: number): void;
   onConfirm?(items: QuickOpenItem[]): void;
   onChangeValue?(lookFor: string): void;
+  keepScrollPosition?: boolean | undefined;
 }
 
 @Injectable()
@@ -110,6 +111,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
       inputEnable: opts.enabled ?? true,
       valueSelection: opts.valueSelection,
       canSelectMany: opts.canSelectMany,
+      keepScrollPosition: opts.keepScrollPosition,
       renderTab: opts.renderTab,
       toggleTab: opts.toggleTab,
     });
@@ -247,6 +249,10 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
 
   get valueSelection(): [number, number] | undefined {
     return this.options.valueSelection;
+  }
+
+  get keepScrollPosition(): boolean | undefined {
+    return this.options.keepScrollPosition;
   }
 
   get renderTab() {
