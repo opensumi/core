@@ -6,6 +6,12 @@ import {
 import { Disposable } from '@opensumi/vscode-jsonrpc/lib/common/disposable';
 import { MessageReader, DataCallback } from '@opensumi/vscode-jsonrpc/lib/common/messageReader';
 import { MessageWriter } from '@opensumi/vscode-jsonrpc/lib/common/messageWriter';
+/**
+ * FIXME: 由于 `createMessageConnection` 方法隐式依赖了 `@opensumi/vscode-jsonrpc/lib/browser/main` 或 `@opensumi/vscode-jsonrpc/lib/node/main`
+ * 的 `RIL.install()` 初始化代码，而 `browser/main` 中仅支持浏览器使用，
+ * 故需要保证提前引入或执行一次 `@opensumi/vscode-jsonrpc/lib/node/main` 代码才能保证逻辑正常执行
+ */
+import '@opensumi/vscode-jsonrpc/lib/node/main';
 
 export class WebSocketMessageReader extends AbstractMessageReader implements MessageReader {
   protected state: 'initial' | 'listening' | 'closed' = 'initial';
