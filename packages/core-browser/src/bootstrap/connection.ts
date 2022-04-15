@@ -1,6 +1,6 @@
 import { Injector, Provider } from '@opensumi/di';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '@opensumi/ide-connection';
-import { createSocketConnection, WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { createWebSocketConnection } from '@opensumi/ide-connection/lib/common/message';
 import {
   getDebugLogger,
@@ -61,13 +61,6 @@ export async function createClientConnection2(
   channel.onReOpen(() => onReconnect());
 
   bindConnectionService(injector, modules, createWebSocketConnection(channel));
-}
-
-/**
- * electron 环境下不要调用这个函数，该函数的 createSocketConnection 是 browser 环境下的
- */
-export async function createNetClientConnection(injector: Injector, modules: ModuleConstructor[], connection: any) {
-  bindConnectionService(injector, modules, createSocketConnection(connection));
 }
 
 export async function bindConnectionService(
