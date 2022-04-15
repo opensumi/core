@@ -75,7 +75,7 @@ export const QuickOpenHeader = observer(() => {
     [quickTitleBar.fireDidTriggerButton],
   );
 
-  return quickTitleBar.isAttached && titleText ? (
+  return quickTitleBar.isAttached ? (
     <div className={styles.title_bar}>
       <div className={styles.title_bar_button}>
         {quickTitleBar.leftButtons.map((button) => (
@@ -185,6 +185,8 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   const [labelHighlights, descriptionHighlights, detailHighlights] = React.useMemo(() => data.getHighlights(), [data]);
 
+  const [mouseOver, setMouseOver] = React.useState(false);
+
   const actions = React.useMemo(() => {
     const provider = widget.actionProvider;
     if (provider && provider.hasActions(data)) {
@@ -232,6 +234,8 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
         [styles.item_selected]: widget.selectIndex === index,
         [styles.item_border]: showBorder,
       })}
+      onMouseEnter={() => setMouseOver(true)}
+      onMouseLeave={() => setMouseOver(false)}
     >
       {widget.canSelectMany && (
         <CheckBox
@@ -285,9 +289,10 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           className={clx(styles.item_action, action.class)}
         ></span>
       ))}
-      {buttons?.map((button) => (
-        <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
-      ))}
+      {(mouseOver || widget.selectIndex === index) &&
+        buttons?.map((button) => (
+          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
+        ))}
     </div>
   );
 });
@@ -351,7 +356,7 @@ export const QuickOpenView = observer(() => {
         // 判断触发事件的元素是否在父元素内，如果在父元素内就不做处理
         return;
       }
-      // widget.blur();
+      widget.blur();
     },
     [widget],
   );
