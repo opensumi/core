@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import net, { ListenOptions } from 'net';
+import fs from 'fs';
+import net, { ListenOptions, Server } from 'net';
 
 import * as pty from 'node-pty';
 
@@ -232,6 +233,7 @@ export class PtyServiceProxyRPCProvider {
   private readonly ptyServiceCenter: RPCServiceCenter;
   private readonly debugLogger = getDebugLogger();
   private serverListenOptions: ListenOptions; // HOST + PORT or UNIX SOCK PATH
+  private server: Server;
 
   constructor(listenOptions: ListenOptions = { port: PTY_SERVICE_PROXY_SERVER_PORT }) {
     this.serverListenOptions = listenOptions;
@@ -247,17 +249,37 @@ export class PtyServiceProxyRPCProvider {
 
   public initServer() {
     this.createSocket();
+    this.bindProcessHandler();
   }
 
   private createSocket() {
-    const server = net.createServer();
-    server.on('connection', (connection) => {
+    this.server = net.createServer();
+    this.server.on('connection', (connection) => {
       this.debugLogger.log('ptyServiceCenter: new connections coming in');
       this.setProxyConnection(connection);
     });
     // const ipcPath = normalizedIpcHandlerPath()
-    server.listen(this.serverListenOptions);
+    if (this.serverListenOptions.path && fs.existsSync(this.serverListenOptions.path)) {
+      // UNIX DOMAIN SOCKET
+      fs.unlinkSync(this.serverListenOptions.path); // 兜底逻辑，如果之前Server没有清除掉SOCK文件的话，那就先清除
+    }
+    this.server.listen(this.serverListenOptions);
     this.debugLogger.log('ptyServiceCenter: listening on', this.serverListenOptions);
+  }
+
+  private bindProcessHandler() {
+    // Handles normal process termination.
+    process.on('exit', () => {
+      this.server.close(); // Close Server, release UNIX DOMAIN SOCKET
+    });
+    // Handles `Ctrl+C`.
+    process.on('SIGINT', async () => {
+      process.exit(0);
+    });
+    // Handles `kill pid`.
+    process.on('SIGTERM', async () => {
+      process.exit(0);
+    });
   }
 
   private setProxyConnection(connection: net.Socket) {
