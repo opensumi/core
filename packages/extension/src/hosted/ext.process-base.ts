@@ -64,6 +64,9 @@ export interface ExtProcessConfig {
   LogServiceClass?: ConstructorOf<ILogService>;
   logDir?: string;
   logLevel?: LogLevel;
+  /**
+   * 这种 command 只有插件能调用到，且只能在插件进程调用到
+   */
   builtinCommands?: IBuiltInCommand[];
   customDebugChildProcess?: CustomChildProcessModule;
   customVSCodeEngineVersion?: string;
