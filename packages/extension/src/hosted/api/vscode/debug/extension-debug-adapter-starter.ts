@@ -5,7 +5,7 @@ import type vscode from 'vscode';
 
 import { DebugStreamConnection, DebugAdapterForkExecutable } from '@opensumi/ide-debug';
 
-import { CustomeChildProcessModule, CustomeChildProcess } from '../../../ext.process-base';
+import { CustomChildProcessModule, CustomChildProcess } from '../../../ext.process-base';
 
 import { DirectDebugAdapter } from './abstract-debug-adapter-session';
 
@@ -14,7 +14,7 @@ import { DirectDebugAdapter } from './abstract-debug-adapter-session';
  */
 export function startDebugAdapter(
   executable: vscode.DebugAdapterExecutable,
-  cp?: CustomeChildProcessModule,
+  cp?: CustomChildProcessModule,
 ): DebugStreamConnection {
   const options: any = { stdio: ['pipe', 'pipe', 2] };
 
@@ -34,7 +34,7 @@ export function startDebugAdapter(
     };
   }
 
-  let childProcess: ChildProcess | CustomeChildProcess;
+  let childProcess: ChildProcess | CustomChildProcess;
 
   if ('command' in executable) {
     const { command, args } = executable;

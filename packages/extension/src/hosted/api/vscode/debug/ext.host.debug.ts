@@ -29,7 +29,7 @@ import {
   DebugConfigurationProviderTriggerKind,
 } from '../../../../common/vscode/ext-types';
 import { Breakpoint } from '../../../../common/vscode/models';
-import { CustomeChildProcessModule } from '../../../ext.process-base';
+import { CustomChildProcessModule } from '../../../ext.process-base';
 
 import { IDebugConfigurationProvider } from './common';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
@@ -182,7 +182,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     rpc: IRPCProtocol,
     private extHostConnectionService: IExtHostConnectionService,
     private extHostCommand: IExtHostCommands,
-    private cp?: CustomeChildProcessModule,
+    private cp?: CustomChildProcessModule,
   ) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadDebug);
     this.activeDebugConsole = {
