@@ -229,7 +229,9 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
         {renderOutputContent()}
       </div>
       <div className={styles.variable_repl_bar} style={{ maxHeight: height - 26 + 'px' }}>
-        <div className={styles.variable_repl_bar_icon}></div>
+        <div className={styles.variable_repl_bar_icon}>
+          <span className={getIcon('right')}></span>
+        </div>
         <div className={styles.variable_repl_editor} ref={debugInputRef}></div>
       </div>
     </div>
