@@ -290,7 +290,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          */
         client.attached.promise.then(() => {
           widget.name = client.name;
-          client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
+          // client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
 
           /**
            * 不成功的时候则认为这个连接已经失效了，去掉这个 widget

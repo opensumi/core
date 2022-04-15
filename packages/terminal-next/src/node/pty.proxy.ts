@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import net from 'net';
+import net, { ListenOptions } from 'net';
 
 import * as pty from 'node-pty';
 
@@ -103,11 +103,18 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
       if (checkResult) {
         ptyInstance = this.ptyInstanceMap.get(pid);
       } else {
+        // 有Session ID 但是没有 Process，说明是被系统杀了，此时需要重新spawn一个Pty
         this.ptyInstanceMap.delete(pid);
+        ptyInstance = pty.spawn(file, args, options);
+        const oldLineCache = this.ptyDataCacheMap.get(pid);
+        if (oldLineCache) {
+          this.ptyDataCacheMap.set(ptyInstance.pid, oldLineCache);
+          this.ptyDataCacheMap.delete(pid);
+        }
       }
     }
 
-    // 如果不存在ptyInstance或者已经被Kill掉的话，则重新创建一个
+    // 如果不存在ptyInstance的话，则重新创建一个，兜底用，理论上不会走到这里
     if (!ptyInstance) {
       ptyInstance = pty.spawn(file, args, options);
     }
@@ -150,6 +157,12 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
       this.$callback(callId, value);
     });
 
+    // 如果缓存内容不是空的话，那就提示一下Terminal 断连了
+    if (cache && cache.data.length > 0) {
+      this.$callback(callId, '\r\n');
+      this.$callback(callId, '\x1b[2mTerminal restored\x1b[22m\r\n');
+    }
+
     const onDataDisposable = ptyInstance?.onData((e) => {
       this.debugLogger.debug('ptyServiceCenter: onData', JSON.stringify(e), 'pid:', pid, 'callId', callId);
       cache?.add(e);
@@ -186,17 +199,16 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
 
   $write(pid: number, data: string): void {
     const ptyInstance = this.ptyInstanceMap.get(pid);
-    this.debugLogger.debug('ptyServiceCenter: write', data, 'pid:', pid);
+    this.debugLogger.debug('ptyServiceCenter: write', JSON.stringify(data), 'pid:', pid);
     ptyInstance?.write(data);
   }
 
   $kill(pid: number, signal?: string): void {
     this.debugLogger.debug('ptyServiceCenter: kill', 'pid:', pid);
-    // TODO: 因为要保活，暂时屏蔽Kill，后续寻找更好的办法
-    // const ptyInstance = this.ptyInstanceMap.get(pid);
-    // ptyInstance?.kill(signal);
-    // this.ptyInstanceMap.delete(pid);
-    // this.ptyDataCacheMap.delete(pid);
+    const ptyInstance = this.ptyInstanceMap.get(pid);
+    ptyInstance?.kill(signal);
+    this.ptyInstanceMap.delete(pid);
+    this.ptyDataCacheMap.delete(pid);
   }
 
   $pause(pid: number): void {
@@ -219,8 +231,10 @@ export class PtyServiceProxyRPCProvider {
   private ptyServiceProxy: PtyServiceProxy;
   private readonly ptyServiceCenter: RPCServiceCenter;
   private readonly debugLogger = getDebugLogger();
+  private serverListenOptions: ListenOptions; // HOST + PORT or UNIX SOCK PATH
 
-  constructor() {
+  constructor(listenOptions: ListenOptions = { port: PTY_SERVICE_PROXY_SERVER_PORT }) {
+    this.serverListenOptions = listenOptions;
     this.ptyServiceCenter = new RPCServiceCenter();
     const { createRPCService, getRPCService } = initRPCService(this.ptyServiceCenter);
     const $callback: (callId: number, ...args) => void = (getRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL) as any)
@@ -241,8 +255,9 @@ export class PtyServiceProxyRPCProvider {
       this.debugLogger.log('ptyServiceCenter: new connections coming in');
       this.setProxyConnection(connection);
     });
-    server.listen(PTY_SERVICE_PROXY_SERVER_PORT);
-    this.debugLogger.log(`ptyServiceCenter: listening on ${PTY_SERVICE_PROXY_SERVER_PORT}`);
+    // const ipcPath = normalizedIpcHandlerPath()
+    server.listen(this.serverListenOptions);
+    this.debugLogger.log('ptyServiceCenter: listening on', this.serverListenOptions);
   }
 
   private setProxyConnection(connection: net.Socket) {

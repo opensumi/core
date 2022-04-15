@@ -54,8 +54,9 @@
       "../../packages"
     ],
     "events": {
-      "crash": "kill -9 $(lsof -t -i:8080 -sTCP:LISTEN)"
+      "crash": "kill -9 $(lsof -t -i:8000 -sTCP:LISTEN)"
     },
+    "signal": "SIGTERM",
     "ext": "js,json,ts",
     "delay": "2000"
   },

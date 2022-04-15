@@ -30,6 +30,7 @@ export const ITerminalProcessPath = 'ITerminalProcessPath';
 export const PTY_SERVICE_PROXY_PROTOCOL = 'PTY_SERVICE_PROXY_PROTOCOL';
 export const PTY_SERVICE_PROXY_CALLBACK_PROTOCOL = 'PTY_SERVICE_PROXY_CALLBACK_PROTOCOL';
 export const PTY_SERVICE_PROXY_SERVER_PORT = 10111;
+
 export interface IPtyProxyRPCService {
   /**
    * 远程spawn pty进程，开启终端，返回符合IPty接口的远程执行对象

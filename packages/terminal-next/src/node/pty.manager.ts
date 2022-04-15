@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import net from 'net';
+import net, { SocketConnectOpts } from 'net';
 
 import * as pty from 'node-pty';
 
@@ -60,15 +60,18 @@ export class PtyServiceManager implements IPtyServiceManager {
   @Autowired(INodeLogger)
   private logger: INodeLogger;
 
-  constructor(@Optional() initMode: 'remote' | 'local' = 'local') {
+  constructor(
+    @Optional() initMode: 'remote' | 'local' = 'local',
+    @Optional() connectOpts: SocketConnectOpts = { port: PTY_SERVICE_PROXY_SERVER_PORT },
+  ) {
     if (initMode === 'remote') {
-      this.initRemoteConnectionMode();
+      this.initRemoteConnectionMode(connectOpts);
     } else {
       this.initLocalInit();
     }
   }
 
-  private initRemoteConnectionMode() {
+  private initRemoteConnectionMode(connectOpts: SocketConnectOpts) {
     const clientCenter = new RPCServiceCenter();
     const { getRPCService: clientGetRPCService, createRPCService } = initRPCService(clientCenter);
     // TODO: 思考any是否应该在这里用 亦或者做空判断
@@ -88,7 +91,7 @@ export class PtyServiceManager implements IPtyServiceManager {
       },
     });
     const socket = new net.Socket();
-    socket.connect({ port: PTY_SERVICE_PROXY_SERVER_PORT });
+    socket.connect(connectOpts);
 
     // 连接绑定
     clientCenter.setConnection(createSocketConnection(socket));

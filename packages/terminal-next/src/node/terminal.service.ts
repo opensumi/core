@@ -79,7 +79,8 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     if (terminalMap) {
       terminalMap.forEach((t, id) => {
         this.terminalProcessMap.delete(id);
-        t.kill();
+        // t.kill(); // 这个是窗口关闭时候触发，在这个场景下终端要保活，不能Kill
+        // TOOD 后续看看有没有更加优雅的方案
       });
       this.clientTerminalMap.delete(clientId);
     }
