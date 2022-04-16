@@ -1,6 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@opensumi/ide-core-browser';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import {
+  DocumentFormattingEditProvider,
+  DocumentRangeFormattingEditProvider,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditorDocumentModelService } from '../doc-model/types';
@@ -19,20 +23,22 @@ export class FormattingSelector {
   private modelService: IEditorDocumentModelService;
 
   async select(
-    formatters: Array<
-      monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider
-    >,
+    formatters: Array<DocumentFormattingEditProvider | DocumentRangeFormattingEditProvider>,
     document: ITextModel,
-  ) {
+    forceSelect?: boolean,
+  ): Promise<DocumentFormattingEditProvider | DocumentRangeFormattingEditProvider | undefined> {
     const docRef = this.modelService.getModelReference(URI.from(document.uri.toJSON()));
     if (!docRef) {
       return;
     }
     const languageId = docRef.instance.languageId;
     docRef.dispose();
-    const preferred = (this.preferenceService.get<{ [key: string]: string }>('editor.preferredFormatter') || {})[
-      languageId
-    ];
+    let preferred;
+    if (!forceSelect) {
+      preferred = (this.preferenceService.get<{ [key: string]: string }>('editor.preferredFormatter') || {})[
+        languageId
+      ];
+    }
 
     const elements: { [key: string]: IProvider } = {};
     formatters.forEach((provider: IProvider) => {
@@ -41,7 +47,7 @@ export class FormattingSelector {
       }
     });
 
-    if (preferred) {
+    if (preferred && !forceSelect) {
       const idx = formatters.findIndex((provider: IProvider) => provider.extensionId === preferred);
       if (idx >= 0) {
         return formatters[idx];

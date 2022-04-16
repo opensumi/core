@@ -605,6 +605,18 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.toggleWorldWrap',
     category: CATEGORY,
   };
+
+  export const FORMAT_DOCUMENT_WITH: Command = {
+    id: 'editor.action.formatDocument.multiple',
+    category: CATEGORY,
+    label: localize('editor.formatDocument.label.multiple', 'Format Document With...'),
+  };
+
+  export const FORMAT_SELECTION_WITH: Command = {
+    id: 'editor.action.formatSelection.multiple',
+    category: CATEGORY,
+    label: localize('editor.formatSelection.label.multiple', 'Format Selection With...'),
+  };
 }
 
 export namespace SEARCH_COMMANDS {
