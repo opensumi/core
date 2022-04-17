@@ -22,7 +22,7 @@ import 'xterm/css/xterm.css';
 export default observer(() => {
   const controller = useInjectable<ITerminalController>(ITerminalController);
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
-  const search = useInjectable<ITerminalSearchService>(ITerminalSearchService);
+  const searchService = useInjectable<ITerminalSearchService>(ITerminalSearchService);
   const errorService = useInjectable<ITerminalErrorService>(ITerminalErrorService);
   const network = useInjectable<ITerminalNetwork>(ITerminalNetwork);
   const { errors } = errorService;
@@ -30,45 +30,54 @@ export default observer(() => {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
-  search.onOpen(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
+  React.useEffect(() => {
+    const dispose = searchService.onOpen(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
 
-      if (inputRef.current.value.length > 0) {
-        inputRef.current.setSelectionRange(0, inputRef.current.value.length);
+        if (inputRef.current.value.length > 0) {
+          inputRef.current.setSelectionRange(0, inputRef.current.value.length);
+        }
       }
-    }
-  });
+    });
+    return () => dispose.dispose();
+  }, [searchService, inputRef.current]);
 
-  const renderWidget = (widget: IWidget, index: number) => {
-    const client = controller.findClientFromWidgetId(widget.id);
-    let error: ITerminalError | undefined;
-    if (client) {
-      error = !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
-    } else {
-      error = errors.get(widget.id);
-    }
-    return <TerminalWidget show={currentGroupIndex === index} error={error} widget={widget} />;
-  };
+  const renderWidget = React.useCallback(
+    (widget: IWidget, index: number) => {
+      const client = controller.findClientFromWidgetId(widget.id);
+      let error: ITerminalError | undefined;
+      if (client) {
+        error = !network.shouldReconnect(client.id) ? errors.get(client.id) : undefined;
+      } else {
+        error = errors.get(widget.id);
+      }
+      return <TerminalWidget show={currentGroupIndex === index} error={error} widget={widget} />;
+    },
+    [currentGroupIndex, controller, errors, network, view],
+  );
 
-  const searchInput = (event: React.ChangeEvent<HTMLInputElement>) => {
-    search.input = event.target.value;
-  };
+  const searchInput = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      searchService.input = event.target.value;
+      searchService.search();
+    },
+    [searchService],
+  );
 
-  const searchKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      search.search();
-    }
+  const searchKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        searchService.search();
+      }
 
-    if (event.key === 'Escape') {
-      search.close();
-      search.clear();
-    }
-  };
-
-  const searchClose = () => {
-    search.close();
-  };
+      if (event.key === 'Escape') {
+        searchService.close();
+        searchService.clear();
+      }
+    },
+    [searchService],
+  );
 
   React.useEffect(() => {
     if (wrapperRef.current) {
@@ -83,17 +92,17 @@ export default observer(() => {
       style={{ backgroundColor: controller.themeBackground }}
       data-group-current={currentGroupId}
     >
-      {search.show && (
+      {searchService.show && (
         <div className={styles.terminalSearch}>
           <input
             autoFocus
             ref={inputRef}
             placeholder='查找'
-            value={search.input}
-            onChange={(event) => searchInput(event)}
-            onKeyDown={(event) => searchKeyDown(event)}
+            value={searchService.input}
+            onChange={searchInput}
+            onKeyDown={searchKeyDown}
           />
-          <div className={getIcon('close')} onClick={() => searchClose()}></div>
+          <div className={getIcon('close')} onClick={searchService.close}></div>
         </div>
       )}
       {groups.map((group, index) => {

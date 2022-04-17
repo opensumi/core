@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, Event } from '@opensumi/ide-core-common';
+import { debounce, Emitter, Event } from '@opensumi/ide-core-common';
 
 import { ITerminalSearchService, ITerminalGroupViewService, ITerminalController, ITerminalClient } from '../common';
 
@@ -42,6 +42,7 @@ export class TerminalSearchService implements ITerminalSearchService {
     this.input = '';
   }
 
+  @debounce(150)
   search() {
     this.client?.findNext(this.input);
   }
