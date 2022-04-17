@@ -127,9 +127,6 @@ export class TypeHierarchyService implements ITypeHierarchyService {
 
       return [model.root];
     } finally {
-      if (isFunction(textModel?.dispose)) {
-        textModel.dispose();
-      }
       textModelReference?.dispose();
     }
   }
