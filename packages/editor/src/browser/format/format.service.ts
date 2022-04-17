@@ -50,7 +50,7 @@ export class DocumentFormatService {
   }
 
   async formatSelectionWith() {
-    if (!this.workbenchEditorService.currentCodeEditor?.monacoEditor.hasModel()) {
+    if (!this.workbenchEditorService.currentEditor?.monacoEditor.hasModel()) {
       return;
     }
     const model = this.workbenchEditorService.currentEditor?.monacoEditor.getModel();

@@ -1,10 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@opensumi/ide-core-browser';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import {
-  DocumentFormattingEditProvider,
-  DocumentRangeFormattingEditProvider,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditorDocumentModelService } from '../doc-model/types';
@@ -23,10 +19,14 @@ export class FormattingSelector {
   private modelService: IEditorDocumentModelService;
 
   async select(
-    formatters: Array<DocumentFormattingEditProvider | DocumentRangeFormattingEditProvider>,
+    formatters: Array<
+      monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider
+    >,
     document: ITextModel,
     forceSelect?: boolean,
-  ): Promise<DocumentFormattingEditProvider | DocumentRangeFormattingEditProvider | undefined> {
+  ): Promise<
+    monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider | undefined
+  > {
     const docRef = this.modelService.getModelReference(URI.from(document.uri.toJSON()));
     if (!docRef) {
       return;
