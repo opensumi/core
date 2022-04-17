@@ -320,13 +320,13 @@ export class KeymapService implements IKeymapService {
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding = (keybinding: Keybinding) => {
+  setKeybinding = (keybinding: Keybinding) =>
     this.progressService.withProgress(
       {
         location: ProgressLocation.Notification,
       },
       (progress: IProgress<IProgressStep>) =>
-        new Promise<any>(async (resolve, reject) => {
+        new Promise<any>((resolve, reject) => {
           progress.report({ message: localize('keymaps.keybinding.loading'), increment: 0, total: 100 });
           const keybindings: KeymapItem[] = this.storeKeybindings || [];
           let updated = false;
@@ -347,9 +347,9 @@ export class KeymapService implements IKeymapService {
             }
           }
           if (!updated) {
-            const defaultBinding: KeybindingItem = this.keybindings.find(
+            const defaultBinding: KeybindingItem | undefined = this.keybindings.find(
               (kb: KeybindingItem) => kb.id === keybinding.command && this.getRaw(kb.when) === keybinding.when,
-            )!;
+            );
             if (defaultBinding && defaultBinding.keybinding) {
               this.unregisterDefaultKeybinding({
                 when: this.getRaw(defaultBinding.when),
@@ -367,7 +367,7 @@ export class KeymapService implements IKeymapService {
             this.registerUserKeybinding(keybinding);
           }
           // 后置存储流程
-          this.saveKeybinding(keybindings)
+          return this.saveKeybinding(keybindings)
             .then(() => {
               resolve(undefined);
               progress.report({ message: localize('keymaps.keybinding.success'), increment: 99 });
@@ -385,7 +385,6 @@ export class KeymapService implements IKeymapService {
         }),
       () => {},
     );
-  };
 
   private async saveKeybinding(keymaps: KeymapItem[]) {
     this.storeKeybindings = keymaps;
@@ -416,7 +415,7 @@ export class KeymapService implements IKeymapService {
     const filtered = keymaps.filter((a) => a.command !== item.command);
     this.unregisterUserKeybinding(item);
     this.restoreDefaultKeybinding(item);
-    this.saveKeybinding(filtered);
+    await this.saveKeybinding(filtered);
   };
 
   /**

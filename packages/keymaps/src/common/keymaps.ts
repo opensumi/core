@@ -65,7 +65,7 @@ export interface IKeymapService {
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding(keybinding: Keybinding): void;
+  setKeybinding(keybinding: Keybinding): Promise<void>;
 
   /**
    * 移除给定ID的快捷键绑定
