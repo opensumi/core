@@ -1,4 +1,4 @@
-name: Release a release on ref
+name: Release RC Version
 
 on:
   workflow_dispatch:
@@ -9,14 +9,14 @@ on:
         default: 'main'
 
 jobs:
-  next-version:
-    name: Next Version
+  rc-version:
+    name: RC Version
 
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
 
     steps:
       # 判断用户是否有写权限

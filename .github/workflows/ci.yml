@@ -15,11 +15,11 @@ on:
 
 jobs:
   coverage:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [12.x, 14.x]
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        node-version: [14.x, 16.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -29,7 +29,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Build
+    - name: Build & Test
       run: |
         npm i
         npm run init
