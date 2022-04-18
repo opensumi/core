@@ -7,6 +7,7 @@ import './style.less';
 export const Tooltip: React.FC<{
   title: string;
   delay?: number;
+  children: React.ReactChild;
 }> = ({ title, children, delay }) => {
   const [visible, setVisible] = useState(false);
   const targetRef = useRef<HTMLParagraphElement | null>(null);

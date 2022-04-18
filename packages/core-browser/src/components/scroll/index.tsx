@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import { MouseEvent, UIEvent } from 'react';
 
 import styles from './scroll.module.less';
@@ -29,7 +29,7 @@ export interface ScrollSizes {
   scrollWidth: number;
 }
 
-export class Scroll extends React.Component<ScrollAreaProps, any> {
+export class Scroll extends React.Component<PropsWithChildren<ScrollAreaProps>, any> {
   public ref: HTMLDivElement;
 
   public container: HTMLDivElement;

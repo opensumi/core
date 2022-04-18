@@ -1,6 +1,7 @@
 import classnames from 'classnames';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import ReactDOM from 'react-dom';
+import ReactDOMClient from 'react-dom/client';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Button } from '@opensumi/ide-components';
@@ -210,7 +211,7 @@ export class ToolbarActionBtnClickEvent extends BasicEvent<{
 
 const popOverMap = new Map<string, Promise<HTMLDivElement>>();
 
-const PopOverComponentWrapper: React.FC<{ delegate: IToolbarActionBtnDelegate }> = (props) => {
+const PopOverComponentWrapper: React.FC<PropsWithChildren<{ delegate: IToolbarActionBtnDelegate }>> = (props) => {
   const [context, setContext] = React.useState();
 
   React.useEffect(() => {
@@ -326,17 +327,14 @@ class ToolbarBtnDelegate implements IToolbarActionBtnDelegate {
       this._popOverElement = new Promise((resolve) => {
         const div = document.createElement('div');
         const C = this.popoverComponent!;
-        ReactDOM.render(
+        ReactDOMClient.createRoot(div).render(
           <ConfigProvider value={this.context}>
             <PopOverComponentWrapper delegate={this}>
               <C />
             </PopOverComponentWrapper>
           </ConfigProvider>,
-          div,
-          () => {
-            resolve(div);
-          },
         );
+        resolve(div);
       });
       popOverMap.set(this.actionId, this._popOverElement);
     }

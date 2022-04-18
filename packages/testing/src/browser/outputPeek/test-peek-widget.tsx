@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import ReactDOMClient from 'react-dom/client';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider, IContextKeyService } from '@opensumi/ide-core-browser';
@@ -49,27 +50,25 @@ export class TestingOutputPeek extends PeekViewWidget {
    */
   protected _fillBody(container: HTMLElement): void {
     this.setCssClass('testing-output-peek-container');
-    ReactDOM.render(
+    ReactDOMClient.createRoot(container).render(
       <ConfigProvider value={this.configContext}>
         <SplitPanel overflow='hidden' id='testing-message-horizontal' flex={1}>
           <TestMessageContainer />
           <TestTreeContainer />
         </SplitPanel>
       </ConfigProvider>,
-      container,
     );
   }
 
   protected async _fillActionBarOptions(container: HTMLElement): Promise<void> {
     const menus = this.menuService.createMenu(MenuId.TestPeekTitleContext, this.contextKeyService);
     return new Promise((res) => {
-      ReactDOM.render(
+      ReactDOMClient.createRoot(container).render(
         <ConfigProvider value={this.configContext}>
           <InlineActionBar menus={menus} type='icon' context={[this.editor.getModel()?.uri.toString()!]} />
         </ConfigProvider>,
-        container,
-        res,
       );
+      res();
     });
   }
 

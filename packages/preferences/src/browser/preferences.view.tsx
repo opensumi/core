@@ -305,15 +305,17 @@ export const PreferenceBody = ({ items, onReady }: { items: ISectionItemData[]; 
 
 export const PreferenceSection = ({ section, scope }: { section: ISettingSection; scope: PreferenceScope }) => (
   <div className={styles.preference_section} id={'preferenceSection-' + section.title}>
-    {section.title ? <div className={styles.section_title}>{section.title!}</div> : null}
-    {section.component ? (
-      <section.component scope={scope} />
-    ) : (
-      section.preferences.map((preference, idx) => {
-        if (typeof preference === 'string') {
-        } else {
-        }
-      }) || <div></div>
-    )}
+    <>
+      {section.title ? <div className={styles.section_title}>{section.title!}</div> : null}
+      {section.component ? (
+        <section.component scope={scope} />
+      ) : (
+        section.preferences.map((preference, idx) => {
+          if (typeof preference === 'string') {
+          } else {
+          }
+        }) || <div></div>
+      )}
+    </>
   </div>
 );

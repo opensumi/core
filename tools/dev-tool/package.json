@@ -29,7 +29,7 @@
     "node-notifier": "^8.0.1",
     "null-loader": "^4.0.1",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
-    "react-dom": "^16.8.6",
+    "react-dom": "^18.0.0",
     "style-loader": "^0.23.1",
     "style-resources-loader": "^1.2.1",
     "thread-loader": "^2.1.3",

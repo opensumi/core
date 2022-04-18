@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDom from 'react-dom';
+import ReactDom from 'react-dom/client';
 
 import { ComponentContextProvider, IIconResourceOptions } from '@opensumi/ide-components';
 import { getDebugLogger, IEventBus, URI } from '@opensumi/ide-core-common';
@@ -60,12 +60,11 @@ const defaultAppRender =
   (dom: HTMLElement, onDidRendered?: () => void): IAppRenderer =>
   (app) =>
     new Promise((resolve) => {
-      ReactDom.render(app, dom, () => {
-        if (onDidRendered && typeof onDidRendered === 'function') {
-          onDidRendered();
-        }
-        resolve();
-      });
+      ReactDom.createRoot(dom).render(app);
+      if (onDidRendered && typeof onDidRendered === 'function') {
+        onDidRendered();
+      }
+      resolve();
     });
 
 export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRenderer) {

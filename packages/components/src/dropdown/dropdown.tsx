@@ -1,7 +1,7 @@
 import RightOutlined from '@ant-design/icons/RightOutlined';
 import classNames from 'classnames';
 import RcDropdown from 'rc-dropdown';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 
 import { tuple } from '../utils/type';
 import { warning } from '../utils/warning';
@@ -44,7 +44,7 @@ export interface DropDownProps {
   openClassName?: string;
 }
 
-export default class Dropdown extends React.Component<DropDownProps, any> {
+export default class Dropdown extends React.Component<PropsWithChildren<DropDownProps>, any> {
   static defaultProps = {
     mouseEnterDelay: 0.15,
     mouseLeaveDelay: 0.1,

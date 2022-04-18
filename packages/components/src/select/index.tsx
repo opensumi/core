@@ -160,8 +160,8 @@ function getLabelWithChildrenProps<T = string>(
 }
 
 export function isDataOptions<T = any>(
-  options: Array<React.ReactNode | { label: string; value: T }> | undefined,
-): options is Array<{ label: string; value: T; iconClass?: string }> {
+  options: Array<React.ReactNode | IDataOption<T> | IDataOptionGroup<T>> | undefined,
+): options is Array<IDataOption<T>> {
   if (!options) {
     return false;
   }
@@ -184,7 +184,7 @@ export function isDataOptionGroups<T = any>(
 }
 
 function isDataOption<T = any>(
-  option: React.ReactNode | { label: string; value: T },
+  option: React.ReactNode | IDataOption<T> | IDataOptionGroup<T>,
 ): option is { label: string; value: T; iconClass?: string } {
   return (option as any).value !== undefined;
 }

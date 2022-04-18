@@ -1,5 +1,5 @@
 import fuzzy from 'fuzzy';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
 
 import {
@@ -18,7 +18,7 @@ import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
 import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { TreeModel } from './tree/model/TreeModel';
-import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
+import { INodeRendererProps, NodeRendererWrap, INodeRenderer, INodeRendererWrapProps } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
 
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
@@ -36,6 +36,7 @@ export interface IRecycleTreeSize {
 }
 
 export interface IRecycleTreeProps<T = TreeModel> {
+  children(props: any): React.ReactNode;
   model: T;
   /**
    * 容器高度
