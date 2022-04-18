@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import ReactIs from 'react-is';
 
 import { Scrollbars } from '@opensumi/ide-components';
@@ -120,11 +120,10 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
         cachedGroupView[grid.editorGroup!.name] = div;
         div.style.height = '100%';
         editorGroupContainer.appendChild(div);
-        ReactDOM.render(
+        ReactDOM.createRoot(div).render(
           <ConfigProvider value={context}>
             <EditorGroupView group={grid.editorGroup! as EditorGroup} />
           </ConfigProvider>,
-          div,
         );
       }
     }
@@ -519,11 +518,10 @@ export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
         div.style.height = '100%';
         componentService.perWorkbenchComponents[component.uid] = div;
         // 对于per_workbench的，resource默认为不会改变
-        ReactDOM.render(
+        ReactDOM.createRoot(div).render(
           <ConfigProvider value={context}>
             <component.component resource={resource} />
           </ConfigProvider>,
-          div,
         );
       }
       containerRef!.appendChild(componentService.perWorkbenchComponents[component.uid]);

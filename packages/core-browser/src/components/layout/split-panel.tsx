@@ -117,7 +117,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       ),
     [childList],
   );
-
   const resizeDelegates = React.useRef<IResizeHandleDelegate[]>([]);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const rootRef = React.useRef<HTMLElement>();

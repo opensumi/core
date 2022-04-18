@@ -47,7 +47,7 @@ const svgBaseProps = {
   fill: 'currentColor',
 };
 
-export function createFromIconfontCN<T>(options: CustomIconOptions = {}): React.SFC<IconFontProps<T>> {
+export function createFromIconfontCN<T>(options: CustomIconOptions = {}) {
   const { scriptUrl, extraCommonProps = {} } = options;
 
   /**

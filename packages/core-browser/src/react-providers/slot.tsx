@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 
 import { Button } from '@opensumi/ide-components';
 import { getDebugLogger, localize } from '@opensumi/ide-core-common';
@@ -59,7 +59,7 @@ export function getTabbarCtxKey(location: string): TabbarContextKeys {
   return standardTabbarCtxKeys[location] || 'activeExtendViewlet';
 }
 
-export class ErrorBoundary extends React.Component {
+export class ErrorBoundary extends React.Component<PropsWithChildren<any>> {
   state = { error: null, errorInfo: null };
 
   componentDidCatch(error, errorInfo) {
@@ -96,8 +96,11 @@ export class ErrorBoundary extends React.Component {
 
 export const allSlot: { slot: string; dom: HTMLElement }[] = [];
 
-export const SlotDecorator: React.FC<{ slot: string; backgroundColor?: string }> = ({ slot, ...props }) => {
-  const ref = React.useRef<HTMLElement | null>();
+export const SlotDecorator: React.FC<{ slot: string; color?: string; children: React.ReactChild }> = ({
+  slot,
+  ...props
+}) => {
+  const ref = React.useRef<HTMLElement>();
   React.useEffect(() => {
     if (ref.current) {
       allSlot.push({ slot, dom: ref.current });
