@@ -8,9 +8,9 @@ export class TreeModel {
   private _state: TreeStateManager;
   private _root: CompositeTreeNode;
 
-  private onChangeEmitter: Emitter<void> = new Emitter();
+  private onChangeEmitter: Emitter<boolean> = new Emitter();
 
-  get onChange(): Event<void> {
+  get onChange(): Event<boolean> {
     return this.onChangeEmitter.event;
   }
 
@@ -41,8 +41,8 @@ export class TreeModel {
     this.state = new TreeStateManager(root as CompositeTreeNode);
   }
 
-  dispatchChange = () => {
-    this.onChangeEmitter.fire();
+  dispatchChange = (force = true) => {
+    this.onChangeEmitter.fire(force);
   };
 
   /**

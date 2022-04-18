@@ -355,8 +355,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       notifyDidChangeMetadata: (target: ITreeNode | ICompositeTreeNode, change: IMetadataChange) => {
         emitter.fire({ type: TreeNodeEvent.DidChangeMetadata, args: [target, change] });
       },
-      notifyDidUpdateBranch: () => {
-        emitter.fire({ type: TreeNodeEvent.BranchDidUpdate, args: [] });
+      notifyDidUpdateBranch: (force = true) => {
+        emitter.fire({ type: TreeNodeEvent.BranchDidUpdate, args: [force] });
       },
       notifyWillResolveChildren: (target: ICompositeTreeNode, nowExpanded: boolean) => {
         emitter.fire({ type: TreeNodeEvent.WillResolveChildren, args: [target, nowExpanded] });
@@ -632,10 +632,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       } else if (CompositeTreeNode.isRoot(this)) {
         TreeNode.updateBranchStatus(this.path, BranchOperatorStatus.EXPANDED);
         // 通知分支树已更新
-        this.watcher.notifyDidUpdateBranch();
+        this.watcher.notifyDidUpdateBranch(false);
       } else {
         // 这种情况一般为非根节点刷新后需同步到父节点，更新分支树
-        this.expandBranch(this);
+        this.expandBranch(this, true);
+        this.watcher.notifyDidUpdateBranch(false);
       }
     } else {
       // 仅需处理存在子节点的情况，否则将会影响刷新后的节点长度
