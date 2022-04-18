@@ -3,13 +3,12 @@ import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import Dialog from 'rc-dialog';
 import addEventListener from 'rc-util/lib/Dom/addEventListener';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 
 import { Button } from '../button';
 import type { ButtonType, ButtonProps } from '../button';
 
 import { getConfirmLocale, ModalLocale } from './locale';
-
 
 let mousePosition: { x: number; y: number } | null;
 export const destroyFns: Array<() => void> = [];
@@ -119,7 +118,7 @@ export type ModalFunc = (props: ModalFuncProps) => {
   update: (newConfig: ModalFuncProps) => void;
 };
 
-export default class Modal extends React.Component<ModalProps, {}> {
+export default class Modal extends React.Component<PropsWithChildren<ModalProps>, {}> {
   static info: ModalFunc;
 
   static success: ModalFunc;

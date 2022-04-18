@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDom from 'react-dom';
+import ReactDom from 'react-dom/client';
 
 import { ComponentContextProvider, IIconResourceOptions } from '@opensumi/ide-components';
 import { getDebugLogger, IEventBus, URI } from '@opensumi/ide-core-common';
@@ -14,7 +14,8 @@ import { getIcon } from '../style/icon/icon';
 
 export interface AppProps {
   app: IClientApp;
-  main: React.ComponentType;
+  main: React.ComponentType<{ callback?: () => void }>;
+  callback?: () => void;
   overlays?: React.ComponentType[];
 }
 
@@ -26,6 +27,7 @@ export function App(props: AppProps) {
     (uri: string, options: IIconResourceOptions) => labelService.getIcon(URI.parse(uri), options),
     [],
   );
+
   React.useEffect(() => {
     let lastFrame: number | null;
     const handle = () => {
@@ -47,26 +49,21 @@ export function App(props: AppProps) {
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
       <ConfigProvider value={props.app.config}>
-        {<props.main />}
+        {<props.main callback={props.callback} />}
         {props.overlays && props.overlays.map((Component, index) => <Component key={index} />)}
       </ConfigProvider>
     </ComponentContextProvider>
   );
 }
 
-export type IAppRenderer = (app: React.ReactElement) => Promise<void>;
+export type IAppRenderer = (app: (props: any) => JSX.Element) => void;
 
 const defaultAppRender =
-  (dom: HTMLElement, onDidRendered?: () => void): IAppRenderer =>
-  (app) =>
-    new Promise((resolve) => {
-      ReactDom.render(app, dom, () => {
-        if (onDidRendered && typeof onDidRendered === 'function') {
-          onDidRendered();
-        }
-        resolve();
-      });
-    });
+  (dom: HTMLElement): IAppRenderer =>
+  (IDEApp: (props: any) => JSX.Element) => {
+    const root = ReactDom.createRoot(dom);
+    root.render(<IDEApp />);
+  };
 
 export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRenderer) {
   const Layout = app.config.layoutComponent || DefaultLayout;
@@ -80,9 +77,9 @@ export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRe
       return module.component;
     });
 
-  const IdeApp = <App app={app} main={Layout} overlays={overlayComponents} />;
+  const IdeApp = (props) => <App {...props} app={app} main={Layout} overlays={overlayComponents} />;
 
-  const render = typeof container === 'function' ? container : defaultAppRender(container, app.config.didRendered);
+  const render = typeof container === 'function' ? container : defaultAppRender(container);
 
   return render(IdeApp);
 }

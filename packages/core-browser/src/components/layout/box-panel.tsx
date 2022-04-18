@@ -1,6 +1,9 @@
 import clsx from 'classnames';
 import React from 'react';
 
+import { useInjectable } from '../../react-hooks';
+import { AppConfig } from '../../react-providers';
+
 import { Layout } from './layout';
 import styles from './styles.module.less';
 
@@ -22,9 +25,15 @@ export const BoxPanel: React.FC<{
 }> = ({ className, children = [], direction = 'left-to-right', ...restProps }) => {
   // convert children to list
   const arrayChildren = React.Children.toArray(children);
+  const appConfig = useInjectable<AppConfig>(AppConfig);
 
   return (
     <div
+      ref={() => {
+        if (appConfig.didRendered) {
+          appConfig.didRendered();
+        }
+      }}
       {...restProps}
       className={clsx(styles['box-panel'], className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}

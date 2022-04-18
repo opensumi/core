@@ -1,4 +1,4 @@
-import ReactDom from 'react-dom';
+import ReactDom from 'react-dom/client';
 
 import {
   CommandRegistryImpl,

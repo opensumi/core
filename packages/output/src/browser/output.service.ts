@@ -29,8 +29,8 @@ export class OutputService extends WithEventBus {
 
   private outputEditor?: ICodeEditor;
 
-  @observable
-  readonly channels = new Map<string, OutputChannel>();
+  @observable.shallow
+  readonly channels = observable.map<string, OutputChannel>();
 
   @observable.ref
   selectedChannel: OutputChannel;

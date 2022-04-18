@@ -160,8 +160,8 @@ function getLabelWithChildrenProps<T = string>(
 }
 
 export function isDataOptions<T = any>(
-  options: Array<React.ReactNode | { label: string; value: T }> | undefined,
-): options is Array<{ label: string; value: T; iconClass?: string }> {
+  options: Array<React.ReactNode | IDataOption<T> | IDataOptionGroup<T>> | undefined,
+): options is Array<IDataOption<T>> {
   if (!options) {
     return false;
   }
@@ -184,7 +184,7 @@ export function isDataOptionGroups<T = any>(
 }
 
 function isDataOption<T = any>(
-  option: React.ReactNode | { label: string; value: T },
+  option: React.ReactNode | IDataOption<T> | IDataOptionGroup<T>,
 ): option is { label: string; value: T; iconClass?: string } {
   return (option as any).value !== undefined;
 }
@@ -261,15 +261,20 @@ export function Select<T = string>({
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
 
-  const toggleOpen = useCallback(() => {
-    const target = !open;
-    if (target) {
-      if (onBeforeShowOptions && onBeforeShowOptions()) {
-        return;
+  const toggleOpen = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = !open;
+      if (target) {
+        if (onBeforeShowOptions && onBeforeShowOptions()) {
+          return;
+        }
       }
-    }
-    setOpen(target);
-  }, [open, onBeforeShowOptions, onBeforeShowOptions]);
+      setOpen(target);
+    },
+    [open, onBeforeShowOptions, onBeforeShowOptions],
+  );
 
   const getSelectedValue = useCallback(() => {
     if (options && isDataOptions(options)) {

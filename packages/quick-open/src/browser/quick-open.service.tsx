@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import {
@@ -175,13 +175,12 @@ export class MonacoQuickOpenService implements QuickOpenService {
   private initWidgetView(widget: QuickOpenWidget) {
     // 因为 quickopen widget 需要通过构造函数初始化，无法通过 useInjectable 获取实例
     // 但其实是一个单例对象，使用 React Context 让其子组件获取到 widget 实例
-    ReactDOM.render(
+    ReactDOM.createRoot(this.container).render(
       <ConfigProvider value={this.appConfig}>
         <QuickOpenContext.Provider value={{ widget }}>
           <QuickOpenView />
         </QuickOpenContext.Provider>
       </ConfigProvider>,
-      this.container,
     );
   }
 
