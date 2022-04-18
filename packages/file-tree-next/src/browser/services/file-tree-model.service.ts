@@ -1613,8 +1613,6 @@ export class FileTreeModelService {
               copyUri.displayName,
               fileStat?.isDirectory ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
             );
-          } else {
-            this.messageService.error(res);
           }
         }
       }

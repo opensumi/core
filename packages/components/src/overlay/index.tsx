@@ -1,5 +1,5 @@
 import clsx from 'classnames';
-import React from 'react';
+import React, { PropsWithChildren } from 'react';
 
 import { Modal, ModalProps } from '../modal';
 
@@ -22,7 +22,7 @@ export interface IOverlayProps {
   keyboard?: boolean;
 }
 
-export const Overlay: React.FC<IOverlayProps> = ({
+export const Overlay: React.FC<PropsWithChildren<IOverlayProps>> = ({
   maskClosable = false,
   closable = true,
   className,

@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import throttle from 'lodash/throttle';
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import { IEventBus, Disposable, Emitter } from '@opensumi/ide-core-common';
 
@@ -638,7 +638,7 @@ class ToolbarActionRenderer {
             element.classList.add(...this.resolvedToolbarAction.extraClassNames);
           }
           let setInDropDown: (inDropDown: boolean) => void | undefined;
-          ReactDOM.render(
+          ReactDOM.createRoot(element).render(
             <ToolbarActionRenderWrapper
               initialInDropDown={inDropDown}
               action={this.toolbarAction}
@@ -651,23 +651,20 @@ class ToolbarActionRenderer {
               }}
               location={location}
             />,
-            element,
-            () => {
-              if (canceled) {
-                reject('canceled render toolbar');
-              } else {
-                this.reactElement = {
-                  element,
-                  setInDropDown: (inDropdown: boolean) => {
-                    if (setInDropDown) {
-                      setInDropDown(inDropdown);
-                    }
-                  },
-                };
-                resolve(element);
-              }
-            },
           );
+          if (canceled) {
+            reject('canceled render toolbar');
+          } else {
+            this.reactElement = {
+              element,
+              setInDropDown: (inDropdown: boolean) => {
+                if (setInDropDown) {
+                  setInDropDown(inDropdown);
+                }
+              },
+            };
+            resolve(element);
+          }
         }
       }).then((resolved) => {
         this.renderPromise.resolved = resolved;
