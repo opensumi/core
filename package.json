@@ -146,7 +146,6 @@
     "simple-git": "^2.34.2",
     "strip-html-comments": "^1.0.0",
     "temp": "^0.9.4",
-    "text-encoding": "^0.7.0",
     "ts-jest": "^27.0.3",
     "uuid": "^8.3.2",
     "write-pkg": "^4.0.0",
