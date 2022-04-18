@@ -274,6 +274,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         );
         const client = await this.clientFactory2(widget, {});
 
+        // 终端被Resume的场景下也要绑定终端事件，避免意料之外的BUG
+        this.setupClient(widget, client);
+
         if (session.task) {
           client.isTaskExecutor = true;
           client.taskId = session.task;
