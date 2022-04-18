@@ -273,7 +273,7 @@ export function createLanguagesApiFactory(
       return extHostLanguages.registerCallHierarchyProvider(selector, provider);
     },
     registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable {
-      return extHostLanguages.registerTypeHierarchyProvider(extension, selector, provider);
+      return extHostLanguages.registerTypeHierarchyProvider(selector, provider);
     },
     registerDocumentSemanticTokensProvider(
       selector: DocumentSelector,
@@ -1074,11 +1074,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.withAdapter(handle, CallHierarchyAdapter, (adapter) => Promise.resolve(adapter.releaseSession(sessionId)));
   }
 
-  registerTypeHierarchyProvider(
-    extension: IExtensionDescription,
-    selector: DocumentSelector,
-    provider: TypeHierarchyProvider,
-  ): Disposable {
+  registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable {
     const callId = this.addNewAdapter(new TypeHierarchyAdapter(this.documents, provider));
     this.proxy.$registerTypeHierarchyProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);

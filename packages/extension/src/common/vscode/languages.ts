@@ -405,11 +405,7 @@ export interface IExtHostLanguages {
     itemId: string,
     token: CancellationToken,
   ): Promise<IOutgoingCallDto[] | undefined>;
-  registerTypeHierarchyProvider(
-    extension: IExtensionDescription,
-    selector: DocumentSelector,
-    provider: TypeHierarchyProvider,
-  ): Disposable;
+  registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable;
   $prepareTypeHierarchy(
     handle: number,
     resource: UriComponents,
