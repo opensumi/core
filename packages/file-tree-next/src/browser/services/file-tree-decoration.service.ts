@@ -7,7 +7,7 @@ import {
   Emitter,
   DisposableCollection,
 } from '@opensumi/ide-core-browser';
-import { IDecorationsService } from '@opensumi/ide-decoration';
+import { IDecorationData, IDecorationsService } from '@opensumi/ide-decoration';
 import { IThemeService } from '@opensumi/ide-theme';
 
 @Injectable()
@@ -22,10 +22,26 @@ export class FileTreeDecorationService implements FileDecorationsProvider {
 
   private readonly onDidChangeEmitter: Emitter<void> = new Emitter();
 
+  private cacheDecorations = new Map<string, IDecorationData>();
+
   constructor() {
     this.disposeCollection.pushAll([
-      this.decorationsService.onDidChangeDecorations(() => {
-        this.onDidChangeEmitter.fire();
+      this.decorationsService.onDidChangeDecorations((e) => {
+        const effectResource = (e as any)._data?._iter?._value;
+        if (effectResource) {
+          const uri = new URI(effectResource);
+          const decoration = this.getDecoration(uri);
+          if (this.cacheDecorations.has(effectResource)) {
+            if (this.cacheDecorations.get(effectResource)?.tooltip !== decoration?.tooltip) {
+              // 当节点装饰发生变化时，更新节点
+              this.onDidChangeEmitter.fire();
+            }
+          } else {
+            // 首次获取到文件装饰时，更新节点
+            this.cacheDecorations.set(effectResource, decoration);
+            this.onDidChangeEmitter.fire();
+          }
+        }
       }),
       this.themeService.onThemeChange(() => {
         this.onDidChangeEmitter.fire();
