@@ -1014,6 +1014,9 @@ export class FileTreeModelService {
   };
 
   async deleteFileByUris(uris: URI[]) {
+    if (uris.length === 0) {
+      return;
+    }
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('file.confirm.delete.ok');
       const cancel = localize('file.confirm.delete.cancel');

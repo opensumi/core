@@ -443,6 +443,8 @@ export class FileTreeContribution
           } else {
             return;
           }
+        } else {
+          this.willDeleteUris = this.willDeleteUris.concat(uris);
         }
         return this.deleteThrottler.queue<void>(this.doDelete.bind(this));
       },
