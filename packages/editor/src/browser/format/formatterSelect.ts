@@ -52,7 +52,7 @@ export class FormattingSelector {
       if (idx >= 0) {
         return formatters[idx];
       }
-    } else if (formatters.length < 2) {
+    } else if (formatters.length < 2 && !forceSelect) {
       return formatters[0];
     }
 

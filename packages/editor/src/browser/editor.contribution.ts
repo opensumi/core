@@ -1172,7 +1172,7 @@ export class EditorContribution
       command: EDITOR_COMMANDS.FORMAT_DOCUMENT_WITH.id,
       group: '1_modification',
       order: 1.3,
-      when: ContextKeyExpr.and(EditorContextKeys.writable, EditorContextKeys.hasDocumentFormattingProvider),
+      when: ContextKeyExpr.and(EditorContextKeys.writable, EditorContextKeys.hasMultipleDocumentFormattingProvider),
     });
 
     menus.registerMenuItem(MenuId.EditorContext, {
