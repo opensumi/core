@@ -113,7 +113,10 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private extensionMetaDataArr: IExtensionMetaData[];
 
   // 插件进程是否正在重启中
-  private isExtensionRestarting = false;
+  private isExtProcessRestarting = false;
+
+  // 插件进程是否正在等待重启，页面不可见的时候被设置
+  private isExtProcessWaitingForRestart = false;
 
   // 针对 activationEvents 为 * 的插件
   public eagerExtensionsActivated: Deferred<void> = new Deferred();
@@ -173,6 +176,13 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.initExtensionInstanceData();
     await this.runExtensionContributes();
     this.doActivate();
+
+    // 插件进程重启时候需要监听页面展示状态
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.isExtProcessWaitingForRestart && !this.isExtProcessRestarting) {
+        this.extProcessRestartHandler();
+      }
+    }, false);
   }
 
   /**
@@ -250,27 +260,49 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * 重启插件进程
    */
   public async restartExtProcess() {
-    if (this.isExtensionRestarting) {
+    /**
+     * 只有在页面可见的情况下才执行插件进程重启操作
+     * 如果当前页面不可见，那么 chrome 会对 socket 进行限流，导致进程重启的 rpc 调用得不到返回从而卡住
+     */
+    if (document.visibilityState === 'visible') {
+      this.extProcessRestartHandler();
+    } else {
+      this.isExtProcessWaitingForRestart = true;
+    }
+  }
+
+  private async extProcessRestartHandler() {
+    if (this.isExtProcessRestarting) {
       return;
     }
 
-    this.isExtensionRestarting = true;
+    const restartProgress = () => {
+      this.progressService.withProgress(
+        {
+          location: ProgressLocation.Notification,
+          title: localize('extension.exthostRestarting.content'),
+        },
+        async () => {
+          try {
+            await this.startExtProcess(false);
+          } catch (err) {
+            this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
+          }
 
-    await this.progressService.withProgress(
-      {
-        location: ProgressLocation.Notification,
-        title: localize('extension.exthostRestarting.content'),
-      },
-      async () => {
-        try {
-          await this.startExtProcess(false);
-        } catch (err) {
-          this.logger.error(`[ext-restart]: ext-host restart failure, error: ${err}`);
+          this.isExtProcessRestarting = false;
+          this.isExtProcessWaitingForRestart = false;
         }
+      );
+    };
 
-        this.isExtensionRestarting = false;
-      },
-    );
+    this.isExtProcessRestarting = true;
+
+    if (this.isExtProcessWaitingForRestart) {
+      // 页面从不可见恢复至可见状态后，可能出现 socket 堆积的现象，因此延迟 1000ms 后再进行重启操作
+      setTimeout(restartProgress, 1000);
+    } else {
+      restartProgress();
+    }
   }
 
   private async startExtProcess(init: boolean) {
