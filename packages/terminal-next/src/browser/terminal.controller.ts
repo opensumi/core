@@ -246,6 +246,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
 
+    // 之前OpenSumi的Check终端活跃机制是有问题的，暂时不启用，这部分逻辑在PtyService会兜住
     // const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
 
     // if (!checked) {

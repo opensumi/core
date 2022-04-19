@@ -1,4 +1,5 @@
 import { Injector } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
   IContextKeyService,
@@ -53,7 +54,6 @@ import {
   MockProfileService,
   MockTerminalProfileInternalService,
 } from './mock.service';
-
 
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
@@ -192,6 +192,12 @@ export const injector = new Injector([
       $resolvePotentialUnixShellPath() {
         return 'detectedBash';
       },
+    },
+  },
+  {
+    token: WSChannelHandler,
+    useValue: {
+      clientId: 'W_LwPKkmhQA', // fake clientId for test case
     },
   },
 ]);
