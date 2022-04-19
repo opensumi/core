@@ -33,6 +33,7 @@ export interface IPtyServiceManager {
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
   ): Promise<IPtyProcessProxy>;
+  // 因为PtyServiceManager是PtyClient端统筹所有Pty的管理类，因此每一个具体方法的调用都需要传入pid来对指定pid做某些操作
   onData(pid: number, listener: (e: string) => any): pty.IDisposable;
   onExit(pid: number, listener: (e: { exitCode: number; signal?: number }) => any): pty.IDisposable;
   on(pid: number, event: 'data', listener: (data: string) => void): void;
@@ -60,6 +61,9 @@ export class PtyServiceManager implements IPtyServiceManager {
   @Autowired(INodeLogger)
   private logger: INodeLogger;
 
+  // 初始化时的Pty模式
+  // Local: Pty运行在IDE Server上
+  // Remote: Pty运行在单独的容器上，通过Socket连接，可以自定义Socket连接参数
   constructor(
     @Optional() initMode: 'remote' | 'local' = 'local',
     @Optional() connectOpts: SocketConnectOpts = { port: PTY_SERVICE_PROXY_SERVER_PORT },
@@ -109,6 +113,8 @@ export class PtyServiceManager implements IPtyServiceManager {
     this.ptyServiceProxy = new PtyServiceProxy(callback);
   }
 
+  // 维护一个CallbackMap，用于在PtyServiceProxy中远程调用回调
+  // 因为在RPC调用中本身是没法直接传递回调Function的，所以需要在远程调用中传递callId，在本地调用中通过callId获取回调
   private addNewCallback(
     pid: number,
     callback: (...args: any[]) => void,
@@ -183,6 +189,7 @@ export class PtyServiceManager implements IPtyServiceManager {
 }
 
 // Pty进程的Remote代理
+// 实现了 IPtyProcessProxy 背后是 NodePty的INodePty, 因此可以做到和本地化直接调用NodePty的代码兼容
 class PtyProcessProxy implements IPtyProcessProxy {
   private ptyServiceManager: IPtyServiceManager;
   constructor(iptyProxy: pty.IPty, ptyServiceManager: IPtyServiceManager) {
@@ -227,6 +234,7 @@ class PtyProcessProxy implements IPtyProcessProxy {
   onData: pty.IEvent<string>;
   onExit: pty.IEvent<{ exitCode: number; signal?: number }>;
 
+  // 将pid维护到对象内部，对外暴露NodePty的标准api，因此在调用的时候不需要显式传入pid
   on(event: 'data', listener: (data: string) => void): void;
   on(event: 'exit', listener: (exitCode: number, signal?: number) => void): void;
   on(event: any, listener: any): void {

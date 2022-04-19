@@ -15,6 +15,7 @@ import {
   PTY_SERVICE_PROXY_SERVER_PORT,
 } from '../common';
 
+// 存储Pty-onData返回的数据行，用于用户Resume场景下的数据恢复
 class PtyLineDataCache {
   private size: number;
   private dataArray: string[] = [];
@@ -107,6 +108,7 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
         // 有Session ID 但是没有 Process，说明是被系统杀了，此时需要重新spawn一个Pty
         this.ptyInstanceMap.delete(pid);
         ptyInstance = pty.spawn(file, args, options);
+        // 这种情况下，需要把之前的PtyCache给attach上去，方便用户查看记录
         const oldLineCache = this.ptyDataCacheMap.get(pid);
         if (oldLineCache) {
           this.ptyDataCacheMap.set(ptyInstance.pid, oldLineCache);
@@ -228,6 +230,7 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
   }
 }
 
+// 需要单独运行PtyServer的时候集成此Class然后运行initServer
 export class PtyServiceProxyRPCProvider {
   private ptyServiceProxy: PtyServiceProxy;
   private readonly ptyServiceCenter: RPCServiceCenter;
@@ -267,10 +270,11 @@ export class PtyServiceProxyRPCProvider {
     this.debugLogger.log('ptyServiceCenter: listening on', this.serverListenOptions);
   }
 
+  // Close Server, release UNIX DOMAIN SOCKET
   private bindProcessHandler() {
     // Handles normal process termination.
     process.on('exit', () => {
-      this.server.close(); // Close Server, release UNIX DOMAIN SOCKET
+      this.server.close();
     });
     // Handles `Ctrl+C`.
     process.on('SIGINT', async () => {
