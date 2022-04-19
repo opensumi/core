@@ -77,6 +77,7 @@ export class TreeNode implements ITreeNode {
   public static idToTreeNode: Map<number, ITreeNodeOrCompositeTreeNode> = new Map();
   public static pathToTreeNode: Map<string, ITreeNodeOrCompositeTreeNode> = new Map();
   public static pathToBranchStatus: Map<string, BranchOperatorStatus> = new Map();
+  public static refreshTaskLock: [string, Promise<any>] | null = null;
 
   protected _uid: number;
   protected _depth: number;
@@ -266,8 +267,6 @@ export class TreeNode implements ITreeNode {
     if (this._disposed) {
       return;
     }
-    this._watcher.notifyWillDispose(this);
-    TreeNode.removeTreeNode(this._uid, this.path);
     this._watcher.notifyDidDispose(this);
     this._disposed = true;
   }
@@ -301,6 +300,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   private activeRefreshPromise: Promise<any> | null;
   private queuedRefreshPromise: Promise<any> | null;
   private queuedRefreshPromiseFactory: (() => Promise<any>) | null;
+  private refreshPromise: Promise<void> | null;
 
   private _lock = false;
 
@@ -332,11 +332,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       ) => {
         emitter.fire({ type: TreeNodeEvent.DidChangeParent, args: [target, prevParent, newParent] });
       },
-      notifyWillDispose: (target: ITreeNodeOrCompositeTreeNode) => {
-        emitter.fire({ type: TreeNodeEvent.DidChangeParent, args: [target] });
-      },
       notifyDidDispose: (target: ITreeNodeOrCompositeTreeNode) => {
-        emitter.fire({ type: TreeNodeEvent.DidChangeParent, args: [target] });
+        emitter.fire({ type: TreeNodeEvent.DidDispose, args: [target] });
       },
       notifyDidProcessWatchEvent: (target: ICompositeTreeNode, event: IWatcherEvent) => {
         emitter.fire({ type: TreeNodeEvent.DidProcessWatchEvent, args: [target, event] });
@@ -355,8 +352,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       notifyDidChangeMetadata: (target: ITreeNode | ICompositeTreeNode, change: IMetadataChange) => {
         emitter.fire({ type: TreeNodeEvent.DidChangeMetadata, args: [target, change] });
       },
-      notifyDidUpdateBranch: (force = true) => {
-        emitter.fire({ type: TreeNodeEvent.BranchDidUpdate, args: [force] });
+      notifyDidUpdateBranch: () => {
+        emitter.fire({ type: TreeNodeEvent.BranchDidUpdate, args: [] });
       },
       notifyWillResolveChildren: (target: ICompositeTreeNode, nowExpanded: boolean) => {
         emitter.fire({ type: TreeNodeEvent.WillResolveChildren, args: [target, nowExpanded] });
@@ -572,18 +569,18 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
       while ((forceLoadPath = expandedPaths.shift())) {
-        const isRelative = forceLoadPath.indexOf(this.path) >= 0;
+        const isRelative = forceLoadPath.indexOf(this.path) > -1;
         if (!isRelative) {
           break;
         }
         const child = TreeNode.getTreeNodeByPath(forceLoadPath);
-
-        if (!child) {
+        // 这里的子节点可能已经被 dispose 回收，故 parent 可能为空
+        if (!child || (child && !(child as TreeNode).parent)) {
           if (!this.children) {
             break;
           }
           for (const child of this.children) {
-            if (forceLoadPath.indexOf(child.path) === 0 && CompositeTreeNode.is(child)) {
+            if (forceLoadPath.indexOf(`${child.path}${Path.separator}`) === 0 && CompositeTreeNode.is(child)) {
               // 包含压缩节点的情况
               if ((child as CompositeTreeNode).isExpanded) {
                 // 说明此时节点初始化时已默认展开或被裁切，不需要进一步处理
@@ -682,7 +679,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       path = expandedPaths.pop();
       const item = TreeNode.getTreeNodeByPath(path);
       if (CompositeTreeNode.is(item)) {
-        await (item as CompositeTreeNode).setCollapsed(true);
+        (item as CompositeTreeNode).setCollapsed(true);
       }
     }
     // 通知分支树已更新
@@ -690,7 +687,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // 折叠节点
-  public async setCollapsed(quiet = false) {
+  public setCollapsed(quiet = false) {
     // 根节点不可折叠
     if (CompositeTreeNode.isRoot(this)) {
       return;
@@ -877,6 +874,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this._children = null;
       this._flattenedBranch = null;
     }
+    this.parent = undefined;
     super.dispose();
   }
 
@@ -1010,7 +1008,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
     }
-
+    if (this.children) {
+      for (const child of this.children) {
+        (child as any).dispose();
+      }
+    }
     const flatTree = new Array(rawItems.length);
     this._children = Array(rawItems.length);
     for (let i = 0; i < rawItems.length; i++) {
@@ -1078,21 +1080,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
     } else {
-      // 预存展开目录
-      const expandedPaths = this.getAllExpandedNodePath();
-      //  Changed事件，表示节点有较多的变化时，重新更新当前Tree节点
-      if (this.children) {
-        for (const child of this.children) {
-          (child as CompositeTreeNode).dispose();
-        }
-      }
+      await this.refreshPromise;
       // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
       if (!this.isItemVisibleAtRootSurface(this)) {
         this.isExpanded = false;
         this._children = null;
       } else {
         // needReload --- 判断根目录是否需要进行一次刷新，部分情况，如压缩目录下的文件创建后不应该刷新
-        await this.refresh(expandedPaths);
+        await this.refresh();
       }
     }
     this.watcher.notifyDidProcessWatchEvent(this, event);
@@ -1101,7 +1096,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   // 当没有传入具体路径时，使用当前展开目录作为刷新路径
   public async refresh(paths: string[] = this.getAllExpandedNodePath()) {
     this.refreshTasks.push(paths);
-    return await this.queue(this.doRefresh.bind(this));
+    this.refreshPromise = this.queue<void>(this.doRefresh.bind(this));
+    return await this.refreshPromise;
   }
 
   private async queue<T>(promiseFactory: () => Promise<T>) {
@@ -1123,14 +1119,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         });
       }
 
-      return new Promise((c, e) => {
+      return new Promise<T>((c, e) => {
         this.queuedRefreshPromise?.then(c, e);
       });
     }
 
     this.activeRefreshPromise = promiseFactory();
 
-    return new Promise((c, e) => {
+    return new Promise<T>((c, e) => {
       this.activeRefreshPromise?.then(
         (result: any) => {
           this.activeRefreshPromise = null;

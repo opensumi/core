@@ -360,22 +360,39 @@ export class FileTreeModelService {
             this.selectFileDecoration(node, false);
             this.willSelectedNodePath = null;
           }
-        } else if (this.contextMenuFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.contextMenuFile.path);
+        }
+
+        if (this.contextMenuFile) {
+          const node = this.fileTreeService.getNodeByPathOrUri(this.contextMenuFile.uri);
           if (node) {
-            this.selectFileDecoration(node as File, false);
+            this.contextMenuDecoration.removeTarget(this.contextMenuFile);
+            this.contextMenuFile = node as File;
+            this.contextMenuDecoration.addTarget(node);
           }
-        } else if (this.focusedFile) {
-          const node = this.treeModel?.root.getTreeNodeByPath(this.focusedFile.path);
+        }
+
+        if (this.focusedFile) {
+          const node = this.fileTreeService.getNodeByPathOrUri(this.focusedFile.uri);
           if (node) {
-            this.activeFileDecoration(node as File, false);
+            this.focusedDecoration.removeTarget(this.focusedFile);
+            this.focusedFile = node as File;
+            this.focusedDecoration.addTarget(node);
           }
-        } else if (this.selectedFiles.length !== 0) {
-          // 仅处理一下单选情况
-          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedFiles[0].path);
-          if (node) {
-            this.selectFileDecoration(node as File, false);
+        }
+
+        if (this.selectedFiles.length !== 0) {
+          const nodes: (File | Directory)[] = [];
+          this.selectedFiles.forEach((file) => {
+            this.selectedDecoration.removeTarget(file);
+          });
+          for (const file of this.selectedFiles) {
+            const node = this.fileTreeService.getNodeByPathOrUri(file.uri);
+            if (node) {
+              this.selectedDecoration.addTarget(node);
+              nodes.push(node as File);
+            }
           }
+          this._selectedFiles = nodes;
         }
       }),
     );

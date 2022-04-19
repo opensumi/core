@@ -285,11 +285,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private queuedPromiseFactory: (() => Promise<void>) | null = null;
   private queueUpdatePromise: Promise<any> | null = null;
 
-  private willUpdateTasks: boolean[] = [];
+  private willUpdateTasks = 0;
 
   // 批量更新Tree节点
   private doBatchUpdate = (() => {
-    const commitUpdate = (resolver: any, force?: boolean) => {
+    const commitUpdate = (resolver: any) => {
       // 已经在 componentWillUnMount 中 disposed 了
       if (this.disposables.disposed) {
         return;
@@ -332,23 +332,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
       // 更新React组件
-      let shouldUpdate = true;
-      if (root.flattenedBranch?.join('') === this.preFlattenedBranch) {
-        shouldUpdate = false;
-      }
-      if (this.promptTargetID > -1) {
-        shouldUpdate = true;
-      }
-      if (force) {
-        shouldUpdate = true;
-      }
-      if (!shouldUpdate) {
-        resolver();
-        return;
-      }
       this.forceUpdate(() => {
         resolver();
-        this.preFlattenedBranch = root.flattenedBranch?.join('') || '';
         // 如果存在过滤条件，同时筛选一下展示节点
         if (this.props.filter && this.props.filterProvider && this.props.filterProvider.filterAlways) {
           this.filterItems(this.props.filter);
@@ -357,11 +342,17 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     };
     return () => {
       const doUpdate = (batchUpdatePromise: any, batchUpdateResolver: any) => {
-        const force = !!this.willUpdateTasks.find((task) => !!task);
-        this.willUpdateTasks = [];
-        requestAnimationFrame(() => {
-          commitUpdate(batchUpdateResolver, force);
-        });
+        const shouldUpdate = !!this.willUpdateTasks;
+        this.willUpdateTasks = 0;
+        if (!shouldUpdate) {
+          batchUpdateResolver.resolve();
+        } else {
+          requestAnimationFrame(async () => {
+            const { root } = this.props.model;
+            await (root as any).refreshPromise;
+            commitUpdate(batchUpdateResolver);
+          });
+        }
         return batchUpdatePromise;
       };
       let batchUpdateResolver;
@@ -376,8 +367,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   })();
 
   // FIXME: 待 @opensumi/ide-utils 合入后可合并逻辑至 Throttler.queue
-  private batchUpdate = (force?: boolean) => {
-    this.willUpdateTasks.push(force || false);
+  private batchUpdate = () => {
+    this.willUpdateTasks++;
     this.queueUpdatePromise = this.queueUpdate(this.doBatchUpdate);
     return this.queueUpdatePromise;
   };
@@ -458,7 +449,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       this.disposables.dispose();
       const { model } = this.props;
       this.listRef.current?.scrollTo(model.state.scrollOffset);
-      this.disposables.push(model.onChange((force) => this.batchUpdate(force)));
+      this.disposables.push(model.onChange(this.batchUpdate));
       this.disposables.push(
         model.state.onDidLoadState(() => {
           this.listRef.current?.scrollTo(model.state.scrollOffset);
@@ -680,7 +671,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (this._promptHandle instanceof PromptHandle && !this._promptHandle.destroyed) {
       this._promptHandle.destroy();
     }
-    handle.onDestroy(() => this.batchUpdate(true));
+    handle.onDestroy(this.batchUpdate);
     this._promptHandle = handle;
   }
 
