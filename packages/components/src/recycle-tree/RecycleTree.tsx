@@ -278,14 +278,17 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private filterWatcherDisposeCollection = new DisposableCollection();
 
   private batchUpdatePromise: Promise<void> | null = null;
-  private delayedUpdatePromise: Promise<void> | null = null;
   private preFlattenedBranch: string;
 
-  private batchUpdateQueue = 0;
+  private activePromise: Promise<void> | null = null;
+  private queuedPromise: Promise<void> | null = null;
+  private queuedPromiseFactory: (() => Promise<void>) | null = null;
+  private queueUpdatePromise: Promise<any> | null = null;
+
+  private willUpdateTasks: boolean[] = [];
 
   // 批量更新Tree节点
-  private batchUpdate = (() => {
-    let lastFrame: number | null;
+  private doBatchUpdate = (() => {
     const commitUpdate = (resolver: any, force?: boolean) => {
       // 已经在 componentWillUnMount 中 disposed 了
       if (this.disposables.disposed) {
@@ -329,7 +332,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
       // 更新React组件
-      let shouldUpdate = false;
+      let shouldUpdate = true;
       if (root.flattenedBranch?.join('') === this.preFlattenedBranch) {
         shouldUpdate = false;
       }
@@ -352,55 +355,70 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         }
       });
     };
-    return (force?: boolean) => {
+    return () => {
       const doUpdate = (batchUpdatePromise: any, batchUpdateResolver: any) => {
-        // 更新批量更新返回的promise对象
-        if (lastFrame) {
-          window.cancelAnimationFrame(lastFrame);
-        }
-        lastFrame = requestAnimationFrame(() => {
+        const force = !!this.willUpdateTasks.find((task) => !!task);
+        this.willUpdateTasks = [];
+        requestAnimationFrame(() => {
           commitUpdate(batchUpdateResolver, force);
         });
         return batchUpdatePromise;
       };
-      if (!this.batchUpdatePromise) {
-        let batchUpdateResolver;
-        this.batchUpdatePromise = new Promise<void>((res) => (batchUpdateResolver = res));
-        this.batchUpdatePromise?.then(() => {
-          this.onDidUpdateEmitter.fire();
-          this.batchUpdatePromise = null;
-        });
-        doUpdate(this.batchUpdatePromise, batchUpdateResolver);
-        return this.batchUpdatePromise;
-      } else {
-        if (!this.delayedUpdatePromise) {
-          let delayedUpdateResolver;
-          this.delayedUpdatePromise = new Promise((resolve) => {
-            delayedUpdateResolver = resolve;
-          });
-          this.batchUpdatePromise.then(() => {
-            this.batchUpdatePromise = this.delayedUpdatePromise;
-            this.delayedUpdatePromise = null;
-            this.batchUpdatePromise?.then(() => {
-              this.onDidUpdateEmitter.fire();
-              this.batchUpdatePromise = null;
-            });
-            doUpdate(this.batchUpdatePromise, delayedUpdateResolver);
-            this.batchUpdateQueue = 0;
-          });
-        } else {
-          this.batchUpdateQueue++;
-        }
-        return this.delayedUpdatePromise;
-      }
+      let batchUpdateResolver;
+      this.batchUpdatePromise = new Promise<void>((res) => (batchUpdateResolver = res));
+      this.batchUpdatePromise?.then(() => {
+        this.onDidUpdateEmitter.fire();
+        this.batchUpdatePromise = null;
+      });
+      doUpdate(this.batchUpdatePromise, batchUpdateResolver);
+      return this.batchUpdatePromise;
     };
   })();
 
-  private getUpdatePromise() {
-    if (this.delayedUpdatePromise) {
-      return this.delayedUpdatePromise;
+  // FIXME: 待 @opensumi/ide-utils 合入后可合并逻辑至 Throttler.queue
+  private batchUpdate = (force?: boolean) => {
+    this.willUpdateTasks.push(force || false);
+    this.queueUpdatePromise = this.queueUpdate(this.doBatchUpdate);
+    return this.queueUpdatePromise;
+  };
+
+  private queueUpdate(promiseFactory: () => Promise<void>) {
+    if (this.activePromise) {
+      this.queuedPromiseFactory = promiseFactory;
+
+      if (!this.queuedPromise) {
+        const onComplete = () => {
+          this.queuedPromise = null;
+
+          const result = this.queueUpdate(this.queuedPromiseFactory!);
+          this.queuedPromiseFactory = null;
+
+          return result;
+        };
+
+        this.queuedPromise = new Promise((c) => {
+          this.activePromise!.then(onComplete, onComplete).then(c);
+        });
+      }
+      return new Promise((c, e) => {
+        this.queuedPromise!.then(c, e);
+      });
     }
-    return this.batchUpdatePromise;
+
+    this.activePromise = promiseFactory();
+
+    return new Promise((c, e) => {
+      this.activePromise!.then(
+        (result: any) => {
+          this.activePromise = null;
+          c(result);
+        },
+        (err: any) => {
+          this.activePromise = null;
+          e(err);
+        },
+      );
+    });
   }
 
   private getNewPromptInsertIndex(startIndex: number, parent: CompositeTreeNode) {
@@ -606,7 +624,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return;
     }
     Event.once(this.props.model.onChange)(async () => {
-      await this.getUpdatePromise();
+      await this.queueUpdatePromise;
       if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
         this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
       } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
