@@ -18,7 +18,7 @@ import { ContentSearchClientService } from './search.service';
 export const Search = React.memo(
   observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
     const searchOptionRef = React.createRef<HTMLDivElement>();
-    const searchBrowserService = useInjectable(ContentSearchClientService);
+    const searchBrowserService = useInjectable<ContentSearchClientService>(ContentSearchClientService);
     const [searchPanelLayout, setSearchPanelLayout] = React.useState({ height: 0, width: 0 });
     const {
       searchResults,
@@ -77,11 +77,14 @@ export const Search = React.memo(
       height: viewState.height,
     };
 
-    const SearchProcess = React.useMemo(() => (
+    const SearchProcess = React.useMemo(
+      () => (
         <div className={styles['loading-wrap']}>
           <ProgressBar loading={isSearchDoing} />
         </div>
-      ), [isSearchDoing]);
+      ),
+      [isSearchDoing],
+    );
 
     return (
       <div className={styles.wrap} style={collapsePanelContainerStyle}>
