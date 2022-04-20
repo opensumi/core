@@ -355,7 +355,9 @@ export class FileTreeModelService {
         }
         // 更新树前更新下选中节点
         if (this.willSelectedNodePath) {
-          const node = this.fileTreeService.getNodeByPathOrUri(this.willSelectedNodePath);
+          const node =
+            this.fileTreeService.getNodeByPathOrUri(this.willSelectedNodePath) ||
+            (this.treeModel.root.getTreeNodeByPath(this.willSelectedNodePath) as File);
           if (node) {
             this.selectFileDecoration(node, false);
             this.willSelectedNodePath = null;
@@ -363,7 +365,9 @@ export class FileTreeModelService {
         }
 
         if (this.contextMenuFile) {
-          const node = this.fileTreeService.getNodeByPathOrUri(this.contextMenuFile.uri);
+          const node =
+            this.fileTreeService.getNodeByPathOrUri(this.contextMenuFile.uri) ||
+            this.treeModel.root.getTreeNodeByPath(this.contextMenuFile.path);
           if (node) {
             this.contextMenuDecoration.removeTarget(this.contextMenuFile);
             this.contextMenuFile = node as File;
@@ -372,7 +376,9 @@ export class FileTreeModelService {
         }
 
         if (this.focusedFile) {
-          const node = this.fileTreeService.getNodeByPathOrUri(this.focusedFile.uri);
+          const node =
+            this.fileTreeService.getNodeByPathOrUri(this.focusedFile.uri) ||
+            this.treeModel.root.getTreeNodeByPath(this.focusedFile.path);
           if (node) {
             this.focusedDecoration.removeTarget(this.focusedFile);
             this.focusedFile = node as File;
@@ -386,7 +392,8 @@ export class FileTreeModelService {
             this.selectedDecoration.removeTarget(file);
           });
           for (const file of this.selectedFiles) {
-            const node = this.fileTreeService.getNodeByPathOrUri(file.uri);
+            const node =
+              this.fileTreeService.getNodeByPathOrUri(file.uri) || this.treeModel.root.getTreeNodeByPath(file.path);
             if (node) {
               this.selectedDecoration.addTarget(node);
               nodes.push(node as File);

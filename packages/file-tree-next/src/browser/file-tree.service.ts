@@ -24,6 +24,7 @@ import {
   OS,
   IApplicationService,
   ILogger,
+  Throttler,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -61,7 +62,8 @@ export interface ISortNode {
 
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
-  private static DEFAULT_FLUSH_FILE_EVENT_DELAY = 300;
+  private static DEFAULT_REFRESH_DELAY = 200;
+  private static DEFAULT_FILE_EVENT_REFRESH_DELAY = 500;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -126,6 +128,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private willRefreshDeferred: Deferred<void> | null;
 
   private requestFlushEventSignalEmitter: Emitter<void> = new Emitter();
+
+  private effectedNodes: Directory[] = [];
+  private refreshThrottler: Throttler = new Throttler();
 
   private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
   private readonly onTreeIndentChangeEmitter = new Emitter<ITreeIndent>();
@@ -438,10 +443,33 @@ export class FileTreeService extends Tree implements IFileTreeService {
         return true;
       }
     });
-    // 处理除了删除/添加/移动事件外的异常事件
-    if (!(await this.refreshAffectedNodes(this.getAffectedChanges(changes))) && this.isRootAffected(changes)) {
-      this.refresh();
+    const nodes = await this.getAffectedNodes(this.getAffectedChanges(changes));
+    if (nodes.length > 0) {
+      this.effectedNodes = this.effectedNodes.concat(nodes);
+    } else if (!(nodes.length > 0) && this.isRootAffected(changes)) {
+      this.effectedNodes.push(this.root as Directory);
     }
+    // 文件事件引起的刷新进行队列化处理，每 500 ms 处理一次刷新任务
+    return this.refreshThrottler.queue(this.doDelayRefresh.bind(this));
+  }
+
+  private async doDelayRefresh() {
+    return new Promise<void>((resolve) => {
+      setTimeout(() => {
+        const nodes = this.effectedNodes.slice(0);
+        this.effectedNodes = [];
+        const hasRoot = nodes.find((node) => Directory.isRoot(node));
+        if (hasRoot) {
+          // 如果存在根节点刷新，则 500 ms 时间内的刷新都可合并为一次根节点刷新
+          this.refresh();
+        } else {
+          for (const node of nodes) {
+            this.refresh(node);
+          }
+        }
+        resolve();
+      }, FileTreeService.DEFAULT_FILE_EVENT_REFRESH_DELAY);
+    });
   }
 
   public async getFileTreeNodePathByUri(uri: URI) {
@@ -609,14 +637,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (watcher && watcher.callback) {
       watcher.callback(event);
     }
-  }
-
-  async refreshAffectedNodes(changes: FileChange[]) {
-    const nodes = await this.getAffectedNodes(changes);
-    for (const node of nodes) {
-      await this.refresh(node);
-    }
-    return nodes.length !== 0;
   }
 
   private async getAffectedNodes(changes: FileChange[]): Promise<Directory[]> {
@@ -800,7 +820,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
         this.willRefreshDeferred = null;
       }
     },
-    FileTreeService.DEFAULT_FLUSH_FILE_EVENT_DELAY,
+    FileTreeService.DEFAULT_REFRESH_DELAY,
     {
       leading: true,
       trailing: true,
