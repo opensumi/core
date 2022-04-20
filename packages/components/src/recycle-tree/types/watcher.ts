@@ -138,7 +138,7 @@ export interface ITreeWatcher {
   notifyDidChangePath(target: ITreeNodeOrCompositeTreeNode);
   notifyDidChangeMetadata(target: ITreeNodeOrCompositeTreeNode, change: IMetadataChange);
 
-  notifyDidUpdateBranch(force?: boolean);
+  notifyDidUpdateBranch();
 
   dispose: IDisposable;
 }

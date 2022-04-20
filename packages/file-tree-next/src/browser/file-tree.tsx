@@ -269,8 +269,8 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
   }, [model, outerActive]);
 
   const beforeFilterValueChange = useCallback(async () => {
-    const { expandAllCacheDirectory } = fileTreeModelService;
-    await expandAllCacheDirectory();
+    const { expandAll } = fileTreeModelService;
+    await expandAll();
   }, [fileTreeModelService]);
 
   const ensureIsReady = useCallback(async () => {

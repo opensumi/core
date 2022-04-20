@@ -25,6 +25,7 @@ import {
   IApplicationService,
   ILogger,
   Throttler,
+  CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -131,6 +132,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private effectedNodes: Directory[] = [];
   private refreshThrottler: Throttler = new Throttler();
+  private fileEventRefreshResolver;
+  private fileEventRefreshTimer;
+
+  private refreshCancelToken = new CancellationTokenSource();
 
   private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
   private readonly onTreeIndentChangeEmitter = new Emitter<ITreeIndent>();
@@ -254,6 +259,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (!this.fileContextKey) {
       this.fileContextKey = this.injector.get(FileContextKey, [dom]);
     }
+  }
+
+  public cancelRefresh() {
+    this.refreshCancelToken.cancel();
   }
 
   public startWatchFileEvent() {
@@ -455,22 +464,28 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private async doDelayRefresh() {
     return new Promise<void>((resolve) => {
-      setTimeout(() => {
-        const nodes = this.effectedNodes.slice(0);
-        this.effectedNodes = [];
-        const hasRoot = nodes.find((node) => Directory.isRoot(node));
-        if (hasRoot) {
-          // 如果存在根节点刷新，则 500 ms 时间内的刷新都可合并为一次根节点刷新
-          this.refresh();
-        } else {
-          for (const node of nodes) {
-            this.refresh(node);
-          }
-        }
-        resolve();
-      }, FileTreeService.DEFAULT_FILE_EVENT_REFRESH_DELAY);
+      this.fileEventRefreshResolver = resolve;
+      this.fileEventRefreshTimer = setTimeout(this.refreshEffectNode, FileTreeService.DEFAULT_FILE_EVENT_REFRESH_DELAY);
     });
   }
+
+  private refreshEffectNode = () => {
+    const nodes = this.effectedNodes.slice(0);
+    this.effectedNodes = [];
+    const hasRoot = nodes.find((node) => Directory.isRoot(node));
+    if (hasRoot) {
+      // 如果存在根节点刷新，则 500 ms 时间内的刷新都可合并为一次根节点刷新
+      this.refresh();
+    } else {
+      for (const node of nodes) {
+        this.refresh(node);
+      }
+    }
+    if (this.fileEventRefreshResolver) {
+      this.fileEventRefreshResolver();
+    }
+    this.fileEventRefreshTimer = null;
+  };
 
   public async getFileTreeNodePathByUri(uri: URI) {
     // 软链文件在这种情况下无法获取到相对路径
@@ -803,7 +818,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
     // 队列化刷新动作减少更新成本
     this._changeEventDispatchQueue.add(node.path);
-    this.doHandleQueueChange();
+    return this.doHandleQueueChange();
   }
 
   private doHandleQueueChange = throttle(
@@ -869,17 +884,17 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.size === 0) {
       return;
     }
-
+    this.refreshCancelToken.cancel();
+    this.refreshCancelToken = new CancellationTokenSource();
+    const token = this.refreshCancelToken.token;
     const queue = Array.from(this._changeEventDispatchQueue);
 
     const effectedRoots = this.sortPaths(queue);
 
     const promise = pSeries(
       effectedRoots.map((root) => async () => {
-        const path = root.node.path;
-        const watcher = this.root?.watchEvents.get(path);
-        if (watcher && typeof watcher.callback === 'function') {
-          await watcher.callback({ type: WatchEvent.Changed, path });
+        if (Directory.is(root.node)) {
+          (root.node as Directory).refresh(undefined, token);
         }
       }),
     );

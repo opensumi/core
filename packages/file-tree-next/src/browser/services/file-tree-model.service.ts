@@ -28,6 +28,7 @@ import {
   IStorage,
   Event,
   ThrottledDelayer,
+  Throttler,
   Emitter,
   Deferred,
   OS,
@@ -156,16 +157,13 @@ export class FileTreeModelService {
 
   private _explorerStorage: IStorage;
 
-  private locationDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LOCATION_FLUSH_DELAY);
   private refreshedActionDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_REFRESHED_ACTION_DELAY);
   private labelChangedDelayer = new ThrottledDelayer<void>(FileTreeModelService.DEFAULT_LABEL_CHANGED_DELAY);
+  private locationThrottler: Throttler = new Throttler();
   private onDidFocusedFileChangeEmitter: Emitter<URI | undefined> = new Emitter();
   private onDidContextMenuFileChangeEmitter: Emitter<URI | undefined> = new Emitter();
   private onDidSelectedFileChangeEmitter: Emitter<URI[]> = new Emitter();
   private onFileTreeModelChangeEmitter: Emitter<TreeModel> = new Emitter();
-
-  private locationQueueDeferred: Deferred<void> | null = new Deferred<void>();
-  private isPatchingLocation = false;
 
   private _fileToLocation: URI | string | undefined;
 
@@ -355,9 +353,7 @@ export class FileTreeModelService {
         }
         // 更新树前更新下选中节点
         if (this.willSelectedNodePath) {
-          const node =
-            this.fileTreeService.getNodeByPathOrUri(this.willSelectedNodePath) ||
-            (this.treeModel.root.getTreeNodeByPath(this.willSelectedNodePath) as File);
+          const node = this.treeModel.root.getTreeNodeByPath(this.willSelectedNodePath) as File;
           if (node) {
             this.selectFileDecoration(node, false);
             this.willSelectedNodePath = null;
@@ -365,9 +361,7 @@ export class FileTreeModelService {
         }
 
         if (this.contextMenuFile) {
-          const node =
-            this.fileTreeService.getNodeByPathOrUri(this.contextMenuFile.uri) ||
-            this.treeModel.root.getTreeNodeByPath(this.contextMenuFile.path);
+          const node = this.treeModel.root.getTreeNodeByPath(this.contextMenuFile.path);
           if (node) {
             this.contextMenuDecoration.removeTarget(this.contextMenuFile);
             this.contextMenuFile = node as File;
@@ -376,9 +370,7 @@ export class FileTreeModelService {
         }
 
         if (this.focusedFile) {
-          const node =
-            this.fileTreeService.getNodeByPathOrUri(this.focusedFile.uri) ||
-            this.treeModel.root.getTreeNodeByPath(this.focusedFile.path);
+          const node = this.treeModel.root.getTreeNodeByPath(this.focusedFile.path);
           if (node) {
             this.focusedDecoration.removeTarget(this.focusedFile);
             this.focusedFile = node as File;
@@ -392,8 +384,7 @@ export class FileTreeModelService {
             this.selectedDecoration.removeTarget(file);
           });
           for (const file of this.selectedFiles) {
-            const node =
-              this.fileTreeService.getNodeByPathOrUri(file.uri) || this.treeModel.root.getTreeNodeByPath(file.path);
+            const node = this.treeModel.root.getTreeNodeByPath(file.path);
             if (node) {
               this.selectedDecoration.addTarget(node);
               nodes.push(node as File);
@@ -420,11 +411,13 @@ export class FileTreeModelService {
     this.disposableCollection.push(
       this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
         this.loadingDecoration.addTarget(target);
+        this.treeModel.dispatchChange();
       }),
     );
     this.disposableCollection.push(
       this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
         this.loadingDecoration.removeTarget(target);
+        this.treeModel.dispatchChange();
       }),
     );
     this._explorerStorage = await this.storageProvider(STORAGE_NAMESPACE.EXPLORER);
@@ -479,9 +472,6 @@ export class FileTreeModelService {
   private async canHandleRefreshEvent() {
     if (this.loadSnapshotReady) {
       await this.loadSnapshotReady;
-    }
-    if (this.locationQueueDeferred) {
-      await this.locationQueueDeferred.promise;
     }
   }
 
@@ -668,6 +658,7 @@ export class FileTreeModelService {
   };
 
   toggleDirectory = async (item: Directory) => {
+    this.fileTreeService.cancelRefresh();
     if (item.expanded) {
       this.fileTreeHandle.collapseNode(item);
     } else {
@@ -978,6 +969,7 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
+    this.fileTreeService.cancelRefresh();
     await this.treeModel.root.collapsedAll();
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     if (snapshot) {
@@ -993,14 +985,9 @@ export class FileTreeModelService {
   }
 
   // 展开所有缓存目录
-  public expandAllCacheDirectory = async () => {
-    const size = this.treeModel.root.branchSize;
-    for (let index = 0; index < size; index++) {
-      const file = this.treeModel.root.getTreeNodeAtIndex(index) as Directory;
-      if (Directory.is(file) && !file.expanded && file.branchSize > 0) {
-        await file.setExpanded();
-      }
-    }
+  public expandAll = async () => {
+    this.fileTreeService.cancelRefresh();
+    await this.treeModel.root.expandedAll();
   };
 
   async deleteFileByUris(uris: URI[]) {
@@ -1694,36 +1681,12 @@ export class FileTreeModelService {
     if (this.willSelectedNodePath) {
       return;
     }
+    this._fileToLocation = pathOrUri;
 
-    return this.queueLocation(pathOrUri);
+    return this.locationThrottler.queue(this.doLocation);
   };
 
-  private queueLocation(path: URI | string) {
-    if (!this.isPatchingLocation) {
-      if (!this.locationDelayer.isTriggered) {
-        this.locationDelayer.cancel();
-      }
-      this.locationDelayer.trigger(async () => {
-        this.isPatchingLocation = true;
-        if (!this.locationQueueDeferred) {
-          this.locationQueueDeferred = new Deferred<void>();
-        }
-        if (this.loadSnapshotReady) {
-          await this.loadSnapshotReady;
-        }
-        // 每次触发定位操作前均等待一下前序的文件树刷新任务
-        await this.fileTreeService.willRefreshPromise;
-
-        await this.doLocation();
-        this.locationQueueDeferred?.resolve();
-        this.locationQueueDeferred = null;
-        this.isPatchingLocation = false;
-      });
-    }
-    this._fileToLocation = path;
-  }
-
-  private async doLocation() {
+  private doLocation = async () => {
     if (!this._fileToLocation) {
       return;
     }
@@ -1739,13 +1702,14 @@ export class FileTreeModelService {
       if (!this.fileTreeHandle) {
         return;
       }
+      this.fileTreeService.cancelRefresh();
       const node = (await this.fileTreeHandle.ensureVisible(path, 'smart', true)) as File;
       if (node) {
         this.selectFileDecoration(node);
       }
     }
     this._fileToLocation = undefined;
-  }
+  };
 
   public locationOnShow = (uri: URI) => {
     this._nextLocationTarget = uri;

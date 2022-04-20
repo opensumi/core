@@ -278,7 +278,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private filterWatcherDisposeCollection = new DisposableCollection();
 
   private batchUpdatePromise: Promise<void> | null = null;
-  private preFlattenedBranch: string;
 
   private activePromise: Promise<void> | null = null;
   private queuedPromise: Promise<void> | null = null;
@@ -544,8 +543,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       typeof pathOrCompositeTreeNode === 'string'
         ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
         : await root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
-
-    if (directory && CompositeTreeNode.is(directory)) {
+    if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
       return (directory as CompositeTreeNode).setExpanded(true);
     }
   };
@@ -556,8 +554,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       typeof pathOrCompositeTreeNode === 'string'
         ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
         : root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
-
-    if (directory && CompositeTreeNode.is(directory)) {
+    if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
       return (directory as CompositeTreeNode).setCollapsed();
     }
   };
