@@ -1,21 +1,11 @@
 /* eslint-disable no-console */
-import net, { SocketConnectOpts } from 'net';
 
 import * as pty from 'node-pty';
 
-import { Injectable, Optional, Autowired } from '@opensumi/di';
-import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
-import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { Injectable, Autowired } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import {
-  IPtyProcessProxy,
-  IPtyProxyRPCService,
-  IShellLaunchConfig,
-  PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
-  PTY_SERVICE_PROXY_PROTOCOL,
-  PTY_SERVICE_PROXY_SERVER_PORT,
-} from '../common';
+import { IPtyProcessProxy, IPtyProxyRPCService, IShellLaunchConfig } from '../common';
 
 import { PtyServiceProxy } from './pty.proxy';
 
@@ -48,61 +38,24 @@ export interface IPtyServiceManager {
   checkSession(sessionId: string): Promise<boolean>;
 }
 
-// 双容器架构 - 在IDE容器中远程运行，与DEV Server上的PtyService通信
 // 标准单容器架构 - 在IDE容器中运行，PtyService也在IDE进程中运行
-// 具体取决于构造函数中使用何种InitMode
+// 如果需要用到双容器远程架构，可以查看PtyServiceManagerRemote的实现
 @Injectable()
 export class PtyServiceManager implements IPtyServiceManager {
-  private callId = 0;
-  private callbackMap = new Map<number, (...args: any[]) => void>();
+  protected callId = 0;
+  protected callbackMap = new Map<number, (...args: any[]) => void>();
   // Pty终端服务的代理，在双容器模式下采用RPC连接，单容器模式下直连
-  private ptyServiceProxy: IPtyProxyRPCService;
+  protected ptyServiceProxy: IPtyProxyRPCService;
 
   @Autowired(INodeLogger)
-  private logger: INodeLogger;
+  protected logger: INodeLogger;
 
-  // 初始化时的Pty模式
-  // Local: Pty运行在IDE Server上
-  // Remote: Pty运行在单独的容器上，通过Socket连接，可以自定义Socket连接参数
-  constructor(
-    @Optional() initMode: 'remote' | 'local' = 'local',
-    @Optional() connectOpts: SocketConnectOpts = { port: PTY_SERVICE_PROXY_SERVER_PORT },
-  ) {
-    if (initMode === 'remote') {
-      this.initRemoteConnectionMode(connectOpts);
-    } else {
-      this.initLocalInit();
-    }
+  // Pty运行在IDE Server上，因此可以直接调用
+  constructor() {
+    this.initLocal();
   }
 
-  private initRemoteConnectionMode(connectOpts: SocketConnectOpts) {
-    const clientCenter = new RPCServiceCenter();
-    const { getRPCService: clientGetRPCService, createRPCService } = initRPCService(clientCenter);
-    // TODO: 思考any是否应该在这里用 亦或者做空判断
-    const getService: IPtyProxyRPCService = clientGetRPCService(PTY_SERVICE_PROXY_PROTOCOL) as any;
-    this.ptyServiceProxy = getService;
-
-    // 处理回调
-    createRPCService(PTY_SERVICE_PROXY_CALLBACK_PROTOCOL, {
-      $callback: async (callId, ...args) => {
-        const callback = this.callbackMap.get(callId);
-        if (!callback) {
-          // 这里callbackMap的callId对应的回调方法被注销，但是依然被调用了，这种情况不应该发生
-          this.logger.warn('PtyServiceManager not found callback:', callId);
-        } else {
-          callback(...args);
-        }
-      },
-    });
-    const socket = new net.Socket();
-    socket.connect(connectOpts);
-
-    // 连接绑定
-    clientCenter.setConnection(createSocketConnection(socket));
-    return getService;
-  }
-
-  private initLocalInit() {
+  protected initLocal() {
     const callback = async (callId, ...args) => {
       const callback = this.callbackMap.get(callId);
       if (!callback) {

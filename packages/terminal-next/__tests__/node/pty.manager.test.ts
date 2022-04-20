@@ -1,9 +1,9 @@
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
-import { PtyServiceManagerToken, IPtyServiceManager, PtyServiceManager } from '../../lib/node/pty.manager';
-import { PtyServiceProxyRPCProvider } from '../../lib/node/pty.proxy';
 import { TerminalNodePtyModule } from '../../src/node';
+import { PtyServiceManagerToken, IPtyServiceManager, PtyServiceManager } from '../../src/node/pty.manager';
+import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
 const delay = (t: number) => new Promise((resolve) => setTimeout(resolve, t));
 
@@ -49,7 +49,7 @@ describe('Pty Manager Test Local', () => {
 
     injector.addProviders({
       token: PtyServiceManagerToken,
-      useValue: new PtyServiceManager('remote'),
+      useValue: new PtyServiceManager(),
     });
 
     ptyServiceManager = injector.get(PtyServiceManagerToken);

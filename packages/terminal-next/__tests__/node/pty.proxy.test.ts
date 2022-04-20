@@ -3,10 +3,11 @@ import os from 'os';
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
-import { PtyServiceManager, PtyServiceManagerToken } from '../../lib/node/pty.manager';
-import { PtyServiceProxyRPCProvider } from '../../lib/node/pty.proxy';
 import { TerminalNodePtyModule } from '../../src/node';
 import { PtyService } from '../../src/node/pty';
+import { PtyServiceManagerToken } from '../../src/node/pty.manager';
+import { PtyServiceManagerRemote } from '../../src/node/pty.manager.remote';
+import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
 // 使用Remote模式（非Local模式）来测试PtyService
 describe('PtyService function should be valid', () => {
@@ -31,7 +32,7 @@ describe('PtyService function should be valid', () => {
 
     injector.addProviders({
       token: PtyServiceManagerToken,
-      useValue: new PtyServiceManager('remote'),
+      useValue: new PtyServiceManagerRemote(),
     });
   });
 
