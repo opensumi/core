@@ -191,26 +191,16 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   private reporter: { timer: IReporterTimer; value: string } | null = null;
 
-  doSearch: (value: string, state: IUIState) => void;
   searchDebounce: () => void;
 
-  searchOnType: boolean;
+  private searchOnType: boolean;
 
   constructor() {
     this.setDefaultIncludeValue();
     this.recoverUIState();
 
     this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
-    this.doSearch = debounce(
-      (value: string, state: IUIState) => {
-        this._doSearch(value, state);
-      },
-      this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300,
-      {
-        leading: true,
-        trailing: true,
-      },
-    );
+
     this.searchDebounce = debounce(
       () => {
         this.search();
@@ -222,17 +212,16 @@ export class ContentSearchClientService implements IContentSearchClientService {
     );
   }
 
-  /**
-   * FIXME: UI 层会直接调用这个函数，会导致每次输入都要调用这个函数一次。
-   * 作为 workaround 先加一个 debounce
-   * 但是将本函数 debounce 后 React 会报 event 相关的错。
-   * 所以这里先将底层真正的搜索做一次 debounce，表现良好
-   */
+  searchOnTyping() {
+    if (this.searchOnType) {
+      this.searchDebounce();
+    }
+  }
+
   search = (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
     if (e && e.keyCode !== Key.ENTER.keyCode) {
       return;
     }
-
     this.cleanOldSearch();
     const value = this.searchValue;
     if (!value) {
@@ -244,7 +233,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.doSearch(value, state);
   };
 
-  _doSearch(value: string, state: IUIState) {
+  doSearch(value: string, state: IUIState) {
     const searchOptions: ContentSearchOptions = {
       maxResults: 2000,
       matchCase: state.isMatchCase,
@@ -571,9 +560,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
     this.isShowValidateMessage = false;
-    if (this.searchOnType) {
-      this.searchDebounce();
-    }
+    this.searchOnTyping();
   };
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -584,17 +571,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
   onSearchExcludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.excludeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
-    if (this.searchOnType) {
-      this.searchDebounce();
-    }
+    this.searchOnTyping();
   };
 
   onSearchIncludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.includeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
-    if (this.searchOnType) {
-      this.searchDebounce();
-    }
+    this.searchOnTyping();
   };
 
   setSearchValueFromActivatedEditor = () => {

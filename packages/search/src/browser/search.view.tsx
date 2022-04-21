@@ -86,6 +86,8 @@ export const Search = React.memo(
       [isSearchDoing],
     );
 
+    const onSearch = searchBrowserService.search.bind(searchBrowserService);
+
     return (
       <div className={styles.wrap} style={collapsePanelContainerStyle}>
         {SearchProcess}
@@ -107,12 +109,12 @@ export const Search = React.memo(
             searchInputEl={searchBrowserService.searchInputEl}
             searchValue={searchBrowserService.searchValue}
             onSearchInputChange={searchBrowserService.onSearchInputChange}
-            onSearch={searchBrowserService.search.bind(searchBrowserService)}
+            onSearch={onSearch}
           />
 
           <SearchReplaceWidget
             replaceValue={searchBrowserService.replaceValue}
-            onSearch={searchBrowserService.search}
+            onSearch={onSearch}
             onReplaceRuleChange={searchBrowserService.onReplaceInputChange}
             replaceInputEl={searchBrowserService.replaceInputEl}
             doReplaceAll={doReplaceAll}
@@ -124,7 +126,7 @@ export const Search = React.memo(
               <SearchRulesWidget
                 includeValue={searchBrowserService.includeValue}
                 excludeValue={searchBrowserService.excludeValue}
-                onSearch={searchBrowserService.search.bind(searchBrowserService)}
+                onSearch={onSearch}
                 onChangeInclude={searchBrowserService.onSearchIncludeChange}
                 onChangeExclude={searchBrowserService.onSearchExcludeChange}
                 isOnlyOpenEditors={UIState.isOnlyOpenEditors}
@@ -136,19 +138,18 @@ export const Search = React.memo(
             )}
           </div>
         </div>
-        {searchResults && searchResults.size > 0 && !searchError ? (
-          <SearchTree searchPanelLayout={searchPanelLayout} viewState={viewState} />
-        ) : (
-          <div
-            className={cls(
-              { [styles.result_describe]: searchState === SEARCH_STATE.done },
-              { [styles.result_error]: searchState === SEARCH_STATE.error || searchError },
-            )}
-          >
-            {searchState === SEARCH_STATE.done && !searchError ? localize('noResultsFound').replace('-', '') : ''}
-            {searchError}
-          </div>
-        )}
+        {!isSearchDoing &&
+          (searchError || searchState === SEARCH_STATE.error ? (
+            <div className={styles.result_error}>{searchError}</div>
+          ) : searchResults && searchResults.size > 0 ? (
+            <SearchTree searchPanelLayout={searchPanelLayout} viewState={viewState} />
+          ) : searchState === SEARCH_STATE.done ? (
+            <div className={styles.result_describe}>
+              {searchBrowserService.searchValue && localize('noResultsFound')}
+            </div>
+          ) : (
+            ''
+          ))}
       </div>
     );
   }),
