@@ -27,6 +27,7 @@ import {
   IProgress,
   IProgressStep,
   Deferred,
+  Throttler,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -99,6 +100,8 @@ export class KeymapService implements IKeymapService {
   };
   private _storeKeybindings: KeymapItem[];
 
+  private reconcileQueue: Throttler = new Throttler();
+
   get storeKeybindings() {
     return (
       this._storeKeybindings &&
@@ -137,7 +140,7 @@ export class KeymapService implements IKeymapService {
     this.disposableCollection.push(watcher);
     watcher.onFilesChanged(() => {
       // 快捷键绑定文件内容变化，重新更新快捷键信息
-      this.reconcile();
+      this.reconcileQueue.queue(this.reconcile.bind(this));
     });
     this._whenReadyDeferred.resolve();
   }
@@ -274,7 +277,10 @@ export class KeymapService implements IKeymapService {
   private restoreDefaultKeybinding(kb: Keybinding) {
     const key = this.toUniqueKey(kb);
     const restore = this.toRestoreDefaultKeybindingMap.get(key);
-    restore?.dispose();
+    if (restore) {
+      restore?.dispose();
+      this.toRestoreDefaultKeybindingMap.delete(key);
+    }
   }
 
   private toUniqueKey(kb: Keybinding) {
@@ -320,7 +326,7 @@ export class KeymapService implements IKeymapService {
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding = (keybinding: Keybinding) => {
+  setKeybinding = (raw: Keybinding, keybinding: Keybinding) => {
     this.progressService.withProgress(
       {
         location: ProgressLocation.Notification,
@@ -339,6 +345,13 @@ export class KeymapService implements IKeymapService {
             if (kb.command === keybinding.command) {
               updated = true;
               this.unregisterUserKeybinding(item);
+              const rawKey = this.toUniqueKey(raw);
+              const restore = this.toRestoreDefaultKeybindingMap.get(rawKey);
+              if (restore) {
+                const newKey = this.toUniqueKey(keybinding as Keybinding);
+                this.toRestoreDefaultKeybindingMap.delete(rawKey);
+                this.toRestoreDefaultKeybindingMap.set(newKey, restore);
+              }
               kb.key = keybinding.keybinding;
               this.registerUserKeybinding({
                 ...item,
@@ -347,15 +360,22 @@ export class KeymapService implements IKeymapService {
             }
           }
           if (!updated) {
-            const defaultBinding: KeybindingItem = this.keybindings.find(
+            const defaultBinding = this.keybindings.find(
               (kb: KeybindingItem) => kb.id === keybinding.command && this.getRaw(kb.when) === keybinding.when,
-            )!;
+            );
             if (defaultBinding && defaultBinding.keybinding) {
               this.unregisterDefaultKeybinding({
                 when: this.getRaw(defaultBinding.when),
                 command: defaultBinding.id,
                 keybinding: this.getRaw(defaultBinding.keybinding),
               });
+              const rawKey = this.toUniqueKey(raw as Keybinding);
+              const restore = this.toRestoreDefaultKeybindingMap.get(rawKey);
+              if (restore) {
+                const newKey = this.toUniqueKey(keybinding);
+                this.toRestoreDefaultKeybindingMap.delete(rawKey);
+                this.toRestoreDefaultKeybindingMap.set(newKey, restore);
+              }
             }
             // 不能额外传入keybinding的resolved值
             const item: KeymapItem = {
@@ -570,12 +590,19 @@ export class KeymapService implements IKeymapService {
     });
   };
 
+  private isSearching = false;
+
   /**
    * 模糊搜索匹配的快捷键
    * @protected
    */
   @action
   protected readonly doSearchKeybindings = (search) => {
+    if (search) {
+      this.isSearching = true;
+    } else {
+      this.isSearching = false;
+    }
     const items = this.getKeybindingItems();
     const result: KeybindingItem[] = [];
     items.forEach((item) => {
@@ -679,9 +706,9 @@ export class KeymapService implements IKeymapService {
     }
     try {
       const binding = {
-        command: keybindingItem.command,
-        when: keybindingItem.when,
-        keybinding,
+        command: this.isSearching ? this.getRaw(keybindingItem.command) : keybindingItem.command,
+        when: this.isSearching ? this.getRaw(keybindingItem.when) : keybindingItem.when,
+        keybinding: this.isSearching ? this.getRaw(keybinding) : keybinding,
       };
       if (keybindingItem.keybinding === keybinding) {
         return ' ';

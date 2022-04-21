@@ -71,11 +71,18 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
           setIsEditing(false);
         }
       } else {
-        setKeybinding({
-          command: getRaw(id),
-          when: getRaw(when) || '',
-          keybinding: value,
-        });
+        setKeybinding(
+          {
+            command: getRaw(id),
+            when: getRaw(when) || '',
+            keybinding: getRaw(keybinding),
+          },
+          {
+            command: getRaw(id),
+            when: getRaw(when) || '',
+            keybinding: value,
+          },
+        );
         setIsEditing(false);
         clearCovert();
       }
@@ -169,14 +176,14 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
                   title={`${keybinding.command}-${keybinding.when}`}
                 >
                   <div className={styles.title}>
-                    {localize('keymaps.header.command.title')}: {keybinding.command}
+                    {localize('keymaps.header.command.title')}: {getRaw(keybinding.command) || '-'}
                   </div>
                   <div className={styles.description}>
                     <div style={{ marginRight: 4 }}>
                       {localize('keymaps.header.source.title')}: {getRaw(keybinding.source) || '-'}
                     </div>
                     <div>
-                      {localize('keymaps.header.when.title')}: {keybinding.when || '—'}
+                      {localize('keymaps.header.when.title')}: {getRaw(keybinding.when) || '—'}
                     </div>
                   </div>
                 </li>
