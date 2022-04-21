@@ -14,7 +14,6 @@ import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceNotRoo
 import { ISCMTreeNodeProps, SCMTreeNode, SCM_TREE_NODE_HEIGHT } from './scm-tree-node.view';
 import { SCMTreeService } from './scm-tree.service';
 
-
 export const TREE_FIELD_NAME = 'SCM_TREE_TREE_FIELD';
 
 export const SCMResourceTree: React.FC<{
@@ -216,7 +215,7 @@ const TreeView = React.memo(
           onDoubleClick={onItemDoubleClick}
           onTwistierClick={onTwistierClick}
           onContextMenu={onContextMenu}
-          defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 16}
+          defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 4}
           leftPadding={scmTreeService.isTreeMode ? 8 : 0}
           iconTheme={iconThemeDesc}
         />
