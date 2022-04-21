@@ -76,11 +76,16 @@ export const Search = React.memo(
       width: viewState.width || '100%',
       height: viewState.height,
     };
+
+    const SearchProcess = React.useMemo(() => (
+        <div className={styles['loading-wrap']}>
+          <ProgressBar loading={isSearchDoing} />
+        </div>
+      ), [isSearchDoing]);
+
     return (
       <div className={styles.wrap} style={collapsePanelContainerStyle}>
-        <div className={styles['loading-wrap']}>
-          <ProgressBar loading={searchState === SEARCH_STATE.doing} />
-        </div>
+        {SearchProcess}
         <div className={styles.search_options} ref={searchOptionRef}>
           <SearchInputWidget
             isDetailOpen={UIState.isDetailOpen}
@@ -99,7 +104,7 @@ export const Search = React.memo(
             searchInputEl={searchBrowserService.searchInputEl}
             searchValue={searchBrowserService.searchValue}
             onSearchInputChange={searchBrowserService.onSearchInputChange}
-            onSearch={searchBrowserService.search}
+            onSearch={searchBrowserService.search.bind(searchBrowserService)}
           />
 
           <SearchReplaceWidget
@@ -116,7 +121,7 @@ export const Search = React.memo(
               <SearchRulesWidget
                 includeValue={searchBrowserService.includeValue}
                 excludeValue={searchBrowserService.excludeValue}
-                onSearch={searchBrowserService.search}
+                onSearch={searchBrowserService.search.bind(searchBrowserService)}
                 onChangeInclude={searchBrowserService.onSearchIncludeChange}
                 onChangeExclude={searchBrowserService.onSearchExcludeChange}
                 isOnlyOpenEditors={UIState.isOnlyOpenEditors}
