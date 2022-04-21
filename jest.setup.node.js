@@ -1,3 +1,4 @@
+const Canvas = require('@napi-rs/canvas');
 const { JSDOM, ResourceLoader } = require('jsdom');
 
 const resourceLoader = new ResourceLoader({
@@ -6,6 +7,8 @@ const resourceLoader = new ResourceLoader({
     process.platform === 'darwin' ? 'Macintosh' : process.platform === 'win32' ? 'Windows' : 'Linux'
   }) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/v16.7.0`,
 });
+
+const { createCanvas, HTMLCanvasElement } = Canvas;
 
 const jsdom = new JSDOM('<div id="main"></div>', {
   // https://github.com/jsdom/jsdom#basic-options
@@ -17,7 +20,20 @@ const jsdom = new JSDOM('<div id="main"></div>', {
   // 保障 `platform.ts` 中 isLinux 等平台信息判断准确性
   resources: resourceLoader,
 });
+global.HTMLCanvasElement = HTMLCanvasElement;
 global.document = jsdom.window.document;
+const canvas = createCanvas(400, 400);
+jsdom.window.HTMLCanvasElement.prototype.getContext = canvas.getContext.bind(canvas);
+jsdom.window.HTMLSpanElement.prototype.getBoundingClientRect = () => ({
+  height: 12,
+  width: 12,
+  bottom: 0,
+  left: 0,
+  right: 0,
+  top: 0,
+  x: 0,
+  y: 0,
+});
 let text = '';
 global.navigator = Object.assign(jsdom.window.navigator, {
   clipboard: {
