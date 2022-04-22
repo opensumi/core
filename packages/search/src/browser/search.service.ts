@@ -192,13 +192,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
   private reporter: { timer: IReporterTimer; value: string } | null = null;
 
   searchDebounce: () => void;
-  searchOnType: boolean;
+
+  private searchOnType: boolean;
 
   constructor() {
     this.setDefaultIncludeValue();
     this.recoverUIState();
 
     this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
+
     this.searchDebounce = debounce(
       () => {
         this.search();
@@ -210,9 +212,28 @@ export class ContentSearchClientService implements IContentSearchClientService {
     );
   }
 
-  search(e?: React.KeyboardEvent, insertUIState?: IUIState) {
-    const state = insertUIState || this.UIState;
+  searchOnTyping() {
+    if (this.searchOnType) {
+      this.searchDebounce();
+    }
+  }
+
+  search = (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
+    if (e && e.keyCode !== Key.ENTER.keyCode) {
+      return;
+    }
+    this.cleanOldSearch();
     const value = this.searchValue;
+    if (!value) {
+      return;
+    }
+
+    const state = insertUIState || this.UIState;
+
+    this.doSearch(value, state);
+  };
+
+  doSearch(value: string, state: IUIState) {
     const searchOptions: ContentSearchOptions = {
       maxResults: 2000,
       matchCase: state.isMatchCase,
@@ -225,15 +246,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
     };
 
     searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
-
-    if (e && e.keyCode !== Key.ENTER.keyCode) {
-      return;
-    }
-
-    this.cleanOldSearch();
-    if (!value) {
-      return;
-    }
 
     // 记录搜索历史
     this.searchHistory.setSearchHistory(value);
@@ -328,6 +340,41 @@ export class ContentSearchClientService implements IContentSearchClientService {
     });
   }
 
+  // #region 操作对当前打开的文档的搜索内容的 selection
+  private EMPTY_SELECTION = new monaco.Range(0, 0, 0, 0);
+  private lastEditor?: ICodeEditor;
+  private lastSelection?: monaco.Range;
+  setEditorSelections(editor: ICodeEditor, selections: monaco.Range) {
+    // 清除上一个 editor 的 selection
+    this.lastEditor?.setSelection(this.EMPTY_SELECTION);
+
+    this.lastEditor = editor;
+    this.lastSelection = selections;
+    this.applyEditorSelections();
+  }
+  /**
+   * 会在 tabbar 被选中时调用
+   */
+  applyEditorSelections() {
+    if (this.lastEditor && this.lastSelection) {
+      this.lastEditor.setSelection(this.lastSelection);
+    }
+  }
+  /**
+   * 会在 tabbar blur 和清除搜索结果时调用
+   * @param clearEditor 是否清除上次选中的 editor（在重置搜索内容时调用）
+   */
+  clearEditorSelections(clearEditor = false) {
+    if (this.lastEditor) {
+      this.lastEditor.setSelection(this.EMPTY_SELECTION);
+    }
+    if (clearEditor) {
+      this.lastSelection = undefined;
+      this.lastEditor = undefined;
+    }
+  }
+  // #endregion
+
   /**
    * 监听正在编辑文件变化，并同步结果
    * @param searchOptions
@@ -387,6 +434,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.docModelSearchedList = [];
     this.searchResults.clear();
     this.resultTotal = resultTotalDefaultValue;
+    this.clearEditorSelections(true);
   }
 
   /**
@@ -464,7 +512,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
       if (this.searchValue !== '') {
         this.searchInputEl.current.select();
       }
+      this.applyEditorSelections();
     });
+  }
+
+  blur() {
+    this.clearEditorSelections();
   }
 
   refresh() {
@@ -507,9 +560,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
     this.isShowValidateMessage = false;
-    if (this.searchOnType) {
-      this.searchDebounce();
-    }
+    this.searchOnTyping();
   };
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -520,11 +571,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
   onSearchExcludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.excludeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
+    this.searchOnTyping();
   };
 
   onSearchIncludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.includeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
+    this.searchOnTyping();
   };
 
   setSearchValueFromActivatedEditor = () => {
@@ -626,7 +679,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   };
 
   dispose() {
+    this.blur();
     this.titleStateEmitter.dispose();
+    this.eventBusDisposer?.dispose();
   }
 
   private async recoverUIState() {
@@ -659,7 +714,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
         return includes;
       }, [])
       .join(',');
-    // 如有 inlcude 填充，则显示搜索条件
+    // 如有 include 填充，则显示搜索条件
     if (this.includeValue) {
       this.updateUIState({ isDetailOpen: true });
     }
@@ -754,7 +809,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     findResults.forEach((find: monaco.editor.FindMatch, index) => {
       if (index === 0 && codeEditor) {
         // 给打开文件添加选中状态
-        codeEditor.setSelection(find.range);
+        this.setEditorSelections(codeEditor, find.range);
       }
       result.push(
         cutShortSearchResult({
