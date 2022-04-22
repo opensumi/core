@@ -1,6 +1,6 @@
 import { IRawThemeSetting } from 'vscode-textmate';
 
-import { Event, URI, IDisposable, IThemeColor } from '@opensumi/ide-core-common';
+import { Event, URI, IDisposable, IThemeColor, Deferred } from '@opensumi/ide-core-common';
 
 import { Color } from './color';
 import { vs, vs_dark, hc_black } from './default-themes';
@@ -77,6 +77,7 @@ export interface IThemeData extends IStandaloneThemeData {
 
 export interface IThemeService {
   currentThemeId: string;
+  themeLoaded: Deferred<void>;
   onThemeChange: Event<ITheme>;
   registerThemes(themeContributions: ThemeContribution[], extPath: URI): IDisposable;
   /**
