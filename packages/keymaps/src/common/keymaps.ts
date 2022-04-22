@@ -61,6 +61,7 @@ export interface IKeymapService {
   init(): Promise<void>;
   /**
    * 设置快捷键
+   * @param {Keybinding} rawKeybinding
    * @param {Keybinding} keybinding
    * @returns {Promise<void>}
    * @memberof KeymapsService

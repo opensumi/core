@@ -322,6 +322,7 @@ export class KeymapService implements IKeymapService {
 
   /**
    * 设置快捷键
+   * @param {Keybinding} raw
    * @param {Keybinding} keybindings
    * @returns {Promise<void>}
    * @memberof KeymapsService
