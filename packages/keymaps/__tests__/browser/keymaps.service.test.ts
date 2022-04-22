@@ -204,11 +204,15 @@ describe('KeymapsService should be work', () => {
     });
 
     it('setKeybinding method should be work', async () => {
+      const rawkeybinding = {
+        command: 'test.command',
+        keybinding: 'cmd+shift+c',
+      };
       const keybinding = {
         command: 'test.command',
         keybinding: 'cmd+c',
       };
-      keymapsService.setKeybinding(keybinding);
+      keymapsService.setKeybinding(rawkeybinding, keybinding);
       expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(4);
     });
 
