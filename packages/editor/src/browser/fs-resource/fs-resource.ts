@@ -43,9 +43,11 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   private involvedFiles: FileTreeSet;
 
+  private ready: Promise<void>;
+
   constructor() {
     super();
-    this.init();
+    this.ready = this.init();
     this.listen();
   }
 
@@ -68,7 +70,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       e.forEach((change) => {
         if (change.type === FileChangeType.ADDED || change.type === FileChangeType.DELETED) {
           // 对于文件夹的删除，做要传递给子文件
-          const effectedPaths = this.involvedFiles.effects(new URI(change.uri).codeUri.fsPath);
+          const effectedPaths = this.involvedFiles?.effects(new URI(change.uri).codeUri.fsPath);
           effectedPaths.forEach((p) => {
             const effected = URI.file(p);
             this.cachedFileStat.delete(effected.toString());
@@ -85,7 +87,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       });
     });
     this.labelService.onDidChange((uri) => {
-      if (uri.codeUri.fsPath && this.involvedFiles.effects(uri.codeUri.fsPath)) {
+      if (uri.codeUri.fsPath && this.involvedFiles?.effects(uri.codeUri.fsPath)) {
         this.eventBus.fire(new ResourceNeedUpdateEvent(uri));
       }
     });
@@ -98,8 +100,9 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     return this.cachedFileStat.get(uri);
   }
 
-  provideResource(uri: URI): MaybePromise<IResource<any>> {
+  async provideResource(uri: URI): Promise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
+    await this.ready;
     this.involvedFiles.add(uri.codeUri.fsPath);
     return Promise.all([
       this.getFileStat(uri.toString()),
@@ -135,7 +138,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   }
 
   onDisposeResource(resource) {
-    this.involvedFiles.delete(resource.uri.codeUri.fsPath);
+    this.involvedFiles?.delete(resource.uri.codeUri.fsPath);
     this.cachedFileStat.delete(resource.uri.toString());
   }
 
