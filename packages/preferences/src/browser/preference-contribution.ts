@@ -193,13 +193,13 @@ export class PreferenceContribution
     });
 
     commands.registerCommand(PREFERENCE_COMMANDS.OPEN_USER_SETTING_FILE, {
-      execute: async () => {
+      execute: () => {
         this.openResource(PreferenceScope.User);
       },
     });
 
     commands.registerCommand(PREFERENCE_COMMANDS.OPEN_WORKSPACE_SETTING_FILE, {
-      execute: async () => {
+      execute: () => {
         this.openResource(PreferenceScope.Workspace);
       },
     });
@@ -320,6 +320,10 @@ export class PreferenceContribution
     const openResult = await this.commandService.executeCommand<IResourceOpenResult>(
       EDITOR_COMMANDS.OPEN_RESOURCE.id,
       new URI(url),
+      {
+        focus: true,
+        groupIndex: this.workbenchEditorService.currentEditorGroup.index,
+      },
     );
     if (openResult && preferenceId) {
       const editor = this.workbenchEditorService.editorGroups.find((g) => g.name === openResult.groupId)?.currentEditor;
