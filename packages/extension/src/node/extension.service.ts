@@ -244,10 +244,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const extServer = net.createServer();
     this.clientExtProcessExtConnectionServer.set(clientId, extServer);
 
-    if (!isWindows && extServerListenOptions.path) {
-      fs.unlink(extServerListenOptions.path).catch(() => {});
-    }
-
     extServer.on('connection', (connection) => {
       this.logger.log('_setupExtHostConnection ext host connected');
       this.clientExtProcessExtConnection.set(clientId, {
@@ -481,10 +477,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       const mainThreadListenPath = await this.getElectronMainThreadListenPath2(clientId);
       this.logger.log('mainThreadListenPath', mainThreadListenPath);
 
-      if (!isWindows) {
-        fs.unlink(mainThreadListenPath).catch(() => {});
-      }
-
       mainThreadServer.on('connection', (connection) => {
         this.logger.log(`electron ext main connected ${clientId}`);
 
@@ -590,7 +582,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     if (!isUndefined(extProcessId)) {
       if (await this.extensionHostManager.isRunning(extProcessId)) {
         await this.extensionHostManager.send(extProcessId, 'close');
-        // deactive
+        // deactivate
         // subscription
         if (this.clientExtProcessFinishDeferredMap.has(clientId)) {
           await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
