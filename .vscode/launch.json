@@ -66,6 +66,15 @@
       "internalConsoleOptions": "neverOpen"
     },
     {
+      "name": "Debug Jest Tests",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/.bin/jest", "--runInBand", "--bail"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "port": 9229
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Publish test",
