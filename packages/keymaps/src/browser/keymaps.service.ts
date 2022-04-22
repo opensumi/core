@@ -436,7 +436,7 @@ export class KeymapService implements IKeymapService {
     const filtered = keymaps.filter((a) => a.command !== item.command);
     this.unregisterUserKeybinding(item);
     this.restoreDefaultKeybinding(item);
-    await this.saveKeybinding(filtered);
+    return this.saveKeybinding(filtered);
   };
 
   /**
