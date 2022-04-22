@@ -105,6 +105,11 @@ export class ExtensionWillContributeEvent extends BasicEvent<IExtensionMetaData>
 export class ExtensionDidActivatedEvent extends BasicEvent<IExtensionProps> {}
 
 /**
+ * 插件扫描完成后的事件
+ */
+export class ExtensionsInitializedEvent extends BasicEvent<IExtension[]> {}
+
+/**
  * 插件卸载时的事件
  */
 export class ExtensionDidUninstalledEvent extends BasicEvent<void> {}

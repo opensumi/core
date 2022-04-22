@@ -41,8 +41,8 @@ import {
   ExtensionDidUninstalledEvent,
   IActivationEventService,
   AbstractExtInstanceManagementService,
+  ExtensionsInitializedEvent,
 } from './types';
-
 
 @Injectable()
 export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
@@ -214,6 +214,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this.extensionInstanceManageService.addExtensionInstance(extension);
       }
     }
+
+    this.eventBus.fire(new ExtensionsInitializedEvent(this.extensionInstanceManageService.getExtensionInstances()));
 
     const extensionInstanceList = this.extensionInstanceManageService.getExtensionInstances();
     this.nodeExtensionService.updateExtensionData(extensionInstanceList);
