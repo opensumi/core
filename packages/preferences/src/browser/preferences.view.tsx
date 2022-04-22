@@ -47,7 +47,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     (uri: string, options: IIconResourceOptions) => labelService.getIcon(URI.parse(uri), options),
     [],
   );
-  const userBeforeWorkspace = preferences.get<boolean>('settings.userBeforeWorkspace');
+  const userBeforeWorkspace = React.useMemo(() => preferences.get<boolean>('settings.userBeforeWorkspace'), []);
+
   const _tabList = userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
 
   const [tabList, setTabList] = React.useState<
@@ -59,47 +60,53 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const [tabIndex, setTabIndex] = React.useState<number>(0);
 
-  const { currentSearch: doSearchValue, currentGroup } = preferenceService;
+  const { currentSearch: _currentSearchText, currentGroup } = preferenceService;
 
   const currentScope = React.useMemo<PreferenceScope>(() => (tabList[tabIndex] || tabList[0]).id, [tabList, tabIndex]);
-  const [currentSearch, setCurrentSearch] = React.useState<string>(doSearchValue);
+  const [currentSearchText, setCurrentSearchText] = React.useState<string>(_currentSearchText);
   const [groups, setGroups] = React.useState<ISettingGroup[]>([]);
 
   const inputRef = React.useRef<HTMLInputElement | null>(null);
 
   const debouncedSearch = debounce(
-    (value) => {
-      setCurrentSearch(value);
+    (value: string) => {
+      setCurrentSearchText(value);
     },
     100,
     { maxWait: 1000 },
   );
 
-  const search = (value: string) => {
-    debouncedSearch(value);
+  const doGetGroups = async () => {
+    const groups = preferenceService.getSettingGroups(currentScope, currentSearchText);
+    if (groups.length > 0 && groups.findIndex((g) => g.id === currentGroup) === -1) {
+      preferenceService.setCurrentGroup(groups[0].id);
+    }
+    setGroups(groups);
   };
+
   React.useEffect(() => {
-    const doGetGroups = async () => {
-      const groups = preferenceService.getSettingGroups(currentScope, currentSearch);
-      if (groups.length > 0 && groups.findIndex((g) => g.id === currentGroup) === -1) {
-        preferenceService.setCurrentGroup(groups[0].id);
-      }
-      setGroups(groups);
-      const hasWorkspaceSettings = await preferenceService.hasThisScopeSetting(PreferenceScope.Workspace);
-      setTabList(hasWorkspaceSettings ? [WorkspaceScope, UserScope] : [UserScope, WorkspaceScope]);
-    };
     doGetGroups();
     const toDispose = preferenceService.onDidSettingsChange(() => {
       doGetGroups();
     });
+
+    // 如果当前工作区有设置文件，则先展示工作区设置
+    (async () => {
+      const hasWorkspaceSettings = await preferenceService.hasThisScopeSetting(PreferenceScope.Workspace);
+      setTabList(hasWorkspaceSettings ? [WorkspaceScope, UserScope] : [UserScope, WorkspaceScope]);
+    })();
     return () => {
       toDispose?.dispose();
     };
   }, []);
 
   React.useEffect(() => {
-    setCurrentSearch(doSearchValue);
-  }, [doSearchValue]);
+    doGetGroups();
+  }, [currentScope, currentSearchText]);
+
+  React.useEffect(() => {
+    setCurrentSearchText(_currentSearchText);
+  }, [_currentSearchText]);
 
   React.useEffect(() => {
     const focusDispose = preferenceService.onFocus(() => {
@@ -122,7 +129,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   );
 
   const items = React.useMemo(() => {
-    const sections = preferenceService.getSections(currentGroup, currentScope, currentSearch);
+    const sections = preferenceService.getSections(currentGroup, currentScope, currentSearchText);
     let items: ISectionItemData[] = [];
     for (const section of sections) {
       if (section.title) {
@@ -135,7 +142,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       }
     }
     return items;
-  }, [currentGroup, currentScope, currentSearch]);
+  }, [currentGroup, currentScope, currentSearchText]);
 
   const navigateTo = React.useCallback(
     (section: ISettingSection) => {
@@ -155,9 +162,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
           <div className={styles.search_pref}>
             <Input
               autoFocus
-              value={currentSearch}
+              value={currentSearchText}
               placeholder={localize('preference.searchPlaceholder')}
-              onValueChange={search}
+              onValueChange={debouncedSearch}
               ref={inputRef}
             />
           </div>
@@ -167,16 +174,18 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             <PreferencesIndexes
               groups={groups}
               scope={currentScope}
-              search={currentSearch}
+              searchText={currentSearchText}
               navigateTo={navigateTo}
-            ></PreferencesIndexes>
+            />
             <div className={styles.preferences_items}>
               <PreferenceBody items={items} onReady={preferenceService.handleListHandler}></PreferenceBody>
             </div>
           </div>
         ) : (
           <div className={styles.preference_noResults}>
-            {currentSearch ? formatLocalize('preference.noResults', currentSearch) : formatLocalize('preference.empty')}
+            {currentSearchText
+              ? formatLocalize('preference.noResults', currentSearchText)
+              : formatLocalize('preference.empty')}
           </div>
         )}
       </div>
@@ -205,13 +214,13 @@ export const PreferenceSections = ({
 export const PreferencesIndexes = ({
   groups,
   scope,
-  search,
+  searchText,
   navigateTo,
 }: {
   groups: ISettingGroup[];
   scope: PreferenceScope;
-  search: string;
-  navigateTo: (setction: ISettingSection) => void;
+  searchText: string;
+  navigateTo: (section: ISettingSection) => void;
 }) => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
 
@@ -220,7 +229,7 @@ export const PreferencesIndexes = ({
       <Scroll>
         {groups &&
           groups.map(({ id, title, iconClass }) => {
-            const sections = preferenceService.getSections(id, scope, search);
+            const sections = preferenceService.getSections(id, scope, searchText);
 
             return (
               <div key={`${id} - ${title}`} className={styles.index_item_wrapper}>
