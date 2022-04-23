@@ -372,15 +372,6 @@ export class OpenedEditorModelService {
     this.treeModel.dispatchChange();
   };
 
-  removeFileDecoration() {
-    if (!this.decorations) {
-      return;
-    }
-    this.decorations.removeDecoration(this.selectedDecoration);
-    this.decorations.removeDecoration(this.focusedDecoration);
-    this.decorations.removeDecoration(this.contextMenuDecoration);
-  }
-
   handleContextMenu = (ev: React.MouseEvent, file?: EditorFileGroup | EditorFile) => {
     if (!file) {
       this.enactiveFileDecoration();

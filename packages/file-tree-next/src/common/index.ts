@@ -8,8 +8,7 @@ export const IFileTreeAPI = Symbol('IFileTreeAPI');
 export const IFileTreeService = Symbol('IFileTreeService');
 
 export interface IFileTreeService extends ITree {
-  removeNodeCacheByPath(path: string): void;
-  reCacheNode(parent: File | Directory, path: string): void;
+  refresh(): Promise<void>;
 }
 export interface IFileTreeAPI {
   copyFile(from: URI, to: URI): Promise<FileStat | string | void>;

@@ -1,6 +1,5 @@
 import cls from 'classnames';
 import React, {
-  createRef,
   useRef,
   useEffect,
   useCallback,
@@ -167,7 +166,6 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       }),
     );
     return () => {
-      fileTreeModelService.removeFileDecoration();
       disposableRef.current?.dispose();
     };
   }, []);

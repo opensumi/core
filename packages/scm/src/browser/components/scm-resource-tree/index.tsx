@@ -14,7 +14,6 @@ import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceNotRoo
 import { ISCMTreeNodeProps, SCMTreeNode, SCM_TREE_NODE_HEIGHT } from './scm-tree-node.view';
 import { SCMTreeService } from './scm-tree.service';
 
-
 export const TREE_FIELD_NAME = 'SCM_TREE_TREE_FIELD';
 
 export const SCMResourceTree: React.FC<{
@@ -42,10 +41,6 @@ export const SCMResourceTree: React.FC<{
       }
       setIsReady(true);
     })();
-
-    return () => {
-      scmTreeModelService.removeFileDecoration();
-    };
   }, []);
 
   React.useEffect(() => {

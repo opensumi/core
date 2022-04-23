@@ -46,8 +46,6 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
   private _tooltip?: string;
   private _resolved = false;
 
-  private _whenReady: Promise<void>;
-
   constructor(
     tree: TreeViewDataProvider,
     parent: ExtensionCompositeTreeNode | undefined,
@@ -63,14 +61,12 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     expanded?: boolean,
     id?: number,
   ) {
-    super(tree, parent, undefined, {}, { disableCache: true });
-    if (expanded) {
-      this._whenReady = this.setExpanded();
-    }
-    this._uid = id || this._uid;
+    super(tree, parent, undefined, {});
+    this.isExpanded = expanded || false;
+    this.id = id || this.id;
     // 每个节点应该拥有自己独立的路径，不存在重复性
     // displayName 作为展示用的字段
-    this.name = String(this._uid);
+    this.name = String(this.id);
     this._command = command;
     this._tooltip = tooltip;
     if (typeof label === 'string') {
@@ -80,7 +76,6 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
       this._hightlights = label.highlights;
       this._strikethrough = label.strikethrough;
     }
-    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get resolved() {
@@ -97,10 +92,6 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
 
   get displayName() {
     return this._displayName;
-  }
-
-  get whenReady() {
-    return this._whenReady;
   }
 
   get accessibilityInformation() {
@@ -156,11 +147,11 @@ export class ExtensionTreeNode extends TreeNode {
     private _accessibilityInformation?: IAccessibilityInformation,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, {}, { disableCache: true });
-    this._uid = id || this._uid;
+    super(tree as ITree, parent, undefined, {});
+    this.id = id || this.id;
     // 每个节点应该拥有自己独立的路径，不存在重复性
     // displayName 作为展示用的字段
-    this.name = String(this._uid);
+    this.name = String(this.id);
     if (typeof label === 'string') {
       this._displayName = label;
     } else if (typeof label === 'object') {
@@ -168,7 +159,6 @@ export class ExtensionTreeNode extends TreeNode {
       this._hightlights = label.highlights;
       this._strikethrough = label.strikethrough;
     }
-    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get resolved() {
