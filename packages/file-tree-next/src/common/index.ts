@@ -4,6 +4,8 @@ import { FileStat } from '@opensumi/ide-file-service';
 
 import { Directory, File } from './file-tree-node.define';
 
+export const FILE_EXPLORER_WELCOME_ID = 'file-explorer';
+
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
 export const IFileTreeService = Symbol('IFileTreeService');
 
