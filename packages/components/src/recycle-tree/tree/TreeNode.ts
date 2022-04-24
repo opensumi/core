@@ -339,8 +339,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   private activeRefreshPromise: Promise<any> | null;
   private queuedRefreshPromise: Promise<any> | null;
-  private queuedRefreshPromiseFactory: (() => Promise<any>) | null;
-  private refreshPromise: Promise<void> | null;
+  private queuedRefreshPromiseFactory: ((token: CancellationToken) => Promise<any>) | null;
 
   private _lock = false;
 
@@ -520,8 +519,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     return await this.hardReloadChildren(token);
   }
+
   // 展开节点
-  public async setExpanded(ensureVisible = true, quiet = false) {
+  public async setExpanded(ensureVisible = true, quiet = false, isOwner = true) {
     if (this.disposed) {
       return;
     }
@@ -533,11 +533,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     const state = TreeNode.getGlobalTreeState(this.path);
-    state.loadPathCancelToken.cancel();
-    state.refreshCancelToken.cancel();
-    TreeNode.setGlobalTreeState(this.path, {
-      isExpanding: true,
-    });
+    if (!isOwner) {
+      state.loadPathCancelToken.cancel();
+      state.refreshCancelToken.cancel();
+      TreeNode.setGlobalTreeState(this.path, {
+        isExpanding: true,
+      });
+    }
     this.isExpanded = true;
     if (this._children === null) {
       !quiet && this._watcher.notifyWillResolveChildren(this, this.isExpanded);
@@ -550,7 +552,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
 
     if (ensureVisible && this.parent && CompositeTreeNode.is(this.parent)) {
-      await (this.parent as CompositeTreeNode).setExpanded(true, !quiet);
+      await (this.parent as CompositeTreeNode).setExpanded(true, !quiet, false);
     }
 
     if (this.isExpanded) {
@@ -559,9 +561,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this.expandBranch(this, quiet);
       !quiet && this._watcher.notifyDidChangeExpansionState(this, true);
     }
-    TreeNode.setGlobalTreeState(this.path, {
-      isExpanding: false,
-    });
+    if (!isOwner) {
+      TreeNode.setGlobalTreeState(this.path, {
+        isExpanding: false,
+      });
+    }
   }
 
   // 获取当前节点下所有展开的节点路径
@@ -856,6 +860,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
         this.watcher.notifyDidUpdateBranch();
       } else {
+        if (token?.isCancellationRequested) {
+          return;
+        }
         const expandedChilds: CompositeTreeNode[] = [];
 
         if (needReload) {
@@ -976,6 +983,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (!this.isExpanded) {
       return;
     }
+    const state = TreeNode.getGlobalTreeState(this.path);
+    state.loadPathCancelToken.cancel();
+    state.refreshCancelToken.cancel();
     !quiet && this._watcher.notifyWillChangeExpansionState(this, false);
     if (this._children && this.parent) {
       // 从根节点裁剪分支
@@ -1357,7 +1367,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
     } else {
-      await this.refreshPromise;
       // 如果当前变化的节点已在数据视图（并非滚动到不可见区域）中不可见，则将该节点折叠，待下次更新即可，
       if (!this.isItemVisibleAtRootSurface(this)) {
         this.isExpanded = false;
@@ -1388,18 +1397,22 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     } else {
       token = state.refreshCancelToken.token;
     }
-    this.refreshPromise = this.queue<void>(() => this.doRefresh(token));
-    return await this.refreshPromise;
+    await this.queue<void>(this.doRefresh.bind(this));
+    TreeNode.setGlobalTreeState(this.path, {
+      isRefreshing: false,
+    });
   }
 
-  private async queue<T>(promiseFactory: () => Promise<T>) {
+  private async queue<T>(promiseFactory: (token?: CancellationToken) => Promise<T>, token?: CancellationToken) {
     if (this.activeRefreshPromise) {
       this.queuedRefreshPromiseFactory = promiseFactory;
 
       if (!this.queuedRefreshPromise) {
         const onComplete = () => {
+          if (token?.isCancellationRequested) {
+            return async () => {};
+          }
           this.queuedRefreshPromise = null;
-
           const result = this.queue(this.queuedRefreshPromiseFactory!);
           this.queuedRefreshPromiseFactory = null;
 
@@ -1416,7 +1429,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       });
     }
 
-    this.activeRefreshPromise = promiseFactory();
+    this.activeRefreshPromise = promiseFactory(token);
 
     return new Promise<T>((c, e) => {
       this.activeRefreshPromise?.then(
@@ -1435,9 +1448,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   private async doRefresh(token: CancellationToken) {
     const paths = this.getAllExpandedNodePath();
     await this.refreshTreeNodeByPaths(paths, true, token);
-    TreeNode.setGlobalTreeState(this.path, {
-      isRefreshing: false,
-    });
   }
 
   private isItemVisibleAtRootSurface(node: TreeNode) {

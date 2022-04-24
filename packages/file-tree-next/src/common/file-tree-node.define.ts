@@ -2,14 +2,11 @@ import { TreeNode, ICompositeTreeNode, CompositeTreeNode, ITree } from '@opensum
 import { URI } from '@opensumi/ide-core-browser';
 import { FileStat } from '@opensumi/ide-file-service';
 
-import { IFileTreeService } from './index';
-
 export class Directory extends CompositeTreeNode {
-  private fileTreeService: IFileTreeService;
   private _displayName: string;
 
   constructor(
-    tree: IFileTreeService,
+    tree: ITree,
     parent: ICompositeTreeNode | undefined,
     public uri: URI = new URI(''),
     name = '',
@@ -21,7 +18,6 @@ export class Directory extends CompositeTreeNode {
       // 根节点默认展开节点
       this.isExpanded = true;
     }
-    this.fileTreeService = tree;
   }
 
   get displayName() {
@@ -65,11 +61,10 @@ export class Directory extends CompositeTreeNode {
 }
 
 export class File extends TreeNode {
-  private fileTreeService: IFileTreeService;
   private _displayName: string;
 
   constructor(
-    tree: IFileTreeService,
+    tree: ITree,
     parent: CompositeTreeNode | undefined,
     public uri: URI = new URI(''),
     name = '',
@@ -77,7 +72,6 @@ export class File extends TreeNode {
     public tooltip: string,
   ) {
     super(tree as ITree, parent, undefined, { name });
-    this.fileTreeService = tree;
   }
 
   get displayName() {

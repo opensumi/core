@@ -131,7 +131,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private effectedNodes: Directory[] = [];
   private refreshThrottler: Throttler = new Throttler();
   private fileEventRefreshResolver;
-  private fileEventRefreshTimer;
 
   private refreshCancelToken = new CancellationTokenSource();
 
@@ -446,7 +445,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private async doDelayRefresh() {
     return new Promise<void>((resolve) => {
       this.fileEventRefreshResolver = resolve;
-      this.fileEventRefreshTimer = setTimeout(this.refreshEffectNode, FileTreeService.DEFAULT_FILE_EVENT_REFRESH_DELAY);
+      setTimeout(this.refreshEffectNode, FileTreeService.DEFAULT_FILE_EVENT_REFRESH_DELAY);
     });
   }
 
@@ -465,7 +464,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (this.fileEventRefreshResolver) {
       this.fileEventRefreshResolver();
     }
-    this.fileEventRefreshTimer = null;
   };
 
   public async getFileTreeNodePathByUri(uri: URI) {

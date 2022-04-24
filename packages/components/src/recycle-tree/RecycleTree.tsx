@@ -556,8 +556,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { root } = this.props.model;
     const directory =
       typeof pathOrCompositeTreeNode === 'string'
-        ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
-        : await root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
+        ? root.getTreeNodeByPath(pathOrCompositeTreeNode)
+        : pathOrCompositeTreeNode;
     if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
       return (directory as CompositeTreeNode).setExpanded(true);
     }
@@ -567,8 +567,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { root } = this.props.model;
     const directory =
       typeof pathOrCompositeTreeNode === 'string'
-        ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
-        : root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
+        ? root.getTreeNodeByPath(pathOrCompositeTreeNode)
+        : pathOrCompositeTreeNode;
     if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
       return (directory as CompositeTreeNode).setCollapsed();
     }
