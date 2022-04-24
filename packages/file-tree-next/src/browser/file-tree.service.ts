@@ -63,8 +63,8 @@ export interface ISortNode {
 
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
-  private static DEFAULT_REFRESH_DELAY = 200;
-  private static DEFAULT_FILE_EVENT_REFRESH_DELAY = 500;
+  private static DEFAULT_REFRESH_DELAY = 100;
+  private static DEFAULT_FILE_EVENT_REFRESH_DELAY = 100;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -99,12 +99,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
   @Autowired(IApplicationService)
   private readonly appService: IApplicationService;
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
+  @Autowired(FileContextKey)
   private fileContextKey: FileContextKey;
 
   private _cacheNodesMap: Map<string, File | Directory> = new Map();
@@ -251,9 +249,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   initContextKey(dom: HTMLDivElement) {
-    if (!this.fileContextKey) {
-      this.fileContextKey = this.injector.get(FileContextKey, [dom]);
-    }
+    this.fileContextKey.initScopedContext(dom);
   }
 
   public cancelRefresh() {
@@ -443,7 +439,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     } else if (!(nodes.length > 0) && this.isRootAffected(changes)) {
       this.effectedNodes.push(this.root as Directory);
     }
-    // 文件事件引起的刷新进行队列化处理，每 500 ms 处理一次刷新任务
+    // 文件事件引起的刷新进行队列化处理，每 200 ms 处理一次刷新任务
     return this.refreshThrottler.queue(this.doDelayRefresh.bind(this));
   }
 
@@ -641,9 +637,9 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const nodes: Directory[] = [];
     for (const change of changes) {
       const uri = new URI(change.uri);
-      const node = this.getNodeByPathOrUri(uri);
-      if (node && node.parent) {
-        nodes.push(node.parent as Directory);
+      const node = this.getNodeByPathOrUri(uri.parent);
+      if (node) {
+        nodes.push(node as Directory);
       }
     }
     return nodes;
@@ -675,6 +671,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
       pathOrUri = pathOrUri.toString();
     } else if (this.isFileURI(pathOrUri)) {
       pathURI = new URI(pathOrUri);
+    } else if (!this.isFileURI(pathOrUri) && typeof pathOrUri === 'string') {
+      path = pathOrUri;
     }
     if (this.isFileURI(pathOrUri) && !!pathURI) {
       let rootStr;
@@ -843,22 +841,13 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.size === 0) {
       return;
     }
-    this.refreshCancelToken.cancel();
-    this.refreshCancelToken = new CancellationTokenSource();
-    const token = this.refreshCancelToken.token;
     const queue = Array.from(this._changeEventDispatchQueue);
 
     const effectedRoots = this.sortPaths(queue);
     const promise = pSeries(
       effectedRoots.map((root) => async () => {
-        if (token.isCancellationRequested) {
-          return;
-        }
         if (Directory.is(root.node)) {
           (root.node as Directory).refresh();
-        }
-        if (token.isCancellationRequested) {
-          return;
         }
       }),
     );

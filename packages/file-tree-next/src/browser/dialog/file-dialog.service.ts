@@ -49,14 +49,12 @@ export class FileTreeDialogService extends Tree {
         this.workspaceRoot = (await this.workspaceService.roots)[0];
       }
       const { children } = await this.fileTreeAPI.resolveChildren(this, this.workspaceRoot);
-      this.cacheNodes(children as (File | Directory)[]);
       this.root = children[0] as Directory;
       return children;
     } else {
       // 加载子目录
       if (parent.uri) {
         const { children } = await this.fileTreeAPI.resolveChildren(this, parent.uri.toString(), parent);
-        this.cacheNodes(children as (File | Directory)[]);
         return children;
       }
     }

@@ -20,7 +20,7 @@ export interface IFileTreeAPI {
   mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<string[] | void>;
   mv(oldUri: URI, newUri: URI, isDirectory?: boolean): Promise<string | void>;
   resolveChildren(
-    tree: IFileTreeService,
+    tree: ITree,
     path: string | FileStat,
     parent?: Directory,
     compact?: boolean,

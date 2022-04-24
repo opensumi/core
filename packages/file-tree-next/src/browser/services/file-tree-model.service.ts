@@ -169,8 +169,6 @@ export class FileTreeModelService {
 
   private _initTreeModelReady = false;
 
-  private locationPromise: Promise<void>;
-
   get onDidFocusedFileChange() {
     return this.onDidFocusedFileChangeEmitter.event;
   }
@@ -463,9 +461,6 @@ export class FileTreeModelService {
 
   private async canHandleRefreshEvent() {
     await this.whenReady;
-    if (this.locationPromise) {
-      await this.locationPromise;
-    }
   }
 
   // 清空所有节点选中态
@@ -1057,17 +1052,15 @@ export class FileTreeModelService {
       this.contextKey?.explorerCompressedFocusContext.set(false);
       this.contextKey?.explorerCompressedFirstFocusContext.set(false);
       this.contextKey?.explorerCompressedLastFocusContext.set(false);
-      // 说明是异常情况或子路径删除
-      this.fileTreeService.refresh(_node.parent as Directory);
-
-      this.loadingDecoration.removeTarget(_node);
     };
-
     processNode(node);
 
     const effectNode = this.fileTreeService.getNodeByPathOrUri(targetPath);
     if (effectNode && !effectNode.uri.isEqual(uri)) {
-      processNode(effectNode);
+      // 说明是异常情况或子路径删除
+      this.fileTreeService.refresh(node.parent as Directory);
+
+      this.loadingDecoration.removeTarget(node);
     }
 
     return true;
