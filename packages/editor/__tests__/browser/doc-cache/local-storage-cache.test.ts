@@ -1,5 +1,3 @@
-import { promisify } from 'util';
-
 import uniqueId from 'lodash/uniqueId';
 
 import { ILoggerManagerClient, URI } from '@opensumi/ide-core-browser';
@@ -56,8 +54,7 @@ describe('LocalStorageDocCacheImpl', () => {
 
     const docModel = injector.get(EditorDocumentModel, [uri, content, { savable: true }]);
     expect(docModel.dirty).toBeFalsy();
-
-    await promisify(setTimeout)(100);
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(docModel.dirty).toBeFalsy();
   });
 
@@ -74,7 +71,8 @@ describe('LocalStorageDocCacheImpl', () => {
     expect(docModel.getMonacoModel().getValue()).toBe(content);
     expect(docModel.dirty).toBeFalsy();
 
-    await promisify(setTimeout)(100);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     expect(docModel.dirty).toBeTruthy();
     expect(docModel.getMonacoModel().getValue()).toBe('a' + content);
   });
