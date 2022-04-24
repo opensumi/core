@@ -5,7 +5,7 @@ import { ThemeContribution, ExtColorContribution, IThemeService, ITheme } from '
 
 @Injectable()
 export class MockThemeService implements IThemeService {
-  themeLoaded: Deferred<void>;
+  colorThemeLoaded: Deferred<void>;
 
   public currentThemeId = 'dark';
 
@@ -21,7 +21,7 @@ export class MockThemeService implements IThemeService {
     };
   }
   async applyTheme(id: string) {
-    this.themeLoaded.resolve();
+    this.colorThemeLoaded.resolve();
     throw new Error('Method not implemented.');
   }
 

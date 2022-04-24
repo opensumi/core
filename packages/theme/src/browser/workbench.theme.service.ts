@@ -69,7 +69,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   private colorClassNameMap = new Map<string, string>();
 
-  themeLoaded: Deferred<void> = new Deferred();
+  colorThemeLoaded: Deferred<void> = new Deferred();
 
   public currentThemeId: string;
   private currentTheme?: Theme;
@@ -117,7 +117,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }, new Map());
 
     this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, Object.fromEntries(themeMap.entries()));
-    this.themeLoaded.resolve();
+    this.colorThemeLoaded.resolve();
   }
 
   get preferenceThemeId(): string | undefined {
@@ -138,7 +138,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
       if (this.preferenceThemeId === themeId) {
         await this.applyTheme(this.preferenceThemeId);
-        this.themeLoaded.resolve();
+        this.colorThemeLoaded.resolve();
       }
 
       disposables.push({
@@ -195,7 +195,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.doApplyTheme(this.currentTheme);
 
     if (!this.preferenceThemeId) {
-      this.themeLoaded.resolve();
+      this.colorThemeLoaded.resolve();
     }
   }
 

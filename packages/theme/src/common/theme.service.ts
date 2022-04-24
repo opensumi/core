@@ -35,6 +35,7 @@ export enum IconShape {
 export interface IIconService {
   currentThemeId: string;
   currentTheme: IIconTheme;
+  iconThemeLoaded: Deferred<void>;
 
   onThemeChange: Event<IIconTheme>;
   /**
@@ -77,7 +78,7 @@ export interface IThemeData extends IStandaloneThemeData {
 
 export interface IThemeService {
   currentThemeId: string;
-  themeLoaded: Deferred<void>;
+  colorThemeLoaded: Deferred<void>;
   onThemeChange: Event<ITheme>;
   registerThemes(themeContributions: ThemeContribution[], extPath: URI): IDisposable;
   /**

@@ -60,7 +60,10 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
     this.registerDefaultTokenModifier();
-    await this.themeService.themeLoaded.promise;
+    await Promise.all([
+      await this.iconService.iconThemeLoaded.promise,
+      await this.themeService.colorThemeLoaded.promise,
+    ]);
   }
 
   private registerDefaultColorTheme() {
