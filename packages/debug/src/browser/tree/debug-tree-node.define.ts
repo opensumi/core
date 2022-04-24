@@ -186,7 +186,6 @@ export class ExpressionContainer extends CompositeTreeNode {
       parent,
       undefined,
       { name: name || options.session?.id },
-      { disableCache: true },
     );
     this.session = options.session;
     this.variablesReference = options.variablesReference || 0;

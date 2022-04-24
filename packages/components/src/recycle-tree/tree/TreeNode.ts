@@ -1372,7 +1372,23 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   // 当没有传入具体路径时，使用当前展开目录作为刷新路径
   public async refresh() {
-    this.refreshPromise = this.queue<void>(() => this.doRefresh());
+    const state = TreeNode.getGlobalTreeState(this.path);
+    if (state.isLoadingPath || state.isExpanding) {
+      return;
+    }
+    let token;
+    if (state.isRefreshing) {
+      state.refreshCancelToken.cancel();
+      const refreshCancelToken = new CancellationTokenSource();
+      TreeNode.setGlobalTreeState(this.path, {
+        isRefreshing: true,
+        refreshCancelToken,
+      });
+      token = refreshCancelToken.token;
+    } else {
+      token = state.refreshCancelToken.token;
+    }
+    this.refreshPromise = this.queue<void>(() => this.doRefresh(token));
     return await this.refreshPromise;
   }
 
@@ -1416,24 +1432,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     });
   }
 
-  private async doRefresh() {
-    const state = TreeNode.getGlobalTreeState(this.path);
-    if (state.isLoadingPath || state.isExpanding) {
-      return;
-    }
+  private async doRefresh(token: CancellationToken) {
     const paths = this.getAllExpandedNodePath();
-    let token;
-    if (state.isRefreshing) {
-      state.refreshCancelToken.cancel();
-      const refreshCancelToken = new CancellationTokenSource();
-      TreeNode.setGlobalTreeState(this.path, {
-        isRefreshing: true,
-        refreshCancelToken,
-      });
-      token = refreshCancelToken.token;
-    } else {
-      token = state.refreshCancelToken.token;
-    }
     await this.refreshTreeNodeByPaths(paths, true, token);
     TreeNode.setGlobalTreeState(this.path, {
       isRefreshing: false,

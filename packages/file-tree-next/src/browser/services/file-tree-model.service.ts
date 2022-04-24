@@ -1658,7 +1658,7 @@ export class FileTreeModelService {
     }
     this._fileToLocation = pathOrUri;
 
-    return (this.locationPromise = this.locationThrottler.queue(this.doLocation));
+    return this.locationThrottler.queue(this.doLocation);
   };
 
   private doLocation = async () => {
