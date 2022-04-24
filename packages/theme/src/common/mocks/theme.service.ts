@@ -1,10 +1,12 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter, Event, URI, IThemeColor } from '@opensumi/ide-core-common';
+import { Emitter, Event, URI, IThemeColor, Deferred } from '@opensumi/ide-core-common';
 
 import { ThemeContribution, ExtColorContribution, IThemeService, ITheme } from '../theme.service';
 
 @Injectable()
 export class MockThemeService implements IThemeService {
+  colorThemeLoaded: Deferred<void>;
+
   public currentThemeId = 'dark';
 
   private _onThemeChange = new Emitter<ITheme>();
@@ -19,6 +21,7 @@ export class MockThemeService implements IThemeService {
     };
   }
   async applyTheme(id: string) {
+    this.colorThemeLoaded.resolve();
     throw new Error('Method not implemented.');
   }
 

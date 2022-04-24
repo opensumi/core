@@ -19,6 +19,7 @@ import {
   IThemeColor,
   OnEvent,
   ExtensionDidContributes,
+  Deferred,
 } from '@opensumi/ide-core-common';
 
 import { ICSSStyleService } from '../common';
@@ -68,6 +69,8 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   private colorClassNameMap = new Map<string, string>();
 
+  colorThemeLoaded: Deferred<void> = new Deferred();
+
   public currentThemeId: string;
   private currentTheme?: Theme;
   private latestApplyTheme: string;
@@ -105,7 +108,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   @OnEvent(ExtensionDidContributes)
-  onDidExtensionContributes() {
+  async onDidExtensionContributes() {
     const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: ThemeInfo) => {
       if (!pre.has(cur.themeId)) {
         pre.set(cur.themeId, cur.name);
@@ -113,14 +116,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       return pre;
     }, new Map());
 
-    const themeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
-    if (themeId && themeId !== DEFAULT_THEME_ID && themeMap.has(themeId)) {
-      this.applyTheme(themeId);
-    } else {
-      this.applyTheme(DEFAULT_THEME_ID);
-    }
-
     this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, Object.fromEntries(themeMap.entries()));
+    this.colorThemeLoaded.resolve();
+  }
+
+  get preferenceThemeId(): string | undefined {
+    return this.preferenceService.get<string>(COLOR_THEME_SETTING);
   }
 
   public registerThemes(themeContributions: ThemeContribution[], extPath: URI) {
@@ -128,16 +129,16 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     disposables.push({
       dispose: () => this.doSetPreferenceSchema(),
     });
-    const preferenceThemeId = this.preferenceService.get<string>(COLOR_THEME_SETTING);
 
-    themeContributions.forEach((contribution) => {
+    themeContributions.forEach(async (contribution) => {
       const themeExtContribution = { basePath: extPath, contribution };
       const themeId = getThemeId(contribution);
 
       this.themeContributionRegistry.set(themeId, themeExtContribution);
 
-      if (preferenceThemeId === themeId) {
-        this.applyTheme(preferenceThemeId);
+      if (this.preferenceThemeId === themeId) {
+        await this.applyTheme(this.preferenceThemeId);
+        this.colorThemeLoaded.resolve();
       }
 
       disposables.push({
@@ -192,6 +193,10 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.toggleBaseThemeClass(prevThemeType, currentThemeType);
 
     this.doApplyTheme(this.currentTheme);
+
+    if (!this.preferenceThemeId) {
+      this.colorThemeLoaded.resolve();
+    }
   }
 
   public registerColor(contribution: ExtColorContribution) {
@@ -318,7 +323,10 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
         50,
       )(async (e) => {
         if (e.preferenceName === COLOR_THEME_SETTING) {
-          await this.applyTheme(e.newValue);
+          // make sure the theme is registered
+          if (this.themeContributionRegistry.has(e.newValue)) {
+            await this.applyTheme(e.newValue);
+          }
         }
 
         if (this.currentTheme) {

@@ -8,7 +8,10 @@ import {
   Event,
   ILogger,
   CODICON_OWNER,
-  runWhenIdle,
+  Deferred,
+  OnEvent,
+  WithEventBus,
+  ExtensionDidContributes,
 } from '@opensumi/ide-core-browser';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
@@ -32,7 +35,7 @@ import './icon.less';
 export const ICON_THEME_SETTING = 'general.icon';
 
 @Injectable()
-export class IconService implements IIconService {
+export class IconService extends WithEventBus implements IIconService {
   @Autowired()
   staticResourceService: StaticResourceService;
 
@@ -50,6 +53,8 @@ export class IconService implements IIconService {
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  iconThemeLoaded: Deferred<void> = new Deferred<void>();
 
   private themeChangeEmitter: Emitter<IIconTheme> = new Emitter();
 
@@ -83,12 +88,13 @@ export class IconService implements IIconService {
   }
 
   constructor() {
+    super();
     this.listen();
   }
 
   private listen() {
     this.preferenceService.onPreferenceChanged(async (e) => {
-      if (e.preferenceName === ICON_THEME_SETTING) {
+      if (e.preferenceName === ICON_THEME_SETTING && this.iconContributionRegistry.has(e.newValue)) {
         await this.applyTheme(this.preferenceService.get<string>(ICON_THEME_SETTING)!);
       }
     });
@@ -250,15 +256,45 @@ export class IconService implements IIconService {
     return targetIconClass;
   }
 
+  @OnEvent(ExtensionDidContributes)
+  async onDidExtensionContributes() {
+    await this.updateIconThemes();
+    this.iconThemeLoaded.resolve();
+  }
+
+  get preferenceThemeId(): string | undefined {
+    return this.preferenceService.get<string>(ICON_THEME_SETTING);
+  }
+
+  private async updateIconThemes() {
+    const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: IconThemeInfo) => {
+      if (!pre.has(cur.themeId)) {
+        pre.set(cur.themeId, cur.name);
+      }
+      return pre;
+    }, new Map());
+
+    this.preferenceSettings.setEnumLabels(ICON_THEME_SETTING, Object.fromEntries(themeMap.entries()));
+    // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
+    if (!this.currentTheme) {
+      if (!this.preferenceThemeId || !themeMap.has(this.preferenceThemeId)) {
+        const themeId = Array.from(themeMap.keys())[0];
+        if (themeId) {
+          await this.applyTheme(themeId);
+        }
+      }
+    }
+  }
+
   registerIconThemes(iconContributions: ThemeContribution[], basePath: URI) {
-    const preferencesIcon = this.preferenceService.get<string>(ICON_THEME_SETTING);
     for (const contribution of iconContributions) {
       const themeId = getThemeId(contribution);
       this.iconContributionRegistry.set(themeId, { contribution, basePath });
-      if (preferencesIcon && preferencesIcon === themeId) {
-        this.applyTheme(preferencesIcon);
+      if (this.preferenceThemeId && this.preferenceThemeId === themeId) {
+        this.applyTheme(this.preferenceThemeId);
       }
     }
+
     this.preferenceSchemaProvider.setSchema(
       {
         properties: {
@@ -272,23 +308,7 @@ export class IconService implements IIconService {
       true,
     );
 
-    const themeMap = this.getAvailableThemeInfos().reduce((pre: Map<string, string>, cur: IconThemeInfo) => {
-      if (!pre.has(cur.themeId)) {
-        pre.set(cur.themeId, cur.name);
-      }
-      return pre;
-    }, new Map());
-
-    this.preferenceSettings.setEnumLabels(ICON_THEME_SETTING, Object.fromEntries(themeMap.entries()));
-    // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
-    if (!this.currentTheme && themeMap.size <= 1) {
-      if (!preferencesIcon || !themeMap.has(preferencesIcon)) {
-        const themeId = Array.from(themeMap.keys())[0];
-        if (themeId) {
-          this.applyTheme(themeId);
-        }
-      }
-    }
+    this.updateIconThemes();
   }
 
   getAvailableThemeInfos(): IconThemeInfo[] {
@@ -338,6 +358,7 @@ export class IconService implements IIconService {
     if (!iconThemeData) {
       this.logger.warn('Target IconTheme extension not detected, use built-in icons.');
       document.getElementsByTagName('body')[0].classList.add('default-file-icons');
+      this.iconThemeLoaded.resolve();
       return;
     }
     this.currentThemeId = themeId;
@@ -354,6 +375,10 @@ export class IconService implements IIconService {
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
     this.themeChangeEmitter.fire(this.currentTheme);
+
+    if (!this.preferenceThemeId) {
+      this.iconThemeLoaded.resolve();
+    }
   }
 
   toggleIconVisible(show?: boolean) {
