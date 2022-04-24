@@ -12,10 +12,6 @@ window.navigator = Object.assign(window.navigator, {
   },
 });
 
-// global.requestAnimationFrame = (fn) => setTimeout(fn, 16);
-// jsdom.window.requestAnimationFrame = (fn) => setTimeout(fn, 16);
-// jsdom.window.cancelAnimationFrame = () => {};
-
 // https://github.com/jsdom/jsdom/issues/1742
 document.queryCommandSupported = () => {};
 document.execCommand = (command, ui, value) => {
@@ -63,7 +59,7 @@ class MockLocalStorage {
   }
 }
 
-// global.localStorage = new MockLocalStorage();
+global.localStorage = new MockLocalStorage();
 
 process.env.IS_JEST_TEST = true;
 
