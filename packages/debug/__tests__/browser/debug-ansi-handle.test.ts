@@ -261,14 +261,6 @@ describe('Debug - ANSI escape sequence', () => {
       });
     }
 
-    const customClassName = 'code-underline-colored';
-
-    // Underline colour class
-    await assertSingleSequenceElement('\x1b[58;5;' + 1 + 'm', (child) => {
-      // `Custom underline color class not found on element after underline color ANSI code 58;5;${1}m.`,
-      expect(child.classList).toContain(customClassName);
-    });
-
     // check all basic colors for underlines (full range is checked elsewhere, here we check cancelation)
     for (let i = 0; i <= 255; i++) {
       const customClassName = 'code-underline-colored';
@@ -310,10 +302,8 @@ describe('Debug - ANSI escape sequence', () => {
       // 'italic missing Doubles of each Different ANSI codes should not cancel each other or accumulate.',
       expect(child.classList).toContain('code-italic');
 
-      assert(
-        child.classList.contains('code-underline') === false,
-        'underline PRESENT and double underline should have removed it- Doubles of each Different ANSI codes should not cancel each other or accumulate.',
-      );
+      // 'underline PRESENT and double underline should have removed it- Doubles of each Different ANSI codes should not cancel each other or accumulate.',
+      expect(child.classList).not.toContain('code-underline');
       // 'dim missing Doubles of each Different ANSI codes should not cancel each other or accumulate.',
       expect(child.classList).toContain('code-dim');
       // 'blink missing Doubles of each Different ANSI codes should not cancel each other or accumulate.',
@@ -328,10 +318,8 @@ describe('Debug - ANSI escape sequence', () => {
       expect(child.classList).toContain('code-strike-through');
       // 'overline missing Doubles of each Different ANSI codes should not cancel each other or accumulate.',
       expect(child.classList).toContain('code-overline');
-      assert(
-        child.classList.contains('code-superscript') === false,
-        'superscript PRESENT and subscript should have removed it- Doubles of each Different ANSI codes should not cancel each other or accumulate.',
-      );
+      // 'superscript PRESENT and subscript should have removed it- Doubles of each Different ANSI codes should not cancel each other or accumulate.',
+      expect(child.classList).not.toContain('code-superscript');
       // 'subscript missing Doubles of each Different ANSI codes should not cancel each other or accumulate.',
       expect(child.classList).toContain('code-subscript');
       // Incorrect number of classes found for each style code sent twice ANSI codes.,
@@ -489,10 +477,8 @@ describe('Debug - ANSI escape sequence', () => {
     await assertSingleSequenceElement('\x1b[38;2;4;4m', (child) => {
       // Invalid color code "38;2;4;4" should not add a class (classes found: ${child.classList}).
       expect(child.classList.length).toStrictEqual(0);
-      assert(
-        !child.style.color,
-        `Invalid color code "38;2;4;4" should not add a custom color CSS (found color: ${child.style.color}).`,
-      );
+      // `Invalid color code "38;2;4;4" should not add a custom color CSS (found color: ${child.style.color}).`,
+      expect(child.style.color).toBeFalsy();
     });
 
     // Bad (nonexistent) color should not render
@@ -605,45 +591,31 @@ describe('Debug - ANSI escape sequence', () => {
         },
         (green) => {
           expect(green.classList.length).toStrictEqual(1);
-          assert(
-            green.classList.contains('code-bold') === false,
-            'Bold class found after both bold WAS TURNED OFF with 22m',
-          );
+          // 'Bold class found after both bold WAS TURNED OFF with 22m',
+          expect(green.classList).not.toContain('code-bold');
           expect(green.classList).toContain('code-foreground-colored'); // 'Color class not found after color ANSI code.'
         },
         (underline) => {
           expect(underline.classList.length).toStrictEqual(2);
-          assert(
-            underline.classList.contains('code-foreground-colored'),
-            'Color class not found after color and underline ANSI codes.',
-          );
-          assert(
-            underline.classList.contains('code-underline'),
-            'Underline class not found after underline ANSI code.',
-          );
+          // 'Color class not found after color and underline ANSI codes.',
+          expect(underline.classList).toContain('code-foreground-colored');
+          // 'Underline class not found after underline ANSI code.',
+          expect(underline.classList).toContain('code-underline');
         },
         (italic) => {
           expect(italic.classList.length).toStrictEqual(2);
-          assert(
-            italic.classList.contains('code-foreground-colored'),
-            'Color class not found after color, underline, and italic ANSI codes.',
-          );
-          assert(
-            italic.classList.contains('code-underline') === false,
-            'Underline class found after underline WAS TURNED OFF with 24m',
-          );
+          // 'Color class not found after color, underline, and italic ANSI codes.',
+          expect(italic.classList).toContain('code-foreground-colored');
+          // 'Underline class found after underline WAS TURNED OFF with 24m',
+          expect(italic.classList).not.toContain('code-underline');
           expect(italic.classList).toContain('code-italic'); // 'Italic class not found after italic ANSI code.'
         },
         (justgreen) => {
           expect(justgreen.classList.length).toStrictEqual(1);
-          assert(
-            justgreen.classList.contains('code-italic') === false,
-            'Italic class found after italic WAS TURNED OFF with 23m',
-          );
-          assert(
-            justgreen.classList.contains('code-foreground-colored'),
-            'Color class not found after color ANSI code.',
-          );
+          // 'Italic class found after italic WAS TURNED OFF with 23m',
+          expect(justgreen.classList).not.toContain('code-italic');
+          // 'Color class not found after color ANSI code.',
+          expect(justgreen.classList).toContain('code-foreground-colored');
         },
         (nothing) => {
           // One or more style classes still found after reset ANSI code.
@@ -669,37 +641,25 @@ describe('Debug - ANSI escape sequence', () => {
         },
         (slowblink) => {
           expect(slowblink.classList.length).toStrictEqual(2);
-          assert(
-            slowblink.classList.contains('code-foreground-colored'),
-            'Color class not found after color and blink ANSI codes.',
-          );
+          // 'Color class not found after color and blink ANSI codes.',
+          expect(slowblink.classList).toContain('code-foreground-colored');
           expect(slowblink.classList).toContain('code-blink'); // 'Blink class not found after underline ANSI code 5m.'
         },
         (rapidblink) => {
           expect(rapidblink.classList.length).toStrictEqual(2);
-          assert(
-            rapidblink.classList.contains('code-foreground-colored'),
-            'Color class not found after color, blink, and rapid blink ANSI codes.',
-          );
-          assert(
-            rapidblink.classList.contains('code-blink') === false,
-            'blink class found after underline WAS TURNED OFF with 25m',
-          );
-          assert(
-            rapidblink.classList.contains('code-rapid-blink'),
-            'Rapid blink class not found after rapid blink ANSI code 6m.',
-          );
+          // 'Color class not found after color, blink, and rapid blink ANSI codes.',
+          expect(rapidblink.classList).toContain('code-foreground-colored');
+          // 'blink class found after underline WAS TURNED OFF with 25m',
+          expect(rapidblink.classList).not.toContain('code-blink');
+          // 'Rapid blink class not found after rapid blink ANSI code 6m.',
+          expect(rapidblink.classList).toContain('code-rapid-blink');
         },
         (justgreen) => {
           expect(justgreen.classList.length).toStrictEqual(1);
-          assert(
-            justgreen.classList.contains('code-rapid-blink') === false,
-            'Rapid blink class found after rapid blink WAS TURNED OFF with 25m',
-          );
-          assert(
-            justgreen.classList.contains('code-foreground-colored'),
-            'Color class not found after color ANSI code.',
-          );
+          // 'Rapid blink class found after rapid blink WAS TURNED OFF with 25m',
+          expect(justgreen.classList).not.toContain('code-rapid-blink');
+          // 'Color class not found after color ANSI code.',
+          expect(justgreen.classList).toContain('code-foreground-colored');
         },
         (nothing) => {
           // One or more style classes still found after reset ANSI code.
@@ -719,48 +679,32 @@ describe('Debug - ANSI escape sequence', () => {
         },
         (green) => {
           expect(green.classList.length).toStrictEqual(1);
-          assert(
-            green.classList.contains('code-hidden') === false,
-            'Hidden class found after Hidden WAS TURNED OFF with 28m',
-          );
+          // 'Hidden class found after Hidden WAS TURNED OFF with 28m',
+          expect(green.classList).not.toContain('code-hidden');
           expect(green.classList).toContain('code-foreground-colored'); // 'Color class not found after color ANSI code.'
         },
         (crossedout) => {
           expect(crossedout.classList.length).toStrictEqual(2);
-          assert(
-            crossedout.classList.contains('code-foreground-colored'),
-            'Color class not found after color and hidden ANSI codes.',
-          );
-          assert(
-            crossedout.classList.contains('code-strike-through'),
-            'strike-through class not found after crossout/strikethrough ANSI code 9m.',
-          );
+          // 'Color class not found after color and hidden ANSI codes.',
+          expect(crossedout.classList).toContain('code-foreground-colored');
+          // 'strike-through class not found after crossout/strikethrough ANSI code 9m.',
+          expect(crossedout.classList).toContain('code-strike-through');
         },
         (doubleunderline) => {
           expect(doubleunderline.classList.length).toStrictEqual(2);
-          assert(
-            doubleunderline.classList.contains('code-foreground-colored'),
-            'Color class not found after color, hidden, and crossedout ANSI codes.',
-          );
-          assert(
-            doubleunderline.classList.contains('code-strike-through') === false,
-            'strike-through class found after strike-through WAS TURNED OFF with 29m',
-          );
-          assert(
-            doubleunderline.classList.contains('code-double-underline'),
-            'Double underline class not found after double underline ANSI code 21m.',
-          );
+          // 'Color class not found after color, hidden, and crossedout ANSI codes.',
+          expect(doubleunderline.classList).toContain('code-foreground-colored');
+          // 'strike-through class found after strike-through WAS TURNED OFF with 29m',
+          expect(doubleunderline.classList).not.toContain('code-strike-through');
+          // 'Double underline class not found after double underline ANSI code 21m.',
+          expect(doubleunderline.classList).toContain('code-double-underline');
         },
         (justgreen) => {
           expect(justgreen.classList.length).toStrictEqual(1);
-          assert(
-            justgreen.classList.contains('code-double-underline') === false,
-            'Double underline class found after double underline WAS TURNED OFF with 24m',
-          );
-          assert(
-            justgreen.classList.contains('code-foreground-colored'),
-            'Color class not found after color ANSI code.',
-          );
+          // 'Double underline class found after double underline WAS TURNED OFF with 24m',
+          expect(justgreen.classList).not.toContain('code-double-underline');
+          // 'Color class not found after color ANSI code.',
+          expect(justgreen.classList).toContain('code-foreground-colored');
         },
         (nothing) => {
           // One or more style classes still found after reset ANSI code.
@@ -776,20 +720,14 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (underline) => {
           expect(underline.classList.length).toStrictEqual(1);
-          assert(
-            underline.classList.contains('code-underline'),
-            'Underline class not found after underline ANSI code 4m.',
-          );
+          // 'Underline class not found after underline ANSI code 4m.',
+          expect(underline.classList).toContain('code-underline');
         },
         (doubleunderline) => {
-          assert(
-            doubleunderline.classList.contains('code-underline') === false,
-            'Underline class found after double underline code 21m',
-          );
-          assert(
-            doubleunderline.classList.contains('code-double-underline'),
-            'Double underline class not found after double underline code 21m',
-          );
+          // 'Underline class found after double underline code 21m',
+          expect(doubleunderline.classList).not.toContain('code-underline');
+          // 'Double underline class not found after double underline code 21m',
+          expect(doubleunderline.classList).toContain('code-double-underline');
           expect(doubleunderline.classList.length).toStrictEqual(1); // 'should have found only double underline'
         },
         (nothing) => {
@@ -797,21 +735,15 @@ describe('Debug - ANSI escape sequence', () => {
           expect(nothing.classList.length).toStrictEqual(0);
         },
         (doubleunderline) => {
-          assert(
-            doubleunderline.classList.contains('code-double-underline'),
-            'Double underline class not found after double underline code 21m',
-          );
+          // 'Double underline class not found after double underline code 21m',
+          expect(doubleunderline.classList).toContain('code-double-underline');
           expect(doubleunderline.classList.length).toStrictEqual(1); // 'should have found only double underline'
         },
         (underline) => {
-          assert(
-            underline.classList.contains('code-double-underline') === false,
-            'Double underline class found after underline code 4m',
-          );
-          assert(
-            underline.classList.contains('code-underline'),
-            'Underline class not found after underline ANSI code 4m.',
-          );
+          // 'Double underline class found after underline code 4m',
+          expect(underline.classList).not.toContain('code-double-underline');
+          // 'Underline class not found after underline ANSI code 4m.',
+          expect(underline.classList).toContain('code-underline');
           expect(underline.classList.length).toStrictEqual(1); // 'should have found only underline'
         },
         (nothing) => {
@@ -829,66 +761,44 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (underline) => {
           expect(underline.classList.length).toStrictEqual(1); // 'should have found only underline'
-          assert(
-            underline.classList.contains('code-underline'),
-            'Underline class not found after underline ANSI code 4m.',
-          );
+          // 'Underline class not found after underline ANSI code 4m.',
+          expect(underline.classList).toContain('code-underline');
         },
         (strikethrough) => {
-          assert(
-            strikethrough.classList.contains('code-underline'),
-            'Underline class NOT found after strikethrough code 9m',
-          );
-          assert(
-            strikethrough.classList.contains('code-strike-through'),
-            'Strike through class not found after strikethrough code 9m',
-          );
+          // 'Underline class NOT found after strikethrough code 9m',
+          expect(strikethrough.classList).toContain('code-underline');
+          // 'Strike through class not found after strikethrough code 9m',
+          expect(strikethrough.classList).toContain('code-strike-through');
           expect(strikethrough.classList.length).toStrictEqual(2); // 'should have found underline and strikethrough'
         },
         (overline) => {
           expect(overline.classList).toContain('code-underline'); // 'Underline class NOT found after overline code 53m'
-          assert(
-            overline.classList.contains('code-strike-through'),
-            'Strike through class not found after overline code 53m',
-          );
+          // 'Strike through class not found after overline code 53m',
+          expect(overline.classList).toContain('code-strike-through');
           expect(overline.classList).toContain('code-overline'); // 'Overline class not found after overline code 53m'
           expect(overline.classList.length).toStrictEqual(3); // 'should have found underline,strikethrough and overline'
         },
         (underlineoff) => {
-          assert(
-            underlineoff.classList.contains('code-underline') === false,
-            'Underline class found after underline off code 24m',
-          );
-          assert(
-            underlineoff.classList.contains('code-strike-through'),
-            'Strike through class not found after underline off code 24m',
-          );
-          assert(
-            underlineoff.classList.contains('code-overline'),
-            'Overline class not found after underline off code 24m',
-          );
+          // 'Underline class found after underline off code 24m',
+          expect(underlineoff.classList).not.toContain('code-underline');
+          // 'Strike through class not found after underline off code 24m',
+          expect(underlineoff.classList).toContain('code-strike-through');
+          // 'Overline class not found after underline off code 24m',
+          expect(underlineoff.classList).toContain('code-overline');
           expect(underlineoff.classList.length).toStrictEqual(2); // 'should have found strikethrough and overline'
         },
         (overlineoff) => {
-          assert(
-            overlineoff.classList.contains('code-underline') === false,
-            'Underline class found after overline off code 55m',
-          );
-          assert(
-            overlineoff.classList.contains('code-overline') === false,
-            'Overline class found after overline off code 55m',
-          );
-          assert(
-            overlineoff.classList.contains('code-strike-through'),
-            'Strike through class not found after overline off code 55m',
-          );
+          // 'Underline class found after overline off code 55m',
+          expect(overlineoff.classList).not.toContain('code-underline');
+          // 'Overline class found after overline off code 55m',
+          expect(overlineoff.classList).not.toContain('code-overline');
+          // 'Strike through class not found after overline off code 55m',
+          expect(overlineoff.classList).toContain('code-strike-through');
           expect(overlineoff.classList.length).toStrictEqual(1); // 'should have found only strikethrough'
         },
         (nothing) => {
-          assert(
-            nothing.classList.contains('code-strike-through') === false,
-            'Strike through class found after strikethrough off code 29m',
-          );
+          // 'Strike through class found after strikethrough off code 29m',
+          expect(nothing.classList).not.toContain('code-strike-through');
           // 'One or more style classes still found after strikethough OFF code 29m',
           expect(nothing.classList.length).toStrictEqual(0);
         },
@@ -903,70 +813,46 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (doubleunderline) => {
           expect(doubleunderline.classList.length).toStrictEqual(1); // 'should have found only doubleunderline'
-          assert(
-            doubleunderline.classList.contains('code-double-underline'),
-            'Double underline class not found after double underline ANSI code 21m.',
-          );
+          // 'Double underline class not found after double underline ANSI code 21m.',
+          expect(doubleunderline.classList).toContain('code-double-underline');
         },
         (strikethrough) => {
-          assert(
-            strikethrough.classList.contains('code-double-underline'),
-            'Double nderline class NOT found after strikethrough code 9m',
-          );
-          assert(
-            strikethrough.classList.contains('code-strike-through'),
-            'Strike through class not found after strikethrough code 9m',
-          );
+          // 'Double nderline class NOT found after strikethrough code 9m',
+          expect(strikethrough.classList).toContain('code-double-underline');
+          // 'Strike through class not found after strikethrough code 9m',
+          expect(strikethrough.classList).toContain('code-strike-through');
           expect(strikethrough.classList.length).toStrictEqual(2); // 'should have found doubleunderline and strikethrough'
         },
         (overline) => {
-          assert(
-            overline.classList.contains('code-double-underline'),
-            'Double underline class NOT found after overline code 53m',
-          );
-          assert(
-            overline.classList.contains('code-strike-through'),
-            'Strike through class not found after overline code 53m',
-          );
+          // 'Double underline class NOT found after overline code 53m',
+          expect(overline.classList).toContain('code-double-underline');
+          // 'Strike through class not found after overline code 53m',
+          expect(overline.classList).toContain('code-strike-through');
           expect(overline.classList).toContain('code-overline'); // 'Overline class not found after overline code 53m'
           // 'should have found doubleunderline,overline and strikethrough',
           expect(overline.classList.length).toStrictEqual(3);
         },
         (strikethrougheoff) => {
-          assert(
-            strikethrougheoff.classList.contains('code-double-underline'),
-            'Double underline class NOT found after strikethrough off code 29m',
-          );
-          assert(
-            strikethrougheoff.classList.contains('code-overline'),
-            'Overline class NOT found after strikethrough off code 29m',
-          );
-          assert(
-            strikethrougheoff.classList.contains('code-strike-through') === false,
-            'Strike through class found after strikethrough off code 29m',
-          );
+          // 'Double underline class NOT found after strikethrough off code 29m',
+          expect(strikethrougheoff.classList).toContain('code-double-underline');
+          // 'Overline class NOT found after strikethrough off code 29m',
+          expect(strikethrougheoff.classList).toContain('code-overline');
+          // 'Strike through class found after strikethrough off code 29m',
+          expect(strikethrougheoff.classList).not.toContain('code-strike-through');
           expect(strikethrougheoff.classList.length).toStrictEqual(2); // 'should have found doubleunderline and overline'
         },
         (overlineoff) => {
-          assert(
-            overlineoff.classList.contains('code-double-underline'),
-            'Double underline class NOT found after overline off code 55m',
-          );
-          assert(
-            overlineoff.classList.contains('code-strike-through') === false,
-            'Strike through class found after overline off code 55m',
-          );
-          assert(
-            overlineoff.classList.contains('code-overline') === false,
-            'Overline class found after overline off code 55m',
-          );
+          // 'Double underline class NOT found after overline off code 55m',
+          expect(overlineoff.classList).toContain('code-double-underline');
+          // 'Strike through class found after overline off code 55m',
+          expect(overlineoff.classList).not.toContain('code-strike-through');
+          // 'Overline class found after overline off code 55m',
+          expect(overlineoff.classList).not.toContain('code-overline');
           expect(overlineoff.classList.length).toStrictEqual(1); // 'Should have found only double underline'
         },
         (nothing) => {
-          assert(
-            nothing.classList.contains('code-double-underline') === false,
-            'Double underline class found after underline off code 24m',
-          );
+          // 'Double underline class found after underline off code 24m',
+          expect(nothing.classList).not.toContain('code-double-underline');
           // 'One or more style classes still found after underline OFF code 24m',
           expect(nothing.classList.length).toStrictEqual(0);
         },
@@ -980,16 +866,12 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (superscript) => {
           expect(superscript.classList.length).toStrictEqual(1); // 'should only be superscript class'
-          assert(
-            superscript.classList.contains('code-superscript'),
-            'Superscript class not found after superscript ANSI code 73m.',
-          );
+          // 'Superscript class not found after superscript ANSI code 73m.',
+          expect(superscript.classList).toContain('code-superscript');
         },
         (subscript) => {
-          assert(
-            subscript.classList.contains('code-superscript') === false,
-            'Superscript class found after subscript code 74m',
-          );
+          // 'Superscript class found after subscript code 74m',
+          expect(subscript.classList).not.toContain('code-superscript');
           expect(subscript.classList).toContain('code-subscript'); // 'Subscript class not found after subscript code 74m'
           expect(subscript.classList.length).toStrictEqual(1); // 'should have found only subscript class'
         },
@@ -1002,14 +884,10 @@ describe('Debug - ANSI escape sequence', () => {
           expect(subscript.classList.length).toStrictEqual(1); // 'should have found only subscript class'
         },
         (superscript) => {
-          assert(
-            superscript.classList.contains('code-subscript') === false,
-            'Subscript class found after superscript code 73m',
-          );
-          assert(
-            superscript.classList.contains('code-superscript'),
-            'Superscript class not found after superscript ANSI code 73m.',
-          );
+          // 'Subscript class found after superscript code 73m',
+          expect(superscript.classList).not.toContain('code-subscript');
+          // 'Superscript class not found after superscript ANSI code 73m.',
+          expect(superscript.classList).toContain('code-superscript');
           expect(superscript.classList.length).toStrictEqual(1); // 'should have found only superscript class'
         },
         (nothing) => {
@@ -1026,54 +904,36 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (font1) => {
           expect(font1.classList.length).toStrictEqual(1);
-          assert(
-            font1.classList.contains('code-font-1'),
-            'font 1 class NOT found after switch to font 1 with ANSI code 11m',
-          );
+          // 'font 1 class NOT found after switch to font 1 with ANSI code 11m',
+          expect(font1.classList).toContain('code-font-1');
         },
         (font2) => {
           expect(font2.classList.length).toStrictEqual(1);
-          assert(
-            font2.classList.contains('code-font-1') === false,
-            'font 1 class found after switch to font 2 with ANSI code 12m',
-          );
-          assert(
-            font2.classList.contains('code-font-2'),
-            'font 2 class NOT found after switch to font 2 with ANSI code 12m',
-          );
+          // 'font 1 class found after switch to font 2 with ANSI code 12m',
+          expect(font2.classList).not.toContain('code-font-1');
+          // 'font 2 class NOT found after switch to font 2 with ANSI code 12m',
+          expect(font2.classList).toContain('code-font-2');
         },
         (font3) => {
           expect(font3.classList.length).toStrictEqual(1);
-          assert(
-            font3.classList.contains('code-font-2') === false,
-            'font 2 class found after switch to font 3 with ANSI code 13m',
-          );
-          assert(
-            font3.classList.contains('code-font-3'),
-            'font 3 class NOT found after switch to font 3 with ANSI code 13m',
-          );
+          // 'font 2 class found after switch to font 3 with ANSI code 13m',
+          expect(font3.classList).not.toContain('code-font-2');
+          // 'font 3 class NOT found after switch to font 3 with ANSI code 13m',
+          expect(font3.classList).toContain('code-font-3');
         },
         (font4) => {
           expect(font4.classList.length).toStrictEqual(1);
-          assert(
-            font4.classList.contains('code-font-3') === false,
-            'font 3 class found after switch to font 4 with ANSI code 14m',
-          );
-          assert(
-            font4.classList.contains('code-font-4'),
-            'font 4 class NOT found after switch to font 4 with ANSI code 14m',
-          );
+          // 'font 3 class found after switch to font 4 with ANSI code 14m',
+          expect(font4.classList).not.toContain('code-font-3');
+          // 'font 4 class NOT found after switch to font 4 with ANSI code 14m',
+          expect(font4.classList).toContain('code-font-4');
         },
         (font5) => {
           expect(font5.classList.length).toStrictEqual(1);
-          assert(
-            font5.classList.contains('code-font-4') === false,
-            'font 4 class found after switch to font 5 with ANSI code 15m',
-          );
-          assert(
-            font5.classList.contains('code-font-5'),
-            'font 5 class NOT found after switch to font 5 with ANSI code 15m',
-          );
+          // 'font 4 class found after switch to font 5 with ANSI code 15m',
+          expect(font5.classList).not.toContain('code-font-4');
+          // 'font 5 class NOT found after switch to font 5 with ANSI code 15m',
+          expect(font5.classList).toContain('code-font-5');
         },
         (defaultfont) => {
           // 'One or more font style classes still found after reset to default font with ANSI code 10m.',
@@ -1089,54 +949,36 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (font6) => {
           expect(font6.classList.length).toStrictEqual(1);
-          assert(
-            font6.classList.contains('code-font-6'),
-            'font 6 class NOT found after switch to font 6 with ANSI code 16m',
-          );
+          // 'font 6 class NOT found after switch to font 6 with ANSI code 16m',
+          expect(font6.classList).toContain('code-font-6');
         },
         (font7) => {
           expect(font7.classList.length).toStrictEqual(1);
-          assert(
-            font7.classList.contains('code-font-6') === false,
-            'font 6 class found after switch to font 7 with ANSI code 17m',
-          );
-          assert(
-            font7.classList.contains('code-font-7'),
-            'font 7 class NOT found after switch to font 7 with ANSI code 17m',
-          );
+          // 'font 6 class found after switch to font 7 with ANSI code 17m',
+          expect(font7.classList).not.toContain('code-font-6');
+          // 'font 7 class NOT found after switch to font 7 with ANSI code 17m',
+          expect(font7.classList).toContain('code-font-7');
         },
         (font8) => {
           expect(font8.classList.length).toStrictEqual(1);
-          assert(
-            font8.classList.contains('code-font-7') === false,
-            'font 7 class found after switch to font 8 with ANSI code 18m',
-          );
-          assert(
-            font8.classList.contains('code-font-8'),
-            'font 8 class NOT found after switch to font 8 with ANSI code 18m',
-          );
+          // 'font 7 class found after switch to font 8 with ANSI code 18m',
+          expect(font8.classList).not.toContain('code-font-7');
+          // 'font 8 class NOT found after switch to font 8 with ANSI code 18m',
+          expect(font8.classList).toContain('code-font-8');
         },
         (font9) => {
           expect(font9.classList.length).toStrictEqual(1);
-          assert(
-            font9.classList.contains('code-font-8') === false,
-            'font 8 class found after switch to font 9 with ANSI code 19m',
-          );
-          assert(
-            font9.classList.contains('code-font-9'),
-            'font 9 class NOT found after switch to font 9 with ANSI code 19m',
-          );
+          // 'font 8 class found after switch to font 9 with ANSI code 19m',
+          expect(font9.classList).not.toContain('code-font-8');
+          // 'font 9 class NOT found after switch to font 9 with ANSI code 19m',
+          expect(font9.classList).toContain('code-font-9');
         },
         (font10) => {
           expect(font10.classList.length).toStrictEqual(1);
-          assert(
-            font10.classList.contains('code-font-9') === false,
-            'font 9 class found after switch to font 10 with ANSI code 20m',
-          );
-          assert(
-            font10.classList.contains('code-font-10'),
-            `font 10 class NOT found after switch to font 10 with ANSI code 20m (${font10.classList})`,
-          );
+          // 'font 9 class found after switch to font 10 with ANSI code 20m',
+          expect(font10.classList).not.toContain('code-font-9');
+          // `font 10 class NOT found after switch to font 10 with ANSI code 20m (${font10.classList})`,
+          expect(font10.classList).toContain('code-font-10');
         },
         (defaultfont) => {
           // 'One or more font style classes (2nd series) still found after reset to default font with ANSI code 10m.',
@@ -1156,14 +998,10 @@ describe('Debug - ANSI escape sequence', () => {
         },
         (font10) => {
           expect(font10.classList.length).toStrictEqual(2);
-          assert(
-            font10.classList.contains('code-italic'),
-            'no itatic class found after switch to font 10 (blackletter) with ANSI code 20m',
-          );
-          assert(
-            font10.classList.contains('code-font-10'),
-            'font 10 class NOT found after switch to font 10 with ANSI code 20m',
-          );
+          // 'no itatic class found after switch to font 10 (blackletter) with ANSI code 20m',
+          expect(font10.classList).toContain('code-italic');
+          // 'font 10 class NOT found after switch to font 10 with ANSI code 20m',
+          expect(font10.classList).toContain('code-font-10');
         },
         (italicAndBlackletterOff) => {
           // 'italic or blackletter (font10) class found after both switched off with ANSI code 23m',
@@ -1171,21 +1009,15 @@ describe('Debug - ANSI escape sequence', () => {
         },
         (font10) => {
           expect(font10.classList.length).toStrictEqual(1);
-          assert(
-            font10.classList.contains('code-font-10'),
-            'font 10 class NOT found after switch to font 10 with ANSI code 20m',
-          );
+          // 'font 10 class NOT found after switch to font 10 with ANSI code 20m',
+          expect(font10.classList).toContain('code-font-10');
         },
         (font1) => {
           expect(font1.classList.length).toStrictEqual(1);
-          assert(
-            font1.classList.contains('code-font-10') === false,
-            'font 10 class found after switch to font 1 with ANSI code 11m',
-          );
-          assert(
-            font1.classList.contains('code-font-1'),
-            'font 1 class NOT found after switch to font 1 with ANSI code 11m',
-          );
+          // 'font 10 class found after switch to font 1 with ANSI code 11m',
+          expect(font1.classList).not.toContain('code-font-10');
+          // 'font 1 class NOT found after switch to font 1 with ANSI code 11m',
+          expect(font1.classList).toContain('code-font-1');
         },
         (defaultfont) => {
           // 'One or more font style classes (2nd series) still found after reset to default font with ANSI code 10m.',
@@ -1205,27 +1037,19 @@ describe('Debug - ANSI escape sequence', () => {
         },
         (font10) => {
           expect(font10.classList.length).toStrictEqual(2);
-          assert(
-            font10.classList.contains('code-italic'),
-            'no itatic class found after switch to font 2 with ANSI code 12m',
-          );
-          assert(
-            font10.classList.contains('code-font-2'),
-            'font 2 class NOT found after switch to font 2 with ANSI code 12m',
-          );
+          // 'no itatic class found after switch to font 2 with ANSI code 12m',
+          expect(font10.classList).toContain('code-italic');
+          // 'font 2 class NOT found after switch to font 2 with ANSI code 12m',
+          expect(font10.classList).toContain('code-font-2');
         },
         (italicOff) => {
           // 'italic class found after both switched off with ANSI code 23m',
           expect(italicOff.classList.length).toStrictEqual(1);
 
-          assert(
-            italicOff.classList.contains('code-italic') === false,
-            'itatic class found after switching it OFF with ANSI code 23m',
-          );
-          assert(
-            italicOff.classList.contains('code-font-2'),
-            'font 2 class NOT found after switching italic off with ANSI code 23m',
-          );
+          // 'itatic class found after switching it OFF with ANSI code 23m',
+          expect(italicOff.classList).not.toContain('code-italic');
+          // 'font 2 class NOT found after switching italic off with ANSI code 23m',
+          expect(italicOff.classList).toContain('code-font-2');
         },
         (italicFont2) => {
           expect(italicFont2.classList.length).toStrictEqual(2);
@@ -1234,14 +1058,10 @@ describe('Debug - ANSI escape sequence', () => {
         },
         (justitalic) => {
           expect(justitalic.classList.length).toStrictEqual(1);
-          assert(
-            justitalic.classList.contains('code-font-2') === false,
-            'font 2 class found after switch to default font with ANSI code 10m',
-          );
-          assert(
-            justitalic.classList.contains('code-italic'),
-            'italic class NOT found after switch to default font with ANSI code 10m',
-          );
+          // 'font 2 class found after switch to default font with ANSI code 10m',
+          expect(justitalic.classList).not.toContain('code-font-2');
+          // 'italic class NOT found after switch to default font with ANSI code 10m',
+          expect(justitalic.classList).toContain('code-italic');
         },
         (nothing) => {
           // 'One or more classes still found after final italic removal with ANSI code 23m.',
@@ -1257,10 +1077,8 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (fg10_20_30) => {
           expect(fg10_20_30.classList.length).toStrictEqual(1); // 'Foreground ANSI color code should add one class.'
-          assert(
-            fg10_20_30.classList.contains('code-foreground-colored'),
-            'Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Foreground ANSI color codes should add custom foreground color class.',
+          expect(fg10_20_30.classList).toContain('code-foreground-colored');
           assertInlineColor(
             fg10_20_30,
             'foreground',
@@ -1272,20 +1090,16 @@ describe('Debug - ANSI escape sequence', () => {
           // 'background ANSI color codes should only add a single class.',
           expect(bg167_168_169.classList.length).toStrictEqual(2);
 
-          assert(
-            bg167_168_169.classList.contains('code-background-colored'),
-            'Background ANSI color codes should add custom background color class.',
-          );
+          // 'Background ANSI color codes should add custom background color class.',
+          expect(bg167_168_169.classList).toContain('code-background-colored');
           assertInlineColor(
             bg167_168_169,
             'background',
             new RGBA(167, 168, 169),
             '24-bit RGBA ANSI background color code (167,168,169) should add matching color inline style.',
           );
-          assert(
-            bg167_168_169.classList.contains('code-foreground-colored'),
-            'Still Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Still Foreground ANSI color codes should add custom foreground color class.',
+          expect(bg167_168_169.classList).toContain('code-foreground-colored');
           assertInlineColor(
             bg167_168_169,
             'foreground',
@@ -1296,20 +1110,16 @@ describe('Debug - ANSI escape sequence', () => {
         (reverseVideo) => {
           // 'background ANSI color codes should only add a single class.',
           expect(reverseVideo.classList.length).toStrictEqual(2);
-          assert(
-            reverseVideo.classList.contains('code-background-colored'),
-            'Background ANSI color codes should add custom background color class.',
-          );
+          // 'Background ANSI color codes should add custom background color class.',
+          expect(reverseVideo.classList).toContain('code-background-colored');
           assertInlineColor(
             reverseVideo,
             'foreground',
             new RGBA(167, 168, 169),
             'Reversed 24-bit RGBA ANSI foreground color code (167,168,169) should add matching former background color inline style.',
           );
-          assert(
-            reverseVideo.classList.contains('code-foreground-colored'),
-            'Still Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Still Foreground ANSI color codes should add custom foreground color class.',
+          expect(reverseVideo.classList).toContain('code-foreground-colored');
           assertInlineColor(
             reverseVideo,
             'background',
@@ -1320,20 +1130,16 @@ describe('Debug - ANSI escape sequence', () => {
         (dupReverseVideo) => {
           // 'After second Reverse Video - background ANSI color codes should only add a single class.',
           expect(dupReverseVideo.classList.length).toStrictEqual(2);
-          assert(
-            dupReverseVideo.classList.contains('code-background-colored'),
-            'After second Reverse Video - Background ANSI color codes should add custom background color class.',
-          );
+          // 'After second Reverse Video - Background ANSI color codes should add custom background color class.',
+          expect(dupReverseVideo.classList).toContain('code-background-colored');
           assertInlineColor(
             dupReverseVideo,
             'foreground',
             new RGBA(167, 168, 169),
             'After second Reverse Video - Reversed 24-bit RGBA ANSI foreground color code (167,168,169) should add matching former background color inline style.',
           );
-          assert(
-            dupReverseVideo.classList.contains('code-foreground-colored'),
-            'After second Reverse Video - Still Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'After second Reverse Video - Still Foreground ANSI color codes should add custom foreground color class.',
+          expect(dupReverseVideo.classList).toContain('code-foreground-colored');
           assertInlineColor(
             dupReverseVideo,
             'background',
@@ -1344,20 +1150,16 @@ describe('Debug - ANSI escape sequence', () => {
         (reversedBack) => {
           // 'Reversed Back - background ANSI color codes should only add a single class.',
           expect(reversedBack.classList.length).toStrictEqual(2);
-          assert(
-            reversedBack.classList.contains('code-background-colored'),
-            'Reversed Back - Background ANSI color codes should add custom background color class.',
-          );
+          // 'Reversed Back - Background ANSI color codes should add custom background color class.',
+          expect(reversedBack.classList).toContain('code-background-colored');
           assertInlineColor(
             reversedBack,
             'background',
             new RGBA(167, 168, 169),
             'Reversed Back - 24-bit RGBA ANSI background color code (167,168,169) should add matching color inline style.',
           );
-          assert(
-            reversedBack.classList.contains('code-foreground-colored'),
-            'Reversed Back -  Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Reversed Back -  Foreground ANSI color codes should add custom foreground color class.',
+          expect(reversedBack.classList).toContain('code-foreground-colored');
           assertInlineColor(
             reversedBack,
             'foreground',
@@ -1369,20 +1171,16 @@ describe('Debug - ANSI escape sequence', () => {
           // '2nd Reversed Back - background ANSI color codes should only add a single class.',
           expect(dupReversedBack.classList.length).toStrictEqual(2);
 
-          assert(
-            dupReversedBack.classList.contains('code-background-colored'),
-            '2nd Reversed Back - Background ANSI color codes should add custom background color class.',
-          );
+          // '2nd Reversed Back - Background ANSI color codes should add custom background color class.',
+          expect(dupReversedBack.classList).toContain('code-background-colored');
           assertInlineColor(
             dupReversedBack,
             'background',
             new RGBA(167, 168, 169),
             '2nd Reversed Back - 24-bit RGBA ANSI background color code (167,168,169) should add matching color inline style.',
           );
-          assert(
-            dupReversedBack.classList.contains('code-foreground-colored'),
-            '2nd Reversed Back -  Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // '2nd Reversed Back -  Foreground ANSI color codes should add custom foreground color class.',
+          expect(dupReversedBack.classList).toContain('code-foreground-colored');
           assertInlineColor(
             dupReversedBack,
             'foreground',
@@ -1400,10 +1198,8 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (fg10_20_30) => {
           expect(fg10_20_30.classList.length).toStrictEqual(1); // 'Foreground ANSI color code should add one class.'
-          assert(
-            fg10_20_30.classList.contains('code-foreground-colored'),
-            'Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Foreground ANSI color codes should add custom foreground color class.',
+          expect(fg10_20_30.classList).toContain('code-foreground-colored');
           assertInlineColor(
             fg10_20_30,
             'foreground',
@@ -1415,14 +1211,10 @@ describe('Debug - ANSI escape sequence', () => {
           // 'Background ANSI color codes should only add a single class.',
           expect(reverseVideo.classList.length).toStrictEqual(1);
 
-          assert(
-            reverseVideo.classList.contains('code-background-colored'),
-            'Background ANSI color codes should add custom background color class.',
-          );
-          assert(
-            reverseVideo.classList.contains('code-foreground-colored') === false,
-            'After Reverse with NO background the Foreground ANSI color codes should NOT BE SET.',
-          );
+          // 'Background ANSI color codes should add custom background color class.',
+          expect(reverseVideo.classList).toContain('code-background-colored');
+          // 'After Reverse with NO background the Foreground ANSI color codes should NOT BE SET.',
+          expect(reverseVideo.classList).not.toContain('code-foreground-colored');
           assertInlineColor(
             reverseVideo,
             'background',
@@ -1434,14 +1226,10 @@ describe('Debug - ANSI escape sequence', () => {
           // 'Reversed Back - background ANSI color codes should only add a single class.',
           expect(reversedBack.classList.length).toStrictEqual(1);
 
-          assert(
-            reversedBack.classList.contains('code-background-colored') === false,
-            'AFTER Reversed Back - Background ANSI color should NOT BE SET.',
-          );
-          assert(
-            reversedBack.classList.contains('code-foreground-colored'),
-            'Reversed Back -  Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'AFTER Reversed Back - Background ANSI color should NOT BE SET.',
+          expect(reversedBack.classList).not.toContain('code-background-colored');
+          // 'Reversed Back -  Foreground ANSI color codes should add custom foreground color class.',
+          expect(reversedBack.classList).toContain('code-foreground-colored');
           assertInlineColor(
             reversedBack,
             'foreground',
@@ -1459,10 +1247,8 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (bg167_168_169) => {
           expect(bg167_168_169.classList.length).toStrictEqual(1); // 'Background ANSI color code should add one class.'
-          assert(
-            bg167_168_169.classList.contains('code-background-colored'),
-            'Background ANSI color codes should add custom foreground color class.',
-          );
+          // 'Background ANSI color codes should add custom foreground color class.',
+          expect(bg167_168_169.classList).toContain('code-background-colored');
           assertInlineColor(
             bg167_168_169,
             'background',
@@ -1474,14 +1260,10 @@ describe('Debug - ANSI escape sequence', () => {
           // 'After ReverseVideo Foreground ANSI color codes should only add a single class.',
           expect(reverseVideo.classList.length).toStrictEqual(1);
 
-          assert(
-            reverseVideo.classList.contains('code-foreground-colored'),
-            'After ReverseVideo Foreground ANSI color codes should add custom background color class.',
-          );
-          assert(
-            reverseVideo.classList.contains('code-background-colored') === false,
-            'After Reverse with NO foreground color the background ANSI color codes should BE SET.',
-          );
+          // 'After ReverseVideo Foreground ANSI color codes should add custom background color class.',
+          expect(reverseVideo.classList).toContain('code-foreground-colored');
+          // 'After Reverse with NO foreground color the background ANSI color codes should BE SET.',
+          expect(reverseVideo.classList).not.toContain('code-background-colored');
           assertInlineColor(
             reverseVideo,
             'foreground',
@@ -1493,14 +1275,10 @@ describe('Debug - ANSI escape sequence', () => {
           // 'Reversed Back - background ANSI color codes should only add a single class.',
           expect(reversedBack.classList.length).toStrictEqual(1);
 
-          assert(
-            reversedBack.classList.contains('code-foreground-colored') === false,
-            'AFTER Reversed Back - Foreground ANSI color should NOT BE SET.',
-          );
-          assert(
-            reversedBack.classList.contains('code-background-colored'),
-            'Reversed Back -  Background ANSI color codes should add custom background color class.',
-          );
+          // 'AFTER Reversed Back - Foreground ANSI color should NOT BE SET.',
+          expect(reversedBack.classList).not.toContain('code-foreground-colored');
+          // 'Reversed Back -  Background ANSI color codes should add custom background color class.',
+          expect(reversedBack.classList).toContain('code-background-colored');
           assertInlineColor(
             reversedBack,
             'background',
@@ -1519,10 +1297,8 @@ describe('Debug - ANSI escape sequence', () => {
         (adv24Bit) => {
           // 'Underline ANSI color codes should only add a single class (1).',
           expect(adv24Bit.classList.length).toStrictEqual(1);
-          assert(
-            adv24Bit.classList.contains('code-underline-colored'),
-            'Underline ANSI color codes should add custom underline color class.',
-          );
+          // 'Underline ANSI color codes should add custom underline color class.',
+          expect(adv24Bit.classList).toContain('code-underline-colored');
           assertInlineColor(
             adv24Bit,
             'underline',
@@ -1534,10 +1310,8 @@ describe('Debug - ANSI escape sequence', () => {
           // 'Multiple underline ANSI color codes should only add a single class (2).',
           expect(adv8BitSimple.classList.length).toStrictEqual(1);
 
-          assert(
-            adv8BitSimple.classList.contains('code-underline-colored'),
-            'Underline ANSI color codes should add custom underline color class.',
-          );
+          // 'Underline ANSI color codes should add custom underline color class.',
+          expect(adv8BitSimple.classList).toContain('code-underline-colored');
           // changed to simple theme color, don't know exactly what it should be, but it should NO LONGER BE 101,102,103
           assertInlineColor(
             adv8BitSimple,
@@ -1550,10 +1324,8 @@ describe('Debug - ANSI escape sequence', () => {
         (adv24BitAgain) => {
           // 'Multiple underline ANSI color codes should only add a single class (3).',
           expect(adv24BitAgain.classList.length).toStrictEqual(1);
-          assert(
-            adv24BitAgain.classList.contains('code-underline-colored'),
-            'Underline ANSI color codes should add custom underline color class.',
-          );
+          // 'Underline ANSI color codes should add custom underline color class.',
+          expect(adv24BitAgain.classList).toContain('code-underline-colored');
           assertInlineColor(
             adv24BitAgain,
             'underline',
@@ -1564,10 +1336,8 @@ describe('Debug - ANSI escape sequence', () => {
         (adv8BitAdvanced) => {
           // 'Multiple underline ANSI color codes should only add a single class (4).',
           expect(adv8BitAdvanced.classList.length).toStrictEqual(1);
-          assert(
-            adv8BitAdvanced.classList.contains('code-underline-colored'),
-            'Underline ANSI color codes should add custom underline color class.',
-          );
+          // 'Underline ANSI color codes should add custom underline color class.',
+          expect(adv8BitAdvanced.classList).toContain('code-underline-colored');
           // changed to 8bit advanced color, don't know exactly what it should be, but it should NO LONGER BE 104,105,106
           assertInlineColor(
             adv8BitAdvanced,
@@ -1580,11 +1350,8 @@ describe('Debug - ANSI escape sequence', () => {
         (adv24BitUnderlin200) => {
           // 'Multiple underline ANSI color codes should only add a single class 4.',
           expect(adv24BitUnderlin200.classList.length).toStrictEqual(1);
-
-          assert(
-            adv24BitUnderlin200.classList.contains('code-underline-colored'),
-            'Underline ANSI color codes should add custom underline color class.',
-          );
+          // 'Underline ANSI color codes should add custom underline color class.',
+          expect(adv24BitUnderlin200.classList).toContain('code-underline-colored');
           assertInlineColor(
             adv24BitUnderlin200,
             'underline',
@@ -1612,19 +1379,15 @@ describe('Debug - ANSI escape sequence', () => {
       [
         (simple) => {
           expect(simple.classList.length).toStrictEqual(1); // 'Foreground ANSI color code should add one class.'
-          assert(
-            simple.classList.contains('code-foreground-colored'),
-            'Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Foreground ANSI color codes should add custom foreground color class.',
+          expect(simple.classList).toContain('code-foreground-colored');
         },
         (adv24Bit) => {
           // 'Multiple foreground ANSI color codes should only add a single class.',
           expect(adv24Bit.classList.length).toStrictEqual(1);
 
-          assert(
-            adv24Bit.classList.contains('code-foreground-colored'),
-            'Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Foreground ANSI color codes should add custom foreground color class.',
+          expect(adv24Bit.classList).toContain('code-foreground-colored');
           assertInlineColor(
             adv24Bit,
             'foreground',
@@ -1635,10 +1398,8 @@ describe('Debug - ANSI escape sequence', () => {
         (adv8BitSimple) => {
           // 'Multiple foreground ANSI color codes should only add a single class.',
           expect(adv8BitSimple.classList.length).toStrictEqual(1);
-          assert(
-            adv8BitSimple.classList.contains('code-foreground-colored'),
-            'Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Foreground ANSI color codes should add custom foreground color class.',
+          expect(adv8BitSimple.classList).toContain('code-foreground-colored');
           // color is theme based, so we can't check what it should be but we know it should NOT BE 101,102,103 anymore
           assertInlineColor(
             adv8BitSimple,
@@ -1651,10 +1412,8 @@ describe('Debug - ANSI escape sequence', () => {
         (adv24BitAgain) => {
           // 'Multiple foreground ANSI color codes should only add a single class.',
           expect(adv24BitAgain.classList.length).toStrictEqual(1);
-          assert(
-            adv24BitAgain.classList.contains('code-foreground-colored'),
-            'Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Foreground ANSI color codes should add custom foreground color class.',
+          expect(adv24BitAgain.classList).toContain('code-foreground-colored');
           assertInlineColor(
             adv24BitAgain,
             'foreground',
@@ -1665,11 +1424,8 @@ describe('Debug - ANSI escape sequence', () => {
         (adv8BitAdvanced) => {
           // 'Multiple foreground ANSI color codes should only add a single class.'
           expect(adv8BitAdvanced.classList.length).toStrictEqual(1);
-
-          assert(
-            adv8BitAdvanced.classList.contains('code-foreground-colored'),
-            'Foreground ANSI color codes should add custom foreground color class.',
-          );
+          // 'Foreground ANSI color codes should add custom foreground color class.',
+          expect(adv8BitAdvanced.classList).toContain('code-foreground-colored');
           // color should NO LONGER BE 104,105,106
           assertInlineColor(
             adv8BitAdvanced,
@@ -1692,7 +1448,7 @@ describe('Debug - ANSI escape sequence', () => {
    */
   async function assertSequencestrictEqualToContent(sequence: string): Promise<void> {
     const child: HTMLSpanElement = await getSequenceOutput(sequence);
-    assert(child.textContent === sequence);
+    expect(child.textContent).toStrictEqual(sequence);
   }
 
   test('Invalid codes treated as regular text', async () => {
