@@ -21,7 +21,7 @@ describe(`test ${__filename} on Electron env`, () => {
     minimizeWindow: jest.fn(),
   };
 
-  beforeEach(() => {
+  beforeAll(() => {
     (global as any).isElectronRenderer = true;
     injector = createBrowserInjector([]);
     injector.overrideProviders(
@@ -46,7 +46,7 @@ describe(`test ${__filename} on Electron env`, () => {
     windowService = injector.get(IWindowService);
   });
 
-  afterEach(() => {
+  afterAll(() => {
     (global as any).isElectronRenderer = false;
     injector.disposeAll();
   });
