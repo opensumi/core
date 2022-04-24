@@ -132,8 +132,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private refreshThrottler: Throttler = new Throttler();
   private fileEventRefreshResolver;
 
-  private refreshCancelToken = new CancellationTokenSource();
-
   private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
   private readonly onTreeIndentChangeEmitter = new Emitter<ITreeIndent>();
   private readonly onFilterModeChangeEmitter = new Emitter<boolean>();
@@ -249,10 +247,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   initContextKey(dom: HTMLDivElement) {
     this.fileContextKey.initScopedContext(dom);
-  }
-
-  public cancelRefresh() {
-    this.refreshCancelToken.cancel();
   }
 
   public startWatchFileEvent() {

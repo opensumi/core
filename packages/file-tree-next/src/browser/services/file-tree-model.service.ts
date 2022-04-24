@@ -745,24 +745,7 @@ export class FileTreeModelService {
   }
 
   handleTreeHandler(handle: IFileTreeHandle) {
-    this._fileTreeHandle = new Proxy(handle, {
-      get: (target, prop: string | symbol) => {
-        if (
-          prop === 'promptNewTreeNode' ||
-          prop === 'promptNewCompositeTreeNode' ||
-          prop === 'promptRename' ||
-          prop === 'expandNode' ||
-          prop === 'collapseNode' ||
-          prop === 'ensureVisible'
-        ) {
-          return (...args) => {
-            this.fileTreeService.cancelRefresh();
-            return (target[prop] as any)(...args);
-          };
-        }
-        return target[prop];
-      },
-    });
+    this._fileTreeHandle = handle;
   }
 
   handleTreeBlur = () => {
@@ -965,7 +948,6 @@ export class FileTreeModelService {
 
   // 命令调用
   async collapseAll() {
-    this.fileTreeService.cancelRefresh();
     await this.treeModel.root.collapsedAll();
     const snapshot = this.explorerStorage.get<ISerializableState>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
     if (snapshot) {
@@ -982,7 +964,6 @@ export class FileTreeModelService {
 
   // 展开所有缓存目录
   public expandAll = async () => {
-    this.fileTreeService.cancelRefresh();
     await this.treeModel.root.expandedAll();
   };
 
