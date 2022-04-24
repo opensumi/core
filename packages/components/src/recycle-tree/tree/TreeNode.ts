@@ -107,7 +107,7 @@ export class TreeNode implements ITreeNode {
   }
 
   public static setGlobalTreeState(path: string, updateState: IOptionalGlobalTreeState) {
-    const root = new Path(path).root?.toString()!;
+    const root = path.split(Path.separator).slice(0, 2).join(Path.separator);
     let state = TreeNode.pathToGlobalTreeState.get(root);
     if (!state) {
       state = {
@@ -122,6 +122,7 @@ export class TreeNode implements ITreeNode {
       ...state,
       ...updateState,
     };
+    TreeNode.pathToGlobalTreeState.set(root, state);
     return state;
   }
 
@@ -346,7 +347,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   private activeRefreshPromise: Promise<any> | null;
   private queuedRefreshPromise: Promise<any> | null;
-  private queuedRefreshPromiseFactory: ((token: CancellationToken) => Promise<any>) | null;
+  private queuedRefreshPromiseFactory: ((token?: CancellationToken) => Promise<any>) | null;
 
   private _lock = false;
 
@@ -539,8 +540,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (this.isExpanded) {
       return;
     }
-    const state = TreeNode.getGlobalTreeState(this.path);
-    if (!isOwner) {
+    if (isOwner) {
+      const state = TreeNode.getGlobalTreeState(this.path);
       state.loadPathCancelToken.cancel();
       state.refreshCancelToken.cancel();
       TreeNode.setGlobalTreeState(this.path, {
@@ -568,7 +569,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this.expandBranch(this, quiet);
       !quiet && this._watcher.notifyDidChangeExpansionState(this, true);
     }
-    if (!isOwner) {
+    if (isOwner) {
       TreeNode.setGlobalTreeState(this.path, {
         isExpanding: false,
       });
@@ -1399,8 +1400,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     let token;
-    if (state.isRefreshing) {
-      state.refreshCancelToken.cancel();
+    if (state.refreshCancelToken.token.isCancellationRequested) {
       const refreshCancelToken = new CancellationTokenSource();
       TreeNode.setGlobalTreeState(this.path, {
         isRefreshing: true,
@@ -1410,7 +1410,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     } else {
       token = state.refreshCancelToken.token;
     }
-    await this.queue<void>(this.doRefresh.bind(this));
+    await this.queue<void>(this.doRefresh.bind(this), token);
     TreeNode.setGlobalTreeState(this.path, {
       isRefreshing: false,
     });
@@ -1426,7 +1426,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             return async () => {};
           }
           this.queuedRefreshPromise = null;
-          const result = this.queue(this.queuedRefreshPromiseFactory!);
+          const result = this.queue(() => this.queuedRefreshPromiseFactory!(token));
           this.queuedRefreshPromiseFactory = null;
 
           return result;
@@ -1458,7 +1458,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     });
   }
 
-  private async doRefresh(token: CancellationToken) {
+  private async doRefresh(token?: CancellationToken) {
     const paths = this.getAllExpandedNodePath();
     await this.refreshTreeNodeByPaths(paths, true, token);
   }
@@ -1506,8 +1506,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     state.refreshCancelToken.cancel();
     let token;
-    if (state.isLoadingPath) {
-      state.loadPathCancelToken.cancel();
+    if (state.loadPathCancelToken.token.isCancellationRequested) {
       const loadPathCancelToken = new CancellationTokenSource();
       TreeNode.setGlobalTreeState(this.path, {
         isLoadingPath: true,
