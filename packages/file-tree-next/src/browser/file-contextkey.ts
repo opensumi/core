@@ -34,13 +34,13 @@ export class FileContextKey {
   constructor() {
     this.explorerResourceIsFolder = ExplorerResourceIsFolderContext.bind(this.globalContextKeyService);
     this.explorerViewletVisibleContext = ExplorerViewletVisibleContext.bind(this.globalContextKeyService);
-    this.explorerFocused = ExplorerFocusedContext.bind(this.globalContextKeyService);
-    this.filesExplorerFocused = FilesExplorerFocusedContext.bind(this.globalContextKeyService);
   }
 
   initScopedContext(dom: HTMLDivElement) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
+    this.explorerFocused = ExplorerFocusedContext.bind(this._contextKeyService);
     this.explorerResourceCut = ExplorerResourceCut.bind(this._contextKeyService);
+    this.filesExplorerFocused = FilesExplorerFocusedContext.bind(this._contextKeyService);
 
     this.filesExplorerInputFocused = FilesExplorerInputFocusedContext.bind(this._contextKeyService);
     this.filesExplorerFilteredContext = FilesExplorerFilteredContext.bind(this._contextKeyService);

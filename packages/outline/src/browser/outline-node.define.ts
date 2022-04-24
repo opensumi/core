@@ -37,10 +37,8 @@ export class OutlineCompositeTreeNode extends CompositeTreeNode {
     parent: OutlineCompositeTreeNode | OutlineRoot,
     public readonly raw: INormalizedDocumentSymbol,
     public readonly icon: string,
-    id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name });
-    this.id = id || this.id;
+    super(tree as ITree, parent, undefined, {});
     this.isExpanded = true;
   }
 
@@ -59,10 +57,8 @@ export class OutlineTreeNode extends TreeNode {
     parent: OutlineCompositeTreeNode | OutlineRoot,
     public readonly raw: INormalizedDocumentSymbol,
     public readonly icon: string,
-    id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name });
-    this.id = id || this.id;
+    super(tree as ITree, parent, undefined, {});
   }
 
   get displayName() {

@@ -196,14 +196,6 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
   );
 
   useEffect(() => {
-    wrapperRef.current?.addEventListener('blur', handleBlur, true);
-    return () => {
-      wrapperRef.current?.removeEventListener('blur', handleBlur);
-      fileTreeModelService.handleTreeBlur();
-    };
-  }, [wrapperRef.current]);
-
-  useEffect(() => {
     if (!filterMode) {
       if (fileTreeModelService.fileTreeHandle) {
         fileTreeModelService.fileTreeHandle.clearFilter();
@@ -348,6 +340,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       ref={wrapperRef}
       onClick={handleOuterClick}
       onFocus={handleFocus}
+      onBlur={handleBlur}
       onContextMenu={handleOuterContextMenu}
       draggable={true}
       onDragStart={handleOuterDragStart}

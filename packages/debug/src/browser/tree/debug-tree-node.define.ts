@@ -152,6 +152,10 @@ export class ExpressionNode extends TreeNode {
   get badge() {
     return this.source ? `${this.source.name}:${this.line}` : '';
   }
+
+  get displayName() {
+    return this.name;
+  }
 }
 
 export namespace ExpressionNode {
@@ -198,6 +202,10 @@ export class ExpressionContainer extends CompositeTreeNode {
 
   get badge() {
     return this.source ? `${this.source.name}:${this.line}` : '';
+  }
+
+  get displayName() {
+    return this.name;
   }
 
   get path(): string {

@@ -486,7 +486,7 @@ export class OpenedEditorModelService {
       if (!node) {
         return;
       }
-      node = (await this.editorTreeHandle.ensureVisible(node)) as EditorFile;
+      node = (await this.editorTreeHandle.ensureVisible(node as EditorFile)) as EditorFile;
       if (node) {
         if (this.focusedFile === node) {
           this.activeFileDecoration(node as EditorFile);

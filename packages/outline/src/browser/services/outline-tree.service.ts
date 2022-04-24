@@ -121,17 +121,10 @@ export class OutlineTreeService extends Tree {
         );
         children =
           symbols?.map((symbol: INormalizedDocumentSymbol) => {
-            const cache = this.cacheOutlineNodes.get(symbol.id);
             if (symbol.children?.length) {
-              return new OutlineCompositeTreeNode(
-                this,
-                parent,
-                symbol,
-                getSymbolIcon(symbol.kind) + ' outline-icon',
-                cache?.id,
-              );
+              return new OutlineCompositeTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon');
             }
-            return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
+            return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon');
           }) || [];
       } else if (parent.raw) {
         children =
@@ -139,15 +132,9 @@ export class OutlineTreeService extends Tree {
             ?.map((symbol: INormalizedDocumentSymbol) => {
               const cache = this.cacheOutlineNodes.get(symbol.id);
               if (symbol.children?.length) {
-                return new OutlineCompositeTreeNode(
-                  this,
-                  parent,
-                  symbol,
-                  getSymbolIcon(symbol.kind) + ' outline-icon',
-                  cache?.id,
-                );
+                return new OutlineCompositeTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon');
               }
-              return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon', cache?.id);
+              return new OutlineTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon');
             })
             .filter((node) => !!node.name) || [];
       }

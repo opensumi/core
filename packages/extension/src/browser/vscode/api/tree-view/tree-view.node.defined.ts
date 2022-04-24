@@ -64,9 +64,6 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     super(tree, parent, undefined, {});
     this.isExpanded = expanded || false;
     this.id = id || this.id;
-    // 每个节点应该拥有自己独立的路径，不存在重复性
-    // displayName 作为展示用的字段
-    this.name = String(this.id);
     this._command = command;
     this._tooltip = tooltip;
     if (typeof label === 'string') {

@@ -12,7 +12,7 @@ export class EditorFileRoot extends CompositeTreeNode {
   }
 
   constructor(tree: OpenedEditorService, id?: number) {
-    super(tree as ITree, undefined, undefined, undefined);
+    super(tree as ITree, undefined);
     // 根节点默认展开节点
     this.id = id || this.id;
   }
@@ -52,6 +52,10 @@ export class EditorFileGroup extends CompositeTreeNode {
     return formatLocalize('opened.editors.group.title', this.groupIndex + 1);
   }
 
+  get displayName() {
+    return this.name;
+  }
+
   get tooltip() {
     return this.name;
   }
@@ -69,11 +73,11 @@ export class EditorFile extends TreeNode {
     parent: EditorFileGroup | undefined,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, undefined);
+    super(tree as ITree, parent, undefined, { name: `${resource.uri.path.toString()}` });
     this.id = id || this.id;
   }
 
-  get name() {
+  get displayName() {
     return this.resource ? this.resource.name : '';
   }
 

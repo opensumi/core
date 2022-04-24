@@ -197,6 +197,10 @@ export class TreeNode implements ITreeNode {
     this._uid = id;
   }
 
+  /**
+   * 由于 Tree 对于唯一路径的 path 的依赖
+   * 在传入 name 值时必须保证其在路径上的唯一性
+   */
   get name() {
     // 根节点保证路径不重复
     if (!this.parent) {
@@ -212,7 +216,7 @@ export class TreeNode implements ITreeNode {
   // 节点绝对路径
   get path(): string {
     if (!this.parent) {
-      return new Path(`/${this.name}`).toString();
+      return new Path(`${Path.separator}${this.name}`).toString();
     }
     return new Path(this.parent.path).join(this.name).toString();
   }
@@ -225,6 +229,9 @@ export class TreeNode implements ITreeNode {
   }
 
   public getMetadata(withKey: string): any {
+    if (withKey === 'name' && !this._metadata[withKey]) {
+      this._metadata[withKey] = String(TreeNode.nextId());
+    }
     return this._metadata[withKey];
   }
 
@@ -819,6 +826,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           }
         }
         const expandedChilds: CompositeTreeNode[] = [];
+        const otherChilds: CompositeTreeNode[] = [];
 
         const flatTree = new Array(childrens.length);
         this._children = Array(childrens.length);
@@ -828,7 +836,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           (child as TreeNode).id = TreeNode.getIdByPath(child.path) || (child as TreeNode).id;
           this._children[i] = child;
           TreeNode.setIdByPath(child.path, child.id);
-          if (CompositeTreeNode.is(child) && child.expanded && child.children) {
+          if (CompositeTreeNode.is(child) && child.expanded) {
             if (!child.children) {
               await (child as CompositeTreeNode).resolveChildrens(token);
               if (token?.isCancellationRequested) {
@@ -836,8 +844,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
               }
             }
             expandedChilds.push(child as CompositeTreeNode);
+          } else {
+            otherChilds.push(child as CompositeTreeNode);
           }
-          this.updateTreeNodeCache(child as CompositeTreeNode | TreeNode);
         }
 
         this._children.sort(this._tree.sortComparator || CompositeTreeNode.defaultSortComparator);
@@ -851,6 +860,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         for (let i = 0; i < expandedChilds.length; i++) {
           const child = expandedChilds[i];
           child.expandBranch(child, true);
+          this.updateTreeNodeCache(child);
+        }
+        for (let i = 0; i < otherChilds.length; i++) {
+          const child = otherChilds[i];
           this.updateTreeNodeCache(child);
         }
         // 清理上一次监听函数
@@ -1544,6 +1557,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           (item as CompositeTreeNode)._watcher.notifyDidChangeExpansionState(item, true);
         }
         if (pathFlag.length === 0) {
+          // if (token.isCancellationRequested) {
+          //   return;
+          // }
           let child;
           while ((child = flattenedBranchChilds.pop())) {
             (child as CompositeTreeNode).expandBranch(child, true);
@@ -1662,6 +1678,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       });
       return preItem;
     }
+    TreeNode.setGlobalTreeState(this.path, {
+      isLoadingPath: false,
+    });
   }
 
   /**

@@ -770,7 +770,7 @@ export class FileTreeModelService {
     if (this._isDisposed) {
       return;
     }
-    this.contextKey?.filesExplorerFocused.set(false);
+    this.contextKey?.filesExplorerFocused?.set(false);
     // 失去焦点状态时，清理右键菜单的选中态
     // 清空焦点状态
     this.deactivateFileDecoration();
@@ -780,7 +780,7 @@ export class FileTreeModelService {
 
   handleTreeFocus = () => {
     // 激活面板
-    this.contextKey?.filesExplorerFocused.set(true);
+    this.contextKey?.filesExplorerFocused?.set(true);
   };
 
   handleItemRangeClick = (item: File | Directory, type: TreeNodeType) => {
