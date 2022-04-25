@@ -104,8 +104,6 @@ export class ExtensionWillContributeEvent extends BasicEvent<IExtensionMetaData>
 // 将激活的插件作为 payload 📢 出去
 export class ExtensionDidActivatedEvent extends BasicEvent<IExtensionProps> {}
 
-export class ExtensionsInitializedEvent extends BasicEvent<IExtension[]> {}
-
 /**
  * 插件扫描完成后的事件
  */
