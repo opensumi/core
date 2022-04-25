@@ -79,7 +79,7 @@ describe('TerminalServiceClientImpl', () => {
     expect(terminal.cols).toEqual(400);
   });
 
-  it.only('Should be disposed.', async () => {
+  it('Should be disposed.', async () => {
     (process as any).env.IS_DEV = 0;
     const mockId = '2';
     await terminalServiceClient.create2(mockId, 200, 200, {
