@@ -47,6 +47,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   setConnectionClientId(clientId: string) {
     this.clientId = clientId;
+    this.logger.debug('TerminalServiceClientImpl', 'setConnectionClientId', clientId);
     this.terminalService.setClient(this.clientId, this);
   }
 

@@ -25,6 +25,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   private clientTerminalMap: Map<string, Map<string, PtyService>> = new Map();
 
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
+  private closeTimeOutMap: Map<string, NodeJS.Timeout> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
@@ -43,6 +44,12 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
     this.serviceClientMap.set(clientId, client);
+    // 如果有相同的setClient clientId被调用，则取消延时触发closeClient，否则会导致终端无响应
+    const timeOutHandler = this.closeTimeOutMap.get(clientId);
+    if (timeOutHandler) {
+      global.clearTimeout(timeOutHandler);
+      this.closeTimeOutMap.delete(clientId);
+    }
   }
 
   // 检查SessionId是否存活，但是因为之前接口设计有问题只返回了boolean，所以不能批量返回SessionId的检查结果
@@ -64,6 +71,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   }
 
   public closeClient(clientId: string) {
+    // 延时触发，因为WS本身有重连逻辑，因此通过延时触发来避免断开后不就重连但是回调方法都被dispose的问题
     const closeTimer = global.setTimeout(
       () => {
         this.disposeClient(clientId);
@@ -71,6 +79,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       },
       isDevelopment() ? 0 : this.appConfig.terminalPtyCloseThreshold || TerminalServiceImpl.TerminalPtyCloseThreshold,
     );
+    this.closeTimeOutMap.set(clientId, closeTimer);
   }
 
   public disposeClient(clientId: string) {
