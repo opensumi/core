@@ -198,6 +198,10 @@ export class TreeNode implements ITreeNode {
     this._uid = id;
   }
 
+  get displayName() {
+    return this.name;
+  }
+
   /**
    * 由于 Tree 对于唯一路径的 path 的依赖
    * 在传入 name 值时必须保证其在路径上的唯一性
