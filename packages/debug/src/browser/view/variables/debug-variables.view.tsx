@@ -27,7 +27,6 @@ import {
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 import styles from './debug-variables.module.less';
 
-
 export const DEBUG_VARIABLE_TREE_FIELD_NAME = 'DEBUG_VARIABLE_TREE_FIELD';
 
 export const DebugVariableView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
@@ -212,7 +211,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
         (node as DebugVariable).description ? styles.name : '',
       )}
     >
-      {node.name}
+      {node.displayName}
       {(node as DebugVariable).description ? ':' : ''}
     </div>
   );

@@ -4,12 +4,13 @@ import { FileStat } from '@opensumi/ide-file-service';
 
 import { Directory, File } from './file-tree-node.define';
 
+export const FILE_EXPLORER_WELCOME_ID = 'file-explorer';
+
 export const IFileTreeAPI = Symbol('IFileTreeAPI');
 export const IFileTreeService = Symbol('IFileTreeService');
 
 export interface IFileTreeService extends ITree {
-  removeNodeCacheByPath(path: string): void;
-  reCacheNode(parent: File | Directory, path: string): void;
+  refresh(): Promise<void>;
 }
 export interface IFileTreeAPI {
   copyFile(from: URI, to: URI): Promise<FileStat | string | void>;
@@ -19,7 +20,7 @@ export interface IFileTreeAPI {
   mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<string[] | void>;
   mv(oldUri: URI, newUri: URI, isDirectory?: boolean): Promise<string | void>;
   resolveChildren(
-    tree: IFileTreeService,
+    tree: ITree,
     path: string | FileStat,
     parent?: Directory,
     compact?: boolean,

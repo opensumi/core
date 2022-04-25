@@ -41,10 +41,6 @@ export const SCMResourceTree: React.FC<{
       }
       setIsReady(true);
     })();
-
-    return () => {
-      scmTreeModelService.removeFileDecoration();
-    };
   }, []);
 
   React.useEffect(() => {

@@ -141,13 +141,6 @@
     .expansion_toggle {
       color: var(--kt-tree-activeSelectionForeground) !important;
     }
-    .debug_console_node_displayname {
-      .compact_name {
-        &.active {
-          text-decoration: underline;
-        }
-      }
-    }
   }
 
   &.mod_actived {
@@ -155,13 +148,6 @@
     outline-offset: -1px;
     .expansion_toggle {
       color: var(--kt-tree-activeSelectionForeground) !important;
-    }
-    .debug_console_node_displayname {
-      .compact_name {
-        &.active {
-          text-decoration: underline;
-        }
-      }
     }
   }
 
@@ -197,18 +183,6 @@
 .debug_console_node_display_name {
   display: inline;
   white-space: inherit;
-  .compact_name {
-    color: inherit;
-    display: inline;
-    &:focus,
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-  .compact_name_separator {
-    margin: 0 2px;
-    opacity: 0.5;
-  }
   &.info {
     color: var(--debugConsole-infoForeground);
   }

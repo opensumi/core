@@ -124,7 +124,8 @@ export class FileTreeContribution
 
   initialize() {
     // 等待排除配置初始化结束后再初始化文件树
-    this.workspaceService.initFileServiceExclude().then(() => {
+    this.workspaceService.initFileServiceExclude().then(async () => {
+      await this.fileTreeService.init();
       this.fileTreeModelService.initTreeModel();
     });
   }
@@ -135,7 +136,6 @@ export class FileTreeContribution
       group: ViewContentGroups.Open,
       order: 1,
     });
-    await this.fileTreeService.init();
     this.mainLayoutService.collectViewComponent(
       {
         id: ExplorerResourceViewId,

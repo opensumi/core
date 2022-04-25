@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ITree } from '@opensumi/ide-components';
-import { Path } from '@opensumi/ide-components/lib/utils';
 import { EDITOR_COMMANDS, CorePreferences } from '@opensumi/ide-core-browser';
 import { URI, localize, CommandService, formatLocalize } from '@opensumi/ide-core-common';
 import * as paths from '@opensumi/ide-core-common/lib/path';
@@ -29,7 +28,6 @@ export class FileTreeAPI implements IFileTreeAPI {
   @Autowired(IDialogService)
   private readonly dialogService: IDialogService;
   private cacheFileStat: Map<string, FileStat> = new Map();
-  private cacheNodeID: Map<string, number> = new Map();
 
   private userhomePath: URI;
 
@@ -53,8 +51,6 @@ export class FileTreeAPI implements IFileTreeAPI {
         if (!!parent && parent.parent) {
           const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
           if (parentName && parentName !== parent.name) {
-            const prePath = parent.path;
-            tree.removeNodeCacheByPath(prePath);
             parent.updateMetaData({
               name: parentName,
               displayName: parentName,
@@ -62,8 +58,6 @@ export class FileTreeAPI implements IFileTreeAPI {
               fileStat: file.children[0],
               tooltip: this.getReadableTooltip(parentURI),
             });
-            // Re-Cache Node
-            tree.reCacheNode(parent, prePath);
           }
         }
         return await this.resolveChildren(tree, file.children[0].uri, parent, compact);
@@ -122,28 +116,10 @@ export class FileTreeAPI implements IFileTreeAPI {
       this.cacheFileStat.set(filestat.uri, filestat);
     }
     if (filestat.isDirectory) {
-      node = new Directory(
-        tree as any,
-        parent,
-        uri,
-        name,
-        filestat,
-        this.getReadableTooltip(uri),
-        parent && this.cacheNodeID.get(new Path(parent.path).join(name).toString()),
-      );
+      node = new Directory(tree as any, parent, uri, name, filestat, this.getReadableTooltip(uri));
     } else {
-      node = new File(
-        tree as any,
-        parent,
-        uri,
-        name,
-        filestat,
-        this.getReadableTooltip(uri),
-        parent && this.cacheNodeID.get(new Path(parent.path).join(name).toString()),
-      );
+      node = new File(tree as any, parent, uri, name, filestat, this.getReadableTooltip(uri));
     }
-    // 用于固定各个节点的ID，防止文件操作出现定位错误
-    this.cacheNodeID.set(node.path, node.id);
     return node;
   }
 
