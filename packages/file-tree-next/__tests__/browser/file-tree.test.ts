@@ -4,7 +4,13 @@ import * as fs from 'fs-extra';
 import temp from 'temp';
 
 import { TreeNodeEvent, TreeNodeType } from '@opensumi/ide-components';
-import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService } from '@opensumi/ide-core-browser';
+import {
+  IContextKeyService,
+  CorePreferences,
+  EDITOR_COMMANDS,
+  PreferenceService,
+  Emitter,
+} from '@opensumi/ide-core-browser';
 import { ILogger } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
@@ -105,6 +111,7 @@ describe('FileTree should be work while on single workspace model', () => {
     done();
   });
   beforeEach(async (done) => {
+    jest.useFakeTimers();
     injector = createBrowserInjector([FileTreeNextModule]);
 
     // mock used instance
@@ -217,6 +224,7 @@ describe('FileTree should be work while on single workspace model', () => {
 
     fileTreeModelService = injector.get(FileTreeModelService);
     fileTreeModelService.initTreeModel();
+    (fileTreeModelService as any).requestFlushEventSignalEmitter = new Emitter();
     // wait for init fileTree model
     await fileTreeModelService.whenReady;
     // make sure the root has been loaded
@@ -226,9 +234,9 @@ describe('FileTree should be work while on single workspace model', () => {
 
     done();
   });
-  afterEach(async (done) => {
+  afterEach(() => {
+    jest.useRealTimers();
     injector.disposeAll();
-    done();
   });
   afterAll(() => {
     track.cleanupSync();
@@ -258,7 +266,7 @@ describe('FileTree should be work while on single workspace model', () => {
   });
 
   describe('02 #Basic API should be worked', () => {
-    it('Expand and collapse Directory should be work', async (done) => {
+    it('Expand and Collapse Directory should be work', async (done) => {
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
       const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
@@ -383,14 +391,13 @@ describe('FileTree should be work while on single workspace model', () => {
       done();
     });
 
-    it('Location file should be work', async (done) => {
+    it('Location file should be work', async () => {
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
       const fileNode = rootNode.getTreeNodeAtIndex(1) as File;
       const { location, decorations } = fileTreeModelService;
       mockTreeHandle.ensureVisible = jest.fn(() => fileNode);
       await location(fileNode.uri);
-      await sleep(500);
       expect(mockTreeHandle.ensureVisible).toBeCalledWith(
         await fileTreeService.getFileTreeNodePathByUri(fileNode.uri),
         'smart',
@@ -398,10 +405,9 @@ describe('FileTree should be work while on single workspace model', () => {
       );
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
-      done();
     });
 
-    it('Location file should be work while fileTree can be see', async (done) => {
+    it('Location file should be work while fileTree can be see', async () => {
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
       const fileNode = rootNode.getTreeNodeAtIndex(1) as File;
@@ -409,7 +415,6 @@ describe('FileTree should be work while on single workspace model', () => {
       mockTreeHandle.ensureVisible = jest.fn(() => fileNode);
       locationOnShow(fileNode.uri);
       await performLocationOnHandleShow();
-      await sleep(500);
       expect(mockTreeHandle.ensureVisible).toBeCalledWith(
         await fileTreeService.getFileTreeNodePathByUri(fileNode.uri),
         'smart',
@@ -417,7 +422,6 @@ describe('FileTree should be work while on single workspace model', () => {
       );
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected]);
-      done();
     });
 
     it('Move to next file node should be work', () => {
