@@ -361,10 +361,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
               batchUpdateResolver();
               return;
             }
-            if (token.isCancellationRequested) {
-              batchUpdateResolver();
-              return;
-            }
             commitUpdate(batchUpdateResolver, token);
           });
         }
