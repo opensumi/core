@@ -1,3 +1,4 @@
+import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { IContextKeyService } from '@opensumi/ide-core-browser/src';
 import { Disposable } from '@opensumi/ide-core-common';
@@ -102,7 +103,13 @@ describe('Debug console component Test Suites', () => {
     mockInjector.overrideProviders({
       token: WSChannelHandler,
       useValue: {
-        openChannel: jest.fn(),
+        clientId: 'mock_id' + Math.random(),
+        openChannel(id: string) {
+          const channelSend = (content) => {
+            //
+          };
+          return new WSChannel(channelSend, 'mock_wschannel' + id);
+        },
       },
     });
     mockInjector.overrideProviders({
