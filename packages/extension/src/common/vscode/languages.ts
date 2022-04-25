@@ -349,7 +349,7 @@ export interface IExtHostLanguages {
     handle: number,
     symbol: SymbolInformation,
     token: CancellationToken,
-  ): PromiseLike<SymbolInformation>;
+  ): PromiseLike<SymbolInformation | undefined>;
 
   $provideSignatureHelp(
     handle: number,
