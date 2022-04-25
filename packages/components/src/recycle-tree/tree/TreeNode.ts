@@ -1526,7 +1526,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       });
       return this;
     }
-    await this.ensureLoaded(token);
+    if (!this.children) {
+      await this.ensureLoaded(token);
+    }
     if (token.isCancellationRequested) {
       TreeNode.setGlobalTreeState(this.path, {
         isLoadingPath: false,
@@ -1543,7 +1545,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         if (CompositeTreeNode.is(item)) {
           (item as CompositeTreeNode)._watcher.notifyWillChangeExpansionState(item, true);
           (item as CompositeTreeNode).isExpanded = true;
-          if (!(item as CompositeTreeNode).children) {
+          if (!(item as CompositeTreeNode).children && pathFlag.length > 0) {
             await (item as CompositeTreeNode).resolveChildrens(token);
             if (token.isCancellationRequested) {
               TreeNode.setGlobalTreeState(this.path, {
@@ -1556,9 +1558,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           (item as CompositeTreeNode)._watcher.notifyDidChangeExpansionState(item, true);
         }
         if (pathFlag.length === 0) {
-          // if (token.isCancellationRequested) {
-          //   return;
-          // }
           let child;
           while ((child = flattenedBranchChilds.pop())) {
             (child as CompositeTreeNode).expandBranch(child, true);
