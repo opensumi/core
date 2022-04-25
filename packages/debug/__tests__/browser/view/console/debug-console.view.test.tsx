@@ -173,7 +173,9 @@ describe('Debug console component Test Suites', () => {
     });
     mockInjector.overrideProviders({
       token: WSChannelHandler,
-      useValue: {},
+      useValue: {
+        openChannel: jest.fn(),
+      },
     });
     mockInjector.overrideProviders({
       token: DebugSessionContributionRegistry,

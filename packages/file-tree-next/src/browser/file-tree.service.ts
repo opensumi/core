@@ -839,7 +839,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const promise = pSeries(
       effectedRoots.map((root) => async () => {
         if (Directory.is(root.node)) {
-          (root.node as Directory).refresh();
+          await (root.node as Directory).refresh();
         }
       }),
     );

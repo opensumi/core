@@ -8,16 +8,7 @@ import { IContextKeyService, CorePreferences, EDITOR_COMMANDS, PreferenceService
 import { ILogger } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import {
-  FileUri,
-  URI,
-  Disposable,
-  StorageProvider,
-  IApplicationService,
-  isWindows,
-  isLinux,
-  OS,
-} from '@opensumi/ide-core-common';
+import { FileUri, URI, Disposable, StorageProvider, IApplicationService, OS } from '@opensumi/ide-core-common';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
@@ -26,6 +17,7 @@ import { FileStat, FileServicePath, IDiskFileProvider, IFileServiceClient } from
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
+import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -219,6 +211,8 @@ describe('FileTree should be work while on single workspace model', () => {
       isDirectory: true,
     } as FileStat);
 
+    const contextKey = injector.get(FileContextKey);
+
     injector.mock(FileTreeModelService, 'fileTreeHandle', mockTreeHandle);
 
     fileTreeModelService = injector.get(FileTreeModelService);
@@ -227,7 +221,7 @@ describe('FileTree should be work while on single workspace model', () => {
     await fileTreeModelService.whenReady;
     // make sure the root has been loaded
     await fileTreeModelService.treeModel.root.ensureLoaded();
-
+    contextKey.initScopedContext(document.createElement('div'));
     fileTreeService = injector.get<FileTreeService>(IFileTreeService);
 
     done();
