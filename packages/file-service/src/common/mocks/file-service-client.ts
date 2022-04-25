@@ -16,7 +16,6 @@ import {
 } from '../files';
 import { IFileServiceWatcher } from '../watcher';
 
-
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {
   listCapabilities() {
@@ -158,7 +157,7 @@ export class MockFileServiceClient implements IFileServiceClient {
       onFilesChanged: () => ({
         dispose: () => {},
       }),
-      dispose: () => {},
+      dispose: async () => {},
     };
   }
 
