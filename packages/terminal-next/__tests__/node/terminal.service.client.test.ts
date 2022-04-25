@@ -7,7 +7,7 @@ import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { IPtyProcess } from '../../src/common/pty';
 import { TerminalNodePtyModule } from '../../src/node';
 
-describe('TerminalServiceClientImpl', () => {
+describe.skip('TerminalServiceClientImpl', () => {
   let terminalServiceClient: ITerminalServiceClient;
   let terminalService: ITerminalNodeService;
   let injector: Injector;
@@ -79,7 +79,7 @@ describe('TerminalServiceClientImpl', () => {
     expect(terminal.cols).toEqual(400);
   });
 
-  it.only('Should be disposed.', async () => {
+  it('Should be disposed.', async () => {
     (process as any).env.IS_DEV = 0;
     const mockId = '2';
     await terminalServiceClient.create2(mockId, 200, 200, {

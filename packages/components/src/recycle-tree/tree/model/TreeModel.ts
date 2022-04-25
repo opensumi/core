@@ -8,9 +8,9 @@ export class TreeModel {
   private _state: TreeStateManager;
   private _root: CompositeTreeNode;
 
-  private onChangeEmitter: Emitter<boolean> = new Emitter();
+  private onChangeEmitter: Emitter<void> = new Emitter();
 
-  get onChange(): Event<boolean> {
+  get onChange(): Event<void> {
     return this.onChangeEmitter.event;
   }
 
@@ -41,8 +41,8 @@ export class TreeModel {
     this.state = new TreeStateManager(root as CompositeTreeNode);
   }
 
-  dispatchChange = (force = true) => {
-    this.onChangeEmitter.fire(force);
+  dispatchChange = () => {
+    this.onChangeEmitter.fire();
   };
 
   /**
@@ -57,7 +57,7 @@ export class TreeModel {
    *  - 临时的输入框节点
    *
    */
-  public async loadTreeState(state: ISerializableState | string) {
+  public loadTreeState(state: ISerializableState | string) {
     if (typeof state === 'string') {
       state = JSON.parse(state);
     }

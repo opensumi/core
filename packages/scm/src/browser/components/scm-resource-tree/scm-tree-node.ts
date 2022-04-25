@@ -39,8 +39,6 @@ export class SCMResourceGroup extends CompositeTreeNode {
     );
   }
 
-  private _whenReady: Promise<void>;
-
   constructor(
     tree: SCMTreeService,
     parent: CompositeTreeNode | undefined,
@@ -48,15 +46,10 @@ export class SCMResourceGroup extends CompositeTreeNode {
     public readonly resource: ISCMResourceGroup,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: resource.label }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, { name: resource.label });
+    this.id = id || this.id;
     // 目录节点默认全部展开
-    this._whenReady = this.setExpanded(false, true);
-  }
-
-  get whenReady() {
-    return this._whenReady;
+    this.isExpanded = true;
   }
 
   @memoize
@@ -72,8 +65,6 @@ export class SCMResourceGroup extends CompositeTreeNode {
 }
 
 export class SCMResourceFolder extends CompositeTreeNode {
-  private _whenReady: Promise<void>;
-
   constructor(
     tree: SCMTreeService,
     parent: CompositeTreeNode | undefined,
@@ -81,15 +72,10 @@ export class SCMResourceFolder extends CompositeTreeNode {
     public readonly resource: ISCMResource,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, { name: raw.name });
+    this.id = id || this.id;
     // 目录节点默认全部展开
-    this._whenReady = this.setExpanded(false, true);
-  }
-
-  get whenReady() {
-    return this._whenReady;
+    this.isExpanded = true;
   }
 
   @memoize
@@ -123,9 +109,8 @@ export class SCMResourceFile extends TreeNode {
     private readonly isTree?: boolean,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.pathname }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, { name: raw.pathname });
+    this.id = id || this.id;
   }
 
   @memoize

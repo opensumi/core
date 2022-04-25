@@ -38,7 +38,6 @@ import {
 import styles from './scm-tree-node.module.less';
 import { SCMTreeService } from './scm-tree.service';
 
-
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }
@@ -501,14 +500,6 @@ export class SCMTreeModelService {
     this._contextMenuFile = target;
     this.treeModel.dispatchChange();
   };
-
-  removeFileDecoration() {
-    if (!this.decorations) {
-      return;
-    }
-    this.decorations.removeDecoration(this.selectedDecoration);
-    this.decorations.removeDecoration(this.focusedDecoration);
-  }
 
   handleTreeHandler(handle: IEditorTreeHandle) {
     this._scmTreeHandle = handle;

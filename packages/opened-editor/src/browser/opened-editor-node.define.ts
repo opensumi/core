@@ -4,7 +4,6 @@ import { IEditorGroup, IResource } from '@opensumi/ide-editor';
 
 import { OpenedEditorService } from './services/opened-editor-tree.service';
 
-
 export type OpenedEditorData = IEditorGroup | IResource;
 
 export class EditorFileRoot extends CompositeTreeNode {
@@ -13,10 +12,9 @@ export class EditorFileRoot extends CompositeTreeNode {
   }
 
   constructor(tree: OpenedEditorService, id?: number) {
-    super(tree as ITree, undefined, undefined, undefined, { disableCache: true });
+    super(tree as ITree, undefined);
     // 根节点默认展开节点
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    this.id = id || this.id;
   }
 
   get expanded() {
@@ -41,16 +39,21 @@ export class EditorFileGroup extends CompositeTreeNode {
   private groupIndex: number;
 
   constructor(tree: OpenedEditorService, public readonly group: IEditorGroup, parent: EditorFileRoot, id?: number) {
-    super(tree as ITree, parent, undefined, undefined, { disableCache: true });
+    super(tree as ITree, parent);
     this.groupIndex = this.group.index;
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
-    // 根节点默认展开节点
-    this.setExpanded(false, true);
+    this.id = id || this.id;
+  }
+
+  get expanded() {
+    return true;
   }
 
   get name() {
     return formatLocalize('opened.editors.group.title', this.groupIndex + 1);
+  }
+
+  get displayName() {
+    return this.name;
   }
 
   get tooltip() {
@@ -70,12 +73,11 @@ export class EditorFile extends TreeNode {
     parent: EditorFileGroup | undefined,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, undefined, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, { name: `${resource.uri.path.toString()}` });
+    this.id = id || this.id;
   }
 
-  get name() {
+  get displayName() {
     return this.resource ? this.resource.name : '';
   }
 

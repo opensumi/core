@@ -166,7 +166,6 @@ describe('OpenedEditorModelService should be work', () => {
       expect(typeof openedEditorModelService.initDecorations).toBe('function');
       expect(typeof openedEditorModelService.activeFileDecoration).toBe('function');
       expect(typeof openedEditorModelService.enactiveFileDecoration).toBe('function');
-      expect(typeof openedEditorModelService.removeFileDecoration).toBe('function');
       expect(typeof openedEditorModelService.handleContextMenu).toBe('function');
       expect(typeof openedEditorModelService.handleTreeHandler).toBe('function');
       expect(typeof openedEditorModelService.handleTreeBlur).toBe('function');
@@ -211,7 +210,7 @@ describe('OpenedEditorModelService should be work', () => {
       openedEditorModelService.handleItemClick(node as EditorFile, TreeNodeType.TreeNode);
       expect(openFile).toBeCalledTimes(1);
       expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(
-        cls(styles.mod_dirty, styles.mod_selected, styles.mod_focused),
+        cls(styles.mod_selected, styles.mod_focused),
       );
       done();
     });

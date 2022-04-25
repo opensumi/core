@@ -7,7 +7,6 @@ export enum TreeNodeEvent {
   DidChangeExpansionState,
   WillChangeParent,
   DidChangeParent,
-  WillDispose,
   DidDispose,
   BranchDidUpdate,
   DidChangePath,
@@ -125,8 +124,6 @@ export interface ITreeWatcher {
     prevParent: ICompositeTreeNode,
     newParent: ICompositeTreeNode,
   );
-
-  notifyWillDispose(target: ITreeNodeOrCompositeTreeNode);
   notifyDidDispose(target: ITreeNodeOrCompositeTreeNode);
 
   notifyWillProcessWatchEvent(target: ICompositeTreeNode, event: IWatcherEvent);
@@ -141,7 +138,7 @@ export interface ITreeWatcher {
   notifyDidChangePath(target: ITreeNodeOrCompositeTreeNode);
   notifyDidChangeMetadata(target: ITreeNodeOrCompositeTreeNode, change: IMetadataChange);
 
-  notifyDidUpdateBranch(force?: boolean);
+  notifyDidUpdateBranch();
 
   dispose: IDisposable;
 }

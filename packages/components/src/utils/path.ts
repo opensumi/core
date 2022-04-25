@@ -158,10 +158,11 @@ export class Path {
     if (!relativePath) {
       return this;
     }
-    if (this.raw.endsWith(Path.separator)) {
-      return new Path(this.raw + relativePath);
+
+    if (this.raw.endsWith(Path.separator) || relativePath.startsWith(Path.separator)) {
+      return new Path(posix.join(this.raw, relativePath));
     }
-    return new Path(this.raw + Path.separator + relativePath);
+    return new Path(posix.join(this.raw, Path.separator, relativePath));
   }
 
   toString(): string {
@@ -352,7 +353,7 @@ interface ParsedPath {
   name: string;
 }
 
-interface IPath {
+export interface IPath {
   normalize(path: string): string;
   isAbsolute(path: string): boolean;
   join(...paths: string[]): string;
@@ -382,14 +383,14 @@ export const win32: IPath = {
       if (i >= 0) {
         path = pathSegments[i];
       } else if (!resolvedDevice) {
-        path = Process.cwd();
+        path = process.cwd();
       } else {
         // Windows has the concept of drive-specific current working
         // directories. If we've resolved a drive letter but not yet an
         // absolute path, get cwd for that drive, or the process cwd if
         // the drive cwd is not available. We're sure the device is not
         // a UNC path at this points, because UNC paths are always absolute.
-        path = Process.env['=' + resolvedDevice] || Process.cwd();
+        path = process.env['=' + resolvedDevice] || process.cwd();
 
         // Verify that a cwd was found and that it actually points
         // to our drive. If not, default to the drive's root.
@@ -506,7 +507,7 @@ export const win32: IPath = {
     }
 
     // At this point the path should be resolved to a full absolute path,
-    // but handle relative paths to be safe (might happen when Process.cwd()
+    // but handle relative paths to be safe (might happen when process.cwd()
     // fails)
 
     // Normalize the tail path
@@ -1347,7 +1348,7 @@ export const posix: IPath = {
       if (i >= 0) {
         path = pathSegments[i];
       } else {
-        path = Process.cwd();
+        path = process.cwd();
       }
 
       validateString(path, 'path');
@@ -1362,7 +1363,7 @@ export const posix: IPath = {
     }
 
     // At this point the path should be resolved to a full absolute path, but
-    // handle relative paths to be safe (might happen when Process.cwd() fails)
+    // handle relative paths to be safe (might happen when process.cwd() fails)
 
     // Normalize the path
     resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute, '/', isPosixPathSeparator);
@@ -1417,7 +1418,6 @@ export const posix: IPath = {
     }
     let joined;
     for (let i = 0; i < paths.length; ++i) {
-      // eslint-disable-next-line prefer-rest-params
       const arg = arguments[i];
       validateString(arg, 'path');
       if (arg.length > 0) {
@@ -1810,16 +1810,16 @@ export const posix: IPath = {
 posix.win32 = win32.win32 = win32;
 posix.posix = win32.posix = posix;
 
-export const normalize = Process.platform === 'win32' ? win32.normalize : posix.normalize;
-export const isAbsolute = Process.platform === 'win32' ? win32.isAbsolute : posix.isAbsolute;
-export const join = Process.platform === 'win32' ? win32.join : posix.join;
-export const resolve = Process.platform === 'win32' ? win32.resolve : posix.resolve;
-export const relative = Process.platform === 'win32' ? win32.relative : posix.relative;
-export const dirname = Process.platform === 'win32' ? win32.dirname : posix.dirname;
-export const basename = Process.platform === 'win32' ? win32.basename : posix.basename;
-export const extname = Process.platform === 'win32' ? win32.extname : posix.extname;
-export const format = Process.platform === 'win32' ? win32.format : posix.format;
-export const parse = Process.platform === 'win32' ? win32.parse : posix.parse;
-export const toNamespacedPath = Process.platform === 'win32' ? win32.toNamespacedPath : posix.toNamespacedPath;
-export const sep = Process.platform === 'win32' ? win32.sep : posix.sep;
-export const delimiter = Process.platform === 'win32' ? win32.delimiter : posix.delimiter;
+export const normalize = process.platform === 'win32' ? win32.normalize : posix.normalize;
+export const isAbsolute = process.platform === 'win32' ? win32.isAbsolute : posix.isAbsolute;
+export const join = process.platform === 'win32' ? win32.join : posix.join;
+export const resolve = process.platform === 'win32' ? win32.resolve : posix.resolve;
+export const relative = process.platform === 'win32' ? win32.relative : posix.relative;
+export const dirname = process.platform === 'win32' ? win32.dirname : posix.dirname;
+export const basename = process.platform === 'win32' ? win32.basename : posix.basename;
+export const extname = process.platform === 'win32' ? win32.extname : posix.extname;
+export const format = process.platform === 'win32' ? win32.format : posix.format;
+export const parse = process.platform === 'win32' ? win32.parse : posix.parse;
+export const toNamespacedPath = process.platform === 'win32' ? win32.toNamespacedPath : posix.toNamespacedPath;
+export const sep = process.platform === 'win32' ? win32.sep : posix.sep;
+export const delimiter = process.platform === 'win32' ? win32.delimiter : posix.delimiter;

@@ -11,6 +11,7 @@ import {
   isWindows,
   OS,
   isLinux,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -29,7 +30,6 @@ import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { Directory, File } from '../../src/common/file-tree-node.define';
-
 
 class TempDirectory {}
 class TempFile {}
@@ -168,6 +168,13 @@ describe('FileTree Service should be work alone', () => {
         token: IViewsRegistry,
         useClass: ViewsRegistry,
       },
+      {
+        token: PreferenceService,
+        useValue: {
+          get: () => {},
+          ready: Promise.resolve(),
+        },
+      },
     );
     fileTreeService = injector.get(IFileTreeService);
     fileTreeService.initContextKey(document.createElement('div'));
@@ -180,12 +187,11 @@ describe('FileTree Service should be work alone', () => {
     fileChangeWatcher.onFilesChanged.mockReset();
   });
 
-  it('Service should be init correctly', async (done) => {
+  it('Service should be init correctly', async () => {
     await fileTreeService.init();
     expect(onPreferenceChanged).toBeCalled();
     expect(fileTreeService.indent).toBe(6);
     expect(fileTreeService.baseIndent).toBe(6);
-    done();
   });
 
   it('ContextMenuContextKeyService should be existed', () => {

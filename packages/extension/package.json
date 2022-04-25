@@ -62,6 +62,7 @@
     "@opensumi/ide-theme": "2.16.10",
     "@opensumi/ide-toolbar": "2.16.10",
     "@opensumi/ide-workspace": "2.16.10",
-    "@opensumi/ide-workspace-edit": "2.16.10"
+    "@opensumi/ide-workspace-edit": "2.16.10",
+    "@opensumi/ide-file-tree-next": "2.16.10"
   }
 }

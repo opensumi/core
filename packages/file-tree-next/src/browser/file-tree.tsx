@@ -1,6 +1,5 @@
 import cls from 'classnames';
 import React, {
-  createRef,
   useRef,
   useEffect,
   useCallback,
@@ -24,7 +23,7 @@ import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@ope
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
-import { IFileTreeService } from '../common';
+import { FILE_EXPLORER_WELCOME_ID, IFileTreeService } from '../common';
 import { Directory, File } from '../common/file-tree-node.define';
 
 import { FileTreeNode, FILE_TREE_NODE_HEIGHT } from './file-tree-node';
@@ -39,7 +38,7 @@ const FilterableRecycleTree = RecycleTreeFilterDecorator(RecycleTree);
 
 export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
   const [isReady, setIsReady] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [outerActive, setOuterActive] = useState<boolean>(false);
   const [outerDragOver, setOuterDragOver] = useState<boolean>(false);
   const [model, setModel] = useState<TreeModel>();
@@ -134,8 +133,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
 
   useEffect(() => {
     if (isReady) {
-      // 首次初始化完成时，设置当前TreeModel，同时监听后续变化，适配工作区变化事件
-      setModel(fileTreeModelService.treeModel);
+      // 首次初始化完成时，监听后续变化，适配工作区变化事件
       // 监听工作区变化
       fileTreeModelService.onFileTreeModelChange(async (treeModel) => {
         setIsLoading(true);
@@ -167,7 +165,6 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       }),
     );
     return () => {
-      fileTreeModelService.removeFileDecoration();
       disposableRef.current?.dispose();
     };
   }, []);
@@ -197,17 +194,6 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     },
     [wrapperRef.current],
   );
-
-  useEffect(() => {
-    wrapperRef.current?.addEventListener('blur', handleBlur, true);
-    if (wrapperRef.current) {
-      fileTreeService.initContextKey(wrapperRef.current);
-    }
-    return () => {
-      wrapperRef.current?.removeEventListener('blur', handleBlur);
-      fileTreeModelService.handleTreeBlur();
-    };
-  }, [wrapperRef.current]);
 
   useEffect(() => {
     if (!filterMode) {
@@ -269,16 +255,21 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
   }, [model, outerActive]);
 
   const beforeFilterValueChange = useCallback(async () => {
-    const { expandAllCacheDirectory } = fileTreeModelService;
-    await expandAllCacheDirectory();
+    const { expandAll } = fileTreeModelService;
+    await expandAll();
   }, [fileTreeModelService]);
 
   const ensureIsReady = useCallback(async () => {
     await fileTreeModelService.whenReady;
     if (fileTreeModelService.treeModel) {
+      setModel(fileTreeModelService.treeModel);
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
       // 这里需要重新取一下treeModel的值确保为最新的TreeModel
       await fileTreeModelService.treeModel.root.ensureLoaded();
+      setIsLoading(false);
+      if (wrapperRef.current) {
+        fileTreeService.initContextKey(wrapperRef.current);
+      }
     }
     if (!disposableRef.current?.disposed) {
       setIsReady(true);
@@ -349,6 +340,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       ref={wrapperRef}
       onClick={handleOuterClick}
       onFocus={handleFocus}
+      onBlur={handleBlur}
       onContextMenu={handleOuterContextMenu}
       draggable={true}
       onDragStart={handleOuterDragStart}
@@ -465,7 +457,7 @@ const FileTreeView = memo(
           </FilterableRecycleTree>
         );
       } else {
-        return <WelcomeView viewId='file-explorer-next' />;
+        return <WelcomeView viewId={FILE_EXPLORER_WELCOME_ID} />;
       }
     } else {
       return <ProgressBar loading />;

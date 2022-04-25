@@ -41,6 +41,6 @@ export class SCMTreeModel extends TreeModel {
     });
     // this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.dispatchChange);
     // 主题或装饰器更新时，更新树
-    this.decorationService.onDidChange(() => this.dispatchChange());
+    this.decorationService.onDidChange(this.dispatchChange);
   }
 }

@@ -32,27 +32,18 @@ export class OutlineCompositeTreeNode extends CompositeTreeNode {
     );
   }
 
-  private _whenReady: Promise<void>;
-
   constructor(
     tree: OutlineTreeService,
     parent: OutlineCompositeTreeNode | OutlineRoot,
     public readonly raw: INormalizedDocumentSymbol,
     public readonly icon: string,
-    id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
-    this._whenReady = this.setExpanded(false, true);
+    super(tree as ITree, parent, undefined, {});
+    this.isExpanded = true;
   }
 
   get displayName() {
     return this.raw.name;
-  }
-
-  get whenReady() {
-    return this._whenReady;
   }
 }
 
@@ -66,11 +57,8 @@ export class OutlineTreeNode extends TreeNode {
     parent: OutlineCompositeTreeNode | OutlineRoot,
     public readonly raw: INormalizedDocumentSymbol,
     public readonly icon: string,
-    id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, {});
   }
 
   get displayName() {

@@ -48,11 +48,7 @@ describe('OutlineCompositeTreeNode', () => {
     expect(node.parent).toEqual(rootNode);
     expect(node.expanded).toBeTruthy();
     expect(node.displayName).toBe(mockRaw.name);
-    expect(node.whenReady).toBeDefined();
-  });
-
-  it('expanded node should be init correctly', () => {
-    expect(mockOutlineTreeService.resolveChildren).toBeCalledTimes(1);
+    expect(node.expanded).toBeTruthy();
   });
 });
 
