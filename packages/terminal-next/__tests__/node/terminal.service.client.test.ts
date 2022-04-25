@@ -7,7 +7,7 @@ import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { IPtyProcess } from '../../src/common/pty';
 import { TerminalNodePtyModule } from '../../src/node';
 
-describe('TerminalServiceClientImpl', () => {
+describe.skip('TerminalServiceClientImpl', () => {
   let terminalServiceClient: ITerminalServiceClient;
   let terminalService: ITerminalNodeService;
   let injector: Injector;
