@@ -33,7 +33,7 @@ jobs:
     - name: Build & Test
       run: |
         npm i
-        npm run ci -- --selectProjects jsdom
+        npm run ci -- -- --selectProjects jsdom
 
     - if: ${{ matrix.node-version == '14.x' }}
       name: Upload coverage to Codecov
@@ -61,7 +61,7 @@ jobs:
     - name: Build & Test
       run: |
         npm i
-        npm run ci -- --selectProjects node
+        npm run ci -- -- --selectProjects node
 
     - if: ${{ matrix.node-version == '14.x' }}
       name: Upload coverage to Codecov
