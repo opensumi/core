@@ -11,10 +11,10 @@ import {
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { OutlineSortTypeContext, OutlineFollowCursorContext } from '@opensumi/ide-core-browser/lib/contextkey';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { MainLayoutContribution, IMainLayoutService } from '@opensumi/ide-main-layout';
 
-import { OutlineSortOrder } from '../common';
+import { OutlineSortOrder, OUTLINE_VIEW_ID } from '../common';
 
 import { OutlinePanel } from './outline';
 import { OutlineModelService } from './services/outline-model.service';
@@ -39,10 +39,10 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       {
         component: OutlinePanel,
         collapsed: true,
-        id: 'outline-view',
+        id: OUTLINE_VIEW_ID,
         name: localize('outline.title'),
       },
-      ExplorerContainerId,
+      EXPLORER_CONTAINER_ID,
     );
   }
 

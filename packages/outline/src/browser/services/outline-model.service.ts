@@ -22,9 +22,11 @@ import {
   DocumentSymbolStore,
   INormalizedDocumentSymbol,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IOutlineDecorationService } from '../../common';
+import { IOutlineDecorationService, OUTLINE_VIEW_ID } from '../../common';
 import { OutlineTreeNode, OutlineCompositeTreeNode, OutlineRoot } from '../outline-node.define';
 import styles from '../outline-node.module.less';
 
@@ -66,6 +68,9 @@ export class OutlineModelService {
 
   @Autowired(DocumentSymbolStore)
   private documentSymbolStore: DocumentSymbolStore;
+
+  @Autowired(IMainLayoutService)
+  private readonly mainLayoutService: IMainLayoutService;
 
   private _activeTreeModel: OutlineTreeModel;
   private _allTreeModels: Map<string, { treeModel: OutlineTreeModel; decoration: DecorationsManager }> = new Map();
@@ -521,7 +526,17 @@ export class OutlineModelService {
     }
 
     return this.refreshDelayer.trigger(async () => {
-      this.refreshDeferred = new Deferred<void>();
+      const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
+      if (!handler || !handler.isVisible || handler.isCollapsed(OUTLINE_VIEW_ID)) {
+        if (this.refreshDeferred) {
+          this.refreshDeferred.resolve();
+          this.refreshDeferred = null;
+        }
+        return;
+      }
+      if (!this.refreshDeferred) {
+        this.refreshDeferred = new Deferred<void>();
+      }
       this.outlineTreeService.currentUri = this.editorService?.currentEditor?.currentUri;
       if (
         !!node.currentUri &&

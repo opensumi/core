@@ -67,7 +67,7 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
 
   React.useEffect(() => {
     setModel(outlineModelService.treeModel);
-    const disposable = outlineModelService.onDidUpdateTreeModel(async (model?: OutlineTreeModel) => {
+    const disposable = outlineModelService.onDidUpdateTreeModel((model?: OutlineTreeModel) => {
       setModel(model);
     });
     return () => {

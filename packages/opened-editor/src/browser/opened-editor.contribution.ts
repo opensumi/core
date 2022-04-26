@@ -13,7 +13,7 @@ import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { ExplorerOpenEditorPanel } from './opened-editor';
@@ -48,7 +48,7 @@ export class OpenedEditorContribution
         collapsed: true,
         component: ExplorerOpenEditorPanel,
       },
-      ExplorerContainerId,
+      EXPLORER_CONTAINER_ID,
     );
   }
 

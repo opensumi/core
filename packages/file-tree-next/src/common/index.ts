@@ -74,3 +74,5 @@ export const IFileDialogTreeService = Symbol('IFileDialogTreeService');
 export interface IFileDialogTreeService extends ITree {
   getDirectoryList(): string[];
 }
+
+export const RESOURCE_VIEW_ID = 'file-explorer';

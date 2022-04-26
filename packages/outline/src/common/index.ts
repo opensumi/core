@@ -28,3 +28,5 @@ export interface IOutlineDecorationService {
   getDecoration(node: ITreeNode): IOutlineDecoration;
   updateDiagnosisInfo(uri?: URI): void;
 }
+
+export const OUTLINE_VIEW_ID = 'outline-view';
