@@ -43,5 +43,5 @@ export * from './keyboard';
 export * from './theme';
 export * from './env';
 export * from './credential';
-export * from './cryptr';
+export * from './crypto';
 export * from './iterator';
