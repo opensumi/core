@@ -1,3 +1,8 @@
+const { createCanvas } = require('@napi-rs/canvas');
+const canvas = createCanvas(400, 400);
+
+window.HTMLCanvasElement.prototype.getContext = canvas.getContext.bind(canvas);
+
 // packages/extension/__tests__/browser/main.thread.env.test.ts
 // MainThreadEnvAPI Test Suites  › can read/write text via clipboard
 let text = '';
