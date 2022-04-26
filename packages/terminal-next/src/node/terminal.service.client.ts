@@ -128,42 +128,6 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     return await findShellExecutableAsync(paths);
   }
 
-  async $resolvePotentialUnixShellPath(): Promise<string | undefined> {
-    if (process.env.SHELL) {
-      return process.env.SHELL;
-    }
-
-    const candidates = ['zsh', 'bash', 'sh'];
-    for (const candidate of candidates) {
-      const path = await this.$resolveUnixShellPath(candidate);
-      if (path) {
-        return path;
-      }
-    }
-  }
-
-  async $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }> {
-    let path = await findShellExecutableAsync(WINDOWS_GIT_BASH_PATHS);
-    if (path) {
-      return {
-        path,
-        type: WindowsShellType['git-bash'],
-      };
-    }
-    path = await findExecutable(WINDOWS_DEFAULT_SHELL_PATH_MAPS.powershell);
-    if (path) {
-      return {
-        path,
-        type: WindowsShellType.powershell,
-      };
-    }
-
-    return {
-      path: WINDOWS_DEFAULT_SHELL_PATH_MAPS.cmd,
-      type: WindowsShellType.cmd,
-    };
-  }
-
   async detectAvailableProfiles(options: IDetectProfileOptions): Promise<ITerminalProfile[]> {
     return await this.terminalProfileService.detectAvailableProfiles(options);
   }

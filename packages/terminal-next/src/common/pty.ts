@@ -227,8 +227,6 @@ export interface ITerminalServiceClient {
   ensureTerminal(terminalIdArr: string[]): boolean;
   $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined>;
   $resolveUnixShellPath(type: string): Promise<string | undefined>;
-  $resolvePotentialUnixShellPath(): Promise<string | undefined>;
-  $resolvePotentialWindowsShellPath(): Promise<{ path: string; type: WindowsShellType }>;
   $resolveShellPath(paths: string[]): Promise<string | undefined>;
   detectAvailableProfiles(options: IDetectProfileOptions): Promise<ITerminalProfile[]>;
   getDefaultSystemShell(os: OperatingSystem): Promise<string>;

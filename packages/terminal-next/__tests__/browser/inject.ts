@@ -194,9 +194,6 @@ export const injector = new Injector([
       $resolveUnixShellPath(p) {
         return p;
       },
-      $resolvePotentialUnixShellPath() {
-        return 'detectedBash';
-      },
     },
   },
 ]);
