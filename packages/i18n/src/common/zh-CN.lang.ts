@@ -489,6 +489,8 @@ export const localizationBundle = {
     'editor.action.accept': '接受更改（使用右边)',
     'editor.action.revert': '回退更改（使用左边)',
     'editor.format.chooseFormatter': '选择要使用的格式化扩展。',
+    'editor.formatDocument.label.multiple': '使用...格式化文档',
+    'editor.formatSelection.label.multiple': '格式化选定内容的方式...',
     'editor.configuration.preferredFormatter': '配置优先使用的格式化器。',
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'editor.guessEncodingFromContent': '通过内容猜测',

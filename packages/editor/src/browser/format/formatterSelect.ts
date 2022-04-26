@@ -23,16 +23,22 @@ export class FormattingSelector {
       monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider
     >,
     document: ITextModel,
-  ) {
+    forceSelect?: boolean,
+  ): Promise<
+    monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider | undefined
+  > {
     const docRef = this.modelService.getModelReference(URI.from(document.uri.toJSON()));
     if (!docRef) {
       return;
     }
     const languageId = docRef.instance.languageId;
     docRef.dispose();
-    const preferred = (this.preferenceService.get<{ [key: string]: string }>('editor.preferredFormatter') || {})[
-      languageId
-    ];
+    let preferred;
+    if (!forceSelect) {
+      preferred = (this.preferenceService.get<{ [key: string]: string }>('editor.preferredFormatter') || {})[
+        languageId
+      ];
+    }
 
     const elements: { [key: string]: IProvider } = {};
     formatters.forEach((provider: IProvider) => {
@@ -41,12 +47,12 @@ export class FormattingSelector {
       }
     });
 
-    if (preferred) {
+    if (preferred && !forceSelect) {
       const idx = formatters.findIndex((provider: IProvider) => provider.extensionId === preferred);
       if (idx >= 0) {
         return formatters[idx];
       }
-    } else if (formatters.length < 2) {
+    } else if (formatters.length < 2 && !forceSelect) {
       return formatters[0];
     }
 

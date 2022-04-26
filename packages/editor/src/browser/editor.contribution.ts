@@ -39,7 +39,9 @@ import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/rende
 import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
 import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { SyncDescriptor } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/descriptors';
 
 import {
@@ -62,6 +64,7 @@ import { EditorOpener } from './editor-opener';
 import { MonacoCodeService, MonacoContextViewService } from './editor.override';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { EditorView } from './editor.view';
+import { DocumentFormatService } from './format/format.service';
 import { FormattingSelector } from './format/formatterSelect';
 import { EditorHistoryService } from './history';
 import { EditorContextMenuController } from './menu/editor.context';
@@ -1088,6 +1091,20 @@ export class EditorContribution
         }
       },
     });
+
+    commands.registerCommand(EDITOR_COMMANDS.FORMAT_DOCUMENT_WITH, {
+      execute: async () => {
+        const formatService = this.injector.get(DocumentFormatService);
+        formatService.formatDocumentWith();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.FORMAT_SELECTION_WITH, {
+      execute: async () => {
+        const formatService = this.injector.get(DocumentFormatService);
+        formatService.formatSelectionWith();
+      },
+    });
   }
 
   registerMenus(menus: IMenuRegistry) {
@@ -1149,6 +1166,24 @@ export class EditorContribution
       group: 'navigation',
       when: 'resource',
       order: 5,
+    });
+
+    menus.registerMenuItem(MenuId.EditorContext, {
+      command: EDITOR_COMMANDS.FORMAT_DOCUMENT_WITH.id,
+      group: '1_modification',
+      order: 1.3,
+      when: ContextKeyExpr.and(EditorContextKeys.writable, EditorContextKeys.hasMultipleDocumentFormattingProvider),
+    });
+
+    menus.registerMenuItem(MenuId.EditorContext, {
+      command: EDITOR_COMMANDS.FORMAT_SELECTION_WITH.id,
+      when: ContextKeyExpr.and(
+        EditorContextKeys.writable,
+        EditorContextKeys.hasMultipleDocumentSelectionFormattingProvider,
+        EditorContextKeys.hasNonEmptySelection,
+      ),
+      group: '1_modification',
+      order: 1.31,
     });
   }
 
