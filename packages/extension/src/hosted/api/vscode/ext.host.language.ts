@@ -1246,25 +1246,43 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   $prepareTypeHierarchy(handle: number, resource: UriComponents, position: Position, token: CancellationToken) {
-    return this.withAdapter(handle, TypeHierarchyAdapter, (adapter) =>
-      Promise.resolve(adapter.prepareSession(Uri.revive(resource), position, token)),
+    return this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
+      (adapter) => Promise.resolve(adapter.prepareSession(Uri.revive(resource), position, token)),
+      false,
+      undefined,
     );
   }
 
   $provideTypeHierarchySupertypes(handle: number, sessionId: string, itemId: string, token: CancellationToken) {
-    return this.withAdapter(handle, TypeHierarchyAdapter, (adapter) =>
-      adapter.provideSupertypes(sessionId, itemId, token),
+    return this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
+      (adapter) => adapter.provideSupertypes(sessionId, itemId, token),
+      false,
+      undefined,
     );
   }
 
   $provideTypeHierarchySubtypes(handle: number, sessionId: string, itemId: string, token: CancellationToken) {
-    return this.withAdapter(handle, TypeHierarchyAdapter, (adapter) =>
-      adapter.provideSubtypes(sessionId, itemId, token),
+    return this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
+      (adapter) => adapter.provideSubtypes(sessionId, itemId, token),
+      false,
+      undefined,
     );
   }
 
   $releaseTypeHierarchy(handle: number, sessionId: string) {
-    this.withAdapter(handle, TypeHierarchyAdapter, (adapter) => Promise.resolve(adapter.releaseSession(sessionId)));
+    this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
+      (adapter) => Promise.resolve(adapter.releaseSession(sessionId)),
+      false,
+      undefined,
+    );
   }
 
   // #region Semantic Tokens
