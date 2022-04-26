@@ -26,6 +26,8 @@ import {
 import { CodeTerminalSettingPrefix } from '../common/preference';
 import { ShellType, WindowsShellType } from '../common/shell';
 
+import { XTerm } from './xterm';
+
 export interface EventMessage {
   data: string;
 }
@@ -100,93 +102,13 @@ export class NodePtyTerminalService implements ITerminalService {
     ptyInstance: pty,
   });
 
-  /**
-   *
-   * @param sessionId
-   * @param _
-   * @param rows
-   * @param cols
-   * @param options
-   * @param shellType
-   * @returns
-   */
-  async attach(
+  async attachByLaunchConfig(
     sessionId: string,
-    _: Terminal,
-    rows: number,
     cols: number,
-    options: TerminalOptions = {},
-    shellType?: ShellType,
+    rows: number,
+    launchConfig: IShellLaunchConfig,
+    _xterm: XTerm,
   ) {
-    let shellPath = options.shellPath;
-    const shellArgs = typeof options.shellArgs === 'string' ? [options.shellArgs] : options.shellArgs || [];
-    const platformKey = await this.getCodePlatformKey();
-    const terminalOs = await this.getOs();
-    if (!shellPath) {
-      // if terminal options.shellPath is not set, we should resolve the shell path from preference: `terminal.type`
-      if (shellType && shellType !== 'default') {
-        if (terminalOs === OperatingSystem.Windows) {
-          shellPath = await this.serviceClientRPC.$resolveWindowsShellPath(shellType as WindowsShellType);
-        } else {
-          shellPath = await this.serviceClientRPC.$resolveUnixShellPath(shellType);
-        }
-
-        if (!shellPath) {
-          // TODO: we can show error message here
-          // "the shell you want to launch is not exists"
-        }
-      }
-
-      // and now, we have the following two situations:
-      if (!shellPath) {
-        if (!shellType || shellType === 'default') {
-          // 1. `terminal.type` is set to a falsy value, or set to `default`
-          if (terminalOs === OperatingSystem.Windows) {
-            // in windows, at least we can launch the cmd.exe
-            const { type: _type, path } = await this.serviceClientRPC.$resolvePotentialWindowsShellPath();
-            shellType = _type;
-            shellPath = path;
-          } else {
-            // in unix, at least we can launch the sh
-            shellPath = await this.serviceClientRPC.$resolvePotentialUnixShellPath();
-          }
-        } else {
-          // 2. `terminal.type` is set to a truthy value, but the shell path is not resolved, for example cannot resolve 'git-bash'
-          //     but in this situation, we preserve the user settings, launch the type as shell path
-          //     on PtyService we also have a fallback to check the shellPath is valid
-          shellPath = shellType;
-        }
-      }
-
-      // if we still can not find the shell path, we use shellType as the target shell path
-      if (!shellPath && shellType !== 'default') {
-        shellPath = shellType;
-      }
-
-      const platformSpecificArgs = this.preferenceService.get<string[]>(
-        `${CodeTerminalSettingPrefix.ShellArgs}${platformKey}`,
-        [],
-      );
-
-      shellArgs.push(...platformSpecificArgs);
-
-      if (shellType === WindowsShellType['git-bash']) {
-        shellArgs.push('--login');
-      }
-    }
-
-    const launchConfig: IShellLaunchConfig = {
-      executable: shellPath,
-      cwd: options.cwd,
-      args: shellArgs,
-      env: options.env,
-      name: options.name,
-      strictEnv: options.strictEnv,
-    };
-    return this.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
-  }
-
-  async attachByLaunchConfig(sessionId: string, cols: number, rows: number, launchConfig: IShellLaunchConfig) {
     // If code runs to here, it means that we want to create a real terminal.
     // So if `launchConfig.executable` is not set, we should use the default shell.
     if (!launchConfig.executable) {

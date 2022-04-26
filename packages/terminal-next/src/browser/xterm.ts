@@ -10,6 +10,7 @@ import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench
 import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { SupportedOptions } from '../common/preference';
+import { IXTerm } from '../common/xterm';
 
 import styles from './component/terminal.module.less';
 import {
@@ -30,7 +31,7 @@ export interface XTermOptions {
 }
 
 @Injectable({ multiple: true })
-export class XTerm extends Disposable {
+export class XTerm extends Disposable implements IXTerm {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 

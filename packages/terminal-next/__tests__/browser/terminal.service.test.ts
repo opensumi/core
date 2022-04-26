@@ -93,9 +93,6 @@ describe('terminal service test cases', () => {
         $resolveUnixShellPath(p) {
           return p;
         },
-        $resolvePotentialUnixShellPath() {
-          return 'detectedBash';
-        },
       },
     });
 
@@ -123,38 +120,24 @@ describe('terminal service test cases', () => {
     expect(windowClientId).toMatch(/^test-window-client-id.*/);
   });
 
-  it('[attach] should be valid launchConfig with a valid shell path and ignore type', async () => {
-    await terminalService.attach(
+  it('[attachByLaunchConfig] should be valid launchConfig with a valid shell path and ignore type', async () => {
+    await terminalService.attachByLaunchConfig(
       sessionId,
-      {} as any,
       200,
       200,
       {
-        shellPath,
+        executable: shellPath,
       },
-      'asdasd',
+      {} as any,
     );
     expect(launchConfig?.executable).toEqual(shellPath);
-  });
-  it('[attach] should be valid launchConfig with empty type or default', async () => {
-    await terminalService.attach(sessionId, {} as any, 200, 200, {}, '');
-    expect(launchConfig?.executable).toEqual('detectedBash');
-    await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'default');
-    expect(launchConfig?.executable).toEqual('detectedBash');
-  });
-
-  it('[attach] should be valid launchConfig with specific type', async () => {
-    await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'bash');
-    expect(launchConfig?.executable).toEqual('bash');
-    await terminalService.attach(sessionId, {} as any, 200, 200, {}, 'asdasdasdasd');
-    expect(launchConfig?.executable).toEqual('asdasdasdasd');
   });
 
   it('[attachByLaunchConfig] can launch valid config', async () => {
     const launchConfig: IShellLaunchConfig = {
       executable: shellPath,
     };
-    await terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig);
+    await terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig, {} as any);
     expect(launchConfig?.executable).toEqual(shellPath);
   });
 
@@ -163,7 +146,7 @@ describe('terminal service test cases', () => {
       const launchConfig: IShellLaunchConfig = {
         executable: shellPath,
       };
-      terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig);
+      terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig, {} as any);
       terminalService.onProcessChange((e) => {
         expect(e.sessionId).toBe(sessionId);
         expect(e.processName).toBe('zsh');
