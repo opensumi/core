@@ -372,18 +372,18 @@ describe('FileTreeModelService should be work', () => {
       },
     } as any;
 
-    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeFalsy();
+    expect(fileTreeModelService.contextKey?.explorerResourceIsFolder.get()).toBeFalsy();
 
     fileTreeModelService.handleContextMenu(mockEvent, mockNode);
     // show context key in folder
-    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeTruthy();
+    expect(fileTreeModelService.contextKey?.explorerResourceIsFolder.get()).toBeTruthy();
 
     // blur
     fileTreeModelService.handleTreeBlur();
-    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeFalsy();
+    expect(fileTreeModelService.contextKey?.explorerResourceIsFolder.get()).toBeFalsy();
 
     // click in empty area
     fileTreeModelService.handleContextMenu(mockEvent, undefined);
-    expect(fileTreeModelService.contextKey.explorerResourceIsFolder.get()).toBeTruthy();
+    expect(fileTreeModelService.contextKey?.explorerResourceIsFolder.get()).toBeTruthy();
   });
 });

@@ -167,11 +167,11 @@ export class FileTreeContribution
     const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
     if (handler) {
       handler.onActivate(() => {
-        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(true);
+        this.fileTreeModelService.contextKey?.explorerViewletVisibleContext.set(true);
         this.fileTreeModelService.performLocationOnHandleShow();
       });
       handler.onInActivate(() => {
-        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(false);
+        this.fileTreeModelService.contextKey?.explorerViewletVisibleContext.set(false);
       });
     }
   }

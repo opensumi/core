@@ -901,7 +901,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   public toggleFilterMode() {
     this._filterMode = !this.filterMode;
     this.onFilterModeChangeEmitter.fire(this.filterMode);
-    this.fileContextKey.filesExplorerFilteredContext.set(this.filterMode);
+    this.fileContextKey?.filesExplorerFilteredContext.set(this.filterMode);
     // 清理掉输入值
     if (this.filterMode === false) {
       // 退出时若需要做 filter 值清理以及聚焦操作

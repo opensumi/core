@@ -9,7 +9,7 @@ import { ToolbarActionBasedLayout } from '@opensumi/ide-core-browser/lib/compone
 const CLIENT_ID = 'W_' + generate();
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
-  opts.workspaceDir = '/Users/baoxubing/work/GitHub/OpenSumi/core' || opts.workspaceDir || process.env.WORKSPACE_DIR;
+  opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
 
   opts.injector = injector;
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
