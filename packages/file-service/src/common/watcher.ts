@@ -11,7 +11,7 @@ export interface FileServiceWatcherOptions {
 export interface IFileServiceWatcher {
   watchId: number;
   onFilesChanged: Event<FileChange[]>;
-  dispose(): void;
+  dispose(): Promise<void>;
 }
 
 export type INsfwFunction = (

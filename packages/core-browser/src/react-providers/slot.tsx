@@ -170,7 +170,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
   const componentRegistry = useInjectable<ComponentRegistry>(ComponentRegistry);
   const appConfig = React.useContext(ConfigContext);
   const clientApp = useInjectable<IClientApp>(IClientApp);
-  const componentKeys = appConfig.layoutConfig[slot]?.modules;
+  const componentKeys = appConfig.layoutConfig[slot]?.modules ?? [];
   if (isTabbar) {
     slotRendererRegistry.addTabbar(slot);
   }

@@ -6,7 +6,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { URI, IWindowService } from '../../src';
 import { IExternalUriService } from '../../src/services';
 
-describe(`test ${__filename} on Electron env`, () => {
+describe('test windowService on Electron env', () => {
   let injector: MockInjector;
   let windowService: IWindowService;
   const mockElectronMainUIService = {
@@ -21,7 +21,13 @@ describe(`test ${__filename} on Electron env`, () => {
     minimizeWindow: jest.fn(),
   };
 
-  beforeEach(() => {
+  // 如果 window 已经关闭的情况下调用 close 会导致报错退出
+  // https://github.com/jsdom/jsdom/issues/2121
+  jest.spyOn(window, 'close').mockImplementation(() => {
+    // mocked window.close()
+  });
+
+  beforeAll(() => {
     (global as any).isElectronRenderer = true;
     injector = createBrowserInjector([]);
     injector.overrideProviders(
@@ -46,7 +52,7 @@ describe(`test ${__filename} on Electron env`, () => {
     windowService = injector.get(IWindowService);
   });
 
-  afterEach(() => {
+  afterAll(() => {
     (global as any).isElectronRenderer = false;
     injector.disposeAll();
   });
@@ -86,14 +92,14 @@ describe(`test ${__filename} on Electron env`, () => {
   });
 });
 
-describe(`test ${__filename}`, () => {
+describe('test windowService on web', () => {
   let injector: MockInjector;
   let windowService: IWindowService;
   const mockExternalUriService = {
     resolveExternalUri: jest.fn((uri) => uri.toString()),
   };
 
-  beforeEach(() => {
+  beforeAll(() => {
     injector = createBrowserInjector([]);
     injector.overrideProviders(
       {
@@ -109,7 +115,7 @@ describe(`test ${__filename}`, () => {
     windowService = injector.get(IWindowService);
   });
 
-  afterEach(() => {
+  afterAll(() => {
     injector.disposeAll();
   });
 
