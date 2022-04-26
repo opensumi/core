@@ -35,9 +35,7 @@ const baseConfig = {
     '/packages/quick-open/entry',
     // 终端渲染测试暂时不跟随单元测试
     '/packages/terminal-next/__tests__/browser/render.test.ts',
-    // ci 环境可能无法正常创建 pty 后端，需要 mock 一下 service
-    // '/packages/terminal-next/__tests__/browser/client.test.ts',
-    // componets下的 utils 均引用自 @opensumi/ide-core-common 模块，无须重复测试
+    // components utils 均引用自 @opensumi/ide-core-common 模块，无须重复测试
     // 后续统一至 @opensumi/ide-utils 模块
     '/packages/components/src/utils',
   ],
@@ -69,6 +67,7 @@ const baseConfig = {
  * @type {import('@jest/types').Config.InitialOptions}
  */
 module.exports = {
+  ...baseConfig,
   projects: [
     {
       ...baseConfig,
@@ -99,6 +98,7 @@ module.exports = {
       testMatch: [
         '**/packages/*/__test?(s)__/browser/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/*/__test?(s)__/common/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/tools/*/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         '**/packages/{components,core-browser,core-common}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
       ],
     },
