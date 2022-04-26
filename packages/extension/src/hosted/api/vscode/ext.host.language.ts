@@ -40,6 +40,7 @@ import {
   SelectionRangeProvider,
   DocumentFormattingEditProvider,
   CallHierarchyProvider,
+  TypeHierarchyProvider,
   DocumentSemanticTokensProvider,
   SemanticTokensLegend,
   DocumentRangeSemanticTokensProvider,
@@ -140,6 +141,7 @@ import { SelectionRangeAdapter } from './language/selection';
 import { DocumentRangeSemanticTokensAdapter, DocumentSemanticTokensAdapter } from './language/semantic-tokens';
 import { SignatureHelpAdapter } from './language/signature';
 import { TypeDefinitionAdapter } from './language/type-definition';
+import { TypeHierarchyAdapter } from './language/type-hierarchy';
 import { getDurationTimer, score } from './language/util';
 import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 
@@ -270,6 +272,9 @@ export function createLanguagesApiFactory(
     registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable {
       return extHostLanguages.registerCallHierarchyProvider(selector, provider);
     },
+    registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable {
+      return extHostLanguages.registerTypeHierarchyProvider(selector, provider);
+    },
     registerDocumentSemanticTokensProvider(
       selector: DocumentSelector,
       provider: DocumentSemanticTokensProvider,
@@ -331,6 +336,7 @@ export type Adapter =
   | RenameAdapter
   | DeclarationAdapter
   | CallHierarchyAdapter
+  | TypeHierarchyAdapter
   | DocumentSemanticTokensAdapter
   | DocumentRangeSemanticTokensAdapter
   | EvaluatableExpressionAdapter
@@ -1227,6 +1233,52 @@ export class ExtHostLanguages implements IExtHostLanguages {
     this.withAdapter(
       handle,
       CallHierarchyAdapter,
+      (adapter) => Promise.resolve(adapter.releaseSession(sessionId)),
+      false,
+      undefined,
+    );
+  }
+
+  registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable {
+    const callId = this.addNewAdapter(new TypeHierarchyAdapter(this.documents, provider));
+    this.proxy.$registerTypeHierarchyProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $prepareTypeHierarchy(handle: number, resource: UriComponents, position: Position, token: CancellationToken) {
+    return this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
+      (adapter) => Promise.resolve(adapter.prepareSession(Uri.revive(resource), position, token)),
+      false,
+      undefined,
+    );
+  }
+
+  $provideTypeHierarchySupertypes(handle: number, sessionId: string, itemId: string, token: CancellationToken) {
+    return this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
+      (adapter) => adapter.provideSupertypes(sessionId, itemId, token),
+      false,
+      undefined,
+    );
+  }
+
+  $provideTypeHierarchySubtypes(handle: number, sessionId: string, itemId: string, token: CancellationToken) {
+    return this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
+      (adapter) => adapter.provideSubtypes(sessionId, itemId, token),
+      false,
+      undefined,
+    );
+  }
+
+  $releaseTypeHierarchy(handle: number, sessionId: string) {
+    this.withAdapter(
+      handle,
+      TypeHierarchyAdapter,
       (adapter) => Promise.resolve(adapter.releaseSession(sessionId)),
       false,
       undefined,

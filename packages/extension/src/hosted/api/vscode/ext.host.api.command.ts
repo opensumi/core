@@ -65,6 +65,13 @@ export class ApiCommandArgument<V, O = V> {
     typeConverters.CallHierarchyItem.to,
   );
 
+  static readonly TypeHierarchyItem = new ApiCommandArgument(
+    'item',
+    'A type hierarchy item',
+    (v) => v instanceof types.TypeHierarchyItem,
+    typeConverters.TypeHierarchyItem.to,
+  );
+
   constructor(
     readonly name: string,
     readonly description: string,
@@ -356,6 +363,41 @@ export const newCommands: ApiCommand[] = [
       (v) => v.map(typeConverters.CallHierarchyOutgoingCall.to),
     ),
   ),
+
+  // --- type hierarchy
+  new ApiCommand(
+    'vscode.prepareTypeHierarchy',
+    '_executePrepareTypeHierarchy',
+    'Prepare type hierarchy at a position inside a document',
+    [ApiCommandArgument.Uri, ApiCommandArgument.Position],
+    new ApiCommandResult<modes.ITypeHierarchyItemDto[], types.TypeHierarchyItem[]>(
+      'A TypeHierarchyItem or undefined',
+      (v) => v.map(typeConverters.TypeHierarchyItem.to),
+    ),
+  ),
+
+  new ApiCommand(
+    'vscode.provideSupertypes',
+    '_executeProvideSupertypes',
+    'Compute supertypes for an item',
+    [ApiCommandArgument.TypeHierarchyItem],
+    new ApiCommandResult<modes.ITypeHierarchyItemDto[], types.TypeHierarchyItem[]>(
+      'A TypeHierarchyItem or undefined',
+      (v) => v.map(typeConverters.TypeHierarchyItem.to),
+    ),
+  ),
+
+  new ApiCommand(
+    'vscode.provideSubtypes',
+    '_executeProvideSubtypes',
+    'Compute subtypes for an item',
+    [ApiCommandArgument.TypeHierarchyItem],
+    new ApiCommandResult<modes.ITypeHierarchyItemDto[], types.TypeHierarchyItem[]>(
+      'A TypeHierarchyItem or undefined',
+      (v) => v.map(typeConverters.TypeHierarchyItem.to),
+    ),
+  ),
+
   // --- rename
   new ApiCommand(
     'vscode.executeDocumentRenameProvider',

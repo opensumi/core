@@ -14,13 +14,13 @@ import {
   EditorDocumentModelServiceImpl,
   EditorDocumentModelContentRegistryImpl,
 } from '@opensumi/ide-editor/lib/browser/doc-model/main';
-import { CallHierarchyService } from '@opensumi/ide-editor/lib/browser/monaco-contrib';
+import { CallHierarchyService, TypeHierarchyService } from '@opensumi/ide-editor/lib/browser/monaco-contrib';
 import {
   IEditorDocumentModelService,
   IEditorDocumentModelContentRegistry,
   EmptyDocCacheImpl,
 } from '@opensumi/ide-editor/src/browser';
-import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
+import { ICallHierarchyService, ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -74,6 +74,10 @@ describe('ExtHostLanguageFeatures', () => {
     {
       token: ICallHierarchyService,
       useClass: CallHierarchyService,
+    },
+    {
+      token: ITypeHierarchyService,
+      useClass: TypeHierarchyService,
     },
     {
       token: IEvaluatableExpressionService,
@@ -929,6 +933,7 @@ An error case:
     expect((tokens as types.SemanticTokens)?.data instanceof Uint32Array).toBeTruthy();
   });
   // #endregion Semantic Tokens
+
   // #region Call Hierarchy
   describe('CallHierarchy', () => {
     beforeAll(() => {
@@ -1019,7 +1024,113 @@ An error case:
       expect(provideOutgoingCalls![0].to.kind).toBe(types.SymbolKind.Object);
     });
   });
-  // #endregion Semantic Tokens
+  // #endregion Call Hierarchy
+
+  // #region TypeHierarchy
+  describe('TypeHierarchy', () => {
+    beforeAll(() => {
+      injector.addProviders({
+        token: IEditorDocumentModelService,
+        useValue: {
+          getModelReference: () => {},
+          createModelReference: (uri) =>
+            Promise.resolve({
+              instance: {
+                uri: model.uri,
+                getMonacoModel: () => ({
+                  uri: model.uri,
+                  isTooLargeForSyncing: () => false,
+                  getLanguageIdentifier: () => ({ language: 'plaintext' }),
+                }),
+              },
+              dispose: jest.fn(),
+            }),
+        },
+        override: true,
+      });
+    });
+
+    afterAll(() => {
+      injector.disposeOne(IEditorDocumentModelService);
+    });
+
+    test('registerTypeHierarchyProvider should be work', async () => {
+      class TestTypeHierarchyProvider implements vscode.TypeHierarchyProvider {
+        prepareTypeHierarchy(
+          document: vscode.TextDocument,
+          position: vscode.Position,
+          token: vscode.CancellationToken,
+        ): vscode.ProviderResult<vscode.TypeHierarchyItem[]> {
+          return [
+            new types.TypeHierarchyItem(
+              types.SymbolKind.Constant,
+              'ROOT',
+              'ROOT',
+              document.uri,
+              new types.Range(0, 0, 0, 0),
+              new types.Range(0, 0, 0, 0),
+            ),
+          ];
+        }
+        provideTypeHierarchySupertypes(
+          item: vscode.TypeHierarchyItem,
+          token: vscode.CancellationToken,
+        ): vscode.ProviderResult<vscode.TypeHierarchyItem[]> {
+          return [
+            new types.TypeHierarchyItem(
+              types.SymbolKind.Constant,
+              'SUPER',
+              'SUPER',
+              item.uri,
+              new types.Range(0, 0, 0, 0),
+              new types.Range(0, 0, 0, 0),
+            ),
+          ];
+        }
+        provideTypeHierarchySubtypes(
+          item: vscode.TypeHierarchyItem,
+          token: vscode.CancellationToken,
+        ): vscode.ProviderResult<vscode.TypeHierarchyItem[]> {
+          return [
+            new types.TypeHierarchyItem(
+              types.SymbolKind.Constant,
+              'SUB',
+              'SUB',
+              item.uri,
+              new types.Range(0, 0, 0, 0),
+              new types.Range(0, 0, 0, 0),
+            ),
+          ];
+        }
+      }
+
+      const typeHierarchyService = injector.get<ITypeHierarchyService>(ITypeHierarchyService);
+      const mockMainThreadFunc = jest.spyOn(mainThread, '$registerTypeHierarchyProvider');
+
+      extHost.registerTypeHierarchyProvider('plaintext', new TestTypeHierarchyProvider());
+
+      await 0;
+
+      expect(mockMainThreadFunc).toBeCalled();
+
+      const prepareTypeHierarchyItems = await typeHierarchyService.prepareTypeHierarchyProvider(
+        model.uri,
+        new Position(1, 1),
+      );
+      expect(Array.isArray(prepareTypeHierarchyItems)).toBe(true);
+      expect(prepareTypeHierarchyItems.length).toBe(1);
+      expect(prepareTypeHierarchyItems[0].name).toBe('ROOT');
+
+      const provideSupertypes = await typeHierarchyService.provideSupertypes(prepareTypeHierarchyItems[0]);
+      expect(provideSupertypes!.length).toBe(1);
+      expect(provideSupertypes![0].name).toBe('SUPER');
+
+      const provideSubtypes = await typeHierarchyService.provideSubtypes(prepareTypeHierarchyItems[0]);
+      expect(provideSubtypes!.length).toBe(1);
+      expect(provideSubtypes![0].name).toBe('SUB');
+    });
+  });
+  // #endregion TypeHierarchy
 
   const textModel = createModel('test.a = "test"', 'test');
   const evaluatableExpressionService = injector.get<IEvaluatableExpressionService>(IEvaluatableExpressionService);
