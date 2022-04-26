@@ -33,7 +33,6 @@ jobs:
     - name: Build & Test
       run: |
         npm i
-        npm run init
         npm run ci -- --selectProjects jsdom
 
     - if: ${{ matrix.node-version == '14.x' }}
@@ -62,7 +61,6 @@ jobs:
     - name: Build & Test
       run: |
         npm i
-        npm run init
         npm run ci -- --selectProjects node
 
     - if: ${{ matrix.node-version == '14.x' }}
