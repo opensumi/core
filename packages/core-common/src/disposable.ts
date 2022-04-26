@@ -351,3 +351,21 @@ export class MutableDisposable<T extends IDisposable> implements IDisposable {
     this._value = undefined;
   }
 }
+
+export class RefCountedDisposable {
+  private _counter = 1;
+
+  constructor(private readonly _disposable: IDisposable) {}
+
+  acquire() {
+    this._counter++;
+    return this;
+  }
+
+  release() {
+    if (--this._counter === 0) {
+      this._disposable.dispose();
+    }
+    return this;
+  }
+}
