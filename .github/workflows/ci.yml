@@ -17,6 +17,7 @@ jobs:
   browser:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         node-version: [14.x, 16.x]
@@ -45,6 +46,7 @@ jobs:
   node:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
         node-version: [14.x, 16.x]
