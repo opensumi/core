@@ -931,7 +931,11 @@ export class FileTreeModelService {
     if (Directory.is(node) && node.expanded) {
       target = node as Directory;
     } else if (node) {
-      target = node.parent as Directory;
+      if (Directory.isRoot(node.parent)) {
+        target = node as Directory;
+      } else {
+        target = node.parent as Directory;
+      }
     } else {
       return;
     }
