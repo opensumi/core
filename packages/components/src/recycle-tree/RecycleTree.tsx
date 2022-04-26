@@ -9,6 +9,7 @@ import {
   Disposable,
   CancellationTokenSource,
   CancellationToken,
+  Throttler,
 } from '@opensumi/ide-utils';
 
 import { ScrollbarsVirtualList } from '../scrollbars';
@@ -294,8 +295,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private willUpdateTasks = 0;
 
-  private updateTimer;
-  private updateTime = 0;
+  private queueUpdateThrottler: Throttler = new Throttler();
 
   // 批量更新Tree节点
   private doBatchUpdate = (() => {
@@ -384,51 +384,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     };
   })();
 
-  // FIXME: 待 @opensumi/ide-utils 合入后可合并逻辑至 Throttler.queue
   private batchUpdate = () => {
     this.willUpdateTasks++;
-    this.queueUpdatePromise = this.queueUpdate(this.doBatchUpdate);
+    this.queueUpdatePromise = this.queueUpdateThrottler.queue(this.doBatchUpdate);
     return this.queueUpdatePromise;
   };
-
-  private queueUpdate(promiseFactory: () => Promise<void>) {
-    if (this.activePromise) {
-      this.queuedPromiseFactory = promiseFactory;
-
-      if (!this.queuedPromise) {
-        const onComplete = () => {
-          this.queuedPromise = null;
-
-          const result = this.queueUpdate(this.queuedPromiseFactory!);
-          this.queuedPromiseFactory = null;
-
-          return result;
-        };
-
-        this.queuedPromise = new Promise((c) => {
-          this.activePromise!.then(onComplete, onComplete).then(c);
-        });
-      }
-      return new Promise((c, e) => {
-        this.queuedPromise!.then(c, e);
-      });
-    }
-
-    this.activePromise = promiseFactory();
-
-    return new Promise((c, e) => {
-      this.activePromise!.then(
-        (result: any) => {
-          this.activePromise = null;
-          c(result);
-        },
-        (err: any) => {
-          this.activePromise = null;
-          e(err);
-        },
-      );
-    });
-  }
 
   private getNewPromptInsertIndex(startIndex: number, parent: CompositeTreeNode) {
     const { root } = this.props.model;

@@ -6,6 +6,7 @@ import {
   path,
   CancellationToken,
   CancellationTokenSource,
+  Throttler,
 } from '@opensumi/ide-utils';
 
 import {
@@ -358,9 +359,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   private _branchSize: number;
   private _flattenedBranch: number[] | null;
 
-  private activeRefreshPromise: Promise<any> | null;
-  private queuedRefreshPromise: Promise<any> | null;
-  private queuedRefreshPromiseFactory: ((token?: CancellationToken) => Promise<any>) | null;
+  private refreshThrottler: Throttler = new Throttler();
 
   private _lock = false;
 
@@ -1423,51 +1422,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     } else {
       token = state.refreshCancelToken.token;
     }
-    await this.queue<void>(this.doRefresh.bind(this), token);
+    await this.refreshThrottler.queue(async () => this.doRefresh(token));
     TreeNode.setGlobalTreeState(this.path, {
       isRefreshing: false,
-    });
-  }
-
-  private async queue<T>(promiseFactory: (token?: CancellationToken) => Promise<T>, token?: CancellationToken) {
-    if (this.activeRefreshPromise) {
-      this.queuedRefreshPromiseFactory = promiseFactory;
-
-      if (!this.queuedRefreshPromise) {
-        const onComplete = () => {
-          if (token?.isCancellationRequested) {
-            return async () => {};
-          }
-          this.queuedRefreshPromise = null;
-          const result = this.queue(() => this.queuedRefreshPromiseFactory!(token));
-          this.queuedRefreshPromiseFactory = null;
-
-          return result;
-        };
-
-        this.queuedRefreshPromise = new Promise((resolve) => {
-          this.activeRefreshPromise?.then(onComplete, onComplete).then(resolve);
-        });
-      }
-
-      return new Promise<T>((c, e) => {
-        this.queuedRefreshPromise?.then(c, e);
-      });
-    }
-
-    this.activeRefreshPromise = promiseFactory(token);
-
-    return new Promise<T>((c, e) => {
-      this.activeRefreshPromise?.then(
-        (result: any) => {
-          this.activeRefreshPromise = null;
-          c(result);
-        },
-        (err: any) => {
-          this.activeRefreshPromise = null;
-          e(err);
-        },
-      );
     });
   }
 
