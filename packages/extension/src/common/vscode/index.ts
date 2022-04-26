@@ -193,3 +193,4 @@ export * from './secret';
 export * from './tests';
 export * from './editor-tabs';
 export * from './scm';
+export * from './decoration';

@@ -30,7 +30,7 @@ export class DecorationsManager implements IDisposable {
       inheritable: new CompositeDecoration(root, CompositeDecorationType.Inheritable),
     });
     this.disposables.push(root.watcher.on(TreeNodeEvent.DidChangeParent, this.switchParent));
-    this.disposables.push(root.watcher.on(TreeNodeEvent.DidDispose, this.decorationsMeta.delete));
+    this.disposables.push(root.watcher.on(TreeNodeEvent.DidDispose, (target) => this.decorationsMeta.delete(target)));
   }
 
   public dispose(): void {

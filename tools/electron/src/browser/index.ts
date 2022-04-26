@@ -35,7 +35,6 @@ import { PreferencesModule } from '@opensumi/ide-preferences/lib/browser';
 import { QuickOpenModule } from '@opensumi/ide-quick-open/lib/browser';
 import { SCMModule } from '@opensumi/ide-scm/lib/browser';
 import { SearchModule } from '@opensumi/ide-search/lib/browser';
-import { StartupModule } from '@opensumi/ide-startup/lib/browser';
 import { StaticResourceModule } from '@opensumi/ide-static-resource/lib/browser';
 import { StatusBarModule } from '@opensumi/ide-status-bar/lib/browser';
 import { StorageModule } from '@opensumi/ide-storage/lib/browser';
@@ -50,8 +49,6 @@ import { WorkspaceModule } from '@opensumi/ide-workspace/lib/browser';
 
 import { renderApp } from './app';
 import { customLayoutConfig } from './layout';
-// import { DemoModule } from 'modules/demo';
-// import { TopbarModule } from 'modules/topbar/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   MainLayoutModule,
@@ -103,12 +100,13 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
 ];
 
 renderApp({
-  modules: [
-    ...CommonBrowserModules,
-    ElectronBasicModule,
-    StartupModule,
-    // DemoModule,
-    // TopbarModule, // Topbar demo
-  ],
+  useExperimentalShadowDom: true,
+  defaultPreferences: {
+    'general.theme': 'opensumi-dark',
+    'general.icon': 'vscode-icons',
+    'application.confirmExit': 'never',
+    'editor.quickSuggestionsDelay': 100,
+  },
+  modules: [...CommonBrowserModules, ElectronBasicModule],
   layoutConfig: customLayoutConfig,
 });

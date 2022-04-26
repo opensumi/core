@@ -79,7 +79,7 @@ export interface IContentSearchClientService {
 
   validateMessage: ValidateMessage | undefined;
 
-  updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent);
+  updateUIState(obj, e?: React.KeyboardEvent);
 }
 
 export interface IUIState {

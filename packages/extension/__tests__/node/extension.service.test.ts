@@ -14,8 +14,7 @@ import { ExtensionHostManager } from '../../src/node/extension.host.manager';
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 
-
-describe('Extension Serivce', () => {
+describe('Extension Service', () => {
   let injector: Injector;
   let extensionService: IExtensionNodeService;
   const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
@@ -46,9 +45,7 @@ describe('Extension Serivce', () => {
           },
           time() {
             return {
-              timeEnd: () => {
-                //
-              },
+              timeEnd: () => 1,
             };
           },
         },
@@ -116,17 +113,25 @@ describe('Extension Serivce', () => {
   });
 
   describe('extension host process', () => {
+    let mockExtClientId = 'mock_id123';
+    beforeEach(() => {
+      mockExtClientId = 'mock_id' + Math.random();
+    });
+
+    afterEach(async () => {
+      await extensionService.disposeClientExtProcess(mockExtClientId, true);
+    });
+
+    // jest.setTimeout(20 * 1000);
+
     it('should create extension host process', async () => {
-      const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);
       const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(port).toBeUndefined();
-      await extensionService.disposeClientExtProcess(mockExtClientId, true);
     });
 
     it.skip('enable extProcess inspect port', async () => {
       (global as any).isDev = undefined;
-      const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);
 
       const res = await extensionService.tryEnableInspectPort(mockExtClientId, 2000);
@@ -134,44 +139,30 @@ describe('Extension Serivce', () => {
 
       const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(typeof port).toBe('number');
-      await extensionService.disposeClientExtProcess(mockExtClientId, true);
     });
 
     it('create extension host process with develop mode', async () => {
       (global as any).isDev = 1;
-      const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId);
       const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(typeof port).toBe('number');
-      await extensionService.disposeClientExtProcess(mockExtClientId, false);
       (global as any).isDev = undefined;
     });
 
     it('create extension host process with enable extension host options', async () => {
       (global as any).isDev = undefined;
-      const mockExtClientId = 'mock_id' + Math.random();
       await extensionService.createProcess(mockExtClientId, {
         enableDebugExtensionHost: true,
       });
       const port = await extensionService.getProcessInspectPort(mockExtClientId);
       expect(typeof port).toBe('number');
-      await extensionService.disposeClientExtProcess(mockExtClientId, false);
     });
-  });
 
-  describe('getElectronMainThreadListenPath', () => {
-    it('should create connect listenPath', () => {
-      const mockExtClientId = 'mock_id' + Math.random();
-
-      const listenPath = extensionService.getElectronMainThreadListenPath2(mockExtClientId);
+    it('should create connect listenPath', async () => {
+      const listenPath = await extensionService.getElectronMainThreadListenPath2(mockExtClientId);
       expect(path.dirname(listenPath)).toBe(path.join(os.tmpdir(), 'sumi-ipc'));
     });
-  });
-
-  describe('getExtServerListenOption', () => {
     it('should create ext server listen option', async () => {
-      const mockExtClientId = 'mock_id' + Math.random();
-
       const { port, path: listenPath } = await extensionService.getExtServerListenOption(mockExtClientId);
 
       if (port) {

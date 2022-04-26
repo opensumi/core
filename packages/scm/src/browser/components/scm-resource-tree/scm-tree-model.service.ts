@@ -498,14 +498,6 @@ export class SCMTreeModelService {
     this.treeModel.dispatchChange();
   };
 
-  removeFileDecoration() {
-    if (!this.decorations) {
-      return;
-    }
-    this.decorations.removeDecoration(this.selectedDecoration);
-    this.decorations.removeDecoration(this.focusedDecoration);
-  }
-
   handleTreeHandler(handle: IEditorTreeHandle) {
     this._scmTreeHandle = handle;
   }

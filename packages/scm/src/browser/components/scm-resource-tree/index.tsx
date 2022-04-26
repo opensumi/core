@@ -41,10 +41,6 @@ export const SCMResourceTree: React.FC<{
       }
       setIsReady(true);
     })();
-
-    return () => {
-      scmTreeModelService.removeFileDecoration();
-    };
   }, []);
 
   React.useEffect(() => {
@@ -215,7 +211,7 @@ const TreeView = React.memo(
           onDoubleClick={onItemDoubleClick}
           onTwistierClick={onTwistierClick}
           onContextMenu={onContextMenu}
-          defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 16}
+          defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 4}
           leftPadding={scmTreeService.isTreeMode ? 8 : 0}
           iconTheme={iconThemeDesc}
         />

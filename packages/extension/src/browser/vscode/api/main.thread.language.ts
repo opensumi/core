@@ -331,7 +331,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
 
     if (DocumentFilter.is(selector)) {
-      return !selector.language || selector.language === languageId;
+      return selector?.language === languageId;
     }
 
     return selector === languageId;

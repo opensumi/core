@@ -374,15 +374,6 @@ export class OpenedEditorModelService {
     this.treeModel.dispatchChange();
   };
 
-  removeFileDecoration() {
-    if (!this.decorations) {
-      return;
-    }
-    this.decorations.removeDecoration(this.selectedDecoration);
-    this.decorations.removeDecoration(this.focusedDecoration);
-    this.decorations.removeDecoration(this.contextMenuDecoration);
-  }
-
   handleContextMenu = (ev: React.MouseEvent, file?: EditorFileGroup | EditorFile) => {
     if (!file) {
       this.enactiveFileDecoration();
@@ -497,7 +488,7 @@ export class OpenedEditorModelService {
       if (!node) {
         return;
       }
-      node = (await this.editorTreeHandle.ensureVisible(node)) as EditorFile;
+      node = (await this.editorTreeHandle.ensureVisible(node as EditorFile)) as EditorFile;
       if (node) {
         if (this.focusedFile === node) {
           this.activeFileDecoration(node as EditorFile);

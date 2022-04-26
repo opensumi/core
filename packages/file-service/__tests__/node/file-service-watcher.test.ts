@@ -12,7 +12,7 @@ import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher
 
 function createNsfwFileSystemWatcherServer() {
   return new NsfwFileSystemWatcherServer({
-    verbose: false,
+    verbose: true,
   });
 }
 
@@ -91,7 +91,7 @@ describe('nsfw-filesystem-watcher', () => {
     watcherServer.setClient(watcherClient);
 
     /* Unwatch root */
-    watcherServer.unwatchFileChanges(watcherId);
+    await watcherServer.unwatchFileChanges(watcherId);
 
     fs.mkdirSync(FileUri.fsPath(root.resolve('foo')));
     expect(fs.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);

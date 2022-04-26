@@ -445,6 +445,7 @@ export class DebugSessionManager implements IDebugSessionManager {
       this.debugContextKey.contextSetVariableSupported.set(session.capabilities.supportsSetVariable ?? false);
       this.debugContextKey.contextRestartFrameSupported.set(session.capabilities.supportsRestartFrame ?? false);
       this.debugContextKey.contextDebugState.set(DebugState[session.state] as keyof typeof DebugState);
+      this.debugContextKey.contextInDdebugMode.set(state !== DebugState.Inactive);
     });
     session.on('terminated', (event) => {
       const restart = event.body && event.body.restart;

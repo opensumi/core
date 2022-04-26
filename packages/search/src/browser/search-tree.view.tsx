@@ -7,7 +7,6 @@ import { ViewState } from '@opensumi/ide-core-browser';
 import { getIcon, getExternalIcon } from '@opensumi/ide-core-browser';
 import { DeprecatedRecycleTree, TreeNode, TreeViewActionTypes } from '@opensumi/ide-core-browser/lib/components';
 
-
 import { ResultTotal } from '../common';
 
 import { SearchTreeService } from './search-tree.service';

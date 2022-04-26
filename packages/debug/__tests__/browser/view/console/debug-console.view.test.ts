@@ -1,9 +1,4 @@
-import { observer } from 'mobx-react-lite';
-import React from 'react';
-import ReactDOM from 'react-dom';
-import { act } from 'react-dom/test-utils';
-
-import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps } from '@opensumi/ide-components';
+import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { IContextKeyService } from '@opensumi/ide-core-browser/src';
 import { Disposable } from '@opensumi/ide-core-common';
@@ -22,13 +17,8 @@ import {
   DefaultDebugSessionFactory,
   DebugSession,
 } from '@opensumi/ide-debug/lib/browser';
-import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer } from '@opensumi/ide-debug/lib/browser/tree';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
-import {
-  DebugConsoleModelService,
-  IDebugConsoleModel,
-} from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
-import { DebugConsoleRenderedNode } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.view';
+import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
@@ -62,67 +52,6 @@ describe('Debug console component Test Suites', () => {
     currentSession: IDebugSession,
     updateCurrentSession: jest.fn((session: IDebugSession | undefined) => {}),
   };
-
-  const DebugConsoleView = observer(
-    ({ tree, model }: { tree: DebugConsoleModelService; model: IDebugConsoleModel }) => {
-      const [filterValue, setFilterValue] = React.useState<string>('');
-      const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
-      const handleTreeReady = (handle: IRecycleTreeHandle) => {
-        tree.handleTreeHandler({
-          ...handle,
-          getModel: () => model?.treeModel!,
-          hasDirectFocus: () => wrapperRef.current === document.activeElement,
-        });
-      };
-
-      React.useEffect(() => {
-        const filterDispose = debugConsoleFilterService.onDidValueChange((value: string) => {
-          setFilterValue(value);
-        });
-        return () => {
-          filterDispose.dispose();
-        };
-      }, []);
-
-      const fuzzyOptions = () => ({
-        pre: '<match>',
-        post: '</match>',
-        extract: (node: DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer) =>
-          node.description ? node.description : node.name,
-      });
-      if (!model) {
-        return null;
-      }
-      return (
-        <RecycleTree
-          height={1024}
-          width={1024}
-          itemHeight={22}
-          onReady={handleTreeReady}
-          filter={filterValue}
-          filterProvider={{ fuzzyOptions }}
-          model={model!.treeModel}
-          overflow={'auto'}
-        >
-          {(props: INodeRendererWrapProps) => {
-            const decorations = tree.decorations.getDecorations(props.item as any);
-            return (
-              <DebugConsoleRenderedNode
-                item={props.item}
-                itemType={props.itemType}
-                decorations={decorations}
-                onClick={() => {}}
-                onTwistierClick={() => {}}
-                onContextMenu={() => {}}
-                defaultLeftPadding={14}
-                leftPadding={8}
-              />
-            );
-          }}
-        </RecycleTree>
-      );
-    },
-  );
 
   beforeEach(() => {
     mockInjector.overrideProviders({
@@ -173,7 +102,15 @@ describe('Debug console component Test Suites', () => {
     });
     mockInjector.overrideProviders({
       token: WSChannelHandler,
-      useValue: {},
+      useValue: {
+        clientId: 'mock_id' + Math.random(),
+        openChannel(id: string) {
+          const channelSend = (content) => {
+            //
+          };
+          return new WSChannel(channelSend, 'mock_wschannel' + id);
+        },
+      },
     });
     mockInjector.overrideProviders({
       token: DebugSessionContributionRegistry,
@@ -214,27 +151,30 @@ describe('Debug console component Test Suites', () => {
 
   afterEach(() => {
     document.body.removeChild(container);
-    // ReactDOM.unmountComponentAtNode(container);
     container = null;
   });
 
-  it('repl filter', async () => {
+  it('repl can be filter', async () => {
     const session = createMockSession('mock', {});
     // @ts-ignore
     mockDebugSessionManager.currentSession = session;
-    const model = await debugConsoleModelService.initTreeModel(session as DebugSession);
+    await debugConsoleModelService.initTreeModel(session as DebugSession);
     const tree = debugConsoleModelService;
-
-    act(() => {
-      ReactDOM.render(<DebugConsoleView tree={tree} model={model!}></DebugConsoleView>, container);
-    });
+    const ensureVisible = jest.fn();
+    debugConsoleModelService.handleTreeHandler({
+      ensureVisible,
+    } as any);
 
     await tree.execute('ABCD\n');
     await tree.execute('EFGH\n');
     await tree.execute('KTTQL\n');
     await tree.execute('KATATAQAL\n');
     await tree.execute('🐜\n');
-
-    debugConsoleFilterService.setFilterText('KTTQL');
+    expect(ensureVisible).toBeCalledTimes(5);
+    const filterString = 'KTTQL';
+    debugConsoleFilterService.onDidValueChange((event) => {
+      expect(event).toBe(filterString);
+    });
+    debugConsoleFilterService.setFilterText(filterString);
   });
 });

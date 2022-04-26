@@ -34,10 +34,8 @@ import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { ExtensionTabBarTreeView } from '../../components';
 
-
 import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
-
 
 @Injectable({ multiple: true })
 export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeView {
@@ -467,7 +465,6 @@ export class TreeViewDataProvider extends Tree {
     } else {
       nodes = [new ExtensionTreeRoot(this as any, this.treeViewId)];
     }
-    this.cacheNodes(nodes);
     return nodes;
   }
 
@@ -485,16 +482,6 @@ export class TreeViewDataProvider extends Tree {
       return -1;
     }
     return 0;
-  }
-
-  getNodeByTreeItemId(treeItemId: string) {
-    return this.treeItemId2TreeNode.get(treeItemId);
-  }
-
-  cacheNodes(nodes: (ExtensionCompositeTreeNode | ExtensionTreeRoot | ExtensionTreeNode)[]) {
-    nodes.forEach((node) => {
-      this.treeItemId2TreeNode.set(node.treeItemId, node);
-    });
   }
 
   async refresh(itemsToRefresh?: TreeViewItem) {

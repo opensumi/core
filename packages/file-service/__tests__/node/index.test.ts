@@ -646,7 +646,7 @@ describe('FileService', () => {
     it('Should return id and dispose', async () => {
       const watchId = await fileService.watchFileChanges(root.toString());
       expect(typeof watchId).toEqual('number');
-      fileService.unwatchFileChanges(watchId);
+      await fileService.unwatchFileChanges(watchId);
     });
 
     it('Should set and get Excludes', () => {

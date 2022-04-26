@@ -1,7 +1,15 @@
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import qs from 'querystring';
 
-import { app, BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions, IpcMainEvent } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  shell,
+  ipcMain,
+  BrowserWindowConstructorOptions,
+  IpcMainEvent,
+  WebPreferences,
+} from 'electron';
 import semver from 'semver';
 import treeKill from 'tree-kill';
 
@@ -15,7 +23,7 @@ import {
   FileUri,
   Deferred,
 } from '@opensumi/ide-core-common';
-import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
+import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 
@@ -24,9 +32,11 @@ const DEFAULT_WINDOW_WIDTH = 1000;
 
 let windowClientCount = 0;
 
-const defaultWebPreferences = {
+const defaultWebPreferences: WebPreferences = {
   webviewTag: true,
   contextIsolation: false,
+  defaultFontSize: 13,
+  minimumFontSize: 12,
 };
 
 @Injectable({ multiple: true })
@@ -197,7 +207,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.windowClientId,
       this.appConfig.extensionDir,
     );
-    this.rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
+    this.rpcListenPath = await normalizedIpcHandlerPathAsync('electron-window', true);
     await this.node.start(this.rpcListenPath!, (this.workspace || '').toString());
     this._nodeReady.resolve();
   }

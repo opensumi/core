@@ -1,7 +1,6 @@
 import cls from 'classnames';
 import React from 'react';
 
-
 import {
   TreeNode,
   CompositeTreeNode,
@@ -120,7 +119,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   };
 
   const getItemTooltip = () => {
-    let tooltip = item.tooltip || item.name;
+    let tooltip = item.tooltip || item.displayName;
     if (decoration && decoration.tooltip) {
       tooltip += ` • ${decoration.tooltip}`;
     }

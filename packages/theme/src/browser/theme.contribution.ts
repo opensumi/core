@@ -55,11 +55,15 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
-  initialize() {
+  async initialize() {
     this.registerDefaultColorTheme();
     this.registerDefaultTokenStyles();
     this.registerDefaultTokenType();
     this.registerDefaultTokenModifier();
+    await Promise.all([
+      await this.iconService.iconThemeLoaded.promise,
+      await this.themeService.colorThemeLoaded.promise,
+    ]);
   }
 
   private registerDefaultColorTheme() {

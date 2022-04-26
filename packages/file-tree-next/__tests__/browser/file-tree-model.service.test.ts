@@ -168,7 +168,8 @@ describe('FileTreeModelService should be work', () => {
         },
       },
     );
-    contextKey = injector.get(FileContextKey, [document.createElement('div')]);
+    contextKey = injector.get(FileContextKey);
+    contextKey.initScopedContext(document.createElement('div'));
 
     const root = {
       ...newDirectoryByName('child'),
@@ -279,27 +280,6 @@ describe('FileTreeModelService should be work', () => {
     decoration = fileTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
     expect(decoration!.classlist).toEqual([styles.mod_selected]);
-  });
-
-  it('removeFileDecoration method should be work', () => {
-    const mockFileTreeService = {
-      on: jest.fn(),
-    } as any;
-    fileTreeModelService.initDecorations(mockRoot);
-    const node = new File(
-      mockFileTreeService,
-      mockRoot,
-      mockRoot.uri.resolve('test.js'),
-      'test.js',
-      undefined,
-      'tooltip',
-    );
-    fileTreeModelService.activeFileDecoration(node);
-    let decoration = fileTreeModelService.decorations.getDecorations(node);
-    fileTreeModelService.removeFileDecoration();
-    decoration = fileTreeModelService.decorations.getDecorations(node);
-    expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
   });
 
   it('handleTreeHandler method should be work', () => {

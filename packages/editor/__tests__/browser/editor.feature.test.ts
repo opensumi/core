@@ -85,24 +85,25 @@ describe('editor status bar item test', () => {
     expect(accessor.addZone).toBeCalled();
   });
 
+  const config = {};
+  injector.mockService(PreferenceService, {
+    get: jest.fn((key) => config[key]),
+    set: jest.fn((key, value) => {
+      config[key] = value;
+    }),
+  });
+  injector.mockService(IEditorDocumentModelService, {
+    getModelReference: () => ({
+      instance: {
+        languageId: 'javascript',
+      },
+      dispose: jest.fn(),
+    }),
+  });
+
   it('formatter select test', async () => {
     injector.mockService(QuickPickService, {
       show: (strings: any[]) => strings[0].value,
-    });
-    const config = {};
-    injector.mockService(PreferenceService, {
-      get: jest.fn((key) => config[key]),
-      set: jest.fn((key, value) => {
-        config[key] = value;
-      }),
-    });
-    injector.mockService(IEditorDocumentModelService, {
-      getModelReference: () => ({
-        instance: {
-          languageId: 'javascript',
-        },
-        dispose: jest.fn(),
-      }),
     });
 
     const selector: FormattingSelector = injector.get(FormattingSelector);
@@ -126,6 +127,29 @@ describe('editor status bar item test', () => {
     );
 
     expect(config['editor.preferredFormatter']['javascript']).toBe('testFormatter');
+  });
+
+  it('formatter selector test for single formatter', async () => {
+    injector.mockService(QuickPickService, {
+      show: (strings: any[]) => strings[0].value,
+    });
+
+    const selector: FormattingSelector = injector.get(FormattingSelector);
+    await selector.select(
+      [
+        {
+          displayName: 'Test Single Formatter',
+          extensionId: 'testSingleFormatter',
+          provideDocumentFormattingEdits: jest.fn(),
+        },
+      ],
+      {
+        uri: new URI('file:///test/test2.js').codeUri,
+      } as any,
+      true, // force show selector
+    );
+
+    expect(config['editor.preferredFormatter']['javascript']).toBe('testSingleFormatter');
   });
 
   afterAll(() => {

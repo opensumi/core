@@ -23,7 +23,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import {
   IMenuRegistry,
-  NextMenuContribution as MenuContribution,
+  MenuContribution,
   MenuId,
   IMenuItem,
   ISubmenuItem,

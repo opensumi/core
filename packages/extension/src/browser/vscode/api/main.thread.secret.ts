@@ -1,7 +1,7 @@
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { AppConfig, ICredentialsService, Disposable } from '@opensumi/ide-core-browser';
-import { ICryptrService } from '@opensumi/ide-core-browser/lib/services';
+import { ICryptoService } from '@opensumi/ide-core-browser/lib/services';
 
 import { ExtHostAPIIdentifier, IMainThreadSecret, IExtHostSecret } from '../../../common/vscode';
 
@@ -15,8 +15,8 @@ export class MainThreadSecret extends Disposable implements IMainThreadSecret {
   @Autowired(ICredentialsService)
   private readonly credentialsService: ICredentialsService;
 
-  @Autowired(ICryptrService)
-  private readonly cryptrService: ICryptrService;
+  @Autowired(ICryptoService)
+  private readonly cryptoService: ICryptoService;
 
   constructor(@Optional(Symbol()) rpcProtocol: IRPCProtocol) {
     super();
@@ -36,7 +36,7 @@ export class MainThreadSecret extends Disposable implements IMainThreadSecret {
   async $getPassword(extensionId: string, key: string): Promise<string | undefined> {
     const fullKey = this.getFullKey(extensionId);
     const password = await this.credentialsService.getPassword(fullKey, key);
-    const decrypted = password && (await this.cryptrService.decrypt(password));
+    const decrypted = password && (await this.cryptoService.decrypt(password));
 
     if (decrypted) {
       try {
@@ -58,7 +58,7 @@ export class MainThreadSecret extends Disposable implements IMainThreadSecret {
       extensionId,
       content: value,
     });
-    const encrypted = await this.cryptrService.encrypt(toEncrypt);
+    const encrypted = await this.cryptoService.encrypt(toEncrypt);
     return this.credentialsService.setPassword(fullKey, key, encrypted);
   }
 

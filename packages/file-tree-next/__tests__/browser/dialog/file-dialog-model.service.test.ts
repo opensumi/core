@@ -167,27 +167,6 @@ describe('FileDialogModel should be work', () => {
     expect(decoration!.classlist).toEqual([styles.mod_selected]);
   });
 
-  it('removeFileDecoration method should be work', () => {
-    const mockFileTreeService = {
-      on: jest.fn(),
-    } as any;
-    fileTreeDialogModel.initDecorations(mockRoot);
-    const node = new File(
-      mockFileTreeService,
-      mockRoot,
-      mockRoot.uri.resolve('test.js'),
-      'test.js',
-      undefined,
-      'tooltip',
-    );
-    fileTreeDialogModel.activeFileDecoration(node);
-    let decoration = fileTreeDialogModel.decorations.getDecorations(node);
-    fileTreeDialogModel.removeFileDecoration();
-    decoration = fileTreeDialogModel.decorations.getDecorations(node);
-    expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
-  });
-
   it('handleTreeHandler method should be work', () => {
     const treeHandle = { ensureVisible: () => {} } as any;
     fileTreeDialogModel.handleTreeHandler(treeHandle);

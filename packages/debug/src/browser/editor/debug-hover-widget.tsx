@@ -33,6 +33,8 @@ export class DebugHoverWidget implements IDebugHoverWidget {
 
   protected readonly toDispose = new DisposableCollection();
 
+  public allowEditorOverflow = true;
+
   @Autowired(DebugEditor)
   protected readonly editor: DebugEditor;
 
@@ -51,7 +53,7 @@ export class DebugHoverWidget implements IDebugHoverWidget {
   @Autowired(IReporterService)
   protected readonly reporterService: IReporterService;
 
-  protected readonly domNode = document.createElement('div');
+  protected domNode: HTMLElement;
 
   constructor() {
     this.init();
@@ -79,6 +81,10 @@ export class DebugHoverWidget implements IDebugHoverWidget {
   }
 
   getDomNode() {
+    if (!this.domNode) {
+      this.domNode = document.createElement('div');
+      this.domNode.classList.add(DebugHoverWidget.ID);
+    }
     return this.domNode;
   }
 
@@ -132,7 +138,7 @@ export class DebugHoverWidget implements IDebugHoverWidget {
 
   protected doHide(): void {
     window.removeEventListener('mousewheel', this.handleWindowWheel, true);
-    if (this.domNode.contains(document.activeElement)) {
+    if (this.getDomNode().contains(document.activeElement)) {
       this.editor.focus();
     }
     this.hoverSource.dispose();

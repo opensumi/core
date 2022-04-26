@@ -142,7 +142,6 @@ describe('FileTreeContribution', () => {
     it('should onStart be work', async () => {
       const contribution = mockInjector.get(FileTreeContribution);
       await contribution.onStart();
-      expect(mockFileTreeService.init).toBeCalledTimes(1);
       expect(mockMainLayoutService.collectViewComponent).toBeCalledTimes(1);
       await onWorkspaceLocationChangedEmitter.fireAndAwait(undefined);
       const handler = tabbarHandlerMap.get(ExplorerContainerId);

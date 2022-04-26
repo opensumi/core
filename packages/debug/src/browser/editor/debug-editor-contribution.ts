@@ -19,8 +19,10 @@ import {
   strings,
 } from '@opensumi/ide-core-browser';
 import { IEditor, IDecorationApplyOptions } from '@opensumi/ide-editor';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
@@ -32,7 +34,7 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
 
-import { CONTEXT_DEBUG_STOPPED_KEY, DebugState, IDebugSessionManager } from './../../common';
+import { IDebugSessionManager } from './../../common';
 import { InlineValueContext } from './../../common/inline-values';
 import { DEFAULT_WORD_REGEXP } from './../debugUtils';
 import { DebugModelManager } from './debug-model-manager';
@@ -194,53 +196,72 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
+  @Autowired(WorkbenchEditorService)
+  private readonly editorService: WorkbenchEditorServiceImpl;
+
   @Autowired(DebugContextKey)
   protected readonly debugContextKey: DebugContextKey;
 
   private readonly disposer: Disposable = new Disposable();
-  private readonly editorListenerdisposer: Disposable = new Disposable();
+  private readonly editorDisposer: Disposable = new Disposable();
 
   constructor() {}
 
   public contribute(editor: IEditor): IDisposable {
     this.disposer.addDispose(
-      this.contextKeyService.onDidChangeContext((e) => {
-        if (this.contextKeyService.match(CONTEXT_DEBUG_STOPPED_KEY)) {
-          this.toggleHoverEnabled(editor);
-        }
-      }),
-    );
-
-    this.disposer.addDispose(
       this.debugSessionManager.onDidChangeActiveDebugSession(() => {
-        if (this.debugSessionManager.currentSession) {
+        const currentSession = this.debugSessionManager.currentSession;
+        if (currentSession) {
+          this.editorDisposer.addDispose(
+            currentSession.onDidChange(() => {
+              this.setHoverEnabled(editor);
+            }),
+          );
+
+          this.editorDisposer.addDispose(
+            currentSession.onDidExitAdapter(() => {
+              this.setHoverEnabled(editor, true);
+            }),
+          );
+
+          this.editorDisposer.addDispose(
+            this.editorService.onActiveResourceChange((resource) => {
+              if (resource?.uri.toString() === currentSession.getModel()?.uri.toString()) {
+                this.setHoverEnabled(editor);
+              } else {
+                this.setHoverEnabled(editor, true);
+              }
+            }),
+          );
+
           this.disposer.addDispose([
             Event.any<void | DebugProtocol.StoppedEvent>(
-              this.debugSessionManager.currentSession.onDidChangeCallStack,
-              this.debugSessionManager.currentSession.onDidStop,
+              currentSession.onDidChangeCallStack,
+              currentSession.onDidStop,
             )(async () => {
               await this.directRunUpdateInlineValueDecorations(editor);
             }),
 
-            this.debugSessionManager.currentSession.onDidExitAdapter(() => {
+            currentSession.onDidExitAdapter(() => {
               this.removeInlineValuesScheduler(editor).schedule();
-              this.editorListenerdisposer.dispose();
+              this.editorDisposer.dispose();
             }),
           ]);
-          this.disposer.addDispose(this.debugSessionManager.currentSession);
+
+          this.disposer.addDispose(currentSession);
 
           this.registerEditorListener(editor);
         }
       }),
     );
 
-    this.disposer.addDispose(this.editorListenerdisposer);
+    this.disposer.addDispose(this.editorDisposer);
 
     return this.disposer;
   }
 
   private registerEditorListener(editor: IEditor): void {
-    this.editorListenerdisposer.addDispose(
+    this.editorDisposer.addDispose(
       editor.monacoEditor.onKeyDown(async (keydownEvent: monaco.IKeyboardEvent) => {
         // 如果当前 session 会话的 editor 和当前打开的 editor 不一致，则不作处理
         if (
@@ -251,11 +272,11 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
         }
 
         if (keydownEvent.keyCode === monaco.KeyCode.Alt) {
-          editor.monacoEditor.updateOptions({ hover: { enabled: true } });
+          this.setHoverEnabled(editor, true);
           this.debugModelManager.model?.getDebugHoverWidget().hide();
           const listener = editor.monacoEditor.onKeyUp(async (keyupEvent: monaco.IKeyboardEvent) => {
             if (keyupEvent.keyCode === monaco.KeyCode.Alt) {
-              editor.monacoEditor.updateOptions({ hover: { enabled: false } });
+              this.setHoverEnabled(editor, false);
               this.debugModelManager.model?.getDebugHoverWidget().show();
               listener.dispose();
             }
@@ -264,14 +285,14 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       }),
     );
 
-    this.editorListenerdisposer.addDispose(
+    this.editorDisposer.addDispose(
       editor.monacoEditor.onDidChangeModelContent(async () => {
         DebugEditorContribution.MEMOIZER.clear();
         await this.directRunUpdateInlineValueDecorations(editor);
       }),
     );
 
-    this.editorListenerdisposer.addDispose(
+    this.editorDisposer.addDispose(
       editor.monacoEditor.onDidChangeModel(async () => {
         await this.directRunUpdateInlineValueDecorations(editor);
       }),
@@ -285,15 +306,10 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
     codeEditorService.registerDecorationType('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, {});
   }
 
-  public toggleHoverEnabled(editor: IEditor) {
-    const debugState = this.debugContextKey.contextDebugState.get();
-    if (!debugState) {
-      return;
-    }
-
+  public setHoverEnabled(editor: IEditor, isEnabled = !this.debugContextKey.contextInDdebugMode.get()) {
     editor.monacoEditor.updateOptions({
       hover: {
-        enabled: DebugState[debugState] === DebugState.Stopped,
+        enabled: isEnabled,
       },
     });
   }

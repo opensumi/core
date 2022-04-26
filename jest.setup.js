@@ -1,7 +1,4 @@
 const { JSDOM, ResourceLoader } = require('jsdom');
-// new TextDecoder('ascii') is not supported in node12
-// use TextDecoder and TextEncoder from `text-encoding`
-const { TextDecoder, TextEncoder } = require('text-encoding');
 
 const resourceLoader = new ResourceLoader({
   strictSSL: false,
@@ -34,17 +31,22 @@ global.navigator = Object.assign(jsdom.window.navigator, {
 });
 global.Element = jsdom.window.Element;
 global.HTMLDivElement = jsdom.window.HTMLDivElement;
+global.HTMLSpanElement = jsdom.window.HTMLSpanElement;
 global.fetch = jsdom.window.fetch;
 global.location = jsdom.window.location;
 global.getComputedStyle = jsdom.window.getComputedStyle;
 global.window = jsdom.window;
 global.DOMParser = jsdom.window.DOMParser;
-global.HTMLDivElement = jsdom.window.HTMLDivElement;
 global.MutationObserver = jsdom.window.MutationObserver;
 global.KeyboardEvent = jsdom.window.KeyboardEvent;
 global.requestAnimationFrame = (fn) => setTimeout(fn, 16);
+global.cancelAnimationFrame = (timer) => {
+  clearTimeout(timer);
+};
 jsdom.window.requestAnimationFrame = (fn) => setTimeout(fn, 16);
-jsdom.window.cancelAnimationFrame = () => {};
+jsdom.window.cancelAnimationFrame = (timer) => {
+  clearTimeout(timer);
+};
 global.document.queryCommandSupported = () => {};
 global.document.execCommand = () => {};
 global.HTMLElement = jsdom.window.HTMLElement;

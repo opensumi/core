@@ -355,11 +355,6 @@ export class FileTreeDialogModel implements IFileDialogModel {
     }
   };
 
-  removeFileDecoration() {
-    this.decorations.removeDecoration(this.selectedDecoration);
-    this.decorations.removeDecoration(this.focusedDecoration);
-  }
-
   handleTreeHandler(handle: IFileTreeHandle) {
     this._fileTreeHandle = handle;
   }

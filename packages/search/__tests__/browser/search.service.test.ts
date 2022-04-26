@@ -49,7 +49,7 @@ class MockSearchContentService {
   catchSearchRootDirs: string[];
   catchSearchOptions: ContentSearchOptions;
 
-  async search(value, rootDirs, searchOptions) {
+  async search(value: string, rootDirs: string[], searchOptions: ContentSearchOptions) {
     this.catchSearchValue = value;
     this.catchSearchRootDirs = rootDirs;
     this.catchSearchOptions = searchOptions;
@@ -118,8 +118,6 @@ describe('search.service.ts', () => {
     );
 
     searchService = injector.get(ContentSearchClientService);
-    // without docModel
-    (searchService as any).workbenchEditorService = true;
     (searchService as any).searchAllFromDocModel = () => ({
       result: null,
     });

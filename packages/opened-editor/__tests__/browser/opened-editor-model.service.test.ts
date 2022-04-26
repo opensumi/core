@@ -16,7 +16,6 @@ import { OpenedEditorDecorationService } from '../../src/browser/services/opened
 import { OpenedEditorModelService } from '../../src/browser/services/opened-editor-model.service';
 import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
 
-
 describe('OpenedEditorModelService should be work', () => {
   (global as any).monaco = createMockedMonaco() as any;
   let injector: MockInjector;
@@ -76,7 +75,7 @@ describe('OpenedEditorModelService should be work', () => {
     refresh: jest.fn(),
     contextMenuContextKeyService: new MockContextKeyService().createScoped({} as any),
   };
-  beforeEach(async () => {
+  beforeAll(async () => {
     injector = createBrowserInjector([]);
 
     injector.overrideProviders(
@@ -131,7 +130,7 @@ describe('OpenedEditorModelService should be work', () => {
     await openedEditorModelService.whenReady;
   });
 
-  afterEach(() => {
+  afterAll(() => {
     injector.disposeAll();
   });
 
@@ -147,7 +146,7 @@ describe('OpenedEditorModelService should be work', () => {
     const node = new EditorFile(
       openedEditorService,
       {
-        uri: mockRoot.uri.resolve('test.js').toString(),
+        uri: mockRoot.uri.resolve('test.js'),
         name: 'test',
         icon: '',
       },
@@ -165,7 +164,7 @@ describe('OpenedEditorModelService should be work', () => {
     const node = new EditorFile(
       openedEditorService,
       {
-        uri: mockRoot.uri.resolve('test.js').toString(),
+        uri: mockRoot.uri.resolve('test.js'),
         name: 'test',
         icon: '',
       },
@@ -183,7 +182,7 @@ describe('OpenedEditorModelService should be work', () => {
     const node = new EditorFile(
       openedEditorService,
       {
-        uri: mockRoot.uri.resolve('test.js').toString(),
+        uri: mockRoot.uri.resolve('test.js'),
         name: 'test',
         icon: '',
       },
@@ -201,7 +200,7 @@ describe('OpenedEditorModelService should be work', () => {
     const node = new EditorFile(
       openedEditorService,
       {
-        uri: mockRoot.uri.resolve('test.js').toString(),
+        uri: mockRoot.uri.resolve('test.js'),
         name: 'test',
         icon: '',
       },
@@ -218,32 +217,12 @@ describe('OpenedEditorModelService should be work', () => {
     expect(decoration!.classlist).toEqual([styles.mod_selected]);
   });
 
-  it('removeFileDecoration method should be work', () => {
-    openedEditorModelService.initDecorations(mockRoot);
-    const node = new EditorFile(
-      openedEditorService,
-      {
-        uri: mockRoot.uri.resolve('test.js').toString(),
-        name: 'test',
-        icon: '',
-      },
-      'tooltip',
-      mockRoot,
-    );
-    openedEditorModelService.activeFileDecoration(node);
-    let decoration = openedEditorModelService.decorations.getDecorations(node);
-    openedEditorModelService.removeFileDecoration();
-    decoration = openedEditorModelService.decorations.getDecorations(node);
-    expect(decoration).toBeDefined();
-    expect(decoration!.classlist).toEqual([]);
-  });
-
   it('handleTreeBlur method should be work', () => {
     openedEditorModelService.initDecorations(mockRoot);
     const node = new EditorFile(
       openedEditorService,
       {
-        uri: mockRoot.uri.resolve('test.js').toString(),
+        uri: mockRoot.uri.resolve('test.js'),
         name: 'test',
         icon: '',
       },
@@ -265,7 +244,7 @@ describe('OpenedEditorModelService should be work', () => {
     const node = new EditorFile(
       openedEditorService,
       {
-        uri: mockRoot.uri.resolve('test.js').toString(),
+        uri: mockRoot.uri.resolve('test.js'),
         name: 'test',
         icon: '',
       },

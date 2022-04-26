@@ -17,7 +17,11 @@ export interface ITreeNode {
    */
   readonly type: TreeNodeType;
   /**
-   * 节点名称
+   * 可用于自定义节点展示名称的字段，不需要保障唯一性，默认使用 name 作为展示值
+   */
+  readonly displayName: string;
+  /**
+   * 节点名称，需要保持该名称的唯一性，如果存在重复节点的情况，建议自定义 displayName 作为展示名称
    */
   readonly name: string;
   /**

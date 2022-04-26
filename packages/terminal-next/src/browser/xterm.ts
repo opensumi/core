@@ -1,15 +1,25 @@
 import { ITerminalOptions, ITheme, Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
-import { SearchAddon } from 'xterm-addon-search';
+import { ISearchOptions, SearchAddon } from 'xterm-addon-search';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IClipboardService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
+import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
+import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { SupportedOptions } from '../common/preference';
 
 import styles from './component/terminal.module.less';
+import {
+  TERMINAL_FIND_MATCH_BACKGROUND_COLOR,
+  TERMINAL_FIND_MATCH_BORDER_COLOR,
+  TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR,
+  TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR,
+  TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR,
+  TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
+} from './terminal.color';
 
 export interface XTermOptions {
   cwd?: string;
@@ -27,7 +37,10 @@ export class XTerm extends Disposable {
   protected messageService: MessageService;
 
   @Autowired(IClipboardService)
-  clipboardService: IClipboardService;
+  protected clipboardService: IClipboardService;
+
+  @Autowired(IThemeService)
+  protected themeService: WorkbenchThemeService;
 
   container: HTMLDivElement;
 
@@ -52,6 +65,7 @@ export class XTerm extends Disposable {
     this._prepareAddons();
     this.raw.onSelectionChange(this.onSelectionChange.bind(this));
   }
+
   private _prepareAddons() {
     this._searchAddon = new SearchAddon();
     this._fitAddon = new FitAddon();
@@ -60,6 +74,7 @@ export class XTerm extends Disposable {
     this.raw.loadAddon(this._searchAddon);
     this.raw.loadAddon(this._fitAddon);
   }
+
   updateTheme(theme: ITheme | undefined) {
     if (theme) {
       this.raw.setOption('theme', theme);
@@ -77,8 +92,38 @@ export class XTerm extends Disposable {
     };
   }
 
+  private getFindColors() {
+    const theme = this.themeService.getCurrentThemeSync();
+    // Theme color names align with monaco/vscode whereas xterm.js has some different naming.
+    // The mapping is as follows:
+    // - findMatch -> activeMatch
+    // - findMatchHighlight -> match
+    const findMatchBackground = theme.getColor(TERMINAL_FIND_MATCH_BACKGROUND_COLOR);
+    const findMatchBorder = theme.getColor(TERMINAL_FIND_MATCH_BORDER_COLOR);
+    const findMatchOverviewRuler = theme.getColor(TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR);
+    const findMatchHighlightBackground = theme.getColor(TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR);
+    const findMatchHighlightBorder = theme.getColor(TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR);
+    const findMatchHighlightOverviewRuler = theme.getColor(TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR);
+
+    return {
+      activeMatchBackground: findMatchBackground?.toString() || 'transparent',
+      activeMatchBorder: findMatchBorder?.toString() || 'transparent',
+      activeMatchColorOverviewRuler: findMatchOverviewRuler?.toString() || 'transparent',
+      matchBackground: findMatchHighlightBackground?.toString() || 'transparent',
+      matchBorder: findMatchHighlightBorder?.toString() || 'transparent',
+      matchOverviewRuler: findMatchHighlightOverviewRuler?.toString() || 'transparent',
+    };
+  }
+
   findNext(text: string) {
-    return this._searchAddon.findNext(text);
+    const options: ISearchOptions = {
+      decorations: this.getFindColors(),
+    };
+    return this._searchAddon.findNext(text, options);
+  }
+
+  closeSearch() {
+    this._searchAddon.clearDecorations();
   }
 
   open() {

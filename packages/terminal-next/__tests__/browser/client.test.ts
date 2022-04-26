@@ -9,13 +9,11 @@ import httpProxy from 'http-proxy';
 import WebSocket from 'ws';
 
 import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
-import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
 
 import { injector } from './inject';
-import { defaultName } from './mock.service';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 import { delay } from './utils';
 
@@ -43,14 +41,6 @@ describe('Terminal Client', () => {
     await fs.ensureDir(root.path.toString());
 
     workspaceService = injector.get(IWorkspaceService);
-
-    injector.addProviders({
-      token: EnvironmentVariableServiceToken,
-      useValue: {
-        mergedCollection: undefined,
-        onDidChangeCollections: () => Disposable.NULL,
-      },
-    });
 
     await workspaceService.setWorkspace({
       uri: root.toString(),

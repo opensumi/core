@@ -32,13 +32,6 @@
     .scm_tree_node_description {
       color: var(--kt-tree-activeSelectionForeground) !important;
     }
-    .scm_tree_node_display_name {
-      .compact_name {
-        &.active {
-          text-decoration: underline;
-        }
-      }
-    }
   }
 
   &.mod_actived {
@@ -93,18 +86,6 @@
     margin-right: 6px;
     display: inline;
     white-space: pre;
-    .compact_name {
-      color: inherit;
-      display: inline;
-      &:focus,
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-    .compact_name_separator {
-      margin: 0 2px;
-      opacity: 0.5;
-    }
   }
 
   &_description {

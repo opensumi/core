@@ -1,4 +1,4 @@
-import { Optional, Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
 import {
   ExplorerResourceIsFolderContext,
@@ -20,25 +20,28 @@ export class FileContextKey {
 
   public readonly explorerResourceIsFolder: IContextKey<boolean>;
   public readonly explorerViewletVisibleContext: IContextKey<boolean>;
-  public readonly explorerFocused: IContextKey<boolean>;
-  public readonly explorerResourceCut: IContextKey<boolean>;
-  public readonly filesExplorerFocused: IContextKey<boolean>;
-  public readonly filesExplorerInputFocused: IContextKey<boolean>;
-  public readonly filesExplorerFilteredContext: IContextKey<boolean>;
-  public readonly explorerCompressedFocusContext: IContextKey<boolean>;
-  public readonly explorerCompressedFirstFocusContext: IContextKey<boolean>;
-  public readonly explorerCompressedLastFocusContext: IContextKey<boolean>;
+  public explorerFocused: IContextKey<boolean>;
+  public explorerResourceCut: IContextKey<boolean>;
+  public filesExplorerFocused: IContextKey<boolean>;
+  public filesExplorerInputFocused: IContextKey<boolean>;
+  public filesExplorerFilteredContext: IContextKey<boolean>;
+  public explorerCompressedFocusContext: IContextKey<boolean>;
+  public explorerCompressedFirstFocusContext: IContextKey<boolean>;
+  public explorerCompressedLastFocusContext: IContextKey<boolean>;
 
-  private readonly _contextKeyService: IContextKeyService;
+  private _contextKeyService: IContextKeyService;
 
-  constructor(@Optional() dom: HTMLDivElement) {
+  constructor() {
+    this.explorerResourceIsFolder = ExplorerResourceIsFolderContext.bind(this.globalContextKeyService);
+    this.explorerViewletVisibleContext = ExplorerViewletVisibleContext.bind(this.globalContextKeyService);
+  }
+
+  initScopedContext(dom: HTMLDivElement) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
-    this.explorerResourceIsFolder = ExplorerResourceIsFolderContext.bind(this._contextKeyService);
-    this.explorerViewletVisibleContext = ExplorerViewletVisibleContext.bind(this._contextKeyService);
     this.explorerFocused = ExplorerFocusedContext.bind(this._contextKeyService);
     this.explorerResourceCut = ExplorerResourceCut.bind(this._contextKeyService);
-
     this.filesExplorerFocused = FilesExplorerFocusedContext.bind(this._contextKeyService);
+
     this.filesExplorerInputFocused = FilesExplorerInputFocusedContext.bind(this._contextKeyService);
     this.filesExplorerFilteredContext = FilesExplorerFilteredContext.bind(this._contextKeyService);
 

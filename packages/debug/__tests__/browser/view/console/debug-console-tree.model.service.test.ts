@@ -36,7 +36,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import styles from '../../../../src/browser/view/console/debug-console.module.less';
 
-
 describe('Debug Console Tree Model', () => {
   const mockInjector = createBrowserInjector([]);
   let debugConsoleModelService: DebugConsoleModelService;
@@ -169,7 +168,9 @@ describe('Debug Console Tree Model', () => {
     });
     mockInjector.overrideProviders({
       token: WSChannelHandler,
-      useValue: {},
+      useValue: {
+        openChannel: jest.fn(),
+      },
     });
     mockInjector.overrideProviders({
       token: DebugSessionContributionRegistry,

@@ -160,7 +160,8 @@ export const injector = new Injector([
   {
     token: EnvironmentVariableServiceToken,
     useValue: {
-      onDidChangeCollections: () => Disposable.create(() => {}),
+      mergedCollection: undefined,
+      onDidChangeCollections: () => Disposable.NULL,
     },
   },
   {

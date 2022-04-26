@@ -11,6 +11,7 @@ import {
   isWindows,
   OperatingSystem,
   isLinux,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -166,6 +167,13 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IViewsRegistry,
         useClass: ViewsRegistry,
+      },
+      {
+        token: PreferenceService,
+        useValue: {
+          get: () => {},
+          ready: Promise.resolve(),
+        },
       },
     );
     fileTreeService = injector.get(IFileTreeService);

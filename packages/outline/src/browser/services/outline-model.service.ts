@@ -531,7 +531,7 @@ export class OutlineModelService {
         // 刷新前需要更新诊断信息数据
         this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri!);
         // 因为Outline模块的节点是自展开的，不需要遍历
-        await node.refresh([node.path]);
+        await node.refresh();
         this.onDidRefreshedEmitter.fire();
       }
       this.refreshDeferred?.resolve();

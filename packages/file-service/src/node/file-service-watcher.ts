@@ -72,7 +72,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
    * 查找父目录是否已经在监听
    * @param watcherPath
    */
-  checkIsParentWatched(watcherPath: string): number {
+  checkIsAlreadyWatched(watcherPath: string): number {
     let watcherId;
     this.watchers.forEach((watcher) => {
       if (watcherId) {
@@ -95,7 +95,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     if (await fs.pathExists(basePath)) {
       realpath = basePath;
     }
-    let watcherId = realpath && this.checkIsParentWatched(realpath);
+    let watcherId = realpath && this.checkIsAlreadyWatched(realpath);
     if (watcherId) {
       return watcherId;
     }
@@ -112,6 +112,10 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     } else {
       const watchPath = await this.lookup(basePath);
       if (watchPath) {
+        const existingWatcher = watchPath && this.checkIsAlreadyWatched(watchPath);
+        if (existingWatcher) {
+          return existingWatcher;
+        }
         this.watchers.set(watcherId, {
           path: watchPath,
           disposable: toDisposeWatcher,

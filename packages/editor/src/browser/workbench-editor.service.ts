@@ -886,9 +886,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @OnEvent(RegisterEditorComponentEvent)
   async onRegisterEditorComponentEvent() {
     if (this.currentResource) {
-      const openTypes = await this.editorComponentRegistry.resolveEditorComponent(this.currentResource);
-      this.availableOpenTypes = openTypes;
-      this.cachedResourcesOpenTypes.set(this.currentResource.uri.toString(), openTypes);
+      const resource = this.currentResource;
+      const openTypes = await this.editorComponentRegistry.resolveEditorComponent(resource);
+      if (this.currentResource === resource) {
+        this.availableOpenTypes = openTypes;
+        this.cachedResourcesOpenTypes.set(resource.uri.toString(), openTypes);
+      }
     }
   }
 
@@ -1369,6 +1372,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       if (activeOpenType.type === 'code') {
         const documentRef = await this.getDocumentModelRef(resource.uri);
+        this.resolveTabChanged(_resource, this.currentResource);
         await this.codeEditorReady.onceReady(async () => {
           await this.codeEditor.open(documentRef);
 
@@ -1503,10 +1507,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         return; // other type not handled
       }
 
-      if (_resource !== this.currentResource) {
-        throw new EditorTabChangedError(); // 在打开过程中已经改变了
-      }
-
+      this.resolveTabChanged(_resource, this.currentResource);
       this._currentOpenType = activeOpenType;
       this.notifyBodyChanged();
 
@@ -1518,6 +1519,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
 
       this.cachedResourcesActiveOpenTypes.set(resource.uri.toString(), activeOpenType);
+    }
+  }
+
+  private resolveTabChanged(lastResource: IResource, curResource: MaybeNull<IResource>): void {
+    if (lastResource !== curResource) {
+      // 打开过程中改变了tab
+      throw new EditorTabChangedError();
     }
   }
 

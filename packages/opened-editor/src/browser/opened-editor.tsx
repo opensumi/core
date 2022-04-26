@@ -69,9 +69,6 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
 
   React.useEffect(() => {
     ensureIsReady();
-    return () => {
-      openedEditorModelService.removeFileDecoration();
-    };
   }, []);
 
   React.useEffect(() => {

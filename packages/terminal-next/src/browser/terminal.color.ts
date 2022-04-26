@@ -1,5 +1,14 @@
 import { localize } from '@opensumi/ide-core-common';
-import { registerColor, PANEL_BACKGROUND, PANEL_BORDER, ColorIdentifier, ColorDefaults } from '@opensumi/ide-theme';
+import {
+  registerColor,
+  PANEL_BACKGROUND,
+  PANEL_BORDER,
+  ColorIdentifier,
+  ColorDefaults,
+  editorFindMatch,
+  editorFindMatchHighlight,
+  overviewRulerFindMatchForeground,
+} from '@opensumi/ide-theme';
 
 // copied from vscode terminal color registry
 
@@ -67,6 +76,75 @@ export const TERMINAL_BORDER_COLOR = registerColor(
     'terminal.border',
     'The color of the border that separates split panes within the terminal. This defaults to panel.border.',
   ),
+);
+
+export const TERMINAL_FIND_MATCH_BACKGROUND_COLOR = registerColor(
+  'terminal.findMatchBackground',
+  {
+    dark: null,
+    light: null,
+    hc: null,
+  },
+  localize(
+    'terminal.findMatchBackground',
+    'Color of the current search match in the terminal. The color must not be opaque so as not to hide underlying terminal content.',
+  ),
+);
+
+export const TERMINAL_FIND_MATCH_BORDER_COLOR = registerColor(
+  'terminal.findMatchBorder',
+  {
+    dark: editorFindMatch,
+    light: editorFindMatch,
+    hc: null,
+  },
+  localize('terminal.findMatchBorder', 'Border color of the current search match in the terminal.'),
+);
+
+export const TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR = registerColor(
+  'terminal.findMatchHighlightBackground',
+  {
+    dark: null,
+    light: null,
+    hc: null,
+  },
+  localize(
+    'terminal.findMatchHighlightBackground',
+    'Color of the other search matches in the terminal. The color must not be opaque so as not to hide underlying terminal content.',
+  ),
+);
+
+export const TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR = registerColor(
+  'terminal.findMatchHighlightBorder',
+  {
+    dark: editorFindMatchHighlight,
+    light: editorFindMatchHighlight,
+    hc: null,
+  },
+  localize('terminal.findMatchHighlightBorder', 'Border color of the other search matches in the terminal.'),
+);
+
+export const TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR = registerColor(
+  'terminalOverviewRuler.findMatchForeground',
+  {
+    dark: overviewRulerFindMatchForeground,
+    light: overviewRulerFindMatchForeground,
+    hc: '#f38518',
+  },
+  localize(
+    'terminalOverviewRuler.findMatchHighlightForeground',
+    'Overview ruler marker color for find matches in the terminal.',
+  ),
+);
+
+export const TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR = registerColor(
+  'terminalOverviewRuler.cursorForeground',
+  {
+    dark: '#A0A0A0CC',
+    light: '#A0A0A0CC',
+    hc: null,
+  },
+  localize('terminalOverviewRuler.cursorForeground', 'The overview ruler cursor color.'),
 );
 
 export const ansiColorMap: { [key: string]: { index: number; defaults: ColorDefaults } } = {

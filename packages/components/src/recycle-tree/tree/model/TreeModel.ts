@@ -58,7 +58,7 @@ export class TreeModel {
    *  - 临时的输入框节点
    *
    */
-  public async loadTreeState(state: ISerializableState | string) {
+  public loadTreeState(state: ISerializableState | string) {
     if (typeof state === 'string') {
       state = JSON.parse(state);
     }
