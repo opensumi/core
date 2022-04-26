@@ -156,7 +156,7 @@ export class MockFileServiceClient implements IFileServiceClient {
       onFilesChanged: () => ({
         dispose: () => {},
       }),
-      dispose: () => {},
+      dispose: async () => {},
     };
   }
 

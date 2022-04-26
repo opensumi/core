@@ -95,29 +95,20 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   /**
    * @param {Uri} uri
    * @param {{ recursive: boolean; excludes: string[] }} [options]  // 还不支持 recursive 参数
-   * @returns {number}
    * @memberof DiskFileSystemProvider
    */
-  watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }) {
-    let watcherId;
+  async watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }): Promise<number> {
     const _uri = Uri.revive(uri);
-    const watchPromise = this.watcherServer
-      .watchFileChanges(_uri.toString(), {
-        excludes: options && options.excludes ? options.excludes : [],
-      })
-      .then((id) => (watcherId = id));
+    const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
+      excludes: options?.excludes ?? [],
+    });
     const disposable = {
       dispose: () => {
-        if (!watcherId) {
-          return watchPromise.then((id) => {
-            this.watcherServer.unwatchFileChanges(id);
-          });
-        }
-        this.watcherServer.unwatchFileChanges(watcherId);
+        this.watcherServer.unwatchFileChanges(id);
       },
     };
-    this.watcherDisposerMap.set(watcherId, disposable);
-    return watcherId;
+    this.watcherDisposerMap.set(id, disposable);
+    return id;
   }
 
   unwatch(watcherId: number) {

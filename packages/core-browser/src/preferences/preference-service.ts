@@ -98,7 +98,7 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   protected async init(): Promise<void> {
-    this.toDispose.push(Disposable.create(() => this._ready.reject(new Error('preference service is disposed'))));
+    // this.toDispose.push(Disposable.create(() => this._ready.reject(new Error('preference service is disposed'))));
     this.initializeProviders();
   }
 

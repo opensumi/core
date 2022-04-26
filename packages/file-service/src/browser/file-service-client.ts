@@ -339,10 +339,11 @@ export class FileServiceClient implements IFileServiceClient {
     const provider = await this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
-    const watcherId = await provider.watch(uri.codeUri, {
+    const watcherId = await provider.watch(_uri.codeUri, {
       recursive: true,
       excludes: excludes || [],
     });
+
     this.watcherDisposerMap.set(id, {
       dispose: () => {
         provider.unwatch && provider.unwatch(watcherId);
@@ -501,7 +502,8 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   /**
-   * Ant Codespaces 对该方法进行复写，对 IDE 容器读取不到的研发容器目录进行 scheme 替换，让插件提供提供的 fs-provider 去读取
+   * 提供一个方法让集成方对该方法进行复写。
+   * 如双容器架构中对 IDE 容器读取不到的研发容器目录进行 scheme 替换，让插件提供提供的 fs-provider 去读取
    */
   protected convertUri(uri: string | Uri): URI {
     const _uri = new URI(uri);

@@ -74,21 +74,25 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
    */
   checkIsAlreadyWatched(watcherPath: string): number {
     let watcherId;
-    this.watchers.forEach((watcher) => {
-      if (watcherId) {
-        return;
-      }
+    for (const [_id, watcher] of this.watchers) {
       if (watcherPath.indexOf(watcher.path) === 0) {
         watcherId = this.watcherSequence++;
         this.watchers.set(watcherId, {
           path: watcherPath,
           disposable: new DisposableCollection(),
         });
+        break;
       }
-    });
+    }
     return watcherId;
   }
 
+  /**
+   * 如果监听路径不存在，则会监听父目录
+   * @param uri 要监听的路径
+   * @param options
+   * @returns
+   */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
     let realpath;
@@ -108,7 +112,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
         disposable: toDisposeWatcher,
       });
       toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
-      this.start(watcherId, basePath, options, toDisposeWatcher);
+      await this.start(watcherId, basePath, options, toDisposeWatcher);
     } else {
       const watchPath = await this.lookup(basePath);
       if (watchPath) {
@@ -121,7 +125,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
           disposable: toDisposeWatcher,
         });
         toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
-        this.start(watcherId, watchPath, options, toDisposeWatcher, basePath);
+        await this.start(watcherId, watchPath, options, toDisposeWatcher, undefined, basePath);
       } else {
         // 向上查找不到对应文件时，使用定时逻辑定时检索文件，当检测到文件时，启用监听逻辑
         const toClearTimer = new DisposableCollection();
@@ -129,7 +133,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
           if (await fs.pathExists(basePath)) {
             toClearTimer.dispose();
             this.pushAdded(watcherId, basePath);
-            this.start(watcherId, basePath, options, toDisposeWatcher);
+            await this.start(watcherId, basePath, options, toDisposeWatcher);
           }
         }, NsfwFileSystemWatcherServer.WATCHER_FILE_DETECTED_TIME);
         toClearTimer.push(Disposable.create(() => clearInterval(timer)));
@@ -209,14 +213,18 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     rawOptions: WatchOptions | undefined,
     toDisposeWatcher: DisposableCollection,
     rawFile?: string,
+    _rawDirectory?: string,
   ): Promise<void> {
     const options: WatchOptions = {
       excludes: [],
       ...rawOptions,
     };
     let watcher: INsfw.NSFW | undefined;
+    if (!(await fs.pathExists(basePath))) {
+      return;
+    }
 
-    watcher = await (nsfw as any)(
+    watcher = await nsfw(
       await fs.realpath(basePath),
       (events: INsfw.ChangeEvent[]) => {
         events = this.trimChangeEvent(events);

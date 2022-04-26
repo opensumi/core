@@ -9,11 +9,10 @@ import type {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
 import { Uri } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
-import { WorkspaceEditModule } from '../src/browser';
-import { MonacoBulkEditService } from '../src/browser/bulk-edit.service';
-import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../src/common';
-
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { WorkspaceEditModule } from '../../src/browser';
+import { MonacoBulkEditService } from '../../src/browser/bulk-edit.service';
+import { IWorkspaceEditService, IResourceFileEdit, IWorkspaceFileService } from '../../src/common';
 
 function mockService(target) {
   return new Proxy(target, {
