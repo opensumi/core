@@ -915,8 +915,17 @@ export class FileTreeModelService {
     let node;
     if (this.focusedFile) {
       node = this.focusedFile;
+      this.focusedDecoration.removeTarget(this.focusedFile);
+      this.focusedFile = undefined;
     } else if (this.contextMenuFile) {
       node = this.contextMenuFile;
+      this.focusedDecoration.removeTarget(this.contextMenuFile);
+      this.contextMenuFile = undefined;
+    }
+    const index = this.selectedFiles.indexOf(node);
+    if (index >= 0) {
+      this.selectedFiles.splice(index, 1);
+      this.selectedDecoration.removeTarget(node);
     }
     let target: Directory;
     if (Directory.is(node) && node.expanded) {
@@ -926,6 +935,7 @@ export class FileTreeModelService {
     } else {
       return;
     }
+    this.focusedFile = target;
     if (target && target.expanded) {
       await this.fileTreeHandle.collapseNode(target as Directory);
       this.activeFileFocusedDecoration(target as Directory, true);
@@ -936,9 +946,19 @@ export class FileTreeModelService {
     let node;
     if (this.focusedFile) {
       node = this.focusedFile;
+      this.focusedDecoration.removeTarget(this.focusedFile);
+      this.focusedFile = undefined;
     } else if (this.contextMenuFile) {
       node = this.contextMenuFile;
+      this.focusedDecoration.removeTarget(this.contextMenuFile);
+      this.contextMenuFile = undefined;
     }
+    const index = this.selectedFiles.indexOf(node);
+    if (index >= 0) {
+      this.selectedFiles.splice(index, 1);
+      this.selectedDecoration.removeTarget(node);
+    }
+    this.focusedFile = node as Directory;
     if (Directory.is(node)) {
       if (!node.expanded) {
         await this.fileTreeHandle.expandNode(node as Directory);
