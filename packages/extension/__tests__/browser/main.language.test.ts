@@ -53,7 +53,7 @@ const mockClientB = {
 const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
 
-const defaultSelector = { scheme: 'far' };
+const defaultSelector = { scheme: 'far', language: 'a' };
 const disposables: DisposableCollection = new DisposableCollection();
 
 const extHostDocuments = new ExtensionDocumentDataManagerImpl(rpcProtocolExt);
