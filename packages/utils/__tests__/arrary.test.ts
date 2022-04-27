@@ -208,4 +208,42 @@ describe('Arrays', () => {
     sparse = arrays.coalesce(sparse);
     equal(sparse.length, 5);
   });
+
+  test('isNonEmptyArray', () => {
+    const a = [];
+    const b = null;
+    const c = [1, 2];
+    expect(arrays.isNonEmptyArray(a)).toBeFalsy();
+    expect(arrays.isNonEmptyArray(b)).toBeFalsy();
+    expect(arrays.isNonEmptyArray(c)).toBeTruthy();
+  });
+
+  test('addElement', () => {
+    const a = [];
+    expect(a.length).toBe(0);
+    arrays.addElement(a, 1);
+    expect(a.length).toBe(1);
+    arrays.addElement(a, 2, true);
+    expect(a.length).toBe(2);
+    expect(a).toEqual([2, 1]);
+  });
+
+  test('enumValueToArray', () => {
+    enum SampleEnum {
+      VSCODE = 'vscode',
+      SUMI = 'sumi',
+    }
+    const a = arrays.enumValueToArray(SampleEnum);
+    expect(a.length).toBe(2);
+    expect(a).toEqual(['vscode', 'sumi']);
+  });
+
+  test('isFalsyOrEmpty', () => {
+    expect(arrays.isFalsyOrEmpty(false)).toBeTruthy();
+    expect(arrays.isFalsyOrEmpty([])).toBeTruthy();
+    expect(arrays.isFalsyOrEmpty('')).toBeTruthy();
+    expect(arrays.isFalsyOrEmpty(null)).toBeTruthy();
+    expect(arrays.isFalsyOrEmpty(undefined)).toBeTruthy();
+    expect(arrays.isFalsyOrEmpty([1])).toBeFalsy();
+  });
 });
