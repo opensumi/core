@@ -1,3 +1,5 @@
+const path = require('path');
+
 const { pathsToModuleNameMapper } = require('ts-jest');
 
 const tsconfig = require('./configs/ts/tsconfig.resolve.json');
@@ -62,6 +64,7 @@ const baseConfig = {
       statements: 0,
     },
   },
+  prettierPath: path.join(__dirname, './node_modules/prettier'),
 };
 /**
  * @type {import('@jest/types').Config.InitialOptions}
