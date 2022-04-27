@@ -8,7 +8,7 @@ const tsModuleNameMapper = pathsToModuleNameMapper(tsconfig.compilerOptions.path
 const baseConfig = {
   preset: 'ts-jest',
   testRunner: 'jest-jasmine2',
-  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
+  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'v8',
   // https://dev.to/vantanev/make-your-jest-tests-up-to-20-faster-by-changing-a-single-setting-i36
   maxWorkers: '50%',
   collectCoverageFrom: [
@@ -55,7 +55,6 @@ const baseConfig = {
       statements: 0,
     },
   },
-  prettierPath: path.join(__dirname, './node_modules/prettier'),
 };
 /**
  * @type {import('@jest/types').Config.InitialOptions}
