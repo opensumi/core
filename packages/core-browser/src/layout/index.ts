@@ -7,7 +7,6 @@ import { IMenu, IContextMenu } from '../menu/next';
 import { useInjectable } from '../react-hooks';
 import { SlotLocation, AppConfig } from '../react-providers';
 
-
 export class VisibleChangedPayload {
   constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
 }
@@ -226,7 +225,9 @@ export const useViewState = (
       const resizeObserver = new ResizeObserver(doUpdate);
       resizeObserver.observe(containerRef.current);
       return () => {
-        resizeObserver.unobserve(containerRef.current);
+        if (containerRef.current) {
+          resizeObserver.unobserve(containerRef.current);
+        }
       };
     }
   }, []);

@@ -19,12 +19,14 @@ export const BoxPanel: React.FC<{
   direction?: Layout.direction;
   flex?: number;
   zIndex?: number;
-}> = ({ className, children = [], direction = 'left-to-right', ...restProps }) => {
+  callback?: () => void;
+}> = ({ className, children = [], direction = 'left-to-right', callback, ...restProps }) => {
   // convert children to list
   const arrayChildren = React.Children.toArray(children);
 
   return (
     <div
+      ref={callback}
       {...restProps}
       className={clsx(styles['box-panel'], className)}
       style={{ flexDirection: Layout.getFlexDirection(direction), zIndex: restProps['z-index'] }}

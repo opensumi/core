@@ -21,10 +21,10 @@ export const getStorageValue = () => {
 
 export const DefaultLayout = ToolbarActionBasedLayout;
 
-export function ToolbarActionBasedLayout() {
+export function ToolbarActionBasedLayout(props) {
   const { colors, layout } = getStorageValue();
   return (
-    <BoxPanel direction='top-to-bottom'>
+    <BoxPanel direction='top-to-bottom' callback={props.callback}>
       <SlotRenderer color={colors.menuBarBackground} defaultSize={0} slot='top' z-index={2} />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
