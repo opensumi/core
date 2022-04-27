@@ -93,6 +93,9 @@ module.exports = {
         </html>`,
         runScripts: 'dangerously',
         url: 'http://localhost/?id=1',
+        userAgent: `Mozilla/5.0 (${
+          process.platform === 'darwin' ? 'Macintosh' : process.platform === 'win32' ? 'Windows' : 'Linux'
+        }) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/v16.7.0`,
       },
       setupFiles: ['./jest.setup.jsdom.js'],
       testMatch: [
