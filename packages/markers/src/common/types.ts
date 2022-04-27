@@ -1,5 +1,4 @@
-import { Event, IBaseMarkerManager, IMarker } from '@opensumi/ide-core-common';
-import { IMatch } from '@opensumi/ide-core-common/lib/filters';
+import { Event, IBaseMarkerManager, IMarker, IMatch } from '@opensumi/ide-core-common';
 
 export const MARKER_CONTAINER_ID = 'ide-markers';
 

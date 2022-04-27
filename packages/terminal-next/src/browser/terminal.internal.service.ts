@@ -1,7 +1,7 @@
 import { Terminal as XTermTerminal } from 'xterm';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
   generateSessionId,
@@ -90,8 +90,8 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.onProcessChange(handler);
   }
 
-  async getOs(): Promise<OperatingSystem> {
-    return await this.service.getOs();
+  async getOS(): Promise<OperatingSystem> {
+    return await this.service.getOS();
   }
 
   async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {

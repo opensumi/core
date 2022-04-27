@@ -1,6 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { matchesFuzzy } from '@opensumi/ide-core-common/lib/filters';
-import { splitGlobAware } from '@opensumi/ide-core-common/lib/utils/glob';
+import { splitGlobAware, matchesFuzzy } from '@opensumi/ide-core-browser';
 
 interface ParsedQuery {
   type: 'include' | 'exclude';

@@ -1,12 +1,9 @@
+import { DidFilesChangedParams, FileChangeEvent } from '@opensumi/ide-core-common';
 import {
-  URI,
-  Event,
   IFileServiceClient as IFileServiceClientToken,
-  IDisposable,
   FileSystemProviderCapabilities,
 } from '@opensumi/ide-core-common';
-import { DidFilesChangedParams, FileChangeEvent } from '@opensumi/ide-core-common';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import { URI, Event, IDisposable, BinaryBuffer } from '@opensumi/ide-core-common';
 
 import {
   FileStat,

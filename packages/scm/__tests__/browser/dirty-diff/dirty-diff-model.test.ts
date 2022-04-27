@@ -39,8 +39,8 @@ const mockedMonaco = createMockedMonaco();
 jest.useFakeTimers();
 
 // mock ThrottledDelayer to take it easy in unit test
-jest.mock('@opensumi/ide-core-common/src/async', () => ({
-  ...jest.requireActual('@opensumi/ide-core-common/src/async'),
+jest.mock('@opensumi/ide-core-common', () => ({
+  ...jest.requireActual('@opensumi/ide-core-common'),
   ThrottledDelayer: class {
     constructor() {}
     trigger(promiseFactory: () => Promise<any>) {

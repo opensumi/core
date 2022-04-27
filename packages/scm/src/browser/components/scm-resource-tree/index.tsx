@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { RecycleTree, IRecycleTreeHandle, TreeNodeType, TreeModel } from '@opensumi/ide-components';
+import { isOSX } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
-import { isOSX } from '@opensumi/ide-core-common';
 
 import { ViewModelContext } from '../../scm-model';
 

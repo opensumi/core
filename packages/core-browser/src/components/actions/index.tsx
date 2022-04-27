@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
-import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
+import { strings } from '@opensumi/ide-core-common';
 
 import {
   MenuNode,
@@ -31,7 +31,7 @@ const MenuAction: React.FC<{
   // 这里遵循 native menu 的原则，保留一个 icon 位置
   <div className={clsx(styles.menuAction, { [styles.disabled]: disabled, [styles.checked]: data.checked })}>
     <div className={styles.icon}>{data.checked ? <Icon icon='check' /> : null}</div>
-    <div className={styles.label}>{data.label ? mnemonicButtonLabel(data.label, true) : ''}</div>
+    <div className={styles.label}>{data.label ? strings.mnemonicButtonLabel(data.label, true) : ''}</div>
     <div className={styles.tip}>
       {data.keybinding ? <div className={styles.shortcut}>{data.keybinding}</div> : null}
       {hasSubmenu ? (

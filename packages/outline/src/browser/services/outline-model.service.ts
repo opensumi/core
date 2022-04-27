@@ -15,8 +15,8 @@ import {
   IRange,
   Disposable,
   ThrottledDelayer,
+  path,
 } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
   DocumentSymbolStore,
@@ -31,6 +31,8 @@ import styles from '../outline-node.module.less';
 import { OutlineEventService } from './outline-event.service';
 import { OutlineTreeModel } from './outline-model';
 import { OutlineTreeService } from './outline-tree.service';
+
+const { Path } = path;
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

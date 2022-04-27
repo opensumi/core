@@ -3,8 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { equalsIgnoreCase, IExtensionProps } from '@opensumi/ide-core-common';
+import { strings, IExtensionProps } from '@opensumi/ide-core-common';
 import type { Uri } from '@opensumi/ide-core-common';
+
+const { equalsIgnoreCase } = strings;
 
 export const MANIFEST_CACHE_FOLDER = 'CachedExtensions';
 export const USER_MANIFEST_CACHE_FILE = 'user';

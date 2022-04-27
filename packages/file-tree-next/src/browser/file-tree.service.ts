@@ -1,7 +1,7 @@
 import throttle from 'lodash/throttle';
 import pSeries from 'p-series';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   Tree,
   ITree,
@@ -21,15 +21,14 @@ import {
   Deferred,
   Event,
   Emitter,
-  OS,
+  OperatingSystem,
   IApplicationService,
   ILogger,
+  path,
   Throttler,
-  CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import {
   FileChange,
   IFileServiceClient,
@@ -45,6 +44,8 @@ import { Directory, File } from '../common/file-tree-node.define';
 
 import { FileContextKey } from './file-contextkey';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
+
+const { Path } = path;
 
 export interface IMoveChange {
   source: FileChange;
@@ -544,7 +545,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     // 处理a/b/c/d这类目录
     if (namePaths.length > 1) {
       let tempUri = node.uri;
-      if ((await this.appService.backendOS) === OS.Type.Windows) {
+      if ((await this.appService.backendOS) === OperatingSystem.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.UPDATED);
       }
@@ -563,7 +564,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     } else {
       tempName = newName;
-      if ((await this.appService.backendOS) === OS.Type.Windows) {
+      if ((await this.appService.backendOS) === OperatingSystem.Windows) {
         // Windows环境下会多触发一个UPDATED事件
         this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.UPDATED);
       }

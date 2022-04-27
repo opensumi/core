@@ -1,19 +1,9 @@
 import * as fs from 'fs';
-import * as paths from 'path';
 
-import {
-  Event,
-  URI,
-  FileUri,
-  Uri,
-  Emitter,
-  FileChangeType,
-  FileSystemProviderCapabilities,
-} from '@opensumi/ide-core-common';
+import { FileChangeType, FileSystemProviderCapabilities } from '@opensumi/ide-core-browser';
+import { Event, URI, FileUri, Uri, Emitter, path, BinaryBuffer } from '@opensumi/ide-core-common';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { promisify } from '@opensumi/ide-core-common/lib/browser-fs/util';
-import { Path } from '@opensumi/ide-core-common/lib/path';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
 import {
   IDiskFileProvider,
   FileChangeEvent,
@@ -22,10 +12,11 @@ import {
   FileSystemError,
   notEmpty,
   isErrnoException,
-} from '@opensumi/ide-file-service/lib/common';
+} from '@opensumi/ide-file-service';
 
 import { HttpTreeList } from './http-file.service';
 
+const { Path } = path;
 interface BrowserFsProviderOptions {
   isReadonly?: boolean;
   rootFolder: string;
@@ -116,7 +107,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
       const dirList = await promisify(fs.readdir)(uri.fsPath);
 
       for (const name of dirList as string[]) {
-        const filePath = paths.join(uri.fsPath, name);
+        const filePath = path.join(uri.fsPath, name);
         result.push([name, this.getFileStatType(await promisify(fs.stat)(filePath))]);
       }
       return result;

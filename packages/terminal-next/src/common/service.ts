@@ -1,7 +1,6 @@
 import { ITerminalOptions as IXtermTerminalOptions, Terminal } from 'xterm';
 
-import { IDisposable } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { IDisposable, OperatingSystem } from '@opensumi/ide-core-common';
 
 import { ITerminalConnection } from './client';
 import { ITerminalError } from './error';
@@ -96,7 +95,7 @@ export interface ITerminalService {
   /**
    * 返回终端环境的 OS
    */
-  getOs(): Promise<OperatingSystem>;
+  getOS(): Promise<OperatingSystem>;
   getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]>;
   getDefaultSystemShell(): Promise<string>;
   getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;

@@ -1,5 +1,4 @@
-import { Event, OS } from '@opensumi/ide-core-common';
-import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
+import { Event, OperatingSystem, IProcessEnvironment } from '@opensumi/ide-core-common';
 
 export const EnvironmentVariableServiceToken = Symbol('EnvironmentVariableServiceToken');
 
@@ -46,7 +45,7 @@ export interface IMergedEnvironmentVariableCollection {
    */
   applyToProcessEnvironment(
     env: IProcessEnvironment,
-    os: OS.Type,
+    os: OperatingSystem,
     variableResolver?: (str: string) => PromiseLike<string>,
   ): Promise<void>;
 

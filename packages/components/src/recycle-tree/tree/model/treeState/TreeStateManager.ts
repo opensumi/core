@@ -1,8 +1,11 @@
-import { Event, Emitter, Path } from '../../../../utils';
+import { Event, Emitter, path } from '@opensumi/ide-utils';
+
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../../types';
 import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 
 import { ISerializableState } from './types';
+
+const { Path } = path;
 
 export enum Operation {
   SetExpanded = 1,

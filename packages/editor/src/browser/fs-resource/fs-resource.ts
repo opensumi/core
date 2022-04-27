@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  OS,
+  OperatingSystem,
   URI,
   MaybePromise,
   WithEventBus,
@@ -11,8 +11,7 @@ import {
   IApplicationService,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { FileChangeType } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { FileChangeType, path } from '@opensumi/ide-core-common';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
 
@@ -21,6 +20,8 @@ import { DIFF_SCHEME } from '../../common';
 import { IEditorDocumentModelService } from '../doc-model/types';
 
 import { FileTreeSet } from './file-tree-set';
+
+const { Path } = path;
 
 @Injectable()
 export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {
@@ -53,7 +54,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   async init() {
     const os = await this.applicationService.getBackendOS();
-    this.involvedFiles = new FileTreeSet(os === OS.Type.Windows);
+    this.involvedFiles = new FileTreeSet(os === OperatingSystem.Windows);
   }
 
   handlesUri(uri: URI): number {

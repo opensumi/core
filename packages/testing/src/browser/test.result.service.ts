@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Emitter, IContextKey, IContextKeyService, URI, uuid } from '@opensumi/ide-core-browser';
+import { Emitter, IContextKey, IContextKeyService, URI, uuid, arrays } from '@opensumi/ide-core-browser';
 import { TestingHasAnyResults, TestingIsRunning } from '@opensumi/ide-core-browser/lib/contextkey/testing';
-import { findFirstInSorted } from '@opensumi/ide-core-common/lib/arrays';
 
 import { ITestProfileService, TestProfileServiceToken } from '../common/test-profile';
 import {
@@ -21,6 +20,8 @@ import {
 import { parseTestUri } from '../common/testingUri';
 
 import { TestDto } from './outputPeek/test-output-peek';
+
+const { findFirstInSorted } = arrays;
 
 export type ResultChangeEvent =
   | { completed: ITestResult }

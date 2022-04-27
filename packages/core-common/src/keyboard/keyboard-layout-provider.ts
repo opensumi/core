@@ -15,7 +15,7 @@
  ********************************************************************************/
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/core/src/browser/keyboard/browser-keyboard-layout-provider.ts
 
-import { Event } from '../event';
+import { Event } from '@opensumi/ide-utils';
 
 import { KeymapInfo } from './keymap';
 

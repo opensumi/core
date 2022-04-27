@@ -19,6 +19,6 @@ describe('NodeLogger', () => {
   });
 
   test('getBackendOS', async () => {
-    expect(typeof (await server.getBackendOS())).toBe('string');
+    expect(typeof (await server.getBackendOS())).toBe('number');
   });
 });

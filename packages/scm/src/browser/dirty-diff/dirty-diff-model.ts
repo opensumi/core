@@ -1,15 +1,21 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { Emitter, Event, sortedDiff, ThrottledDelayer, IChange, positionToRange } from '@opensumi/ide-core-common';
-import { first } from '@opensumi/ide-core-common/lib/async';
 import {
   IDisposable,
   dispose,
   Disposable,
   DisposableStore,
   toDisposable,
-} from '@opensumi/ide-core-common/lib/disposable';
-import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
-import { Uri, URI } from '@opensumi/ide-core-common/lib/uri';
+  Emitter,
+  Event,
+  arrays,
+  Uri,
+  URI,
+  ISplice,
+  ThrottledDelayer,
+  first,
+  IChange,
+  positionToRange,
+} from '@opensumi/ide-core-browser';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -22,6 +28,7 @@ import { SCMService, ISCMRepository, IDirtyDiffModel } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { DirtyDiffWidget } from './dirty-diff-widget';
 
+const { sortedDiff } = arrays;
 @Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   private _originalModel: IEditorDocumentModel | null;

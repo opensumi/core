@@ -35,24 +35,15 @@ const baseConfig = {
     '/packages/quick-open/entry',
     // 终端渲染测试暂时不跟随单元测试
     '/packages/terminal-next/__tests__/browser/render.test.ts',
-    // components utils 均引用自 @opensumi/ide-core-common 模块，无须重复测试
-    // 后续统一至 @opensumi/ide-utils 模块
-    '/packages/components/src/utils',
   ],
   modulePathIgnorePatterns: ['<rootDir>/dist/'],
   coveragePathIgnorePatterns: [
     '/dist/',
     '/node_modules/',
-    '/__test__/',
     '/mocks/',
     '/tools/template/',
     '/tools/workspace/',
-    '/packages/status-bar/entry',
     '/packages/startup/entry',
-    '/packages/quick-open/entry',
-    // components 下的 utils 均引用自 @opensumi/ide-core-common 模块，无须重复测试
-    // 后续统一至 @opensumi/ide-utils 模块
-    '/packages/components/src/utils',
   ],
   coverageThreshold: {
     global: {
@@ -78,7 +69,7 @@ module.exports = {
         // 有个 webview 的 case 应该放在 electron 下测，也会被第一条规则匹配到
         // - packages/webview/__tests__/webview/webview.channel.test.ts
         '**/packages/*/__test?(s)__/!(browser)/**/?(*.)+(spec|test).[jt]s?(x)',
-        '**/packages/{core-common,core-electron-main,core-node,electron-basic}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/{core-common,core-electron-main,core-node,electron-basic,utils}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         // exclude 的要放最后
         '!**/packages/{components,core-browser}/__tests__/**',
       ],
@@ -93,6 +84,9 @@ module.exports = {
         </html>`,
         runScripts: 'dangerously',
         url: 'http://localhost/?id=1',
+        userAgent: `Mozilla/5.0 (${
+          process.platform === 'darwin' ? 'Macintosh' : process.platform === 'win32' ? 'Windows' : 'Linux'
+        }) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/v16.7.0`,
       },
       setupFiles: ['./jest.setup.jsdom.js'],
       testMatch: [

@@ -22,7 +22,6 @@ import {
   TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
 } from './terminal.color';
 
-
 export interface XTermOptions {
   cwd?: string;
   // 要传给 xterm 的参数和一些我们自己的参数（如 copyOnSelection）

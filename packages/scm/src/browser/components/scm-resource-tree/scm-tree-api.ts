@@ -1,12 +1,12 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Disposable } from '@opensumi/ide-core-common';
-import * as paths from '@opensumi/ide-core-common/lib/path';
+import { Disposable, path } from '@opensumi/ide-core-common';
 
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';
 import { ViewModelContext } from '../../scm-model';
 import { isSCMResourceGroup } from '../../scm-util';
 
+const { Path } = path;
 export interface ISCMTreeNodeDescription<T = ISCMResource | ISCMResourceGroup> {
   /**
    * 唯一 key，用来缓存
@@ -89,7 +89,7 @@ export class SCMTreeAPI extends Disposable {
   }
 
   private pathToTree(elements: ISCMResource[]): ISCMTreeNodeDescription[] {
-    // // https://stackoverflow.com/questions/54424774/how-to-convert-an-array-of-paths-into-tree-object
+    // // https://stackoverflow.com/questions/54424774/how-to-convert-an-array-of-path-into-tree-object
     const result: ISCMTreeNodeDescription[] = [];
     // helper 的对象
     const kResult = Symbol('result');
@@ -100,14 +100,14 @@ export class SCMTreeAPI extends Disposable {
       const path = this._getPathDesc(element);
       // 初始的 accumulator 为 level
       path
-        .split(paths.Path.separator)
+        .split(Path.separator)
         .filter(Boolean)
         .reduce((acc, cur, index, pathList) => {
           // 每次返回 path 对应的 desc 作为下一个 path 的 parent
           // 不存在 path 对应的 desc 则创建一个新的挂载到 acc 上
           if (!acc[cur]) {
             acc[cur] = this._initPlainCounterObject(kResult, []);
-            const pathname = pathList.slice(0, index + 1).join(paths.Path.separator);
+            const pathname = pathList.slice(0, index + 1).join(Path.separator);
             const resource = {
               id: `${this.providerId}_${element.resourceGroup.id}_${pathname}`,
               name: cur,
@@ -154,7 +154,7 @@ export class SCMTreeAPI extends Disposable {
     while (item.children.length === 1 && item.children[0].children.length) {
       const child = item.children[0];
       // 将 name 拼接起来
-      item.name = `${item.name}${paths.Path.separator}${child.name}`;
+      item.name = `${item.name}${Path.separator}${child.name}`;
       // 剩下部分继承 child 的属性
       item.pathname = child.pathname;
       item.children = child.children;
@@ -164,6 +164,6 @@ export class SCMTreeAPI extends Disposable {
   }
 
   private _getPathDesc(resource: ISCMResource) {
-    return paths.relative(resource.resourceGroup.provider.rootUri!.path, resource.sourceUri.path);
+    return path.relative(resource.resourceGroup.provider.rootUri!.path, resource.sourceUri.path);
   }
 }

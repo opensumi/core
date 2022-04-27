@@ -9,7 +9,7 @@ import {
   ILoggerManagerClient,
   IApplicationService,
   isWindows,
-  OS,
+  OperatingSystem,
   isLinux,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
@@ -137,7 +137,7 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.Macintosh,
         },
       },
       {

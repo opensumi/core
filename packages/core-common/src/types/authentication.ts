@@ -1,5 +1,4 @@
-import { IDisposable } from '../disposable';
-import { Event } from '../event';
+import { IDisposable, Event } from '@opensumi/ide-utils';
 
 export const noAccountsId = 'authentication.noAccounts';
 

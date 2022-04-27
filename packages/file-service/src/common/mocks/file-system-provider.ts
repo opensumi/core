@@ -1,6 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter, Event } from '@opensumi/ide-core-common';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import { Emitter, Event, BinaryBuffer } from '@opensumi/ide-core-common';
 
 import { FileChangeEvent } from '..';
 import { IDiskFileProvider, FileType } from '../';

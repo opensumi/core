@@ -6,9 +6,7 @@
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Schemas, IOpenerService, OS, formatLocalize } from '@opensumi/ide-core-browser';
-import { URI, IRange } from '@opensumi/ide-core-common';
-import * as osPath from '@opensumi/ide-core-common/lib/path';
-import * as platform from '@opensumi/ide-core-common/lib/platform';
+import { URI, IRange, isWindows, isMacintosh, path as osPath, OperatingSystem } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
@@ -30,10 +28,7 @@ const WIN_RELATIVE_PATH = /(?:(?:\~|\.)(?:(?:\\|\/)[\w\.-]*)+)/;
 const WIN_PATH = new RegExp(`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`);
 const POSIX_PATH = /((?:\~|\.)?(?:\/[\w\.-]*)+)/;
 const LINE_COLUMN = /(?:\:([\d]+))?(?:\:([\d]+))?/;
-const PATH_LINK_REGEX = new RegExp(
-  `${platform.isWindows ? WIN_PATH.source : POSIX_PATH.source}${LINE_COLUMN.source}`,
-  'g',
-);
+const PATH_LINK_REGEX = new RegExp(`${isWindows ? WIN_PATH.source : POSIX_PATH.source}${LINE_COLUMN.source}`, 'g');
 
 const MAX_LENGTH = 2000;
 
@@ -105,9 +100,9 @@ export class LinkDetector {
     this.decorateLink(link, async () => {
       if (uri.scheme === Schemas.file) {
         const fsPath = uri.toString();
-        const path = OS.type() === OS.Type.Windows ? osPath.win32 : osPath.posix;
+        const path = OS.type() === OperatingSystem.Windows ? osPath.win32 : osPath.posix;
         const fileUrl = osPath.normalize(
-          path.sep === osPath.posix.sep && platform.isWindows ? fsPath.replace(/\\/g, osPath.posix.sep) : fsPath,
+          path.sep === osPath.posix.sep && isWindows ? fsPath.replace(/\\/g, osPath.posix.sep) : fsPath,
         );
 
         await this.workbenchEditorService.open(URI.parse(fileUrl));
@@ -173,9 +168,9 @@ export class LinkDetector {
 
   private decorateLink(link: HTMLElement, onClick: (preserveFocus: boolean) => void) {
     link.classList.add(styles.link);
-    link.title = formatLocalize('debug.console.followLink', platform.isMacintosh ? 'Cmd' : 'Ctrl');
+    link.title = formatLocalize('debug.console.followLink', isMacintosh ? 'Cmd' : 'Ctrl');
     link.onmousemove = (event) => {
-      link.classList.toggle(styles.pointer, platform.isMacintosh ? event.metaKey : event.ctrlKey);
+      link.classList.toggle(styles.pointer, isMacintosh ? event.metaKey : event.ctrlKey);
     };
     link.onmouseleave = () => link.classList.remove(styles.pointer);
     link.onclick = (event) => {
@@ -183,7 +178,7 @@ export class LinkDetector {
       if (!selection || selection.type === 'Range') {
         return;
       }
-      if (!(platform.isMacintosh ? event.metaKey : event.ctrlKey)) {
+      if (!(isMacintosh ? event.metaKey : event.ctrlKey)) {
         return;
       }
 

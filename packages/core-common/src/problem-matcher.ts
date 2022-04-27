@@ -16,9 +16,8 @@
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/task/src/browser/task-problem-matcher-registry.ts
 
 import { Injectable, Autowired } from '@opensumi/di';
+import { URI, Emitter, DisposableCollection, Disposable, IDisposable } from '@opensumi/ide-utils';
 
-import { DisposableCollection, Disposable, IDisposable } from './disposable';
-import { Emitter } from './event';
 import {
   IProblemPatternRegistry,
   ApplyToKind,
@@ -28,7 +27,6 @@ import {
   ProblemPattern,
   WatchingPattern,
 } from './problem-pattern';
-import { URI } from './uri';
 
 export interface WatchingMatcherContribution {
   // If set to true the background monitor is in active mode when the task starts.

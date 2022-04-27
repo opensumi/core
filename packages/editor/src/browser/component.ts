@@ -19,7 +19,6 @@ import {
   RegisterEditorSideComponentEvent,
 } from './types';
 
-
 type SchemeKey = string;
 
 interface INormalizedEditorComponentResolver {

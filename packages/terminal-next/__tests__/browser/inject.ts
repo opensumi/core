@@ -8,8 +8,14 @@ import {
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { IEventBus, CommandService, ILogger, IFileServiceClient, Disposable } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import {
+  IEventBus,
+  CommandService,
+  ILogger,
+  IFileServiceClient,
+  Disposable,
+  OperatingSystem,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -175,7 +181,7 @@ export const injector = new Injector([
       getDefaultSystemShell() {
         return '/bin/sh';
       },
-      getOs() {
+      getOS() {
         return OperatingSystem.Macintosh;
       },
       detectAvailableProfiles() {

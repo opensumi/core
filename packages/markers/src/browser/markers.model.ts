@@ -2,11 +2,13 @@ import { observable } from 'mobx';
 
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IMarker, MarkerSeverity, URI, Disposable, compareRangesUsingStarts } from '@opensumi/ide-core-common';
-import { isFalsyOrEmpty, mergeSort } from '@opensumi/ide-core-common/lib/arrays';
+import { arrays } from '@opensumi/ide-core-common';
 
 import { IMarkerService, IRenderableMarkerModel, MarkerModelBuilder } from '../common';
 
 import { Filter, FilterOptions } from './markers-filter.model';
+
+const { isFalsyOrEmpty, mergeSort } = arrays;
 
 function compareMarkers(a: IMarker, b: IMarker): number {
   return MarkerSeverity.compare(a.severity, b.severity) || compareRangesUsingStarts(a, b);

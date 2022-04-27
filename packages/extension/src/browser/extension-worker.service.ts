@@ -2,8 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { warning } from '@opensumi/ide-components/lib/utils';
 import { IRPCProtocol, RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { AppConfig, Deferred, Emitter, IExtensionProps, ILogger, URI } from '@opensumi/ide-core-browser';
-import { Disposable, IDisposable, toDisposable } from '@opensumi/ide-core-common';
-import { posix } from '@opensumi/ide-core-common/lib/path';
+import { Disposable, IDisposable, toDisposable, path } from '@opensumi/ide-core-common';
 
 import { IExtension, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../common';
 import { ActivatedExtensionJSON } from '../common/activator';
@@ -12,6 +11,8 @@ import { AbstractWorkerExtProcessService } from '../common/extension.service';
 import { getWorkerBootstrapUrl } from './loader';
 import { initWorkerThreadAPIProxy } from './vscode/api/main.thread.api.impl';
 import { startInsideIframe } from './workerHostIframe';
+
+const { posix } = path;
 
 @Injectable()
 export class WorkerExtProcessService

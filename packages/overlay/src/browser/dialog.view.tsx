@@ -3,7 +3,7 @@ import React, { useEffect, RefObject, useRef } from 'react';
 
 import { Button, Dialog as DialogView } from '@opensumi/ide-components';
 import { useInjectable, localize } from '@opensumi/ide-core-browser';
-import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
+import { strings } from '@opensumi/ide-core-browser';
 
 import { IDialogService } from '../common';
 
@@ -49,7 +49,7 @@ export const Dialog = observer(() => {
               key={button}
               type={index === buttons.length - 1 ? 'primary' : 'secondary'}
             >
-              {mnemonicButtonLabel(button, true)}
+              {strings.mnemonicButtonLabel(button, true)}
             </Button>
           ))
         ) : (

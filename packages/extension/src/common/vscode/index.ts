@@ -175,7 +175,6 @@ export * from './strings';
 export * from './storage';
 export * from './env';
 export * from './languages';
-export * from './paths';
 export * from './webview';
 export * from './treeview';
 export * from './debug';

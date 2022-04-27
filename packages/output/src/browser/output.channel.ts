@@ -1,15 +1,6 @@
 import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import {
-  Disposable,
-  uuid,
-  URI,
-  localize,
-  Deferred,
-  IEventBus,
-  removeAnsiEscapeCodes,
-  Schemas,
-} from '@opensumi/ide-core-common';
+import { Disposable, uuid, URI, localize, Deferred, IEventBus, strings, Schemas } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -19,6 +10,7 @@ import { ContentChangeEvent, ContentChangeEventPayload, ContentChangeType } from
 
 import { OutputPreferences } from './output-preference';
 
+const { removeAnsiEscapeCodes } = strings;
 const DEFAULT_MAX_CHANNEL_LINE = 50000;
 
 @Injectable({ multiple: true })

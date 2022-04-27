@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@opensumi/di';
+import { Injector } from '@opensumi/di';
 
 import { IHashCalculateService, HashCalculateServiceImpl } from '../src/hash-calculate/hash-calculate';
 

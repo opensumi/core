@@ -2,26 +2,24 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect, useRef } from 'react';
 
-
 import {
   useInjectable,
   MaybeNull,
   ComponentRenderer,
   ComponentRegistry,
-  Disposable,
   DomListener,
   AppConfig,
   replaceLocalizePlaceholder,
   electronEnv,
-  isOSX,
   IWindowService,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { path, isMacintosh, Disposable } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { basename } from '@opensumi/ide-core-common/lib/utils/paths';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
 
+const { basename } = path;
 import styles from './header.module.less';
 
 const useFullScreen = () => {
@@ -73,7 +71,7 @@ const useMaximize = () => {
 };
 
 // Big Sur increases title bar height
-const isNewMacHeaderBar = () => isOSX && parseFloat(electronEnv.osRelease) >= 20;
+const isNewMacHeaderBar = () => isMacintosh && parseFloat(electronEnv.osRelease) >= 20;
 
 /**
  * autoHide: Hide the HeaderBar when the macOS full screen
@@ -87,7 +85,7 @@ export const ElectronHeaderBar = observer(
     const { maximized, getMaximized } = useMaximize();
 
     const LeftComponent = () => {
-      if (isOSX) {
+      if (isMacintosh) {
         return null;
       }
 
@@ -106,7 +104,7 @@ export const ElectronHeaderBar = observer(
     };
 
     const RightComponent = () => {
-      if (isOSX) {
+      if (isMacintosh) {
         return null;
       }
 
@@ -124,7 +122,7 @@ export const ElectronHeaderBar = observer(
     };
 
     // in Mac, hide the header bar if it is in full screen mode
-    if (isOSX && isFullScreen && autoHide) {
+    if (isMacintosh && isFullScreen && autoHide) {
       return (
         <div>
           <TitleInfo hidden={true} />

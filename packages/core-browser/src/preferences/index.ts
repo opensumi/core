@@ -5,4 +5,5 @@ export * from './preference-scope';
 export * from './preference-service';
 export * from './preference-proxy';
 export * from './early-preferences';
+export * from './types';
 export * from './settings';

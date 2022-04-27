@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { URI, localize, getIcon, IReporterService, format } from '@opensumi/ide-core-browser';
+import { URI, localize, getIcon, IReporterService, strings } from '@opensumi/ide-core-browser';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core-browser/lib/components';
 import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { Scroll } from '@opensumi/ide-editor/lib/browser/component/scroll/scroll';
@@ -12,6 +12,8 @@ import { IExtension } from '../../common';
 
 import { createBrowserCommandsApiFactory } from './commands';
 import { createBrowserComponents } from './components';
+
+const { format } = strings;
 
 /**
  * Browser 尽量只export视图相关的少量API

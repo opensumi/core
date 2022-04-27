@@ -1,5 +1,4 @@
-import { INativeCredentialService, isLinux } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig, INativeCredentialService, isLinux } from '@opensumi/ide-core-node';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';

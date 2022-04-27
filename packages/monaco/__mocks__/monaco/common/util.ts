@@ -1,4 +1,4 @@
-import { Emitter } from '@opensumi/ide-core-common/lib/event';
+import { Emitter } from '@opensumi/ide-core-common';
 
 const emitters: Map<string, Emitter<any>> = new Map();
 

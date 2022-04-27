@@ -10,9 +10,8 @@ import {
   INodeRendererProps,
   TreeNodeType,
 } from '@opensumi/ide-components';
-import { useInjectable, localize, isOSX } from '@opensumi/ide-core-browser';
+import { useInjectable, localize, isMacintosh, path } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import * as path from '@opensumi/ide-core-common/lib/utils/paths';
 import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@opensumi/ide-overlay';
 
 import { Directory, File } from '../../common/file-tree-node.define';
@@ -20,7 +19,6 @@ import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeDialogModel } from './file-dialog-model.service';
 import { FileTreeDialogNode } from './file-dialog-node';
 import styles from './file-dialog.module.less';
-
 
 export interface IFileDialogProps {
   options: ISaveDialogOptions | IOpenDialogOptions;
@@ -65,7 +63,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     // 如果有文件名的，说明肯定是保存文件的情况
     if (fileName && (options as ISaveDialogOptions).showNameInput && (value?.length === 1 || options.defaultUri)) {
       const filePath = value?.length === 1 ? value[0] : options.defaultUri!.path.toString();
-      dialogService.hide([path.resolve(filePath!, fileName)]);
+      dialogService.hide([path.join(filePath!, fileName)]);
     } else {
       if (value.length > 0) {
         dialogService.hide(value);
@@ -122,7 +120,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
 
   const hasCtrlCmdMask = (event): boolean => {
     const { metaKey, ctrlKey } = event;
-    return (isOSX && metaKey) || ctrlKey;
+    return (isMacintosh && metaKey) || ctrlKey;
   };
 
   const handleItemClicked = (ev: React.MouseEvent, item: File | Directory, type: TreeNodeType) => {

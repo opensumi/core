@@ -1,4 +1,5 @@
-import { Emitter, DisposableCollection } from '../../utils';
+import { Emitter, DisposableCollection } from '@opensumi/ide-utils';
+
 import { ITreeNodeOrCompositeTreeNode, ITree, ICompositeTreeNode } from '../types';
 
 import { TreeNode, CompositeTreeNode } from './TreeNode';

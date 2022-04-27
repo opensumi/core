@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ITree } from '@opensumi/ide-components';
 import { EDITOR_COMMANDS, CorePreferences } from '@opensumi/ide-core-browser';
-import { URI, localize, CommandService, formatLocalize } from '@opensumi/ide-core-common';
-import * as paths from '@opensumi/ide-core-common/lib/path';
+import { URI, localize, CommandService, formatLocalize, path } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
@@ -245,8 +244,8 @@ export class FileTreeAPI implements IFileTreeAPI {
     }
     while (exists) {
       const name = to.displayName.replace(/\Wcopy\W\d+/, '');
-      const extname = paths.extname(name);
-      const basename = paths.basename(name, extname);
+      const extname = path.extname(name);
+      const basename = path.basename(name, extname);
       const newFileName = `${basename} copy ${idx}${extname}`;
       to = to.parent.resolve(newFileName);
       idx++;

@@ -12,9 +12,8 @@ import {
   NewPromptHandle,
 } from '@opensumi/ide-components';
 import { Loading } from '@opensumi/ide-components';
-import { getIcon, URI } from '@opensumi/ide-core-browser';
+import { getIcon, URI, path } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 
 import { Directory, File } from '../common/file-tree-node.define';
 
@@ -22,6 +21,7 @@ import styles from './file-tree-node.module.less';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
 import { DragAndDropService } from './services/file-tree-dnd.service';
 
+const { Path } = path;
 
 export interface IFileTreeNodeProps {
   item: any;

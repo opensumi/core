@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { StoragePaths, Deferred, URI, isWindows, ILogger } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { StoragePaths, Deferred, URI, isWindows, ILogger, path } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { IStoragePathServer } from '../common';
+
+const { Path } = path;
 
 @Injectable()
 export class StoragePathServer implements IStoragePathServer {

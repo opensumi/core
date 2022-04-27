@@ -3,10 +3,12 @@
  */
 import mergeWith from 'lodash/mergeWith';
 
-import { asArray } from '@opensumi/ide-core-common';
+import { arrays } from '@opensumi/ide-core-common';
 
 import { ISumiExtensionContributions } from '../common/sumi/extension';
 import { IExtensionContributions } from '../common/vscode/extension';
+
+const { asArray } = arrays;
 
 export function mergeContributes(
   contributes: IExtensionContributions | undefined,

@@ -7,7 +7,7 @@ import {
   Disposable,
   MaybeNull,
   ILogger,
-  addElement,
+  arrays,
   Emitter,
   StorageProvider,
   IStorage,
@@ -43,6 +43,8 @@ import {
   IWebviewReviver,
 } from './types';
 import { ElectronPlainWebviewWindow } from './webview-window';
+
+const { addElement } = arrays;
 
 @Injectable()
 export class WebviewServiceImpl implements IWebviewService {

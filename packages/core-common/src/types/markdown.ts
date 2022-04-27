@@ -1,4 +1,4 @@
-import { UriComponents } from '../uri';
+import { UriComponents } from '@opensumi/ide-utils';
 
 export interface IMarkdownString {
   value: string;

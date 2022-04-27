@@ -10,7 +10,8 @@ import {
   TreeNodeType,
 } from '@opensumi/ide-components';
 import { Loading } from '@opensumi/ide-components';
-import { useInjectable, URI, getIcon, CommandService } from '@opensumi/ide-core-browser';
+import { useInjectable, getIcon, CommandService } from '@opensumi/ide-core-browser';
+import { URI } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';

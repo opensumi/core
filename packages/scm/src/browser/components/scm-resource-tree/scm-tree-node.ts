@@ -1,6 +1,5 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
-import { URI, memoize } from '@opensumi/ide-core-browser';
-import * as paths from '@opensumi/ide-core-common/lib/path';
+import { URI, memoize, path } from '@opensumi/ide-core-browser';
 
 import { ISCMResourceGroup, ISCMResource } from '../../../common';
 import { isSCMResourceGroup } from '../../scm-util';
@@ -87,7 +86,7 @@ export class SCMResourceFolder extends CompositeTreeNode {
   get tooltip(): string {
     const node = this.resource;
 
-    return paths.join(node.resourceGroup.provider.rootUri!.path, this.raw.pathname!);
+    return path.join(node.resourceGroup.provider.rootUri!.path, this.raw.pathname!);
   }
 
   /**
@@ -126,9 +125,9 @@ export class SCMResourceFile extends TreeNode {
     }
 
     const node = this.resource;
-    const filePath = paths.parse(node.sourceUri.path);
+    const filePath = path.parse(node.sourceUri.path);
 
-    return paths.relative(node.resourceGroup.provider.rootUri!.path, filePath.dir);
+    return path.relative(node.resourceGroup.provider.rootUri!.path, filePath.dir);
   }
 
   @memoize

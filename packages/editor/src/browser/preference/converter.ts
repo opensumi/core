@@ -1,8 +1,10 @@
-import { removeUndefined, Uri } from '@opensumi/ide-core-browser';
+import { objects, Uri } from '@opensumi/ide-core-browser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
 import { IConvertedMonacoOptions } from '../types';
+
+const { removeUndefined } = objects;
 
 /**
  * 计算由ConfigurationService设置值带来的monaco编辑器的属性

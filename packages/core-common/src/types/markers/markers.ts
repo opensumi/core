@@ -1,4 +1,4 @@
-import { isEmptyObject } from '../../utils/types';
+import { isEmptyObject } from '@opensumi/ide-utils';
 
 export interface MapMap<V> {
   [key: string]: { [key: string]: V };

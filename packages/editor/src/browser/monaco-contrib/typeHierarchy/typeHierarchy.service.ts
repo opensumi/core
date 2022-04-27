@@ -3,8 +3,7 @@ import {
   CancellationToken,
   IPosition,
   IDisposable,
-  isFunction,
-  isNonEmptyArray,
+  arrays,
   RefCountedDisposable,
   onUnexpectedExternalError,
   URI,
@@ -19,6 +18,8 @@ import {
 import { ITextModel, Position } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
+
+const { isNonEmptyArray } = arrays;
 
 export class TypeHierarchyModel {
   static async create(

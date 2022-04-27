@@ -6,16 +6,16 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { SCMService } from '../../src';
 import { SCMModule } from '../../src/browser';
 import { SCMBadgeController, SCMStatusBarController } from '../../src/browser/scm-activity';
+import { SCMService } from '../../src/common/scm.service';
 import { MockSCMProvider, MockSCMResourceGroup, MockSCMResource } from '../scm-test-util';
 
 jest.useFakeTimers();
 
 // mock localize
-jest.mock('@opensumi/ide-core-common/src/localize', () => ({
-  ...jest.requireActual('@opensumi/ide-core-common/src/localize'),
+jest.mock('@opensumi/ide-core-common', () => ({
+  ...jest.requireActual('@opensumi/ide-core-common'),
   localize: (symbol: string, defaultValue?: string) => defaultValue || symbol,
 }));
 
@@ -230,7 +230,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       // scm provider without rootUri
       const mockProvider0 = new MockSCMProvider(0);
-      mockProvider0.statusBarCommands!.push(
+      mockProvider0.statusBarCommands?.push(
         {
           id: 'fake.command.id.0',
           title: 'fake.command.title.0',
@@ -281,7 +281,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       // scm provider without rootUri
       const mockProvider0 = new MockSCMProvider(0);
       mockProvider0.rootUri = Uri.file('/test/workspace');
-      mockProvider0.statusBarCommands!.push({
+      mockProvider0.statusBarCommands?.push({
         id: 'fake.command.id.0',
         title: 'fake.command.title.0',
         tooltip: 'fake.command.tooltip.0',
@@ -311,7 +311,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       // scm provider without rootUri
       const mockProvider0 = new MockSCMProvider(0);
-      mockProvider0.statusBarCommands!.push({
+      mockProvider0.statusBarCommands?.push({
         id: 'fake.command.id.0',
         title: 'fake.command.title.0',
         tooltip: 'fake.command.tooltip.0',
@@ -383,7 +383,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       // scm provider0 without rootUri
       const mockProvider0 = new MockSCMProvider(0);
       mockProvider0.rootUri = undefined;
-      mockProvider0.statusBarCommands!.push({
+      mockProvider0.statusBarCommands?.push({
         id: 'fake.command.id.0',
         title: 'fake.command.title.0',
         tooltip: 'fake.command.tooltip.0',
@@ -406,7 +406,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       // scm provider1 with rootUri
       const mockProvider1 = new MockSCMProvider(1);
       mockProvider1.rootUri = Uri.file('/test/workspace/another-ws');
-      mockProvider1.statusBarCommands!.push({
+      mockProvider1.statusBarCommands?.push({
         id: 'fake.command.id.1',
         title: 'fake.command.title.1',
         arguments: [1, 2, 3],
@@ -464,7 +464,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       // scm provider0 without rootUri
       const mockProvider0 = new MockSCMProvider(0);
       mockProvider0.rootUri = undefined;
-      mockProvider0.statusBarCommands!.push({
+      mockProvider0.statusBarCommands?.push({
         id: 'fake.command.id.0',
         title: 'fake.command.title.0',
         tooltip: 'fake.command.tooltip.0',
@@ -487,7 +487,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
       // scm provider1 with rootUri
       const mockProvider1 = new MockSCMProvider(1);
       mockProvider1.rootUri = Uri.file('/test/workspace/another-ws');
-      mockProvider1.statusBarCommands!.push({
+      mockProvider1.statusBarCommands?.push({
         id: 'fake.command.id.1',
         title: 'fake.command.title.1',
         arguments: [1, 2, 3],
@@ -523,7 +523,7 @@ describe('test for packages/scm/src/browser/scm-activity.ts', () => {
 
       // scm provider without rootUri
       const mockProvider0 = new MockSCMProvider(0);
-      mockProvider0.statusBarCommands!.push({
+      mockProvider0.statusBarCommands?.push({
         id: 'fake.command.id.0',
         title: 'fake.command.title.0',
         tooltip: 'fake.command.tooltip.0',

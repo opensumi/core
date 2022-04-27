@@ -37,8 +37,8 @@ import {
   ReadyEvent,
   IDisposable,
   Disposable,
+  makeRandomHexString,
 } from '@opensumi/ide-core-common';
-import { makeRandomHexString } from '@opensumi/ide-core-common/lib/functional';
 import { IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -887,7 +887,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async onRegisterEditorComponentEvent() {
     if (this.currentResource) {
       const resource = this.currentResource;
-      const openTypes =(await this.editorComponentRegistry.resolveEditorComponent(resource));
+      const openTypes = await this.editorComponentRegistry.resolveEditorComponent(resource);
       if (this.currentResource === resource) {
         this.availableOpenTypes = openTypes;
         this.cachedResourcesOpenTypes.set(resource.uri.toString(), openTypes);

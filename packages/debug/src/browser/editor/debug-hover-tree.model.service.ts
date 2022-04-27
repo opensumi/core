@@ -8,14 +8,15 @@ import {
   WatchEvent,
   TreeNodeEvent,
 } from '@opensumi/ide-components';
-import { Emitter, Deferred, Event, DisposableCollection } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { Emitter, Deferred, Event, DisposableCollection, path } from '@opensumi/ide-core-browser';
 
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import styles from '../view/variables/debug-variables.module.less';
 
 import { DebugHoverModel } from './debug-hover-model';
 import { ExpressionVariable, DebugHoverSource } from './debug-hover-source';
+
+const { Path } = path;
 
 export interface IDebugVariablesHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

@@ -5,8 +5,7 @@
 
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.55.0/src/vs/workbench/contrib/terminal/common/environmentVariableCollection.ts
 
-import { OS } from '@opensumi/ide-core-common';
-import { IProcessEnvironment } from '@opensumi/ide-core-common/lib/platform';
+import { IProcessEnvironment, OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
   IMergedEnvironmentVariableCollection,
@@ -52,17 +51,17 @@ export class MergedEnvironmentVariableCollection implements IMergedEnvironmentVa
 
   async applyToProcessEnvironment(
     env: IProcessEnvironment,
-    os: OS.Type,
+    os: OperatingSystem,
     variableResolver?: (str: string) => Promise<string>,
   ): Promise<void> {
     let lowerToActualVariableNames: { [lowerKey: string]: string | undefined } | undefined;
-    if (os === OS.Type.Windows) {
+    if (os === OperatingSystem.Windows) {
       lowerToActualVariableNames = {};
       Object.keys(env).forEach((e) => (lowerToActualVariableNames![e.toLowerCase()] = e));
     }
     this.map.forEach((mutators, variable) => {
       const actualVariable =
-        os === OS.Type.Windows ? lowerToActualVariableNames![variable.toLowerCase()] || variable : variable;
+        os === OperatingSystem.Windows ? lowerToActualVariableNames![variable.toLowerCase()] || variable : variable;
       mutators.forEach(async (mutator) => {
         const value = variableResolver ? await variableResolver(mutator.value) : mutator.value;
         switch (mutator.type) {

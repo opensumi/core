@@ -3,9 +3,8 @@ import { Terminal } from 'xterm';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { AppConfig, electronEnv, PreferenceService } from '@opensumi/ide-core-browser';
+import { AppConfig, electronEnv, PreferenceService, OperatingSystem } from '@opensumi/ide-core-browser';
 import { Emitter, ILogger, Event } from '@opensumi/ide-core-common';
-import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 
 import {
   generateSessionId,
@@ -201,11 +200,11 @@ export class NodePtyTerminalService implements ITerminalService {
     this._onProcessChange.fire({ sessionId, processName });
   }
 
-  async getOs() {
+  async getOS() {
     if (this.backendOs) {
       return this.backendOs;
     }
-    return (this.backendOs = this.serviceClientRPC.getOs());
+    return (this.backendOs = this.serviceClientRPC.getOS());
   }
 
   async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
@@ -222,7 +221,7 @@ export class NodePtyTerminalService implements ITerminalService {
   }
 
   async getDefaultSystemShell(): Promise<string> {
-    return await this.serviceClientRPC.getDefaultSystemShell(await this.getOs());
+    return await this.serviceClientRPC.getDefaultSystemShell(await this.getOS());
   }
 
   dispose() {

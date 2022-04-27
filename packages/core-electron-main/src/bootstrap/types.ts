@@ -2,7 +2,7 @@ import { BrowserWindowConstructorOptions } from 'electron';
 
 import { Injector } from '@opensumi/di';
 import { ConstructorOf, ExtensionCandidate } from '@opensumi/ide-core-common';
-import { IDisposable } from '@opensumi/ide-core-common/lib/disposable';
+import { IDisposable } from '@opensumi/ide-core-common';
 import { IURLHandler } from '@opensumi/ide-core-common/lib/electron';
 
 import { ElectronMainModule } from '../electron-main-module';

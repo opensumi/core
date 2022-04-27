@@ -1,6 +1,6 @@
+import { IAsyncResult, IDisposable } from '@opensumi/ide-utils';
+
 import { ConstructorOf } from '../declare';
-import { IDisposable } from '../disposable';
-import { IAsyncResult } from '../event';
 
 export interface IEventFireOpts {
   nextTick?: boolean;

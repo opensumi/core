@@ -17,15 +17,15 @@ import {
   IProgressStep,
   ProgressLocation,
   Progress,
-  format,
+  strings,
   CommandService,
   Disposable,
   Emitter,
   Event,
   toDisposable,
   dispose,
+  parseLinkedText,
 } from '@opensumi/ide-core-common';
-import { parseLinkedText } from '@opensumi/ide-core-common/lib/linkedText';
 
 import { timeout, IDisposable, IOpenerService, toMarkdown } from '..';
 import { open } from '../components';
@@ -35,6 +35,8 @@ import { ProgressBar } from './progress-bar';
 import { ProgressIndicator } from './progress-indicator';
 
 import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
+
+const { format } = strings;
 
 @Injectable()
 export class ProgressService implements IProgressService {

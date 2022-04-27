@@ -9,7 +9,7 @@ import {
   Emitter as EventEmitter,
   ISelection,
   Disposable,
-  removeUndefined,
+  objects,
 } from '@opensumi/ide-core-common';
 import { Emitter } from '@opensumi/ide-core-common';
 import type {
@@ -32,7 +32,6 @@ import {
   IResourceOpenOptions,
 } from '../common';
 
-
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import {
   IEditorDocumentModelRef,
@@ -44,6 +43,7 @@ import { EditorFeatureRegistryImpl } from './feature';
 import { getConvertedMonacoOptions, isEditorOption, isDiffEditorOption } from './preference/converter';
 import { IEditorFeatureRegistry } from './types';
 
+const { removeUndefined } = objects;
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {

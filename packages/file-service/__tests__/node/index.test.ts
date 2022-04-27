@@ -12,9 +12,6 @@ import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-help
 import { IFileService, FileChangeType } from '../../src/common';
 import { FileServiceModule, FileService } from '../../src/node';
 
-// import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-// import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
-
 // tslint:disable:variable-name
 describe('FileService', () => {
   let root: URI;

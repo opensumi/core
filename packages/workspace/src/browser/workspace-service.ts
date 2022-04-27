@@ -15,9 +15,9 @@ import {
   AppConfig,
   IClientApp,
   IWindowService,
+  path,
 } from '@opensumi/ide-core-browser';
 import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize, formatLocalize } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileStat } from '@opensumi/ide-file-service';
 import { FileChangeEvent } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -32,6 +32,8 @@ import {
 } from '../common';
 
 import { WorkspacePreferences } from './workspace-preferences';
+
+const { Path } = path;
 
 @Injectable()
 export class WorkspaceService implements IWorkspaceService {

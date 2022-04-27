@@ -6,9 +6,8 @@ import { RecycleList } from '@opensumi/ide-components/lib/recycle-list';
 import { ViewState } from '@opensumi/ide-core-browser/lib/layout';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services/label-service';
+import { URI, Uri, path } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
-import * as paths from '@opensumi/ide-core-common/lib/path';
-import { URI, Uri } from '@opensumi/ide-core-common/lib/uri';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type {
@@ -149,8 +148,8 @@ const FileEditNode = observer<IFileEditNodeProps>(({ data: item }) => {
     return null;
   }
 
-  const filename = paths.basename(editDesc.uri.fsPath);
-  const dirname = paths.dirname(editDesc.uri.fsPath);
+  const filename = path.basename(editDesc.uri.fsPath);
+  const dirname = path.dirname(editDesc.uri.fsPath);
 
   return (
     <div className={styles.resource_node} data-workspace-edit-type='file'>

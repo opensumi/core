@@ -27,6 +27,8 @@ import {
   WaitUntilEvent,
   CancellationToken,
   getDebugLogger,
+  IRelativePattern,
+  parseGlob,
 } from '@opensumi/ide-core-common';
 import { FileOperation } from '@opensumi/ide-workspace-edit';
 
@@ -44,7 +46,6 @@ import {
   IWillRunFileOperationParticipation,
   SourceTargetPair,
 } from '../../../common/vscode/file-system';
-import { IRelativePattern, parse } from '../../../common/vscode/glob';
 import * as model from '../../../common/vscode/model.api';
 
 class FileSystemWatcher implements vscode.FileSystemWatcher {
@@ -84,7 +85,7 @@ class FileSystemWatcher implements vscode.FileSystemWatcher {
       this._config += 0b100;
     }
 
-    const parsedPattern = parse(globPattern);
+    const parsedPattern = parseGlob(globPattern);
 
     const subscription = dispatcher((events) => {
       if (!ignoreCreateEvents) {

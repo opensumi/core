@@ -1,4 +1,12 @@
-const { JSDOM } = require('jsdom');
+const { JSDOM, ResourceLoader } = require('jsdom');
+
+const resourceLoader = new ResourceLoader({
+  strictSSL: false,
+  userAgent: `Mozilla/5.0 (${
+    process.platform === 'darwin' ? 'Macintosh' : process.platform === 'win32' ? 'Windows' : 'Linux'
+  }) AppleWebKit/537.36 (KHTML, like Gecko) jsdom/v16.7.0`,
+});
+
 const jsdom = new JSDOM('<div id="main"></div>', {
   // https://github.com/jsdom/jsdom#basic-options
   // 禁用掉 resources: usable, 采用 jsdom 默认策略不加载 subresources
@@ -6,6 +14,8 @@ const jsdom = new JSDOM('<div id="main"></div>', {
   // resources: 'usable',
   runScripts: 'dangerously',
   url: 'http://localhost/?id=1',
+  // 保障 `platform.ts` 中 isLinux 等平台信息判断准确性
+  resources: resourceLoader,
 });
 global.document = jsdom.window.document;
 let text = '';

@@ -1,4 +1,5 @@
-import { IDisposable, DisposableCollection } from '../../../utils';
+import { IDisposable, DisposableCollection } from '@opensumi/ide-utils';
+
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../types';
 import { TreeNode, CompositeTreeNode } from '../TreeNode';
 

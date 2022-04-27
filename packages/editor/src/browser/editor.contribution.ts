@@ -31,13 +31,13 @@ import {
   getLanguageIdFromMonaco,
   QuickPickItem,
   AppConfig,
+  SUPPORTED_ENCODINGS,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
-import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';

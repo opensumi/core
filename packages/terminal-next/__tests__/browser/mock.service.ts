@@ -3,8 +3,7 @@ import { Terminal } from 'xterm';
 
 import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { uuid, URI, Emitter, IDisposable, PreferenceScope } from '@opensumi/ide-core-common';
-import { OS } from '@opensumi/ide-core-common/lib/platform';
+import { uuid, URI, Emitter, IDisposable, PreferenceScope, OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
   ITerminalService,
@@ -108,8 +107,8 @@ export class MockSocketService implements ITerminalService {
     return {};
   }
 
-  async getOs() {
-    return OS;
+  async getOS() {
+    return OperatingSystem.Linux;
   }
 
   private _handleStdoutMessage(sessionId: string, handler: (json: any) => void) {

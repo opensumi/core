@@ -1,4 +1,5 @@
-import { DisposableCollection, Emitter } from '../../utils';
+import { DisposableCollection, Emitter } from '@opensumi/ide-utils';
+
 import { TreeModel, Tree, Decoration, DecorationsManager } from '../tree';
 import { TreeNodeEvent } from '../types';
 

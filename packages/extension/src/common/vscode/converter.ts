@@ -12,13 +12,13 @@ import {
   MarkerTag,
   MarkerSeverity,
   ProgressLocation as MainProgressLocation,
-  parse,
-  cloneAndChange,
+  path,
+  objects,
   IThemeColor,
   isDefined,
-  coalesce,
-  asArray,
+  arrays,
   IMarkdownString,
+  IRelativePattern,
 } from '@opensumi/ide-core-common';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
@@ -56,11 +56,14 @@ import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 import { ExtensionDocumentDataManager } from './doc';
 import { ViewColumn as ViewColumnEnums } from './enums';
 import * as types from './ext-types';
-import { IRelativePattern } from './glob';
 import { IInlineValueContextDto } from './languages';
 import * as model from './model.api';
 import { isMarkdownString, parseHrefAndDimensions } from './models';
 import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
+
+const { parse } = path;
+const { cloneAndChange } = objects;
+const { coalesce, asArray } = arrays;
 
 export interface TextEditorOpenOptions extends vscode.TextDocumentShowOptions {
   background?: boolean;
@@ -1299,44 +1302,46 @@ export namespace CallHierarchyItem {
 }
 
 export namespace TypeHierarchyItem {
+  export function to(item: model.ITypeHierarchyItemDto): types.TypeHierarchyItem {
+    const result = new types.TypeHierarchyItem(
+      SymbolKind.to(item.kind),
+      item.name,
+      item.detail || '',
+      URI.revive(item.uri),
+      Range.to(item.range),
+      Range.to(item.selectionRange),
+    );
 
-	export function to(item: model.ITypeHierarchyItemDto): types.TypeHierarchyItem {
-		const result = new types.TypeHierarchyItem(
-			SymbolKind.to(item.kind),
-			item.name,
-			item.detail || '',
-			URI.revive(item.uri),
-			Range.to(item.range),
-			Range.to(item.selectionRange)
-		);
+    result._sessionId = item._sessionId;
+    result._itemId = item._itemId;
 
-		result._sessionId = item._sessionId;
-		result._itemId = item._itemId;
+    return result;
+  }
 
-		return result;
-	}
+  export function from(
+    item: vscode.TypeHierarchyItem,
+    sessionId?: string,
+    itemId?: string,
+  ): model.ITypeHierarchyItemDto {
+    sessionId = sessionId ?? (item as types.TypeHierarchyItem)._sessionId;
+    itemId = itemId ?? (item as types.TypeHierarchyItem)._itemId;
 
-	export function from(item: vscode.TypeHierarchyItem, sessionId?: string, itemId?: string): model.ITypeHierarchyItemDto {
+    if (sessionId === undefined || itemId === undefined) {
+      throw new Error('invalid item');
+    }
 
-		sessionId = sessionId ?? (item as types.TypeHierarchyItem)._sessionId;
-		itemId = itemId ?? (item as types.TypeHierarchyItem)._itemId;
-
-		if (sessionId === undefined || itemId === undefined) {
-			throw new Error('invalid item');
-		}
-
-		return {
-			_sessionId: sessionId,
-			_itemId: itemId,
-			kind: SymbolKind.from(item.kind),
-			name: item.name,
-			detail: item.detail ?? '',
-			uri: item.uri,
-			range: Range.from(item.range),
-			selectionRange: Range.from(item.selectionRange),
-			tags: item.tags?.map(SymbolTag.from),
-		};
-	}
+    return {
+      _sessionId: sessionId,
+      _itemId: itemId,
+      kind: SymbolKind.from(item.kind),
+      name: item.name,
+      detail: item.detail ?? '',
+      uri: item.uri,
+      range: Range.from(item.range),
+      selectionRange: Range.from(item.selectionRange),
+      tags: item.tags?.map(SymbolTag.from),
+    };
+  }
 }
 
 export namespace CallHierarchyIncomingCall {

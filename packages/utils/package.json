@@ -1,0 +1,26 @@
+{
+  "name": "@opensumi/ide-utils",
+  "version": "2.17.0",
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.utils.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:opensumi/core.git"
+  },
+  "dependencies": {
+    "@opensumi/ide-core-common": "2.17.0",
+    "shortid": "^2.2.14",
+    "iconv-lite": "^0.6.0",
+    "vscode-uri": "^3.0.2"
+  },
+  "devDependencies": {
+    "@opensumi/ide-dev-tool": "^1.3.1"
+  }
+}

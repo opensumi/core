@@ -1,7 +1,6 @@
 import type vscode from 'vscode';
 
-import { IDisposable, Event, URI } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { IDisposable, Event, URI, OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
   ICreateContributedTerminalProfileOptions,

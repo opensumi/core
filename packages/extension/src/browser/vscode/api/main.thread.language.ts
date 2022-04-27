@@ -14,8 +14,8 @@ import {
   MarkerManager,
   REPORT_NAME,
   URI,
+  path,
 } from '@opensumi/ide-core-common';
-import { extname } from '@opensumi/ide-core-common/lib/path';
 import { IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
 import { InlineValuesProviderRegistry } from '@opensumi/ide-debug/lib/browser/editor/inline-values';
 import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
@@ -72,6 +72,8 @@ import {
   DocumentRangeSemanticTokensProviderImpl,
   DocumentSemanticTokensProvider,
 } from './semantic-tokens/semantic-token-provider';
+
+const { extname } = path;
 
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {

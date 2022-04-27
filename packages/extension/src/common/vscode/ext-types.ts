@@ -1,13 +1,14 @@
 import type vscode from 'vscode';
 
 import { Uri, UriUtils } from '@opensumi/ide-core-common';
-import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@opensumi/ide-core-common';
+import { strings, uuid, es5ClassCompat, isStringArray } from '@opensumi/ide-core-common';
 
 import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
 import { illegalArgument } from './utils';
 
 export { UriComponents } from './models/uri';
+const { startsWithIgnoreCase } = strings;
 
 // vscode 中的 uri 存在 static 方法。。内容是 vscode-uri 的 Utils 中的内容...
 Object.keys(UriUtils).forEach((funcName) => {

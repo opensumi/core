@@ -9,8 +9,7 @@ import type { Terminal, IBufferLine, IViewportRange } from 'xterm';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { IWindowService } from '@opensumi/ide-core-browser/lib/window';
-import { CommandService, IDisposable, URI } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { CommandService, IDisposable, URI, OperatingSystem } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace-defination';
 
 import type { TerminalClient } from '../terminal.client';

@@ -9,8 +9,9 @@ import {
   IDisposable,
   Disposable,
   CancellationToken,
+  Sequence,
+  ISplice,
 } from '@opensumi/ide-core-common';
-import { Sequence, ISplice } from '@opensumi/ide-core-common/lib/sequence';
 import {
   ISCMRepository,
   ISCMProvider,
@@ -30,7 +31,6 @@ import {
   SCMRawResourceSplices,
   IMainThreadSCMShape,
 } from '../../../common/vscode/scm';
-
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
   readonly elements: ISCMResource[] = [];

@@ -4,10 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
-import { IJSONSchemaMap, isString, basename, URI, ProblemMatcher, ProblemMatch } from '@opensumi/ide-core-common';
+import { IJSONSchemaMap, isString, path, URI, ProblemMatcher, ProblemMatch } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 
 import { IWorkspaceFolder } from './index';
+
+const { basename } = path;
 
 interface JSONType {
   [key: string]: any;

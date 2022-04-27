@@ -4,13 +4,13 @@ import { Autowired, Injectable } from '@opensumi/di';
 import {
   URI,
   Emitter,
-  addElement,
   IDisposable,
-  LRUMap,
+  arrays,
   Event,
   WithEventBus,
   BasicEvent,
   Disposable,
+  LRUMap,
 } from '@opensumi/ide-core-common';
 import type { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
 import type { IModeService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
@@ -19,6 +19,7 @@ import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/stand
 
 import { getIcon } from '../style/icon/icon';
 
+const { addElement } = arrays;
 
 /**
  * Data URI related helpers.

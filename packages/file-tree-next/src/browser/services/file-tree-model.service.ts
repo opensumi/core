@@ -16,12 +16,10 @@ import {
   CorePreferences,
   IContextKey,
   URI,
-  trim,
-  rtrim,
+  strings,
   localize,
-  coalesce,
+  arrays,
   formatLocalize,
-  isValidBasename,
   DisposableCollection,
   StorageProvider,
   STORAGE_NAMESPACE,
@@ -31,15 +29,15 @@ import {
   Throttler,
   Emitter,
   Deferred,
-  OS,
+  OperatingSystem,
   IApplicationService,
   CommandService,
   FILE_COMMANDS,
+  path,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, FileChangeType } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
@@ -52,6 +50,10 @@ import styles from '../file-tree-node.module.less';
 import { FileTreeService } from '../file-tree.service';
 
 import { DragAndDropService } from './file-tree-dnd.service';
+
+const { Path, isValidBasename } = path;
+const { coalesce } = arrays;
+const { trim, rtrim } = strings;
 
 export interface IPasteStore {
   files: (File | Directory)[];
@@ -1256,7 +1258,7 @@ export class FileTreeModelService {
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           if (this.fileTreeService.isCompactMode && isEmptyDirectory && !Directory.isRoot(parent)) {
             this.fileTreeService.ignoreFileEvent(parent.uri, FileChangeType.UPDATED);
-            if ((await this.appService.backendOS) === OS.Type.Windows) {
+            if ((await this.appService.backendOS) === OperatingSystem.Windows) {
               // Windows环境下会多触发一个UPDATED事件
               this.fileTreeService.ignoreFileEvent(parent.uri.resolve(newName), FileChangeType.UPDATED);
             }

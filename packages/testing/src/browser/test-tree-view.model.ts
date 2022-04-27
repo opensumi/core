@@ -1,8 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { CompositeTreeNode, IRecycleTreeHandle, TreeNodeEvent } from '@opensumi/ide-components';
 import { BasicCompositeTreeNode } from '@opensumi/ide-components/lib/recycle-tree/basic/tree-node.define';
-import { Emitter } from '@opensumi/ide-components/lib/utils';
-import { Disposable, isDefined, filter, map, getDebugLogger } from '@opensumi/ide-core-browser';
+import { Disposable, isDefined, filter, map, Emitter } from '@opensumi/ide-core-browser';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import { ITestService, TestServiceToken } from '../common';
@@ -16,7 +15,6 @@ import {
   TestsDiff,
 } from '../common/testCollection';
 import { ITestTreeItem, ITestTreeViewModel } from '../common/tree-view.model';
-
 
 import { applyTestItemUpdate, IncrementalTestCollectionItem, ITestItemUpdate } from './../common/testCollection';
 import { ITestTreeData } from './../common/tree-view.model';

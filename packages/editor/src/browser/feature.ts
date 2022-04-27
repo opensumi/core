@@ -1,9 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, addElement, ILogger, Emitter, Event, URI } from '@opensumi/ide-core-browser';
+import { IDisposable, arrays, ILogger, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 
 import { IEditor } from '../common';
 
 import { IEditorFeatureRegistry, IEditorFeatureContribution } from './types';
+
+const { addElement } = arrays;
 
 @Injectable()
 export class EditorFeatureRegistryImpl implements IEditorFeatureRegistry {

@@ -18,7 +18,7 @@ import {
   PreferenceProvider,
   PreferenceSchemaProvider,
   IDisposable,
-  addElement,
+  arrays,
   getAvailableLanguages,
   PreferenceService,
   replaceLocalizePlaceholder,
@@ -31,6 +31,7 @@ import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel }
 
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
+const { addElement } = arrays;
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
   private static DEFAULT_CHANGE_DELAY = 500;
