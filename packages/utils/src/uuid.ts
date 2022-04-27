@@ -1,5 +1,5 @@
-import * as shortid from 'shortid';
+import { nanoid } from 'nanoid';
 
 export function uuid(): string {
-  return shortid.generate();
+  return nanoid();
 }

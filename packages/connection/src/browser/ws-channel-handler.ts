@@ -1,4 +1,4 @@
-import shortid from 'shortid';
+import { nanoid } from 'nanoid';
 
 import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 
@@ -23,7 +23,7 @@ export class WSChannelHandler {
 
   constructor(public wsPath: string, logger: any, public protocols?: string[], clientId?: string) {
     this.logger = logger || this.logger;
-    this.clientId = clientId || `CLIENT_ID_${shortid.generate()}`;
+    this.clientId = clientId || `CLIENT_ID_${nanoid()}`;
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   // 为解决建立连接之后，替换成可落盘的 logger
