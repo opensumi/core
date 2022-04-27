@@ -261,15 +261,20 @@ export function Select<T = string>({
   const selectRef = React.useRef<HTMLDivElement | null>(null);
   const overlayRef = React.useRef<HTMLDivElement | null>(null);
 
-  const toggleOpen = useCallback(() => {
-    const target = !open;
-    if (target) {
-      if (onBeforeShowOptions && onBeforeShowOptions()) {
-        return;
+  const toggleOpen = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const target = !open;
+      if (target) {
+        if (onBeforeShowOptions && onBeforeShowOptions()) {
+          return;
+        }
       }
-    }
-    setOpen(target);
-  }, [open, onBeforeShowOptions, onBeforeShowOptions]);
+      setOpen(target);
+    },
+    [open, onBeforeShowOptions, onBeforeShowOptions],
+  );
 
   const getSelectedValue = useCallback(() => {
     if (options && isDataOptions(options)) {
