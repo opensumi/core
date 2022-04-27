@@ -88,7 +88,7 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
     return (
       <div className={classNames('input-box', { popup })}>
         <Input
-          type='text'
+          type={type}
           ref={ref}
           className={classNames(className, validateMessage, validateClx)}
           onChange={handleChange}
