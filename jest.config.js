@@ -1,5 +1,3 @@
-const path = require('path');
-
 const { pathsToModuleNameMapper } = require('ts-jest');
 
 const tsconfig = require('./configs/ts/tsconfig.resolve.json');
@@ -8,7 +6,7 @@ const tsModuleNameMapper = pathsToModuleNameMapper(tsconfig.compilerOptions.path
 const baseConfig = {
   preset: 'ts-jest',
   testRunner: 'jest-jasmine2',
-  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'v8',
+  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
   // https://dev.to/vantanev/make-your-jest-tests-up-to-20-faster-by-changing-a-single-setting-i36
   maxWorkers: '50%',
   collectCoverageFrom: [
