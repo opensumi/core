@@ -8,6 +8,7 @@ import {
   getPreferenceLanguageId,
   IClientApp,
   ILogger,
+  Disposable,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { localize, OnEvent, WithEventBus, ProgressLocation, ExtensionDidContributes } from '@opensumi/ide-core-common';
@@ -177,12 +178,24 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     await this.runExtensionContributes();
     this.doActivate();
 
-    // 插件进程重启时候需要监听页面展示状态
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && this.isExtProcessWaitingForRestart && !this.isExtProcessRestarting) {
+    // 监听页面展示状态，当页面状态变为可见且插件进程待重启的时候执行
+    const onPageVisibilitychange = () => {
+      if (
+        document.visibilityState === 'visible' &&
+        this.isExtProcessWaitingForRestart &&
+        !this.isExtProcessRestarting
+      ) {
         this.extProcessRestartHandler();
       }
-    }, false);
+    };
+
+    document.addEventListener('visibilitychange', onPageVisibilitychange, false);
+
+    this.addDispose(
+      Disposable.create(() => {
+        document.removeEventListener('visibilitychange', onPageVisibilitychange);
+      }),
+    );
   }
 
   /**
@@ -291,7 +304,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
           this.isExtProcessRestarting = false;
           this.isExtProcessWaitingForRestart = false;
-        }
+        },
       );
     };
 
