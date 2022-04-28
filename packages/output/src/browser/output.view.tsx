@@ -2,21 +2,12 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useEffect, createRef } from 'react';
 
-import { Select } from '@opensumi/ide-components';
+import { Select, Option } from '@opensumi/ide-components';
 import { useInjectable, isElectronRenderer, ViewState } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 
 import styles from './output.module.less';
 import { OutputService } from './output.service';
-
-const NONE = '<no channels>';
-
-const NONE_CHANNELS = [
-  {
-    label: NONE,
-    value: NONE,
-  },
-];
 
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
@@ -40,20 +31,34 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
 });
 
 export const ChannelSelector = observer(() => {
+  const NONE = '<no channels>';
+
   const outputService = useInjectable<OutputService>(OutputService);
   const channelOptionElements: React.ReactNode[] = [];
   outputService.getChannels().forEach((channel, idx) => {
     channelOptionElements.push(
-      <option value={channel.name} key={`${idx} - ${channel.name}`}>
-        {channel.name}
-      </option>,
+      isElectronRenderer() ? (
+        <option value={channel.name} key={`${idx} - ${channel.name}`}>
+          {channel.name}
+        </option>
+      ) : (
+        <Option value={channel.name} key={`${idx} - ${channel.name}`}>
+          {channel.name}
+        </Option>
+      ),
     );
   });
   if (channelOptionElements.length === 0) {
     channelOptionElements.push(
-      <option key={NONE} value={NONE}>
-        {NONE}
-      </option>,
+      isElectronRenderer() ? (
+        <option key={NONE} value={NONE}>
+          {NONE}
+        </option>
+      ) : (
+        <Option key={NONE} value={NONE}>
+          {NONE}
+        </Option>
+      ),
     );
   }
 
@@ -70,14 +75,6 @@ export const ChannelSelector = observer(() => {
     }
   }
 
-  const options =
-    outputService.channels.size === 0
-      ? NONE_CHANNELS
-      : Array.from(outputService.channels.values()).map((channel) => ({
-          label: channel.name,
-          value: channel.name,
-        }));
-
   return isElectronRenderer() ? (
     <NativeSelect
       value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
@@ -92,7 +89,8 @@ export const ChannelSelector = observer(() => {
       size='small'
       maxHeight={outputService.viewHeight}
       onChange={handleChange}
-      options={options}
-    />
+    >
+      {channelOptionElements}
+    </Select>
   );
 });
