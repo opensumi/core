@@ -286,12 +286,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private filterFlattenBranchChildrenCache: Map<number, number[]> = new Map();
   private filterWatcherDisposeCollection = new DisposableCollection();
 
-  private activePromise: Promise<void> | null = null;
-  private queuedPromise: Promise<void> | null = null;
-  private queuedPromiseFactory: (() => Promise<void>) | null = null;
   private queueUpdatePromise: Promise<any> | null = null;
 
   private updateCancelToken: CancellationTokenSource = new CancellationTokenSource();
+  private expandNodeCancelToken: CancellationTokenSource = new CancellationTokenSource();
 
   private willUpdateTasks = 0;
 
@@ -522,8 +520,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       typeof pathOrCompositeTreeNode === 'string'
         ? root.getTreeNodeByPath(pathOrCompositeTreeNode)
         : pathOrCompositeTreeNode;
+    if (this.expandNodeCancelToken.token.isCancellationRequested) {
+      this.expandNodeCancelToken = new CancellationTokenSource();
+    }
     if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
-      return (directory as CompositeTreeNode).setExpanded(true);
+      return (directory as CompositeTreeNode).setExpanded(false, false, true, this.expandNodeCancelToken.token);
     }
   };
 
@@ -534,6 +535,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         ? root.getTreeNodeByPath(pathOrCompositeTreeNode)
         : pathOrCompositeTreeNode;
     if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
+      this.expandNodeCancelToken.cancel();
       return (directory as CompositeTreeNode).setCollapsed();
     }
   };

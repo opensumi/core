@@ -541,7 +541,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   // 展开节点
-  public async setExpanded(ensureVisible = true, quiet = false, isOwner = true) {
+  public async setExpanded(ensureVisible = true, quiet = false, isOwner = true, token?: CancellationToken) {
     if (this.disposed) {
       return;
     }
@@ -563,16 +563,35 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     this.isExpanded = true;
     if (this._children === null) {
       !quiet && this._watcher.notifyWillResolveChildren(this, this.isExpanded);
-      await this.hardReloadChildren();
+      await this.hardReloadChildren(token);
       !quiet && this._watcher.notifyDidResolveChildren(this, this.isExpanded);
       // 检查其是否展开；可能同时执行了 setCollapsed 方法
-      if (!this.isExpanded) {
+      if (!this.isExpanded || token?.isCancellationRequested) {
+        if (isOwner) {
+          TreeNode.setGlobalTreeState(this.path, {
+            isExpanding: false,
+          });
+        }
         return;
       }
     }
 
     if (ensureVisible && this.parent && CompositeTreeNode.is(this.parent)) {
-      await (this.parent as CompositeTreeNode).setExpanded(true, !quiet, false);
+      /**
+       * 在传入 ensureVisible = true 时，这里传入的 token 不能取消所有副作用
+       * 故在使用 ensureVisible = true 时必须保证 `setExpanded` 与 `setCollapsed` 的独立性
+       * 如需要 `await node.setExpanded(true)` 后再执行 `node.setCollapsed()`
+       */
+      await (this.parent as CompositeTreeNode).setExpanded(true, !quiet, false, token);
+    }
+
+    if (token?.isCancellationRequested) {
+      if (isOwner) {
+        TreeNode.setGlobalTreeState(this.path, {
+          isExpanding: false,
+        });
+      }
+      return;
     }
 
     if (this.isExpanded) {
@@ -1295,6 +1314,32 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return false;
     }
 
+    const expandedChilds: CompositeTreeNode[] = [];
+    const flatTree = new Array(rawItems.length);
+    const tempChildren = new Array(rawItems.length);
+    for (let i = 0; i < rawItems.length; i++) {
+      const child = rawItems[i];
+      // 如果存在上一次缓存的节点，则使用缓存节点的 ID
+      (child as TreeNode).id = TreeNode.getIdByPath(child.path) || (child as TreeNode).id;
+      tempChildren[i] = child;
+      TreeNode.setIdByPath(child.path, child.id);
+      if (CompositeTreeNode.is(child) && child.expanded) {
+        if (!(child as CompositeTreeNode).children) {
+          await (child as CompositeTreeNode).resolveChildrens(token);
+        }
+        if (token?.isCancellationRequested) {
+          return false;
+        }
+        expandedChilds.push(child as CompositeTreeNode);
+      }
+    }
+
+    tempChildren.sort(this._tree.sortComparator || CompositeTreeNode.defaultSortComparator);
+
+    for (let i = 0; i < rawItems.length; i++) {
+      flatTree[i] = tempChildren[i].id;
+    }
+
     if (this.children) {
       // 重置节点分支
       this.shrinkBranch(this);
@@ -1305,37 +1350,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         (child as any).dispose();
       }
     }
-    const expandedChilds: CompositeTreeNode[] = [];
-    const flatTree = new Array(rawItems.length);
-    this._children = new Array(rawItems.length);
-    for (let i = 0; i < rawItems.length; i++) {
-      const child = rawItems[i];
-      // 如果存在上一次缓存的节点，则使用缓存节点的 ID
-      (child as TreeNode).id = TreeNode.getIdByPath(child.path) || (child as TreeNode).id;
-      this._children[i] = child;
-      TreeNode.setIdByPath(child.path, child.id);
-      TreeNode.setTreeNode(TreeNode.getIdByPath(child.path) || child.id, child.path, child);
-      if (CompositeTreeNode.is(child) && child.expanded) {
-        await (child as CompositeTreeNode).resolveChildrens(token);
-        if (!(child as CompositeTreeNode).children) {
-          continue;
-        }
-        for (let i = 0; i < (child as CompositeTreeNode).children!.length; i++) {
-          const subChild = (child as CompositeTreeNode).children![i];
-          TreeNode.setTreeNode(TreeNode.getIdByPath(subChild.path) || subChild.id, subChild.path, subChild as TreeNode);
-        }
-        if (token?.isCancellationRequested) {
-          return false;
-        }
-        expandedChilds.push(child as CompositeTreeNode);
-      }
+
+    for (let i = 0; i < tempChildren.length; i++) {
+      this.updateTreeNodeCache(tempChildren[i]);
     }
 
-    this._children.sort(this._tree.sortComparator || CompositeTreeNode.defaultSortComparator);
-
-    for (let i = 0; i < rawItems.length; i++) {
-      flatTree[i] = this._children[i].id;
-    }
+    this._children = tempChildren;
     this._branchSize = flatTree.length;
     this.setFlattenedBranch(flatTree);
 
