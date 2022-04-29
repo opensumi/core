@@ -57,7 +57,10 @@ export class FormattingSelector {
     }
 
     const selected = await this.quickPickService.show(
-      Object.keys(elements).map((k) => ({ label: elements[k].displayName!, value: elements[k].extensionId })),
+      Object.keys(elements).map((k) => ({
+        label: elements[k].displayName!,
+        value: elements[k].extensionId,
+      })),
       { placeholder: localize('editor.format.chooseFormatter') },
     );
     if (selected) {
