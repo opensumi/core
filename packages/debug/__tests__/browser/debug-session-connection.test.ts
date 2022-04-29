@@ -7,7 +7,6 @@ import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-
 describe('DebugSessionConnection', () => {
   let debugSessionConnection: DebugSessionConnection;
   let injector: MockInjector;
@@ -165,7 +164,7 @@ describe('DebugSessionConnection', () => {
         },
       }),
     );
-    expect((await requestPromise).body).toBeDefined();
+    expect(await requestPromise).toBeDefined();
   });
 
   it('handle event message', (done) => {
