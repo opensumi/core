@@ -13,7 +13,7 @@ export class TerminalRestore extends Disposable implements ITerminalRestore {
 
   get storageKey() {
     // 集成方根据自己的场景来自定义storageKey做到终端恢复场景的准确性
-    return 'KAITIAN';
+    return 'OPENSUMI_TERMINAL_RESTORE';
   }
 
   save() {

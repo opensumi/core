@@ -211,7 +211,6 @@ export class PtyService extends Disposable {
       this._ptyOptions,
       this.sessionId,
     );
-    // const ptyProcess = pty.spawn(options.executable as string, args, this._ptyOptions);
 
     this.addDispose(
       ptyProcess.onData(async (e) => {

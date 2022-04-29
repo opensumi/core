@@ -298,7 +298,3 @@ export class PtyServiceProxyRPCProvider {
     return this.ptyServiceProxy;
   }
 }
-
-// const proxy = new PtyServiceProxy();
-// proxy.initServer();
-// console.log('ptyServiceCenter: init');
