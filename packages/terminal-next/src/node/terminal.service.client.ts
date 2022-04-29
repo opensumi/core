@@ -46,6 +46,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
 
   setConnectionClientId(clientId: string) {
     this.clientId = clientId;
+    this.logger.debug('TerminalServiceClientImpl', 'setConnectionClientId', clientId);
     this.terminalService.setClient(this.clientId, this);
   }
 
@@ -71,9 +72,9 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
     }
   }
 
-  // 完成创建之后，前端进行状态同步
-  ensureTerminal(terminalIdArr: string[]): boolean {
-    return this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
+  // 检查终端状态，终端是否存活
+  async ensureTerminal(terminalIdArr: string[]): Promise<boolean> {
+    return await this.terminalService.ensureClientTerminal(this.clientId, terminalIdArr);
   }
 
   async create2(
@@ -87,6 +88,10 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
       if (pty) {
         this.terminalService.setClient(this.clientId, this);
         this.logger.log(`client ${id} create ${pty.pid} with options `, launchConfig);
+        this.logger.log(
+          `terminal client ${id} and clientID: ${this.clientId} create ${pty.pid} with options `,
+          launchConfig,
+        );
         this.terminalMap.set(id, pty);
         return {
           id,

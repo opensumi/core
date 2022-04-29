@@ -1,6 +1,7 @@
 import { observable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
@@ -109,6 +110,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(ICtxMenuRenderer)
   private ctxMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired(WSChannelHandler)
+  protected readonly wsChannelHandler: WSChannelHandler;
+
   private terminalContextKey: TerminalContextKey;
 
   @observable
@@ -215,17 +219,38 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async recovery(history: ITerminalBrowserHistory) {
+    // HACK: 因为现在的终端重连是有问题的，是ClientID机制导致的，因此在拿出记录恢复终端的时候，需要把里面的ClientID替换为当前活跃窗口的ClientID
+    // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
+
+    const currentClientId = this.wsChannelHandler.clientId;
+    const currentRealSessionId = history.current?.split('|')?.[1];
+    if (history.current) {
+      history.current = `${currentClientId}|${currentRealSessionId}`;
+    }
+    history.groups = history.groups.map((group) => {
+      if (Array.isArray(group)) {
+        // 替换clientId为当前窗口ClientID
+        return group.map(({ client, ...other }) => ({
+          client: `${currentClientId}|${(client as string)?.split('|')?.[1]}`,
+          ...other,
+        }));
+      } else {
+        return group;
+      }
+    });
+
     let currentWidgetId = '';
     const { groups, current } = history;
 
     const ids: (string | { clientId: string })[] = [];
 
-    groups.forEach((widgets) => ids.concat(widgets));
-    const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
+    groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
 
-    if (!checked) {
-      return;
-    }
+    // 之前OpenSumi的Check终端活跃机制是有问题的，暂时不启用，这部分逻辑在PtyService会兜住
+    // const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
+    // if (!checked) {
+    //   return;
+    // }
 
     for (const widgets of groups) {
       const { group } = this._createOneGroup();
@@ -234,8 +259,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         continue;
       }
 
-      for (const sessionId of widgets) {
-        if (!sessionId) {
+      for (const session of widgets) {
+        if (!session) {
           continue;
         }
 
@@ -244,9 +269,19 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          */
         const widget = this.terminalView.createWidget(
           group,
-          typeof sessionId === 'string' ? sessionId : sessionId.clientId,
+          typeof session === 'string' ? session : session.client,
+          !!session.task,
         );
-        const client = await this.clientFactory(widget, {});
+        const client = await this.clientFactory2(widget, {});
+
+        // 终端被Resume的场景下也要绑定终端事件，避免意料之外的BUG
+        this.setupClient(widget, client);
+
+        if (session.task) {
+          client.isTaskExecutor = true;
+          client.taskId = session.task;
+        }
+
         this._clients.set(client.id, client);
 
         if (current === client.id) {
@@ -258,6 +293,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
          */
         client.attached.promise.then(() => {
           widget.name = client.name;
+          // client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
 
           /**
            * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
@@ -416,18 +452,22 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   toJSON() {
-    const groups: string[][] = [];
+    const groups: { client: string; task?: string }[][] = [];
     const cClient = this._clients.get(this.terminalView.currentWidgetId);
     this.terminalView.groups.forEach((wGroup) => {
-      const group: string[] = [];
+      const group: { client: string; task?: string }[] = [];
+
       wGroup.widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
 
         if (!client) {
           return;
         }
-
-        group.push(client.id);
+        const record: { client: string; task?: string } = { client: client.id };
+        if (client.isTaskExecutor) {
+          record.task = client.taskId;
+        }
+        group.push(record);
       });
 
       if (group.length > 0) {
@@ -464,13 +504,24 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = this.service.generateSessionId();
     const { group } = this._createOneGroup();
-    const widget = this.terminalView.createWidget(group, widgetId, !options.closeWhenExited, true);
+    const widget = this.terminalView.createWidget(
+      group,
+      widgetId,
+      options.isTaskExecutor || !options.closeWhenExited,
+      true,
+    );
 
     if (options.beforeCreate && typeof options.beforeCreate === 'function') {
       options.beforeCreate(widgetId);
     }
 
-    return await this._createClient(widget, options.terminalOptions);
+    const client = await this._createClient(widget, options.terminalOptions);
+
+    if (options.isTaskExecutor) {
+      client.isTaskExecutor = true;
+      client.taskId = options.taskId;
+    }
+    return client;
   }
 
   clearCurrentGroup() {

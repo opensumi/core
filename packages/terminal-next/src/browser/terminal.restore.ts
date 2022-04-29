@@ -12,7 +12,8 @@ export class TerminalRestore extends Disposable implements ITerminalRestore {
   protected readonly service: ITerminalInternalService;
 
   get storageKey() {
-    return 'KAITIAN';
+    // 集成方根据自己的场景来自定义storageKey做到终端恢复场景的准确性
+    return 'OPENSUMI_TERMINAL_RESTORE';
   }
 
   save() {
@@ -24,6 +25,7 @@ export class TerminalRestore extends Disposable implements ITerminalRestore {
   restore() {
     const key = this.storageKey;
     const history = window.localStorage.getItem(key);
+    window.localStorage.removeItem(key); // 触发恢复之后清除掉缓存
     if (history) {
       try {
         return this.controller.recovery(JSON.parse(history));

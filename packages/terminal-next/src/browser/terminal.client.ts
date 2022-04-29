@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import type vscode from 'vscode';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { CorePreferences, QuickPickService } from '@opensumi/ide-core-browser';
+import { CorePreferences, QuickPickService, IEventBus, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
 import {
   Disposable,
   Deferred,
@@ -66,6 +66,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _workspacePath: string;
   private _linkManager: TerminalLinkManager;
   /** end */
+
+  isTaskExecutor = false;
+  taskId: string | undefined;
 
   /** status */
   private _ready = false;
@@ -137,6 +140,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   @Autowired(IVariableResolverService)
   variableResolver: IVariableResolverService;
+
+  @Autowired(IEventBus)
+  private readonly eventBus: IEventBus;
 
   private _onInput = new Emitter<ITerminalDataEvent>();
   onInput: Event<ITerminalDataEvent> = this._onInput.event;
@@ -611,6 +617,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._ready = true;
     this._attached.resolve();
     this._widget.name = this.name;
+
+    this.eventBus.fire(new TerminalClientAttachEvent({ clientId: this.id }));
 
     this._firstStdout.promise.then(() => {
       this._doResize();

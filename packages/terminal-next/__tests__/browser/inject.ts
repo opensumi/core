@@ -1,4 +1,5 @@
 import { Injector } from '@opensumi/di';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
   IContextKeyService,
@@ -194,6 +195,12 @@ export const injector = new Injector([
       $resolveUnixShellPath(p) {
         return p;
       },
+    },
+  },
+  {
+    token: WSChannelHandler,
+    useValue: {
+      clientId: 'W_LwPKkmhQA', // fake clientId for test case
     },
   },
 ]);

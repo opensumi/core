@@ -20,6 +20,7 @@ import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
 import { IPtyProcess } from '../common/pty';
 
+import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
 
 export const IPtyService = Symbol('IPtyService');
@@ -27,9 +28,12 @@ export const IPtyService = Symbol('IPtyService');
 @Injectable({ multiple: true })
 export class PtyService extends Disposable {
   @Autowired(INodeLogger)
-  private readonly logger: INodeLogger;
+  protected readonly logger: INodeLogger;
 
-  private readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
+  @Autowired(PtyServiceManagerToken)
+  protected readonly ptyServiceManager: IPtyServiceManager;
+
+  protected readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
   private _ptyProcess: IPtyProcess | undefined;
 
   private readonly _onData = new Emitter<string>();
@@ -40,6 +44,9 @@ export class PtyService extends Disposable {
 
   private readonly _onExit = new Emitter<IProcessExitEvent>();
   readonly onExit = this._onExit.event;
+  // private readonly ptyServiceManager = new PtyServiceManager();
+  // 终端的sessionId，也就是构造函数传入的id
+  private readonly sessionId: string;
 
   private readonly _onProcessChange = new Emitter<string>();
   readonly onProcessChange = this._onProcessChange.event;
@@ -69,6 +76,7 @@ export class PtyService extends Disposable {
       cols,
       rows,
     };
+    this.sessionId = id;
   }
 
   async kill(): Promise<void> {
@@ -191,17 +199,21 @@ export class PtyService extends Disposable {
     }
   }
 
-  private async setupPtyProcess() {
+  protected async setupPtyProcess() {
     const options = this.shellLaunchConfig;
 
     const args = options.args || [];
-    const ptyProcess = pty.spawn(options.executable as string, args, this._ptyOptions);
+    const ptyProcess = await this.ptyServiceManager.spawn(
+      options.executable as string,
+      args,
+      this._ptyOptions,
+      this.sessionId,
+    );
 
     this.addDispose(
-      ptyProcess.onData((e) => {
+      ptyProcess.onData(async (e) => {
         this._onData.fire(e);
-
-        const processName = ptyProcess.process;
+        const processName = await ptyProcess.getProcessDynamically();
         if (processName !== this.previouslyProcess) {
           this.previouslyProcess = processName;
           this._onProcessChange.fire(processName);
@@ -255,6 +267,7 @@ export class PtyService extends Disposable {
     }
     return true;
   }
+
   onMessage(data: string) {
     this._ptyProcess?.write(data);
   }

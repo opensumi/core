@@ -155,7 +155,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
   @computed
   get snapshot() {
-    return this.current?.processName || this.name;
+    return this.name || this.processName || this.current?.name!;
   }
 
   @computed
@@ -167,6 +167,9 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     this.widgets.push(widget);
     this.widgetsMap.set(widget.id, widget);
 
+    if (!this.current || !this.currentId) {
+      this.selectWidget(widget);
+    }
     this._averageLayout();
   }
 

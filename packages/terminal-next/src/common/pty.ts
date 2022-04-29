@@ -1,8 +1,9 @@
 import { IPty as INodePty } from 'node-pty';
+import * as pty from 'node-pty';
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 
-import { Uri, OperatingSystem } from '@opensumi/ide-core-common';
+import { MaybePromise, Uri, OperatingSystem } from '@opensumi/ide-core-common';
 
 import { ITerminalError } from './error';
 import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } from './extension';
@@ -18,8 +19,102 @@ export interface IPtyProcess extends INodePty {
   parsedName: string;
 }
 
+export interface IPtyProcessProxy extends IPtyProcess {
+  getProcessDynamically(): MaybePromise<string>;
+}
+
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalProcessPath = 'ITerminalProcessPath';
+
+export const PTY_SERVICE_PROXY_PROTOCOL = 'PTY_SERVICE_PROXY_PROTOCOL';
+export const PTY_SERVICE_PROXY_CALLBACK_PROTOCOL = 'PTY_SERVICE_PROXY_CALLBACK_PROTOCOL';
+export const PTY_SERVICE_PROXY_SERVER_PORT = 10111;
+
+export interface IPtyProxyRPCService {
+  /**
+   * 远程spawn pty进程，开启终端，返回符合IPty接口的远程执行对象
+   * @param file 启动的程序 如/bin/bash
+   * @param args 启动参数 argv (具体参考node-pty参数文档)
+   * @param options 启动终端options (具体参考node-pty参数文档)
+   * @param sessionId (可选)传入启动终端的sessionId，通常用于terminal重连的场景
+   * @returns 返回符合IPty接口的远程执行RPC对象，实际上内容是IPty的静态常量，没有function，需要做二次包装
+   */
+  $spawn(
+    file: string,
+    args: string[] | string,
+    options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
+    sessionId?: string,
+  ): Promise<pty.IPty>;
+
+  /**
+   * pty数据onData回调代理
+   * @param callId 指定callId的方法回调注册
+   * @param pid pty进程的pid，用于辨识pty进程
+   */
+  $onData(callId: number, pid: number): void;
+
+  /**
+   * pty数据onExit回调代理
+   * @param callId 指定callId的方法回调注册
+   * @param pid pty进程的pid，用于辨识pty进程
+   */
+  $onExit(callId: number, pid: number): void;
+
+  /**
+   * pty数据on回调代理
+   * @param callId 指定callId的方法回调注册
+   * @param pid pty进程的pid，用于辨识pty进程
+   */
+  $on(callId: number, pid: number, event: any): void;
+
+  /**
+   * resize方法RPC转发
+   * @param pid pty进程的pid，用于辨识pty进程
+   * @param columns 列数
+   * @param rows 行数
+   */
+  $resize(pid: number, columns: number, rows: number): void;
+
+  /**
+   * 远程pty写入数据的RPC转发
+   * @param pid pty进程的pid，用于辨识pty进程
+   * @param data 终端stdin写入的数据
+   */
+  $write(pid: number, data: string): void;
+
+  /**
+   * kill pty 的RPC转发
+   * @param pid pty进程的pid，用于辨识pty进程
+   * @param signal The signal to use, defaults to SIGHUP. This parameter is not supported onWindows.
+   */
+  $kill(pid: number, signal?: string): void;
+
+  /**
+   * pause pty 的RPC转发
+   * Pauses the pty for customizable flow control.
+   * @param pid pty进程的pid，用于辨识pty进程
+   */
+  $pause(pid: number): void;
+
+  /**
+   * resume pty 的RPC转发
+   * Resumes the pty for customizable flow control.
+   * @param pid pty进程的pid，用于辨识pty进程
+   */
+  $resume(pid: number): void;
+
+  /**
+   * 实时性通过Pid获取ProcessName
+   * @param pid pty进程的pid，用于辨识pty进程
+   */
+  $getProcess(pid: number): string;
+
+  /**
+   * 检查Session对应的进程是否存活
+   * @param sessionId 终端的sessionId
+   */
+  $checkSession(sessionId: string): boolean;
+}
 
 export interface Terminal {
   readonly xterm: XTerm;
@@ -180,7 +275,7 @@ export interface ITerminalNodeService {
   dispose(): void;
   setClient(clientId: string, client: ITerminalServiceClient): void;
   closeClient(clientId: string): void;
-  ensureClientTerminal(clientId: string, terminalIdArr: string[]): boolean;
+  ensureClientTerminal(clientId: string, terminalIdArr: string[]): Promise<boolean>;
 }
 
 export const ITerminalProcessService = Symbol('ITerminalProcessService');
@@ -224,7 +319,7 @@ export interface ITerminalServiceClient {
   setConnectionClientId(clientId: string): void;
   dispose(): void;
   getShellName(id: string): string;
-  ensureTerminal(terminalIdArr: string[]): boolean;
+  ensureTerminal(terminalIdArr: string[]): Promise<boolean>;
   $resolveWindowsShellPath(type: WindowsShellType): Promise<string | undefined>;
   $resolveUnixShellPath(type: string): Promise<string | undefined>;
   $resolveShellPath(paths: string[]): Promise<string | undefined>;

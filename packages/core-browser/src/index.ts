@@ -14,6 +14,7 @@ export * from './layout';
 export * from './fs';
 export * from './tree';
 export * from './toolbar';
+export * from './terminal';
 
 // 前端工具方法
 export * from './logger';

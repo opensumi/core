@@ -19,10 +19,12 @@ import {
   Event,
   IProblemPatternRegistry,
   Emitter,
+  WithEventBus,
   platform,
 } from '@opensumi/ide-core-common';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
+import { ITerminalClient } from '@opensumi/ide-terminal-next/lib/common/client';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { ITaskService, WorkspaceFolderTaskResult, ITaskProvider, ITaskSystem, ITaskSummary } from '../common';
@@ -110,8 +112,10 @@ export class TaskService extends Disposable implements ITaskService {
 
   private _workspaceFolders: Uri[];
 
+  private runningTasks: Map<string, Task | ConfiguringTask> = new Map();
+
   private providers: Map<number, ITaskProvider>;
-  private providerTypes: Map<number, string>;
+  private providerTypes: Map<string, number>;
 
   constructor() {
     super();
@@ -151,6 +155,37 @@ export class TaskService extends Disposable implements ITaskService {
 
   public run(task: Task) {
     return this.runTask(task);
+  }
+
+  public async attach(taskId: string, terminal: ITerminalClient) {
+    if (this.runningTasks.has(taskId)) {
+      return;
+    }
+
+    const [, , , taskType] = taskId.split(',');
+    if (!taskType) {
+      return;
+    }
+
+    if (this.providerTypes.has(taskType)) {
+      const task = await this.getTask(this.workspaceFolders[0], taskId);
+      if (task) {
+        this.taskSystem.attach(task, terminal);
+        this.runningTasks.set(taskId, task);
+      }
+    } else {
+      // wait for task provider to be registered
+      const disposable = this._onDidRegisterTaskProvider.event(async (e) => {
+        if (e === taskType) {
+          const task = await this.getTask(this.workspaceFolders[0], taskId);
+          if (task) {
+            this.taskSystem.attach(task, terminal);
+            this.runningTasks.set(taskId, task);
+            disposable.dispose();
+          }
+        }
+      });
+    }
   }
 
   public async terminateTask(taskId: string) {
@@ -199,9 +234,16 @@ export class TaskService extends Disposable implements ITaskService {
 
   private async runTask(task: Task | ConfiguringTask): Promise<ITaskSummary> {
     const result = await this.taskSystem.run(task);
+
     result.promise.then((res) => {
+      if (this.runningTasks.has(task._id)) {
+        this.runningTasks.delete(task._id);
+      }
       this.outputChannel.appendLine(`task ${task._label} done, exit code ${res.exitCode}`);
     });
+
+    this.runningTasks.set(task._id, task);
+
     return Promise.resolve(result.promise);
   }
 
@@ -438,13 +480,13 @@ export class TaskService extends Disposable implements ITaskService {
   public registerTaskProvider(provider: ITaskProvider, type: string): IDisposable {
     const handler = (this.providerHandler += 1);
     this.providers.set(handler, provider);
-    this.providerTypes.set(handler, type);
+    this.providerTypes.set(type, handler);
     this._onDidRegisterTaskProvider.fire(type);
 
     return {
       dispose: () => {
         this.providers.delete(handler);
-        this.providerTypes.delete(handler);
+        this.providerTypes.delete(type);
       },
     };
   }
