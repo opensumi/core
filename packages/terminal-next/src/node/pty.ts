@@ -30,12 +30,12 @@ export const IPtyService = Symbol('IPtyService');
 @Injectable({ multiple: true })
 export class PtyService extends Disposable {
   @Autowired(INodeLogger)
-  private readonly logger: INodeLogger;
+  protected readonly logger: INodeLogger;
 
   @Autowired(PtyServiceManagerToken)
-  private readonly ptyServiceManager: IPtyServiceManager;
+  protected readonly ptyServiceManager: IPtyServiceManager;
 
-  private readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
+  protected readonly _ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions;
   private _ptyProcess: IPtyProcess | undefined;
 
   private readonly _onData = new Emitter<string>();
@@ -201,7 +201,7 @@ export class PtyService extends Disposable {
     }
   }
 
-  private async setupPtyProcess() {
+  protected async setupPtyProcess() {
     const options = this.shellLaunchConfig;
 
     const args = options.args || [];
