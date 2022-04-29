@@ -270,7 +270,7 @@
     "ms-vscode": [
       {
         "name": "node-debug",
-        "version": "1.44.28"
+        "version": "1.38.4"
       },
       {
         "name": "node-debug2",
