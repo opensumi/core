@@ -213,4 +213,46 @@ describe('Extension service', () => {
       expect(result).toBe(ReactDom);
     });
   });
+
+  describe('extension process restart', () => {
+    it('restart ext process when visibility change', async () => {
+      // 开始进行 visibilitychange 事件监听
+      await extensionService.activate();
+
+      /**
+       * 如果页面不可见，那么不会执行插件进程重启操作
+       */
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get() {
+          return 'hidden';
+        },
+      });
+
+      const extProcessRestartHandler = jest.spyOn(extensionService as any, 'extProcessRestartHandler');
+
+      extensionService.restartExtProcess();
+
+      expect(extProcessRestartHandler).not.toBeCalled();
+      expect(extensionService['isExtProcessWaitingForRestart']).toBe(true);
+
+      /**
+       * 页面变为可见后，开始执行插件进程重启操作
+       */
+      Object.defineProperty(document, 'visibilityState', {
+        configurable: true,
+        get() {
+          return 'visible';
+        },
+      });
+
+      // 手动派发一个 visibilitychange 事件
+      const visibilityChangeEvent = new Event('visibilitychange');
+      visibilityChangeEvent.initEvent('visibilitychange', false, false);
+
+      document.dispatchEvent(visibilityChangeEvent);
+
+      expect(extProcessRestartHandler).toBeCalled();
+    });
+  });
 });
