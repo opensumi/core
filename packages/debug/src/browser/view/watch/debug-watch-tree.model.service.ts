@@ -25,9 +25,9 @@ import {
   IClipboardService,
   IContextKey,
   IReporterService,
+  path,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugWatch } from '../../model';
@@ -40,6 +40,7 @@ import { DebugVariableContainer, DebugVariable } from './../../tree/debug-tree-n
 import { DebugWatchModel } from './debug-watch-model';
 import styles from './debug-watch.module.less';
 
+const { Path } = path;
 
 export interface IDebugWatchHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;

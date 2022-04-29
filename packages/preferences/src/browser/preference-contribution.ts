@@ -24,7 +24,7 @@ import {
   ContributionProvider,
   ISettingGroup,
   IDisposable,
-  addElement,
+  arrays,
   Command,
   getIcon,
   isString,
@@ -48,6 +48,7 @@ import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
+const { addElement } = arrays;
 
 @Injectable()
 export class PrefResourceProvider extends WithEventBus implements IResourceProvider {
@@ -193,13 +194,13 @@ export class PreferenceContribution
     });
 
     commands.registerCommand(PREFERENCE_COMMANDS.OPEN_USER_SETTING_FILE, {
-      execute: async () => {
+      execute: () => {
         this.openResource(PreferenceScope.User);
       },
     });
 
     commands.registerCommand(PREFERENCE_COMMANDS.OPEN_WORKSPACE_SETTING_FILE, {
-      execute: async () => {
+      execute: () => {
         this.openResource(PreferenceScope.Workspace);
       },
     });
@@ -320,6 +321,10 @@ export class PreferenceContribution
     const openResult = await this.commandService.executeCommand<IResourceOpenResult>(
       EDITOR_COMMANDS.OPEN_RESOURCE.id,
       new URI(url),
+      {
+        focus: true,
+        groupIndex: this.workbenchEditorService.currentEditorGroup.index,
+      },
     );
     if (openResult && preferenceId) {
       const editor = this.workbenchEditorService.editorGroups.find((g) => g.name === openResult.groupId)?.currentEditor;

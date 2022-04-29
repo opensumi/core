@@ -74,7 +74,7 @@ import { PreferenceContribution } from '../preferences';
 import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
 import { AppConfig, SlotRendererContribution } from '../react-providers';
-import { CredentialsService, ICredentialsService, CryptrService, ICryptrService } from '../services';
+import { CredentialsService, ICredentialsService, CryptoService, ICryptoService } from '../services';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
 import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
@@ -85,7 +85,6 @@ import { createElectronMainApi } from '../utils/electron';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
-
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -237,8 +236,8 @@ export function injectInnerProviders(injector: Injector) {
       useClass: AuthenticationService,
     },
     {
-      token: ICryptrService,
-      useClass: CryptrService,
+      token: ICryptoService,
+      useClass: CryptoService,
     },
     {
       token: ICredentialsService,

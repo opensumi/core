@@ -3,15 +3,16 @@ import type vscode from 'vscode';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   getDebugLogger,
+  Uri,
   revive,
   toDisposable,
   DisposableStore,
-  isNonEmptyArray,
+  arrays,
+  objects,
+  validateConstraint,
+  isFunction,
   IExtensionInfo,
 } from '@opensumi/ide-core-common';
-import { Uri } from '@opensumi/ide-core-common';
-import { cloneAndChange } from '@opensumi/ide-core-common/lib/utils/objects';
-import { validateConstraint, isFunction } from '@opensumi/ide-core-common/lib/utils/types';
 
 import {
   MainThreadAPIIdentifier,
@@ -133,7 +134,7 @@ export class ExtHostCommands implements IExtHostCommands {
         }
 
         // 数组参数的处理
-        if (isNonEmptyArray(arg)) {
+        if (arrays.isNonEmptyArray(arg)) {
           return arg.map((item) => {
             if (Uri.isUri(item)) {
               return Uri.from(item);
@@ -270,7 +271,7 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   private convertArguments(args: any[]) {
-    return cloneAndChange(args, (value) => {
+    return objects.cloneAndChange(args, (value) => {
       if (value instanceof Position) {
         return extHostTypeConverter.fromPosition(value);
       }
@@ -420,7 +421,7 @@ export class CommandsConverter {
       // API command with return-value can be converted inplace
       result.id = apiCommand.internalId;
       result.arguments = apiCommand.args.map((arg, i) => arg.convert(command.arguments && command.arguments[i]));
-    } else if (isNonEmptyArray(command.arguments)) {
+    } else if (arrays.isNonEmptyArray(command.arguments)) {
       // we have a contributed command with arguments. that
       // means we don't want to send the arguments around
 

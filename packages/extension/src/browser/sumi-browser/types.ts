@@ -1,6 +1,5 @@
 import { ProxyIdentifier } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { IDisposable, Uri } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { IDisposable, Uri, path } from '@opensumi/ide-core-common';
 import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
 import { ToolBarPosition } from '@opensumi/ide-toolbar/lib/browser';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
@@ -147,7 +146,7 @@ export interface IEditorViewContribution {
    * 判断一个path是否要被处理
    * @deprecated
    */
-  shouldPreview?: (path: Path) => boolean;
+  shouldPreview?: (path: path.Path) => boolean;
 
   /**
    * 判断一个uri是否要被处理(传入参数为vscode uri)

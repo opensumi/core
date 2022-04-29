@@ -1,7 +1,6 @@
 import cls from 'classnames';
 import React from 'react';
 
-
 import {
   TreeNode,
   CompositeTreeNode,
@@ -93,13 +92,13 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   const getNodeName = (node: EditorFileGroup | EditorFile) => {
     if (!EditorFileGroup.is(node)) {
       if (node.uri.scheme === EDITOR_WEBVIEW_SCHEME) {
-        return node.name;
+        return node.displayName;
       }
 
-      return node.name || labelService.getName(node.uri);
+      return node.displayName || labelService.getName(node.uri);
     }
 
-    return node.name;
+    return node.displayName;
   };
 
   const renderDisplayName = (node: EditorFileGroup | EditorFile) => (

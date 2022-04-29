@@ -1,6 +1,5 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { IChange } from '@opensumi/ide-core-common';
-import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
+import { Disposable, IChange } from '@opensumi/ide-core-browser';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { themeColorFromId } from '@opensumi/ide-theme';

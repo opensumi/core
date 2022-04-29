@@ -11,10 +11,8 @@ import {
   toDisposable,
   dispose,
 } from '@opensumi/ide-core-common';
-import { getDebugLogger, isFalsyOrWhitespace, asArray } from '@opensumi/ide-core-common';
-import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
-import { LinkedList } from '@opensumi/ide-core-common/lib/linked-list';
-import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';
+import { getDebugLogger, strings, arrays } from '@opensumi/ide-core-common';
+import { isPromiseCanceledError, LinkedList, TernarySearchTree } from '@opensumi/ide-core-common';
 
 import {
   IDecorationsService,
@@ -24,6 +22,8 @@ import {
   IDecorationData,
 } from '../common/decorations';
 
+const { isFalsyOrWhitespace } = strings;
+const { asArray } = arrays;
 class FileDecorationChangeEvent implements IResourceDecorationChangeEvent {
   private readonly _data = TernarySearchTree.forPaths<boolean>();
 

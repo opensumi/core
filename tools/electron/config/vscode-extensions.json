@@ -3,134 +3,288 @@
   "extensions": {
     "vscode": [
       {
-        "name": "git",
-        "id": "5d81d6c95d4f8fc77a790063",
-        "version": "1.0.0"
-      },
-      {
-        "name": "merge-conflict",
-        "id": "5d81d6f25d4f8fc77a790066",
-        "version": "1.0.0"
-      },
-      {
-        "name": "css",
-        "id": "5d81d58c18e033a1af371ef2",
-        "version": "1.0.0"
-      },
-      {
-        "name": "html",
-        "id": "5d81d68a5d4f8fc77a79005f",
-        "version": "1.0.0"
-      },
-      {
-        "name": "json",
-        "id": "5d81d63718e033a1af371ef8",
-        "version": "1.0.0"
-      },
-      {
-        "name": "javascript",
-        "id": "5da19225392bdd7063eb0dd8",
-        "version": "1.37.1",
-        "vscode-version": "1.37.1"
-      },
-      {
-        "name": "typescript-basics",
-        "id": "5da1888a845342e87e0f3071",
-        "version": "1.37.1",
-        "vscode-version": "1.37.1"
-      },
-      {
         "name": "typescript-language-features",
-        "id": "5d84a0acd988b2a6c15f19a2",
-        "version": "1.37.1-patch.1",
-        "vscode-version": "1.37.1"
+        "version": "1.60.0"
       },
       {
-        "name": "atom-one-dark",
-        "id": "5d8354cc606d531b27357331",
-        "version": "2.1.0"
+        "name": "bat",
+        "version": "1.55.2"
       },
       {
-        "name": "java",
-        "id": "5d835531606d531b27357334",
-        "version": "1.0.0"
+        "name": "clojure",
+        "version": "1.55.2"
       },
       {
-        "name": "markdown-basics",
-        "id": "5d835cc7606d531b27357373",
-        "version": "1.0.0"
-      },
-      {
-        "name": "markdown-language-features",
-        "id": "5d8355b0606d531b27357337",
-        "version": "1.0.0"
-      },
-      {
-        "name": "theme-defaults",
-        "id": "5d8355cd606d531b2735733a",
-        "version": "1.0.0"
-      },
-      {
-        "name": "vscode-eslint",
-        "id": "5d8d6c64845342e87e0f2e83",
-        "version": "1.9.0-patch.1"
-      },
-      {
-        "name": "vscode-java",
-        "id": "5d82f46beda500379cc0237c",
-        "version": "0.47.0"
-      },
-      {
-        "name": "vscode-language-pack-jp",
-        "id": "5d835716606d531b27357344",
-        "version": "1.36.2"
-      },
-      {
-        "name": "vscode-language-pack-zh-hans",
-        "id": "5d835738606d531b27357347",
-        "version": "1.37.1"
-      },
-      {
-        "name": "vscode-icons",
-        "id": "5d9f1463392bdd7063eb0d62",
-        "version": "9.4.0"
-      },
-      {
-        "name": "json-language-feature",
-        "id": "5da45bb2392bdd7063eb0e0d",
-        "version": "1.0.0"
+        "name": "coffeescript",
+        "version": "1.55.2"
       },
       {
         "name": "configuration-editing",
-        "id": "5da45c36392bdd7063eb0e11",
-        "version": "1.0.0"
+        "version": "1.55.2"
       },
       {
-        "name": "ide-dark-theme",
-        "id": "5d9094c5845342e87e0f2ebf",
-        "version": "1.6.1"
+        "name": "cpp",
+        "version": "1.55.2"
       },
+      {
+        "name": "csharp",
+        "version": "1.55.2"
+      },
+      {
+        "name": "css",
+        "version": "1.55.2"
+      },
+      {
+        "name": "css-language-features",
+        "version": "1.55.2"
+      },
+      {
+        "name": "debug-auto-launch",
+        "version": "1.55.2"
+      },
+      {
+        "name": "docker",
+        "version": "1.55.2"
+      },
+      {
+        "name": "emmet",
+        "version": "1.55.2"
+      },
+      {
+        "name": "fsharp",
+        "version": "1.55.2"
+      },
+      {
+        "name": "git-ui",
+        "version": "1.55.2"
+      },
+      {
+        "name": "go",
+        "version": "1.55.2"
+      },
+      {
+        "name": "groovy",
+        "version": "1.55.2"
+      },
+      {
+        "name": "grunt",
+        "version": "1.55.2"
+      },
+      {
+        "name": "gulp",
+        "version": "1.55.2"
+      },
+      {
+        "name": "handlebars",
+        "version": "1.55.2"
+      },
+      {
+        "name": "hlsl",
+        "version": "1.55.2"
+      },
+      {
+        "name": "git",
+        "version": "1.55.2"
+      },
+      {
+        "name": "html",
+        "version": "1.55.2"
+      },
+      {
+        "name": "html-language-features",
+        "version": "1.55.2"
+      },
+      {
+        "name": "ini",
+        "version": "1.55.2"
+      },
+      {
+        "name": "jake",
+        "version": "1.55.2"
+      },
+      {
+        "name": "java",
+        "version": "1.55.2"
+      },
+      {
+        "name": "javascript",
+        "version": "1.60.0"
+      },
+      {
+        "name": "json",
+        "version": "1.55.2"
+      },
+      {
+        "name": "json-language-features",
+        "version": "1.55.2"
+      },
+      {
+        "name": "less",
+        "version": "1.55.2"
+      },
+      {
+        "name": "log",
+        "version": "1.55.2"
+      },
+      {
+        "name": "lua",
+        "version": "1.55.2"
+      },
+      {
+        "name": "make",
+        "version": "1.55.2"
+      },
+      {
+        "name": "merge-conflict",
+        "version": "1.55.2"
+      },
+      {
+        "name": "objective-c",
+        "version": "1.55.2"
+      },
+      {
+        "name": "perl",
+        "version": "1.55.2"
+      },
+      {
+        "name": "php",
+        "version": "1.55.2"
+      },
+      {
+        "name": "php-language-features",
+        "version": "1.55.2"
+      },
+      {
+        "name": "powershell",
+        "version": "1.55.2"
+      },
+      {
+        "name": "pug",
+        "version": "1.55.2"
+      },
+      {
+        "name": "python",
+        "version": "1.55.2"
+      },
+      {
+        "name": "r",
+        "version": "1.55.2"
+      },
+      {
+        "name": "razor",
+        "version": "1.55.2"
+      },
+      {
+        "name": "ruby",
+        "version": "1.55.2"
+      },
+      {
+        "name": "rust",
+        "version": "1.55.2"
+      },
+      {
+        "name": "scss",
+        "version": "1.55.2"
+      },
+      {
+        "name": "search-result",
+        "version": "1.55.2"
+      },
+      {
+        "name": "shaderlab",
+        "version": "1.55.2"
+      },
+      {
+        "name": "shellscript",
+        "version": "1.55.2"
+      },
+      {
+        "name": "sql",
+        "version": "1.55.2"
+      },
+      {
+        "name": "swift",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-abyss",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-defaults",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-kimbie-dark",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-monokai",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-monokai-dimmed",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-quietlight",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-red",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-solarized-dark",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-solarized-light",
+        "version": "1.55.2"
+      },
+      {
+        "name": "theme-tomorrow-night-blue",
+        "version": "1.55.2"
+      },
+      {
+        "name": "typescript",
+        "version": "1.60.0"
+      },
+      {
+        "name": "vb",
+        "version": "1.55.2"
+      },
+      {
+        "name": "vscode-theme-seti",
+        "version": "1.55.2"
+      },
+      {
+        "name": "xml",
+        "version": "1.55.2"
+      },
+      {
+        "name": "yaml",
+        "version": "1.55.2"
+      }
+    ],
+    "ms-vscode": [
       {
         "name": "node-debug",
-        "id": "5dbbd53b999d421844c82d76",
-        "version": "1.40.1"
+        "version": "1.38.4"
       },
       {
         "name": "node-debug2",
-        "id": "5dbbd463999d421844c82d71",
-        "version": "1.39.3"
+        "version": "1.42.7"
       }
     ],
-    "sample": [
+    "vscode-icons-team": [
       {
-        "name": "init",
-        "id": "5d835782606d531b2735734a",
-        "version": "0.0.1"
-      },
+        "name": "vscode-icons"
+      }
+    ],
+    "opensumi": [
       {
-        "name": "fsprovider-sample",
-        "id": "5d8357df606d531b27357350",
-        "version": "0.0.3"
+        "name": "opensumi-default-themes"
       }
     ]
   }

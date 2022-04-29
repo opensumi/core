@@ -5,7 +5,7 @@ import {
   ComponentRegistry,
   CommandRegistry,
   KeybindingRegistry,
-  addElement,
+  arrays,
   electronEnv,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -21,6 +21,7 @@ import { ElectronBasicContribution } from '../src/browser';
 import { ElectronNativeDialogService } from '../src/browser/dialog';
 import { WelcomeContribution } from '../src/browser/welcome/contribution';
 
+const { addElement } = arrays;
 
 function mockService(target) {
   return new Proxy(target, {

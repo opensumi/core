@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Path } from '@opensumi/ide-components/lib/utils/path';
-import { Uri, formatLocalize } from '@opensumi/ide-core-browser/lib';
+import { formatLocalize } from '@opensumi/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
-import { WithEventBus } from '@opensumi/ide-core-common/lib';
+import { WithEventBus, Uri, path } from '@opensumi/ide-core-common';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+
+const { Path } = path;
 
 import {
   IFileDropFrontendService,

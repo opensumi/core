@@ -1,11 +1,10 @@
 import { Injectable } from '@opensumi/di';
+import { Emitter, IAsyncResult, Event } from '@opensumi/ide-utils';
 
 import { ConstructorOf } from '../declare';
-import { Emitter, IAsyncResult, Event } from '../event';
 
 import { BasicEvent } from './basic-event';
 import { IEventBus, IEventListener, IEventFireOpts, IAsyncEventFireOpts } from './event-bus-types';
-
 
 @Injectable()
 export class EventBusImpl implements IEventBus {

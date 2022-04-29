@@ -1,5 +1,6 @@
+import { DisposableCollection, Emitter, Event, IAsyncResult } from '@opensumi/ide-utils';
+
 import { bindInputElement, ProxiedInputProp } from '../../input';
-import { DisposableCollection, Emitter, Event, IAsyncResult } from '../../utils';
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -171,7 +172,7 @@ export abstract class PromptHandle {
       return;
     }
     // 获取最顶层的父级焦点容器
-    let element = this.focusPrevActiveElement();
+    const element = this.focusPrevActiveElement();
     this._destroyed = true;
     this.$.removeEventListener('click', this.handleClick);
     this.$.removeEventListener('keyup', this.handleKeyup);

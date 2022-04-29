@@ -1,6 +1,5 @@
-import { isWebKit, isMacintosh } from '@opensumi/ide-core-common/lib/platform';
+import { isWebKit, isMacintosh } from '@opensumi/ide-core-common';
 import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
-
 
 export const KEY_CODE_MAP: KeyCodeEnum[] = [];
 (() => {

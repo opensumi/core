@@ -165,7 +165,7 @@ describe('DebugSessionConnection', () => {
         },
       }),
     );
-    expect((await requestPromise).body).toBeDefined();
+    expect(await requestPromise).toBeDefined();
   });
 
   it('handle event message', (done) => {

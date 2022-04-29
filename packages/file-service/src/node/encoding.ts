@@ -4,8 +4,7 @@ import * as fs from 'fs-extra';
 import iconv from 'iconv-lite';
 import jschardet from 'jschardet';
 
-import { URI } from '@opensumi/ide-core-common';
-import { SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common/lib/const';
+import { URI, SUPPORTED_ENCODINGS } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { EncodingInfo } from '../common/encoding';

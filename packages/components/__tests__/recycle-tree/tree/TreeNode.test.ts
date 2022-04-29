@@ -177,7 +177,7 @@ describe('Tree', () => {
       new File(tree, root, { name: 'e' }),
     ]);
     expect(root.branchSize).toBe(2);
-    const node = await root.forceLoadTreeNodeAtPath('a/c');
+    const node = await root.loadTreeNodeByPath('a/c');
     expect((node as TreeNode).name).toBe('c');
     expect(root.branchSize).toBe(5);
   });

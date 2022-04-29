@@ -3,12 +3,12 @@ import {
   getDebugLogger,
   registerLocalizationBundle,
   getCurrentLanguageInfo,
+  WithEventBus,
+  replaceNlsField,
   Uri,
   Deferred,
   URI,
-  WithEventBus,
-  replaceNlsField,
-} from '@opensumi/ide-core-common';
+} from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';

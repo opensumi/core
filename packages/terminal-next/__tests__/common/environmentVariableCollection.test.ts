@@ -1,4 +1,4 @@
-import { OS } from '@opensumi/ide-core-common';
+import { OperatingSystem } from '@opensumi/ide-core-common';
 
 import { MergedEnvironmentVariableCollection } from '../../src/common/environmentVariableCollection';
 
@@ -17,7 +17,7 @@ describe('MergedEnvironmentVariableCollection', () => {
 
   it('MergedEnvironmentVariableCollection#applyToProcessEnvironment', async () => {
     const env = {};
-    await colleciton1.applyToProcessEnvironment(env, OS.Type.Linux, (val) => Promise.resolve(val));
+    await colleciton1.applyToProcessEnvironment(env, OperatingSystem.Linux, (val) => Promise.resolve(val));
     expect(env).toEqual({
       'VARIABLE1-1': 'value1-1',
       'VARIABLE1-2': 'value1-2',

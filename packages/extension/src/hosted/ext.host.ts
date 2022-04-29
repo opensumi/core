@@ -14,7 +14,7 @@ import {
   ReporterService,
   IReporter,
   IExtensionLogger,
-  enumValueToArray,
+  arrays,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 
@@ -35,6 +35,8 @@ import { ExtensionContext } from './api/vscode/ext.host.extensions';
 import { ExtHostSecret } from './api/vscode/ext.host.secrets';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { KTExtension } from './vscode.extension';
+
+const { enumValueToArray } = arrays;
 
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require

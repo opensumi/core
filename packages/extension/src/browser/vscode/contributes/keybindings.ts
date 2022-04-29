@@ -1,6 +1,5 @@
-// import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@opensumi/di';
-import { KeybindingRegistry, OS, Keybinding, KeybindingWeight } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry, OS, Keybinding, KeybindingWeight, OperatingSystem } from '@opensumi/ide-core-browser';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
@@ -44,9 +43,9 @@ export class KeybindingContributionPoint extends VSCodeContributePoint<Keybindin
   protected toOSKeybinding(ContributedKeyBinding: ContributedKeyBinding): string {
     let keybinding: string | undefined;
     const os = OS.type();
-    if (os === OS.Type.Windows && ContributedKeyBinding.win) {
+    if (os === OperatingSystem.Windows && ContributedKeyBinding.win) {
       keybinding = ContributedKeyBinding.win;
-    } else if (os === OS.Type.OSX && ContributedKeyBinding.mac) {
+    } else if (os === OperatingSystem.Macintosh && ContributedKeyBinding.mac) {
       keybinding = ContributedKeyBinding.mac;
     } else if (ContributedKeyBinding.linux) {
       keybinding = ContributedKeyBinding.linux;

@@ -4,9 +4,7 @@
  */
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
-import * as path from '@opensumi/ide-core-common/lib/path';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { PreferenceService, path, OperatingSystem } from '@opensumi/ide-core-browser';
 
 import {
   IResolveDefaultProfileOptions,
@@ -45,7 +43,7 @@ export class TerminalProfileInternalService implements ITerminalProfileInternalS
     let shellPath = shellType;
     const args: string[] = [];
     const platformKey = await this.terminalService.getCodePlatformKey();
-    const terminalOs = await this.terminalService.getOs();
+    const terminalOs = await this.terminalService.getOS();
     if (terminalOs === OperatingSystem.Windows) {
       shellPath = (await this.serviceClientRPC.$resolveWindowsShellPath(shellType as WindowsShellType)) ?? shellPath;
     } else {
@@ -95,7 +93,7 @@ export class TerminalProfileInternalService implements ITerminalProfileInternalS
     const executable = await this.terminalService.getDefaultSystemShell();
     // Finally fallback to a generated profile
     let args: string | string[] | undefined;
-    const os = options?.os ?? (await this.terminalService.getOs());
+    const os = options?.os ?? (await this.terminalService.getOS());
     if (os === OperatingSystem.Macintosh && path.parse(executable).name.match(/(zsh|bash)/)) {
       // macOS should launch a login shell by default
       args = ['--login'];

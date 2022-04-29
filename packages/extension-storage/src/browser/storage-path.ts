@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { isWindows, URI, Deferred, StoragePaths } from '@opensumi/ide-core-common';
+import { isWindows, URI, Deferred, StoragePaths, path } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
 import { ILoggerManagerClient } from '@opensumi/ide-logs';
 import {
@@ -12,6 +11,8 @@ import {
 } from '@opensumi/ide-workspace';
 
 import { IExtensionStoragePathServer } from '../common';
+
+const { Path } = path;
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {

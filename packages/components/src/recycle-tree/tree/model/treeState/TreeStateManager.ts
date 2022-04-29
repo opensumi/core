@@ -1,8 +1,11 @@
-import { Event, Emitter, Path } from '../../../../utils';
+import { Event, Emitter, path } from '@opensumi/ide-utils';
+
 import { TreeNodeEvent, ITreeNodeOrCompositeTreeNode } from '../../../types';
 import { CompositeTreeNode, TreeNode } from '../../TreeNode';
 
 import { ISerializableState } from './types';
+
+const { Path } = path;
 
 export enum Operation {
   SetExpanded = 1,
@@ -75,18 +78,15 @@ export class TreeStateManager {
     if (state) {
       for (const relPath of state.expandedDirectories.buried) {
         try {
-          const node = await this.root.forceLoadTreeNodeAtPath(relPath);
+          const node = await this.root.loadTreeNodeByPath(relPath);
           if (node && CompositeTreeNode.is(node)) {
-            await (node as CompositeTreeNode).setExpanded(false);
+            (node as CompositeTreeNode).setCollapsed();
           }
         } catch (error) {}
       }
       for (const relPath of state.expandedDirectories.atSurface) {
         try {
-          const node = await this.root.forceLoadTreeNodeAtPath(relPath);
-          if (node && CompositeTreeNode.is(node)) {
-            await (node as CompositeTreeNode).setExpanded(true);
-          }
+          await this.root.loadTreeNodeByPath(relPath);
         } catch (error) {}
       }
       this._scrollOffset =

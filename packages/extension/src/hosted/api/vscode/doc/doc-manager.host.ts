@@ -1,9 +1,7 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationTokenSource, Emitter, IDisposable } from '@opensumi/ide-core-common';
-import { isUTF8 } from '@opensumi/ide-core-common/lib/encoding';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
+import { BinaryBuffer, CancellationTokenSource, Emitter, IDisposable, isUTF8 } from '@opensumi/ide-core-common';
 
 import {
   ExtensionDocumentDataManager,

@@ -1,12 +1,13 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
-import { URI, formatLocalize, Emitter, Event } from '@opensumi/ide-core-browser';
+import { URI, formatLocalize, Emitter, Event, path } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { EditorFileGroup, EditorFile, EditorFileRoot, OpenedEditorData } from '../opened-editor-node.define';
+
+const { Path } = path;
 
 @Injectable()
 export class OpenedEditorService extends Tree {
@@ -22,7 +23,6 @@ export class OpenedEditorService extends Tree {
   @Autowired(ResourceService)
   private readonly resourceService: ResourceService;
 
-  private cacheEditorNode: Map<string, EditorFileGroup | EditorFile | EditorFileRoot> = new Map();
   // 是否为分组的节点树
   private isGroupTree = false;
 
@@ -50,26 +50,20 @@ export class OpenedEditorService extends Tree {
       }
       for (const item of groupOrResource) {
         if (!(item as IEditorGroup).resources) {
-          const cacheNode = this.getEditorNodeByUri(item as IResource, (parent as EditorFileGroup).group);
           const tooltip = await this.getReadableTooltip((item as IResource).uri);
-          children.push(
-            new EditorFile(this, item as IResource, tooltip, parent as EditorFileGroup, cacheNode && cacheNode.id),
-          );
+          children.push(new EditorFile(this, item as IResource, tooltip, parent as EditorFileGroup));
         } else {
           this.isGroupTree = true;
-          const cacheNode = this.getEditorNodeByUri(undefined, item as IEditorGroup);
-          const groupItem = new EditorFileGroup(this, item as IEditorGroup, parent, cacheNode && cacheNode.id);
+          const groupItem = new EditorFileGroup(this, item as IEditorGroup, parent);
           children.push(groupItem);
         }
       }
     } else {
       for (const resource of (parent as EditorFileGroup).group.resources) {
-        const cacheNode = this.getEditorNodeByUri(resource as IResource, (parent as EditorFileGroup).group);
         const tooltip = await this.getReadableTooltip(resource.uri);
-        children.push(new EditorFile(this, resource, tooltip, parent, cacheNode && cacheNode.id));
+        children.push(new EditorFile(this, resource, tooltip, parent));
       }
     }
-    this.cacheNodes(children);
     return children;
   }
 
@@ -98,30 +92,6 @@ export class OpenedEditorService extends Tree {
     return a.type === TreeNodeType.CompositeTreeNode ? -1 : b.type === TreeNodeType.CompositeTreeNode ? 1 : 0;
   };
 
-  private cacheNodes(nodes: (EditorFileGroup | EditorFileRoot | EditorFile)[]) {
-    const dirtyNodes: EditorFile[] = [];
-    for (const node of nodes) {
-      if ((node as EditorFile).uri) {
-        const decoration = this.resourceService.getResourceDecoration((node as EditorFile).uri);
-        if (decoration.dirty) {
-          dirtyNodes.push(node as EditorFile);
-        }
-        // EditorFile
-        const parent = node.parent;
-        this.cacheEditorNode.set(new Path(parent?.path!).join((node as EditorFile).uri.toString()).toString(), node);
-      } else if (EditorFileGroup.is(node as any)) {
-        // EditorFileGroup
-        this.cacheEditorNode.set(node.path, node);
-      } else {
-        // EditorFileRoot
-        this.cacheEditorNode.set(node.path, node);
-      }
-    }
-    if (dirtyNodes.length > 0) {
-      this.onDirtyNodesChangeEmitter.fire(dirtyNodes);
-    }
-  }
-
   public getEditorNodeByUri(resource?: IResource | URI, group?: IEditorGroup) {
     let path = this.root!.path;
     if (resource) {
@@ -134,27 +104,27 @@ export class OpenedEditorService extends Tree {
           .join(groupName)
           .join(
             resource && (resource as IResource).uri
-              ? (resource as IResource).uri.toString()
-              : (resource as URI).toString(),
+              ? (resource as IResource).uri.path.toString()
+              : (resource as URI).path.toString(),
           )
           .toString();
       } else {
         path = new Path(path)
           .join(
             resource && (resource as IResource).uri
-              ? (resource as IResource).uri.toString()
-              : (resource as URI).toString(),
+              ? (resource as IResource).uri.path.toString()
+              : (resource as URI).path.toString(),
           )
           .toString();
       }
-      return this.cacheEditorNode.get(path);
+      return this.root?.getTreeNodeByPath(path);
     } else {
       if (!group) {
         return;
       }
       const groupName = formatLocalize('opened.editors.group.title', group.index + 1);
       path = new Path(path).join(groupName).toString();
-      return this.cacheEditorNode.get(path);
+      return this.root?.getTreeNodeByPath(path);
     }
   }
 

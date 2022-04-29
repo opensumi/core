@@ -9,15 +9,15 @@ import {
   IEditorDocumentModelSaveResult,
   AppConfig,
   CommandService,
-  OS,
+  OperatingSystem,
   IApplicationService,
   PreferenceService,
   getLanguageIdFromMonaco,
   localize,
   formatLocalize,
   MessageType,
+  path,
 } from '@opensumi/ide-core-browser';
-import * as path from '@opensumi/ide-core-common/lib/path';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
 
@@ -75,7 +75,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     if (eol !== 'auto') {
       return eol;
     }
-    return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
+    return backendOS === OperatingSystem.Windows ? EOL.CRLF : EOL.LF;
   }
 
   async provideEditorDocumentModelContent(uri: URI, encoding?: string | undefined): Promise<string> {

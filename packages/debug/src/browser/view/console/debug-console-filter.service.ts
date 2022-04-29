@@ -1,12 +1,12 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter, Event } from '@opensumi/ide-core-browser';
-import * as strings from '@opensumi/ide-core-common';
+import { Emitter, Event, strings } from '@opensumi/ide-core-browser';
 
 import { matchAll } from '../../debugUtils';
 
 import { DebugConsoleFilterModel } from './debug-console-filter.model';
 
 const Ansi = require('anser');
+const { convertSimple2RegExpPattern } = strings;
 
 export interface IDebugConsoleFilter {
   filter: (t: string) => boolean;
@@ -60,7 +60,7 @@ export class DebugConsoleFilterService implements IDebugConsoleFilter {
   }
 
   public findMatches(text: string): IFilterMatches[] {
-    const regexp = new RegExp(strings.convertSimple2RegExpPattern(this._filterText.toLowerCase()), 'g');
+    const regexp = new RegExp(convertSimple2RegExpPattern(this._filterText.toLowerCase()), 'g');
     if (this._filterText.trim() === '') {
       return [];
     }

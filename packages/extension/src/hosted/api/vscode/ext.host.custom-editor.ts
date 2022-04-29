@@ -1,8 +1,14 @@
 import { CustomDocumentOpenContext } from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IDisposable, CancellationToken, IExtensionInfo, Emitter, Schemas } from '@opensumi/ide-core-common';
-import { iconvEncode } from '@opensumi/ide-core-common/lib/encoding';
+import {
+  IDisposable,
+  CancellationToken,
+  IExtensionInfo,
+  Emitter,
+  Schemas,
+  iconvEncode,
+} from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 
 import {
@@ -25,7 +31,6 @@ import {
 import { Uri } from '../../../common/vscode/ext-types';
 
 import { ExtHostWebviewService } from './ext.host.api.webview';
-
 
 export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
   private proxy: IMainThreadCustomEditor;

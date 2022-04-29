@@ -166,8 +166,8 @@ export class DebugSessionConnection implements IDisposable {
     return result;
   }
 
-  sendCustomRequest<T extends DebugProtocol.Response>(command: string, args?: any): Promise<T> {
-    return this.doSendRequest<T>(command, args);
+  async sendCustomRequest<T extends DebugProtocol.Response>(command: string, args?: any): Promise<T> {
+    return (await this.doSendRequest<T>(command, args))?.body;
   }
 
   protected async doSendRequest<K extends DebugProtocol.Response>(

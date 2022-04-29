@@ -26,7 +26,7 @@ import {
   ISchemaStore,
   URI,
   Disposable,
-  ICryptrService,
+  ICryptoService,
   ICredentialsService,
   Emitter,
 } from '@opensumi/ide-core-browser';
@@ -559,7 +559,7 @@ export function setupExtensionServiceInjector() {
 
   injector.overrideProviders(
     {
-      token: ICryptrService,
+      token: ICryptoService,
       useValue: mockService({}),
     },
     {

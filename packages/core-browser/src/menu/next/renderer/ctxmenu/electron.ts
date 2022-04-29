@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@opensumi/ide-core-common';
-import { mnemonicButtonLabel } from '@opensumi/ide-core-common/lib/utils/strings';
+import { INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@opensumi/ide-core-common';
+import { strings, Disposable } from '@opensumi/ide-core-common';
 
 import { electronEnv } from '../../../../utils';
 import { MenuNode } from '../../base';
@@ -33,7 +33,7 @@ export class ElectronMenuFactory extends Disposable {
       if (menuNode.id === SubmenuItemNode.ID) {
         const submenuTemplate = this.getTemplate(menuNode.children, map, context);
         return {
-          label: `${mnemonicButtonLabel(menuNode.label, true)}`,
+          label: `${strings.mnemonicButtonLabel(menuNode.label, true)}`,
           submenu: Array.isArray(submenuTemplate) && submenuTemplate.length ? submenuTemplate : undefined,
         };
       } else {
@@ -41,7 +41,9 @@ export class ElectronMenuFactory extends Disposable {
         return {
           type: menuNode.checked ? 'checkbox' : undefined,
           checked: menuNode.checked ? menuNode.checked : false,
-          label: `${mnemonicButtonLabel(menuNode.label, true)} ${menuNode.isKeyCombination ? menuNode.keybinding : ''}`,
+          label: `${strings.mnemonicButtonLabel(menuNode.label, true)} ${
+            menuNode.isKeyCombination ? menuNode.keybinding : ''
+          }`,
           id: menuNode.id,
           action: true,
           role: menuNode.nativeRole,
@@ -185,7 +187,7 @@ export class ElectronMenuBarService implements IElectronMenuBarService {
       const templates = this.factory.getTemplate(menuNodes, this.menuBarActions);
       if (templates && templates.length > 0) {
         const template: INativeMenuTemplate = {
-          label: mnemonicButtonLabel(item.label, true),
+          label: strings.mnemonicButtonLabel(item.label, true),
           submenu: templates,
         };
         if (item.nativeRole) {

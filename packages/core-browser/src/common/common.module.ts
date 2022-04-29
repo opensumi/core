@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { CommonServerPath, CryptrServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
+import { CommonServerPath, CryptoServicePath, KeytarServicePath } from '@opensumi/ide-core-common';
 
 import { AuthenticationContribution } from '../authentication/authentication.contribution';
 import { BrowserModule } from '../browser-module';
@@ -27,7 +27,7 @@ export class ClientCommonModule extends BrowserModule {
       servicePath: KeytarServicePath,
     },
     {
-      servicePath: CryptrServicePath,
+      servicePath: CryptoServicePath,
     },
   ];
 }

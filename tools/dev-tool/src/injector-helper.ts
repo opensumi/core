@@ -1,6 +1,6 @@
 import { Injector, Injectable } from '@opensumi/di';
 import { BrowserModule, ClientApp, getDebugLogger } from '@opensumi/ide-core-browser';
-import { ConstructorOf, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { CommonServerPath, ConstructorOf, ILoggerManagerClient, OS } from '@opensumi/ide-core-common';
 import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
 
 import { MockInjector } from './mock-injector';
@@ -21,12 +21,22 @@ export async function createBrowserApp(
 ): Promise<MockClientApp> {
   const injector = inj || new MockInjector();
   // 需要依赖前后端模块
-  injector.addProviders({
-    token: ILoggerManagerClient,
-    useValue: {
-      getLogger() {},
+  injector.addProviders(
+    {
+      token: ILoggerManagerClient,
+      useValue: {
+        getLogger() {
+          return getDebugLogger();
+        },
+      },
     },
-  });
+    {
+      token: CommonServerPath,
+      useValue: {
+        getBackendOS: jest.fn(() => OS.Type.OSX),
+      },
+    },
+  );
   const app = new ClientApp({
     modules: [MockMainLayout, ...modules],
     injector,

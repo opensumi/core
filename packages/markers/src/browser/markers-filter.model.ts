@@ -1,7 +1,16 @@
-import { IMarker, MarkerSeverity, URI } from '@opensumi/ide-core-common';
-import { IFilter, matchesFuzzy, matchesFuzzy2, matchesPrefix } from '@opensumi/ide-core-common/lib/filters';
-import { getEmptyExpression, IExpression, splitGlobAware } from '@opensumi/ide-core-common/lib/utils/glob';
-import * as strings from '@opensumi/ide-core-common/lib/utils/strings';
+import {
+  IMarker,
+  MarkerSeverity,
+  IFilter,
+  matchesFuzzy,
+  matchesFuzzy2,
+  matchesPrefix,
+  strings,
+  URI,
+  getEmptyExpression,
+  IExpression,
+  splitGlobAware,
+} from '@opensumi/ide-core-browser';
 
 import {
   IFilterOptions,

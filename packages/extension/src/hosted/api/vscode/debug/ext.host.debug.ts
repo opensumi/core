@@ -1,8 +1,7 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet, path } from '@opensumi/ide-core-common';
 import {
   DebugConfiguration,
   DebugStreamConnection,
@@ -29,7 +28,7 @@ import {
   DebugConfigurationProviderTriggerKind,
 } from '../../../../common/vscode/ext-types';
 import { Breakpoint } from '../../../../common/vscode/models';
-import { CustomeChildProcessModule } from '../../../ext.process-base';
+import { CustomChildProcessModule } from '../../../ext.process-base';
 
 import { IDebugConfigurationProvider } from './common';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
@@ -41,6 +40,8 @@ import {
   namedPipeDebugAdapter,
 } from './extension-debug-adapter-starter';
 import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker';
+
+const { Path } = path;
 
 export function createDebugApiFactory(extHostDebugService: IExtHostDebugService) {
   const debug: typeof vscode.debug = {
@@ -182,7 +183,7 @@ export class ExtHostDebug implements IExtHostDebugService {
     rpc: IRPCProtocol,
     private extHostConnectionService: IExtHostConnectionService,
     private extHostCommand: IExtHostCommands,
-    private cp?: CustomeChildProcessModule,
+    private cp?: CustomChildProcessModule,
   ) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadDebug);
     this.activeDebugConsole = {

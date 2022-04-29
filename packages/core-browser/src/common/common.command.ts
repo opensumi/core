@@ -605,6 +605,18 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.toggleWorldWrap',
     category: CATEGORY,
   };
+
+  export const FORMAT_DOCUMENT_WITH: Command = {
+    id: 'editor.action.formatDocument.multiple',
+    category: CATEGORY,
+    label: localize('editor.formatDocument.label.multiple', 'Format Document With...'),
+  };
+
+  export const FORMAT_SELECTION_WITH: Command = {
+    id: 'editor.action.formatSelection.multiple',
+    category: CATEGORY,
+    label: localize('editor.formatSelection.label.multiple', 'Format Selection With...'),
+  };
 }
 
 export namespace SEARCH_COMMANDS {
@@ -740,6 +752,15 @@ export namespace KEYBOARD_COMMANDS {
   export const CHOOSE_KEYBOARD_LAYOUT: Command = {
     id: 'keyboard.chooseKeyboardLayout',
     label: '%keyboard.chooseKeyboardLayout%',
+    category: CATEGORY,
+  };
+}
+
+export namespace DIALOG_COMMANDS {
+  const CATEGORY = 'dialog';
+
+  export const ENSURE: Command = {
+    id: 'dialog.ensure',
     category: CATEGORY,
   };
 }

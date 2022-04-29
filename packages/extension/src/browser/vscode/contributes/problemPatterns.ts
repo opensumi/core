@@ -3,12 +3,13 @@ import {
   IProblemPatternRegistry,
   ProblemPatternContribution,
   IJSONSchema,
-  deepClone,
+  objects,
   localize,
 } from '@opensumi/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
+const { deepClone } = objects;
 export namespace PatternSchemas {
   export const ProblemPattern: IJSONSchema = {
     default: {
@@ -109,7 +110,7 @@ export namespace PatternSchemas {
 
   export const NamedProblemPattern: IJSONSchema = deepClone(ProblemPattern);
   NamedProblemPattern.properties = deepClone(NamedProblemPattern.properties) || {};
-  NamedProblemPattern!.properties['name'] = {
+  NamedProblemPattern.properties!['name'] = {
     type: 'string',
     description: localize('NamedProblemPatternSchema.name', 'The name of the problem pattern.'),
   };

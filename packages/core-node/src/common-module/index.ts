@@ -4,8 +4,8 @@ import {
   CommonServerPath,
   INativeCredentialService,
   KeytarServicePath,
-  INativeCryptrService,
-  CryptrServicePath,
+  INativeCryptoService,
+  CryptoServicePath,
 } from '@opensumi/ide-core-common';
 
 import { HashCalculateContribution } from '../hash-calculate/hash-calculate.contribution';
@@ -13,7 +13,7 @@ import { NodeModule } from '../node-module';
 
 import { CommonServer } from './common.server';
 import { CredentialService } from './credential.server';
-import { CryptrService } from './cryptr.server';
+import { CryptoService } from './crypto.server';
 
 @Injectable()
 export class ServerCommonModule extends NodeModule {
@@ -28,8 +28,8 @@ export class ServerCommonModule extends NodeModule {
       useClass: CredentialService,
     },
     {
-      token: INativeCryptrService,
-      useClass: CryptrService,
+      token: INativeCryptoService,
+      useClass: CryptoService,
     },
   ];
   backServices = [
@@ -42,8 +42,8 @@ export class ServerCommonModule extends NodeModule {
       token: INativeCredentialService,
     },
     {
-      servicePath: CryptrServicePath,
-      token: INativeCryptrService,
+      servicePath: CryptoServicePath,
+      token: INativeCryptoService,
     },
   ];
 }

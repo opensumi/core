@@ -21,7 +21,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   asPromise,
   comparePaths,
-  sortedDiff,
+  arrays,
   debounce,
   Event,
   Emitter,
@@ -32,8 +32,8 @@ import {
   UriComponents,
   CancellationToken,
   IDisposable,
+  ISplice,
 } from '@opensumi/ide-core-common';
-import { ISplice } from '@opensumi/ide-core-common/lib/sequence';
 
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
 import {
@@ -46,6 +46,8 @@ import {
 } from '../../../common/vscode/scm';
 
 import { ExtHostCommands } from './ext.host.command';
+
+const { sortedDiff } = arrays;
 
 export type IMainContext = IRPCProtocol;
 

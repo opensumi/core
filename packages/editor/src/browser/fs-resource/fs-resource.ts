@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import {
-  OS,
+  OperatingSystem,
   URI,
   MaybePromise,
   WithEventBus,
@@ -11,8 +11,7 @@ import {
   IApplicationService,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { FileChangeType } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
+import { FileChangeType, path } from '@opensumi/ide-core-common';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
 
@@ -21,6 +20,8 @@ import { DIFF_SCHEME } from '../../common';
 import { IEditorDocumentModelService } from '../doc-model/types';
 
 import { FileTreeSet } from './file-tree-set';
+
+const { Path } = path;
 
 @Injectable()
 export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {
@@ -43,15 +44,17 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   private involvedFiles: FileTreeSet;
 
+  private ready: Promise<void>;
+
   constructor() {
     super();
-    this.init();
+    this.ready = this.init();
     this.listen();
   }
 
   async init() {
     const os = await this.applicationService.getBackendOS();
-    this.involvedFiles = new FileTreeSet(os === OS.Type.Windows);
+    this.involvedFiles = new FileTreeSet(os === OperatingSystem.Windows);
   }
 
   handlesUri(uri: URI): number {
@@ -68,7 +71,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       e.forEach((change) => {
         if (change.type === FileChangeType.ADDED || change.type === FileChangeType.DELETED) {
           // 对于文件夹的删除，做要传递给子文件
-          const effectedPaths = this.involvedFiles.effects(new URI(change.uri).codeUri.fsPath);
+          const effectedPaths = this.involvedFiles?.effects(new URI(change.uri).codeUri.fsPath);
           effectedPaths.forEach((p) => {
             const effected = URI.file(p);
             this.cachedFileStat.delete(effected.toString());
@@ -85,7 +88,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       });
     });
     this.labelService.onDidChange((uri) => {
-      if (uri.codeUri.fsPath && this.involvedFiles.effects(uri.codeUri.fsPath)) {
+      if (uri.codeUri.fsPath && this.involvedFiles?.effects(uri.codeUri.fsPath)) {
         this.eventBus.fire(new ResourceNeedUpdateEvent(uri));
       }
     });
@@ -98,8 +101,9 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     return this.cachedFileStat.get(uri);
   }
 
-  provideResource(uri: URI): MaybePromise<IResource<any>> {
+  async provideResource(uri: URI): Promise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
+    await this.ready;
     this.involvedFiles.add(uri.codeUri.fsPath);
     return Promise.all([
       this.getFileStat(uri.toString()),
@@ -135,7 +139,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   }
 
   onDisposeResource(resource) {
-    this.involvedFiles.delete(resource.uri.codeUri.fsPath);
+    this.involvedFiles?.delete(resource.uri.codeUri.fsPath);
     this.cachedFileStat.delete(resource.uri.toString());
   }
 

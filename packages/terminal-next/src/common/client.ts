@@ -116,6 +116,8 @@ export interface ITerminalClient extends Disposable {
    */
   findNext(text: string): void;
 
+  closeSearch(): void;
+
   /**
    * 向后端发送一段字符串
    *

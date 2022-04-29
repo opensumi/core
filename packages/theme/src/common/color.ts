@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/base/common/color.ts
 
-import { CharCode } from '@opensumi/ide-core-common/lib/charCode';
+import { CharCode } from '@opensumi/ide-core-common';
 
 function roundFloat(num: number, decimalPoints: number): number {
   const decimal = Math.pow(10, decimalPoints);

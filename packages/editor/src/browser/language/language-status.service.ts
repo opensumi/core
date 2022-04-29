@@ -1,10 +1,11 @@
 import { Injectable } from '@opensumi/di';
-import { compare, Event, IDisposable } from '@opensumi/ide-core-common';
+import { strings, Event, IDisposable } from '@opensumi/ide-core-common';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageFeatureRegistry';
 
 import { ILanguageStatusService, ILanguageStatus } from '../../common';
 
+const { compare } = strings;
 
 @Injectable()
 export class LanguageStatusService implements ILanguageStatusService {

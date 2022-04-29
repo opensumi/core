@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { isMacintosh } from '@opensumi/ide-core-common/lib/platform';
+import { isMacintosh } from '@opensumi/ide-core-common';
 
 @Injectable()
 export class TerminalKeyBoardInputService {

@@ -18,9 +18,9 @@ import {
   Event,
   DisposableCollection,
   IClipboardService,
+  path,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 
 import { IDebugSessionManager } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
@@ -40,7 +40,7 @@ import { DebugConsoleTreeModel } from './debug-console-model';
 import { DebugConsoleSession } from './debug-console-session';
 import styles from './debug-console.module.less';
 
-
+const { Path } = path;
 export interface IDebugConsoleHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
 }

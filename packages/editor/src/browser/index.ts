@@ -14,6 +14,7 @@ import {
   IMonacoCommandsRegistry,
 } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 
 import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
 import { IDocPersistentCacheProvider } from '../common/doc-cache';
@@ -36,7 +37,12 @@ import { LanguageStatusContribution } from './language/language-status.contribut
 import { LanguageStatusService } from './language/language-status.service';
 import { LanguageService } from './language/language.service';
 import { EditorActionRegistryImpl } from './menu/editor.menu';
-import { CallHierarchyContribution, CallHierarchyService } from './monaco-contrib';
+import {
+  CallHierarchyContribution,
+  CallHierarchyService,
+  TypeHierarchyService,
+  TypeHierarchyContribution,
+} from './monaco-contrib';
 import {
   MonacoActionRegistry,
   MonacoCommandRegistry,
@@ -132,6 +138,10 @@ export class EditorModule extends BrowserModule {
       useClass: CallHierarchyService,
     },
     {
+      token: ITypeHierarchyService,
+      useClass: TypeHierarchyService,
+    },
+    {
       token: ICommandServiceToken,
       useClass: MonacoCommandService,
     },
@@ -160,6 +170,7 @@ export class EditorModule extends BrowserModule {
     SaveParticipantsContribution,
     FileSystemResourceContribution,
     CallHierarchyContribution,
+    TypeHierarchyContribution,
     LanguageStatusContribution,
   ];
   contributionProvider = BrowserEditorContribution;

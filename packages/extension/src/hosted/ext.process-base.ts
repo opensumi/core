@@ -13,8 +13,7 @@ import {
   setLanguageId,
   ILogService,
 } from '@opensumi/ide-core-common';
-import { isPromiseCanceledError } from '@opensumi/ide-core-common/lib/errors';
-import { locale } from '@opensumi/ide-core-common/lib/platform';
+import { isPromiseCanceledError, locale } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
 
 import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
@@ -37,19 +36,19 @@ export interface IBuiltInCommand {
   handler: CommandHandler;
 }
 
-export interface CustomeChildProcess {
+export interface CustomChildProcess {
   stdin: Stream.Writable;
   stdout: Stream.Readable;
   kill: () => void;
 }
 
-export interface CustomeChildProcessModule {
-  spawn(command: string, args: string | string[], options: any): CustomeChildProcess;
+export interface CustomChildProcessModule {
+  spawn(command: string, args: string | string[], options: any): CustomChildProcess;
 }
 
 export interface ExtHostAppConfig extends Partial<AppConfig> {
   builtinCommands?: IBuiltInCommand[];
-  customDebugChildProcess?: CustomeChildProcessModule;
+  customDebugChildProcess?: CustomChildProcessModule;
   /**
    * 集成方自定义 vscode.version 版本
    * 设置该参数可能会导致插件运行异常
@@ -64,8 +63,11 @@ export interface ExtProcessConfig {
   LogServiceClass?: ConstructorOf<ILogService>;
   logDir?: string;
   logLevel?: LogLevel;
+  /**
+   * 这种 command 只有插件能调用到，且只能在插件进程调用到
+   */
   builtinCommands?: IBuiltInCommand[];
-  customDebugChildProcess?: CustomeChildProcessModule;
+  customDebugChildProcess?: CustomChildProcessModule;
   customVSCodeEngineVersion?: string;
 }
 

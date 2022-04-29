@@ -108,6 +108,8 @@ export const localizationBundle = {
     'editor.action.accept': 'Accept Changes (Use version on the right)',
     'editor.action.revert': 'Revert Changes (Use version on the left)',
     'editor.format.chooseFormatter': 'Choose the Formatter',
+    'editor.formatDocument.label.multiple': 'Format Document With...',
+    'editor.formatSelection.label.multiple': 'Format Selection With...',
     'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
     'editor.guessEncodingFromContent': 'Guess from content',
@@ -248,6 +250,7 @@ export const localizationBundle = {
     'dialog.file.saveLabel': 'Save File:',
     'dialog.file.close': 'Close',
     'dialog.file.ok': 'OK',
+    'dialog.ensure': 'OK',
     'menu-bar.file.pref': 'Preference',
 
     'editorOpenType.code': 'Code',

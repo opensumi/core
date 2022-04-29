@@ -8,8 +8,8 @@ import {
   URI,
   ThrottledDelayer,
   FileStat,
+  path,
 } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
 import { IMessageService } from '@opensumi/ide-overlay';
 
@@ -20,6 +20,8 @@ import styles from '../file-tree.module.less';
 import { FileTreeService } from '../file-tree.service';
 
 import { FileTreeModelService } from './file-tree-model.service';
+
+const { Path } = path;
 
 @Injectable()
 export class DragAndDropService extends WithEventBus {

@@ -18,6 +18,8 @@ import {
   AppConfig,
 } from '@opensumi/ide-core-browser';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { MockProgressService } from '@opensumi/ide-core-browser/__mocks__/progress-service';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
@@ -101,6 +103,10 @@ describe('KeymapsService should be work', () => {
       {
         token: ILogger,
         useClass: MockLogger,
+      },
+      {
+        token: IProgressService,
+        useClass: MockProgressService,
       },
       {
         token: AppConfig,
@@ -197,23 +203,28 @@ describe('KeymapsService should be work', () => {
           key: 'cmd+c',
         },
       ];
-      keymapsService.reconcile(keybindings);
+      await keymapsService.reconcile(keybindings);
       expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(3);
       expect(mockKeybindingRegistry.unregisterKeybinding).toBeCalledTimes(2);
       expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(3);
     });
 
     it('setKeybinding method should be work', async () => {
+      const rawkeybinding = {
+        command: 'test.command',
+        keybinding: 'cmd+shift+c',
+      };
       const keybinding = {
         command: 'test.command',
         keybinding: 'cmd+c',
       };
-      keymapsService.setKeybinding(keybinding);
+      await keymapsService.setKeybinding(rawkeybinding, keybinding);
       expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(4);
     });
 
-    it('getKeybindings method should be work', () => {
-      keymapsService.getKeybindings();
+    it('getKeybindings method should be work', async () => {
+      const list = await keymapsService.getKeybindings();
+      expect(list?.length).toBeGreaterThan(0);
     });
 
     it('resetKeybinding method should be work', async () => {

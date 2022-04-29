@@ -10,9 +10,7 @@ import type vscode from 'vscode';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
-import * as path from '@opensumi/ide-core-common/lib/path';
-import { isWindows } from '@opensumi/ide-core-common/lib/platform';
-import { INodeLogger } from '@opensumi/ide-core-node';
+import { INodeLogger, path, isWindows } from '@opensumi/ide-core-node';
 
 import { IDetectProfileOptions, ITerminalEnvironment } from '..';
 import {
@@ -23,7 +21,6 @@ import {
 } from '../common/profile';
 
 import { exists, findExecutable, getPowershellPaths, WINDOWS_GIT_BASH_PATHS } from './shell';
-
 
 function applyConfigProfilesToMap(
   configProfiles: { [key: string]: IUnresolvedTerminalProfile } | undefined,

@@ -174,13 +174,13 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
     this._url = url;
     if (!this.webview) {
       this.webview = document.createElement('webview');
-      this.wrapper!.appendChild(this.webview);
       this.webview.style.width = '100%';
       this.webview.style.height = '100%';
       this.webview.style.border = 'none';
       this.webview.style.zIndex = '2';
       this.webview.src = url;
       this.webview.preload = electronEnv.plainWebviewPreload;
+      this.wrapper!.appendChild(this.webview);
       this.webview.addEventListener('ipc-message', (event) => {
         if (event.channel === 'webview-message') {
           this._onMessage.fire(event.args[0]);

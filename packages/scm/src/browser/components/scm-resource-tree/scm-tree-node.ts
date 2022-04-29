@@ -1,6 +1,5 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
-import { URI, memoize } from '@opensumi/ide-core-browser';
-import * as paths from '@opensumi/ide-core-common/lib/path';
+import { URI, memoize, path } from '@opensumi/ide-core-browser';
 
 import { ISCMResourceGroup, ISCMResource } from '../../../common';
 import { isSCMResourceGroup } from '../../scm-util';
@@ -39,8 +38,6 @@ export class SCMResourceGroup extends CompositeTreeNode {
     );
   }
 
-  private _whenReady: Promise<void>;
-
   constructor(
     tree: SCMTreeService,
     parent: CompositeTreeNode | undefined,
@@ -48,15 +45,10 @@ export class SCMResourceGroup extends CompositeTreeNode {
     public readonly resource: ISCMResourceGroup,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: resource.label }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, { name: resource.label });
+    this.id = id || this.id;
     // 目录节点默认全部展开
-    this._whenReady = this.setExpanded(false, true);
-  }
-
-  get whenReady() {
-    return this._whenReady;
+    this.isExpanded = true;
   }
 
   @memoize
@@ -72,8 +64,6 @@ export class SCMResourceGroup extends CompositeTreeNode {
 }
 
 export class SCMResourceFolder extends CompositeTreeNode {
-  private _whenReady: Promise<void>;
-
   constructor(
     tree: SCMTreeService,
     parent: CompositeTreeNode | undefined,
@@ -81,15 +71,10 @@ export class SCMResourceFolder extends CompositeTreeNode {
     public readonly resource: ISCMResource,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, { name: raw.name });
+    this.id = id || this.id;
     // 目录节点默认全部展开
-    this._whenReady = this.setExpanded(false, true);
-  }
-
-  get whenReady() {
-    return this._whenReady;
+    this.isExpanded = true;
   }
 
   @memoize
@@ -101,7 +86,7 @@ export class SCMResourceFolder extends CompositeTreeNode {
   get tooltip(): string {
     const node = this.resource;
 
-    return paths.join(node.resourceGroup.provider.rootUri!.path, this.raw.pathname!);
+    return path.join(node.resourceGroup.provider.rootUri!.path, this.raw.pathname!);
   }
 
   /**
@@ -123,9 +108,8 @@ export class SCMResourceFile extends TreeNode {
     private readonly isTree?: boolean,
     id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.pathname }, { disableCache: true });
-    this._uid = id || this._uid;
-    TreeNode.setTreeNode(this._uid, this.path, this);
+    super(tree as ITree, parent, undefined, { name: raw.pathname });
+    this.id = id || this.id;
   }
 
   @memoize
@@ -141,9 +125,9 @@ export class SCMResourceFile extends TreeNode {
     }
 
     const node = this.resource;
-    const filePath = paths.parse(node.sourceUri.path);
+    const filePath = path.parse(node.sourceUri.path);
 
-    return paths.relative(node.resourceGroup.provider.rootUri!.path, filePath.dir);
+    return path.relative(node.resourceGroup.provider.rootUri!.path, filePath.dir);
   }
 
   @memoize

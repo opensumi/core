@@ -1,6 +1,4 @@
-import { Event, IDisposable } from '@opensumi/ide-core-common';
-import { ISequence } from '@opensumi/ide-core-common/lib/sequence';
-import { Uri } from '@opensumi/ide-core-common/lib/uri';
+import { Event, IDisposable, ISequence, Uri } from '@opensumi/ide-core-common';
 
 export interface VSCommand {
   id: string;

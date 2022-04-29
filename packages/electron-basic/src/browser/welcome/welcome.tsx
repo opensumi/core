@@ -40,7 +40,7 @@ export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({
             workspacePath = FileUri.fsPath(workspace);
           }
           return (
-            <div key={workspace}>
+            <div key={workspace} className={styles.recentRow}>
               <a
                 onClick={() => {
                   windowService.openWorkspace(new URI(workspace), { newWindow: false });

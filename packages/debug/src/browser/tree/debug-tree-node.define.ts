@@ -8,7 +8,6 @@ import { DebugSession } from '../debug-session';
 
 import { AnsiConsoleNode } from './debug-console-tree-node.define';
 
-
 export class ExpressionTreeService {
   constructor(private session?: DebugSession, private source?: DebugProtocol.Source, private line?: number | string) {}
 
@@ -153,6 +152,10 @@ export class ExpressionNode extends TreeNode {
   get badge() {
     return this.source ? `${this.source.name}:${this.line}` : '';
   }
+
+  get displayName() {
+    return this.name;
+  }
 }
 
 export namespace ExpressionNode {
@@ -187,7 +190,6 @@ export class ExpressionContainer extends CompositeTreeNode {
       parent,
       undefined,
       { name: name || options.session?.id },
-      { disableCache: true },
     );
     this.session = options.session;
     this.variablesReference = options.variablesReference || 0;
@@ -196,11 +198,14 @@ export class ExpressionContainer extends CompositeTreeNode {
     this.startOfVariables = options.startOfVariables || 0;
     this.source = options.source;
     this.line = options.line;
-    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get badge() {
     return this.source ? `${this.source.name}:${this.line}` : '';
+  }
+
+  get displayName() {
+    return this.name;
   }
 
   get path(): string {
@@ -261,7 +266,6 @@ export class DebugVariable extends ExpressionNode {
       },
       parent,
     );
-    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get variableMenuContext(): string {
@@ -372,7 +376,6 @@ export class DebugVariableContainer extends ExpressionContainer {
             : variable.evaluateName.split('.')[variable.evaluateName.split('.').length - 1]
           : ''),
     );
-    TreeNode.setTreeNode(this._uid, this.path, this);
   }
 
   get variableMenuContext(): string {

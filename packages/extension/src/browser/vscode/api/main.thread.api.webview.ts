@@ -15,7 +15,7 @@ import {
   STORAGE_SCHEMA,
   IStorage,
   IDisposable,
-  addMapElement,
+  arrays,
 } from '@opensumi/ide-core-browser';
 import { IOpenerService } from '@opensumi/ide-core-browser';
 import { CommandOpener } from '@opensumi/ide-core-browser/lib/opener/command-opener';
@@ -54,6 +54,7 @@ import { viewColumnToResourceOpenOptions } from '../../../common/vscode/converte
 import { WebviewViewShouldShowEvent } from '../../components/extension-webview-view';
 import { IActivationEventService } from '../../types';
 
+const { addMapElement } = arrays;
 @Injectable({ multiple: true })
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {
   @Autowired(IWebviewService)

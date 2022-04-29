@@ -18,8 +18,9 @@ import {
   Uri,
   withNullAsUndefined,
   IThemeColor,
+  OperatingSystem,
+  OS,
 } from '@opensumi/ide-core-common';
-import { OperatingSystem, OS } from '@opensumi/ide-core-common/lib/platform';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -77,7 +78,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _show: Deferred<void> | null;
   private _hasOutput = false;
   private _areLinksReady = false;
-  private _os: OperatingSystem = OS;
+  private _os: OperatingSystem;
   /** end */
 
   @Autowired(INJECTOR_TOKEN)
@@ -508,7 +509,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._error = new Deferred<void>();
     this._firstStdout = new Deferred<void>();
     this._attachAddon?.setConnection(undefined);
-    this.internalService.getOs().then((os) => {
+    this.internalService.getOS().then((os) => {
       this._os = os;
     });
     const { dispose } = this.onOutput(() => {
@@ -592,7 +593,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.logger.log('attach terminal by launchConfig: ', this._launchConfig);
 
     try {
-      connection = await this.internalService.attachByLaunchConfig(sessionId, cols, rows, this._launchConfig);
+      connection = await this.internalService.attachByLaunchConfig(
+        sessionId,
+        cols,
+        rows,
+        this._launchConfig,
+        this.xterm,
+      );
     } catch (e) {
       this.logger.error(`attach ${sessionId} terminal failed, _launchConfig`, JSON.stringify(this._launchConfig), e);
     }
@@ -697,6 +704,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   findNext(text: string) {
     this._checkReady();
     return this.xterm.findNext(text);
+  }
+
+  closeSearch() {
+    this.xterm.closeSearch();
   }
 
   getSelection() {

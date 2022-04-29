@@ -1,4 +1,4 @@
-import { IDisposable } from '../../utils';
+import { IDisposable } from '@opensumi/ide-utils';
 
 import { ITreeNode, ICompositeTreeNode, ITreeNodeOrCompositeTreeNode } from './tree-node';
 
@@ -7,7 +7,6 @@ export enum TreeNodeEvent {
   DidChangeExpansionState,
   WillChangeParent,
   DidChangeParent,
-  WillDispose,
   DidDispose,
   BranchDidUpdate,
   DidChangePath,
@@ -125,8 +124,6 @@ export interface ITreeWatcher {
     prevParent: ICompositeTreeNode,
     newParent: ICompositeTreeNode,
   );
-
-  notifyWillDispose(target: ITreeNodeOrCompositeTreeNode);
   notifyDidDispose(target: ITreeNodeOrCompositeTreeNode);
 
   notifyWillProcessWatchEvent(target: ICompositeTreeNode, event: IWatcherEvent);

@@ -1,4 +1,4 @@
-import { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
+import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];

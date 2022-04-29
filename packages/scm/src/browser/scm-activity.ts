@@ -1,15 +1,11 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { strings, path, Event, Disposable, IDisposable, dispose, combinedDisposable } from '@opensumi/ide-core-browser';
 import { StatusBarAlignment, IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
 import { localize } from '@opensumi/ide-core-common';
-import { Disposable, IDisposable, dispose, combinedDisposable } from '@opensumi/ide-core-common/lib/disposable';
-import { Event } from '@opensumi/ide-core-common/lib/event';
-import { basename } from '@opensumi/ide-core-common/lib/path';
-import { commonPrefixLength } from '@opensumi/ide-core-common/lib/utils/strings';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { SCMService, ISCMRepository, scmContainerId } from '../common';
-
 
 // 更新 ActivityBar 中 SCM 模块边的数字, 标注当前的 changes 数量
 @Injectable()
@@ -145,7 +141,7 @@ export class SCMStatusBarController {
       }
 
       const rootFSPath = root.fsPath;
-      const prefixLength = commonPrefixLength(rootFSPath, currentResource.uri.codeUri.fsPath);
+      const prefixLength = strings.commonPrefixLength(rootFSPath, currentResource.uri.codeUri.fsPath);
 
       if (prefixLength === rootFSPath.length && prefixLength > bestMatchLength) {
         bestRepository = repository;
@@ -206,7 +202,7 @@ export class SCMStatusBarController {
 
   private getRepoLabel(repository) {
     const label = repository.provider.rootUri
-      ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
+      ? `${path.basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
     return label;

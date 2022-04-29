@@ -7,8 +7,7 @@
 // based on https://github.com/microsoft/vscode/blob/04c36be045a94fee58e5f8992d3e3fd980294a84/src/vs/workbench/services/textfile/browser/textFileService.ts#L491
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Disposable, IDisposable } from '@opensumi/ide-core-common';
-import { UTF8, encodingExists } from '@opensumi/ide-core-common/lib/encoding';
+import { URI, Disposable, IDisposable, UTF8, encodingExists } from '@opensumi/ide-core-common';
 
 import { PreferenceService } from './preferences';
 import { getLanguageIdFromMonaco } from './services/label-service';
@@ -46,12 +45,13 @@ export class EncodingRegistry {
     } else if (preferredEncoding) {
       fileEncoding = preferredEncoding; // preferred encoding comes second
     } else {
-      fileEncoding = this.preferenceService.get<string>(
-        'files.encoding',
-        undefined,
-        resource.toString(),
-        getLanguageIdFromMonaco(resource)!,
-      )!;
+      fileEncoding =
+        this.preferenceService.get<string>(
+          'files.encoding',
+          undefined,
+          resource.toString(),
+          getLanguageIdFromMonaco(resource) || undefined,
+        ) || '';
     }
 
     if (!fileEncoding || !encodingExists(fileEncoding)) {

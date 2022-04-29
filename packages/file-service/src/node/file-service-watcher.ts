@@ -4,9 +4,17 @@ import * as fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 import nsfw from 'nsfw';
 
-import { IDisposable, Disposable, DisposableCollection, isWindows, URI, isLinux } from '@opensumi/ide-core-common';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
-import { FileUri } from '@opensumi/ide-core-node';
+import {
+  FileUri,
+  parseGlob,
+  ParsedPattern,
+  IDisposable,
+  Disposable,
+  DisposableCollection,
+  isWindows,
+  URI,
+  isLinux,
+} from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, FileSystemWatcherServer, WatchOptions } from '..';
 import { INsfw } from '../common/watcher';
@@ -64,30 +72,34 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
    * 查找父目录是否已经在监听
    * @param watcherPath
    */
-  checkIsParentWatched(watcherPath: string): number {
+  checkIsAlreadyWatched(watcherPath: string): number {
     let watcherId;
-    this.watchers.forEach((watcher) => {
-      if (watcherId) {
-        return;
-      }
+    for (const [_id, watcher] of this.watchers) {
       if (watcherPath.indexOf(watcher.path) === 0) {
         watcherId = this.watcherSequence++;
         this.watchers.set(watcherId, {
           path: watcherPath,
           disposable: new DisposableCollection(),
         });
+        break;
       }
-    });
+    }
     return watcherId;
   }
 
+  /**
+   * 如果监听路径不存在，则会监听父目录
+   * @param uri 要监听的路径
+   * @param options
+   * @returns
+   */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
     let realpath;
     if (await fs.pathExists(basePath)) {
       realpath = basePath;
     }
-    let watcherId = realpath && this.checkIsParentWatched(realpath);
+    let watcherId = realpath && this.checkIsAlreadyWatched(realpath);
     if (watcherId) {
       return watcherId;
     }
@@ -100,16 +112,20 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
         disposable: toDisposeWatcher,
       });
       toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
-      this.start(watcherId, basePath, options, toDisposeWatcher);
+      await this.start(watcherId, basePath, options, toDisposeWatcher);
     } else {
       const watchPath = await this.lookup(basePath);
       if (watchPath) {
+        const existingWatcher = watchPath && this.checkIsAlreadyWatched(watchPath);
+        if (existingWatcher) {
+          return existingWatcher;
+        }
         this.watchers.set(watcherId, {
           path: watchPath,
           disposable: toDisposeWatcher,
         });
         toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
-        this.start(watcherId, watchPath, options, toDisposeWatcher, basePath);
+        await this.start(watcherId, watchPath, options, toDisposeWatcher, undefined, basePath);
       } else {
         // 向上查找不到对应文件时，使用定时逻辑定时检索文件，当检测到文件时，启用监听逻辑
         const toClearTimer = new DisposableCollection();
@@ -117,7 +133,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
           if (await fs.pathExists(basePath)) {
             toClearTimer.dispose();
             this.pushAdded(watcherId, basePath);
-            this.start(watcherId, basePath, options, toDisposeWatcher);
+            await this.start(watcherId, basePath, options, toDisposeWatcher);
           }
         }, NsfwFileSystemWatcherServer.WATCHER_FILE_DETECTED_TIME);
         toClearTimer.push(Disposable.create(() => clearInterval(timer)));
@@ -197,14 +213,18 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     rawOptions: WatchOptions | undefined,
     toDisposeWatcher: DisposableCollection,
     rawFile?: string,
+    _rawDirectory?: string,
   ): Promise<void> {
     const options: WatchOptions = {
       excludes: [],
       ...rawOptions,
     };
     let watcher: INsfw.NSFW | undefined;
+    if (!(await fs.pathExists(basePath))) {
+      return;
+    }
 
-    watcher = await (nsfw as any)(
+    watcher = await nsfw(
       await fs.realpath(basePath),
       (events: INsfw.ChangeEvent[]) => {
         events = this.trimChangeEvent(events);
@@ -265,7 +285,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       }),
     );
     this.watcherOptions.set(watcherId, {
-      excludesPattern: options.excludes.map((pattern) => parse(pattern)),
+      excludesPattern: options.excludes.map((pattern) => parseGlob(pattern)),
       excludes: options.excludes,
     });
   }

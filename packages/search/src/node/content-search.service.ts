@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { FileUri, replaceAsarInPath } from '@opensumi/ide-core-node';
+import { FileUri, path } from '@opensumi/ide-core-node';
 import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
 import { IProcessFactory, IProcess, ProcessOptions } from '@opensumi/ide-process';
 import { rgPath } from '@opensumi/vscode-ripgrep';
@@ -15,16 +15,35 @@ import {
   cutShortSearchResult,
   FilterFileWithGlobRelativePath,
 } from '../common';
-interface RipGrepArbitraryData {
-  text?: string;
-  bytes?: string;
-}
 
 interface SearchInfo {
   searchId: number;
   resultLength: number;
   dataBuf: string;
 }
+
+interface LineInfo {
+  type: 'begin' | 'end' | 'match' | 'summary';
+  data: {
+    path: {
+      text: string;
+    };
+    lines: {
+      text: string;
+    };
+    line_number: number;
+    absolute_offset: number;
+    submatches: {
+      match: {
+        text: string;
+      };
+      start: number;
+      end: number;
+    }[];
+  };
+}
+
+const { replaceAsarInPath } = path;
 
 /**
  * Convert the length of a range in `text` expressed in bytes to a number of
@@ -71,17 +90,17 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     super();
   }
 
-  private searchStart(searchId, searchProcess) {
+  private searchStart(searchId: number, searchProcess) {
     this.sendResultToClient([], searchId, SEARCH_STATE.doing);
     this.processMap.set(searchId, searchProcess);
   }
 
-  private searchEnd(searchId) {
+  private searchEnd(searchId: number) {
     this.sendResultToClient([], searchId, SEARCH_STATE.done);
     this.processMap.delete(searchId);
   }
 
-  private searchError(searchId, error: string) {
+  private searchError(searchId: number, error: string) {
     this.sendResultToClient([], searchId, SEARCH_STATE.error, error);
     this.processMap.delete(searchId);
   }
@@ -118,8 +137,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     const rgProcess: IProcess = this.processFactory.create(processOptions);
     this.searchStart(searchInfo.searchId, rgProcess);
     rgProcess.onError((error) => {
-      // tslint:disable-next-line:no-any
-      let errorCode = (error as any).code;
+      let errorCode = error.code;
 
       // Try to provide somewhat clearer error messages, if possible.
       if (errorCode === 'ENOENT') {
@@ -134,7 +152,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
       this.searchError(searchInfo.searchId, errorStr);
     });
 
-    rgProcess.outputStream.on('data', (chunk: string) => {
+    rgProcess.outputStream.on('data', (chunk: Buffer) => {
       searchInfo.dataBuf = searchInfo.dataBuf + chunk;
       this.parseDataBuffer(searchInfo, opts, rootUris);
     });
@@ -175,7 +193,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
         searchInfo.dataBuf = searchInfo.dataBuf.slice(eolIdx + 1);
       }
 
-      let lintObj;
+      let lintObj: LineInfo | undefined;
       try {
         lintObj = JSON.parse(line.trim());
       } catch (e) {}
@@ -185,9 +203,9 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
 
       if (lintObj.type === 'match') {
         const data = lintObj.data;
-        const file = (data.path as RipGrepArbitraryData).text;
+        const file = data.path.text;
         const line = data.line_number;
-        const lineText = (data.lines as RipGrepArbitraryData).text;
+        const lineText = data.lines.text;
 
         if (file === undefined || lineText === undefined) {
           return;

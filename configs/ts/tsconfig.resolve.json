@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
+      "@opensumi/ide-utils": ["../packages/utils/src/index.ts"],
+      "@opensumi/ide-utils/lib/*": ["../packages/utils/src/*"],
       "@opensumi/ide-addons": ["../packages/addons/src/index.ts"],
       "@opensumi/ide-addons/lib/*": ["../packages/addons/src/*"],
       "@opensumi/ide-comments": ["../packages/comments/src/index.ts"],

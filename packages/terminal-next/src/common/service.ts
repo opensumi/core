@@ -1,12 +1,12 @@
 import { ITerminalOptions as IXtermTerminalOptions, Terminal } from 'xterm';
 
-import { IDisposable } from '@opensumi/ide-core-common';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { IDisposable, OperatingSystem } from '@opensumi/ide-core-common';
 
 import { ITerminalConnection } from './client';
 import { ITerminalError } from './error';
 import { ITerminalProfile } from './profile';
 import { IShellLaunchConfig, TerminalOptions } from './pty';
+import { IXTerm } from './xterm';
 
 export interface IPtyExitEvent {
   sessionId: string;
@@ -37,28 +37,20 @@ export interface ITerminalService {
    * @param sessionIds
    */
   check?(sessionIds: string[]): Promise<boolean>;
+
   /**
-   * @deprecated will remove on 2.17.0, please use `attachByLaunchConfig` instead
    * @param sessionId 会话唯一标识
-   * @param xterm 返回的 Xterm 终端实例
    * @param rows 终端初始化使用的列数
    * @param cols 终端初始化使用的行数
-   * @param options 创建一个新终端的进程选项
-   * @param shellType 终端类型
+   * @param launchConfig 创建一个新终端的进程选项
+   * @param xterm 创建的 xterm 实例
    */
-  attach(
-    sessionId: string,
-    xterm: Terminal,
-    cols: number,
-    rows: number,
-    options?: TerminalOptions,
-    shellType?: string,
-  ): Promise<ITerminalConnection | undefined>;
   attachByLaunchConfig(
     sessionId: string,
     cols: number,
     rows: number,
     launchConfig: IShellLaunchConfig,
+    xterm?: IXTerm,
   ): Promise<ITerminalConnection | undefined>;
   /**
    *
@@ -103,7 +95,7 @@ export interface ITerminalService {
   /**
    * 返回终端环境的 OS
    */
-  getOs(): Promise<OperatingSystem>;
+  getOS(): Promise<OperatingSystem>;
   getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]>;
   getDefaultSystemShell(): Promise<string>;
   getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'>;

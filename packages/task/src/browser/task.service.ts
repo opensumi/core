@@ -20,8 +20,8 @@ import {
   IProblemPatternRegistry,
   Emitter,
   WithEventBus,
+  platform,
 } from '@opensumi/ide-core-common';
-import { platform } from '@opensumi/ide-core-common/lib/platform';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { ITerminalClient } from '@opensumi/ide-terminal-next/lib/common/client';

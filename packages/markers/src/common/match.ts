@@ -1,9 +1,15 @@
-import { equalsIgnoreCase, URI, isWindows, isLinux } from '@opensumi/ide-core-common';
-import { TernarySearchTree } from '@opensumi/ide-core-common/lib/map';
-import { Schemas } from '@opensumi/ide-core-common/lib/network';
-import * as paths from '@opensumi/ide-core-common/lib/path';
-import { parse, IExpression, ParsedExpression } from '@opensumi/ide-core-common/lib/utils/glob';
-import * as extpath from '@opensumi/ide-core-common/lib/utils/paths';
+import { Schemas } from '@opensumi/ide-core-common';
+import {
+  URI,
+  strings,
+  isWindows,
+  isLinux,
+  TernarySearchTree,
+  path,
+  parseGlob,
+  IExpression,
+  ParsedExpression,
+} from '@opensumi/ide-core-common';
 
 export class ResourceGlobMatcher {
   private readonly globalExpression: ParsedExpression;
@@ -11,11 +17,11 @@ export class ResourceGlobMatcher {
     TernarySearchTree.forPaths<{ root: URI; expression: ParsedExpression }>();
 
   constructor(globalExpression: IExpression, rootExpressions: { root: URI; expression: IExpression }[]) {
-    this.globalExpression = parse(globalExpression);
+    this.globalExpression = parseGlob(globalExpression);
     for (const expression of rootExpressions) {
       this.expressionsByRoot.set(expression.root.toString(), {
         root: expression.root,
-        expression: parse(expression.expression),
+        expression: parseGlob(expression.expression),
       });
     }
   }
@@ -41,8 +47,8 @@ export function relativePath(from: URI, to: URI, ignoreCase = hasToIgnoreCase(fr
     return undefined;
   }
   if (from.scheme === Schemas.file) {
-    const relativePath = paths.relative(from.codeUri.path, to.codeUri.path);
-    return isWindows ? extpath.toSlashes(relativePath) : relativePath;
+    const relativePath = path.relative(from.codeUri.path, to.codeUri.path);
+    return isWindows ? path.toSlashes(relativePath) : relativePath;
   }
   let fromPath = from.codeUri.path || '/';
   const toPath = to.codeUri.path || '/';
@@ -58,14 +64,14 @@ export function relativePath(from: URI, to: URI, ignoreCase = hasToIgnoreCase(fr
     }
     fromPath = toPath.substr(0, i) + fromPath.substr(i);
   }
-  return paths.posix.relative(fromPath, toPath);
+  return path.relative(fromPath, toPath);
 }
 
 /**
  * Tests wheter the two authorities are the same
  */
 export function isEqualAuthority(a1: string, a2: string) {
-  return a1 === a2 || equalsIgnoreCase(a1, a2);
+  return a1 === a2 || strings.equalsIgnoreCase(a1, a2);
 }
 
 export function hasToIgnoreCase(resource: URI | undefined): boolean {

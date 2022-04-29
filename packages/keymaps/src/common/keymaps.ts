@@ -61,11 +61,12 @@ export interface IKeymapService {
   init(): Promise<void>;
   /**
    * 设置快捷键
+   * @param {Keybinding} rawKeybinding
    * @param {Keybinding} keybinding
    * @returns {Promise<void>}
    * @memberof KeymapsService
    */
-  setKeybinding(keybinding: Keybinding): void;
+  setKeybinding(rawKeybinding: Keybinding, keybinding: Keybinding): Promise<void>;
 
   /**
    * 移除给定ID的快捷键绑定

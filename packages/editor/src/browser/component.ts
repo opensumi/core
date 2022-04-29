@@ -1,3 +1,5 @@
+import isEqual from 'lodash/isEqual';
+import uniqWith from 'lodash/uniqWith';
 import ReactDOM from 'react-dom';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -16,7 +18,6 @@ import {
   RegisterEditorComponentEvent,
   RegisterEditorSideComponentEvent,
 } from './types';
-
 
 type SchemeKey = string;
 
@@ -121,7 +122,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
       const wb = b.weight || 0;
       return wb - wa;
     });
-    return results;
+    return uniqWith(results, isEqual);
   }
 
   private calculateSchemeResolver(scheme: string): IEditorComponentResolver[] {

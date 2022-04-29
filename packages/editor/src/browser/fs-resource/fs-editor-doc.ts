@@ -5,14 +5,16 @@ import {
   Event,
   IApplicationService,
   FileChangeType,
-  OS,
+  OperatingSystem,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
   PreferenceService,
   getLanguageIdFromMonaco,
   EncodingRegistry,
+  UTF8_with_bom,
+  UTF8,
+  detectEncodingFromBuffer,
 } from '@opensumi/ide-core-browser';
-import { UTF8_with_bom, UTF8, detectEncodingFromBuffer } from '@opensumi/ide-core-common/lib/encoding';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
@@ -93,7 +95,7 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
     if (eol !== 'auto') {
       return eol;
     }
-    return backendOS === OS.Type.Windows ? EOL.CRLF : EOL.LF;
+    return backendOS === OperatingSystem.Windows ? EOL.CRLF : EOL.LF;
   }
 
   async read(uri: URI, options: ReadEncodingOptions): Promise<{ encoding: string; content: string }> {

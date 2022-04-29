@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { DisposableCollection, localize } from '@opensumi/ide-core-browser';
 import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
+import { FILE_EXPLORER_WELCOME_ID } from '@opensumi/ide-file-tree-next';
 import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
@@ -25,7 +26,7 @@ export interface ViewWelcome {
 export type ViewsWelcomeSchema = ViewWelcome[];
 
 export const ViewIdentifierMap: { [key: string]: string } = {
-  explorer: 'file-explorer-next',
+  explorer: FILE_EXPLORER_WELCOME_ID,
   debug: DEBUG_WELCOME_ID,
   scm: 'scm_view',
 };

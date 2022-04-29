@@ -1,4 +1,4 @@
-import { AppConfig, ICredentialsService, ICryptrService } from '@opensumi/ide-core-browser/src';
+import { AppConfig, ICredentialsService, ICryptoService } from '@opensumi/ide-core-browser/src';
 import { Emitter } from '@opensumi/ide-core-common';
 import { MainThreadSecret } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.secret';
 
@@ -33,7 +33,7 @@ describe('MainThreadSecret API Test Suite', () => {
     setPassword: jest.fn(),
     deletePassword: jest.fn(),
   };
-  const mockCryptrService = {
+  const mockCryptoService = {
     decrypt: jest.fn((value) => value),
     encrypt: jest.fn((value) => value),
   };
@@ -55,8 +55,8 @@ describe('MainThreadSecret API Test Suite', () => {
         useValue: mockCredentialsService,
       },
       {
-        token: ICryptrService,
-        useValue: mockCryptrService,
+        token: ICryptoService,
+        useValue: mockCryptoService,
       },
     );
     mainThreadSecret = injector.get(MainThreadSecret, [mockProxy as any]);
@@ -69,13 +69,13 @@ describe('MainThreadSecret API Test Suite', () => {
   it('$setPassword', async () => {
     await mainThreadSecret.$setPassword(extensionId, key, value);
     expect(mockCredentialsService.setPassword).toBeCalled();
-    expect(mockCryptrService.encrypt).toBeCalled();
+    expect(mockCryptoService.encrypt).toBeCalled();
   });
 
   it('$getPassword', async () => {
     await mainThreadSecret.$getPassword(extensionId, key);
     expect(mockCredentialsService.getPassword).toBeCalled();
-    expect(mockCryptrService.decrypt).toBeCalled();
+    expect(mockCryptoService.decrypt).toBeCalled();
   });
 
   it('$deletePassword', async () => {

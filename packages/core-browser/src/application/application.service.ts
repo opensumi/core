@@ -1,5 +1,12 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { OS, IApplicationService, CommonServerPath, ICommonServer, Deferred } from '@opensumi/ide-core-common';
+import {
+  OS,
+  OperatingSystem,
+  IApplicationService,
+  CommonServerPath,
+  ICommonServer,
+  Deferred,
+} from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers';
 
@@ -11,7 +18,7 @@ export class ApplicationService implements IApplicationService {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
-  private _backendOS: OS.Type;
+  private _backendOS: OperatingSystem;
 
   private _initialized = new Deferred<void>();
 

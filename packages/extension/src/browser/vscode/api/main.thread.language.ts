@@ -14,8 +14,8 @@ import {
   MarkerManager,
   REPORT_NAME,
   URI,
+  path,
 } from '@opensumi/ide-core-common';
-import { extname } from '@opensumi/ide-core-common/lib/path';
 import { IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
 import { InlineValuesProviderRegistry } from '@opensumi/ide-debug/lib/browser/editor/inline-values';
 import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
@@ -27,6 +27,7 @@ import {
   LanguageSelector,
 } from '@opensumi/ide-editor/lib/browser';
 import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
+import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -56,7 +57,9 @@ import {
   SerializedLanguageConfiguration,
   WorkspaceSymbolProvider,
   ICallHierarchyItemDto,
+  ITypeHierarchyItemDto,
   CallHierarchyItem,
+  TypeHierarchyItem,
   IWorkspaceEditDto,
   ResourceTextEditDto,
   ResourceFileEditDto,
@@ -69,6 +72,8 @@ import {
   DocumentRangeSemanticTokensProviderImpl,
   DocumentSemanticTokensProvider,
 } from './semantic-tokens/semantic-token-provider';
+
+const { extname } = path;
 
 @Injectable({ multiple: true })
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -89,6 +94,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired(ICallHierarchyService)
   protected readonly callHierarchyService: ICallHierarchyService;
+
+  @Autowired(ITypeHierarchyService)
+  protected readonly typeHierarchyService: ITypeHierarchyService;
 
   @Autowired(IEvaluatableExpressionService)
   protected readonly evaluatableExpressionService: IEvaluatableExpressionService;
@@ -329,7 +337,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
 
     if (DocumentFilter.is(selector)) {
-      return !selector.language || selector.language === languageId;
+      return selector?.language === languageId;
     }
 
     return selector === languageId;
@@ -1343,6 +1351,61 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
     };
   }
+
+  // --- type hierarchy
+  $registerTypeHierarchyProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const provider = this.createTypeHierarchyProvider(handle, languageSelector);
+
+    this.typeHierarchyService.registerTypeHierarchyProvider(selector, provider);
+  }
+
+  private createTypeHierarchyProvider(handle: number, selector: LanguageSelector | undefined) {
+    return {
+      prepareTypeHierarchy: async (document, position, token) => {
+        const items = await this.proxy.$prepareTypeHierarchy(handle, document.uri, position, token);
+        if (!items) {
+          return undefined;
+        }
+        return {
+          dispose: () => {
+            for (const item of items) {
+              this.proxy.$releaseTypeHierarchy(handle, item._sessionId);
+            }
+          },
+          roots: items.map(this.reviveTypeHierarchyItemDto),
+        };
+      },
+
+      provideSupertypes: async (item, token) => {
+        const supertypes = await this.proxy.$provideTypeHierarchySupertypes(
+          handle,
+          item._sessionId,
+          item._itemId,
+          token,
+        );
+        if (!supertypes) {
+          return supertypes;
+        }
+        return supertypes.map(this.reviveTypeHierarchyItemDto);
+      },
+      provideSubtypes: async (item, token) => {
+        const subtypes = await this.proxy.$provideTypeHierarchySubtypes(handle, item._sessionId, item._itemId, token);
+        if (!subtypes) {
+          return subtypes;
+        }
+        return subtypes.map(this.reviveTypeHierarchyItemDto);
+      },
+    };
+  }
+
+  private reviveTypeHierarchyItemDto(data: ITypeHierarchyItemDto | undefined): TypeHierarchyItem {
+    if (data) {
+      data.uri = URI.revive(data.uri);
+    }
+    return data as TypeHierarchyItem;
+  }
+
   // #region Semantic Tokens
   $registerDocumentSemanticTokensProvider(
     handle: number,

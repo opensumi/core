@@ -13,9 +13,6 @@ export class WindowService implements IWindowService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(IExternalUriService)
-  private readonly externalUriService: IExternalUriService;
-
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -29,7 +26,8 @@ export class WindowService implements IWindowService {
       return undefined;
     } else {
       if (options?.external) {
-        url = this.externalUriService.resolveExternalUri(new URI(url)).toString(true);
+        const externalUriService = this.injector.get(IExternalUriService);
+        url = externalUriService.resolveExternalUri(new URI(url)).toString(true);
       }
       const newWindow = window.open(url);
       if (newWindow === null) {

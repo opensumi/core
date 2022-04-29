@@ -1,4 +1,5 @@
-import { IDisposable, IMarkdownString, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
+import { IMarkdownString, IThemeColor, StatusBarHoverCommand } from '@opensumi/ide-core-common';
+import { IDisposable } from '@opensumi/ide-core-common';
 
 import { IMenu } from '../menu/next';
 

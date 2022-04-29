@@ -2,8 +2,17 @@ import fuzzy from 'fuzzy';
 import React from 'react';
 import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
 
+import {
+  DisposableCollection,
+  Emitter,
+  Event,
+  Disposable,
+  CancellationTokenSource,
+  CancellationToken,
+  Throttler,
+} from '@opensumi/ide-utils';
+
 import { ScrollbarsVirtualList } from '../scrollbars';
-import { DisposableCollection, Emitter, Event, Disposable } from '../utils';
 
 import { RenamePromptHandle, PromptHandle } from './prompt';
 import { NewPromptHandle } from './prompt/NewPromptHandle';
@@ -11,7 +20,6 @@ import { TreeNode, CompositeTreeNode, spliceArray } from './tree';
 import { TreeModel } from './tree/model/TreeModel';
 import { INodeRendererProps, NodeRendererWrap, INodeRenderer } from './TreeNodeRendererWrap';
 import { TreeNodeType, TreeNodeEvent } from './types';
-
 
 export type IRecycleTreeAlign = 'smart' | 'start' | 'center' | 'end' | 'auto';
 
@@ -220,7 +228,7 @@ export interface IRecycleTreeHandle {
   onError: Event<IRecycleTreeError>;
 
   /**
-   * 自适应每条 item 的布局（暂时只计算高度）
+   * 自适应每条 item 的布局（暂时只计算高度）
    */
   layoutItem: () => void;
 }
@@ -278,13 +286,18 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private filterFlattenBranchChildrenCache: Map<number, number[]> = new Map();
   private filterWatcherDisposeCollection = new DisposableCollection();
 
-  private batchUpdatePromise: Promise<void> | null = null;
-  private batchUpdateResolver: any;
+  private queueUpdatePromise: Promise<any> | null = null;
+
+  private updateCancelToken: CancellationTokenSource = new CancellationTokenSource();
+  private expandNodeCancelToken: CancellationTokenSource = new CancellationTokenSource();
+
+  private willUpdateTasks = 0;
+
+  private queueUpdateThrottler: Throttler = new Throttler();
 
   // 批量更新Tree节点
-  private batchUpdate = (() => {
-    let lastFrame: number | null;
-    const commitUpdate = () => {
+  private doBatchUpdate = (() => {
+    const commitUpdate = (resolver: any, token: CancellationToken) => {
       // 已经在 componentWillUnMount 中 disposed 了
       if (this.disposables.disposed) {
         return;
@@ -327,8 +340,12 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       // 清理cache，这里可以确保分支已更新完毕
       this.idxToRendererPropsCache.clear();
       // 更新React组件
+      if (token.isCancellationRequested) {
+        resolver();
+        return;
+      }
       this.forceUpdate(() => {
-        this.batchUpdateResolver();
+        resolver();
         // 如果存在过滤条件，同时筛选一下展示节点
         if (this.props.filter && this.props.filterProvider && this.props.filterProvider.filterAlways) {
           this.filterItems(this.props.filter);
@@ -336,23 +353,40 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       });
     };
     return () => {
-      // 如果上次更新队列未完成，直接使用上次更新队列作为最新结果
-      if (!this.batchUpdatePromise) {
-        this.batchUpdatePromise = new Promise((res) => (this.batchUpdateResolver = res));
-        this.batchUpdatePromise.then(() => {
-          this.batchUpdatePromise = null;
-          this.batchUpdateResolver = null;
-          this.onDidUpdateEmitter.fire();
-        });
-        // 更新批量更新返回的promise对象
-        if (lastFrame) {
-          window.cancelAnimationFrame(lastFrame);
+      const doUpdate = (batchUpdatePromise: any, batchUpdateResolver: any) => {
+        const shouldUpdate = !!this.willUpdateTasks;
+        this.willUpdateTasks = 0;
+        if (!shouldUpdate) {
+          batchUpdateResolver.resolve();
+        } else {
+          this.updateCancelToken.cancel();
+          this.updateCancelToken = new CancellationTokenSource();
+          const token = this.updateCancelToken.token;
+          requestAnimationFrame(() => {
+            if (token.isCancellationRequested) {
+              batchUpdateResolver();
+              return;
+            }
+            commitUpdate(batchUpdateResolver, token);
+          });
         }
-        lastFrame = requestAnimationFrame(commitUpdate.bind(this));
-      }
-      return this.batchUpdatePromise;
+        return batchUpdatePromise;
+      };
+      let batchUpdateResolver;
+      const batchUpdatePromise = new Promise<void>((res) => (batchUpdateResolver = res));
+      batchUpdatePromise.then(() => {
+        this.onDidUpdateEmitter.fire();
+      });
+      doUpdate(batchUpdatePromise, batchUpdateResolver);
+      return batchUpdatePromise;
     };
   })();
+
+  private batchUpdate = () => {
+    this.willUpdateTasks++;
+    this.queueUpdatePromise = this.queueUpdateThrottler.queue(this.doBatchUpdate);
+    return this.queueUpdatePromise;
+  };
 
   private getNewPromptInsertIndex(startIndex: number, parent: CompositeTreeNode) {
     const { root } = this.props.model;
@@ -391,7 +425,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       this.disposables.dispose();
       const { model } = this.props;
       this.listRef.current?.scrollTo(model.state.scrollOffset);
-      this.disposables.push(model.onChange(this.batchUpdate));
+      this.disposables.push(model.onChange(this.batchUpdate.bind(this)));
       this.disposables.push(
         model.state.onDidLoadState(() => {
           this.listRef.current?.scrollTo(model.state.scrollOffset);
@@ -484,11 +518,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { root } = this.props.model;
     const directory =
       typeof pathOrCompositeTreeNode === 'string'
-        ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
-        : await root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
-
-    if (directory && CompositeTreeNode.is(directory)) {
-      return (directory as CompositeTreeNode).setExpanded(true);
+        ? root.getTreeNodeByPath(pathOrCompositeTreeNode)
+        : pathOrCompositeTreeNode;
+    if (this.expandNodeCancelToken.token.isCancellationRequested) {
+      this.expandNodeCancelToken = new CancellationTokenSource();
+    }
+    if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
+      return (directory as CompositeTreeNode).setExpanded(false, false, true, this.expandNodeCancelToken.token);
     }
   };
 
@@ -496,10 +532,10 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const { root } = this.props.model;
     const directory =
       typeof pathOrCompositeTreeNode === 'string'
-        ? ((await root.getTreeNodeByPath(pathOrCompositeTreeNode)) as CompositeTreeNode)
-        : root.getTreeNodeByPath(pathOrCompositeTreeNode.path);
-
-    if (directory && CompositeTreeNode.is(directory)) {
+        ? root.getTreeNodeByPath(pathOrCompositeTreeNode)
+        : pathOrCompositeTreeNode;
+    if (directory && CompositeTreeNode.is(directory) && !(directory as CompositeTreeNode).disposed) {
+      this.expandNodeCancelToken.cancel();
       return (directory as CompositeTreeNode).setCollapsed();
     }
   };
@@ -517,17 +553,16 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     this._isEnsuring = true;
     const { root } = this.props.model;
     const node =
-      typeof pathOrTreeNode === 'string' ? await root.forceLoadTreeNodeAtPath(pathOrTreeNode) : pathOrTreeNode;
-    if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
-      // 异常
-      return;
+      typeof pathOrTreeNode === 'string'
+        ? root.getTreeNodeByPath(pathOrTreeNode) || (await root.loadTreeNodeByPath(pathOrTreeNode))
+        : pathOrTreeNode;
+    if (node && !root.isItemVisibleAtSurface(node as TreeNode)) {
+      await root.loadTreeNodeByPath(node.path);
     }
-    let parent = node.parent;
-    while (parent) {
-      if (!(parent as CompositeTreeNode).expanded) {
-        await (parent as CompositeTreeNode).setExpanded(true);
-      }
-      parent = parent.parent;
+    if (!TreeNode.is(node) || CompositeTreeNode.isRoot(node)) {
+      this._isEnsuring = false;
+      // 节点展开操作被取消
+      return;
     }
     if (untilStable) {
       this.tryScrollIntoViewWhileStable(node as TreeNode, align);
@@ -557,7 +592,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return;
     }
     Event.once(this.props.model.onChange)(async () => {
-      await this.batchUpdatePromise;
+      await this.queueUpdatePromise;
       if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
         this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
       } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
@@ -573,7 +608,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   public componentDidMount() {
     const { model, onReady } = this.props;
     this.listRef.current?.scrollTo(model.state.scrollOffset);
-    this.disposables.push(model.onChange(this.batchUpdate));
+    this.disposables.push(model.onChange(this.batchUpdate.bind(this)));
     this.disposables.push(
       model.state.onDidLoadState(() => {
         this.listRef.current?.scrollTo(model.state.scrollOffset);

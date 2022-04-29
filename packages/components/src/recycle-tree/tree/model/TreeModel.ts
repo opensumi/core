@@ -1,4 +1,5 @@
-import { Event, Emitter } from '../../../utils';
+import { Event, Emitter } from '@opensumi/ide-utils';
+
 import { ICompositeTreeNode, TreeNodeEvent } from '../../types';
 import { CompositeTreeNode, TreeNode } from '../TreeNode';
 
@@ -57,7 +58,7 @@ export class TreeModel {
    *  - 临时的输入框节点
    *
    */
-  public async loadTreeState(state: ISerializableState | string) {
+  public loadTreeState(state: ISerializableState | string) {
     if (typeof state === 'string') {
       state = JSON.parse(state);
     }

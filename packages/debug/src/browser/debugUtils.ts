@@ -1,6 +1,8 @@
-import { equalsIgnoreCase } from '@opensumi/ide-core-browser';
+import { strings } from '@opensumi/ide-core-browser';
 
 import { DebugConfiguration } from '../common';
+
+const { equalsIgnoreCase } = strings;
 
 export function isExtensionHostDebugging(config: DebugConfiguration) {
   return (

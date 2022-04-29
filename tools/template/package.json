@@ -9,7 +9,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.workspace-edit.json"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.TemplateUpperName.json"
   },
   "repository": {
     "type": "git",

@@ -6,6 +6,7 @@ import {
   getExternalIcon,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { Disposable, URI } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
@@ -14,11 +15,9 @@ import {
   Command,
   PreferenceSchema,
   localize,
-  URI,
   PreferenceScope,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { Disposable } from '@opensumi/ide-core-common/lib/disposable';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@opensumi/ide-editor/lib/common';
 import { IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 
@@ -40,7 +39,6 @@ import { DirtyDiffWorkbenchController } from './dirty-diff';
 import { SCMBadgeController, SCMStatusBarController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { SCMViewContainer } from './scm-view-container';
-
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',

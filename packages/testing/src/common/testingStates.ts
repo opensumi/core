@@ -5,9 +5,11 @@
 
 import { marked } from 'marked';
 
-import { count } from '@opensumi/ide-core-common';
+import { strings } from '@opensumi/ide-core-common';
 
 import { ITestErrorMessage, TestResultState } from './testCollection';
+
+const { count } = strings;
 
 export interface TreeStateNode {
   statusNode: true;

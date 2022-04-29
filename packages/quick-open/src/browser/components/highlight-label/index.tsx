@@ -1,7 +1,9 @@
 import React from 'react';
 
 import { Highlight } from '@opensumi/ide-core-browser/lib/quick-open';
-import { escape } from '@opensumi/ide-core-common';
+import { strings } from '@opensumi/ide-core-common';
+
+const { escape } = strings;
 
 export interface HighlightLabelProp {
   text?: string;

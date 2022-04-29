@@ -1,12 +1,12 @@
 // eslint-disable-next-line no-console
 console.time('Render');
-import { generate } from 'shortid';
 
 import { Injector } from '@opensumi/di';
 import { ClientApp, IClientAppOpts } from '@opensumi/ide-core-browser';
 import { ToolbarActionBasedLayout } from '@opensumi/ide-core-browser/lib/components';
+import { uuid } from '@opensumi/ide-core-common';
 
-const CLIENT_ID = 'W_' + generate();
+const CLIENT_ID = 'W_' + uuid();
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
   opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;

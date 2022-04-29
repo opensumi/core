@@ -7,31 +7,29 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import {
   Key,
-  URI,
   Schemas,
-  IDisposable,
   CommandService,
   COMMON_COMMANDS,
   RecentStorage,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
+import {
+  isUndefined,
+  strings,
+  parseGlob,
+  ParsedPattern,
+  Emitter,
+  IDisposable,
+  URI,
+  arrays,
+} from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
-import {
-  Emitter,
-  IEventBus,
-  trim,
-  isUndefined,
-  localize,
-  IReporterService,
-  IReporterTimer,
-  REPORT_NAME,
-} from '@opensumi/ide-core-common';
-import * as arrays from '@opensumi/ide-core-common/lib/arrays';
+import { IEventBus, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
+  ICodeEditor,
   IEditorDocumentModelService,
   IEditorDocumentModel,
   EditorDocumentModelContentChangedEvent,
@@ -68,7 +66,6 @@ export interface SearchAllFromDocModelOptions {
   searchValue: string;
   searchOptions: ContentSearchOptions;
   documentModelManager: IEditorDocumentModelService;
-  workbenchEditorService: WorkbenchEditorService;
   rootDirs: string[];
 }
 
@@ -129,12 +126,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
   private readonly searchContextKey: SearchContextKey;
 
   @Autowired(IReporterService)
-  reporterService: IReporterService;
+  private reporterService: IReporterService;
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
-  workbenchEditorService: WorkbenchEditorService;
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   @observable
   replaceValue = '';
@@ -191,13 +189,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
   private reporter: { timer: IReporterTimer; value: string } | null = null;
 
   searchDebounce: () => void;
-  searchOnType: boolean;
+
+  private searchOnType: boolean;
 
   constructor() {
     this.setDefaultIncludeValue();
     this.recoverUIState();
 
     this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
+
     this.searchDebounce = debounce(
       () => {
         this.search();
@@ -209,9 +209,28 @@ export class ContentSearchClientService implements IContentSearchClientService {
     );
   }
 
-  search = (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
-    const state = insertUIState || this.UIState;
+  searchOnTyping() {
+    if (this.searchOnType) {
+      this.searchDebounce();
+    }
+  }
+
+  search = (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
+    if (e && e.keyCode !== Key.ENTER.keyCode) {
+      return;
+    }
+    this.cleanOldSearch();
     const value = this.searchValue;
+    if (!value) {
+      return;
+    }
+
+    const state = insertUIState || this.UIState;
+
+    this.doSearch(value, state);
+  };
+
+  doSearch(value: string, state: IUIState) {
     const searchOptions: ContentSearchOptions = {
       maxResults: 2000,
       matchCase: state.isMatchCase,
@@ -225,17 +244,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
 
-    if (e && (e as any).keyCode !== undefined && Key.ENTER.keyCode !== (e as any).keyCode) {
-      return;
-    }
-    if (!value) {
-      return this.cleanOldSearch();
-    }
-
-    if (!this.workbenchEditorService) {
-      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
-    }
-
     // 记录搜索历史
     this.searchHistory.setSearchHistory(value);
 
@@ -244,12 +252,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.isExpandAllResult = true;
 
     // Stop old search
-    if (this.currentSearchId) {
+    this.isSearchDoing = true;
+    if (this.currentSearchId > -1) {
       this.contentSearchServer.cancel(this.currentSearchId);
-      this.cleanOldSearch();
       this.currentSearchId = this.currentSearchId + 1;
       this.reporter = null;
     }
+
     let rootDirs: string[] = [];
     this.workspaceService.tryGetRoots().forEach((stat) => {
       const uri = new URI(stat.uri);
@@ -270,8 +279,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
       const openResources = arrays.coalesce(
         arrays.flatten(this.workbenchEditorService.editorGroups.map((group) => group.resources)),
       );
-      const includeMatcherList = searchOptions.include?.map((str) => parse(anchorGlob(str))) || [];
-      const excludeMatcherList = searchOptions.exclude?.map((str) => parse(anchorGlob(str))) || [];
+      const includeMatcherList = searchOptions.include?.map((str) => parseGlob(anchorGlob(str))) || [];
+      const excludeMatcherList = searchOptions.exclude?.map((str) => parseGlob(anchorGlob(str))) || [];
       const openResourcesInFilter = openResources.filter((resource) => {
         const uriString = resource.uri.toString();
         if (excludeMatcherList.length > 0 && excludeMatcherList.some((matcher) => matcher(uriString))) {
@@ -308,7 +317,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
       searchValue: value,
       searchOptions,
       documentModelManager: this.documentModelManager,
-      workbenchEditorService: this.workbenchEditorService,
       rootDirs,
     });
 
@@ -327,7 +335,42 @@ export class ContentSearchClientService implements IContentSearchClientService {
     transaction(() => {
       this.watchDocModelContentChange(searchOptions, rootDirs);
     });
-  };
+  }
+
+  // #region 操作对当前打开的文档的搜索内容的 selection
+  private EMPTY_SELECTION = new monaco.Range(0, 0, 0, 0);
+  private lastEditor?: ICodeEditor;
+  private lastSelection?: monaco.Range;
+  setEditorSelections(editor: ICodeEditor, selections: monaco.Range) {
+    // 清除上一个 editor 的 selection
+    this.lastEditor?.setSelection(this.EMPTY_SELECTION);
+
+    this.lastEditor = editor;
+    this.lastSelection = selections;
+    this.applyEditorSelections();
+  }
+  /**
+   * 会在 tabbar 被选中时调用
+   */
+  applyEditorSelections() {
+    if (this.lastEditor && this.lastSelection) {
+      this.lastEditor.setSelection(this.lastSelection);
+    }
+  }
+  /**
+   * 会在 tabbar blur 和清除搜索结果时调用
+   * @param clearEditor 是否清除上次选中的 editor（在重置搜索内容时调用）
+   */
+  clearEditorSelections(clearEditor = false) {
+    if (this.lastEditor) {
+      this.lastEditor.setSelection(this.EMPTY_SELECTION);
+    }
+    if (clearEditor) {
+      this.lastSelection = undefined;
+      this.lastEditor = undefined;
+    }
+  }
+  // #endregion
 
   /**
    * 监听正在编辑文件变化，并同步结果
@@ -388,6 +431,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.docModelSearchedList = [];
     this.searchResults.clear();
     this.resultTotal = resultTotalDefaultValue;
+    this.clearEditorSelections(true);
   }
 
   /**
@@ -465,7 +509,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
       if (this.searchValue !== '') {
         this.searchInputEl.current.select();
       }
+      this.applyEditorSelections();
     });
+  }
+
+  blur() {
+    this.clearEditorSelections();
   }
 
   refresh() {
@@ -508,9 +557,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.searchValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
     this.isShowValidateMessage = false;
-    if (this.searchOnType) {
-      this.searchDebounce();
-    }
+    this.searchOnTyping();
   };
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -521,18 +568,16 @@ export class ContentSearchClientService implements IContentSearchClientService {
   onSearchExcludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.excludeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
+    this.searchOnTyping();
   };
 
   onSearchIncludeChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.includeValue = e.currentTarget.value || '';
     this.titleStateEmitter.fire();
+    this.searchOnTyping();
   };
 
   setSearchValueFromActivatedEditor = () => {
-    if (!this.workbenchEditorService) {
-      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
-    }
-
     const currentEditor = this.workbenchEditorService.currentEditor;
     if (currentEditor) {
       const selections = currentEditor.getSelections();
@@ -542,7 +587,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
           new monaco.Range(selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn),
         );
 
-        const searchText = trim(selectionText) === '' ? this.searchValue : selectionText;
+        const searchText = strings.trim(selectionText) === '' ? this.searchValue : selectionText;
         this.searchValue = searchText;
       }
     }
@@ -557,7 +602,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       (v) => uiState[v] !== undefined && uiState[v] !== this.UIState[v],
     );
 
-  updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent | React.MouseEvent) => {
+  updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent) => {
     if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
       this.searchContextKey.searchInputFocused.set(obj.isSearchFocus);
       // 搜索框状态发现变化，重置搜索历史的当前位置
@@ -631,7 +676,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   };
 
   dispose() {
+    this.blur();
     this.titleStateEmitter.dispose();
+    this.eventBusDisposer?.dispose();
   }
 
   private async recoverUIState() {
@@ -664,7 +711,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
         return includes;
       }, [])
       .join(',');
-    // 如有 inlcude 填充，则显示搜索条件
+    // 如有 include 填充，则显示搜索条件
     if (this.includeValue) {
       this.updateUIState({ isDetailOpen: true });
     }
@@ -705,7 +752,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     docModel: IEditorDocumentModel,
     searchValue: string,
     rootDirs: string[],
-    codeEditor?,
+    codeEditor?: ICodeEditor,
   ): {
     result: ContentSearchResult[];
     searchedList: string[];
@@ -718,7 +765,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (searchOptions.include && searchOptions.include.length > 0) {
       // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
-        matcherList.push(parse(anchorGlob(str)));
+        matcherList.push(parseGlob(anchorGlob(str)));
       });
       const isInclude = matcherList.some((matcher) => matcher(uriString));
       matcherList = [];
@@ -733,7 +780,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (searchOptions.exclude && searchOptions.exclude.length > 0) {
       // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
-        matcherList.push(parse(anchorGlob(str)));
+        matcherList.push(parseGlob(anchorGlob(str)));
       });
 
       const isExclude = matcherList.some((matcher) => matcher(uriString));
@@ -759,7 +806,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     findResults.forEach((find: monaco.editor.FindMatch, index) => {
       if (index === 0 && codeEditor) {
         // 给打开文件添加选中状态
-        codeEditor.setSelection(find.range);
+        this.setEditorSelections(codeEditor, find.range);
       }
       result.push(
         cutShortSearchResult({
@@ -785,14 +832,12 @@ export class ContentSearchClientService implements IContentSearchClientService {
     const searchValue = options.searchValue;
     const searchOptions = options.searchOptions;
     const documentModelManager = options.documentModelManager;
-    const workbenchEditorService = options.workbenchEditorService;
     const rootDirs = options.rootDirs;
 
     let result: ContentSearchResult[] = [];
     let searchedList: string[] = [];
     const docModels = documentModelManager.getAllModels();
-    const group = workbenchEditorService.currentEditorGroup;
-    const resources = group.resources;
+    const group = this.workbenchEditorService.currentEditorGroup;
 
     const filterFileWithGlobRelativePath = new FilterFileWithGlobRelativePath(rootDirs, searchOptions.include || []);
 

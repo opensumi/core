@@ -4,7 +4,7 @@ import {
   IContextKeyService,
   isLinux,
   isWindows,
-  OS,
+  OperatingSystem,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
@@ -128,7 +128,7 @@ describe('FileTreeContribution', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OS.Type.Windows : isLinux ? OS.Type.Linux : OS.Type.OSX,
+          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.Macintosh,
         },
       },
     );
@@ -142,7 +142,6 @@ describe('FileTreeContribution', () => {
     it('should onStart be work', async () => {
       const contribution = mockInjector.get(FileTreeContribution);
       await contribution.onStart();
-      expect(mockFileTreeService.init).toBeCalledTimes(1);
       expect(mockMainLayoutService.collectViewComponent).toBeCalledTimes(1);
       await onWorkspaceLocationChangedEmitter.fireAndAwait(undefined);
       const handler = tabbarHandlerMap.get(ExplorerContainerId);

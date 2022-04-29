@@ -2,7 +2,7 @@ import path from 'path';
 
 import type vscode from 'vscode';
 
-import { Uri } from '@opensumi/ide-core-common/lib/uri';
+import { Uri } from '@opensumi/ide-core-common';
 
 import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
 import { IExtHostTerminal } from '../../../common/vscode';

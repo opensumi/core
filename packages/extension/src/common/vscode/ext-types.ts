@@ -1,13 +1,14 @@
 import type vscode from 'vscode';
 
 import { Uri, UriUtils } from '@opensumi/ide-core-common';
-import { startsWithIgnoreCase, uuid, es5ClassCompat, isStringArray } from '@opensumi/ide-core-common';
+import { strings, uuid, es5ClassCompat, isStringArray } from '@opensumi/ide-core-common';
 
 import { FileOperationOptions } from './model.api';
 import { escapeCodicons } from './models/html-content';
 import { illegalArgument } from './utils';
 
 export { UriComponents } from './models/uri';
+const { startsWithIgnoreCase } = strings;
 
 // vscode 中的 uri 存在 static 方法。。内容是 vscode-uri 的 Utils 中的内容...
 Object.keys(UriUtils).forEach((funcName) => {
@@ -415,25 +416,54 @@ export enum EndOfLine {
 
 @es5ClassCompat
 export class RelativePattern {
-  base: string;
+  pattern: string;
 
-  constructor(base: vscode.WorkspaceFolder | string, public pattern: string) {
+  private _base!: string;
+  get base(): string {
+    return this._base;
+  }
+  set base(base: string) {
+    this._base = base;
+    this._baseUri = Uri.file(base);
+  }
+
+  private _baseUri!: Uri;
+  get baseUri(): Uri {
+    return this._baseUri;
+  }
+  set baseUri(baseUri: Uri) {
+    this._baseUri = baseUri;
+    this._base = baseUri.fsPath;
+  }
+
+  constructor(base: vscode.WorkspaceFolder | Uri | string, pattern: string) {
     if (typeof base !== 'string') {
-      if (!base || !Uri.isUri(base.uri)) {
-        throw new Error('illegalArgument: base');
+      if (!base || (!Uri.isUri(base) && !Uri.isUri(base.uri))) {
+        throw illegalArgument('base');
       }
     }
 
     if (typeof pattern !== 'string') {
-      throw new Error('illegalArgument: pattern');
+      throw illegalArgument('pattern');
     }
 
-    this.base = typeof base === 'string' ? base : base.uri.fsPath;
+    if (typeof base === 'string') {
+      this.baseUri = Uri.file(base);
+    } else if (Uri.isUri(base)) {
+      this.baseUri = base;
+    } else {
+      this.baseUri = base.uri;
+    }
+
+    this.pattern = pattern;
   }
 
-  pathToRelative(from: string, to: string): string {
-    // return relative(from, to);
-    return 'not implement!';
+  toJSON() {
+    return {
+      pattern: this.pattern,
+      base: this.base,
+      baseUri: this.baseUri.toJSON(),
+    };
   }
 }
 
@@ -2684,6 +2714,29 @@ export class CallHierarchyOutgoingCall {
   constructor(item: vscode.CallHierarchyItem, fromRanges: vscode.Range[]) {
     this.fromRanges = fromRanges;
     this.to = item;
+  }
+}
+
+@es5ClassCompat
+export class TypeHierarchyItem {
+  _sessionId?: string;
+  _itemId?: string;
+
+  kind: SymbolKind;
+  tags?: SymbolTag[];
+  name: string;
+  detail?: string;
+  uri: Uri;
+  range: Range;
+  selectionRange: Range;
+
+  constructor(kind: SymbolKind, name: string, detail: string, uri: Uri, range: Range, selectionRange: Range) {
+    this.kind = kind;
+    this.name = name;
+    this.detail = detail;
+    this.uri = uri;
+    this.range = range;
+    this.selectionRange = selectionRange;
   }
 }
 

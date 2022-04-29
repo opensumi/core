@@ -1,7 +1,7 @@
 import { Autowired } from '@opensumi/di';
+import { Disposable } from '@opensumi/ide-utils';
 
 import { ConstructorOf } from '../declare';
-import { Disposable } from '../disposable';
 
 import { BasicEvent } from './basic-event';
 import { IEventBus } from './event-bus-types';

@@ -1,10 +1,8 @@
 import { observer, useComputed } from 'mobx-react-lite';
 import React from 'react';
 
-import { ViewState, useInjectable } from '@opensumi/ide-core-browser';
+import { ViewState, useInjectable, IMatch } from '@opensumi/ide-core-browser';
 import { DeprecatedRecycleTree, TreeNode } from '@opensumi/ide-core-browser/lib/components';
-import { IMatch } from '@opensumi/ide-core-common/lib/filters';
-
 
 import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../common';
 
@@ -13,7 +11,6 @@ import { MarkerService } from './markers-service';
 import { MarkerViewModel } from './markers.model';
 import styles from './markers.module.less';
 import Messages from './messages';
-
 
 const TAG_NONE = '';
 const EMPTY_FOLDING: string[] = [];

@@ -10,9 +10,11 @@ import writeFileAtomic from 'write-file-atomic';
 
 import { Injectable } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { isLinux } from '@opensumi/ide-core-common/lib/platform';
-import { ParsedPattern, parse } from '@opensumi/ide-core-common/lib/utils/glob';
+import { getDebugLogger } from '@opensumi/ide-core-node';
 import {
+  ParsedPattern,
+  parseGlob,
+  isLinux,
   UriComponents,
   Uri,
   Event,
@@ -22,7 +24,6 @@ import {
   isUndefined,
   DisposableCollection,
   isWindows,
-  getDebugLogger,
   FileUri,
 } from '@opensumi/ide-core-node';
 
@@ -41,7 +42,6 @@ import {
 } from '../common/';
 
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
-
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -95,29 +95,20 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   /**
    * @param {Uri} uri
    * @param {{ recursive: boolean; excludes: string[] }} [options]  // 还不支持 recursive 参数
-   * @returns {number}
    * @memberof DiskFileSystemProvider
    */
-  watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }) {
-    let watcherId;
+  async watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }): Promise<number> {
     const _uri = Uri.revive(uri);
-    const watchPromise = this.watcherServer
-      .watchFileChanges(_uri.toString(), {
-        excludes: options && options.excludes ? options.excludes : [],
-      })
-      .then((id) => (watcherId = id));
+    const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
+      excludes: options?.excludes ?? [],
+    });
     const disposable = {
       dispose: () => {
-        if (!watcherId) {
-          return watchPromise.then((id) => {
-            this.watcherServer.unwatchFileChanges(id);
-          });
-        }
-        this.watcherServer.unwatchFileChanges(watcherId);
+        this.watcherServer.unwatchFileChanges(id);
       },
     };
-    this.watcherDisposerMap.set(watcherId, disposable);
-    return watcherId;
+    this.watcherDisposerMap.set(id, disposable);
+    return id;
   }
 
   unwatch(watcherId: number) {
@@ -323,7 +314,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
     getDebugLogger().info('set watch file exclude:', watcherExcludes);
     this.watchFileExcludes = watcherExcludes;
-    this.watchFileExcludesMatcherList = watcherExcludes.map((pattern) => parse(pattern));
+    this.watchFileExcludesMatcherList = watcherExcludes.map((pattern) => parseGlob(pattern));
   }
 
   getWatchFileExcludes() {

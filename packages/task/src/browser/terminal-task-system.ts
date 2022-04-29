@@ -7,14 +7,14 @@ import {
   Deferred,
   ProblemMatcher,
   isString,
-  deepClone,
-  removeAnsiEscapeCodes,
+  strings,
   Emitter,
   DisposableCollection,
   ProblemMatch,
   ProblemMatchData,
+  objects,
+  path,
 } from '@opensumi/ide-core-common';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import {
   TerminalOptions,
   ITerminalController,
@@ -44,6 +44,11 @@ import {
 import { CustomTask } from '../common/task';
 
 import { ProblemCollector } from './problem-collector';
+
+
+const { deepClone } = objects;
+const { removeAnsiEscapeCodes } = strings;
+const { Path } = path;
 
 enum TaskStatus {
   PROCESS_INIT,

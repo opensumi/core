@@ -4,7 +4,8 @@ import {
   IDisposable,
   IPosition,
   isFunction,
-  isNonEmptyArray,
+  arrays,
+  RefCountedDisposable,
   onUnexpectedExternalError,
   URI,
   Uri,
@@ -21,28 +22,14 @@ import { ITextModel, Position } from '@opensumi/ide-monaco/lib/browser/monaco-ap
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
 
+const { isNonEmptyArray } = arrays;
+
 declare type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
 /* ---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/tree/main/src/vs/workbench/contrib/callHierarchy/common/callHierarchy.ts
-
-class RefCountedDisposabled {
-  constructor(private readonly _disposable: IDisposable, private _counter = 1) {}
-
-  acquire() {
-    this._counter++;
-    return this;
-  }
-
-  release() {
-    if (--this._counter === 0) {
-      this._disposable.dispose();
-    }
-    return this;
-  }
-}
 
 export class CallHierarchyModel {
   static async create(
@@ -62,7 +49,7 @@ export class CallHierarchyModel {
       session.roots.reduce((p, c) => p + c._sessionId, ''),
       provider,
       session.roots,
-      new RefCountedDisposabled(session),
+      new RefCountedDisposable(session),
     );
   }
 
@@ -72,7 +59,7 @@ export class CallHierarchyModel {
     readonly id: string,
     readonly provider: CallHierarchyProvider,
     readonly roots: CallHierarchyItem[],
-    readonly ref: RefCountedDisposabled,
+    readonly ref: RefCountedDisposable,
   ) {
     this.root = roots[0];
   }

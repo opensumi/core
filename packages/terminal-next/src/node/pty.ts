@@ -13,9 +13,7 @@ import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import * as path from '@opensumi/ide-core-common/lib/path';
-import { isWindows } from '@opensumi/ide-core-common/lib/platform';
-import { Disposable, Emitter, INodeLogger } from '@opensumi/ide-core-node';
+import { Disposable, Emitter, INodeLogger, isWindows, path } from '@opensumi/ide-core-node';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';

@@ -20,15 +20,22 @@ import type {
 } from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter, Event, getDebugLogger } from '@opensumi/ide-core-common';
-import { mapFind } from '@opensumi/ide-core-common/lib/arrays';
-import { CancellationToken, CancellationTokenSource } from '@opensumi/ide-core-common/lib/cancellation';
-import { Disposable, DisposableStore, toDisposable } from '@opensumi/ide-core-common/lib/disposable';
-import { once } from '@opensumi/ide-core-common/lib/functional';
-import { hash } from '@opensumi/ide-core-common/lib/utils/hash';
-import { deepFreeze } from '@opensumi/ide-core-common/lib/utils/objects';
-import { isDefined } from '@opensumi/ide-core-common/lib/utils/types';
-import { uuid } from '@opensumi/ide-core-common/lib/uuid';
+import { getDebugLogger } from '@opensumi/ide-core-common';
+import {
+  CancellationToken,
+  CancellationTokenSource,
+  uuid,
+  isDefined,
+  objects,
+  hash,
+  once,
+  Disposable,
+  DisposableStore,
+  toDisposable,
+  Emitter,
+  Event,
+  arrays,
+} from '@opensumi/ide-core-common';
 import {
   AbstractIncrementalTestCollection,
   CoverageDetails,
@@ -142,7 +149,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
   $publishTestResults(results: ISerializedTestResults[]): void {
     this.results = Object.freeze(
       results
-        .map((r) => deepFreeze(Convert.TestResults.to(r)))
+        .map((r) => objects.deepFreeze(Convert.TestResults.to(r)))
         .concat(this.results)
         .sort((a, b) => b.completedAt - a.completedAt)
         .slice(0, 32),
@@ -160,7 +167,9 @@ export class ExtHostTestsImpl implements IExtHostTests {
   }
 
   $provideFileCoverage(runId: string, taskId: string, token: CancellationToken): Promise<IFileCoverage[]> {
-    const coverage = mapFind(this.runTracker.trackers, (t) => (t.id === runId ? t.getCoverage(taskId) : undefined));
+    const coverage = arrays.mapFind(this.runTracker.trackers, (t) =>
+      t.id === runId ? t.getCoverage(taskId) : undefined,
+    );
     return coverage?.provideFileCoverage(token) ?? Promise.resolve([]);
   }
 
@@ -170,7 +179,9 @@ export class ExtHostTestsImpl implements IExtHostTests {
     fileIndex: number,
     token: CancellationToken,
   ): Promise<CoverageDetails[]> {
-    const coverage = mapFind(this.runTracker.trackers, (t) => (t.id === runId ? t.getCoverage(taskId) : undefined));
+    const coverage = arrays.mapFind(this.runTracker.trackers, (t) =>
+      t.id === runId ? t.getCoverage(taskId) : undefined,
+    );
     return coverage?.resolveFileCoverage(fileIndex, token) ?? Promise.resolve([]);
   }
 

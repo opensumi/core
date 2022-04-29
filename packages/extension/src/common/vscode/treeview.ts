@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 
 import { Event, IDisposable, IAccessibilityInformation } from '@opensumi/ide-core-common';
-import type { CancellationToken } from '@opensumi/ide-core-common/lib/cancellation';
+import type { CancellationToken } from '@opensumi/ide-core-common';
 import { ThemeType } from '@opensumi/ide-theme';
 
 import { TreeItemCollapsibleState, ThemeIcon } from './ext-types';

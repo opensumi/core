@@ -18,11 +18,9 @@
 import { Diagnostic } from 'vscode';
 
 import { Injectable } from '@opensumi/di';
+import { isArray, isString, IDisposable, Disposable, DisposableCollection, URI } from '@opensumi/ide-utils';
 
-import { IDisposable, Disposable, DisposableCollection } from './disposable';
 import { ProblemMatcher } from './problem-matcher';
-import { URI } from './uri';
-import { isArray, isString } from './utils/types';
 
 export enum ApplyToKind {
   allDocuments,

@@ -3,8 +3,8 @@ import os from 'os';
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
+import { PtyService } from '../../lib/node/pty';
 import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
-import { IPtyProcess } from '../../src/common/pty';
 import { TerminalNodePtyModule } from '../../src/node';
 
 describe('TerminalServiceClientImpl', () => {
@@ -55,10 +55,10 @@ describe('TerminalServiceClientImpl', () => {
       name: 'test',
       executable: shellPath,
     });
-    const terminal: IPtyProcess = (terminalService as any).getTerminal(mockId);
+    const terminal: PtyService = (terminalService as any).getTerminal(mockId);
     let receiveData = '';
 
-    terminal.on('data', (data: any) => {
+    terminal.onData((data: any) => {
       receiveData = receiveData + data;
     });
 
@@ -74,12 +74,9 @@ describe('TerminalServiceClientImpl', () => {
     expect(typeof terminalServiceClient.getProcessId(mockId)).toEqual('number');
     expect(typeof terminalServiceClient.getShellName(mockId)).toEqual('string');
     expect(receiveData.indexOf('message test') > -1).toEqual(true);
-
-    expect(terminal.rows).toEqual(400);
-    expect(terminal.cols).toEqual(400);
   });
 
-  it.only('Should be disposed.', async () => {
+  it('Should be disposed.', async () => {
     (process as any).env.IS_DEV = 0;
     const mockId = '2';
     await terminalServiceClient.create2(mockId, 200, 200, {

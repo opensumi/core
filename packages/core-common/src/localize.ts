@@ -1,5 +1,6 @@
-import { CaseInsensitiveMap } from './map';
-import { format, mnemonicButtonLabel } from './utils/strings';
+import { strings, CaseInsensitiveMap } from '@opensumi/ide-utils';
+
+const { format, mnemonicButtonLabel } = strings;
 
 export type ILocalizationKey = string; // ts不支持symbol作为key
 

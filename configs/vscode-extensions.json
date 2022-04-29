@@ -135,10 +135,6 @@
         "version": "1.55.2"
       },
       {
-        "name": "markdown-basics",
-        "version": "1.55.2"
-      },
-      {
         "name": "merge-conflict",
         "version": "1.55.2"
       },
@@ -269,6 +265,16 @@
       {
         "name": "yaml",
         "version": "1.55.2"
+      }
+    ],
+    "ms-vscode": [
+      {
+        "name": "node-debug",
+        "version": "1.38.4"
+      },
+      {
+        "name": "node-debug2",
+        "version": "1.42.7"
       }
     ],
     "vscode-icons-team": [

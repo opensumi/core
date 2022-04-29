@@ -7,8 +7,7 @@ import {
   IMenu,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { Disposable, IDisposable, IRange, URI, uuid } from '@opensumi/ide-core-common';
-import { removeAnsiEscapeCodes } from '@opensumi/ide-core-common';
+import { Disposable, IDisposable, IRange, URI, uuid, strings } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -22,7 +21,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { TestServiceToken } from '../common';
 import {
   IncrementalTestCollectionItem,
-  InternalTestItem,
   IRichLocation,
   ITestMessage,
   TestMessageType,
@@ -48,6 +46,7 @@ import { TestingPeekOpenerServiceImpl } from './outputPeek/test-peek-opener.serv
 import { ResultChangeEvent, TestResultServiceImpl } from './test.result.service';
 import { TestServiceImpl } from './test.service';
 
+const { removeAnsiEscapeCodes } = strings;
 
 interface ITestDecoration extends IDisposable {
   id: string;

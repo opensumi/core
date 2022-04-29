@@ -1,8 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { Disposable, IDisposable, MaybePromise } from '@opensumi/ide-utils';
 
-import { MaybePromise } from './async';
 import { ContributionProvider } from './contribution-provider';
-import { Disposable, IDisposable } from './disposable';
 import { replaceLocalizePlaceholder } from './localize';
 import { getDebugLogger } from './log';
 import { IExtensionInfo } from './types';

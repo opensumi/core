@@ -59,7 +59,8 @@ describe('external preference tests', () => {
     registerLocalStorageProvider('general.language');
 
     getExternalPreferenceProvider('general.theme')!.set('testTheme', PreferenceScope.Workspace);
-    expect(getPreferenceThemeId()).toBe(undefined);
+    expect(getPreferenceThemeId()).toBe('testTheme');
+
     // mock localStorage
     const store = new Map();
     (global as any).localStorage = {
@@ -68,9 +69,6 @@ describe('external preference tests', () => {
       },
       getItem: (key: string) => store.get(key),
     };
-
-    getExternalPreferenceProvider('general.theme')!.set('testTheme', PreferenceScope.Workspace);
-    expect(getPreferenceThemeId()).toBe('testTheme');
 
     // 默认值为 zh-CN
     expect(getPreferenceLanguageId()).toBe('zh-CN');

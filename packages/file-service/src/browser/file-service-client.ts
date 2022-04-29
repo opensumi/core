@@ -1,23 +1,25 @@
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { FilesChangeEvent, ExtensionActivateEvent, AppConfig } from '@opensumi/ide-core-browser';
-import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   URI,
   Emitter,
   Event,
-  IEventBus,
   FileUri,
   DisposableCollection,
   IDisposable,
-  FileSystemProviderCapabilities,
+  BinaryBuffer,
+  parseGlob,
+  ParsedPattern,
   Deferred,
-} from '@opensumi/ide-core-common';
-import { Uri } from '@opensumi/ide-core-common';
+  Uri,
+  FilesChangeEvent,
+  ExtensionActivateEvent,
+  AppConfig,
+} from '@opensumi/ide-core-browser';
+import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
+import { FileSystemProviderCapabilities, IEventBus } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { BinaryBuffer } from '@opensumi/ide-core-common/lib/utils/buffer';
-import { parse, ParsedPattern } from '@opensumi/ide-core-common/lib/utils/glob';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
 import {
@@ -48,7 +50,6 @@ import {
 } from '../common';
 
 import { FileSystemWatcher } from './watcher';
-
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
@@ -325,27 +326,39 @@ export class FileServiceClient implements IFileServiceClient {
     this.eventBus.fire(new FilesChangeEvent(changes));
   }
 
+  private uriWatcherMap: Map<string, FileSystemWatcher> = new Map();
+
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
-    const id = this.watcherId++;
     const _uri = this.convertUri(uri.toString());
+    if (this.uriWatcherMap.has(_uri.toString())) {
+      return this.uriWatcherMap.get(_uri.toString())!;
+    }
+
+    const id = this.watcherId++;
     const provider = await this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
-    const watcherId = await provider.watch(uri.codeUri, {
+    const watcherId = await provider.watch(_uri.codeUri, {
       recursive: true,
       excludes: excludes || [],
     });
+
     this.watcherDisposerMap.set(id, {
-      dispose: () => provider.unwatch && provider.unwatch(watcherId),
+      dispose: () => {
+        provider.unwatch && provider.unwatch(watcherId);
+        this.uriWatcherMap.delete(_uri.toString());
+      },
     });
     schemaWatchIdList.push(id);
     this.watcherWithSchemaMap.set(_uri.scheme, schemaWatchIdList);
-    return new FileSystemWatcher({
+    const watcher = new FileSystemWatcher({
       fileServiceClient: this,
       watchId: id,
       uri,
     });
+    this.uriWatcherMap.set(_uri.toString(), watcher);
+    return watcher;
   }
 
   async setWatchFileExcludes(excludes: string[]) {
@@ -489,7 +502,8 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   /**
-   * Ant Codespaces 对该方法进行复写，对 IDE 容器读取不到的研发容器目录进行 scheme 替换，让插件提供提供的 fs-provider 去读取
+   * 提供一个方法让集成方对该方法进行复写。
+   * 如双容器架构中对 IDE 容器读取不到的研发容器目录进行 scheme 替换，让插件提供提供的 fs-provider 去读取
    */
   protected convertUri(uri: string | Uri): URI {
     const _uri = new URI(uri);
@@ -507,10 +521,10 @@ export class FileServiceClient implements IFileServiceClient {
         this.workspaceRoots.forEach((root: string) => {
           const uri = new URI(root);
           const pathStrWithExclude = uri.resolve(str).path.toString();
-          this.filesExcludesMatcherList.push(parse(pathStrWithExclude));
+          this.filesExcludesMatcherList.push(parseGlob(pathStrWithExclude));
         });
       } else {
-        this.filesExcludesMatcherList.push(parse(str));
+        this.filesExcludesMatcherList.push(parseGlob(str));
       }
     });
   }

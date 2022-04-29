@@ -15,8 +15,8 @@ import {
   IRange,
   Disposable,
   ThrottledDelayer,
+  path,
 } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
   DocumentSymbolStore,
@@ -31,6 +31,8 @@ import styles from '../outline-node.module.less';
 import { OutlineEventService } from './outline-event.service';
 import { OutlineTreeModel } from './outline-model';
 import { OutlineTreeService } from './outline-tree.service';
+
+const { Path } = path;
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -529,7 +531,7 @@ export class OutlineModelService {
         // 刷新前需要更新诊断信息数据
         this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri!);
         // 因为Outline模块的节点是自展开的，不需要遍历
-        await node.refresh([node.path]);
+        await node.refresh();
         this.onDidRefreshedEmitter.fire();
       }
       this.refreshDeferred?.resolve();

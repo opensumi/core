@@ -1,7 +1,5 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { CommandRegistry, CommandService, Command, isOSX } from '@opensumi/ide-core-common';
-import { IDisposable } from '@opensumi/ide-core-common/lib/disposable';
-import { Event } from '@opensumi/ide-core-common/lib/event';
+import { CommandRegistry, CommandService, Command, IDisposable, isMacintosh, Event } from '@opensumi/ide-core-common';
 
 import { IContextKeyService } from '../../context-key';
 import { KeybindingRegistry } from '../../keybinding';
@@ -100,7 +98,7 @@ export class MenuItemNode extends MenuNode {
 
         const isKeyCombination =
           Array.isArray(highPriorityKeybinding.resolved) && highPriorityKeybinding.resolved.length > 1;
-        let keybinding = this.keybindings.acceleratorFor(highPriorityKeybinding, isOSX ? '' : '+').join(' ');
+        let keybinding = this.keybindings.acceleratorFor(highPriorityKeybinding, isMacintosh ? '' : '+').join(' ');
         if (isKeyCombination) {
           keybinding = `[${keybinding}]`;
         }

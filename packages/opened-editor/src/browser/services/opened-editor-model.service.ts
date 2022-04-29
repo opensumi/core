@@ -19,10 +19,10 @@ import {
   ThrottledDelayer,
   Deferred,
   Event,
+  path,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService, IEditorGroup, IResource } from '@opensumi/ide-editor/lib/browser';
 import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -34,6 +34,8 @@ import { OpenedEditorDecorationService } from './opened-editor-decoration.servic
 import { OpenedEditorEventService } from './opened-editor-event.service';
 import { OpenedEditorModel } from './opened-editor-model';
 import { OpenedEditorService } from './opened-editor-tree.service';
+
+const { Path } = path;
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -372,15 +374,6 @@ export class OpenedEditorModelService {
     this.treeModel.dispatchChange();
   };
 
-  removeFileDecoration() {
-    if (!this.decorations) {
-      return;
-    }
-    this.decorations.removeDecoration(this.selectedDecoration);
-    this.decorations.removeDecoration(this.focusedDecoration);
-    this.decorations.removeDecoration(this.contextMenuDecoration);
-  }
-
   handleContextMenu = (ev: React.MouseEvent, file?: EditorFileGroup | EditorFile) => {
     if (!file) {
       this.enactiveFileDecoration();
@@ -495,7 +488,7 @@ export class OpenedEditorModelService {
       if (!node) {
         return;
       }
-      node = (await this.editorTreeHandle.ensureVisible(node)) as EditorFile;
+      node = (await this.editorTreeHandle.ensureVisible(node as EditorFile)) as EditorFile;
       if (node) {
         if (this.focusedFile === node) {
           this.activeFileDecoration(node as EditorFile);

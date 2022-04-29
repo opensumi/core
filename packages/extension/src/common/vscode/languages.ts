@@ -11,6 +11,7 @@ import {
   DocumentRangeFormattingEditProvider,
   DocumentFormattingEditProvider,
   CallHierarchyProvider,
+  TypeHierarchyProvider,
   InlayHintsProvider,
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
@@ -56,6 +57,7 @@ import {
   ISerializedSignatureHelpProviderMetadata,
   SelectionRange,
   ICallHierarchyItemDto,
+  ITypeHierarchyItemDto,
   IOutgoingCallDto,
   IIncomingCallDto,
   CodeLens,
@@ -140,6 +142,7 @@ export interface IMainThreadLanguages {
   $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDeclarationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerCallHierarchyProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerTypeHierarchyProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentSemanticTokensProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
@@ -349,7 +352,7 @@ export interface IExtHostLanguages {
     handle: number,
     symbol: SymbolInformation,
     token: CancellationToken,
-  ): PromiseLike<SymbolInformation>;
+  ): PromiseLike<SymbolInformation | undefined>;
 
   $provideSignatureHelp(
     handle: number,
@@ -402,6 +405,26 @@ export interface IExtHostLanguages {
     itemId: string,
     token: CancellationToken,
   ): Promise<IOutgoingCallDto[] | undefined>;
+  registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable;
+  $prepareTypeHierarchy(
+    handle: number,
+    resource: UriComponents,
+    position: Position,
+    token: CancellationToken,
+  ): Promise<ICallHierarchyItemDto[] | undefined>;
+  $provideTypeHierarchySupertypes(
+    handle: number,
+    sessionId: string,
+    itemId: string,
+    token: CancellationToken,
+  ): Promise<ITypeHierarchyItemDto[] | undefined>;
+  $provideTypeHierarchySubtypes(
+    handle: number,
+    sessionId: string,
+    itemId: string,
+    token: CancellationToken,
+  ): Promise<ITypeHierarchyItemDto[] | undefined>;
+  $releaseTypeHierarchy(handle: number, sessionId: string): void;
   $provideDocumentSemanticTokens(
     handle: number,
     resource: UriComponents,

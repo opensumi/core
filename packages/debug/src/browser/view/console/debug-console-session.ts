@@ -87,7 +87,7 @@ export class DebugConsoleSession {
         { session, variablesReference, source, line },
         this.treeModel?.root as ExpressionContainer,
       );
-      await node.hardReloadChildren(true);
+      await node.hardReloadChildren();
       if (node.children) {
         for (const child of node.children) {
           this.treeModel.root.insertItem(child as DebugConsoleNode);

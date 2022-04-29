@@ -1,7 +1,7 @@
 import { Terminal as XTermTerminal } from 'xterm';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { OperatingSystem } from '@opensumi/ide-core-common/lib/platform';
+import { OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
   generateSessionId,
@@ -10,12 +10,12 @@ import {
   ITerminalError,
   IPtyExitEvent,
   ITerminalController,
-  TerminalOptions,
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalConnection,
   IPtyProcessChangeEvent,
 } from '../common';
+import { IXTerm } from '../common/xterm';
 
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 
@@ -43,32 +43,6 @@ export class TerminalInternalService implements ITerminalInternalService {
 
   private _getExtHostProxy(id: string) {
     return this._processExtHostProxies.get(id);
-  }
-
-  async attach(
-    sessionId: string,
-    xterm: XTermTerminal,
-    rows: number,
-    cols: number,
-    options: TerminalOptions = {},
-    type: string,
-  ) {
-    if (options.isExtensionTerminal) {
-      const proxy = new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
-      proxy.start();
-      proxy.onProcessExit(() => {
-        this._processExtHostProxies.delete(sessionId);
-      });
-      this._processExtHostProxies.set(sessionId, proxy);
-      return {
-        name: options.name || 'ExtensionTerminal-' + sessionId,
-        readonly: false,
-        onData: proxy.onProcessData.bind(proxy),
-        sendData: proxy.input.bind(proxy),
-        onExit: proxy.onProcessExit.bind(proxy),
-      };
-    }
-    return this.service.attach(sessionId, xterm, rows, cols, options, type);
   }
 
   async sendText(sessionId: string, message: string) {
@@ -116,8 +90,8 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.onProcessChange(handler);
   }
 
-  async getOs(): Promise<OperatingSystem> {
-    return await this.service.getOs();
+  async getOS(): Promise<OperatingSystem> {
+    return await this.service.getOS();
   }
 
   async getProfiles(autoDetect: boolean): Promise<ITerminalProfile[]> {
@@ -137,6 +111,7 @@ export class TerminalInternalService implements ITerminalInternalService {
     cols: number,
     rows: number,
     launchConfig: IShellLaunchConfig,
+    xterm: IXTerm,
   ): Promise<ITerminalConnection | undefined> {
     if (launchConfig.customPtyImplementation) {
       const proxy = launchConfig.customPtyImplementation(sessionId, cols, rows) as TerminalProcessExtHostProxy;
@@ -153,6 +128,6 @@ export class TerminalInternalService implements ITerminalInternalService {
         onExit: proxy.onProcessExit.bind(proxy),
       };
     }
-    return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig);
+    return await this.service.attachByLaunchConfig(sessionId, cols, rows, launchConfig, xterm);
   }
 }

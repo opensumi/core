@@ -14,9 +14,10 @@ import {
   PreferenceService,
   ReadyEvent,
   memoize,
+  mapToSerializable,
+  serializableToMap,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { mapToSerializable, serializableToMap } from '@opensumi/ide-core-common/lib/map';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { EditorDocumentModel } from './editor-document-model';

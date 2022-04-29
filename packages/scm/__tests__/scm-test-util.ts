@@ -1,5 +1,4 @@
-import { URI, Uri, Event, Emitter } from '@opensumi/ide-core-common';
-import { Sequence, ISplice } from '@opensumi/ide-core-common/lib/sequence';
+import { URI, Uri, Event, Emitter, Sequence, ISplice } from '@opensumi/ide-core-common';
 
 import { ISCMProvider, ISCMResourceGroup, ISCMResource, VSCommand } from '../src/common';
 
