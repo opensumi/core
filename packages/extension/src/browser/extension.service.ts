@@ -311,7 +311,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     this.isExtProcessRestarting = true;
 
     if (this.isExtProcessWaitingForRestart) {
-      // 页面从不可见恢复至可见状态后，可能出现 socket 堆积的现象，因此延迟 1000ms 后再进行重启操作
+      /**
+       * 只有当页面不可见的时候被通知执行重启操作，isExtProcessWaitingForRestart 才会为 true
+       * 目前观察到页面从不可见恢复至可见状态后，可能出现 socket 堆积的现象，因此延迟 1000ms 后再进行重启操作
+       * 这里延时并不能保证一定能够正确重启，只是降低失败的可能性。在解决了 socket 堆积的情况后，可以直接去掉
+       */
       setTimeout(restartProgress, 1000);
     } else {
       restartProgress();
