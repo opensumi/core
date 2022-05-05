@@ -160,12 +160,6 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
       this.$callback(callId, value);
     });
 
-    // 如果缓存内容不是空的话，那就提示一下Terminal 断连了
-    if (cache && cache.data.length > 0) {
-      this.$callback(callId, '\r\n');
-      this.$callback(callId, '\x1b[2mTerminal restored\x1b[22m\r\n');
-    }
-
     const onDataDisposable = ptyInstance?.onData((e) => {
       this.debugLogger.debug('ptyServiceCenter: onData', JSON.stringify(e), 'pid:', pid, 'callId', callId);
       cache?.add(e);
