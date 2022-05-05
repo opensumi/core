@@ -49,6 +49,7 @@ import {
 
 import { FileSystemWatcher } from './watcher';
 
+
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
   public readonly providers = new Map<string, IFileSystemProvider>();
@@ -324,16 +325,10 @@ export class FileServiceClient implements IFileServiceClient {
     this.eventBus.fire(new FilesChangeEvent(changes));
   }
 
-  private uriWatcherMap: Map<string, FileSystemWatcher> = new Map();
-
   // 添加监听文件
   async watchFileChanges(uri: URI, excludes?: string[]): Promise<IFileServiceWatcher> {
-    const _uri = this.convertUri(uri.toString());
-    if (this.uriWatcherMap.has(_uri.toString())) {
-      return this.uriWatcherMap.get(_uri.toString())!;
-    }
-
     const id = this.watcherId++;
+    const _uri = this.convertUri(uri.toString());
     const provider = await this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
@@ -342,20 +337,15 @@ export class FileServiceClient implements IFileServiceClient {
       excludes: excludes || [],
     });
     this.watcherDisposerMap.set(id, {
-      dispose: () => {
-        provider.unwatch && provider.unwatch(watcherId);
-        this.uriWatcherMap.delete(_uri.toString());
-      },
+      dispose: () => provider.unwatch && provider.unwatch(watcherId),
     });
     schemaWatchIdList.push(id);
     this.watcherWithSchemaMap.set(_uri.scheme, schemaWatchIdList);
-    const watcher = new FileSystemWatcher({
+    return new FileSystemWatcher({
       fileServiceClient: this,
       watchId: id,
       uri,
     });
-    this.uriWatcherMap.set(_uri.toString(), watcher);
-    return watcher;
   }
 
   async setWatchFileExcludes(excludes: string[]) {

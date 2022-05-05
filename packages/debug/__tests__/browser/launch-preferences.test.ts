@@ -35,6 +35,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 
+
 @Injectable()
 export class MockLoggerManagerClient {
   getLogger = () => ({
@@ -505,12 +506,10 @@ describe('Launch Preferences', () => {
         injector.mock(
           IFileServiceClient,
           'watchFileChanges',
-          jest.fn(() =>
-            Promise.resolve({
-              dispose: () => {},
-              onFilesChanged: jest.fn(),
-            }),
-          ),
+          jest.fn(() => ({
+            dispose: () => {},
+            onFilesChanged: jest.fn(),
+          })),
         );
 
         preferences = injector.get(PreferenceService);

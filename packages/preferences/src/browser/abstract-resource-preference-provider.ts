@@ -75,6 +75,16 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       .then(() => this._ready.resolve())
       .catch(() => this._ready.resolve());
 
+    const uri = this.getUri();
+    const watcher = await this.fileSystem.watchFileChanges(uri);
+    // 配置文件改变时，重新读取配置
+    this.toDispose.push(watcher);
+    watcher.onFilesChanged((e: FileChange[]) => {
+      const effected = e.find((file) => file.uri === uri.toString());
+      if (effected) {
+        return this.readPreferences();
+      }
+    });
     this.toDispose.push(Disposable.create(() => this.reset()));
   }
 
@@ -181,11 +191,6 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   protected loaded = false;
-
-  public updatePreferences() {
-    this.readPreferences();
-  }
-
   protected async readPreferences(content?: string): Promise<void> {
     const newContent = content || (await this.readContents());
     this.loaded = !isUndefined(newContent);
