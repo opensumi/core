@@ -158,13 +158,12 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     return this.terminalApi.getProcessId(id);
   }
 
-  async $createTerminal(options: vscode.TerminalOptions) {
+  async $createTerminal(options: vscode.TerminalOptions, id: string) {
     await this.controller.ready.promise;
-    const terminal = await this.terminalApi.createTerminal(options);
+    const terminal = await this.terminalApi.createTerminal(options, id);
     if (!terminal) {
-      return this.logger.error('Create Terminal fail.');
+      return this.logger.error(`Create Terminal ${id} fail.`);
     }
-    return terminal.id;
   }
 
   private _onRequestStartExtensionTerminal(request: IStartExtensionTerminalRequest): void {

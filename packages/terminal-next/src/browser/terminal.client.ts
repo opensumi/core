@@ -346,7 +346,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   async init2(widget: IWidget, options?: ICreateTerminalOptions) {
-    this._uid = widget.id;
+    this._uid = options?.id || widget.id;
     this.setupWidget(widget);
 
     if (!options || Object.keys(options).length === 0) {
