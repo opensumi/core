@@ -124,6 +124,7 @@ describe('editor status bar item test', () => {
       {
         uri: new URI('file:///test/test.js').codeUri,
       } as any,
+      1,
     );
 
     expect(config['editor.preferredFormatter']['javascript']).toBe('testFormatter');
@@ -146,6 +147,7 @@ describe('editor status bar item test', () => {
       {
         uri: new URI('file:///test/test2.js').codeUri,
       } as any,
+      1,
       true, // force show selector
     );
 

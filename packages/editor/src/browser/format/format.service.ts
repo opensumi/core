@@ -6,7 +6,10 @@ import {
   DocumentRangeFormattingEditProvider,
   DocumentRangeFormattingEditProviderRegistry,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { getRealAndSyntheticDocumentFormattersOrdered } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
+import {
+  getRealAndSyntheticDocumentFormattersOrdered,
+  FormattingMode,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/formattingEdit';
 
 import { WorkbenchEditorService } from '../types';
@@ -30,7 +33,7 @@ export class DocumentFormatService {
     if (model) {
       const formatterProviders = getRealAndSyntheticDocumentFormattersOrdered(model);
       const selector = this.injector.get(FormattingSelector);
-      const formatter = await selector.select(formatterProviders, model, true);
+      const formatter = await selector.select(formatterProviders, model, FormattingMode.Explicit, true);
       if (formatter) {
         try {
           const edits = await (formatter as DocumentFormattingEditProvider).provideDocumentFormattingEdits(
@@ -66,7 +69,7 @@ export class DocumentFormatService {
       }
       const formatterProviders = DocumentRangeFormattingEditProviderRegistry.ordered(model);
       const selector = this.injector.get(FormattingSelector);
-      const formatter = await selector.select(formatterProviders, model, true);
+      const formatter = await selector.select(formatterProviders, model, FormattingMode.Explicit, true);
       if (formatter) {
         try {
           const edits = await (formatter as DocumentRangeFormattingEditProvider).provideDocumentRangeFormattingEdits(

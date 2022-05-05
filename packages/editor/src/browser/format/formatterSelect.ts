@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { QuickPickService, localize, PreferenceService, URI, PreferenceScope } from '@opensumi/ide-core-browser';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { FormattingMode } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IEditorDocumentModelService } from '../doc-model/types';
@@ -23,7 +24,8 @@ export class FormattingSelector {
       monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider
     >,
     document: ITextModel,
-    forceSelect?: boolean,
+    mode: FormattingMode,
+    forceSelect = false,
   ): Promise<
     monaco.languages.DocumentFormattingEditProvider | monaco.languages.DocumentRangeFormattingEditProvider | undefined
   > {
@@ -56,18 +58,23 @@ export class FormattingSelector {
       return formatters[0];
     }
 
-    const selected = await this.quickPickService.show(
-      Object.keys(elements).map((k) => ({ label: elements[k].displayName!, value: elements[k].extensionId })),
-      { placeholder: localize('editor.format.chooseFormatter') },
-    );
-    if (selected) {
-      const config = this.preferenceService.get<{ [key: string]: string }>('editor.preferredFormatter') || {};
-      this.preferenceService.set(
-        'editor.preferredFormatter',
-        { ...config, [languageId]: selected },
-        PreferenceScope.User,
+    if (mode === FormattingMode.Explicit) {
+      const selected = await this.quickPickService.show(
+        Object.keys(elements).map((k) => ({
+          label: elements[k].displayName!,
+          value: elements[k].extensionId,
+        })),
+        { placeholder: localize('editor.format.chooseFormatter') },
       );
-      return elements[selected];
+      if (selected) {
+        const config = this.preferenceService.get<{ [key: string]: string }>('editor.preferredFormatter') || {};
+        this.preferenceService.set(
+          'editor.preferredFormatter',
+          { ...config, [languageId]: selected },
+          PreferenceScope.User,
+        );
+        return elements[selected];
+      }
     } else {
       return undefined;
     }
