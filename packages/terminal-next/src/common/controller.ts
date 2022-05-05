@@ -26,6 +26,10 @@ export interface IBoundSize {
 export interface ICreateClientWithWidgetOptions {
   terminalOptions: TerminalOptions;
   /**
+   * 插件进程传递的唯一 ID
+   */
+  id?: string;
+  /**
    * pty 进程退出后是否自动关闭 terminal 控件
    */
   closeWhenExited?: boolean;

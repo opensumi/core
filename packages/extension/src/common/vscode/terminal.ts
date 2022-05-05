@@ -21,7 +21,7 @@ export interface IMainThreadTerminal {
   $hide(id: string): void;
   $dispose(id: string): void;
   $getProcessId(id: string): Promise<number | undefined>;
-  $createTerminal(options: vscode.TerminalOptions): Promise<string | void>;
+  $createTerminal(options: vscode.TerminalOptions, id: string): Promise<void>;
   $startLinkProvider(): void;
   $stopLinkProvider(): void;
 

@@ -532,6 +532,10 @@ export interface IShellLaunchConfig {
 
 export interface ICreateTerminalOptions {
   /**
+   * unique id
+   */
+  id?: string;
+  /**
    * The shell launch config or profile to launch with, when not specified the default terminal
    * profile will be used.
    */
