@@ -8,6 +8,7 @@
       "type": "node",
       "request": "attach",
       "name": "Attach to BackEnd",
+      "skipFiles": ["<node_internals>/**"],
       "port": 9999,
       "restart": true
     },
@@ -50,6 +51,7 @@
       "restart": true,
       "sourceMaps": true,
       "outFiles": ["${workspaceRoot}/tools/extension/**/*.js"],
+      "skipFiles": ["<node_internals>/**"],
       "sourceMapPathOverrides": {
         "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
         "webpack:///./*": "${workspaceRoot}/*",
