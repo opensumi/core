@@ -12,7 +12,7 @@ import { Emitter, URI } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IFileTreeAPI, IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { FileTreeContribution } from '@opensumi/ide-file-tree-next/lib/browser/file-tree-contribution';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
@@ -144,7 +144,7 @@ describe('FileTreeContribution', () => {
       await contribution.onStart();
       expect(mockMainLayoutService.collectViewComponent).toBeCalledTimes(1);
       await onWorkspaceLocationChangedEmitter.fireAndAwait(undefined);
-      const handler = tabbarHandlerMap.get(ExplorerContainerId);
+      const handler = tabbarHandlerMap.get(EXPLORER_CONTAINER_ID);
       expect(handler.updateViewTitle).toBeCalledTimes(1);
     });
 
@@ -157,7 +157,7 @@ describe('FileTreeContribution', () => {
     it('should onDidRender be work', async () => {
       const contribution = mockInjector.get(FileTreeContribution);
       contribution.onDidRender();
-      const handler = tabbarHandlerMap.get(ExplorerContainerId);
+      const handler = tabbarHandlerMap.get(EXPLORER_CONTAINER_ID);
       expect(handler.onActivate).toBeCalledTimes(1);
       expect(handler.onInActivate).toBeCalledTimes(1);
     });

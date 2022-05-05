@@ -24,7 +24,7 @@ import {
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IEditorGroup, IResource } from '@opensumi/ide-editor/lib/browser';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { EditorFile, EditorFileGroup } from '../opened-editor-node.define';
@@ -533,7 +533,7 @@ export class OpenedEditorModelService {
       targetSets.add((target as EditorFile).uri.toString());
     }
     const dirtyCount = targetSets.size;
-    const handler = this.layoutService.getTabbarHandler(ExplorerContainerId);
+    const handler = this.layoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
     if (handler) {
       handler.setBadge(dirtyCount > 0 ? dirtyCount.toString() : '');
     }

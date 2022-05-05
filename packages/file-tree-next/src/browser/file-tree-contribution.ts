@@ -38,22 +38,20 @@ import {
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { ExplorerContainerId } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
 import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 
-import { IFileTreeService, PasteTypes } from '../common';
+import { IFileTreeService, PasteTypes, RESOURCE_VIEW_ID } from '../common';
 import { Directory } from '../common/file-tree-node.define';
 
 import { FileTree } from './file-tree';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeModelService } from './services/file-tree-model.service';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
-
-export const ExplorerResourceViewId = 'file-explorer-next';
 
 @Domain(
   MenuContribution,
@@ -132,27 +130,27 @@ export class FileTreeContribution
   }
 
   async onStart() {
-    this.viewsRegistry.registerViewWelcomeContent(ExplorerResourceViewId, {
+    this.viewsRegistry.registerViewWelcomeContent(RESOURCE_VIEW_ID, {
       content: formatLocalize('welcome-view.noFolderHelp', FILE_COMMANDS.OPEN_FOLDER.id),
       group: ViewContentGroups.Open,
       order: 1,
     });
     this.mainLayoutService.collectViewComponent(
       {
-        id: ExplorerResourceViewId,
+        id: RESOURCE_VIEW_ID,
         name: this.getWorkspaceTitle(),
         weight: 3,
         priority: 9,
         collapsed: false,
         component: FileTree,
       },
-      ExplorerContainerId,
+      EXPLORER_CONTAINER_ID,
     );
     // 监听工作区变化更新标题
     this.workspaceService.onWorkspaceLocationChanged(() => {
-      const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+      const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
       if (handler) {
-        handler.updateViewTitle(ExplorerResourceViewId, this.getWorkspaceTitle());
+        handler.updateViewTitle(RESOURCE_VIEW_ID, this.getWorkspaceTitle());
       }
     });
   }
@@ -164,7 +162,7 @@ export class FileTreeContribution
 
   onDidRender() {
     this.isRendered = true;
-    const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+    const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
     if (handler) {
       handler.onActivate(() => {
         this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(true);
@@ -199,8 +197,8 @@ export class FileTreeContribution
   private revealFile(locationUri: URI) {
     if (locationUri) {
       if (this.isRendered) {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler || !handler.isVisible || handler.isCollapsed(ExplorerResourceViewId)) {
+        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
+        if (!handler || !handler.isVisible || handler.isCollapsed(RESOURCE_VIEW_ID)) {
           this.fileTreeModelService.locationOnShow(locationUri);
         } else {
           this.fileTreeModelService.location(locationUri);
@@ -414,7 +412,7 @@ export class FileTreeContribution
 
     commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
       execute: () => {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (!handler || !handler.isVisible) {
           return;
         }
@@ -424,7 +422,7 @@ export class FileTreeContribution
 
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
       execute: async () => {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (!handler || !handler.isVisible) {
           return;
         }
@@ -745,12 +743,12 @@ export class FileTreeContribution
 
     commands.registerCommand(FILE_COMMANDS.REVEAL_IN_EXPLORER, {
       execute: (uri?: URI) => {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (handler && !handler.isVisible) {
           handler.activate();
         }
-        if (handler && handler.isCollapsed(ExplorerResourceViewId)) {
-          handler?.setCollapsed(ExplorerResourceViewId, false);
+        if (handler && handler.isCollapsed(RESOURCE_VIEW_ID)) {
+          handler?.setCollapsed(RESOURCE_VIEW_ID, false);
         }
         if (!uri && this.workbenchEditorService.currentEditor?.currentUri) {
           uri = this.workbenchEditorService.currentEditor.currentUri;
@@ -763,7 +761,7 @@ export class FileTreeContribution
 
     commands.registerCommand(FILE_COMMANDS.FOCUS_FILES, {
       execute: () => {
-        const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
+        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
         if (handler) {
           handler.activate();
         }
@@ -929,8 +927,8 @@ export class FileTreeContribution
       id: FILE_COMMANDS.LOCATION_WITH_EDITOR.id,
       command: FILE_COMMANDS.LOCATION_WITH_EDITOR.id,
       label: localize('file.location'),
-      viewId: ExplorerResourceViewId,
-      when: `view == '${ExplorerResourceViewId}' && !config.explorer.autoReveal && !${FilesExplorerFilteredContext.raw}`,
+      viewId: RESOURCE_VIEW_ID,
+      when: `view == '${RESOURCE_VIEW_ID}' && !config.explorer.autoReveal && !${FilesExplorerFilteredContext.raw}`,
       // 由于目前 contextkey 设置 resourceScheme 是绑定在 editor 的 dom scope 因此设置无效
       // enabledWhen: 'resourceScheme == file',
       order: 0,
@@ -940,23 +938,23 @@ export class FileTreeContribution
       id: FILE_COMMANDS.NEW_FILE.id,
       command: FILE_COMMANDS.NEW_FILE.id,
       label: localize('file.new'),
-      viewId: ExplorerResourceViewId,
-      when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
+      viewId: RESOURCE_VIEW_ID,
+      when: `view == '${RESOURCE_VIEW_ID}' && !${FilesExplorerFilteredContext.raw}`,
       order: 1,
     });
     registry.registerItem({
       id: FILE_COMMANDS.NEW_FOLDER.id,
       command: FILE_COMMANDS.NEW_FOLDER.id,
       label: localize('file.folder.new'),
-      viewId: ExplorerResourceViewId,
-      when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
+      viewId: RESOURCE_VIEW_ID,
+      when: `view == '${RESOURCE_VIEW_ID}' && !${FilesExplorerFilteredContext.raw}`,
       order: 2,
     });
     registry.registerItem({
       id: FILE_COMMANDS.FILTER_TOGGLE.id,
       command: FILE_COMMANDS.FILTER_TOGGLE.id,
       label: localize('file.filetree.filter'),
-      viewId: ExplorerResourceViewId,
+      viewId: RESOURCE_VIEW_ID,
       toggledWhen: `${FilesExplorerFilteredContext.raw}`,
       order: 3,
     });
@@ -964,15 +962,15 @@ export class FileTreeContribution
       id: FILE_COMMANDS.REFRESH_ALL.id,
       command: FILE_COMMANDS.REFRESH_ALL.id,
       label: localize('file.refresh'),
-      viewId: ExplorerResourceViewId,
-      when: `view == '${ExplorerResourceViewId}' && !${FilesExplorerFilteredContext.raw}`,
+      viewId: RESOURCE_VIEW_ID,
+      when: `view == '${RESOURCE_VIEW_ID}' && !${FilesExplorerFilteredContext.raw}`,
       order: 4,
     });
     registry.registerItem({
       id: FILE_COMMANDS.COLLAPSE_ALL.id,
       command: FILE_COMMANDS.COLLAPSE_ALL.id,
       label: localize('file.collapse'),
-      viewId: ExplorerResourceViewId,
+      viewId: RESOURCE_VIEW_ID,
       order: 5,
     });
   }

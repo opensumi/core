@@ -8,6 +8,7 @@ import {
   DocumentSymbolStore,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { SymbolKind } from '@opensumi/ide-extension/lib/hosted/api/worker/worker.ext-types';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IOutlineDecorationService } from '@opensumi/ide-outline';
 import {
   OutlineRoot,
@@ -19,7 +20,6 @@ import { OutlineModelService } from '@opensumi/ide-outline/lib/browser/services/
 import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 
 import styles from '../../../../src/browser/outline-node.module.less';
-
 
 describe('OutlineTreeModelService', () => {
   let outlineTreeModelService: OutlineModelService;
@@ -120,6 +120,18 @@ describe('OutlineTreeModelService', () => {
     mockInjector.overrideProviders({
       token: IContextKeyService,
       useValue: {},
+    });
+
+    const mockHandler = {
+      isVisible: true,
+      isCollapsed: () => false,
+    };
+
+    mockInjector.overrideProviders({
+      token: IMainLayoutService,
+      useValue: {
+        getTabbarHandler: () => mockHandler,
+      },
     });
 
     outlineTreeModelService = mockInjector.get(OutlineModelService);

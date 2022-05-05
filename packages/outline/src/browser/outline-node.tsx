@@ -126,6 +126,15 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
     return tooltip;
   };
 
+  const renderDescription = (node: OutlineCompositeTreeNode | OutlineTreeNode) => {
+    if (OutlineCompositeTreeNode.is(node)) {
+      return null;
+    }
+    return (
+      <div className={cls(styles.outline_node_segment_grow, styles.outline_node_description)}>{node.description}</div>
+    );
+  };
+
   return (
     <div
       key={item.id}
@@ -138,7 +147,10 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       <div className={cls(styles.outline_node_content)}>
         {renderTwice(item)}
         {renderIcon(item)}
-        <div className={styles.outline_node_overflow_wrap}>{renderDisplayName(item)}</div>
+        <div className={styles.outline_node_overflow_wrap}>
+          {renderDisplayName(item)}
+          {renderDescription(item)}
+        </div>
         {renderStatusTail()}
       </div>
     </div>

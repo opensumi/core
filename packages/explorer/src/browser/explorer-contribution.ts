@@ -2,7 +2,7 @@ import { localize, Domain } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 
-export const ExplorerContainerId = 'explorer';
+export const EXPLORER_CONTAINER_ID = 'explorer';
 
 @Domain(ComponentContribution)
 export class ExplorerContribution implements ComponentContribution {
@@ -12,7 +12,7 @@ export class ExplorerContribution implements ComponentContribution {
       iconClass: getIcon('explorer'),
       title: localize('explorer.title'),
       priority: 10,
-      containerId: ExplorerContainerId,
+      containerId: EXPLORER_CONTAINER_ID,
     });
   }
 }

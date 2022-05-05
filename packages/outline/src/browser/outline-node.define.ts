@@ -45,6 +45,10 @@ export class OutlineCompositeTreeNode extends CompositeTreeNode {
   get displayName() {
     return this.raw.name;
   }
+
+  get description() {
+    return this.raw.detail;
+  }
 }
 
 export class OutlineTreeNode extends TreeNode {
@@ -63,5 +67,9 @@ export class OutlineTreeNode extends TreeNode {
 
   get displayName() {
     return this.raw.name;
+  }
+
+  get description() {
+    return this.raw.detail;
   }
 }
