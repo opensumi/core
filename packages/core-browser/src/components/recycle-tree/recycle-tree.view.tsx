@@ -79,7 +79,7 @@ export interface RecycleTreeProps extends TreeProps {
 }
 
 /**
- * @deprecated will be removed in v2.17.0 version
+ * @deprecated will be removed in v2.19.0 version
  */
 export const DeprecatedRecycleTree = ({
   nodes,
@@ -364,5 +364,5 @@ DeprecatedRecycleTree.displayName = 'DeprecatedRecycleTree';
 
 export const RecycleTree = Deprecated(
   DeprecatedRecycleTree,
-  '[Deprecated warning]: The `RecycleTree` component in `@opensumi/ide-core-browser` will be removed in v2.17.0 version. Please use the new `RecycleTree` in `@opensumi/ide-component` instead',
+  '[Deprecated warning]: The `RecycleTree` component in `@opensumi/ide-core-browser` will be removed in v2.19.0 version. Please use the new `RecycleTree` in `@opensumi/ide-component` instead',
 );
