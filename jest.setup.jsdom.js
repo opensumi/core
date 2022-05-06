@@ -1,3 +1,5 @@
+require('jest-canvas-mock');
+
 // packages/extension/__tests__/browser/main.thread.env.test.ts
 // MainThreadEnvAPI Test Suites  › can read/write text via clipboard
 let text = '';

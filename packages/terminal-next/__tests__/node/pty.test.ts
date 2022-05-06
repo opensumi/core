@@ -18,8 +18,12 @@ describe('PtyService function should be valid', () => {
     shellPath = 'sh';
   }
 
-  beforeEach(() => {
+  beforeAll(() => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
+  });
+
+  afterAll(() => {
+    injector.disposeAll();
   });
 
   it('cannot create a invalid shell case1', async () => {

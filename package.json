@@ -50,7 +50,6 @@
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^7.1.2",
-    "canvas": "2.6.1",
     "commitizen": "^4.2.4",
     "commitlint": "^15.0.0",
     "cz-conventional-changelog": "^2.1.0",
@@ -86,7 +85,6 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "resolutions": {
-    "canvas": "2.6.1",
     "y18n": "4.0.0",
     "shelljs": "0.8.4",
     "webpack": "4.39.3"
@@ -128,6 +126,7 @@
     "handlebars": "^4.7.3",
     "is-git-clean": "^1.1.0",
     "jest": "^28.0.3",
+    "jest-canvas-mock": "^2.4.0",
     "jest-environment-jsdom": "^28.0.2",
     "jest-jasmine2": "^28.0.3",
     "jsdom": "^19.0.0",

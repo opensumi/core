@@ -18,6 +18,7 @@ const jsdom = new JSDOM('<div id="main"></div>', {
   resources: resourceLoader,
 });
 global.document = jsdom.window.document;
+
 let text = '';
 global.navigator = Object.assign(jsdom.window.navigator, {
   clipboard: {
