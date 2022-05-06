@@ -22,6 +22,15 @@ export class ExtensionDebugAdapterTracker implements vscode.DebugAdapterTracker 
     return new ExtensionDebugAdapterTracker(trackers);
   }
 
+  private toDebugProtocolMessage(message: any): vscode.DebugProtocolMessage {
+    if (typeof message === 'string') {
+      try {
+        return JSON.parse(message);
+      } catch (error) {}
+    }
+    return message;
+  }
+
   onWillStartSession(): void {
     this.trackers.forEach((tracker) => {
       if (tracker.onWillStartSession) {
@@ -33,7 +42,7 @@ export class ExtensionDebugAdapterTracker implements vscode.DebugAdapterTracker 
   onWillReceiveMessage(message: any): void {
     this.trackers.forEach((tracker) => {
       if (tracker.onWillReceiveMessage) {
-        tracker.onWillReceiveMessage(message);
+        tracker.onWillReceiveMessage(this.toDebugProtocolMessage(message));
       }
     });
   }
@@ -41,7 +50,7 @@ export class ExtensionDebugAdapterTracker implements vscode.DebugAdapterTracker 
   onDidSendMessage(message: any): void {
     this.trackers.forEach((tracker) => {
       if (tracker.onDidSendMessage) {
-        tracker.onDidSendMessage(message);
+        tracker.onDidSendMessage(this.toDebugProtocolMessage(message));
       }
     });
   }
