@@ -175,13 +175,11 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     const profiles = await this._detectProfiles(true);
     const profilesChanged = !equals(profiles, this._availableProfiles, profilesEqual);
     const contributedProfilesChanged = await this._updateContributedProfiles();
-    if (contributedProfilesChanged) {
-      this.registerContributedProfilesCommandAndMenu();
-    }
     if (profilesChanged || contributedProfilesChanged) {
       this._availableProfiles = profiles;
       this._profilesReadyBarrier.open();
       this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
+      this.registerContributedProfilesCommandAndMenu();
     }
   }
 
@@ -190,6 +188,30 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
       this.commandAndMenuDisposeCollection.dispose();
     }
     this.commandAndMenuDisposeCollection = new DisposableCollection();
+    const notAutoDetectedProfiles = this.availableProfiles.filter((profile) => !profile.isAutoDetected);
+    notAutoDetectedProfiles.forEach((profile) => {
+      const id = `TerminalProfilesCommand:${profile.path}:${profile.profileName}`;
+      this.commandAndMenuDisposeCollection.push(
+        this.commandRegistry.registerCommand(
+          {
+            id,
+          },
+          {
+            execute: async () => {
+              // TODO：create profiles terminal
+            },
+          },
+        ),
+      );
+      this.commandAndMenuDisposeCollection.push(
+        this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
+          command: {
+            id,
+            label: profile.profileName || '',
+          },
+        }),
+      );
+    });
     this.contributedProfiles.forEach((profile) => {
       const id = `TerminalProfilesCommand:${profile.extensionIdentifier}:${profile.id}`;
       this.commandAndMenuDisposeCollection.push(
