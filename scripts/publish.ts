@@ -8,7 +8,7 @@ import { argv } from 'yargs';
 import git from 'git-rev-sync';
 import chalk from 'chalk';
 
-import pkg from '../package.json';
+import pkg from '../lerna.json';
 import Package, { readAllMainPackages } from './pkg';
 import { generateManifest } from './manifest';
 
