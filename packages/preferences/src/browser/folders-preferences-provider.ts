@@ -78,17 +78,6 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
           }
         }
       }
-
-      this.fileSystem.watchFileChanges(folderUri).then((watcher) => {
-        watcher.onFilesChanged((e) => {
-          for (const file of e) {
-            if (this.providers.has(file.uri)) {
-              const p = this.providers.get(file.uri);
-              p?.updatePreferences();
-            }
-          }
-        });
-      });
     }
     // 去重，移除旧的配置文件Provider
     for (const key of toDelete) {
