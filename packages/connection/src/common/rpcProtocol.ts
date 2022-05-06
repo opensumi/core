@@ -105,6 +105,11 @@ export namespace ObjectTransfer {
           $type: 'Buffer',
           data: Array.from(value),
         };
+      } else if (value instanceof ArrayBuffer) {
+        return {
+          $type: 'Buffer',
+          data: Array.from(new Uint8Array(value)),
+        };
       }
     }
 
