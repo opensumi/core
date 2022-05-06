@@ -19,7 +19,6 @@ import {
   withNullAsUndefined,
   IThemeColor,
   OperatingSystem,
-  OS,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -179,12 +178,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.addDispose(this.xterm);
 
     this.addDispose(
-      this.xterm.raw.onTitleChange((e) => {
-        this.updateOptions({ name: e });
-      }),
-    );
-
-    this.addDispose(
       this.internalService.onError((error) => {
         this.messageService.error(error.message);
         if (error.launchConfig?.executable) {
@@ -290,7 +283,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       strictEnv: withNullAsUndefined(options.strictEnv),
       hideFromUser: withNullAsUndefined(options.hideFromUser),
       // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
-      isExtensionOwnedTerminal: true,
+      isExtensionOwnedTerminal: options.isExtensionTerminal,
       // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
       // location:
       // internalOptions?.location ||
@@ -728,7 +721,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._terminalOptions = { ...this._terminalOptions, ...options };
     this._launchConfig = this.convertTerminalOptionsToLaunchConfig();
 
-    this._widget.name = options.name || this.name;
+    if (!this.name && !this._widget.name) {
+      this._widget.name = options.name || this.name;
+    }
   }
 
   async sendText(message: string) {
