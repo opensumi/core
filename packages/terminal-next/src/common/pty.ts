@@ -258,6 +258,8 @@ export interface TerminalOptions {
    * 自定义的参数，由上层集成方自行控制
    */
   beforeCreate?: (terminalId: string) => void;
+
+  isTransient?: boolean;
 }
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');

@@ -459,10 +459,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
       wGroup.widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
-
         if (!client) {
           return;
         }
+
+        if (client.options.isExtensionTerminal || client.options.isTransient) {
+          return;
+        }
+
         const record: { client: string; task?: string } = { client: client.id };
         if (client.isTaskExecutor) {
           record.task = client.taskId;
@@ -502,7 +506,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    * @returns
    */
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
-    const widgetId = this.service.generateSessionId();
+    const widgetId = this.wsChannelHandler.clientId + '|' + options.id || this.service.generateSessionId();
     const { group } = this._createOneGroup();
     const widget = this.terminalView.createWidget(
       group,
