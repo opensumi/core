@@ -632,6 +632,13 @@ export interface IDecorationApplyOptions {
 
 export type IHoverMessage = IMarkdownString | IMarkdownString[] | string;
 
+export enum IEditorPriority {
+  builtin = 'builtin',
+  option = 'option',
+  exclusive = 'exclusive',
+  default = 'default',
+}
+
 // 定义一个resource如何被打开
 export interface IEditorOpenType {
   type: 'code' | 'diff' | 'component';
@@ -641,6 +648,8 @@ export interface IEditorOpenType {
   title?: string;
 
   readonly?: boolean;
+
+  priority?: keyof typeof IEditorPriority;
 
   // 默认0， 大的排在前面
   weight?: number;

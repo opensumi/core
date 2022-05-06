@@ -15,7 +15,7 @@ import {
   IOpenerService,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { isUndefinedOrNull, Schemas, REPORT_NAME } from '@opensumi/ide-core-common';
+import { isUndefinedOrNull, Schemas, REPORT_NAME, match } from '@opensumi/ide-core-common';
 import {
   CommandService,
   URI,
@@ -64,6 +64,7 @@ import {
   getSplitActionFromDragDrop,
 } from '../common';
 
+import { IEditorPriority } from './../common/editor';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { EditorTabChangedError, isEditorError } from './error';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
@@ -1536,9 +1537,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const openTypes =
       this.cachedResourcesOpenTypes.get(resource.uri.toString()) ||
       (await this.editorComponentRegistry.resolveEditorComponent(resource));
+    const editorAssociations = this.preferenceService.get<{ [key in string]: string }>('workbench.editorAssociations');
     const activeOpenType = findSuitableOpenType(
       openTypes,
       this.cachedResourcesActiveOpenTypes.get(resource.uri.toString()),
+      resource,
+      editorAssociations,
       options.forceOpenType,
     );
     this.cachedResourcesOpenTypes.set(resource.uri.toString(), openTypes);
@@ -2011,6 +2015,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 function findSuitableOpenType(
   currentAvailable: IEditorOpenType[],
   prev: IEditorOpenType | undefined,
+  resource: IResource,
+  editorAssociations: { [key in string]: string } | undefined,
   forceOpenType?: IEditorOpenType,
 ) {
   if (forceOpenType) {
@@ -2018,6 +2024,22 @@ function findSuitableOpenType(
   } else if (prev) {
     return currentAvailable.find((p) => openTypeSimilar(p, prev)) || currentAvailable[0];
   }
+
+  if (editorAssociations) {
+    // 如果配置了 workbench.editorAssociations 且 priority 为 option 的情况下符合规则的默认打开方式行为
+    const matchAvailableType = currentAvailable.find((p) => {
+      if (p.priority === IEditorPriority.option) {
+        const matchAssKey = Object.keys(editorAssociations).find((r) => match(r, resource.uri.path.toString().toLowerCase()) || match(r, resource.uri.path.base.toLowerCase()));
+        const viewType = matchAssKey && editorAssociations[matchAssKey];
+        if (!viewType) {return false;}
+
+        return p.componentId?.split('-')[1] === viewType;
+      }
+    });
+
+    if (matchAvailableType) {return matchAvailableType;}
+  }
+
   return currentAvailable[0];
 }
 

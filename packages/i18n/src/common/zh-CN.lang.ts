@@ -433,6 +433,8 @@ export const localizationBundle = {
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy': '触发一些重构变更时，是否需要弹窗确认',
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': '重构确认方式',
+    'preference.workbench.editorAssociations':
+      '将 glob 模式配置到编辑器(例如 `"*十六进制": "hexEditor.hexEdit"`)。这些优先顺序高于默认行为。',
 
     'preference.editor.wrapTab': '编辑器 Tab 自动换行',
     'editor.configuration.previewMode': '使用预览模式打开',

@@ -448,6 +448,8 @@ export const defaultSettingSections: {
         { id: 'editor.fontFamily', localized: 'preference.editor.fontFamily' },
         { id: 'editor.lineHeight', localized: 'preference.editor.lineHeight' },
         { id: 'editor.trimAutoWhitespace' },
+        // workbench
+        { id: 'workbench.editorAssociations' },
         // 补全
         { id: 'editor.suggest.insertMode' },
         { id: 'editor.suggest.filterGraceful' },
@@ -536,8 +538,6 @@ export const defaultSettingSections: {
         { id: 'files.exclude', localized: 'preference.files.exclude.title' },
         { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
         { id: 'files.associations', localized: 'preference.files.associations.title' },
-        { id: 'files.exclude', localized: 'preference.files.exclude.title' },
-        { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
       ],
     },
   ],
