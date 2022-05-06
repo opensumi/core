@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-i18n",
-  "version": "2.16.12",
+  "version": "2.16.13",
   "files": [
     "lib"
   ],
@@ -16,10 +16,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.16.12"
+    "@opensumi/ide-core-common": "2.16.13"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.16.12",
+    "@opensumi/ide-core-browser": "2.16.13",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }
