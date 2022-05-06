@@ -19,7 +19,7 @@ describe('PtyService function should be valid', () => {
   }
 
   beforeAll(() => {
-    injector = createNodeInjector([TerminalNodePtyModule], new Injector([]), true);
+    injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
   });
 
   afterAll(() => {
