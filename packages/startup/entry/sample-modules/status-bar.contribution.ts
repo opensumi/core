@@ -12,13 +12,13 @@ import {
   OnEvent,
   WithEventBus,
 } from '@opensumi/ide-core-common';
-import { IconType } from '@opensumi/ide-theme';
+import { IconType, IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 @Injectable()
 @Domain(ClientAppContribution)
 export class StatusBarContribution extends WithEventBus implements ClientAppContribution {
-  @Autowired(IconService)
+  @Autowired(IIconService)
   private iconService: IconService;
 
   @Autowired(IStatusBarService)
