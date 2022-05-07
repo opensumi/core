@@ -33,7 +33,7 @@ export class WorkspaceVariableContribution implements VariableContribution {
       description: 'The path of the workspace root folder',
       resolve: (context?: URI) => {
         const uri = this.getWorkspaceRootUri(context);
-        return uri && uri.path.toString();
+        return uri && uri.codeUri.fsPath.toString();
       },
     });
     variables.registerVariable({
@@ -49,7 +49,7 @@ export class WorkspaceVariableContribution implements VariableContribution {
       description: 'The path of the current working directory',
       resolve: (context?: URI) => {
         const uri = this.getWorkspaceRootUri(context);
-        return (uri && uri.path.toString()) || '';
+        return (uri && uri.codeUri.fsPath.toString()) || '';
       },
     });
     variables.registerVariable({
@@ -57,7 +57,7 @@ export class WorkspaceVariableContribution implements VariableContribution {
       description: 'The path of the currently opened file',
       resolve: async () => {
         const uri = await this.getResourceUri();
-        return uri && uri.path.toString();
+        return uri && uri.codeUri.fsPath.toString();
       },
     });
     variables.registerVariable({
