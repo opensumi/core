@@ -35,7 +35,7 @@ jobs:
         npm i
         npm run ci -- -- --selectProjects jsdom
 
-    - if: ${{ matrix.node-version == '14.x' }}
+    - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
       name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
@@ -63,7 +63,7 @@ jobs:
         npm i
         npm run ci -- -- --selectProjects node
 
-    - if: ${{ matrix.node-version == '14.x' }}
+    - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
       name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:

@@ -6,3 +6,8 @@ coverage:
         # allow coverage to drop by this amount and still post success
         threshold: 0.5%
         if_ci_failed: error
+codecov:
+  require_ci_to_pass: true
+  notify:
+    after_n_builds: 2
+    wait_for_ci: true
