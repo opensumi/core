@@ -19,7 +19,15 @@ import {
   IRecycleTreeFilterHandle,
   TreeModel,
 } from '@opensumi/ide-components';
-import { ViewState, useInjectable, isOSX, URI, DisposableCollection } from '@opensumi/ide-core-browser';
+import {
+  ViewState,
+  useInjectable,
+  isOSX,
+  URI,
+  DisposableCollection,
+  CancellationToken,
+  CancellationTokenSource,
+} from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
@@ -148,7 +156,8 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
   }, [isReady]);
 
   useEffect(() => {
-    ensureIsReady();
+    const tokenSource = new CancellationTokenSource();
+    ensureIsReady(tokenSource.token);
     disposableRef.current?.push(
       iconService.onThemeChange((theme) => {
         setIconTheme(theme);
@@ -165,6 +174,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
       }),
     );
     return () => {
+      tokenSource.cancel();
       disposableRef.current?.dispose();
     };
   }, []);
@@ -259,22 +269,31 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     await expandAll();
   }, [fileTreeModelService]);
 
-  const ensureIsReady = useCallback(async () => {
-    await fileTreeModelService.whenReady;
-    if (fileTreeModelService.treeModel) {
-      setModel(fileTreeModelService.treeModel);
-      // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-      // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-      await fileTreeModelService.treeModel.root.ensureLoaded();
-      setIsLoading(false);
-      if (wrapperRef.current) {
-        fileTreeService.initContextKey(wrapperRef.current);
+  const ensureIsReady = useCallback(
+    async (token: CancellationToken) => {
+      await fileTreeModelService.whenReady;
+      if (token.isCancellationRequested) {
+        return;
       }
-    }
-    if (!disposableRef.current?.disposed) {
-      setIsReady(true);
-    }
-  }, [fileTreeModelService, disposableRef.current]);
+      if (fileTreeModelService.treeModel) {
+        setModel(fileTreeModelService.treeModel);
+        // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+        // 这里需要重新取一下treeModel的值确保为最新的TreeModel
+        await fileTreeModelService.treeModel.root.ensureLoaded();
+        if (token.isCancellationRequested) {
+          return;
+        }
+        setIsLoading(false);
+        if (wrapperRef.current) {
+          fileTreeService.initContextKey(wrapperRef.current);
+        }
+      }
+      if (!disposableRef.current?.disposed) {
+        setIsReady(true);
+      }
+    },
+    [fileTreeModelService, disposableRef.current],
+  );
 
   const handleTreeReady = useCallback(
     (handle: IRecycleTreeFilterHandle) => {
