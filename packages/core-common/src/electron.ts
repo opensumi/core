@@ -1,4 +1,4 @@
-import Electron from 'electron';
+import type Electron from 'electron';
 
 import { IDisposable } from '@opensumi/ide-utils';
 
