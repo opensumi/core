@@ -84,7 +84,7 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
       submenu: SUB_MENU_ID,
       label: localize('editor.openType'),
       group: 'navigation',
-      order: 0,
+      order: Number.MIN_SAFE_INTEGER,
       iconClass: getIcon('setting'),
       type: 'default',
     } as ISubmenuItem;
@@ -99,7 +99,6 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
         },
         extraTailArgs: [type.componentId ?? type.type],
         group: 'navigation',
-        type: 'primary',
       });
     });
   }
