@@ -491,6 +491,8 @@ export const localizationBundle = {
     'preference.workbench.refactoringChanges.showPreviewStrategy':
       'Show preview confirm when triggering some refactoring changes',
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': 'Refactor Confirm',
+    'preference.workbench.editorAssociations':
+      'Configure glob patterns to editors (e.g. `"*.hex": "hexEditor.hexEdit"`). These have precedence over the default behavior.',
 
     'preference.tab.name': 'Settings',
     'preference.noResults': "No Setting Found Containing '{0}'",

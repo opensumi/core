@@ -3,7 +3,7 @@ import React = require('react');
 import { Injectable, Autowired } from '@opensumi/di';
 import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
 import { CancellationTokenSource, Disposable, ILogger, match } from '@opensumi/ide-core-common';
-import { EditorComponentRegistry, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorPriority, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
 
@@ -72,7 +72,7 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
       if (patterns.length === 0) {
         return;
       }
-      const priority: 'default' | 'option' = customEditor.priority || 'default';
+      const priority: keyof typeof IEditorPriority = customEditor.priority || IEditorPriority.default;
       this.addDispose(
         this.editorComponentRegistry.registerEditorComponentResolver(
           () => 10,
@@ -88,7 +88,8 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
                   title: customEditor.displayName
                     ? this.getLocalizeFromNlsJSON(customEditor.displayName)
                     : customEditor.viewType,
-                  weight: priority === 'default' ? Number.MAX_SAFE_INTEGER : 0,
+                  weight: priority === IEditorPriority.default ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER,
+                  priority,
                   saveResource: (resource) =>
                     this.eventBus.fireAndAwait(
                       new CustomEditorShouldSaveEvent({

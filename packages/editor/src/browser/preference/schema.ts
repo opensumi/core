@@ -1806,6 +1806,14 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'integer',
     default: 3000,
   },
+  'workbench.editorAssociations': {
+    type: 'object',
+    description: '%preference.workbench.editorAssociations%',
+    default: {},
+    additionalProperties: {
+      type: 'string',
+    },
+  },
   'diffEditor.renderSideBySide': {
     type: 'boolean',
     default: true,
