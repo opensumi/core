@@ -17,12 +17,12 @@ describe('Pty Manager Test Local', () => {
 
   it('pty manager create and kill', async () => {
     ptyServiceManager = injector.get(PtyServiceManager);
-    const ptyService = await ptyServiceManager.spawn('sh', [], {}, 'fake-session-1');
+    const ptyService = await ptyServiceManager.spawn('bash', [], {}, 'fake-session-1');
     expect(ptyService.onData).toBeDefined();
     expect(ptyService).toBeDefined();
     expect(ptyService?.pid).toBeDefined();
     const process = await ptyService.getProcessDynamically();
-    expect(process).toEqual('sh');
+    expect(process).toEqual('bash');
     ptyService.write('pwd\n');
 
     ptyService.kill();
