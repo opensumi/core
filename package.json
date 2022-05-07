@@ -47,6 +47,9 @@
     "changelog-old": "node scripts/changelog/index.js",
     "changelog": "ts-node -P scripts/tsconfig.scripts.json scripts/changelog/index.ts"
   },
+  "engines": {
+    "node": ">=12 <=14"
+  },
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^7.1.2",
