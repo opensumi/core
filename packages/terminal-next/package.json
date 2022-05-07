@@ -21,7 +21,7 @@
     "@opensumi/ide-core-node": "2.17.2",
     "@opensumi/ide-file-service": "2.17.2",
     "event-kit": "^2.5.3",
-    "node-pty": "0.10.0",
+    "node-pty": "0.11.0-beta19",
     "os-locale": "^4.0.0",
     "xterm": "4.19.0-beta.15",
     "xterm-addon-fit": "^0.5.0",

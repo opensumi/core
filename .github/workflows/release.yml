@@ -19,7 +19,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
 
     steps:
       # 判断用户是否有管理员权限
@@ -70,7 +70,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      
+
       # 非 main 分支发布时，自动推送代码到对应分支并打 Tag
       - name: Publish Prod Version
         if: steps.checkTag.outputs.exists == 'false' && github.event.ref != 'refs/heads/main' && github.event.inputs.release_branch == ''

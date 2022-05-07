@@ -14,12 +14,13 @@ on:
       - 'packages/**'
 
 jobs:
-  coverage:
-    runs-on: ubuntu-latest
-
+  browser:
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [12.x, 14.x]
+        os: [macos-latest, ubuntu-latest]
+        node-version: [14.x]
 
     steps:
     - uses: actions/checkout@v2
@@ -29,16 +30,43 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Build
+    - name: Build & Test
       run: |
         npm i
-        npm run init
-        npm run ci
+        npm run ci -- -- --selectProjects jsdom
 
-    # Only upload the coverage once
     - if: ${{ matrix.node-version == '14.x' }}
       name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
         token: ${{ secrets.CORE_CODECOV_TOKEN }}
+        flags: jsdom
+        directory: ./coverage
+  node:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        node-version: [14.x]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Build & Test
+      run: |
+        npm i
+        npm run ci -- -- --selectProjects node
+
+    - if: ${{ matrix.node-version == '14.x' }}
+      name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v2
+      with:
+        token: ${{ secrets.CORE_CODECOV_TOKEN }}
+        flags: node
         directory: ./coverage

@@ -35,14 +35,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "node-pty": "0.10.0",
-    "nsfw": "^2.1.2",
+    "node-pty": "0.11.0-beta19",
+    "nsfw": "^2.2.0",
     "spdlog": "^0.9.0",
     "vscode-oniguruma": "1.5.1",
     "@opensumi/vscode-ripgrep": "^1.4.0"
-  },
-  "resolutions": {
-    "y18n": "4.0.0"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",

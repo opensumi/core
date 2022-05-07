@@ -24,7 +24,7 @@
     "iconv-lite": "^0.6.0",
     "jschardet": "3.0.0",
     "mv": "^2.1.1",
-    "nsfw": "^2.1.2",
+    "nsfw": "^2.2.0",
     "trash": "^5.2.0",
     "vscode-languageserver-types": "^3.16.0",
     "write-file-atomic": "^3.0.0"

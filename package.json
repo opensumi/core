@@ -40,8 +40,7 @@
     "test:module": "cross-env NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
     "prepare:test": "npm run init:deps && npm run compile && npm run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 npm run test -- --coverage",
-    "coverage": "npm run init && npm run test:cov",
-    "ci": "npm run lint -- --quiet && npm run coverage && npm run check:dep",
+    "ci": "npm run init && npm run lint -- --quiet && npm run check:dep && npm run test:cov",
     "download-extension": "cross-env DEBUG=InstallExtension node scripts/download.js",
     "update:iconfont": "ts-node ./scripts/download-iconfont.ts",
     "changelog-old": "node scripts/changelog/index.js",
@@ -83,11 +82,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:opensumi/core.git"
-  },
-  "resolutions": {
-    "y18n": "4.0.0",
-    "shelljs": "0.8.4",
-    "webpack": "4.39.3"
   },
   "devDependencies": {
     "@types/classnames": "2.2.6",
