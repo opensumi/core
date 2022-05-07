@@ -1,3 +1,5 @@
+import os from 'os';
+
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
@@ -10,19 +12,25 @@ const delay = (t: number) => new Promise((resolve) => setTimeout(resolve, t));
 describe('Pty Manager Test Local', () => {
   let injector: Injector;
   let ptyServiceManager: IPtyServiceManager;
+  let shellPath = '';
 
+  if (os.platform() === 'win32') {
+    shellPath = 'powershell';
+  } else if (os.platform() === 'linux' || os.platform() === 'darwin') {
+    shellPath = 'bash';
+  }
   beforeEach(() => {
     injector = createNodeInjector([TerminalNodePtyModule]);
   });
 
   it('pty manager create and kill', async () => {
     ptyServiceManager = injector.get(PtyServiceManager);
-    const ptyService = await ptyServiceManager.spawn('sh', [], {}, 'fake-session-1');
+    const ptyService = await ptyServiceManager.spawn(shellPath, [], {}, 'fake-session-1');
     expect(ptyService.onData).toBeDefined();
     expect(ptyService).toBeDefined();
     expect(ptyService?.pid).toBeDefined();
     const process = await ptyService.getProcessDynamically();
-    expect(process).toEqual('sh');
+    expect(process).toEqual(shellPath);
     ptyService.write('pwd\n');
 
     ptyService.kill();
