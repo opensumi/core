@@ -37,6 +37,7 @@ import { LanguageStatusContribution } from './language/language-status.contribut
 import { LanguageStatusService } from './language/language-status.service';
 import { LanguageService } from './language/language.service';
 import { EditorActionRegistryImpl } from './menu/editor.menu';
+import { OpenTypeMenuContribution } from './menu/open-type-menu.contribution';
 import {
   CallHierarchyContribution,
   CallHierarchyService,
@@ -172,6 +173,7 @@ export class EditorModule extends BrowserModule {
     CallHierarchyContribution,
     TypeHierarchyContribution,
     LanguageStatusContribution,
+    OpenTypeMenuContribution,
   ];
   contributionProvider = BrowserEditorContribution;
 

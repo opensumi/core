@@ -469,7 +469,6 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         />
       </div>
       {group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>}
-      <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group} />
     </div>
   );
 });
