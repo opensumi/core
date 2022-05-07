@@ -1776,7 +1776,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this._currentOpenType;
   }
 
-  async changeOpenType(type: IEditorOpenType) {
+  async changeOpenType(id: string) {
+    const type = this.availableOpenTypes.find((a) => a.type === id || a.componentId === id);
+    if (!type) {
+      return;
+    }
+
     if (!this.currentResource) {
       return;
     }

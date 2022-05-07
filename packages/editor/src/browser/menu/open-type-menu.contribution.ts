@@ -1,7 +1,13 @@
-
 import { Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { IMenuRegistry, ISubmenuItem, MenuId, MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  IMenuRegistry,
+  ISubmenuItem,
+  MenuId,
+  MenuContribution,
+  IMenuItem,
+  MenuCommandDesc,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   Command,
   CommandContribution,
@@ -37,7 +43,16 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
   private readonly menuRegistry: IMenuRegistry;
 
   registerCommands(commands: CommandRegistry): void {
-    // commands.registerCommand('')
+    commands.registerCommand(
+      { id: 'editor.opentype' },
+      {
+        execute: (id: string) => {
+          if (id) {
+            (this.workbenchEditorService.topGrid.editorGroup as EditorGroup).changeOpenType(id);
+          }
+        },
+      },
+    );
   }
 
   constructor() {
@@ -46,17 +61,23 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
       this.workbenchEditorService.onActiveResourceChange((e) => {
         const openTypes = (this.workbenchEditorService.topGrid.editorGroup as EditorGroup).availableOpenTypes;
         // 如果打开方式没有两个以上，则不需要展示
-        if (openTypes.length < 2) {
-          this.menuRegistry.unregisterMenuItem(MenuId.EditorTitle, SUB_MENU_ID);
-          return;
-        }
+        const preMenu = this.menuRegistry
+          .getMenuItems(SUB_MENU_ID)
+          .map((e) => (e as IMenuItem).command as MenuCommandDesc);
+        preMenu.forEach((c) => {
+          this.menuRegistry.unregisterMenuItem(SUB_MENU_ID, c.id);
+        });
 
-        this.registerMenuItem(openTypes);
+        this.menuRegistry.unregisterMenuItem(MenuId.EditorTitle, SUB_MENU_ID);
+
+        if (openTypes.length >= 2) {
+          this.registerMenuItem(openTypes);
+        }
       }),
     );
   }
 
-  registerMenus() {}
+  registerMenus(menuRegistry: IMenuRegistry) {}
 
   private registerMenuItem(openTypes: IEditorOpenType[]) {
     const openTypeMenus = {
@@ -73,9 +94,10 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
     openTypes.forEach((type) => {
       this.menuRegistry.registerMenuItem(SUB_MENU_ID, {
         command: {
-          id: type.componentId ?? 'code',
+          id: 'editor.opentype',
           label: type.title || type.componentId || type.type,
         },
+        extraTailArgs: [type.componentId ?? type.type],
         group: 'navigation',
         type: 'primary',
       });
