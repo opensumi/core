@@ -1,7 +1,6 @@
 import { execSync } from 'child_process';
 
 import * as fs from 'fs-extra';
-import mv from 'mv';
 import temp from 'temp';
 
 import { URI } from '@opensumi/ide-core-common';
@@ -184,17 +183,14 @@ describe('测试重命名、移动、新建相关', () => {
     const expectedAddUris = [root.resolve('for_rename_folder').resolve('for_rename').toString()];
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
+    await fs.move(
+      FileUri.fsPath(root.resolve('for_rename')),
+      FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
+      {
+        overwrite: true,
+      },
+    );
 
-    await new Promise<void>((resolve) => {
-      mv(
-        FileUri.fsPath(root.resolve('for_rename')),
-        FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
-        { mkdirp: true, clobber: true },
-        () => {
-          resolve();
-        },
-      );
-    });
     await sleep(sleepTime);
 
     expect([...addUris]).toEqual(expectedAddUris);
@@ -223,17 +219,10 @@ describe('测试重命名、移动、新建相关', () => {
     const expectedAddUris = [root.resolve('for_rename_1').toString()];
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
-
-    await new Promise<void>((resolve) => {
-      mv(
-        FileUri.fsPath(root.resolve('for_rename')),
-        FileUri.fsPath(root.resolve('for_rename_1')),
-        { mkdirp: true, clobber: true },
-        () => {
-          resolve();
-        },
-      );
+    await fs.move(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_1')), {
+      overwrite: true,
     });
+
     await sleep(sleepTime);
 
     expect([...addUris]).toEqual(expectedAddUris);

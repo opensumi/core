@@ -3,7 +3,6 @@ import paths from 'path';
 
 import fileType from 'file-type';
 import * as fse from 'fs-extra';
-import mv from 'mv';
 import trash from 'trash';
 import { v4 } from 'uuid';
 import writeFileAtomic from 'write-file-atomic';
@@ -475,10 +474,10 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       return newStat;
     } else {
       return new Promise<FileStat>((resolve, reject) => {
-        mv(
+        fse.move(
           FileUri.fsPath(_sourceUri.toString()),
           FileUri.fsPath(_targetUri.toString()),
-          { mkdirp: true, clobber: overwrite },
+          { overwrite },
           async (error: any) => {
             if (error) {
               return reject(error);
