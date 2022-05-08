@@ -12,9 +12,9 @@
     "terser": "^5.13.1"
   },
   "dependencies": {
-    "@types/koa": "^2.0.48",
+    "@types/koa": "^2.13.4",
     "@types/koa-router": "^7.4.2",
-    "@types/koa-bodyparser": "^4.2.2",
+    "@types/koa-bodyparser": "^4.3.7",
     "cache-loader": "^4.1.0",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",
@@ -22,8 +22,8 @@
     "fork-ts-checker-webpack-plugin": "^6.5.0",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-webpack-plugin": "^3.2.0",
-    "koa": "^2.11.0",
-    "koa-bodyparser": "^4.2.1",
+    "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
     "koa-router": "^10.1.1",
     "less": "^3.9.0",
     "less-loader": "^6.0.0",
