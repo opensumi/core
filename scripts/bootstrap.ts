@@ -1,5 +1,5 @@
 import retry from 'async-retry';
-import { execaCommand } from 'execa';
+import { command } from 'execa';
 
 (async () => {
   // lerna bootstrap --hoist 偶先会报错，使用 retry 重试三次
@@ -7,7 +7,8 @@ import { execaCommand } from 'execa';
   try {
     await retry(
       async () => {
-        await execaCommand('lerna clean --yes && lerna bootstrap --hoist', {
+        await command('lerna clean --yes && lerna bootstrap --hoist', {
+          shell: true,
           stdio: 'inherit',
         });
       },
