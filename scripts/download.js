@@ -1,6 +1,5 @@
 const path = require('path');
 const rimraf = require('rimraf');
-const mkdirp = require('mkdirp');
 const fs = require('fs-extra');
 const yauzl = require('yauzl');
 const log = require('debug')('InstallExtension');
@@ -178,7 +177,7 @@ const installExtension = async (namespace, name, version) => {
 const downloadVscodeExtensions = async () => {
   log('清空 vscode extension 目录：%s', targetDir);
   rimraf.sync(targetDir);
-  mkdirp.sync(targetDir);
+  fs.mkdirpSync(targetDir);
 
   const promises = [];
   const publishers = Object.keys(extensions);
