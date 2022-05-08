@@ -21,7 +21,7 @@
     "@opensumi/ide-core-node": "2.17.4",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
-    "iconv-lite": "^0.6.0",
+    "iconv-lite": "^0.6.3",
     "jschardet": "3.0.0",
     "mv": "^2.1.1",
     "nsfw": "^2.2.0",
