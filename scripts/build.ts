@@ -21,7 +21,7 @@ import * as fs from 'fs-extra';
   const configFile = path.join(__dirname, 'test/jest.config.js');
   const testFile = path.join(__dirname, 'test/build.js');
 
-  await run(`npx jest ${testFile} -c ${configFile}`);
+  // await run(`npx jest ${testFile} -c ${configFile}`);
 })().catch((e) => {
   console.trace(e);
   process.exit(128);
