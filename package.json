@@ -104,7 +104,6 @@
     "@types/read-pkg": "^5.1.0",
     "@types/socket.io-client": "^1.4.32",
     "@types/temp": "^0.9.1",
-    "@types/write-pkg": "^4.0.0",
     "@types/ws": "^6.0.1",
     "@types/yargs": "^16",
     "@typescript-eslint/eslint-plugin": "^5.12.1",
@@ -140,7 +139,6 @@
     "simple-git": "^3.3.0",
     "temp": "^0.9.4",
     "ts-jest": "^28.0.0",
-    "write-pkg": "^4.0.0",
     "yargs": "^16.1.0",
     "yauzl": "^2.10.0"
   }
