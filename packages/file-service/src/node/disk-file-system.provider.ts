@@ -25,6 +25,7 @@ import {
   isWindows,
   FileUri,
 } from '@opensumi/ide-core-node';
+import { move } from '@opensumi/ide-core-node/lib/fs';
 
 import {
   FileChangeEvent,
@@ -473,24 +474,13 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       await this.delete(sourceUri, { moveToTrash: false });
       return newStat;
     } else {
-      return new Promise<FileStat>((resolve, reject) => {
-        fse.move(
-          FileUri.fsPath(_sourceUri.toString()),
-          FileUri.fsPath(_targetUri.toString()),
-          { overwrite },
-          async (error: any) => {
-            if (error) {
-              return reject(error);
-            }
-            const stat = await this.doGetStat(_targetUri, 1);
-            if (stat) {
-              resolve(stat);
-            } else {
-              reject(FileSystemError.FileNotFound(_targetUri.path));
-            }
-          },
-        );
-      });
+      await move(FileUri.fsPath(_sourceUri.toString()), FileUri.fsPath(_targetUri.toString()), { overwrite });
+      const stat = await this.doGetStat(_targetUri, 1);
+      if (stat) {
+        return stat;
+      } else {
+        throw FileSystemError.FileNotFound(_targetUri.path);
+      }
     }
   }
 

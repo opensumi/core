@@ -7,6 +7,7 @@ import * as fse from 'fs-extra';
 import { Injector } from '@opensumi/di';
 import { isWindows } from '@opensumi/ide-core-common';
 import { URI, FileUri, AppConfig } from '@opensumi/ide-core-node';
+import { expectThrowsAsync } from '@opensumi/ide-core-node/__tests__/helper';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileService, FileChangeType } from '../../src/common';
@@ -35,10 +36,6 @@ describe('FileService', () => {
       ]),
     );
 
-    // injector = new Injector([{
-    //   token: 'FileServiceOptions',
-    //   useValue: FileSystemNodeOptions.DEFAULT,
-    // }]);
     fileService = injector.get(IFileService);
   });
 
@@ -328,7 +325,7 @@ describe('FileService', () => {
       expect(fs.readdirSync(FileUri.fsPath(targetUri)).length).toEqual(0);
     });
 
-    it('Moving an empty directory to a non-empty directory. Should be rejected because the target folder is not empty.', async () => {
+    it('Moving an empty directory to a non-empty directory without overwrite. Should be rejected because the target folder is not empty.', async () => {
       const sourceUri = root.resolve('foo');
       const targetUri = root.resolve('bar');
       const targetFileUri_01 = targetUri.resolve('bar_01.txt');
@@ -344,7 +341,7 @@ describe('FileService', () => {
       expect(fs.readFileSync(FileUri.fsPath(targetFileUri_02), 'utf8')).toEqual('bar_02');
       expect(fs.readdirSync(FileUri.fsPath(targetUri))).toEqual(['bar_01.txt', 'bar_02.txt']);
 
-      await expectThrowsAsync(fileService.move(sourceUri.toString(), targetUri.toString(), { overwrite: true }));
+      await expectThrowsAsync(fileService.move(sourceUri.toString(), targetUri.toString()));
     });
 
     it('Moving a non-empty directory to an empty directory. Source folder and its content should be moved to the target location.', async (): Promise<void> => {
@@ -376,7 +373,7 @@ describe('FileService', () => {
       expect(fs.readFileSync(FileUri.fsPath(targetUri.resolve('foo_02.txt')), 'utf8')).toEqual('foo_02');
     });
 
-    it('Moving a non-empty directory to a non-empty directory. Should be rejected because the target location is not empty.', async () => {
+    it('Moving a non-empty directory to a non-empty directory without overwrite. Should be rejected because the target location is not empty.', async () => {
       const sourceUri = root.resolve('foo');
       const targetUri = root.resolve('bar');
       const sourceFileUri_01 = sourceUri.resolve('foo_01.txt');
@@ -398,7 +395,7 @@ describe('FileService', () => {
       expect(fs.readdirSync(FileUri.fsPath(sourceUri))).toEqual(['foo_01.txt', 'foo_02.txt']);
       expect(fs.readdirSync(FileUri.fsPath(targetUri))).toEqual(['bar_01.txt', 'bar_02.txt']);
 
-      await expectThrowsAsync(fileService.move(sourceUri.toString(), targetUri.toString(), { overwrite: true }));
+      await expectThrowsAsync(fileService.move(sourceUri.toString(), targetUri.toString()));
     });
   });
 
@@ -700,27 +697,3 @@ describe('FileService', () => {
     });
   });
 });
-
-export async function expectThrowsAsync(
-  actual: Promise<any>,
-  expected?: string | RegExp,
-  message?: string,
-): Promise<void>;
-export async function expectThrowsAsync(
-  actual: Promise<any>,
-  constructor: Error | Function,
-  expected?: string | RegExp,
-  message?: string,
-): Promise<void>;
-export async function expectThrowsAsync(promise: Promise<any>, ...args: any[]): Promise<void> {
-  let synchronous = () => {};
-  try {
-    await promise;
-  } catch (e) {
-    synchronous = () => {
-      throw e;
-    };
-  } finally {
-    expect(synchronous).toThrow(...args);
-  }
-}
