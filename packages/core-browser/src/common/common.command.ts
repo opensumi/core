@@ -64,6 +64,11 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
   };
 
+  export const OPEN_TYPE_WITH: Command = {
+    id: 'filetree.open.with',
+    category: CATEGORY,
+  };
+
   export const COPY_PATH: Command = {
     id: 'filetree.copy.path',
     category: CATEGORY,

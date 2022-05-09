@@ -2021,23 +2021,29 @@ function findSuitableOpenType(
 ) {
   if (forceOpenType) {
     return currentAvailable.find((p) => openTypeSimilar(p, forceOpenType)) || currentAvailable[0];
-  } else if (prev) {
-    return currentAvailable.find((p) => openTypeSimilar(p, prev)) || currentAvailable[0];
   }
 
   if (editorAssociations) {
     // 如果配置了 workbench.editorAssociations 且 priority 为 option 的情况下符合规则的默认打开方式行为
     const matchAvailableType = currentAvailable.find((p) => {
-      if (p.priority === IEditorPriority.option) {
-        const matchAssKey = Object.keys(editorAssociations).find((r) => match(r, resource.uri.path.toString().toLowerCase()) || match(r, resource.uri.path.base.toLowerCase()));
-        const viewType = matchAssKey && editorAssociations[matchAssKey];
-        if (!viewType) {return false;}
-
-        return p.componentId?.split('-')[1] === viewType;
+      const matchAssKey = Object.keys(editorAssociations).find(
+        (r) => match(r, resource.uri.path.toString().toLowerCase()) || match(r, resource.uri.path.base.toLowerCase()),
+      );
+      const viewType = matchAssKey && editorAssociations[matchAssKey];
+      if (!viewType) {
+        return false;
       }
+
+      return p.componentId === viewType;
     });
 
-    if (matchAvailableType) {return matchAvailableType;}
+    if (matchAvailableType) {
+      return matchAvailableType;
+    }
+  }
+
+  if (prev) {
+    return currentAvailable.find((p) => openTypeSimilar(p, prev)) || currentAvailable[0];
   }
 
   return currentAvailable[0];
