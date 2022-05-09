@@ -126,6 +126,8 @@ describe('OpenedEditorModelService should be work', () => {
     const groups: OpenedEditorData[] = [
       {
         ...baseMockGroup,
+        availableOpenTypes: [],
+        changeOpenType: async () => {},
         index: 1,
         name: 'group 1',
         resources: [
