@@ -2021,6 +2021,8 @@ function findSuitableOpenType(
 ) {
   if (forceOpenType) {
     return currentAvailable.find((p) => openTypeSimilar(p, forceOpenType)) || currentAvailable[0];
+  } else if (prev) {
+    return currentAvailable.find((p) => openTypeSimilar(p, prev)) || currentAvailable[0];
   }
 
   if (editorAssociations) {
@@ -2040,10 +2042,6 @@ function findSuitableOpenType(
     if (matchAvailableType) {
       return matchAvailableType;
     }
-  }
-
-  if (prev) {
-    return currentAvailable.find((p) => openTypeSimilar(p, prev)) || currentAvailable[0];
   }
 
   return currentAvailable[0];

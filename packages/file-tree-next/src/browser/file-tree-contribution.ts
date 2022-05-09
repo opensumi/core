@@ -577,7 +577,9 @@ export class FileTreeContribution
       selectIndex: number | undefined;
     } => {
       const { availableOpenTypes, currentOpenType } = this.workbenchEditorService.currentEditorGroup;
-      if (!(availableOpenTypes && uri && currentOpenType)) {return { items: [], selectIndex: -1 };}
+      if (!(availableOpenTypes && uri && currentOpenType)) {
+        return { items: [], selectIndex: -1 };
+      }
 
       const editorAssociations =
         this.preferenceService.get<{ [key in string]: string }>('workbench.editorAssociations');
@@ -585,8 +587,12 @@ export class FileTreeContribution
       const items: QuickOpenItem[] = [];
 
       const compareType = (o: IEditorOpenType, t: IEditorOpenType) => {
-        if (t.type === 'code') {return o.type === 'code';}
-        if (t.type === 'component' && o.type === 'component') {return o.componentId === t.componentId;}
+        if (t.type === 'code') {
+          return o.type === 'code';
+        }
+        if (t.type === 'component' && o.type === 'component') {
+          return o.componentId === t.componentId;
+        }
         return false;
       };
       const prettyDescription = (des: string | undefined, msg: string) => {
@@ -645,7 +651,9 @@ export class FileTreeContribution
 
         const { items, selectIndex } = getOpenTypesQuickOpenItem(uri, run);
 
-        if (items.length === 0 || typeof selectIndex === 'undefined') {return;}
+        if (items.length === 0 || typeof selectIndex === 'undefined') {
+          return;
+        }
 
         const openQuickOpen = (items: QuickOpenItem[]) => {
           this.quickOpenService.open(
@@ -654,7 +662,7 @@ export class FileTreeContribution
             },
             {
               fuzzyMatchLabel: true,
-              ignoreFocusOut: true,
+              ignoreFocusOut: false,
               placeholder: formatLocalize('file.open.type.placeholder', uri.path.base),
               selectIndex: () => selectIndex,
             },
@@ -692,7 +700,9 @@ export class FileTreeContribution
 
                 const { items: defaultItems, selectIndex } = getOpenTypesQuickOpenItem(uri, run);
 
-                if (defaultItems.length === 0 || typeof selectIndex === 'undefined') {return true;}
+                if (defaultItems.length === 0 || typeof selectIndex === 'undefined') {
+                  return true;
+                }
 
                 openQuickOpen(defaultItems);
               }
