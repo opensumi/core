@@ -259,6 +259,9 @@ export interface TerminalOptions {
    */
   beforeCreate?: (terminalId: string) => void;
 
+  /**
+   * 终端是否保活
+   */
   isTransient?: boolean;
 }
 

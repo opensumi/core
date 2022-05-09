@@ -288,7 +288,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       // location:
       // internalOptions?.location ||
       // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
-      // disablePersistence: withNullAsUndefined(options.disablePersistence),
+      disablePersistence: withNullAsUndefined(options.isTransient),
     };
 
     if (options.isExtensionTerminal) {
