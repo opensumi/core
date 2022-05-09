@@ -463,7 +463,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           return;
         }
 
-        if (client.options.isExtensionTerminal || client.options.isTransient) {
+        if (client?.options?.isExtensionTerminal || client?.options?.isTransient) {
           return;
         }
 
