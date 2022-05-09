@@ -5,6 +5,7 @@ import temp from 'temp';
 
 import { URI } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
+import { move } from '@opensumi/ide-core-node/lib/fs';
 
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
@@ -183,7 +184,7 @@ describe('测试重命名、移动、新建相关', () => {
     const expectedAddUris = [root.resolve('for_rename_folder').resolve('for_rename').toString()];
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
-    await fs.move(
+    await move(
       FileUri.fsPath(root.resolve('for_rename')),
       FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
       {
@@ -219,7 +220,7 @@ describe('测试重命名、移动、新建相关', () => {
     const expectedAddUris = [root.resolve('for_rename_1').toString()];
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
-    await fs.move(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_1')), {
+    await move(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_1')), {
       overwrite: true,
     });
 

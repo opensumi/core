@@ -15,7 +15,7 @@ export async function expectThrowsAsync(promise: Promise<any>, ...args: any[]): 
     await promise;
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.log('file: move.test.ts ~ expectThrowsAsync', e);
+    console.log('expectThrowsAsync', e);
     synchronous = () => {
       throw e;
     };
