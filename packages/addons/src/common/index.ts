@@ -5,8 +5,8 @@ export const FileDropServicePath = 'FileDropServicePath';
 export const IFileDropServiceToken = Symbol('IFileDropService');
 
 export interface IFileDropBackendService {
-  ensureFileExist(fileName: string, targetDir: string): Promise<boolean>;
-  writeStream(chunk: string | ArrayBuffer, fileName: string, targetDir: string, done: boolean): Promise<void>;
+  $ensureFileExist(fileName: string, targetDir: string): Promise<boolean>;
+  $writeStream(chunk: string | ArrayBuffer, fileName: string, targetDir: string, done: boolean): Promise<void>;
 }
 
 export const IFileDropFrontendServiceToken = Symbol('IFileDropFrontendService');
