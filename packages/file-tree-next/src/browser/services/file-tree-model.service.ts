@@ -307,19 +307,6 @@ export class FileTreeModelService {
     // 等待初次加载完成后再初始化当前的 treeStateWatcher, 只加载可见的节点
     this.treeStateWatcher = this._treeModel.getTreeStateWatcher(true);
     this.disposableCollection.push(
-      this.treeStateWatcher.onDidChange(() => {
-        if (!this._initTreeModelReady) {
-          return;
-        }
-        const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
-        const currentTreeSnapshot = this.treeStateWatcher.snapshot();
-        this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, {
-          ...snapshot,
-          ...currentTreeSnapshot,
-        });
-      }),
-    );
-    this.disposableCollection.push(
       this.fileTreeService.onNodeRefreshed(() => {
         if (!this.initTreeModelReady) {
           return;
@@ -428,6 +415,20 @@ export class FileTreeModelService {
       // 初始化时。以右侧编辑器打开的文件进行定位
       await this.loadFileTreeSnapshot(snapshot);
     }
+    // 完成首次文件树快照恢复后再进行 Tree 状态变化的更新
+    this.disposableCollection.push(
+      this.treeStateWatcher.onDidChange(() => {
+        if (!this._initTreeModelReady) {
+          return;
+        }
+        const snapshot = this.explorerStorage.get<any>(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY);
+        const currentTreeSnapshot = this.treeStateWatcher.snapshot();
+        this.explorerStorage.set(FileTreeModelService.FILE_TREE_SNAPSHOT_KEY, {
+          ...snapshot,
+          ...currentTreeSnapshot,
+        });
+      }),
+    );
     // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
     // 即找到插入节点位置为 0，导致重复问题
     this.fileTreeService.startWatchFileEvent();
