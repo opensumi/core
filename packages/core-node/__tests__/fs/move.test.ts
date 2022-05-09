@@ -1,9 +1,11 @@
 import fse from 'fs-extra';
 import temp from 'temp';
 
-import { move } from '../../src/fs';
+// TODO: 以后可能会自己在某个地方实现一套 fs.xx 函数，这里的测试先保留
+const move = fse.move;
+
 import { expectThrowsAsync } from '../helper';
-describe('fs move is work', () => {
+describe.skip('fs move is work', () => {
   const track = temp.track();
 
   let srcFile: temp.OpenFile;
