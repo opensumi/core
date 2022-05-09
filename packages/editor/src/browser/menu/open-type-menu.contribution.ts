@@ -26,8 +26,8 @@ import { WorkbenchEditorServiceImpl, EditorGroup } from './../workbench-editor.s
 const SUB_MENU_ID = 'editor/openType/submenu';
 
 namespace OPEN_TYPE_COMMANDS {
-  export const UN_REGISTER: Command = {
-    id: 'opened.editors.save.byGroup',
+  export const EDITOR_OPEN_TYPE: Command = {
+    id: 'editor.opentype',
   };
 }
 
@@ -43,16 +43,13 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
   private readonly menuRegistry: IMenuRegistry;
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(
-      { id: 'editor.opentype' },
-      {
-        execute: (id: string) => {
-          if (id) {
-            (this.workbenchEditorService.topGrid.editorGroup as EditorGroup).changeOpenType(id);
-          }
-        },
+    commands.registerCommand(OPEN_TYPE_COMMANDS.EDITOR_OPEN_TYPE, {
+      execute: (id: string) => {
+        if (id) {
+          (this.workbenchEditorService.topGrid.editorGroup as EditorGroup).changeOpenType(id);
+        }
       },
-    );
+    });
   }
 
   constructor() {
@@ -94,7 +91,7 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
     openTypes.forEach((type) => {
       this.menuRegistry.registerMenuItem(SUB_MENU_ID, {
         command: {
-          id: 'editor.opentype',
+          id: OPEN_TYPE_COMMANDS.EDITOR_OPEN_TYPE.id,
           label: type.title || type.componentId || type.type,
         },
         extraTailArgs: [type.componentId ?? type.type],
