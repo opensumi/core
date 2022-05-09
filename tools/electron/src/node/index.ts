@@ -20,12 +20,9 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   FileSearchModule,
   SearchModule,
   TerminalNodePtyModule,
-
   ExtensionModule,
   OpenVsxExtensionManagerModule,
   FileSchemeNodeModule,
-
-  // TopBarModule, // Topbar demo
   AddonsModule,
 ];
 

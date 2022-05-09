@@ -11,9 +11,8 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   let opts: IServerAppOpts = {
     webSocketHandler: [],
     marketplace: {
+      endpoint: 'https://open-vsx.org/api',
       showBuiltinExtensions: true,
-      accountId: 'nGJBcqs1D-ma32P3mBftgsfq',
-      masterKey: '-nzxLbuqvrKh8arE0grj2f1H',
     },
   };
   if (Array.isArray(arg1)) {
@@ -30,7 +29,6 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
 
   const server = net.createServer();
   const listenPath = yargs.argv.listenPath;
-  console.log('listenPath', listenPath);
 
   const serverApp = new ServerApp(opts);
 
