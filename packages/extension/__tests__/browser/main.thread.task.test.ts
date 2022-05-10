@@ -12,11 +12,8 @@ import {
   TaskDefinitionRegistryImpl,
 } from '@opensumi/ide-core-common';
 import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
-import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import {
-  EditorDocumentModelContentRegistryImpl,
-  EditorDocumentModelServiceImpl,
-} from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/src/browser';
+import { EditorDocumentModelContentRegistryImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { ExtensionService } from '@opensumi/ide-extension';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
