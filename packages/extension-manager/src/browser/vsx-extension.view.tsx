@@ -9,11 +9,10 @@ import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressb
 import { localize } from '@opensumi/ide-core-common';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
-
-import { IVSXExtensionService, TabActiveKey, VSXExtension, VSXExtensionServiceToken } from '../common';
+import { IVSXExtensionService, TabActiveKey, VSXExtension, VSXExtensionServiceToken, InstallState } from '../common';
 
 import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID } from './const';
-import { Extension } from './extension';
+import { Extension, ExtensionViewType } from './extension';
 import styles from './vsx-extension.module.less';
 
 const tabMap = [TabActiveKey.MARKETPLACE, TabActiveKey.INSTALLED];
@@ -35,7 +34,7 @@ export const VSXExtensionView = observer(() => {
 
   const onInstall = useCallback((extension: VSXExtension) => vsxExtensionService.install(extension), []);
 
-  const onClick = useCallback((extension, state) => {
+  const onClick = useCallback((extension: VSXExtension, state: InstallState) => {
     const id = extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
     vsxExtensionService.openExtensionEditor(id, state);
   }, []);
@@ -73,7 +72,8 @@ export const VSXExtensionView = observer(() => {
               onInstall={onInstall}
               key={`${e.namespace}-${e.name}`}
               extension={e}
-              installed={false}
+              type={ExtensionViewType.MARKETPLACE}
+              installedExtensions={vsxExtensionService.installedExtensions}
             />
           ))}
         </div>
@@ -86,7 +86,7 @@ export const VSXExtensionView = observer(() => {
               onInstall={onInstall}
               key={`${e.namespace}-${e.name}`}
               extension={e}
-              installed={true}
+              type={ExtensionViewType.INSTALLED}
             />
           ))}
         </div>

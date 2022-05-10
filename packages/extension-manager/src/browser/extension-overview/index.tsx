@@ -141,6 +141,11 @@ export const ExtensionOverview: ReactEditorComponent<
                 {localize(installing ? 'marketplace.extension.installing' : 'marketplace.extension.install')}
               </Button>
             )}
+            {resource.metadata?.state === InstallState.SHOULD_UPDATE && (
+              <Button size='small' onClick={onInstallCallback} disabled={installing}>
+                {localize(installing ? 'marketplace.extension.updating' : 'marketplace.extension.update')}
+              </Button>
+            )}
             {resource.metadata?.state === InstallState.INSTALLED && (
               <span>{localize('marketplace.extension.installed')}</span>
             )}
