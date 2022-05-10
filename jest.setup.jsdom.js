@@ -1,4 +1,5 @@
 require('jest-canvas-mock');
+const fetch = require('node-fetch');
 
 // packages/extension/__tests__/browser/main.thread.env.test.ts
 // MainThreadEnvAPI Test Suites  › can read/write text via clipboard
@@ -13,6 +14,8 @@ window.navigator = Object.assign(window.navigator, {
     },
   },
 });
+
+window.fetch = fetch.default;
 
 // https://github.com/jsdom/jsdom/issues/1742
 document.queryCommandSupported = () => {};
