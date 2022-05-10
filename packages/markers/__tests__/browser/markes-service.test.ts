@@ -60,9 +60,7 @@ const fakeEditorGroup: IEditorGroup = {
   saveCurrent: (() => {}) as any,
   saveResource: (() => {}) as any,
   availableOpenTypes: [],
-  changeOpenType (type: IEditorOpenType): Promise<void> {
-    throw new Error('Function not implemented.');
-  },
+  changeOpenType: ((id: string) => {}) as any,
 };
 
 fakeEditorGroup.resources = [fakeResource];

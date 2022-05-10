@@ -260,7 +260,7 @@ export interface IEditorGroup {
 
   resourceStatus: Map<IResource, Promise<void>>;
 
-  changeOpenType(type: IEditorOpenType): Promise<void>;
+  changeOpenType(type: string): Promise<void>;
 
   onDidEditorGroupContentLoading: Event<IResource>;
 
