@@ -6,6 +6,7 @@ import {
   isWindows,
   OperatingSystem,
   PreferenceService,
+  QuickOpenService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { Emitter, URI } from '@opensumi/ide-core-node';
@@ -19,6 +20,7 @@ import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { OutlineModule } from '@opensumi/ide-outline/lib/browser';
 import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
+import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -124,6 +126,10 @@ describe('FileTreeContribution', () => {
       {
         token: IViewsRegistry,
         useClass: ViewsRegistry,
+      },
+      {
+        token: QuickOpenService,
+        useClass: MockQuickOpenService,
       },
       {
         token: IApplicationService,
