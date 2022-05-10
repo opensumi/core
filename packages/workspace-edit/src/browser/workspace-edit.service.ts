@@ -304,7 +304,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
         await editorService.close(this.oldResource, true);
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldResource }));
       } catch (err) {
-        if (FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists) {
+        if (err.cause && FileSystemError.FileNotFound.is(err) && options.ignoreIfNotExists) {
           // 不抛出错误
         } else {
           throw err;
@@ -319,8 +319,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
           await workspaceFS.create(this.newResource, '', { overwrite: options.overwrite });
         }
       } catch (err) {
-        // FIXME: 不知道为什么这里错误不是 FileSystemError 了，所以换个实现兼容一下
-        if (this.isFileExistError(err) && options.ignoreIfExists) {
+        if (err.cause && FileSystemError.FileExists.is(err.cause) && options.ignoreIfExists) {
           // 不抛出错误
         } else {
           throw err;
@@ -330,10 +329,6 @@ export class ResourceFileEdit implements IResourceFileEdit {
         editorService.open(this.newResource);
       }
     }
-  }
-
-  private isFileExistError(err: Error): boolean {
-    return err.message.includes('already exists.');
   }
 
   async revert(): Promise<void> {}

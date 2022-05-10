@@ -1,3 +1,4 @@
+import { ApplicationError } from '@opensumi/ide-core-common';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 export abstract class RPCService<T = any> {
@@ -119,6 +120,14 @@ export class RPCProxy {
                     const error = new Error(result.data.message);
                     if (result.data.stack) {
                       error.stack = result.data.stack;
+                    }
+                    if (result.data.errorType) {
+                      // using ApplicationError
+                      const applicationError = ApplicationError.fromJson(
+                        result.data.errorType.code,
+                        result.data.errorType.data,
+                      );
+                      error.cause = applicationError;
                     }
                     reject(error);
                   } else {
