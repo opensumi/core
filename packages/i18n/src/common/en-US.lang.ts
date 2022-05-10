@@ -160,6 +160,8 @@ export const localizationBundle = {
     'editor.quickOpen': 'Go to File...',
     'editor.editor.goToSymbol': 'Go to Symbol...',
     'editor.goToLine': 'Go to Line...',
+    'editor.openType': 'Open Type',
+
     'editor.closeEditorsInOtherGroups': 'Close Other Groups',
     'editor.resetEditorGroups': 'Reset Editor Group',
     'editor.revert': 'Revert Document',

@@ -131,6 +131,7 @@ export const localizationBundle = {
     'editor.quickOpen': '转到文件...',
     'editor.editor.goToSymbol': '转到符号...',
     'editor.goToLine': '转到行...',
+    'editor.openType': '打开方式',
 
     'quickopen.goToLine.defaultMessage': '当前行: {0}， 列: {1}。 请输入要转到的行号： 1 至 {2} 之间的数字。',
     'quickopen.goToLine.notValid': '请打开一个有效的编辑器。',
