@@ -241,13 +241,6 @@ describe('FileTree should be work while on single workspace model', () => {
   });
   afterAll(() => {
     track.cleanupSync();
-    mockTreeHandle.promptNewTreeNode.mockReset();
-    mockTreeHandle.promptNewCompositeTreeNode.mockReset();
-    mockTreeHandle.promptRename.mockReset();
-    mockTreeHandle.ensureVisible.mockReset();
-    mockFileTreeApi.mv.mockReset();
-    mockFileTreeApi.copyFile.mockReset();
-    mockGetContextValue.mockReset();
   });
 
   describe('01 #Init', () => {

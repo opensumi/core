@@ -252,9 +252,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   public startWatchFileEvent() {
     this._readyToWatch = true;
-    this._watchRootsQueue.forEach(async (uri) => {
-      await this.watchFilesChange(uri);
-    });
+    return Promise.all(
+      this._watchRootsQueue.map(async (uri) => {
+        await this.watchFilesChange(uri);
+      }),
+    );
   }
 
   async resolveChildren(parent?: Directory) {
