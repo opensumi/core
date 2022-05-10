@@ -64,7 +64,6 @@ import {
   getSplitActionFromDragDrop,
 } from '../common';
 
-import { IEditorPriority } from './../common/editor';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { EditorTabChangedError, isEditorError } from './error';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';

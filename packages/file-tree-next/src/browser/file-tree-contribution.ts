@@ -643,7 +643,7 @@ export class FileTreeContribution
       execute: (uri) => {
         const run = (mode: Mode, item: IEditorOpenType) => {
           if (mode === Mode.OPEN) {
-            this.workbenchEditorService.currentEditorGroup?.changeOpenType(item);
+            this.workbenchEditorService.currentEditorGroup?.changeOpenType(item.type);
             return true;
           }
           return false;
@@ -692,7 +692,7 @@ export class FileTreeContribution
                       effectiveScope,
                     );
 
-                    this.workbenchEditorService.currentEditorGroup?.changeOpenType(item);
+                    this.workbenchEditorService.currentEditorGroup?.changeOpenType(item.type);
                     return true;
                   }
                   return false;
