@@ -292,7 +292,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     );
   });
 
-  it('dispose', () => {
+  it('dispose', async () => {
     const id = 'test_id';
     const label = 'test_label';
     const $deleteCommentThread = jest.spyOn(mainThreadComments, '$deleteCommentThread');
@@ -315,6 +315,8 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     ]);
 
     controller.dispose();
+    // 有一个 remote call 的调用，需要等下一个微任务队列
+    await 0;
     expect($deleteCommentThread).toBeCalledTimes(1);
   });
 });
