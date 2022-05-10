@@ -169,11 +169,9 @@ describe(__filename, () => {
 
     const defered = new Deferred();
 
-    mainThread['$createTerminal'] = () => Promise.resolve('fake-id-1');
+    mainThread['$createTerminal'] = () => Promise.resolve();
 
-    mainThread['$sendProcessExit'] = () => {
-      //
-    };
+    mainThread['$sendProcessExit'] = () => {};
 
     const mockCreateTerminal = jest.spyOn(mainThread, '$createTerminal');
 

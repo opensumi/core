@@ -16,14 +16,12 @@ import { IDebugProgress } from './../../src/common/debug-progress';
 import { IDebugServer } from './../../src/common/debug-service';
 import { IDebugSessionManager } from './../../src/common/debug-session';
 
-
 describe('DebugProgressService', () => {
   let debugProgressService: IDebugProgress;
   let injector: MockInjector;
 
   const debugSessionManager = {
     onDidChangeActiveDebugSession: jest.fn(),
-    onDidCreateDebugSession: jest.fn(),
   };
 
   beforeAll(() => {
@@ -88,6 +86,5 @@ describe('DebugProgressService', () => {
     debugProgressService.run(debugSessionManager as any);
 
     expect(debugSessionManager.onDidChangeActiveDebugSession).toBeCalledTimes(1);
-    expect(debugSessionManager.onDidCreateDebugSession).toBeCalledTimes(1);
   });
 });

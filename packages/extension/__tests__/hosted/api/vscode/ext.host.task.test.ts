@@ -105,6 +105,16 @@ describe('ExtHostTask API', () => {
       }),
     },
     {
+      token: ITerminalProfileInternalService,
+      useValue: {
+        resolveDefaultProfile: jest.fn(() => ({
+          profileName: 'bash',
+          path: '/local/bin/bash',
+          isDefault: true,
+        })),
+      },
+    },
+    {
       token: ITerminalService,
       useValue: new MockSocketService(),
     },
