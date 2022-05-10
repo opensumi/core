@@ -1535,7 +1535,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         if (CompositeTreeNode.is(item)) {
           (item as CompositeTreeNode)._watcher.notifyWillChangeExpansionState(item, true);
           (item as CompositeTreeNode).isExpanded = true;
-          if (!(item as CompositeTreeNode).children && pathFlag.length > 0) {
+          if (!(item as CompositeTreeNode).children) {
             await (item as CompositeTreeNode).resolveChildrens(token);
             if (token.isCancellationRequested) {
               TreeNode.setGlobalTreeState(this.path, {

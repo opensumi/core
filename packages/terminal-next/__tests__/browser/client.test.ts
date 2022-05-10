@@ -87,7 +87,7 @@ describe('Terminal Client', () => {
   });
 
   it('Terminal Pid And Name', () => {
-    expect(client.name).toEqual('');
+    expect(client.name).toEqual('bash');
   });
 
   it('Focus Terminal which is ready', async () => {

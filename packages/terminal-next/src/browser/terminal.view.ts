@@ -155,7 +155,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
   @computed
   get snapshot() {
-    return this.name || this.processName || this.current?.name!;
+    return this.current?.name! || this.processName || this.name;
   }
 
   @computed
