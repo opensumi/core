@@ -11,8 +11,12 @@ import {
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
 } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
+import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
+import {
+  EditorDocumentModelContentRegistryImpl,
+  EditorDocumentModelServiceImpl,
+} from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { ExtensionService } from '@opensumi/ide-extension';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
@@ -133,10 +137,6 @@ describe('MainThreadTask Test Suite', () => {
         useClass: MockedMonacoService,
       },
       {
-        token: IEditorDocumentModelService,
-        useClass: EditorDocumentModelServiceImpl,
-      },
-      {
         token: ITaskSystem,
         useClass: TerminalTaskSystem,
       },
@@ -181,6 +181,7 @@ describe('MainThreadTask Test Suite', () => {
         token: ExtensionService,
         useClass: ExtensionServiceImpl,
       },
+      DebugConsoleInputDocumentProvider,
     ],
   );
   const testProvider = new TestTaskProvider();
@@ -229,6 +230,9 @@ describe('MainThreadTask Test Suite', () => {
       injector.get(MainThreadWorkspace, [rpcProtocolMain]),
     );
     extHostTaskApi = createTaskApiFactory(extHostTask, mockExtensions[0]);
+    (
+      injector.get(IEditorDocumentModelContentRegistry) as EditorDocumentModelContentRegistryImpl
+    ).registerEditorDocumentModelContentProvider(injector.get(DebugConsoleInputDocumentProvider));
   });
 
   describe('ExtHostTask API should be work', () => {

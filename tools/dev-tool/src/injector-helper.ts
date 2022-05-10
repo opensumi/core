@@ -1,7 +1,20 @@
 import { Injector, Injectable } from '@opensumi/di';
-import { BrowserModule, ClientApp, getDebugLogger } from '@opensumi/ide-core-browser';
+import { BrowserModule, ClientApp, getDebugLogger, IContextKeyService } from '@opensumi/ide-core-browser';
 import { CommonServerPath, ConstructorOf, ILoggerManagerClient, OS } from '@opensumi/ide-core-common';
 import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
+import {
+  EmptyDocCacheImpl,
+  IDocPersistentCacheProvider,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
+} from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorDocumentModelContentRegistryImpl,
+  EditorDocumentModelServiceImpl,
+} from '@opensumi/ide-editor/lib/browser/doc-model/main';
+
+import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage';
+import { MockContextKeyService } from '../../../packages/monaco/__mocks__/monaco.context-key.service';
 
 import { MockInjector } from './mock-injector';
 import { MainLayout } from './mock-main';
@@ -46,8 +59,36 @@ export async function createBrowserApp(
   return app;
 }
 
+export function addEditorProviders(injector: MockInjector) {
+  injector.addProviders(
+    {
+      token: IDocPersistentCacheProvider,
+      useClass: EmptyDocCacheImpl,
+    },
+    {
+      token: IEditorDocumentModelContentRegistry,
+      useClass: EditorDocumentModelContentRegistryImpl,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
+    },
+  );
+}
+
+function getBrowserMockInjector() {
+  const injector = new MockInjector();
+  useMockStorage(injector);
+  addEditorProviders(injector);
+  injector.addProviders({
+    token: IContextKeyService,
+    useClass: MockContextKeyService,
+  });
+  return injector;
+}
+
 export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
-  const injector = inj || new MockInjector();
+  const injector = inj || getBrowserMockInjector();
   const app = new ClientApp({ modules, injector } as any);
   afterAll(() => {
     app.injector.disposeAll();
