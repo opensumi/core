@@ -167,6 +167,9 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
     this.widgets.push(widget);
     this.widgetsMap.set(widget.id, widget);
 
+    if (!this.currentId) {
+      this.currentId = widget.id;
+    }
     this._averageLayout();
   }
 
