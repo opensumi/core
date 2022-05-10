@@ -1,9 +1,9 @@
-import { createHash } from 'crypto';
 import os from 'os';
 import path from 'path';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { uuid, INodeLogger, Uri } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
@@ -35,6 +35,9 @@ export class ExtensionServiceClientImpl
 
   @Autowired(IFileService)
   private fileService: IFileService;
+
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
 
   @Autowired(INodeLogger)
   logger: INodeLogger;
@@ -126,12 +129,10 @@ export class ExtensionServiceClientImpl
     } = packageJson;
     const languagePacks: { [key: string]: any } = {};
     for (const localization of localizations) {
-      const md5 = createHash('md5');
       // 这里需要添加languagePack路径作为id一部分，因为可能存在多个
       const id = `${languagePackPath}-${publisher.toLocaleLowerCase()}.${name.toLocaleLowerCase()}`;
       const _uuid = uuid();
-      md5.update(id).update(version);
-      const hash = md5.digest('hex');
+      const hash = this.hashCalculateService.calculate(id + (version ?? ''));
       languagePacks[localization.languageId] = {
         hash,
         extensions: [

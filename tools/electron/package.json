@@ -56,7 +56,6 @@
     "koa-bodyparser": "^4.3.0",
     "less": "^3.9.0",
     "less-loader": "^6.0.0",
-    "md5": "^2.2.1",
     "mini-css-extract-plugin": "^0.6.0",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
