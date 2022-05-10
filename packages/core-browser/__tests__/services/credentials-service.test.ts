@@ -1,4 +1,4 @@
-import { KeytarServicePath } from '@opensumi/ide-core-common';
+import { Deferred, KeytarServicePath } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -43,30 +43,35 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
     expect(mockNativeCredentialService.getPassword).toBeCalledWith(testData.service, testData.account);
   });
 
-  it('setPassword', () =>
-    new Promise<void>(async (done) => {
-      const password = 'password';
-      const disposable = credentialsService.onDidChangePassword((event) => {
-        expect(event.service).toBe(testData.service);
-        expect(event.account).toBe(testData.account);
-        disposable.dispose();
-        done();
-      });
-      await credentialsService.setPassword(testData.service, testData.account, password);
-      expect(mockNativeCredentialService.setPassword).toBeCalledWith(testData.service, testData.account, password);
-    }));
+  it('setPassword', async () => {
+    expect.assertions(3);
+    const defered = new Deferred();
+    const password = 'password';
+    const disposable = credentialsService.onDidChangePassword((event) => {
+      expect(event.service).toBe(testData.service);
+      expect(event.account).toBe(testData.account);
+      disposable.dispose();
+      defered.resolve();
+    });
+    await credentialsService.setPassword(testData.service, testData.account, password);
+    expect(mockNativeCredentialService.setPassword).toBeCalledWith(testData.service, testData.account, password);
+    await defered.promise;
+  });
 
-  it('deletePassword', () =>
-    new Promise<void>(async (done) => {
-      const disposable = credentialsService.onDidChangePassword((event) => {
-        expect(event.service).toBe(testData.service);
-        expect(event.account).toBe(testData.account);
-        disposable.dispose();
-        done();
-      });
-      await credentialsService.deletePassword(testData.service, testData.account);
-      expect(mockNativeCredentialService.deletePassword).toBeCalledWith(testData.service, testData.account);
-    }));
+  it('deletePassword', async () => {
+    expect.assertions(3);
+    const defered = new Deferred();
+
+    const disposable = credentialsService.onDidChangePassword((event) => {
+      expect(event.service).toBe(testData.service);
+      expect(event.account).toBe(testData.account);
+      disposable.dispose();
+      defered.resolve();
+    });
+    await credentialsService.deletePassword(testData.service, testData.account);
+    expect(mockNativeCredentialService.deletePassword).toBeCalledWith(testData.service, testData.account);
+    await defered.promise;
+  });
 
   it('findPassword', async () => {
     await credentialsService.findPassword(testData.service);

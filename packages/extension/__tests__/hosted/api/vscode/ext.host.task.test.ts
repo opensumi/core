@@ -10,6 +10,7 @@ import {
   StorageProvider,
   Uri,
   IFileServiceClient,
+  Deferred,
 } from '@opensumi/ide-core-common';
 import { ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common/lib/task-definition';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
@@ -57,9 +58,7 @@ import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/c
 import { ExtHostTerminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { ExtHostTasks } from '../../../../src/hosted/api/vscode/tasks/ext.host.tasks';
 
-
 import { CustomBuildTaskProvider } from './__mock__/taskProvider';
-
 
 const extension = mockExtensionProps;
 
@@ -256,14 +255,19 @@ describe('ExtHostTask API', () => {
     expect(taskSet?.tasks.length).toBe(6);
   });
 
-  it('run custombuild task', () =>
-    new Promise<void>(async (done) => {
-      const taskSet = await taskService['getGroupedTasks']();
-      taskService.run(taskSet[0].tasks[0]);
-      extHostTask.onDidStartTask((e) => {
-        expect(e.execution.task.definition.type).toBe('custombuildscript');
-        expect(e.execution.task.name).toBe('32 watch incremental');
-        done();
-      });
-    }));
+  it('run custombuild task', async () => {
+    expect.assertions(2);
+
+    const defered = new Deferred();
+    extHostTask.onDidStartTask((e) => {
+      expect(e.execution.task.definition.type).toBe('custombuildscript');
+      expect(e.execution.task.name).toBe('32 watch incremental');
+      defered.resolve();
+    });
+
+    const taskSet = await taskService['getGroupedTasks']();
+    taskService.run(taskSet[0].tasks[0]);
+
+    await defered.promise;
+  });
 });

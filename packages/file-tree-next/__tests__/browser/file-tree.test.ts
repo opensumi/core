@@ -14,7 +14,15 @@ import {
 import { ILogger } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { FileUri, URI, Disposable, StorageProvider, IApplicationService, OS } from '@opensumi/ide-core-common';
+import {
+  FileUri,
+  URI,
+  Disposable,
+  StorageProvider,
+  IApplicationService,
+  OS,
+  Deferred,
+} from '@opensumi/ide-core-common';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
@@ -39,10 +47,6 @@ import { FileTreeService } from '../../src/browser/file-tree.service';
 import { FileTreeModelService } from '../../src/browser/services/file-tree-model.service';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';
 import { Directory, File } from '../../src/common/file-tree-node.define';
-
-function sleep(time: number) {
-  return new Promise((resolve) => setTimeout(resolve, time));
-}
 
 describe('FileTree should be work while on single workspace model', () => {
   let track;
@@ -438,29 +442,31 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(fileTreeModelService.focusedFile?.uri.toString()).toBe(fileNode.uri.toString());
     });
 
-    it('Expand current file node should be work', () =>
-      new Promise<void>(async (done) => {
-        const treeModel = fileTreeModelService.treeModel;
-        const rootNode = treeModel.root;
-        const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
-        if (directoryNode.expanded) {
-          const dispose = directoryNode.watcher.on(TreeNodeEvent.DidChangeExpansionState, async () => {
-            fileTreeModelService.activeFileFocusedDecoration(directoryNode);
-            mockTreeHandle.expandNode.mockClear();
-            await fileTreeModelService.expandCurrentFile();
-            expect(mockTreeHandle.expandNode).toBeCalledTimes(1);
-            dispose.dispose();
-            done();
-          });
-          directoryNode.setCollapsed();
-        } else {
+    it('Expand current file node should be work', async () => {
+      const defered = new Deferred();
+
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
+      if (directoryNode.expanded) {
+        const dispose = directoryNode.watcher.on(TreeNodeEvent.DidChangeExpansionState, async () => {
           fileTreeModelService.activeFileFocusedDecoration(directoryNode);
           mockTreeHandle.expandNode.mockClear();
           await fileTreeModelService.expandCurrentFile();
           expect(mockTreeHandle.expandNode).toBeCalledTimes(1);
-          done();
-        }
-      }));
+          dispose.dispose();
+          defered.resolve();
+        });
+        directoryNode.setCollapsed();
+      } else {
+        fileTreeModelService.activeFileFocusedDecoration(directoryNode);
+        mockTreeHandle.expandNode.mockClear();
+        await fileTreeModelService.expandCurrentFile();
+        expect(mockTreeHandle.expandNode).toBeCalledTimes(1);
+        defered.resolve();
+      }
+      await defered.promise;
+    });
 
     it('Collapse current file node should be work', (done) => {
       const treeModel = fileTreeModelService.treeModel;
