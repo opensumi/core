@@ -18,7 +18,7 @@ import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode'
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { addEditorProviders, createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 const map = new Map();
@@ -154,6 +154,7 @@ describe('MainThreadDebug API Test Suite', () => {
               error() {},
               verbose() {},
               warn() {},
+              dispose() {},
             }),
           },
         },
@@ -187,6 +188,8 @@ describe('MainThreadDebug API Test Suite', () => {
         },
       ]),
     );
+    addEditorProviders(injector);
+
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostConnection, mockExtThreadConnection as any);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDebug, mockExtThreadDebug as any);
 

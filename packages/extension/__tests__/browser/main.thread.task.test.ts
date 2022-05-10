@@ -10,6 +10,8 @@ import {
   LogLevel,
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
+  Disposable,
+  Schemas,
 } from '@opensumi/ide-core-common';
 import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
 import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/src/browser';
@@ -42,7 +44,7 @@ import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { addEditorProviders, createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { mockExtensions } from '../../__mocks__/extensions';
 
@@ -89,29 +91,6 @@ const mockClientB = {
 
 const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
-
-@Injectable()
-class MockLogServiceForClient {
-  private level: LogLevel;
-
-  hasDisposeAll = false;
-
-  async setGlobalLogLevel(level) {
-    this.level = level;
-  }
-
-  async getGlobalLogLevel() {
-    return this.level;
-  }
-
-  async verbose() {
-    //
-  }
-
-  async disposeAll() {
-    this.hasDisposeAll = true;
-  }
-}
 
 describe('MainThreadTask Test Suite', () => {
   const injector = createBrowserInjector([VariableModule]);
@@ -171,16 +150,25 @@ describe('MainThreadTask Test Suite', () => {
         },
       },
       {
-        token: LogServiceForClientPath,
-        useClass: MockLogServiceForClient,
-      },
-      {
         token: ExtensionService,
         useClass: ExtensionServiceImpl,
       },
-      DebugConsoleInputDocumentProvider,
+      {
+        token: DebugConsoleInputDocumentProvider,
+        useValue: {
+          handlesScheme: (v) => v === Schemas.walkThroughSnippet,
+          provideEditorDocumentModelContent: () => '123',
+          isReadonly: false,
+          onDidChangeContent: () => Disposable.create(() => {}),
+          preferLanguageForUri() {
+            return 'plaintext';
+          },
+        },
+      },
     ],
   );
+  addEditorProviders(injector);
+
   const testProvider = new TestTaskProvider();
   let extHostTask: ExtHostTasks;
   let mainthreadTask: MainthreadTasks;
