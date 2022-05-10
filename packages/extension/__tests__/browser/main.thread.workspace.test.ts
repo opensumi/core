@@ -29,6 +29,7 @@ import {
   IApplicationService,
   DisposableCollection,
   IFileServiceClient,
+  Deferred,
 } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig } from '@opensumi/ide-core-node';
@@ -539,15 +540,19 @@ describe('MainThreadWorkspace API Test Suite', () => {
     expect(onDidRename?.files[0].newUri.toString()).toEqual(newUri.toString());
   });
 
-  it('should receive onDidChangeWorkspaceFolders when workspace folder has changed', () =>
-    new Promise<void>(async (done) => {
-      extHostWorkspaceAPI.onDidChangeWorkspaceFolders((e) => {
-        expect(e.added.length).toBe(1);
-        expect(e.added[0].name).toBe(path.basename(__dirname));
-        done();
-      });
-      const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
-      const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
-      workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
-    }));
+  it('should receive onDidChangeWorkspaceFolders when workspace folder has changed', async () => {
+    const defered = new Deferred();
+    expect.assertions(2);
+
+    extHostWorkspaceAPI.onDidChangeWorkspaceFolders((e) => {
+      expect(e.added.length).toBe(1);
+      expect(e.added[0].name).toBe(path.basename(__dirname));
+      defered.resolve();
+    });
+    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+    const roots = [await fileServiceClient.getFileStat(URI.file(path.join(__dirname)).toString())];
+    workspaceService._onWorkspaceChanged.fire(roots as FileStat[]);
+
+    await defered.promise;
+  });
 });

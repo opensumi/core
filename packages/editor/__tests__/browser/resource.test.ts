@@ -1,6 +1,6 @@
 import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { URI, IEventBus, Schemes, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { URI, IEventBus, Schemes, ILoggerManagerClient, Deferred } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
 import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
@@ -184,30 +184,33 @@ describe('resource service tests', () => {
     disposer2.dispose();
   });
 
-  it('should fire need didUpdateEvent', () =>
-    new Promise<void>(async (done) => {
-      const service: ResourceService = injector.get(ResourceService);
-      const disposer = service.registerResourceProvider(TestResourceProvider1);
+  it('should fire need didUpdateEvent', async () => {
+    expect.assertions(3);
+    const defered = new Deferred();
 
-      const resUri = new URI('test://testResource1');
-      const resource = await service.getResource(resUri);
+    const service: ResourceService = injector.get(ResourceService);
+    const disposer = service.registerResourceProvider(TestResourceProvider1);
 
-      expect(resource!.metadata!.data).toBe(0);
+    const resUri = new URI('test://testResource1');
+    const resource = await service.getResource(resUri);
 
-      const eventBus: IEventBus = injector.get(IEventBus);
+    expect(resource!.metadata!.data).toBe(0);
 
-      data++;
-      eventBus.fire(new ResourceNeedUpdateEvent(resUri));
+    const eventBus: IEventBus = injector.get(IEventBus);
 
-      eventBus.on(ResourceDidUpdateEvent, async (e) => {
-        expect(e.payload.toString()).toEqual(resUri.toString());
-        const newResource = await service.getResource(resUri);
-        expect(newResource!.metadata!.data).toBe(1);
-        done();
-      });
+    data++;
+    eventBus.fire(new ResourceNeedUpdateEvent(resUri));
 
-      disposer.dispose();
-    }));
+    eventBus.on(ResourceDidUpdateEvent, async (e) => {
+      expect(e.payload.toString()).toEqual(resUri.toString());
+      const newResource = await service.getResource(resUri);
+      expect(newResource!.metadata!.data).toBe(1);
+      defered.resolve();
+    });
+
+    disposer.dispose();
+    await defered.promise;
+  });
 
   it('untitled resource test', async () => {
     injector.mockService(IEditorDocumentModelService);

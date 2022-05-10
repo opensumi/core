@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { URI } from '@opensumi/ide-core-common';
+import { Deferred, URI } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
@@ -13,7 +13,6 @@ import {
 import { ExtHostDebug, createDebugApiFactory } from '../../../../src/hosted/api/vscode/debug/ext.host.debug';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostConnection } from '../../../../src/hosted/api/vscode/ext.host.connection';
-
 
 const mockMainThreadCommandProxy = {
   $executeCommand: jest.fn(() => new Promise(() => ({}))),
@@ -176,28 +175,30 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     ).toBe('function');
   });
 
-  it('RPC methods all should be work', () =>
-    new Promise<void>(async (done) => {
-      const sessionId = await extHostDebug.$createDebugSession({
-        configuration: {
-          type: 'node',
-          name: 'test',
-          request: '',
-        },
-        id: 1000,
-        index: 1,
-      });
-      expect(mockMainThreadConnection.$createConnection).toBeCalledTimes(1);
-      await extHostDebug.$onSessionCustomEvent(sessionId, 'event');
-      await extHostDebug.$sessionDidStart(sessionId);
-      await extHostDebug.$sessionDidDestroy(sessionId);
-      await extHostDebug.$sessionDidChange(sessionId);
-      await extHostDebug.$breakpointsDidChange([], [], [], []);
-      extHostDebug.onDidTerminateDebugSession(() => {
-        done();
-      });
-      await extHostDebug.$terminateDebugSession(sessionId);
-    }));
+  it('RPC methods all should be work', async () => {
+    const defered = new Deferred();
+
+    const sessionId = await extHostDebug.$createDebugSession({
+      configuration: {
+        type: 'node',
+        name: 'test',
+        request: '',
+      },
+      id: 1000,
+      index: 1,
+    });
+    expect(mockMainThreadConnection.$createConnection).toBeCalledTimes(1);
+    await extHostDebug.$onSessionCustomEvent(sessionId, 'event');
+    await extHostDebug.$sessionDidStart(sessionId);
+    await extHostDebug.$sessionDidDestroy(sessionId);
+    await extHostDebug.$sessionDidChange(sessionId);
+    await extHostDebug.$breakpointsDidChange([], [], [], []);
+    extHostDebug.onDidTerminateDebugSession(() => {
+      defered.resolve();
+    });
+    await extHostDebug.$terminateDebugSession(sessionId);
+    await defered.promise;
+  });
 
   it('convertToDto method should be work', async () => {
     const execDADescriptor = async (id: string, adDescriptor) => {

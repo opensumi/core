@@ -1,5 +1,5 @@
 import { Emitter } from '@opensumi/ide-core-browser';
-import { CancellationToken, CancellationTokenSource, Disposable } from '@opensumi/ide-core-common';
+import { CancellationToken, CancellationTokenSource, Deferred, Disposable } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -114,24 +114,27 @@ describe('DebugSessionConnection', () => {
     mockConnection.send.mockClear();
   });
 
-  it('send continue command', () =>
-    new Promise<void>(async (done) => {
-      debugSessionConnection.on('continued', (event) => {
-        expect(event.event).toBe('continued');
-        done();
-      });
-      await debugSessionConnection.sendRequest(
-        'continue',
-        { threadId: 1000001 },
-        {
-          type: 'node',
-          name: 'test',
-          request: 'node-debug',
-        },
-      );
-      expect(mockConnection.send).toBeCalledTimes(1);
-      mockConnection.send.mockClear();
-    }));
+  it('send continue command', async () => {
+    expect.assertions(2);
+    const defered = new Deferred();
+
+    debugSessionConnection.on('continued', (event) => {
+      expect(event.event).toBe('continued');
+      defered.resolve();
+    });
+    await debugSessionConnection.sendRequest(
+      'continue',
+      { threadId: 1000001 },
+      {
+        type: 'node',
+        name: 'test',
+        request: 'node-debug',
+      },
+    );
+    expect(mockConnection.send).toBeCalledTimes(1);
+    mockConnection.send.mockClear();
+    await defered.promise;
+  });
 
   it('send custom request', async () => {
     await debugSessionConnection.sendCustomRequest('abc', {});
