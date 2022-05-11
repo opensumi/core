@@ -48,7 +48,7 @@
     "react-window": "^1.8.5",
     "reconnecting-websocket": "^4.2.0",
     "resize-observer-polyfill": "1.5.1",
-    "vscode-languageserver-protocol": "^3.14.1",
+    "vscode-languageserver-protocol": "3.16.0",
     "vscode-textmate": "5.4.0"
   }
 }
