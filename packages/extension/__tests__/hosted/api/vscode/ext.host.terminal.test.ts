@@ -156,8 +156,8 @@ describe(__filename, () => {
       name: 'terminal-3',
       pty: {
         onDidWrite: emitter3.event,
-        open: () => {},
-        close: () => {},
+        open: () => { },
+        close: () => { },
       },
     });
     expect(terminal3).toBeInstanceOf(Terminal);
@@ -165,40 +165,37 @@ describe(__filename, () => {
   });
 
   it('extension terminal exit status should defined', async () => {
-    expect.assertions(7);
+    expect.assertions(5);
 
     const defered = new Deferred();
 
     mainThread['$createTerminal'] = () => Promise.resolve();
 
-    mainThread['$sendProcessExit'] = () => {};
+    mainThread['$sendProcessExit'] = () => { };
 
     const mockCreateTerminal = jest.spyOn(mainThread, '$createTerminal');
-
     const mockTerminalExit = jest.spyOn(mainThread, '$sendProcessExit');
-
     const emitter4 = new Emitter<string>();
     const closeEmitter = new Emitter<void | number>();
-
     const terminal4 = extHost.createExtensionTerminal({
       name: 'terminal-4',
       pty: {
         onDidWrite: emitter4.event,
         onDidClose: closeEmitter.event,
-        open: () => {},
-        close: () => {},
+        open: () => { },
+        close: () => { },
       },
     });
+    let terminalId;
+    for (const [id, terminal] of extHost['terminalsMap']) {
+      if (terminal === terminal4) {
+        terminalId = id;
+      }
+    }
 
-    extHost['terminalsMap'].set('fake-id-1', terminal4);
-    mainThread['_terminalProcessProxies'].set('fake-id-1', {} as any);
+    mainThread['$sendProcessReady'] = jest.fn(() => { });
 
-    expect(terminal4).toBeInstanceOf(Terminal);
-    expect(terminal4.name).toBe('terminal-4');
-
-    mainThread['$sendProcessReady'] = jest.fn(() => {});
-
-    await mainThread['proxy'].$startExtensionTerminal('fake-id-1', {
+    await mainThread['proxy'].$startExtensionTerminal(terminalId, {
       columns: 80,
       rows: 30,
     });
@@ -213,7 +210,7 @@ describe(__filename, () => {
 
       // 要等待事件 fire 后能监听到
       setTimeout(() => {
-        expect(mockTerminalExit).toBeCalledWith('fake-id-1', 2);
+        expect(mockTerminalExit).toBeCalledWith(terminalId, 2);
         expect(mockSetStatus).toBeCalled();
         expect(terminal4.exitStatus).toBeDefined();
         expect(terminal4.exitStatus?.code).toBe(2);
@@ -234,8 +231,8 @@ describe(__filename, () => {
       onDidWrite: new Emitter<string>().event,
       onDidChangeName: changeNameEmitter.event,
       onDidClose: closeEmitter.event,
-      open: () => {},
-      close: () => {},
+      open: () => { },
+      close: () => { },
     };
 
     const terminal = extHost.createExtensionTerminal({
