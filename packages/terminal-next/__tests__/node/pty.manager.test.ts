@@ -7,18 +7,20 @@ import { TerminalNodePtyModule } from '../../src/node';
 import { PtyServiceManagerToken, IPtyServiceManager, PtyServiceManager } from '../../src/node/pty.manager';
 import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
+let shellPath = '';
+
+if (os.platform() === 'win32') {
+  shellPath = 'powershell';
+} else if (os.platform() === 'linux' || os.platform() === 'darwin') {
+  shellPath = 'bash';
+}
+
 const delay = (t: number) => new Promise((resolve) => setTimeout(resolve, t));
 
 describe('Pty Manager Test Local', () => {
   let injector: Injector;
   let ptyServiceManager: IPtyServiceManager;
-  let shellPath = '';
 
-  if (os.platform() === 'win32') {
-    shellPath = 'powershell';
-  } else if (os.platform() === 'linux' || os.platform() === 'darwin') {
-    shellPath = 'bash';
-  }
   beforeEach(() => {
     injector = createNodeInjector([TerminalNodePtyModule]);
   });
@@ -61,12 +63,13 @@ describe('Pty Manager Test Local', () => {
     });
 
     ptyServiceManager = injector.get(PtyServiceManagerToken);
-    const ptyService = await ptyServiceManager.spawn('sh', [], {}, 'fake-session-1');
+    const ptyService = await ptyServiceManager.spawn(shellPath, [], {}, 'fake-session-1');
     expect(ptyService.onData).toBeDefined();
     expect(ptyService).toBeDefined();
     expect(ptyService?.pid).toBeDefined();
     const process = await ptyService.getProcessDynamically();
     expect(typeof process).toBe('string');
+    expect(process).toEqual(shellPath);
     ptyService.write('pwd\n');
 
     ptyService.kill();
