@@ -125,14 +125,6 @@ export function addEditorProviders(injector: MockInjector) {
       useClass: EditorDecorationCollectionService,
     },
     {
-      token: IEditorDocumentModelContentRegistry,
-      useClass: EditorDocumentModelContentRegistryImpl,
-    },
-    {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    },
-    {
       token: ILanguageService,
       useClass: LanguageService,
     },

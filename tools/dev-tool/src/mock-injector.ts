@@ -1,4 +1,4 @@
-import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@opensumi/di';
+import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus, Provider } from '@opensumi/di';
 import { CommandRegistry } from '@opensumi/ide-core-common';
 
 export class MockInjector extends Injector {
@@ -50,6 +50,10 @@ export class MockInjector extends Injector {
   private hasCreated(token: Token) {
     const creator = this.creatorMap.get(token);
     return creator && creator.status === CreatorStatus.done;
+  }
+
+  addProviders(...providers: Provider[]): void {
+    this.overrideProviders(...providers);
   }
 
   public mockCommand(commandId, fn?) {
