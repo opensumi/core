@@ -9,7 +9,6 @@ import { MainThreadQuickOpen } from '../../../../src/browser/vscode/api/main.thr
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostQuickOpen } from '../../../../src/hosted/api/vscode/ext.host.quickopen';
 
-
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 
@@ -30,7 +29,6 @@ let mainThread: MainThreadQuickOpen;
 
 describe(__filename, () => {
   const injector = createBrowserInjector([]);
-
   injector.addProviders(
     {
       token: QuickPickService,

@@ -5,6 +5,7 @@ import {
   getDebugLogger,
   IContextKeyService,
   MonacoService,
+  RecentFilesManager,
 } from '@opensumi/ide-core-browser';
 import {
   CommonServerPath,
@@ -194,6 +195,12 @@ function getBrowserMockInjector() {
     {
       token: LogServiceForClientPath,
       useClass: MockLogServiceForClient,
+    },
+    {
+      token: RecentFilesManager,
+      useValue: {
+        getMostRecentlyOpenedFiles: () => [],
+      },
     },
   );
   return injector;
