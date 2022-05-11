@@ -121,11 +121,11 @@ export class RPCProxy {
                     if (result.data.stack) {
                       error.stack = result.data.stack;
                     }
-                    if (result.data.errorType) {
-                      // using ApplicationError
+                    if (result.data.applicationError) {
+                      // 经过通信，applicationError 实例的构造类信息丢失了，使用 fromJson 恢复
                       const applicationError = ApplicationError.fromJson(
-                        result.data.errorType.code,
-                        result.data.errorType.data,
+                        result.data.applicationError.code,
+                        result.data.applicationError.data,
                       );
                       error.cause = applicationError;
                     }
@@ -224,6 +224,7 @@ export class RPCProxy {
         data: {
           message: e.message,
           stack: e.stack,
+          applicationError: ApplicationError.is(e) ? e : null,
         },
       };
     }
