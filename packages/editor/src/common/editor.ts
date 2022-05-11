@@ -253,9 +253,16 @@ export interface IEditorGroup {
    */
   currentOpenType: MaybeNull<IEditorOpenType>;
 
-  onDidEditorGroupContentLoading: Event<IResource>;
+  /**
+   * 当前可选的打开方式列表
+   */
+  availableOpenTypes: IEditorOpenType[];
 
   resourceStatus: Map<IResource, Promise<void>>;
+
+  changeOpenType(type: string): Promise<void>;
+
+  onDidEditorGroupContentLoading: Event<IResource>;
 
   open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
 

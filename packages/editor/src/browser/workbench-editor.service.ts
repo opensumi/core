@@ -64,7 +64,6 @@ import {
   getSplitActionFromDragDrop,
 } from '../common';
 
-import { IEditorPriority } from './../common/editor';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { EditorTabChangedError, isEditorError } from './error';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
@@ -1776,7 +1775,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this._currentOpenType;
   }
 
-  async changeOpenType(type: IEditorOpenType) {
+  async changeOpenType(id: string) {
+    const type = this.availableOpenTypes.find((a) => a.type === id || a.componentId === id);
+    if (!type) {
+      return;
+    }
+
     if (!this.currentResource) {
       return;
     }
@@ -2028,16 +2032,20 @@ function findSuitableOpenType(
   if (editorAssociations) {
     // 如果配置了 workbench.editorAssociations 且 priority 为 option 的情况下符合规则的默认打开方式行为
     const matchAvailableType = currentAvailable.find((p) => {
-      if (p.priority === IEditorPriority.option) {
-        const matchAssKey = Object.keys(editorAssociations).find((r) => match(r, resource.uri.path.toString().toLowerCase()) || match(r, resource.uri.path.base.toLowerCase()));
-        const viewType = matchAssKey && editorAssociations[matchAssKey];
-        if (!viewType) {return false;}
-
-        return p.componentId?.split('-')[1] === viewType;
+      const matchAssKey = Object.keys(editorAssociations).find(
+        (r) => match(r, resource.uri.path.toString().toLowerCase()) || match(r, resource.uri.path.base.toLowerCase()),
+      );
+      const viewType = matchAssKey && editorAssociations[matchAssKey];
+      if (!viewType) {
+        return false;
       }
+
+      return p.componentId === viewType;
     });
 
-    if (matchAvailableType) {return matchAvailableType;}
+    if (matchAvailableType) {
+      return matchAvailableType;
+    }
   }
 
   return currentAvailable[0];

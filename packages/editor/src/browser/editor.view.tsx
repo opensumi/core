@@ -469,7 +469,6 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         />
       </div>
       {group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>}
-      <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group} />
     </div>
   );
 });
@@ -546,42 +545,6 @@ export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
     </div>
   );
 };
-
-export const OpenTypeSwitcher = observer(
-  ({
-    options,
-    current,
-    group,
-  }: {
-    options: IEditorOpenType[];
-    current: MaybeNull<IEditorOpenType>;
-    group: EditorGroup;
-  }) => {
-    if (options.length <= 1) {
-      return null;
-    }
-
-    return (
-      <div className={styles.open_type_switcher}>
-        {options.map((option, i) => (
-          <div
-            className={classnames({
-              [styles.option]: true,
-              [styles.current_type]:
-                current && current.type === option.type && current.componentId === option.componentId,
-            })}
-            onClick={() => {
-              group.changeOpenType(option);
-            }}
-            key={i}
-          >
-            {option.title || option.componentId || option.type}
-          </div>
-        ))}
-      </div>
-    );
-  },
-);
 
 function getDragOverPosition(e: DragEvent, element: HTMLElement): DragOverPosition {
   const rect = element.getBoundingClientRect();

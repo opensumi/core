@@ -2,7 +2,7 @@ import { Injector, Injectable } from '@opensumi/di';
 import { Uri, URI, MarkerManager, Emitter } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService, IEditorGroup } from '@opensumi/ide-editor';
-import { EditorGroupCloseEvent, IResource } from '@opensumi/ide-editor/lib/browser';
+import { EditorGroupCloseEvent, IEditorOpenType, IResource } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { IThemeService } from '@opensumi/ide-theme';
 
@@ -59,6 +59,8 @@ const fakeEditorGroup: IEditorGroup = {
   resourceStatus: new Map(),
   saveCurrent: (() => {}) as any,
   saveResource: (() => {}) as any,
+  availableOpenTypes: [],
+  changeOpenType: ((id: string) => {}) as any,
 };
 
 fakeEditorGroup.resources = [fakeResource];

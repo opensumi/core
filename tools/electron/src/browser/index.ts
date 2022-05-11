@@ -68,7 +68,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   OutputModule,
   QuickOpenModule,
   MarkersModule,
-
   ThemeModule,
   WorkspaceModule,
   ExtensionStorageModule,
@@ -86,14 +85,9 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
   VariableModule,
   KeymapsModule,
   TerminalNextModule,
-
-  // Extension Modules
   ExtensionModule,
-  // FeatureExtensionModule,
   OpenVsxExtensionManagerModule,
   MonacoEnhanceModule,
-
-  // addons
   ClientAddonModule,
   CommentsModule,
   TaskModule,

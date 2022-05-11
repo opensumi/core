@@ -11,15 +11,12 @@ import {
 } from '@opensumi/ide-core-browser';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
-import { Disposable, localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
-import { ThrottledDelayer } from '@opensumi/ide-core-common/lib/async';
+import { localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
 import { IKeymapService } from '@opensumi/ide-keymaps/lib/common/keymaps';
 import { KeybindingView } from '@opensumi/ide-quick-open/lib/browser/components/keybinding';
 import { QUICK_OPEN_COMMANDS } from '@opensumi/ide-quick-open/lib/common';
 
 import styles from './editor-empty-component.module.less';
-
-const DEFAULT_CHANGE_DELAY = 500; // ms
 
 // 集成侧自定义多语言
 export const localizationBundle = {

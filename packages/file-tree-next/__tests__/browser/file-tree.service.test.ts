@@ -12,6 +12,7 @@ import {
   OperatingSystem,
   isLinux,
   PreferenceService,
+  QuickOpenService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -20,6 +21,7 @@ import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { IWindowDialogService, IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 import { IThemeService, IIconService } from '@opensumi/ide-theme';
 import { IWorkspaceService, DEFAULT_WORKSPACE_SUFFIX_NAME } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
@@ -174,6 +176,10 @@ describe('FileTree Service should be work alone', () => {
           get: () => {},
           ready: Promise.resolve(),
         },
+      },
+      {
+        token: QuickOpenService,
+        useClass: MockQuickOpenService,
       },
     );
     fileTreeService = injector.get(IFileTreeService);

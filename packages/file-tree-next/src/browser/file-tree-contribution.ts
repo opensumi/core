@@ -18,11 +18,15 @@ import {
   IClipboardService,
   PreferenceService,
   formatLocalize,
-  OS,
+  QuickOpenService,
+  Mode,
+  QuickOpenItem,
+  QuickOpenItemOptions,
   OperatingSystem,
   WORKSPACE_COMMANDS,
   AppConfig,
   Throttler,
+  match,
 } from '@opensumi/ide-core-browser';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
@@ -37,7 +41,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IDecorationsService } from '@opensumi/ide-decoration';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IEditorOpenType, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
@@ -102,6 +106,9 @@ export class FileTreeContribution
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
+
+  @Autowired(QuickOpenService)
+  private quickOpenService: QuickOpenService;
 
   @Autowired(IViewsRegistry)
   private viewsRegistry: IViewsRegistry;
@@ -248,11 +255,20 @@ export class FileTreeContribution
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
       command: {
+        id: FILE_COMMANDS.OPEN_TYPE_WITH.id,
+        label: localize('file.open.type'),
+      },
+      order: 3,
+      group: '1_open',
+    });
+
+    menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
+      command: {
         id: FILE_COMMANDS.OPEN_TERMINAL_WITH_PATH.id,
         label: localize('file.filetree.openTerminalWithPath'),
       },
       when: 'workbench.panel.terminal',
-      order: 3,
+      order: 4,
       group: '1_open',
     });
 
@@ -548,6 +564,154 @@ export class FileTreeContribution
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
       execute: (uri) => {
         this.fileTreeService.openToTheSide(uri);
+      },
+      isVisible: () =>
+        !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile),
+    });
+
+    const getOpenTypesQuickOpenItem = (
+      uri,
+      run: (mode: Mode, item: IEditorOpenType) => boolean,
+    ): {
+      items: QuickOpenItem[];
+      selectIndex: number | undefined;
+    } => {
+      const { availableOpenTypes, currentOpenType } = this.workbenchEditorService.currentEditorGroup;
+      if (!(availableOpenTypes && uri && currentOpenType)) {
+        return { items: [], selectIndex: -1 };
+      }
+
+      const editorAssociations =
+        this.preferenceService.get<{ [key in string]: string }>('workbench.editorAssociations');
+
+      const items: QuickOpenItem[] = [];
+
+      const compareType = (o: IEditorOpenType, t: IEditorOpenType) => {
+        if (t.type === 'code') {
+          return o.type === 'code';
+        }
+        if (t.type === 'component' && o.type === 'component') {
+          return o.componentId === t.componentId;
+        }
+        return false;
+      };
+      const prettyDescription = (des: string | undefined, msg: string) => {
+        if (des) {
+          des += localize('file.open.type.detail.and') + msg;
+        } else {
+          des = msg;
+        }
+        return des;
+      };
+
+      let defaultType: string | undefined;
+      let selectIndex: number | undefined;
+
+      if (editorAssociations) {
+        const matchAssKey = Object.keys(editorAssociations).find(
+          (r) => match(r, uri.path.toString().toLowerCase()) || match(r, uri.path.base.toLowerCase()),
+        );
+        defaultType = matchAssKey && editorAssociations[matchAssKey];
+      }
+
+      availableOpenTypes.forEach((item, index) => {
+        const option: QuickOpenItemOptions = {
+          label: item.title || item.componentId || item.type,
+          detail: item.title,
+          run: (mode: Mode) => run(mode, item),
+        };
+
+        if (compareType(currentOpenType, item)) {
+          option.description = prettyDescription(option.description, localize('file.open.type.detail.active'));
+          selectIndex = index;
+        }
+
+        if (defaultType && item.componentId?.endsWith(defaultType)) {
+          option.description = prettyDescription(option.description, localize('file.open.type.detail.default'));
+        }
+
+        items.push(new QuickOpenItem(option));
+      });
+
+      return {
+        items,
+        selectIndex,
+      };
+    };
+
+    commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.OPEN_TYPE_WITH, {
+      execute: (uri) => {
+        const run = (mode: Mode, item: IEditorOpenType) => {
+          if (mode === Mode.OPEN) {
+            this.workbenchEditorService.currentEditorGroup?.changeOpenType(item.componentId ?? item.type);
+            return true;
+          }
+          return false;
+        };
+
+        const { items, selectIndex } = getOpenTypesQuickOpenItem(uri, run);
+
+        if (items.length === 0 || typeof selectIndex === 'undefined') {
+          return;
+        }
+
+        const openQuickOpen = (items: QuickOpenItem[]) => {
+          this.quickOpenService.open(
+            {
+              onType: (_, acceptor) => acceptor(items),
+            },
+            {
+              fuzzyMatchLabel: true,
+              ignoreFocusOut: false,
+              placeholder: formatLocalize('file.open.type.placeholder', uri.path.base),
+              selectIndex: () => selectIndex,
+            },
+          );
+        };
+
+        // 在最后添加一个用于选择默认编辑器的 quick open item
+        items.push(
+          new QuickOpenItem({
+            label: formatLocalize('file.open.type.preference.default', `*${uri.path.ext}`),
+            showBorder: true,
+            run: (mode: Mode) => {
+              if (mode === Mode.OPEN) {
+                // 再次 open quickopen
+                const run = (mode: Mode, item: IEditorOpenType) => {
+                  if (mode === Mode.OPEN) {
+                    const key = 'workbench.editorAssociations';
+                    const effectiveScope = this.preferenceService.resolve(key).scope;
+                    const editorAssociations = this.preferenceService.get<{ [key in string]: string }>(key);
+
+                    this.preferenceService.set(
+                      key,
+                      {
+                        ...(editorAssociations || {}),
+                        [`*${uri.path.ext}`]: item.componentId ?? item.type,
+                      },
+                      effectiveScope,
+                    );
+
+                    this.workbenchEditorService.currentEditorGroup?.changeOpenType(item.componentId ?? item.type);
+                    return true;
+                  }
+                  return false;
+                };
+
+                const { items: defaultItems, selectIndex } = getOpenTypesQuickOpenItem(uri, run);
+
+                if (defaultItems.length === 0 || typeof selectIndex === 'undefined') {
+                  return true;
+                }
+
+                openQuickOpen(defaultItems);
+              }
+              return false;
+            },
+          }),
+        );
+
+        openQuickOpen(items);
       },
       isVisible: () =>
         !!this.fileTreeModelService.contextMenuFile && !Directory.is(this.fileTreeModelService.contextMenuFile),

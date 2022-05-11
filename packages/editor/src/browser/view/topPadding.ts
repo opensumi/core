@@ -10,7 +10,7 @@ export class EditorTopPaddingContribution implements IEditorFeatureContribution 
         accessor.addZone({
           afterLineNumber: 0,
           domNode: document.createElement('div'),
-          heightInPx: 8,
+          heightInPx: 0,
         });
       });
     });
