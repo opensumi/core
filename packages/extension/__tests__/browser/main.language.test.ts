@@ -95,10 +95,6 @@ describe('ExtHostLanguageFeatures', () => {
       token: IDocPersistentCacheProvider,
       useClass: EmptyDocCacheImpl,
     },
-    {
-      token: IEditorDocumentModelService,
-      useValue: {},
-    },
   );
 
   useMockStorage(injector);
