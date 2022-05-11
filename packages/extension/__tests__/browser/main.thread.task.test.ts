@@ -1,13 +1,10 @@
 import path from 'path';
 
-import { Injectable } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import {
   Emitter,
   FileUri,
   ILoggerManagerClient,
-  LogServiceForClientPath,
-  LogLevel,
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
   Disposable,
@@ -168,6 +165,7 @@ describe('MainThreadTask Test Suite', () => {
       },
     ],
   );
+
   addEditorProviders(injector);
 
   const testProvider = new TestTaskProvider();

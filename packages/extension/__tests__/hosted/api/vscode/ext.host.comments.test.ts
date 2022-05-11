@@ -31,6 +31,8 @@ import { MockContextKeyService } from '../../../../../monaco/__mocks__/monaco.co
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () => {
+  jest.setTimeout(10 * 1000);
+
   let injector: Injector;
   let vscodeComments: typeof vscode.comments;
   let extComments: ExtHostComments;
