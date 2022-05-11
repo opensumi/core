@@ -11,7 +11,12 @@ describe('Tree', () => {
     }
 
     async resolveChildren() {
-      return this._child;
+      if (this._child) {
+        const child = this._child;
+        this._child = [];
+        return child;
+      }
+      return [];
     }
   }
   class Root extends CompositeTreeNode {
@@ -56,7 +61,7 @@ describe('Tree', () => {
     expect(file.name).toBe('file_1');
   });
 
-  it("add new key to Folder's metadata", async (done) => {
+  it("add new key to Folder's metadata", (done) => {
     const root = new Root(tree, undefined, undefined);
     const metadata = { name: 'folder' };
     const folder = new Folder(tree, root, undefined, metadata);
@@ -69,7 +74,7 @@ describe('Tree', () => {
     folder.addMetadata('other', 'hello');
   });
 
-  it("add new key to File's metadata", async (done) => {
+  it("add new key to File's metadata", (done) => {
     const root = new Root(tree, undefined, undefined);
     const metadata = { name: 'folder' };
     const folder = new Folder(tree, root, undefined, metadata);
@@ -200,8 +205,13 @@ describe('Tree', () => {
     expect(root.branchSize).toBe(2);
     await rootWatcher?.callback({ type: WatchEvent.Removed, path: (a as TreeNode).path });
     expect(root.branchSize).toBe(1);
+    tree.setPresetChildren([
+      new Folder(tree, root, undefined, { name: 'c' }),
+      new File(tree, root, { name: 'd' }),
+      new File(tree, root, { name: 'e' }),
+    ]);
     // reload nodes
-    await rootWatcher?.callback({ type: WatchEvent.Changed, path: root.path });
-    expect(root.branchSize).toBe(2);
+    await root.refresh();
+    expect(root.branchSize).toBe(3);
   });
 });
