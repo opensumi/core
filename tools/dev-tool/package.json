@@ -7,6 +7,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "private": true,
+  "resolutions": {
+    "acorn": "^8.7.1",
+    "terser": "^5.13.1"
+  },
   "dependencies": {
     "@types/koa": "^2.0.48",
     "@types/koa-router": "^7.4.2",
