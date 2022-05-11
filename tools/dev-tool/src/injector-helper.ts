@@ -1,51 +1,20 @@
 import { Injector, Injectable } from '@opensumi/di';
-import {
-  BrowserModule,
-  ClientApp,
-  getDebugLogger,
-  IContextKeyService,
-  MonacoService,
-  RecentFilesManager,
-} from '@opensumi/ide-core-browser';
+import { IContextKeyService, RecentFilesManager } from '@opensumi/ide-core-browser';
+import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
+import { BrowserModule } from '@opensumi/ide-core-browser/lib/browser-module';
 import {
   CommonServerPath,
   ConstructorOf,
+  getDebugLogger,
   ILoggerManagerClient,
   LogLevel,
   LogServiceForClientPath,
   OS,
 } from '@opensumi/ide-core-common';
 import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
-import {
-  EditorCollectionService,
-  EditorComponentRegistry,
-  EmptyDocCacheImpl,
-  IDocPersistentCacheProvider,
-  IEditorDecorationCollectionService,
-  IEditorDocumentModelContentRegistry,
-  IEditorDocumentModelService,
-  IEditorFeatureRegistry,
-  ILanguageService,
-  ResourceService,
-  WorkbenchEditorService,
-} from '@opensumi/ide-editor/lib/browser';
-import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
-import {
-  EditorDocumentModelContentRegistryImpl,
-  EditorDocumentModelServiceImpl,
-} from '@opensumi/ide-editor/lib/browser/doc-model/main';
-import { EditorCollectionServiceImpl } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
-import { EditorDecorationCollectionService } from '@opensumi/ide-editor/lib/browser/editor.decoration.service';
-import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
-import { LanguageService } from '@opensumi/ide-editor/lib/browser/language/language.service';
-import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage';
 import { MockContextKeyService } from '../../../packages/monaco/__mocks__/monaco.context-key.service';
-import { MockedMonacoService } from '../../../packages/monaco/__mocks__/monaco.service.mock';
 
 import { MockInjector } from './mock-injector';
 import { MainLayout } from './mock-main';
@@ -88,59 +57,6 @@ export async function createBrowserApp(
   } as any) as MockClientApp;
   await app.start(document.getElementById('main')!);
   return app;
-}
-
-export function addEditorProviders(injector: MockInjector) {
-  injector.addProviders(
-    {
-      token: IDocPersistentCacheProvider,
-      useClass: EmptyDocCacheImpl,
-    },
-    {
-      token: IEditorDocumentModelContentRegistry,
-      useClass: EditorDocumentModelContentRegistryImpl,
-    },
-    {
-      token: IEditorDocumentModelService,
-      useClass: EditorDocumentModelServiceImpl,
-    },
-    {
-      token: EditorCollectionService,
-      useClass: EditorCollectionServiceImpl,
-    },
-    {
-      token: WorkbenchEditorService,
-      useClass: WorkbenchEditorServiceImpl,
-    },
-    {
-      token: ResourceService,
-      useClass: ResourceServiceImpl,
-    },
-    {
-      token: EditorComponentRegistry,
-      useClass: EditorComponentRegistryImpl,
-    },
-    {
-      token: IEditorDecorationCollectionService,
-      useClass: EditorDecorationCollectionService,
-    },
-    {
-      token: ILanguageService,
-      useClass: LanguageService,
-    },
-    {
-      token: MonacoService,
-      useClass: MockedMonacoService,
-    },
-    {
-      token: IWorkspaceService,
-      useClass: MockWorkspaceService,
-    },
-    {
-      token: IEditorFeatureRegistry,
-      useClass: EditorFeatureRegistryImpl,
-    },
-  );
 }
 
 @Injectable()

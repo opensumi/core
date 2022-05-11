@@ -14,6 +14,7 @@ import {
   Schemas,
 } from '@opensumi/ide-core-common';
 import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
+import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModelContentRegistryImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { ExtensionService } from '@opensumi/ide-extension';
@@ -44,7 +45,7 @@ import { VariableModule } from '@opensumi/ide-variable/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { addEditorProviders, createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { mockExtensions } from '../../__mocks__/extensions';
 

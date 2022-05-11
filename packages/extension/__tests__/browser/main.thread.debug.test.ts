@@ -10,6 +10,7 @@ import {
 } from '@opensumi/ide-debug/lib/browser';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/src';
 import { MainThreadConnection } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.connection';
@@ -18,7 +19,7 @@ import { ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode'
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 
-import { addEditorProviders, createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
 const map = new Map();
