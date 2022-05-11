@@ -5,6 +5,7 @@ import {
   isLinux,
   isWindows,
   OperatingSystem,
+  OS,
   PreferenceService,
   QuickOpenService,
 } from '@opensumi/ide-core-browser';
@@ -134,7 +135,7 @@ describe('FileTreeContribution', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.Macintosh,
+          getBackendOS: () => Promise.resolve(OS.type()),
         },
       },
     );

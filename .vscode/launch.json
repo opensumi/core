@@ -63,7 +63,7 @@
       "request": "launch",
       "name": "Jest Current File",
       "runtimeArgs": ["--unhandled-rejections=strict", "${workspaceRoot}/node_modules/.bin/jest"],
-      "args": ["${relativeFile}", "--detectOpenHandles"],
+      "args": ["${relativeFile}", "--detectOpenHandles", "--testTimeout=100000000"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
     },

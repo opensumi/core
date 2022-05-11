@@ -52,10 +52,6 @@ export class MockInjector extends Injector {
     return creator && creator.status === CreatorStatus.done;
   }
 
-  addProviders(...providers: Provider[]): void {
-    this.overrideProviders(...providers);
-  }
-
   public mockCommand(commandId, fn?) {
     const registry = this.get(CommandRegistry) as CommandRegistry;
     if (registry.getCommand(commandId)) {

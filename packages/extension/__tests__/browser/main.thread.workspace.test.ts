@@ -28,7 +28,6 @@ import {
   OS,
   IApplicationService,
   DisposableCollection,
-  IFileServiceClient,
   Deferred,
 } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -78,6 +77,7 @@ import {
   FileServiceClient,
   BrowserFileSystemRegistryImpl,
 } from '@opensumi/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { FileService, FileSystemNodeOptions } from '@opensumi/ide-file-service/lib/node';
 import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 import { MonacoService } from '@opensumi/ide-monaco';
@@ -252,15 +252,18 @@ describe('MainThreadWorkspace API Test Suite', () => {
       },
     ]),
   );
+
   injectMockPreferences(injector);
   useMockStorage(injector);
-  const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
 
+  const hashImpl = injector.get(IHashCalculateService) as IHashCalculateService;
+  const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
+  fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
+  let mainThreadWorkspaceAPI: MainThreadWorkspace;
   beforeAll(async () => {
     const root = FileUri.create(fs.realpathSync(temp.mkdirSync('extension-storage-test')));
     await hashImpl.initialize();
-    const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
-    fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
+
     injector.mock(ILoggerManagerClient, 'getLogFolder', () => root.path.toString());
     const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
     extHostDocs = rpcProtocolExt.set(
@@ -272,7 +275,7 @@ describe('MainThreadWorkspace API Test Suite', () => {
     const extHostTask = new ExtHostTasks(rpcProtocolExt, extHostTerminal, extWorkspace);
     extHostWorkspace = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostWorkspace, extWorkspace);
     const monacoservice = injector.get(MonacoService);
-    const mainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [rpcProtocolMain]);
+    mainThreadWorkspaceAPI = injector.get(MainThreadWorkspace, [rpcProtocolMain]);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWorkspace, mainThreadWorkspaceAPI);
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWebview, [rpcProtocolMain]));
     rpcProtocolMain.set(
@@ -314,14 +317,17 @@ describe('MainThreadWorkspace API Test Suite', () => {
       mockExtensions[0],
     );
     rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostStorage, new ExtHostStorage(rpcProtocolExt));
+
     const modelContentRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
     modelContentRegistry.registerEditorDocumentModelContentProvider(injector.get(FileSchemeDocumentProvider));
     workspaceService = injector.get(IWorkspaceService);
     eventBus = injector.get(IEventBus);
     await (injector.get(IEditorDocumentModelService) as EditorDocumentModelServiceImpl).initialize();
   });
+
   afterAll(() => {
     track.cleanupSync();
+    mainThreadWorkspaceAPI.dispose();
     disposables.dispose();
     injector.disposeAll();
   });
@@ -383,15 +389,19 @@ describe('MainThreadWorkspace API Test Suite', () => {
     });
   });
 
-  it('should be able to openTextDocument', (done) => {
+  it.only('should be able to openTextDocument', async () => {
+    const defered = new Deferred();
+
     const filePath = path.join(__dirname, 'main.thread.output.test.ts');
     const disposeable = eventBus.on(EditorDocumentModelCreationEvent, (e) => {
       expect(e.payload.content).toBe(fs.readFileSync(filePath).toString());
       expect(e.payload.uri.toString()).toBe(vscodeUri.file(filePath).toString());
       disposeable.dispose();
-      done();
+      defered.resolve();
     });
-    extHostWorkspaceAPI.openTextDocument(vscodeUri.file(filePath));
+
+    await extHostWorkspaceAPI.openTextDocument(vscodeUri.file(filePath));
+    await defered.promise;
   });
 
   it('should be able to getConfiguration and use default value', async () => {

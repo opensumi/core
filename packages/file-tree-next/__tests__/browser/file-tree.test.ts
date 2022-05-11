@@ -174,7 +174,7 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: OS.type(),
+          getBackendOS: () => Promise.resolve(OS.type()),
         },
       },
       {
