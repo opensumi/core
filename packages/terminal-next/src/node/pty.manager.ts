@@ -38,6 +38,11 @@ export interface IPtyServiceManager {
   checkSession(sessionId: string): Promise<boolean>;
 }
 
+// 记录终端输入到输出的时间戳，主要是用于统计Pty处理 + IDE <--> PTY的IPC 耗时
+let timeCaptureTmp = 0;
+// 终端的命令可能会有多行输出，避免后面几次输出也被用于时间差计算统计，因此一次write，一次统计
+let timeCaptureFilter = false;
+
 // 标准单容器架构 - 在IDE容器中运行，PtyService也在IDE进程中运行
 // 如果需要用到双容器远程架构，可以查看PtyServiceManagerRemote的实现
 @Injectable()
@@ -99,7 +104,15 @@ export class PtyServiceManager implements IPtyServiceManager {
 
   // 实现Ipty的需要回调的逻辑接口，同时注入
   onData(pid: number, listener: (e: string) => any): pty.IDisposable {
-    const { callId, disposable } = this.addNewCallback(pid, listener);
+    const monitorListener = (resString) => {
+      listener(resString);
+      if (timeCaptureFilter) {
+        const timeDiff = new Date().getTime() - timeCaptureTmp;
+        this.logger.log(`PtyServiceManager.onData: ${timeDiff}ms data: ${resString.substring(0, 100)}`);
+        timeCaptureFilter = false;
+      }
+    };
+    const { callId, disposable } = this.addNewCallback(pid, monitorListener);
     this.ptyServiceProxy.$onData(callId, pid);
     return disposable;
   }
@@ -121,6 +134,11 @@ export class PtyServiceManager implements IPtyServiceManager {
   }
 
   write(pid: number, data: string): void {
+    timeCaptureTmp = new Date().getTime();
+    if (data.includes('=')) {
+      // 使用'='作为触发本地通信统计的标识
+      timeCaptureFilter = true;
+    }
     this.ptyServiceProxy.$write(pid, data);
   }
 
