@@ -19,6 +19,6 @@ export interface ItemProps {
 
 export const ITerminalRenderProvider = Symbol('TerminalRenderProvider');
 export interface ITerminalRenderProvider {
-  infoItemRender(props: ItemProps): JSX.Element;
-  addItemRender(props: ItemProps): JSX.Element;
+  infoItemRender: React.FunctionComponent<ItemProps>;
+  addItemRender: React.FunctionComponent<ItemProps>;
 }
