@@ -87,7 +87,7 @@ export const Extension = React.memo(
                     {localize(installing ? 'marketplace.extension.updating' : 'marketplace.extension.update')}
                   </Button>
                 ) : (
-                  <span>{localize('marketplace.extension.installed')}</span>
+                  <span className={styles.state_text}>{localize('marketplace.extension.installed')}</span>
                 )
               ) : (
                 <>
@@ -96,7 +96,9 @@ export const Extension = React.memo(
                   </Button>
                 </>
               ))}
-            {type === ExtensionViewType.INSTALLED && <span>{localize('marketplace.extension.installed')}</span>}
+            {type === ExtensionViewType.INSTALLED && (
+              <span className={styles.state_text}>{localize('marketplace.extension.installed')}</span>
+            )}
           </div>
         </div>
       </div>
