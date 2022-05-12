@@ -3,9 +3,10 @@ import { Config } from '@jest/types';
 import { argv } from 'yargs';
 
 export async function runTest(target: string, project?: string) {
+  console.log(argv);
+
   return await jest.runCLI(
     {
-      ...argv,
       runInBand: true,
       bail: true,
       passWithNoTests: true,
@@ -13,6 +14,7 @@ export async function runTest(target: string, project?: string) {
       selectProjects: project ? [project] : undefined,
       detectOpenHandles: true,
       forceExit: true,
+      ...argv,
     } as Config.Argv,
     [process.cwd()],
   );

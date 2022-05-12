@@ -89,7 +89,7 @@ const funcs = packagesDirNames.map((target) => {
             console.log(`${checkPointKey} 命中 successCheckPoint，跳过`);
             return;
           }
-          const cmd = `yarn test:module --module=${target} --project=${v}`;
+          const cmd = `yarn test:module --module=${target} --project=${v} --no-runInBand`;
           console.log('cmd:', cmd);
           const runResult = await shell(cmd, {
             reject: false,
