@@ -125,11 +125,11 @@ export interface ICodeWindow {
 
   metadata: any;
 
-  setWorkspace(workspace: string, fsPath?: boolean);
+  setWorkspace(workspace: string, fsPath?: boolean): void;
 
-  setExtensionDir(extensionDir: string);
+  setExtensionDir(extensionDir: string): void;
 
-  setExtensionCandidate(extensionCandidate: ExtensionCandidate[]);
+  setExtensionCandidate(extensionCandidate: ExtensionCandidate[]): void;
 }
 
 export interface ICodeWindowOptions {
