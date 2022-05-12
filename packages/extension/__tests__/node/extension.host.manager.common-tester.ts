@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { Provider } from '@opensumi/di';
-import { INodeLogger, MaybePromise, getDebugLogger } from '@opensumi/ide-core-node';
+import { INodeLogger, MaybePromise, getDebugLogger, isMacintosh } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -49,19 +49,20 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       expect(await extensionHostManager.isRunning(pid)).toBeTruthy();
     });
 
-    it.skip('send message', () =>
-      new Promise<void>(async (done) => {
-        const pid = await extensionHostManager.fork(extHostPath);
-        extensionHostManager.onMessage(pid, async (message) => {
-          if (message === 'ready') {
-            return;
-          }
-          expect(message).toBe('finish');
-          await extensionHostManager.kill(pid);
-          done();
-        });
-        await extensionHostManager.send(pid, 'close');
-      }));
+    !isMacintosh &&
+      it('send message', () =>
+        new Promise<void>(async (done) => {
+          const pid = await extensionHostManager.fork(extHostPath);
+          extensionHostManager.onMessage(pid, async (message) => {
+            if (message === 'ready') {
+              return;
+            }
+            expect(message).toBe('finish');
+            await extensionHostManager.kill(pid);
+            done();
+          });
+          await extensionHostManager.send(pid, 'close');
+        }));
 
     it('send kill signal', () =>
       new Promise<void>(async (done) => {
