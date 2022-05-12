@@ -1,3 +1,5 @@
+.tests-cache
+
 .DS_Store
 yarn.lock
 
