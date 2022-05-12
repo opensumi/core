@@ -19,6 +19,7 @@ interface IExtensionHostManagerTesterOptions {
 
 export const extensionHostManagerTester = (options: IExtensionHostManagerTesterOptions) =>
   describe(__filename, () => {
+    jest.setTimeout(10 * 1000);
     let extensionHostManager: IExtensionHostManager;
     let injector: MockInjector;
     const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');
@@ -49,45 +50,36 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       expect(await extensionHostManager.isRunning(pid)).toBeTruthy();
     });
 
-    it('send message', async () => {
+    it('send message & on message', async () => {
+      // 确保收到一次
       expect.assertions(1);
-      const defered = new Deferred();
+      const deferred = new Deferred();
 
       const pid = await extensionHostManager.fork(extHostPath);
-      // 等待 ready 发完
       await sleep(2000);
       extensionHostManager.onMessage(pid, (message) => {
-        expect(message).toBe('finish');
-        defered.resolve();
+        if (message === 'finish') {
+          expect(message).toBe('finish');
+          deferred.resolve();
+        }
       });
       await extensionHostManager.send(pid, 'close');
-      await defered.promise;
-    });
-    it('on message', async () => {
-      expect.assertions(1);
-      const defered = new Deferred();
-
-      const pid = await extensionHostManager.fork(extHostPath);
-      extensionHostManager.onMessage(pid, (message) => {
-        expect(message).toBe('ready');
-        defered.resolve();
-      });
-      await defered.promise;
+      await deferred.promise;
     });
 
     it('send kill signal', async () => {
       expect.assertions(2);
 
-      const defered = new Deferred();
+      const deferred = new Deferred();
 
       const pid = await extensionHostManager.fork(extHostPath);
       extensionHostManager.onExit(pid, async (code, signal) => {
         expect(signal).toBe('SIGTERM');
         expect(await extensionHostManager.isKilled(pid)).toBeTruthy();
-        defered.resolve();
+        deferred.resolve();
       });
       await extensionHostManager.kill(pid);
-      await defered.promise;
+      await deferred.promise;
     });
     it('tree kill', async () => {
       expect.assertions(2);
