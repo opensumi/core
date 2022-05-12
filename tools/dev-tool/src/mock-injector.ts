@@ -28,11 +28,11 @@ export class MockInjector extends Injector {
   get<T>(token: Token, opts?: InstanceOpts): T;
   get(arg1: any, arg2?: any, arg3?: any) {
     const instance = super.get(arg1, arg2, arg3);
-    const mockDefinations = this.mockMap.get(arg1);
-    if (mockDefinations) {
-      for (const mockDefination of mockDefinations) {
-        const method = mockDefination[0];
-        let value = mockDefination[1];
+    const mockDefs = this.mockMap.get(arg1);
+    if (mockDefs) {
+      for (const mockDef of mockDefs) {
+        const method = mockDef[0];
+        let value = mockDef[1];
         Object.defineProperty(instance, method, {
           get: () => value,
           set: (v) => {

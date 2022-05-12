@@ -143,7 +143,9 @@ describe('MainThreadTask Test Suite', () => {
           extensionStoragePath: {},
           set() {},
           get() {},
-          getAll() {},
+          getAll() {
+            return Promise.resolve({});
+          },
           reConnectInit() {},
         },
       },
