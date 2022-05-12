@@ -1,16 +1,17 @@
 import clx from 'classnames';
 import debounce from 'lodash/debounce';
+import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { getIcon, getIconClass } from '@opensumi/ide-core-browser';
+import { getIcon } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 
 import { ItemProps, ItemType } from '../../common';
 
 import styles from './tab.module.less';
 
-export function renderInfoItem(props: ItemProps) {
+export const renderInfoItem = observer((props: ItemProps) => {
   const handleSelect = debounce(() => props.onClick && props.onClick(), 20);
   const handleClose = debounce(() => props.onClose && props.onClose(), 20);
 
@@ -76,9 +77,9 @@ export function renderInfoItem(props: ItemProps) {
       )}
     </div>
   );
-}
+});
 
-export function renderAddItem(props: ItemProps) {
+export const renderAddItem = observer((props: ItemProps) => {
   const handleAdd = debounce(() => props.onClick && props.onClick(), 20);
 
   return (
@@ -90,16 +91,15 @@ export function renderAddItem(props: ItemProps) {
       onClick={() => handleAdd()}
     />
   );
-}
+});
 
 export default (props: ItemProps) => {
   const type = props.type || ItemType.info;
-
   switch (type) {
     case ItemType.info:
-      return props.provider.infoItemRender(props);
+      return React.createElement(props.provider.infoItemRender, props);
     case ItemType.add:
-      return props.provider.addItemRender(props);
+      return React.createElement(props.provider.addItemRender, props);
     default:
       return null;
   }
