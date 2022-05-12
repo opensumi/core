@@ -1,13 +1,12 @@
 import { Terminal, ILinkMatcherOptions, ITerminalAddon } from 'xterm';
 
-import { URI, Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import { URI, Disposable, Emitter, Event, Schemes } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
 
 import { ITerminalConnection } from '../common';
 
 import { TerminalKeyBoardInputService } from './terminal.input';
-
 
 const segmentClause = '\\~\\w\\.@_\\-';
 const posClause = [
@@ -59,7 +58,7 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
       paths.map((absolute) => promises.push(this._fileService.getFileStat(URI.file(absolute).toString())));
       const stats = await Promise.all(promises);
       return stats
-        .filter((s) => !!s && !s.isDirectory && new URI(s!.uri).scheme === 'file')
+        .filter((s) => !!s && !s.isDirectory && new URI(s!.uri).scheme === Schemes.file)
         .map((s) => new URI(s!.uri).codeUri.fsPath);
     } catch {
       return [];

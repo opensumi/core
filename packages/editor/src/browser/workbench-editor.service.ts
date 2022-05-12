@@ -15,7 +15,7 @@ import {
   IOpenerService,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { isUndefinedOrNull, Schemas, REPORT_NAME, match } from '@opensumi/ide-core-common';
+import { isUndefinedOrNull, Schemes, REPORT_NAME, match } from '@opensumi/ide-core-common';
 import {
   CommandService,
   URI,
@@ -474,7 +474,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @OnEvent(EditorGroupCloseEvent)
   handleOnCloseUntitledResource(e: EditorGroupCloseEvent) {
-    if (e.payload.resource.uri.scheme === Schemas.untitled) {
+    if (e.payload.resource.uri.scheme === Schemes.untitled) {
       const { index } = e.payload.resource.uri.getParsedQuery();
       this.untitledCloseIndex.push(parseInt(index, 10));
       // 升序排序，每次可以去到最小的 index
@@ -485,7 +485,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
     const index = this.untitledCloseIndex.shift() || this.untitledIndex++;
-    return new URI().withScheme(Schemas.untitled).withQuery(`name=Untitled-${index}&index=${index}`);
+    return new URI().withScheme(Schemes.untitled).withQuery(`name=Untitled-${index}&index=${index}`);
   }
 
   createUntitledResource(
@@ -1140,7 +1140,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
-    if (uri.scheme === Schemas.file) {
+    if (uri.scheme === Schemes.file) {
       // 只记录 file 类型的
       this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
     }
@@ -1929,7 +1929,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async saveAll(includeUntitled?: boolean, reason?: SaveReason) {
     for (const r of this.resources) {
       // 不保存无标题文件
-      if (!includeUntitled && r.uri.scheme === Schemas.untitled) {
+      if (!includeUntitled && r.uri.scheme === Schemes.untitled) {
         continue;
       }
       await this.saveResource(r, reason);

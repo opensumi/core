@@ -15,11 +15,11 @@ import {
   WithEventBus,
   LRUMap,
   path,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
-import { USER_STORAGE_SCHEME } from '@opensumi/ide-preferences';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { IEditor } from '../../common';
@@ -53,7 +53,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   private cachedBreadCrumb = new LRUMap<string, IBreadCrumbPart>(200, 100);
 
   handlesUri(uri: URI): boolean {
-    return uri.scheme === 'file' || uri.scheme === USER_STORAGE_SCHEME;
+    return uri.scheme === Schemes.file || uri.scheme === Schemes.userStorage;
   }
 
   provideBreadCrumbForUri(uri: URI, editor: MaybeNull<IEditor>): IBreadCrumbPart[] {

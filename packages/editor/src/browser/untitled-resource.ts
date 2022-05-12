@@ -3,7 +3,7 @@ import {
   URI,
   Emitter,
   Event,
-  Schemas,
+  Schemes,
   WithEventBus,
   IEditorDocumentChange,
   IEditorDocumentModelSaveResult,
@@ -50,7 +50,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
   protected readonly preferenceService: PreferenceService;
 
   handlesScheme(scheme: string): boolean {
-    return scheme === Schemas.untitled;
+    return scheme === Schemes.untitled;
   }
 
   async provideEncoding(uri: URI) {
@@ -141,7 +141,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
 
 @Injectable()
 export class UntitledSchemeResourceProvider extends WithEventBus implements IResourceProvider {
-  readonly scheme: string = Schemas.untitled;
+  readonly scheme: string = Schemes.untitled;
 
   @Autowired(IDialogService)
   protected dialogService: IDialogService;

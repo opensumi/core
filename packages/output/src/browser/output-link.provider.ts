@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, path, Uri, URI, strings } from '@opensumi/ide-core-browser';
+import { Disposable, path, Uri, URI, strings, Schemes } from '@opensumi/ide-core-browser';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -89,7 +89,7 @@ class OutputLinkComputer {
       const resourceCreator: IResourceCreator = {
         toResource: (folderRelativePath: string): string | undefined => {
           if (typeof folderRelativePath === 'string') {
-            return URI.parse(path.join(folderUri, folderRelativePath)).withScheme('file').toString();
+            return URI.parse(path.join(folderUri, folderRelativePath)).withScheme(Schemes.file).toString();
           }
 
           return undefined;

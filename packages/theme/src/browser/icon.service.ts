@@ -13,6 +13,7 @@ import {
   OnEvent,
   WithEventBus,
   ExtensionDidContributes,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
@@ -160,7 +161,9 @@ export class IconService extends WithEventBus implements IIconService {
 
   protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl =
-      path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
+      path.scheme === Schemes.file
+        ? this.staticResourceService.resolveStaticResource(path).toString()
+        : path.toString();
     return this.getMaskStyleSheet(iconUrl, className, baseTheme);
   }
 
@@ -173,7 +176,9 @@ export class IconService extends WithEventBus implements IIconService {
 
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
     const iconUrl =
-      path.scheme === 'file' ? this.staticResourceService.resolveStaticResource(path).toString() : path.toString();
+      path.scheme === Schemes.file
+        ? this.staticResourceService.resolveStaticResource(path).toString()
+        : path.toString();
     return this.getBackgroundStyleSheet(iconUrl, className, baseTheme);
   }
 

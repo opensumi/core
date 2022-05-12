@@ -1,7 +1,7 @@
 import { observable, action, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemas } from '@opensumi/ide-core-browser';
+import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemes } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
@@ -205,7 +205,7 @@ export class DebugBreakpointsService extends WithEventBus {
       renderIndentGuides: false,
     });
     const docModel = await this.documentService.createModelReference(
-      new URI('debug/breakpoint/expression/input').withScheme(Schemas.walkThroughSnippet),
+      new URI('debug/breakpoint/expression/input').withScheme(Schemes.walkThroughSnippet),
     );
 
     const model = docModel.instance.getMonacoModel();

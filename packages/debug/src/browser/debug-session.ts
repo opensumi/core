@@ -12,7 +12,7 @@ import {
   canceled,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { CancellationTokenSource, CancellationToken, Disposable } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, CancellationToken, Disposable, Schemes } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -652,7 +652,7 @@ export class DebugSession implements IDebugSession {
     }
     const name = uri.displayName;
     let path: string | undefined = uri.toString();
-    if (uri.scheme === 'file') {
+    if (uri.scheme === Schemes.file) {
       path = await this.fileSystem.getFsPath(path);
     }
     return {

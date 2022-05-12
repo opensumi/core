@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, URI, AppConfig } from '@opensumi/ide-core-browser';
+import { Domain, URI, AppConfig, Schemes } from '@opensumi/ide-core-browser';
 import {
   StaticResourceContribution,
   StaticResourceService,
@@ -14,7 +14,7 @@ export class ExpressFileServerContribution implements StaticResourceContribution
 
   registerStaticResolver(service: StaticResourceService): void {
     service.registerStaticResourceProvider({
-      scheme: 'file',
+      scheme: Schemes.file,
       resolveStaticResource: (uri: URI) => {
         // file 协议统一走静态服务
         // http://0.0.0.0:8000/assets/${path}

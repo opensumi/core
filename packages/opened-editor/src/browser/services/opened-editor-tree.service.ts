@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
-import { URI, formatLocalize, Emitter, Event, path } from '@opensumi/ide-core-browser';
+import { URI, formatLocalize, Emitter, Event, path, Schemes } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IEditorGroup, IResource, ResourceService } from '@opensumi/ide-editor';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -136,7 +136,7 @@ export class OpenedEditorService extends Tree {
    * @memberof FileTreeAPI
    */
   public async getReadableTooltip(path: URI) {
-    if (path.scheme !== 'file') {
+    if (path.scheme !== Schemes.file) {
       return '';
     }
     const roots = await this.workspaceService.roots;

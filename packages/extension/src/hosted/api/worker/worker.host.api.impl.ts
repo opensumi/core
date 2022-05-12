@@ -1,7 +1,7 @@
 import type * as vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, Event, CancellationTokenSource, DefaultReporter } from '@opensumi/ide-core-common';
+import { Emitter, Event, CancellationTokenSource, DefaultReporter, Schemes } from '@opensumi/ide-core-common';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 
 import { IExtensionHostService, IExtensionWorkerHost, WorkerHostAPIIdentifier } from '../../../common';
@@ -167,7 +167,7 @@ export function createAPIFactory(
     // VS Code 纯前端插件 API
     env: {
       // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
-      uriScheme: 'file',
+      uriScheme: Schemes.file,
     },
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),

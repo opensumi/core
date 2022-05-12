@@ -1,4 +1,4 @@
-import { URI } from '@opensumi/ide-core-common';
+import { Schemes, URI } from '@opensumi/ide-core-common';
 
 import { IContextKeyService, IContextKey } from '../context-key';
 import { getLanguageIdFromMonaco } from '../services/label-service';
@@ -46,7 +46,7 @@ export class ResourceContextKey {
       this.resourceExtname.set(uri.path.ext);
       this.resourceLangId.set(this.languageResolver(uri)!);
       this.resourceKey.set(uri.toString());
-      this.isFileSystemResource.set(uri.scheme === 'file');
+      this.isFileSystemResource.set(uri.scheme === Schemes.file);
     }
   }
 

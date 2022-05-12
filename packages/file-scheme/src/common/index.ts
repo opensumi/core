@@ -1,6 +1,5 @@
 import { IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-common';
 
-export const FILE_SCHEME = 'file';
 export const FILE_ON_DISK_SCHEME = 'fileOnDisk';
 
 export const FILE_SAVE_BY_CHANGE_THRESHOLD = 100000; // 约 100k 大小的脚本

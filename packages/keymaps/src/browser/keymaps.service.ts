@@ -28,10 +28,10 @@ import {
   IProgressStep,
   Deferred,
   Throttler,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { USER_STORAGE_SCHEME } from '@opensumi/ide-preferences';
 
 import { KEYMAPS_FILE_NAME, IKeymapService, KEYMAPS_SCHEME, KeybindingItem, KeymapItem } from '../common';
 
@@ -40,7 +40,7 @@ import { KeymapsParser } from './keymaps-parser';
 @Injectable()
 export class KeymapService implements IKeymapService {
   static DEFAULT_SEARCH_DELAY = 100;
-  static KEYMAP_FILE_URI: URI = new URI().withScheme(USER_STORAGE_SCHEME).withPath(KEYMAPS_FILE_NAME);
+  static KEYMAP_FILE_URI: URI = new URI().withScheme(Schemes.userStorage).withPath(KEYMAPS_FILE_NAME);
 
   @Autowired(KeybindingRegistry)
   protected readonly keyBindingRegistry: KeybindingRegistry;

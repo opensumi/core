@@ -7,7 +7,7 @@ import * as fs from 'fs-extra';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Schemas, INodeLogger, AppConfig } from '@opensumi/ide-core-node';
+import { INodeLogger, AppConfig, Schemes } from '@opensumi/ide-core-node';
 import {
   URI,
   Emitter,
@@ -533,7 +533,7 @@ export class FileService implements IFileService {
   }
 
   private initProvider() {
-    this.registerProvider(Schemas.file, this.injector.get(IDiskFileProvider));
+    this.registerProvider(Schemes.file, this.injector.get(IDiskFileProvider));
   }
 
   private getProvider<T extends string>(scheme: T): T extends 'file' ? IDiskFileProvider : FileSystemProvider;

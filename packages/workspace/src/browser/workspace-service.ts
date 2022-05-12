@@ -17,7 +17,15 @@ import {
   IWindowService,
   path,
 } from '@opensumi/ide-core-browser';
-import { URI, StorageProvider, IStorage, STORAGE_NAMESPACE, localize, formatLocalize } from '@opensumi/ide-core-common';
+import {
+  URI,
+  StorageProvider,
+  IStorage,
+  STORAGE_NAMESPACE,
+  localize,
+  formatLocalize,
+  Schemes,
+} from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 import { FileChangeEvent } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -125,7 +133,7 @@ export class WorkspaceService implements IWorkspaceService {
     return home
       .resolve(this.appConfig.storageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME)
       .resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`)
-      .withScheme('file');
+      .withScheme(Schemes.file);
   }
 
   protected listenPreference() {
@@ -727,7 +735,7 @@ export class WorkspaceService implements IWorkspaceService {
    */
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined {
     // 获取非file协议文件的根目录，默认返回第一个根目录或undefined
-    if (!uri || uri.scheme !== 'file') {
+    if (!uri || uri.scheme !== Schemes.file) {
       const root = this.tryGetRoots()[0];
       if (root) {
         return new URI(root.uri);

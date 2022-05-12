@@ -1,7 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { ClientAppContribution, Domain } from '@opensumi/ide-core-browser';
 import { PreferenceSchema, PreferenceSchemaProvider, PreferenceService } from '@opensumi/ide-core-browser';
-import { debounce, IReporterService, StaleLRUMap, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
+import {
+  debounce,
+  IReporterService,
+  StaleLRUMap,
+  OnEvent,
+  URI,
+  WithEventBus,
+  Schemes,
+} from '@opensumi/ide-core-common';
 import { EditorDocumentModelSavedEvent, EditorDocumentModelWillSaveEvent } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import {
@@ -237,7 +245,7 @@ export class FileAndContentUpdateTimeContribution extends WithEventBus {
     }
 
     // 非当前 workspace 的文件不统计 | 非 file 协议不统计
-    if (uri.scheme !== 'file') {
+    if (uri.scheme !== Schemes.file) {
       return false;
     }
 
