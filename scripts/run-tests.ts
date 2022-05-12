@@ -86,7 +86,7 @@ const funcs = packagesDirNames.map((target) => {
             console.log(`${checkPointKey} 命中 successCheckPoint，跳过`);
             return;
           }
-          const cmd = `npm run test:module -- --module=${target} --project=${v}`;
+          const cmd = `cross-env NODE_OPTIONS=--max_old_space_size=5120 ts-node ./scripts/module-jest --module=${target} --project=${v}`;
           console.log('cmd:', cmd);
           const runResult = await shell(cmd, {
             reject: false,

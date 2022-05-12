@@ -26,6 +26,7 @@ import {
   ExtHostTerminal,
   Terminal,
 } from '../../../../src/hosted/api/vscode/ext.host.terminal';
+import EnvironmentVariableService from '../../__mocks__/environmentVariableService';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -102,10 +103,7 @@ describe(__filename, () => {
     },
     {
       token: EnvironmentVariableServiceToken,
-      useValue: {
-        set: () => {},
-        delete: () => {},
-      },
+      useValue: EnvironmentVariableService,
     },
   );
 

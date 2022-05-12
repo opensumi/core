@@ -1,6 +1,12 @@
 require('jest-canvas-mock');
+const { Buffer } = require('buffer');
+const timer = require('timers');
+
 const fetch = require('node-fetch');
 
+global.setImmediate = timer.setImmediate;
+global.Buffer = Buffer;
+global.clearImmediate = timer.clearImmediate;
 // packages/extension/__tests__/browser/main.thread.env.test.ts
 // MainThreadEnvAPI Test Suites  › can read/write text via clipboard
 let text = '';

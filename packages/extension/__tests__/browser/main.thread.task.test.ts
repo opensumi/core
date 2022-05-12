@@ -45,6 +45,7 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { mockExtensions } from '../../__mocks__/extensions';
+import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
 
 const extension = Object.assign({}, mockExtensions[0], {
   packageJSON: {
@@ -138,16 +139,7 @@ describe('MainThreadTask Test Suite', () => {
       },
       {
         token: IExtensionStorageService,
-        useValue: {
-          whenReady: Promise.resolve(true),
-          extensionStoragePath: {},
-          set() {},
-          get() {},
-          getAll() {
-            return Promise.resolve({});
-          },
-          reConnectInit() {},
-        },
+        useValue: MockExtensionStorageService,
       },
       {
         token: ExtensionService,
