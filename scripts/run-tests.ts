@@ -64,7 +64,7 @@ const serial = (funcs) =>
     Promise.resolve([]),
   );
 
-const skipList = ['addons', 'comments', 'components', 'connection'] as string[];
+const skipList = ((argv as any).skipList ?? '').split(',') || ([] as string[]);
 const testResult = {};
 
 const funcs = packagesDirNames.map((target) => {
@@ -86,8 +86,11 @@ const funcs = packagesDirNames.map((target) => {
             console.log(`${checkPointKey} 命中 successCheckPoint，跳过`);
             return;
           }
-          const runResult = await shell(`npm run test:module -- --module=${target} --project=${v}`, {
+          const cmd = `npm run test:module -- --module=${target} --project=${v}`;
+          console.log('cmd:', cmd);
+          const runResult = await shell(cmd, {
             reject: false,
+            stdio: 'inherit',
           });
           const info = {
             info: runResult,
@@ -114,5 +117,5 @@ const funcs = packagesDirNames.map((target) => {
 serial(funcs)
   .then(console.log.bind(console))
   .then(() => {
-    writeJSONSync('tests-by-modules.json', testResult);
+    writeJSONSync(join(cacheDir, 'tests.json'), testResult);
   });
