@@ -63,6 +63,7 @@ let mainThread: MainThreadLanguages;
 let model: ITextModel;
 
 describe('ExtHostLanguageFeatures', () => {
+  jest.setTimeout(10 * 1000);
   const injector = createBrowserInjector([]);
   let monacoService: MonacoService;
 

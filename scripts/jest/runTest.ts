@@ -8,7 +8,7 @@ export async function runTest(target: string, project?: string) {
       ...argv,
       runInBand: true,
       passWithNoTests: true,
-      testPathPattern: [`packages/${target}(/__tests?__/.*|(\\.|/)(test|spec))\\.[jt]sx?$`],
+      testPathPattern: [`packages\/${target}\/__tests?__\/.*\\.(test|spec)\\.[jt]sx?$`],
       selectProjects: project ? [project] : undefined,
       detectOpenHandles: true,
       forceExit: true,

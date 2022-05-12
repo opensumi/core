@@ -40,6 +40,8 @@ async function delay(ms: number) {
 }
 
 describe('Webview view tests ', () => {
+  jest.setTimeout(10 * 1000);
+
   let extHostWebview: IExtHostWebview;
   let extHostWebviewView: ExtHostWebviewViews;
   let mainThreadWebview: MainThreadWebview;

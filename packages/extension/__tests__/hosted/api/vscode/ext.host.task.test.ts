@@ -26,9 +26,11 @@ import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import {
   ITerminalApiService,
   ITerminalClientFactory,
+  ITerminalContributionService,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
+  ITerminalProfileInternalService,
   ITerminalProfileService,
   ITerminalService,
   ITerminalTheme,
@@ -39,6 +41,7 @@ import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser
 import { TerminalPreference } from '@opensumi/ide-terminal-next/lib/browser/terminal.preference';
 import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile';
 import { TerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/browser/terminal.view';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { VariableResolverService } from '@opensumi/ide-variable/lib/browser/variable-resolver.service';
@@ -49,6 +52,8 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import {
   MockMainLayoutService,
   MockSocketService,
+  MockTerminalContributionService,
+  MockTerminalProfileInternalService,
   MockTerminalThemeService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
 import { mockExtensionProps } from '../../../../__mocks__/extensions';
@@ -57,6 +62,7 @@ import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thre
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostTerminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { ExtHostTasks } from '../../../../src/hosted/api/vscode/tasks/ext.host.tasks';
+import { MockEnvironmentVariableService } from '../../__mocks__/environmentVariableService';
 
 import { CustomBuildTaskProvider } from './__mock__/taskProvider';
 
@@ -205,6 +211,18 @@ describe('ExtHostTask API', () => {
     {
       token: IMainLayoutService,
       useValue: new MockMainLayoutService(),
+    },
+    {
+      token: ITerminalProfileInternalService,
+      useValue: new MockTerminalProfileInternalService(),
+    },
+    {
+      token: ITerminalContributionService,
+      useValue: new MockTerminalContributionService(),
+    },
+    {
+      token: EnvironmentVariableServiceToken,
+      useValue: MockEnvironmentVariableService,
     },
   );
 

@@ -1,6 +1,6 @@
 import { Disposable } from '@opensumi/ide-core-common';
 
-export default {
+export const MockEnvironmentVariableService = {
   set: () => {},
   delete: () => {},
   mergedCollection: undefined,

@@ -9,7 +9,7 @@ import { IExtHostProxy, IExtensionHostManager } from '../../src/common';
 import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';
 import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.manager';
 
-import EnvironmentVariableService from './__mocks__/environmentVariableService';
+import { MockEnvironmentVariableService } from './__mocks__/environmentVariableService';
 
 // re-install RAL in `@opensumi/vscode-jsonrpc`
 import '@opensumi/vscode-jsonrpc/lib/node/main';
@@ -33,7 +33,7 @@ describe(__filename, () => {
         },
         {
           token: EnvironmentVariableServiceToken,
-          useValue: EnvironmentVariableService,
+          useValue: MockEnvironmentVariableService,
         },
         {
           token: IExtensionHostManager,
