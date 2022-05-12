@@ -89,11 +89,20 @@ const funcs = packagesDirNames.map((target) => {
             console.log(`${checkPointKey} 命中 successCheckPoint，跳过`);
             return;
           }
-          const cmd = `yarn test:module --module=${target} --project=${v} --no-runInBand`;
-          console.log('cmd:', cmd);
+          const env = {};
+          if ((argv as any).strictPromise) {
+            env['EXIT_ON_UNHANDLED_REJECTION'] = 'true';
+          }
+          let cmd = `yarn test:module --module=${target} --project=${v}`;
+          if ((argv as any).serial) {
+            cmd += ' --no-runInBand';
+          }
+
+          console.log('cmd:', cmd, 'env:', env);
           const runResult = await shell(cmd, {
             reject: false,
             stdio: 'inherit',
+            env,
           });
           const info = {
             info: runResult,
