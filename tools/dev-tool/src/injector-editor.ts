@@ -24,6 +24,7 @@ import { IDocPersistentCacheProvider } from '@opensumi/ide-editor/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks/workspace-service';
 
+import { TestEditorDocumentProvider } from '../../../packages/editor/__tests__/browser/test-providers';
 import { MockedMonacoService } from '../../../packages/monaco/__mocks__/monaco.service.mock';
 
 import { MockInjector } from './mock-injector';
@@ -78,4 +79,6 @@ export function addEditorProviders(injector: MockInjector) {
       useClass: EditorFeatureRegistryImpl,
     },
   );
+  const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
+  editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
 }

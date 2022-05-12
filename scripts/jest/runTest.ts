@@ -7,6 +7,7 @@ export async function runTest(target: string, project?: string) {
     {
       ...argv,
       runInBand: true,
+      bail: true,
       passWithNoTests: true,
       testPathPattern: [`packages\/${target}\/__tests?__\/.*\\.(test|spec)\\.[jt]sx?$`],
       selectProjects: project ? [project] : undefined,

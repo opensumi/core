@@ -8,8 +8,8 @@ import {
   EvaluatableExpressionServiceImpl,
   IEvaluatableExpressionService,
 } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
+import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
-import { TestEditorDocumentProvider } from '@opensumi/ide-editor/__tests__/browser/test-providers';
 import {
   EditorDocumentModelServiceImpl,
   EditorDocumentModelContentRegistryImpl,
@@ -99,12 +99,11 @@ describe('ExtHostLanguageFeatures', () => {
   );
 
   useMockStorage(injector);
-
-  const editorDocModelRegistry: IEditorDocumentModelContentRegistry = injector.get(IEditorDocumentModelContentRegistry);
-  editorDocModelRegistry.registerEditorDocumentModelContentProvider(TestEditorDocumentProvider);
+  addEditorProviders(injector);
 
   beforeAll(async () => {
     monacoService = injector.get(MonacoService);
+
     model = createModel(
       ['This is the first line', 'This is the second line', 'This is the third line'].join('\n'),
       undefined,

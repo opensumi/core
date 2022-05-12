@@ -15,57 +15,17 @@ import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/co
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 
+import { extensionDir, getBaseInjector } from './baseInjector';
+
 describe('Extension Client Serivce', () => {
   let injector: Injector;
   let extensionNodeClient: IExtensionNodeClientService;
-  const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
   const testExtId = 'opensumi.ide-dark-theme';
   const testExtPath = 'opensumi.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
 
   beforeAll(async () => {
-    injector = createNodeInjector([]);
-    injector.addProviders(
-      {
-        token: AppConfig,
-        useValue: {
-          marketplace: {
-            extensionDir,
-            ignoreId: [],
-          },
-        },
-      },
-      {
-        token: INodeLogger,
-        useValue: getDebugLogger(),
-      },
-      {
-        token: IFileService,
-        useClass: FileService,
-      },
-      {
-        token: IDiskFileProvider,
-        useClass: DiskFileSystemProvider,
-      },
-      {
-        token: 'FileServiceOptions',
-        useValue: FileSystemNodeOptions.DEFAULT,
-      },
-      {
-        token: IExtensionStoragePathServer,
-        useValue: {
-          getLastStoragePath: () => Promise.resolve(path.join(os.homedir(), '.sumi', 'workspace-storage')),
-        },
-      },
-      {
-        token: IExtensionNodeService,
-        useClass: ExtensionNodeServiceImpl,
-      },
-      {
-        token: IExtensionNodeClientService,
-        useClass: ExtensionServiceClientImpl,
-      },
-    );
+    injector = getBaseInjector();
     extensionNodeClient = injector.get(IExtensionNodeClientService);
   });
 
