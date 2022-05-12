@@ -24,7 +24,6 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
     const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');
 
     beforeEach(async () => {
-      jest.setTimeout(10 * 1000);
       injector = createNodeInjector([]);
       injector.addProviders(
         {
@@ -50,7 +49,7 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       expect(await extensionHostManager.isRunning(pid)).toBeTruthy();
     });
 
-    it('send message', () =>
+    it.skip('send message', () =>
       new Promise<void>(async (done) => {
         const pid = await extensionHostManager.fork(extHostPath);
         extensionHostManager.onMessage(pid, async (message) => {
