@@ -381,7 +381,7 @@ function SelectPreferenceItem({
 
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
-
+  const defaultValue = preferenceService.get(preferenceName, PreferenceScope.Default) || schema.default;
   const renderEnumOptions = useCallback(
     () =>
       schema.enum?.map((item, idx) => {
@@ -397,7 +397,7 @@ function SelectPreferenceItem({
             className={styles.select_option}
           >
             {replaceLocalizePlaceholder((labels[item] || item).toString())}
-            {item === schema.default && (
+            {item === String(defaultValue) && (
               <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
             )}
           </Option>
