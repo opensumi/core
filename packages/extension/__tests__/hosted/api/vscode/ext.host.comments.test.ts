@@ -212,7 +212,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     const author = 'hacke2';
     const reaction = {
       iconPath: Uri.file('test.png'),
-      label: '点赞',
+      label: 'Like',
       count: 1,
       authorHasReacted: false,
     };
@@ -222,7 +222,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
 
     controller.reactionHandler = async (comment, reaction) => {
       expect(comment.reactions).toHaveLength(1);
-      expect(reaction.label).toBe('点赞');
+      expect(reaction.label).toBe('Like');
       defered.resolve();
     };
 
