@@ -89,14 +89,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     const toDispose = preferenceService.onDidSettingsChange(() => {
       doGetGroups();
     });
-
-    // 如果当前工作区有设置文件，则先展示工作区设置
-    (async () => {
-      const hasWorkspaceSettings = await preferenceService.hasThisScopeSetting(PreferenceScope.Workspace);
-      if (hasWorkspaceSettings) {
-        setTabList([WorkspaceScope, UserScope]);
-      }
-    })();
     return () => {
       toDispose?.dispose();
     };
