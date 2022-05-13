@@ -340,6 +340,8 @@ export class DebugSession implements IDebugSession {
         supportsRunInTerminalRequest: true,
         supportsProgressReporting: true,
         supportsInvalidatedEvent: true,
+        supportsMemoryEvent: true,
+        supportsMemoryReferences: true,
       },
       this.configuration,
     );

@@ -285,6 +285,7 @@ export const localizationBundle = {
     'debug.watch.title': '监视',
     'debug.callStack.title': '堆栈',
     'debug.variables.title': '变量',
+    'debug.variables.view.memory': '查看变量视图',
     'debug.breakpoints.title': '断点',
     'debug.container.title': '调试管理器',
     'debug.breakpoint.toggle': '启用/禁用断点',

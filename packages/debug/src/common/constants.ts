@@ -2,6 +2,8 @@ import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 
 import { DebugState } from './debug-session';
 
+export const DEBUG_MEMORY_SCHEME = 'vscode-debug-memory';
+
 export const DEBUG_CONSOLE_CONTAINER_ID = 'debug-console-container';
 export const DEBUG_CONTAINER_ID = 'debug';
 export const DEBUG_WATCH_ID = 'debug-watch';

@@ -163,7 +163,7 @@ export class ExpressionNode extends TreeNode {
 export namespace ExpressionNode {
   export interface Options {
     session: DebugSession | undefined;
-    variablesReference?: number;
+    variablesReference: number;
     namedVariables?: number;
     indexedVariables?: number;
     startOfVariables?: number;
@@ -390,6 +390,7 @@ export class DebugVariableContainer extends ExpressionContainer {
       variablesReference: this.variable.variablesReference || 0,
       value: this.value,
       evaluateName: this.evaluateName,
+      memoryReference: this.memoryReference,
     };
   }
 
@@ -412,6 +413,10 @@ export class DebugVariableContainer extends ExpressionContainer {
 
   get evaluateName(): string {
     return this.variable?.evaluateName || '';
+  }
+
+  get memoryReference(): string {
+    return this.variable.memoryReference || '';
   }
 
   get description(): string {

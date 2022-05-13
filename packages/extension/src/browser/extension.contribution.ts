@@ -26,6 +26,7 @@ import {
   URI,
   ILogger,
   AppConfig,
+  CUSTOM_EDITOR_SCHEME,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -47,7 +48,7 @@ import {
   ExtensionHostTypeUpperCase,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
-import { TextDocumentShowOptions, ViewColumn, CUSTOM_EDITOR_SCHEME } from '../common/vscode';
+import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
 import {
@@ -216,6 +217,12 @@ export class ExtensionCommandContribution implements CommandContribution {
         },
       },
     );
+    registry.registerCommand(VSCodeBuiltinCommands.GET_EXTENSION, {
+      execute: async (id: string) => {
+        const ext = this.extensionInstanceManageService.getExtensionInstanceByExtId(id);
+        return ext && ext.toJSON();
+      },
+    });
 
     this.registerVSCBuiltinCommands(registry);
   }
