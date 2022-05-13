@@ -39,7 +39,6 @@ import {
   ITerminalConnection,
   ITerminalExternalLinkProvider,
   ICreateTerminalOptions,
-  ITerminalProfileService,
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalProfileInternalService,
@@ -130,9 +129,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
-
-  @Autowired(ITerminalProfileService)
-  terminalProfileService: ITerminalProfileService;
 
   @Autowired(ITerminalProfileInternalService)
   terminalProfileInternalService: ITerminalProfileInternalService;

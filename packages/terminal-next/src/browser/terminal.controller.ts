@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
-import { ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import {
@@ -14,6 +14,9 @@ import {
   IDisposable,
   DisposableStore,
   ILogger,
+  DisposableCollection,
+  CommandRegistry,
+  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -41,6 +44,8 @@ import {
   ICreateTerminalOptions,
   ITerminalClientFactory2,
   ICreateClientWithWidgetOptions,
+  ITerminalProfileService,
+  ITerminalProfile,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -49,7 +54,7 @@ import { TerminalGroupViewService } from './terminal.view';
 @Injectable()
 export class TerminalController extends WithEventBus implements ITerminalController {
   protected _focus: boolean;
-  protected _tabbarHandler: TabBarHandler | undefined;
+  protected _tabBarHandler: TabBarHandler | undefined;
   protected _clients: Map<string, ITerminalClient>;
   protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
   protected _onDidCloseTerminal = new Emitter<ITerminalExitEvent>();
@@ -67,6 +72,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   private readonly _onInstanceRequestStartExtensionTerminal = new Emitter<IStartExtensionTerminalRequest>();
   readonly onInstanceRequestStartExtensionTerminal: Event<IStartExtensionTerminalRequest> =
     this._onInstanceRequestStartExtensionTerminal.event;
+
+  private commandAndMenuDisposeCollection: DisposableCollection;
 
   @Autowired(IMainLayoutService)
   protected readonly layoutService: IMainLayoutService;
@@ -94,6 +101,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ITerminalErrorService)
   protected readonly errorService: ITerminalErrorService;
+
+  @Autowired(ITerminalProfileService)
+  protected readonly profileService: ITerminalProfileService;
+
+  @Autowired(CommandRegistry)
+  private readonly commandRegistry: CommandRegistry;
+
+  @Autowired(IMenuRegistry)
+  private readonly menuRegistry: IMenuRegistry;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -321,7 +337,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   firstInitialize() {
-    this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId);
+    this._tabBarHandler = this.layoutService.getTabbarHandler(TerminalContainerId);
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
     this.addDispose(
@@ -371,8 +387,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.addDispose(
       this.eventBus.on(ResizeEvent, (e: ResizeEvent) => {
         if (
-          this._tabbarHandler &&
-          this._tabbarHandler.isActivated() &&
+          this._tabBarHandler &&
+          this._tabBarHandler.isActivated() &&
           e.payload.slotLocation === getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig)
         ) {
           this.terminalView.resize();
@@ -380,9 +396,16 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }),
     );
 
-    if (this._tabbarHandler) {
+    this.registerContributedProfilesCommandAndMenu();
+    this.addDispose(
+      this.profileService.onDidChangeAvailableProfiles(() => {
+        this.registerContributedProfilesCommandAndMenu();
+      }),
+    );
+
+    if (this._tabBarHandler) {
       this.addDispose(
-        this._tabbarHandler.onActivate(() => {
+        this._tabBarHandler.onActivate(() => {
           if (this.terminalView.empty()) {
             const current = this._reset();
             this.terminalView.selectWidget(current.id);
@@ -395,14 +418,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       );
 
       this.addDispose(
-        this._tabbarHandler.onInActivate(() => {
+        this._tabBarHandler.onInActivate(() => {
           if (this.editorService.currentEditor) {
             this.editorService.currentEditor.monacoEditor.focus();
           }
         }),
       );
 
-      if (this._tabbarHandler.isActivated()) {
+      if (this._tabBarHandler.isActivated()) {
         if (this.terminalView.empty()) {
           const widget = this._reset();
           this.terminalView.selectWidget(widget.id);
@@ -528,6 +551,16 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return client;
   }
 
+  async createTerminal(options: ICreateTerminalOptions) {
+    const widgetId = options.id || this.service.generateSessionId();
+    const { group } = this._createOneGroup();
+    const widget = this.terminalView.createWidget(group, widgetId, false, true);
+
+    const client = await this._createClient(widget, options);
+
+    return client;
+  }
+
   clearCurrentGroup() {
     this.terminalView.currentGroup &&
       this.terminalView.currentGroup.widgets.forEach((widget) => {
@@ -547,14 +580,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   showTerminalPanel() {
-    if (this._tabbarHandler) {
-      this._tabbarHandler.activate();
+    if (this._tabBarHandler) {
+      this._tabBarHandler.activate();
     }
   }
 
   hideTerminalPanel() {
-    if (this._tabbarHandler && this._tabbarHandler.isActivated()) {
-      this._tabbarHandler.deactivate();
+    if (this._tabBarHandler && this._tabBarHandler.isActivated()) {
+      this._tabBarHandler.deactivate();
     }
   }
 
@@ -593,5 +626,64 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       const provider = instance.registerLinkProvider(linkProvider);
       disposable?.add(provider);
     }
+  }
+
+  private registerContributedProfilesCommandAndMenu() {
+    if (this.commandAndMenuDisposeCollection) {
+      this.commandAndMenuDisposeCollection.dispose();
+    }
+    this.commandAndMenuDisposeCollection = new DisposableCollection();
+    const notAutoDetectedProfiles = this.profileService.availableProfiles.filter((profile) => !profile.isAutoDetected);
+    notAutoDetectedProfiles.forEach((profile) => {
+      const id = `TerminalProfilesCommand:${profile.path}:${profile.profileName}`;
+      this.commandAndMenuDisposeCollection.push(
+        this.commandRegistry.registerCommand(
+          {
+            id,
+          },
+          {
+            execute: async () => {
+              // TODO：create profiles terminal
+              // await this.terminalService.
+              // await this.clientFactory2()
+              await this.createTerminal({
+                config: profile,
+              });
+            },
+          },
+        ),
+      );
+      this.commandAndMenuDisposeCollection.push(
+        this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
+          command: {
+            id,
+            label: profile.profileName || '',
+          },
+        }),
+      );
+    });
+    this.profileService.contributedProfiles.forEach((profile) => {
+      const id = `TerminalProfilesCommand:${profile.extensionIdentifier}:${profile.id}`;
+      this.commandAndMenuDisposeCollection.push(
+        this.commandRegistry.registerCommand(
+          {
+            id,
+          },
+          {
+            execute: async () => {
+              await this.profileService.createContributedTerminalProfile(profile.extensionIdentifier, profile.id, {});
+            },
+          },
+        ),
+      );
+      this.commandAndMenuDisposeCollection.push(
+        this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
+          command: {
+            id,
+            label: replaceLocalizePlaceholder(profile.title) || '',
+          },
+        }),
+      );
+    });
   }
 }

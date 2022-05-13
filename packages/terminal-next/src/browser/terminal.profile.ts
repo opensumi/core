@@ -45,18 +45,10 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   @Autowired(ITerminalContributionService)
   private readonly terminalContributionService: ITerminalContributionService;
 
-  @Autowired(CommandRegistry)
-  private readonly commandRegistry: CommandRegistry;
-
-  @Autowired(IMenuRegistry)
-  private readonly menuRegistry: IMenuRegistry;
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
   private readonly _profilesReadyBarrier: AutoOpenBarrier;
-
-  private commandAndMenuDisposeCollection: DisposableCollection;
 
   private onTerminalProfileResolvedEmitter: Emitter<string> = new Emitter();
 
@@ -129,14 +121,14 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   }
 
   public registerTerminalProfileProvider(
-    extensionIdentifierenfifier: string,
+    extensionIdentifier: string,
     id: string,
     profileProvider: ITerminalProfileProvider,
   ): IDisposable {
-    let extMap = this._profileProviders.get(extensionIdentifierenfifier);
+    let extMap = this._profileProviders.get(extensionIdentifier);
     if (!extMap) {
       extMap = new Map();
-      this._profileProviders.set(extensionIdentifierenfifier, extMap);
+      this._profileProviders.set(extensionIdentifier, extMap);
     }
     extMap.set(id, profileProvider);
     return Disposable.create(() => this._profileProviders.delete(id));
@@ -179,62 +171,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
       this._availableProfiles = profiles;
       this._profilesReadyBarrier.open();
       this._onDidChangeAvailableProfiles.fire(this._availableProfiles);
-      this.registerContributedProfilesCommandAndMenu();
     }
-  }
-
-  private registerContributedProfilesCommandAndMenu() {
-    if (this.commandAndMenuDisposeCollection) {
-      this.commandAndMenuDisposeCollection.dispose();
-    }
-    this.commandAndMenuDisposeCollection = new DisposableCollection();
-    const notAutoDetectedProfiles = this.availableProfiles.filter((profile) => !profile.isAutoDetected);
-    notAutoDetectedProfiles.forEach((profile) => {
-      const id = `TerminalProfilesCommand:${profile.path}:${profile.profileName}`;
-      this.commandAndMenuDisposeCollection.push(
-        this.commandRegistry.registerCommand(
-          {
-            id,
-          },
-          {
-            execute: async () => {
-              // TODO：create profiles terminal
-            },
-          },
-        ),
-      );
-      this.commandAndMenuDisposeCollection.push(
-        this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
-          command: {
-            id,
-            label: profile.profileName || '',
-          },
-        }),
-      );
-    });
-    this.contributedProfiles.forEach((profile) => {
-      const id = `TerminalProfilesCommand:${profile.extensionIdentifier}:${profile.id}`;
-      this.commandAndMenuDisposeCollection.push(
-        this.commandRegistry.registerCommand(
-          {
-            id,
-          },
-          {
-            execute: async () => {
-              await this.createContributedTerminalProfile(profile.extensionIdentifier, profile.id, {});
-            },
-          },
-        ),
-      );
-      this.commandAndMenuDisposeCollection.push(
-        this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
-          command: {
-            id,
-            label: replaceLocalizePlaceholder(profile.title) || '',
-          },
-        }),
-      );
-    });
   }
 
   async getContributedDefaultProfile(

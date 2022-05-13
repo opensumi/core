@@ -31,6 +31,11 @@ export interface ITerminalProfileService {
     id: string,
     profileProvider: ITerminalProfileProvider,
   ): IDisposable;
+  createContributedTerminalProfile(
+    extensionIdentifier: string,
+    id: string,
+    options: ICreateContributedTerminalProfileOptions,
+  ): Promise<void>;
 }
 
 export const ITerminalProfileInternalService = Symbol('ITerminalProfileInternalService');
