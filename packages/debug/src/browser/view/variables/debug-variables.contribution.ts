@@ -15,6 +15,7 @@ import {
   BrowserEditorContribution,
   EditorComponentRegistry,
   EditorComponentRenderMode,
+  EditorGroupSplitAction,
   IEditorDocumentModelContentRegistry,
   IResource,
   ResourceService,
@@ -40,7 +41,6 @@ import {
 } from './../../../common/constants';
 import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
-
 
 @Domain(ClientAppContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
 export class VariablesPanelContribution implements BrowserEditorContribution, MenuContribution, CommandContribution {
@@ -157,6 +157,10 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
               path: '/' + encodeURIComponent(memoryReference || '') + '/memory.bin',
             }),
             {
+              split: EditorGroupSplitAction.Right,
+              disableNavigate: true,
+              backend: true,
+              preview: true,
               forceOpenType: {
                 type: 'component',
                 componentId: HEX_EDITOR_EDITOR_ID,
@@ -176,10 +180,10 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
     service.registerResourceProvider({
       scheme: DEBUG_MEMORY_SCHEME,
       provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
-          uri,
-          icon: getIcon('hex'),
-          name: uri.displayName,
-        }),
+        uri,
+        icon: getIcon('hex'),
+        name: uri.displayName,
+      }),
     });
   }
 
