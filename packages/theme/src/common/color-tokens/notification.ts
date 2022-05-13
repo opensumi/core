@@ -9,8 +9,9 @@ import {
   editorErrorForeground,
   editorWarningForeground,
   editorInfoForeground,
+  editorSuccessForeground,
 } from './editor';
-import { textLinkForeground } from './text';
+import { textLinkForeground, textSeparatorBackground } from './text';
 
 // < --- Notifications --- >
 
@@ -63,6 +64,19 @@ export const NOTIFICATIONS_BACKGROUND = registerColor(
   localize(
     'notificationsBackground',
     'Notifications background color. Notifications slide in from the bottom right of the window.',
+  ),
+);
+
+export const NOTIFICATIONS_SEPARATOR_BACKGROUND = registerColor(
+  'notificationsSeparator.background',
+  {
+    dark: textSeparatorBackground,
+    light: textSeparatorBackground,
+    hc: textSeparatorBackground,
+  },
+  localize(
+    'notificationsSeparatorBackground',
+    'Notifications separator background color. Notifications slide in from the bottom right of the window.',
   ),
 );
 
@@ -146,4 +160,14 @@ export const NOTIFICATIONS_INFO_ICON_FOREGROUND = registerColor(
     hc: editorInfoForeground,
   },
   localize('notificationsInfoIconForeground', 'The color used for the notification info icon.'),
+);
+
+export const NOTIFICATIONS_SUCCESS_ICON_FOREGROUND = registerColor(
+  'notificationsSuccessIcon.foreground',
+  {
+    dark: editorSuccessForeground,
+    light: editorSuccessForeground,
+    hc: editorSuccessForeground,
+  },
+  localize('notificationsSuccessIconForeground', 'The color used for the notification success icon.'),
 );
