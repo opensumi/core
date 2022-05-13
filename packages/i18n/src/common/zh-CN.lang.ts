@@ -541,7 +541,7 @@ export const localizationBundle = {
     'preference.editSettingsJson': '在 settings.json 中编辑',
     'preference.overwritten': '（已被下一级设置覆盖）',
     'preference.overwrittenInUser': '（已在全局设置中设置）',
-    'preference.overwrittenInWorkspace': '（已在工作区设置中设置）',
+    'preference.overwrittenInWorkspace': '（已在工作区设置中被覆盖）',
     'preference.searchPlaceholder': '搜索设置...',
     'keymaps.tab.name': '快捷键设置',
 
