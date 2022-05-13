@@ -24,6 +24,8 @@ const PORT = process.env.IDE_FRONT_PORT || 8080;
 const defaultWorkspace = path.join(__dirname, '../../workspace');
 fse.mkdirpSync(defaultWorkspace);
 
+const withSlash = process.platform === 'win32' ? '/' : '';
+
 // eslint-disable-next-line no-console
 console.log('front port', PORT);
 
@@ -193,7 +195,9 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
           'process.env.EXTENSION_WORKER_HOST': JSON.stringify(
             process.env.EXTENSION_WORKER_HOST ||
-              `http://${HOST}:8080/assets` + path.join(__dirname, '../../../packages/extension/lib/worker-host.js'),
+              `http://${HOST}:8080/assets` +
+                withSlash +
+                path.join(__dirname, '../../../packages/extension/lib/worker-host.js'),
           ),
           'process.env.WS_PATH': JSON.stringify(process.env.WS_PATH || `ws://${HOST}:8000`),
           'process.env.WEBVIEW_HOST': JSON.stringify(process.env.WEBVIEW_HOST || HOST),
