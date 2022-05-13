@@ -45,7 +45,7 @@ import {
   ITerminalClientFactory2,
   ICreateClientWithWidgetOptions,
   ITerminalProfileService,
-  ITerminalProfile,
+  ICreateContributedTerminalProfileOptions,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -655,7 +655,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
           command: {
             id,
-            label: profile.profileName || '',
+            label: profile.profileName || 'unknown profile',
           },
         }),
       );
@@ -678,7 +678,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this.menuRegistry.registerMenuItem(MenuId.TerminalNewDropdownContext, {
           command: {
             id,
-            label: replaceLocalizePlaceholder(profile.title) || '',
+            label: replaceLocalizePlaceholder(profile.title) || profile.title || 'unknown profile',
           },
         }),
       );

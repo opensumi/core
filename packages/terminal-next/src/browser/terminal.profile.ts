@@ -114,7 +114,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     try {
       await profileProvider.createContributedTerminalProfile(options);
     } catch (e) {
-      this.logger.error(e.message);
+      this.logger.error('create contributed terminal profile error:', e.message);
     }
   }
 
