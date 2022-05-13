@@ -11,6 +11,7 @@ import {
   IJSONSchemaRegistry,
   replaceLocalizePlaceholder,
   PreferenceService,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
@@ -18,7 +19,7 @@ import { BaseFileSystemEditorDocumentProvider } from '@opensumi/ide-editor/lib/b
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
-import { FILE_SCHEME, FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
+import { FILE_SAVE_BY_CHANGE_THRESHOLD, IFileSchemeDocClient } from '../common';
 
 @Injectable()
 export class FileSchemeDocumentProvider
@@ -38,7 +39,7 @@ export class FileSchemeDocumentProvider
   private readonly hashCalculateService: IHashCalculateService;
 
   handlesUri(uri: URI): number {
-    return uri.scheme === FILE_SCHEME ? 20 : -1;
+    return uri.scheme === Schemes.file ? 20 : -1;
   }
 
   handlesScheme() {

@@ -1,6 +1,6 @@
 import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { URI, IEventBus, Schemas, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { URI, IEventBus, Schemes, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
 import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
@@ -221,7 +221,7 @@ describe('resource service tests', () => {
     const provider = injector.get(UntitledSchemeDocumentProvider);
 
     const untitledURI = URI.from({
-      scheme: Schemas.untitled,
+      scheme: Schemes.untitled,
       authority: 'test',
       path: '/test.js',
       query: 'name=test.js',
@@ -233,8 +233,8 @@ describe('resource service tests', () => {
 
     expect(provider.disposeEvenDirty(untitledURI)).toBeTruthy();
 
-    expect(provider.handlesScheme(Schemas.untitled)).toBeTruthy();
-    expect(provider.handlesScheme(Schemas.file)).toBeFalsy();
+    expect(provider.handlesScheme(Schemes.untitled)).toBeTruthy();
+    expect(provider.handlesScheme(Schemes.file)).toBeFalsy();
 
     expect(await provider.provideEditorDocumentModelContent(untitledURI)).toBe('');
 

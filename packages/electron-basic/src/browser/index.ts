@@ -20,6 +20,7 @@ import {
   ILogger,
   formatLocalize,
   IEventBus,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -265,7 +266,7 @@ export class ElectronBasicContribution
       },
       {
         execute: (uri: URI) => {
-          if (uri && uri.scheme === 'file') {
+          if (uri && uri.scheme === Schemes.file) {
             this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
           }
         },
@@ -279,7 +280,7 @@ export class ElectronBasicContribution
       },
       {
         execute: ({ uri }: { uri?: URI } = {}) => {
-          if (uri && uri.scheme === 'file') {
+          if (uri && uri.scheme === Schemes.file) {
             this.electronMainUIService.revealInFinder(uri.codeUri.fsPath);
           }
         },
@@ -293,7 +294,7 @@ export class ElectronBasicContribution
       },
       {
         execute: (uri: URI) => {
-          if (uri && uri.scheme === 'file') {
+          if (uri && uri.scheme === Schemes.file) {
             try {
               this.electronMainUIService.revealInSystemTerminal(uri.codeUri.fsPath);
             } catch (e) {

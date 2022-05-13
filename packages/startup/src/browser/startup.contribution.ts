@@ -14,7 +14,7 @@ import { getIcon } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
-import { CommandContribution, CommandRegistry, IEventBus, CommandService } from '@opensumi/ide-core-common';
+import { CommandContribution, CommandRegistry, IEventBus, CommandService, Schemes } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
@@ -66,7 +66,7 @@ export class StartupContribution
     registry.registerEditorSideWidget({
       id: 'example-bottom',
       component: ExampleEditorBottomWidget,
-      displaysOnResource: (r) => r.uri.scheme === 'file',
+      displaysOnResource: (r) => r.uri.scheme === Schemes.file,
     });
   }
 

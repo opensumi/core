@@ -27,6 +27,7 @@ import {
   AppConfig,
   Throttler,
   match,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
@@ -420,7 +421,7 @@ export class FileTreeContribution
 
     commands.registerCommand(FILE_COMMANDS.LOCATION_WITH_EDITOR, {
       execute: () => {
-        if (this.workbenchEditorService.currentEditor?.currentUri?.scheme === 'file') {
+        if (this.workbenchEditorService.currentEditor?.currentUri?.scheme === Schemes.file) {
           this.revealFile(this.workbenchEditorService.currentEditor?.currentUri);
         }
       },

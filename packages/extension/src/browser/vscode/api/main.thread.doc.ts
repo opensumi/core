@@ -12,6 +12,7 @@ import {
   isUndefinedOrNull,
   Emitter,
   LRUMap,
+  Schemes,
 } from '@opensumi/ide-core-common';
 import { ResourceService } from '@opensumi/ide-editor';
 import {
@@ -30,7 +31,6 @@ import {
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
-import { Schemas } from '../../../common/vscode/ext-types';
 
 const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce
@@ -221,7 +221,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   async $tryCreateDocument(options: { content: string; language: string }): Promise<string> {
     const { language, content } = options;
     const docRef = await this.docManager.createModelReference(
-      new URI(`${Schemas.untitled}://temp/` + this.tempDocIdCount++),
+      new URI(`${Schemes.untitled}://temp/` + this.tempDocIdCount++),
       'ext-create-document',
     );
     if (options.language) {

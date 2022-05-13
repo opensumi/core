@@ -3,7 +3,7 @@ import paths from 'path';
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { CancellationToken, Emitter, Event, MessageType, path } from '@opensumi/ide-core-common';
+import { CancellationToken, Emitter, Event, MessageType, path, Schemes } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 import { WorkspaceRootsChangeEvent, IExtHostMessage } from '../../../common/vscode';
@@ -339,7 +339,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     }
 
     function dirname(resource: Uri): Uri {
-      if (resource.scheme === 'file') {
+      if (resource.scheme === Schemes.file) {
         return Uri.file(paths.dirname(resource.fsPath));
       }
       return resource.with({

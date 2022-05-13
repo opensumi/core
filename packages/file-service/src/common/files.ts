@@ -377,8 +377,6 @@ export function isErrnoException(error: any | NodeJS.ErrnoException): error is N
   return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
 }
 
-export const FILE_SCHEME = 'file';
-
 export interface IFileSystemProviderRegistrationEvent {
   added: boolean;
   scheme: string;

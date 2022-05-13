@@ -1,5 +1,5 @@
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { EDITOR_COMMANDS, IContextKeyService, Schemas } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS, IContextKeyService, Schemes } from '@opensumi/ide-core-browser';
 import { CommandService, Disposable, IDisposable, MutableDisposable, URI } from '@opensumi/ide-core-common';
 import { IEditor, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
@@ -109,7 +109,7 @@ export class TestOutputPeekContribution implements IEditorFeatureContribution {
   public contribute(): IDisposable {
     this.disposer.addDispose(
       this.editor.monacoEditor.onDidChangeModel((e: editorCommon.IModelChangedEvent) => {
-        if (e.newModelUrl?.scheme !== Schemas.file) {
+        if (e.newModelUrl?.scheme !== Schemes.file) {
           return;
         }
 

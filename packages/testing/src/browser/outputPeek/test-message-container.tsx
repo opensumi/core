@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 import { IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
-import { Disposable, IMarkdownString, Schemas, URI } from '@opensumi/ide-core-common';
+import { Disposable, IMarkdownString, Schemes, URI } from '@opensumi/ide-core-common';
 import {
   EditorCollectionService,
   getSimpleEditorOptions,
@@ -63,7 +63,7 @@ const MarkdownContentProvider = (props: { dto: TestDto | undefined }) => {
   const [shadowRoot, setShadowRoot] = useState<ShadowRoot | null>(null);
 
   const handleLinkClick = (uri: URI) => {
-    if (uri && uri.scheme === Schemas.command) {
+    if (uri && uri.scheme === Schemes.command) {
       openerService.open(uri);
     }
   };
