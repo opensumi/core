@@ -29,7 +29,8 @@ import {
   ISubmenuItem,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI, ILogger } from '@opensumi/ide-core-common';
-import { IThemeService } from '@opensumi/ide-theme';
+import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import {
   ISemanticTokenRegistry,
   parseClassifierString,
@@ -94,6 +95,9 @@ export class MonacoClientContribution
 
   @Autowired(IThemeService)
   themeService: IThemeService;
+
+  @Autowired(IIconService)
+  private iconService: IconService;
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
@@ -290,12 +294,12 @@ export class MonacoClientContribution
 
   private patchMonacoThemeService() {
     const standaloneThemeService = StaticServices.standaloneThemeService.get();
-    const originalGetTheme: typeof standaloneThemeService.getColorTheme =
+    const originalGetColorTheme: typeof standaloneThemeService.getColorTheme =
       standaloneThemeService.getColorTheme.bind(standaloneThemeService);
     const patchedGetTokenStyleMetadataFlag = '__patched_getTokenStyleMetadata';
 
     standaloneThemeService.getColorTheme = () => {
-      const theme = originalGetTheme();
+      const theme = originalGetColorTheme();
       if (!(patchedGetTokenStyleMetadataFlag in theme)) {
         Object.defineProperty(theme, patchedGetTokenStyleMetadataFlag, {
           enumerable: false,
@@ -334,6 +338,8 @@ export class MonacoClientContribution
       }
       return theme;
     };
+
+    standaloneThemeService.getFileIconTheme = () => this.iconService.currentTheme;
   }
 
   registerCommands(commands: CommandRegistry) {
