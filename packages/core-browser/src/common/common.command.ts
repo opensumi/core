@@ -24,6 +24,7 @@ export namespace FILE_COMMANDS {
   export const NEW_FOLDER: Command = {
     id: 'file.folder.new',
     category: CATEGORY,
+    label: '%file.folder.new%',
     iconClass: getIcon('new-folder'),
   };
 
