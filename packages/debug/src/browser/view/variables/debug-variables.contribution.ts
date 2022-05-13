@@ -13,10 +13,7 @@ import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-brow
 import { CommandService, CUSTOM_EDITOR_SCHEME, IExtensionProps, URI } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
-  EditorComponentRegistry,
-  EditorComponentRenderMode,
   EditorGroupSplitAction,
-  IEditorDocumentModelContentRegistry,
   IResource,
   ResourceService,
   WorkbenchEditorService,
@@ -159,7 +156,6 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
             {
               split: EditorGroupSplitAction.Right,
               disableNavigate: true,
-              backend: true,
               preview: true,
               forceOpenType: {
                 type: 'component',
