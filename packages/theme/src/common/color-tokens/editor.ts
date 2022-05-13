@@ -40,17 +40,6 @@ export const editorInfoBorder = registerColor(
   localize('infoBorder', 'Border color of info boxes in the editor.'),
 );
 
-export const editorSuccessForeground = registerColor(
-  'editorSuccess.foreground',
-  { dark: '#64B436', light: '#64B436', hc: null },
-  localize('editorSuccess.foreground', 'Foreground color of success squigglies in the editor.'),
-);
-export const editorSuccessBorder = registerColor(
-  'editorSuccess.border',
-  { dark: null, light: null, hc: Color.fromHex('#71B771').transparent(0.8) },
-  localize('successBorder', 'Border color of success boxes in the editor.'),
-);
-
 export const editorHintForeground = registerColor(
   'editorHint.foreground',
   { dark: Color.fromHex('#eeeeee').transparent(0.7), light: '#6c6c6c', hc: null },

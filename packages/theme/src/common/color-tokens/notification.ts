@@ -9,7 +9,6 @@ import {
   editorErrorForeground,
   editorWarningForeground,
   editorInfoForeground,
-  editorSuccessForeground,
 } from './editor';
 import { textLinkForeground, textSeparatorBackground } from './text';
 
@@ -165,9 +164,9 @@ export const NOTIFICATIONS_INFO_ICON_FOREGROUND = registerColor(
 export const NOTIFICATIONS_SUCCESS_ICON_FOREGROUND = registerColor(
   'notificationsSuccessIcon.foreground',
   {
-    dark: editorSuccessForeground,
-    light: editorSuccessForeground,
-    hc: editorSuccessForeground,
+    dark: '#64B436',
+    light: '#64B436',
+    hc: null,
   },
   localize('notificationsSuccessIconForeground', 'The color used for the notification success icon.'),
 );
