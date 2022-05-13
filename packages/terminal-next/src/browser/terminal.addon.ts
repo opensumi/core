@@ -139,6 +139,9 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
 
   private _lastInputTime = 0;
 
+  private readonly _onBeforeProcessData = new Emitter<{ data: string }>();
+  readonly onBeforeProcessData = this._onBeforeProcessData.event;
+
   public setConnection(connection: ITerminalConnection | undefined) {
     if (this._disposeConnection) {
       this._disposeConnection.dispose();
@@ -148,9 +151,18 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     if (connection) {
       this._disposeConnection = new Disposable(
         connection.onData((data: string | ArrayBuffer) => {
-          // connection.onData 的时候 对 lastInputTime 进行差值运算，统计最后一次输入到收到回复的时间间隔
-          this._terminal.write(typeof data === 'string' ? data : new Uint8Array(data));
-          this._onData.fire(data);
+          // connection.onData 的时候 对lastInputTime进行差值运算，统计最后一次输入到收到回复的时间间隔
+          let dataToWrite = data;
+          if (typeof data === 'string') {
+            const beforeProcessDataEvent = { data } as { data: string };
+            this._onBeforeProcessData.fire(beforeProcessDataEvent);
+            if (beforeProcessDataEvent.data) {
+              dataToWrite = beforeProcessDataEvent.data;
+            }
+          }
+
+          this._terminal.write(typeof dataToWrite === 'string' ? dataToWrite : new Uint8Array(dataToWrite));
+          this._onData.fire(dataToWrite);
           if (this._lastInputTime) {
             const delta = Date.now() - this._lastInputTime;
             this._lastInputTime = 0;

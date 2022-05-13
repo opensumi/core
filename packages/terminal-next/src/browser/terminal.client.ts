@@ -49,6 +49,7 @@ import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { TerminalKeyBoardInputService } from './terminal.input';
+import { TypeAheadAddon } from './terminal.typeAhead.addon';
 import { XTerm } from './xterm';
 
 @Injectable()
@@ -418,6 +419,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _prepareAddons() {
     this._attachAddon = new AttachAddon();
+    const onBeforeProcessEvent = this._attachAddon.onBeforeProcessData;
+    const typeAheadAddon = new TypeAheadAddon(onBeforeProcessEvent);
+
     this.addDispose([
       this._attachAddon,
       this._attachAddon.onData((data) => {
@@ -442,6 +446,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
     ]);
     this.xterm.raw.loadAddon(this._attachAddon);
+    this.xterm.raw.loadAddon(typeAheadAddon);
   }
 
   private _xtermEvents() {
