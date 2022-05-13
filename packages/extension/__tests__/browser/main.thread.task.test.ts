@@ -7,8 +7,6 @@ import {
   ILoggerManagerClient,
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
-  Disposable,
-  Schemas,
 } from '@opensumi/ide-core-common';
 import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
