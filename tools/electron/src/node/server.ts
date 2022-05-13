@@ -28,7 +28,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   }
 
   const server = net.createServer();
-  const listenPath = yargs.argv.listenPath;
+  const listenPath = (await yargs.argv).listenPath;
 
   const serverApp = new ServerApp(opts);
 
