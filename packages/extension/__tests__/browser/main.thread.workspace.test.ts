@@ -393,7 +393,6 @@ describe('MainThreadWorkspace API Test Suite', () => {
       done();
     });
   });
-  it.only('empty', () => {});
 
   it('should be able to openTextDocument', async () => {
     const defered = new Deferred();
