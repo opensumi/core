@@ -9,12 +9,11 @@ import {
   ExtHostStorage,
 } from '../../../../src/hosted/api/vscode/ext.host.storage';
 
-
 const cache = {
   shared: {},
   unShared: {},
 };
-const moackMainThreadStorage = {
+const mockMainThreadStorage = {
   $getValue: jest.fn(async (shared: boolean, key: string) => (shared ? cache.shared[key] : cache.unShared[key])),
   $setValue: jest.fn(async (shared: boolean, key: string, value: any) => {
     if (shared) {
@@ -44,7 +43,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.storage.test.ts', () =>
   const extensionId = 'opensumi.test-extension';
 
   beforeAll(() => {
-    rpcProtocol.set(MainThreadAPIIdentifier.MainThreadStorage, moackMainThreadStorage as any);
+    rpcProtocol.set(MainThreadAPIIdentifier.MainThreadStorage, mockMainThreadStorage as any);
 
     extHostStorage = injector.get(ExtHostStorage, [rpcProtocol]);
   });
@@ -64,12 +63,12 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.storage.test.ts', () =>
 
   it('getValue', async () => {
     await extHostStorage.getValue(false, 'test');
-    expect(moackMainThreadStorage.$getValue).toBeCalledTimes(1);
+    expect(mockMainThreadStorage.$getValue).toBeCalledTimes(1);
   });
 
   it('setValue', async () => {
     await extHostStorage.setValue(false, 'test', {});
-    expect(moackMainThreadStorage.$setValue).toBeCalledTimes(1);
+    expect(mockMainThreadStorage.$setValue).toBeCalledTimes(1);
   });
 
   it('ExtensionMemento', async () => {

@@ -1,4 +1,4 @@
-import { AppConfig, INativeCredentialService, isLinux } from '@opensumi/ide-core-node';
+import { AppConfig, ILogServiceManager, INativeCredentialService, isLinux } from '@opensumi/ide-core-node';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -21,6 +21,12 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
       {
         token: INativeCredentialService,
         useClass: CredentialService,
+      },
+      {
+        token: ILogServiceManager,
+        useValue: {
+          getLogger: () => console,
+        },
       },
     );
     credentialsService = injector.get<INativeCredentialService>(INativeCredentialService);

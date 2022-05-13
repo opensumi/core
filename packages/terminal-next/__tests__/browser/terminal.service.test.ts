@@ -10,6 +10,7 @@ import { Disposable, FileUri, URI, OperatingSystem } from '@opensumi/ide-core-co
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { MockEnvironmentVariableService } from '../../../extension/__tests__/hosted/__mocks__/environmentVariableService';
 import { NodePtyTerminalService } from '../../src/browser/terminal.service';
 import { IShellLaunchConfig, ITerminalService, ITerminalServicePath } from '../../src/common';
 
@@ -41,10 +42,7 @@ describe('terminal service test cases', () => {
 
     injector.addProviders({
       token: EnvironmentVariableServiceToken,
-      useValue: {
-        mergedCollection: undefined,
-        onDidChangeCollections: () => Disposable.NULL,
-      },
+      useValue: MockEnvironmentVariableService,
     });
 
     await workspaceService.setWorkspace({

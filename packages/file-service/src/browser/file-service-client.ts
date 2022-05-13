@@ -120,12 +120,14 @@ export class FileServiceClient implements IFileServiceClient {
   };
 
   constructor() {
-    this.onDidChangeFileSystemProviderRegistrations((e) => {
-      // 只支持 file
-      if (e.added && e.scheme === Schemes.file) {
-        this.doGetCurrentUserHome();
-      }
-    });
+    this.toDisposable.push(
+      this.onDidChangeFileSystemProviderRegistrations((e) => {
+        // 只支持 file
+        if (e.added && e.scheme === Schemes.file) {
+          this.doGetCurrentUserHome();
+        }
+      }),
+    );
   }
 
   private async doGetCurrentUserHome() {

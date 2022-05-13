@@ -1,7 +1,7 @@
 import path from 'path';
 
 import { Provider } from '@opensumi/di';
-import { INodeLogger, MaybePromise, getDebugLogger, isMacintosh } from '@opensumi/ide-core-node';
+import { INodeLogger, MaybePromise, getDebugLogger, Deferred } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -19,6 +19,7 @@ interface IExtensionHostManagerTesterOptions {
 
 export const extensionHostManagerTester = (options: IExtensionHostManagerTesterOptions) =>
   describe(__filename, () => {
+    jest.setTimeout(10 * 1000);
     let extensionHostManager: IExtensionHostManager;
     let injector: MockInjector;
     const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');
@@ -49,56 +50,69 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
       expect(await extensionHostManager.isRunning(pid)).toBeTruthy();
     });
 
-    !isMacintosh &&
-      it('send message', () =>
-        new Promise<void>(async (done) => {
-          const pid = await extensionHostManager.fork(extHostPath);
-          extensionHostManager.onMessage(pid, async (message) => {
-            if (message === 'ready') {
-              return;
-            }
-            expect(message).toBe('finish');
-            await extensionHostManager.kill(pid);
-            done();
-          });
-          await extensionHostManager.send(pid, 'close');
-        }));
+    it('send message & on message', async () => {
+      // 确保收到一次
+      expect.assertions(1);
+      const deferred = new Deferred();
 
-    it('send kill signal', () =>
-      new Promise<void>(async (done) => {
-        const pid = await extensionHostManager.fork(extHostPath);
-        extensionHostManager.onExit(pid, async (code, signal) => {
-          expect(signal).toBe('SIGTERM');
-          expect(await extensionHostManager.isKilled(pid)).toBeTruthy();
-          done();
-        });
-        await extensionHostManager.kill(pid);
-      }));
-    it('tree kill', () =>
-      new Promise<void>(async (done) => {
-        const pid = await extensionHostManager.fork(extHostPath);
-        extensionHostManager.onExit(pid, async (code, signal) => {
-          expect(signal).toBe('SIGTERM');
-          // tree-kill 使用 process.kill 不能使用 killed 判断
-          expect(await extensionHostManager.isRunning(pid)).toBeFalsy();
-          done();
-        });
-        await extensionHostManager.treeKill(pid);
-      }));
+      const pid = await extensionHostManager.fork(extHostPath);
+      await sleep(2000);
+      extensionHostManager.onMessage(pid, (message) => {
+        if (message === 'finish') {
+          expect(message).toBe('finish');
+          deferred.resolve();
+        }
+      });
+      await extensionHostManager.send(pid, 'close');
+      await deferred.promise;
+    });
+
+    it('send kill signal', async () => {
+      expect.assertions(2);
+
+      const deferred = new Deferred();
+
+      const pid = await extensionHostManager.fork(extHostPath);
+      extensionHostManager.onExit(pid, async (code, signal) => {
+        expect(signal).toBe('SIGTERM');
+        expect(await extensionHostManager.isKilled(pid)).toBeTruthy();
+        deferred.resolve();
+      });
+      await extensionHostManager.kill(pid);
+      await deferred.promise;
+    });
+    it('tree kill', async () => {
+      expect.assertions(2);
+      const defered = new Deferred();
+
+      const pid = await extensionHostManager.fork(extHostPath);
+      extensionHostManager.onExit(pid, async (code, signal) => {
+        expect(signal).toBe('SIGTERM');
+        // tree-kill 使用 process.kill 不能使用 killed 判断
+        expect(await extensionHostManager.isRunning(pid)).toBeFalsy();
+        defered.resolve();
+      });
+      await extensionHostManager.treeKill(pid);
+      await defered.promise;
+    });
 
     it('findDebugPort', async () => {
       const debugPort = await extensionHostManager.findDebugPort(3000, 500, 5000);
       expect(typeof debugPort).toBe('number');
       expect(Math.abs(debugPort - 3000)).toBeLessThan(500);
     });
-    it('on output', () =>
-      new Promise<void>(async (done) => {
-        const pid = await extensionHostManager.fork(extHostPath, [], { silent: true });
-        extensionHostManager.onOutput(pid, (output) => {
-          expect(output.data).toContain('send ready');
-          done();
-        });
-      }));
+
+    it('on output', async () => {
+      expect.assertions(1);
+      const defered = new Deferred();
+
+      const pid = await extensionHostManager.fork(extHostPath, [], { silent: true });
+      extensionHostManager.onOutput(pid, (output) => {
+        expect(output.data).toContain('send ready');
+        defered.resolve();
+      });
+      await defered.promise;
+    });
     it('dispose process', async () => {
       const pid = await extensionHostManager.fork(extHostPath);
       expect(typeof pid).toBe('number');

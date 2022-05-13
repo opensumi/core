@@ -50,14 +50,18 @@ describe('Debug Model', () => {
 
   const initializeInjector = async () => {
     toTearDown.push(Disposable.create(enableMonaCo()));
-
+    const mockEditor = createMockedMonaco().editor!;
     mockDebugEditor = {
-      ...createMockedMonaco().editor!,
-      getModel: () => ({
+      ...mockEditor,
+      getModel: (uri) => ({
+        ...mockEditor.getModel(uri),
         uri: testFile,
+        onDidChangeContent: () => Disposable.create(() => {}),
       }),
       addContentWidget: () => {},
       onKeyDown: () => Disposable.create(() => {}),
+      onDidChangeModelContent: () => Disposable.create(() => {}),
+      onDidChangeModel: () => Disposable.create(() => {}),
     };
     injector = createBrowserInjector([DebugModule]);
     injector.addProviders({
@@ -95,7 +99,12 @@ describe('Debug Model', () => {
       ...mockDebugEditor,
       deltaDecorations: deltaDecorationsFn,
     };
+    // TODO: 需要确认一下这个 case 还能不能生效，现在这样改不知道对不对
+    expect(deltaDecorationsFn).toBeCalledTimes(0);
+
     model = DebugModel.createModel(injector, mockDebugEditor) as DebugModel;
+    expect(deltaDecorationsFn).toBeCalledTimes(2);
+
     const fakeSession = new DebugSession(
       '0',
       {} as DebugSessionOptions,
@@ -124,6 +133,6 @@ describe('Debug Model', () => {
       },
     });
     model.focusStackFrame();
-    expect(deltaDecorationsFn).toBeCalledTimes(0);
+    expect(deltaDecorationsFn).toBeCalledTimes(2);
   });
 });

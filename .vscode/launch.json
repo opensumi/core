@@ -68,6 +68,15 @@
       "internalConsoleOptions": "neverOpen"
     },
     {
+      "type": "node",
+      "request": "launch",
+      "name": "Jest Current File(no timeout)",
+      "runtimeArgs": ["--unhandled-rejections=strict", "${workspaceRoot}/node_modules/.bin/jest"],
+      "args": ["${relativeFile}", "--detectOpenHandles", "--testTimeout=100000000"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
+    },
+    {
       "name": "Debug Jest Tests",
       "type": "node",
       "request": "launch",

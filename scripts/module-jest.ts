@@ -1,10 +1,16 @@
 import { argv } from 'yargs';
-import * as jest from 'jest';
+import { runTest } from './jest/runTest';
 
-const target: string | undefined = argv.module as any;
+const modulePath: string | undefined = argv.module as any;
 
-if (!target) {
-  throw new Error('必须使用 --module参数 提供Module名称， 例子： npm run test:module -- --module=editor');
+if (!modulePath) {
+  throw new Error('必须使用 --module 参数 提供Module名称， 例子： npm run test:module -- --module=editor');
 }
 
-jest.run(['--testPathPattern', `packages/${target}(/__tests?__/.*|(\\.|/)(test|spec))\\.[jt]sx?$`]);
+runTest(modulePath, argv.project as string).then((v) => {
+  console.log('测试是否成功:', v.results.success);
+  // 如果三秒后进程还没退出
+  setTimeout(() => {
+    process.exit(v.results.success ? 0 : 1);
+  }, 3000);
+});

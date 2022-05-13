@@ -103,7 +103,7 @@ export function initRPCService<T = void>(center: RPCServiceCenter) {
   };
 }
 
-interface Ibench {
+interface IBench {
   registerService: (service: string) => void;
 }
 
@@ -135,7 +135,7 @@ export class RPCServiceCenter {
   private connectionPromiseResolve: () => void;
   private logger;
 
-  constructor(private bench?: Ibench, logger?: any) {
+  constructor(private bench?: IBench, logger?: any) {
     this.uid = 'RPCServiceCenter:' + process.pid;
     this.connectionPromise = new Promise((resolve) => {
       this.connectionPromiseResolve = resolve;

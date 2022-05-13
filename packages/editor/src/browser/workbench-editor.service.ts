@@ -506,6 +506,7 @@ export interface IEditorCurrentState {
 
   currentOpenType: IEditorOpenType;
 }
+
 /**
  * Editor Group是一个可视的编辑区域
  * 它由tab，editor，diff-editor，富组件container组成

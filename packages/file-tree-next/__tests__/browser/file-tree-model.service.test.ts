@@ -6,10 +6,8 @@ import {
   StorageProvider,
   ILogger,
   IApplicationService,
-  isWindows,
-  isLinux,
-  OperatingSystem,
   Emitter,
+  OS,
 } from '@opensumi/ide-core-browser';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -164,7 +162,7 @@ describe('FileTreeModelService should be work', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.Macintosh,
+          getBackendOS: () => Promise.resolve(OS.type()),
         },
       },
     );
