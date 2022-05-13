@@ -15,6 +15,7 @@ import {
   replaceLocalizePlaceholder,
   useInjectable,
   formatLocalize,
+  isUndefined,
 } from '@opensumi/ide-core-browser';
 
 import { toPreferenceReadableName, getPreferenceItemLabel } from '../common';
@@ -355,8 +356,9 @@ function SelectPreferenceItem({
   hasValueInScope,
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
+  const defaultValue = preferenceService.get(preferenceName, PreferenceScope.Default) || schema.default;
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const [value, setValue] = useState<string>(currentValue);
+  const [value, setValue] = useState<string>(isUndefined(currentValue) ? defaultValue : currentValue);
 
   // 鼠标还没有划过来的时候，需要一个默认的描述信息
   const defaultDescription = useMemo((): string => {
@@ -366,10 +368,6 @@ function SelectPreferenceItem({
     return '';
   }, [schema]);
   const [description, setDescription] = useState<string>(defaultDescription);
-
-  useEffect(() => {
-    setValue(currentValue);
-  }, [currentValue]);
 
   const handleValueChange = useCallback(
     (val) => {
@@ -381,7 +379,6 @@ function SelectPreferenceItem({
 
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
-
   const renderEnumOptions = useCallback(
     () =>
       schema.enum?.map((item, idx) => {
@@ -397,7 +394,7 @@ function SelectPreferenceItem({
             className={styles.select_option}
           >
             {replaceLocalizePlaceholder((labels[item] || item).toString())}
-            {item === schema.default && (
+            {item === String(defaultValue) && (
               <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
             )}
           </Option>
