@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-common';
-import { ITerminalContributions, ITerminalContributionService } from '@opensumi/ide-terminal-next/lib/common';
+import { ITerminalContributions, ITerminalProfileService } from '@opensumi/ide-terminal-next/lib/common';
 
 import { VSCodeContributePoint, Contributes, ExtensionContributePoint } from '../../../common';
 
@@ -136,13 +136,13 @@ export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalCo
     },
   };
 
-  @Autowired(ITerminalContributionService)
-  terminalContributionService: ITerminalContributionService;
+  @Autowired(ITerminalProfileService)
+  profileService: ITerminalProfileService;
   contribute() {
-    this.terminalContributionService.add(this.extension.id, this.json);
+    this.profileService.addContributedProfile(this.extension.id, this.json);
   }
 
   dispose(): void {
-    this.terminalContributionService.remove(this.extension.id);
+    this.profileService.removeContributedProfile(this.extension.id);
   }
 }

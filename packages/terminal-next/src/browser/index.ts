@@ -19,7 +19,6 @@ import {
   ITerminalHoverManagerService,
   ITerminalProfileService,
   ITerminalClientFactory2,
-  ITerminalContributionService,
   ITerminalProfileInternalService,
 } from '../common';
 import { EnvironmentVariableServiceToken } from '../common/environmentVariable';
@@ -36,7 +35,6 @@ import {
 } from './contribution';
 import { TerminalApiService } from './terminal.api';
 import { createTerminalClientFactory, createTerminalClientFactory2 } from './terminal.client';
-import { TerminalContributionService } from './terminal.contribution';
 import { TerminalController } from './terminal.controller';
 import { TerminalEnvironmentService } from './terminal.environment.service';
 import { TerminalErrorService } from './terminal.error';
@@ -134,10 +132,6 @@ export class TerminalNextModule extends BrowserModule {
     {
       token: ITerminalProfileInternalService,
       useClass: TerminalProfileInternalService,
-    },
-    {
-      token: ITerminalContributionService,
-      useClass: TerminalContributionService,
     },
   ];
 

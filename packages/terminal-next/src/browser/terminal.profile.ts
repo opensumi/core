@@ -11,15 +11,13 @@ import {
   AutoOpenBarrier,
   PreferenceScope,
   ILogger,
-  ExtensionContributePointDone,
 } from '@opensumi/ide-core-common';
-import { ExtensionContributePoint } from '@opensumi/ide-extension';
+import { URI } from '@opensumi/ide-core-common';
 
 import {
   IExtensionTerminalProfile,
-  IRegisterContributedProfileArgs,
+  ISaveContributedProfileArgs,
   IShellLaunchConfig,
-  ITerminalContributionService,
   ITerminalProfile,
   ITerminalProfileObject,
   ITerminalProfileProvider,
@@ -27,6 +25,8 @@ import {
   ITerminalService,
   terminalProfileArgsMatch,
   ICreateContributedTerminalProfileOptions,
+  ITerminalProfileContribution,
+  ITerminalContributions,
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 
@@ -39,9 +39,6 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
-
-  @Autowired(ITerminalContributionService)
-  private readonly terminalContributionService: ITerminalContributionService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -72,12 +69,6 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     // this long.
     this._profilesReadyBarrier = new AutoOpenBarrier(5000);
     this.refreshAvailableProfiles();
-
-    this.addDispose(
-      this.eventBus.on(ExtensionContributePointDone.get(ExtensionContributePoint.Terminal), () => {
-        this.refreshAvailableProfiles();
-      }),
-    );
   }
 
   private readonly _profileProviders: Map</* ext id*/ string, Map</* provider id*/ string, ITerminalProfileProvider>> =
@@ -158,7 +149,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
       }
     }
     const filteredContributedProfiles = Array.from(
-      this.terminalContributionService.terminalProfiles.filter((p) => !excludedContributedProfiles.includes(p.title)),
+      this.rawContributedProfiles.filter((p) => !excludedContributedProfiles.includes(p.title)),
     );
 
     const contributedProfilesChanged = !equals(
@@ -195,7 +186,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     return undefined;
   }
 
-  async registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void> {
+  async saveContributedProfile(args: ISaveContributedProfileArgs): Promise<void> {
     const platformKey = await this.terminalService.getCodePlatformKey();
     const profilesConfig = await this.preferenceService.get(`${CodeTerminalSettingPrefix.Profiles}${platformKey}`);
     if (typeof profilesConfig === 'object') {
@@ -216,6 +207,34 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     );
     return;
   }
+
+  // #region 外部插件贡献的 Terminal Profiles
+  private _rawContributedProfileMap = new Map<string, IExtensionTerminalProfile>();
+  get rawContributedProfiles() {
+    return Array.from(this._rawContributedProfileMap.values());
+  }
+
+  addContributedProfile(extensionId: string, contributions: ITerminalContributions) {
+    const profiles =
+      contributions?.profiles
+        ?.filter((p) => hasValidTerminalIcon(p))
+        .map((e) => ({ ...e, extensionIdentifier: extensionId })) || [];
+    for (const profile of profiles) {
+      this._rawContributedProfileMap.set(profile.id, profile);
+    }
+
+    this.refreshAvailableProfiles();
+  }
+
+  removeContributedProfile(extensionId: string): void {
+    const profiles = this.rawContributedProfiles;
+    for (const profile of profiles) {
+      if (profile.extensionIdentifier === extensionId) {
+        this._rawContributedProfileMap.delete(profile.id);
+      }
+    }
+  }
+  // #endregion
 }
 
 function profilesEqual(one: ITerminalProfile, other: ITerminalProfile) {
@@ -237,5 +256,14 @@ function contributedProfilesEqual(one: IExtensionTerminalProfile, other: IExtens
     one.icon === other.icon &&
     one.id === other.id &&
     one.title === other.title
+  );
+}
+
+function hasValidTerminalIcon(profile: ITerminalProfileContribution): boolean {
+  return (
+    !profile.icon ||
+    typeof profile.icon === 'string' ||
+    URI.isUri(profile.icon) ||
+    ('light' in profile.icon && 'dark' in profile.icon && URI.isUri(profile.icon.light) && URI.isUri(profile.icon.dark))
   );
 }

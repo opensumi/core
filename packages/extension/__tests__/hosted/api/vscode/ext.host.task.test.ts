@@ -27,7 +27,6 @@ import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import {
   ITerminalApiService,
   ITerminalClientFactory,
-  ITerminalContributionService,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
@@ -123,12 +122,6 @@ describe('ExtHostTask API', () => {
     {
       token: ITerminalInternalService,
       useClass: TerminalInternalService,
-    },
-    {
-      token: ITerminalContributionService,
-      useValue: {
-        terminalProfiles: [],
-      },
     },
     {
       token: WSChannelHandler,
