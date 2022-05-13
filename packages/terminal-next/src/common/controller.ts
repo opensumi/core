@@ -6,7 +6,7 @@ import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
 
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
-import { TerminalOptions, ITerminalInfo } from './pty';
+import { TerminalOptions, ITerminalInfo, ICreateTerminalOptions } from './pty';
 import { IWidgetGroup, IWidget } from './resize';
 
 export interface ITerminalExternalClient {
@@ -73,6 +73,7 @@ export interface ITerminalController extends Disposable {
    */
   createClientWithWidget(options: TerminalOptions): Promise<ITerminalClient>;
   createClientWithWidget2(options: ICreateClientWithWidgetOptions): Promise<ITerminalClient>;
+  createTerminal(options: ICreateTerminalOptions): Promise<ITerminalClient>;
   clearCurrentGroup(): void;
   clearAllGroups(): void;
   showTerminalPanel(): void;

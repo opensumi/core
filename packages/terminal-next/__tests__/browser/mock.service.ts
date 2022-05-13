@@ -355,7 +355,7 @@ export class MockProfileService implements ITerminalProfileService {
   ): Promise<void> {
     return Promise.resolve();
   }
-  contributedProfiles: IExtensionTerminalProfile[];
+  contributedProfiles: IExtensionTerminalProfile[] = [];
   async getContributedDefaultProfile(
     shellLaunchConfig: IShellLaunchConfig,
   ): Promise<IExtensionTerminalProfile | undefined> {
