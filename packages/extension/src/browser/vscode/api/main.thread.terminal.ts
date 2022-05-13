@@ -52,7 +52,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   private controller: ITerminalController;
 
   @Autowired(ITerminalProfileService)
-  private profileSerivce: ITerminalProfileService;
+  private profileService: ITerminalProfileService;
 
   @Autowired(ITerminalProfileInternalService)
   private profileInternalSerivce: ITerminalProfileInternalService;
@@ -109,12 +109,12 @@ export class MainThreadTerminal implements IMainThreadTerminal {
       this.controller.onInstanceRequestStartExtensionTerminal((e) => this._onRequestStartExtensionTerminal(e)),
     );
     this.disposable.addDispose(
-      this.profileSerivce.onDidChangeAvailableProfiles(() => {
+      this.profileService.onDidChangeAvailableProfiles(() => {
         this._updateDefaultProfile();
       }),
     );
     this.disposable.addDispose(
-      this.profileSerivce.onTerminalProfileResolved(async (id: string) => {
+      this.profileService.onTerminalProfileResolved(async (id: string) => {
         await this.activationEventService.fireEvent(`onTerminalProfile:${id}`);
       }),
     );
@@ -245,7 +245,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     // Proxy profile provider requests through the extension host
     this._profileProviders.set(
       id,
-      this.profileSerivce.registerTerminalProfileProvider(extensionIdentifier, id, {
+      this.profileService.registerTerminalProfileProvider(extensionIdentifier, id, {
         createContributedTerminalProfile: async (options) => {
           this.proxy.$createContributedProfileTerminal(id, options);
         },

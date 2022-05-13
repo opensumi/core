@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   Disposable,
   Emitter,
@@ -12,9 +11,6 @@ import {
   AutoOpenBarrier,
   PreferenceScope,
   ILogger,
-  CommandRegistry,
-  DisposableCollection,
-  replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 
 import {
@@ -52,6 +48,9 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
 
   private onTerminalProfileResolvedEmitter: Emitter<string> = new Emitter();
 
+  /**
+   * 当用户创建了一个 Profile 时发出的事件
+   */
   get onTerminalProfileResolved() {
     return this.onTerminalProfileResolvedEmitter.event;
   }

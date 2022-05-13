@@ -633,6 +633,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       this.commandAndMenuDisposeCollection.dispose();
     }
     this.commandAndMenuDisposeCollection = new DisposableCollection();
+    // 展示在下拉列表的数据
     const notAutoDetectedProfiles = this.profileService.availableProfiles.filter((profile) => !profile.isAutoDetected);
     notAutoDetectedProfiles.forEach((profile) => {
       const id = `TerminalProfilesCommand:${profile.path}:${profile.profileName}`;
@@ -643,9 +644,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           },
           {
             execute: async () => {
-              // TODO：create profiles terminal
-              // await this.terminalService.
-              // await this.clientFactory2()
               await this.createTerminal({
                 config: profile,
               });
