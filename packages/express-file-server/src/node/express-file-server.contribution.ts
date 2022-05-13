@@ -4,10 +4,9 @@ import path from 'path';
 import mount from 'koa-mount';
 
 import { Autowired } from '@opensumi/di';
-import { ServerAppContribution, Domain, IServerApp, AppConfig } from '@opensumi/ide-core-node';
+import { ServerAppContribution, Domain, IServerApp, AppConfig, URI } from '@opensumi/ide-core-node';
 
 import { ALLOW_MIME } from '../common';
-
 
 @Domain(ServerAppContribution)
 export class ExpressFileServerContribution implements ServerAppContribution {
@@ -25,12 +24,13 @@ export class ExpressFileServerContribution implements ServerAppContribution {
   initialize(app: IServerApp) {
     app.use(
       mount('/assets', async (ctx) => {
-        const filePath = decodeURI(ctx.path.replace(/^\/assets/, ''));
-        if (!filePath) {
+        const uriPath = decodeURI(ctx.path.replace(/^\/assets/, ''));
+        if (!uriPath) {
           ctx.status = 404;
           return;
         }
 
+        const filePath = URI.parse(`file://${uriPath}`).codeUri.fsPath;
         const whitelist = this.getWhiteList();
         const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
         if (
@@ -48,6 +48,7 @@ export class ExpressFileServerContribution implements ServerAppContribution {
           if (this.appConfig.staticAllowOrigin) {
             ctx.set('Access-Control-Allow-Origin', this.appConfig.staticAllowOrigin);
           }
+
           ctx.body = fs.createReadStream(filePath);
         } else {
           ctx.status = 403;
