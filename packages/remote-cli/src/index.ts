@@ -3,7 +3,6 @@ import { join } from 'path';
 
 import { green, yellow, red } from 'chalk';
 import got from 'got';
-import { open } from 'temp';
 import yargs from 'yargs';
 
 const CLI_NAME = process.env.CLI_NAME || 'sumi';
@@ -70,7 +69,13 @@ Examples:
   .help()
   .string('_').argv;
 
-openPathOrUrl(argv._);
+if (argv._[0] !== undefined) {
+  openPathOrUrl(argv._[0]);
+} else {
+  // eslint-disable-next-line no-console
+  console.error(red('The path or url is not defined.'));
+  process.exit(0);
+}
 
 function isRelativePath(path: string): boolean {
   return path.startsWith('./') || !path.startsWith('/');
