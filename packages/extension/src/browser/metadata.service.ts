@@ -36,7 +36,7 @@ export class ExtensionMetadataService extends Disposable {
 
       this.addDispose(this.registerActivationEvent(extension));
     } catch (e) {
-      this.logger.error('vscode meta启用插件出错' + extension.name);
+      this.logger.error('启用插件时解析元数据出错' + extension.name);
       this.logger.error(e);
     }
   }

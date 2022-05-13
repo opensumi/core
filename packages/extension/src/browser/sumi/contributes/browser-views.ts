@@ -38,7 +38,7 @@ const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar', 'edito
 @Contributes('browserViews')
 export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsContribution> {
   @Autowired(IMainLayoutService)
-  mainlayoutService: IMainLayoutService;
+  mainLayoutService: IMainLayoutService;
 
   @Autowired(IIconService)
   iconService: IIconService;
@@ -49,7 +49,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
   static unsupportLocation = ['bottom', 'editor', 'toolBar'];
 
   contribute() {
-    this.mainlayoutService.viewReady.promise.then(() => {
+    this.mainLayoutService.viewReady.promise.then(() => {
       const keys = Object.keys(this.json).filter(
         (key) => !BrowserViewContributionPoint.unsupportLocation.includes(key),
       );
@@ -59,7 +59,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
           component: ExtensionLoadingView,
         }));
         if (!SUPPORT_LOCATION.includes(location)) {
-          if (!this.mainlayoutService.getTabbarHandler(location)) {
+          if (!this.mainLayoutService.getTabbarHandler(location)) {
             // 若目标视图不存在，append将fallback到add模式添加到左侧边栏
             location = 'left';
           } else {
@@ -72,8 +72,8 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
               }
               const { title, id, priority, component, when, weight } = view;
               // 支持指定通过 location 获取 containerId 的方式
-              const containerId = this.mainlayoutService.getTabbarHandler(location)?.containerId || location;
-              const handlerId = this.mainlayoutService.collectViewComponent(
+              const containerId = this.mainLayoutService.getTabbarHandler(location)?.containerId || location;
+              const handlerId = this.mainLayoutService.collectViewComponent(
                 {
                   id,
                   priority,
@@ -90,7 +90,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
               );
               this.disposableCollection.push({
                 dispose: () => {
-                  const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
+                  const handler = this.mainLayoutService.getTabbarHandler(handlerId)!;
                   handler.disposeView(id);
                 },
               });
@@ -101,7 +101,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
         for (const view of views) {
           const { title, icon, iconPath, id, priority, component, expanded, noResize, when, weight, hideTab } = view;
           const containerId = `${this.extension.id}:${id}`;
-          const handlerId = this.mainlayoutService.collectTabbarComponent(
+          const handlerId = this.mainLayoutService.collectTabbarComponent(
             [
               {
                 id,
@@ -125,7 +125,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
           );
           this.disposableCollection.push({
             dispose: () => {
-              const handler = this.mainlayoutService.getTabbarHandler(handlerId)!;
+              const handler = this.mainLayoutService.getTabbarHandler(handlerId)!;
               handler.dispose();
             },
           });

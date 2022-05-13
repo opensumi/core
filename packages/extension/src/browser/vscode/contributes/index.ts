@@ -8,6 +8,7 @@ import {
   ILogger,
   WithEventBus,
   IEventBus,
+  ExtensionContributePointDone,
 } from '@opensumi/ide-core-browser';
 
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../common';
@@ -475,6 +476,8 @@ export class VSCodeContributeRunner extends WithEventBus {
 
           this.addDispose(contributePoint);
           await contributePoint.contribute();
+
+          this.eventBus.fire(new (ExtensionContributePointDone.get(contributeName))());
         } catch (e) {
           this.logger.error(e);
         }

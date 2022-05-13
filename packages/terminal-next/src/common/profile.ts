@@ -140,6 +140,7 @@ export const ITerminalContributionService = Symbol('ITerminalContributionService
 export interface ITerminalContributionService {
   readonly terminalProfiles: ReadonlyArray<IExtensionTerminalProfile>;
   add(extensionId: string, contributions: ITerminalContributions): void;
+  remove(extensionId: string): void;
 }
 
 export interface IRegisterContributedProfileArgs {

@@ -2,10 +2,10 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { localize } from '@opensumi/ide-core-common';
 import { ITerminalContributions, ITerminalContributionService } from '@opensumi/ide-terminal-next/lib/common';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, ExtensionContributePoint } from '../../../common';
 
 @Injectable()
-@Contributes('terminal')
+@Contributes(ExtensionContributePoint.Terminal)
 export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalContributions> {
   schema = {
     description: localize('vscode.extension.contributes.terminal', 'Contributes terminal functionality.'),
@@ -140,5 +140,9 @@ export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalCo
   terminalContributionService: ITerminalContributionService;
   contribute() {
     this.terminalContributionService.add(this.extension.id, this.json);
+  }
+
+  dispose(): void {
+    this.terminalContributionService.remove(this.extension.id);
   }
 }

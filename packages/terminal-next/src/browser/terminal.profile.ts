@@ -11,7 +11,9 @@ import {
   AutoOpenBarrier,
   PreferenceScope,
   ILogger,
+  ExtensionContributePointDone,
 } from '@opensumi/ide-core-common';
+import { ExtensionContributePoint } from '@opensumi/ide-extension';
 
 import {
   IExtensionTerminalProfile,
@@ -70,6 +72,12 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     // this long.
     this._profilesReadyBarrier = new AutoOpenBarrier(5000);
     this.refreshAvailableProfiles();
+
+    this.addDispose(
+      this.eventBus.on(ExtensionContributePointDone.get(ExtensionContributePoint.Terminal), () => {
+        this.refreshAvailableProfiles();
+      }),
+    );
   }
 
   private readonly _profileProviders: Map</* ext id*/ string, Map</* provider id*/ string, ITerminalProfileProvider>> =

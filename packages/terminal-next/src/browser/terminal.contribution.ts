@@ -33,4 +33,12 @@ export class TerminalContributionService implements ITerminalContributionService
       this._terminalProfiles.set(profile.id, profile);
     }
   }
+  remove(extensionId: string): void {
+    const profiles = this.terminalProfiles;
+    for (const profile of profiles) {
+      if (profile.extensionIdentifier === extensionId) {
+        this._terminalProfiles.delete(profile.id);
+      }
+    }
+  }
 }
