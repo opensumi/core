@@ -581,7 +581,6 @@ export class PreferenceServiceImpl implements PreferenceService {
     if (!cache.has(cacheKey)) {
       cache.set(cacheKey, this.doResolveWithOutCache<T>(preferenceName, resourceUri, untilScope, language));
     }
-    // return this.doResolveWithOutCache<T>(preferenceName, resourceUri, untilScope, language);
     const result = cache.get(cacheKey)!;
     if (result.value === undefined) {
       result.value = defaultValue;
