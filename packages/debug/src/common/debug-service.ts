@@ -1,7 +1,83 @@
-import { IDisposable, IJSONSchema, IJSONSchemaSnippet, ApplicationError, Event } from '@opensumi/ide-core-common';
+import {
+  IDisposable,
+  IJSONSchema,
+  IJSONSchemaSnippet,
+  ApplicationError,
+  Event,
+  BinaryBuffer,
+} from '@opensumi/ide-core-common';
 
 import { DebugConfiguration } from './debug-configuration';
 import { IDebugSessionDTO } from './debug-session-options';
+
+export interface IMemoryInvalidationEvent {
+  fromOffset: number;
+  toOffset: number;
+}
+
+export const enum MemoryRangeType {
+  Valid,
+  Unreadable,
+  Error,
+}
+
+export interface IMemoryRange {
+  type: MemoryRangeType;
+  offset: number;
+  length: number;
+}
+
+export interface IUnreadableMemoryRange extends IMemoryRange {
+  type: MemoryRangeType.Unreadable;
+}
+
+export interface IErrorMemoryRange extends IMemoryRange {
+  type: MemoryRangeType.Error;
+  error: string;
+}
+
+export interface IValidMemoryRange extends IMemoryRange {
+  type: MemoryRangeType.Valid;
+  offset: number;
+  length: number;
+  data: BinaryBuffer;
+}
+
+/**
+ * Union type of memory that can be returned from read(). Since a read request
+ * could encompass multiple previously-read ranges, multiple of these types
+ * are possible to return.
+ */
+export type MemoryRange = IValidMemoryRange | IUnreadableMemoryRange | IErrorMemoryRange;
+
+/**
+ * An IMemoryRegion corresponds to a contiguous range of memory referred to
+ * by a DAP `memoryReference`.
+ */
+export interface IMemoryRegion extends IDisposable {
+  /**
+   * Event that fires when memory changes. Can be a result of memory events or
+   * `write` requests.
+   */
+  readonly onDidInvalidate: Event<IMemoryInvalidationEvent>;
+
+  /**
+   * Whether writes are supported on this memory region.
+   */
+  readonly writable: boolean;
+
+  /**
+   * Requests memory ranges from the debug adapter. It returns a list of memory
+   * ranges that overlap (but may exceed!) the given offset. Use the `offset`
+   * and `length` of each range for display.
+   */
+  read(fromOffset: number, toOffset: number): Promise<MemoryRange[]>;
+
+  /**
+   * Writes memory to the debug adapter at the given offset.
+   */
+  write(offset: number, data: BinaryBuffer): Promise<number>;
+}
 
 export interface DebuggerDescription {
   type: string;
