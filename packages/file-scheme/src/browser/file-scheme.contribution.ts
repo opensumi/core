@@ -146,14 +146,16 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
       },
     );
 
+    // untitled 文件仅支持 code type
     editorComponentRegistry.registerEditorComponentResolver(
       Schemes.untitled,
-      (resource: IResource<any>, results: IEditorOpenType[]) => {
-        if (results.length === 0) {
-          results.push({
+      (_resource: IResource<any>, _results: IEditorOpenType[], resolve: (results: IEditorOpenType[]) => void) => {
+        resolve([
+          {
             type: 'code',
-          });
-        }
+            priority: 'default',
+          },
+        ]);
       },
     );
   }
