@@ -304,7 +304,7 @@ export class AccordionService extends WithEventBus {
   private doUpdateResize = debounce(() => {
     let largestViewId: string | undefined;
     Object.keys(this.state).forEach((id) => {
-      if (!(this.state[id].hidden || this.state[id].collapsed)) {
+      if (!(this.state[id].hidden || this.state[id].collapsed) && this.visibleViews.find((view) => view.id === id)) {
         if (!largestViewId) {
           largestViewId = id;
         } else {
@@ -489,21 +489,26 @@ export class AccordionService extends WithEventBus {
     if (collapsed) {
       sizeIncrement = this.setSize(index, 0, false, noAnimation);
     } else {
-      sizeIncrement = this.setSize(index, this.getAvailableSize(viewId), false, noAnimation);
+      // 仅有一个视图展开时独占
+      sizeIncrement = this.setSize(
+        index,
+        this.expandedViews.length === 1 ? this.getAvailableSize() : viewState.size || this.minSize,
+        false,
+        noAnimation,
+      );
     }
-    // 找到视图上方首个展开的视图减去对应的高度
-    for (let i = index - 1; i >= 0; i--) {
-      if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
+    // 下方视图被影响的情况下，上方视图不会同时变化，该情况会在sizeIncrement=0上体现
+    // 从视图下方最后一个展开的视图起依次减去对应的高度
+    for (let i = this.visibleViews.length - 1; i > index; i--) {
+      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
         sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
       } else {
         this.setSize(i, 0, false, noAnimation);
       }
     }
-    // 下方视图被影响的情况下，上方视图不会同时变化，该情况会在sizeIncrement=0上体现
-    // 因为最后一个展开的视图需要兼容最大高度超出总视图高度及最大高度不足总视图高度的情况
-    // 所以从index + 1 开始
-    for (let i = index + 1; i < this.visibleViews.length; i++) {
-      if (this.getViewState(this.visibleViews[i].id).collapsed !== true) {
+    // 找到视图上方首个展开的视图减去对应的高度
+    for (let i = index - 1; i >= 0; i--) {
+      if ((this.state[this.visibleViews[i].id] || {}).collapsed !== true) {
         sizeIncrement = this.setSize(i, sizeIncrement, true, noAnimation);
       } else {
         this.setSize(i, 0, false, noAnimation);
@@ -534,28 +539,34 @@ export class AccordionService extends WithEventBus {
     const prevSize = panel.clientHeight;
     const viewState = this.getViewState(this.visibleViews[index].id);
     let calcTargetSize: number = targetSize;
-    // isIncrement说明该视图为受其它视图影响而尺寸变化的展开视图，尺寸不能小于minSize
+    // 视图即将折叠时、受其他视图影响尺寸变化时、主动展开时、resize时均需要存储尺寸信息
     if (isIncrement) {
-      calcTargetSize = this.minSize;
+      calcTargetSize = Math.max(prevSize - targetSize, this.minSize);
     }
-    const lastExpandedView = this.expandedViews.slice(-1)[0];
-    if (lastExpandedView && this.visibleViews[index].id === lastExpandedView.id) {
+    if (index === this.expandedViews.length - 1) {
       // 最后一个视图需要兼容最大高度超出总视图高度及最大高度不足总视图高度的情况
-      const expandedViewsCount = this.expandedViews.length;
-      if (calcTargetSize + (expandedViewsCount - 1) * this.minSize > fullHeight) {
-        calcTargetSize -= calcTargetSize + (expandedViewsCount - 1) * this.minSize - fullHeight;
+      if (calcTargetSize + index * this.minSize > fullHeight) {
+        calcTargetSize -= calcTargetSize + index * this.minSize - fullHeight;
       } else {
         const restSize = this.getPanelFullHeight(this.visibleViews[index].id);
         if (calcTargetSize + restSize < fullHeight) {
           calcTargetSize += fullHeight - (calcTargetSize + restSize);
         }
       }
-      // 解决窗口resize时，最后一个view不会吸附到底部或者右边
-      panel.style.flexGrow = '1';
-    } else {
-      panel.style.flexGrow = '';
     }
-    viewState.size = calcTargetSize;
+    if (this.rendered) {
+      let toSaveSize: number;
+      if (targetSize === this.headerSize) {
+        // 当前视图即将折叠且不是唯一展开的视图时，存储当前高度
+        toSaveSize = prevSize;
+      } else {
+        toSaveSize = calcTargetSize;
+      }
+      if (toSaveSize !== this.headerSize) {
+        // 视图折叠高度不做存储
+        viewState.size = toSaveSize;
+      }
+    }
     this.storeState();
     viewState.nextSize = calcTargetSize;
     if (!noAnimation) {
@@ -564,18 +575,12 @@ export class AccordionService extends WithEventBus {
         panel.classList.remove('resize-ease');
       }, 200);
     }
-    return calcTargetSize - prevSize;
+    return isIncrement ? calcTargetSize - (prevSize - targetSize) : targetSize - prevSize;
   }
 
-  protected getAvailableSize(viewId: string) {
-    const viewState = this.getViewState(viewId);
+  protected getAvailableSize() {
     const fullHeight = this.splitPanelService.rootNode!.clientHeight;
-    const collapsedViewsNum = this.visibleViews.length - this.expandedViews.length;
-    const expandedViewsNum = this.expandedViews.length;
-    if (viewState.collapsed) {
-      return fullHeight - expandedViewsNum * this.minSize - (collapsedViewsNum - 1) * this.headerSize;
-    }
-    return fullHeight - (expandedViewsNum - 1) * this.minSize - collapsedViewsNum * this.headerSize;
+    return fullHeight - (this.visibleViews.length - 1) * this.headerSize;
   }
 
   private handleContextKeyChange() {
