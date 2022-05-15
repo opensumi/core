@@ -1,4 +1,13 @@
 require('jest-canvas-mock');
+const { Buffer } = require('buffer');
+const timer = require('timers');
+
+const fetch = require('node-fetch');
+
+// vscode-jsonrpc 的 node 层需要 setImmediate 函数
+global.setImmediate = timer.setImmediate;
+global.Buffer = Buffer;
+global.clearImmediate = timer.clearImmediate;
 
 // packages/extension/__tests__/browser/main.thread.env.test.ts
 // MainThreadEnvAPI Test Suites  › can read/write text via clipboard
@@ -13,6 +22,8 @@ window.navigator = Object.assign(window.navigator, {
     },
   },
 });
+
+window.fetch = fetch.default;
 
 // https://github.com/jsdom/jsdom/issues/1742
 document.queryCommandSupported = () => {};
@@ -78,4 +89,12 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
+});
+
+process.on('unhandledRejection', (error) => {
+  // eslint-disable-next-line no-console
+  console.error('unhandledRejection', error);
+  if (process.env.EXIT_ON_UNHANDLED_REJECTION) {
+    process.exit(1); // To exit with a 'failure' code
+  }
 });

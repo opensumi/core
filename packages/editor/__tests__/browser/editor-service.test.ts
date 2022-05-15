@@ -5,6 +5,7 @@ import {
   createContributionProvider,
   ILoggerManagerClient,
   IEventBus,
+  Deferred,
 } from '@opensumi/ide-core-common';
 import {
   EditorComponentRegistry,
@@ -57,7 +58,6 @@ import {
   TestResourceComponent,
   doNotClose,
 } from './test-providers';
-
 
 const injector = createBrowserInjector([]);
 
@@ -228,27 +228,28 @@ describe('workbench editor service tests', () => {
     disposer.dispose();
   });
 
-  it('should be able to fire loading state for big resources', () =>
-    new Promise<void>(async (done) => {
-      const listener = jest.fn();
-      const testLoadingCodeUri = new URI('test://test/loading');
-      const testCodeUri = new URI('test://testUri1');
-
-      const disposer = editorService.currentEditorGroup.onDidEditorGroupContentLoading((resource) => {
-        listener();
-        const status = editorService.currentEditorGroup.resourceStatus.get(resource);
-        expect(status).toBeDefined();
-        status?.finally(async () => {
-          disposer.dispose();
-          await editorService.closeAll();
-          done();
-        });
+  it('should be able to fire loading state for big resources', async () => {
+    expect.assertions(2);
+    const listener = jest.fn();
+    const testLoadingCodeUri = new URI('test://test/loading');
+    const testCodeUri = new URI('test://testUri1');
+    const defered = new Deferred();
+    const disposer = editorService.currentEditorGroup.onDidEditorGroupContentLoading(async (resource) => {
+      listener();
+      const status = editorService.currentEditorGroup.resourceStatus.get(resource);
+      expect(status).toBeDefined();
+      await status?.finally(async () => {
+        disposer.dispose();
+        await editorService.closeAll();
+        defered.resolve();
       });
+    });
 
-      await editorService.open(testCodeUri);
-      await editorService.open(testLoadingCodeUri);
-      expect(listener).toBeCalledTimes(1);
-    }));
+    await editorService.open(testCodeUri);
+    await editorService.open(testLoadingCodeUri);
+    expect(listener).toBeCalledTimes(1);
+    await defered.promise;
+  });
 
   it('should be able to open component ', async () => {
     const testComponentUri = new URI('test://component');

@@ -11,6 +11,7 @@ import {
   IResolvedPreferences,
   Throttler,
   FileChange,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 import {
   PreferenceProvider,
@@ -19,9 +20,9 @@ import {
   PreferenceProviderDataChange,
   PreferenceConfigurations,
 } from '@opensumi/ide-core-browser';
-import { FILE_SCHEME, IFileServiceClient } from '@opensumi/ide-file-service';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { IPreferenceTask, USER_STORAGE_SCHEME } from '../common';
+import { IPreferenceTask } from '../common';
 
 // vscode 对语言的setting是根据这种格式来的
 // "[json]": { "editor.formatter": "xxxx" }
@@ -57,11 +58,11 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   protected listen() {
-    if (this.fileSystem.handlesScheme(FILE_SCHEME) && this.fileSystem.handlesScheme(USER_STORAGE_SCHEME)) {
+    if (this.fileSystem.handlesScheme(Schemes.file) && this.fileSystem.handlesScheme(Schemes.userStorage)) {
       this.init();
     } else {
       const disposable = this.fileSystem.onFileProviderChanged((scheme: string[]) => {
-        if (this.fileSystem.handlesScheme(FILE_SCHEME) && this.fileSystem.handlesScheme(USER_STORAGE_SCHEME)) {
+        if (this.fileSystem.handlesScheme(Schemes.file) && this.fileSystem.handlesScheme(Schemes.userStorage)) {
           this.init();
           disposable.dispose();
         }

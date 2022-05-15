@@ -1,12 +1,11 @@
 import { Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Domain, localize } from '@opensumi/ide-core-common';
+import { Domain, localize, Schemes } from '@opensumi/ide-core-common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 
 import { IMarkdownService } from '../common';
 
 import { MarkdownEditorComponent } from './editor.markdown';
-
 
 export const MARKDOWN_EDITOR_COMPONENT_ID = 'MARKDOWN_EDITOR_COMPONENT_ID';
 
@@ -22,10 +21,10 @@ export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribu
     componentRegistry.registerEditorComponent({
       uid: MARKDOWN_EDITOR_COMPONENT_ID,
       component: MarkdownEditorComponent,
-      scheme: 'file',
+      scheme: Schemes.file,
     });
 
-    componentRegistry.registerEditorComponentResolver('file', (resource, results) => {
+    componentRegistry.registerEditorComponentResolver(Schemes.file, (resource, results) => {
       if (resource.uri.path.ext === '.md') {
         results.push({
           type: 'component',

@@ -215,10 +215,6 @@ export class CodeLens {
   }
 }
 
-export enum Schemas {
-  untitled = 'untitled',
-}
-
 @es5ClassCompat
 export class Position {
   static Min(...positions: Position[]): Position {

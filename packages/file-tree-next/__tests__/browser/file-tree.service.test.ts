@@ -13,6 +13,7 @@ import {
   isLinux,
   PreferenceService,
   QuickOpenService,
+  OS,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -139,7 +140,7 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IApplicationService,
         useValue: {
-          backendOS: isWindows ? OperatingSystem.Windows : isLinux ? OperatingSystem.Linux : OperatingSystem.Macintosh,
+          getBackendOS: () => Promise.resolve(OS.type()),
         },
       },
       {

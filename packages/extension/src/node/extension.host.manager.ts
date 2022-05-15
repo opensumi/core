@@ -30,8 +30,8 @@ export class ExtensionHostManager implements IExtensionHostManager {
   send(pid: number, message: string) {
     return new Promise<void>((resolve, reject) => {
       const extProcess = this.processMap.get(pid);
-      assert(extProcess);
-      extProcess!.send(message, (err) => {
+      assert(extProcess, "[ExtensionHostManager] Can't find process with pid: " + pid);
+      extProcess.send(message, (err) => {
         if (err) {
           reject(err);
         } else {
@@ -131,6 +131,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
         }
       }),
     );
+
     this.processMap.clear();
   }
 }

@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { URI, Domain, localize, LRUMap, Schemas, PreferenceService } from '@opensumi/ide-core-browser';
+import { URI, Domain, localize, LRUMap, Schemes, PreferenceService } from '@opensumi/ide-core-browser';
 import { getLanguageIdFromMonaco } from '@opensumi/ide-core-browser/lib/services';
 import { ResourceService, IResource, IEditorOpenType } from '@opensumi/ide-editor';
 import {
@@ -12,8 +12,6 @@ import {
   UntitledSchemeDocumentProvider,
 } from '@opensumi/ide-editor/lib/browser/untitled-resource';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-
-import { FILE_SCHEME } from '../common';
 
 import { BinaryEditorComponent } from './external.view';
 import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
@@ -74,30 +72,30 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     editorComponentRegistry.registerEditorComponent({
       component: ImagePreview,
       uid: IMAGE_PREVIEW_COMPONENT_ID,
-      scheme: FILE_SCHEME,
+      scheme: Schemes.file,
     });
 
     editorComponentRegistry.registerEditorComponent({
       component: VideoPreview,
       uid: VIDEO_PREVIEW_COMPONENT_ID,
-      scheme: FILE_SCHEME,
+      scheme: Schemes.file,
     });
 
     editorComponentRegistry.registerEditorComponent({
       component: BinaryEditorComponent,
       uid: EXTERNAL_OPEN_COMPONENT_ID,
-      scheme: FILE_SCHEME,
+      scheme: Schemes.file,
     });
 
     editorComponentRegistry.registerEditorComponent({
       component: LargeFilePrevent,
       uid: LARGE_FILE_PREVENT_COMPONENT_ID,
-      scheme: FILE_SCHEME,
+      scheme: Schemes.file,
     });
 
     // 如果文件无法在当前IDE编辑器中找到打开方式
     editorComponentRegistry.registerEditorComponentResolver(
-      (scheme: string) => (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
+      (scheme: string) => (scheme === Schemes.file || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
       (resource: IResource<any>, results: IEditorOpenType[]) => {
         if (results.length === 0) {
           results.push({
@@ -110,7 +108,7 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
 
     // 图片文件
     editorComponentRegistry.registerEditorComponentResolver(
-      (scheme: string) => (scheme === FILE_SCHEME || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
+      (scheme: string) => (scheme === Schemes.file || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
       async (resource: IResource<any>, results: IEditorOpenType[]) => {
         const type = await this.getFileType(resource.uri.toString());
 
@@ -149,7 +147,7 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
     );
 
     editorComponentRegistry.registerEditorComponentResolver(
-      Schemas.untitled,
+      Schemes.untitled,
       (resource: IResource<any>, results: IEditorOpenType[]) => {
         if (results.length === 0) {
           results.push({

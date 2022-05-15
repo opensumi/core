@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schemas } from '@opensumi/ide-core-common';
+import { Schemes } from '@opensumi/ide-core-common';
 
 import { IExtHostFileSystemInfoShape } from '../../../common/vscode/file-system';
 
 export class ExtHostFileSystemInfo implements IExtHostFileSystemInfoShape {
   declare readonly _serviceBrand: undefined;
 
-  private readonly _systemSchemes = new Set(Object.keys(Schemas));
+  private readonly _systemSchemes = new Set(Object.keys(Schemes));
   private readonly _providerInfo = new Map<string, number>();
 
   $acceptProviderInfos(scheme: string, capabilities: number | null): void {

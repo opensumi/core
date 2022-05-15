@@ -51,6 +51,8 @@ export class MockLoggerManagerClient {
  * 见 https://github.com/akosyakov/vscode-launch/blob/master/src/test/extension.test.ts
  */
 describe('Launch Preferences', () => {
+  jest.setTimeout(30 * 1000);
+
   type ConfigMode = '.sumi' | ['.sumi'];
 
   const defaultLaunch = {

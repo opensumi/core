@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Schemas } from '@opensumi/ide-core-common';
+import { URI, Schemes } from '@opensumi/ide-core-common';
 
 import { IWindowService } from '../window';
 
@@ -7,7 +7,7 @@ import { IOpener } from '.';
 
 @Injectable()
 export class HttpOpener implements IOpener {
-  static standardSupportedLinkSchemes = new Set([Schemas.http, Schemas.https, Schemas.mailto]);
+  static standardSupportedLinkSchemes = new Set([Schemes.http, Schemes.https, Schemes.mailto]);
 
   @Autowired(IWindowService)
   private readonly windowService: IWindowService;

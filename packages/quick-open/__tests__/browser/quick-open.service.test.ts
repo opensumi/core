@@ -28,7 +28,7 @@ describe(__filename, () => {
 
   beforeEach(() => {
     injector = createBrowserInjector([QuickOpenModule]);
-    injector.addProviders(
+    injector.overrideProviders(
       {
         token: MonacoContextKeyService,
         useValue: mockService({}),

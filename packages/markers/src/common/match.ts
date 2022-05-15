@@ -1,4 +1,4 @@
-import { Schemas } from '@opensumi/ide-core-common';
+import { Schemes } from '@opensumi/ide-core-common';
 import {
   URI,
   strings,
@@ -46,7 +46,7 @@ export function relativePath(from: URI, to: URI, ignoreCase = hasToIgnoreCase(fr
   if (from.scheme !== to.scheme || !isEqualAuthority(from.authority, to.authority)) {
     return undefined;
   }
-  if (from.scheme === Schemas.file) {
+  if (from.scheme === Schemes.file) {
     const relativePath = path.relative(from.codeUri.path, to.codeUri.path);
     return isWindows ? path.toSlashes(relativePath) : relativePath;
   }
@@ -77,5 +77,5 @@ export function isEqualAuthority(a1: string, a2: string) {
 export function hasToIgnoreCase(resource: URI | undefined): boolean {
   // A file scheme resource is in the same platform as code, so ignore case for non linux platforms
   // Resource can be from another platform. Lowering the case as an hack. Should come from File system provider
-  return resource && resource.scheme === Schemas.file ? !isLinux : true;
+  return resource && resource.scheme === Schemes.file ? !isLinux : true;
 }

@@ -5,6 +5,7 @@ import {
   IExtensionInfo,
   Disposable as IDEDisposable,
   CancellationToken,
+  Schemes,
 } from '@opensumi/ide-core-common';
 
 import {
@@ -27,7 +28,6 @@ import {
   WebviewViewProvider,
 } from '../../../common/vscode';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
-
 
 type IconPath = Uri | { light: Uri; dark: Uri };
 
@@ -99,7 +99,7 @@ export class ExtHostWebview implements Webview {
   }
 
   public asWebviewUri(localResource: Uri): Uri {
-    if (localResource.scheme === 'file') {
+    if (localResource.scheme === Schemes.file) {
       return Uri.from({
         scheme: 'vscode-resource',
         path: localResource.path,

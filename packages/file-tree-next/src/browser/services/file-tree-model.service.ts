@@ -431,9 +431,7 @@ export class FileTreeModelService {
         });
       }),
     );
-    // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
-    // 即找到插入节点位置为 0，导致重复问题
-    this.fileTreeService.startWatchFileEvent();
+    await this.fileTreeService.startWatchFileEvent();
     this.onFileTreeModelChangeEmitter.fire(this._treeModel);
 
     this._whenReady.resolve();

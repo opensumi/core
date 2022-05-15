@@ -1,4 +1,3 @@
-
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   DisposableCollection,
@@ -10,11 +9,11 @@ import {
   FileType,
   FileChangeEvent,
 } from '@opensumi/ide-core-browser';
-import { Event, FileSystemProviderCapabilities } from '@opensumi/ide-core-common';
+import { Event, FileSystemProviderCapabilities, Schemes } from '@opensumi/ide-core-common';
 import { FileSetContentOptions } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
-import { USER_STORAGE_SCHEME, IUserStorageService } from '../../common';
+import { IUserStorageService } from '../../common';
 
 export const DEFAULT_USER_STORAGE_FOLDER = '.sumi';
 
@@ -30,7 +29,7 @@ export class UserStorageServiceImpl implements IUserStorageService {
   public static toUserStorageUri(userStorageFolderUri: URI, rawUri: URI): URI {
     const userStorageRelativePath = this.getRelativeUserStoragePath(userStorageFolderUri, rawUri);
     return new URI('')
-      .withScheme(USER_STORAGE_SCHEME)
+      .withScheme(Schemes.userStorage)
       .withPath(userStorageRelativePath)
       .withFragment(rawUri.fragment)
       .withQuery(rawUri.query);

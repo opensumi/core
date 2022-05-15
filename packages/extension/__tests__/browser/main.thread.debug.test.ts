@@ -10,6 +10,8 @@ import {
 } from '@opensumi/ide-debug/lib/browser';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/src';
 import { MainThreadConnection } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.connection';
 import { MainThreadDebug } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.debug';
@@ -153,6 +155,7 @@ describe('MainThreadDebug API Test Suite', () => {
               error() {},
               verbose() {},
               warn() {},
+              dispose() {},
             }),
           },
         },
@@ -180,8 +183,14 @@ describe('MainThreadDebug API Test Suite', () => {
           token: IDebugServer,
           useValue: mockDebugServer,
         },
+        {
+          token: IEditorDocumentModelService,
+          useValue: {},
+        },
       ]),
     );
+    addEditorProviders(injector);
+
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostConnection, mockExtThreadConnection as any);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDebug, mockExtThreadDebug as any);
 
@@ -218,13 +227,17 @@ describe('MainThreadDebug API Test Suite', () => {
   });
 
   it('$registerDebuggerContribution method should be work', async () => {
+    // TODO: 这个 case 应该是在别的地方已经被调用过一次了，这里加个先检测为 1，然后调用一次，下一次检测是不是 2
+    expect(mockDebugServer.registerDebugAdapterContribution).toBeCalledTimes(1);
+    expect(mockDebugSessionContributionRegistry.registerDebugSessionContribution).toBeCalledTimes(1);
+
     await mainThreadDebug.$registerDebuggerContribution({
       type: 'node',
       label: 'Node Debug',
     });
     expect(mockExtThreadDebug.$getTerminalCreationOptions).toBeCalledTimes(1);
-    expect(mockDebugServer.registerDebugAdapterContribution).toBeCalledTimes(1);
-    expect(mockDebugSessionContributionRegistry.registerDebugSessionContribution).toBeCalledTimes(1);
+    expect(mockDebugServer.registerDebugAdapterContribution).toBeCalledTimes(2);
+    expect(mockDebugSessionContributionRegistry.registerDebugSessionContribution).toBeCalledTimes(2);
   });
 
   it('$addBreakpoints method should be work', async () => {

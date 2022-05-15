@@ -60,7 +60,7 @@ describe('log-manager', () => {
 
   beforeEach(() => {
     injector = createBrowserInjector([LogModule]);
-    injector.addProviders({
+    injector.overrideProviders({
       token: LogServiceForClientPath,
       useClass: MockLogServiceForClient,
     });

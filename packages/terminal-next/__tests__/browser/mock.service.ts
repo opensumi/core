@@ -18,6 +18,8 @@ import {
   IRegisterContributedProfileArgs,
   ITerminalProfileInternalService,
   IPtyProcessChangeEvent,
+  ITerminalContributionService,
+  ITerminalContributions,
 } from '../../src/common';
 
 import { getPort, localhost, MessageMethod } from './proxy';
@@ -395,4 +397,9 @@ export class MockTerminalProfileInternalService implements ITerminalProfileInter
   async resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined> {
     return undefined;
   }
+}
+
+export class MockTerminalContributionService implements ITerminalContributionService {
+  terminalProfiles = [];
+  add(extensionId: string, contributions: ITerminalContributions): void {}
 }

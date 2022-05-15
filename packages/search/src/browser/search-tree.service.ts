@@ -6,7 +6,7 @@ import { LabelService } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   URI,
-  Schemas,
+  Schemes,
   Emitter,
   formatLocalize,
   dispose,
@@ -37,12 +37,11 @@ import { SearchPreferences } from './search-preferences';
 import styles from './search.module.less';
 import { ContentSearchClientService } from './search.service';
 
-
 const REPLACE_PREVIEW = 'replacePreview';
 
 const toReplaceResource = (fileResource: URI): URI =>
   fileResource
-    .withScheme(Schemas.internal)
+    .withScheme(Schemes.internal)
     .withFragment(REPLACE_PREVIEW)
     .withQuery(JSON.stringify({ scheme: fileResource.scheme }));
 
@@ -143,7 +142,7 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
   private onDidChangeContentEvent: Emitter<URI> = new Emitter();
 
   handlesScheme(scheme: string) {
-    return scheme === Schemas.internal;
+    return scheme === Schemes.internal;
   }
 
   provideEditorDocumentModelContent(uri: URI, encoding?: string): string {

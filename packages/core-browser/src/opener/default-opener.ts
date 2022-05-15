@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Schemas, isElectronRenderer } from '@opensumi/ide-core-common';
+import { URI, Schemes, isElectronRenderer } from '@opensumi/ide-core-common';
 
 import { AppConfig } from '../react-providers';
 import { IWindowService } from '../window';
@@ -19,7 +19,7 @@ export class DefaultOpener implements IOpener {
   }
 
   async open(uri: URI) {
-    if (this.appConfig.isElectronRenderer || [Schemas.http, Schemas.https].includes(uri.scheme)) {
+    if (this.appConfig.isElectronRenderer || [Schemes.http, Schemes.https].includes(uri.scheme)) {
       this.windowService.openNewWindow(uri.toString(true), {
         external: true,
       });

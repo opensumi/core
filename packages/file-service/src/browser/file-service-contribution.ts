@@ -4,9 +4,10 @@ import {
   FsProviderContribution,
   ContributionProvider,
   ClientAppContribution,
+  Schemes,
 } from '@opensumi/ide-core-browser';
 
-import { IFileServiceClient, IDiskFileProvider, FILE_SCHEME } from '../common';
+import { IFileServiceClient, IDiskFileProvider } from '../common';
 
 import { FileServiceClient } from './file-service-client';
 
@@ -25,7 +26,7 @@ export class FileServiceContribution implements ClientAppContribution {
   constructor() {
     // 初始化资源读取逻辑，需要在最早初始化时注册
     // 否则后续注册的 debug\user_stroage 等将无法正常使用
-    this.fileSystem.registerProvider(FILE_SCHEME, this.diskFileServiceProvider);
+    this.fileSystem.registerProvider(Schemes.file, this.diskFileServiceProvider);
   }
 
   async initialize() {

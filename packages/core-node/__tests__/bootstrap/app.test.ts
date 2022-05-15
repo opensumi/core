@@ -5,7 +5,7 @@ import path from 'path';
 import Koa from 'koa';
 
 import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
-import { ILogServiceManager, INodeLogger, ServerApp, ServerCommonModule } from '@opensumi/ide-core-node';
+import { Deferred, ILogServiceManager, INodeLogger, ServerApp, ServerCommonModule } from '@opensumi/ide-core-node';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -36,7 +36,8 @@ describe('ServerApp', () => {
     injector.disposeAll();
   });
 
-  test('start net server', (done) => {
+  test('start net server', async () => {
+    const deferred = new Deferred();
     const rpcListenPath = normalizedIpcHandlerPath('NODE-TEST', true);
     const app = new ServerApp({
       injector,
@@ -50,13 +51,17 @@ describe('ServerApp', () => {
     // server 的 connection 事件在测试环境下无法正常发送，只能跑一下执行
     server.listen(rpcListenPath, () => {
       server.close(() => {
-        done();
+        deferred.resolve();
       });
     });
-    app.start(server);
+
+    await app.start(server);
+    await deferred.promise;
   });
 
-  test('start http server', (done) => {
+  test('start http server', async () => {
+    const deferred = new Deferred();
+
     const testPort = 9999;
     const koa = new Koa();
     const app = new ServerApp({
@@ -72,9 +77,10 @@ describe('ServerApp', () => {
     // server 的 connection 事件在测试环境下无法正常发送，只能跑一下执行
     server.listen(testPort, () => {
       server.close(() => {
-        done();
+        deferred.resolve();
       });
     });
-    app.start(server);
+    await app.start(server);
+    await deferred.promise;
   });
 });

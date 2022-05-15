@@ -97,6 +97,7 @@ import {
   AbstractViewExtProcessService,
   AbstractWorkerExtProcessService,
 } from '../../../src/common/extension.service';
+import { MockExtensionStorageService } from '../../hosted/__mocks__/extensionStorageService';
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -443,14 +444,7 @@ export function setupExtensionServiceInjector() {
     },
     {
       token: IExtensionStorageService,
-      useValue: {
-        whenReady: Promise.resolve(true),
-        extensionStoragePath: {},
-        set() {},
-        get() {},
-        getAll() {},
-        reConnectInit() {},
-      },
+      useValue: MockExtensionStorageService,
     },
     {
       token: IGlobalStorageServer,

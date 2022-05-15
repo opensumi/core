@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { strings, path, Event, Disposable, IDisposable, dispose, combinedDisposable } from '@opensumi/ide-core-browser';
 import { StatusBarAlignment, IStatusBarService } from '@opensumi/ide-core-browser/lib/services';
-import { localize } from '@opensumi/ide-core-common';
+import { localize, Schemes } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
@@ -126,7 +126,7 @@ export class SCMStatusBarController {
   private onDidActiveResouceChange(): void {
     const currentResource = this.workbenchEditorService.currentResource;
 
-    if (!currentResource || currentResource.uri.scheme !== 'file') {
+    if (!currentResource || currentResource.uri.scheme !== Schemes.file) {
       return;
     }
 

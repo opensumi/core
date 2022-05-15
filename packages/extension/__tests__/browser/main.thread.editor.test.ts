@@ -14,6 +14,7 @@ import {
   CommonServerPath,
   OS,
   IApplicationService,
+  Deferred,
 } from '@opensumi/ide-core-common';
 import { IResource, IEditorOpenType } from '@opensumi/ide-editor';
 import {
@@ -267,51 +268,55 @@ describe('MainThreadEditor Test Suites', () => {
     }
   });
 
-  it('should be able to get activeTextEditor and receive texteditor changed event', () =>
-    new Promise<void>(async (done) => {
-      const group: EditorGroup = (workbenchEditorService as any).createEditorGroup();
-      const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
-      const resource: IResource = {
-        name: 'test-file',
-        uri: URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
-        icon: 'file',
-      };
-      const disposer = extEditor.onDidChangeActiveTextEditor((e) => {
-        if (e) {
-          expect(extEditor.activeEditor?.textEditor).toBeDefined();
-          expect(extEditor.activeEditor?.textEditor.document.fileName).toBe(
-            path.join(__dirname, 'main.thread.output.test.ts'),
-          );
-          expect(e).toBeDefined();
-          done();
-          disposer.dispose();
-        }
-      });
-      await group.createEditor(document.createElement('div'));
-      const ref = await editorDocModelService.createModelReference(
-        URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
-      );
-      await group.codeEditor.open(ref);
-      const openType: IEditorOpenType = {
-        type: 'code',
-        componentId: 'test-v-component',
-        title: 'test-file',
-      };
-      (workbenchEditorService as WorkbenchEditorServiceImpl).setCurrentGroup(group);
-      group._currentOpenType = openType;
-      group._currentResource = resource;
-      eventBus.fire(
-        new EditorGroupChangeEvent({
-          group,
-          newOpenType: group.currentOpenType,
-          newResource: group.currentResource,
-          oldOpenType: null,
-          oldResource: null,
-        }),
-      );
-      group._onDidEditorGroupBodyChanged.fire();
-      group._onDidEditorFocusChange.fire();
-    }));
+  it('should be able to get activeTextEditor and receive texteditor changed event', async () => {
+    expect.assertions(3);
+    const defered = new Deferred();
+
+    const group: EditorGroup = (workbenchEditorService as any).createEditorGroup();
+    const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
+    const resource: IResource = {
+      name: 'test-file',
+      uri: URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
+      icon: 'file',
+    };
+    const disposer = extEditor.onDidChangeActiveTextEditor((e) => {
+      if (e) {
+        expect(extEditor.activeEditor?.textEditor).toBeDefined();
+        expect(extEditor.activeEditor?.textEditor.document.fileName).toBe(
+          path.join(__dirname, 'main.thread.output.test.ts'),
+        );
+        expect(e).toBeDefined();
+        disposer.dispose();
+        defered.resolve();
+      }
+    });
+    await group.createEditor(document.createElement('div'));
+    const ref = await editorDocModelService.createModelReference(
+      URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
+    );
+    await group.codeEditor.open(ref);
+    const openType: IEditorOpenType = {
+      type: 'code',
+      componentId: 'test-v-component',
+      title: 'test-file',
+    };
+    (workbenchEditorService as WorkbenchEditorServiceImpl).setCurrentGroup(group);
+    group._currentOpenType = openType;
+    group._currentResource = resource;
+    eventBus.fire(
+      new EditorGroupChangeEvent({
+        group,
+        newOpenType: group.currentOpenType,
+        newResource: group.currentResource,
+        oldOpenType: null,
+        oldResource: null,
+      }),
+    );
+    group._onDidEditorGroupBodyChanged.fire();
+    group._onDidEditorFocusChange.fire();
+
+    await defered.promise;
+  });
 
   it('should be able to get visibleTextEditors', async () => {
     const visibleTextEditors = extEditor.visibleEditors;

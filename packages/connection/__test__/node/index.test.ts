@@ -2,7 +2,7 @@ import http from 'http';
 
 import ws from 'ws';
 
-import { Emitter, Uri } from '@opensumi/ide-core-common';
+import { Deferred, Emitter, Uri } from '@opensumi/ide-core-common';
 
 import { RPCService } from '../../src';
 import { RPCServiceCenter, initRPCService, RPCMessageConnection } from '../../src/common';
@@ -11,7 +11,6 @@ import { RPCProtocol, createMainContextProxyIdentifier } from '../../src/common/
 import { parse } from '../../src/common/utils';
 import { WSChannel } from '../../src/common/ws-channel';
 import { WebSocketServerRoute, CommonChannelHandler, commonChannelPathHandler } from '../../src/node';
-
 
 const WebSocket = ws;
 
@@ -79,7 +78,15 @@ describe('connection', () => {
       channel.open('TEST_CHANNEL');
     });
     expect(mockHandler.mock.calls.length).toBe(1);
-    server.close();
+
+    // do clean up
+    connection.close();
+    const deferred = new Deferred();
+    socketRoute.deleteHandler(channelHandler);
+    server.close(() => {
+      deferred.resolve();
+    });
+    await deferred.promise;
   });
 
   it('RPCService', async () => {

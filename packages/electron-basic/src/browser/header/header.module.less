@@ -1,28 +1,24 @@
-:global(.mac) {
-  --header-height: 22px;
-}
-:global(.windows) {
-  --header-height: 27px;
-}
-
 .header {
-  height: var(--header-height);
+  height: var(--tabBar-height);
   background: var(--menu-background);
   color: var(--titlebar-activeForeground);
   display: flex;
   align-items: center;
   text-align: center;
-  line-height: var(--header-height);
+  line-height: var(--tabBar-height);
   font-size: 12px;
   user-select: none;
+
   .title_info {
     -webkit-app-region: drag;
     flex-grow: 1;
     text-align: left;
   }
+
   :global .menu-bar {
     flex-shrink: 0;
   }
+
   :global .menubarWrapper {
     background-color: var(--menu-background);
   }
@@ -34,15 +30,18 @@
 
 .windowActions {
   display: flex;
-  height: var(--header-height);
+  height: var(--tabBar-height);
   -webkit-app-region: no-drag;
   user-select: none;
+
   > div {
     font-size: 16px;
     padding: 0 15px;
+
     &:hover {
       background-color: hsla(0, 0%, 100%, 0.1);
     }
+
     &:hover:last-child {
       background-color: rgba(232, 17, 35, 0.9);
       color: white;
