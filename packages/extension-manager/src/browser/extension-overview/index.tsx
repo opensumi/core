@@ -135,10 +135,15 @@ export const ExtensionOverview: ReactEditorComponent<
           <div className={styles.description}>
             {replaceLocalizePlaceholder(resource.metadata?.description, resource.metadata?.extensionId)}
           </div>
-          <div>
+          <div className={styles.button}>
             {resource.metadata?.state === InstallState.NOT_INSTALLED && (
               <Button size='small' onClick={onInstallCallback} disabled={installing}>
                 {localize(installing ? 'marketplace.extension.installing' : 'marketplace.extension.install')}
+              </Button>
+            )}
+            {resource.metadata?.state === InstallState.SHOULD_UPDATE && (
+              <Button size='small' onClick={onInstallCallback} disabled={installing}>
+                {localize(installing ? 'marketplace.extension.updating' : 'marketplace.extension.update')}
               </Button>
             )}
             {resource.metadata?.state === InstallState.INSTALLED && (

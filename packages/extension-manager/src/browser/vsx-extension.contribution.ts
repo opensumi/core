@@ -10,8 +10,7 @@ import {
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
-import { InstallState, IVSXExtensionService, VSXExtensionServiceToken } from '../common';
-import { VSXExtensionRaw } from '../common/vsx-registry-types';
+import { IVSXExtensionService, VSXExtensionServiceToken } from '../common';
 
 import { OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID, EXTENSION_SCHEME } from './const';
 import { ExtensionOverview } from './extension-overview';
@@ -72,7 +71,7 @@ export class VSXExtensionContribution
     });
 
     editorComponentRegistry.registerEditorComponentResolver(EXTENSION_SCHEME, (_, __, resolve) => {
-      resolve!([
+      resolve?.([
         {
           type: 'component',
           componentId: EXTENSIONS_DETAIL_COMPONENT_ID,

@@ -147,7 +147,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
       }
     });
   }
-  private async downloadExtension({ url, name, id }): Promise<{ downloadPath: string }> {
+  private async downloadExtension({ url, id }): Promise<{ downloadPath: string }> {
     const extensionDir = path.join(os.tmpdir(), 'extension', uuidv4());
     await fs.mkdirp(extensionDir);
     const vsixFileName = id + '.vsix';

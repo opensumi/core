@@ -76,9 +76,9 @@ export class VSXExtensionService implements IVSXExtensionService {
 
     const task = this.backService.install({
       id,
-      name: extension.name!,
+      name: extension.name ?? '-',
       url: extension.downloadUrl,
-      version: extension.version!,
+      version: extension.version ?? '-',
     });
     this.tasks.set(id, task);
     this.updateStatusBar();
