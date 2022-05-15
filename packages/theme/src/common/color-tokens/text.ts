@@ -9,11 +9,6 @@ export const textSeparatorForeground = registerColor(
   { light: '#0000002e', dark: '#ffffff2e', hc: Color.black },
   localize('textSeparatorForeground', 'Color for text separators.'),
 );
-export const textSeparatorBackground = registerColor(
-  'textSeparator.background',
-  { light: '#0000002e', dark: '#ffffff2e', hc: Color.black },
-  localize('textSeparatorBackground', 'Color for text separators.'),
-);
 export const textLinkForeground = registerColor(
   'textLink.foreground',
   { light: '#006AB1', dark: '#3794FF', hc: '#3794FF' },
