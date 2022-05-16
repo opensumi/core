@@ -26,7 +26,7 @@ export * from './marshalling';
 export * from './os';
 export * from './platform';
 export * from './progress';
-export * from './promise-util';
+export * from './promises';
 export * from './sequence';
 export * from './types';
 export * from './uint';

@@ -4,8 +4,9 @@
 import { join } from 'path';
 import yargs from 'yargs';
 
-import { shell } from 'execa';
+import { command } from 'execa';
 import { readdirSync, writeJSONSync, mkdirSync, readJSONSync, pathExistsSync, removeSync } from 'fs-extra';
+import { pSeries } from '../packages/utils/src/promises';
 
 const argv = yargs.argv;
 
@@ -53,20 +54,6 @@ if (argv.noCache) {
   successCheckPoint.clean();
 }
 
-/*
- * serial executes Promises sequentially.
- * @param {funcs} An array of funcs that return promises.
- * @example
- * const urls = ['/url1', '/url2', '/url3']
- * serial(urls.map(url => () => $.ajax(url)))
- *     .then(console.log.bind(console))
- */
-const serial = (funcs) =>
-  funcs.reduce(
-    (promise, func) => promise.then((result) => func().then(Array.prototype.concat.bind(result))),
-    Promise.resolve([]),
-  );
-
 const skipList = ((argv as any).skipList ?? '').split(',') || ([] as string[]);
 const testResult = {};
 
@@ -99,9 +86,10 @@ const funcs = packagesDirNames.map((target) => {
           }
 
           console.log('cmd:', cmd, 'env:', env);
-          const runResult = await shell(cmd, {
+          const runResult = await command(cmd, {
             reject: false,
             stdio: 'inherit',
+            shell: true,
             env,
           });
           const info = {
@@ -126,6 +114,6 @@ const funcs = packagesDirNames.map((target) => {
   };
 });
 
-serial(funcs).then(() => {
+pSeries(funcs).then(() => {
   writeJSONSync(join(cacheDir, 'tests.json'), testResult);
 });
