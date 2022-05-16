@@ -102,7 +102,7 @@ describe('Terminal Client', () => {
 
   it('Terminal getSelection', async () => {
     await client.attached.promise;
-    await client.sendText('pwd\r');
+    await client.sendText('pwd\n');
     await delay(500);
     client.selectAll();
     const selection = client.getSelection();
@@ -112,7 +112,7 @@ describe('Terminal Client', () => {
   it('Terminal Send Text', async () => {
     await client.attached.promise;
     client.clear();
-    await client.sendText('pwd\r');
+    await client.sendText('pwd\n');
     await delay(500);
 
     const line = client.term.buffer.active.getLine(0);
@@ -141,7 +141,7 @@ describe('Terminal Client', () => {
 
   it('After Terminal Dispose', async () => {
     await client.attached.promise;
-    client.sendText('pwd\r');
+    client.sendText('pwd\n');
     client.focus();
     client.selectAll();
     client.updateTheme();

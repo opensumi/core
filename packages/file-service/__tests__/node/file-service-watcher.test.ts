@@ -1,7 +1,6 @@
 import { execSync } from 'child_process';
 
-import * as fs from 'fs-extra';
-import mv from 'mv';
+import * as fse from 'fs-extra';
 import temp from 'temp';
 
 import { URI } from '@opensumi/ide-core-common';
@@ -29,7 +28,7 @@ describe('nsfw-filesystem-watcher', () => {
   jest.setTimeout(10000);
 
   beforeEach(async () => {
-    root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+    root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
     watcherServer = createNsfwFileSystemWatcherServer();
     watcherId = await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
@@ -60,16 +59,16 @@ describe('nsfw-filesystem-watcher', () => {
       root.withPath(root.path.join('foo', 'bar', 'baz.txt')).toString(),
     ];
 
-    fs.mkdirSync(FileUri.fsPath(root.resolve('foo')));
-    expect(fs.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
+    fse.mkdirSync(FileUri.fsPath(root.resolve('foo')));
+    expect(fse.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
     await sleep(sleepTime);
 
-    fs.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
-    expect(fs.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
+    fse.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
+    expect(fse.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
     await sleep(sleepTime);
 
-    fs.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
-    expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
+    fse.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
+    expect(fse.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
       'baz',
     );
     await sleep(sleepTime);
@@ -93,16 +92,16 @@ describe('nsfw-filesystem-watcher', () => {
     /* Unwatch root */
     await watcherServer.unwatchFileChanges(watcherId);
 
-    fs.mkdirSync(FileUri.fsPath(root.resolve('foo')));
-    expect(fs.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
+    fse.mkdirSync(FileUri.fsPath(root.resolve('foo')));
+    expect(fse.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
     await sleep(sleepTime);
 
-    fs.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
-    expect(fs.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
+    fse.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
+    expect(fse.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
     await sleep(sleepTime);
 
-    fs.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
-    expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
+    fse.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
+    expect(fse.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
       'baz',
     );
     await sleep(sleepTime);
@@ -119,9 +118,9 @@ describe('测试重命名、移动、新建相关', () => {
   jest.setTimeout(10000);
 
   beforeEach(async () => {
-    root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
-    fs.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
-    fs.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
+    root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
+    fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
+    fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     watcherServer = createNsfwFileSystemWatcherServer();
     await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
@@ -155,7 +154,7 @@ describe('测试重命名、移动、新建相关', () => {
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
 
-    fs.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
+    fse.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
     await sleep(sleepTime);
 
     expect([...addUris]).toEqual(expectedAddUris);
@@ -184,17 +183,14 @@ describe('测试重命名、移动、新建相关', () => {
     const expectedAddUris = [root.resolve('for_rename_folder').resolve('for_rename').toString()];
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
+    await fse.move(
+      FileUri.fsPath(root.resolve('for_rename')),
+      FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
+      {
+        overwrite: true,
+      },
+    );
 
-    await new Promise<void>((resolve) => {
-      mv(
-        FileUri.fsPath(root.resolve('for_rename')),
-        FileUri.fsPath(root.resolve('for_rename_folder').resolve('for_rename')),
-        { mkdirp: true, clobber: true },
-        () => {
-          resolve();
-        },
-      );
-    });
     await sleep(sleepTime);
 
     expect([...addUris]).toEqual(expectedAddUris);
@@ -223,17 +219,10 @@ describe('测试重命名、移动、新建相关', () => {
     const expectedAddUris = [root.resolve('for_rename_1').toString()];
 
     const expectedDeleteUris = [root.resolve('for_rename').toString()];
-
-    await new Promise<void>((resolve) => {
-      mv(
-        FileUri.fsPath(root.resolve('for_rename')),
-        FileUri.fsPath(root.resolve('for_rename_1')),
-        { mkdirp: true, clobber: true },
-        () => {
-          resolve();
-        },
-      );
+    await fse.move(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_1')), {
+      overwrite: true,
     });
+
     await sleep(sleepTime);
 
     expect([...addUris]).toEqual(expectedAddUris);
