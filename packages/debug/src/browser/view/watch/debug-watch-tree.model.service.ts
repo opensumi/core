@@ -196,7 +196,9 @@ export class DebugWatchModelService {
 
   listenDebugWatchChange() {
     this.debugWatch.onDidChange(async () => {
-      this.flushDispatchChangeDelayer.cancel();
+      if (!this.flushDispatchChangeDelayer.isTriggered()) {
+        this.flushDispatchChangeDelayer.cancel();
+      }
       this.flushDispatchChangeDelayer.trigger(async () => {
         this.initTreeModel();
       });
