@@ -35,6 +35,7 @@ import {
   CONTEXT_IN_DEBUG_MODE,
   CONTEXT_SET_VARIABLE_SUPPORTED,
   DEBUG_MEMORY_SCHEME,
+  CONTEXT_CAN_VIEW_MEMORY,
 } from './../../../common/constants';
 import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
@@ -154,7 +155,6 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
               path: '/' + encodeURIComponent(memoryReference || '') + '/memory.bin',
             }),
             {
-              split: EditorGroupSplitAction.Right,
               disableNavigate: true,
               preview: true,
               forceOpenType: {
@@ -235,7 +235,9 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
         id: DEBUG_COMMANDS.VIEW_MEMORY_ID.id,
         label: localize('debug.variables.view.memory'),
       },
-      type: 'checkbox',
+      iconClass: '',
+      when: `${CONTEXT_CAN_VIEW_MEMORY.equalsTo(true)} && ${CONTEXT_IN_DEBUG_MODE.equalsTo(true)}`,
+      type: 'icon',
     });
   }
 }

@@ -12,6 +12,7 @@ import {
   CONTEXT_SET_VARIABLE_SUPPORTED,
   CONTEXT_RESTART_FRAME_SUPPORTED,
   CONTEXT_DEBUG_PROTOCOL_VARIABLE_MENU_CONTEXT,
+  CONTEXT_CAN_VIEW_MEMORY,
 } from './../../common/constants';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class DebugContextKey {
   public readonly contextSetVariableSupported: IContextKey<boolean>;
   public readonly contextRestartFrameSupported: IContextKey<boolean>;
   public readonly contextDebugProtocolVariableMenu: IContextKey<string>;
+  public readonly contextCanViewMemory: IContextKey<boolean>;
 
   constructor(@Optional() dom?: HTMLElement) {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
@@ -40,6 +42,7 @@ export class DebugContextKey {
     this.contextSetVariableSupported = CONTEXT_SET_VARIABLE_SUPPORTED.bind(this.contextKeyScoped);
     this.contextRestartFrameSupported = CONTEXT_RESTART_FRAME_SUPPORTED.bind(this.contextKeyScoped);
     this.contextDebugProtocolVariableMenu = CONTEXT_DEBUG_PROTOCOL_VARIABLE_MENU_CONTEXT.bind(this.contextKeyScoped);
+    this.contextCanViewMemory = CONTEXT_CAN_VIEW_MEMORY.bind(this.contextKeyScoped);
   }
 
   public get contextKeyScoped(): IScopedContextKeyService {

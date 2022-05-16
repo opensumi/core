@@ -371,6 +371,13 @@ export class DebugVariablesModelService {
       );
     }
 
+    // 决定某一变量是否允许以十六进制视图查看
+    if (expression.session?.capabilities.supportsReadMemoryRequest && expression.memoryReference !== undefined) {
+      this.debugContextKey.contextCanViewMemory.set(true);
+    } else {
+      this.debugContextKey.contextCanViewMemory.set(false);
+    }
+
     const menus = this.contextMenuService.createMenu({
       id: MenuId.DebugVariablesContext,
       contextKeyService: this.debugContextKey.contextKeyScoped,
