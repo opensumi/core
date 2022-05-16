@@ -121,10 +121,6 @@ export class ClientCommonContribution
         group: '2_new',
       },
       {
-        command: FILE_COMMANDS.NEW_FOLDER.id,
-        group: '2_new',
-      },
-      {
         command: {
           id: EDITOR_COMMANDS.SAVE_CURRENT.id,
           label: localize('file.save'),
