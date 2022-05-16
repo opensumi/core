@@ -1,3 +1,5 @@
+import { clamp } from 'lodash';
+
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   Event,
@@ -9,9 +11,19 @@ import {
   Uri,
   BinaryBuffer,
   Emitter,
+  Disposable,
+  ILogger,
 } from '@opensumi/ide-core-common';
 
-import { DEBUG_MEMORY_SCHEME, IDebugSessionManager } from '../common';
+import {
+  DEBUG_MEMORY_SCHEME,
+  IDebugSession,
+  IDebugSessionManager,
+  IMemoryInvalidationEvent,
+  IMemoryRegion,
+  MemoryRange,
+  MemoryRangeType,
+} from '../common';
 
 import { DebugSessionManager } from '.';
 
@@ -20,7 +32,12 @@ export class DebugMemoryFileSystemProvider implements FileSystemProvider {
   @Autowired(IDebugSessionManager)
   protected readonly debugSessionManager: DebugSessionManager;
 
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
+
+  private memoryFdCounter = 0;
   private readonly changeEmitter = new Emitter<FileChangeEvent>();
+  private readonly fdMemory = new Map<number, { session: IDebugSession; region: IMemoryRegion }>();
 
   public readonly capabilities: FileSystemProviderCapabilities =
     0 | FileSystemProviderCapabilities.PathCaseSensitive | FileSystemProviderCapabilities.FileOpenReadWriteClose;
@@ -41,13 +58,58 @@ export class DebugMemoryFileSystemProvider implements FileSystemProvider {
     });
   }
 
-  public readFile(uri: Uri): void | Uint8Array | Promise<void | Uint8Array> {
+  public async readFile(uri: Uri): Promise<void | Uint8Array> {
     const parse = this.parseUri(uri);
-    if (parse && !parse.offset) {
+    if (!parse) {return this.toBuffer('');}
+
+    if (!parse.offset) {return this.toBuffer('');}
+
+    const { session, memoryReference, offset } = parse;
+
+    const data = new Uint8Array(offset.toOffset - offset.fromOffset);
+
+    const fd = this.memoryFdCounter++;
+    let region = session.getMemory(memoryReference);
+    if (offset) {
+      region = new MemoryRegionView(region, offset);
+    }
+
+    this.fdMemory.set(fd, { session, region });
+    await this.read(fd, offset.fromOffset, data, 0, data.length);
+    return data;
+  }
+
+  public async read(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number | void> {
+    const memory = this.fdMemory.get(fd);
+    if (!memory) {
       return;
     }
 
-    return this.toBuffer('');
+    const ranges = await memory.region.read(pos, length);
+    let readSoFar = 0;
+    for (const range of ranges) {
+      switch (range.type) {
+        case MemoryRangeType.Unreadable:
+          return readSoFar;
+        case MemoryRangeType.Error:
+          if (readSoFar > 0) {
+            return readSoFar;
+          } else {
+            return this.logger.error(range.error);
+          }
+        case MemoryRangeType.Valid: {
+          const start = Math.max(0, pos - range.offset);
+          const toWrite = range.data.slice(start, Math.min(range.data.byteLength, start + (length - readSoFar)));
+          data.set(toWrite.buffer, offset + readSoFar);
+          readSoFar += toWrite.byteLength;
+          break;
+        }
+        default:
+          this.logger.log(range);
+      }
+    }
+
+    return readSoFar;
   }
 
   private toBuffer(s: string): Uint8Array {
@@ -110,5 +172,41 @@ export class DebugMemoryFileSystemProvider implements FileSystemProvider {
    */
   public writeFile(): never {
     throw new Error('Method not implemented.');
+  }
+}
+
+class MemoryRegionView extends Disposable implements IMemoryRegion {
+  private readonly invalidateEmitter = new Emitter<IMemoryInvalidationEvent>();
+
+  public readonly onDidInvalidate = this.invalidateEmitter.event;
+  public readonly writable: boolean;
+  private readonly width = this.range.toOffset - this.range.fromOffset;
+
+  constructor(private readonly parent: IMemoryRegion, public readonly range: { fromOffset: number; toOffset: number }) {
+    super();
+    this.writable = parent.writable;
+
+    this.registerDispose(parent);
+    this.registerDispose(
+      parent.onDidInvalidate((e) => {
+        const fromOffset = clamp(e.fromOffset - range.fromOffset, 0, this.width);
+        const toOffset = clamp(e.toOffset - range.fromOffset, 0, this.width);
+        if (toOffset > fromOffset) {
+          this.invalidateEmitter.fire({ fromOffset, toOffset });
+        }
+      }),
+    );
+  }
+
+  public read(fromOffset: number, toOffset: number): Promise<MemoryRange[]> {
+    if (fromOffset < 0) {
+      throw new RangeError(`Invalid fromOffset: ${fromOffset}`);
+    }
+
+    return this.parent.read(this.range.fromOffset + fromOffset, this.range.fromOffset + Math.min(toOffset, this.width));
+  }
+
+  public write(offset: number, data: BinaryBuffer): Promise<number> {
+    return this.parent.write(this.range.fromOffset + offset, data);
   }
 }
