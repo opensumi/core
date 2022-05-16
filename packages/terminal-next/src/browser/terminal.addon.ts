@@ -156,13 +156,15 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
           if (typeof data === 'string') {
             const beforeProcessDataEvent = { data } as { data: string };
             this._onBeforeProcessData.fire(beforeProcessDataEvent);
-            if (beforeProcessDataEvent.data) {
+
+            if (beforeProcessDataEvent.data !== undefined) {
               dataToWrite = beforeProcessDataEvent.data;
             }
           }
 
-          this._terminal.write(typeof dataToWrite === 'string' ? dataToWrite : new Uint8Array(dataToWrite));
           this._onData.fire(dataToWrite);
+
+          this._terminal.write(typeof dataToWrite === 'string' ? dataToWrite : new Uint8Array(dataToWrite));
           if (this._lastInputTime) {
             const delta = Date.now() - this._lastInputTime;
             this._lastInputTime = 0;
