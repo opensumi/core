@@ -5,6 +5,7 @@ import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensu
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { uuid, URI, Emitter, IDisposable, PreferenceScope, OperatingSystem } from '@opensumi/ide-core-common';
 
+import { Deferred } from '../../../utils';
 import {
   ITerminalService,
   ITerminalConnection,
@@ -236,6 +237,10 @@ export const MainLayoutTabbarOnActivate = new Emitter<any>();
 export const MainLayoutTabbarOnInActivate = new Emitter<any>();
 
 export class MockMainLayoutService {
+  viewReady = new Deferred();
+  constructor() {
+    this.viewReady.resolve();
+  }
   getTabbarHandler() {
     return {
       onActivate: MainLayoutTabbarOnActivate.event,
