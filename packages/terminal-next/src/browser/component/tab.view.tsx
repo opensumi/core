@@ -1,8 +1,9 @@
 import { observer } from 'mobx-react-lite';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
+import { IThemeService, ThemeType } from '@opensumi/ide-theme';
 
 import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
 import { TerminalContextMenuService } from '../terminal.context-menu';
@@ -14,8 +15,25 @@ export default observer(() => {
   const view = useInjectable<ITerminalGroupViewService>(ITerminalGroupViewService);
   const provider = useInjectable<ITerminalRenderProvider>(ITerminalRenderProvider);
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
+  const themeService = useInjectable<IThemeService>(IThemeService);
   const tabContainer = useRef<HTMLDivElement | null>();
+  const [theme, setTheme] = useState<ThemeType>('dark');
 
+  const init = useCallback(() => {
+    themeService.getCurrentTheme().then((theme) => {
+      setTheme(theme.type);
+    });
+    return themeService.onThemeChange((theme) => {
+      setTheme(theme.type);
+    });
+  }, [theme, themeService]);
+
+  useEffect(() => {
+    const disposable = init();
+    return () => {
+      disposable.dispose();
+    };
+  }, []);
   return (
     <div className={styles.view_container}>
       <div className={styles.tabs}>
@@ -29,6 +47,7 @@ export default observer(() => {
                 <TabItem
                   key={group.id}
                   id={group.id}
+                  options={group.options}
                   editable={group.editable}
                   name={group.snapshot}
                   selected={view.currentGroup && view.currentGroup.id === group.id}
@@ -38,6 +57,7 @@ export default observer(() => {
                   onClose={() => view.removeGroup(index)}
                   onContextMenu={(event) => menuService.onTabContextMenu(event, index)}
                   provider={provider}
+                  theme={theme}
                 ></TabItem>
               );
             })}
@@ -52,6 +72,7 @@ export default observer(() => {
                 }}
                 onDropdown={(event) => menuService.onDropDownContextMenu(event)}
                 provider={provider}
+                theme={theme}
               />
             </div>
           </div>

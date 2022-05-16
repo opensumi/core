@@ -9,6 +9,7 @@ import {
   ITerminalInternalService,
   userActionViewUuid,
   IWidgetGroup,
+  TerminalOptions,
 } from '../common';
 
 export class Widget extends Disposable implements IWidget {
@@ -107,6 +108,7 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
   static float = 1000;
 
   protected _id: string;
+  protected _options: TerminalOptions;
   protected _name: string;
   protected _activated: boolean;
 
@@ -127,14 +129,19 @@ export class WidgetGroup extends Disposable implements IWidgetGroup {
 
   widgetsMap: Map<string, Widget> = new Map();
 
-  constructor(id?: string) {
+  constructor(id?: string, options?: TerminalOptions) {
     super();
     this._id = id || userActionViewUuid();
+    this._options = options || {};
     this._activated = false;
   }
 
   get id() {
     return this._id;
+  }
+
+  get options() {
+    return this._options;
   }
 
   get length() {
@@ -290,14 +297,14 @@ export class TerminalGroupViewService implements ITerminalGroupViewService {
     this._doSelectGroup(index);
   }
 
-  private _doCreateGroup(id?: string) {
-    const group = new WidgetGroup(id);
+  private _doCreateGroup(id?: string, options?: TerminalOptions) {
+    const group = new WidgetGroup(id, options);
     this.groups.push(group);
     return this.groups.length - 1;
   }
 
-  createGroup() {
-    const index = this._doCreateGroup();
+  createGroup(options?: TerminalOptions) {
+    const index = this._doCreateGroup(undefined, options);
     this.getGroup(index);
     return index;
   }

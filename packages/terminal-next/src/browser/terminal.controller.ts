@@ -222,8 +222,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this._clients = new Map();
   }
 
-  private _createOneGroup() {
-    const index = this.terminalView.createGroup();
+  private _createOneGroup(options?: TerminalOptions) {
+    const index = this.terminalView.createGroup(options);
     const group = this.terminalView.getGroup(index);
     return { group, index };
   }
@@ -530,7 +530,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    */
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = this.wsChannelHandler.clientId + '|' + options.id || this.service.generateSessionId();
-    const { group } = this._createOneGroup();
+    const { group } = this._createOneGroup(options.terminalOptions);
     const widget = this.terminalView.createWidget(
       group,
       widgetId,
@@ -669,7 +669,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           },
           {
             execute: async () => {
-              await this.profileService.createContributedTerminalProfile(profile.extensionIdentifier, profile.id, {});
+              await this.profileService.createContributedTerminalProfile(profile.extensionIdentifier, profile.id, {
+                icon: profile.icon,
+              });
             },
           },
         ),
