@@ -17,7 +17,6 @@ import {
   IExtensionTerminalProfile,
   ITerminalProfileInternalService,
   IPtyProcessChangeEvent,
-  ITerminalContributionService,
   ITerminalContributions,
   ICreateContributedTerminalProfileOptions,
 } from '../../src/common';
@@ -407,9 +406,4 @@ export class MockTerminalProfileInternalService implements ITerminalProfileInter
   async resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined> {
     return undefined;
   }
-}
-
-export class MockTerminalContributionService implements ITerminalContributionService {
-  terminalProfiles = [];
-  add(extensionId: string, contributions: ITerminalContributions): void {}
 }

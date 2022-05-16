@@ -53,7 +53,6 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import {
   MockMainLayoutService,
   MockSocketService,
-  MockTerminalContributionService,
   MockTerminalProfileInternalService,
   MockTerminalThemeService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
@@ -237,10 +236,6 @@ describe('ExtHostTask API', () => {
     {
       token: ITerminalProfileInternalService,
       useValue: new MockTerminalProfileInternalService(),
-    },
-    {
-      token: ITerminalContributionService,
-      useValue: new MockTerminalContributionService(),
     },
     {
       token: EnvironmentVariableServiceToken,
