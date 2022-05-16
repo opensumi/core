@@ -8,20 +8,13 @@ import {
   IMenuItem,
   MenuCommandDesc,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import {
-  Command,
-  CommandContribution,
-  CommandRegistry,
-  CommandService,
-  Disposable,
-  localize,
-} from '@opensumi/ide-core-common';
+import { Command, CommandContribution, CommandRegistry, Disposable, localize } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
 import { WorkbenchEditorService } from '../types';
 
 import { IEditorOpenType } from './../../common/editor';
-import { WorkbenchEditorServiceImpl, EditorGroup } from './../workbench-editor.service';
+import { WorkbenchEditorServiceImpl } from './../workbench-editor.service';
 
 const SUB_MENU_ID = 'editor/openType/submenu';
 
@@ -33,9 +26,6 @@ namespace OPEN_TYPE_COMMANDS {
 
 @Domain(CommandContribution, MenuContribution)
 export class OpenTypeMenuContribution extends Disposable implements CommandContribution, MenuContribution {
-  @Autowired(CommandService)
-  private readonly commandService: CommandService;
-
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorServiceImpl;
 
@@ -46,7 +36,7 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
     commands.registerCommand(OPEN_TYPE_COMMANDS.EDITOR_OPEN_TYPE, {
       execute: (id: string) => {
         if (id) {
-          (this.workbenchEditorService.topGrid.editorGroup as EditorGroup).changeOpenType(id);
+          this.workbenchEditorService.currentEditorGroup.changeOpenType(id);
         }
       },
     });
@@ -56,7 +46,7 @@ export class OpenTypeMenuContribution extends Disposable implements CommandContr
     super();
     this.disposables.push(
       this.workbenchEditorService.onActiveResourceChange((e) => {
-        const openTypes = (this.workbenchEditorService.topGrid.editorGroup as EditorGroup).availableOpenTypes;
+        const openTypes = this.workbenchEditorService.currentEditorGroup.availableOpenTypes;
         // 如果打开方式没有两个以上，则不需要展示
         const preMenu = this.menuRegistry
           .getMenuItems(SUB_MENU_ID)
