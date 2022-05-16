@@ -4,6 +4,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import { Injector } from '@opensumi/di';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig, INodeLogger, getDebugLogger } from '@opensumi/ide-core-node';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
 import { IFileService, IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
@@ -72,6 +73,8 @@ describe('Extension Client Serivce', () => {
       const lpPath = path.join(os.homedir(), '.sumi', 'workspace-storage', 'languagepacks.json');
       // make sure the workspace-storage path is exist
       const extensionStorageServer = injector.get(IExtensionStoragePathServer);
+      const hashCalculateService = injector.get(IHashCalculateService);
+      await hashCalculateService.initialize();
       const targetPath = path.join(extensionDir, `${publisher}.${name}-${version}`);
       const storagePath = (await extensionStorageServer.getLastStoragePath()) || '';
       await extensionNodeClient.updateLanguagePack('zh-CN', targetPath, storagePath);
