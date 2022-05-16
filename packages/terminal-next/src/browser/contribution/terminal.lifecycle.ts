@@ -1,6 +1,6 @@
 import { Autowired } from '@opensumi/di';
 import { Domain, ClientAppContribution } from '@opensumi/ide-core-browser';
-import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
+import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 
 import { ITerminalController, ITerminalRestore } from '../../common';
 import { IEnvironmentVariableService, EnvironmentVariableServiceToken } from '../../common/environmentVariable';
@@ -21,9 +21,6 @@ export class TerminalLifeCycleContribution implements ClientAppContribution, Mai
   @Autowired(EnvironmentVariableServiceToken)
   protected readonly environmentService: IEnvironmentVariableService;
 
-  @Autowired(IMainLayoutService)
-  protected readonly layoutService: IMainLayoutService;
-
   initialize() {
     registerTerminalColors();
   }
@@ -35,9 +32,9 @@ export class TerminalLifeCycleContribution implements ClientAppContribution, Mai
 
   // 必须等待这个事件返回，否则 tabHandler 无法保证获取
   onDidRender() {
-    this.layoutService.viewReady.promise.then(() =>
-      this.store.restore().then(() => this.terminalController.firstInitialize()),
-    );
+    this.store.restore().then(() => {
+      this.terminalController.firstInitialize();
+    });
   }
 
   onStop() {
