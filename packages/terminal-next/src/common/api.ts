@@ -6,7 +6,7 @@ import { TerminalOptions, ITerminalInfo } from './pty';
 
 export const ITerminalApiService = Symbol('ITerminalApiService');
 export interface ITerminalApiService {
-  createTerminal(options: TerminalOptions): Promise<ITerminalExternalClient>;
+  createTerminal(options: TerminalOptions, id?: string): Promise<ITerminalExternalClient>;
   sendText(id: string, text: string, addNewLine?: boolean): void;
   getProcessId(sessionId: string): Promise<number | undefined>;
 

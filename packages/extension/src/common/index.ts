@@ -261,7 +261,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 
   protected readonly iconService?: IIconService;
 
-  abstract contribute();
+  abstract contribute(): void;
 
   protected toIconClass(iconContrib: { [index in ThemeType]: string } | string): string | undefined {
     if (typeof iconContrib === 'string' && VAR_REGEXP.test(iconContrib)) {
@@ -452,3 +452,7 @@ export function validateTypeOrModifier(
 }
 
 // #endregion Semantic Tokens Contribution Point
+
+export const enum ExtensionContributePoint {
+  Terminal = 'terminal',
+}

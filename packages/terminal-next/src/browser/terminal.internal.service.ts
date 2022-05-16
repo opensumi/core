@@ -1,5 +1,3 @@
-import { Terminal as XTermTerminal } from 'xterm';
-
 import { Injectable, Autowired } from '@opensumi/di';
 import { OperatingSystem } from '@opensumi/ide-core-common';
 

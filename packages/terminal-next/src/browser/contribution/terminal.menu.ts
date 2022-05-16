@@ -12,6 +12,7 @@ import {
   IMenuRegistry,
   getTabbarCommonMenuId,
   MenuId as CoreMenuId,
+  MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain, CommandService, isWindows } from '@opensumi/ide-core-common';
 
@@ -22,7 +23,6 @@ import {
   TerminalContainerId,
   TERMINAL_COMMANDS,
 } from '../../common';
-import { MenuId } from '../../common/menu';
 
 export const group = 'panel_menu';
 export const more1 = 'more_1';
@@ -54,7 +54,7 @@ export class TerminalMenuContribution implements MenuContribution {
 
   registerMenus(menuRegistry: IMenuRegistry) {
     /** 终端 Tab 菜单 */
-    menuRegistry.registerMenuItem(MenuId.TermTab, {
+    menuRegistry.registerMenuItem(MenuId.TerminalTabContext, {
       command: {
         id: TERMINAL_COMMANDS.TAB_RENAME.id,
         label: localize('terminal.menu.rename'),
@@ -63,7 +63,7 @@ export class TerminalMenuContribution implements MenuContribution {
       group,
     });
 
-    menuRegistry.registerMenuItem(MenuId.TermTab, {
+    menuRegistry.registerMenuItem(MenuId.TerminalTabContext, {
       command: {
         id: TERMINAL_COMMANDS.SPLIT.id,
         label: localize('terminal.menu.split'),
@@ -72,7 +72,7 @@ export class TerminalMenuContribution implements MenuContribution {
       group,
     });
 
-    menuRegistry.registerMenuItem(MenuId.TermTab, {
+    menuRegistry.registerMenuItem(MenuId.TerminalTabContext, {
       command: {
         id: TERMINAL_COMMANDS.REMOVE.id,
         label: localize('terminal.menu.stopGroup'),

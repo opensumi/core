@@ -1,6 +1,7 @@
 import path from 'path';
 
 import { RPCProtocol } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
@@ -26,7 +27,6 @@ import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import {
   ITerminalApiService,
   ITerminalClientFactory,
-  ITerminalContributionService,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
@@ -37,6 +37,7 @@ import {
 } from '@opensumi/ide-terminal-next';
 import { TerminalClientFactory } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
+import { TerminalEnvironmentService } from '@opensumi/ide-terminal-next/lib/browser/terminal.environment.service';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
 import { TerminalPreference } from '@opensumi/ide-terminal-next/lib/browser/terminal.preference';
 import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile';
@@ -52,7 +53,6 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import {
   MockMainLayoutService,
   MockSocketService,
-  MockTerminalContributionService,
   MockTerminalProfileInternalService,
   MockTerminalThemeService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
@@ -105,12 +105,33 @@ describe('ExtHostTask API', () => {
       }),
     },
     {
+      token: ITerminalProfileInternalService,
+      useValue: {
+        resolveDefaultProfile: jest.fn(() => ({
+          profileName: 'bash',
+          path: '/local/bin/bash',
+          isDefault: true,
+        })),
+      },
+    },
+    {
       token: ITerminalService,
       useValue: new MockSocketService(),
     },
     {
       token: ITerminalInternalService,
       useClass: TerminalInternalService,
+    },
+    {
+      token: WSChannelHandler,
+      useValue: {
+        openChannel: jest.fn(),
+        clientId: 'test_connection',
+      },
+    },
+    {
+      token: EnvironmentVariableServiceToken,
+      useClass: TerminalEnvironmentService,
     },
     {
       token: ITerminalProfileService,
@@ -215,10 +236,6 @@ describe('ExtHostTask API', () => {
     {
       token: ITerminalProfileInternalService,
       useValue: new MockTerminalProfileInternalService(),
-    },
-    {
-      token: ITerminalContributionService,
-      useValue: new MockTerminalContributionService(),
     },
     {
       token: EnvironmentVariableServiceToken,

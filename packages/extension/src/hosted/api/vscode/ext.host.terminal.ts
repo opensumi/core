@@ -13,6 +13,7 @@ import {
   Deferred,
   Disposable,
   CancellationTokenSource,
+  uuid,
 } from '@opensumi/ide-core-common';
 import {
   ITerminalInfo,
@@ -39,7 +40,6 @@ import {
   IExtensionDescription,
 } from '../../../common/vscode';
 
-
 const debugLog = getDebugLogger();
 
 let nextLinkId = 1;
@@ -54,6 +54,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   private changeActiveTerminalEvent: Emitter<Terminal | undefined> = new Emitter();
   private closeTerminalEvent: Emitter<Terminal> = new Emitter();
   private openTerminalEvent: Emitter<Terminal> = new Emitter();
+  private terminalStateChangeEvent: Emitter<Terminal> = new Emitter();
   private terminalsMap: Map<string, Terminal> = new Map();
   private _terminalDeferreds: Map<string, Deferred<Terminal | undefined>> = new Map();
   private readonly _linkProviders: Set<vscode.TerminalLinkProvider> = new Set();
@@ -102,7 +103,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   $onDidCloseTerminal(e: ITerminalExitEvent) {
     const terminal = this.terminalsMap.get(e.id);
     if (!terminal) {
-      return debugLog.error('没有找到终端');
+      return debugLog.error(`Terminal ${e.id} not found`);
     }
 
     terminal.setExitCode(e.code);
@@ -135,39 +136,42 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this._defaultProfile?.path || process.env.SHELL || userInfo().shell;
   }
 
+  get onDidChangeTerminalState(): Event<Terminal> {
+    return this.terminalStateChangeEvent.event;
+  }
+
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
+    const id = uuid();
     const terminal = new Terminal(name || '', { name, shellPath, shellArgs }, this.proxy);
-    terminal
-      .create({
+    terminal.create(
+      {
         name,
         shellPath,
         shellArgs,
-      })
-      .then((id) => {
-        this.terminalsMap.set(id, terminal);
-      });
+      },
+      id,
+    );
+    this.terminalsMap.set(id, terminal);
     return terminal;
   }
 
   createTerminalFromOptions(options: vscode.TerminalOptions) {
-    // 插件API 同步提供 terminal 实例
+    // 插件 API 同步提供 terminal 实例
+    const id = uuid();
     const terminal = new Terminal(options.name, options, this.proxy);
-    terminal.create(options).then((id) => {
-      this.terminalsMap.set(id, terminal);
-    });
+    terminal.create(options, id);
+    this.terminalsMap.set(id, terminal);
     return terminal;
   }
 
   createExtensionTerminal(options: vscode.ExtensionTerminalOptions) {
+    const id = uuid();
     const terminal = new Terminal(options.name, options, this.proxy);
     const p = new ExtHostPseudoterminal(options.pty);
-    terminal.createExtensionTerminal().then((id) => {
-      const disposable = this._setupExtHostProcessListeners(id, p);
-
-      this.terminalsMap.set(id, terminal);
-
-      this._terminalProcessDisposables[id] = disposable;
-    });
+    terminal.createExtensionTerminal(id);
+    this.terminalsMap.set(id, terminal);
+    const disposable = this._setupExtHostProcessListeners(id, p);
+    this._terminalProcessDisposables[id] = disposable;
 
     this.disposables.add(
       p.onProcessExit((e: number | undefined) => {
@@ -461,9 +465,15 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   public $acceptTerminalTitleChange(terminalId: string, name: string) {
     const terminal = this.terminalsMap.get(terminalId);
-
     if (terminal) {
       terminal.setName(name);
+    }
+  }
+
+  public $acceptTerminalInteraction(terminalId: string) {
+    const terminal = this.terminalsMap.get(terminalId);
+    if (terminal?.setInteractedWith()) {
+      this.terminalStateChangeEvent.fire(terminal);
     }
   }
 
@@ -583,6 +593,12 @@ export class Terminal implements vscode.Terminal {
   public __id: string;
 
   private _exitStatus: vscode.TerminalExitStatus | undefined;
+  /**
+   * FIXME: 这里默认值应该为 { isInteractedWith: false }
+   * 由于终端重连在前端往后端重新初始化了 Terminal，插件进程获取到的 Terminal 与前端 Terminal 仅有 id 等部分信息关联
+   * 导致状态丢失
+   */
+  private _state: vscode.TerminalState = { isInteractedWith: false };
 
   private createdPromiseResolve;
 
@@ -603,6 +619,10 @@ export class Terminal implements vscode.Terminal {
 
   get name() {
     return this._name;
+  }
+
+  get state(): vscode.TerminalState {
+    return this._state;
   }
 
   get exitStatus() {
@@ -635,16 +655,15 @@ export class Terminal implements vscode.Terminal {
     });
   }
 
-  async create(options: vscode.TerminalOptions): Promise<string> {
-    const id = await this.proxy.$createTerminal(options);
-
-    if (!id) {
-      throw new Error('createExtensionTerminal error');
-    }
-
+  /**
+   * 所有插件进程的终端调用都需要指定 id
+   * 该逻辑用于保障依赖 `vscode.window.onDidOpenTermina` 获取 terminal 实例的相关逻辑
+   * 让相关 terminal 的值引用一致
+   * 如 vscode-js-debug 中的 https://github.com/microsoft/vscode-js-debug/blob/a201e735c94b9aeb1e13d8c586b91a1fe1ab62b3/src/ui/debugTerminalUI.ts#L198
+   */
+  async create(options: vscode.TerminalOptions, id: string): Promise<void> {
+    await this.proxy.$createTerminal(options, id);
     this.created(id);
-
-    return id;
   }
 
   created(id) {
@@ -657,14 +676,9 @@ export class Terminal implements vscode.Terminal {
     this.proxy.$dispose(this.id);
   }
 
-  async createExtensionTerminal(): Promise<string> {
-    const id = await this.proxy.$createTerminal({ name: this.name, isExtensionTerminal: true });
-    if (!id) {
-      // 这种情况应该是不会发生的，加个判断安全
-      throw new Error('createExtensionTerminal error');
-    }
+  async createExtensionTerminal(id: string): Promise<void> {
+    await this.proxy.$createTerminal({ name: this.name, isExtensionTerminal: true }, id);
     this.created(id);
-    return id;
   }
 
   public setExitCode(code: number | undefined) {
@@ -673,6 +687,14 @@ export class Terminal implements vscode.Terminal {
 
   public setName(name: string) {
     this._name = name;
+  }
+
+  public setInteractedWith() {
+    if (!this._state.isInteractedWith) {
+      (this._state as any).isInteractedWith = true;
+      return true;
+    }
+    return false;
   }
 }
 

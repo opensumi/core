@@ -19,17 +19,24 @@ export interface ITerminalProfileService {
   readonly availableProfiles: ITerminalProfile[];
   readonly contributedProfiles: IExtensionTerminalProfile[];
   readonly profilesReady: Promise<void>;
+  onTerminalProfileResolved: Event<string>;
   onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
   getDefaultProfileName(): string | undefined;
   getContributedDefaultProfile(shellLaunchConfig: IShellLaunchConfig): Promise<IExtensionTerminalProfile | undefined>;
   getContributedProfileProvider(extensionIdentifier: string, id: string): ITerminalProfileProvider | undefined;
   refreshAvailableProfiles(): void;
-  registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void>;
   registerTerminalProfileProvider(
     extensionIdentifier: string,
     id: string,
     profileProvider: ITerminalProfileProvider,
   ): IDisposable;
+  createContributedTerminalProfile(
+    extensionIdentifier: string,
+    id: string,
+    options: ICreateContributedTerminalProfileOptions,
+  ): Promise<void>;
+  addContributedProfile(extensionId: string, contributions: ITerminalContributions): void;
+  removeContributedProfile(extensionId: string): void;
 }
 
 export const ITerminalProfileInternalService = Symbol('ITerminalProfileInternalService');
@@ -130,13 +137,7 @@ export interface IExtensionTerminalProfile extends ITerminalProfileContribution 
 export type ITerminalProfileObject = ITerminalExecutable | ITerminalProfileSource | IExtensionTerminalProfile | null;
 export type ITerminalProfileType = ITerminalProfile | IExtensionTerminalProfile;
 
-export const ITerminalContributionService = Symbol('ITerminalContributionService');
-export interface ITerminalContributionService {
-  readonly terminalProfiles: ReadonlyArray<IExtensionTerminalProfile>;
-  add(extensionId: string, contributions: ITerminalContributions): void;
-}
-
-export interface IRegisterContributedProfileArgs {
+export interface ISaveContributedProfileArgs {
   extensionIdentifier: string;
   id: string;
   title: string;

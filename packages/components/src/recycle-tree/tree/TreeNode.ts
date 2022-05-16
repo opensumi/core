@@ -139,7 +139,6 @@ export class TreeNode implements ITreeNode {
   public static idToTreeNode: Map<number, ITreeNodeOrCompositeTreeNode> = new Map();
   public static pathToTreeNode: Map<string, ITreeNodeOrCompositeTreeNode> = new Map();
   public static pathToId: Map<string, number> = new Map();
-  public static refreshTaskLock: [string, Promise<any>] | null = null;
   // 每颗树都只会在根节点上绑定一个可取消的对象，即同个时间点只能存在一个改变树数据结构的事情
   public static pathToGlobalTreeState: Map<string, IGlobalTreeState> = new Map();
 

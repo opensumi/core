@@ -8,7 +8,6 @@ import { ITerminalController } from '../../src/common';
 import { injector } from './inject';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
 
-
 describe('Terminal Controller', () => {
   let controller: ITerminalController;
   let proxy;
@@ -24,6 +23,7 @@ describe('Terminal Controller', () => {
   });
 
   afterAll(() => {
+    controller.dispose();
     // 不知道为啥 ws.close 就会报错，看其他的 test 没有这个问题
     // 先注释掉
     // ws.close();
@@ -38,6 +38,15 @@ describe('Terminal Controller', () => {
     controller.firstInitialize();
     await new Promise((resolve) => {
       setTimeout(resolve, 0);
+    });
+  });
+  it('create terminal', async () => {
+    await controller.createTerminal({
+      config: {
+        profileName: 'bash',
+        path: 'bash',
+        isDefault: false,
+      },
     });
   });
 });

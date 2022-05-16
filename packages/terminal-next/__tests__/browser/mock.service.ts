@@ -15,11 +15,10 @@ import {
   IResolveDefaultProfileOptions,
   ITerminalProfileProvider,
   IExtensionTerminalProfile,
-  IRegisterContributedProfileArgs,
   ITerminalProfileInternalService,
   IPtyProcessChangeEvent,
-  ITerminalContributionService,
   ITerminalContributions,
+  ICreateContributedTerminalProfileOptions,
 } from '../../src/common';
 
 import { getPort, localhost, MessageMethod } from './proxy';
@@ -348,15 +347,20 @@ export class MockErrorService {
 /** End */
 
 export class MockProfileService implements ITerminalProfileService {
-  contributedProfiles: IExtensionTerminalProfile[];
+  createContributedTerminalProfile(
+    extensionIdentifier: string,
+    id: string,
+    options: ICreateContributedTerminalProfileOptions,
+  ): Promise<void> {
+    return Promise.resolve();
+  }
+  contributedProfiles: IExtensionTerminalProfile[] = [];
   async getContributedDefaultProfile(
     shellLaunchConfig: IShellLaunchConfig,
   ): Promise<IExtensionTerminalProfile | undefined> {
     return undefined;
   }
-  async registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void> {
-    // do nothing
-  }
+
   availableProfiles: ITerminalProfile[] = [
     {
       isDefault: true,
@@ -384,6 +388,11 @@ export class MockProfileService implements ITerminalProfileService {
   ): IDisposable {
     return new Disposable();
   }
+  get onTerminalProfileResolved() {
+    return new Emitter<string>().event;
+  }
+  addContributedProfile(extensionId: string, contributions: ITerminalContributions): void {}
+  removeContributedProfile(extensionId: string): void {}
 }
 
 export class MockTerminalProfileInternalService implements ITerminalProfileInternalService {
@@ -397,9 +406,4 @@ export class MockTerminalProfileInternalService implements ITerminalProfileInter
   async resolveRealDefaultProfile(): Promise<ITerminalProfile | undefined> {
     return undefined;
   }
-}
-
-export class MockTerminalContributionService implements ITerminalContributionService {
-  terminalProfiles = [];
-  add(extensionId: string, contributions: ITerminalContributions): void {}
 }
