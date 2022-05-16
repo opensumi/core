@@ -321,6 +321,8 @@ export const localizationBundle = {
     'debug.callStack.title': 'CALL STACK',
     'debug.variables.title': 'VARIABLES',
     'debug.variables.view.memory': 'View Binary Data',
+    'debug.variables.view.memory.prompt.hexEditor.notInstalled':
+      'Inspecting binary data requires the Hex Editor extension.',
     'debug.breakpoints.title': 'BREAKPOINTS',
     'debug.container.title': 'DEBUG',
     'debug.breakpoint.breakpointMessage': 'Breakpoint',

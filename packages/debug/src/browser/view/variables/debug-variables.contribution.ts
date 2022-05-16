@@ -13,7 +13,6 @@ import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-brow
 import { CommandService, CUSTOM_EDITOR_SCHEME, IExtensionProps, URI } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
-  EditorGroupSplitAction,
   IResource,
   ResourceService,
   WorkbenchEditorService,
@@ -163,6 +162,8 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
               },
             },
           );
+        } else {
+          this.messageService.warning(localize('debug.variables.view.memory.prompt.hexEditor.notInstalled'));
         }
       },
     });
