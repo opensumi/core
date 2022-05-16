@@ -304,7 +304,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
         await editorService.close(this.oldResource, true);
         eventBus.fire(new WorkspaceEditDidDeleteFileEvent({ oldUri: this.oldResource }));
       } catch (err) {
-        if (err.cause && FileSystemError.FileNotFound.is(err.cause) && options.ignoreIfNotExists) {
+        if (FileSystemError.FileNotFound.is(err.cause) && options.ignoreIfNotExists) {
           // 不抛出错误
         } else {
           throw err;
@@ -319,7 +319,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
           await workspaceFS.create(this.newResource, '', { overwrite: options.overwrite });
         }
       } catch (err) {
-        if (err.cause && FileSystemError.FileExists.is(err.cause) && options.ignoreIfExists) {
+        if (FileSystemError.FileExists.is(err.cause) && options.ignoreIfExists) {
           // 不抛出错误
         } else {
           throw err;

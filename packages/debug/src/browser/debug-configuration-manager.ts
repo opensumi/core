@@ -389,7 +389,7 @@ export class DebugConfigurationManager {
       try {
         await this.filesystem.setContent(fileStat, content);
       } catch (e) {
-        if (!e.cause || !FileSystemError.FileExists.is(e.cause)) {
+        if (!FileSystemError.FileExists.is(e.cause)) {
           throw e;
         }
       }
