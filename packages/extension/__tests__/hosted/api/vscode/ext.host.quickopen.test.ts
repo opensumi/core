@@ -2,6 +2,8 @@ import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import { QuickPickService } from '@opensumi/ide-quick-open';
 import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
+import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
+import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
@@ -36,6 +38,16 @@ describe(__filename, () => {
         // 默认返回第一个
         show: (_, options) => (options.canPickMany ? [0] : 0),
       }),
+    },
+    {
+      token: IThemeService,
+      useValue: {
+        applyTheme: () => {},
+      },
+    },
+    {
+      token: IIconService,
+      useClass: IconService,
     },
     {
       token: QuickTitleBar,

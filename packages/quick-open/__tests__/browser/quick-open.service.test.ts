@@ -7,7 +7,8 @@ import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco
 import { QuickOpenItemService } from '@opensumi/ide-quick-open/lib/browser/quick-open-item.service';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { StaticResourceServiceImpl } from '@opensumi/ide-static-resource/lib/browser/static.service';
-import { IThemeService } from '@opensumi/ide-theme/lib/common';
+import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
+import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common';
 
 import { QuickOpenModule } from '../../src/browser';
 import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
@@ -44,6 +45,10 @@ describe(__filename, () => {
       {
         token: QuickOpenItemService,
         useClass: QuickOpenItemService,
+      },
+      {
+        token: IIconService,
+        useClass: IconService,
       },
       {
         token: IThemeService,
