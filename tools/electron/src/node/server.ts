@@ -3,7 +3,7 @@ import net from 'net';
 
 import yargs from 'yargs';
 
-import { Deferred } from '@opensumi/ide-core-common';
+import { Deferred, DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
@@ -11,7 +11,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   let opts: IServerAppOpts = {
     webSocketHandler: [],
     marketplace: {
-      endpoint: 'https://open-vsx.org/api',
+      endpoint: `${DEFAULT_OPENVSX_REGISTRY}/api`,
       showBuiltinExtensions: true,
     },
   };

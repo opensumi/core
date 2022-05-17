@@ -179,7 +179,9 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    const uri = `${this.appConfig.marketplace.endpoint}/-/search?query=${param?.query}`;
+    const uri = `${this.appConfig.marketplace.endpoint}/-/search?${
+      param && new URLSearchParams(param as any).toString()
+    }`;
     const res = await nodeFetch(uri, {
       headers: {
         ...commonHeaders,

@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 
 import { Button, Icon, getKaitianIcon } from '@opensumi/ide-components';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
 import { InstallState, VSXExtension } from '../../common';
 
@@ -58,7 +59,7 @@ export const Extension = React.memo(
       <div className={styles.extension_item} onClick={onClickCallback}>
         <img
           className={styles.icon}
-          src={extension.iconUrl || 'https://open-vsx.org/default-icon.png'}
+          src={extension.iconUrl || `${DEFAULT_OPENVSX_REGISTRY}/default-icon.png`}
           alt={replaceLocalizePlaceholder(extension.displayName, `${extension.publisher}.${extension.name}`)}
         />
         <div className={styles.extension_detail}>

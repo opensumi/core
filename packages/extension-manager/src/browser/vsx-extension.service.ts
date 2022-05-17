@@ -118,6 +118,8 @@ export class VSXExtensionService implements IVSXExtensionService {
   async search(keyword: string): Promise<void> {
     const param: VSXSearchParam = {
       query: keyword,
+      size: 50,
+      sortBy: 'downloadCount',
     };
 
     const res = await this.backService.search(param);
