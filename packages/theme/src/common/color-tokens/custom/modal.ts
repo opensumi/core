@@ -9,9 +9,6 @@ import {
   NOTIFICATIONS_WARNING_ICON_FOREGROUND,
 } from '../notification';
 
-import { ktNotificationsSuccessIconForeground } from './notification';
-import { ktTextSeparatorBackground } from './text';
-
 export const ktModalForeground = registerColor(
   'kt.modal.foreground',
   { light: NOTIFICATIONS_FOREGROUND, dark: NOTIFICATIONS_FOREGROUND, hc: null },
@@ -25,7 +22,7 @@ export const ktModalBackground = registerColor(
 
 export const ktModalSeparatorBackground = registerColor(
   'kt.modal.separatorBackground',
-  { light: ktTextSeparatorBackground, dark: ktTextSeparatorBackground, hc: null },
+  { light: '#2C3033', dark: '#2C3033', hc: null },
   localize('ktModalSeparatorBackground', 'Modal Separator Background color'),
 );
 export const ktModalErrorIconForeground = registerColor(
@@ -45,6 +42,6 @@ export const ktModalInfoIconForeground = registerColor(
 );
 export const ktModalSuccessIconForeground = registerColor(
   'kt.modalSuccessIcon.foreground',
-  { light: ktNotificationsSuccessIconForeground, dark: ktNotificationsSuccessIconForeground, hc: null },
+  { light: '#64B436', dark: '#64B436', hc: null },
   localize('ktModalSuccessIconForeground', 'Modal Success Icon Foreground Color.'),
 );
