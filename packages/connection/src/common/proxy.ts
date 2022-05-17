@@ -37,7 +37,7 @@ export class ProxyClient {
 }
 
 interface IRPCResult {
-  error: ApplicationError<number, any> | null;
+  error?: ApplicationError<number, any>;
   data: any;
 }
 export class RPCProxy {
@@ -175,7 +175,6 @@ export class RPCProxy {
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
           return {
-            error: null,
             data: NOTREGISTERMETHOD,
           };
         }
@@ -212,7 +211,6 @@ export class RPCProxy {
       const result = await this.proxyService[prop](...this.serializeArguments(args));
 
       return {
-        error: null,
         data: result,
       };
     } catch (e) {
