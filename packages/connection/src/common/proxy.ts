@@ -37,7 +37,7 @@ export class ProxyClient {
 }
 
 interface IRPCResult {
-  error: boolean;
+  error: ApplicationError<number, any> | null;
   data: any;
 }
 export class RPCProxy {
@@ -121,12 +121,9 @@ export class RPCProxy {
                     if (result.data.stack) {
                       error.stack = result.data.stack;
                     }
-                    if (result.data.applicationError) {
+                    if (result.error.code && result.error.data) {
                       // 经过通信，applicationError 实例的构造类信息丢失了，使用 fromJson 恢复
-                      const applicationError = ApplicationError.fromJson(
-                        result.data.applicationError.code,
-                        result.data.applicationError.data,
-                      );
+                      const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
                     reject(error);
@@ -178,7 +175,7 @@ export class RPCProxy {
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
           return {
-            error: false,
+            error: null,
             data: NOTREGISTERMETHOD,
           };
         }
@@ -215,16 +212,15 @@ export class RPCProxy {
       const result = await this.proxyService[prop](...this.serializeArguments(args));
 
       return {
-        error: false,
+        error: null,
         data: result,
       };
     } catch (e) {
       return {
-        error: true,
+        error: e,
         data: {
           message: e.message,
           stack: e.stack,
-          applicationError: ApplicationError.is(e) ? e : null,
         },
       };
     }
