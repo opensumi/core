@@ -18,7 +18,7 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { URI, IDisposable, Schemas, toDisposable } from '@opensumi/ide-core-common';
+import { URI, IDisposable, Schemes, toDisposable } from '@opensumi/ide-core-common';
 import { FileChangeType, FileStat, FileSystemProviderCapabilities, FileChange } from '@opensumi/ide-file-service';
 
 import { MainThreadAPIIdentifier } from '../../../common/vscode';
@@ -26,7 +26,6 @@ import { UriComponents } from '../../../common/vscode/ext-types';
 import * as files from '../../../common/vscode/file-system';
 
 import { ExtHostFileSystemInfo } from './ext.host.file-system-info';
-
 
 export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
   return {
@@ -127,7 +126,7 @@ export class ExtHostFileSystem implements files.IExtHostFileSystemShape {
     this.fileSystem = new ConsumerFileSystem(this._proxy, this._fileSystemInfo);
 
     // register used schemes
-    Object.keys(Schemas).forEach((scheme) => this._usedSchemes.add(scheme));
+    Object.keys(Schemes).forEach((scheme) => this._usedSchemes.add(scheme));
   }
 
   registerFileSystemProvider(

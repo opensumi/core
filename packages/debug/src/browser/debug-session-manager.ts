@@ -363,7 +363,12 @@ export class DebugSessionManager implements IDebugSessionManager {
       return options;
     }
     const { workspaceFolderUri, index, noDebug, parentSession, repl, compact, lifecycleManagedByParent } = options;
+
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
+    if (resolvedConfiguration && !('cwd' in resolvedConfiguration)) {
+      // 当调试配置不存在配置项时，提供默认的 `cwd` 选项
+      resolvedConfiguration['cwd'] = '${workspaceFolder}';
+    }
     let configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
     if (!configuration) {
       // 当返回值为 `undefined` 或 `null` 时，中断调试
@@ -452,7 +457,7 @@ export class DebugSessionManager implements IDebugSessionManager {
       if (restart) {
         this.doRestart(session, restart);
       } else {
-        session.terminate();
+        this.destroy(session.id);
       }
     });
     session.on('exited', () => this.destroy(session.id));

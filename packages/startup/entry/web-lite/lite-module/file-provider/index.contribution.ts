@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { Domain, URI, FsProviderContribution, AppConfig, Uri, path } from '@opensumi/ide-core-browser';
+import { Domain, URI, FsProviderContribution, AppConfig, Uri, path, Schemes } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import {
@@ -45,7 +45,7 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
   registerStaticResolver(service: StaticResourceService): void {
     // 用来打开 raw 文件，如 jpg
     service.registerStaticResourceProvider({
-      scheme: 'file',
+      scheme: Schemes.file,
       resolveStaticResource: (uri: URI) => {
         // file 协议统一走 scm raw 服务
         // https://0.0.0.0:8080/asset-service/v3/project/$repo/repository/blobs/$ref
@@ -64,7 +64,7 @@ export class FileProviderContribution implements StaticResourceContribution, FsP
       scheme: 'ext',
       resolveStaticResource: (uri: URI) =>
         // ext 协议统一走 scheme 头转换为 https
-        uri.withScheme('https'),
+        uri.withScheme(Schemes.https),
       roots: [this.appConfig.staticServicePath || EXPRESS_SERVER_PATH],
     });
   }

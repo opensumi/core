@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, Schemas, CommandService } from '@opensumi/ide-core-common';
+import { URI, Schemes, CommandService } from '@opensumi/ide-core-common';
 
 import { IOpener } from '.';
 
@@ -9,7 +9,7 @@ export class CommandOpener implements IOpener {
   private readonly commandService: CommandService;
 
   handleScheme(scheme: string) {
-    return scheme === Schemas.command;
+    return scheme === Schemes.command;
   }
 
   static parseURI(uri: URI) {

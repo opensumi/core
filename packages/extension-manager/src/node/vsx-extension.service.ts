@@ -147,7 +147,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
       }
     });
   }
-  private async downloadExtension({ url, name, id }): Promise<{ downloadPath: string }> {
+  private async downloadExtension({ url, id }): Promise<{ downloadPath: string }> {
     const extensionDir = path.join(os.tmpdir(), 'extension', uuidv4());
     await fs.mkdirp(extensionDir);
     const vsixFileName = id + '.vsix';
@@ -179,7 +179,9 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    const uri = `${this.appConfig.marketplace.endpoint}/-/search?query=${param?.query}`;
+    const uri = `${this.appConfig.marketplace.endpoint}/-/search?${
+      param && new URLSearchParams(param as any).toString()
+    }`;
     const res = await nodeFetch(uri, {
       headers: {
         ...commonHeaders,

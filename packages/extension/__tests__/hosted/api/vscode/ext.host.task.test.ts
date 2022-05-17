@@ -1,6 +1,7 @@
 import path from 'path';
 
 import { RPCProtocol } from '@opensumi/ide-connection';
+import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
@@ -10,6 +11,7 @@ import {
   StorageProvider,
   Uri,
   IFileServiceClient,
+  Deferred,
 } from '@opensumi/ide-core-common';
 import { ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common/lib/task-definition';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
@@ -28,16 +30,19 @@ import {
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
+  ITerminalProfileInternalService,
   ITerminalProfileService,
   ITerminalService,
   ITerminalTheme,
 } from '@opensumi/ide-terminal-next';
 import { TerminalClientFactory } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
+import { TerminalEnvironmentService } from '@opensumi/ide-terminal-next/lib/browser/terminal.environment.service';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
 import { TerminalPreference } from '@opensumi/ide-terminal-next/lib/browser/terminal.preference';
 import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/terminal.profile';
 import { TerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/browser/terminal.view';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { VariableResolverService } from '@opensumi/ide-variable/lib/browser/variable-resolver.service';
@@ -48,6 +53,7 @@ import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector'
 import {
   MockMainLayoutService,
   MockSocketService,
+  MockTerminalProfileInternalService,
   MockTerminalThemeService,
 } from '../../../../../terminal-next/__tests__/browser/mock.service';
 import { mockExtensionProps } from '../../../../__mocks__/extensions';
@@ -56,10 +62,9 @@ import { MainThreadTerminal } from '../../../../src/browser/vscode/api/main.thre
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostTerminal } from '../../../../src/hosted/api/vscode/ext.host.terminal';
 import { ExtHostTasks } from '../../../../src/hosted/api/vscode/tasks/ext.host.tasks';
-
+import { MockEnvironmentVariableService } from '../../__mocks__/environmentVariableService';
 
 import { CustomBuildTaskProvider } from './__mock__/taskProvider';
-
 
 const extension = mockExtensionProps;
 
@@ -100,12 +105,33 @@ describe('ExtHostTask API', () => {
       }),
     },
     {
+      token: ITerminalProfileInternalService,
+      useValue: {
+        resolveDefaultProfile: jest.fn(() => ({
+          profileName: 'bash',
+          path: '/local/bin/bash',
+          isDefault: true,
+        })),
+      },
+    },
+    {
       token: ITerminalService,
       useValue: new MockSocketService(),
     },
     {
       token: ITerminalInternalService,
       useClass: TerminalInternalService,
+    },
+    {
+      token: WSChannelHandler,
+      useValue: {
+        openChannel: jest.fn(),
+        clientId: 'test_connection',
+      },
+    },
+    {
+      token: EnvironmentVariableServiceToken,
+      useClass: TerminalEnvironmentService,
     },
     {
       token: ITerminalProfileService,
@@ -207,6 +233,14 @@ describe('ExtHostTask API', () => {
       token: IMainLayoutService,
       useValue: new MockMainLayoutService(),
     },
+    {
+      token: ITerminalProfileInternalService,
+      useValue: new MockTerminalProfileInternalService(),
+    },
+    {
+      token: EnvironmentVariableServiceToken,
+      useValue: MockEnvironmentVariableService,
+    },
   );
 
   const extHostMessage = rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocolExt));
@@ -256,14 +290,19 @@ describe('ExtHostTask API', () => {
     expect(taskSet?.tasks.length).toBe(6);
   });
 
-  it('run custombuild task', () =>
-    new Promise<void>(async (done) => {
-      const taskSet = await taskService['getGroupedTasks']();
-      taskService.run(taskSet[0].tasks[0]);
-      extHostTask.onDidStartTask((e) => {
-        expect(e.execution.task.definition.type).toBe('custombuildscript');
-        expect(e.execution.task.name).toBe('32 watch incremental');
-        done();
-      });
-    }));
+  it('run custombuild task', async () => {
+    expect.assertions(2);
+
+    const defered = new Deferred();
+    extHostTask.onDidStartTask((e) => {
+      expect(e.execution.task.definition.type).toBe('custombuildscript');
+      expect(e.execution.task.name).toBe('32 watch incremental');
+      defered.resolve();
+    });
+
+    const taskSet = await taskService['getGroupedTasks']();
+    taskService.run(taskSet[0].tasks[0]);
+
+    await defered.promise;
+  });
 });

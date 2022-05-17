@@ -1,6 +1,6 @@
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { Tree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
-import { URI } from '@opensumi/ide-core-browser';
+import { Schemes, URI } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -34,7 +34,7 @@ export class FileTreeDialogService extends Tree {
 
   async resolveWorkspaceRoot(path: string) {
     if (path) {
-      const rootUri: URI = new URI(path).withScheme('file');
+      const rootUri: URI = new URI(path).withScheme(Schemes.file);
       const rootFileStat = await this.fileTreeAPI.resolveFileStat(rootUri);
       if (rootFileStat) {
         this.workspaceRoot = rootFileStat;

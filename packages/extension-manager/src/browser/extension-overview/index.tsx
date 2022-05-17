@@ -4,6 +4,7 @@ import { Icon, getIcon, Button, Tabs } from '@opensumi/ide-components';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { Markdown } from '@opensumi/ide-markdown';
 
@@ -86,14 +87,14 @@ export const ExtensionOverview: ReactEditorComponent<
       <ProgressBar loading={loading} />
       <div className={styles.extension_overview_header}>
         <img
-          src={resource.metadata?.iconUrl || 'https://open-vsx.org/default-icon.png'}
+          src={resource.metadata?.iconUrl || `${DEFAULT_OPENVSX_REGISTRY}/default-icon.png`}
           alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
         />
         <div className={styles.extension_detail}>
           <div className={styles.extension_name}>
             <h1>
               <a
-                href={`https://open-vsx.org/extension/${resource.metadata?.namespace.toLowerCase()}/${resource.metadata?.name.toLowerCase()}`}
+                href={`${DEFAULT_OPENVSX_REGISTRY}/extension/${resource.metadata?.namespace.toLowerCase()}/${resource.metadata?.name.toLowerCase()}`}
                 target='_blank'
                 rel='noopener noreferrer'
               >
@@ -135,10 +136,15 @@ export const ExtensionOverview: ReactEditorComponent<
           <div className={styles.description}>
             {replaceLocalizePlaceholder(resource.metadata?.description, resource.metadata?.extensionId)}
           </div>
-          <div>
+          <div className={styles.button}>
             {resource.metadata?.state === InstallState.NOT_INSTALLED && (
               <Button size='small' onClick={onInstallCallback} disabled={installing}>
                 {localize(installing ? 'marketplace.extension.installing' : 'marketplace.extension.install')}
+              </Button>
+            )}
+            {resource.metadata?.state === InstallState.SHOULD_UPDATE && (
+              <Button size='small' onClick={onInstallCallback} disabled={installing}>
+                {localize(installing ? 'marketplace.extension.updating' : 'marketplace.extension.update')}
               </Button>
             )}
             {resource.metadata?.state === InstallState.INSTALLED && (

@@ -8,6 +8,7 @@ import KoaRouter from 'koa-router';
 
 import { Injector } from '@opensumi/di';
 import { Deferred } from '@opensumi/ide-core-common';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 import {
   IExternalFileArgs,
@@ -54,13 +55,17 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     injector,
     use: app.use.bind(app),
     marketplace: {
-      endpoint: 'https://open-vsx.org/api',
+      endpoint: `${DEFAULT_OPENVSX_REGISTRY}/api`,
       showBuiltinExtensions: true,
     },
     processCloseExitThreshold: 5 * 60 * 1000,
     terminalPtyCloseThreshold: 5 * 60 * 1000,
     staticAllowOrigin: '*',
-    staticAllowPath: [path.join(__dirname, '../../../packages/extension'), '/'],
+    staticAllowPath: [
+      path.join(__dirname, '../../../packages/extension'),
+      path.join(__dirname, '../../../tools/extensions'),
+      '/',
+    ],
     extLogServiceClassPath: path.join(__dirname, './mock-log-service.js'),
     /**
      * 集成时可使用自定义的 extHost 入口传入内置 command

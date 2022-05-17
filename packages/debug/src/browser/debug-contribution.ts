@@ -413,7 +413,11 @@ export class DebugContribution
     this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
       const { internalConsoleOptions } = session.configuration;
       const openDebug = session.configuration.openDebug || this.debugPreferences['debug.openDebug'];
-      if (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart)) {
+      if (openDebug === 'openOnSessionStart' || openDebug === 'openOnFirstSessionStart') {
+        if (this.firstSessionStart) {
+          this.openDebugView();
+        }
+      } else if (openDebug !== 'neverOpen') {
         this.openDebugView();
       }
 

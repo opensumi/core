@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, Disposable, URI } from '@opensumi/ide-core-common';
+import { IDisposable, Disposable, URI, Schemes } from '@opensumi/ide-core-common';
 import { ResourceService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -36,7 +36,7 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
   registerEditorComponent(viewContribution: IEditorViewContribution, runParam: IRunTimeParams): IDisposable {
     const disposer = new Disposable();
     const { extendProtocol, extendService } = runParam.getExtensionExtendService(this.extension, viewContribution.id);
-    const scheme = viewContribution.scheme || 'file';
+    const scheme = viewContribution.scheme || Schemes.file;
     disposer.addDispose(
       this.editorComponentRegistry.registerEditorComponent(
         {
@@ -54,7 +54,7 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
       ),
     );
 
-    if (scheme === 'file') {
+    if (scheme === Schemes.file) {
       disposer.addDispose(
         this.editorComponentRegistry.registerEditorComponentResolver(scheme, (resource, results) => {
           let shouldShow = false;

@@ -6,7 +6,7 @@ import {
   localize,
   StorageProvider,
 } from '@opensumi/ide-core-browser';
-import { Schemas, URI, CommandRegistry, Emitter, Event, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
+import { Schemes, URI, CommandRegistry, Emitter, Event, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
 import { EditorCollectionService, IDecorationApplyOptions } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelService,
@@ -32,7 +32,6 @@ import { DebugSessionManager } from '../../debug-session-manager';
 
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
-
 
 const DECORATION_KEY = 'consoleinputdecoration';
 const HISTORY_STORAGE_KEY = 'debug.console.history';
@@ -214,7 +213,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
   }
 
   private get consoleInputUri() {
-    return new URI('debug/console/input').withScheme(Schemas.walkThroughSnippet);
+    return new URI('debug/console/input').withScheme(Schemes.walkThroughSnippet);
   }
 
   private async createConsoleInput() {
@@ -442,7 +441,7 @@ export class DebugConsoleInputDocumentProvider implements IEditorDocumentModelCo
   private readonly debugConsole: DebugConsoleService;
 
   handlesScheme(scheme: string) {
-    return scheme === Schemas.walkThroughSnippet;
+    return scheme === Schemes.walkThroughSnippet;
   }
 
   async provideEditorDocumentModelContent() {

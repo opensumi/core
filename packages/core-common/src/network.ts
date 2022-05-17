@@ -1,4 +1,4 @@
-export namespace Schemas {
+export namespace Schemes {
   /**
    * A schema that is used for models that exist in memory
    * only and that have no correspondence on a server or such.
@@ -42,4 +42,6 @@ export namespace Schemas {
   export const vscodeRemote = 'vscode-remote';
 
   export const userData = 'vscode-userdata';
+
+  export const userStorage = 'user_storage';
 }

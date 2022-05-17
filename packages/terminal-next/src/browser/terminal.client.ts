@@ -19,7 +19,6 @@ import {
   withNullAsUndefined,
   IThemeColor,
   OperatingSystem,
-  OS,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -40,7 +39,6 @@ import {
   ITerminalConnection,
   ITerminalExternalLinkProvider,
   ICreateTerminalOptions,
-  ITerminalProfileService,
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalProfileInternalService,
@@ -132,9 +130,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(IApplicationService)
   protected readonly applicationService: IApplicationService;
 
-  @Autowired(ITerminalProfileService)
-  terminalProfileService: ITerminalProfileService;
-
   @Autowired(ITerminalProfileInternalService)
   terminalProfileInternalService: ITerminalProfileInternalService;
 
@@ -177,12 +172,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     ]);
 
     this.addDispose(this.xterm);
-
-    this.addDispose(
-      this.xterm.raw.onTitleChange((e) => {
-        this.updateOptions({ name: e });
-      }),
-    );
 
     this.addDispose(
       this.internalService.onError((error) => {
@@ -290,12 +279,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       strictEnv: withNullAsUndefined(options.strictEnv),
       hideFromUser: withNullAsUndefined(options.hideFromUser),
       // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
-      isExtensionOwnedTerminal: true,
+      isExtensionOwnedTerminal: options.isExtensionTerminal,
       // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
       // location:
       // internalOptions?.location ||
       // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
-      // disablePersistence: withNullAsUndefined(options.disablePersistence),
+      disablePersistence: withNullAsUndefined(options.isTransient),
     };
 
     if (options.isExtensionTerminal) {
@@ -346,7 +335,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   async init2(widget: IWidget, options?: ICreateTerminalOptions) {
-    this._uid = widget.id;
+    this._uid = options?.id || widget.id;
     this.setupWidget(widget);
 
     if (!options || Object.keys(options).length === 0) {
@@ -729,7 +718,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this._terminalOptions = { ...this._terminalOptions, ...options };
     this._launchConfig = this.convertTerminalOptionsToLaunchConfig();
 
-    this._widget.name = options.name || this.name;
+    if (!this.name && !this._widget.name) {
+      this._widget.name = options.name || this.name;
+    }
   }
 
   async sendText(message: string) {

@@ -8,7 +8,7 @@ import {
   MaybeNull,
   IEventBus,
   ILogger,
-  Schemas,
+  Schemes,
   IExtensionInfo,
   CommandRegistry,
   StorageProvider,
@@ -135,7 +135,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
       return true;
     }
     // webview 支持打开 command 协议
-    if (!!options.enableCommandUris && uri.scheme === Schemas.command) {
+    if (!!options.enableCommandUris && uri.scheme === Schemes.command) {
       // 从 webview 过来的 command 也要做安全校验
       const { id, args } = CommandOpener.parseURI(uri);
       const isPermitted = this.commandRegistry.isPermittedCommand(id, extension, ...args);

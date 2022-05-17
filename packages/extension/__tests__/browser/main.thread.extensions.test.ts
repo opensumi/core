@@ -34,10 +34,9 @@ import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../src/common/
 import * as types from '../../src/common/vscode/ext-types';
 import { createExtensionsApiFactory } from '../../src/hosted/api/vscode/ext.host.extensions';
 import ExtensionHostServiceImpl from '../../src/hosted/ext.host';
-
+import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
 
 import { mockKaitianExtensionProviders } from './extension-service/extension-service-mock-helper';
-
 
 @Injectable()
 class MockLoggerManagerClient {
@@ -116,14 +115,7 @@ describe('MainThreadExtensions Test Suites', () => {
       },
       {
         token: IExtensionStorageService,
-        useValue: {
-          whenReady: Promise.resolve(true),
-          extensionStoragePath: {},
-          set() {},
-          get() {},
-          getAll() {},
-          reConnectInit() {},
-        },
+        useValue: MockExtensionStorageService,
       },
       {
         token: IWorkspaceService,

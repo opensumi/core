@@ -188,7 +188,9 @@ export class DebugVariablesModelService {
 
   listenViewModelChange() {
     this.viewModel.onDidChange(async () => {
-      this.flushDispatchChangeDelayer.cancel();
+      if (!this.flushDispatchChangeDelayer.isTriggered()) {
+        this.flushDispatchChangeDelayer.cancel();
+      }
       this.flushDispatchChangeDelayer.trigger(async () => {
         if (this.viewModel && this.viewModel.currentSession && !this.viewModel.currentSession.terminated) {
           const currentTreeModel = await this.initTreeModel(this.viewModel.currentSession);

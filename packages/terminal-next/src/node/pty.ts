@@ -57,7 +57,7 @@ export class PtyService extends Disposable {
     return this._ptyProcess;
   }
 
-  constructor(public id: string, private readonly shellLaunchConfig: IShellLaunchConfig, cols: number, rows: number) {
+  constructor(public id: string, public readonly shellLaunchConfig: IShellLaunchConfig, cols: number, rows: number) {
     super();
     let name: string;
     if (isWindows) {

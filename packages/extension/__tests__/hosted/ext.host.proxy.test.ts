@@ -1,12 +1,15 @@
 import path from 'path';
 
-import { INodeLogger, Event, getDebugLogger } from '@opensumi/ide-core-node';
+import { INodeLogger, Event, getDebugLogger, Disposable } from '@opensumi/ide-core-node';
+import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtHostProxy, IExtensionHostManager } from '../../src/common';
 import { ExtHostProxy } from '../../src/hosted/ext.host.proxy-base';
 import { ExtensionHostProxyManager } from '../../src/node/extension.host.proxy.manager';
+
+import { MockEnvironmentVariableService } from './__mocks__/environmentVariableService';
 
 // re-install RAL in `@opensumi/vscode-jsonrpc`
 import '@opensumi/vscode-jsonrpc/lib/node/main';
@@ -15,6 +18,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PROXY_PORT = 10296;
 describe(__filename, () => {
+  jest.setTimeout(10 * 1000);
   describe('extension host proxy', () => {
     const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');
     let injector: MockInjector;
@@ -26,6 +30,10 @@ describe(__filename, () => {
         {
           token: INodeLogger,
           useValue: getDebugLogger(),
+        },
+        {
+          token: EnvironmentVariableServiceToken,
+          useValue: MockEnvironmentVariableService,
         },
         {
           token: IExtensionHostManager,

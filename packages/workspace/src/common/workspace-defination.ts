@@ -1,7 +1,7 @@
 import Ajv from 'ajv';
 
 import { StorageService } from '@opensumi/ide-core-browser/lib/services';
-import { URI, Event } from '@opensumi/ide-core-common';
+import { URI, Event, Schemes } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 export const DEFAULT_WORKSPACE_SUFFIX_NAME = 'sumi-workspace';
@@ -104,9 +104,9 @@ export namespace WorkspaceData {
    */
   export function transformToRelative(data: WorkspaceData, workspaceFile?: FileStat): WorkspaceData {
     const folderUris: string[] = [];
-    const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme('file');
+    const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme(Schemes.file);
     for (const { path } of data.folders) {
-      const folderUri = new URI(path).withScheme('file');
+      const folderUri = new URI(path).withScheme(Schemes.file);
       if (workspaceFileUri.parent.isEqualOrParent(folderUri)) {
         if (workspaceFileUri.parent.isEqual(folderUri)) {
           folderUris.push('.');

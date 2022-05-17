@@ -51,3 +51,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Adding markdown
+        if: success()
+        run: |
+          CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
+          echo '### Release :rocket:' $CURRENT_VERSION >> $GITHUB_STEP_SUMMARY

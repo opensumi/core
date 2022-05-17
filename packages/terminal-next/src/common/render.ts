@@ -13,6 +13,7 @@ export interface ItemProps {
   onClose?: () => void;
   onInputBlur?: (id: string) => void;
   onInputEnter?: (id: string, name: string) => void;
+  onDropdown?: (event: React.MouseEvent<HTMLElement>) => void;
   onContextMenu?: (event: React.MouseEvent<HTMLElement>) => void;
   provider: ITerminalRenderProvider;
 }

@@ -1,18 +1,17 @@
 import path from 'path';
 
-import { Injectable } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import {
   Emitter,
   FileUri,
   ILoggerManagerClient,
-  LogServiceForClientPath,
-  LogLevel,
   ITaskDefinitionRegistry,
   TaskDefinitionRegistryImpl,
 } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
+import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
+import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/src/browser';
+import { EditorDocumentModelContentRegistryImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { ExtensionService } from '@opensumi/ide-extension';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
@@ -43,7 +42,9 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
+import { MockDebugConsoleInputDocumentProvider } from '../../__mocks__/debugConsoleInputDocumentProvider';
 import { mockExtensions } from '../../__mocks__/extensions';
+import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
 
 const extension = Object.assign({}, mockExtensions[0], {
   packageJSON: {
@@ -89,29 +90,6 @@ const mockClientB = {
 const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
 
-@Injectable()
-class MockLogServiceForClient {
-  private level: LogLevel;
-
-  hasDisposeAll = false;
-
-  async setGlobalLogLevel(level) {
-    this.level = level;
-  }
-
-  async getGlobalLogLevel() {
-    return this.level;
-  }
-
-  async verbose() {
-    //
-  }
-
-  async disposeAll() {
-    this.hasDisposeAll = true;
-  }
-}
-
 describe('MainThreadTask Test Suite', () => {
   const injector = createBrowserInjector([VariableModule]);
   injector.addProviders(
@@ -131,10 +109,6 @@ describe('MainThreadTask Test Suite', () => {
       {
         token: MonacoService,
         useClass: MockedMonacoService,
-      },
-      {
-        token: IEditorDocumentModelService,
-        useClass: EditorDocumentModelServiceImpl,
       },
       {
         token: ITaskSystem,
@@ -164,25 +138,21 @@ describe('MainThreadTask Test Suite', () => {
       },
       {
         token: IExtensionStorageService,
-        useValue: {
-          whenReady: Promise.resolve(true),
-          extensionStoragePath: {},
-          set() {},
-          get() {},
-          getAll() {},
-          reConnectInit() {},
-        },
-      },
-      {
-        token: LogServiceForClientPath,
-        useClass: MockLogServiceForClient,
+        useValue: MockExtensionStorageService,
       },
       {
         token: ExtensionService,
         useClass: ExtensionServiceImpl,
       },
+      {
+        token: DebugConsoleInputDocumentProvider,
+        useValue: MockDebugConsoleInputDocumentProvider,
+      },
     ],
   );
+
+  addEditorProviders(injector);
+
   const testProvider = new TestTaskProvider();
   let extHostTask: ExtHostTasks;
   let mainthreadTask: MainthreadTasks;
@@ -229,6 +199,9 @@ describe('MainThreadTask Test Suite', () => {
       injector.get(MainThreadWorkspace, [rpcProtocolMain]),
     );
     extHostTaskApi = createTaskApiFactory(extHostTask, mockExtensions[0]);
+    (
+      injector.get(IEditorDocumentModelContentRegistry) as EditorDocumentModelContentRegistryImpl
+    ).registerEditorDocumentModelContentProvider(injector.get(DebugConsoleInputDocumentProvider));
   });
 
   describe('ExtHostTask API should be work', () => {

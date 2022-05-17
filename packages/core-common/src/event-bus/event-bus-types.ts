@@ -32,8 +32,8 @@ export interface IEventBus {
       }
 
       // 不推荐，但是兼容 vscode 的 Event 设计
-      public onDidResize(lisener: (t: ResizeEvent) => void) {
-        return this.eventBus.on(ResizeEvent, lisener)
+      public onDidResize(listener: (t: ResizeEvent) => void) {
+        return this.eventBus.on(ResizeEvent, listener)
       }
     }
    */

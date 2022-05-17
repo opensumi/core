@@ -6,7 +6,7 @@ import {
   CancellationToken,
   IExtensionInfo,
   Emitter,
-  Schemas,
+  Schemes,
   iconvEncode,
 } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
@@ -123,7 +123,7 @@ export class ExtHostCustomEditorImpl implements IExtHostCustomEditor {
       let document = this.getCustomDocument(viewType, uri)?.document;
       if (!document) {
         const openContext: CustomDocumentOpenContext = {};
-        if (uri.scheme === Schemas.untitled) {
+        if (uri.scheme === Schemes.untitled) {
           const untitledDoc = this.extDocuments.getDocument(uri);
           // untitled 默认都是 utf8 编码
           openContext.untitledDocumentData = untitledDoc && iconvEncode(untitledDoc.getText(), 'utf-8');

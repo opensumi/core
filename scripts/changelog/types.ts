@@ -14,3 +14,9 @@ export interface ICommitLogFields extends DefaultLogFields {
    */
   loginName?: string;
 }
+
+export enum PR_STATE {
+  CLOSED = 0,
+  OPEN,
+  ALL,
+}

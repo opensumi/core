@@ -10,19 +10,23 @@ import {
   arrays,
   AutoOpenBarrier,
   PreferenceScope,
+  ILogger,
 } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 
 import {
   IExtensionTerminalProfile,
-  IRegisterContributedProfileArgs,
+  ISaveContributedProfileArgs,
   IShellLaunchConfig,
-  ITerminalContributionService,
   ITerminalProfile,
   ITerminalProfileObject,
   ITerminalProfileProvider,
   ITerminalProfileService,
   ITerminalService,
   terminalProfileArgsMatch,
+  ICreateContributedTerminalProfileOptions,
+  ITerminalProfileContribution,
+  ITerminalContributions,
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
 
@@ -30,18 +34,25 @@ const { equals } = arrays;
 
 @Injectable()
 export class TerminalProfileService extends WithEventBus implements ITerminalProfileService {
-  private _availableProfiles: ITerminalProfile[] | undefined;
-
   @Autowired(ITerminalService)
-  private terminalService: ITerminalService;
+  private readonly terminalService: ITerminalService;
 
   @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  private readonly preferenceService: PreferenceService;
 
-  @Autowired(ITerminalContributionService)
-  terminalContributionService: ITerminalContributionService;
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
 
-  private _profilesReadyBarrier: AutoOpenBarrier;
+  private readonly _profilesReadyBarrier: AutoOpenBarrier;
+
+  private onTerminalProfileResolvedEmitter: Emitter<string> = new Emitter();
+
+  /**
+   * 当用户创建了一个 Profile 时发出的事件
+   */
+  get onTerminalProfileResolved() {
+    return this.onTerminalProfileResolvedEmitter.event;
+  }
 
   get profilesReady(): Promise<void> {
     return this._profilesReadyBarrier.wait().then(() => {});
@@ -63,6 +74,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
   private readonly _profileProviders: Map</* ext id*/ string, Map</* provider id*/ string, ITerminalProfileProvider>> =
     new Map();
 
+  private _availableProfiles: ITerminalProfile[] | undefined;
   get availableProfiles(): ITerminalProfile[] {
     return this._availableProfiles || [];
   }
@@ -88,15 +100,33 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     return extMap?.get(id);
   }
 
+  async createContributedTerminalProfile(
+    extensionIdentifier: string,
+    id: string,
+    options: ICreateContributedTerminalProfileOptions,
+  ): Promise<void> {
+    await this.onTerminalProfileResolvedEmitter.fireAndAwait(id);
+    const profileProvider = this.getContributedProfileProvider(extensionIdentifier, id);
+    if (!profileProvider) {
+      this.logger.error(`No terminal profile provider registered for id "${id}"`);
+      return;
+    }
+    try {
+      await profileProvider.createContributedTerminalProfile(options);
+    } catch (e) {
+      this.logger.error('create contributed terminal profile error:', e.message);
+    }
+  }
+
   public registerTerminalProfileProvider(
-    extensionIdentifierenfifier: string,
+    extensionIdentifier: string,
     id: string,
     profileProvider: ITerminalProfileProvider,
   ): IDisposable {
-    let extMap = this._profileProviders.get(extensionIdentifierenfifier);
+    let extMap = this._profileProviders.get(extensionIdentifier);
     if (!extMap) {
       extMap = new Map();
-      this._profileProviders.set(extensionIdentifierenfifier, extMap);
+      this._profileProviders.set(extensionIdentifier, extMap);
     }
     extMap.set(id, profileProvider);
     return Disposable.create(() => this._profileProviders.delete(id));
@@ -119,7 +149,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
       }
     }
     const filteredContributedProfiles = Array.from(
-      this.terminalContributionService.terminalProfiles.filter((p) => !excludedContributedProfiles.includes(p.title)),
+      this.rawContributedProfiles.filter((p) => !excludedContributedProfiles.includes(p.title)),
     );
 
     const contributedProfilesChanged = !equals(
@@ -135,7 +165,6 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     const profiles = await this._detectProfiles(true);
     const profilesChanged = !equals(profiles, this._availableProfiles, profilesEqual);
     const contributedProfilesChanged = await this._updateContributedProfiles();
-
     if (profilesChanged || contributedProfilesChanged) {
       this._availableProfiles = profiles;
       this._profilesReadyBarrier.open();
@@ -157,7 +186,7 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     return undefined;
   }
 
-  async registerContributedProfile(args: IRegisterContributedProfileArgs): Promise<void> {
+  async saveContributedProfile(args: ISaveContributedProfileArgs): Promise<void> {
     const platformKey = await this.terminalService.getCodePlatformKey();
     const profilesConfig = await this.preferenceService.get(`${CodeTerminalSettingPrefix.Profiles}${platformKey}`);
     if (typeof profilesConfig === 'object') {
@@ -178,6 +207,34 @@ export class TerminalProfileService extends WithEventBus implements ITerminalPro
     );
     return;
   }
+
+  // #region 外部插件贡献的 Terminal Profiles
+  private _rawContributedProfileMap = new Map<string, IExtensionTerminalProfile>();
+  get rawContributedProfiles() {
+    return Array.from(this._rawContributedProfileMap.values());
+  }
+
+  addContributedProfile(extensionId: string, contributions: ITerminalContributions) {
+    const profiles =
+      contributions?.profiles
+        ?.filter((p) => hasValidTerminalIcon(p))
+        .map((e) => ({ ...e, extensionIdentifier: extensionId })) || [];
+    for (const profile of profiles) {
+      this._rawContributedProfileMap.set(profile.id, profile);
+    }
+
+    this.refreshAvailableProfiles();
+  }
+
+  removeContributedProfile(extensionId: string): void {
+    const profiles = this.rawContributedProfiles;
+    for (const profile of profiles) {
+      if (profile.extensionIdentifier === extensionId) {
+        this._rawContributedProfileMap.delete(profile.id);
+      }
+    }
+  }
+  // #endregion
 }
 
 function profilesEqual(one: ITerminalProfile, other: ITerminalProfile) {
@@ -199,5 +256,14 @@ function contributedProfilesEqual(one: IExtensionTerminalProfile, other: IExtens
     one.icon === other.icon &&
     one.id === other.id &&
     one.title === other.title
+  );
+}
+
+function hasValidTerminalIcon(profile: ITerminalProfileContribution): boolean {
+  return (
+    !profile.icon ||
+    typeof profile.icon === 'string' ||
+    URI.isUri(profile.icon) ||
+    ('light' in profile.icon && 'dark' in profile.icon && URI.isUri(profile.icon.light) && URI.isUri(profile.icon.dark))
   );
 }

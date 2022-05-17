@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Event, Emitter, LogLevel as KTLogLevel, Schemas, URI } from '@opensumi/ide-core-common';
+import { Event, Emitter, LogLevel as KTLogLevel, Schemes, URI } from '@opensumi/ide-core-common';
 
 import {
   MainThreadAPIIdentifier,
@@ -138,7 +138,7 @@ export class ExtHostEnv implements IExtHostEnv {
     if (!target.scheme.trim().length) {
       throw new Error('Invalid scheme - cannot be empty');
     }
-    if (![Schemas.http, Schemas.https, this.values.uriScheme].includes(target.scheme)) {
+    if (![Schemes.http, Schemes.https, this.values.uriScheme].includes(target.scheme)) {
       throw new Error(`Invalid scheme '${target.scheme}'`);
     }
     const uri = await this.proxy.$asExternalUri(target);

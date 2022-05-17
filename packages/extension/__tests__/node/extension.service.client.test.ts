@@ -4,6 +4,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import { Injector } from '@opensumi/di';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig, INodeLogger, getDebugLogger } from '@opensumi/ide-core-node';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
 import { IFileService, IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
@@ -15,57 +16,17 @@ import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/co
 import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
 import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
 
+import { extensionDir, getBaseInjector } from './baseInjector';
+
 describe('Extension Client Serivce', () => {
   let injector: Injector;
   let extensionNodeClient: IExtensionNodeClientService;
-  const extensionDir = path.join(__dirname, '../../__mocks__/extensions');
   const testExtId = 'opensumi.ide-dark-theme';
   const testExtPath = 'opensumi.ide-dark-theme-1.13.1';
   const testExtReadme = '# IDE Dark Theme';
 
   beforeAll(async () => {
-    injector = createNodeInjector([]);
-    injector.addProviders(
-      {
-        token: AppConfig,
-        useValue: {
-          marketplace: {
-            extensionDir,
-            ignoreId: [],
-          },
-        },
-      },
-      {
-        token: INodeLogger,
-        useValue: getDebugLogger(),
-      },
-      {
-        token: IFileService,
-        useClass: FileService,
-      },
-      {
-        token: IDiskFileProvider,
-        useClass: DiskFileSystemProvider,
-      },
-      {
-        token: 'FileServiceOptions',
-        useValue: FileSystemNodeOptions.DEFAULT,
-      },
-      {
-        token: IExtensionStoragePathServer,
-        useValue: {
-          getLastStoragePath: () => Promise.resolve(path.join(os.homedir(), '.sumi', 'workspace-storage')),
-        },
-      },
-      {
-        token: IExtensionNodeService,
-        useClass: ExtensionNodeServiceImpl,
-      },
-      {
-        token: IExtensionNodeClientService,
-        useClass: ExtensionServiceClientImpl,
-      },
-    );
+    injector = getBaseInjector();
     extensionNodeClient = injector.get(IExtensionNodeClientService);
   });
 
@@ -112,6 +73,8 @@ describe('Extension Client Serivce', () => {
       const lpPath = path.join(os.homedir(), '.sumi', 'workspace-storage', 'languagepacks.json');
       // make sure the workspace-storage path is exist
       const extensionStorageServer = injector.get(IExtensionStoragePathServer);
+      const hashCalculateService = injector.get(IHashCalculateService);
+      await hashCalculateService.initialize();
       const targetPath = path.join(extensionDir, `${publisher}.${name}-${version}`);
       const storagePath = (await extensionStorageServer.getLastStoragePath()) || '';
       await extensionNodeClient.updateLanguagePack('zh-CN', targetPath, storagePath);

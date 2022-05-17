@@ -7,7 +7,7 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import {
   Key,
-  Schemas,
+  Schemes,
   CommandService,
   COMMON_COMMANDS,
   RecentStorage,
@@ -262,7 +262,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     let rootDirs: string[] = [];
     this.workspaceService.tryGetRoots().forEach((stat) => {
       const uri = new URI(stat.uri);
-      if (uri.scheme !== Schemas.file) {
+      if (uri.scheme !== Schemes.file) {
         return;
       }
       return rootDirs.push(uri.toString());
@@ -294,7 +294,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       const include: string[] = [];
       const isAbsolutePath = (resource: URI): boolean => !!resource.codeUri.path && resource.codeUri.path[0] === '/';
       openResourcesInFilter.forEach(({ uri }) => {
-        if (uri.scheme === Schemas.walkThrough) {
+        if (uri.scheme === Schemes.walkThrough) {
           return;
         }
         if (isAbsolutePath(uri)) {
@@ -389,7 +389,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       }
 
       // 只搜索file协议内容
-      if (event.uri.scheme !== Schemas.file) {
+      if (event.uri.scheme !== Schemes.file) {
         return;
       }
 
@@ -702,7 +702,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   private setDefaultIncludeValue() {
-    const searchIncludes = this.searchPreferences['search.include'] || {};
+    const searchIncludes = this.searchPreferences[SearchSettingId.Include] || {};
     this.includeValue = Object.keys(searchIncludes)
       .reduce<string[]>((includes, key) => {
         if (searchIncludes[key]) {
@@ -845,7 +845,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       const uriString = docModel.uri.toString();
 
       // 只搜索file协议内容
-      if (docModel.uri.scheme !== Schemas.file) {
+      if (docModel.uri.scheme !== Schemes.file) {
         return;
       }
 

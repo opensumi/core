@@ -1,7 +1,9 @@
 import type vscode from 'vscode';
 
+import { Schemes } from '@opensumi/ide-core-common';
+
 import { IMainThreadDocumentsShape } from '../../../../common/vscode';
-import { Range, Position, EndOfLine, Schemas, Uri } from '../../../../common/vscode/ext-types';
+import { Range, Position, EndOfLine, Uri } from '../../../../common/vscode/ext-types';
 
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
@@ -80,7 +82,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
           return data._uri.fsPath;
         },
         get isUntitled() {
-          return data._uri.scheme === Schemas.untitled;
+          return data._uri.scheme === Schemes.untitled;
         },
         get languageId() {
           return data._languageId;

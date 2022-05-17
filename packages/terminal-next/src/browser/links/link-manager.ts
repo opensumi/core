@@ -14,6 +14,7 @@ import {
   OperatingSystem,
   isWindows,
   isMacintosh,
+  Schemes,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -249,7 +250,7 @@ export class TerminalLinkManager extends Disposable {
     // Check if it's a file:/// link, hand off to local link handler so to open an editor and
     // respect line/col attachment
     const uri = URI.parse(link);
-    if (uri.scheme === 'file') {
+    if (uri.scheme === Schemes.file) {
       // Just using fsPath here is unsafe: https://github.com/microsoft/vscode/issues/109076
       // fsPath 是基于当前环境判断 sep 的，连接远程服务时，如果当前系统为 Windows，
       // 而 uri 来自远程 Linux，则会出现生成的链接 sep 不正确，导致打开文件失败。

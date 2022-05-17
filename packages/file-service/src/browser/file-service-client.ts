@@ -18,7 +18,7 @@ import {
   AppConfig,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
-import { FileSystemProviderCapabilities, IEventBus } from '@opensumi/ide-core-common';
+import { FileSystemProviderCapabilities, IEventBus, Schemes } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
@@ -33,7 +33,6 @@ import {
   FileAccess,
   IDiskFileProvider,
   containsExtraFileMethod,
-  FILE_SCHEME,
   IFileSystemProviderRegistrationEvent,
   IFileSystemProviderCapabilitiesChangeEvent,
 } from '../common';
@@ -121,16 +120,18 @@ export class FileServiceClient implements IFileServiceClient {
   };
 
   constructor() {
-    this.onDidChangeFileSystemProviderRegistrations((e) => {
-      // 只支持 file
-      if (e.added && e.scheme === FILE_SCHEME) {
-        this.doGetCurrentUserHome();
-      }
-    });
+    this.toDisposable.push(
+      this.onDidChangeFileSystemProviderRegistrations((e) => {
+        // 只支持 file
+        if (e.added && e.scheme === Schemes.file) {
+          this.doGetCurrentUserHome();
+        }
+      }),
+    );
   }
 
   private async doGetCurrentUserHome() {
-    const provider = await this.getProvider(FILE_SCHEME);
+    const provider = await this.getProvider(Schemes.file);
     const userHome = provider.getCurrentUserHome();
     this.userHomeDeferred.resolve(userHome);
   }
@@ -362,12 +363,12 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async setWatchFileExcludes(excludes: string[]) {
-    const provider = await this.getProvider(FILE_SCHEME);
+    const provider = await this.getProvider(Schemes.file);
     return await provider.setWatchFileExcludes(excludes);
   }
 
   async getWatchFileExcludes() {
-    const provider = await this.getProvider(FILE_SCHEME);
+    const provider = await this.getProvider(Schemes.file);
     return await provider.getWatchFileExcludes();
   }
 
@@ -396,7 +397,7 @@ export class FileServiceClient implements IFileServiceClient {
   async delete(uriString: string, options?: FileDeleteOptions) {
     if (this.appConfig.isElectronRenderer && options && options.moveToTrash) {
       const uri = new URI(uriString);
-      if (uri.scheme === FILE_SCHEME) {
+      if (uri.scheme === Schemes.file) {
         return (this.injector.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
       }
     }

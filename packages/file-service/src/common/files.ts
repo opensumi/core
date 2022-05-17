@@ -94,13 +94,12 @@ export interface IFileService extends FileSystemWatcherServer {
    *
    * The optional parameter overwrite can be set to replace an existing file at the location.
    *
-   * |           | missing | file | empty dir |    dir    |
-   * |-----------|---------|------|-----------|-----------|
-   * | missing   |    x    |   x  |     x     |     x     |
-   * | file      |    ✓    |   x  |     x     |     x     |
-   * | empty dir |    ✓    |   x  |     x     | overwrite |
-   * | dir       |    ✓    |   x  | overwrite | overwrite |
-   *
+   * |           | missing |    file   | empty dir |    dir    |
+   * |-----------|---------|-----------|-----------|-----------|
+   * | missing   |    x    |     x     |     x     |     x     |
+   * | file      |    ✓    | overwrite |     x     |     x     |
+   * | empty dir |    ✓    |     x     | overwrite | overwrite |
+   * | dir       |    ✓    |     x     | overwrite | overwrite |
    */
   move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat>;
 
@@ -376,8 +375,6 @@ export function notEmpty<T>(value: T | undefined): value is T {
 export function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.ErrnoException {
   return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
 }
-
-export const FILE_SCHEME = 'file';
 
 export interface IFileSystemProviderRegistrationEvent {
   added: boolean;

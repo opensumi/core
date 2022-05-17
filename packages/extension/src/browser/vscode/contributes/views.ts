@@ -25,7 +25,7 @@ export type ViewsSchema = ViewsContribution;
 @Contributes('views')
 export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
   @Autowired(IMainLayoutService)
-  mainlayoutService: IMainLayoutService;
+  mainLayoutService: IMainLayoutService;
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
@@ -37,7 +37,7 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
         component: view.type === 'webview' ? ExtensionWebviewView : WelcomeView,
       }));
       for (const view of views) {
-        const handlerId = this.mainlayoutService.collectViewComponent(
+        const handlerId = this.mainLayoutService.collectViewComponent(
           view,
           location,
           { viewId: view.id },
@@ -47,7 +47,7 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
         );
         this.disposableCollection.push({
           dispose: () => {
-            const handler = this.mainlayoutService.getTabbarHandler(handlerId);
+            const handler = this.mainLayoutService.getTabbarHandler(handlerId);
             handler?.disposeView(view.id);
           },
         });

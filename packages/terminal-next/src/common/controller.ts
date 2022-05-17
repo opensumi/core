@@ -6,7 +6,7 @@ import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
 
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
-import { TerminalOptions, ITerminalInfo } from './pty';
+import { TerminalOptions, ITerminalInfo, ICreateTerminalOptions } from './pty';
 import { IWidgetGroup, IWidget } from './resize';
 
 export interface ITerminalExternalClient {
@@ -25,6 +25,10 @@ export interface IBoundSize {
 
 export interface ICreateClientWithWidgetOptions {
   terminalOptions: TerminalOptions;
+  /**
+   * 插件进程传递的唯一 ID
+   */
+  id?: string;
   /**
    * pty 进程退出后是否自动关闭 terminal 控件
    */
@@ -69,6 +73,7 @@ export interface ITerminalController extends Disposable {
    */
   createClientWithWidget(options: TerminalOptions): Promise<ITerminalClient>;
   createClientWithWidget2(options: ICreateClientWithWidgetOptions): Promise<ITerminalClient>;
+  createTerminal(options: ICreateTerminalOptions): Promise<ITerminalClient>;
   clearCurrentGroup(): void;
   clearAllGroups(): void;
   showTerminalPanel(): void;

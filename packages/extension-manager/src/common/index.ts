@@ -13,6 +13,7 @@ export enum TabActiveKey {
 export enum InstallState {
   INSTALLED = 'INSTALLED',
   NOT_INSTALLED = 'NOT_INSTALLED',
+  SHOULD_UPDATE = 'SHOULD_UPDATE',
 }
 
 export type VSXExtensionNamespaceAccess = 'public' | 'restricted';

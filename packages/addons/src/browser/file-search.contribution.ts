@@ -26,7 +26,7 @@ import {
   CommandRegistry,
   Command,
   CancellationTokenSource,
-  Schemas,
+  Schemes,
   CancellationToken,
   IRange,
   IReporterService,
@@ -357,7 +357,7 @@ export class FileSearchQuickCommandHandler {
     const rootUris: string[] = [];
     roots.forEach((stat) => {
       const uri = new URI(stat.uri);
-      if (uri.scheme !== Schemas.file) {
+      if (uri.scheme !== Schemes.file) {
         return;
       }
       this.logger.debug('file-search.contribution rootUri', uri.toString());

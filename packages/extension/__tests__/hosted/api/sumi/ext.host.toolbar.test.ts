@@ -1,5 +1,5 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter } from '@opensumi/ide-core-common';
+import { Deferred, Emitter } from '@opensumi/ide-core-common';
 import { ExtHostCommon } from '@opensumi/ide-extension/lib/hosted/api/sumi/ext.host.common';
 import {
   createToolbarAPIFactory,
@@ -11,7 +11,6 @@ import { mockExtensions } from '../../../../__mocks__/extensions';
 import { ExtHostSumiAPIIdentifier, MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
-
 
 const actionMaps: Map<string, any> = new Map();
 
@@ -121,16 +120,19 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     expect(hostAction).toBeDefined();
   });
 
-  it('toolbarAPI#registerToolbarAction button setState should be work', () =>
-    new Promise<void>(async (done) => {
-      const id = `${extension.id}-toolbar`;
-      const hostAction = await toolbarAPI.getToolbarActionButtonHandle(id);
-      hostAction.onStateChanged((e) => {
-        expect(e.from).toBe('hover');
-        done();
-      });
-      hostAction.setState('hover');
-    }));
+  it('toolbarAPI#registerToolbarAction button setState should be work', async () => {
+    const defered = new Deferred();
+
+    const id = `${extension.id}-toolbar`;
+    const hostAction = await toolbarAPI.getToolbarActionButtonHandle(id);
+    hostAction.onStateChanged((e) => {
+      expect(e.from).toBe('hover');
+      defered.resolve();
+    });
+
+    hostAction.setState('hover');
+    await defered.promise;
+  });
 
   it('toolbarAPI#registerToolbarAction select should be work', async () => {
     const id = `${extension.id}-toolbar-select`;
@@ -159,15 +161,17 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     expect(hostAction).toBeDefined();
   });
 
-  it('toolbarAPI#registerToolbarAction select setState should be work', () =>
-    new Promise<void>(async (done) => {
-      const id = `${extension.id}-toolbar-select`;
-      const hostAction = await toolbarAPI.getToolbarActionSelectHandle(id);
-      hostAction.onStateChanged((e) => {
-        expect(e.from).toBe('selected');
-        done();
-      });
+  it('toolbarAPI#registerToolbarAction select setState should be work', async () => {
+    const id = `${extension.id}-toolbar-select`;
+    const defered = new Deferred();
 
-      await hostAction.setState('selected');
-    }));
+    const hostAction = await toolbarAPI.getToolbarActionSelectHandle(id);
+    hostAction.onStateChanged((e) => {
+      expect(e.from).toBe('selected');
+      defered.resolve();
+    });
+
+    await hostAction.setState('selected');
+    await defered.promise;
+  });
 });

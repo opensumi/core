@@ -271,20 +271,18 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     }
 
     const preferredLanguage = preferedOptions && preferedOptions.languageId;
-
     const [content, readonly, languageId, eol, alwaysDirty, closeAutoSave, disposeEvenDirty] = await Promise.all([
-      (async () => provider.provideEditorDocumentModelContent(uri, encoding))(),
-      (async () => (provider.isReadonly ? provider.isReadonly(uri) : undefined))(),
-      (async () =>
-        preferredLanguage
-          ? preferredLanguage
-          : provider.preferLanguageForUri
-          ? provider.preferLanguageForUri(uri)
-          : undefined)(),
-      (async () => preferedOptions?.eol || (provider.provideEOL ? provider.provideEOL(uri) : undefined))(),
-      (async () => (provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false))(),
-      (async () => (provider.closeAutoSave ? provider.closeAutoSave(uri) : false))(),
-      (async () => (provider.disposeEvenDirty ? provider.disposeEvenDirty(uri) : false))(),
+      provider.provideEditorDocumentModelContent(uri, encoding),
+      provider.isReadonly ? provider.isReadonly(uri) : undefined,
+      preferredLanguage
+        ? preferredLanguage
+        : provider.preferLanguageForUri
+        ? provider.preferLanguageForUri(uri)
+        : undefined,
+      preferedOptions?.eol || (provider.provideEOL ? provider.provideEOL(uri) : undefined),
+      provider.isAlwaysDirty ? provider.isAlwaysDirty(uri) : false,
+      provider.closeAutoSave ? provider.closeAutoSave(uri) : false,
+      provider.disposeEvenDirty ? provider.disposeEvenDirty(uri) : false,
     ] as const);
 
     // 优先使用 preferred encoding，然后用 detected encoding

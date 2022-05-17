@@ -5,7 +5,7 @@
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/94c9ea46838a9a619aeafb7e8afd1170c967bb55/src/vs/workbench/contrib/debug/browser/linkDetector.ts
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { Schemas, IOpenerService, OS, formatLocalize } from '@opensumi/ide-core-browser';
+import { Schemes, IOpenerService, OS, formatLocalize } from '@opensumi/ide-core-browser';
 import { URI, IRange, isWindows, isMacintosh, path as osPath, OperatingSystem } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service/lib/common';
@@ -98,7 +98,7 @@ export class LinkDetector {
 
     const uri = URI.parse(url);
     this.decorateLink(link, async () => {
-      if (uri.scheme === Schemas.file) {
+      if (uri.scheme === Schemes.file) {
         const fsPath = uri.toString();
         const path = OS.type() === OperatingSystem.Windows ? osPath.win32 : osPath.posix;
         const fileUrl = osPath.normalize(

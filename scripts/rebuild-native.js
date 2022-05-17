@@ -1,62 +1,70 @@
-const { execSync } = require("child_process");
-const { pathExistsSync, copySync, removeSync } = require("fs-extra");
+const { execSync } = require('child_process');
+const { pathExistsSync, copySync, removeSync } = require('fs-extra');
 const { join } = require('path');
 const argv = require('yargs').argv;
-
+const os = require('os');
 
 const nativeModules = [
   join(__dirname, '../node_modules/node-pty'),
   join(__dirname, '../node_modules/nsfw'),
-  join(__dirname, '../node_modules/spdlog')
-]
+  join(__dirname, '../node_modules/spdlog'),
+  join(__dirname, '../node_modules/keytar'),
+];
 
 let commands;
 
 const target = argv.target || 'node';
+const arch = argv.arch || os.arch();
+const force = argv['force-rebuild'] || argv.force;
 let version;
 
 if (target === 'electron') {
-
   version = argv.electronVersion || require('electron/package.json').version;
-
   console.log('rebuilding native for electron version ' + version);
-
-  commands = [require('os').arch === 'win32' ? 'set HOME=~/.electron-gyp' : 'HOME=~/.electron-gyp', 'node-gyp', 'rebuild', `--target=${version}`, '--arch=x64', '--dist-url=https://electronjs.org/headers', 'openssl_fips=X']
-
+  commands = [
+    os.platform() === 'win32' ? 'set HOME=~/.electron-gyp' : 'HOME=~/.electron-gyp',
+    'node-gyp',
+    'rebuild',
+    '--openssl_fips=X',
+    `--target=${version}`,
+    `--arch=${arch}`,
+    '--dist-url=https://electronjs.org/headers',
+  ];
 } else if (target === 'node') {
-
   console.log('rebuilding native for node version ' + process.version);
-
   version = process.version;
-
-  commands = ['node-gyp', 'rebuild']
-
+  commands = ['node-gyp', 'rebuild'];
 }
 
-function rebuildModule (modulePath, type, version) {
+function rebuildModule(modulePath, type, version, arch) {
   const info = require(join(modulePath, './package.json'));
-  console.log('rebuilding ' + info.name)
-  const cache = getBuildCacheDir(modulePath, type, version, target);
-  if (pathExistsSync(cache) && !argv['force-rebuild']) {
-    console.log('cache found for ' + info.name)
+  console.log(`rebuilding ${info.name}: ${info.version} for arch ${arch}`);
+  const cache = getBuildCacheDir(modulePath, type, version, arch);
+  console.log(`cache dir ${cache}`);
+  if (pathExistsSync(cache) && !force) {
+    console.log('cache found for ' + info.name);
     copySync(cache, join(modulePath, 'build'));
-  }
-  else {
+  } else {
+    console.log(`running command ${commands.join(' ')}`);
     execSync(commands.join(' '), {
-      cwd: modulePath
+      cwd: modulePath,
+      stdio: 'inherit',
     });
     removeSync(cache);
     copySync(join(modulePath, 'build'), cache);
   }
-
 }
 
-function getBuildCacheDir (modulePath, type, version, target) {
+function getBuildCacheDir(modulePath, type, version, arch) {
   const info = require(join(modulePath, './package.json'));
-  return join(require('os').tmpdir(), 'ide_build_cache', target, info.name + '-' + info.version, type + '-' + version);
+  return join(
+    require('os').tmpdir(),
+    'kaitian_build_cache',
+    `${type}-${version}-${arch}`,
+    info.name + '-' + info.version,
+  );
 }
 
-
-nativeModules.forEach(path => {
-  rebuildModule(path, target, version);
-})
+nativeModules.forEach((path) => {
+  rebuildModule(path, target, version, arch);
+});

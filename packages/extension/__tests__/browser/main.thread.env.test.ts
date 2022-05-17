@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { Injector, Injectable } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { AppConfig } from '@opensumi/ide-core-browser';
@@ -25,6 +24,7 @@ import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.hos
 import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -90,14 +90,7 @@ describe('MainThreadEnvAPI Test Suites ', () => {
         },
         {
           token: IExtensionStorageService,
-          useValue: {
-            whenReady: Promise.resolve(true),
-            extensionStoragePath: {},
-            set() {},
-            get() {},
-            getAll() {},
-            reConnectInit() {},
-          },
+          useValue: MockExtensionStorageService,
         },
       ],
     );
@@ -119,7 +112,7 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     setTimeout(() => {
       extHostEnvAPI = createEnvApiFactory(
         rpcProtocolExt,
-        injector.get(ExtensionHostServiceImpl),
+        injector.get(ExtensionHostServiceImpl) as any,
         extHostEnv,
         extHostTerminal,
       );
@@ -158,7 +151,7 @@ describe('MainThreadEnvAPI Test Suites ', () => {
   it('can read/write text via clipboard', async () => {
     const text = 'test for env';
     await extHostEnvAPI.clipboard.writeText(text);
-    expect(global.navigator.clipboard.readText()).toBe(text);
+    expect(navigator.clipboard.readText()).toBe(text);
     const target = await extHostEnvAPI.clipboard.readText();
     expect(target).toBe(text);
   });

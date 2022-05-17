@@ -7,6 +7,7 @@ import { toLocalISOString, ILogService } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
+import { LogServiceManager } from '../../lib/node/log-manager';
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 import { LogServiceModule } from '../../src/node';
 import { LogLevelMessageMap } from '../../src/node/log.service';
@@ -16,7 +17,7 @@ const logDir = path.join(testDir, 'logs_1');
 const today = Number(
   toLocalISOString(new Date())
     .replace(/-/g, '')
-    .match(/^\d{8}/)![0],
+    .match(/^\d{8}/)?.[0],
 );
 
 function doAllLog(logger: ILogService) {
@@ -30,12 +31,18 @@ function doAllLog(logger: ILogService) {
 
 describe('LogService', () => {
   const injector = createNodeInjector([LogServiceModule]);
-  injector.addProviders({
-    token: AppConfig,
-    useValue: {
-      logDir,
+  injector.addProviders(
+    {
+      token: AppConfig,
+      useValue: {
+        logDir,
+      },
     },
-  });
+    {
+      token: ILogServiceManager,
+      useClass: LogServiceManager,
+    },
+  );
   const loggerManager: ILogServiceManager = injector.get(ILogServiceManager);
 
   afterAll(() => {

@@ -97,9 +97,9 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
   // 获取setSize的handle，对于最右端或最底部的视图，取上一个位置的handle
   const setSizeHandle = (index) => (size?: number, isLatter?: boolean) => {
     const targetIndex = isLatter ? index - 1 : index;
-    const delegete = resizeDelegates.current[targetIndex];
-    if (delegete) {
-      delegete.setAbsoluteSize(
+    const delegate = resizeDelegates.current[targetIndex];
+    if (delegate) {
+      delegate.setAbsoluteSize(
         size !== undefined ? size : getProp(childList[index], 'defaultSize'),
         isLatter,
         resizeKeep,
@@ -109,26 +109,26 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
 
   const setRelativeSizeHandle = (index) => (prev: number, next: number, isLatter?: boolean) => {
     const targetIndex = isLatter ? index - 1 : index;
-    const delegete = resizeDelegates.current[targetIndex];
-    if (delegete) {
-      delegete.setRelativeSize(prev, next);
+    const delegate = resizeDelegates.current[targetIndex];
+    if (delegate) {
+      delegate.setRelativeSize(prev, next);
     }
   };
 
   const getSizeHandle = (index) => (isLatter?: boolean) => {
     const targetIndex = isLatter ? index - 1 : index;
-    const delegete = resizeDelegates.current[targetIndex];
-    if (delegete) {
-      return delegete.getAbsoluteSize(isLatter);
+    const delegate = resizeDelegates.current[targetIndex];
+    if (delegate) {
+      return delegate.getAbsoluteSize(isLatter);
     }
     return 0;
   };
 
   const getRelativeSizeHandle = (index) => (isLatter?: boolean) => {
     const targetIndex = isLatter ? index - 1 : index;
-    const delegete = resizeDelegates.current[targetIndex];
-    if (delegete) {
-      return delegete.getRelativeSize();
+    const delegate = resizeDelegates.current[targetIndex];
+    if (delegate) {
+      return delegate.getRelativeSize();
     }
     return [0, 0];
   };

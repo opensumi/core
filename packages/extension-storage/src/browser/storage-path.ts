@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
-import { isWindows, URI, Deferred, StoragePaths, path } from '@opensumi/ide-core-common';
+import { isWindows, URI, Deferred, StoragePaths, path, Schemes } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
 import { ILoggerManagerClient } from '@opensumi/ide-logs';
@@ -131,12 +131,12 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       home
         .resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME)
         .resolve(`${UNTITLED_WORKSPACE}.${this.workspaceSuffixName}`)
-        .withScheme('file');
+        .withScheme(Schemes.file);
     const getTemporaryWorkspaceUri = (home: URI): URI =>
       home
         .resolve(extensionStorageDirName || WORKSPACE_USER_STORAGE_FOLDER_NAME)
         .resolve(`${UNTITLED_WORKSPACE}`)
-        .withScheme('file');
+        .withScheme(Schemes.file);
     if (!workspace) {
       const untitled = getTemporaryWorkspaceUri(new URI(homeDir));
       // 当不存在工作区信息时，使用 `UNTITLED_WORKSPACE` 作为工作区

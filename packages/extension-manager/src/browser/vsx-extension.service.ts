@@ -76,9 +76,9 @@ export class VSXExtensionService implements IVSXExtensionService {
 
     const task = this.backService.install({
       id,
-      name: extension.name!,
+      name: extension.name ?? '-',
       url: extension.downloadUrl,
-      version: extension.version!,
+      version: extension.version ?? '-',
     });
     this.tasks.set(id, task);
     this.updateStatusBar();
@@ -118,6 +118,8 @@ export class VSXExtensionService implements IVSXExtensionService {
   async search(keyword: string): Promise<void> {
     const param: VSXSearchParam = {
       query: keyword,
+      size: 50,
+      sortBy: 'downloadCount',
     };
 
     const res = await this.backService.search(param);

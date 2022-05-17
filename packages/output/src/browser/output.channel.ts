@@ -1,6 +1,6 @@
 import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Disposable, uuid, URI, localize, Deferred, IEventBus, strings, Schemas } from '@opensumi/ide-core-common';
+import { Disposable, uuid, URI, localize, Deferred, IEventBus, strings, Schemes } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -74,7 +74,7 @@ export class OutputChannel extends Disposable {
       }),
     );
 
-    const uri = new URI(`${Schemas.walkThroughSnippet}://output/${name || uuid()}`);
+    const uri = new URI(`${Schemes.walkThroughSnippet}://output/${name || uuid()}`);
     this.documentService.createModelReference(uri).then((model) => {
       this.outputModel = model;
       this.monacoModel = this.outputModel.instance.getMonacoModel();

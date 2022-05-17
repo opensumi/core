@@ -11,7 +11,6 @@ import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
 import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
-
 const enum MessageType {
   Request = 1,
   Reply = 2,
@@ -103,22 +102,25 @@ describe('Extension process test', () => {
       expect(extHostImpl.getExtensionExports(id)).toEqual({});
     });
 
-    it('should caught runtime error', () =>
-      new Promise<void>(async (done) => {
-        const id = mockExtensionProps2.id;
-        const reporter = injector.get(IReporter);
-        jest.spyOn(reporter, 'point').mockImplementation((msg: string, data: any) => {
-          if (msg === REPORT_NAME.RUNTIME_ERROR_EXTENSION) {
-            expect(typeof data.extra.error).toBeTruthy();
-            expect(data.extra.stackTraceMessage).toMatch(/Test caught exception/);
-            done();
-          }
-        });
+    it('should caught runtime error', async () => {
+      expect.assertions(3);
+      const defered = new Deferred();
 
-        await expect(async () => {
-          await extHostImpl.$activateExtension(id);
-        }).rejects.toThrow('Test caught exception');
-      }));
+      const id = mockExtensionProps2.id;
+      const reporter = injector.get(IReporter);
+      jest.spyOn(reporter, 'point').mockImplementation((msg: string, data: any) => {
+        if (msg === REPORT_NAME.RUNTIME_ERROR_EXTENSION) {
+          expect(typeof data.extra.error).toBeTruthy();
+          expect(data.extra.stackTraceMessage).toMatch(/Test caught exception/);
+          defered.resolve();
+        }
+      });
+
+      await expect(async () => {
+        await extHostImpl.$activateExtension(id);
+      }).rejects.toThrow('Test caught exception');
+      await defered.promise;
+    });
 
     it('should caught runtime unexpected error', (done) => {
       const reporter = injector.get(IReporter);

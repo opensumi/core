@@ -58,7 +58,7 @@ export function createMockedMonacoEditorApi(): any {
     },
     setModelMarkers: () => {},
     getModelMarkers: () => [],
-    getModel: (uri) => (models.get(uri.toString()) as unknown as monaco.editor.ITextModel) || null,
+    getModel: (uri) => (models.get(uri?.toString()) as unknown as monaco.editor.ITextModel) || null,
     getModels: () => [],
     TrackedRangeStickiness,
     MouseTargetType,

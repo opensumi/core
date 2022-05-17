@@ -9,6 +9,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IEventBus,
   CommandService,
@@ -16,6 +17,8 @@ import {
   IFileServiceClient,
   Disposable,
   OperatingSystem,
+  CommandRegistry,
+  CoreCommandRegistryImpl,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -202,5 +205,13 @@ export const injector = new Injector([
     useValue: {
       clientId: 'W_LwPKkmhQA', // fake clientId for test case
     },
+  },
+  {
+    token: CommandRegistry,
+    useClass: CoreCommandRegistryImpl,
+  },
+  {
+    token: IMenuRegistry,
+    useClass: MenuRegistryImpl,
   },
 ]);

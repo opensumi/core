@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import { DefaultLogFields } from 'simple-git';
-import { ICommitLogFields } from './types';
+import { ICommitLogFields, PR_STATE } from './types';
 
 const GITHUB_URL = 'https://github.com/opensumi/core';
 
@@ -67,6 +67,52 @@ export async function extractChangelog(logs: ReadonlyArray<DefaultLogFields>): P
         pullRequestDescription: prDetail.body || '',
         pullRequestId: prIid,
       });
+    }
+  }
+  return result;
+}
+
+/**
+ * 获取某个时间至今合并/新建的所有 PR
+ * @param date
+ * @param state 状态，合并的、关闭的、新建的
+ * @param projectId
+ */
+export async function getPrList(startTime: number = Date.now(), state = PR_STATE.CLOSED, projectId = 'opensumi/core') {
+  const per_page = 100;
+  let page = 1;
+  const start = new Date(startTime).getTime();
+  const result: any[] = [];
+  const _state = state === PR_STATE.ALL ? 'all' : state === PR_STATE.CLOSED ? 'closed' : 'open';
+  for (page = 1; ; page++) {
+    const res = await fetch(
+      `https://api.github.com/repos/${projectId}/pulls?` +
+        new URLSearchParams({
+          per_page: String(per_page),
+          page: String(page),
+          state: _state,
+        }),
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `token ${process.env.GITHUB_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      },
+    );
+    const ret = await res.json();
+    if (ret.length === 0) {
+      break;
+    }
+    for (const item of ret) {
+      // 如果查询的是 PR_STATE.CLOSED 状态，以 merged_at 时间进行判断
+      // 如果查询的是 PR_STATE.OPEN 或 PR_STATE.ALL 状态，则以 created_at 进行判断
+      const time = new Date(state === PR_STATE.CLOSED ? item.merged_at || item.closed_at : item.created_at).getTime();
+      if (time >= start) {
+        result.push(item);
+      } else {
+        break;
+      }
     }
   }
   return result;

@@ -16,7 +16,7 @@ import {
   CommandService,
   QuickPickService,
   IEventBus,
-  Schemas,
+  Schemes,
   PreferenceService,
   Disposable,
   IPreferenceSettingsService,
@@ -586,7 +586,7 @@ export class EditorContribution
     commands.registerCommand(EDITOR_COMMANDS.COPY_CURRENT_PATH, {
       execute: () => {
         const resource = this.workbenchEditorService.currentResource;
-        if (resource && resource.uri.scheme === Schemas.file) {
+        if (resource && resource.uri.scheme === Schemes.file) {
           this.clipboardService.writeText(resource.uri.codeUri.fsPath);
         }
       },

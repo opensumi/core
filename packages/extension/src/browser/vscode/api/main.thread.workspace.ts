@@ -85,7 +85,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     return this.roots.some((root, index) => root.uri !== roots[index].uri);
   }
 
-  async processWorkspaceFoldersChanged(roots: FileStat[]): Promise<void> {
+  processWorkspaceFoldersChanged(roots: FileStat[]): void {
     if (this.isAnyRootChanged(roots) === false) {
       return;
     }
@@ -93,11 +93,13 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
     this.proxy.$onWorkspaceFoldersChanged({ roots });
 
     // workspace变化，更新及初始化storage
-    const storageWorkspacesData = await this.extensionStorageService.getAll(false);
-    this.storageProxy.$updateWorkspaceStorageData(storageWorkspacesData);
+    this.extensionStorageService.getAll(false).then((v) => {
+      this.storageProxy.$updateWorkspaceStorageData(v);
+    });
   }
 
   dispose() {
+    super.dispose();
     this.workspaceChangeEvent.dispose();
   }
 

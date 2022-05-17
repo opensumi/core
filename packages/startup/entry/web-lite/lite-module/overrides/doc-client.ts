@@ -1,8 +1,8 @@
-import * as md5 from 'md5';
 import { Range } from 'vscode-languageserver-types';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { IEditorDocumentModelSaveResult, IEditorDocumentEditChange } from '@opensumi/ide-core-browser';
+import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileSchemeDocClient, IContentChange, ISavingContent } from '@opensumi/ide-file-scheme';
 import { IFileServiceClient, TextDocumentContentChangeEvent } from '@opensumi/ide-file-service';
 
@@ -13,6 +13,9 @@ import { IFileServiceClient, TextDocumentContentChangeEvent } from '@opensumi/id
 export class FileSchemeDocClientService implements IFileSchemeDocClient {
   @Autowired(IFileServiceClient)
   private fileService: IFileServiceClient;
+
+  @Autowired(IHashCalculateService)
+  private readonly hashCalculateService: IHashCalculateService;
 
   async saveByChange(
     uri: string,
@@ -25,7 +28,7 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
       if (stat) {
         if (!force) {
           const res = await this.fileService.resolveContent(uri, { encoding });
-          if (change.baseMd5 !== md5(res.content)) {
+          if (change.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
             };
@@ -77,7 +80,7 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
       if (stat) {
         if (!force) {
           const res = await this.fileService.resolveContent(uri, { encoding });
-          if (content.baseMd5 !== md5(res.content)) {
+          if (content.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
             };
@@ -105,7 +108,7 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
     try {
       if (await this.fileService.access(uri)) {
         const res = await this.fileService.resolveContent(uri, { encoding });
-        return md5(res.content);
+        return this.hashCalculateService.calculate(res.content);
       } else {
         return undefined;
       }
