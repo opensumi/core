@@ -181,8 +181,9 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     events = events.filter((event: INsfw.ChangeEvent) => {
       if (event.file) {
         if (/\.\d{7}\d+$/.test(event.file)) {
-          // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx;
-          event.file = event.file.replace(/\.\d{7}\d+$/, '');
+          // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
+          // 这类文件的更新应当完全隐藏掉
+          return false;
         }
       }
 
