@@ -71,7 +71,7 @@ export const Extension = React.memo(
             <span className={styles.version}>{extension.version}</span>
             {!installedState && (
               <span className={styles.download_count}>
-                <Icon iconClass={getKaitianIcon('download')} />
+                <Icon iconClass={getIcon('download')} />
                 {extension.downloadCount}
               </span>
             )}
