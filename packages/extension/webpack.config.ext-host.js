@@ -12,7 +12,7 @@ module.exports = {
     libraryTarget: 'commonjs2',
   },
   target: 'node',
-  devtool: 'srouce-map',
+  devtool: 'source-map',
   mode: 'none',
   optimization: {
     minimize: false,
