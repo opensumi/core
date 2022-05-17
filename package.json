@@ -94,7 +94,6 @@
     "@types/jest": "^27.4.0",
     "@types/jsdom": "^16.2.14",
     "@types/lodash": "^4.14.182",
-    "@types/md5": "^2.1.33",
     "@types/node": "^10.14.6",
     "@types/node-fetch": "^2.6.1",
     "@types/react": "^16.9.33",

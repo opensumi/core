@@ -1,5 +1,9 @@
 import os from 'os';
 
+import {
+  HashCalculateServiceImpl,
+  IHashCalculateService,
+} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig, INodeLogger, getDebugLogger, path } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
@@ -54,6 +58,10 @@ export const getBaseInjector = () => {
     {
       token: IExtensionNodeClientService,
       useClass: ExtensionServiceClientImpl,
+    },
+    {
+      token: IHashCalculateService,
+      useClass: HashCalculateServiceImpl,
     },
   );
   return injector;
