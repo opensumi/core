@@ -9,7 +9,7 @@ describe('di-helper', () => {
   @Injectable()
   class A {}
 
-  it('能够通过 domain 找到对象实例', () => {
+  it('get instance from domain', () => {
     const injector = new Injector([A]);
     const instance = injector.getFromDomain(domain)[0];
     expect(instance).toBeInstanceOf(A);

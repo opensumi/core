@@ -417,7 +417,7 @@ export const localizationBundle = {
     'preference.stringArray.none': 'None',
 
     // Default value prompt message for enumerated options in settings
-    'preference.enum.default': 'default',
+    'preference.enum.default': 'Default',
 
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
@@ -449,8 +449,8 @@ export const localizationBundle = {
     'component.modal.cancelText': 'Cancel',
     'component.modal.justOkText': 'OK',
 
-    'preference.tab.user': 'Global Settings',
-    'preference.tab.workspace': 'Workspace Settings',
+    'preference.tab.user': 'User',
+    'preference.tab.workspace': 'Workspace',
 
     'settings.group.general': 'General',
     'settings.group.shortcut': 'Shortcut',

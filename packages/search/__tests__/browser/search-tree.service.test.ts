@@ -3,6 +3,7 @@ import path from 'path';
 import { Injector, Injectable } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { ILoggerManagerClient, Uri, URI } from '@opensumi/ide-core-common';
+import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
@@ -11,6 +12,7 @@ import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
+import { SearchPreferences } from '@opensumi/ide-search/lib/browser/search-preferences';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 
@@ -129,7 +131,7 @@ describe('search.service.ts', () => {
   beforeAll(() => {
     injector = createBrowserInjector([OverlayModule, SearchModule]);
 
-    injector.addProviders(
+    injector.overrideProviders(
       {
         token: ContentSearchClientService,
         useClass: ContentSearchClientService,
@@ -174,6 +176,14 @@ describe('search.service.ts', () => {
         token: IFileServiceClient,
         useClass: MockFileServiceClient,
       },
+      {
+        token: SearchPreferences,
+        useValue: {
+          [SearchSettingId.Include]: '',
+          [SearchSettingId.SearchOnType]: true,
+          [SearchSettingId.SearchOnTypeDebouncePeriod]: 300,
+        },
+      },
     );
 
     searchService = injector.get(ContentSearchClientService);
@@ -188,11 +198,11 @@ describe('search.service.ts', () => {
     });
   });
 
-  test('可以加载正常service', () => {
+  test('service can be work', () => {
     expect(searchTreeService._nodes).toBeDefined();
   });
 
-  test('初始化nodes', () => {
+  test('initialize', () => {
     const childList = (searchTreeService as any).getChildrenNodes(searchService.searchResults, parent);
     parent.children.push(childList);
     const nodeList = [parent, ...childList];
@@ -201,7 +211,7 @@ describe('search.service.ts', () => {
     expect(searchTreeService._nodes).toEqual(nodeList);
   });
 
-  test('method: onSelect 父节点', () => {
+  test('method: onSelect', () => {
     searchTreeService.onSelect([parent]);
 
     expect(searchTreeService.nodes[0].expanded).toEqual(true);
