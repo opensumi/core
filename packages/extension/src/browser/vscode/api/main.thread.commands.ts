@@ -35,10 +35,7 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol, fromWorker?: boolean) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
-    if (!fromWorker) {
-      this.proxy.$registerBuiltInCommands();
-    }
-
+    this.proxy.$registerBuiltInCommands();
     this.proxy.$registerCommandConverter();
     this.registerUriArgProcessor();
   }
