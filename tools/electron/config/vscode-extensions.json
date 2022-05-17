@@ -283,12 +283,14 @@
     ],
     "vscode-icons-team": [
       {
-        "name": "vscode-icons"
+        "name": "vscode-icons",
+        "version": "11.11.0"
       }
     ],
     "opensumi": [
       {
-        "name": "opensumi-default-themes"
+        "name": "opensumi-default-themes",
+        "version": "2.5.5"
       }
     ]
   }

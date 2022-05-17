@@ -17,6 +17,7 @@ import {
   SupportLogNamespace,
   StoragePaths,
 } from '@opensumi/ide-core-common';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
 import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
@@ -183,7 +184,7 @@ export class ServerApp implements IServerApp {
       LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign(
         {
-          endpoint: 'https://open-vsx.org/api',
+          endpoint: `${DEFAULT_OPENVSX_REGISTRY}/api`,
           extensionDir: path.join(
             os.homedir(),
             ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),

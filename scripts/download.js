@@ -9,7 +9,7 @@ const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const { v4 } = require('uuid');
 
-// 放置 vscode extension 的目录
+// 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
 
 const { extensions } = require(path.resolve(__dirname, '../configs/vscode-extensions.json'));
@@ -47,7 +47,8 @@ const parallelRunPromise = (lazyPromises, n) => {
   return new Promise(addWorking);
 };
 
-const api = 'https://open-vsx.org/api/';
+// const api = 'https://open-vsx.org/api/';
+const api = 'https://marketplace.smartide.cn/api/'; // China Mirror
 
 async function downloadExtension(url, namespace, extensionName) {
   const tmpPath = path.join(os.tmpdir(), 'extension', v4());
@@ -175,7 +176,7 @@ const installExtension = async (namespace, name, version) => {
 };
 
 const downloadVscodeExtensions = async () => {
-  log('清空 vscode extension 目录：%s', targetDir);
+  log('清空 extension 目录：%s', targetDir);
   rimraf.sync(targetDir);
   fs.mkdirpSync(targetDir);
 
