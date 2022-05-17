@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 
-import { Button, Icon, getKaitianIcon } from '@opensumi/ide-components';
+import { Button, Icon, getIcon } from '@opensumi/ide-components';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { InstallState, VSXExtension } from '../../common';
@@ -50,7 +50,7 @@ export const Extension = React.memo(({ extension, onInstall, onClick, installed 
           <span className={styles.version}>{extension.version}</span>
           {!installedState && (
             <span className={styles.download_count}>
-              <Icon iconClass={getKaitianIcon('download')} />
+              <Icon iconClass={getIcon('download')} />
               {extension.downloadCount}
             </span>
           )}

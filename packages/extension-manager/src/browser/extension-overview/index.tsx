@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 
-import { Icon, getKaitianIcon, Button, Tabs } from '@opensumi/ide-components';
+import { Icon, getIcon, Button, Tabs } from '@opensumi/ide-components';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
@@ -112,7 +112,7 @@ export const ExtensionOverview: ReactEditorComponent<
               </a>
             </span>
             <span>
-              <Icon iconClass={getKaitianIcon('download')} />
+              <Icon iconClass={getIcon('download')} />
               {resource.metadata?.downloadCount || metadata.downloadCount}
             </span>
             {resource.metadata?.averageRating && <span>{resource.metadata?.averageRating}</span>}

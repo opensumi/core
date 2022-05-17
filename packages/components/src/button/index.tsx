@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React from 'react';
 
 import { Dropdown } from '../dropdown';
-import { Icon, getKaitianIcon, DefaultIconKeys } from '../icon';
+import { Icon, DefaultIconKeys, getIcon } from '../icon';
 import './style.less';
 
 export type ButtonType = 'primary' | 'secondary' | 'ghost' | 'danger' | 'link' | 'icon' | 'default';
@@ -141,10 +141,7 @@ export const Button = React.memo(
             {iconNode && iconNode}
             {children}
             {more && (
-              <Icon
-                iconClass={moreIconClass ? moreIconClass : getKaitianIcon('down')}
-                className='kt-button-secondary-more'
-              />
+              <Icon iconClass={moreIconClass ? moreIconClass : getIcon('down')} className='kt-button-secondary-more' />
             )}
           </button>
         </Dropdown>

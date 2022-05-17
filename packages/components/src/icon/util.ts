@@ -17,7 +17,7 @@ export enum ANIM_TYPE {
 const ROTATE_CLASS_NAME = ['rotate-90', 'rotate-180', 'rotate-270', 'flip-horizontal', 'flip-vertical', 'flip-both'];
 const ANIM_CLASS_NAME = ['spin', 'pulse'];
 
-export function updateKaitianIconMap(prefix: string, customIconMap: { [iconKey: string]: string }) {
+export function updateIconMap(prefix: string, customIconMap: { [iconKey: string]: string }) {
   iconManager.update(prefix, customIconMap);
 }
 
@@ -50,9 +50,12 @@ export function getIconShapeClxList(options?: IIconShapeOptions): string[] {
  * @param options
  * @return 获取拼接好的 className，如果拿不到则返回空字符串
  */
-export function getKaitianIcon(iconKey: string, options?: IIconShapeOptions): string {
+export function getIcon(iconKey: string, options?: IIconShapeOptions): string {
   const iconClassList = iconManager.getIconClx(iconKey);
   const iconShapeClxList = getIconShapeClxList(options);
   iconClassList.push(...iconShapeClxList);
   return iconClassList.join(' ');
 }
+
+export const getKaitianIcon = getIcon;
+export const updateKaitianIconMap = updateIconMap;

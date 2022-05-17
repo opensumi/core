@@ -1,14 +1,11 @@
-import { updateKaitianIconMap, getKaitianIcon } from '@opensumi/ide-components/lib/icon/util';
 import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 import { IDE_ICONFONT_CN_CSS, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS } from './ide-iconfont';
 
+export { updateIconMap, getIcon } from '@opensumi/ide-components/lib/icon/util';
+
 export const DEFAULT_CDN_ICON = IDE_ICONFONT_CN_CSS;
-
 export { IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS };
-
-export const getIcon = getKaitianIcon;
-export const updateIconMap = updateKaitianIconMap;
 
 export function getOctIcon(iconKey: string) {
   return `octicon octicon-${iconKey}`;
