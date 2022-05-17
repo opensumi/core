@@ -702,7 +702,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   private setDefaultIncludeValue() {
-    const searchIncludes = this.searchPreferences['search.include'] || {};
+    const searchIncludes = this.searchPreferences[SearchSettingId.Include] || {};
     this.includeValue = Object.keys(searchIncludes)
       .reduce<string[]>((includes, key) => {
         if (searchIncludes[key]) {

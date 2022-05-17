@@ -1,7 +1,6 @@
-import { IContextKeyService, URI } from '@opensumi/ide-core-browser';
+import { IContextKeyService, PreferenceService, URI } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuId, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
-import { DisposableCollection, Event } from '@opensumi/ide-core-common';
-
+import { DisposableCollection, Event, Disposable } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -13,6 +12,15 @@ import { MockSCMProvider, MockSCMResource, MockSCMResourceGroup } from '../scm-t
 
 describe('test for scm.store.ts', () => {
   const toTearDown = new DisposableCollection();
+
+  const MockedPreferenceService = {
+    get: (key: string) => {
+      if (key === 'scm.alwaysShowActions') {
+        return false;
+      }
+    },
+    onSpecificPreferenceChange: () => Disposable.create(() => {}),
+  };
 
   afterEach(() => toTearDown.dispose());
 
@@ -37,6 +45,10 @@ describe('test for scm.store.ts', () => {
           {
             token: IMenuRegistry,
             useClass: MenuRegistryImpl,
+          },
+          {
+            token: PreferenceService,
+            useValue: MockedPreferenceService,
           },
         ]),
       );

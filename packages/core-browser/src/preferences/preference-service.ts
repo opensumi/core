@@ -122,38 +122,41 @@ export class PreferenceServiceImpl implements PreferenceService {
    * 初始化并创建默认的PreferenceProvider
    */
   protected async initializeProviders(): Promise<void> {
-    try {
-      const scopes = PreferenceScope.getScopes();
-      for (const scope of scopes) {
-        const provider = this.providerProvider(scope);
-        this.preferenceProviders.set(scope, provider);
-        // 获得每个Scope下的PreferenceProvider后，监听配置变化进行变更合并
-        this.toDispose.push(
-          provider.onDidPreferencesChanged((changes) => {
-            // 对应作用域的配置修改至通知对应Provider
-            // 当 PreferenceService 中依然能收到一次更新通知
-            const preferenceNames = Object.keys(changes.default);
-            const defaultChange = {};
-            for (const name of preferenceNames) {
-              if (changes.default[name].scope === scope) {
-                defaultChange[name] = changes.default[name];
-              }
+    const scopes = PreferenceScope.getScopes();
+    const promises: Array<Promise<void>> = [];
+    for (const scope of scopes) {
+      const provider = this.providerProvider(scope);
+      this.preferenceProviders.set(scope, provider);
+      // 获得每个Scope下的PreferenceProvider后，监听配置变化进行变更合并
+      this.toDispose.push(
+        provider.onDidPreferencesChanged((changes) => {
+          // 对应作用域的配置修改至通知对应Provider
+          // 当 PreferenceService 中依然能收到一次更新通知
+          const preferenceNames = Object.keys(changes.default);
+          const defaultChange = {};
+          for (const name of preferenceNames) {
+            if (changes.default[name].scope === scope) {
+              defaultChange[name] = changes.default[name];
             }
-            if (isEmptyObject(defaultChange)) {
-              return;
-            }
-            this.reconcilePreferences({
-              default: defaultChange,
-              languageSpecific: changes.languageSpecific,
-            });
-          }),
-        );
-        await provider.ready;
-      }
-      this._ready.resolve();
-    } catch (e) {
-      this._ready.reject(e);
+          }
+          if (isEmptyObject(defaultChange)) {
+            return;
+          }
+          this.reconcilePreferences({
+            default: defaultChange,
+            languageSpecific: changes.languageSpecific,
+          });
+        }),
+      );
+      promises.push(provider.ready);
     }
+    return Promise.all(promises)
+      .then(() => {
+        this._ready.resolve();
+      })
+      .catch((e) => {
+        this._ready.reject(e);
+      });
   }
 
   /**
