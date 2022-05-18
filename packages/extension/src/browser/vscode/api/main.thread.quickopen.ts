@@ -3,6 +3,7 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable } from '@opensumi/ide-core-browser';
 import { IQuickInputService } from '@opensumi/ide-core-browser/lib/quick-open';
 import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions } from '@opensumi/ide-quick-open';
+import { QuickOpenItemService } from '@opensumi/ide-quick-open/lib/browser/quick-open-item.service';
 import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
 import { InputBoxImpl } from '@opensumi/ide-quick-open/lib/browser/quickInput.inputBox';
 
@@ -21,6 +22,9 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
   @Autowired(QuickTitleBar)
   protected quickTitleBarService: QuickTitleBar;
 
+  @Autowired(QuickOpenItemService)
+  protected quickOpenItemService: QuickOpenItemService;
+
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
 
@@ -28,11 +32,16 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostQuickOpen);
 
-    this.addDispose(
+    this.addDispose([
       this.quickTitleBarService.onDidTriggerButton((button) => {
         this.proxy.$onDidTriggerButton((button as unknown as { handler: number }).handler);
       }),
-    );
+      this.quickOpenItemService.onDidTriggerItemButton(({ item, button }) => {
+        if (button.handle !== undefined) {
+          this.proxy.$onDidTriggerItemButton(item.handle, button.handle);
+        }
+      }),
+    ]);
   }
 
   $showQuickPick(

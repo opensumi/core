@@ -1,9 +1,14 @@
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
-import { HideReason, IContextKeyService } from '@opensumi/ide-core-browser';
+import { HideReason, IContextKeyService, URI } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco.context-key.service';
+import { QuickOpenItemService } from '@opensumi/ide-quick-open/lib/browser/quick-open-item.service';
+import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
+import { StaticResourceServiceImpl } from '@opensumi/ide-static-resource/lib/browser/static.service';
+import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
+import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common';
 
 import { QuickOpenModule } from '../../src/browser';
 import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
@@ -36,6 +41,26 @@ describe('quick-open service test', () => {
       {
         token: IContextKeyService,
         useClass: MockContextKeyService,
+      },
+      {
+        token: QuickOpenItemService,
+        useClass: QuickOpenItemService,
+      },
+      {
+        token: IIconService,
+        useClass: IconService,
+      },
+      {
+        token: IThemeService,
+        useValue: {
+          getCurrentThemeSync: () => ({
+            type: 'dark',
+          }),
+        },
+      },
+      {
+        token: StaticResourceService,
+        useClass: StaticResourceServiceImpl,
       },
     );
     model = {
@@ -131,6 +156,19 @@ describe('quick-open service test', () => {
     expect(widget.validateType).toBe(VALIDATE_TYPE.ERROR);
     quickOpenService.hideDecoration();
     expect(widget.validateType).toBeUndefined();
+  });
+
+  it('show quick-open item buttons', () => {
+    const quickOpenItemService = injector.get(QuickOpenItemService);
+    quickOpenItemService.getButtons([
+      {
+        iconPath: {
+          dark: URI.file('resources/dark/add.svg'),
+          light: URI.file('resources/dark/add.svg'),
+        },
+        tooltip: 'demo button',
+      },
+    ]);
   });
 
   // onType 为 quickOpen 最主要的回调方法，在这里着重测试
@@ -333,6 +371,24 @@ describe('quick-open service test', () => {
       // true 为取消类型的关闭
       expect(ignoreFocusOut).toBeFalsy();
       expect($onClose).toBeCalledWith(true);
+    });
+  });
+
+  // 直接调用事件
+  describe('event', () => {
+    it('fire item button event', () => {
+      const quickOpenItemService = injector.get(QuickOpenItemService);
+      quickOpenItemService.onDidTriggerItemButton((event) => {
+        expect(event.item).toBe(0);
+        expect(event.button.tooltip).toBe('tooltip');
+      });
+      quickOpenItemService.fireDidTriggerItemButton(0, {
+        iconPath: {
+          dark: URI.file('resources/dark/add.svg'),
+          light: URI.file('resources/dark/add.svg'),
+        },
+        tooltip: 'tooltip',
+      });
     });
   });
 });

@@ -52,6 +52,7 @@ type VSCodeQuickPickItem = string | vscode.QuickPickItem;
 
 export interface IExtHostQuickOpen {
   $onDidTriggerButton(handler: number): void;
+  $onDidTriggerItemButton(itemHandler: number, buttonHandler: number): void;
   $onItemSelected(handler: number): void;
   showQuickPick(
     promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>,

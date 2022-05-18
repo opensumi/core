@@ -2,7 +2,7 @@ import { observable } from 'mobx';
 import React from 'react';
 
 import { VALIDATE_TYPE } from '@opensumi/ide-components';
-import { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
+import { URI, Uri, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
 
 import { Keybinding } from '../keybinding';
 
@@ -38,11 +38,43 @@ export { Mode as QuickOpenMode };
 
 export interface QuickTitleButton {
   iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
-  icon: string; // a background image coming from a url
+  icon?: string; // a background image coming from a url
   iconClass?: string; // a class such as one coming from font awesome
   tooltip?: string;
   // undefined 在 QuickTitleBar 中视为为右侧
   side?: QuickTitleButtonSide;
+}
+
+/**
+ * Button for an action in a {@link QuickPick} or {@link InputBox}.
+ */
+export interface QuickInputButton {
+  /**
+   * Icon for the button.
+   */
+  readonly iconPath: URI | { light: URI; dark: URI } | ThemeIcon;
+
+  /**
+   * An optional tooltip.
+   */
+  readonly tooltip?: string | undefined;
+
+  /**
+   * a class such as one coming from font awesome
+   */
+  readonly iconClass?: string;
+
+  /**
+   * An optional id for the button.
+   */
+  handle?: number;
+}
+
+export interface IQuickPickItemButtonEvent {
+  button: QuickInputButton;
+  item: {
+    handle: number;
+  };
 }
 
 /**
@@ -111,7 +143,10 @@ export interface QuickOpenItemOptions {
    * @returns 执行后是否要隐藏面板, mode 为 PREVIEW 时不判断该值
    */
   run?(mode: Mode): boolean;
+
   value?: any;
+
+  buttons?: QuickInputButton[];
 }
 
 export class QuickOpenItem {
@@ -183,6 +218,9 @@ export class QuickOpenItem {
   }
   getValue(): any {
     return this.options.value;
+  }
+  getButtons(): QuickInputButton[] {
+    return this.options.buttons || [];
   }
 }
 
@@ -303,6 +341,11 @@ export namespace QuickOpenOptions {
      * 结果为空显示的 item，应该用此方法实现空占位，不用 accept，accept 结果可能会被 fuzzy 处理导致高亮
      */
     getPlaceholderItem?: (lookFor: string, originLookFor: string) => QuickOpenItem;
+
+    /**
+     * 内容更新后保持滚动区域不变
+     */
+    keepScrollPosition?: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     enabled: true,
@@ -345,6 +388,7 @@ export interface QuickPickItem<T> {
   description?: string;
   detail?: string;
   iconClass?: string;
+  buttons?: QuickInputButton[];
 }
 
 export interface QuickPickOptions extends QuickOpenOptions {
@@ -387,6 +431,11 @@ export interface QuickPickOptions extends QuickOpenOptions {
    * The prefill value.
    */
   value?: string;
+
+  /*
+   * An optional flag to maintain the scroll position of the quick pick when the quick pick items are updated. Defaults to false.
+   */
+  keepScrollPosition?: boolean;
 }
 
 export const QuickPickService = Symbol('QuickPickService');

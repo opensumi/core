@@ -14,7 +14,6 @@ import { Emitter, Event } from '@opensumi/ide-core-common';
 
 import { QuickTitleBar } from './quick-title-bar';
 
-
 @Injectable()
 export class QuickPickServiceImpl implements QuickPickService {
   @Autowired(QuickTitleBar)
@@ -89,6 +88,7 @@ export class QuickPickServiceImpl implements QuickPickService {
     const detail = typeof element === 'string' ? undefined : element.detail;
     const groupLabel = typeof element === 'string' ? undefined : element.groupLabel;
     const showBorder = typeof element === 'string' ? undefined : element.showBorder;
+    const buttons = typeof element === 'string' ? undefined : element.buttons;
     const [icon, text] = getIconClass(label);
 
     if (icon) {
@@ -102,6 +102,7 @@ export class QuickPickServiceImpl implements QuickPickService {
       iconClass,
       groupLabel,
       showBorder,
+      buttons,
       run: (mode) => {
         if (mode !== Mode.OPEN) {
           return false;

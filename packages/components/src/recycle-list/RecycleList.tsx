@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeList, VariableSizeList, Align } from 'react-window';
+import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
 
 import { ScrollbarsVirtualList } from '../scrollbars';
 
@@ -95,6 +95,11 @@ export interface IRecycleListProps {
    */
   onReady?: (api: IRecycleListHandler) => void;
   /**
+   * Called when the list scroll positions changes, as a result of user scrolling or scroll-to method calls.
+   */
+  onScroll?: ((props: ListOnScrollProps) => any) | undefined;
+
+  /**
    * 如果为不定高 Item 时可以指定动态获取 item Size
    * https://react-window.vercel.app/#/examples/list/variable-size
    */
@@ -118,6 +123,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   style,
   data,
   onReady,
+  onScroll,
   itemHeight,
   header: Header,
   footer: Footer,
@@ -329,14 +335,6 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     );
   };
 
-  const getItemKey = (index: number) => {
-    const node = data[index];
-    if (node && node.id) {
-      return node.id;
-    }
-    return index;
-  };
-
   // 通过计算平均行高来提高准确性
   // 修复滚动条行为，见: https://github.com/bvaughn/react-window/issues/408
   const calcEstimatedSize = React.useMemo(() => {
@@ -364,13 +362,6 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     const isAutoSizeList = !width || !height;
 
     const renderList = () => {
-      let List;
-      if (!isDynamicList) {
-        List = FixedSizeList;
-      } else {
-        List = VariableSizeList;
-      }
-
       const renderContent = ({ width, height }) => {
         const maxH = getMaxListHeight();
         const minH = getMinListHeight();
@@ -382,16 +373,16 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
         }
         if (isDynamicList) {
           return (
-            <List
+            <VariableSizeList
+              onScroll={onScroll}
               width={width}
               height={currentHeight}
               // 这里的数据不是必要的，主要用于在每次更新列表
               itemData={[]}
               itemSize={getSize}
               itemCount={adjustedRowCount}
-              getItemKey={getItemKey}
               overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
-              ref={listRef}
+              ref={listRef as any}
               style={{
                 transform: 'translate3d(0px, 0px, 0px)',
                 ...style,
@@ -402,20 +393,20 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
               estimatedItemSize={calcEstimatedSize}
             >
               {renderDynamicItem}
-            </List>
+            </VariableSizeList>
           );
         } else {
           return (
-            <List
+            <FixedSizeList
+              onScroll={onScroll}
               width={width}
               height={currentHeight}
               // 这里的数据不是必要的，主要用于在每次更新列表
               itemData={[]}
               itemSize={itemHeight}
               itemCount={adjustedRowCount}
-              getItemKey={getItemKey}
               overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
-              ref={listRef}
+              ref={listRef as any}
               style={{
                 transform: 'translate3d(0px, 0px, 0px)',
                 ...style,
@@ -425,7 +416,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
               outerElementType={ScrollbarsVirtualList}
             >
               {renderItem}
-            </List>
+            </FixedSizeList>
           );
         }
       };
@@ -436,7 +427,6 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
         return <AutoSizer>{renderContent}</AutoSizer>;
       }
     };
-
     return renderList();
   };
 

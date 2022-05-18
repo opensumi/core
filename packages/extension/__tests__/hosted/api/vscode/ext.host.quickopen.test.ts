@@ -1,7 +1,11 @@
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, Disposable } from '@opensumi/ide-core-common';
-import { QuickPickService } from '@opensumi/ide-quick-open';
+import { IQuickInputService, QuickOpenService, QuickPickService } from '@opensumi/ide-quick-open';
+import { QuickInputService } from '@opensumi/ide-quick-open/lib/browser/quick-input-service';
 import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
+import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
+import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
+import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
@@ -38,6 +42,26 @@ describe('ext host quickopen test', () => {
       }),
     },
     {
+      token: IThemeService,
+      useValue: {
+        applyTheme: () => {},
+      },
+    },
+    {
+      token: IIconService,
+      useClass: IconService,
+    },
+    {
+      token: IQuickInputService,
+      useClass: QuickInputService,
+    },
+    {
+      token: QuickOpenService,
+      useValue: {
+        open: () => Promise.resolve(),
+      },
+    },
+    {
       token: QuickTitleBar,
       useValue: mockService({
         onDidTriggerButton: () => Disposable.NULL,
@@ -67,5 +91,26 @@ describe('ext host quickopen test', () => {
       canPickMany: true,
     });
     expect(item).toStrictEqual(['a']);
+  });
+
+  it('trigger quick open item button', async () => {
+    extHost.$onDidTriggerItemButton(0, 0);
+  });
+
+  it('invoke show input box', async () => {
+    extHost.showInputBox({
+      title: 'test input box',
+      value: '0',
+    });
+  });
+
+  it('set input box items', async () => {
+    const quickPick = extHost.createQuickPick();
+    quickPick.items = [
+      {
+        label: 'test button',
+      },
+    ];
+    expect(quickPick.items.length).toBe(1);
   });
 });

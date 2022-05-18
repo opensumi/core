@@ -1,6 +1,7 @@
 import clx from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import type { ListOnScrollProps } from 'react-window';
 
 import {
   Button,
@@ -13,6 +14,7 @@ import {
 import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
 import {
   HideReason,
+  QuickInputButton,
   QuickOpenAction,
   QuickOpenItem,
   QuickOpenMode,
@@ -23,6 +25,7 @@ import { KeyCode as KeyCodeEnum } from '@opensumi/monaco-editor-core/esm/vs/base
 
 import { HighlightLabel } from './components/highlight-label';
 import { KeybindingView } from './components/keybinding';
+import { QuickOpenItemService } from './quick-open-item.service';
 import { QuickOpenContext } from './quick-open.type';
 import { QuickTitleBar } from './quick-title-bar';
 import styles from './styles.module.less';
@@ -32,12 +35,12 @@ interface IQuickOpenItemProps {
   index: number;
 }
 
-const QuickOpenHeaderButton: React.FC<
+const QuickOpenButton: React.FC<
   {
     button: QuickTitleButton;
   } & React.ButtonHTMLAttributes<HTMLButtonElement>
 > = observer(({ button, ...props }) => (
-  <Button {...props} key={button.tooltip} type='icon' iconClass={button.iconClass} title={button.tooltip}></Button>
+  <Button {...props} key={button.tooltip} type='icon' iconClass={button.iconClass} title={button.tooltip} />
 ));
 
 export const QuickOpenHeader = observer(() => {
@@ -72,23 +75,17 @@ export const QuickOpenHeader = observer(() => {
     [quickTitleBar.fireDidTriggerButton],
   );
 
-  return quickTitleBar.isAttached && titleText ? (
+  return quickTitleBar.isAttached ? (
     <div className={styles.title_bar}>
       <div className={styles.title_bar_button}>
         {quickTitleBar.leftButtons.map((button) => (
-          <QuickOpenHeaderButton
-            onMouseDown={(event) => onSelectButton(event, button)}
-            button={button}
-          ></QuickOpenHeaderButton>
+          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
         ))}
       </div>
       <div>{titleText}</div>
       <div className={styles.title_bar_button}>
         {quickTitleBar.rightButtons.map((button) => (
-          <QuickOpenHeaderButton
-            onMouseDown={(event) => onSelectButton(event, button)}
-            button={button}
-          ></QuickOpenHeaderButton>
+          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
         ))}
       </div>
     </div>
@@ -168,6 +165,7 @@ export const QuickOpenInput = observer(() => {
 
 const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index }) => {
   const { widget } = React.useContext(QuickOpenContext);
+  const quickOpenItemService = useInjectable<QuickOpenItemService>(QuickOpenItemService);
 
   const label = React.useMemo(() => data.getLabel(), [data]);
 
@@ -183,7 +181,11 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   const showBorder = React.useMemo(() => data.showBorder(), [data]);
 
+  const buttons = React.useMemo(() => quickOpenItemService.getButtons(data.getButtons()), [data]);
+
   const [labelHighlights, descriptionHighlights, detailHighlights] = React.useMemo(() => data.getHighlights(), [data]);
+
+  const [mouseOver, setMouseOver] = React.useState(false);
 
   const actions = React.useMemo(() => {
     const provider = widget.actionProvider;
@@ -217,6 +219,14 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
     [data],
   );
 
+  const onSelectButton = React.useCallback(
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, button: QuickInputButton) => {
+      event.stopPropagation();
+      quickOpenItemService.fireDidTriggerItemButton(index, button);
+    },
+    [data],
+  );
+
   return (
     <div
       tabIndex={0}
@@ -224,6 +234,8 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
         [styles.item_selected]: widget.selectIndex === index,
         [styles.item_border]: showBorder,
       })}
+      onMouseEnter={() => setMouseOver(true)}
+      onMouseLeave={() => setMouseOver(false)}
     >
       {widget.canSelectMany && (
         <CheckBox
@@ -277,11 +289,18 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           className={clx(styles.item_action, action.class)}
         ></span>
       ))}
+      {(mouseOver || widget.selectIndex === index) &&
+        buttons?.map((button) => (
+          <QuickOpenButton onMouseDown={(event) => onSelectButton(event, button)} button={button} />
+        ))}
     </div>
   );
 });
 
-export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => void }> = observer(({ onReady }) => {
+export const QuickOpenList: React.FC<{
+  onReady: (api: IRecycleListHandler) => void;
+  onScroll: (props: ListOnScrollProps) => void;
+}> = observer(({ onReady, onScroll }) => {
   const { widget } = React.useContext(QuickOpenContext);
 
   const getSize = React.useCallback(
@@ -295,6 +314,7 @@ export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => vo
   return widget.items.length > 0 ? (
     <RecycleList
       onReady={onReady}
+      onScroll={onScroll}
       className={clx(styles.quickopen_list, {
         [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
       })}
@@ -309,6 +329,8 @@ export const QuickOpenList: React.FC<{ onReady: (api: IRecycleListHandler) => vo
 export const QuickOpenView = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const listApi = React.useRef<IRecycleListHandler>();
+
+  const scrollOffsetBefore = React.useRef(0);
 
   // https://stackoverflow.com/questions/38019140/react-and-blur-event/38019906#38019906
   const focusInCurrentTarget = React.useCallback(({ relatedTarget, currentTarget }) => {
@@ -342,6 +364,13 @@ export const QuickOpenView = observer(() => {
   const onListReady = React.useCallback(
     (api: IRecycleListHandler) => {
       listApi.current = api;
+    },
+    [widget],
+  );
+
+  const onListScroll = React.useCallback(
+    (props: ListOnScrollProps) => {
+      scrollOffsetBefore.current = props.scrollOffset;
     },
     [widget],
   );
@@ -399,8 +428,13 @@ export const QuickOpenView = observer(() => {
   }, [widget.items, widget.autoFocus]);
 
   React.useEffect(() => {
-    // smart 效果可以还原 vscode quickopen 上下切换的效果
-    listApi.current?.scrollToIndex(widget.selectIndex, 'smart');
+    if (widget.keepScrollPosition) {
+      listApi.current?.scrollTo(scrollOffsetBefore.current);
+    } else {
+      // smart 效果可以还原 vscode quickopen 上下切换的效果
+      listApi.current?.scrollToIndex(widget.selectIndex, 'smart');
+    }
+
     if (widget.items.length === 0) {
       return;
     }
@@ -411,7 +445,7 @@ export const QuickOpenView = observer(() => {
     }
     item.run(QuickOpenMode.PREVIEW);
     widget.callbacks.onSelect(item, widget.selectIndex);
-  }, [widget.items, widget.selectIndex]);
+  }, [widget.items, widget.selectIndex, widget.keepScrollPosition]);
 
   const onKeydown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     // 处于 composition 的输入，不做处理，否则在按 enter 后会直接打开选择的第一个文件，并且快捷键完全失效
@@ -473,7 +507,7 @@ export const QuickOpenView = observer(() => {
       <QuickOpenHeader />
       <QuickOpenInput />
       {widget.renderTab?.()}
-      <QuickOpenList onReady={onListReady} />
+      <QuickOpenList onReady={onListReady} onScroll={onListScroll} />
     </div>
   ) : null;
 });

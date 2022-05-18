@@ -77,12 +77,14 @@ export interface QuickOpenInputOptions extends QuickOpenTabOptions {
   inputEnable?: boolean;
   valueSelection?: [number, number];
   canSelectMany?: boolean;
+  keepScrollPosition?: boolean;
 }
 
 export interface IQuickOpenWidget extends QuickOpenTabOptions {
   inputValue: string;
   selectIndex: number;
   validateType?: VALIDATE_TYPE;
+  keepScrollPosition?: boolean;
   readonly MAX_HEIGHT: number;
   readonly isShow: boolean;
   readonly items: QuickOpenItem[];

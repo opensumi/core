@@ -11,7 +11,13 @@ import {
   isUndefined,
   Disposable,
 } from '@opensumi/ide-core-common';
-import { QuickInputOptions, QuickPickItem, QuickPickOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
+import {
+  QuickInputButton,
+  QuickInputOptions,
+  QuickPickItem,
+  QuickPickOptions,
+  QuickTitleButton,
+} from '@opensumi/ide-quick-open';
 
 import {
   MainThreadAPIIdentifier,
@@ -80,6 +86,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
           description: item.description,
           detail: item.detail,
           value: index, // handle
+          buttons: item.buttons as QuickInputButton[],
         };
 
         return quickPickItem;
@@ -95,6 +102,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
         fuzzyMatchDescription: options.matchOnDescription,
         fuzzyMatchDetail: options.matchOnDetail,
         ignoreFocusOut: options.ignoreFocusOut,
+        keepScrollPosition: options.keepScrollPosition,
         title: (options as QuickPickOptions).title,
         buttons: (options as QuickPickOptions).buttons,
         step: (options as QuickPickOptions).step,
@@ -199,6 +207,12 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   $onDidTriggerButton(btnHandler: number): void {
     return (this.createdQuicks.get(this.currentQuick) as ExtQuickPick<vscode.QuickPickItem>)?.attachBtn(btnHandler);
   }
+  $onDidTriggerItemButton(itemHandler: number, btnHandler: number): void {
+    return (this.createdQuicks.get(this.currentQuick) as ExtQuickPick<vscode.QuickPickItem>)?.attachItemBtn(
+      itemHandler,
+      btnHandler,
+    );
+  }
   showInputBox(
     options: vscode.InputBoxOptions = {},
     token: CancellationToken = CancellationToken.None,
@@ -233,15 +247,18 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   ignoreFocusOut: boolean;
   matchOnDescription: boolean;
   matchOnDetail: boolean;
+  keepScrollPosition?: boolean | undefined;
   selectedItems: ReadonlyArray<T>;
   step: number | undefined;
   title: string | undefined;
   totalSteps: number | undefined;
-  value: string;
-  _buttons: [];
-  private _items: T[];
-  private _activeItems: T[];
-  private _placeholder: string | undefined;
+  value = '';
+  _buttons: [] = [];
+  private _items: T[] = [];
+  private _handlesToItems: Map<number, T> = new Map();
+  private _itemsToHandles: Map<T, number> = new Map();
+  private _activeItems: T[] = [];
+  private _placeholder: string | undefined = '';
   private disposableCollection: DisposableCollection;
   private readonly _onDidHideEmitter: Emitter<void>;
   private readonly _onDidAcceptEmitter: Emitter<void>;
@@ -249,6 +266,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   private readonly _onDidChangeSelectionEmitter: Emitter<T[]>;
   private readonly _onDidChangeValueEmitter: Emitter<string>;
   private readonly _onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  private readonly _onDidTriggerItemButtonEmitter: Emitter<vscode.QuickPickItemButtonEvent<T>>;
 
   private didShow = false;
 
@@ -256,11 +274,6 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   constructor(readonly quickOpen: IExtHostQuickOpen, quickPickIndex: number) {
     this.quickPickIndex = quickPickIndex;
-    this._items = [];
-    this._activeItems = [];
-    this._placeholder = '';
-    this._buttons = [];
-    this.value = '';
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push((this._onDidHideEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));
@@ -268,6 +281,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     this.disposableCollection.push((this._onDidChangeSelectionEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidChangeValueEmitter = new Emitter()));
     this.disposableCollection.push((this._onDidTriggerButtonEmitter = new Emitter()));
+    this.disposableCollection.push((this._onDidTriggerItemButtonEmitter = new Emitter()));
   }
 
   get items(): T[] {
@@ -276,6 +290,13 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
 
   set items(activeItems: T[]) {
     this._items = activeItems;
+    this._handlesToItems.clear();
+    this._itemsToHandles.clear();
+    this._items.forEach((item, i) => {
+      this._handlesToItems.set(i, item);
+      this._itemsToHandles.set(item, i);
+    });
+
     // 说明是先 show，再设置 item
     if (this.didShow) {
       this.show();
@@ -325,6 +346,10 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
     return this._onDidTriggerButtonEmitter.event;
   }
 
+  get onDidTriggerItemButton(): Event<vscode.QuickPickItemButtonEvent<T>> {
+    return this._onDidTriggerItemButtonEmitter.event;
+  }
+
   _fireDidChangeValue(value: string) {
     this.value = value;
     this._onDidChangeValueEmitter.fire(value);
@@ -341,6 +366,21 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   attachBtn(btnHandler: number): void {
     const btn = this.buttons[btnHandler];
     return this._onDidTriggerButtonEmitter.fire(btn);
+  }
+
+  attachItemBtn(itemhandler: number, btnHandler: number): void {
+    const item = this._handlesToItems.get(itemhandler);
+    if (!item || !item.buttons || !item.buttons.length) {
+      return;
+    }
+
+    const button = item.buttons[btnHandler];
+    if (button) {
+      return this._onDidTriggerItemButtonEmitter.fire({
+        button,
+        item,
+      });
+    }
   }
 
   hide(): void {
@@ -371,6 +411,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
           placeHolder: this.placeholder,
           ignoreFocusOut: this.ignoreFocusOut,
           _sessionId: this.quickPickIndex,
+          keepScrollPosition: this.keepScrollPosition,
         } as QuickPickOptions,
       )
       .then((item) => {
