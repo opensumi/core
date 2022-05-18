@@ -40,6 +40,12 @@ export namespace ApplicationError {
     const constructorOpt = Object.assign((...args: any[]) => new Impl(code, factory(...args), constructorOpt), {
       code,
       is(arg: object | undefined): arg is ApplicationError<C, D> {
+        // JSON RPC通信后，错误的构造信息丢失，通过 Error 类的 cause 属性保存 ApplicationError 实例来修复。
+        // 需要加上第一个判断，否则过不了语法检查。
+        if (arg instanceof Error && arg.cause) {
+          const cause = arg.cause;
+          return cause instanceof Impl && cause.code === code;
+        }
         return arg instanceof Impl && arg.code === code;
       },
     });

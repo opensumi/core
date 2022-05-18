@@ -1,3 +1,4 @@
+import { ApplicationError } from '@opensumi/ide-core-common';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
 export abstract class RPCService<T = any> {
@@ -36,7 +37,7 @@ export class ProxyClient {
 }
 
 interface IRPCResult {
-  error: boolean;
+  error?: ApplicationError<number, any>;
   data: any;
 }
 export class RPCProxy {
@@ -120,6 +121,11 @@ export class RPCProxy {
                     if (result.data.stack) {
                       error.stack = result.data.stack;
                     }
+                    if (result.error.code && result.error.data) {
+                      // 经过通信，applicationError 实例的构造类信息丢失了，使用 fromJson 恢复
+                      const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
+                      error.cause = applicationError;
+                    }
                     reject(error);
                   } else {
                     resolve(result.data);
@@ -169,7 +175,6 @@ export class RPCProxy {
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
           return {
-            error: false,
             data: NOTREGISTERMETHOD,
           };
         }
@@ -206,12 +211,11 @@ export class RPCProxy {
       const result = await this.proxyService[prop](...this.serializeArguments(args));
 
       return {
-        error: false,
         data: result,
       };
     } catch (e) {
       return {
-        error: true,
+        error: e,
         data: {
           message: e.message,
           stack: e.stack,
