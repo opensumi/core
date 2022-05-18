@@ -79,7 +79,7 @@ export class SCMResourceFolder extends CompositeTreeNode {
 
   @memoize
   get uri(): URI {
-    return new URI(this.raw.pathname);
+    return new URI(this.raw.resource.sourceUri);
   }
 
   @memoize
@@ -114,7 +114,7 @@ export class SCMResourceFile extends TreeNode {
 
   @memoize
   get uri(): URI {
-    return new URI(this.raw.pathname);
+    return new URI(this.raw.resource.sourceUri);
   }
 
   // Tree 模式下则没有 description
