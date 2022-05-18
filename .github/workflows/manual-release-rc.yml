@@ -57,7 +57,6 @@ jobs:
           CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
           echo '### Released :rocket:' $CURRENT_VERSION >> $GITHUB_STEP_SUMMARY
           echo 'user input ref:' $INPUT_REF >> $GITHUB_STEP_SUMMARY
-          echo 'checkout from hash:' >> $GITHUB_STEP_SUMMARY
           echo '```log' >> $GITHUB_STEP_SUMMARY
           git log --oneline -1 >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
