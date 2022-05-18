@@ -36,6 +36,14 @@ export class ToolbarRegistry {
       group: item.group || 'navigation',
     } as IMenuItem);
   }
+
+  /**
+   * 取消已注册的菜单项
+   * @param menuItemId
+   */
+  unRegisterItem(menuItemId: string) {
+    this.menuRegistry.unregisterMenuItem(MenuId.ViewTitle, menuItemId);
+  }
 }
 
 export interface TabBarToolbarItem extends IMenuItem {
