@@ -9,7 +9,7 @@ import { QuickOpenModule } from '../../src/browser';
 import { IQuickOpenWidget } from '../../src/browser/quick-open.type';
 import { QuickOpenItem, QuickOpenModel, QuickOpenService } from '../../src/common';
 
-describe(__filename, () => {
+describe('quick-open service test', () => {
   let injector: MockInjector;
   let quickOpenService: QuickOpenService;
   let container: HTMLDivElement;

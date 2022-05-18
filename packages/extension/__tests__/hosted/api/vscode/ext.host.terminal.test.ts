@@ -46,7 +46,7 @@ const rpcProtocolMain = new RPCProtocol(mockClientB);
 let extHost: ExtHostTerminal;
 let mainThread: MainThreadTerminal;
 
-describe(__filename, () => {
+describe('ext host terminal test', () => {
   const injector = createBrowserInjector([]);
   injector.mockService(PreferenceService, {});
   injector.mockService(ILogger, {});
@@ -156,8 +156,8 @@ describe(__filename, () => {
       name: 'terminal-3',
       pty: {
         onDidWrite: emitter3.event,
-        open: () => { },
-        close: () => { },
+        open: () => {},
+        close: () => {},
       },
     });
     expect(terminal3).toBeInstanceOf(Terminal);
@@ -171,7 +171,7 @@ describe(__filename, () => {
 
     mainThread['$createTerminal'] = () => Promise.resolve();
 
-    mainThread['$sendProcessExit'] = () => { };
+    mainThread['$sendProcessExit'] = () => {};
 
     const mockCreateTerminal = jest.spyOn(mainThread, '$createTerminal');
     const mockTerminalExit = jest.spyOn(mainThread, '$sendProcessExit');
@@ -182,8 +182,8 @@ describe(__filename, () => {
       pty: {
         onDidWrite: emitter4.event,
         onDidClose: closeEmitter.event,
-        open: () => { },
-        close: () => { },
+        open: () => {},
+        close: () => {},
       },
     });
     let terminalId;
@@ -193,7 +193,7 @@ describe(__filename, () => {
       }
     }
 
-    mainThread['$sendProcessReady'] = jest.fn(() => { });
+    mainThread['$sendProcessReady'] = jest.fn(() => {});
 
     await mainThread['proxy'].$startExtensionTerminal(terminalId, {
       columns: 80,
@@ -231,8 +231,8 @@ describe(__filename, () => {
       onDidWrite: new Emitter<string>().event,
       onDidChangeName: changeNameEmitter.event,
       onDidClose: closeEmitter.event,
-      open: () => { },
-      close: () => { },
+      open: () => {},
+      close: () => {},
     };
 
     const terminal = extHost.createExtensionTerminal({

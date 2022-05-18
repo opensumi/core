@@ -22,7 +22,7 @@ import { ExtensionClientAppContribution, ExtensionCommandContribution } from '..
 
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
 
-describe(__filename, () => {
+describe('extension browser test', () => {
   let injector: MockInjector;
   let commandService: CommandService;
   let extensionClientAppContribution: ExtensionClientAppContribution;

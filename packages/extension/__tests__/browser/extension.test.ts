@@ -33,7 +33,7 @@ const mockExtension: IExtensionMetaData = {
   },
 };
 
-describe(__filename, () => {
+describe('extension browser test', () => {
   let injector: MockInjector;
 
   beforeEach(() => {

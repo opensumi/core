@@ -3,7 +3,7 @@ import { Injectable } from '@opensumi/di';
 import { createBrowserInjector, createNodeInjector } from '../src/injector-helper';
 import { MockInjector } from '../src/mock-injector';
 
-describe(__filename, () => {
+describe('mock-injector test', () => {
   let fn1: jest.Mock<any, any>;
   let fn2: jest.Mock<any, any>;
 

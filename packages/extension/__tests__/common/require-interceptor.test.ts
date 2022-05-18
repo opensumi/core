@@ -3,7 +3,7 @@ import React from 'react';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IRequireInterceptorService, RequireInterceptorService } from '../../src/common/require-interceptor';
 
-describe(__filename, () => {
+describe('require-interceptor test', () => {
   const injector = createBrowserInjector([]);
   let requireInterceptorService: IRequireInterceptorService;
 

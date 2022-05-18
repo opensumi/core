@@ -3,7 +3,7 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { URI, AppConfig } from '../../src';
 import { IExternalUriService } from '../../src/services';
 
-describe(__filename, () => {
+describe('external-uri service test', () => {
   const oldWindowLocationHostname = window.location.hostname;
   const oldWindowLocationHref = window.location.href;
   const ideHostName = 'ide.aliababa.com';

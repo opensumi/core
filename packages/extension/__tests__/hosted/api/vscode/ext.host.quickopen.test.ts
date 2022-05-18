@@ -27,7 +27,7 @@ const rpcProtocolMain = new RPCProtocol(mockClientB);
 let extHost: ExtHostQuickOpen;
 let mainThread: MainThreadQuickOpen;
 
-describe(__filename, () => {
+describe('ext host quickopen test', () => {
   const injector = createBrowserInjector([]);
   injector.addProviders(
     {
