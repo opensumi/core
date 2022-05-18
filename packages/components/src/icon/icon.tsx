@@ -2,7 +2,7 @@ import clx from 'classnames';
 import React from 'react';
 
 import { defaultIconMap, defaultIconfont } from './iconfont/iconManager';
-import { getKaitianIcon, IIconShapeOptions } from './util';
+import { getIcon, IIconShapeOptions } from './util';
 
 import './styles.less';
 
@@ -89,13 +89,13 @@ const IconBase = function <T>(props: IconProps<T>, ref: React.Ref<HTMLSpanElemen
     // 这里为了兼容被废弃的 icon 使用了 `defaultIconMap` 去取值
     // 但是上方的类型 DefaultIconKeys 里面已经不包含被废弃的 icon 了，避免继续使用废弃的图标
     if (defaultIconMap[icon as DefaultIconKeys]) {
-      iconClx = getKaitianIcon(icon as string, iconShapeOptions);
+      iconClx = getIcon(icon as string, iconShapeOptions);
     } else {
-      const { getIcon, getResourceIcon } = React.useContext(IconContext);
+      const { getIcon: getContextIcon, getResourceIcon } = React.useContext(IconContext);
       if (resourceOptions && getResourceIcon) {
         iconClx = getResourceIcon(icon as string, resourceOptions);
       } else {
-        iconClx = getIcon(icon, iconShapeOptions);
+        iconClx = getContextIcon(icon, iconShapeOptions);
       }
     }
   } else {

@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { useState, useEffect } from 'react';
 
 import './style.less';
-import { Icon, getKaitianIcon } from '../icon';
+import { Icon, getIcon } from '../icon';
 
 export interface IDataOption<T> {
   iconClass?: string;
@@ -447,7 +447,7 @@ export function Select<T = string>({
             <span className={'kt-select-option'}>{selected.label}</span>
           </React.Fragment>
         )}
-        <Icon iconClass={getKaitianIcon('down')} />
+        <Icon iconClass={getIcon('down')} />
       </React.Fragment>
     );
   };

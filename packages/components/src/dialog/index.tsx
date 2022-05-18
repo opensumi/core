@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Button } from '../button';
 import { MessageType } from '../common';
-import { IconContext, getKaitianIcon } from '../icon';
+import { IconContext, getIcon } from '../icon';
 import { Overlay, IOverlayProps } from '../overlay';
 import './styles.less';
 
@@ -60,7 +60,7 @@ export const Dialog: React.FC<IDialogProps> = ({
   getContainer,
   keyboard,
 }) => {
-  const { getIcon } = React.useContext(IconContext);
+  const { getIcon: getContextIcon } = React.useContext(IconContext);
   return (
     <Overlay
       visible={visible}
@@ -81,7 +81,7 @@ export const Dialog: React.FC<IDialogProps> = ({
           {icon && (
             <div
               style={{ color: icon.color }}
-              className={clx('kt-dialog-icon', getKaitianIcon(icon.className) || getIcon(icon.className))}
+              className={clx('kt-dialog-icon', getIcon(icon.className) || getContextIcon(icon.className))}
             />
           )}
           <div className={'kt-dialog-content_area'}>
@@ -89,7 +89,7 @@ export const Dialog: React.FC<IDialogProps> = ({
             {typeof message === 'string' ? <span className={'kt-dialog-message'}>{message}</span> : message}
           </div>
           {closable && type !== 'basic' && (
-            <button className={clx('kt-dialog-closex', getKaitianIcon('close'))} onClick={onClose}></button>
+            <button className={clx('kt-dialog-closex', getIcon('close'))} onClick={onClose}></button>
           )}
         </div>
         {messageType !== MessageType.Empty && type !== 'basic' && (
