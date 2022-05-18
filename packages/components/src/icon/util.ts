@@ -57,5 +57,11 @@ export function getIcon(iconKey: string, options?: IIconShapeOptions): string {
   return iconClassList.join(' ');
 }
 
+/**
+ * @deprecated please use `getIcon` instead
+ */
 export const getKaitianIcon = getIcon;
+/**
+ * @deprecated please use `updateIconMap` instead
+ */
 export const updateKaitianIconMap = updateIconMap;
