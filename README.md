@@ -63,7 +63,7 @@ Read through our [contributing guidelines](./CONTRIBUTING.md) to learn about our
 
 ## 🙋‍♀️ Want to Help?
 
-Want to report a bug, contribute some code, or improve documentation? Excellent! Read up on our [guidelines](<(./CONTRIBUTING.md)>) for contributing and then check out one of our issues labeled as help wanted or good first issue.
+Want to report a bug, contribute some code, or improve documentation? Excellent! Read up on our [guidelines](./CONTRIBUTING.md) for contributing and then check out one of our issues labeled as help wanted or good first issue.
 
 ## 🧑‍💻 DingTalk Group
 
