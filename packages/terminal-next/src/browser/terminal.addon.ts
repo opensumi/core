@@ -148,7 +148,7 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     if (connection) {
       this._disposeConnection = new Disposable(
         connection.onData((data: string | ArrayBuffer) => {
-          // connection.onData 的时候 对lastInputTime 进行差值运算，统计最后一次输入到收到回复的时间间隔
+          // connection.onData 的时候 对 lastInputTime 进行差值运算，统计最后一次输入到收到回复的时间间隔
           this._terminal.write(typeof data === 'string' ? data : new Uint8Array(data));
           this._onData.fire(data);
           if (this._lastInputTime) {
@@ -179,7 +179,7 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     if (!this.connection || this.connection.readonly) {
       return;
     }
-    // 记录lastInputTime，用于终端反应速度统计
+    // 记录 lastInputTime，用于终端反应速度统计
     this._timeResponse();
     this.connection.sendData(data);
   }

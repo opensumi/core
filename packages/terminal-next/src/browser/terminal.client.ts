@@ -19,7 +19,6 @@ import {
   withNullAsUndefined,
   IThemeColor,
   OperatingSystem,
-  OS,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
