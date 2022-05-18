@@ -17,7 +17,7 @@ import '@opensumi/vscode-jsonrpc/lib/node/main';
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PROXY_PORT = 10296;
-describe(__filename, () => {
+describe('ext host proxy test', () => {
   jest.setTimeout(10 * 1000);
   describe('extension host proxy', () => {
     const extHostPath = path.join(__dirname, '../../__mocks__/ext.host.js');

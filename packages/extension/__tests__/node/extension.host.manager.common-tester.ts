@@ -18,7 +18,7 @@ interface IExtensionHostManagerTesterOptions {
 }
 
 export const extensionHostManagerTester = (options: IExtensionHostManagerTesterOptions) =>
-  describe(__filename, () => {
+  describe('extension host manager test', () => {
     jest.setTimeout(10 * 1000);
     let extensionHostManager: IExtensionHostManager;
     let injector: MockInjector;

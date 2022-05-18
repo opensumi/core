@@ -16,7 +16,7 @@ import { QuickOpenHandlerRegistry, PrefixQuickOpenServiceImpl } from '../../src/
 import { QuickTitleBar } from '../../src/browser/quick-title-bar';
 import { QUICK_OPEN_COMMANDS } from '../../src/common';
 
-describe(__filename, () => {
+describe('prefix quick open service test', () => {
   let injector: MockInjector;
   let handler: QuickOpenHandlerRegistry;
 

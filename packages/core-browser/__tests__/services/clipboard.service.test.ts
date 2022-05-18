@@ -4,7 +4,7 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IClipboardService } from '../../src/services';
 
-describe(__filename, () => {
+describe('clipboard service test', () => {
   let injector: MockInjector;
   let clipboardService: IClipboardService;
   beforeAll(() => {

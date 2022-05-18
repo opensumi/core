@@ -3,7 +3,7 @@ import { TextEditorData } from '@opensumi/ide-extension/lib/hosted/api/vscode/ed
 
 import { mockService } from '../../../../../../../tools/dev-tool/src/mock-injector';
 
-describe(__filename, () => {
+describe('editor host test', () => {
   describe('TextEditorData', () => {
     let textData: TextEditorData;
     const snippet = ['for (const ${2:element} of ${1:array}) {', '\t$0', '}'];

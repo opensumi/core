@@ -1,7 +1,7 @@
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { ExtensionsActivator, ActivatedExtension } from '../../src/common/activator';
 
-describe(__filename, () => {
+describe('activator test', () => {
   let extensionsActivator: ExtensionsActivator;
   const mockActivatedExtension = new ActivatedExtension(
     'test',
