@@ -1,6 +1,6 @@
 import { ThemeType } from '@opensumi/ide-theme/lib/common';
 
-import { TerminalOptions } from './pty';
+import { IShellLaunchConfig } from './pty';
 
 export enum ItemType {
   info = 0,
@@ -13,7 +13,7 @@ export interface ItemProps {
   selected?: boolean;
   type?: ItemType;
   editable?: boolean;
-  options?: TerminalOptions;
+  options?: IShellLaunchConfig;
   onClick?: () => void;
   onClose?: () => void;
   onInputBlur?: (id: string) => void;

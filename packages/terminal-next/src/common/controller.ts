@@ -6,7 +6,7 @@ import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
 
 import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
-import { TerminalOptions, ITerminalInfo, ICreateTerminalOptions } from './pty';
+import { ITerminalInfo, ICreateTerminalOptions, TerminalOptions } from './pty';
 import { IWidgetGroup, IWidget } from './resize';
 
 export interface ITerminalExternalClient {

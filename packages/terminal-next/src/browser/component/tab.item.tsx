@@ -6,7 +6,7 @@ import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
 import { getIcon, useInjectable, URI } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
-import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 import { ItemProps, ItemType } from '../../common';
@@ -32,16 +32,16 @@ export const renderInfoItem = observer((props: ItemProps) => {
 
   let iconClass;
 
-  if (props.options?.iconPath) {
-    if ((props.options.iconPath as any)?.id) {
-      iconClass = iconService.fromString(`$(${(props.options.iconPath as any)?.id})`);
-    } else if (props.options.iconPath instanceof URI) {
-      iconClass = iconService.fromIcon(props.options?.iconPath.toString());
-    } else if ((props.options.iconPath as any)?.light || (props.options?.iconPath as any)?.dark) {
+  if (props.options?.icon) {
+    if ((props.options.icon as any)?.id) {
+      iconClass = iconService.fromString(`$(${(props.options.icon as any)?.id})`);
+    } else if (props.options.icon instanceof URI) {
+      iconClass = iconService.fromIcon(props.options?.icon.toString());
+    } else if ((props.options.icon as any)?.light || (props.options?.icon as any)?.dark) {
       iconClass =
         props.theme === 'light'
-          ? iconService.fromIcon((props.options.iconPath as any).light.toString())
-          : iconService.fromIcon((props.options.iconPath as any).dark.toString());
+          ? iconService.fromIcon((props.options.icon as any).light.toString())
+          : iconService.fromIcon((props.options.icon as any).dark.toString());
     }
   }
 

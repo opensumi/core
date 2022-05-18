@@ -1,7 +1,7 @@
 import { Event } from '@opensumi/ide-core-common';
 import { Disposable } from '@opensumi/ide-core-common';
 
-import { TerminalOptions } from './pty';
+import { IShellLaunchConfig } from './pty';
 
 export interface IWidget extends Disposable {
   id: string;
@@ -27,7 +27,7 @@ export interface IWidget extends Disposable {
 export interface IWidgetGroup extends Disposable {
   id: string;
   name: string;
-  options?: TerminalOptions;
+  options?: IShellLaunchConfig;
   editable: boolean;
   activated: boolean;
   length: number;
