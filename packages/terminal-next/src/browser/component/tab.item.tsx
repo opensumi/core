@@ -1,33 +1,49 @@
 import clx from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { getIcon } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, URI } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { IIconService } from '@opensumi/ide-theme';
+import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 import { ItemProps, ItemType } from '../../common';
 
 import styles from './tab.module.less';
 
 export const renderInfoItem = observer((props: ItemProps) => {
+  const iconService = useInjectable<IIconService>(IconService);
   const handleSelect = debounce(() => props.onClick && props.onClick(), 20);
   const handleClose = debounce(() => props.onClose && props.onClose(), 20);
 
-  const handleOnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleOnKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && props.onInputEnter && props.id) {
       props.onInputEnter(props.id, (e.target as any).value);
     }
   };
-
-  const ref = React.useRef<HTMLDivElement>(null);
-  React.useEffect(() => {
-    // 刚刚选中，滚一下
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
     if (props.selected) {
       ref.current?.scrollIntoView();
     }
   }, [props.selected]);
+
+  let iconClass;
+
+  if (props.options?.icon) {
+    if ((props.options.icon as any)?.id) {
+      iconClass = iconService.fromString(`$(${(props.options.icon as any)?.id})`);
+    } else if (props.options.icon instanceof URI) {
+      iconClass = iconService.fromIcon(props.options?.icon.toString());
+    } else if ((props.options.icon as any)?.light || (props.options?.icon as any)?.dark) {
+      iconClass =
+        props.theme === 'light'
+          ? iconService.fromIcon((props.options.icon as any).light.toString())
+          : iconService.fromIcon((props.options.icon as any).dark.toString());
+    }
+  }
 
   return (
     <div
@@ -54,7 +70,9 @@ export const renderInfoItem = observer((props: ItemProps) => {
           {props.name !== '' ? (
             <>
               <Icon
-                iconClass={getIcon(props.name?.toLowerCase() || 'terminal') || getIcon('terminal')}
+                iconClass={
+                  iconClass ? iconClass : getIcon(props.name?.toLowerCase() || 'terminal') || getIcon('terminal')
+                }
                 style={{ marginRight: 4, color: 'inherit', fontSize: 14 }}
               />
               <span className={styles.item_title}>{props.name}</span>
@@ -106,9 +124,9 @@ export default (props: ItemProps) => {
   const type = props.type || ItemType.info;
   switch (type) {
     case ItemType.info:
-      return React.createElement(props.provider.infoItemRender, props);
+      return createElement(props.provider.infoItemRender, props);
     case ItemType.add:
-      return React.createElement(props.provider.addItemRender, props);
+      return createElement(props.provider.addItemRender, props);
     default:
       return null;
   }

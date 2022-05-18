@@ -1,5 +1,4 @@
 import { observable } from 'mobx';
-import type vscode from 'vscode';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { CorePreferences, QuickPickService, IEventBus, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
@@ -16,8 +15,6 @@ import {
   IReporter,
   REPORT_NAME,
   Uri,
-  withNullAsUndefined,
-  IThemeColor,
   OperatingSystem,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
@@ -42,7 +39,7 @@ import {
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalProfileInternalService,
-  TerminalIcon,
+  convertTerminalOptionsToLaunchConfig,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { SupportedOptions, ITerminalPreference } from '../common/preference';
@@ -267,25 +264,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   convertTerminalOptionsToLaunchConfig() {
     const options = this._terminalOptions;
-    const shellLaunchConfig: IShellLaunchConfig = {
-      name: options.name,
-      executable: withNullAsUndefined(options.shellPath),
-      args: withNullAsUndefined(options.shellArgs),
-      cwd: withNullAsUndefined(options.cwd),
-      env: withNullAsUndefined(options.env),
-      icon: withNullAsUndefined(asTerminalIcon(options.iconPath)),
-      // color: ThemeColor.isThemeColor(options.color) ? options.color.id : undefined,
-      initialText: withNullAsUndefined(options.message),
-      strictEnv: withNullAsUndefined(options.strictEnv),
-      hideFromUser: withNullAsUndefined(options.hideFromUser),
-      // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
-      isExtensionOwnedTerminal: options.isExtensionTerminal,
-      // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
-      // location:
-      // internalOptions?.location ||
-      // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
-      disablePersistence: withNullAsUndefined(options.isTransient),
-    };
+    const shellLaunchConfig: IShellLaunchConfig = convertTerminalOptionsToLaunchConfig(options);
 
     if (options.isExtensionTerminal) {
       shellLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
@@ -788,18 +767,3 @@ export const createTerminalClientFactory = (injector: Injector) => (widget: IWid
 export const createTerminalClientFactory2 =
   (injector: Injector) => (widget: IWidget, options?: ICreateTerminalOptions) =>
     TerminalClientFactory.createClient2(injector, widget, options);
-
-function asTerminalIcon(iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon): TerminalIcon | undefined {
-  if (!iconPath || typeof iconPath === 'string') {
-    return undefined;
-  }
-
-  if (!('id' in iconPath)) {
-    return iconPath;
-  }
-
-  return {
-    id: iconPath.id,
-    color: iconPath.color as IThemeColor,
-  };
-}

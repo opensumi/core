@@ -32,7 +32,7 @@ import {
   ITerminalBrowserHistory,
   ITerminalTheme,
   ITerminalGroupViewService,
-  TerminalOptions,
+  IShellLaunchConfig,
   ITerminalErrorService,
   ITerminalInternalService,
   TerminalContainerId,
@@ -45,7 +45,8 @@ import {
   ITerminalClientFactory2,
   ICreateClientWithWidgetOptions,
   ITerminalProfileService,
-  ICreateContributedTerminalProfileOptions,
+  TerminalOptions,
+  convertTerminalOptionsToLaunchConfig,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -165,7 +166,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return await this._createClient(widget);
   }
 
-  private async _createClient(widget: IWidget, options?: ICreateTerminalOptions | TerminalOptions | undefined) {
+  private async _createClient(widget: IWidget, options?: ICreateTerminalOptions) {
     let client: ITerminalClient;
 
     if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
@@ -222,8 +223,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this._clients = new Map();
   }
 
-  private _createOneGroup() {
-    const index = this.terminalView.createGroup();
+  private _createOneGroup(options?: IShellLaunchConfig) {
+    const index = this.terminalView.createGroup(options);
     const group = this.terminalView.getGroup(index);
     return { group, index };
   }
@@ -530,7 +531,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    */
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = this.wsChannelHandler.clientId + '|' + options.id || this.service.generateSessionId();
-    const { group } = this._createOneGroup();
+    const { group } = this._createOneGroup(convertTerminalOptionsToLaunchConfig(options.terminalOptions));
     const widget = this.terminalView.createWidget(
       group,
       widgetId,
@@ -669,7 +670,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           },
           {
             execute: async () => {
-              await this.profileService.createContributedTerminalProfile(profile.extensionIdentifier, profile.id, {});
+              await this.profileService.createContributedTerminalProfile(profile.extensionIdentifier, profile.id, {
+                icon: profile.icon,
+              });
             },
           },
         ),
