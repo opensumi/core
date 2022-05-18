@@ -373,4 +373,22 @@ describe(__filename, () => {
       expect($onClose).toBeCalledWith(true);
     });
   });
+
+  // 直接调用事件
+  describe('event', () => {
+    it('fire item button event', () => {
+      const quickOpenItemService = injector.get(QuickOpenItemService);
+      quickOpenItemService.onDidTriggerItemButton((event) => {
+        expect(event.item).toBe(0);
+        expect(event.button.tooltip).toBe('tooltip');
+      });
+      quickOpenItemService.fireDidTriggerItemButton(0, {
+        iconPath: {
+          dark: URI.file('resources/dark/add.svg'),
+          light: URI.file('resources/dark/add.svg'),
+        },
+        tooltip: 'tooltip',
+      });
+    });
+  });
 });
