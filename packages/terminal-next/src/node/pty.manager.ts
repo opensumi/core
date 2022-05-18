@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 import * as pty from 'node-pty';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -12,7 +10,7 @@ import { PtyServiceProxy } from './pty.proxy';
 export const PtyServiceManagerToken = Symbol('PtyServiceManager');
 
 /**
- * 在IDE容器中运行，具体分为两类实现。通过DI注入替换来做到两种模式的替换
+ * 在 IDE 容器中运行，具体分为两类实现。通过 DI 注入替换来做到两种模式的替换
  * 1.与远程容器通信，完成终端的创建连接一些列事情 - 双容器架构
  * 2.直接走同进程调用，操作终端 - 传统架构
  */
@@ -23,7 +21,7 @@ export interface IPtyServiceManager {
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
   ): Promise<IPtyProcessProxy>;
-  // 因为PtyServiceManager是PtyClient端统筹所有Pty的管理类，因此每一个具体方法的调用都需要传入pid来对指定pid做某些操作
+  // 因为 PtyServiceManage 是 PtyClient 端统筹所有 Pty 的管理类，因此每一个具体方法的调用都需要传入 pid 来对指定 pid 做某些操作
   onData(pid: number, listener: (e: string) => any): pty.IDisposable;
   onExit(pid: number, listener: (e: { exitCode: number; signal?: number }) => any): pty.IDisposable;
   on(pid: number, event: 'data', listener: (data: string) => void): void;
@@ -38,19 +36,24 @@ export interface IPtyServiceManager {
   checkSession(sessionId: string): Promise<boolean>;
 }
 
-// 标准单容器架构 - 在IDE容器中运行，PtyService也在IDE进程中运行
-// 如果需要用到双容器远程架构，可以查看PtyServiceManagerRemote的实现
+// 记录终端输入到输出的时间戳，主要是用于统计 Pty 处理 + IDE <--> Pty 的IPC 耗时
+let timeCaptureTmp = 0;
+// 终端的命令可能会有多行输出，避免后面几次输出也被用于时间差计算统计，因此一次 write，一次统计
+let timeCaptureFilter = false;
+
+// 标准单容器架构 - 在 IDE 容器中运行，PtyService 也在 IDE 进程中运行
+// 如果需要用到双容器远程架构，可以查看 PtyServiceManagerRemote 的实现
 @Injectable()
 export class PtyServiceManager implements IPtyServiceManager {
   protected callId = 0;
   protected callbackMap = new Map<number, (...args: any[]) => void>();
-  // Pty终端服务的代理，在双容器模式下采用RPC连接，单容器模式下直连
+  // Pty 终端服务的代理，在双容器模式下采用 RPC 连接，单容器模式下直连
   protected ptyServiceProxy: IPtyProxyRPCService;
 
   @Autowired(INodeLogger)
   protected logger: INodeLogger;
 
-  // Pty运行在IDE Server上，因此可以直接调用
+  // Pty 运行在 IDE Server 上，因此可以直接调用
   constructor() {
     this.initLocal();
   }
@@ -66,8 +69,8 @@ export class PtyServiceManager implements IPtyServiceManager {
     this.ptyServiceProxy = new PtyServiceProxy(callback);
   }
 
-  // 维护一个CallbackMap，用于在PtyServiceProxy中远程调用回调
-  // 因为在RPC调用中本身是没法直接传递回调Function的，所以需要在远程调用中传递callId，在本地调用中通过callId获取回调
+  // 维护一个 CallbackMap，用于在 PtyServiceProxy 中远程调用回调
+  // 因为在 RPC 调用中本身是没法直接传递回调 Function 的，所以需要在远程调用中传递 callId，在本地调用中通过 callId 获取回调
   private addNewCallback(
     pid: number,
     callback: (...args: any[]) => void,
@@ -89,7 +92,7 @@ export class PtyServiceManager implements IPtyServiceManager {
     sessionId?: string,
   ): Promise<IPtyProcessProxy> {
     const iPtyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options, sessionId)) as pty.IPty;
-    // 局部功能的Ipty, 代理所有常量
+    // 局部功能的 Ipty, 代理所有常量
     return new PtyProcessProxy(iPtyRemoteProxy, this);
   }
 
@@ -97,9 +100,17 @@ export class PtyServiceManager implements IPtyServiceManager {
     return await this.ptyServiceProxy.$getProcess(pid);
   }
 
-  // 实现Ipty的需要回调的逻辑接口，同时注入
+  // 实现 Ipty 的需要回调的逻辑接口，同时注入
   onData(pid: number, listener: (e: string) => any): pty.IDisposable {
-    const { callId, disposable } = this.addNewCallback(pid, listener);
+    const monitorListener = (resString) => {
+      listener(resString);
+      if (timeCaptureFilter) {
+        const timeDiff = new Date().getTime() - timeCaptureTmp;
+        this.logger.log(`PtyServiceManager.onData: ${timeDiff}ms data: ${resString.substring(0, 100)}`);
+        timeCaptureFilter = false;
+      }
+    };
+    const { callId, disposable } = this.addNewCallback(pid, monitorListener);
     this.ptyServiceProxy.$onData(callId, pid);
     return disposable;
   }
@@ -121,6 +132,11 @@ export class PtyServiceManager implements IPtyServiceManager {
   }
 
   write(pid: number, data: string): void {
+    timeCaptureTmp = new Date().getTime();
+    if (data.includes('=')) {
+      // 使用 '=' 作为触发本地通信统计的标识
+      timeCaptureFilter = true;
+    }
     this.ptyServiceProxy.$write(pid, data);
   }
 
@@ -141,8 +157,8 @@ export class PtyServiceManager implements IPtyServiceManager {
   }
 }
 
-// Pty进程的Remote代理
-// 实现了 IPtyProcessProxy 背后是 NodePty的INodePty, 因此可以做到和本地化直接调用NodePty的代码兼容
+// Pty 进程的 Remote 代理
+// 实现了 IPtyProcessProxy 背后是 NodePty 的 INodePty, 因此可以做到和本地化直接调用 NodePty 的代码兼容
 class PtyProcessProxy implements IPtyProcessProxy {
   private ptyServiceManager: IPtyServiceManager;
   constructor(iptyProxy: pty.IPty, ptyServiceManager: IPtyServiceManager) {
@@ -187,7 +203,7 @@ class PtyProcessProxy implements IPtyProcessProxy {
   onData: pty.IEvent<string>;
   onExit: pty.IEvent<{ exitCode: number; signal?: number }>;
 
-  // 将pid维护到对象内部，对外暴露NodePty的标准api，因此在调用的时候不需要显式传入pid
+  // 将 pid 维护到对象内部，对外暴露 NodePty 的标准 api，因此在调用的时候不需要显式传入 pid
   on(event: 'data', listener: (data: string) => void): void;
   on(event: 'exit', listener: (exitCode: number, signal?: number) => void): void;
   on(event: any, listener: any): void {
