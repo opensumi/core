@@ -184,7 +184,7 @@ export class ServerApp implements IServerApp {
       LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign(
         {
-          endpoint: `${DEFAULT_OPENVSX_REGISTRY}/api`,
+          endpoint: DEFAULT_OPENVSX_REGISTRY,
           extensionDir: path.join(
             os.homedir(),
             ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),

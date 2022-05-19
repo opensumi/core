@@ -74,10 +74,12 @@ export interface IVSXExtensionService {
   install(extension: VSXExtension): Promise<void>;
   getLocalExtension(extensionId: string): Promise<VSXExtension | undefined>;
   getRemoteRawExtension(extensionId: string): Promise<VSXExtensionRaw | undefined>;
+  getOpenVSXRegistry(): Promise<void>;
   openExtensionEditor(extensionId: string, state: InstallState): Promise<void>;
 
   extensions: VSXExtension[];
   installedExtensions: VSXExtension[];
+  openVSXRegistry: string;
 }
 
 export const VSXExtensionBackSerivceToken = Symbol('VSXExtensionBackSerivceToken');
@@ -94,4 +96,5 @@ export interface IVSXExtensionBackService {
   search(param?: VSXSearchParam): Promise<VSXSearchResult>;
   install(param: IExtensionInstallParam): Promise<string>;
   getExtension(param: QueryParam): Promise<QueryResult | undefined>;
+  getOpenVSXRegistry(): Promise<string>;
 }

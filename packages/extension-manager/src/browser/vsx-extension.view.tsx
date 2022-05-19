@@ -74,6 +74,7 @@ export const VSXExtensionView = observer(() => {
               extension={e}
               type={ExtensionViewType.MARKETPLACE}
               installedExtensions={vsxExtensionService.installedExtensions}
+              openVSXRegistry={vsxExtensionService.openVSXRegistry}
             />
           ))}
         </div>
@@ -87,6 +88,7 @@ export const VSXExtensionView = observer(() => {
               key={`${e.namespace}-${e.name}`}
               extension={e}
               type={ExtensionViewType.INSTALLED}
+              openVSXRegistry={vsxExtensionService.openVSXRegistry}
             />
           ))}
         </div>

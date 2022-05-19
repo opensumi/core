@@ -55,7 +55,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     injector,
     use: app.use.bind(app),
     marketplace: {
-      endpoint: `${DEFAULT_OPENVSX_REGISTRY}/api`,
+      endpoint: DEFAULT_OPENVSX_REGISTRY,
       showBuiltinExtensions: true,
     },
     processCloseExitThreshold: 5 * 60 * 1000,

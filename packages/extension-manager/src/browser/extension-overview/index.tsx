@@ -4,7 +4,6 @@ import { Icon, getIcon, Button, Tabs } from '@opensumi/ide-components';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
-import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { Markdown } from '@opensumi/ide-markdown';
 
@@ -30,7 +29,7 @@ interface IExtensionMetadata {
 }
 
 export const ExtensionOverview: ReactEditorComponent<
-  VSXExtensionRaw & VSXExtension & { state: string; extensionId: string }
+  VSXExtensionRaw & VSXExtension & { state: string; extensionId: string; openVSXRegistry: string }
 > = ({ resource }) => {
   const vsxExtensionService = useInjectable<IVSXExtensionService>(VSXExtensionServiceToken);
   const [loading, setLoading] = useState(true);
@@ -87,14 +86,16 @@ export const ExtensionOverview: ReactEditorComponent<
       <ProgressBar loading={loading} />
       <div className={styles.extension_overview_header}>
         <img
-          src={resource.metadata?.iconUrl || `${DEFAULT_OPENVSX_REGISTRY}/default-icon.png`}
+          src={resource.metadata?.iconUrl || `${resource.metadata?.openVSXRegistry}/default-icon.png`}
           alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
         />
         <div className={styles.extension_detail}>
           <div className={styles.extension_name}>
             <h1>
               <a
-                href={`${DEFAULT_OPENVSX_REGISTRY}/extension/${resource.metadata?.namespace.toLowerCase()}/${resource.metadata?.name.toLowerCase()}`}
+                href={`${
+                  resource.metadata?.openVSXRegistry
+                }/extension/${resource.metadata?.namespace.toLowerCase()}/${resource.metadata?.name.toLowerCase()}`}
                 target='_blank'
                 rel='noopener noreferrer'
               >

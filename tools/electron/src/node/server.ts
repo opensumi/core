@@ -11,7 +11,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   let opts: IServerAppOpts = {
     webSocketHandler: [],
     marketplace: {
-      endpoint: `${DEFAULT_OPENVSX_REGISTRY}/api`,
+      endpoint: DEFAULT_OPENVSX_REGISTRY,
       showBuiltinExtensions: true,
     },
   };

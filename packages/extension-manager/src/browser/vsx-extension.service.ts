@@ -38,6 +38,9 @@ export class VSXExtensionService implements IVSXExtensionService {
   @observable
   public extensions: VSXExtension[] = [];
 
+  @observable
+  public openVSXRegistry: string;
+
   @Autowired(IStatusBarService)
   protected readonly statusBarService: IStatusBarService;
 
@@ -109,7 +112,12 @@ export class VSXExtensionService implements IVSXExtensionService {
     }
   }
 
+  async getOpenVSXRegistry() {
+    this.openVSXRegistry = await this.backService.getOpenVSXRegistry();
+  }
+
   async openExtensionEditor(extensionId: string, state: InstallState) {
+    await this.getOpenVSXRegistry();
     this.workbenchEditorService.open(new URI(`extension://?extensionId=${extensionId}&state=${state}`), {
       preview: true,
     });

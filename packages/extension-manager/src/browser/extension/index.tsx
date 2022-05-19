@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 
 import { Button, Icon, getIcon } from '@opensumi/ide-components';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
-import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
 import { InstallState, VSXExtension } from '../../common';
 
@@ -19,10 +18,11 @@ interface IExtensionViewProps {
   onClick(extension: VSXExtension, state: InstallState): void;
   type: ExtensionViewType;
   installedExtensions?: VSXExtension[];
+  openVSXRegistry: string;
 }
 
 export const Extension = React.memo(
-  ({ extension: extension, onInstall, onClick, type, installedExtensions }: IExtensionViewProps) => {
+  ({ extension: extension, onInstall, onClick, type, installedExtensions, openVSXRegistry }: IExtensionViewProps) => {
     const [installing, setInstalling] = useState<boolean>();
     const installedExtension = installedExtensions?.find(
       (installed) => installed.namespace === extension.namespace && installed.name === extension.name,
@@ -59,7 +59,7 @@ export const Extension = React.memo(
       <div className={styles.extension_item} onClick={onClickCallback}>
         <img
           className={styles.icon}
-          src={extension.iconUrl || `${DEFAULT_OPENVSX_REGISTRY}/default-icon.png`}
+          src={extension.iconUrl || `${openVSXRegistry}/default-icon.png`}
           alt={replaceLocalizePlaceholder(extension.displayName, `${extension.publisher}.${extension.name}`)}
         />
         <div className={styles.extension_detail}>
