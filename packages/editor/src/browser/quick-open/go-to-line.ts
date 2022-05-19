@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   CommandService,
-  EDITOR_COMMANDS,
   formatLocalize,
   localize,
   QuickOpenHandler,
@@ -19,17 +18,19 @@ import { WorkbenchEditorService } from '../types';
 class MonacoGoToLine extends AbstractGotoLineQuickAccessProvider {
   activeTextEditorControl: IMonacoCodeEditor | undefined;
   onDidActiveTextEditorControlChange: MonacoEvent<void>;
-  addDeco(editor: IMonacoCodeEditor, range: IMonacoRange) {
+  clearDecorations(editor: IMonacoCodeEditor) {
+    super.clearDecorations(editor);
+  }
+  preview(editor: IMonacoCodeEditor, range: IMonacoRange) {
+    editor.revealRangeInCenter(range, monaco.editor.ScrollType.Smooth);
     this.addDecorations(editor, range);
   }
-  clearDeco(editor: IMonacoCodeEditor) {
-    this.clearDecorations(editor);
-  }
-  goTo(editor: IMonacoCodeEditor, range: IMonacoRange) {
+  goTo(editor: IMonacoCodeEditor, range: IMonacoRange, preserveFocus = true) {
     this.gotoLocation(
       { editor },
       {
         range,
+        preserveFocus,
         // 该函数内部实现并没有用到这个属性
         keyMods: {
           alt: false,
@@ -123,17 +124,16 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
               label,
               run: (mode: Mode) => {
                 if (mode === Mode.PREVIEW) {
-                  editor.monacoEditor.revealRangeInCenter(range, monaco.editor.ScrollType.Smooth);
-                  this.quickAccess.addDeco(editor.monacoEditor, range);
+                  this.quickAccess.preview(editor.monacoEditor, range);
                   return false;
                 }
-                this.quickAccess.goTo(editor.monacoEditor, range);
+                this.quickAccess.goTo(editor.monacoEditor, range, true);
                 return true;
               },
             }),
           ]);
         } else {
-          this.quickAccess.clearDeco(editor.monacoEditor);
+          this.quickAccess.clearDecorations(editor.monacoEditor);
           acceptor([
             new QuickOpenItem({
               label: formatLocalize('quickopen.goToLine.defaultMessage', currentLine, currentCol, lineCount),
@@ -150,13 +150,13 @@ export class GoToLineQuickOpenHandler implements QuickOpenHandler {
   }
 
   onClose(canceled) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.FOCUS.id);
     const editor = this.workbenchEditorService.currentEditor;
     if (!editor) {
       return;
     }
 
-    this.quickAccess.clearDeco(editor.monacoEditor);
+    editor.monacoEditor.focus();
+    this.quickAccess.clearDecorations(editor.monacoEditor);
     if (canceled && this.savedViewState) {
       editor.monacoEditor.restoreViewState(this.savedViewState);
     }

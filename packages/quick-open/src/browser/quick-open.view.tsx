@@ -145,7 +145,7 @@ export const QuickOpenInput = observer(() => {
   }, []);
 
   return (
-    <div className={styles.input}>
+    <div tabIndex={0} className={styles.input}>
       {widget.canSelectMany && <CheckBox checked={widget.selectAll} wrapTabIndex={0} onChange={handleSelectAll} />}
       <ValidateInput
         validateMessage={validateMessage}
@@ -328,6 +328,10 @@ export const QuickOpenView = observer(() => {
     return false;
   }, []);
 
+  /**
+   * 当你修改这里的 onblur 事件之后，请确认一下几件事情
+   * 1. 按 ctrl+g，按回车，看它是否激活的 onClose 事件
+   */
   const onBlur = React.useCallback(
     (event: React.FocusEvent) => {
       if (focusInCurrentTarget(event)) {
@@ -469,7 +473,7 @@ export const QuickOpenView = observer(() => {
   }, []);
 
   return widget.isShow ? (
-    <div className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
+    <div tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
       {widget.renderTab?.()}
