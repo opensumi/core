@@ -330,7 +330,12 @@ export const QuickOpenView = observer(() => {
 
   /**
    * 当你修改这里的 onblur 事件之后，请确认一下几件事情
-   * 1. 按 ctrl+g，按回车，看它是否激活的 onClose 事件
+   * - 按 ctrl+g，输入行号，按回车，看是否转到了对应的行
+   * - 按 ctrl+g，输入行号，按 esc，行号没有跳转
+   * - 按 ctrl+g，输入行号，鼠标点击 quickOpen 的第一项，看是否转到了对应的行
+   * - 按 ctrl+shift+p，输入命令，按回车，看它的功能是否正常
+   * - 按 ctrl+shift+p，按 esc，看该框是否取消
+   * - 按 ctrl+shift+p，鼠标点击编辑器区域，看该框是否取消
    */
   const onBlur = React.useCallback(
     (event: React.FocusEvent) => {
