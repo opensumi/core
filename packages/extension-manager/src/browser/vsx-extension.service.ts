@@ -117,7 +117,6 @@ export class VSXExtensionService implements IVSXExtensionService {
   }
 
   async openExtensionEditor(extensionId: string, state: InstallState) {
-    await this.getOpenVSXRegistry();
     this.workbenchEditorService.open(new URI(`extension://?extensionId=${extensionId}&state=${state}`), {
       preview: true,
     });

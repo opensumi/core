@@ -80,7 +80,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   async getOpenVSXRegistry(): Promise<string> {
-    return this.appConfig.marketplace.endpoint + '/api';
+    return this.appConfig.marketplace.endpoint;
   }
 
   private async uncompressFile(distPath: string, downloadPath: string) {
