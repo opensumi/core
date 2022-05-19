@@ -163,7 +163,8 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     const onDataDisposable = ptyInstance?.onData((e) => {
       this.debugLogger.debug('ptyServiceCenter: onData', JSON.stringify(e), 'pid:', pid, 'callId', callId);
       if (typeof e === 'string') {
-        // 缓存数据的时候只存放前1024个字符，因为正常情况下也不会超过1024个，如果超过的话，基本上是用户误操作导致的cat 二进制文件或者其他位置问题
+        // 缓存数据的时候只存放前1024个字符，因为正常情况下也不会超过1024个，如果超过的话，基本上是用户误操作导致的cat 二进制文件或者其他未知问题
+        // 比如说某个程序一直通过CSI转义命令来以用户不可见的方式增加终端输出内容
         // 缓存限制在每行1024字符来避免潜在的内存泄漏问题
         cache?.add(e.slice(0, 1024));
       }
