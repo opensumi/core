@@ -424,6 +424,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
     this.addDispose([
       this._attachAddon,
+      typeAheadAddon,
       this._attachAddon.onData((data) => {
         this._onOutput.fire({ id: this.id, data });
       }),

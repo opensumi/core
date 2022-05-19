@@ -1387,9 +1387,8 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
   private _clearPredictionDebounce?: IDisposable;
 
   constructor(
-    private onBeforeProcessData: Event<IBeforeProcessDataEvent>,
-  ) // @ITelemetryService private readonly _telemetryService: ITelemetryService,
-  {
+    private onBeforeProcessData: Event<IBeforeProcessDataEvent>, // @ITelemetryService private readonly _telemetryService: ITelemetryService,
+  ) {
     super();
     console.log('#DEBUG1# hello terminal type ahead addon');
     // this._register(toDisposable(() => this._clearPredictionDebounce?.dispose()));
@@ -1533,7 +1532,12 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
     // 	...stats.latency,
     // 	predictionAccuracy: stats.accuracy,
     // });
-    console.log(stats);
+
+    // TODO: 加入到reporter中
+    console.log('terminalLatencyStats', {
+      ...stats.latency,
+      predictionAccuracy: stats.accuracy,
+    });
   }
 
   private _onUserData(data: string): void {
