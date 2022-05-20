@@ -147,7 +147,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
       this.callbacks.onCancel();
     }
 
-    this.callbacks.onHide(reason!);
+    this.callbacks.onHide(reason);
   }
 
   @action

@@ -29,7 +29,7 @@ export interface IQuickOpenCallbacks {
   /**
    * 关闭 QuickOpen 时发送的事件
    */
-  onHide: (reason: HideReason) => void;
+  onHide: (reason?: HideReason) => void;
   /**
    * select 状态时触发
    */

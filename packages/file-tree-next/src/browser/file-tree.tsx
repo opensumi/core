@@ -283,11 +283,11 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
         if (token.isCancellationRequested) {
           return;
         }
-        setIsLoading(false);
         if (wrapperRef.current) {
           fileTreeService.initContextKey(wrapperRef.current);
         }
       }
+      setIsLoading(false);
       if (!disposableRef.current?.disposed) {
         setIsReady(true);
       }
