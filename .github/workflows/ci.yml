@@ -20,6 +20,7 @@ jobs:
       matrix:
         os: [macos-latest, ubuntu-latest]
         node-version: [14.x]
+        shard: [1/3, 2/3, 3/3]
 
     steps:
     - uses: actions/checkout@v2
@@ -32,15 +33,43 @@ jobs:
     - name: Build & Test
       run: |
         npm i
-        npm run ci -- -- --selectProjects jsdom
+        npm run ci -- -- --selectProjects=jsdom --shard=${matrix.shared} --maxWorkers=2
 
-    - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
-      name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
+    - name: Persist Coverages
+      if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
+      run: |
+        mkdir persist-coverage
+        mv coverage/coverage-final.json persist-coverage/react-${{matrix.react}}-test-${{matrix.module}}-${{strategy.job-index}}.json
+
+    - uses: actions/upload-artifact@v3
+      if: ${{ matrix.module == 'dom' && matrix.react == '17' }}
+      name: upload coverage-shard.json
       with:
-        token: ${{ secrets.CORE_CODECOV_TOKEN }}
-        flags: jsdom
-        directory: ./coverage
+        name: coverage-artifacts
+        path: persist-coverage/
+
+  test-coverage:
+    name: test-coverage
+    runs-on: ubuntu-latest
+    needs: [browser]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: coverage-artifacts
+          path: persist-coverage
+      - name: Merge Code Coverage
+        run: |
+          npx nyc merge persist-coverage/ coverage/coverage-final.json
+          npx nyc report --reporter text -t coverage --report-dir coverage
+          rm -rf persist-coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CORE_CODECOV_TOKEN }}
+          flags: jsdom
+          directory: ./coverage
+
   node:
     runs-on: ${{ matrix.os }}
     strategy:
