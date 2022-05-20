@@ -9,7 +9,6 @@ import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol'
 import { LinkDetector } from '../debug-link-detector';
 import debugConsoleStyles from '../view/console/debug-console.module.less';
 
-
 const getColor = (severity?: MessageType): string => {
   if (typeof severity === 'undefined') {
     return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
@@ -26,10 +25,12 @@ const getColor = (severity?: MessageType): string => {
   }
 };
 
-export class TreeWithLinkWrapper extends React.Component<{ html: HTMLElement; className?: string }> {
+export class TreeWithLinkWrapper extends React.Component<{ html?: HTMLElement; className?: string }> {
   componentDidMount() {
-    const container = ReactDOM.findDOMNode(this);
-    container!.appendChild(this.props.html);
+    if (this.props.html) {
+      const container = ReactDOM.findDOMNode(this);
+      container?.appendChild(this.props.html);
+    }
   }
 
   render() {
