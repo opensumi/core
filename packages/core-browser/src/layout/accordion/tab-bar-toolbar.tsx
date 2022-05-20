@@ -41,7 +41,7 @@ export class ToolbarRegistry {
    * 取消已注册的菜单项
    * @param menuItemId
    */
-  unRegisterItem(menuItemId: string) {
+  unregisterItem(menuItemId: string) {
     this.menuRegistry.unregisterMenuItem(MenuId.ViewTitle, menuItemId);
   }
 }
