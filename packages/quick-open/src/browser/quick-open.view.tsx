@@ -145,7 +145,7 @@ export const QuickOpenInput = observer(() => {
   }, []);
 
   return (
-    <div className={styles.input}>
+    <div tabIndex={0} className={styles.input}>
       {widget.canSelectMany && <CheckBox checked={widget.selectAll} wrapTabIndex={0} onChange={handleSelectAll} />}
       <ValidateInput
         validateMessage={validateMessage}
@@ -328,6 +328,15 @@ export const QuickOpenView = observer(() => {
     return false;
   }, []);
 
+  /**
+   * 当你修改这里的 onblur 事件之后，请确认一下几件事情
+   * - 按 ctrl+g，输入行号，按回车，看是否转到了对应的行
+   * - 按 ctrl+g，输入行号，按 esc，行号没有跳转
+   * - 按 ctrl+g，输入行号，鼠标点击 quickOpen 的第一项，看是否转到了对应的行
+   * - 按 ctrl+shift+p，输入命令，按回车，看它的功能是否正常
+   * - 按 ctrl+shift+p，按 esc，看该框是否取消
+   * - 按 ctrl+shift+p，鼠标点击编辑器区域，看该框是否取消
+   */
   const onBlur = React.useCallback(
     (event: React.FocusEvent) => {
       if (focusInCurrentTarget(event)) {
@@ -469,7 +478,7 @@ export const QuickOpenView = observer(() => {
   }, []);
 
   return widget.isShow ? (
-    <div className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
+    <div tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
       {widget.renderTab?.()}
