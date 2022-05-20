@@ -14,57 +14,150 @@ on:
       - 'packages/**'
 
 jobs:
-  browser:
+  setup:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
         node-version: [14.x]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: restore deps cache
+        uses: actions/cache@v3
+        id: node_modules_cache_id
+        with:
+          path: |
+            node_modules
+            packages/**/node_modules
+            tools/**/node_modules
+          key: ${{ matrix.os }}-${{matrix.node-version}}-deps-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{matrix.node-version}}-deps-
+
+      - name: install
+        if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
+        run: npm i
+
+      - name: restore init cache
+        uses: actions/cache@v3
+        id: init_cache_id
+        with:
+          path: |
+            packages/**/lib
+            packages/**/dist
+            tools/**/lib
+          key: ${{ matrix.os }}-${{matrix.node-version}}-init-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{matrix.node-version}}-init-
+
+      - name: init
+        if: steps.compiled_cache_id.outputs.cache-hit != 'true'
+        run: npm run init
+
+  lint:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: restore deps cache
+        uses: actions/cache@v3
+        id: node_modules_cache_id
+        with:
+          path: |
+            node_modules
+            packages/**/node_modules
+            tools/**/node_modules
+          key: ${{ matrix.os }}-${{matrix.node-version}}-deps-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{matrix.node-version}}-deps-
+
+      - name: install
+        if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
+        run: npm i
+
+      - name: lint
+        run: npm run lint
+    needs: setup
+
+  check-deps:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: restore deps cache
+        uses: actions/cache@v3
+        id: node_modules_cache_id
+        with:
+          path: |
+            node_modules
+            packages/**/node_modules
+            tools/**/node_modules
+          key: ${{ matrix.os }}-${{matrix.node-version}}-deps-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ matrix.os }}-${{matrix.node-version}}-deps-
+
+      - name: install
+        if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
+        run: npm i
+
+      - name: check
+        run: npm run check:dep
+    needs: setup
+
+  test:
+    runs-on: ${{ matrix.os }}
+    needs: init
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+        node-version: [14.x]
+        project: ["node", "jsdom"]
+        shard: ["1/3", "2/3", "3/3"]
 
     steps:
-    - uses: actions/checkout@v2
+    - name: checkout
+      uses: actions/checkout@v2
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Build & Test
+    - name: Test Coverage
       run: |
         npm i
-        npm run ci -- -- --selectProjects jsdom
+        npm run test:cov -- --selectProjects=${{matrix.project}} --shard=${{matrix.shard}} --maxWorkers=2
 
-    - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
-      name: Upload coverage to Codecov
+    - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
       with:
         token: ${{ secrets.CORE_CODECOV_TOKEN }}
-        flags: jsdom
-        directory: ./coverage
-  node:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-        node-version: [14.x]
-
-    steps:
-    - uses: actions/checkout@v2
-
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-
-    - name: Build & Test
-      run: |
-        npm i
-        npm run ci -- -- --selectProjects node
-
-    - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
-      name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        token: ${{ secrets.CORE_CODECOV_TOKEN }}
-        flags: node
+        flags: ${{ matrix.project }}
         directory: ./coverage
