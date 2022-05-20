@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-testing",
-  "version": "2.17.5",
+  "version": "2.17.6",
   "files": [
     "lib"
   ],
@@ -14,17 +14,17 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.17.5"
+    "@opensumi/ide-core-common": "2.17.6"
   },
   "devDependencies": {
-    "@opensumi/ide-components": "2.17.5",
-    "@opensumi/ide-core-browser": "2.17.5",
+    "@opensumi/ide-components": "2.17.6",
+    "@opensumi/ide-core-browser": "2.17.6",
     "@opensumi/ide-dev-tool": "^1.1.0",
-    "@opensumi/ide-editor": "2.17.5",
-    "@opensumi/ide-file-service": "2.17.5",
-    "@opensumi/ide-main-layout": "2.17.5",
-    "@opensumi/ide-markdown": "2.17.5",
-    "@opensumi/ide-monaco": "2.17.5",
-    "@opensumi/ide-monaco-enhance": "2.17.5"
+    "@opensumi/ide-editor": "2.17.6",
+    "@opensumi/ide-file-service": "2.17.6",
+    "@opensumi/ide-main-layout": "2.17.6",
+    "@opensumi/ide-markdown": "2.17.6",
+    "@opensumi/ide-monaco": "2.17.6",
+    "@opensumi/ide-monaco-enhance": "2.17.6"
   }
 }
