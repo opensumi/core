@@ -53,9 +53,8 @@ jobs:
             packages/**/lib
             packages/**/dist
             tools/**/lib
-          key: ${{ matrix.os }}-${{matrix.node-version}}-init-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ matrix.os }}-${{matrix.node-version}}-init-
+          key: ${{ matrix.os }}-${{matrix.node-version}}-init-${{ github.sha }}
+          restore-keys: ${{ matrix.os }}-${{matrix.node-version}}-init-
 
       - name: init
         if: steps.compiled_cache_id.outputs.cache-hit != 'true'
@@ -150,9 +149,39 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: restore deps cache
+      uses: actions/cache@v3
+      id: node_modules_cache_id
+      with:
+        path: |
+          node_modules
+          packages/**/node_modules
+          tools/**/node_modules
+        key: ${{ matrix.os }}-${{matrix.node-version}}-deps-${{ hashFiles('**/package.json') }}
+        restore-keys: |
+          ${{ matrix.os }}-${{matrix.node-version}}-deps-
+
+    - name: install
+      if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
+      run: npm i
+
+    - name: restore init cache
+      uses: actions/cache@v3
+      id: init_cache_id
+      with:
+        path: |
+          packages/**/lib
+          packages/**/dist
+          tools/**/lib
+        key: ${{ matrix.os }}-${{matrix.node-version}}-init-${{ github.sha }}
+        restore-keys: ${{ matrix.os }}-${{matrix.node-version}}-init-
+
+    - name: init
+      if: steps.compiled_cache_id.outputs.cache-hit != 'true'
+      run: npm run init
+
     - name: Test Coverage
       run: |
-        npm i
         npm run test:cov -- --selectProjects=${{matrix.project}} --shard=${{matrix.shard}} --maxWorkers=2
 
     - name: Upload coverage to Codecov
