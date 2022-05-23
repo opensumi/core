@@ -32,8 +32,8 @@ Steps to reproduce the behavior:
 **环境信息（Environment）**
 
 - OS: [e.g. macOS 11.2 Apple M1/Windows10/Windows11]
-- Browser [e.g. chrome, safari]
-- OpenSumi Version [e.g. 2.13.0]
+- Browser: [e.g. chrome, safari, electron]
+- OpenSumi Version: [e.g. 2.13.0]
 
 **补充信息（Additional context）**
 
