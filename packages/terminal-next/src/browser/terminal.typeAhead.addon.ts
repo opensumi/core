@@ -7,41 +7,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// import { disposableTimeout } from 'vs/base/common/async';
-// import { debounce } from 'vs/base/common/decorators';
-// import { Emitter } from 'vs/base/common/event';
-// import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
-
 import type { IBuffer, IBufferCell, IDisposable, ITerminalAddon, Terminal } from 'xterm';
 
-import { debounce, DisposableCollection, Emitter, Event, disposableTimeout } from '@opensumi/ide-core-common';
+import { PreferenceChange } from '@opensumi/ide-core-browser/lib/preferences';
+import {
+  debounce,
+  DisposableCollection,
+  Emitter,
+  Event,
+  disposableTimeout,
+  Disposable,
+} from '@opensumi/ide-core-common';
+
+import { CodeTerminalSettingId, IPreferenceValue } from '../common/preference';
 
 import { Color, RGBA } from './terminal.typeAhead.ext';
 import { XtermAttributes, IXtermCore } from './xterm-private';
 
 export const DEFAULT_LOCAL_ECHO_EXCLUDE: ReadonlyArray<string> = ['vim', 'vi', 'nano', 'tmux'];
-
-abstract class Disposable implements IDisposable {
-  static readonly None = Object.freeze<IDisposable>({ dispose() {} });
-
-  protected readonly _store = new DisposableCollection();
-
-  constructor() {}
-
-  public dispose(): void {
-    // markAsDisposed(this);
-
-    this._store.dispose();
-  }
-
-  protected _register<T extends IDisposable>(o: T): T {
-    if ((o as unknown as Disposable) === this) {
-      throw new Error('Cannot register a disposable on itself!');
-    }
-    this._store.push(o);
-    return o;
-  }
-}
 
 export interface ITerminalConfiguration {
   localEchoEnabled: 'auto' | 'on' | 'off';
@@ -736,9 +719,9 @@ export class PredictionStats extends Disposable {
 
   constructor(timeline: PredictionTimeline) {
     super();
-    this._register(timeline.onPredictionAdded((p) => this._addedAtTime.set(p, Date.now())));
-    this._register(timeline.onPredictionSucceeded(this._pushStat.bind(this, true)));
-    this._register(timeline.onPredictionFailed(this._pushStat.bind(this, false)));
+    this.addDispose(timeline.onPredictionAdded((p) => this._addedAtTime.set(p, Date.now())));
+    this.addDispose(timeline.onPredictionSucceeded(this._pushStat.bind(this, true)));
+    this.addDispose(timeline.onPredictionFailed(this._pushStat.bind(this, false)));
   }
 
   private _pushStat(correct: boolean, prediction: IPrediction) {
@@ -1364,21 +1347,25 @@ export const enum CharPredictState {
   Validated,
 }
 
+interface LocalEchoConfiguration {
+  localEchoLatencyThreshold: number;
+  localEchoExcludePrograms: readonly string[];
+  localEchoStyle: string;
+}
+
 export class TypeAheadAddon extends Disposable implements ITerminalAddon {
-  private _typeaheadStyle?: TypeAheadStyle;
-  private _config: any = {
-    config: {
-      localEchoLatencyThreshold: 30,
-      localEchoExcludePrograms: DEFAULT_LOCAL_ECHO_EXCLUDE,
-      localEchoStyle: 'dim',
-    },
-  };
-  private _typeaheadThreshold = this._config.config.localEchoLatencyThreshold;
-  private _excludeProgramRe = compileExcludeRegexp(this._config.config.localEchoExcludePrograms);
+  private _typeAheadStyle?: TypeAheadStyle;
+
+  private _excludeProgramRe: RegExp;
+
   protected _lastRow?: { y: number; startingX: number; endingX: number; charState: CharPredictState };
+
   protected _timeline?: PredictionTimeline;
+
   private _terminalTitle = '';
+
   private disposableCollection = new DisposableCollection();
+
   stats?: PredictionStats;
 
   /**
@@ -1388,10 +1375,39 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 
   constructor(
     private onBeforeProcessData: Event<IBeforeProcessDataEvent>, // @ITelemetryService private readonly _telemetryService: ITelemetryService,
+    private _config: LocalEchoConfiguration,
+    private readonly onDidTerminalPreferenceChange: Event<PreferenceChange>,
   ) {
     super();
-    console.log('#DEBUG1# hello terminal type ahead addon');
-    // this._register(toDisposable(() => this._clearPredictionDebounce?.dispose()));
+    this._excludeProgramRe = compileExcludeRegexp(this._config.localEchoExcludePrograms);
+    this.addDispose(
+      this.onDidTerminalPreferenceChange((e) => {
+        switch (e.preferenceName) {
+          case CodeTerminalSettingId.LocalEchoLatencyThreshold: {
+            if (e.newValue && e.newValue !== this._config.localEchoLatencyThreshold) {
+              this._config.localEchoLatencyThreshold = e.newValue;
+            }
+            break;
+          }
+          case CodeTerminalSettingId.LocalEchoExcludePrograms: {
+            if (e.newValue && e.newValue !== this._config.localEchoExcludePrograms) {
+              this._config.localEchoExcludePrograms = e.newValue;
+              this._excludeProgramRe = compileExcludeRegexp(this._config.localEchoExcludePrograms);
+            }
+            break;
+          }
+          case CodeTerminalSettingId.LocalEchoStyle: {
+            if (e.newValue !== this._config.localEchoStyle) {
+              this._config.localEchoStyle = e.newValue;
+              this._typeAheadStyle?.onUpdate(this._config.localEchoStyle);
+            }
+            break;
+          }
+          default:
+            break;
+        }
+      }),
+    );
   }
 
   protected _register<T extends IDisposable>(o: T): T {
@@ -1404,13 +1420,11 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 
   activate(terminal: Terminal): void {
     console.log('#DEBUG1# activate terminal type ahead addon');
-    const style = (this._typeaheadStyle = this._register(
-      new TypeAheadStyle(this._config.config.localEchoStyle, terminal),
-    ));
-    const timeline = (this._timeline = new PredictionTimeline(terminal, this._typeaheadStyle));
+    const style = (this._typeAheadStyle = this._register(new TypeAheadStyle(this._config.localEchoStyle, terminal)));
+    const timeline = (this._timeline = new PredictionTimeline(terminal, this._typeAheadStyle));
     const stats = (this.stats = new PredictionStats(this._timeline)); // register disposeable;
 
-    timeline.setShowPredictions(this._typeaheadThreshold === 0);
+    timeline.setShowPredictions(this._config.localEchoLatencyThreshold === 0);
     this._register(terminal.onData((e) => this._onUserData(e)));
     this._register(
       terminal.onTitleChange((title) => {
@@ -1426,9 +1440,9 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
       }),
     );
     // this._register(this._config.onConfigChanged(() => {
-    // 	style.onUpdate(this._config.config.localEchoStyle);
-    // 	this._typeaheadThreshold = this._config.config.localEchoLatencyThreshold;
-    // 	this._excludeProgramRe = compileExcludeRegexp(this._config.config.localEchoExcludePrograms);
+    // 	style.onUpdate(this._config.localEchoStyle);
+    // 	this._config.localEchoLatencyThreshold = this._config.localEchoLatencyThreshold;
+    // 	this._excludeProgramRe = compileExcludeRegexp(this._config.localEchoExcludePrograms);
     // 	this._reevaluatePredictorState(stats, timeline);
     // }));
     this._register(
@@ -1504,15 +1518,15 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
   protected _reevaluatePredictorStateNow(stats: PredictionStats, timeline: PredictionTimeline) {
     if (this._excludeProgramRe.test(this._terminalTitle)) {
       timeline.setShowPredictions(false);
-    } else if (this._typeaheadThreshold < 0) {
+    } else if (this._config.localEchoLatencyThreshold < 0) {
       timeline.setShowPredictions(false);
-    } else if (this._typeaheadThreshold === 0) {
+    } else if (this._config.localEchoLatencyThreshold === 0) {
       timeline.setShowPredictions(true);
     } else if (stats.sampleSize > statsMinSamplesToTurnOn && stats.accuracy > statsMinAccuracyToTurnOn) {
       const latency = stats.latency.median;
-      if (latency >= this._typeaheadThreshold) {
+      if (latency >= this._config.localEchoLatencyThreshold) {
         timeline.setShowPredictions(true);
-      } else if (latency < this._typeaheadThreshold / statsToggleOffThreshold) {
+      } else if (latency < this._config.localEchoLatencyThreshold / statsToggleOffThreshold) {
         timeline.setShowPredictions(false);
       }
     }
@@ -1619,7 +1633,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
       if (reader.eatCharCode(32, 126)) {
         // alphanum
         const char = data[reader.index - 1];
-        const prediction = new CharacterPrediction(this._typeaheadStyle!, char);
+        const prediction = new CharacterPrediction(this._typeAheadStyle!, char);
         if (this._lastRow.charState === CharPredictState.Unknown) {
           this._timeline.addBoundary(buffer, prediction);
           this._lastRow.charState = CharPredictState.HasPendingChar;
@@ -1667,7 +1681,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 
     if (this._timeline.length === 1) {
       this._deferClearingPredictions();
-      this._typeaheadStyle!.startTracking();
+      this._typeAheadStyle!.startTracking();
     }
   }
 

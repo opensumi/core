@@ -2,7 +2,8 @@ import { observable } from 'mobx';
 import type vscode from 'vscode';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { CorePreferences, QuickPickService, IEventBus, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
+import { QuickPickService, IEventBus, TerminalClientAttachEvent } from '@opensumi/ide-core-browser';
+import { PreferenceService } from '@opensumi/ide-core-browser/lib/preferences/types';
 import {
   Disposable,
   Deferred,
@@ -19,7 +20,6 @@ import {
   withNullAsUndefined,
   IThemeColor,
   OperatingSystem,
-  OS,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -47,13 +47,18 @@ import {
   TerminalIcon,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import { SupportedOptions, ITerminalPreference } from '../common/preference';
+import {
+  SupportedOptions,
+  ITerminalPreference,
+  CodeTerminalSettingId,
+  SupportedOptionsName,
+} from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
 import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { TerminalKeyBoardInputService } from './terminal.input';
-import { TypeAheadAddon } from './terminal.typeAhead.addon';
+import { DEFAULT_LOCAL_ECHO_EXCLUDE, TypeAheadAddon } from './terminal.typeAhead.addon';
 import { XTerm } from './xterm';
 
 @Injectable()
@@ -103,11 +108,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   @Autowired(ITerminalTheme)
   protected readonly theme: ITerminalTheme;
 
-  @Autowired(CorePreferences)
-  protected readonly corePreferences: CorePreferences;
-
   @Autowired(ITerminalController)
   protected readonly controller: ITerminalController;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(ITerminalGroupViewService)
   protected readonly view: ITerminalGroupViewService;
@@ -448,11 +453,26 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   private _prepareAddons() {
     this._attachAddon = new AttachAddon();
     const onBeforeProcessEvent = this._attachAddon.onBeforeProcessData;
-    const typeAheadAddon = new TypeAheadAddon(onBeforeProcessEvent);
+
+    if (this.preferenceService.get(CodeTerminalSettingId.LocalEchoEnabled)) {
+      const typeAheadAddon = new TypeAheadAddon(
+        onBeforeProcessEvent,
+        {
+          localEchoExcludePrograms: this.preferenceService.get(
+            CodeTerminalSettingId.LocalEchoExcludePrograms,
+            DEFAULT_LOCAL_ECHO_EXCLUDE,
+          ),
+          localEchoLatencyThreshold: this.preferenceService.get(CodeTerminalSettingId.LocalEchoLatencyThreshold, 30),
+          localEchoStyle: this.preferenceService.get(CodeTerminalSettingId.LocalEchoStyle, 'dim'),
+        },
+        this.preferenceService.onPreferenceChanged,
+      );
+      this.addDispose(typeAheadAddon);
+      this.xterm.raw.loadAddon(typeAheadAddon);
+    }
 
     this.addDispose([
       this._attachAddon,
-      typeAheadAddon,
       this._attachAddon.onData((data) => {
         this._onOutput.fire({ id: this.id, data });
       }),
@@ -475,7 +495,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       }),
     ]);
     this.xterm.raw.loadAddon(this._attachAddon);
-    this.xterm.raw.loadAddon(typeAheadAddon);
   }
 
   private _xtermEvents() {
