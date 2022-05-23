@@ -16,6 +16,7 @@ import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.i
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
 import { ExtHostWebviewService, ExtHostWebviewViews } from '../vscode/ext.host.api.webview';
+import { createAuthenticationApiFactory, ExtHostAuthentication } from '../vscode/ext.host.authentication';
 import { ExtHostCommands, createCommandsApiFactory } from '../vscode/ext.host.command';
 import { ExtHostComments, createCommentsApiFactory } from '../vscode/ext.host.comments';
 import { ExtHostCustomEditorImpl } from '../vscode/ext.host.custom-editor';
@@ -151,6 +152,10 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostSCM,
     new ExtHostSCM(rpcProtocol, extHostCommands),
   ) as ExtHostSCM;
+  const extHostAuthentication = rpcProtocol.set(
+    ExtHostAPIIdentifier.ExtHostAuthentication,
+    new ExtHostAuthentication(rpcProtocol),
+  ) as ExtHostAuthentication;
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
   const reporter = new DefaultReporter();
   const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
@@ -209,6 +214,7 @@ export function createAPIFactory(
       extHostCustomEditor,
       extHostEditorTabs,
     ),
+    authentication: createAuthenticationApiFactory(extension, extHostAuthentication),
     comments: createCommentsApiFactory(extension, extHostComments),
     // Sumi 扩展 API
     ...sumiAPI,
