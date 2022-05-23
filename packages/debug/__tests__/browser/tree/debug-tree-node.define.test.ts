@@ -291,7 +291,7 @@ describe('DebugConsoleRoot —— DebugConsoleNode —— DebugConsoleVariableCo
 
   it('should have correct property', () => {
     expect(node.available).toBeFalsy();
-    expect(node.description).toBeUndefined();
+    expect(node.description).toBe('undefined');
 
     expect(containerNode.uniqueID).toBe(DebugConsoleVariableContainer.uniqueID);
     expect(containerNode.value).toBe(mockContainerNodeOptions.variable.value);
