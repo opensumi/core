@@ -1121,6 +1121,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     master.setFlattenedBranch(spliceArray(master._flattenedBranch, absInsertionIndex, 0, branch));
     TreeNode.setTreeNode(item.id, item.path, item as TreeNode);
+    return item;
   }
 
   /**
@@ -1191,6 +1192,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     item.mv(destDir, newP.base.toString());
+    return item;
   }
 
   public dispose() {
@@ -1369,6 +1371,41 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
     return true;
+  }
+
+  public moveNode(oldPath: string, newPath: string) {
+    if (typeof oldPath !== 'string') {
+      throw new TypeError('Expected oldPath to be a string');
+    }
+    if (typeof newPath !== 'string') {
+      throw new TypeError('Expected newPath to be a string');
+    }
+    if (Path.isRelative(oldPath)) {
+      throw new TypeError('oldPath must be absolute');
+    }
+    if (Path.isRelative(newPath)) {
+      throw new TypeError('newPath must be absolute');
+    }
+    return this.transferItem(oldPath, newPath);
+  }
+
+  public addNode(node: TreeNode) {
+    if (!TreeNode.is(node)) {
+      throw new TypeError('Expected node to be a TreeNode');
+    }
+    return this.insertItem(node);
+  }
+
+  public removeNode(path: string) {
+    const pathObject = new Path(path);
+    const dirName = pathObject.dir.toString();
+    const name = pathObject.base.toString();
+    if (dirName === this.path && !!this.children) {
+      const item = this.children.find((c) => c.name === name);
+      if (item) {
+        this.unlinkItem(item);
+      }
+    }
   }
 
   /**

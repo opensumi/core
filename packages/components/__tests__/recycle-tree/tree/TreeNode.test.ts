@@ -214,4 +214,23 @@ describe('Tree', () => {
     await root.refresh();
     expect(root.branchSize).toBe(3);
   });
+
+  it('move/remove/add node should be work', async () => {
+    const tree = new TreeA();
+    const root = new Root(tree, undefined, undefined);
+    tree.setPresetChildren([new Folder(tree, root, undefined, { name: 'a' }), new File(tree, root, { name: 'b' })]);
+    await root.ensureLoaded();
+    const a = root.getTreeNodeAtIndex(0);
+    // move node
+    root.moveNode((a as TreeNode).path, (a as TreeNode).path.replace('a', 'c'));
+    expect((a as TreeNode).name).toBe('c');
+    // remove node
+    expect(root.branchSize).toBe(2);
+    root.removeNode((a as TreeNode).path);
+    expect(root.branchSize).toBe(1);
+    // add node
+    const d = new File(tree, root, { name: 'd' });
+    root.addNode(d);
+    expect(root.branchSize).toBe(2);
+  });
 });
