@@ -58,6 +58,14 @@ describe('search-service', () => {
     expect(matches.length).toBe(2);
   });
 
+  it('search hidden file in the workspace', async () => {
+    const dir = FileUri.create(path.resolve(__dirname, '../test-resources/subdir1')).toString();
+
+    const matches = await service.find('.sumi', { rootUris: [dir] });
+    expect(matches).toBeDefined();
+    expect(matches.length).toBe(1);
+  });
+
   describe('search with glob', () => {
     it('should support file searches with globs', async () => {
       const rootUri = FileUri.create(path.resolve(__dirname, '../test-resources/subdir1/sub2')).toString();

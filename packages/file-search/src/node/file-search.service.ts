@@ -136,7 +136,7 @@ export class FileSearchService implements IFileSearchService {
   }
 
   private getSearchArgs(options: IFileSearchService.BaseOptions): string[] {
-    const args = ['--files', '--case-sensitive'];
+    const args = ['--files', '--hidden', '--case-sensitive'];
     if (options.includePatterns) {
       for (const includePattern of options.includePatterns) {
         if (includePattern) {
