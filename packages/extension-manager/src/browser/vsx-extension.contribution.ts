@@ -36,7 +36,7 @@ export class VSXExtensionContribution
     if (handler) {
       // 在激活的时候获取数据
       handler.onActivate(async () => {
-        await this.vsxExtensionService.getOpenVSXRegistry();
+        !this.vsxExtensionService.openVSXRegistry && (await this.vsxExtensionService.getOpenVSXRegistry());
         this.vsxExtensionService.search('');
       });
     }
