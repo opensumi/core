@@ -8,16 +8,15 @@
 
 .variable_repl_bar {
   display: flex;
-  border-top: 1px solid hsla(0, 0%, 50%, 0.35);
+  border-top: 1px solid var(--sideBar-border);
   width: 100%;
   overflow: hidden;
-  min-height: 24px;
+  min-height: 26px;
   background-color: var(--editor-background);
 
   .variable_repl_editor {
     width: 100%;
     z-index: 99;
-    margin-top: -5px;
 
     :global(.margin) {
       display: none;
@@ -40,8 +39,8 @@
     position: relative;
     padding: 0 6px 0 8px;
     min-width: 16px;
-    min-height: 100%;
-    line-height: 24px;
+    line-height: 26px;
+    height: 26px;
     display: flex;
     flex-shrink: 0;
     justify-content: center;

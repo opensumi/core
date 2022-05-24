@@ -45,6 +45,7 @@ const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
     vertical: 'hidden',
     handleMouseWheel: true,
   },
+  lineHeight: 26,
   acceptSuggestionOnEnter: 'on',
   readOnly: true,
 };
