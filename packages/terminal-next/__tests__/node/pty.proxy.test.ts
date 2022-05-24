@@ -16,6 +16,7 @@ describe('PtyService function should be valid', () => {
   let injector: Injector;
   let shellPath = '';
   let proxyProvider: PtyServiceProxyRPCProvider;
+  let ptyManagerInstance;
 
   if (os.platform() === 'win32') {
     shellPath = 'powershell';
@@ -30,9 +31,19 @@ describe('PtyService function should be valid', () => {
     proxyProvider = new PtyServiceProxyRPCProvider();
     proxyProvider.initServer();
 
-    injector.addProviders({
+    injector.overrideProviders({
       token: PtyServiceManagerToken,
-      useValue: new PtyServiceManagerRemote(),
+      useFactory: (injector1: Injector) => {
+        if (ptyManagerInstance) {
+          return ptyManagerInstance;
+        }
+        ptyManagerInstance = injector1.get(PtyServiceManagerRemote, [
+          {
+            port: 10111,
+          },
+        ]);
+        return ptyManagerInstance;
+      },
     });
   });
 
