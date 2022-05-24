@@ -16,7 +16,7 @@ describe('PtyService function should be valid', () => {
   let injector: Injector;
   let shellPath = '';
   let proxyProvider: PtyServiceProxyRPCProvider;
-  let ptyManagerInstance;
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   if (os.platform() === 'win32') {
     shellPath = 'powershell';
@@ -24,27 +24,17 @@ describe('PtyService function should be valid', () => {
     shellPath = 'sh';
   }
 
-  beforeAll(() => {
+  beforeAll(async () => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
 
     // 双容器模式下，需要以本文件作为entry单独打包出一个可执行文件，运行在DEV容器中
     proxyProvider = new PtyServiceProxyRPCProvider();
     proxyProvider.initServer();
-
     injector.overrideProviders({
       token: PtyServiceManagerToken,
-      useFactory: (injector1: Injector) => {
-        if (ptyManagerInstance) {
-          return ptyManagerInstance;
-        }
-        ptyManagerInstance = injector1.get(PtyServiceManagerRemote, [
-          {
-            port: 10111,
-          },
-        ]);
-        return ptyManagerInstance;
-      },
+      useValue: injector.get(PtyServiceManagerRemote, []),
     });
+    await delay(2000);
   });
 
   afterAll(() => {
