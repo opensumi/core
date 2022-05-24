@@ -558,6 +558,17 @@ export const defaultSettingSections: {
         // 命令行参数
         { id: 'terminal.integrated.shellArgs.linux', localized: 'preference.terminal.integrated.shellArgs.linux' },
         { id: 'terminal.integrated.copyOnSelection', localized: 'preference.terminal.integrated.copyOnSelection' },
+        // Local echo
+        { id: 'terminal.integrated.localEchoEnabled', localized: 'preference.terminal.integrated.localEchoEnabled' },
+        {
+          id: 'terminal.integrated.localEchoLatencyThreshold',
+          localized: 'preference.terminal.integrated.localEchoLatencyThreshold',
+        },
+        {
+          id: 'terminal.integrated.localEchoExcludePrograms',
+          localized: 'preference.terminal.integrated.localEchoExcludePrograms',
+        },
+        { id: 'terminal.integrated.localEchoStyle', localized: 'preference.terminal.integrated.localEchoStyle' },
       ],
     },
   ],

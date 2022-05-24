@@ -445,6 +445,18 @@ export const localizationBundle = {
     'preference.terminal.integrated.copyOnSelection': 'Terminal Copy On Selection',
     'preference.terminal.integrated.copyOnSelectionDesc':
       'Controls whether text selected in the terminal will be copied to the clipboard.',
+    // Local Echo
+    'preference.terminal.integrated.localEchoEnabled': 'Terminal Local Echo',
+    'preference.terminal.integrated.localEchoDesc': 'When local echo should be enabled.',
+    'preference.terminal.integrated.localEchoLatencyThreshold': 'Local Echo Latency Threshold',
+    'preference.terminal.integrated.localEchoLatencyThresholdDesc':
+      "Length of network delay, in milliseconds, where local edits will be echoed on the terminal without waiting for server acknowledgement. If '0', local echo will always be on, and if '-1' it will be disabled.",
+    'preference.terminal.integrated.localEchoExcludePrograms': 'Local Echo Exclude Programs',
+    'preference.terminal.integrated.localEchoExcludeProgramsDesc':
+      'Local echo will be disabled when any of these program names are found in the terminal title.',
+    'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
+    'preference.terminal.integrated.localEchoStyleDesc':
+      'Terminal style of locally echoed text; either a font style or an RGB color.',
 
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
