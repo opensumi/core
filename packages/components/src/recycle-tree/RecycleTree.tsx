@@ -424,11 +424,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (this.props.model !== prevProps.model) {
       this.disposables.dispose();
       const { model } = this.props;
-      this.listRef.current?.scrollTo(model.state.scrollOffset);
+      this.listRef?.current?.scrollTo(model.state.scrollOffset);
       this.disposables.push(model.onChange(this.batchUpdate.bind(this)));
       this.disposables.push(
         model.state.onDidLoadState(() => {
-          this.listRef.current?.scrollTo(model.state.scrollOffset);
+          this.listRef?.current?.scrollTo(model.state.scrollOffset);
         }),
       );
       this.onDidModelChangeEmitter.fire({
@@ -475,7 +475,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
     if (this.newPromptInsertionIndex >= 0) {
       // 说明已在输入框已在可视区域
-      this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
+      this.listRef?.current?.scrollToItem(this.newPromptInsertionIndex);
     } else {
       this.tryScrollIntoViewWhileStable(this.promptHandle as any);
     }
@@ -510,7 +510,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     } else {
       await this.batchUpdate();
     }
-    this.listRef.current?.scrollToItem(root.getIndexAtTreeNodeId(this.promptTargetID));
+    this.listRef?.current?.scrollToItem(root.getIndexAtTreeNodeId(this.promptTargetID));
     return this.promptHandle as RenamePromptHandle;
   };
 
@@ -576,9 +576,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private tryScrollIntoView(node: TreeNode | CompositeTreeNode | PromptHandle, align: IRecycleTreeAlign = 'auto') {
     const { root } = this.props.model;
     if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
-      this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
+      this.listRef?.current?.scrollToItem(this.newPromptInsertionIndex);
     } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
-      this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
+      this.listRef?.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
     }
   }
 
@@ -594,9 +594,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     Event.once(this.props.model.onChange)(async () => {
       await this.queueUpdatePromise;
       if (node.constructor === NewPromptHandle && !(node as NewPromptHandle).destroyed) {
-        this.listRef.current?.scrollToItem(this.newPromptInsertionIndex);
+        this.listRef?.current?.scrollToItem(this.newPromptInsertionIndex);
       } else if (root.isItemVisibleAtSurface(node as TreeNode | CompositeTreeNode)) {
-        this.listRef.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
+        this.listRef?.current?.scrollToItem(root.getIndexAtTreeNode(node as TreeNode | CompositeTreeNode), align);
         this.tryEnsureVisibleTimes = 0;
       } else {
         this.tryEnsureVisibleTimes++;
@@ -607,11 +607,11 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   public componentDidMount() {
     const { model, onReady } = this.props;
-    this.listRef.current?.scrollTo(model.state.scrollOffset);
+    this.listRef?.current?.scrollTo(model.state.scrollOffset);
     this.disposables.push(model.onChange(this.batchUpdate.bind(this)));
     this.disposables.push(
       model.state.onDidLoadState(() => {
-        this.listRef.current?.scrollTo(model.state.scrollOffset);
+        this.listRef?.current?.scrollTo(model.state.scrollOffset);
       }),
     );
     if (typeof onReady === 'function') {
@@ -927,15 +927,16 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return;
     }
 
-    if (this.listRef && this.listRef.current && '_getRangeToRender' in this.listRef.current) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
+    if (this.listRef && this.listRef?.current && '_getRangeToRender' in this.listRef?.current) {
       // _getRangeToRender 是 react-window 的内部方法，用于获取可视区域的下标范围
       // @ts-ignore
-      const range = this.listRef.current._getRangeToRender();
+      const range = this.listRef?.current._getRangeToRender();
       if (range) {
         const start = range[0];
         const end = range[1];
         Array.from({ length: end - start }).forEach((_, i) => {
-          (this.listRef.current as VariableSizeList<any>).resetAfterIndex(start + i);
+          (this.listRef?.current as VariableSizeList<any>).resetAfterIndex(start + i);
         });
       }
     }

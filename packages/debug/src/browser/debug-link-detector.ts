@@ -189,6 +189,9 @@ export class LinkDetector {
   }
 
   private detectLinks(text: string): LinkPart[] {
+    if (!text) {
+      return [];
+    }
     if (text.length > MAX_LENGTH) {
       return [{ kind: 'text', value: text, captures: [] }];
     }

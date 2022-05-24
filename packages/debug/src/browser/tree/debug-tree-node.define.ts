@@ -8,6 +8,8 @@ import { DebugSession } from '../debug-session';
 
 import { AnsiConsoleNode } from './debug-console-tree-node.define';
 
+const UNDEFINED_VALUE = 'undefined';
+
 export class ExpressionTreeService {
   constructor(private session?: DebugSession, private source?: DebugProtocol.Source, private line?: number | string) {}
 
@@ -303,7 +305,7 @@ export class DebugVariable extends ExpressionNode {
   }
 
   get description(): string {
-    return this.value;
+    return this.value || UNDEFINED_VALUE;
   }
 
   protected _value: string | undefined;
@@ -413,7 +415,7 @@ export class DebugVariableContainer extends ExpressionContainer {
   }
 
   get description(): string {
-    return this._value || this.variable.value;
+    return this._value || this.variable.value || UNDEFINED_VALUE;
   }
 
   get tooltip(): string {
@@ -522,7 +524,7 @@ export class DebugWatchNode extends ExpressionContainer {
   }
 
   get description() {
-    return this._available ? this._description : DebugWatchNode.notAvailable;
+    return this._available ? this._description || UNDEFINED_VALUE : DebugWatchNode.notAvailable;
   }
 
   get available() {
@@ -536,12 +538,12 @@ export class DebugWatchNode extends ExpressionContainer {
   async evaluate(context = 'watch'): Promise<void> {
     if (this.session) {
       try {
+        this._available = true;
         const { expression } = this;
         const body = await this.session.evaluate(expression, context);
         if (body) {
           this.name = this.expression;
           this._description = body.result;
-          this._available = true;
           this.variablesReference = body.variablesReference;
           this.namedVariables = body.namedVariables;
           this.indexedVariables = body.indexedVariables;
@@ -589,7 +591,7 @@ export class DebugConsoleVariableContainer extends DebugVariableContainer {
     if (this.variable) {
       return this.variable.value;
     }
-    return '';
+    return UNDEFINED_VALUE;
   }
 
   get tooltip() {
@@ -628,7 +630,7 @@ export class DebugConsoleNode extends ExpressionContainer {
   }
 
   get description() {
-    return this._description;
+    return this._description || UNDEFINED_VALUE;
   }
 
   async evaluate(context = 'repl'): Promise<void> {

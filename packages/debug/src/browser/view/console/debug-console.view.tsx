@@ -99,7 +99,9 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       });
       resizeObserver.observe(wrapperRef.current);
       return () => {
-        resizeObserver.unobserve(wrapperRef.current!);
+        if (wrapperRef.current) {
+          resizeObserver?.unobserve(wrapperRef.current);
+        }
         if (animationFrame) {
           window.cancelAnimationFrame(animationFrame);
         }
