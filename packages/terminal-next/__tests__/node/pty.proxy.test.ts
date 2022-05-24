@@ -12,7 +12,7 @@ import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
 // 使用Remote模式（非Local模式）来测试PtyService
 describe('PtyService function should be valid', () => {
-  jest.setTimeout(20000);
+  jest.setTimeout(40000);
 
   let injector: Injector;
   let shellPath = '';
