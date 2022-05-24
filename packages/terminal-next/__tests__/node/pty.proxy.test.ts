@@ -1,6 +1,7 @@
 import os from 'os';
 
 import { Injector } from '@opensumi/di';
+import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { TerminalNodePtyModule } from '../../src/node';
@@ -16,6 +17,7 @@ describe('PtyService function should be valid', () => {
   let injector: Injector;
   let shellPath = '';
   let proxyProvider: PtyServiceProxyRPCProvider;
+  const ipcPath = normalizedIpcHandlerPath('NODE-TEST-PTY', true);
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   if (os.platform() === 'win32') {
@@ -28,11 +30,11 @@ describe('PtyService function should be valid', () => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
 
     // 双容器模式下，需要以本文件作为entry单独打包出一个可执行文件，运行在DEV容器中
-    proxyProvider = new PtyServiceProxyRPCProvider();
+    proxyProvider = new PtyServiceProxyRPCProvider({ path: ipcPath });
     proxyProvider.initServer();
     injector.overrideProviders({
       token: PtyServiceManagerToken,
-      useValue: injector.get(PtyServiceManagerRemote, []),
+      useValue: injector.get(PtyServiceManagerRemote, [{ path: ipcPath }]),
     });
     await delay(2000);
   });
