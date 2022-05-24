@@ -13,7 +13,6 @@ import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-brow
 
 import { ToolbarCustomizeComponent, ToolbarCustomizeViewService } from './toolbar-customize';
 
-
 @Domain(CommandContribution, ComponentContribution, MenuContribution)
 export class ToolbarCustomizeContribution implements CommandContribution, ComponentContribution, MenuContribution {
   @Autowired(AppConfig)
@@ -46,7 +45,7 @@ export class ToolbarCustomizeContribution implements CommandContribution, Compon
         modules: [],
       };
     }
-    this.config.layoutConfig[SlotLocation.extra]!.modules.push('addon/toolbar-customize');
+    this.config.layoutConfig[SlotLocation.extra].modules.push('addon/toolbar-customize');
   }
 
   registerMenus(registry: IMenuRegistry) {

@@ -5,7 +5,6 @@ import { IMainLayoutService } from '../common';
 
 import { TabbarService } from './tabbar/tabbar.service';
 
-
 @Injectable({ multiple: true })
 export class TabBarHandler {
   @Autowired(IMainLayoutService)
@@ -28,6 +27,11 @@ export class TabBarHandler {
   public accordionService = this.layoutService.getAccordionService(this.containerId);
 
   constructor(public readonly containerId: string, private tabbarService: TabbarService) {
+    // 如果当前视图已经激活，则设置一些激活的标志
+    if (tabbarService.currentContainerId === this.containerId) {
+      this.onActivateEmitter.fire();
+      this.isVisible = true;
+    }
     this.tabbarService.onCurrentChange((e) => {
       if (e.currentId === this.containerId) {
         this.onActivateEmitter.fire();
