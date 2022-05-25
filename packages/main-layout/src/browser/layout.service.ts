@@ -165,7 +165,8 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         size: undefined,
       },
       [SlotLocation.right]: {
-        currentId: undefined,
+        // 依照下面的恢复逻辑，这里设置为 `''` 时，就不会恢复右侧的 TabBar 的状态（即选中相应的 viewContainer）
+        currentId: '',
         size: undefined,
       },
       [SlotLocation.bottom]: {
