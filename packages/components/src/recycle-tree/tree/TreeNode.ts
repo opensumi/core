@@ -561,9 +561,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     this.isExpanded = true;
     if (this._children === null) {
-      !quiet && this._watcher.notifyWillResolveChildren(this, this.isExpanded);
+      this._watcher.notifyWillResolveChildren(this, this.isExpanded);
       await this.hardReloadChildren(token);
-      !quiet && this._watcher.notifyDidResolveChildren(this, this.isExpanded);
+      this._watcher.notifyDidResolveChildren(this, this.isExpanded);
       // 检查其是否展开；可能同时执行了 setCollapsed 方法
       if (!this.isExpanded || token?.isCancellationRequested) {
         if (isOwner) {
@@ -594,10 +594,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
 
     if (this.isExpanded) {
-      !quiet && this._watcher.notifyWillChangeExpansionState(this, true);
+      this._watcher.notifyWillChangeExpansionState(this, true);
       // 与根节点合并分支
       this.expandBranch(this, quiet);
-      !quiet && this._watcher.notifyDidChangeExpansionState(this, true);
+      this._watcher.notifyDidChangeExpansionState(this, true);
     }
     if (isOwner) {
       TreeNode.setGlobalTreeState(this.path, {
@@ -1030,13 +1030,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     const state = TreeNode.getGlobalTreeState(this.path);
     state.loadPathCancelToken.cancel();
     state.refreshCancelToken.cancel();
-    !quiet && this._watcher.notifyWillChangeExpansionState(this, false);
+    this._watcher.notifyWillChangeExpansionState(this, false);
     if (this._children && this.parent) {
       // 从根节点裁剪分支
       this.shrinkBranch(this, quiet);
     }
     this.isExpanded = false;
-    !quiet && this._watcher.notifyDidChangeExpansionState(this, false);
+    this._watcher.notifyDidChangeExpansionState(this, false);
   }
 
   public mv(to: ICompositeTreeNode, name: string = this.name) {
@@ -1121,6 +1121,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     master.setFlattenedBranch(spliceArray(master._flattenedBranch, absInsertionIndex, 0, branch));
     TreeNode.setTreeNode(item.id, item.path, item as TreeNode);
+    return item;
   }
 
   /**
@@ -1191,6 +1192,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     item.mv(destDir, newP.base.toString());
+    return item;
   }
 
   public dispose() {
@@ -1369,6 +1371,41 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     this.watchTerminator = this.watcher.onWatchEvent(this.path, this.handleWatchEvent);
     return true;
+  }
+
+  public moveNode(oldPath: string, newPath: string) {
+    if (typeof oldPath !== 'string') {
+      throw new TypeError('Expected oldPath to be a string');
+    }
+    if (typeof newPath !== 'string') {
+      throw new TypeError('Expected newPath to be a string');
+    }
+    if (Path.isRelative(oldPath)) {
+      throw new TypeError('oldPath must be absolute');
+    }
+    if (Path.isRelative(newPath)) {
+      throw new TypeError('newPath must be absolute');
+    }
+    return this.transferItem(oldPath, newPath);
+  }
+
+  public addNode(node: TreeNode) {
+    if (!TreeNode.is(node)) {
+      throw new TypeError('Expected node to be a TreeNode');
+    }
+    return this.insertItem(node);
+  }
+
+  public removeNode(path: string) {
+    const pathObject = new Path(path);
+    const dirName = pathObject.dir.toString();
+    const name = pathObject.base.toString();
+    if (dirName === this.path && !!this.children) {
+      const item = this.children.find((c) => c.name === name);
+      if (item) {
+        this.unlinkItem(item);
+      }
+    }
   }
 
   /**
