@@ -12,7 +12,7 @@ import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
 // 使用Remote模式（非Local模式）来测试PtyService
 describe('PtyService function should be valid', () => {
-  jest.setTimeout(40000);
+  jest.setTimeout(20000);
 
   let injector: Injector;
   let shellPath = '';
@@ -69,25 +69,5 @@ describe('PtyService function should be valid', () => {
     expect(instance).toBeDefined();
     expect(instance?.pid).toBeDefined();
     expect(instance?.launchConfig).toBeDefined();
-  });
-
-  it('cwd is user home dir if not set', async () => {
-    const ptyService = injector.get(PtyService, ['0', { executable: shellPath, args: ['-c', 'pwd'] }, 200, 200]);
-    const error = await ptyService.start();
-    const instance = ptyService.pty;
-
-    expect(error).toBeUndefined();
-
-    let result = '';
-
-    if (os.platform() !== 'win32') {
-      await new Promise<void>((resolve) => {
-        instance?.onData((data) => {
-          result += data;
-          resolve(undefined);
-        });
-      });
-      expect(result).toContain(os.homedir());
-    }
   });
 });
