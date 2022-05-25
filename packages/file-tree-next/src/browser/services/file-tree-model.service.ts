@@ -31,9 +31,8 @@ import {
   Throttler,
   Emitter,
   Deferred,
-  OS,
-  IApplicationService,
   CommandService,
+  IApplicationService,
   FILE_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
@@ -41,7 +40,7 @@ import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileStat, FileChangeType } from '@opensumi/ide-file-service';
+import { FileStat } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
@@ -429,9 +428,7 @@ export class FileTreeModelService {
         });
       }),
     );
-    // 先加载快照后再监听文件变化，同时操作会出现Tree更新后节点无法对齐问题
-    // 即找到插入节点位置为 0，导致重复问题
-    this.fileTreeService.startWatchFileEvent();
+    await this.fileTreeService.startWatchFileEvent();
     this.onFileTreeModelChangeEmitter.fire(this._treeModel);
 
     this._whenReady.resolve();
@@ -1228,10 +1225,8 @@ export class FileTreeModelService {
           to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
         }
         // 屏蔽重命名文件事件
-        this.fileTreeService.ignoreFileEventOnce((target.parent as Directory).uri);
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
         if (error) {
-          this.fileTreeService.ignoreFileEventOnce(null);
           this.validateMessage = {
             type: PROMPT_VALIDATE_TYPE.ERROR,
             message: error,
@@ -1240,17 +1235,23 @@ export class FileTreeModelService {
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
-        if (!isCompactNode) {
+        if (!isCompactNode && target.parent) {
           // 重命名节点的情况，直接刷新一下父节点即可
-          const newPath = new Path(target.parent!.path).join(newName).toString();
-          await this.fileTreeService.refresh(target.parent as Directory);
-          this.willSelectedNodePath = newPath;
+          const node = await this.fileTreeService.moveNodeByPath(
+            target.parent as Directory,
+            target.parent as Directory,
+            target.name,
+            newName,
+            target.type,
+          );
+          if (node) {
+            this.selectFileDecoration(node as File, false);
+          }
         } else {
           // 更新压缩目录展示名称
           // 由于节点移动时默认仅更新节点路径
           // 我们需要自己更新额外的参数，如uri, filestat等
           (target as Directory).updateMetaData({
-            displayName: newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator),
             name: newNameFragments.concat(nameFragments.slice(index + 1)).join(Path.separator),
             uri: to,
             fileStat: {
@@ -1261,7 +1262,7 @@ export class FileTreeModelService {
           });
           this.treeModel.dispatchChange();
           if ((target.parent as Directory).children?.find((child) => target.path.indexOf(child.path) >= 0)) {
-            // 当重命名后的压缩节点在父节点中存在子集节点时，刷新父节点
+            // 当重命名后的压缩节点在父节点中存在子节点时，刷新父节点
             // 如：
             // 压缩节点 001/002 修改为 003/002 时
             // 同时父节点下存在 003 空节点
@@ -1279,14 +1280,6 @@ export class FileTreeModelService {
         const isEmptyDirectory = !parent.children || parent.children.length === 0;
         promptHandle.addAddonAfter('loading_indicator');
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-          if (this.fileTreeService.isCompactMode && isEmptyDirectory && !Directory.isRoot(parent)) {
-            this.fileTreeService.ignoreFileEvent(parent.uri, FileChangeType.UPDATED);
-            if ((await this.appService.backendOS) === OS.Type.Windows) {
-              // Windows环境下会多触发一个UPDATED事件
-              this.fileTreeService.ignoreFileEvent(parent.uri.resolve(newName), FileChangeType.UPDATED);
-            }
-            this.fileTreeService.ignoreFileEvent(parent.uri.resolve(newName), FileChangeType.ADDED);
-          }
           error = await this.fileTreeAPI.createDirectory(newUri);
         } else {
           error = await this.fileTreeAPI.createFile(newUri);
@@ -1321,7 +1314,6 @@ export class FileTreeModelService {
                 const newNodeName = [parent.name].concat(newName).join(Path.separator);
                 parent.updateMetaData({
                   name: newNodeName,
-                  displayName: newNodeName,
                   uri: parent.uri.resolve(newName),
                   fileStat: {
                     ...parent.filestat,
@@ -1342,7 +1334,6 @@ export class FileTreeModelService {
               const parentUri = parent.uri.resolve(parentAddonPath);
               const newNodeName = [parent.name].concat(parentAddonPath).join(Path.separator);
               parent.updateMetaData({
-                displayName: newNodeName,
                 name: newNodeName,
                 uri: parentUri,
                 fileStat: {
@@ -1365,7 +1356,6 @@ export class FileTreeModelService {
             const parentUri = parent.uri.resolve(newName);
             const newNodeName = [parent.name].concat(newName).join(Path.separator);
             parent.updateMetaData({
-              displayName: newNodeName,
               name: newNodeName,
               uri: parentUri,
               fileStat: {
@@ -1524,7 +1514,6 @@ export class FileTreeModelService {
       // 更新目标节点信息
       (targetNode as Directory).updateMetaData({
         name: relativeName?.toString(),
-        displayName: relativeName?.toString(),
         uri: newTargetUri,
         tooltip: this.fileTreeAPI.getReadableTooltip(newTargetUri),
         fileStat: {
@@ -1682,10 +1671,6 @@ export class FileTreeModelService {
     await this.whenReady;
     // 筛选模式下，禁止使用定位功能
     if (this.fileTreeService.filterMode) {
-      return;
-    }
-    // 当存在等待选中的节点路径时，跳过定位
-    if (this.willSelectedNodePath) {
       return;
     }
     this._fileToLocation = pathOrUri;

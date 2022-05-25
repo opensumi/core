@@ -170,6 +170,7 @@ export class FileTreeContribution
         this.fileTreeModelService.performLocationOnHandleShow();
       });
       handler.onInActivate(() => {
+        this.fileTreeModelService.handleTreeBlur();
         this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(false);
       });
     }

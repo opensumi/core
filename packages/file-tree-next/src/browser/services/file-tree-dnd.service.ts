@@ -9,7 +9,6 @@ import {
   ThrottledDelayer,
   FileStat,
 } from '@opensumi/ide-core-browser';
-import { Path } from '@opensumi/ide-core-common/lib/path';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
 import { IMessageService } from '@opensumi/ide-overlay';
 
@@ -267,8 +266,10 @@ export class DragAndDropService extends WithEventBus {
                   const to = containing.uri.resolve(target.name);
                   this.fileTreeService.moveNodeByPath(
                     target.parent as Directory,
-                    target.path,
-                    new Path(containing.path).join(target.name).toString(),
+                    containing,
+                    target.name,
+                    target.name,
+                    target.type,
                   );
                   // 由于节点移动时默认仅更新节点路径
                   // 我们需要自己更新额外的参数，如uri, filestat等

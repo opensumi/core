@@ -1,15 +1,8 @@
 import throttle from 'lodash/throttle';
 import pSeries from 'p-series';
 
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import {
-  Tree,
-  ITree,
-  WatchEvent,
-  ITreeNodeOrCompositeTreeNode,
-  IWatcherEvent,
-  TreeNodeType,
-} from '@opensumi/ide-components';
+import { Injectable, Autowired } from '@opensumi/di';
+import { Tree, ITree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
 import {
   CommandService,
   IContextKeyService,
@@ -21,11 +14,9 @@ import {
   Deferred,
   Event,
   Emitter,
-  OS,
   IApplicationService,
   ILogger,
   Throttler,
-  CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -108,9 +99,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private _cacheNodesMap: Map<string, File | Directory> = new Map();
 
   private _fileServiceWatchers: Map<string, IFileServiceWatcher> = new Map();
-
-  private _cacheIgnoreFileEvent: Map<string, FileChangeType> = new Map();
-  private _cacheIgnoreFileEventOnce: URI | null;
 
   // 文件系统Change事件队列
   private _changeEventDispatchQueue = new Set<string>();
@@ -251,9 +239,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   public startWatchFileEvent() {
     this._readyToWatch = true;
-    this._watchRootsQueue.forEach(async (uri) => {
-      await this.watchFilesChange(uri);
-    });
+    return Promise.all(
+      this._watchRootsQueue.map(async (uri) => {
+        await this.watchFilesChange(uri);
+      }),
+    );
   }
 
   async resolveChildren(parent?: Directory) {
@@ -290,7 +280,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
             const rootName = this.workspaceService.getWorkspaceName(child.uri);
             if (rootName && rootName !== child.name) {
               (child as Directory).updateMetaData({
-                displayName: rootName,
+                name: rootName,
               });
             }
           });
@@ -401,31 +391,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   }
 
   private async onFilesChanged(changes: FileChange[]) {
-    // 过滤掉内置触发的事件
-    if (this._cacheIgnoreFileEventOnce) {
-      let filtered = false;
-      changes = changes.filter((change) => {
-        if (this._cacheIgnoreFileEventOnce!.isEqualOrParent(new URI(change.uri))) {
-          filtered = true;
-          return false;
-        }
-        return true;
-      });
-      if (filtered) {
-        this._cacheIgnoreFileEventOnce = null;
-      }
-    }
-    changes = changes.filter((change) => {
-      if (!this._cacheIgnoreFileEvent.has(change.uri)) {
-        return true;
-      } else {
-        if (this._cacheIgnoreFileEvent.get(change.uri) === change.type) {
-          this._cacheIgnoreFileEvent.delete(change.uri);
-          return false;
-        }
-        return true;
-      }
-    });
     const nodes = await this.getAffectedNodes(this.getAffectedChanges(changes));
     if (nodes.length > 0) {
       this.effectedNodes = this.effectedNodes.concat(nodes);
@@ -492,48 +457,31 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
   }
 
-  public async moveNode(node: File | Directory, source: string, target: string) {
-    const sourceUri = new URI(source);
-    const targetUri = new URI(target);
-    const oldPath = await this.getFileTreeNodePathByUri(sourceUri);
-    const newPath = await this.getFileTreeNodePathByUri(targetUri);
-    // 判断是否为重命名场景，如果是重命名，则不需要刷新父目录
-    const shouldReloadParent = sourceUri.parent.isEqual(targetUri.parent) ? false : this.isCompactMode;
-    await this.moveNodeByPath(node, oldPath, newPath, shouldReloadParent);
-  }
-
   // 软链接目录下，文件节点路径不能通过uri去获取，存在偏差
-  public async moveNodeByPath(node: File | Directory, oldPath?: string, newPath?: string, refreshParent?: boolean) {
+  public async moveNodeByPath(
+    from: Directory,
+    to: Directory,
+    oldName: string,
+    newName: string,
+    type: TreeNodeType = TreeNodeType.TreeNode,
+  ) {
+    const oldPath = new Path(from.path).join(oldName).toString();
+    const newPath = new Path(to.path).join(newName).toString();
     if (oldPath && newPath && newPath !== oldPath) {
-      if (!this.isMultipleWorkspace) {
-        this._cacheIgnoreFileEvent.set(
-          (this.root as Directory).uri.parent.resolve(oldPath.slice(1)).toString(),
-          FileChangeType.DELETED,
-        );
-        this._cacheIgnoreFileEvent.set(
-          (this.root as Directory).uri.parent.resolve(newPath.slice(1)).toString(),
-          FileChangeType.ADDED,
-        );
+      const movedNode = from.moveNode(oldPath, newPath);
+      // 更新节点除了 name 以外的其他属性，如 fileStat，tooltip 等，否则节点数据可能会异常
+      if (movedNode) {
+        (movedNode as File).updateMetaData({
+          uri: to.uri.resolve(newName),
+          fileStat: {
+            ...to.filestat,
+            uri: to.uri.resolve(newName).toString(),
+            isDirectory: type === TreeNodeType.TreeNode ? false : true,
+          },
+          tooltip: this.fileTreeAPI.getReadableTooltip(to.uri.resolve(newName)),
+        });
       }
-      this.dispatchWatchEvent(node!.path, { type: WatchEvent.Moved, oldPath, newPath });
-      // 压缩模式下，需要尝试更新移动的源节点的父节点及目标节点的目标节点折叠状态
-      if (this.isCompactMode) {
-        const oldParentPath = new Path(oldPath).dir.toString();
-        const newParentPath = new Path(newPath).dir.toString();
-        if (oldParentPath) {
-          const oldParentNode = this.getNodeByPathOrUri(oldParentPath);
-          if (!!oldParentNode && refreshParent) {
-            this.refresh(oldParentNode as Directory);
-          }
-        }
-        if (newParentPath) {
-          const newParentNode = this.getNodeByPathOrUri(newParentPath);
-          const isCompressedFocused = this.contextKeyService.getContextValue('explorerViewletCompressedFocus');
-          if (!!newParentNode && isCompressedFocused) {
-            this.refresh(newParentNode as Directory);
-          }
-        }
-      }
+      return movedNode;
     }
   }
 
@@ -544,13 +492,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     // 处理a/b/c/d这类目录
     if (namePaths.length > 1) {
       let tempUri = node.uri;
-      if ((await this.appService.backendOS) === OS.Type.Windows) {
-        // Windows环境下会多触发一个UPDATED事件
-        this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.UPDATED);
-      }
       for (const path of namePaths) {
         tempUri = tempUri.resolve(path);
-        this._cacheIgnoreFileEvent.set(tempUri.toString(), FileChangeType.ADDED);
       }
       if (!this.isCompactMode || Directory.isRoot(node)) {
         tempName = namePaths[0];
@@ -563,11 +506,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     } else {
       tempName = newName;
-      if ((await this.appService.backendOS) === OS.Type.Windows) {
-        // Windows环境下会多触发一个UPDATED事件
-        this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.UPDATED);
-      }
-      this._cacheIgnoreFileEvent.set(node.uri.resolve(newName).toString(), FileChangeType.ADDED);
     }
     tempFileStat = {
       uri: node.uri.resolve(tempName).toString(),
@@ -578,10 +516,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const addNode = await this.fileTreeAPI.toNode(this as ITree, tempFileStat, node as Directory, tempName);
     if (addNode) {
       // 节点创建失败时，不需要添加
-      this.dispatchWatchEvent(node.path, { type: WatchEvent.Added, node: addNode, id: node.id });
-    } else {
-      // 新建失败时移除该缓存
-      this._cacheIgnoreFileEvent.delete(tempFileStat.uri);
+      node.addNode(addNode);
     }
     return addNode;
   }
@@ -594,8 +529,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (node.displayName.indexOf(Path.separator) > 0 && !notRefresh) {
         this.refresh(node.parent as Directory);
       } else {
-        this._cacheIgnoreFileEvent.set(node.uri.toString(), FileChangeType.DELETED);
-        this.dispatchWatchEvent(node.parent.path, { type: WatchEvent.Removed, path: node.path });
+        (node.parent as Directory).removeNode(node.path);
       }
     }
   }
@@ -618,13 +552,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return changes.filter((change) => change.type !== FileChangeType.DELETED);
   }
 
-  private dispatchWatchEvent(path: string, event: IWatcherEvent) {
-    const watcher = this.root?.watchEvents.get(path);
-    if (watcher && watcher.callback) {
-      watcher.callback(event);
-    }
-  }
-
   private async getAffectedNodes(changes: FileChange[]): Promise<Directory[]> {
     const nodes: Directory[] = [];
     for (const change of changes) {
@@ -635,14 +562,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
       }
     }
     return nodes;
-  }
-
-  ignoreFileEvent(uri: URI, type: FileChangeType) {
-    this._cacheIgnoreFileEvent.set(uri.toString(), type);
-  }
-
-  ignoreFileEventOnce(uri: URI | null) {
-    this._cacheIgnoreFileEventOnce = uri;
   }
 
   private isFileURI(str: string) {
@@ -759,10 +678,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
     }
     if (!Directory.is(node) && node.parent) {
       node = node.parent as Directory;
-    }
-    if (Directory.isRoot(node)) {
-      // 根目录刷新时情况忽略队列
-      this._cacheIgnoreFileEvent.clear();
     }
 
     // 队列化刷新动作减少更新成本

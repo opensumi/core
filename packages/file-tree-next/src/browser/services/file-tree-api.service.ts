@@ -53,7 +53,6 @@ export class FileTreeAPI implements IFileTreeAPI {
           if (parentName && parentName !== parent.name) {
             parent.updateMetaData({
               name: parentName,
-              displayName: parentName,
               uri: parentURI,
               fileStat: file.children[0],
               tooltip: this.getReadableTooltip(parentURI),
