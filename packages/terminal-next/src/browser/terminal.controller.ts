@@ -236,6 +236,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async recovery(history: ITerminalBrowserHistory) {
+    // Electron的环境下，不启用终端恢复能力
+    // 而且在Electron的环境下，clientId的获取方式也不一样，但因为不启用恢复能力，所以后面的代码也无需做额外处理
+    if (this.config.isElectronRenderer && !this.config.isRemote) {
+      return;
+    }
+
     // HACK: 因为现在的终端重连是有问题的，是ClientID机制导致的，因此在拿出记录恢复终端的时候，需要把里面的ClientID替换为当前活跃窗口的ClientID
     // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
 

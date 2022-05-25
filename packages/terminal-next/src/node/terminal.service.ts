@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { INodeLogger, AppConfig, isDevelopment } from '@opensumi/ide-core-node';
+import { INodeLogger, AppConfig, isDevelopment, isElectronNode } from '@opensumi/ide-core-node';
 
 import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient } from '../common';
 import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
@@ -84,11 +84,18 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
   public disposeClient(clientId: string) {
     const terminalMap = this.clientTerminalMap.get(clientId);
+    // 如果是Electron也要直接kill掉，跟随IDE Server的生命周期
+    const isElectronNodeEnv = isElectronNode();
 
     if (terminalMap) {
       terminalMap.forEach((t, id) => {
         this.terminalProcessMap.delete(id);
-        if (t.shellLaunchConfig.disablePersistence || t.shellLaunchConfig.isExtensionOwnedTerminal) {
+
+        if (
+          t.shellLaunchConfig.disablePersistence ||
+          t.shellLaunchConfig.isExtensionOwnedTerminal ||
+          isElectronNodeEnv
+        ) {
           t.kill(); // terminalProfile有isTransient的参数化，要Kill，不保活
         }
         // t.kill(); // 这个是窗口关闭时候触发，终端默认在这种场景下保活, 不kill
