@@ -1,5 +1,14 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
-import { Event, Emitter, DisposableCollection, Path, CancellationToken, CancellationTokenSource } from '../../utils';
+import {
+  Event,
+  Emitter,
+  DisposableCollection,
+  path,
+  CancellationToken,
+  CancellationTokenSource,
+  Throttler,
+} from '@opensumi/ide-utils';
+
 import {
   IWatcherCallback,
   IWatchTerminator,
@@ -18,6 +27,7 @@ import {
   IAccessibilityInformation,
 } from '../types';
 
+const { Path } = path;
 /**
  * 裁剪数组
  *
@@ -129,7 +139,6 @@ export class TreeNode implements ITreeNode {
   public static idToTreeNode: Map<number, ITreeNodeOrCompositeTreeNode> = new Map();
   public static pathToTreeNode: Map<string, ITreeNodeOrCompositeTreeNode> = new Map();
   public static pathToId: Map<string, number> = new Map();
-  public static refreshTaskLock: [string, Promise<any>] | null = null;
   // 每颗树都只会在根节点上绑定一个可取消的对象，即同个时间点只能存在一个改变树数据结构的事情
   public static pathToGlobalTreeState: Map<string, IGlobalTreeState> = new Map();
 
@@ -349,9 +358,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   private _branchSize: number;
   private _flattenedBranch: number[] | null;
 
-  private activeRefreshPromise: Promise<any> | null;
-  private queuedRefreshPromise: Promise<any> | null;
-  private queuedRefreshPromiseFactory: ((token?: CancellationToken) => Promise<any>) | null;
+  private refreshThrottler: Throttler = new Throttler();
 
   private _lock = false;
 
@@ -1114,6 +1121,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     master.setFlattenedBranch(spliceArray(master._flattenedBranch, absInsertionIndex, 0, branch));
     TreeNode.setTreeNode(item.id, item.path, item as TreeNode);
+    return item;
   }
 
   /**
@@ -1184,6 +1192,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     item.mv(destDir, newP.base.toString());
+    return item;
   }
 
   public dispose() {
@@ -1364,6 +1373,41 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     return true;
   }
 
+  public moveNode(oldPath: string, newPath: string) {
+    if (typeof oldPath !== 'string') {
+      throw new TypeError('Expected oldPath to be a string');
+    }
+    if (typeof newPath !== 'string') {
+      throw new TypeError('Expected newPath to be a string');
+    }
+    if (Path.isRelative(oldPath)) {
+      throw new TypeError('oldPath must be absolute');
+    }
+    if (Path.isRelative(newPath)) {
+      throw new TypeError('newPath must be absolute');
+    }
+    return this.transferItem(oldPath, newPath);
+  }
+
+  public addNode(node: TreeNode) {
+    if (!TreeNode.is(node)) {
+      throw new TypeError('Expected node to be a TreeNode');
+    }
+    return this.insertItem(node);
+  }
+
+  public removeNode(path: string) {
+    const pathObject = new Path(path);
+    const dirName = pathObject.dir.toString();
+    const name = pathObject.base.toString();
+    if (dirName === this.path && !!this.children) {
+      const item = this.children.find((c) => c.name === name);
+      if (item) {
+        this.unlinkItem(item);
+      }
+    }
+  }
+
   /**
    * 处理Watch事件，同时可通过外部手动调 g用节点更新函数进行节点替换，这里为通用的事件管理
    * 如： transferItem，insertItem, unlinkItem等
@@ -1434,51 +1478,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     } else {
       token = state.refreshCancelToken.token;
     }
-    await this.queue<void>(this.doRefresh.bind(this), token);
+    await this.refreshThrottler.queue(async () => this.doRefresh(token));
     TreeNode.setGlobalTreeState(this.path, {
       isRefreshing: false,
-    });
-  }
-
-  private async queue<T>(promiseFactory: (token?: CancellationToken) => Promise<T>, token?: CancellationToken) {
-    if (this.activeRefreshPromise) {
-      this.queuedRefreshPromiseFactory = promiseFactory;
-
-      if (!this.queuedRefreshPromise) {
-        const onComplete = () => {
-          if (token?.isCancellationRequested) {
-            return async () => {};
-          }
-          this.queuedRefreshPromise = null;
-          const result = this.queue(() => this.queuedRefreshPromiseFactory!(token));
-          this.queuedRefreshPromiseFactory = null;
-
-          return result;
-        };
-
-        this.queuedRefreshPromise = new Promise((resolve) => {
-          this.activeRefreshPromise?.then(onComplete, onComplete).then(resolve);
-        });
-      }
-
-      return new Promise<T>((c, e) => {
-        this.queuedRefreshPromise?.then(c, e);
-      });
-    }
-
-    this.activeRefreshPromise = promiseFactory(token);
-
-    return new Promise<T>((c, e) => {
-      this.activeRefreshPromise?.then(
-        (result: any) => {
-          this.activeRefreshPromise = null;
-          c(result);
-        },
-        (err: any) => {
-          this.activeRefreshPromise = null;
-          e(err);
-        },
-      );
     });
   }
 
