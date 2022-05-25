@@ -60,7 +60,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   private appConfig: AppConfig;
 
   async getExtension(param: QueryParam): Promise<QueryResult | undefined> {
-    const uri = `${this.appConfig.marketplace.endpoint}/-/query`;
+    const uri = `${this.appConfig.marketplace.endpoint}/api/-/query`;
     const res = await nodeFetch(uri, {
       headers: {
         ...commonHeaders,
@@ -77,6 +77,10 @@ export class VSXExtensionService implements IVSXExtensionBackService {
     const targetPath = await this.uncompressFile(distPath, downloadPath);
     cleanup([downloadPath]);
     return targetPath;
+  }
+
+  async getOpenVSXRegistry(): Promise<string> {
+    return this.appConfig.marketplace.endpoint;
   }
 
   private async uncompressFile(distPath: string, downloadPath: string) {
@@ -179,7 +183,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    const uri = `${this.appConfig.marketplace.endpoint}/-/search?${
+    const uri = `${this.appConfig.marketplace.endpoint}/api/-/search?${
       param && new URLSearchParams(param as any).toString()
     }`;
     const res = await nodeFetch(uri, {

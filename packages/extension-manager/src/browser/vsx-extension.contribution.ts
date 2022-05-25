@@ -35,7 +35,8 @@ export class VSXExtensionContribution
     const handler = this.mainLayoutService.getTabbarHandler(OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID);
     if (handler) {
       // 在激活的时候获取数据
-      handler.onActivate(() => {
+      handler.onActivate(async () => {
+        !this.vsxExtensionService.openVSXRegistry && (await this.vsxExtensionService.getOpenVSXRegistry());
         this.vsxExtensionService.search('');
       });
     }
@@ -54,6 +55,7 @@ export class VSXExtensionContribution
             ...extension,
             extensionId,
             state,
+            openVSXRegistry: this.vsxExtensionService.openVSXRegistry,
           },
           icon: iconClass || getIcon('extension'),
           name: replaceLocalizePlaceholder(extension?.displayName, extensionId) || '',

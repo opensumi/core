@@ -38,6 +38,9 @@ export class VSXExtensionService implements IVSXExtensionService {
   @observable
   public extensions: VSXExtension[] = [];
 
+  @observable
+  public openVSXRegistry: string;
+
   @Autowired(IStatusBarService)
   protected readonly statusBarService: IStatusBarService;
 
@@ -107,6 +110,10 @@ export class VSXExtensionService implements IVSXExtensionService {
     if (res && res.extensions && res.extensions.length >= 1) {
       return Object.assign({}, res.extensions[0]);
     }
+  }
+
+  async getOpenVSXRegistry() {
+    this.openVSXRegistry = await this.backService.getOpenVSXRegistry();
   }
 
   async openExtensionEditor(extensionId: string, state: InstallState) {
