@@ -67,7 +67,7 @@
     "tslib": "^2.4.0",
     "node-gyp": "^9.0.0",
     "ts-node": "^10.0.0",
-    "typescript": "^4.4.2",
+    "typescript": "4.6.4",
     "webpack": "^4.39.3"
   },
   "lint-staged": {
