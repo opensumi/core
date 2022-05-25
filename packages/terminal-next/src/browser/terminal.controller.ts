@@ -247,14 +247,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     const currentClientId = this.wsChannelHandler.clientId;
     const currentRealSessionId = history.current?.split('|')?.[1];
-    if (history.current) {
+    if (history.current && history.current.includes('|')) {
       history.current = `${currentClientId}|${currentRealSessionId}`;
     }
     history.groups = history.groups.map((group) => {
       if (Array.isArray(group)) {
         // 替换clientId为当前窗口ClientID
         return group.map(({ client, ...other }) => ({
-          client: `${currentClientId}|${(client as string)?.split('|')?.[1]}`,
+          client: client.includes('|') ? `${currentClientId}|${(client as string)?.split('|')?.[1]}` : client,
           ...other,
         }));
       } else {
@@ -265,7 +265,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     let currentWidgetId = '';
     const { groups, current } = history;
 
-    const ids: (string | { clientId: string })[] = [];
+    const ids: (string | { client: string })[] = [];
 
     groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
 
