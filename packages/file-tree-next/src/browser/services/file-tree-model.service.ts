@@ -1337,7 +1337,6 @@ export class FileTreeModelService {
               const parentUri = parent.uri.resolve(parentAddonPath);
               const newNodeName = [parent.name].concat(parentAddonPath).join(Path.separator);
               parent.updateMetaData({
-                displayName: newNodeName,
                 name: newNodeName,
                 uri: parentUri,
                 fileStat: {

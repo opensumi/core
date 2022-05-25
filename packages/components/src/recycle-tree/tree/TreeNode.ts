@@ -561,9 +561,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
     this.isExpanded = true;
     if (this._children === null) {
-      !quiet && this._watcher.notifyWillResolveChildren(this, this.isExpanded);
+      this._watcher.notifyWillResolveChildren(this, this.isExpanded);
       await this.hardReloadChildren(token);
-      !quiet && this._watcher.notifyDidResolveChildren(this, this.isExpanded);
+      this._watcher.notifyDidResolveChildren(this, this.isExpanded);
       // 检查其是否展开；可能同时执行了 setCollapsed 方法
       if (!this.isExpanded || token?.isCancellationRequested) {
         if (isOwner) {
@@ -594,10 +594,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
 
     if (this.isExpanded) {
-      !quiet && this._watcher.notifyWillChangeExpansionState(this, true);
+      this._watcher.notifyWillChangeExpansionState(this, true);
       // 与根节点合并分支
       this.expandBranch(this, quiet);
-      !quiet && this._watcher.notifyDidChangeExpansionState(this, true);
+      this._watcher.notifyDidChangeExpansionState(this, true);
     }
     if (isOwner) {
       TreeNode.setGlobalTreeState(this.path, {
@@ -1030,13 +1030,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     const state = TreeNode.getGlobalTreeState(this.path);
     state.loadPathCancelToken.cancel();
     state.refreshCancelToken.cancel();
-    !quiet && this._watcher.notifyWillChangeExpansionState(this, false);
+    this._watcher.notifyWillChangeExpansionState(this, false);
     if (this._children && this.parent) {
       // 从根节点裁剪分支
       this.shrinkBranch(this, quiet);
     }
     this.isExpanded = false;
-    !quiet && this._watcher.notifyDidChangeExpansionState(this, false);
+    this._watcher.notifyDidChangeExpansionState(this, false);
   }
 
   public mv(to: ICompositeTreeNode, name: string = this.name) {
