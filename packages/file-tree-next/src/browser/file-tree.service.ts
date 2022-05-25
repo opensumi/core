@@ -2,14 +2,7 @@ import throttle from 'lodash/throttle';
 import pSeries from 'p-series';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import {
-  Tree,
-  ITree,
-  WatchEvent,
-  ITreeNodeOrCompositeTreeNode,
-  IWatcherEvent,
-  TreeNodeType,
-} from '@opensumi/ide-components';
+import { Tree, ITree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
 import {
   CommandService,
   IContextKeyService,
@@ -21,14 +14,13 @@ import {
   Deferred,
   Event,
   Emitter,
-  OperatingSystem,
   IApplicationService,
   ILogger,
-  path,
   Throttler,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { Path } from '@opensumi/ide-core-common/lib/path';
 import {
   FileChange,
   IFileServiceClient,
@@ -44,8 +36,6 @@ import { Directory, File } from '../common/file-tree-node.define';
 
 import { FileContextKey } from './file-contextkey';
 import { FileTreeDecorationService } from './services/file-tree-decoration.service';
-
-const { Path } = path;
 
 export interface IMoveChange {
   source: FileChange;
