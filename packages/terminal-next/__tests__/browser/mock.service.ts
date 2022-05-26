@@ -3,7 +3,7 @@ import { Terminal } from 'xterm';
 
 import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { uuid, URI, Emitter, IDisposable, PreferenceScope, Deferred } from '@opensumi/ide-core-common';
+import { uuid, URI, Emitter, IDisposable, PreferenceScope, Deferred, OperatingSystem } from '@opensumi/ide-core-common';
 
 import {
   ITerminalService,
