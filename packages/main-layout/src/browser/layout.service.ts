@@ -123,14 +123,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     // 仅确保 tabbar 视图加载完毕
     this.tabbarServices.forEach((service) => {
       if (slotRendererRegistry.isTabbar(service.location)) {
-        list.push(
-          service.viewReady.promise
-            .then(() => service.restoreState())
-            .then(() => this.restoreTabbarService(service))
-            .catch((err) => {
-              this.logger.error(`[TabbarService:${location}] restore state error`, err);
-            }),
-        );
+        list.push(service.viewReady.promise);
       }
     });
     Promise.all(list).then(() => {
@@ -163,7 +156,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     );
   }
 
-  restoreTabbarService = (service: TabbarService) => {
+  restoreTabbarService = async (service: TabbarService) => {
+    await service.viewReady.promise;
+
     this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, {
       [SlotLocation.left]: {
         currentId: undefined,
@@ -268,6 +263,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           });
         }
       });
+      service.viewReady.promise
+        .then(() => service.restoreState())
+        .then(() => this.restoreTabbarService(service))
+        .catch((err) => {
+          this.logger.error(`[TabbarService:${location}] restore state error`, err);
+        });
       service.onSizeChange(() => debounce(() => this.storeState(service, service.currentContainerId), 200)());
       this.tabbarServices.set(location, service);
     }
