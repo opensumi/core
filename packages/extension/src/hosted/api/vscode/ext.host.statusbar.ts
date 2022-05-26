@@ -71,7 +71,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
 
   private readonly _entryId = StatusBarItemImpl.nextId();
 
-  private _text: string;
+  private _text = '';
   private _tooltip?: string | vscode.MarkdownString;
   private _name?: string;
   private _color: string | ThemeColor | undefined;
