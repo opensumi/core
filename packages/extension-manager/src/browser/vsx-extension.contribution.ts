@@ -34,11 +34,17 @@ export class VSXExtensionContribution
   onDidRender() {
     const handler = this.mainLayoutService.getTabbarHandler(OPEN_VSX_EXTENSION_MANAGER_CONTAINER_ID);
     if (handler) {
-      // 在激活的时候获取数据
-      handler.onActivate(async () => {
-        !this.vsxExtensionService.openVSXRegistry && (await this.vsxExtensionService.getOpenVSXRegistry());
-        this.vsxExtensionService.search('');
-      });
+      if (handler.isActivated()) {
+        this.vsxExtensionService.getOpenVSXRegistry().then(() => {
+          this.vsxExtensionService.search('');
+        });
+      } else {
+        // 在激活的时候获取数据
+        handler.onActivate(async () => {
+          !this.vsxExtensionService.openVSXRegistry && (await this.vsxExtensionService.getOpenVSXRegistry());
+          this.vsxExtensionService.search('');
+        });
+      }
     }
   }
 
