@@ -87,30 +87,3 @@ export interface IExtensionActivateEventPayload {
 export class ExtensionActivateEvent extends BasicEvent<IExtensionActivateEventPayload> {}
 
 export class ExtensionDidContributes extends BasicEvent<void> {}
-
-/**
- * 某个插件完成了某个 ContributePoint 的注册
- */
-export class ExtensionContributePointDone extends BasicEvent<{ contributePointName: string }> {
-  static #map = new Map<string, ConstructorOf<BasicEvent<{ contributePointName: string }>>>();
-
-  private constructor(contributePointName: string) {
-    super({
-      contributePointName,
-    });
-  }
-
-  static get(name: string): ConstructorOf<BasicEvent<{ contributePointName: string }>> {
-    if (!this.#map.has(name)) {
-      this.#map.set(
-        name,
-        class extends ExtensionContributePointDone {
-          constructor() {
-            super(name);
-          }
-        },
-      );
-    }
-    return this.#map.get(name)!;
-  }
-}
