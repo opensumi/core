@@ -372,7 +372,7 @@ export const localizationBundle = {
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',
-    'output.configurationTitle': 'Ouput settings',
+    'output.configurationTitle': 'Output settings',
     'output.logWhenNoPanel': 'Whether to output to the browser when no available panel',
     'output.maxChannelLine': 'Max channel message line length',
     'output.maxChannelLineDesc': 'Max channel message line length',
@@ -908,7 +908,7 @@ export const localizationBundle = {
     'refactoring-changes.ask.N.delete': '{0} extensions want to make refactoring changes with this file deletion',
 
     'refactoring-changes.msg.showPreview': 'Show Preview',
-    'refactoring-changes.msg.skipChanges': 'Skil Changes',
+    'refactoring-changes.msg.skipChanges': 'Skip Changes',
 
     'keyboard.chooseKeyboardLayout': 'Choose keyboard layout',
     'keyboard.autoDetect.label': 'Auto Detect',
