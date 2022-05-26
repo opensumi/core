@@ -63,7 +63,7 @@
     "lodash": "^4.17.11",
     "node-gyp": "^8.3.0",
     "ts-node": "8.0.2",
-    "typescript": "^4.4.2",
+    "typescript": "4.6.4",
     "webpack": "4.39.3"
   },
   "lint-staged": {

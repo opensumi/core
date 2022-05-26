@@ -118,12 +118,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         contribution.onDidRender();
       }
     }
-    this.restoreState();
     const list: Array<Promise<void>> = [];
-    // 渲染之后注册的tab不再恢复状态
+    // 这里保证的 viewReady 并不是真实的 viewReady，只是保证在此刻之前注册进来的 Tabbar Ready 了
+    // 仅确保 tabbar 视图加载完毕
     this.tabbarServices.forEach((service) => {
-      service.restoreState();
-      // 仅确保tabbar视图加载完毕
       if (slotRendererRegistry.isTabbar(service.location)) {
         list.push(service.viewReady.promise);
       }
@@ -158,13 +156,16 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     );
   }
 
-  restoreState() {
+  restoreTabbarService = async (service: TabbarService) => {
+    await service.viewReady.promise;
+
     this.state = this.layoutState.getState(LAYOUT_STATE.MAIN, {
       [SlotLocation.left]: {
         currentId: undefined,
         size: undefined,
       },
       [SlotLocation.right]: {
+        // 依照下面的恢复逻辑，这里设置为 `''` 时，就不会恢复右侧的 TabBar 的状态（即选中相应的 viewContainer）
         currentId: '',
         size: undefined,
       },
@@ -173,43 +174,42 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
         size: undefined,
       },
     });
-    for (const service of this.tabbarServices.values()) {
-      const { currentId, size } = this.state[service.location] || {};
-      service.prevSize = size;
-      let defaultContainer = service.visibleContainers[0] && service.visibleContainers[0].options!.containerId;
-      const defaultPanels = this.appConfig.defaultPanels;
-      const restorePanel = defaultPanels && defaultPanels[service.location];
-      if (defaultPanels && restorePanel !== undefined) {
-        if (restorePanel) {
-          if (service.containersMap.has(restorePanel)) {
-            defaultContainer = restorePanel;
-          } else {
-            const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
-            if (
-              componentInfo &&
-              this.appConfig.layoutConfig[service.location]?.modules &&
-              ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)
-            ) {
-              defaultContainer = componentInfo.options!.containerId;
-            } else {
-              this.logger.warn(`[defaultPanels] 没有找到${restorePanel}对应的视图!`);
-            }
-          }
+
+    const { currentId, size } = this.state[service.location] || {};
+    service.prevSize = size;
+    let defaultContainer = service.visibleContainers[0] && service.visibleContainers[0].options!.containerId;
+    const defaultPanels = this.appConfig.defaultPanels;
+    const restorePanel = defaultPanels && defaultPanels[service.location];
+    if (defaultPanels && restorePanel !== undefined) {
+      if (restorePanel) {
+        if (service.containersMap.has(restorePanel)) {
+          defaultContainer = restorePanel;
         } else {
-          defaultContainer = '';
+          const componentInfo = this.componentRegistry.getComponentRegistryInfo(restorePanel);
+          if (
+            componentInfo &&
+            this.appConfig.layoutConfig[service.location]?.modules &&
+            ~this.appConfig.layoutConfig[service.location].modules.indexOf(restorePanel)
+          ) {
+            defaultContainer = componentInfo.options!.containerId;
+          } else {
+            this.logger.warn(`[defaultPanels] 没有找到${restorePanel}对应的视图!`);
+          }
         }
-      }
-      if (currentId === undefined) {
-        service.currentContainerId = defaultContainer;
       } else {
-        service.currentContainerId = currentId
-          ? service.containersMap.has(currentId)
-            ? currentId
-            : defaultContainer
-          : '';
+        defaultContainer = '';
       }
     }
-  }
+    if (currentId === undefined) {
+      service.currentContainerId = defaultContainer;
+    } else {
+      service.currentContainerId = currentId
+        ? service.containersMap.has(currentId)
+          ? currentId
+          : defaultContainer
+        : '';
+    }
+  };
 
   isVisible(location: string) {
     const tabbarService = this.getTabbarService(location);
@@ -263,6 +263,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           });
         }
       });
+      service.viewReady.promise
+        .then(() => service.restoreState())
+        .then(() => this.restoreTabbarService(service))
+        .catch((err) => {
+          this.logger.error(`[TabbarService:${location}] restore state error`, err);
+        });
       service.onSizeChange(() => debounce(() => this.storeState(service, service.currentContainerId), 200)());
       this.tabbarServices.set(location, service);
     }
