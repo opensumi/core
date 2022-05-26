@@ -38,7 +38,8 @@
     "is-running": "^2.1.0",
     "picomatch": "^2.2.1",
     "tree-kill": "^1.2.2",
-    "v8-inspect-profiler": "^0.0.20"
+    "v8-inspect-profiler": "^0.0.20",
+    "yargs": "^17.5.0"
   },
   "devDependencies": {
     "@opensumi/ide-comments": "2.17.7",
