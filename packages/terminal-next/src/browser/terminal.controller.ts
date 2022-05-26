@@ -190,6 +190,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.logger.log(`setup client ${client.id}`);
     client.addDispose(
       client.onExit((e) => {
+        this.terminalView.removeWidget(client.id);
+        this.clients.delete(client.id);
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
       }),
     );
