@@ -209,7 +209,6 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadExtensionLogAPI = injector.get(MainThreadExtensionLog);
   const MainThreadWebviewAPI = injector.get(MainThreadWebview, [workerProtocol]);
   const MainThreadWebviewViewAPI = injector.get(MainThreadWebviewView, [workerProtocol, MainThreadWebviewAPI]);
-  const MainThreadTerminalAPI = injector.get(MainThreadTerminal, [workerProtocol]);
   const MainThreadStorageAPI = injector.get(MainThreadStorage, [workerProtocol]);
   const MainThreadUrlsAPI = injector.get(MainThreadUrls, [workerProtocol]);
   const MainthreadCommentsAPI = injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]);
@@ -238,7 +237,6 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadAPIIdentifier.MainThreadOutput,
     MainThreadOutputAPI,
   ) as MainThreadOutput;
-  workerProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
   workerProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, MainThreadEditorServiceAPI);
   workerProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, MainThreadMessageAPI);
   workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, MainThreadExtensionLogAPI);
@@ -291,6 +289,5 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadSCMAPI.dispose();
     MainThreadDecorationsAPI.dispose();
     MainThreadTreeViewAPI.dispose();
-    MainThreadTerminalAPI.dispose();
   };
 }
