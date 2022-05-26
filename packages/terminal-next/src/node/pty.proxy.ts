@@ -13,6 +13,7 @@ import {
   PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
   PTY_SERVICE_PROXY_PROTOCOL,
   PTY_SERVICE_PROXY_SERVER_PORT,
+  TERMINAL_ID_SEPARATOR,
 } from '../common';
 
 // 存储Pty-onData返回的数据行，用于用户Resume场景下的数据恢复
@@ -93,7 +94,7 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     longSessionId?: string,
   ): any {
     // 切割sessionId到短Id
-    const sessionId = longSessionId?.split('|')?.[1];
+    const sessionId = longSessionId?.split(TERMINAL_ID_SEPARATOR)?.[1];
     this.debugLogger.log('ptyServiceProxy: spawn sessionId:', sessionId);
     let ptyInstance: pty.IPty | undefined;
     if (sessionId) {

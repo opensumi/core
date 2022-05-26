@@ -47,6 +47,7 @@ import {
   ITerminalProfileService,
   TerminalOptions,
   convertTerminalOptionsToLaunchConfig,
+  TERMINAL_ID_SEPARATOR,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -254,15 +255,17 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
 
     const currentClientId = this.wsChannelHandler.clientId;
-    const currentRealSessionId = history.current?.split('|')?.[1];
-    if (history.current && history.current.includes('|')) {
+    const currentRealSessionId = history.current?.split(TERMINAL_ID_SEPARATOR)?.[1];
+    if (history.current && history.current.includes(TERMINAL_ID_SEPARATOR)) {
       history.current = `${currentClientId}|${currentRealSessionId}`;
     }
     history.groups = history.groups.map((group) => {
       if (Array.isArray(group)) {
         // 替换clientId为当前窗口ClientID
         return group.map(({ client, ...other }) => ({
-          client: client.includes('|') ? `${currentClientId}|${(client as string)?.split('|')?.[1]}` : client,
+          client: client.includes(TERMINAL_ID_SEPARATOR)
+            ? `${currentClientId}${TERMINAL_ID_SEPARATOR}${(client as string)?.split(TERMINAL_ID_SEPARATOR)?.[1]}`
+            : client,
           ...other,
         }));
       } else {
@@ -557,7 +560,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
    * @returns
    */
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
-    const widgetId = this.wsChannelHandler.clientId + '|' + options.id || this.service.generateSessionId();
+    const widgetId =
+      this.wsChannelHandler.clientId + TERMINAL_ID_SEPARATOR + options.id || this.service.generateSessionId();
     const { group } = this._createOneGroup(convertTerminalOptionsToLaunchConfig(options.terminalOptions));
     const widget = this.terminalView.createWidget(
       group,

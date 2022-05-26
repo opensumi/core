@@ -26,6 +26,7 @@ import {
   ITerminalLinkDto,
   ICreateContributedTerminalProfileOptions,
   ITerminalProfile,
+  TERMINAL_ID_SEPARATOR,
 } from '@opensumi/ide-terminal-next';
 import {
   EnvironmentVariableMutatorType,
@@ -118,12 +119,18 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   $onDidOpenTerminal(info: ITerminalInfo) {
     let terminal = this.terminalsMap.get(info.id);
-
     if (!terminal) {
-      terminal = new Terminal(info.name, info, this.proxy, info.id);
-      this.terminalsMap.set(info.id, terminal);
-      const deferred = this._terminalDeferreds.get(info.id);
-      deferred?.resolve(terminal);
+      // 插件进程创建的 Terminal 可能会在前端被拼接为 `${clientId}${TERMINAL_ID_SEPARATOR}${terminalId}` 的形式
+      if (info.id.includes(TERMINAL_ID_SEPARATOR)) {
+        const terminalId = info.id.split(TERMINAL_ID_SEPARATOR)[1];
+        terminal = this.terminalsMap.get(terminalId);
+      }
+      if (!terminal) {
+        terminal = new Terminal(info.name, info, this.proxy, info.id);
+        this.terminalsMap.set(info.id, terminal);
+        const deferred = this._terminalDeferreds.get(info.id);
+        deferred?.resolve(terminal);
+      }
     }
     this.openTerminalEvent.fire(terminal);
   }

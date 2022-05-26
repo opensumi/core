@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { INodeLogger, AppConfig, isDevelopment, isElectronNode } from '@opensumi/ide-core-node';
 
-import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient } from '../common';
+import { ETerminalErrorType, ITerminalNodeService, ITerminalServiceClient, TERMINAL_ID_SEPARATOR } from '../common';
 import { IPtyProcess, IShellLaunchConfig } from '../common/pty';
 
 import { PtyService } from './pty';
@@ -55,7 +55,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   // 检查SessionId是否存活，但是因为之前接口设计有问题只返回了boolean，所以不能批量返回SessionId的检查结果
   // 可以通过多次调用来达成目的，每次调用terminalIdArr只传入一个东西
   public async ensureClientTerminal(clientId: string, terminalIdArr: string[]) {
-    const sessionIdArray = terminalIdArr.map((id) => id.split('|')[1]);
+    const sessionIdArray = terminalIdArr.map((id) => id.split(TERMINAL_ID_SEPARATOR)[1]);
     const sessionCheckResArray = await Promise.all(
       sessionIdArray.map((sessionId) => this.ptyServiceManager.checkSession(sessionId)),
     );
@@ -127,7 +127,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     _rows?: unknown,
     _launchConfig?: unknown,
   ): Promise<IPtyProcess | undefined> {
-    const clientId = id.split('|')[0];
+    const clientId = id.split(TERMINAL_ID_SEPARATOR)[0];
     let ptyService: PtyService | undefined;
     let cols = _cols as number;
     let rows = _rows as number;

@@ -19,9 +19,9 @@ import {
   IShellLaunchConfig,
   IDetectProfileOptionsPreference,
   IPtyProcessChangeEvent,
+  TERMINAL_ID_SEPARATOR,
 } from '../common';
 import { CodeTerminalSettingPrefix } from '../common/preference';
-import { ShellType, WindowsShellType } from '../common/shell';
 
 import { XTerm } from './xterm';
 
@@ -73,10 +73,10 @@ export class NodePtyTerminalService implements ITerminalService {
     // Electron 环境下，未指定 isRemote 时默认使用本地连接
     // 否则使用 WebSocket 连接
     if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
-      return electronEnv.metadata.windowClientId + '|' + generateSessionId();
+      return electronEnv.metadata.windowClientId + TERMINAL_ID_SEPARATOR + generateSessionId();
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      return WSChannelHandler.clientId + '|' + generateSessionId();
+      return WSChannelHandler.clientId + TERMINAL_ID_SEPARATOR + generateSessionId();
     }
   }
 
