@@ -87,8 +87,20 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this._bufferer = new TerminalDataBufferer(this.proxy.$sendProcessData);
   }
 
+  getTerminal(id: string) {
+    let terminal;
+    // 插件进程创建的 Terminal 可能会在前端被拼接为 `${clientId}${TERMINAL_ID_SEPARATOR}${terminalId}` 的形式
+    if (id.includes(TERMINAL_ID_SEPARATOR)) {
+      const terminalId = id.split(TERMINAL_ID_SEPARATOR)[1];
+      terminal = this.terminalsMap.get(terminalId);
+    } else {
+      terminal = this.terminalsMap.get(id);
+    }
+    return terminal;
+  }
+
   $onDidChangeActiveTerminal(id: string) {
-    const terminal = this.terminalsMap.get(id);
+    const terminal = this.getTerminal(id);
     if (terminal) {
       this.activeTerminal = terminal;
       this.changeActiveTerminalEvent.fire(terminal);
@@ -102,7 +114,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   $onDidCloseTerminal(e: ITerminalExitEvent) {
-    const terminal = this.terminalsMap.get(e.id);
+    const terminal = this.getTerminal(e.id);
     if (!terminal) {
       return debugLog.error(`Terminal ${e.id} not found`);
     }
@@ -118,19 +130,12 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   $onDidOpenTerminal(info: ITerminalInfo) {
-    let terminal = this.terminalsMap.get(info.id);
+    let terminal = this.getTerminal(info.id);
     if (!terminal) {
-      // 插件进程创建的 Terminal 可能会在前端被拼接为 `${clientId}${TERMINAL_ID_SEPARATOR}${terminalId}` 的形式
-      if (info.id.includes(TERMINAL_ID_SEPARATOR)) {
-        const terminalId = info.id.split(TERMINAL_ID_SEPARATOR)[1];
-        terminal = this.terminalsMap.get(terminalId);
-      }
-      if (!terminal) {
-        terminal = new Terminal(info.name, info, this.proxy, info.id);
-        this.terminalsMap.set(info.id, terminal);
-        const deferred = this._terminalDeferreds.get(info.id);
-        deferred?.resolve(terminal);
-      }
+      terminal = new Terminal(info.name, info, this.proxy, info.id);
+      this.terminalsMap.set(info.id, terminal);
+      const deferred = this._terminalDeferreds.get(info.id);
+      deferred?.resolve(terminal);
     }
     this.openTerminalEvent.fire(terminal);
   }
@@ -202,14 +207,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.terminalsMap.clear();
     this.activeTerminal = undefined;
     idList.forEach((info: ITerminalInfo) => {
-      if (this.terminalsMap.get(info.id)) {
+      if (this.getTerminal(info.id)) {
         return;
       }
       const terminal = new Terminal(info.name, info, this.proxy, info.id);
       if (info.isActive) {
         this.activeTerminal = terminal;
       }
-      if (this.terminalsMap.get(info.id)) {
+      if (this.getTerminal(info.id)) {
         return;
       }
       this.terminalsMap.set(info.id, terminal);
@@ -230,7 +235,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   async $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]> {
-    const terminal = this.terminalsMap.get(terminalId);
+    const terminal = this.getTerminal(terminalId);
     if (!terminal) {
       return [];
     }
@@ -367,7 +372,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   private async _getTerminalByIdEventually(id: string, timeout = 1000) {
-    let terminal = this.terminalsMap.get(id);
+    let terminal = this.getTerminal(id);
     if (!terminal) {
       const deferred = this._terminalDeferreds.get(id) || new Deferred<Terminal | undefined>();
       setTimeout(() => {
@@ -471,14 +476,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   public $acceptTerminalTitleChange(terminalId: string, name: string) {
-    const terminal = this.terminalsMap.get(terminalId);
+    const terminal = this.getTerminal(terminalId);
     if (terminal) {
       terminal.setName(name);
     }
   }
 
   public $acceptTerminalInteraction(terminalId: string) {
-    const terminal = this.terminalsMap.get(terminalId);
+    const terminal = this.getTerminal(terminalId);
     if (terminal?.setInteractedWith()) {
       this.terminalStateChangeEvent.fire(terminal);
     }
