@@ -29,9 +29,8 @@ import {
   Throttler,
   Emitter,
   Deferred,
-  OperatingSystem,
-  IApplicationService,
   CommandService,
+  IApplicationService,
   FILE_COMMANDS,
   path,
 } from '@opensumi/ide-core-browser';
@@ -39,7 +38,7 @@ import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/re
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileStat, FileChangeType } from '@opensumi/ide-file-service';
+import { FileStat } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';

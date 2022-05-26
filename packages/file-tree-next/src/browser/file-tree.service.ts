@@ -2,14 +2,7 @@ import throttle from 'lodash/throttle';
 import pSeries from 'p-series';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import {
-  Tree,
-  ITree,
-  WatchEvent,
-  ITreeNodeOrCompositeTreeNode,
-  IWatcherEvent,
-  TreeNodeType,
-} from '@opensumi/ide-components';
+import { Tree, ITree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
 import {
   CommandService,
   IContextKeyService,
@@ -21,7 +14,6 @@ import {
   Deferred,
   Event,
   Emitter,
-  OperatingSystem,
   IApplicationService,
   ILogger,
   path,

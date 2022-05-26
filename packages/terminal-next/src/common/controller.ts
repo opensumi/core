@@ -60,6 +60,7 @@ export interface ITerminalController extends Disposable {
   activeClient?: ITerminalClient;
   themeBackground: string;
   contextKeyService?: IContextKeyService;
+  viewReady: Deferred<void>;
   initContextKey(dom: HTMLDivElement): void;
   firstInitialize(): void;
   recovery(history: ITerminalBrowserHistory): Promise<void>;

@@ -82,6 +82,7 @@ export default observer(() => {
   React.useEffect(() => {
     if (wrapperRef.current) {
       controller.initContextKey(wrapperRef.current);
+      controller.viewReady.resolve();
     }
   }, [wrapperRef.current]);
 
