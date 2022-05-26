@@ -363,7 +363,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }),
     ]);
 
-    this._tabbarHandler = this.layoutService.getTabbarHandler(TerminalContainerId);
+    this._tabBarHandler = this.layoutService.getTabbarHandler(TerminalContainerId);
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
     this.addDispose(
