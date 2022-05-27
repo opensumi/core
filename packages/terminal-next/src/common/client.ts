@@ -217,3 +217,5 @@ export interface ITerminalLink {
    */
   activate(text: string): void;
 }
+
+export const TERMINAL_ID_SEPARATOR = '|';
