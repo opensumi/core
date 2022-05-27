@@ -44,7 +44,9 @@ export interface ExtensionDocumentDataManager extends IExtensionHostDocService {
   getDocument(resource: Uri | string): vscode.TextDocument | undefined;
   getDocumentData(resource: Uri | string): ExtHostDocumentData | undefined;
   getAllDocument(): vscode.TextDocument[];
-  openTextDocument(path: Uri | string): Promise<vscode.TextDocument | undefined>;
+  openTextDocument(
+    uriOrFileNameOrOptions?: Uri | string | { language?: string; content?: string },
+  ): Promise<vscode.TextDocument>;
   registerTextDocumentContentProvider(scheme: string, provider: vscode.TextDocumentContentProvider): IDisposable;
   onDidOpenTextDocument: Event<vscode.TextDocument>;
   onDidCloseTextDocument: Event<vscode.TextDocument>;

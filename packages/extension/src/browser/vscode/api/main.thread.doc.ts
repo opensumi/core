@@ -218,16 +218,19 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     });
   }
 
-  async $tryCreateDocument(options: { content: string; language: string }): Promise<string> {
+  async $tryCreateDocument(options?: { content?: string; language?: string }): Promise<string> {
+    if (!options) {
+      options = {};
+    }
     const { language, content } = options;
     const docRef = await this.docManager.createModelReference(
-      new URI(`${Schemes.untitled}://temp/` + this.tempDocIdCount++),
+      new URI(`${Schemes.untitled}://temp/Untitled-` + this.tempDocIdCount++),
       'ext-create-document',
     );
-    if (options.language) {
+    if (language) {
       docRef.instance.languageId = language;
     }
-    if (!isUndefinedOrNull(options.content)) {
+    if (!isUndefinedOrNull(content)) {
       docRef.instance.updateContent(content);
     }
     return docRef.instance.uri.toString();
