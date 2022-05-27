@@ -142,6 +142,7 @@ export class MockSCMResource implements ISCMResource {
   }
 
   async open() {}
+
   toJSON() {
     return { $mid: 3 };
   }
