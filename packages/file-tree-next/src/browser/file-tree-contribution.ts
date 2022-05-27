@@ -404,7 +404,7 @@ export class FileTreeContribution
             }
           }
         }
-        this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, { includeValue: searchPath! });
+        this.commandService.executeCommand(SEARCH_COMMANDS.OPEN_SEARCH.id, { includeValue: searchPath! + '/' });
       },
       isVisible: () =>
         !!this.fileTreeModelService.contextMenuFile && Directory.is(this.fileTreeModelService.contextMenuFile),
