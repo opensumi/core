@@ -88,15 +88,15 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   getTerminal(id: string) {
-    let terminal;
-    // 插件进程创建的 Terminal 可能会在前端被拼接为 `${clientId}${TERMINAL_ID_SEPARATOR}${terminalId}` 的形式
+    return this.terminalsMap.get(this.getTerminalShortId(id));
+  }
+
+  getTerminalShortId(id: string) {
+    // 插件进程创建的 Terminal 可能会在前端被拼接为 `${clientId}${TERMINAL_ID_SEPARATOR}${shortId}` 的形式
     if (id.includes(TERMINAL_ID_SEPARATOR)) {
-      const terminalId = id.split(TERMINAL_ID_SEPARATOR)[1];
-      terminal = this.terminalsMap.get(terminalId);
-    } else {
-      terminal = this.terminalsMap.get(id);
+      return id.split(TERMINAL_ID_SEPARATOR)[1];
     }
-    return terminal;
+    return id;
   }
 
   $onDidChangeActiveTerminal(id: string) {
@@ -114,7 +114,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   $onDidCloseTerminal(e: ITerminalExitEvent) {
-    const terminal = this.getTerminal(e.id);
+    const terminal = this.terminalsMap.get(this.getTerminalShortId(e.id));
     if (!terminal) {
       return debugLog.error(`Terminal ${e.id} not found`);
     }
@@ -153,7 +153,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): vscode.Terminal {
-    const id = uuid();
+    const shortId = uuid();
     const terminal = new Terminal(name || '', { name, shellPath, shellArgs }, this.proxy);
     terminal.create(
       {
@@ -161,29 +161,29 @@ export class ExtHostTerminal implements IExtHostTerminal {
         shellPath,
         shellArgs,
       },
-      id,
+      shortId,
     );
-    this.terminalsMap.set(id, terminal);
+    this.terminalsMap.set(shortId, terminal);
     return terminal;
   }
 
   createTerminalFromOptions(options: vscode.TerminalOptions) {
     // 插件 API 同步提供 terminal 实例
-    const id = uuid();
+    const shortId = uuid();
     const terminal = new Terminal(options.name, options, this.proxy);
-    terminal.create(options, id);
-    this.terminalsMap.set(id, terminal);
+    terminal.create(options, shortId);
+    this.terminalsMap.set(shortId, terminal);
     return terminal;
   }
 
   createExtensionTerminal(options: vscode.ExtensionTerminalOptions) {
-    const id = uuid();
+    const shortId = uuid();
     const terminal = new Terminal(options.name, options, this.proxy);
     const p = new ExtHostPseudoterminal(options.pty);
-    terminal.createExtensionTerminal(id);
-    this.terminalsMap.set(id, terminal);
-    const disposable = this._setupExtHostProcessListeners(id, p);
-    this._terminalProcessDisposables[id] = disposable;
+    terminal.createExtensionTerminal(shortId);
+    this.terminalsMap.set(shortId, terminal);
+    const disposable = this._setupExtHostProcessListeners(shortId, p);
+    this._terminalProcessDisposables[shortId] = disposable;
 
     this.disposables.add(
       p.onProcessExit((e: number | undefined) => {
@@ -210,16 +210,16 @@ export class ExtHostTerminal implements IExtHostTerminal {
       if (this.getTerminal(info.id)) {
         return;
       }
-      let id = info.id;
+      let shortId = info.id;
       // 终端恢复时，需要将终端的 ID 处理为单端的短 ID
       if (info.id.includes(TERMINAL_ID_SEPARATOR)) {
-        id = id.split(TERMINAL_ID_SEPARATOR)[1];
+        shortId = shortId.split(TERMINAL_ID_SEPARATOR)[1];
       }
-      const terminal = new Terminal(info.name, info, this.proxy, id);
+      const terminal = new Terminal(info.name, info, this.proxy, shortId);
       if (info.isActive) {
         this.activeTerminal = terminal;
       }
-      this.terminalsMap.set(id, terminal);
+      this.terminalsMap.set(shortId, terminal);
     });
   }
 
@@ -237,21 +237,22 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   async $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]> {
-    const terminal = this.getTerminal(terminalId);
+    const shortId = this.getTerminalShortId(terminalId);
+    const terminal = this.getTerminal(shortId);
     if (!terminal) {
       return [];
     }
 
     // Discard any cached links the terminal has been holding, currently all links are released
     // when new links are provided.
-    this._terminalLinkCache.delete(terminalId);
+    this._terminalLinkCache.delete(shortId);
 
-    const oldToken = this._terminalLinkCancellationSource.get(terminalId);
+    const oldToken = this._terminalLinkCancellationSource.get(shortId);
     if (oldToken) {
       oldToken.dispose(true);
     }
     const cancellationSource = new CancellationTokenSource();
-    this._terminalLinkCancellationSource.set(terminalId, cancellationSource);
+    this._terminalLinkCancellationSource.set(shortId, cancellationSource);
 
     const result: ITerminalLinkDto[] = [];
     const context: vscode.TerminalLinkContext = { terminal, line };
@@ -297,13 +298,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
       }
     }
 
-    this._terminalLinkCache.set(terminalId, cacheLinkMap);
+    this._terminalLinkCache.set(shortId, cacheLinkMap);
 
     return result;
   }
 
   $activateLink(terminalId: string, linkId: number): void {
-    const cachedLink = this._terminalLinkCache.get(terminalId)?.get(linkId);
+    const shortId = this.getTerminalShortId(terminalId);
+    const cachedLink = this._terminalLinkCache.get(shortId)?.get(linkId);
     if (!cachedLink) {
       return;
     }
