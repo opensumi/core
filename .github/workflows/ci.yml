@@ -61,6 +61,7 @@ jobs:
         run: npm run init
 
   lint:
+    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -93,9 +94,9 @@ jobs:
 
       - name: lint
         run: npm run lint
-    needs: setup
 
   check-deps:
+    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -128,11 +129,10 @@ jobs:
 
       - name: check
         run: npm run check:dep
-    needs: setup
 
   test:
+    needs: setup
     runs-on: ${{ matrix.os }}
-    needs: init
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest]
