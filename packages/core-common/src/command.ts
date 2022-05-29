@@ -45,6 +45,10 @@ export interface Command {
    */
   alias?: string;
   /**
+   * 在任意语言下都相同的分类名
+   */
+  aliasCategory?: string;
+  /**
    * 是否启用该命令，值为 when 表达式
    * 这个值只影响 UI 是否展示 （命令面板或者菜单）
    */
@@ -522,9 +526,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     return command
       ? {
           ...command,
-          category: replaceLocalizePlaceholder(command.category),
           label: replaceLocalizePlaceholder(command.label),
-          alias: replaceLocalizePlaceholder(command.label, id),
+          category: replaceLocalizePlaceholder(command.category),
         }
       : undefined;
   }

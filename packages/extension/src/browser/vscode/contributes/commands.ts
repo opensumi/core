@@ -64,6 +64,8 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
               (typeof command.icon === 'string' && this.iconService.fromString(command.icon)) ||
               this.iconService.fromIcon(this.extension.path, command.icon, IconType.Background),
             enablement: command.enablement,
+            alias: this.getLocalizeFromNlsJSON(command.title, command.command),
+            aliasCategory: this.getLocalizeFromNlsJSON(command.category, command.command),
           },
           {
             execute: (...args: any[]) => this.extensionService.executeExtensionCommand(command.command, args),
