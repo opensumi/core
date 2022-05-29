@@ -135,16 +135,34 @@ export class QuickCommandHandler implements QuickOpenHandler {
     return items;
   }
 
-  protected getOtherCommands() {
+  /**
+   * @param recentCommandIds `最近使用` 部分的命令 id。用来过滤掉最近使用的命令。
+   * @returns
+   */
+  protected getOtherCommands(recentCommandIds: Set<string>) {
     const menus = this.menuService.createMenu(MenuId.CommandPalette, this.contextKeyService);
-    const menuNodes = menus
-      .getMenuNodes()
-      .reduce((r, [, actions]) => [...r, ...actions], [] as MenuItemNode[])
-      .filter((item) => item instanceof MenuItemNode && !item.disabled)
-      .filter((item, index, array) => array.findIndex((n) => n.id === item.id) === index) as MenuItemNode[];
+    // 用来记录某个命令 id 已被保存。相同的命令 id 只保存第一次
+    const existsId = new Set<string>();
+    const nodes = [] as MenuItemNode[];
+
+    for (const [, actions] of menus.getMenuNodes()) {
+      for (const item of actions) {
+        if (
+          !(item instanceof MenuItemNode) ||
+          item.disabled ||
+          existsId.has(item.id) ||
+          recentCommandIds.has(item.id)
+        ) {
+          continue;
+        }
+        existsId.add(item.id);
+        nodes.push(item);
+      }
+    }
+
     menus.dispose();
 
-    return menuNodes.reduce((prev, item) => {
+    return nodes.reduce((prev, item) => {
       const command = this.commandRegistry.getCommand(item.id);
       // 过滤掉可能存在的 command "没有注册" 的情况
       if (command) {
@@ -159,14 +177,13 @@ export class QuickCommandHandler implements QuickOpenHandler {
   }
 
   protected getCommands(): { recent: Command[]; other: Command[] } {
-    const otherCommands = this.getOtherCommands();
-    const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
+    const _recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
     const limit = this.corePreferences['workbench.commandPalette.history'];
+    const recentCommands = _recentCommands.slice(0, limit);
+    const otherCommands = this.getOtherCommands(new Set(recentCommands.map((c) => c.id)));
     return {
-      recent: recentCommands.slice(0, limit),
+      recent: recentCommands,
       other: otherCommands
-        // 过滤掉最近使用中含有的命令
-        .filter((command) => !recentCommands.some((recent) => recent.id === command.id))
         // 命令重新排序
         .sort((a, b) => Command.compareCommands(a, b)),
     };
