@@ -135,52 +135,53 @@ export class QuickCommandHandler implements QuickOpenHandler {
     return items;
   }
 
-  /**
-   * @param recentCommandIds `最近使用` 部分的命令 id。用来过滤掉最近使用的命令。
-   * @returns
-   */
-  protected getOtherCommands(recentCommandIds: Set<string>) {
+  protected getCommands(): { recent: Command[]; other: Command[] } {
     const menus = this.menuService.createMenu(MenuId.CommandPalette, this.contextKeyService);
+
+    const _recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
+    const limit = this.corePreferences['workbench.commandPalette.history'];
+    const recentCommands = _recentCommands.slice(0, limit);
+    const recentCommandIds = new Set<string>(recentCommands.map((command) => command.id));
     // 用来记录某个命令 id 已被保存。相同的命令 id 只保存第一次
-    const existsId = new Set<string>();
+    const availableCommandIds = new Set<string>();
     const nodes = [] as MenuItemNode[];
+    const otherCommands = [] as Command[];
 
     for (const [, actions] of menus.getMenuNodes()) {
       for (const item of actions) {
-        if (
-          !(item instanceof MenuItemNode) ||
-          item.disabled ||
-          existsId.has(item.id) ||
-          recentCommandIds.has(item.id)
-        ) {
+        if (!(item instanceof MenuItemNode) || item.disabled || availableCommandIds.has(item.id)) {
           continue;
         }
-        existsId.add(item.id);
+        // 这里先添加进来
+        availableCommandIds.add(item.id);
+        // 与上一句判断不能交换位置，allCommandIds 代表了所有命令的 id，也包括 recent 的
+        if (recentCommandIds.has(item.id)) {
+          continue;
+        }
         nodes.push(item);
+        const command = this.commandRegistry.getCommand(item.id);
+
+        // 过滤掉可能存在的 command "没有注册" 的情况
+        if (command) {
+          // 使用 Menu 中存在的 label
+          otherCommands.push({
+            ...command,
+            label: item.label,
+          });
+        }
+      }
+    }
+
+    // 过滤掉无效的命令，可能此时该命令还没有被激活（when 条件为 False）
+    for (let index = recentCommands.length - 1; index >= 0; index--) {
+      const element = recentCommands[index];
+      if (!availableCommandIds.has(element.id)) {
+        recentCommands.splice(index, 1);
       }
     }
 
     menus.dispose();
 
-    return nodes.reduce((prev, item) => {
-      const command = this.commandRegistry.getCommand(item.id);
-      // 过滤掉可能存在的 command "没有注册" 的情况
-      if (command) {
-        // 使用 Menu 中存在的 label
-        prev.push({
-          ...command,
-          label: item.label,
-        });
-      }
-      return prev;
-    }, [] as Command[]);
-  }
-
-  protected getCommands(): { recent: Command[]; other: Command[] } {
-    const _recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
-    const limit = this.corePreferences['workbench.commandPalette.history'];
-    const recentCommands = _recentCommands.slice(0, limit);
-    const otherCommands = this.getOtherCommands(new Set(recentCommands.map((c) => c.id)));
     return {
       recent: recentCommands,
       other: otherCommands
