@@ -94,6 +94,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
   open(model: IKaitianQuickOpenModel, options?: Partial<QuickOpenOptions.Resolved> | undefined): void {
     const opts = new KaitianQuickOpenControllerOpts(model, this.keybindingRegistry, options);
+    this.hideDecoration();
     this.internalOpen(opts);
   }
 
