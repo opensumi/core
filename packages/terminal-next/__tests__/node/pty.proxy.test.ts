@@ -1,6 +1,7 @@
 import os from 'os';
 
 import { Injector } from '@opensumi/di';
+import { normalizedIpcHandlerPath } from '@opensumi/ide-core-common/lib/utils/ipc';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { TerminalNodePtyModule } from '../../src/node';
@@ -11,11 +12,13 @@ import { PtyServiceProxyRPCProvider } from '../../src/node/pty.proxy';
 
 // 使用Remote模式（非Local模式）来测试PtyService
 describe('PtyService function should be valid', () => {
-  jest.setTimeout(10000);
+  jest.setTimeout(20000);
 
   let injector: Injector;
   let shellPath = '';
   let proxyProvider: PtyServiceProxyRPCProvider;
+  const ipcPath = normalizedIpcHandlerPath('NODE-TEST-PTY', true);
+  const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   if (os.platform() === 'win32') {
     shellPath = 'powershell';
@@ -23,17 +26,17 @@ describe('PtyService function should be valid', () => {
     shellPath = 'sh';
   }
 
-  beforeAll(() => {
+  beforeAll(async () => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
 
     // 双容器模式下，需要以本文件作为entry单独打包出一个可执行文件，运行在DEV容器中
-    proxyProvider = new PtyServiceProxyRPCProvider();
+    proxyProvider = new PtyServiceProxyRPCProvider({ path: ipcPath });
     proxyProvider.initServer();
-
-    injector.addProviders({
+    injector.overrideProviders({
       token: PtyServiceManagerToken,
-      useValue: new PtyServiceManagerRemote(),
+      useValue: injector.get(PtyServiceManagerRemote, [{ path: ipcPath }]),
     });
+    await delay(2000);
   });
 
   afterAll(() => {
@@ -66,25 +69,5 @@ describe('PtyService function should be valid', () => {
     expect(instance).toBeDefined();
     expect(instance?.pid).toBeDefined();
     expect(instance?.launchConfig).toBeDefined();
-  });
-
-  it('cwd is user home dir if not set', async () => {
-    const ptyService = injector.get(PtyService, ['0', { executable: shellPath, args: ['-c', 'pwd'] }, 200, 200]);
-    const error = await ptyService.start();
-    const instance = ptyService.pty;
-
-    expect(error).toBeUndefined();
-
-    let result = '';
-
-    if (os.platform() !== 'win32') {
-      await new Promise<void>((resolve) => {
-        instance?.onData((data) => {
-          result += data;
-          resolve(undefined);
-        });
-      });
-      expect(result).toContain(os.homedir());
-    }
   });
 });
