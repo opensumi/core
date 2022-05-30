@@ -51,6 +51,9 @@ blockquote {
 }
 ::-webkit-scrollbar-thumb:active {
   background-color: var(--vscode-scrollbarSlider-activeBackground);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }`;
 
 export interface IWebviewChannel {
