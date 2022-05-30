@@ -264,11 +264,6 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     };
   }, [model, outerActive]);
 
-  const beforeFilterValueChange = useCallback(async () => {
-    const { expandAll } = fileTreeModelService;
-    await expandAll();
-  }, [fileTreeModelService]);
-
   const ensureIsReady = useCallback(
     async (token: CancellationToken) => {
       await fileTreeModelService.whenReady;
@@ -381,7 +376,6 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
         treeIndent={treeIndent}
         filterMode={filterMode}
         locationToCurrentFile={locationToCurrentFile}
-        beforeFilterValueChange={beforeFilterValueChange}
         onTreeReady={handleTreeReady}
         onContextMenu={handleContextMenu}
         onItemClick={handleItemClicked}
@@ -405,7 +399,7 @@ interface FileTreeViewProps {
     hidesExplorerArrows: boolean;
   };
   onTreeReady: (handle: IRecycleTreeFilterHandle) => void;
-  beforeFilterValueChange: () => Promise<void>;
+  beforeFilterValueChange?: () => Promise<void>;
   locationToCurrentFile: (location: string) => void;
   onItemClick(event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
   onItemDoubleClick(event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
@@ -427,7 +421,6 @@ const FileTreeView = memo(
     onItemDoubleClick,
     onContextMenu,
     onTwistierClick,
-    beforeFilterValueChange,
   }: FileTreeViewProps) => {
     const filetreeService = useInjectable<FileTreeService>(IFileTreeService);
     const { decorationService, labelService, locationToCurrentFile } = filetreeService;
@@ -472,7 +465,6 @@ const FileTreeView = memo(
             onReady={onTreeReady}
             model={model}
             filterEnabled={filterMode}
-            beforeFilterValueChange={beforeFilterValueChange}
             filterAfterClear={locationToCurrentFile}
             filterAutoFocus={true}
             leaveBottomBlank={true}
