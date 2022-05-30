@@ -45,10 +45,8 @@
 $ npm config set registry https://registry.npmmirror.com
 ```
 
-由于 `canvas` 依赖 GitHub Release 资源，在国内网络环境下极易超时，故安装依赖时请加上对应的镜像地址如下：
-
 ```bash
-$ npm install --canvas_binary_host_mirror=https://npmmirror.com/mirrors/canvas/
+$ npm install
 $ npm run init
 $ npm run download-extension  # 可选
 $ npm run start
