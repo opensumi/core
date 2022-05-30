@@ -231,7 +231,20 @@ export class CommandQuickOpenItem extends QuickOpenItem {
   }
 
   getDetail(): string | undefined {
-    return this.command.label !== this.command.alias ? this.command.alias : undefined;
+    if (this.command.label === this.command.alias) {
+      return;
+    }
+    let detail: string | undefined;
+    if (this.command.alias) {
+      const category = this.command.aliasCategory ?? this.command.category;
+      if (category) {
+        detail = `${category}: ${this.command.alias}`;
+      } else {
+        detail = this.command.alias;
+      }
+    }
+
+    return detail;
   }
 
   getKeybinding(): Keybinding | undefined {

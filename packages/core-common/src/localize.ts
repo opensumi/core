@@ -8,9 +8,14 @@ let _currentLanguageId = 'zh-CN';
 
 const localizationRegistryMap = new CaseInsensitiveMap<string, LocalizationRegistry>();
 
-export function localize(symbol: ILocalizationKey, defaultMessage?: string | undefined, scope = 'host'): string {
+export function localize(
+  symbol: ILocalizationKey,
+  defaultMessage?: string | undefined,
+  scope = 'host',
+  language = _currentLanguageId,
+): string {
   const localizationRegistry = getLocalizationRegistry(scope);
-  return localizationRegistry.getLocalizeString(symbol, defaultMessage);
+  return localizationRegistry.getLocalizeString(symbol, defaultMessage, language);
 }
 
 export function formatLocalize(symbol: ILocalizationKey, ...args: any) {
@@ -47,7 +52,7 @@ export interface ILocalizationContents {
 interface ILocalizationRegistry {
   registerLocalizationBundle(bundle: ILocalizationBundle): void;
 
-  getLocalizeString(symbol: ILocalizationKey, defaultLabel?: string): string;
+  getLocalizeString(symbol: ILocalizationKey, defaultLabel?: string, languageId?: string): string;
 
   getAllLanguages(): ILocalizationInfo[];
 }
@@ -82,8 +87,8 @@ class LocalizationRegistry implements ILocalizationRegistry {
     }
   }
 
-  getLocalizeString(key: ILocalizationKey, defaultLabel?: string | null): string {
-    return this.getContents(_currentLanguageId)[key] || this.getContents('default')[key] || defaultLabel || '';
+  getLocalizeString(key: ILocalizationKey, defaultLabel?: string | null, languageId = _currentLanguageId): string {
+    return this.getContents(languageId)[key] || this.getContents('default')[key] || defaultLabel || '';
   }
 
   private getContents(languageId: string | undefined = 'zh-CN'): ILocalizationContents {
@@ -178,12 +183,13 @@ export function replaceNlsField(
   label?: string,
   scope?: string,
   fallback: string | undefined = undefined,
+  language = _currentLanguageId,
 ): string | undefined {
   if (label) {
     const nlsRegex = /^%([\w\d.-]+)%$/i;
     const result = nlsRegex.exec(label);
     if (result) {
-      return localize(result[1], fallback, scope);
+      return localize(result[1], fallback, scope, language);
     }
   }
   return label;
