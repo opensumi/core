@@ -108,9 +108,6 @@ export class EditorContribution
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
-  @Autowired(ResourceService)
-  private resourceService: ResourceService;
-
   @Autowired()
   private editorStatusBarService: EditorStatusBarService;
 
@@ -270,20 +267,11 @@ export class EditorContribution
     };
   }
 
+  /**
+   * Return true in order to prevent exit.
+   */
   async onWillStopElectron() {
-    for (const group of this.workbenchEditorService.editorGroups) {
-      for (const resource of group.resources) {
-        if (!(await this.resourceService.shouldCloseResource(resource, []))) {
-          return true;
-        }
-      }
-    }
-
-    if (!this.cacheProvider.isFlushed()) {
-      return true;
-    }
-
-    return false;
+    return await this.workbenchEditorService.closeAllOnlyConfirmOnce();
   }
 
   private isElectronRenderer(): boolean {

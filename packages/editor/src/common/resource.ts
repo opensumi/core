@@ -16,6 +16,13 @@ export interface IResourceProvider {
   provideResourceSubname?(resource: IResource, groupResources: IResource[]): string | null;
 
   shouldCloseResource?(resource: IResource, openedResources: IResource[][]): MaybePromise<boolean>;
+  /**
+   * 只是用来判断一个 resource 是否可以被 Close
+   * 与 shouldCloseResource 的区别是，这个方法不会触发真实的 close，你需要手动调用 `close` 方法
+   */
+  shouldCloseResourceWithoutConfirm?(resource: IResource): MaybePromise<boolean>;
+
+  close?(resource: IResource, saveAction: AskSaveResult): MaybePromise<boolean>;
 
   onDisposeResource?(resource: IResource): void;
 }
@@ -47,6 +54,13 @@ export abstract class ResourceService {
    * 是否能关闭一个资源
    */
   abstract shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean>;
+
+  /**
+   * 与 `shouldCloseResource` 不同的点在于：不弹窗让用户确认
+   * 返回 true 说明用户可以之后调用 `close` 方法将其关闭
+   */
+  abstract shouldCloseResourceWithoutConfirm(resource: IResource): Promise<boolean>;
+  close?(resource: IResource, saveAction: AskSaveResult): MaybePromise<boolean>;
 
   abstract getResourceDecoration(uri: URI): IResourceDecoration;
 
