@@ -271,7 +271,15 @@ export class EditorContribution
    * Return true in order to prevent exit.
    */
   async onWillStopElectron() {
-    return await this.workbenchEditorService.closeAllOnlyConfirmOnce();
+    if (await this.workbenchEditorService.closeAllOnlyConfirmOnce()) {
+      return true;
+    }
+
+    if (!this.cacheProvider.isFlushed()) {
+      return true;
+    }
+
+    return false;
   }
 
   private isElectronRenderer(): boolean {
