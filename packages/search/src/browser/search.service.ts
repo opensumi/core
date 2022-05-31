@@ -245,7 +245,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       exclude: splitOnComma(this.excludeValue || ''),
     };
 
-    searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
+    searchOptions.exclude = this.getExcludeWithSetting(searchOptions, state);
 
     // 记录搜索历史
     this.searchHistory.setSearchHistory(value);
@@ -262,34 +262,38 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.reporter = null;
     }
 
-    let rootDirs: string[] = [];
+    const rootDirSet = new Set<string>();
     this.workspaceService.tryGetRoots().forEach((stat) => {
       const uri = new URI(stat.uri);
       if (uri.scheme !== Schemas.file) {
         return;
       }
-      return rootDirs.push(uri.toString());
+      rootDirSet.add(uri.toString());
     });
 
     // 由于查询的限制，暂时只支持单一 workspace 的编码参数
-    searchOptions.encoding = this.preferenceService.get<string>('files.encoding', undefined, rootDirs[0]?.toString());
+    searchOptions.encoding = this.preferenceService.get<string>(
+      'files.encoding',
+      undefined,
+      rootDirSet.values().next()?.value,
+    );
 
     // FIXME: 当前无法在不同根目录内根据各自 include 搜素，因此如果多 workspaceFolders，此处可能返回比实际要多的结果
     // 同时 searchId 设计原因只能针对单服务，多个 search 服务无法对同一个 searchId 返回结果
     // 长期看需要改造，以支持 registerFileSearchProvider
-    if (this.UIState.isOnlyOpenEditors) {
-      rootDirs = [];
+    if (state.isOnlyOpenEditors) {
+      rootDirSet.clear();
       const openResources = arrays.coalesce(
         arrays.flatten(this.workbenchEditorService.editorGroups.map((group) => group.resources)),
       );
       const includeMatcherList = searchOptions.include?.map((str) => parse(anchorGlob(str))) || [];
       const excludeMatcherList = searchOptions.exclude?.map((str) => parse(anchorGlob(str))) || [];
       const openResourcesInFilter = openResources.filter((resource) => {
-        const uriString = resource.uri.toString();
-        if (excludeMatcherList.length > 0 && excludeMatcherList.some((matcher) => matcher(uriString))) {
+        const fsPath = resource.uri.path.toString();
+        if (excludeMatcherList.length > 0 && excludeMatcherList.some((matcher) => matcher(fsPath))) {
           return false;
         }
-        if (includeMatcherList.length > 0 && !includeMatcherList.some((matcher) => matcher(uriString))) {
+        if (includeMatcherList.length > 0 && !includeMatcherList.some((matcher) => matcher(fsPath))) {
           return false;
         }
         return true;
@@ -303,7 +307,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
         if (isAbsolutePath(uri)) {
           const searchRoot = this.workspaceService.getWorkspaceRootUri(uri) ?? uri.withPath(uri.path.dir);
           const relPath = searchRoot.path.relative(uri.path);
-          rootDirs.push(searchRoot.toString());
+          rootDirSet.add(searchRoot.toString());
           if (relPath) {
             include.push(`./${relPath.toString()}`);
           }
@@ -311,10 +315,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
           include.push(uri.codeUri.fsPath);
         }
       });
-      searchOptions.include = include;
-      searchOptions.exclude = include.length ? undefined : ['**/*'];
-    }
 
+      searchOptions.include = include;
+      searchOptions.exclude = include.length > 0 ? undefined : ['**/*'];
+    }
+    const rootDirs = Array.from(rootDirSet);
     // 从 doc model 中搜索
     const searchFromDocModelInfo = this.searchAllFromDocModel({
       searchValue: value,
@@ -689,7 +694,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.updateUIState(UIState || {});
   }
 
-  private getExcludeWithSetting(searchOptions: ContentSearchOptions) {
+  private getExcludeWithSetting(searchOptions: ContentSearchOptions, state: IUIState) {
     let result: string[] = [];
 
     if (searchOptions.exclude) {
@@ -697,7 +702,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
 
     // 启用默认排除项
-    if (!this.UIState.isIncludeIgnored) {
+    if (!state.isIncludeIgnored) {
       result = result.concat(this.getPreferenceSearchExcludes());
     }
 
