@@ -3,7 +3,8 @@ import net from 'net';
 
 import yargs from 'yargs';
 
-import { Deferred, DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common';
+import { Deferred } from '@opensumi/ide-core-common';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
