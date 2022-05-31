@@ -228,16 +228,12 @@ export class ExtHostTerminal implements IExtHostTerminal {
       if (this.getTerminal(info.id)) {
         return;
       }
-      let shortId = info.id;
-      // 终端恢复时，需要将终端的 ID 处理为单端的短 ID
-      if (info.id.includes(TERMINAL_ID_SEPARATOR)) {
-        shortId = shortId.split(TERMINAL_ID_SEPARATOR)[1];
-      }
-      const terminal = new Terminal(info.name, info, this.proxy, shortId);
+      const terminal = new Terminal(info.name, info, this.proxy, info.id);
       if (info.isActive) {
         this.activeTerminal = terminal;
       }
-      this.terminalsMap.set(shortId, terminal);
+      // 终端恢复时，id 为前端创建，故不需要处理 id 信息
+      this.terminalsMap.set(info.id, terminal);
     });
   }
 
