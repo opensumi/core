@@ -33,6 +33,7 @@ import {
   IWidget,
   ITerminalDataEvent,
   ITerminalExitEvent,
+  ITerminalTitleChangeEvent,
   ITerminalConnection,
   ITerminalExternalLinkProvider,
   ICreateTerminalOptions,
@@ -144,6 +145,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _onExit = new Emitter<ITerminalExitEvent>();
   onExit: Event<ITerminalExitEvent> = this._onExit.event;
+
+  private _onTitleChange = new Emitter<ITerminalTitleChangeEvent>();
+  onTitleChange: Event<ITerminalTitleChangeEvent> = this._onTitleChange.event;
 
   private readonly _onLinksReady = new Emitter<ITerminalClient>();
   onLinksReady: Event<ITerminalClient> = this._onLinksReady.event;
@@ -582,7 +586,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     }
 
     this._attachAddon.setConnection(connection);
-    this.name = this.name || this._launchConfig.name || connection.name;
+    const name = this.name || this._launchConfig.name || connection.name;
+    if (name !== this.name) {
+      this.name = name;
+      this._onTitleChange.fire({ id: this.id, name });
+    }
     this._ready = true;
     this._attached.resolve();
     this._widget.name = this.name;

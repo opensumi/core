@@ -93,6 +93,11 @@ export class MainThreadTerminal implements IMainThreadTerminal {
       }),
     );
     this.disposable.addDispose(
+      this.terminalApi.onDidTerminalTitleChange((e) => {
+        this.proxy.$onDidTerminalTitleChange(e.id, e.name);
+      }),
+    );
+    this.disposable.addDispose(
       this.terminalApi.onDidOpenTerminal((info: ITerminalInfo) => {
         const client = this.controller.clients.get(info.id);
         if (client) {

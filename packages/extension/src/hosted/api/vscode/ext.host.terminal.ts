@@ -106,7 +106,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
    * FIXME：由于前端对于 id 的拼接逻辑，需要通过 terminalsMap 是否存在对应 terminal 实例来获取真实 id
    */
   getRealTerminalId(id: string) {
-    let terminalId;
+    let terminalId = '';
     const shortId = this.getTerminalShortId(id);
     if (this.terminalsMap.has(id)) {
       terminalId = id;
@@ -156,6 +156,15 @@ export class ExtHostTerminal implements IExtHostTerminal {
       deferred?.resolve(terminal);
     }
     this.openTerminalEvent.fire(terminal);
+  }
+
+  $onDidTerminalTitleChange(id: string, name: string) {
+    const terminal = this.getTerminal(id);
+    if (terminal) {
+      if (name !== terminal.name) {
+        terminal.setName(name);
+      }
+    }
   }
 
   get onDidOpenTerminal(): Event<Terminal> {
@@ -434,7 +443,16 @@ export class ExtHostTerminal implements IExtHostTerminal {
     disposables.add(
       p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(id, e.pid, e.cwd)),
     );
-    disposables.add(p.onProcessTitleChanged((title) => this.proxy.$sendProcessTitle(id, title)));
+    disposables.add(
+      p.onProcessTitleChanged((title) => {
+        this.proxy.$sendProcessTitle(id, title);
+        this._getTerminalByIdEventually(id).then((terminal) => {
+          if (terminal) {
+            terminal.setName(title);
+          }
+        });
+      }),
+    );
 
     // Buffer data events to reduce the amount of messages going to the renderer
     this._bufferer.startBuffering(id, p.onProcessData);

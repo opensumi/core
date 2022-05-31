@@ -71,6 +71,8 @@ export interface IExtHostTerminal {
 
   $onDidOpenTerminal(info: ITerminalInfo);
 
+  $onDidTerminalTitleChange(id: string, name: string);
+
   dispose(): void;
 
   $startExtensionTerminal(

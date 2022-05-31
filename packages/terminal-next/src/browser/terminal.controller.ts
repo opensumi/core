@@ -40,6 +40,7 @@ import {
   ITerminalProcessExtHostProxy,
   IStartExtensionTerminalRequest,
   ITerminalExitEvent,
+  ITerminalTitleChangeEvent,
   ITerminalExternalLinkProvider,
   ICreateTerminalOptions,
   ITerminalClientFactory2,
@@ -60,6 +61,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected _clients: Map<string, ITerminalClient>;
   protected _onDidOpenTerminal = new Emitter<ITerminalInfo>();
   protected _onDidCloseTerminal = new Emitter<ITerminalExitEvent>();
+  protected _onDidTerminalTitleChange = new Emitter<ITerminalTitleChangeEvent>();
   protected _onDidChangeActiveTerminal = new Emitter<string>();
   protected _ready = new Deferred<void>();
   protected _activeClientId?: string;
@@ -69,6 +71,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
   readonly onDidCloseTerminal: Event<ITerminalExitEvent> = this._onDidCloseTerminal.event;
+  readonly onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent> = this._onDidTerminalTitleChange.event;
   readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   private readonly _onInstanceRequestStartExtensionTerminal = new Emitter<IStartExtensionTerminalRequest>();
@@ -194,6 +197,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
         this.terminalView.removeWidget(client.id);
         this.clients.delete(client.id);
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
+      }),
+    );
+
+    client.addDispose(
+      client.onTitleChange((e) => {
+        this._onDidTerminalTitleChange.fire({ id: client.id, name: e.name });
       }),
     );
 
