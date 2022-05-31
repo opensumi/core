@@ -71,14 +71,23 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
 
     // UNIX Socket 连接失败或者断开，此时需要等待 1.5s 后重新连接
     socket.on('close', () => {
-      this.logger.log('PtyServiceManagerRemote connect failed, will reconnect after 1.5s');
+      this.logger.log('PtyServiceManagerRemote connect failed, will reconnect after 2s');
       rpcServiceDisposable?.dispose();
       global.setTimeout(() => {
-        socket.connect(connectOpts);
-      }, 1500);
+        try {
+          socket.connect(connectOpts);
+        } catch (e) {
+          this.logger.warn(e);
+        }
+      }, 2000);
     });
 
-    socket.connect(connectOpts);
+    try {
+      socket.connect(connectOpts);
+    } catch (e) {
+      // 连接错误的时候会抛出异常，此时自动重连，同时需要 catch 错误
+      this.logger.warn(e);
+    }
   }
 
   protected initLocal() {
