@@ -88,6 +88,9 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   getTerminal(id: string) {
+    if (this.terminalsMap.has(id)) {
+      return this.terminalsMap.get(id);
+    }
     return this.terminalsMap.get(this.getTerminalShortId(id));
   }
 
@@ -97,6 +100,20 @@ export class ExtHostTerminal implements IExtHostTerminal {
       return id.split(TERMINAL_ID_SEPARATOR)[1];
     }
     return id;
+  }
+
+  /**
+   * FIXME：由于前端对于 id 的拼接逻辑，需要通过 terminalsMap 是否存在对应 terminal 实例来获取真实 id
+   */
+  getRealTerminalId(id: string) {
+    let terminalId = '';
+    const shortId = this.getTerminalShortId(id);
+    if (this.terminalsMap.has(id)) {
+      terminalId = id;
+    } else if (this.terminalsMap.has(shortId)) {
+      terminalId = shortId;
+    }
+    return terminalId;
   }
 
   $onDidChangeActiveTerminal(id: string) {
@@ -114,7 +131,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
   }
 
   $onDidCloseTerminal(e: ITerminalExitEvent) {
-    const terminal = this.terminalsMap.get(this.getTerminalShortId(e.id));
+    const terminalId = this.getRealTerminalId(e.id);
+    const terminal = this.terminalsMap.get(terminalId);
     if (!terminal) {
       return debugLog.error(`Terminal ${e.id} not found`);
     }
@@ -122,7 +140,7 @@ export class ExtHostTerminal implements IExtHostTerminal {
     terminal.setExitCode(e.code);
     this.closeTerminalEvent.fire(terminal);
 
-    this.terminalsMap.delete(e.id);
+    this.terminalsMap.delete(terminalId);
   }
 
   get onDidCloseTerminal(): Event<Terminal> {
@@ -138,6 +156,15 @@ export class ExtHostTerminal implements IExtHostTerminal {
       deferred?.resolve(terminal);
     }
     this.openTerminalEvent.fire(terminal);
+  }
+
+  $onDidTerminalTitleChange(id: string, name: string) {
+    const terminal = this.getTerminal(id);
+    if (terminal) {
+      if (name !== terminal.name) {
+        terminal.setName(name);
+      }
+    }
   }
 
   get onDidOpenTerminal(): Event<Terminal> {
@@ -210,16 +237,12 @@ export class ExtHostTerminal implements IExtHostTerminal {
       if (this.getTerminal(info.id)) {
         return;
       }
-      let shortId = info.id;
-      // 终端恢复时，需要将终端的 ID 处理为单端的短 ID
-      if (info.id.includes(TERMINAL_ID_SEPARATOR)) {
-        shortId = shortId.split(TERMINAL_ID_SEPARATOR)[1];
-      }
-      const terminal = new Terminal(info.name, info, this.proxy, shortId);
+      const terminal = new Terminal(info.name, info, this.proxy, info.id);
       if (info.isActive) {
         this.activeTerminal = terminal;
       }
-      this.terminalsMap.set(shortId, terminal);
+      // 终端恢复时，id 为前端创建，故不需要处理 id 信息
+      this.terminalsMap.set(info.id, terminal);
     });
   }
 
@@ -236,23 +259,24 @@ export class ExtHostTerminal implements IExtHostTerminal {
     });
   }
 
-  async $provideLinks(terminalId: string, line: string): Promise<ITerminalLinkDto[]> {
-    const shortId = this.getTerminalShortId(terminalId);
-    const terminal = this.getTerminal(shortId);
+  async $provideLinks(id: string, line: string): Promise<ITerminalLinkDto[]> {
+    const terminalId = this.getRealTerminalId(id);
+
+    const terminal = this.getTerminal(terminalId);
     if (!terminal) {
       return [];
     }
 
     // Discard any cached links the terminal has been holding, currently all links are released
     // when new links are provided.
-    this._terminalLinkCache.delete(shortId);
+    this._terminalLinkCache.delete(terminalId);
 
-    const oldToken = this._terminalLinkCancellationSource.get(shortId);
+    const oldToken = this._terminalLinkCancellationSource.get(terminalId);
     if (oldToken) {
       oldToken.dispose(true);
     }
     const cancellationSource = new CancellationTokenSource();
-    this._terminalLinkCancellationSource.set(shortId, cancellationSource);
+    this._terminalLinkCancellationSource.set(terminalId, cancellationSource);
 
     const result: ITerminalLinkDto[] = [];
     const context: vscode.TerminalLinkContext = { terminal, line };
@@ -298,14 +322,14 @@ export class ExtHostTerminal implements IExtHostTerminal {
       }
     }
 
-    this._terminalLinkCache.set(shortId, cacheLinkMap);
+    this._terminalLinkCache.set(terminalId, cacheLinkMap);
 
     return result;
   }
 
-  $activateLink(terminalId: string, linkId: number): void {
-    const shortId = this.getTerminalShortId(terminalId);
-    const cachedLink = this._terminalLinkCache.get(shortId)?.get(linkId);
+  $activateLink(id: string, linkId: number): void {
+    const terminalId = this.getRealTerminalId(id);
+    const cachedLink = this._terminalLinkCache.get(terminalId)?.get(linkId);
     if (!cachedLink) {
       return;
     }
@@ -419,7 +443,16 @@ export class ExtHostTerminal implements IExtHostTerminal {
     disposables.add(
       p.onProcessReady((e: { pid: number; cwd: string }) => this.proxy.$sendProcessReady(id, e.pid, e.cwd)),
     );
-    disposables.add(p.onProcessTitleChanged((title) => this.proxy.$sendProcessTitle(id, title)));
+    disposables.add(
+      p.onProcessTitleChanged((title) => {
+        this.proxy.$sendProcessTitle(id, title);
+        this._getTerminalByIdEventually(id).then((terminal) => {
+          if (terminal) {
+            terminal.setName(title);
+          }
+        });
+      }),
+    );
 
     // Buffer data events to reduce the amount of messages going to the renderer
     this._bufferer.startBuffering(id, p.onProcessData);

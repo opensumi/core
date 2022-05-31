@@ -4,7 +4,12 @@ import { Event, Disposable, Deferred, IDisposable } from '@opensumi/ide-core-com
 // eslint-disable-next-line import/no-restricted-paths
 import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
 
-import { ITerminalClient, ITerminalExitEvent, ITerminalExternalLinkProvider } from './client';
+import {
+  ITerminalClient,
+  ITerminalExitEvent,
+  ITerminalTitleChangeEvent,
+  ITerminalExternalLinkProvider,
+} from './client';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
 import { ITerminalInfo, ICreateTerminalOptions, TerminalOptions } from './pty';
 import { IWidgetGroup, IWidget } from './resize';
@@ -83,6 +88,7 @@ export interface ITerminalController extends Disposable {
 
   onDidOpenTerminal: Event<ITerminalInfo>;
   onDidCloseTerminal: Event<ITerminalExitEvent>;
+  onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent>;
   onDidChangeActiveTerminal: Event<string>;
 
   requestStartExtensionTerminal(

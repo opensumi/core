@@ -13,16 +13,19 @@ import {
   ITerminalInternalService,
   ITerminalNetwork,
   ITerminalExitEvent,
+  ITerminalTitleChangeEvent,
 } from '../common';
 
 @Injectable()
 export class TerminalApiService implements ITerminalApiService {
   private _onDidOpenTerminal = new Emitter<ITerminalInfo>();
   private _onDidCloseTerminal = new Emitter<ITerminalExitEvent>();
+  private _onDidTerminalTitleChange = new Emitter<ITerminalTitleChangeEvent>();
   private _onDidChangeActiveTerminal = new Emitter<string>();
 
   readonly onDidOpenTerminal: Event<ITerminalInfo> = this._onDidOpenTerminal.event;
   readonly onDidCloseTerminal: Event<ITerminalExitEvent> = this._onDidCloseTerminal.event;
+  readonly onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent> = this._onDidTerminalTitleChange.event;
   readonly onDidChangeActiveTerminal: Event<string> = this._onDidChangeActiveTerminal.event;
 
   @Autowired(ITerminalController)
@@ -46,6 +49,10 @@ export class TerminalApiService implements ITerminalApiService {
 
     this.controller.onDidCloseTerminal((e) => {
       this._onDidCloseTerminal.fire(e);
+    });
+
+    this.controller.onDidTerminalTitleChange((e) => {
+      this._onDidTerminalTitleChange.fire(e);
     });
 
     this.controller.onDidChangeActiveTerminal((id) => {

@@ -1,6 +1,6 @@
 import { Event } from '@opensumi/ide-core-common';
 
-import { ITerminalExitEvent } from './client';
+import { ITerminalExitEvent, ITerminalTitleChangeEvent } from './client';
 import { ITerminalExternalClient } from './controller';
 import { TerminalOptions, ITerminalInfo } from './pty';
 
@@ -12,6 +12,7 @@ export interface ITerminalApiService {
 
   onDidOpenTerminal: Event<ITerminalInfo>;
   onDidCloseTerminal: Event<ITerminalExitEvent>;
+  onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent>;
   onDidChangeActiveTerminal: Event<string>;
 
   terminals: ITerminalInfo[];

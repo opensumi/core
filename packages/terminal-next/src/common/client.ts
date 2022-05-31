@@ -15,6 +15,11 @@ export interface ITerminalExitEvent {
   code?: number;
 }
 
+export interface ITerminalTitleChangeEvent {
+  id: string;
+  name: string;
+}
+
 export interface ITerminalClient extends Disposable {
   /**
    * 标识终端客户端的唯一 id
@@ -158,6 +163,11 @@ export interface ITerminalClient extends Disposable {
    * 退出事件
    */
   onExit: Event<ITerminalExitEvent>;
+
+  /**
+   * 标题变更事件
+   */
+  onTitleChange: Event<ITerminalTitleChangeEvent>;
 
   /**
    * linkManager 初始化成功事件

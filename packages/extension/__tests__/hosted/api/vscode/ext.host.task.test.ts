@@ -99,6 +99,7 @@ describe('ExtHostTask API', () => {
         onDidChangeActiveTerminal: () => Disposable.NULL,
         onDidCloseTerminal: () => Disposable.NULL,
         onDidOpenTerminal: () => Disposable.NULL,
+        onDidTerminalTitleChange: () => Disposable.NULL,
         createTerminal: (options) => ({
           id: options.name,
         }),
