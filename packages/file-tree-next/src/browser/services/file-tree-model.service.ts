@@ -1001,11 +1001,6 @@ export class FileTreeModelService {
     }
   }
 
-  // 展开所有缓存目录
-  public expandAll = async () => {
-    await this.treeModel.root.expandedAll();
-  };
-
   async deleteFileByUris(uris: URI[]) {
     if (uris.length === 0) {
       return;
