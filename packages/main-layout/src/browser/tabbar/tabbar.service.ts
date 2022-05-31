@@ -701,13 +701,11 @@ export class TabbarService extends WithEventBus {
         if (previousId && currentId !== previousId) {
           this.prevSize = getSize();
         }
-        setSize(this.prevSize || this.panelSize + this.barSize);
         const containerInfo = this.getContainer(currentId);
-        if (containerInfo && containerInfo.options!.noResize) {
-          lockSize(true);
-        } else {
-          lockSize(false);
-        }
+
+        setSize(this.prevSize || this.panelSize + this.barSize);
+        lockSize(Boolean(containerInfo?.options?.noResize));
+
         this.activatedKey.set(currentId);
       } else {
         setSize(this.barSize);
