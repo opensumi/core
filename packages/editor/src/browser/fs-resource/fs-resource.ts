@@ -141,7 +141,33 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     this.involvedFiles?.delete(resource.uri.codeUri.fsPath);
     this.cachedFileStat.delete(resource.uri.toString());
   }
-
+  async shouldCloseResourceWithoutConfirm(resource: IResource) {
+    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
+    if (documentModelRef && documentModelRef.instance.dirty) {
+      return true;
+    }
+    return false;
+  }
+  async close(resource: IResource, saveAction?: AskSaveResult) {
+    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
+    if (!documentModelRef) {
+      return false;
+    }
+    if (saveAction === AskSaveResult.SAVE) {
+      const res = await documentModelRef.instance.save();
+      documentModelRef.dispose();
+      return res;
+    } else if (saveAction === AskSaveResult.REVERT) {
+      await documentModelRef.instance.revert();
+      documentModelRef.dispose();
+      return true;
+    } else if (!saveAction || saveAction === AskSaveResult.CANCEL) {
+      documentModelRef.dispose();
+      return false;
+    } else {
+      return true;
+    }
+  }
   async shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean> {
     let count = 0;
     for (const resources of openedResources) {
@@ -164,6 +190,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       }
       return true;
     }
+
     // 询问用户是否保存
     const buttons = {
       [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
@@ -176,20 +203,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       Object.keys(buttons),
     );
     const result = buttons[selection!];
-    if (result === AskSaveResult.SAVE) {
-      const res = await documentModelRef.instance.save();
-      documentModelRef.dispose();
-      return res;
-    } else if (result === AskSaveResult.REVERT) {
-      await documentModelRef.instance.revert();
-      documentModelRef.dispose();
-      return true;
-    } else if (!result || result === AskSaveResult.CANCEL) {
-      documentModelRef.dispose();
-      return false;
-    } else {
-      return true;
-    }
+    return this.close(resource, result);
   }
 }
 

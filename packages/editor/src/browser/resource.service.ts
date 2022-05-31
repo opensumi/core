@@ -13,6 +13,7 @@ import {
   IResourceDecoration,
   ResourceDecorationNeedChangeEvent,
   ResourceDecorationChangeEvent,
+  AskSaveResult,
 } from '../common';
 
 @Injectable()
@@ -157,7 +158,21 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       return await provider.shouldCloseResource(resource, openedResources);
     }
   }
-
+  async shouldCloseResourceWithoutConfirm(resource: IResource<any>): Promise<boolean> {
+    const provider = this.getProvider(resource.uri);
+    if (provider && provider.shouldCloseResourceWithoutConfirm) {
+      return await provider.shouldCloseResourceWithoutConfirm(resource);
+    }
+    return false;
+  }
+  async close(resource: IResource<any>, saveAction: AskSaveResult): Promise<boolean> {
+    const provider = this.getProvider(resource.uri);
+    if (!provider || !provider.close) {
+      return true;
+    } else {
+      return await provider.close(resource, saveAction);
+    }
+  }
   private calculateProvider(uri: URI): IResourceProvider | undefined {
     if (this.cachedProvider.has(uri.toString())) {
       return this.cachedProvider.get(uri.toString());
