@@ -58,6 +58,7 @@ describe('ext host terminal test', () => {
         onDidChangeActiveTerminal: () => Disposable.NULL,
         onDidCloseTerminal: () => Disposable.NULL,
         onDidOpenTerminal: () => Disposable.NULL,
+        onDidTerminalTitleChange: () => Disposable.NULL,
         createTerminal: (options) => ({
           id: options.name,
         }),
