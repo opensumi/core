@@ -1,3 +1,4 @@
+import lodashGet from 'lodash/get';
 import { observable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
@@ -257,6 +258,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     // Electron的环境下，不启用终端恢复能力
     // 而且在Electron的环境下，clientId的获取方式也不一样，但因为不启用恢复能力，所以后面的代码也无需做额外处理
     if (this.config.isElectronRenderer && !this.config.isRemote) {
+      return;
+    }
+
+    // 先对recovery数据做一个简单校验，因为之前groups数据可能是字符串或object，而现在抛弃了字符串的方式
+    // 所以为了避免旧逻辑写入localStorage的数据混乱，这里做一个简单的校验
+    if (!history.current || !lodashGet(history, 'groups[0][0].client')) {
       return;
     }
 
