@@ -161,8 +161,10 @@ export const ExtensionOverview: ReactEditorComponent<
           onChange={onDidTabChange}
           tabs={[TabActiveKey.details, TabActiveKey.changelog]}
         />
-        {activateKey === TabActiveKey.details && metadata.readme && <Markdown content={metadata.readme} />}
-        {activateKey === TabActiveKey.changelog && metadata.changelog && <Markdown content={metadata.changelog} />}
+        <div className={styles.extension_content}>
+          {activateKey === TabActiveKey.details && metadata.readme && <Markdown content={metadata.readme} />}
+          {activateKey === TabActiveKey.changelog && metadata.changelog && <Markdown content={metadata.changelog} />}
+        </div>
       </div>
     </div>
   );
