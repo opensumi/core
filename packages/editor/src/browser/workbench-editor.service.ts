@@ -472,7 +472,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
     }
   }
-
+  /**
+   * Return true in order to prevent exit.
+   */
   async closeAllOnlyConfirmOnce() {
     const resources = [] as IResource<any>[];
     for (const group of this.editorGroups) {
@@ -489,7 +491,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
     const toClose = shouldClose.filter((v) => v.shouldClose);
     if (toClose.length === 0) {
-      return;
+      return false;
     }
 
     // 询问用户是否保存
