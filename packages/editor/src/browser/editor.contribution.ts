@@ -111,9 +111,6 @@ export class EditorContribution
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
-  @Autowired(ResourceService)
-  private resourceService: ResourceService;
-
   @Autowired()
   private editorStatusBarService: EditorStatusBarService;
 
@@ -273,13 +270,12 @@ export class EditorContribution
     };
   }
 
+  /**
+   * Return true in order to prevent exit.
+   */
   async onWillStopElectron() {
-    for (const group of this.workbenchEditorService.editorGroups) {
-      for (const resource of group.resources) {
-        if (!(await this.resourceService.shouldCloseResource(resource, []))) {
-          return true;
-        }
-      }
+    if (await this.workbenchEditorService.closeAllOnlyConfirmOnce()) {
+      return true;
     }
 
     if (!this.cacheProvider.isFlushed()) {
@@ -785,7 +781,8 @@ export class EditorContribution
           return;
         }
 
-        const uris = resource.uri.scheme === 'diff' ? [resource.metadata.original, resource.metadata.modified] : [resource.uri];
+        const uris =
+          resource.uri.scheme === 'diff' ? [resource.metadata.original, resource.metadata.modified] : [resource.uri];
         uris.forEach((uri) => {
           this.editorDocumentModelService.changeModelOptions(uri, {
             encoding: selectedFileEncoding,

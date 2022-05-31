@@ -159,6 +159,35 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
     };
   }
 
+  async shouldCloseResourceWithoutConfirm(resource: IResource) {
+    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
+    if (documentModelRef && documentModelRef.instance.dirty) {
+      return true;
+    }
+    return false;
+  }
+
+  async close(resource: IResource, saveAction?: AskSaveResult) {
+    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
+    if (!documentModelRef) {
+      return false;
+    }
+    if (saveAction === AskSaveResult.SAVE) {
+      const res = await documentModelRef.instance.save();
+      documentModelRef.dispose();
+      return res;
+    } else if (saveAction === AskSaveResult.REVERT) {
+      await documentModelRef.instance.revert();
+      documentModelRef.dispose();
+      return true;
+    } else if (!saveAction || saveAction === AskSaveResult.CANCEL) {
+      documentModelRef.dispose();
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   async shouldCloseResource(resource: IResource) {
     const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
     if (!documentModelRef || !documentModelRef.instance.dirty) {
@@ -178,20 +207,6 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
       MessageType.Info,
       Object.keys(buttons),
     );
-    const result = buttons[selection!];
-    if (result === AskSaveResult.SAVE) {
-      const res = await documentModelRef.instance.save();
-      documentModelRef.dispose();
-      return res;
-    } else if (result === AskSaveResult.REVERT) {
-      await documentModelRef.instance.revert();
-      documentModelRef.dispose();
-      return true;
-    } else if (!result || result === AskSaveResult.CANCEL) {
-      documentModelRef.dispose();
-      return false;
-    } else {
-      return true;
-    }
+    return await this.close(resource, buttons[selection!]);
   }
 }

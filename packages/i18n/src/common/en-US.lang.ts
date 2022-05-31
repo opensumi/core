@@ -757,9 +757,13 @@ export const localizationBundle = {
     'marketplace.quickopen.install.error': 'Install Extension has error',
 
     saveChangesMessage: 'Do you want to save the changes you made to {0}?',
+    saveNFilesChangesMessage:
+      "Do you want to save these changes you made to {0} files?  \n{1}  \n\nYour changes will be lost if you don't save them.",
     'file.prompt.dontSave': "Don't Save",
     'file.prompt.save': 'Save',
     'file.prompt.cancel': 'Cancel',
+    'file.prompt.more.one': ' and 1 additional file.',
+    'file.prompt.more.number': ' and {0} additional files.',
 
     'doc.saveError.failed': 'File Saving Failed. Reason: ',
     'doc.saveError.diff': '{0} cannot be saved because it has been modified by other editors.',

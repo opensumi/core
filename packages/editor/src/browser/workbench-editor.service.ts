@@ -13,9 +13,10 @@ import {
   RecentFilesManager,
   PreferenceService,
   IOpenerService,
+  toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { isUndefinedOrNull, Schemes, REPORT_NAME, match } from '@opensumi/ide-core-common';
+import { isUndefinedOrNull, Schemes, REPORT_NAME, match, localize, MessageType } from '@opensumi/ide-core-common';
 import {
   CommandService,
   URI,
@@ -39,7 +40,7 @@ import {
   Disposable,
   makeRandomHexString,
 } from '@opensumi/ide-core-common';
-import { IMessageService } from '@opensumi/ide-overlay';
+import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
@@ -87,7 +88,10 @@ import {
   EditorActiveResourceStateChangedEvent,
   CodeEditorDidVisibleEvent,
   RegisterEditorComponentEvent,
+  AskSaveResult,
 } from './types';
+
+const MAX_CONFIRM_RESOURCES = 10;
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -100,6 +104,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   @Autowired(INJECTOR_TOKEN)
   private injector!: Injector;
+
+  @Autowired(ResourceService)
+  private resourceService: ResourceService;
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
@@ -120,6 +127,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
 
+  @Autowired(IDialogService)
+  protected dialogService: IDialogService;
+
   openedResourceState: IStorage;
 
   private _restoring = true;
@@ -131,6 +141,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   public editorContextKeyService: IScopedContextKeyService;
 
   private _domNode: HTMLElement;
+
+  @Autowired(IOpenerService)
+  openner: IOpenerService;
 
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
@@ -458,6 +471,58 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         await group.closeAll();
       }
     }
+  }
+  /**
+   * Return true in order to prevent exit.
+   */
+  async closeAllOnlyConfirmOnce() {
+    const resources = [] as IResource<any>[];
+    for (const group of this.editorGroups) {
+      for (const resource of group.resources) {
+        resources.push(resource);
+      }
+    }
+    const shouldClose = await Promise.all(
+      resources.map(async (resource) => ({
+        shouldClose: await this.resourceService.shouldCloseResourceWithoutConfirm(resource),
+        resource,
+      })),
+    );
+
+    const toClose = shouldClose.filter((v) => v.shouldClose);
+    if (toClose.length === 0) {
+      return false;
+    }
+
+    // 询问用户是否保存
+    const buttons = {
+      [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
+      [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
+      [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
+    };
+    const files = toClose.slice(0, MAX_CONFIRM_RESOURCES);
+    let filesDetail = files.map((v) => v.resource.name).join('、');
+    if (toClose.length > MAX_CONFIRM_RESOURCES) {
+      if (toClose.length - MAX_CONFIRM_RESOURCES === 1) {
+        filesDetail += localize('file.prompt.more.one');
+      } else {
+        filesDetail += formatLocalize('file.prompt.more.number', toClose.length - MAX_CONFIRM_RESOURCES);
+      }
+    }
+    const selection = await this.dialogService.open(
+      toMarkdown(formatLocalize('saveNFilesChangesMessage', toClose.length, filesDetail), this.openner),
+      MessageType.Info,
+      Object.keys(buttons),
+    );
+    const result = buttons[selection!];
+    if (result === AskSaveResult.SAVE) {
+      await Promise.all(toClose.map((v) => this.resourceService.close?.(v.resource, AskSaveResult.SAVE)));
+      return false;
+    } else if (result === AskSaveResult.REVERT) {
+      await Promise.all(toClose.map((v) => this.resourceService.close?.(v.resource, AskSaveResult.REVERT)));
+      return false;
+    }
+    return true;
   }
 
   async close(uri: URI, force?: boolean) {

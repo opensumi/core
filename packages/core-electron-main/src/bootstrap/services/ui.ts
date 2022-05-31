@@ -16,9 +16,7 @@ import {
 
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
 
-
 import { WindowCreatedEvent } from './events';
-
 
 @Injectable()
 export class ElectronMainUIService
@@ -106,6 +104,11 @@ export class ElectronMainUIService
     openInTerminal(targetPath);
   }
 
+  getZoomFactor(webContentsId: number): number | undefined {
+    const contents = webContents.fromId(webContentsId);
+    return contents?.getZoomFactor();
+  }
+
   setZoomFactor(webContentsId: number, options: { value?: number; delta?: number } = {}) {
     const contents = webContents.fromId(webContentsId);
     if (contents) {
@@ -113,13 +116,7 @@ export class ElectronMainUIService
         contents.setZoomFactor(options.value);
       }
       if (options.delta) {
-        if (semver.lt(process.versions.electron, '5.0.0')) {
-          (contents as any).getZoomFactor((zoomFactor) => {
-            contents.setZoomFactor(zoomFactor + options.delta);
-          });
-        } else {
-          contents.setZoomFactor(contents.getZoomFactor() + options.delta);
-        }
+        contents.setZoomFactor(contents.getZoomFactor() + options.delta);
       }
     }
   }
