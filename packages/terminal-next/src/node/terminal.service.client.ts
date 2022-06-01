@@ -138,8 +138,16 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
   }
 
   async getCodePlatformKey(): Promise<'osx' | 'windows' | 'linux'> {
-    // follow vscode
-    return this.getOS() === OperatingSystem.Macintosh ? 'osx' : OperatingSystem.Windows ? 'windows' : 'linux';
+    switch (this.getOS()) {
+      case OperatingSystem.Macintosh:
+        return 'osx';
+      case OperatingSystem.Windows:
+        return 'windows';
+      case OperatingSystem.Linux:
+        return 'linux';
+      default:
+        return 'linux';
+    }
   }
 
   async getDefaultSystemShell(os: OperatingSystem) {
