@@ -24,8 +24,18 @@
 }
 
 .outer_active {
-  outline: 1px solid var(--list-focusOutline) !important;
-  outline-offset: -1px;
+  &:before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    content: '';
+    pointer-events: none;
+    outline: 1px solid var(--list-focusOutline) !important;
+    outline-offset: -1px;
+  }
 }
 
 .empty_view {
