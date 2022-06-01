@@ -40,8 +40,6 @@ export class TerminalApiService implements ITerminalApiService {
   @Autowired(ITerminalNetwork)
   protected readonly network: ITerminalNetwork;
 
-  protected _entries = new Map<string, ITerminalExternalClient>();
-
   constructor() {
     this.controller.onDidOpenTerminal((info) => {
       this._onDidOpenTerminal.fire(info);
@@ -98,11 +96,9 @@ export class TerminalApiService implements ITerminalApiService {
       },
       dispose: () => {
         this.view.removeWidget(client.widget.id);
-        this._entries.delete(client.id);
+        this.controller.clients.delete(client.id);
       },
     };
-
-    this._entries.set(client.id, external);
 
     await client.attached.promise;
 
@@ -111,8 +107,12 @@ export class TerminalApiService implements ITerminalApiService {
     return external;
   }
 
-  getProcessId(sessionId: string) {
-    return this.service.getProcessId(sessionId);
+  async getProcessId(sessionId: string) {
+    const client = this.controller.clients.get(sessionId);
+    if (!client) {
+      return;
+    }
+    return client.pid;
   }
 
   sendText(sessionId: string, text: string, addNewLine = true) {
@@ -120,33 +120,33 @@ export class TerminalApiService implements ITerminalApiService {
   }
 
   showTerm(sessionId: string, preserveFocus = true) {
-    const client = this._entries.get(sessionId);
-
+    const client = this.controller.clients.get(sessionId);
     if (!client) {
       return;
     }
-
-    client.show(preserveFocus);
+    const widget = client.widget;
+    this.view.selectWidget(widget.id);
+    this.controller.showTerminalPanel();
+    if (!preserveFocus) {
+      setTimeout(() => client.focus());
+    }
   }
 
   hideTerm(sessionId: string) {
-    const client = this._entries.get(sessionId);
-
+    const client = this.controller.clients.get(sessionId);
     if (!client) {
       return;
     }
-
-    client.hide();
+    this.controller.hideTerminalPanel();
   }
 
   removeTerm(sessionId: string) {
-    const client = this._entries.get(sessionId);
-
+    const client = this.controller.clients.get(sessionId);
     if (!client) {
       return;
     }
-
-    client.dispose();
+    this.view.removeWidget(client.widget.id);
+    this.controller.clients.delete(sessionId);
   }
 
   createWidget(uniqName: string, widgetRenderFunc: (element: HTMLDivElement) => void) {
