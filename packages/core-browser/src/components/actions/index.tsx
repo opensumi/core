@@ -181,7 +181,7 @@ const InlineActionWidget: React.FC<
   const title = React.useMemo(() => {
     const title = data.tooltip || data.label;
     if (data.keybinding) {
-      return `${title} (${data.keybinding.split('').join('+')})`;
+      return `${title} (${data.keybinding})`;
     }
     return title;
   }, [data]);
