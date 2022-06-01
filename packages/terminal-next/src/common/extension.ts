@@ -139,6 +139,9 @@ export interface ITerminalChildProcess {
 }
 
 export interface ITerminalProcessExtHostProxy extends IDisposable {
+  /**
+   * 这个 id 是由 clientId 和 shortId 拼接而成的
+   */
   readonly terminalId: string;
 
   emitData(data: string): void;
