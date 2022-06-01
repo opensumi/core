@@ -286,7 +286,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       config: this.convertTerminalOptionsToLaunchConfig(),
     });
   }
-
   convertProfileToLaunchConfig(
     shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
     cwd?: Uri | string,
@@ -325,6 +324,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       // 应该是必定能 resolve 到 profile 的
       const defaultProfile = await this.terminalProfileInternalService.resolveDefaultProfile();
       options = {
+        id: this._uid,
         config: defaultProfile,
       };
     }

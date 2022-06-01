@@ -40,17 +40,8 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.check ? this.service.check(sessionIds) : Promise.resolve(true);
   }
 
-  private _getExtHostProxy(id: string) {
-    // FIXME: 插件进程创建的 Terminal id 为短 ID，需要查询一下
-    if (!id.includes(TERMINAL_ID_SEPARATOR)) {
-      const longId = Array.from(this._processExtHostProxies.keys()).find(
-        (id) => id.split(TERMINAL_ID_SEPARATOR)[1] === id,
-      );
-      if (longId) {
-        return this._processExtHostProxies.get(longId);
-      }
-    }
-    return this._processExtHostProxies.get(id);
+  private _getExtHostProxy(longId: string) {
+    return this._processExtHostProxies.get(longId);
   }
 
   async sendText(sessionId: string, message: string) {
