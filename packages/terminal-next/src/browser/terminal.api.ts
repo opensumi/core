@@ -115,12 +115,12 @@ export class TerminalApiService implements ITerminalApiService {
     return this.service.getProcessId(sessionId);
   }
 
-  sendText(id: string, text: string, addNewLine = true) {
-    this.service.sendText(id, `${text}${addNewLine ? '\r' : ''}`);
+  sendText(sessionId: string, text: string, addNewLine = true) {
+    this.service.sendText(sessionId, `${text}${addNewLine ? '\r' : ''}`);
   }
 
-  showTerm(clientId: string, preserveFocus = true) {
-    const client = this._entries.get(clientId);
+  showTerm(sessionId: string, preserveFocus = true) {
+    const client = this._entries.get(sessionId);
 
     if (!client) {
       return;
@@ -129,8 +129,8 @@ export class TerminalApiService implements ITerminalApiService {
     client.show(preserveFocus);
   }
 
-  hideTerm(clientId: string) {
-    const client = this._entries.get(clientId);
+  hideTerm(sessionId: string) {
+    const client = this._entries.get(sessionId);
 
     if (!client) {
       return;
@@ -139,8 +139,8 @@ export class TerminalApiService implements ITerminalApiService {
     client.hide();
   }
 
-  removeTerm(clientId: string) {
-    const client = this._entries.get(clientId);
+  removeTerm(sessionId: string) {
+    const client = this._entries.get(sessionId);
 
     if (!client) {
       return;

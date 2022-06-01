@@ -701,18 +701,19 @@ export class Terminal implements vscode.Terminal {
 
   /**
    * 所有插件进程的终端调用都需要指定 id
-   * 该逻辑用于保障依赖 `vscode.window.onDidOpenTermina` 获取 terminal 实例的相关逻辑
+   * 该逻辑用于保障依赖 `vscode.window.onDidOpenTerminal` 获取 terminal 实例的相关逻辑
    * 让相关 terminal 的值引用一致
    * 如 vscode-js-debug 中的 https://github.com/microsoft/vscode-js-debug/blob/a201e735c94b9aeb1e13d8c586b91a1fe1ab62b3/src/ui/debugTerminalUI.ts#L198
    */
-  async create(options: vscode.TerminalOptions, id: string): Promise<void> {
-    await this.proxy.$createTerminal(options, id);
-    this.created(id);
+  async create(options: vscode.TerminalOptions, shortId: string): Promise<void> {
+    await this.proxy.$createTerminal(options, shortId);
+    this.created(shortId);
   }
 
-  created(id) {
-    this.id = id;
-    this.__id = id;
+  created(shortId: string) {
+    this.id = shortId;
+    this.__id = shortId;
+
     this.createdPromiseResolve();
   }
 
