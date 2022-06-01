@@ -52,7 +52,9 @@ function useMutationObserver(from: HTMLHeadElement, target: HTMLHeadElement) {
         }
         if (mutation.removedNodes.length > 0) {
           for (const removedNode of Array.from(mutation.removedNodes)) {
-            target.removeChild(removedNode as any);
+            if (target.contains(removedNode)) {
+              target.removeChild(removedNode as any);
+            }
           }
         }
       }
