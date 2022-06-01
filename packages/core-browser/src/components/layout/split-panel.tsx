@@ -240,7 +240,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
               ? element['props'].minSize + 'px'
               : '-1px',
             [Layout.getMaxSizeProperty(direction)]:
-              maxLocks[index] && getProp(element, 'minSize') ? element['props'].minSize + 'px' : 'unset',
+              maxLocks[index] && getProp(element, 'maxSize') ? element['props'].maxSize + 'px' : 'unset',
             // resize flex模式下应用flexGrow
             ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: element['props'].flexGrow } : {}),
             display: hides[index] ? 'none' : 'block',
