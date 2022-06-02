@@ -334,6 +334,10 @@ export class ElectronBasicContribution
       command: 'electron.zoomOut',
       keybinding: isWindows ? 'alt+-' : 'ctrlcmd+-',
     });
+    keybindings.registerKeybinding({
+      command: 'electron.zoomReset',
+      keybinding: isWindows ? 'alt+numpad0' : 'ctrlcmd+numpad0',
+    });
   }
 
   onStart() {
