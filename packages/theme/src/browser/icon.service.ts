@@ -14,6 +14,7 @@ import {
   WithEventBus,
   ExtensionDidContributes,
   Schemes,
+  memoize,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
@@ -109,7 +110,11 @@ export class IconService extends WithEventBus implements IIconService {
   private appendStyleCounter = 0;
 
   private doAppend(targetElement: HTMLElement | null) {
-    targetElement?.append(this.styleSheetCollection);
+    if (targetElement) {
+      const textContent = targetElement?.textContent + this.styleSheetCollection;
+      targetElement.textContent = textContent;
+    }
+
     this.styleSheetCollection = '';
     this.appendStylesTimer = undefined;
     this.appendStyleCounter = 0;
@@ -139,19 +144,31 @@ export class IconService extends WithEventBus implements IIconService {
     // 超过 100 个样式
     if (this.appendStyleCounter >= 150 && this.appendStylesTimer) {
       clearTimeout(this.appendStylesTimer);
-      this.doAppend(iconStyleNode);
+      this.appendExtensionIconStyle();
     }
 
     if (!this.appendStylesTimer) {
       // 超过 100 毫秒
       this.appendStylesTimer = window.setTimeout(() => {
-        this.doAppend(iconStyleNode);
+        this.appendExtensionIconStyle();
       }, 100);
     }
   }
 
-  protected getRandomIconClass() {
-    return `icon-${Math.random().toString(36).slice(-8)}`;
+  private appendExtensionIconStyle(styleNode?: HTMLElement | null) {
+    if (styleNode) {
+      this.doAppend(styleNode);
+    } else {
+      const randomClass = this.getRandomIconClass('extension-');
+      const styleNode = document.createElement('style');
+      styleNode!.className = randomClass;
+      this.doAppend(styleNode);
+      document.getElementsByTagName('head')[0].appendChild(styleNode);
+    }
+  }
+
+  protected getRandomIconClass(prefix = '') {
+    return `${prefix}icon-${Math.random().toString(36).slice(-8)}`;
   }
 
   protected getMaskStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
