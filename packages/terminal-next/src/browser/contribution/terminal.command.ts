@@ -24,6 +24,7 @@ import {
   TERMINAL_COMMANDS,
   ITerminalClient,
 } from '../../common';
+import { CodeTerminalSettingId } from '../../common/preference';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';
 
@@ -206,31 +207,31 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_ZSH, {
       execute: async () => {
-        this.preference.set('terminal.type', 'zsh', PreferenceScope.User);
+        this.preference.set(CodeTerminalSettingId.TerminalType, 'zsh', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_BASH, {
       execute: async () => {
-        this.preference.set('terminal.type', 'bash', PreferenceScope.User);
+        this.preference.set(CodeTerminalSettingId.TerminalType, 'bash', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_SH, {
       execute: async () => {
-        this.preference.set('terminal.type', 'sh', PreferenceScope.User);
+        this.preference.set(CodeTerminalSettingId.TerminalType, 'sh', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_POWERSHELL, {
       execute: async () => {
-        this.preference.set('terminal.type', 'powershell', PreferenceScope.User);
+        this.preference.set(CodeTerminalSettingId.TerminalType, 'powershell', PreferenceScope.User);
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_CMD, {
       execute: async () => {
-        this.preference.set('terminal.type', 'cmd', PreferenceScope.User);
+        this.preference.set(CodeTerminalSettingId.TerminalType, 'cmd', PreferenceScope.User);
       },
     });
 
