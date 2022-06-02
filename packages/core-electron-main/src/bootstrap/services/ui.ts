@@ -109,14 +109,35 @@ export class ElectronMainUIService
     return contents?.getZoomFactor();
   }
 
-  setZoomFactor(webContentsId: number, options: { value?: number; delta?: number } = {}) {
+  setZoomFactor(
+    webContentsId: number,
+    options: { value?: number; delta?: number; minValue?: number; maxValue?: number } = {},
+  ) {
+    if (options.minValue === undefined) {
+      options.minValue = 0.25;
+    }
+    if (options.maxValue === undefined) {
+      options.maxValue = 5;
+    }
+
     const contents = webContents.fromId(webContentsId);
     if (contents) {
+      let factor: number | undefined;
       if (options.value) {
+        factor = options.value;
         contents.setZoomFactor(options.value);
       }
       if (options.delta) {
-        contents.setZoomFactor(contents.getZoomFactor() + options.delta);
+        factor = contents.getZoomFactor() + options.delta;
+      }
+      if (factor) {
+        if (options.minValue && factor < options.minValue) {
+          factor = options.minValue;
+        }
+        if (options.maxValue && factor > options.maxValue) {
+          factor = options.maxValue;
+        }
+        contents.setZoomFactor(factor);
       }
     }
   }
