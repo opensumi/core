@@ -22,7 +22,8 @@ export interface ITerminalTitleChangeEvent {
 
 export interface ITerminalClient extends Disposable {
   /**
-   * 标识终端客户端的唯一 id
+   * 标识终端客户端的唯一 id。
+   * 长 id，由 clientId + "|" + shortId 组成
    */
   id: string;
 
