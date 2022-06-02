@@ -151,10 +151,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     // 终端
     'terminal.type': {
       type: 'string',
-      enum:
-        isElectronRenderer() && isWindows
-          ? ['git-bash', 'powershell', 'cmd', 'default']
-          : ['zsh', 'bash', 'sh', 'default'],
+      enum: isWindows ? ['git-bash', 'powershell', 'cmd', 'default'] : ['zsh', 'bash', 'sh', 'default'],
       default: 'default',
       description: '%preference.terminal.typeDesc%',
     },

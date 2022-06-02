@@ -130,7 +130,7 @@ export class TerminalMenuContribution implements MenuContribution {
       when,
     });
 
-    if (this.config.isElectronRenderer && isWindows) {
+    if (isWindows) {
       menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [
         {
           command: TERMINAL_COMMANDS.SELECT_CMD,
