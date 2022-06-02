@@ -27,7 +27,7 @@ export interface IElectronMainUIServiceShape {
   showSaveDialog(windowId: number, options: Electron.SaveDialogOptions): Promise<string | undefined>;
 
   /**
-   * 默认最小缩放因数为 0.25，最大缩放因数为 5.0
+   * 默认：最小缩放因子为 0.25，最大缩放因子为 5.0
    */
   setZoomFactor(
     webContentsId: number,
