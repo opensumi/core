@@ -15,7 +15,7 @@ import {
   ITerminalServiceClient,
   ITerminalServicePath,
 } from '../common';
-import { CodeTerminalSettingId, CodeTerminalSettingPrefix } from '../common/preference';
+import { CodeTerminalSettingPrefix } from '../common/preference';
 import { WindowsShellType } from '../common/shell';
 
 const generatedProfileName = 'Generated Profile';
@@ -35,7 +35,7 @@ export class TerminalProfileInternalService implements ITerminalProfileInternalS
   protected readonly serviceClientRPC: ITerminalServiceClient;
 
   private async resolveTerminalTypeProfile(): Promise<ITerminalProfile | undefined> {
-    const shellType = this.preferenceService.get<string>(CodeTerminalSettingId.TerminalType);
+    const shellType = this.preferenceService.get<string>('terminal.type');
     if (!shellType || shellType === 'default') {
       // 继续走我们的 resolveDefaultProfile
       return;
@@ -57,7 +57,7 @@ export class TerminalProfileInternalService implements ITerminalProfileInternalS
     args.push(...platformSpecificArgs);
 
     return {
-      profileName: CodeTerminalSettingId.TerminalType,
+      profileName: 'terminal.type',
       path: shellPath,
       args,
       icon: undefined,

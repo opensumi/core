@@ -127,7 +127,6 @@ export const enum CodeTerminalSettingId {
   ShowLinkHover = 'terminal.integrated.showLinkHover',
   IgnoreProcessNames = 'terminal.integrated.ignoreProcessNames',
   AutoReplies = 'terminal.integrated.autoReplies',
-  TerminalType = 'terminal.type',
 }
 
 const shellDeprecationMessageLinux = localize(
@@ -150,7 +149,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
   type: 'object',
   properties: {
     // 终端
-    [CodeTerminalSettingId.TerminalType]: {
+    'terminal.type': {
       type: 'string',
       enum: ['zsh', 'bash', 'sh', 'default'], // default is macOS
       default: 'default',

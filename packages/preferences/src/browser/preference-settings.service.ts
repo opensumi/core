@@ -26,7 +26,6 @@ import {
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { CodeTerminalSettingId } from '@opensumi/ide-terminal-next/lib/common/preference';
 
 import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel } from '../common';
 
@@ -546,7 +545,7 @@ export const defaultSettingSections: {
     {
       preferences: [
         // 终端类型
-        { id: CodeTerminalSettingId.TerminalType, localized: 'preference.terminal.type' },
+        { id: 'terminal.type', localized: 'preference.terminal.type' },
         // 字体
         { id: 'terminal.fontFamily', localized: 'preference.terminal.fontFamily' },
         { id: 'terminal.fontSize', localized: 'preference.terminal.fontSize' },
