@@ -27,6 +27,7 @@ export interface IElectronMainUIServiceShape {
   showSaveDialog(windowId: number, options: Electron.SaveDialogOptions): Promise<string | undefined>;
 
   setZoomFactor(webContentsId: number, options: { value?: number; delta?: number }): void;
+  getZoomFactor(webContentsId: number): number | undefined;
 
   /**
    * 在资源管理器里打开文件
