@@ -12,6 +12,7 @@ import {
   IShellLaunchConfig,
   ITerminalConnection,
   IPtyProcessChangeEvent,
+  TERMINAL_ID_SEPARATOR,
 } from '../common';
 import { IXTerm } from '../common/xterm';
 
@@ -39,8 +40,8 @@ export class TerminalInternalService implements ITerminalInternalService {
     return this.service.check ? this.service.check(sessionIds) : Promise.resolve(true);
   }
 
-  private _getExtHostProxy(id: string) {
-    return this._processExtHostProxies.get(id);
+  private _getExtHostProxy(longId: string) {
+    return this._processExtHostProxies.get(longId);
   }
 
   async sendText(sessionId: string, message: string) {

@@ -642,11 +642,6 @@ export class Terminal implements vscode.Terminal {
   public __id: string;
 
   private _exitStatus: vscode.TerminalExitStatus | undefined;
-  /**
-   * FIXME: 这里默认值应该为 { isInteractedWith: false }
-   * 由于终端重连在前端往后端重新初始化了 Terminal，插件进程获取到的 Terminal 与前端 Terminal 仅有 id 等部分信息关联
-   * 导致状态丢失
-   */
   private _state: vscode.TerminalState = { isInteractedWith: false };
 
   private createdPromiseResolve;
@@ -706,18 +701,19 @@ export class Terminal implements vscode.Terminal {
 
   /**
    * 所有插件进程的终端调用都需要指定 id
-   * 该逻辑用于保障依赖 `vscode.window.onDidOpenTermina` 获取 terminal 实例的相关逻辑
+   * 该逻辑用于保障依赖 `vscode.window.onDidOpenTerminal` 获取 terminal 实例的相关逻辑
    * 让相关 terminal 的值引用一致
    * 如 vscode-js-debug 中的 https://github.com/microsoft/vscode-js-debug/blob/a201e735c94b9aeb1e13d8c586b91a1fe1ab62b3/src/ui/debugTerminalUI.ts#L198
    */
-  async create(options: vscode.TerminalOptions, id: string): Promise<void> {
-    await this.proxy.$createTerminal(options, id);
-    this.created(id);
+  async create(options: vscode.TerminalOptions, shortId: string): Promise<void> {
+    await this.proxy.$createTerminal(options, shortId);
+    this.created(shortId);
   }
 
-  created(id) {
-    this.id = id;
-    this.__id = id;
+  created(shortId: string) {
+    this.id = shortId;
+    this.__id = shortId;
+
     this.createdPromiseResolve();
   }
 

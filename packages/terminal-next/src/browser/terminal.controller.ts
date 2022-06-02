@@ -181,10 +181,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     let client: ITerminalClient;
 
     if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
-      client = await this.clientFactory2(widget, options);
+      client = await this.clientFactory2(widget, /** @type ICreateTerminalOptions */ options);
       this.logger.log('create client with clientFactory2', client);
     } else {
-      client = await this.clientFactory(widget, options);
+      client = await this.clientFactory(widget, /** @type TerminalOptions */ options);
       this.logger.log('create client with clientFactory', client);
     }
     return this.setupClient(widget, client);
@@ -571,14 +571,14 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
   }
 
-  /**
-   * @param options
-   * @returns
-   */
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
-    const widgetId =
-      this.wsChannelHandler.clientId + TERMINAL_ID_SEPARATOR + options.id || this.service.generateSessionId();
-    const { group } = this._createOneGroup(convertTerminalOptionsToLaunchConfig(options.terminalOptions));
+    const widgetId = options.id
+      ? this.wsChannelHandler.clientId + TERMINAL_ID_SEPARATOR + options.id
+      : this.service.generateSessionId();
+
+    const launchConfig = convertTerminalOptionsToLaunchConfig(options.terminalOptions);
+
+    const { group } = this._createOneGroup(launchConfig);
     const widget = this.terminalView.createWidget(
       group,
       widgetId,
@@ -590,7 +590,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       options.beforeCreate(widgetId);
     }
 
-    const client = await this._createClient(widget, options.terminalOptions);
+    const client = await this._createClient(widget, {
+      id: widgetId,
+      config: launchConfig,
+    });
 
     if (options.isTaskExecutor) {
       client.isTaskExecutor = true;
