@@ -206,29 +206,26 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     proxy.onRequestInitialCwd(() => this.proxy.$acceptProcessRequestInitialCwd(proxy.terminalId));
   }
 
-  private _getTerminalProcess(terminalId: string): ITerminalProcessExtHostProxy {
-    this.transform(terminalId, (id) => {
-      terminalId = id;
+  private _getTerminalProcess(id: string): ITerminalProcessExtHostProxy {
+    return this.transform(id, (terminalId) => {
+      const terminal = this._terminalProcessProxies.get(terminalId);
+      if (!terminal) {
+        throw new Error(`Unknown terminal: ${terminalId}`);
+      }
+      return terminal;
     });
-    const terminal = this._terminalProcessProxies.get(terminalId);
-    if (!terminal) {
-      throw new Error(`Unknown terminal: ${terminalId}`);
-    }
-    return terminal;
   }
 
-  public $sendProcessTitle(terminalId: string, title: string): void {
-    this.transform(terminalId, (id) => {
-      terminalId = id;
+  public $sendProcessTitle(id: string, title: string): void {
+    return this.transform(id, (terminalId) => {
+      const terminalWidgetInstance = this.terminalGroupViewService.getWidget(terminalId);
+
+      if (terminalWidgetInstance) {
+        terminalWidgetInstance.rename(title);
+
+        this.proxy.$acceptTerminalTitleChange(terminalId, title);
+      }
     });
-
-    const terminalWidgetInstance = this.terminalGroupViewService.getWidget(terminalId);
-
-    if (terminalWidgetInstance) {
-      terminalWidgetInstance.rename(title);
-
-      this.proxy.$acceptTerminalTitleChange(terminalId, title);
-    }
   }
 
   public $sendProcessData(terminalId: string, data: string): void {
