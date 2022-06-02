@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { PreferenceContribution } from '@opensumi/ide-core-browser';
+import { PreferenceContribution, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
 import { Domain, OperatingSystem, PreferenceSchema } from '@opensumi/ide-core-common';
 
 import { ITerminalService } from '../../common';
@@ -8,20 +8,34 @@ import { NodePtyTerminalService } from '../terminal.service';
 
 @Domain(PreferenceContribution)
 export class TerminalPreferenceContribution implements PreferenceContribution {
-  public schema: PreferenceSchema;
+  public schema: PreferenceSchema = terminalPreferenceSchema;
 
   @Autowired(ITerminalService)
-  private client: NodePtyTerminalService;
+  private ptyTerminal: NodePtyTerminalService;
+
+  @Autowired(PreferenceSchemaProvider)
+  private preferenceSchemaProvider: PreferenceSchemaProvider;
 
   constructor() {
-    this.schema = terminalPreferenceSchema;
-    this.client.getOS().then((osType) => {
-      switch (osType) {
-        case OperatingSystem.Windows:
-          terminalPreferenceSchema.properties['terminal.type'].enum = ['git-bash', 'powershell', 'cmd', 'default'];
-          break;
-        default:
-          terminalPreferenceSchema.properties['terminal.type'].enum = ['zsh', 'bash', 'sh', 'default'];
+    const TERMINAL_TYPE = 'terminal.type';
+    const TERMINAL_TYPE_ENUM = ['git-bash', 'powershell', 'cmd', 'default'];
+    const {
+      properties: { [TERMINAL_TYPE]: terminalTypeProperty },
+    } = { ...terminalPreferenceSchema };
+
+    this.ptyTerminal.getOS().then((osType) => {
+      if (osType === OperatingSystem.Windows) {
+        this.preferenceSchemaProvider.setSchema(
+          {
+            properties: {
+              [TERMINAL_TYPE]: {
+                ...terminalTypeProperty,
+                enum: TERMINAL_TYPE_ENUM, // if OS is windows, update terminal type
+              },
+            },
+          },
+          true,
+        );
       }
     });
   }

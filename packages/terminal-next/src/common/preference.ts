@@ -151,8 +151,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     // 终端
     'terminal.type': {
       type: 'string',
-      // enum: isWindows ? ['git-bash', 'powershell', 'cmd', 'default'] : ['zsh', 'bash', 'sh', 'default'],
-      enum: [], // use getOS() to get OS type
+      enum: ['zsh', 'bash', 'sh', 'default'], // default is macOS
       default: 'default',
       description: '%preference.terminal.typeDesc%',
     },
