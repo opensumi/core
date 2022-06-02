@@ -26,7 +26,6 @@ import {
 import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 
-
 @Domain(MenuContribution, CommandContribution)
 export class VariablesPanelContribution implements MenuContribution, CommandContribution {
   @Autowired(IQuickInputService)
@@ -57,7 +56,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         }
 
         const param = await this.quickInputService.open({
-          placeHolder: localize('deugger.menu.setValue.param'),
+          placeHolder: localize('debugger.menu.setValue.param'),
           value: node.description.replace(/^\"(.*)\"$/, '$1') as string,
         });
         if (param !== undefined && param !== null) {
@@ -115,7 +114,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
     registry.registerMenuItem(MenuId.DebugVariablesContext, {
       command: {
         id: DEBUG_COMMANDS.SET_VARIABLE_VALUE.id,
-        label: localize('deugger.menu.setValue'),
+        label: localize('debugger.menu.setValue'),
       },
       order: 10,
       when: CONTEXT_SET_VARIABLE_SUPPORTED.raw,
@@ -124,7 +123,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
     registry.registerMenuItem(MenuId.DebugVariablesContext, {
       command: {
         id: DEBUG_COMMANDS.COPY_VARIABLE_VALUE.id,
-        label: localize('deugger.menu.copyValue'),
+        label: localize('debugger.menu.copyValue'),
       },
       order: 10,
       group: '5_cutcopypaste',
@@ -132,7 +131,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
     registry.registerMenuItem(MenuId.DebugVariablesContext, {
       command: {
         id: DEBUG_COMMANDS.COPY_EVALUATE_PATH.id,
-        label: localize('deugger.menu.copyEvaluatePath'),
+        label: localize('debugger.menu.copyEvaluatePath'),
       },
       when: CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT.raw,
       order: 20,
@@ -141,7 +140,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
     registry.registerMenuItem(MenuId.DebugVariablesContext, {
       command: {
         id: DEBUG_COMMANDS.ADD_TO_WATCH_ID.id,
-        label: localize('deugger.menu.addToWatchExpressions'),
+        label: localize('debugger.menu.addToWatchExpressions'),
       },
       when: CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT.raw,
       order: 100,
@@ -150,7 +149,7 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
     registry.registerMenuItem(MenuId.EditorContext, {
       command: {
         id: DEBUG_COMMANDS.ADD_TO_WATCH_ID.id,
-        label: localize('deugger.menu.addToWatchExpressions'),
+        label: localize('debugger.menu.addToWatchExpressions'),
       },
       when: ContextKeyExpr.and(EditorContextKeys.hasNonEmptySelection, EditorContextKeys.editorTextFocus)
         ?.keys()

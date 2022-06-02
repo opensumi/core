@@ -644,15 +644,15 @@ export const localizationBundle = {
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
 
-    'deugger.menu.setValue': 'Set Value',
-    'deugger.menu.setValue.param': 'Please input the value of this variable',
+    'debugger.menu.setValue': 'Set Value',
+    'debugger.menu.setValue.param': 'Please input the value of this variable',
 
-    'deugger.menu.copyValue': 'Copy Value',
-    'deugger.menu.copyEvaluatePath': 'Copy as Expression',
-    'deugger.menu.addToWatchExpressions': 'Add to Watch',
+    'debugger.menu.copyValue': 'Copy Value',
+    'debugger.menu.copyEvaluatePath': 'Copy as Expression',
+    'debugger.menu.addToWatchExpressions': 'Add to Watch',
 
-    'deugger.menu.restartFrame': 'Restart Frame',
-    'deugger.menu.copyCallstack': 'Copy Call Stack',
+    'debugger.menu.restartFrame': 'Restart Frame',
+    'debugger.menu.copyCallstack': 'Copy Call Stack',
 
     'theme.toggle': 'Color Theme',
     'theme.icon.toggle': 'File Icon Theme',
