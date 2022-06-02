@@ -104,12 +104,12 @@ export class ElectronMainUIService
     openInTerminal(targetPath);
   }
 
-  getZoomFactor(webContentsId: number): number | undefined {
+  async getZoomFactor(webContentsId: number): Promise<number | undefined> {
     const contents = webContents.fromId(webContentsId);
     return contents?.getZoomFactor();
   }
 
-  setZoomFactor(
+  async setZoomFactor(
     webContentsId: number,
     options: { value?: number; delta?: number; minValue?: number; maxValue?: number } = {},
   ) {

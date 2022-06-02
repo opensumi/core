@@ -32,8 +32,8 @@ export interface IElectronMainUIServiceShape {
   setZoomFactor(
     webContentsId: number,
     options: { value?: number; delta?: number; minValue?: number | undefined; maxValue?: number | undefined },
-  ): void;
-  getZoomFactor(webContentsId: number): number | undefined;
+  ): Promise<void>;
+  getZoomFactor(webContentsId: number): Promise<number | undefined>;
 
   /**
    * 在资源管理器里打开文件
