@@ -207,10 +207,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   private _getTerminalProcess(terminalId: string): ITerminalProcessExtHostProxy {
-    if (this.shortId2LongIdMap.has(terminalId)) {
-      terminalId = this.shortId2LongIdMap.get(terminalId)!;
-    }
-
+    this.transform(terminalId, (id) => {
+      terminalId = id;
+    });
     const terminal = this._terminalProcessProxies.get(terminalId);
     if (!terminal) {
       throw new Error(`Unknown terminal: ${terminalId}`);
@@ -219,9 +218,9 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   public $sendProcessTitle(terminalId: string, title: string): void {
-    if (this.shortId2LongIdMap.has(terminalId)) {
-      terminalId = this.shortId2LongIdMap.get(terminalId)!;
-    }
+    this.transform(terminalId, (id) => {
+      terminalId = id;
+    });
 
     const terminalWidgetInstance = this.terminalGroupViewService.getWidget(terminalId);
 
