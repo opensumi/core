@@ -46,11 +46,11 @@ jobs:
 
       # 评论正在发布
       - name: Update status for current issue
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -82,7 +82,7 @@ jobs:
 
       # 更新 Changelog 到 pre-release issue 正文
       - name: Update prerelease changelog for current issue
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
@@ -92,7 +92,7 @@ jobs:
             const version = lernaJson.version.split('.');
             const nextVersion = `${version[0]}.${version[1]}.${parseInt(version[2]) + 1}-next`;
 
-            github.issues.update({
+            github.rest.issues.update({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -121,26 +121,9 @@ jobs:
           CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
 
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const issueBody =
-              '🎉 Pre-Release version ' +
-              process.env.CURRENT_VERSION +
-              ' publish successful! You can install prerelease version via `npm install package@' +
-              process.env.CURRENT_VERSION +
-              ' `' +
-              ' [@' +
-              context.payload.comment.user.login +
-              ']' +
-              '(https://github.com/' +
-              context.payload.comment.user.login +
-              ')';
-
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: issueBody
-            });
+            const script = require('./scripts/github/notifyPreReleaseResult.js')
+            await script({github, context, core})

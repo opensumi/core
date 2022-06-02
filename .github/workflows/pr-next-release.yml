@@ -33,31 +33,13 @@ jobs:
       - run: |
           echo "HEAD_SHA=${{steps.comment-branch.outputs.head_sha}}" >> $GITHUB_ENV
 
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         id: run-check-suite
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            // 创建一个 checkSuite
-            const suite = await github.checks.createSuite({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              head_sha: process.env.HEAD_SHA,
-            });
-
-            // 创建一个 checkRun
-            const check = await github.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              name: '🚀🚀🚀 Pre-Release Version for pull request',
-              status: 'in_progress',
-              head_sha: suite.data.head_sha,
-              output: {
-                title: 'Pre-Release version is publishing. Please wait for a moment...',
-                summary: `A version for pull request is **running**. sha: **${process.env.HEAD_SHA}**`,
-              },
-            });
-            return check.data.id;
+            const script = require('./scripts/github/createPrNextCheckSuite.js')
+            return await script({github, context, core, status: 'start'})
 
       - run: |
           echo "CHECK_RUN_ID=${{steps.run-check-suite.outputs.result}}" >> $GITHUB_ENV
@@ -103,59 +85,19 @@ jobs:
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
 
       # 发布失败后，更新 checkRun 状态
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         if: failure()
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.checks.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              status: 'completed',
-              completed_at: new Date(),
-              conclusion: 'failure',
-              check_run_id: process.env.CHECK_RUN_ID,
-              output: {
-                title: 'Pre-Release Version publish failed',
-                summary: `A version for pull request is **failed**. please check the error.`,
-              }
-            });
+            const script = require('./scripts/github/createPrNextCheckSuite.js')
+            return await script({github, context, core, status: 'end'})
 
       # 发布完成后，在 issue 中评论，并更新 checkRun 状态
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         if: success()
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const issueBody =
-              '🎉 Pre-Release version ' +
-              process.env.CURRENT_VERSION +
-              ' publish successful! You can install prerelease version via `npm install package@' +
-              process.env.CURRENT_VERSION +
-              ' `' +
-              ' [@' +
-              context.payload.comment.user.login +
-              ']' +
-              '(https://github.com/' +
-              context.payload.comment.user.login +
-              ')';
-
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: issueBody
-            });
-
-            github.checks.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              status: 'completed',
-              completed_at: new Date(),
-              conclusion: 'success',
-              check_run_id: process.env.CHECK_RUN_ID,
-              output: {
-                title: 'Pre-Release Version publish successful!',
-                summary: `A version for pull request is **published**. version: **${process.env.CURRENT_VERSION}**`,
-              }
-            });
+            const script = require('./scripts/github/notifyPrNextResult.js')
+            return await script({github, context, core})

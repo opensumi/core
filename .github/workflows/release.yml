@@ -124,11 +124,11 @@ jobs:
       # 在 main 分支运行时，自动基于 Release 分支创建 PR
       - name: Create Pull Request
         if: github.event.ref == 'refs/heads/main' && github.event.inputs.release_branch != ''
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.pulls.create({
+            github.rest.pulls.create({
               owner: github.repository.owner.login,
               repo: github.repository.name,
               title: 'chore: v${{ github.event.inputs.version }}',
