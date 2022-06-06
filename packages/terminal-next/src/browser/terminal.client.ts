@@ -628,7 +628,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     });
   }
 
-  private _setOption(name: string, value: string | number | boolean) {
+  private _setOption(name: string, value: string | number | boolean | Array<string | number | boolean>) {
     /**
      * 有可能 preference 引起的修改并不是对应终端的 option，
      * 这种情况可能会报错
