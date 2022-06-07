@@ -10,7 +10,7 @@ module.exports = async ({ github, context, core }) => {
     body: commentBody,
   });
 
-  github.checks.update({
+  github.rest.checks.update({
     owner: context.repo.owner,
     repo: context.repo.repo,
     status: 'completed',
