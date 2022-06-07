@@ -3,14 +3,14 @@ const { createVersionText } = require('./helpers');
 module.exports = async ({ github, context, core }) => {
   const commentBody = createVersionText('PR Next', process.env.CURRENT_VERSION);
 
-  github.rest.issues.createComment({
+  await github.rest.issues.createComment({
     issue_number: context.issue.number,
     owner: context.repo.owner,
     repo: context.repo.repo,
     body: commentBody,
   });
 
-  github.rest.checks.update({
+  await github.rest.checks.update({
     owner: context.repo.owner,
     repo: context.repo.repo,
     status: 'completed',

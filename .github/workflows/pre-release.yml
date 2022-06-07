@@ -50,7 +50,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -92,7 +92,7 @@ jobs:
             const version = lernaJson.version.split('.');
             const nextVersion = `${version[0]}.${version[1]}.${parseInt(version[2]) + 1}-next`;
 
-            github.rest.issues.update({
+            await github.rest.issues.update({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,

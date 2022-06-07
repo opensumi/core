@@ -21,7 +21,7 @@ module.exports = async ({ github, context, core, status = 'start' }) => {
     });
     return check.data.id;
   } else {
-    github.rest.checks.update({
+    await github.rest.checks.update({
       owner: context.repo.owner,
       repo: context.repo.repo,
       status: 'completed',
