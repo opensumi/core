@@ -1,5 +1,4 @@
 import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
-import { argv } from 'yargs';
 
 import { Injector, ConstructorOf } from '@opensumi/di';
 import {
@@ -12,6 +11,7 @@ import {
   asExtensionCandidate,
 } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 
 import { ElectronMainModule } from '../electron-main-module';
 

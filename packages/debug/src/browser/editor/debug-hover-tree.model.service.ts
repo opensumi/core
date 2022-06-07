@@ -6,8 +6,7 @@ import {
   WatchEvent,
   TreeNodeEvent,
 } from '@opensumi/ide-components';
-import { Emitter, Deferred, Event, DisposableCollection, path } from '@opensumi/ide-core-browser';
-import { pSeries } from '@opensumi/ide-utils/lib/promises';
+import { Emitter, Deferred, Event, DisposableCollection, path, pSeries } from '@opensumi/ide-core-browser';
 
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import styles from '../view/variables/debug-variables.module.less';

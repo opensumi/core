@@ -17,9 +17,9 @@ import {
   DisposableCollection,
   IClipboardService,
   path,
+  pSeries,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { pSeries } from '@opensumi/ide-utils/lib/promises';
 
 import { IDebugSessionManager } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
