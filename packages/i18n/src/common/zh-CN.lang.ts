@@ -677,15 +677,15 @@ export const localizationBundle = {
     'terminal.focusNext.inTerminalGroup': '终端：聚焦当前终端组中的下一个终端',
     'terminal.focusPrevious.inTerminalGroup': '终端：聚焦当前终端组中的上一个终端',
 
-    'deugger.menu.setValue': '设置变量',
-    'deugger.menu.setValue.param': '请输入你要改变变量的值',
+    'debugger.menu.setValue': '设置变量',
+    'debugger.menu.setValue.param': '请输入你要改变变量的值',
 
-    'deugger.menu.copyValue': '复制值',
-    'deugger.menu.copyEvaluatePath': '复制表达式',
-    'deugger.menu.addToWatchExpressions': '添加到监视',
+    'debugger.menu.copyValue': '复制值',
+    'debugger.menu.copyEvaluatePath': '复制表达式',
+    'debugger.menu.addToWatchExpressions': '添加到监视',
 
-    'deugger.menu.restartFrame': '重启栈帧',
-    'deugger.menu.copyCallstack': '复制堆栈',
+    'debugger.menu.restartFrame': '重启栈帧',
+    'debugger.menu.copyCallstack': '复制堆栈',
 
     'theme.toggle': '颜色主题',
     'theme.icon.toggle': '文件图标主题',

@@ -3,15 +3,15 @@ id: main-layout
 title: 配置模块
 ---
 
-Preferences 模块主要用于管理整个IDE配置的读取逻辑，
+Preferences 模块主要用于管理整个 IDE 配置的读取逻辑，
 
-配置文件的目录位置可通过配置 `AppConfig` 中的  `userPreferenceDirName` 及 `workspacePreferenceDirName`  分别配置 全局配置 和 工作区配置的 `settings.json` 读取路径。
+配置文件的目录位置可通过配置 `AppConfig` 中的 `userPreferenceDirName` 及 `workspacePreferenceDirName` 分别配置 全局配置 和 工作区配置的 `settings.json` 读取路径。
 
 > 下面我们统一将 `.sumi` 作为我们默认的配置文件读取路径
 
 对于全局配置，我们一般是从 `~/.sumi/settings.json` 文件中读取；
 
-针对工作区的配置文件，我们一般是从 `${worksace_path}/.sumi/settings.json` 文件中读取，但在存在多个工作区存在的`多工作区` 项目，我们则是从 `${workspace_name}.sumi-workspace` 文件中读取；
+针对工作区的配置文件，我们一般是从 `${workspace_path}/.sumi/settings.json` 文件中读取，但在存在多个工作区存在的`多工作区` 项目，我们则是从 `${workspace_name}.sumi-workspace` 文件中读取；
 
 你可以简单的通过如下方式来进行配置文件的修改，同时监听其变化：
 
@@ -38,8 +38,6 @@ export class Demo {
 }
 ```
 
-
-
 # 贡献点
 
 ## Contribution Providers
@@ -51,18 +49,18 @@ export class Demo {
 用于在框架中注册配置定义，你可以创建一个贡献点模块，在应用启动时引入该贡献点模块，来实现自定义的配置定义。
 
 ##### Example
-```ts
 
+```ts
 // 定义一个 `general.language` 配置项
 const preferencesSchema: PreferenceSchema = {
-  'type': 'object',
+  type: 'object',
   properties: {
     'general.demo': {
       type: 'string',
       default: 'zh-CN',
       description: 'Demo preference%',
     },
-  }
+  },
 };
 
 @Domain(PreferenceContribution)
@@ -76,11 +74,12 @@ export class DemoPreferenceContribution implements PreferenceContribution {
 如果你需要让你定义的配置出现在设置面板中，你还可以通过 `SettingContribution` 贡献点来定义。
 
 ##### Example
+
 ```ts
 // 在 `general`  面板追加一个 `general.demo` 配置项的展示
 @Domain(SettingContribution)
 export class DemoSettingContribution implements SettingContribution {
-  handleSettingSections(settingSections: { [key: string]: ISettingSection[]; }) {
+  handleSettingSections(settingSections: { [key: string]: ISettingSection[] }) {
     return {
       ...settingSections,
       general: [
@@ -104,13 +103,13 @@ export class DemoSettingContribution implements SettingContribution {
 
 ### Command
 
-* `preference.open.user`: 打开用户配置文件
-* `preference.open.workspace`: 打开工作区配置文件
-* `core.openpreference`: 打开设置面板
+- `preference.open.user`: 打开用户配置文件
+- `preference.open.workspace`: 打开工作区配置文件
+- `core.openpreference`: 打开设置面板
 
 ### KeyBinding
 
-* `ctrlcmd+,`: 打开设置面板
+- `ctrlcmd+,`: 打开设置面板
 
 # 类
 
@@ -123,7 +122,6 @@ export class DemoSettingContribution implements SettingContribution {
 ### Property
 
 #### `ready`
-
 
 ```ts
 ready: Promise<void>;
@@ -153,7 +151,7 @@ ready: Promise<void>;
 
 ```ts
   /**
-   * 
+   *
    * @param preferenceName  配置名称
    * @param defaultValue 默认值
    * @param resourceUri 资源路径
@@ -171,7 +169,6 @@ ready: Promise<void>;
 ```
 
 配置变更事件，这里会获取到一个配置变更的集合。
-
 
 #### `onPreferenceChanged()`
 

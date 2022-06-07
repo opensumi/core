@@ -70,7 +70,7 @@ export class DebugCallStackContribution implements MenuContribution, CommandCont
     registry.registerMenuItem(MenuId.DebugCallStackContext, {
       command: {
         id: DEBUG_COMMANDS.RESTART_FRAME.id,
-        label: localize('deugger.menu.restartFrame'),
+        label: localize('debugger.menu.restartFrame'),
       },
       when: `${CONTEXT_CALLSTACK_ITEM_TYPE.equalsTo('stackFrame')} && ${CONTEXT_RESTART_FRAME_SUPPORTED.raw}`,
       enabledWhen: CONTEXT_STACK_FRAME_SUPPORTS_RESTART.raw,
@@ -79,7 +79,7 @@ export class DebugCallStackContribution implements MenuContribution, CommandCont
     registry.registerMenuItem(MenuId.DebugCallStackContext, {
       command: {
         id: DEBUG_COMMANDS.COPY_STACK_TRACE.id,
-        label: localize('deugger.menu.copyCallstack'),
+        label: localize('debugger.menu.copyCallstack'),
       },
       when: CONTEXT_CALLSTACK_ITEM_TYPE.equalsTo('stackFrame'),
       order: 20,
