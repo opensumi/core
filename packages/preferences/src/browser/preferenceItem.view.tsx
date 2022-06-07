@@ -357,7 +357,7 @@ function SelectPreferenceItem({
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const defaultValue =
-    preferenceService.resolve(preferenceName, undefined, undefined, undefined, PreferenceScope.Default) ||
+    preferenceService.resolve(preferenceName, undefined, undefined, undefined, PreferenceScope.Default)?.value ||
     schema.default;
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const [value, setValue] = useState<string>(isUndefined(currentValue) ? defaultValue : currentValue);
