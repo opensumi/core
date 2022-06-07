@@ -507,7 +507,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     language?: string,
   ): PreferenceResolveResult<T> {
     const result: PreferenceResolveResult<T> = { scope: PreferenceScope.Default };
-    const scopes = untilScope
+    const scopes = !isUndefined(untilScope)
       ? PreferenceScope.getScopes().filter((s) => s <= untilScope)
       : PreferenceScope.getScopes();
     for (const scope of scopes) {
@@ -554,5 +554,8 @@ export class PreferenceServiceImpl implements PreferenceService {
 }
 
 function cacheHash(language?: string, untilScope?: PreferenceScope, resourceUri?: string) {
-  return `${language ? `${language}:::` : ''}${untilScope ? `${untilScope}:::` : ''}${resourceUri}` || 'default';
+  return (
+    `${language ? `${language}:::` : ''}${!isUndefined(untilScope) ? `${untilScope}:::` : ''}${resourceUri || ''}` ||
+    'default'
+  );
 }
