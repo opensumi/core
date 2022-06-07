@@ -736,7 +736,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         }
       }
       while ((forceLoadPath = expandedPaths.shift())) {
-        const isRelative = forceLoadPath.indexOf(this.path) > -1;
+        const isRelative = forceLoadPath.indexOf(`${this.path}${Path.separator}`) > -1;
         if (!isRelative) {
           break;
         }
