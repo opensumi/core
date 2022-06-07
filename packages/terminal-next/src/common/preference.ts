@@ -1,5 +1,5 @@
 import { Event } from '@opensumi/ide-core-common';
-import { localize, isElectronRenderer, isWindows } from '@opensumi/ide-core-common';
+import { localize } from '@opensumi/ide-core-common';
 import { PreferenceSchema } from '@opensumi/ide-core-common/lib/preferences';
 export interface IPreferenceValue {
   name: string;
@@ -151,10 +151,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     // 终端
     'terminal.type': {
       type: 'string',
-      enum:
-        isElectronRenderer() && isWindows
-          ? ['git-bash', 'powershell', 'cmd', 'default']
-          : ['zsh', 'bash', 'sh', 'default'],
+      enum: ['zsh', 'bash', 'sh', 'default'], // default is macOS
       default: 'default',
       description: '%preference.terminal.typeDesc%',
     },
