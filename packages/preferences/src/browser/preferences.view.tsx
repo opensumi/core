@@ -49,14 +49,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   );
   const userBeforeWorkspace = React.useMemo(() => preferences.get<boolean>('settings.userBeforeWorkspace'), []);
 
-  const _tabList = userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
-
-  const [tabList, setTabList] = React.useState<
-    {
-      id: PreferenceScope;
-      label: string;
-    }[]
-  >(_tabList);
+  const tabList = userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
 
   const [tabIndex, setTabIndex] = React.useState<number>(0);
 
@@ -86,9 +79,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   React.useEffect(() => {
     doGetGroups();
-    const toDispose = preferenceService.onDidSettingsChange(() => {
-      doGetGroups();
-    });
+    const toDispose = preferenceService.onDidSettingsChange(
+      debounce(
+        () => {
+          doGetGroups();
+        },
+        300,
+        {
+          maxWait: 1000,
+        },
+      ),
+    );
     return () => {
       toDispose?.dispose();
     };

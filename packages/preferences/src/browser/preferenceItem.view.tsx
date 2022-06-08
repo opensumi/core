@@ -15,7 +15,7 @@ import {
   replaceLocalizePlaceholder,
   useInjectable,
   formatLocalize,
-  isUndefined,
+  ILogger,
 } from '@opensumi/ide-core-browser';
 
 import { toPreferenceReadableName, getPreferenceItemLabel } from '../common';
@@ -27,10 +27,12 @@ interface IPreferenceItemProps {
   preferenceName: string;
   localizedName?: string;
   currentValue: any;
+  defaultValue: any;
   schema: PreferenceItem;
   scope: PreferenceScope;
   effectingScope: PreferenceScope;
   hasValueInScope: boolean;
+  isModified: boolean;
 }
 
 const DESCRIPTION_EXPRESSION_REGEXP = /`#(.+)#`/gi;
@@ -66,7 +68,7 @@ export const NextPreferenceItem = ({
   // 获得这个设置项的当前值
   const { value: inherited, effectingScope } = settingsService.getPreference(preferenceName, scope);
   const [value, setValue] = useState<boolean | string | string[] | undefined>(
-    preferenceProvider.get<boolean | string | string[]>(preferenceName)!,
+    preferenceProvider.get<boolean | string | string[]>(preferenceName),
   );
   const [schema, setSchema] = useState<PreferenceItem>();
 
@@ -80,7 +82,7 @@ export const NextPreferenceItem = ({
     // 监听配置变化
     disposableCollection.push(
       preferenceProvider.onDidPreferencesChanged((e) => {
-        if (e.default && e.default.hasOwnProperty(preferenceName)) {
+        if (e.default && Object.prototype.hasOwnProperty.call(e.default, preferenceName)) {
           if (e.default[preferenceName].scope === scope) {
             const newValue = e.default[preferenceName].newValue;
             setValue(newValue);
@@ -105,24 +107,46 @@ export const NextPreferenceItem = ({
     localizedName = toPreferenceReadableName(preferenceName);
   }
 
+  let renderSchema = schema;
+  if (!renderSchema) {
+    // 渲染阶段可能存在还没获取到 schema 的情况
+    renderSchema = schemaProvider.getPreferenceProperty(preferenceName);
+  }
+
+  if (!renderSchema) {
+    return (
+      <div
+        className={classnames({
+          [styles.preference_item]: true,
+        })}
+      >
+        {{ preferenceName }} schema not found.
+      </div>
+    );
+  }
+
+  const defaultValue =
+    preferenceService.resolve(preferenceName, undefined, undefined, undefined, PreferenceScope.Default).value ??
+    renderSchema.default;
+
+  // 目前还没法对 input 的数字值进行 === 校验，先全部转为 String
+  const isModified = value !== undefined && String(value) !== String(defaultValue);
+
   const renderPreferenceItem = () => {
-    let renderSchema = schema;
-    if (!renderSchema) {
-      // 渲染阶段可能存在还没获取到 schema 的情况
-      renderSchema = schemaProvider.getPreferenceProperty(preferenceName)!;
-    }
     if (renderSchema) {
       const props = {
         preferenceName,
         scope,
         effectingScope,
-        schema: renderSchema!,
+        schema: renderSchema,
         currentValue: value === undefined ? inherited : value,
+        defaultValue,
         localizedName,
         hasValueInScope: value !== undefined,
+        isModified,
       };
 
-      switch (renderSchema!.type) {
+      switch (renderSchema.type) {
         case 'boolean':
           return <CheckboxPreferenceItem {...props} />;
         case 'integer':
@@ -154,7 +178,7 @@ export const NextPreferenceItem = ({
     <div
       className={classnames({
         [styles.preference_item]: true,
-        [styles.modified]: value !== undefined,
+        [styles.modified]: isModified,
       })}
     >
       {renderPreferenceItem()}
@@ -198,12 +222,12 @@ const SettingStatus = ({
   preferenceName,
   scope,
   effectingScope,
-  hasValueInScope,
+  showReset,
 }: {
   preferenceName: string;
   scope: PreferenceScope;
   effectingScope: PreferenceScope;
-  hasValueInScope: boolean;
+  showReset: boolean;
 }) => {
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   return (
@@ -214,10 +238,10 @@ const SettingStatus = ({
       {effectingScope === PreferenceScope.User && scope === PreferenceScope.Workspace ? (
         <span className={styles.preference_overwritten}>{localize('preference.overwrittenInUser')}</span>
       ) : undefined}
-      {hasValueInScope ? (
+      {showReset ? (
         <span
           className={classnames(styles.preference_reset, getIcon('rollback'))}
-          onClick={(e) => {
+          onClick={() => {
             settingsService.reset(preferenceName, scope);
           }}
         ></span>
@@ -234,7 +258,7 @@ function InputPreferenceItem({
   isNumber,
   effectingScope,
   scope,
-  hasValueInScope,
+  isModified,
 }: IPreferenceItemProps & { isNumber?: boolean }) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const schemaProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
@@ -272,7 +296,7 @@ function InputPreferenceItem({
           preferenceName={preferenceName}
           scope={scope}
           effectingScope={effectingScope}
-          hasValueInScope={hasValueInScope}
+          showReset={isModified}
         />
       </div>
       {schema && schema.description && (
@@ -304,7 +328,7 @@ function CheckboxPreferenceItem({
   schema,
   effectingScope,
   scope,
-  hasValueInScope,
+  isModified,
 }: IPreferenceItemProps) {
   const description = schema && schema.description && replaceLocalizePlaceholder(schema.description);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
@@ -334,7 +358,7 @@ function CheckboxPreferenceItem({
           preferenceName={preferenceName}
           scope={scope}
           effectingScope={effectingScope}
-          hasValueInScope={hasValueInScope}
+          showReset={isModified}
         />
       </div>
       {description ? (
@@ -350,17 +374,16 @@ function SelectPreferenceItem({
   preferenceName,
   localizedName,
   currentValue,
+  defaultValue,
   schema,
   effectingScope,
   scope,
-  hasValueInScope,
+  isModified,
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
-  const defaultValue =
-    preferenceService.resolve(preferenceName, undefined, undefined, undefined, PreferenceScope.Default).value ??
-    schema.default;
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const [value, setValue] = useState<string>(currentValue ?? defaultValue);
+  const logger: ILogger = useInjectable(ILogger);
+  const value = currentValue ?? defaultValue;
 
   // 鼠标还没有划过来的时候，需要一个默认的描述信息
   const defaultDescription = useMemo((): string => {
@@ -374,36 +397,37 @@ function SelectPreferenceItem({
   const handleValueChange = useCallback(
     (val) => {
       preferenceService.set(preferenceName, val, scope);
-      setValue(val);
     },
-    [value, preferenceService],
+    [preferenceService],
   );
 
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
-  const renderEnumOptions = useCallback(
-    () =>
-      schema.enum?.map((item, idx) => {
-        if (typeof item === 'boolean') {
-          item = String(item);
-        }
+  const renderEnumOptions = useCallback(() => {
+    const enums = schema.enum ? [...schema.enum] : [];
+    if (!enums.includes(defaultValue)) {
+      logger.warn(`default value(${defaultValue}) of ${preferenceName} not found in its enum field`);
+    }
+    return enums.map((item, idx) => {
+      if (typeof item === 'boolean') {
+        item = String(item);
+      }
 
-        return (
-          <Option
-            value={item}
-            label={replaceLocalizePlaceholder((labels[item] || item).toString())}
-            key={`${idx} - ${item}`}
-            className={styles.select_option}
-          >
-            {replaceLocalizePlaceholder((labels[item] || item).toString())}
-            {item === String(defaultValue) && (
-              <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
-            )}
-          </Option>
-        );
-      }),
-    [schema.enum],
-  );
+      return (
+        <Option
+          value={item}
+          label={replaceLocalizePlaceholder((labels[item] || item).toString())}
+          key={`${idx} - ${item}`}
+          className={styles.select_option}
+        >
+          {replaceLocalizePlaceholder((labels[item] || item).toString())}
+          {item === String(defaultValue) && (
+            <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
+          )}
+        </Option>
+      );
+    });
+  }, [schema.enum]);
 
   const renderNoneOptions = () => (
     <Option
@@ -442,7 +466,7 @@ function SelectPreferenceItem({
           preferenceName={preferenceName}
           scope={scope}
           effectingScope={effectingScope}
-          hasValueInScope={hasValueInScope}
+          showReset={isModified}
         />
       </div>
       {schema && schema.description && (
@@ -457,7 +481,7 @@ function SelectPreferenceItem({
           className={styles.select_control}
           description={description}
           onMouseEnter={handleDescriptionChange}
-          notMatchWarning={hasValueInScope ? formatLocalize('preference.item.notValid', value) : ''}
+          notMatchWarning={isModified ? formatLocalize('preference.item.notValid', value) : ''}
         >
           {options}
         </Select>
@@ -488,7 +512,7 @@ function EditInSettingsJsonPreferenceItem({
           preferenceName={preferenceName}
           scope={scope}
           effectingScope={effectingScope}
-          hasValueInScope={hasValueInScope}
+          showReset={hasValueInScope}
         />
       </div>
       {schema && schema.description && (
@@ -508,7 +532,7 @@ function StringArrayPreferenceItem({
   schema,
   effectingScope,
   scope,
-  hasValueInScope,
+  isModified,
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const [value, setValue] = useState<string[]>([]);
@@ -641,7 +665,7 @@ function StringArrayPreferenceItem({
           preferenceName={preferenceName}
           scope={scope}
           effectingScope={effectingScope}
-          hasValueInScope={hasValueInScope}
+          showReset={isModified}
         />
       </div>
       {schema && schema.description && (

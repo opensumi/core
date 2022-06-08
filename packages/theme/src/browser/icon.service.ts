@@ -13,6 +13,7 @@ import {
   WithEventBus,
   ExtensionDidContributes,
 } from '@opensumi/ide-core-browser';
+import { GeneralSettingsId } from '@opensumi/ide-core-common';
 import { Path } from '@opensumi/ide-core-common/lib/path';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
@@ -32,7 +33,7 @@ import { IconThemeStore } from './icon-theme-store';
 
 import './icon.less';
 
-export const ICON_THEME_SETTING = 'general.icon';
+export const ICON_THEME_SETTING = GeneralSettingsId.Icon;
 
 @Injectable()
 export class IconService extends WithEventBus implements IIconService {
@@ -295,12 +296,15 @@ export class IconService extends WithEventBus implements IIconService {
       }
     }
 
+    const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(ICON_THEME_SETTING);
+    if (currentSchemas) {
+      delete currentSchemas.scope;
+    }
     this.preferenceSchemaProvider.setSchema(
       {
         properties: {
           [ICON_THEME_SETTING]: {
-            type: 'string',
-            default: 'vscode-icons',
+            ...currentSchemas,
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
           },
         },
