@@ -79,9 +79,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   React.useEffect(() => {
     doGetGroups();
-    const toDispose = preferenceService.onDidSettingsChange(() => {
-      doGetGroups();
-    });
+    const toDispose = preferenceService.onDidSettingsChange(
+      debounce(
+        () => {
+          doGetGroups();
+        },
+        300,
+        {
+          maxWait: 1000,
+        },
+      ),
+    );
     return () => {
       toDispose?.dispose();
     };
