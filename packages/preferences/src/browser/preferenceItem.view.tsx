@@ -15,7 +15,7 @@ import {
   replaceLocalizePlaceholder,
   useInjectable,
   formatLocalize,
-  isUndefined,
+  ILogger,
 } from '@opensumi/ide-core-browser';
 
 import { toPreferenceReadableName, getPreferenceItemLabel } from '../common';
@@ -217,7 +217,7 @@ const SettingStatus = ({
       {hasValueInScope ? (
         <span
           className={classnames(styles.preference_reset, getIcon('rollback'))}
-          onClick={(e) => {
+          onClick={() => {
             settingsService.reset(preferenceName, scope);
           }}
         ></span>
@@ -360,7 +360,8 @@ function SelectPreferenceItem({
     preferenceService.resolve(preferenceName, undefined, undefined, undefined, PreferenceScope.Default).value ??
     schema.default;
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const [value, setValue] = useState<string>(currentValue ?? defaultValue);
+  const logger: ILogger = useInjectable(ILogger);
+  const value = currentValue ?? defaultValue;
 
   // 鼠标还没有划过来的时候，需要一个默认的描述信息
   const defaultDescription = useMemo((): string => {
@@ -374,36 +375,37 @@ function SelectPreferenceItem({
   const handleValueChange = useCallback(
     (val) => {
       preferenceService.set(preferenceName, val, scope);
-      setValue(val);
     },
-    [value, preferenceService],
+    [preferenceService],
   );
 
   // enum 本身为 string[] | number[]
   const labels = settingsService.getEnumLabels(preferenceName);
-  const renderEnumOptions = useCallback(
-    () =>
-      schema.enum?.map((item, idx) => {
-        if (typeof item === 'boolean') {
-          item = String(item);
-        }
+  const renderEnumOptions = useCallback(() => {
+    const enums = schema.enum ? [...schema.enum] : [];
+    if (!enums.includes(defaultValue)) {
+      logger.warn(`default value(${defaultValue}) of ${preferenceName} not found in its enum field`);
+    }
+    return enums.map((item, idx) => {
+      if (typeof item === 'boolean') {
+        item = String(item);
+      }
 
-        return (
-          <Option
-            value={item}
-            label={replaceLocalizePlaceholder((labels[item] || item).toString())}
-            key={`${idx} - ${item}`}
-            className={styles.select_option}
-          >
-            {replaceLocalizePlaceholder((labels[item] || item).toString())}
-            {item === String(defaultValue) && (
-              <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
-            )}
-          </Option>
-        );
-      }),
-    [schema.enum],
-  );
+      return (
+        <Option
+          value={item}
+          label={replaceLocalizePlaceholder((labels[item] || item).toString())}
+          key={`${idx} - ${item}`}
+          className={styles.select_option}
+        >
+          {replaceLocalizePlaceholder((labels[item] || item).toString())}
+          {item === String(defaultValue) && (
+            <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
+          )}
+        </Option>
+      );
+    });
+  }, [schema.enum]);
 
   const renderNoneOptions = () => (
     <Option

@@ -45,3 +45,4 @@ export * from './env';
 export * from './credential';
 export * from './cryptr';
 export * from './iterator';
+export * from './settings';

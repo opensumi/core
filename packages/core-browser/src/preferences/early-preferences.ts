@@ -1,11 +1,11 @@
-import { PreferenceItem, Event } from '@opensumi/ide-core-common';
+import { PreferenceItem, Event, GeneralSettingsId } from '@opensumi/ide-core-common';
 
 import { IPreferences } from '../bootstrap';
 
 import { PreferenceProvider } from './preference-provider';
 import { PreferenceScope } from './preference-scope';
 
-// 这些设置选项生效时间太早, 并且可能在app生命周期外生效，不能只由preference服务进行管理
+// 这些设置选项生效时间太早,并且可能在 app 生命周期外生效，不能只由 preference 服务进行管理
 export interface IExternalPreferenceProvider<T = any> {
   get(scope: PreferenceScope): T | undefined;
   set(value: T, scope: PreferenceScope): void;
@@ -14,14 +14,14 @@ export interface IExternalPreferenceProvider<T = any> {
 
 const providers = new Map<string, IExternalPreferenceProvider>();
 
-export function registerExternalPreferenceProvider<T>(name, provider: IExternalPreferenceProvider<T>) {
+export function registerExternalPreferenceProvider<T>(name: string, provider: IExternalPreferenceProvider<T>) {
   if (providers.get(name)) {
     return; // 不可覆盖，先注册的生效
   }
   providers.set(name, provider);
 }
 
-export function getExternalPreferenceProvider(name) {
+export function getExternalPreferenceProvider(name: string) {
   let provider = providers.get(name);
   if (!provider) {
     // 尝试使用delegate的配置名获取
@@ -34,20 +34,20 @@ export function getExternalPreferenceProvider(name) {
 }
 
 export function getPreferenceThemeId(): string {
-  return getExternalPreference<string>('general.theme').value as string;
+  return getExternalPreference<string>(GeneralSettingsId.Theme).value as string;
 }
 
 export function getPreferenceIconThemeId(): string {
-  return getExternalPreference<string>('general.icon').value as string;
+  return getExternalPreference<string>(GeneralSettingsId.Icon).value as string;
 }
 
 export function getPreferenceLanguageId(defaultPreferences?: IPreferences): string {
   // 因为语言加载的时机比较早，因此会优先从 defaultPreferences 里面读取
-  const langFromDefaultPreferences = defaultPreferences && defaultPreferences['general.language'];
-  return langFromDefaultPreferences || getExternalPreference<string>('general.language').value || 'zh-CN';
+  const langFromDefaultPreferences = defaultPreferences && defaultPreferences[GeneralSettingsId.Language];
+  return langFromDefaultPreferences || getExternalPreference<string>(GeneralSettingsId.Language).value || 'zh-CN';
 }
 
-// 默认使用localStorage
+// 默认使用 localStorage
 export function registerLocalStorageProvider(key: string, workspaceFolder?: string) {
   function getScopePrefix(scope: PreferenceScope) {
     if (scope === PreferenceScope.Workspace) {
@@ -92,7 +92,7 @@ export function getExternalPreference<T>(
     ? PreferenceScope.getReversedScopes().filter((s) => s <= untilScope)
     : PreferenceScope.getReversedScopes();
   for (const scope of scopes) {
-    const value = providers.get(preferenceName)!.get(scope);
+    const value = providers.get(preferenceName)?.get(scope);
     if (value !== undefined) {
       return {
         value,
