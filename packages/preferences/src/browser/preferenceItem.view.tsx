@@ -357,10 +357,10 @@ function SelectPreferenceItem({
 }: IPreferenceItemProps) {
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
   const defaultValue =
-    preferenceService.resolve<string>(preferenceName, undefined, undefined, undefined, PreferenceScope.Default).value ??
-    (schema.default as string);
+    preferenceService.resolve(preferenceName, undefined, undefined, undefined, PreferenceScope.Default).value ??
+    schema.default;
   const settingsService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const [value, setValue] = useState<string>(isUndefined(currentValue) ? defaultValue : currentValue);
+  const [value, setValue] = useState<string>(currentValue ?? defaultValue);
 
   // 鼠标还没有划过来的时候，需要一个默认的描述信息
   const defaultDescription = useMemo((): string => {
