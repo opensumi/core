@@ -3,7 +3,7 @@ import { RPCService } from '@opensumi/ide-connection';
 import { FileUri, path } from '@opensumi/ide-core-node';
 import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
 import { IProcessFactory, IProcess, ProcessOptions } from '@opensumi/ide-process';
-import { rgPath } from '@opensumi/vscode-ripgrep';
+import { rgPath } from '@opensumi/ripgrep';
 
 import {
   IContentSearchServer,

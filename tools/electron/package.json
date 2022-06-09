@@ -39,7 +39,7 @@
     "nsfw": "^2.2.0",
     "spdlog": "^0.9.0",
     "vscode-oniguruma": "1.5.1",
-    "@opensumi/vscode-ripgrep": "^1.4.0"
+    "@opensumi/ripgrep": "^1.4.0"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",

@@ -6,7 +6,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { CancellationToken, CancellationTokenSource, path } from '@opensumi/ide-core-common';
 import { URI, FileUri, INodeLogger } from '@opensumi/ide-core-node';
 import { IProcessFactory } from '@opensumi/ide-process';
-import { rgPath } from '@opensumi/vscode-ripgrep';
+import { rgPath } from '@opensumi/ripgrep';
 
 import { IFileSearchService } from '../common';
 
