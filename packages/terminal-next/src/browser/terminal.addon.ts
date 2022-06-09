@@ -151,10 +151,11 @@ export class AttachAddon extends Disposable implements ITerminalAddon {
     if (connection) {
       this._disposeConnection = new Disposable(
         connection.onData((data: string | ArrayBuffer) => {
-          // connection.onData 的时候 对lastInputTime进行差值运算，统计最后一次输入到收到回复的时间间隔
+          // connection.onData 的时候对 lastInputTime 进行差值运算，统计最后一次输入到收到回复的时间间隔
           let dataToWrite = data;
           if (typeof data === 'string') {
             const beforeProcessDataEvent = { data } as { data: string };
+            // 通过 EventEmitter 修改终端 data 的内容
             this._onBeforeProcessData.fire(beforeProcessDataEvent);
 
             if (beforeProcessDataEvent.data !== undefined) {

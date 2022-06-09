@@ -151,6 +151,7 @@ class Cursor implements ICoordinate {
   }
 
   moveInstruction() {
+    // 如果 y 坐标大于xterm的rows(一屏显示行数), 做一下额外处理
     if (this._y >= this.rows) {
       this._baseY += this._y - (this.rows - 1);
       this._y = this.rows - 1;
@@ -159,6 +160,7 @@ class Cursor implements ICoordinate {
       this._y = 0;
     }
 
+    // 坐标都加1，因为xterm的cursorX,Y是从0开始，而CSI的坐标控制是从1开始
     return `${CSI}${this._y + 1};${this._x + 1}H`;
   }
 }
@@ -976,6 +978,10 @@ export class PredictionTimeline {
    * Appends a typeahead prediction.
    */
   addPrediction(buffer: IBuffer, prediction: IPrediction) {
+    console.log('prediction type: \x1b[36m%s\x1b[0m', prediction.constructor.name);
+    if (prediction.constructor.name === 'TentativeBoundary') {
+      console.log('prediction type inner: \x1b[36m%s\x1b[0m', prediction['inner'].constructor.name);
+    }
     this._expected.push({ gen: this._currentGen, p: prediction });
     this._addedEmitter.fire(prediction);
 
@@ -992,6 +998,7 @@ export class PredictionTimeline {
         this._style.expectIncomingStyle();
       }
       console.log('predict:', JSON.stringify(text));
+      // console.log('prediction type: \x1b[36m%s\x1b[0m', prediction.constructor.name);
       this.terminal.write(text);
     }
 
@@ -1419,6 +1426,9 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
   }
 
   activate(terminal: Terminal): void {
+    // @ts-ignore
+    window.xterm = terminal;
+
     console.log('#DEBUG1# activate terminal type ahead addon');
     const style = (this._typeAheadStyle = this._register(new TypeAheadStyle(this._config.localEchoStyle, terminal)));
     const timeline = (this._timeline = new PredictionTimeline(terminal, this._typeAheadStyle));
@@ -1632,9 +1642,11 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 
       if (reader.eatCharCode(32, 126)) {
         // alphanum
-        const char = data[reader.index - 1];
+        const char = data[reader.index - 1]; // eat 匹配成功之后 index + 1，因此要拿 index - 1 的字符才是刚刚 eat 的字符
+        // 检测到正常字符输入，创建字符推断
         const prediction = new CharacterPrediction(this._typeAheadStyle!, char);
         if (this._lastRow.charState === CharPredictState.Unknown) {
+          // ？大概是这一行还没有接受过输入的时候，是Unknown状态，创建一个Boundary
           this._timeline.addBoundary(buffer, prediction);
           this._lastRow.charState = CharPredictState.HasPendingChar;
         } else {
