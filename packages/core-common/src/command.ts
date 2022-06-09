@@ -6,8 +6,6 @@ import { replaceLocalizePlaceholder } from './localize';
 import { getDebugLogger } from './log';
 import { IExtensionInfo } from './types';
 
-type InterceptorFunction = (result: any) => MaybePromise<any>;
-
 export interface Command {
   /**
    * 命令 id，全局唯一
@@ -128,7 +126,10 @@ export interface CommandContribution {
   registerCommands(commands: CommandRegistry): void;
 }
 
-export type PreCommandInterceptor = (command: string, args: any[]) => MaybePromise<any[]>;
+type PostInterceptorFunction = (result: any) => MaybePromise<any>;
+type PreInterceptorFunction = (args: any[]) => MaybePromise<any[] | boolean>;
+
+export type PreCommandInterceptor = (command: string, args: any[]) => MaybePromise<any[] | boolean>;
 export type PostCommandInterceptor = (command: string, result: any) => MaybePromise<any>;
 
 export const CommandService = Symbol('CommandService');
@@ -212,9 +213,20 @@ interface CoreCommandRegistry {
    */
   setRecentCommands(commands: Command[]): Command[];
 
+  /**
+   * 为特定的命令注册前置拦截器
+   *
+   * 拦截器的入参是该命令的参数数组，请返回修改后的参数数组或者返回 false 来拦截本次执行
+   */
+  beforeExecuteCommand(commandId: string, interceptorFunc: PreInterceptorFunction): IDisposable;
+  /**
+   * 可以为命令添加拦截器
+   * 拦截器的入参是该命令的参数数组，请返回修改后的参数数组或者返回 false 来拦截本次执行
+   * @param interceptor 每个 command 都会执行一遍
+   */
   beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable;
-
-  afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: InterceptorFunction): IDisposable;
+  afterExecuteCommand(commandId: string, interceptorFunc: PostInterceptorFunction): IDisposable;
+  afterExecuteCommand(interceptor: PostCommandInterceptor): IDisposable;
   /**
    * 是否是通过鉴过权的命令
    * @param commandId
@@ -246,10 +258,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
 
   public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
 
-  private readonly postCommandInterceptor: Map<string, InterceptorFunction[]> = new Map<
-    string,
-    InterceptorFunction[]
-  >();
+  private readonly preCommandInterceptorMap = new Map<string, PreInterceptorFunction[]>();
+  private readonly postCommandInterceptor = new Map<string, PostInterceptorFunction[]>();
 
   private readonly logger = getDebugLogger();
 
@@ -260,14 +270,24 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
    */
   async executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     const command = this.getCommand(commandId);
-    // 执行代理命令
+    // 执行代理命令。即该命令是另一个命令的 alias，这里转为执行真实的命令
     if (command && command.delegate) {
       return this.executeCommand<T>(command.delegate, ...args);
     }
+
     // 把 before 在 handler 判断前置，对于 onCommand 激活的插件如果没有在 contributes 配置，那么 handler 是不存在的，也就无法激活
     // 如 node debug 插件 https://github.com/microsoft/vscode-node-debug/blob/main/package.json
-    for (const preCommand of this.preCommandInterceptors) {
-      args = await preCommand(commandId, args);
+    const _preCommandInterceptor = this.preCommandInterceptorMap.get(commandId);
+    const preInterceptorWrapper = (_preCommandInterceptor ?? []).map((cb) => (_, args) => cb(args));
+    const currentPreInterceptors = [...preInterceptorWrapper, ...this.preCommandInterceptors];
+    for (const preInterceptor of currentPreInterceptors) {
+      const result = await preInterceptor(commandId, args);
+      if (result === false) {
+        this.logger.log(`command ${commandId} is prevented by pre interceptor`, preInterceptor.name);
+        return undefined;
+      } else if (Array.isArray(result)) {
+        args = result;
+      }
     }
     const handler = this.getActiveHandler(commandId, ...args);
     if (handler) {
@@ -516,20 +536,46 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     };
   }
 
-  public beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable {
-    this.preCommandInterceptors.push(interceptor);
-    return {
-      dispose: () => {
-        const index = this.preCommandInterceptors.indexOf(interceptor);
-        if (index !== -1) {
-          this.preCommandInterceptors.splice(index, 1);
-        }
-      },
-    };
+  beforeExecuteCommand(commandId: string, interceptorFunc: PreInterceptorFunction): IDisposable;
+  beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable;
+  public beforeExecuteCommand(
+    interceptor: string | PreCommandInterceptor,
+    interceptorFunc?: PreInterceptorFunction,
+  ): IDisposable {
+    if (typeof interceptor === 'string') {
+      const commandInterceptor = this.preCommandInterceptorMap.get(interceptor);
+      if (commandInterceptor) {
+        interceptorFunc && commandInterceptor.push(interceptorFunc);
+      } else {
+        interceptorFunc && this.preCommandInterceptorMap.set(interceptor, [interceptorFunc]);
+      }
+      return {
+        dispose: () => {
+          const commandInterceptor = this.preCommandInterceptorMap.get(interceptor);
+          if (commandInterceptor && interceptorFunc) {
+            const index = commandInterceptor.indexOf(interceptorFunc);
+            if (index !== -1) {
+              commandInterceptor.splice(index, 1);
+            }
+          }
+        },
+      };
+    } else {
+      this.preCommandInterceptors.push(interceptor);
+      return {
+        dispose: () => {
+          const index = this.preCommandInterceptors.indexOf(interceptor);
+          if (index !== -1) {
+            this.preCommandInterceptors.splice(index, 1);
+          }
+        },
+      };
+    }
   }
 
-  public afterExecuteCommand(command: string, result: InterceptorFunction);
-  public afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: InterceptorFunction) {
+  afterExecuteCommand(commandId: string, interceptorFunc: PostInterceptorFunction): IDisposable;
+  afterExecuteCommand(interceptor: PostCommandInterceptor): IDisposable;
+  public afterExecuteCommand(interceptor: string | PostCommandInterceptor, result?: PostInterceptorFunction) {
     if (typeof interceptor === 'string') {
       const commandInterceptor = this.postCommandInterceptor.get(interceptor);
       if (commandInterceptor) {
