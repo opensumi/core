@@ -31,6 +31,7 @@ import {
   IDisposable,
   Deferred,
   isUndefined,
+  GeneralSettingsId,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -613,9 +614,9 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected initEarlyPreference(workspaceDir: string) {
-    registerLocalStorageProvider('general.theme', workspaceDir);
-    registerLocalStorageProvider('general.icon', workspaceDir);
-    registerLocalStorageProvider('general.language', workspaceDir);
+    registerLocalStorageProvider(GeneralSettingsId.Theme, workspaceDir);
+    registerLocalStorageProvider(GeneralSettingsId.Icon, workspaceDir);
+    registerLocalStorageProvider(GeneralSettingsId.Language, workspaceDir);
   }
 
   public async dispose() {
