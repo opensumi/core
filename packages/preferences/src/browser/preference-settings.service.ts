@@ -23,6 +23,7 @@ import {
   PreferenceService,
   replaceLocalizePlaceholder,
   ThrottledDelayer,
+  TerminalSettingsId,
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -547,16 +548,16 @@ export const defaultSettingSections: {
     {
       preferences: [
         // 终端类型
-        { id: 'terminal.type', localized: 'preference.terminal.type' },
+        { id: TerminalSettingsId.Type, localized: 'preference.terminal.type' },
         // 字体
-        { id: 'terminal.fontFamily', localized: 'preference.terminal.fontFamily' },
-        { id: 'terminal.fontSize', localized: 'preference.terminal.fontSize' },
-        { id: 'terminal.fontWeight', localized: 'preference.terminal.fontWeight' },
-        { id: 'terminal.lineHeight', localized: 'preference.terminal.lineHeight' },
+        { id: TerminalSettingsId.FontFamily, localized: 'preference.terminal.fontFamily' },
+        { id: TerminalSettingsId.FontSize, localized: 'preference.terminal.fontSize' },
+        { id: TerminalSettingsId.FontWeight, localized: 'preference.terminal.fontWeight' },
+        { id: TerminalSettingsId.LineHeight, localized: 'preference.terminal.lineHeight' },
         // 光标
-        { id: 'terminal.cursorBlink', localized: 'preference.terminal.cursorBlink' },
+        { id: TerminalSettingsId.CursorBlink, localized: 'preference.terminal.cursorBlink' },
         // 显示
-        { id: 'terminal.scrollback', localized: 'preference.terminal.scrollback' },
+        { id: TerminalSettingsId.Scrollback, localized: 'preference.terminal.scrollback' },
         // 命令行参数
         { id: 'terminal.integrated.shellArgs.linux', localized: 'preference.terminal.integrated.shellArgs.linux' },
         { id: 'terminal.integrated.copyOnSelection', localized: 'preference.terminal.integrated.copyOnSelection' },
