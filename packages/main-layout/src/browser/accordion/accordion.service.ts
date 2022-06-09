@@ -526,6 +526,11 @@ export class AccordionService extends WithEventBus {
   protected setSize(index: number, targetSize: number, isIncrement?: boolean, noAnimation?: boolean): number {
     const fullHeight = this.splitPanelService.rootNode!.clientHeight;
     const panel = this.splitPanelService.panels[index];
+    if (targetSize) {
+      panel.style.flexGrow = '1';
+    } else {
+      panel.style.flexGrow = '';
+    }
     if (!noAnimation) {
       panel.classList.add('resize-ease');
     }
