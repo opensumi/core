@@ -1,14 +1,14 @@
 module.exports = async ({ github, context, core, status = 'start' }) => {
   if (status === 'start') {
     // 创建一个 checkSuite
-    const suite = await github.checks.createSuite({
+    const suite = await github.rest.checks.createSuite({
       owner: context.repo.owner,
       repo: context.repo.repo,
       head_sha: process.env.HEAD_SHA,
     });
 
     // 创建一个 checkRun
-    const check = await github.checks.create({
+    const check = await github.rest.checks.create({
       owner: context.repo.owner,
       repo: context.repo.repo,
       name: '🚀🚀🚀 Pre-Release Version for pull request',
@@ -21,7 +21,7 @@ module.exports = async ({ github, context, core, status = 'start' }) => {
     });
     return check.data.id;
   } else {
-    github.checks.update({
+    await github.rest.checks.update({
       owner: context.repo.owner,
       repo: context.repo.repo,
       status: 'completed',
