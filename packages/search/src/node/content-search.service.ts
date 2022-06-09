@@ -1,9 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { FileUri, path } from '@opensumi/ide-core-node';
+import { FileUri } from '@opensumi/ide-core-node';
 import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
-import { IProcessFactory, IProcess, ProcessOptions } from '@opensumi/ide-process';
-import { rgPath } from '@opensumi/ripgrep';
+import { IProcess } from '@opensumi/ide-process';
 
 import {
   IContentSearchServer,
@@ -15,6 +14,8 @@ import {
   cutShortSearchResult,
   FilterFileWithGlobRelativePath,
 } from '../common';
+
+import { RipGrepBinding } from './ripgrep';
 
 interface SearchInfo {
   searchId: number;
@@ -42,8 +43,6 @@ interface LineInfo {
     }[];
   };
 }
-
-const { replaceAsarInPath } = path;
 
 /**
  * Convert the length of a range in `text` expressed in bytes to a number of
@@ -76,9 +75,6 @@ interface IRPCContentSearchService {
 
 @Injectable()
 export class ContentSearchService extends RPCService<IRPCContentSearchService> implements IContentSearchServer {
-  @Autowired(IProcessFactory)
-  protected processFactory: IProcessFactory;
-
   private searchId: number = new Date().getTime();
   private processMap: Map<number, IProcess> = new Map();
 
@@ -86,9 +82,8 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
   loggerManager!: ILogServiceManager;
   logger: ILogService = this.loggerManager.getLogger(SupportLogNamespace.Node);
 
-  constructor() {
-    super();
-  }
+  @Autowired(RipGrepBinding)
+  ripGrep: RipGrepBinding;
 
   private searchStart(searchId: number, searchProcess) {
     this.sendResultToClient([], searchId, SEARCH_STATE.doing);
@@ -129,12 +124,8 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
       dataBuf: '',
     };
 
-    const processOptions: ProcessOptions = {
-      command: replaceAsarInPath(rgPath),
-      args: [...args, what].concat(rootUris.map((root) => FileUri.fsPath(root))),
-    };
+    const rgProcess = this.ripGrep.doSpawn([...args, what].concat(rootUris.map((root) => FileUri.fsPath(root))));
 
-    const rgProcess: IProcess = this.processFactory.create(processOptions);
     this.searchStart(searchInfo.searchId, rgProcess);
     rgProcess.onError((error) => {
       let errorCode = error.code;

@@ -26,8 +26,8 @@ export class SearchModule extends NodeModule {
       token: IContentSearchServer,
     },
     {
-      token: IFileSearchService,
       servicePath: FileSearchServicePath,
+      token: IFileSearchService,
     },
   ];
 }

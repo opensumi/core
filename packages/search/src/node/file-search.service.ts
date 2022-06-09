@@ -5,17 +5,15 @@ import fuzzy from 'fuzzy';
 import { Injectable, Autowired } from '@opensumi/di';
 import { CancellationToken, CancellationTokenSource, path } from '@opensumi/ide-core-common';
 import { URI, FileUri, INodeLogger } from '@opensumi/ide-core-node';
-import { IProcessFactory } from '@opensumi/ide-process';
-import { rgPath } from '@opensumi/ripgrep';
 
 import { IFileSearchService } from '../common';
 
-const { replaceAsarInPath } = path;
+import { RipGrepBinding } from './ripgrep';
 
 @Injectable()
 export class FileSearchService implements IFileSearchService {
-  @Autowired(IProcessFactory)
-  processFactory: IProcessFactory;
+  @Autowired(RipGrepBinding)
+  ripGrep: RipGrepBinding;
 
   @Autowired(INodeLogger)
   logger: INodeLogger;
@@ -114,7 +112,7 @@ export class FileSearchService implements IFileSearchService {
       try {
         const cwd = FileUri.fsPath(rootUri);
         const args = this.getSearchArgs(options);
-        const process = this.processFactory.create({ command: replaceAsarInPath(rgPath), args, options: { cwd } });
+        const process = this.ripGrep.doSpawn(args, { cwd });
         process.onError(reject);
         process.outputStream.on('close', resolve);
 
