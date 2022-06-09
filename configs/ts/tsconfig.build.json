@@ -109,9 +109,6 @@
       "path": "./references/tsconfig.search.json"
     },
     {
-      "path": "./references/tsconfig.file-search.json"
-    },
-    {
       "path": "./references/tsconfig.quick-open.json"
     },
     {
