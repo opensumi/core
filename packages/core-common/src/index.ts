@@ -30,4 +30,5 @@ export * from './env';
 export * from './credential';
 export * from './crypto';
 export * from './markdown';
+export * from './settings';
 export * from '@opensumi/ide-utils';
