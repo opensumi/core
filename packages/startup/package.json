@@ -74,7 +74,6 @@
     "@opensumi/ide-extension-manager": "2.18.3",
     "@opensumi/ide-extension-storage": "2.18.3",
     "@opensumi/ide-file-scheme": "2.18.3",
-    "@opensumi/ide-file-search": "2.18.3",
     "@opensumi/ide-file-service": "2.18.3",
     "@opensumi/ide-file-tree-next": "2.18.3",
     "@opensumi/ide-i18n": "2.18.3",

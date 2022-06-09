@@ -46,13 +46,13 @@ import {
   AbstractExtInstanceManagementService,
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
-import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
+import { FileSearchServicePath } from '@opensumi/ide-search/lib/common/file-search';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IWorkspaceStorageServer, IGlobalStorageServer } from '@opensumi/ide-storage';
 import { DatabaseStorageContribution } from '@opensumi/ide-storage/lib/browser/storage.contribution';

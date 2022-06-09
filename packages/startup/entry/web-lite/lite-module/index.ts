@@ -3,7 +3,7 @@ import { BrowserModule, LogServiceForClientPath } from '@opensumi/ide-core-brows
 import { CommonServerPath, KeytarServicePath } from '@opensumi/ide-core-common';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser';
 import { ExtensionNodeServiceServerPath } from '@opensumi/ide-extension/lib/common';
-import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
+import { FileSearchServicePath } from '@opensumi/ide-search/lib/common';
 
 import { ExtensionClientService } from './extension';
 import { FileProviderContribution } from './file-provider/index.contribution';
@@ -12,7 +12,6 @@ import { TextmateLanguageGrammarContribution } from './grammar/index.contributio
 // import { LsifServiceImpl } from './language-service/lsif-service';
 // import { ILsifService } from './language-service/lsif-service/base';
 import { BrowserCommonServer } from './overrides/browser-common-server';
-import { BrowserFileSchemeModule } from './overrides/browser-file-scheme';
 import { MockCredentialService } from './overrides/mock-credential.service';
 import { MockFileSearch } from './overrides/mock-file-search';
 import { MockLogServiceForClient } from './overrides/mock-logger';

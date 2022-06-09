@@ -25,7 +25,7 @@
     "@opensumi/ide-connection": "2.18.3",
     "@opensumi/ide-core-node": "2.18.3",
     "@opensumi/ide-debug": "2.18.3",
-    "@opensumi/ide-file-search": "2.18.3",
+    "@opensumi/ide-search": "2.18.3",
     "@opensumi/ide-file-service": "2.18.3",
     "@opensumi/ide-logs": "2.18.3",
     "@opensumi/ide-static-resource": "2.18.3",

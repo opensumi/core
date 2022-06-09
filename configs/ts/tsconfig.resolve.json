@@ -41,8 +41,6 @@
       "@opensumi/ide-extension-storage/lib/*": ["../packages/extension-storage/src/*"],
       "@opensumi/ide-file-scheme": ["../packages/file-scheme/src/index.ts"],
       "@opensumi/ide-file-scheme/lib/*": ["../packages/file-scheme/src/*"],
-      "@opensumi/ide-file-search": ["../packages/file-search/src/index.ts"],
-      "@opensumi/ide-file-search/lib/*": ["../packages/file-search/src/*"],
       "@opensumi/ide-file-service": ["../packages/file-service/src/index.ts"],
       "@opensumi/ide-file-service/lib/*": ["../packages/file-service/src/*"],
       "@opensumi/ide-file-tree-next": ["../packages/file-tree-next/src/index.ts"],

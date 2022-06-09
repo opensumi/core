@@ -7,10 +7,10 @@ import { LogServiceModule } from '@opensumi/ide-logs/lib/node';
 import { ProcessModule } from '@opensumi/ide-process/lib/node';
 
 import { IFileSearchService } from '../../src';
-import { FileSearchModule } from '../../src/node';
+import { SearchModule } from '../../src/node';
 
 describe('search-service', () => {
-  const injector = createNodeInjector([FileSearchModule, ProcessModule, LogServiceModule]);
+  const injector = createNodeInjector([SearchModule, ProcessModule, LogServiceModule]);
   injector.addProviders(
     {
       token: AppConfig,

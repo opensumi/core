@@ -15,9 +15,9 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
 import { PrefixQuickOpenService } from '@opensumi/ide-quick-open';
 import { QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
+import { FileSearchServicePath } from '@opensumi/ide-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 

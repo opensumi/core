@@ -13,8 +13,8 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { localize, OnEvent, WithEventBus, ProgressLocation, ExtensionDidContributes } from '@opensumi/ide-core-common';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
-import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {

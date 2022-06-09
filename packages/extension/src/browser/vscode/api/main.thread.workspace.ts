@@ -3,8 +3,8 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
-import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { FileStat } from '@opensumi/ide-file-service';
+import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-search/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService, WorkspaceEditDidRenameFileEvent } from '@opensumi/ide-workspace-edit';
 
