@@ -182,6 +182,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    */
   registerSettingGroup(group: ISettingGroup): IDisposable {
     const disposable = addElement(this.settingsGroups, group);
+    this.fireDidSettingsChange();
     return disposable;
   }
 
@@ -196,6 +197,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     }
     this.cachedGroupSection.clear();
     const disposable = addElement(this.settingsSections.get(groupId)!, section);
+    this.fireDidSettingsChange();
     return disposable;
   }
 

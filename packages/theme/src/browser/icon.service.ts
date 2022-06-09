@@ -319,12 +319,15 @@ export class IconService extends WithEventBus implements IIconService {
       }
     }
 
+    const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(ICON_THEME_SETTING);
+    if (currentSchemas) {
+      delete currentSchemas.scope;
+    }
     this.preferenceSchemaProvider.setSchema(
       {
         properties: {
           [ICON_THEME_SETTING]: {
-            type: 'string',
-            default: 'vscode-icons',
+            ...currentSchemas,
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
           },
         },
