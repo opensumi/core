@@ -274,17 +274,31 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   }
 
   registerMonacoActions() {
-    const editorActions = new Map(this.monacoEditorRegistry.getEditorActions().map(({ id, label }) => [id, label]));
+    const editorActions = new Map(
+      this.monacoEditorRegistry.getEditorActions().map(({ id, label, alias }) => [
+        id,
+        {
+          label,
+          alias,
+        },
+      ]),
+    );
+
     for (const id of this.monacoCommands.keys()) {
       if (MonacoActionRegistry.EXCLUDE_ACTIONS.includes(id)) {
         continue;
       }
-      const label = editorActions.has(id) ? editorActions.get(id) : '';
+      if (!editorActions.has(id)) {
+        continue;
+      }
+
+      const data = editorActions.get(id)!;
       const handler = this.actAndComHandler(editorActions, id);
       this.monacoCommandRegistry.registerCommand(
         {
           id,
-          label,
+          label: data.label,
+          alias: data.alias,
         },
         handler,
       );
@@ -299,7 +313,16 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
   /**
    * monaco 内部有些 contribution 既注册了 actions 又注册了 commands，在这里优先调取 commands
    */
-  private actAndComHandler(actions: Map<string, string>, id: string): MonacoEditorCommandHandler {
+  private actAndComHandler(
+    actions: Map<
+      string,
+      {
+        label: string;
+        alias: string;
+      }
+    >,
+    id: string,
+  ): MonacoEditorCommandHandler {
     if (MonacoActionRegistry.CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID.has(id)) {
       const toConver = MonacoActionRegistry.CONVERT_MONACO_ACTIONS_TO_CONTRIBUTION_ID.get(id)!;
       if (this.monacoEditorRegistry.getSomeEditorContributions([toConver]).length > 0) {
