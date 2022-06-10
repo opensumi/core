@@ -28,6 +28,7 @@ export const group = 'panel_menu';
 export const more1 = 'more_1';
 export const more1Sub = 'more_1_sub';
 export const more2 = 'more_2';
+export const DEFAULT_TERMINAL_TYPE_MENU_ID = 'DEFAULT_TERMINAL_TYPE_MENU_ID';
 
 @Domain(MenuContribution)
 export class TerminalMenuContribution implements MenuContribution {
@@ -124,14 +125,14 @@ export class TerminalMenuContribution implements MenuContribution {
 
     menuRegistry.registerMenuItem(commonMenuId, {
       label: localize('terminal.menu.selectType'),
-      submenu: 'tabbar_bottom_select_sub',
+      submenu: DEFAULT_TERMINAL_TYPE_MENU_ID,
       order: 1,
       group: more2,
       when,
     });
 
     if (isWindows) {
-      menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [
+      menuRegistry.registerMenuItems(DEFAULT_TERMINAL_TYPE_MENU_ID, [
         {
           command: TERMINAL_COMMANDS.SELECT_CMD,
           order: 1,
@@ -148,7 +149,7 @@ export class TerminalMenuContribution implements MenuContribution {
         },
       ]);
     } else {
-      menuRegistry.registerMenuItems('tabbar_bottom_select_sub', [
+      menuRegistry.registerMenuItems(DEFAULT_TERMINAL_TYPE_MENU_ID, [
         {
           command: TERMINAL_COMMANDS.SELECT_ZSH,
           order: 1,

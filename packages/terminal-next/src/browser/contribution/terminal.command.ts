@@ -75,6 +75,16 @@ export class TerminalCommandContribution implements CommandContribution {
     this.terminalController.reconnect();
   }
 
+  private setDefaultTerminalType(type: string) {
+    const value = this.preference.resolve('terminal.type');
+    // 当存在工作区配置时，优先更新工作区中的配置
+    if (value?.scope === PreferenceScope.Workspace) {
+      this.preference.set('terminal.type', type, PreferenceScope.Workspace);
+    } else {
+      this.preference.set('terminal.type', type, PreferenceScope.User);
+    }
+  }
+
   registerCommands(registry: CommandRegistry) {
     // 搜索
     registry.registerCommand(
