@@ -288,11 +288,8 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
       if (MonacoActionRegistry.EXCLUDE_ACTIONS.includes(id)) {
         continue;
       }
-      if (!editorActions.has(id)) {
-        continue;
-      }
 
-      const data = editorActions.get(id)!;
+      const data: { label?: string; alias?: string } = editorActions.get(id) ?? {};
       const handler = this.actAndComHandler(editorActions, id);
       this.monacoCommandRegistry.registerCommand(
         {
@@ -302,6 +299,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         },
         handler,
       );
+
       // 将 monaco 命令处理函数代理到有 label 的空命令上
       const command = MonacoActionRegistry.COMMON_ACTIONS.get(id);
       if (command) {
