@@ -87,8 +87,8 @@ class LocalizationRegistry implements ILocalizationRegistry {
     }
   }
 
-  getLocalizeString(key: ILocalizationKey, defaultLabel?: string | null, languageId = _currentLanguageId): string {
-    return this.getContents(languageId)[key] || this.getContents('default')[key] || defaultLabel || '';
+  getLocalizeString(key: ILocalizationKey, defaultValue?: string | null, languageId = _currentLanguageId): string {
+    return this.getContents(languageId)[key] || this.getContents('default')[key] || defaultValue || '';
   }
 
   private getContents(languageId: string | undefined = 'zh-CN'): ILocalizationContents {
@@ -179,6 +179,13 @@ export function replaceLocalizePlaceholder(label?: string, scope?: string): stri
  * @param scope 默认为 host
  * @param fallback 默认为 undefined
  */
+export function replaceNlsField(label: string, scope: string, fallback: string, language?: string): string;
+export function replaceNlsField(
+  label?: string,
+  scope?: string,
+  fallback?: string,
+  language?: string,
+): string | undefined;
 export function replaceNlsField(
   label?: string,
   scope?: string,

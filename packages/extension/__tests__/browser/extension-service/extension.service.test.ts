@@ -7,6 +7,7 @@ import {
   PreferenceScope,
   KeybindingRegistryImpl,
   KeybindingRegistry,
+  setLanguageId,
 } from '@opensumi/ide-core-browser';
 import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
@@ -18,6 +19,8 @@ import { TabbarService } from '@opensumi/ide-main-layout/lib/browser/tabbar/tabb
 import { PreferenceSettingsService } from '@opensumi/ide-preferences/lib/browser/preference-settings.service';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
 import { IThemeService, getColorRegistry } from '@opensumi/ide-theme/lib/common';
+
+import '@opensumi/ide-i18n';
 
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { AbstractExtInstanceManagementService } from '../../../src/browser/types';
@@ -135,6 +138,16 @@ describe('Extension service', () => {
     it('should register shadow command via command contribution point', () => {
       const commandRegistry: CommandRegistryImpl = injector.get(CommandRegistry);
       expect(commandRegistry.getCommand('HelloKaitian')).toBeDefined();
+    });
+
+    it('should use english nls as alias', async () => {
+      const commandRegistry: CommandRegistryImpl = injector.get(CommandRegistry);
+      const command = commandRegistry.getCommand('Test');
+      expect(command).toBeDefined();
+      expect(command?.label).toBe('这是 label');
+      expect(command?.alias).toBe('这是 alias');
+      expect(command?.category).toBe('这是 category');
+      expect(command?.aliasCategory).toBe('这是 aliasCategory');
     });
 
     it('should register menus in editor/title and editor/context position', () => {

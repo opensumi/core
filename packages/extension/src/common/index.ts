@@ -270,8 +270,8 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
     return this.iconService?.fromIcon(this.extension.path, iconContrib, IconType.Mask);
   }
 
-  protected getLocalizeFromNlsJSON(title: string, scope?: string, languageId?: string): string {
-    return replaceNlsField(title, this.extension.id, scope, languageId)!;
+  protected getLocalizeFromNlsJSON(title: string, scope: string = this.extension.id, languageId?: string): string {
+    return replaceNlsField(title, scope, title, languageId);
   }
 }
 
