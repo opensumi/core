@@ -141,6 +141,9 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 export function createExtensionsApiFactory<T extends IExtensionHost>(extensionService: T) {
   return {
     all: (() => extensionService.getExtensions())(),
+    // TODO: VS Code 目前支持多个 worker 插件进程，该 API 为获取当前插件进程可以访问的进程
+    // anycode 最新版插件依赖改 API，先临时实现
+    allAcrossExtensionHosts: (() => extensionService.getExtensions())(),
     get onDidChange() {
       return extensionService.extensionsChangeEmitter.event;
     },
