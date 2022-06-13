@@ -102,9 +102,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       excludes: options?.excludes ?? [],
     });
     const disposable = {
-      dispose: () => {
-        this.watcherServer.unwatchFileChanges(id);
-      },
+      dispose: () => this.watcherServer.unwatchFileChanges(id),
     };
     this.watcherDisposerMap.set(id, disposable);
     return id;

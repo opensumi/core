@@ -346,8 +346,8 @@ export class FileServiceClient implements IFileServiceClient {
     });
 
     this.watcherDisposerMap.set(id, {
-      dispose: () => {
-        provider.unwatch && provider.unwatch(watcherId);
+      dispose: async () => {
+        provider.unwatch && (await provider.unwatch(watcherId));
         this.uriWatcherMap.delete(_uri.toString());
       },
     });

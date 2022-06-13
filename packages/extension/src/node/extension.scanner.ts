@@ -6,7 +6,6 @@ import semver from 'semver';
 
 import { getDebugLogger, getNodeRequire, Uri } from '@opensumi/ide-core-node';
 
-
 import { IExtensionMetaData, IExtraMetaData } from '../common';
 
 import { mergeContributes } from './merge-contributes';
@@ -134,7 +133,7 @@ export class ExtensionScanner {
       defaultPkgNlsJSON,
       packageNlsJSON: pkgNlsJSON,
       extraMetadata: extensionExtraMetaData,
-      realPath: await fs.realpath(extensionPath),
+      realPath: await fs.realpath.native(extensionPath),
       uri: Uri.file(extensionPath),
     };
     return extension as IExtensionMetaData;
