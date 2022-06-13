@@ -64,8 +64,8 @@ describe('MainThread CustomEditor Test', () => {
     rpcProtocolMain.set(MainThreadAPIIdentifier.MainThreadCustomEditor, mockService({}));
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('resolve text editor', async () => {

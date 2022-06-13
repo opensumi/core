@@ -192,7 +192,7 @@ describe('PreferenceService should be work', () => {
       await fs.remove(root.path.toString());
     }
     root = null;
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   describe('01 #Init', () => {

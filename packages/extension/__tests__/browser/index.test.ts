@@ -93,8 +93,8 @@ describe('extension browser test', () => {
     commandService = injector.get<CommandService>(CommandService);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('execute workbench.action.reloadWindow command ', async () => {

@@ -21,8 +21,8 @@ describe('DebugService', () => {
     debugService = injector.get(IDebugService);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('registerDebugContributionPoints should emit change', (done) => {

@@ -32,8 +32,8 @@ describe('FileServiceClient should be work', () => {
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
     track.cleanupSync();
   });
 

@@ -48,8 +48,8 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.storage.test.ts', () =>
     extHostStorage = injector.get(ExtHostStorage, [rpcProtocol]);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('init storage path', async () => {

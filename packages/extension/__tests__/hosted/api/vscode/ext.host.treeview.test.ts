@@ -6,7 +6,6 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { MainThreadAPIIdentifier, TreeView } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 
-
 const moackManThreadTreeView = {
   $registerTreeDataProvider: jest.fn(),
   $unregisterTreeDataProvider: jest.fn(() => Disposable.create(() => {})),
@@ -59,8 +58,8 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () =
     extHostTreeViews = injector.get(ExtHostTreeViews, [rpcProtocol, extHostCommands]);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('registerTreeDataProvider should be work', () => {

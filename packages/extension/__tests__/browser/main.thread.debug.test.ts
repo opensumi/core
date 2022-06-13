@@ -198,8 +198,8 @@ describe('MainThreadDebug API Test Suite', () => {
     mainThreadDebug = injector.get(MainThreadDebug, [rpcProtocol, mainThreadConnection]);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('MainThreadDebug can be initial correctly', () => {

@@ -92,8 +92,8 @@ describe('DebugSessionConnection', () => {
     debugSessionConnection = injector.get(DebugSessionConnection, ['1001', connectionFactory, traceOutputChannel]);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('first, create connection', () => {

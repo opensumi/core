@@ -72,8 +72,8 @@ describe('Preference Proxy', () => {
     preferenceService = injector.get(PreferenceService);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   function getProxy(

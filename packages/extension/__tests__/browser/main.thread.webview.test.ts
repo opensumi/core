@@ -183,8 +183,8 @@ describe('Webview view tests ', () => {
     expect(webview.setContent).toBeCalledWith('testHtmlContent');
   });
 
-  afterAll(() => {
-    injector.disposeAll();
-    Array.from(webviews.entries()).forEach(([i, w]) => w.dispose());
+  afterAll(async () => {
+    await injector.disposeAll();
+    await Promise.all(Array.from(webviews.entries()).map(([i, w]) => w.dispose()));
   });
 });

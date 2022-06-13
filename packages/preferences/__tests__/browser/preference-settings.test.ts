@@ -17,7 +17,6 @@ import {
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 
-
 describe('PreferenceSettingService should be work', () => {
   let injector: MockInjector;
   let preferenceSettingsService: PreferenceSettingsService;
@@ -88,7 +87,7 @@ describe('PreferenceSettingService should be work', () => {
   });
 
   afterAll(async () => {
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   describe('01 #Init', () => {

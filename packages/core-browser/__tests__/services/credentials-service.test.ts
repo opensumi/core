@@ -34,8 +34,8 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
     credentialsService = injector.get<ICredentialsService>(ICredentialsService);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('getPassword', async () => {

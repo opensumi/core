@@ -76,8 +76,8 @@ describe('Extension process test', () => {
       await extHostImpl.$updateExtHostData();
     });
 
-    afterEach(() => {
-      injector.disposeAll();
+    afterEach(async () => {
+      await injector.disposeAll();
       proxyMaps.clear();
     });
 

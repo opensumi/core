@@ -54,8 +54,8 @@ describe('extension browser test', () => {
     );
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('should get correct extensionLocation for file scheme', async () => {

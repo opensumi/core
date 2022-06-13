@@ -78,7 +78,7 @@ describe('Extension Service', () => {
   afterAll(async () => {
     const extensionHostManager = injector.get(IExtensionHostManager);
     await extensionHostManager.dispose();
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   describe('get all extensions', () => {

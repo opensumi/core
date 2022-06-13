@@ -32,8 +32,8 @@ describe('ServerApp', () => {
     );
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   test('start net server', async () => {

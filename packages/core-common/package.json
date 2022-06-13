@@ -17,7 +17,7 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "dependencies": {
-    "@opensumi/di": "^1.1.0",
+    "@opensumi/di": "^1.4.0",
     "@opensumi/ide-utils": "2.18.3",
     "jschardet": "3.0.0"
   },

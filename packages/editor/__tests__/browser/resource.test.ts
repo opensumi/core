@@ -341,7 +341,7 @@ describe('resource service tests', () => {
     expect(res2.metadata!.modified.toString()).toBe('fileOnDisk://path/to/a.ts');
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 });

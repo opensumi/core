@@ -66,8 +66,8 @@ describe('breadcrumb test', () => {
     });
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('breadcrumb test', async () => {

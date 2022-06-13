@@ -187,8 +187,8 @@ describe('FileTree Service should be work alone', () => {
     fileTreeService.initContextKey(document.createElement('div'));
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
     onPreferenceChanged.mockReset();
     mockFileServiceClient.watchFileChanges.mockReset();
     fileChangeWatcher.onFilesChanged.mockReset();
@@ -385,8 +385,8 @@ describe('FileTree Service should be work alone on multiple workspace mode', () 
     fileTreeService = injector.get(IFileTreeService);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
     onPreferenceChanged.mockReset();
     mockFileServiceClient.watchFileChanges.mockReset();
     fileChangeWatcher.onFilesChanged.mockReset();

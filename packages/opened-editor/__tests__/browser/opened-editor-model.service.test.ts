@@ -130,8 +130,8 @@ describe('OpenedEditorModelService should be work', () => {
     await openedEditorModelService.whenReady;
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('should init success', () => {

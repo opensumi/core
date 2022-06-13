@@ -151,8 +151,8 @@ describe('DebugSessionManager', () => {
     debugSessionManager = injector.get(IDebugSessionManager);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('report start action time', () => {

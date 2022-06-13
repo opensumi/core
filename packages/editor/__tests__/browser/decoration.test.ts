@@ -164,7 +164,7 @@ describe('editor decoration service test', () => {
     disposer2.dispose();
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 });

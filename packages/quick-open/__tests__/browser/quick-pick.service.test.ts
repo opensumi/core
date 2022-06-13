@@ -54,8 +54,8 @@ describe('quick-pick service test', () => {
     quickPickService = injector.get(QuickPickService);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('show quick-open', (done) => {

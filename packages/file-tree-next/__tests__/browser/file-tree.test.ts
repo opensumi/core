@@ -235,9 +235,9 @@ describe('FileTree should be work while on single workspace model', () => {
     contextKey.initScopedContext(document.createElement('div'));
     fileTreeService = injector.get<FileTreeService>(IFileTreeService);
   });
-  afterEach(() => {
+  afterEach(async () => {
     jest.useRealTimers();
-    injector.disposeAll();
+    await injector.disposeAll();
   });
   afterAll(() => {
     track.cleanupSync();

@@ -66,10 +66,10 @@ describe('ext host proxy test', () => {
       extHostProxy.dispose();
     });
 
-    afterAll(() => {
-      injector.disposeAll();
-      extHostProxy.dispose();
-      extensionHostManager.dispose();
+    afterAll(async () => {
+      await injector.disposeAll();
+      await extHostProxy.dispose();
+      await extensionHostManager.dispose();
     });
 
     it('retry connect if server close', async () => {

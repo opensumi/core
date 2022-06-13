@@ -114,8 +114,8 @@ describe('FormatService', () => {
     );
     DocumentRangeFormattingEditProviderRegistry.ordered = () => [provider];
   });
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
     DocumentRangeFormattingEditProviderRegistry.ordered = originalOrdered;
   });
 

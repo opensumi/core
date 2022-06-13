@@ -85,8 +85,8 @@ describe('workspace-symbol-quickopen', () => {
     workspaceSymbolQuickOpenHandler = injector.get(WorkspaceSymbolQuickOpenHandler);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('onType', (done) => {

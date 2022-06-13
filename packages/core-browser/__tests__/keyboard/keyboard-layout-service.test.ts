@@ -46,8 +46,8 @@ describe('KeyboardLayoutService should be work', () => {
     await keyboardLayoutService.initialize();
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   describe('#init', () => {

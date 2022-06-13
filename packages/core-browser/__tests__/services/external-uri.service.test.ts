@@ -22,14 +22,14 @@ describe('external-uri service test', () => {
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     Object.defineProperty(window, 'location', {
       value: {
         href: oldWindowLocationHref,
         hostname: oldWindowLocationHostname,
       },
     });
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   it('localhost uri to remote uri', async () => {

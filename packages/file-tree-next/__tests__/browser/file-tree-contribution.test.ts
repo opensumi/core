@@ -141,8 +141,8 @@ describe('FileTreeContribution', () => {
     );
   });
 
-  afterAll(() => {
-    mockInjector.disposeAll();
+  afterAll(async () => {
+    await mockInjector.disposeAll();
   });
 
   describe('01 #contribution should be work', () => {

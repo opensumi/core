@@ -52,9 +52,9 @@ describe('test windowService on Electron env', () => {
     windowService = injector.get(IWindowService);
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     (global as any).isElectronRenderer = false;
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   it('openNewWindow method should be work', () => {
@@ -115,8 +115,8 @@ describe('test windowService on web', () => {
     windowService = injector.get(IWindowService);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('openNewWindow method should be work', () => {

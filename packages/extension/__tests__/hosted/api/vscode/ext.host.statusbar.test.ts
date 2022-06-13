@@ -66,8 +66,8 @@ describe('vscode MainThreadStatusBar Test', () => {
     );
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
     jest.resetAllMocks();
   });
 

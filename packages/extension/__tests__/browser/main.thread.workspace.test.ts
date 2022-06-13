@@ -330,11 +330,11 @@ describe('MainThreadWorkspace API Test Suite', () => {
     await sleep(300);
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     track.cleanupSync();
-    mainThreadWorkspaceAPI.dispose();
-    disposables.dispose();
-    injector.disposeAll();
+    await mainThreadWorkspaceAPI.dispose();
+    await disposables.dispose();
+    await injector.disposeAll();
   });
 
   describe('MainThreadWorkspace fs API Test Suite', () => {

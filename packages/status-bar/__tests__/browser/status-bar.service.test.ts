@@ -47,8 +47,8 @@ describe('template test', () => {
     statusBarService.addElement(EN_CODING_ENTRY_ID, enCodingEntry);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('新增 statusBar Item', () => {

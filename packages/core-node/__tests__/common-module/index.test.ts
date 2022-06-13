@@ -14,8 +14,8 @@ describe('NodeLogger', () => {
     server = injector.get(ICommonServer);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   test('getBackendOS', async () => {
