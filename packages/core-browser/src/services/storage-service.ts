@@ -4,6 +4,9 @@ import { isUndefinedOrNull } from '@opensumi/ide-core-common';
 
 import { Logger } from '../logger';
 
+export const GLOBAL_BROWSER_STORAGE_PREFIX = 'global';
+export const SCOPED_BROWSER_STORAGE_PREFIX = 'scoped';
+
 export const StorageService = Symbol('IStorageService');
 /**
  * StorageService用于提供给插件或模块进行session级别的数据存储能力
@@ -77,7 +80,7 @@ abstract class BaseBrowserStorageService implements StorageService {
     return JSON.parse(result);
   }
 
-  public removeData<T>(key: string, defaultValue?: T): void {
+  public removeData<T>(key: string): void {
     this.storage.removeItem(this.prefix(key));
   }
 
@@ -115,7 +118,7 @@ abstract class BaseBrowserStorageService implements StorageService {
 @Injectable()
 export class GlobalBrowserStorageService extends BaseBrowserStorageService {
   prefix(key: string): string {
-    return `kt-global:${key}`;
+    return `${GLOBAL_BROWSER_STORAGE_PREFIX}:${key}`;
   }
 }
 
@@ -131,7 +134,7 @@ export class ScopedBrowserStorageService extends BaseBrowserStorageService {
    */
   prefix(key: string): string {
     const pathname = typeof window === 'undefined' ? '' : window.location.pathname;
-    return `kt:${pathname}:${key}`;
+    return `${SCOPED_BROWSER_STORAGE_PREFIX}:${pathname}:${key}`;
   }
 }
 
