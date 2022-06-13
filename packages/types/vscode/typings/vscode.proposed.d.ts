@@ -677,4 +677,14 @@ declare module 'vscode' {
   }
 
   //#endregion
+
+  export namespace extensions {
+    /**
+     * All extensions across all extension hosts.
+     *
+     * @see {@link Extension.isFromDifferentExtensionHost}
+     */
+    export const allAcrossExtensionHosts: readonly Extension<void>[];
+
+  }
 }
