@@ -129,9 +129,8 @@ export class MainLayoutModuleContribution
   @Autowired(KeybindingRegistry)
   protected keybindingRegistry: KeybindingRegistry;
 
-  async initialize() {
-    // 全局只要初始化一次
-    await this.layoutState.initStorage();
+  initialize() {
+    this.layoutState.initStorage();
 
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
