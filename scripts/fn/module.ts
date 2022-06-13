@@ -8,7 +8,6 @@ export function getPkgFromFolder(folderName: string) {
 }
 
 export async function startFromFolder(folderName: string, scriptName: string = 'start') {
-  // await run('npm run clean');
   await run(`cd ${folderName} && npm run ${scriptName}`);
 }
 
