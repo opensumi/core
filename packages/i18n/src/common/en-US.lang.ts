@@ -159,7 +159,7 @@ export const localizationBundle = {
     'editor.goForward': 'Forward',
     'editor.quickOpen': 'Go to File...',
     'editor.editor.goToSymbol': 'Go to Symbol...',
-    'editor.goToLine': 'Go to Line/Column...',
+    'editor.goToLine': 'Go to Line...',
     'editor.openType': 'Open Type',
 
     'editor.closeEditorsInOtherGroups': 'Close Other Groups',
