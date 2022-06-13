@@ -144,10 +144,10 @@ describe('Extension service', () => {
       const commandRegistry: CommandRegistryImpl = injector.get(CommandRegistry);
       const command = commandRegistry.getCommand('Test');
       expect(command).toBeDefined();
-      expect(command?.label).toBe('这是 label');
-      expect(command?.alias).toBe('这是 alias');
-      expect(command?.category).toBe('这是 category');
-      expect(command?.aliasCategory).toBe('这是 aliasCategory');
+      expect(command?.label).toBe('this is label');
+      expect(command?.alias).toBe('this is alias');
+      expect(command?.category).toBe('this is category');
+      expect(command?.aliasCategory).toBe('this is aliasCategory');
     });
 
     it('should register menus in editor/title and editor/context position', () => {

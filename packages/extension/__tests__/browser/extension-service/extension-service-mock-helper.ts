@@ -250,12 +250,12 @@ const mockExtensionProps: IExtensionProps = {
   },
   extraMetadata: {},
   packageNlsJSON: {
-    'test.label': '这是 label',
-    'test.category': '这是 category',
+    'test.label': 'this is label',
+    'test.category': 'this is category',
   },
   defaultPkgNlsJSON: {
-    'test.label': '这是 alias',
-    'test.category': '这是 aliasCategory',
+    'test.label': 'this is alias',
+    'test.category': 'this is aliasCategory',
   },
 };
 
