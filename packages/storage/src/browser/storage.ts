@@ -1,4 +1,4 @@
-import { AppConfig } from '@opensumi/ide-core-browser';
+import { AppConfig, StorageService } from '@opensumi/ide-core-browser';
 import {
   getDebugLogger,
   IStorage,
@@ -7,6 +7,7 @@ import {
   Emitter,
   Event,
   DisposableCollection,
+  Deferred,
 } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -19,7 +20,7 @@ enum StorageState {
 }
 
 export class Storage implements IStorage {
-  private static readonly DEFAULT_FLUSH_DELAY = 100;
+  private static readonly DEFAULT_FLUSH_DELAY = 200;
 
   private _onDidChangeStorage = new Emitter<string>();
   readonly onDidChangeStorage: Event<string> = this._onDidChangeStorage.event;
@@ -34,19 +35,17 @@ export class Storage implements IStorage {
   private pendingInserts: Map<string, string> = new Map();
 
   private toDisposableCollection: DisposableCollection = new DisposableCollection();
+  private readonly logger = getDebugLogger();
 
-  private storageName: string;
-
-  private _whenReady: Promise<void>;
+  private readyDeferred = new Deferred<void>();
 
   constructor(
     private readonly database: IStorageServer,
     private readonly workspace: IWorkspaceService,
     private readonly appConfig: AppConfig,
-    storageName: string,
-    private readonly logger = getDebugLogger(),
+    private readonly storageName: string,
+    private readonly browserLocalStroage?: StorageService,
   ) {
-    this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
     this.toDisposableCollection.push(
       this.workspace.onWorkspaceChanged(() => {
@@ -58,7 +57,7 @@ export class Storage implements IStorage {
   }
 
   get whenReady() {
-    return this._whenReady;
+    return this.readyDeferred.promise;
   }
 
   get items(): Map<string, string> {
@@ -70,28 +69,30 @@ export class Storage implements IStorage {
   }
 
   async init(storageName: string) {
-    await this.workspace.whenReady;
     const workspace = this.workspace.workspace;
-    await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
-    const cache = await this.database.getItems(storageName);
+    let cache;
+    if (this.browserLocalStroage) {
+      cache = await this.browserLocalStroage.getData(storageName);
+    }
+    if (!cache) {
+      await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
+      cache = await this.database.getItems(storageName);
+      if (this.browserLocalStroage) {
+        this.browserLocalStroage.setData(storageName, cache);
+      }
+    }
     this.cache = this.jsonToMap(cache);
     this.state = StorageState.Initialized;
+    this.readyDeferred.resolve();
   }
 
   setup(storageName: string) {
-    this._whenReady = this.init(storageName);
+    this.init(storageName);
   }
 
   async reConnectInit() {
+    this.readyDeferred = new Deferred();
     this.setup(this.storageName);
-  }
-
-  private jsonToMap(json) {
-    const itemsMap: Map<string, string> = new Map();
-    for (const key of Object.keys(json)) {
-      itemsMap.set(key, json[key]);
-    }
-    return itemsMap;
   }
 
   dispose() {
@@ -213,7 +214,8 @@ export class Storage implements IStorage {
     await this.database.close(() => this.cache);
   }
 
-  private flushPending(): Promise<void> {
+  private async flushPending(): Promise<void> {
+    await this.whenReady;
     if (this.pendingInserts.size === 0 && this.pendingDeletes.size === 0) {
       return Promise.resolve();
     }
@@ -223,6 +225,20 @@ export class Storage implements IStorage {
       insert: this.mapToJson(this.pendingInserts),
       delete: Array.from(this.pendingDeletes),
     };
+    // 同时在 LocalStroage 中同步缓存变化
+    if (this.browserLocalStroage) {
+      let cache = await this.browserLocalStroage.getData<any>(this.storageName);
+      if (cache) {
+        for (const del of updateRequest?.delete || []) {
+          delete cache[del];
+        }
+        cache = {
+          ...cache,
+          ...updateRequest.insert,
+        };
+        await this.browserLocalStroage.setData(this.storageName, cache);
+      }
+    }
 
     // 重置等待队列用于下次存储
     this.pendingDeletes = new Set<string>();
@@ -232,11 +248,19 @@ export class Storage implements IStorage {
     return this.database.updateItems(this.storageName, updateRequest);
   }
 
-  mapToJson(map: Map<string, string>) {
+  private mapToJson(map: Map<string, string>) {
     const obj = Object.create(null);
     for (const [k, v] of map) {
       obj[k] = v;
     }
     return obj;
+  }
+
+  private jsonToMap(json) {
+    const itemsMap: Map<string, string> = new Map();
+    for (const key of Object.keys(json)) {
+      itemsMap.set(key, json[key]);
+    }
+    return itemsMap;
   }
 }

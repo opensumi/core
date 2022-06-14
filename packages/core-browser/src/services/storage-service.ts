@@ -1,5 +1,4 @@
-import { Autowired, Injectable } from '@opensumi/di';
-import { warning } from '@opensumi/ide-components/lib/utils';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { isUndefinedOrNull } from '@opensumi/ide-core-common';
 
 import { Logger } from '../logger';
@@ -128,23 +127,14 @@ export class GlobalBrowserStorageService extends BaseBrowserStorageService {
  */
 @Injectable()
 export class ScopedBrowserStorageService extends BaseBrowserStorageService {
-  /**
-   * 目前这里的 key 是从 location 获取
-   * 存在一定问题，这里的 key 改成 workspaceDir 更合适
-   */
-  prefix(key: string): string {
-    const pathname = typeof window === 'undefined' ? '' : window.location.pathname;
-    return `${SCOPED_BROWSER_STORAGE_PREFIX}:${pathname}:${key}`;
-  }
-}
+  private pathname = 'unknow';
 
-/**
- * @deprecated please use `ScopedBrowserStorageService` instead
- */
-@Injectable()
-export class LocalStorageService extends ScopedBrowserStorageService {
-  constructor() {
+  constructor(@Optional() key: string) {
     super();
-    warning(false, 'LocalStorageService is deprecated please consider using `ScopedBrowserStorageService` instead');
+    this.pathname = key;
+  }
+
+  prefix(key: string): string {
+    return `${SCOPED_BROWSER_STORAGE_PREFIX}:${this.pathname}:${key}`;
   }
 }
