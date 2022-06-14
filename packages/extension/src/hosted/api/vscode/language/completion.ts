@@ -82,32 +82,7 @@ export class CompletionAdapter {
     for (let i = 0; i < list.items.length; i++) {
       const item = list.items[i];
       // check for bad completion item first
-      const dto = {
-        [ISuggestDataDtoField.label]:
-          typeof item.label === 'string' ? item.label : this.convertCompletionLabel(item.label),
-        [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
-        [ISuggestDataDtoField.sortText]: item.sortText,
-        [ISuggestDataDtoField.filterText]: item.filterText,
-        [ISuggestDataDtoField.documentation]: item.documentation,
-        x: [pid, i] as [number, number],
-      };
-
-      if (item.textEdit) {
-        dto[ISuggestDataDtoField.insertText] = item.textEdit.newText;
-      } else if (typeof item.insertText === 'string') {
-        dto[ISuggestDataDtoField.insertText] = item.insertText;
-      } else if (item.insertText instanceof SnippetString) {
-        dto[ISuggestDataDtoField.insertText] = item.insertText.value;
-        dto[ISuggestDataDtoField.insertTextRules] = CompletionItemInsertTextRule.InsertAsSnippet;
-      } else {
-        dto[ISuggestDataDtoField.insertText] = typeof item.label === 'string' ? item.label : item.label.label;
-      }
-
-      const range = this.convertRange(item, inserting, replacing);
-      if (range) {
-        dto[ISuggestDataDtoField.range] = range;
-      }
-
+      const dto = this.convertCompletionItem(item, [pid, i], inserting, replacing);
       completions.push(dto);
     }
     return result;
