@@ -42,6 +42,8 @@ export const STORAGE_SCHEMA = {
   GLOBAL: 'gldb',
 };
 
+// 在该对象定义的存储对象在初始化阶段时将默认通过 LocalStorage 缓存
+// ref: https://github.com/opensumi/core/blob/f512897d691f1aa0d89ff6469ff2251ab2124f71/packages/storage/src/browser/storage.contribution.ts#L49
 export const STORAGE_NAMESPACE = {
   // workspace database
   WORKBENCH: new URI('workbench').withScheme(STORAGE_SCHEMA.SCOPE),
