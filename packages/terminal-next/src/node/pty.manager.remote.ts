@@ -84,7 +84,7 @@ export class PtyServiceManagerRemote extends PtyServiceManager {
 
     // 处理 Socket 异常
     socket.on('error', (e) => {
-      this.logger.warn(e);
+      this.logger.warn('pty unix domain socket error ', e);
     });
 
     try {
