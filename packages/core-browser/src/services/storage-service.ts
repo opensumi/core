@@ -1,5 +1,3 @@
-import { noConflict, now } from 'lodash';
-
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { isObject, isUndefinedOrNull } from '@opensumi/ide-core-common';
 
@@ -38,6 +36,8 @@ export interface StorageService {
 abstract class BaseBrowserStorageService implements StorageService {
   // 默认对于 14 天内无使用的 LocalStorage 数据进行清理
   private static EXPIRES_DAY = 14;
+  private static EXPIRES_LIMITE_NUMBER = 20;
+
   @Autowired()
   private logger: Logger;
 
@@ -79,7 +79,7 @@ abstract class BaseBrowserStorageService implements StorageService {
         }
         this.storage.setItem(this.prefix(key), JSON.stringify(data));
       } catch (e) {
-        this.showDiskQuotaExceededMessage();
+        this.removeExpiringStorage();
       }
     } else {
       this.removeData(key);
@@ -110,7 +110,7 @@ abstract class BaseBrowserStorageService implements StorageService {
     try {
       this.storage.setItem(keyTest, JSON.stringify(new Array(60000)));
     } catch (error) {
-      this.showDiskQuotaExceededMessage();
+      this.removeExpiringStorage();
     } finally {
       this.storage.removeItem(keyTest);
     }
@@ -135,12 +135,26 @@ abstract class BaseBrowserStorageService implements StorageService {
     }
   }
 
-  private async showDiskQuotaExceededMessage(): Promise<void> {
-    const READ_INSTRUCTIONS_ACTION = 'Read Instructions';
-    const CLEAR_STORAGE_ACTION = 'Clear Local Storage';
-    const ERROR_MESSAGE = `Your preferred browser's local storage is almost full.
-        To be able to save your current workspace layout or data, you may need to free up some space.`;
-    this.logger.log(READ_INSTRUCTIONS_ACTION, CLEAR_STORAGE_ACTION, ERROR_MESSAGE);
+  /**
+   * 移除即将过期的数据，为后续数据腾出存储空间
+   */
+  private async removeExpiringStorage(): Promise<void> {
+    const allKeys = Object.keys(this.storage);
+    const sortedKeys = allKeys
+      .filter((key) => this.storage[key]?.indexOf('expires') > 0)
+      .sort((a, b) => {
+        try {
+          const expiresA = JSON.parse(this.storage[a])?.expires;
+          const expiresB = JSON.parse(this.storage[b])?.expires;
+          return expiresA - expiresB;
+        } catch (e) {
+          return 0;
+        }
+      });
+    // 移除即将过期的 EXPIRES_LIMITE_NUMBER 个数据
+    for (const key of sortedKeys.slice(0, BaseBrowserStorageService.EXPIRES_LIMITE_NUMBER)) {
+      this.storage.removeItem(key);
+    }
   }
 }
 
