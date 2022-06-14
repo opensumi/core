@@ -74,15 +74,17 @@ export class Storage implements IStorage {
     if (this.browserLocalStroage) {
       cache = await this.browserLocalStroage.getData(storageName);
     }
-    await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
     if (!cache) {
+      await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
       cache = await this.database.getItems(storageName);
       if (this.browserLocalStroage) {
         this.browserLocalStroage.setData(storageName, cache);
       }
     } else {
       // 初始化服务端缓存
-      this.database.getItems(storageName);
+      this.database.init(this.appConfig.storageDirName, workspace && workspace.uri).then(() => {
+        this.database.getItems(storageName);
+      });
     }
     this.cache = this.jsonToMap(cache);
     this.state = StorageState.Initialized;
