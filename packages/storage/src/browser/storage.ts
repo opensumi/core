@@ -80,6 +80,9 @@ export class Storage implements IStorage {
       if (this.browserLocalStroage) {
         this.browserLocalStroage.setData(storageName, cache);
       }
+    } else {
+      // 初始化服务端缓存
+      this.database.getItems(storageName);
     }
     this.cache = this.jsonToMap(cache);
     this.state = StorageState.Initialized;

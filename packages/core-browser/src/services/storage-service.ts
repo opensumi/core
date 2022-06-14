@@ -1,5 +1,7 @@
+import { noConflict, now } from 'lodash';
+
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { isUndefinedOrNull } from '@opensumi/ide-core-common';
+import { isObject, isUndefinedOrNull } from '@opensumi/ide-core-common';
 
 import { Logger } from '../logger';
 
@@ -34,6 +36,8 @@ export interface StorageService {
 
 @Injectable()
 abstract class BaseBrowserStorageService implements StorageService {
+  // 默认对于 14 天内无使用的 LocalStorage 数据进行清理
+  private static EXPIRES_DAY = 14;
   @Autowired()
   private logger: Logger;
 
@@ -53,6 +57,7 @@ abstract class BaseBrowserStorageService implements StorageService {
 
   private init() {
     if (typeof window !== 'undefined' && window.localStorage) {
+      this.clearLocalStorage();
       this.testLocalStorage();
     } else {
       this.logger.warn("The browser doesn't support localStorage. state will not be persisted across sessions.");
@@ -62,6 +67,10 @@ abstract class BaseBrowserStorageService implements StorageService {
   public setData<T>(key: string, data?: T): void {
     if (data !== undefined) {
       try {
+        if (isObject(data)) {
+          // 追加数据过期时间
+          data['expires'] = Date.now() + BaseBrowserStorageService.EXPIRES_DAY * 24 * 60 * 60 * 1000;
+        }
         this.storage.setItem(this.prefix(key), JSON.stringify(data));
       } catch (e) {
         this.showDiskQuotaExceededMessage();
@@ -90,7 +99,7 @@ abstract class BaseBrowserStorageService implements StorageService {
    * @private
    * @memberof LocalStorageService
    */
-  private testLocalStorage(): void {
+  private testLocalStorage() {
     const keyTest = this.prefix('Test');
     try {
       this.storage.setItem(keyTest, JSON.stringify(new Array(60000)));
@@ -98,6 +107,25 @@ abstract class BaseBrowserStorageService implements StorageService {
       this.showDiskQuotaExceededMessage();
     } finally {
       this.storage.removeItem(keyTest);
+    }
+  }
+
+  /**
+   * 清理过期的本地存储数据
+   */
+  private clearLocalStorage() {
+    const allKeys = Object.keys(this.storage);
+    for (const key of allKeys) {
+      try {
+        const data = JSON.parse(this.storage[key]);
+        if (isObject(data) && data.expires) {
+          if (data.expires < Date.now()) {
+            this.storage.removeItem(key);
+          }
+        }
+      } catch (e) {
+        continue;
+      }
     }
   }
 
