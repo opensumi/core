@@ -41,6 +41,8 @@ abstract class BaseBrowserStorageService implements StorageService {
   @Autowired()
   private logger: Logger;
 
+  private _enableExpired = false;
+
   /**
    * global/scoped 浏览器层存储定义
    * @param key {string} 存储的唯一 key
@@ -49,6 +51,10 @@ abstract class BaseBrowserStorageService implements StorageService {
 
   constructor() {
     this.init();
+  }
+
+  public setExpires(value: boolean) {
+    this._enableExpired = value;
   }
 
   private get storage(): Storage {
@@ -67,7 +73,7 @@ abstract class BaseBrowserStorageService implements StorageService {
   public setData<T>(key: string, data?: T): void {
     if (data !== undefined) {
       try {
-        if (isObject(data)) {
+        if (isObject(data) && this._enableExpired) {
           // 追加数据过期时间
           data['expires'] = Date.now() + BaseBrowserStorageService.EXPIRES_DAY * 24 * 60 * 60 * 1000;
         }
@@ -160,6 +166,8 @@ export class ScopedBrowserStorageService extends BaseBrowserStorageService {
   constructor(@Optional() key: string) {
     super();
     this.pathname = key;
+    // 仅对局部 LocalStorage 设置过期时间
+    this.setExpires(true);
   }
 
   prefix(key: string): string {
