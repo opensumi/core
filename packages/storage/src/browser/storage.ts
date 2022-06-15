@@ -38,6 +38,7 @@ export class Storage implements IStorage {
   private readonly logger = getDebugLogger();
 
   private readyDeferred = new Deferred<void>();
+  private whenReadyToWriteDeferred = new Deferred<void>();
 
   constructor(
     private readonly database: IStorageServer,
@@ -58,6 +59,10 @@ export class Storage implements IStorage {
 
   get whenReady() {
     return this.readyDeferred.promise;
+  }
+
+  get whenReadyToWrite() {
+    return this.whenReadyToWriteDeferred.promise;
   }
 
   get items(): Map<string, string> {
@@ -83,9 +88,13 @@ export class Storage implements IStorage {
     } else {
       // 初始化服务端缓存
       this.database.init(this.appConfig.storageDirName, workspace && workspace.uri).then(() => {
-        this.database.getItems(storageName).then((data) => {
+        this.database.getItems(storageName).then(async (data) => {
           // 后续以服务端数据为准更新前端缓存数据，防止后续数据存取异常
           this.cache = this.jsonToMap(data);
+          if (this.browserLocalStroage) {
+            await this.browserLocalStroage.setData(storageName, JSON.stringify(data));
+          }
+          this.whenReadyToWriteDeferred.resolve();
         });
       });
     }
@@ -223,7 +232,7 @@ export class Storage implements IStorage {
   }
 
   private async flushPending(): Promise<void> {
-    await this.whenReady;
+    await this.whenReadyToWrite;
     if (this.pendingInserts.size === 0 && this.pendingDeletes.size === 0) {
       return Promise.resolve();
     }
