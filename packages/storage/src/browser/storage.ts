@@ -83,7 +83,10 @@ export class Storage implements IStorage {
     } else {
       // 初始化服务端缓存
       this.database.init(this.appConfig.storageDirName, workspace && workspace.uri).then(() => {
-        this.database.getItems(storageName);
+        this.database.getItems(storageName).then((data) => {
+          // 后续以服务端数据为准更新前端缓存数据，防止后续数据存取异常
+          this.cache = this.jsonToMap(data);
+        });
       });
     }
     this.cache = this.jsonToMap(cache);
