@@ -175,7 +175,7 @@ export class GlobalBrowserStorageService extends BaseBrowserStorageService {
  */
 @Injectable()
 export class ScopedBrowserStorageService extends BaseBrowserStorageService {
-  private pathname = 'unknow';
+  private pathname = 'unknown';
 
   constructor(@Optional() key: string) {
     super();
