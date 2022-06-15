@@ -13,7 +13,7 @@ import { RipGrepBinding } from './ripgrep';
 @Injectable()
 export class FileSearchService implements IFileSearchService {
   @Autowired(RipGrepBinding)
-  ripGrep: RipGrepBinding;
+  private ripGrep: RipGrepBinding;
 
   @Autowired(INodeLogger)
   logger: INodeLogger;

@@ -83,7 +83,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
   logger: ILogService = this.loggerManager.getLogger(SupportLogNamespace.Node);
 
   @Autowired(RipGrepBinding)
-  ripGrep: RipGrepBinding;
+  private ripGrep: RipGrepBinding;
 
   private searchStart(searchId: number, searchProcess) {
     this.sendResultToClient([], searchId, SEARCH_STATE.doing);
