@@ -62,8 +62,8 @@ describe('MainThreadSecret API Test Suite', () => {
     mainThreadSecret = injector.get(MainThreadSecret, [mockProxy as any]);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('$setPassword', async () => {

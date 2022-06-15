@@ -42,8 +42,8 @@ describe('BrowserKeyboardLayoutService should be work', () => {
     await keyboardNativeLayoutService.whenReady;
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   describe('#init', () => {

@@ -41,7 +41,7 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
     afterEach(async () => {
       await extensionHostManager.dispose();
       await options.dispose();
-      injector.disposeAll();
+      await injector.disposeAll();
     });
 
     it('fork extension host', async () => {

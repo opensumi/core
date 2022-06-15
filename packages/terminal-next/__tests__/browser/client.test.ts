@@ -75,11 +75,11 @@ describe('Terminal Client', () => {
     await client.attached.promise;
   });
 
-  afterAll(() => {
-    client.dispose();
-    server.close();
-    proxy.close();
-    injector.disposeAll();
+  afterAll(async () => {
+    await client.dispose();
+    await server.close();
+    await proxy.close();
+    await injector.disposeAll();
   });
 
   it('Render Terminal', () => {

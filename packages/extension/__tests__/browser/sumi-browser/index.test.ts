@@ -30,8 +30,8 @@ describe('activation event test', () => {
     browserApi = createBrowserApi(injector, mockExtension);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('localize label', () => {

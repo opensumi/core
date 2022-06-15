@@ -59,9 +59,9 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
     return initializeInjector();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     track.cleanupSync();
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   it('Extension Path Server should setup directory correctly', async () => {
@@ -140,9 +140,9 @@ describe('Extension Storage Server -- Data operation should be worked', () => {
     await extensionStorage.init(rootFileStat, [rootFileStat], extensionStorageDirName);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     track.cleanupSync();
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   it('Global -- set value can be work', async () => {

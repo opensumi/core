@@ -18,8 +18,8 @@ describe('test for core-browser/src/services/crypto-service.ts', () => {
     cryptoService = injector.get<INativeCryptoService>(INativeCryptoService);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('encrypt', async () => {

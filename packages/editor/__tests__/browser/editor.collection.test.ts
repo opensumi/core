@@ -34,8 +34,8 @@ describe('editor collection service test', () => {
     );
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('code editor test', () => {

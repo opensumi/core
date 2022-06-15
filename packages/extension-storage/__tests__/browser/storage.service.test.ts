@@ -7,7 +7,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IExtensionStorageService, IExtensionStorageServer } from '../../src/common';
 
-
 describe('ExtensionStorage service should be work', () => {
   let injector: MockInjector;
   let extensionStorageService: IExtensionStorageService;
@@ -41,7 +40,7 @@ describe('ExtensionStorage service should be work', () => {
   });
 
   afterEach(async () => {
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   it('01 #Init', async () => {

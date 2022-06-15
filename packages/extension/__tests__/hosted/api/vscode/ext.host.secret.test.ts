@@ -34,8 +34,8 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.secret.test.ts', () => 
     extHostSecret = injector.get(ExtHostSecret, [rpcProtocol]);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('get', async () => {

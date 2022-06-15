@@ -83,8 +83,8 @@ describe('FileDialogModel should be work', () => {
     await fileTreeDialogModel.whenReady;
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
     mockFileTreeDialogService.resolveChildren.mockReset();
     mockFileTreeDialogService.resolveRoot.mockReset();
     mockFileTreeDialogService.getDirectoryList.mockReset();

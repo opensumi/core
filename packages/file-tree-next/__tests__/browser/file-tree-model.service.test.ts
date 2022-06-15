@@ -183,8 +183,8 @@ describe('FileTreeModelService should be work', () => {
     await fileTreeModelService.whenReady;
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('should init success', () => {

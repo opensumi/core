@@ -154,8 +154,8 @@ describe('editor status bar item test', () => {
     expect(config['editor.preferredFormatter']['javascript']).toBe('testSingleFormatter');
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 });
 
@@ -472,8 +472,8 @@ describe('editor menu test', () => {
     injector.mockService(ICtxMenuRenderer);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('editor context menu test', () => {

@@ -534,7 +534,7 @@ describe('Launch Preferences', () => {
       });
 
       afterEach(async () => {
-        toTearDown.dispose();
+        await toTearDown.dispose();
         await fs.remove(rootPath);
       });
 

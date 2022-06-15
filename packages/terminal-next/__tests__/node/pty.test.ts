@@ -22,8 +22,8 @@ describe('PtyService function should be valid', () => {
     injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('cannot create a invalid shell case1', async () => {

@@ -9,7 +9,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkspaceModule } from '../../src/browser';
 
-
 describe('WorkspaceContribution should be work', () => {
   let workspaceContribution: WorkspaceContribution;
   let injector: MockInjector;
@@ -54,8 +53,8 @@ describe('WorkspaceContribution should be work', () => {
     workspaceContribution = injector.get(WorkspaceContribution);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
     mockWorkspaceService.getWorkspaceRootUri.mockReset();
   });
 

@@ -15,8 +15,8 @@ describe('require-interceptor test', () => {
     requireInterceptorService = injector.get(IRequireInterceptorService);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('registerRequireInterceptor', () => {

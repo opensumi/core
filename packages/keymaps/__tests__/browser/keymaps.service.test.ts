@@ -142,7 +142,7 @@ describe('KeymapsService should be work', () => {
       await fs.remove(userhome.path.toString());
     }
     userhome = null;
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   describe('01 #Init', () => {

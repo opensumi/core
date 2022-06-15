@@ -95,11 +95,11 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     vscodeComments = createCommentsApiFactory(extension, extComments);
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     // 静态递增置为 0
     (ExtHostComments as any).handlePool = 0;
     (ExtHostCommentThread as any)._handlePool = 0;
-    injector.disposeAll();
+    await injector.disposeAll();
   });
 
   it('registerCommentController', async () => {

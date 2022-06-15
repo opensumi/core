@@ -246,8 +246,8 @@ describe('file-search-quickopen', () => {
     fileSearchQuickOpenHandler = injector.get(FileSearchQuickCommandHandler);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('onType', (done) => {

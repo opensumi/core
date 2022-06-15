@@ -64,8 +64,8 @@ describe('packages/extension/__tests__/hosted/api/vscode/ext.host.debug.test.ts'
     extHostDebug = injector.get(ExtHostDebug, [rpcProtocol, extHostConnection, extHostCommands]);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('createDebugApiFactory should be work', () => {

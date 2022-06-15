@@ -99,10 +99,10 @@ describe('terminal service test cases', () => {
     };
   });
 
-  afterAll(() => {
-    server.close();
-    proxy.close();
-    injector.disposeAll();
+  afterAll(async () => {
+    await server.close();
+    await proxy.close();
+    await injector.disposeAll();
   });
 
   beforeEach(() => {

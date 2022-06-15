@@ -10,7 +10,6 @@ import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { IFileTreeAPI } from '../../../src/common';
 import { Directory, File } from '../../../src/common/file-tree-node.define';
 
-
 class TempDirectory {}
 class TempFile {}
 
@@ -93,8 +92,8 @@ describe('FileDialogService should be work', () => {
     await fileTreeDialogService.whenReady;
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
     mockFileTreeAPI.resolveFileStat.mockReset();
     mockFileTreeAPI.resolveChildren.mockReset();
     mockFileTreeAPI.resolveFileStat.mockReset();

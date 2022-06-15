@@ -18,8 +18,8 @@ describe('packages/core-browser/src/bootstrap/connection.test.ts', () => {
     eventBus = injector.get(IEventBus);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('handle WebSocket BrowserConnectionErrorEvent event', (done) => {

@@ -13,6 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
+import { MaybePromise } from './async';
 import { Event, Emitter } from './event';
 
 // DisposableStore 是从 vscode lifecycle 中复制而来
@@ -230,17 +231,22 @@ export class DisposableCollection implements IDisposable {
     if (this.disposed || this.disposingElements) {
       return;
     }
+    const toPromise = [] as any[];
     this.disposingElements = true;
     while (!this.disposed) {
       try {
-        this.disposables.pop()!.dispose();
+        const maybePromise = this.disposables.pop()!.dispose() as MaybePromise<void>;
+        if (maybePromise) {
+          toPromise.push(maybePromise);
+        }
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error(e);
+        console.error('DisposableCollection.dispose error', e);
       }
     }
     this.disposingElements = false;
     this.checkDisposed();
+    return Promise.all(toPromise) as unknown as MaybePromise<void> as void;
   }
 
   push(disposable: IDisposable): IDisposable {

@@ -72,8 +72,8 @@ describe('prefix quick open service test', () => {
     handler.registerHandler(helpQuickOpenHandler);
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('QuickOpenHandlerRegistry', () => {

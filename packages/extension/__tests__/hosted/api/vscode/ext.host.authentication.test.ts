@@ -130,8 +130,8 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
     await authenticationService.initialize();
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('get session by default option', async () => {

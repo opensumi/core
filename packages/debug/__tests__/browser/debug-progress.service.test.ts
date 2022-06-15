@@ -73,8 +73,8 @@ describe('DebugProgressService', () => {
     debugProgressService = injector.get(IDebugProgress);
   });
 
-  afterAll(() => {
-    injector.disposeAll();
+  afterAll(async () => {
+    await injector.disposeAll();
   });
 
   it('should have enough API', () => {

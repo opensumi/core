@@ -74,8 +74,8 @@ describe('quick-open service test', () => {
     widget = quickOpenService.widget;
   });
 
-  afterEach(() => {
-    injector.disposeAll();
+  afterEach(async () => {
+    await injector.disposeAll();
   });
 
   it('show quick-open', () => {
