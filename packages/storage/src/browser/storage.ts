@@ -85,6 +85,7 @@ export class Storage implements IStorage {
       if (this.browserLocalStroage) {
         this.browserLocalStroage.setData(storageName, cache);
       }
+      this.whenReadyToWriteDeferred.resolve();
     } else {
       // 初始化服务端缓存
       this.database.init(this.appConfig.storageDirName, workspace && workspace.uri).then(() => {
@@ -244,17 +245,15 @@ export class Storage implements IStorage {
     };
     // 同时在 LocalStroage 中同步缓存变化
     if (this.browserLocalStroage) {
-      let cache = await this.browserLocalStroage.getData<any>(this.storageName);
-      if (cache) {
-        for (const del of updateRequest?.delete || []) {
-          delete cache[del];
-        }
-        cache = {
-          ...cache,
-          ...updateRequest.insert,
-        };
-        await this.browserLocalStroage.setData(this.storageName, cache);
+      let cache = (await this.browserLocalStroage.getData<any>(this.storageName)) || this.mapToJson(this.cache);
+      for (const del of updateRequest?.delete || []) {
+        delete cache[del];
       }
+      cache = {
+        ...cache,
+        ...updateRequest.insert,
+      };
+      await this.browserLocalStroage.setData(this.storageName, cache);
     }
 
     // 重置等待队列用于下次存储
