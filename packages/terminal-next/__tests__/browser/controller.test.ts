@@ -76,7 +76,7 @@ describe('Terminal Controller', () => {
     expect(launchConfig.cwd).toEqual(terminalOptions.cwd);
     expect(launchConfig.env).toEqual(terminalOptions.env);
     expect(launchConfig.icon).toEqual(terminalOptions.iconPath);
-    expect(launchConfig.color).toEqual(terminalOptions.color);
+    expect(launchConfig.color).toEqual((terminalOptions.color as any).id);
     expect(launchConfig.initialText).toEqual(terminalOptions.message);
     expect(launchConfig.strictEnv).toEqual(terminalOptions.strictEnv);
     expect(launchConfig.hideFromUser).toEqual(terminalOptions.hideFromUser);
