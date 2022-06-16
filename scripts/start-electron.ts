@@ -6,12 +6,12 @@ import { run } from './fn/shell';
 const folderName = 'tools/electron';
 
 async function main() {
-  const semphore = path.resolve(folderName, 'node_modules/.init-done');
-  if (!fs.existsSync(semphore)) {
+  const semaphore = path.resolve(folderName, 'node_modules/.init-done');
+  if (!fs.existsSync(semaphore)) {
     await run(
       'cd tools/electron && rimraf ./node_modules && npm i && npm run link-local && npm run rebuild-native && npm run build',
     );
-    fs.closeSync(fs.openSync(semphore, 'a'));
+    fs.closeSync(fs.openSync(semaphore, 'a'));
   }
 
   startFromFolder(folderName, 'start');
