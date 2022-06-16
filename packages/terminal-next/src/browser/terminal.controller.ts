@@ -19,6 +19,7 @@ import {
   CommandRegistry,
   replaceLocalizePlaceholder,
   withNullAsUndefined,
+  isThemeColor,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -49,11 +50,12 @@ import {
   ICreateClientWithWidgetOptions,
   ITerminalProfileService,
   TerminalOptions,
-  convertTerminalOptionsToLaunchConfig,
+  asTerminalIcon,
   TERMINAL_ID_SEPARATOR,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
+import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { TerminalGroupViewService } from './terminal.view';
 
 @Injectable()
@@ -601,7 +603,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       ? this.wsChannelHandler.clientId + TERMINAL_ID_SEPARATOR + options.id
       : this.service.generateSessionId();
 
-    const launchConfig = convertTerminalOptionsToLaunchConfig(options.terminalOptions);
+    const launchConfig = this.convertTerminalOptionsToLaunchConfig(options.terminalOptions);
 
     const { group } = this._createOneGroup(launchConfig);
     const widget = this.terminalView.createWidget(
