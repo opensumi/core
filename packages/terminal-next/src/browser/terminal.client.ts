@@ -266,6 +266,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   /**
+   * 目前 core 内不再有代码调用这个函数，只有测试用例中会调用这里。
+   * 后续移除掉该函数
    * @deprecated Please use `init2` instead.
    */
   async init(widget: IWidget, options: TerminalOptions = {}) {
