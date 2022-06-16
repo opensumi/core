@@ -40,14 +40,12 @@ import {
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalProfileInternalService,
-  convertTerminalOptionsToLaunchConfig,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { SupportedOptions, ITerminalPreference } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
-import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { XTerm } from './xterm';
 
@@ -266,24 +264,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
-  convertTerminalOptionsToLaunchConfig() {
-    const options = this._terminalOptions;
-    const shellLaunchConfig: IShellLaunchConfig = convertTerminalOptionsToLaunchConfig(options);
-
-    if (options.isExtensionTerminal) {
-      shellLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
-        new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
-    }
-    return shellLaunchConfig;
-  }
-
   /**
    * @deprecated Please use `init2` instead.
    */
   async init(widget: IWidget, options: TerminalOptions = {}) {
     this._terminalOptions = options;
     await this.init2(widget, {
-      config: this.convertTerminalOptionsToLaunchConfig(),
+      config: this.controller.convertTerminalOptionsToLaunchConfig(options),
     });
   }
   convertProfileToLaunchConfig(
@@ -703,7 +690,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateOptions(options: TerminalOptions) {
     this._terminalOptions = { ...this._terminalOptions, ...options };
-    this._launchConfig = this.convertTerminalOptionsToLaunchConfig();
+    this._launchConfig = this.controller.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
 
     if (!this.name && !this._widget.name) {
       this._widget.name = options.name || this.name;
