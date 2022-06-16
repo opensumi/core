@@ -3,7 +3,9 @@
  */
 import WebSocket from 'ws';
 
-import { ITerminalController } from '../../src/common';
+import { Uri } from '@opensumi/ide-core-common';
+
+import { ITerminalController, TerminalOptions } from '../../src/common';
 
 import { injector } from './inject';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
@@ -48,5 +50,37 @@ describe('Terminal Controller', () => {
         isDefault: false,
       },
     });
+  });
+
+  it('can transform terminal options', async () => {
+    const terminalOptions = {
+      name: 'name',
+      shellPath: 'shellPath',
+      shellArgs: ['123'],
+      cwd: 'cwd',
+      env: {
+        asd: 'asd',
+      },
+      iconPath: Uri.file('iconPath'),
+      color: { id: '#fff' },
+      strictEnv: true,
+      hideFromUser: true,
+      isExtensionTerminal: true,
+      isTransient: true,
+    } as TerminalOptions;
+
+    const launchConfig = controller.convertTerminalOptionsToLaunchConfig(terminalOptions);
+    expect(launchConfig.name).toEqual(terminalOptions.name);
+    expect(launchConfig.executable).toEqual(terminalOptions.shellPath);
+    expect(launchConfig.args).toEqual(terminalOptions.shellArgs);
+    expect(launchConfig.cwd).toEqual(terminalOptions.cwd);
+    expect(launchConfig.env).toEqual(terminalOptions.env);
+    expect(launchConfig.icon).toEqual(terminalOptions.iconPath);
+    expect(launchConfig.color).toEqual(terminalOptions.color);
+    expect(launchConfig.initialText).toEqual(terminalOptions.message);
+    expect(launchConfig.strictEnv).toEqual(terminalOptions.strictEnv);
+    expect(launchConfig.hideFromUser).toEqual(terminalOptions.hideFromUser);
+    expect(launchConfig.isExtensionOwnedTerminal).toEqual(terminalOptions.isExtensionTerminal);
+    expect(launchConfig.disablePersistence).toEqual(terminalOptions.isTransient);
   });
 });

@@ -561,6 +561,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       cwd: this._launchConfig?.cwd || this._workspacePath,
     };
 
+    if (finalLaunchConfig.isExtensionOwnedTerminal) {
+      finalLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
+        new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
+    }
+
     this._launchConfig = finalLaunchConfig;
     this.logger.log('attach terminal by launchConfig: ', this._launchConfig);
 

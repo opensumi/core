@@ -18,6 +18,7 @@ import {
   DisposableCollection,
   CommandRegistry,
   replaceLocalizePlaceholder,
+  withNullAsUndefined,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -569,6 +570,30 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       beforeCreate: options.beforeCreate,
       closeWhenExited: options.closeWhenExited,
     });
+  }
+
+  public convertTerminalOptionsToLaunchConfig(options: TerminalOptions): IShellLaunchConfig {
+    const shellLaunchConfig: IShellLaunchConfig = {
+      name: options.name,
+      executable: withNullAsUndefined(options.shellPath),
+      args: withNullAsUndefined(options.shellArgs),
+      cwd: withNullAsUndefined(options.cwd),
+      env: withNullAsUndefined(options.env),
+      icon: withNullAsUndefined(asTerminalIcon(options.iconPath)),
+      color: isThemeColor(options.color) ? options.color.id : undefined,
+      initialText: withNullAsUndefined(options.message),
+      strictEnv: withNullAsUndefined(options.strictEnv),
+      hideFromUser: withNullAsUndefined(options.hideFromUser),
+      // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
+      isExtensionOwnedTerminal: options.isExtensionTerminal,
+      // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
+      // location:
+      // internalOptions?.location ||
+      // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
+      disablePersistence: withNullAsUndefined(options.isTransient),
+    };
+
+    return shellLaunchConfig;
   }
 
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
