@@ -18,8 +18,6 @@ import {
   DisposableCollection,
   CommandRegistry,
   replaceLocalizePlaceholder,
-  withNullAsUndefined,
-  isThemeColor,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -50,12 +48,11 @@ import {
   ICreateClientWithWidgetOptions,
   ITerminalProfileService,
   TerminalOptions,
-  asTerminalIcon,
+  convertTerminalOptionsToLaunchConfig,
   TERMINAL_ID_SEPARATOR,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
-import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { TerminalGroupViewService } from './terminal.view';
 
 @Injectable()
@@ -574,40 +571,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     });
   }
 
-  public convertTerminalOptionsToLaunchConfig(options: TerminalOptions): IShellLaunchConfig {
-    const shellLaunchConfig: IShellLaunchConfig = {
-      name: options.name,
-      executable: withNullAsUndefined(options.shellPath),
-      args: withNullAsUndefined(options.shellArgs),
-      cwd: withNullAsUndefined(options.cwd),
-      env: withNullAsUndefined(options.env),
-      icon: withNullAsUndefined(asTerminalIcon(options.iconPath)),
-      color: isThemeColor(options.color) ? options.color.id : undefined,
-      initialText: withNullAsUndefined(options.message),
-      strictEnv: withNullAsUndefined(options.strictEnv),
-      hideFromUser: withNullAsUndefined(options.hideFromUser),
-      // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
-      isExtensionOwnedTerminal: options.isExtensionTerminal,
-      // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
-      // location:
-      // internalOptions?.location ||
-      // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
-      disablePersistence: withNullAsUndefined(options.isTransient),
-    };
-
-    if (options.isExtensionTerminal) {
-      shellLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
-        new TerminalProcessExtHostProxy(sessionId, cols, rows, this);
-    }
-    return shellLaunchConfig;
-  }
-
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
     const widgetId = options.id
       ? this.wsChannelHandler.clientId + TERMINAL_ID_SEPARATOR + options.id
       : this.service.generateSessionId();
 
-    const launchConfig = this.convertTerminalOptionsToLaunchConfig(options.terminalOptions);
+    const launchConfig = convertTerminalOptionsToLaunchConfig(options.terminalOptions);
 
     const { group } = this._createOneGroup(launchConfig);
     const widget = this.terminalView.createWidget(
