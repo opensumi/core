@@ -55,7 +55,6 @@ import {
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
-import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { TerminalGroupViewService } from './terminal.view';
 
 @Injectable()
