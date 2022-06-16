@@ -46,6 +46,7 @@ import { SupportedOptions, ITerminalPreference } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
+import { TerminalProcessExtHostProxy } from './terminal.ext.host.proxy';
 import { TerminalKeyBoardInputService } from './terminal.input';
 import { XTerm } from './xterm';
 
@@ -547,6 +548,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       ...this._launchConfig,
       cwd: this._launchConfig?.cwd || this._workspacePath,
     };
+
+    if (finalLaunchConfig.isExtensionOwnedTerminal) {
+      finalLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
+        new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
+    }
 
     this._launchConfig = finalLaunchConfig;
     this.logger.log('attach terminal by launchConfig: ', this._launchConfig);
