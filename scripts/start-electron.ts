@@ -11,7 +11,7 @@ async function main() {
     await run(
       'cd tools/electron && rimraf ./node_modules && npm i && npm run link-local && npm run rebuild-native && npm run build',
     );
-    await run('touch ' + semphore);
+    fs.closeSync(fs.openSync(semphore, 'a'));
   }
 
   startFromFolder(folderName, 'start');
