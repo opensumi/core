@@ -24,8 +24,6 @@ export abstract class StorageServer implements IStorageServer {
 
   public _cache: any = {};
 
-  private cachedStoragePath = new Map<string, string | undefined>();
-
   public onDidChangeEmitter = new Emitter<StorageChange>();
   readonly onDidChange: Event<StorageChange> = this.onDidChangeEmitter.event;
 
@@ -100,6 +98,11 @@ export class WorkspaceStorageServer extends StorageServer {
   private workspaceNamespace: string | undefined;
   public deferredStorageDirPath: Deferred<string | undefined>;
   public databaseStorageDirPath: string | undefined;
+  private readyDeferred = new Deferred<void>();
+
+  get whenReady() {
+    return this.readyDeferred.promise;
+  }
 
   public async init(storageDirName?: string, workspaceNamespace?: string) {
     this.workspaceNamespace = workspaceNamespace;
@@ -135,10 +138,12 @@ export class WorkspaceStorageServer extends StorageServer {
     if (workspaceNamespace) {
       items = items[workspaceNamespace] || {};
     }
+    this.readyDeferred.resolve();
     return items;
   }
 
   async updateItems(storageName: string, request: IUpdateRequest) {
+    await this.whenReady;
     let raw = {};
     const workspaceNamespace = this.workspaceNamespace;
     if (this._cache[storageName]) {
@@ -205,6 +210,12 @@ export class GlobalStorageServer extends StorageServer {
   public deferredStorageDirPath: Deferred<string | undefined>;
   public databaseStorageDirPath: string | undefined;
 
+  private readyDeferred = new Deferred<void>();
+
+  get whenReady() {
+    return this.readyDeferred.promise;
+  }
+
   public async init(storageDirName: string) {
     return await this.setupDirectories(STORAGE_SCHEMA.GLOBAL, storageDirName);
   }
@@ -232,10 +243,12 @@ export class GlobalStorageServer extends StorageServer {
       }
     }
     this._cache[storageName] = items;
+    this.readyDeferred.resolve();
     return items;
   }
 
   async updateItems(storageName: string, request: IUpdateRequest) {
+    await this.whenReady;
     let raw = {};
     if (this._cache[storageName]) {
       raw = this._cache[storageName];
