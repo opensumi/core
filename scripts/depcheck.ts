@@ -2,7 +2,7 @@ import { join, resolve, relative } from 'path';
 import depcheck from 'depcheck';
 import chalk from 'chalk';
 import { readdirSync, existsSync } from 'fs-extra';
-import { argv } from 'yargs';
+import { argv } from '../packages/core-common/src/node/cli';
 
 const packagesDir = join(__dirname, '../packages');
 
