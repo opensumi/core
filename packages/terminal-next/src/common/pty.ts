@@ -3,14 +3,7 @@ import * as pty from 'node-pty';
 import type vscode from 'vscode';
 import { Terminal as XTerm } from 'xterm';
 
-import {
-  MaybePromise,
-  Uri,
-  OperatingSystem,
-  withNullAsUndefined,
-  IThemeColor,
-  isThemeColor,
-} from '@opensumi/ide-core-common';
+import { MaybePromise, Uri, OperatingSystem, IThemeColor } from '@opensumi/ide-core-common';
 
 import { ITerminalError } from './error';
 import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } from './extension';
@@ -540,6 +533,8 @@ export interface IShellLaunchConfig {
    * Opt-out of the default terminal persistence on restart and reload
    */
   disablePersistence?: boolean;
+
+  __fromTerminalOptions?: TerminalOptions;
 }
 
 export interface ICreateTerminalOptions {
@@ -568,7 +563,9 @@ export interface ICreateTerminalOptions {
   location?: ITerminalLocationOptions;
 }
 
-function asTerminalIcon(iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon): TerminalIcon | undefined {
+export function asTerminalIcon(
+  iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon,
+): TerminalIcon | undefined {
   if (!iconPath || typeof iconPath === 'string') {
     return undefined;
   }
@@ -582,26 +579,3 @@ function asTerminalIcon(iconPath?: Uri | { light: Uri; dark: Uri } | vscode.Them
     color: iconPath.color as IThemeColor,
   };
 }
-
-export const convertTerminalOptionsToLaunchConfig = (options: TerminalOptions) => {
-  const shellLaunchConfig: IShellLaunchConfig = {
-    name: options.name,
-    executable: withNullAsUndefined(options.shellPath),
-    args: withNullAsUndefined(options.shellArgs),
-    cwd: withNullAsUndefined(options.cwd),
-    env: withNullAsUndefined(options.env),
-    icon: withNullAsUndefined(asTerminalIcon(options.iconPath)),
-    color: isThemeColor(options.color) ? options.color.id : undefined,
-    initialText: withNullAsUndefined(options.message),
-    strictEnv: withNullAsUndefined(options.strictEnv),
-    hideFromUser: withNullAsUndefined(options.hideFromUser),
-    // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
-    isExtensionOwnedTerminal: options.isExtensionTerminal,
-    // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
-    // location:
-    // internalOptions?.location ||
-    // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
-    disablePersistence: withNullAsUndefined(options.isTransient),
-  };
-  return shellLaunchConfig;
-};

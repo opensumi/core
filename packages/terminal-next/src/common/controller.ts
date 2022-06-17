@@ -11,7 +11,7 @@ import {
   ITerminalExternalLinkProvider,
 } from './client';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
-import { ITerminalInfo, ICreateTerminalOptions, TerminalOptions } from './pty';
+import { ITerminalInfo, ICreateTerminalOptions, TerminalOptions, IShellLaunchConfig } from './pty';
 import { IWidgetGroup, IWidget } from './resize';
 
 export interface ITerminalExternalClient {
@@ -85,6 +85,7 @@ export interface ITerminalController extends Disposable {
   showTerminalPanel(): void;
   hideTerminalPanel(): void;
   toJSON(): ITerminalBrowserHistory;
+  convertTerminalOptionsToLaunchConfig(options: TerminalOptions): IShellLaunchConfig;
 
   onDidOpenTerminal: Event<ITerminalInfo>;
   onDidCloseTerminal: Event<ITerminalExitEvent>;
