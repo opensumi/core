@@ -1,7 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain } from '@opensumi/ide-core-common';
+import { IDisposable, Emitter, WithEventBus, ContributionProvider, Domain, Event } from '@opensumi/ide-core-common';
 
 import { ClientAppContribution } from '../common';
+import { ContextKeyChangeEvent, IContextKeyService } from '../context-key';
 
 import {
   IToolbarRegistry,
@@ -13,6 +14,7 @@ import {
   ToolBarActionContribution,
   ToolbarActionGroupsChangedEvent,
   ToolbarRegistryReadyEvent,
+  ToolbarActionsWhenChangeEvent,
 } from './types';
 
 type LocationName = string;
@@ -44,6 +46,11 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
   private _onActionDisposed: Emitter<IToolbarAction> = new Emitter();
 
   private _onActionAdded: Emitter<IToolbarAction> = new Emitter();
+
+  private _contextKeys: Set<string> = new Set<string>();
+
+  @Autowired(IContextKeyService)
+  private readonly globalContextKeyService: IContextKeyService;
 
   @Autowired(ToolBarActionContribution)
   private readonly contributions: ContributionProvider<ToolBarActionContribution>;
@@ -106,6 +113,14 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
     this._onActionAdded.event((action) => {
       this.calculateActionPosition(action);
     });
+    // when context keys change we need to check if the toolbar also has changed
+    this.addDispose(
+      Event.debounce<ContextKeyChangeEvent, boolean>(
+        this.globalContextKeyService.onDidChangeContext,
+        (last, event) => last || event.payload.affectsSome(this._contextKeys),
+        50,
+      )((e) => e && this.eventBus.fire(new ToolbarActionsWhenChangeEvent()), this),
+    );
     this.eventBus.fire(new ToolbarRegistryReadyEvent());
   }
 
@@ -122,6 +137,13 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
 
   setDefaultLocation(locationName: string) {
     this._preferredDefaultLocation = locationName;
+  }
+
+  private fillKeysInWhenExpr(when?: string) {
+    const keys = this.globalContextKeyService.getKeysInWhen(when);
+    keys.forEach((key) => {
+      this._contextKeys.add(key);
+    });
   }
 
   registerToolbarActionGroup(group: IToolbarActionGroup): IDisposable {
@@ -275,6 +297,9 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
   registerToolbarAction(action: IToolbarAction): IDisposable {
     this.actions.set(action.id, action);
     this._onActionAdded.fire(action);
+    if (action.when) {
+      this.fillKeysInWhenExpr(action.when);
+    }
     return {
       dispose: () => {
         this.actions.delete(action.id);
@@ -288,7 +313,10 @@ export class NextToolbarRegistryImpl extends WithEventBus implements IToolbarReg
     if (!groups || !this.isValidGroup(position.group)) {
       return;
     }
-    const actions = groups.get(position.group);
+    const actions = groups
+      .get(position.group)
+      ?.filter((action) => (action.when ? this.globalContextKeyService.match(action.when) : true));
+
     if (!actions) {
       return;
     }

@@ -22,6 +22,7 @@ import {
   IToolbarLocationPreference,
   IToolbarActionElementProps,
   ToolbarRegistryReadyEvent,
+  ToolbarActionsWhenChangeEvent,
 } from './types';
 
 export const DEFAULT_TOOLBAR_ACTION_MARGIN = 5;
@@ -79,6 +80,11 @@ export const ToolbarLocation = (props: IToolbarLocationProps & React.HTMLAttribu
           }),
         );
       }
+      disposer.addDispose(
+        eventBus.on(ToolbarActionsWhenChangeEvent, () => {
+          updateNow();
+        }),
+      );
       disposer.addDispose(
         eventBus.on(ToolbarActionGroupsChangedEvent, (e) => {
           if (e.payload.location === location) {

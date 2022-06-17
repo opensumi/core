@@ -171,10 +171,13 @@ export interface IToolbarAction {
    * 是否永远不被收起
    */
   neverCollapse?: boolean;
+  when?: string;
 }
 
 // events
 export class ToolbarRegistryReadyEvent extends BasicEvent<void> {}
+
+export class ToolbarActionsWhenChangeEvent extends BasicEvent<void> {}
 
 export class ToolbarActionsChangedEvent extends BasicEvent<{ position: IToolbarActionPosition }> {}
 

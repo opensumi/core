@@ -32,6 +32,7 @@ export interface IToolbarButtonContribution extends IToolbarActionBasicContribut
   popoverComponent?: string;
 
   popoverStyle?: IToolbarPopoverStyle;
+  when?: string;
 }
 
 export interface IToolbarSelectContribution<T = any> extends IToolbarActionBasicContribution {
