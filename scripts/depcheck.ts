@@ -1,4 +1,3 @@
-
 import { join, resolve, relative } from 'path';
 import depcheck from 'depcheck';
 import chalk from 'chalk';
@@ -10,11 +9,7 @@ const packagesDir = join(__dirname, '../packages');
 const options = {
   ignoreBinPackage: false, // ignore the packages with bin entry
   skipMissing: false, // skip calculation of missing dependencies
-  ignoreDirs: [
-    'bower_components',
-    'node_modules',
-    'lib',
-  ],
+  ignoreDirs: ['bower_components', 'node_modules', 'lib'],
   ignoreMatches: [
     '@opensumi/ide-core-browser',
     '@opensumi/ide-core-common',
@@ -44,11 +39,14 @@ const options = {
   ],
 };
 
-function check(rootDir: string, config = {
-  unusedDependency: true,
-  unusedDevDependency: true,
-  missing: true,
-}) {
+function check(
+  rootDir: string,
+  config = {
+    unusedDependency: true,
+    unusedDevDependency: true,
+    missing: true,
+  },
+) {
   return new Promise<void>((resolve) => {
     const cwd = process.cwd();
     depcheck(rootDir, options, (unused) => {
@@ -127,10 +125,12 @@ async function bootAll() {
   runTaskWithPackages(targetPacks);
 }
 
+const targetModule = (argv as any).module as string;
+
 // 指定模块加载
-if (argv.module) {
-  console.log(`单模块模式依赖检查: ${argv.module}`);
-  const moduleName = (argv.module as string).replace(/@ali\//, '');
+if (targetModule) {
+  console.log(`单模块模式依赖检查: ${targetModule}`);
+  const moduleName = targetModule.replace(/@ali\//, '');
   runTaskWithPackages([moduleName]);
 } else {
   console.log('项目级别依赖检查');
