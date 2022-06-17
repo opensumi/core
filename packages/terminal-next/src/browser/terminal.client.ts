@@ -323,6 +323,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
     const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
     this._launchConfig = launchConfig;
+    if (this._launchConfig.__fromTerminalOptions) {
+      this._terminalOptions = this._launchConfig.__fromTerminalOptions;
+    }
+
     this.name = launchConfig.name || '';
 
     if (launchConfig.initialText) {

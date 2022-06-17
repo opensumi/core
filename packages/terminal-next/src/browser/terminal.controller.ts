@@ -593,7 +593,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
       disablePersistence: withNullAsUndefined(options.isTransient),
     };
-
+    shellLaunchConfig.__fromTerminalOptions = options;
     return shellLaunchConfig;
   }
 

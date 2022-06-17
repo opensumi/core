@@ -533,6 +533,8 @@ export interface IShellLaunchConfig {
    * Opt-out of the default terminal persistence on restart and reload
    */
   disablePersistence?: boolean;
+
+  __fromTerminalOptions?: TerminalOptions;
 }
 
 export interface ICreateTerminalOptions {
