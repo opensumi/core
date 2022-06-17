@@ -33,6 +33,12 @@ jobs:
       - run: |
           echo "HEAD_SHA=${{steps.comment-branch.outputs.head_sha}}" >> $GITHUB_ENV
 
+      # Checkout 到 PR 对应分支
+      - uses: actions/checkout@v2
+        if: success()
+        with:
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
+
       - uses: actions/github-script@v6
         id: run-check-suite
         with:
@@ -43,12 +49,6 @@ jobs:
 
       - run: |
           echo "CHECK_RUN_ID=${{steps.run-check-suite.outputs.result}}" >> $GITHUB_ENV
-
-      # Checkout 到 PR 对应分支
-      - uses: actions/checkout@v2
-        if: success()
-        with:
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v1

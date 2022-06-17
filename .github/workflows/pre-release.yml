@@ -44,6 +44,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org'
+
       # 评论正在发布
       - name: Update status for current issue
         uses: actions/github-script@v6
@@ -56,15 +65,6 @@ jobs:
               repo: context.repo.repo,
               body: `🤖 Pre-Release version is publishing ...`
             });
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
 
       # 安装依赖并构建
       - name: Install dependencies & Build
