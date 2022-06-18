@@ -31,12 +31,17 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   @observable
   protected buttons: string[] = [];
 
+  @observable
+  protected props: Record<string, any> = {};
+
   @action
   open<T = string>(
     message: string | React.ReactNode,
     type: MessageType,
     buttons?: any[],
     closable = true,
+    _?: string,
+    props?: Record<string, any>,
   ): Promise<T | undefined> {
     this.deferred = new Deferred<string>();
     this.type = type;
@@ -44,6 +49,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this.visible = true;
     this.contextkeyService.dialogViewVisibleContext.set(true);
     this.closable = closable;
+    this.props = props ?? {};
     if (buttons) {
       this.buttons = buttons;
     }
@@ -62,6 +68,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     this.type = undefined;
     this.message = '';
     this.buttons = [];
+    this.props = {};
   }
 
   isVisible(): boolean {
@@ -100,5 +107,9 @@ export class DialogService extends AbstractMessageService implements IDialogServ
 
   getButtons(): string[] {
     return this.buttons;
+  }
+
+  getProps(): Record<string, any> {
+    return this.props;
   }
 }

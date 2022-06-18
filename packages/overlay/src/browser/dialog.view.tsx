@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, RefObject, useRef } from 'react';
+import React from 'react';
 
 import { Button, Dialog as DialogView } from '@opensumi/ide-components';
 import { useInjectable, localize } from '@opensumi/ide-core-browser';
@@ -13,7 +13,8 @@ export const Dialog = observer(() => {
   const message = dialogService.getMessage();
   const buttons = dialogService.getButtons();
   const type = dialogService.getType();
-  const wrapperRef: RefObject<HTMLDivElement> = useRef(null);
+  // props will transfer to Overlay component
+  const customProps = dialogService.getProps();
 
   function afterClose() {
     dialogService.reset();
@@ -58,6 +59,7 @@ export const Dialog = observer(() => {
           </Button>
         )
       }
+      {...customProps}
     />
   );
 });

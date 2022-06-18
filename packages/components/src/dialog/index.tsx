@@ -59,6 +59,7 @@ export const Dialog: React.FC<IDialogProps> = ({
   cancelText,
   getContainer,
   keyboard,
+  ...props
 }) => {
   const { getIcon: getContextIcon } = React.useContext(IconContext);
   return (
@@ -75,6 +76,7 @@ export const Dialog: React.FC<IDialogProps> = ({
           : undefined
       }
       afterClose={afterClose}
+      {...props}
     >
       <>
         <div className={'kt-dialog-content'}>

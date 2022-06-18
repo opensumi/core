@@ -14,6 +14,7 @@ export interface IMessageService {
     buttons?: string[],
     closable?: boolean,
     from?: string,
+    props?: Record<string, any>,
   ): Promise<T | undefined>;
   hide<T = string>(value?: T): void;
 }
@@ -33,6 +34,7 @@ export interface IDialogService extends IMessageService {
   getIcon(): Icon | undefined;
   getButtons(): string[];
   getType(): MessageType | undefined;
+  getProps(): Record<string, any>;
   reset(): void;
 }
 
@@ -53,6 +55,8 @@ export abstract class AbstractMessageService implements IMessageService {
     type: MessageType,
     buttons?: any[],
     closable?: boolean,
+    from?: string,
+    props?: Record<string, any>,
   ): Promise<T | undefined>;
   abstract hide<T = string>(value?: T): void;
 }
