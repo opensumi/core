@@ -688,6 +688,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   private async recoverUIState() {
     const UIState = (await this.browserStorageService.getData('search.UIState')) as IUIState | undefined;
+    // 上次关闭时搜索框若处于focus状态会导致本次启动恢复现场后UI与Service不一致 (#1203)
+    // 这里一个非根本性解决方法是在updateUIState前将isSearchFocus置为false
+    if (UIState) {
+      UIState.isSearchFocus = false;
+    }
     this.updateUIState(UIState || {});
   }
 
