@@ -46,7 +46,7 @@ export interface PreferenceService extends IDisposable {
 
   /**
    * 设置一个配置的值
-   * @param preferenceName 偏好名称
+   * @param preferenceName 配置名称
    * @param value 设置值
    * @param scope 目标scope级别 如 User, Workspace
    * @param resourceUri 资源路径
@@ -59,6 +59,15 @@ export interface PreferenceService extends IDisposable {
     resourceUri?: string,
     overrideIdentifier?: string,
   ): Promise<void>;
+
+  /**
+   * 设置一个配置值，优先设置最高 Scope 级别的配置
+   * 如，但设置了工作区配置的情况下，调用该方法将会优先更新工作区配置
+   * @param preferenceName 配置名称
+   * @param value 配置值
+   * @param defaultScope 默认作用域，当查找不到配置值情况下使用该作用域设置配置值
+   */
+  update(preferenceName: string, value: any, defaultScope?: PreferenceScope): Promise<void>;
 
   onPreferenceChanged: Event<PreferenceChange>;
 
