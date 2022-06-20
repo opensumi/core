@@ -371,6 +371,16 @@ export class PreferenceServiceImpl implements PreferenceService {
     throw new Error(`Unable to write to ${PreferenceScope.getScopeNames(resolvedScope)[0]} Settings.`);
   }
 
+  public async update(preferenceName: string, value: any, defaultScope = PreferenceScope.User) {
+    const resolved = this.resolve(preferenceName);
+    // 默认会跳过 PreferenceScope.Default 作用域值的设置
+    if (resolved?.scope) {
+      this.set(preferenceName, value, resolved.scope);
+    } else {
+      this.set(preferenceName, value, defaultScope);
+    }
+  }
+
   public hasLanguageSpecific(preferenceName: string, language: string, resourceUri?: string): boolean {
     return !!this.doResolve(preferenceName, undefined, resourceUri, undefined, language).languageSpecific;
   }

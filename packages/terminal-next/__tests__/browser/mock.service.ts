@@ -288,6 +288,9 @@ export class MockPreferenceService implements PreferenceService {
     resourceUri?: string,
     overrideIdentifier?: string,
   ): Promise<void> {}
+
+  async update(preferenceName: string, value: any, defaultScope?: PreferenceScope): Promise<void> {}
+
   onPreferencesChanged() {
     return Disposable.NULL;
   }
