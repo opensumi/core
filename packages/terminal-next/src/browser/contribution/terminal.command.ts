@@ -12,7 +12,6 @@ import {
   IPreferenceSettingsService,
   ILogger,
   IClipboardService,
-  PreferenceScope,
   TerminalSettingsId,
 } from '@opensumi/ide-core-browser';
 
@@ -76,7 +75,7 @@ export class TerminalCommandContribution implements CommandContribution {
   }
 
   private setDefaultTerminalType(type: string) {
-    this.preference.update('terminal.type', type);
+    this.preference.update(TerminalSettingsId.Type, type);
   }
 
   registerCommands(registry: CommandRegistry) {
@@ -211,31 +210,31 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_ZSH, {
       execute: async () => {
-        this.preference.set(TerminalSettingsId.Type, 'zsh', PreferenceScope.User);
+        this.setDefaultTerminalType('zsh');
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_BASH, {
       execute: async () => {
-        this.preference.set(TerminalSettingsId.Type, 'bash', PreferenceScope.User);
+        this.setDefaultTerminalType('bash');
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_SH, {
       execute: async () => {
-        this.preference.set(TerminalSettingsId.Type, 'sh', PreferenceScope.User);
+        this.setDefaultTerminalType('sh');
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_POWERSHELL, {
       execute: async () => {
-        this.preference.set(TerminalSettingsId.Type, 'powershell', PreferenceScope.User);
+        this.setDefaultTerminalType('powershell');
       },
     });
 
     registry.registerCommand(TERMINAL_COMMANDS.SELECT_CMD, {
       execute: async () => {
-        this.preference.set(TerminalSettingsId.Type, 'cmd', PreferenceScope.User);
+        this.setDefaultTerminalType('cmd');
       },
     });
 
