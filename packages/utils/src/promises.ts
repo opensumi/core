@@ -21,3 +21,24 @@ export async function pSeries<T>(tasks: Iterable<() => Promise<T> | T>): Promise
 
   return results;
 }
+
+export async function pLimit<T>(tasks: (() => Promise<T> | T)[], limit: number) {
+  let count = 0;
+  const queue = [] as (() => void)[];
+  async function run(fn: () => Promise<T> | T) {
+    if (count > limit) {
+      await new Promise<void>((resolve) => {
+        queue.push(resolve);
+      });
+    }
+    count++;
+    const res = await fn();
+    count--;
+    if (queue.length > 0) {
+      queue.shift()!();
+    }
+    return res;
+  }
+  const data = await Promise.all(tasks.map((fn) => run(fn)));
+  return data;
+}
