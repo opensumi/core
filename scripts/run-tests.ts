@@ -1,6 +1,3 @@
-// 用来 debug 某个 packages 的测试有问题
-// 该模块会一个个的跑每个 package 下的测试
-
 import { command } from 'execa';
 
 import { argv } from '../packages/core-common/src/node/cli';
