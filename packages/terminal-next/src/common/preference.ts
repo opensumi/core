@@ -3,7 +3,7 @@ import { localize } from '@opensumi/ide-core-common';
 import { PreferenceSchema } from '@opensumi/ide-core-common/lib/preferences';
 export interface IPreferenceValue {
   name: string;
-  value: string | number | boolean;
+  value: string | number | boolean | Array<string | number | boolean>;
 }
 
 export const ITerminalPreference = Symbol('ITerminalPreference');
@@ -298,6 +298,26 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       description: '%preference.terminal.integrated.copyOnSelectionDesc%',
       default: false,
+    },
+    [CodeTerminalSettingId.LocalEchoEnabled]: {
+      type: 'boolean',
+      description: '%preference.terminal.integrated.localEchoDesc%',
+      default: true,
+    },
+    [CodeTerminalSettingId.LocalEchoLatencyThreshold]: {
+      type: 'number',
+      description: '%preference.terminal.integrated.localEchoLatencyThresholdDesc%',
+      default: 30,
+    },
+    [CodeTerminalSettingId.LocalEchoExcludePrograms]: {
+      type: 'array',
+      description: '%preference.terminal.integrated.localEchoExcludeProgramsDesc%',
+      default: ['vim', 'vi', 'nano', 'tmux'],
+    },
+    [CodeTerminalSettingId.LocalEchoStyle]: {
+      type: 'string',
+      description: '%preference.terminal.integrated.localEchoStyleDesc%',
+      default: 'dim',
     },
   },
 };
