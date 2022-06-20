@@ -841,6 +841,7 @@ export const localizationBundle = {
     'main-layout.left-panel.toggle': '切换左侧面板',
     'main-layout.left-panel.show': '显示左侧面板',
     'main-layout.left-panel.hide': '隐藏左侧面板',
+    'main-layout.sidecar.hide': '隐藏左右面板',
     'main-layout.right-panel.toggle': '切换右侧面板',
     'main-layout.right-panel.show': '显示右侧面板',
     'main-layout.right-panel.hide': '隐藏右侧面板',
