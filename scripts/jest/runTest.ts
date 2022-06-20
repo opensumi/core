@@ -2,14 +2,15 @@ import * as jest from 'jest';
 import { Config } from '@jest/types';
 import { argv } from '../../packages/core-common/src/node/cli';
 
-export async function runTest(targets: string[], project?: string) {
-  console.log(argv);
+export async function runTest(targets: string[], projects?: string[]) {
+  console.log('test argv', argv);
   const testPathPattern = targets.map((v) => `packages\/${v}\/__tests?__\/.*\\.(test|spec)\\.[jt]sx?$`);
+
   return await jest.runCLI(
     {
       passWithNoTests: true,
       testPathPattern,
-      selectProjects: project ? [project] : undefined,
+      selectProjects: projects,
       detectOpenHandles: true,
       forceExit: true,
       ...argv,
