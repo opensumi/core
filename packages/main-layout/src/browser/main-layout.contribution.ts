@@ -37,7 +37,7 @@ export const HIDE_LEFT_PANEL_COMMAND: Command = {
 
 export const WORKBENCH_ACTION_CLOSESIDECAR: Command = {
   id: 'workbench.action.closeSidebar',
-  label: '%main-layout.sidecar.hide%',
+  label: '%main-layout.sidebar.hide%',
 };
 
 export const SHOW_LEFT_PANEL_COMMAND: Command = {
@@ -217,7 +217,8 @@ export class MainLayoutModuleContribution
     });
 
     commands.registerCommand(WORKBENCH_ACTION_CLOSESIDECAR, {
-      execute: () => Promise.all([
+      execute: () =>
+        Promise.all([
           this.mainLayoutService.toggleSlot(SlotLocation.left, false),
           this.mainLayoutService.toggleSlot(SlotLocation.right, false),
         ]),

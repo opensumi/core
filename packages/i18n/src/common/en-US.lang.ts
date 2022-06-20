@@ -861,6 +861,7 @@ export const localizationBundle = {
     'main-layout.left-panel.toggle': 'Toggle Left Side Bar',
     'main-layout.left-panel.show': 'Show Left Side Bar',
     'main-layout.left-panel.hide': 'Hide Left Side Bar',
+    'main-layout.sidebar.hide': 'Hide Side Bar',
     'main-layout.right-panel.toggle': 'Toggle Right Side Bar',
     'main-layout.right-panel.show': 'Show Right Side Bar',
     'main-layout.right-panel.hide': 'Hide Right Side Bar',
