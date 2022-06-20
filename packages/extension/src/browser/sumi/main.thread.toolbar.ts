@@ -224,6 +224,7 @@ export class KaitianExtensionToolbarService {
       strictPosition: contribution.strictPosition,
       description: contribution.description || contribution.title || id,
       weight: contribution.weight,
+      when: contribution.when,
       component: createToolbarActionBtn({
         id,
         popoverId: `${extensionId}:${contribution.popoverComponent}`,
