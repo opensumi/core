@@ -14,7 +14,7 @@ import {
   WithEventBus,
   ExtensionDidContributes,
   Schemes,
-  memoize,
+  GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
@@ -35,8 +35,6 @@ import { IconThemeStore } from './icon-theme-store';
 import './icon.less';
 
 const { Path } = path;
-
-export const ICON_THEME_SETTING = 'general.icon';
 
 @Injectable()
 export class IconService extends WithEventBus implements IIconService {
@@ -98,8 +96,8 @@ export class IconService extends WithEventBus implements IIconService {
 
   private listen() {
     this.preferenceService.onPreferenceChanged(async (e) => {
-      if (e.preferenceName === ICON_THEME_SETTING && this.iconContributionRegistry.has(e.newValue)) {
-        await this.applyTheme(this.preferenceService.get<string>(ICON_THEME_SETTING)!);
+      if (e.preferenceName === GeneralSettingsId.Icon && this.iconContributionRegistry.has(e.newValue)) {
+        await this.applyTheme(this.preferenceService.get<string>(GeneralSettingsId.Icon)!);
       }
     });
   }
@@ -287,7 +285,7 @@ export class IconService extends WithEventBus implements IIconService {
   }
 
   get preferenceThemeId(): string | undefined {
-    return this.preferenceService.get<string>(ICON_THEME_SETTING);
+    return this.preferenceService.get<string>(GeneralSettingsId.Icon);
   }
 
   private async updateIconThemes() {
@@ -298,7 +296,7 @@ export class IconService extends WithEventBus implements IIconService {
       return pre;
     }, new Map());
 
-    this.preferenceSettings.setEnumLabels(ICON_THEME_SETTING, Object.fromEntries(themeMap.entries()));
+    this.preferenceSettings.setEnumLabels(GeneralSettingsId.Icon, Object.fromEntries(themeMap.entries()));
     // 当前没有主题，或没有缓存的主题时，将第一个注册主题设置为当前主题
     if (!this.currentTheme) {
       if (!this.preferenceThemeId || !themeMap.has(this.preferenceThemeId)) {
@@ -319,14 +317,14 @@ export class IconService extends WithEventBus implements IIconService {
       }
     }
 
-    const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(ICON_THEME_SETTING);
+    const currentSchemas = this.preferenceSchemaProvider.getPreferenceProperty(GeneralSettingsId.Icon);
     if (currentSchemas) {
       delete currentSchemas.scope;
     }
     this.preferenceSchemaProvider.setSchema(
       {
         properties: {
-          [ICON_THEME_SETTING]: {
+          [GeneralSettingsId.Icon]: {
             ...currentSchemas,
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
           },

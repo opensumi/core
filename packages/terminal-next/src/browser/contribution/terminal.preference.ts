@@ -1,6 +1,6 @@
 import { Autowired } from '@opensumi/di';
 import { PreferenceContribution, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
-import { Domain, OperatingSystem, PreferenceSchema } from '@opensumi/ide-core-common';
+import { Domain, OperatingSystem, PreferenceSchema, TerminalSettingsId } from '@opensumi/ide-core-common';
 
 import { ITerminalService } from '../../common';
 import { terminalPreferenceSchema } from '../../common/preference';
@@ -17,10 +17,9 @@ export class TerminalPreferenceContribution implements PreferenceContribution {
   private preferenceSchemaProvider: PreferenceSchemaProvider;
 
   constructor() {
-    const TERMINAL_TYPE = 'terminal.type';
     const TERMINAL_TYPE_ENUM = ['git-bash', 'powershell', 'cmd', 'default'];
     const {
-      properties: { [TERMINAL_TYPE]: terminalTypeProperty },
+      properties: { [TerminalSettingsId.Type]: terminalTypeProperty },
     } = { ...terminalPreferenceSchema };
 
     this.ptyTerminal.getOS().then((osType) => {
@@ -28,7 +27,7 @@ export class TerminalPreferenceContribution implements PreferenceContribution {
         this.preferenceSchemaProvider.setSchema(
           {
             properties: {
-              [TERMINAL_TYPE]: {
+              [TerminalSettingsId.Type]: {
                 ...terminalTypeProperty,
                 enum: TERMINAL_TYPE_ENUM, // if OS is windows, update terminal type
               },

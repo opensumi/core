@@ -13,6 +13,7 @@ import {
   QuickOpenItem,
   Mode,
   ClientAppContribution,
+  GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
@@ -271,13 +272,13 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
             placeholder: localize('icon.quickopen.plh'),
           },
           (value) => {
-            this.updateTopPreference('general.icon', value);
+            this.updateTopPreference(GeneralSettingsId.Icon, value);
           },
         );
         if (themeId) {
-          await this.updateTopPreference('general.icon', themeId);
+          await this.updateTopPreference(GeneralSettingsId.Icon, themeId);
         } else {
-          await this.updateTopPreference('general.icon', prevThemeId);
+          await this.updateTopPreference(GeneralSettingsId.Icon, prevThemeId);
         }
       },
     });

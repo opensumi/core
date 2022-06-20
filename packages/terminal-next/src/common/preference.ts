@@ -1,4 +1,4 @@
-import { Event } from '@opensumi/ide-core-common';
+import { Event, TerminalSettingsId } from '@opensumi/ide-core-common';
 import { localize } from '@opensumi/ide-core-common';
 import { PreferenceSchema } from '@opensumi/ide-core-common/lib/preferences';
 export interface IPreferenceValue {
@@ -149,33 +149,33 @@ export const terminalPreferenceSchema: PreferenceSchema = {
   type: 'object',
   properties: {
     // 终端
-    'terminal.type': {
+    [TerminalSettingsId.Type]: {
       type: 'string',
-      enum: ['zsh', 'bash', 'sh', 'default'], // default is macOS
+      enum: ['zsh', 'bash', 'sh', 'default'], // for unix
       default: 'default',
       description: '%preference.terminal.typeDesc%',
     },
-    'terminal.fontFamily': {
+    [TerminalSettingsId.FontFamily]: {
       type: 'string',
     },
-    'terminal.fontSize': {
+    [TerminalSettingsId.FontSize]: {
       type: 'number',
       default: 12,
     },
-    'terminal.fontWeight': {
+    [TerminalSettingsId.FontWeight]: {
       type: 'string',
       enum: ['normal', 'bold'],
       default: 400,
     },
-    'terminal.lineHeight': {
+    [TerminalSettingsId.LineHeight]: {
       type: 'number',
       default: 1,
     },
-    'terminal.cursorBlink': {
+    [TerminalSettingsId.CursorBlink]: {
       type: 'boolean',
       default: false,
     },
-    'terminal.scrollback': {
+    [TerminalSettingsId.Scrollback]: {
       type: 'number',
       default: 5000,
     },
