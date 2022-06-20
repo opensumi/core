@@ -14,7 +14,7 @@ on:
       - 'packages/**'
 
 jobs:
-  browser:
+  ci:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
