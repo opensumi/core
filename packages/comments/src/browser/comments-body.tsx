@@ -7,15 +7,19 @@ import { markdownCss } from './markdown.style';
 
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
-const renderer = new marked.Renderer();
-
-renderer.link = (href, title, text) => `<a target="_blank" rel="noopener" href="${href}" title="${title}">${text}</a>`;
-
 export const CommentsBody: React.FC<{
   body: string;
 }> = React.memo(({ body }) => {
   const shadowRootRef = React.useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
+
+  const renderer = React.useMemo(() => {
+    const renderer = new marked.Renderer();
+
+    renderer.link = (href, title, text) =>
+      `<a target="_blank" rel="noopener" href="${href}" title="${title}">${text}</a>`;
+    return renderer;
+  }, []);
 
   React.useEffect(() => {
     if (shadowRootRef.current) {

@@ -37,7 +37,7 @@ const baseConfig = {
     // 终端渲染测试暂时不跟随单元测试
     '/packages/terminal-next/__tests__/browser/render.test.ts',
   ],
-  modulePathIgnorePatterns: ['<rootDir>/dist/'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/tools/workspace/'],
   coveragePathIgnorePatterns: [
     '/dist/',
     '/node_modules/',

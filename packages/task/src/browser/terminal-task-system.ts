@@ -45,7 +45,6 @@ import { CustomTask } from '../common/task';
 
 import { ProblemCollector } from './problem-collector';
 
-
 const { deepClone } = objects;
 const { removeAnsiEscapeCodes } = strings;
 const { Path } = path;
@@ -289,7 +288,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.taskStatus = TaskStatus.PROCESS_RUNNING;
     this.pid = await this.terminalClient?.pid;
     this.processReady.resolve();
-    this.terminalView.selectWidget(this.terminalClient!.id);
     this.terminalClient?.term.write('\n\x1b[G');
     return this.exitDefer.promise;
   }

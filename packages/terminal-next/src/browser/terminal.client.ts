@@ -40,7 +40,6 @@ import {
   ITerminalProfile,
   IShellLaunchConfig,
   ITerminalProfileInternalService,
-  convertTerminalOptionsToLaunchConfig,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
 import { SupportedOptions, ITerminalPreference } from '../common/preference';
@@ -266,24 +265,15 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
-  convertTerminalOptionsToLaunchConfig() {
-    const options = this._terminalOptions;
-    const shellLaunchConfig: IShellLaunchConfig = convertTerminalOptionsToLaunchConfig(options);
-
-    if (options.isExtensionTerminal) {
-      shellLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
-        new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
-    }
-    return shellLaunchConfig;
-  }
-
   /**
+   * 目前 core 内不再有代码调用这个函数，只有测试用例中会调用这里。
+   * 后续移除掉该函数
    * @deprecated Please use `init2` instead.
    */
   async init(widget: IWidget, options: TerminalOptions = {}) {
     this._terminalOptions = options;
     await this.init2(widget, {
-      config: this.convertTerminalOptionsToLaunchConfig(),
+      config: this.controller.convertTerminalOptionsToLaunchConfig(options),
     });
   }
   convertProfileToLaunchConfig(
@@ -333,6 +323,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
     const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
     this._launchConfig = launchConfig;
+    if (this._launchConfig.__fromTerminalOptions) {
+      this._terminalOptions = this._launchConfig.__fromTerminalOptions;
+    }
+
     this.name = launchConfig.name || '';
 
     if (launchConfig.initialText) {
@@ -561,6 +555,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       cwd: this._launchConfig?.cwd || this._workspacePath,
     };
 
+    if (finalLaunchConfig.isExtensionOwnedTerminal) {
+      finalLaunchConfig.customPtyImplementation = (sessionId, cols, rows) =>
+        new TerminalProcessExtHostProxy(sessionId, cols, rows, this.controller);
+    }
+
     this._launchConfig = finalLaunchConfig;
     this.logger.log('attach terminal by launchConfig: ', this._launchConfig);
 
@@ -703,7 +702,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateOptions(options: TerminalOptions) {
     this._terminalOptions = { ...this._terminalOptions, ...options };
-    this._launchConfig = this.convertTerminalOptionsToLaunchConfig();
+    this._launchConfig = this.controller.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
 
     if (!this.name && !this._widget.name) {
       this._widget.name = options.name || this.name;

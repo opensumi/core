@@ -11,7 +11,15 @@ import WebSocket from 'ws';
 import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
-import { ITerminalClientFactory, ITerminalGroupViewService, ITerminalClient, IWidget } from '../../src/common';
+import {
+  ITerminalClientFactory,
+  ITerminalGroupViewService,
+  ITerminalClient,
+  IWidget,
+  ITerminalClientFactory2,
+  ITerminalInternalService,
+  IShellLaunchConfig,
+} from '../../src/common';
 
 import { injector } from './inject';
 import { createProxyServer, createWsServer, resetPort } from './proxy';
@@ -88,6 +96,7 @@ describe('Terminal Client', () => {
 
   it('Terminal Pid And Name', () => {
     expect(client.name).toEqual('bash');
+    expect(client.id).toEqual(widget.id);
   });
 
   it('Focus Terminal which is ready', async () => {
@@ -146,5 +155,24 @@ describe('Terminal Client', () => {
     client.selectAll();
     client.updateTheme();
     client.clear();
+  });
+
+  it('should use isExtentionOwnedTerminal to determine the terminal process', async () => {
+    let launchConfig1: IShellLaunchConfig | undefined;
+    injector.mock(
+      ITerminalInternalService,
+      'attachByLaunchConfig',
+      (sessionId: string, cols: number, rows: number, launchConfig: IShellLaunchConfig) => {
+        launchConfig1 = launchConfig;
+      },
+    );
+    const factory2 = injector.get(ITerminalClientFactory2) as ITerminalClientFactory2;
+    await factory2(widget, {
+      config: {
+        isExtensionOwnedTerminal: true,
+      },
+    });
+    expect(launchConfig1).toBeDefined();
+    expect(launchConfig1?.customPtyImplementation).toBeDefined();
   });
 });

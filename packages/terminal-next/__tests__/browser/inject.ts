@@ -1,4 +1,3 @@
-import { Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
   AppConfig,
@@ -20,6 +19,7 @@ import {
   CommandRegistry,
   CoreCommandRegistryImpl,
 } from '@opensumi/ide-core-common';
+import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -66,7 +66,7 @@ import {
 const mockPreferences = new Map();
 mockPreferences.set('terminal.integrated.shellArgs.linux', []);
 
-export const injector = new Injector([
+export const injector = new MockInjector([
   {
     token: ITerminalInternalService,
     useClass: TerminalInternalService,
