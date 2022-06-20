@@ -21,9 +21,7 @@ if (target === 'electron') {
   version = argv.electronVersion || require('electron/package.json').version;
   console.log('rebuilding native for electron version ' + version);
   commands = [
-    os.platform() === 'win32'
-      ? 'set HOME=~/.electron-gyp'
-      : 'HOME=~/.electron-gyp',
+    os.platform() === 'win32' ? 'set HOME=~/.electron-gyp' : 'HOME=~/.electron-gyp',
     'node-gyp',
     'rebuild',
     '--openssl_fips=X',
@@ -62,7 +60,7 @@ function getBuildCacheDir(modulePath, type, version, arch) {
     require('os').tmpdir(),
     'kaitian_build_cache',
     `${type}-${version}-${arch}`,
-    info.name + '-' + info.version
+    info.name + '-' + info.version,
   );
 }
 

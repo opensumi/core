@@ -1,5 +1,3 @@
-import pSeries from 'p-series';
-
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { DecorationsManager, Decoration, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
 import {
@@ -16,6 +14,7 @@ import {
   Disposable,
   ThrottledDelayer,
   path,
+  pSeries,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {

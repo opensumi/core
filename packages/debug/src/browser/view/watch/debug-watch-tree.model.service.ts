@@ -1,5 +1,3 @@
-import pSeries from 'p-series';
-
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   TreeModel,
@@ -26,6 +24,7 @@ import {
   IContextKey,
   IReporterService,
   path,
+  pSeries,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 

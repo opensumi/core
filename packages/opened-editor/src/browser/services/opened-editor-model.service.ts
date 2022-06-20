@@ -1,5 +1,3 @@
-import pSeries = require('p-series');
-
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   DecorationsManager,
@@ -20,6 +18,7 @@ import {
   Deferred,
   Event,
   path,
+  pSeries,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';

@@ -11,3 +11,13 @@ export class Deferred<T> {
     this.reject = reject;
   });
 }
+
+export async function pSeries<T>(tasks: Iterable<() => Promise<T> | T>): Promise<T[]> {
+  const results = [] as T[];
+
+  for (const task of tasks) {
+    results.push(await task());
+  }
+
+  return results;
+}

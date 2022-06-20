@@ -1,5 +1,4 @@
 import { observable } from 'mobx';
-import pSeries from 'p-series';
 
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
@@ -9,6 +8,7 @@ import {
   PreferenceService,
   EDITOR_COMMANDS,
   ILogger,
+  pSeries,
 } from '@opensumi/ide-core-browser';
 import { path, Deferred, DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';

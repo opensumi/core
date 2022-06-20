@@ -1,5 +1,3 @@
-import pSeries = require('p-series');
-
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   DecorationsManager,
@@ -8,7 +6,7 @@ import {
   WatchEvent,
   TreeNodeEvent,
 } from '@opensumi/ide-components';
-import { Emitter, Deferred, Event, DisposableCollection, path } from '@opensumi/ide-core-browser';
+import { Emitter, Deferred, Event, DisposableCollection, path, pSeries } from '@opensumi/ide-core-browser';
 
 import { DebugVariable, ExpressionContainer, ExpressionNode } from '../tree/debug-tree-node.define';
 import styles from '../view/variables/debug-variables.module.less';

@@ -67,10 +67,10 @@ Examples:
   `,
   )
   .help()
-  .string('_').argv;
+  .string('_').argv as { [x: string]: unknown; _: (string | number)[]; $0: string };
 
 if (argv._[0] !== undefined) {
-  openPathOrUrl(argv._[0]);
+  openPathOrUrl(argv._[0].toString());
 } else {
   // eslint-disable-next-line no-console
   console.error(red('The path or url is not defined.'));

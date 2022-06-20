@@ -1,5 +1,4 @@
 import throttle from 'lodash/throttle';
-import pSeries from 'p-series';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
@@ -18,6 +17,7 @@ import {
   ILogger,
   path,
   Throttler,
+  pSeries,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';

@@ -1,5 +1,3 @@
-import pSeries from 'p-series';
-
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   DecorationsManager,
@@ -19,6 +17,7 @@ import {
   DisposableCollection,
   IClipboardService,
   path,
+  pSeries,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 
