@@ -17,6 +17,11 @@ export interface Command {
    */
   label?: string;
   /**
+   * 要在命令面板显示的较短的文案
+   * 支持国际化占位符，例如 %evenEditorGroups%
+   */
+  shortLabel?: string;
+  /**
    * 要在命令面板显示的图标
    */
   iconClass?: string;
@@ -39,6 +44,10 @@ export interface Command {
    * 在任意语言下都相同的别名
    */
   alias?: string;
+  /**
+   * 在任意语言下都相同的分类名
+   */
+  aliasCategory?: string;
   /**
    * 是否启用该命令，值为 when 表达式
    * 这个值只影响 UI 是否展示 （命令面板或者菜单）
@@ -517,8 +526,8 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     return command
       ? {
           ...command,
-          category: replaceLocalizePlaceholder(command.category),
           label: replaceLocalizePlaceholder(command.label),
+          category: replaceLocalizePlaceholder(command.category),
         }
       : undefined;
   }

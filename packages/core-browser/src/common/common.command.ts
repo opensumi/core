@@ -586,28 +586,33 @@ export namespace EDITOR_COMMANDS {
   export const SEARCH_WORKSPACE_SYMBOL: Command = {
     id: 'editor.workspaceSymbol.quickopen',
     label: localize('editor.workspaceSymbol.quickopen'),
+    alias: 'Search Workspace Symbol',
     category: CATEGORY,
   };
 
   export const SEARCH_WORKSPACE_SYMBOL_CLASS: Command = {
     id: 'editor.workspaceSymbolClass.quickopen',
-    label: localize('editor.workspaceClassSymbol.quickopen', '搜索工作区中的类'),
+    label: localize('editor.workspaceSymbolClass.quickopen', 'Search Workspace Class Symbol'),
+    alias: 'Search Workspace Class Symbol',
     category: CATEGORY,
   };
 
   export const GO_TO_LINE: Command = {
     id: 'editor.action.gotoLine',
     label: localize('editor.goToLine', 'Go to Line...'),
+    alias: 'Go to Line...',
     category: CATEGORY,
   };
 
   export const QUICK_OPEN: Command = {
     id: 'workbench.action.quickOpen',
     category: CATEGORY,
+    label: localize('quickOpen', 'Go to File...'),
+    alias: 'Go to File...',
   };
 
   export const TOGGLE_WORD_WRAP: Command = {
-    id: 'editor.toggleWorldWrap',
+    id: 'editor.toggleWordWrap',
     category: CATEGORY,
   };
 
@@ -615,12 +620,14 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.action.formatDocument.multiple',
     category: CATEGORY,
     label: localize('editor.formatDocument.label.multiple', 'Format Document With...'),
+    alias: 'Format Document With...',
   };
 
   export const FORMAT_SELECTION_WITH: Command = {
     id: 'editor.action.formatSelection.multiple',
     category: CATEGORY,
     label: localize('editor.formatSelection.label.multiple', 'Format Selection With...'),
+    alias: 'Format Selection With...',
   };
 }
 

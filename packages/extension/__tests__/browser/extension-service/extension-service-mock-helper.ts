@@ -156,6 +156,11 @@ const mockExtensionProps: IExtensionProps = {
           title: 'HelloKaitian',
           icon: 'icon.svg',
         },
+        {
+          command: 'Test',
+          title: '%test.label%',
+          category: '%test.category%',
+        },
       ],
       keybindings: [
         {
@@ -244,8 +249,14 @@ const mockExtensionProps: IExtensionProps = {
     },
   },
   extraMetadata: {},
-  packageNlsJSON: {},
-  defaultPkgNlsJSON: {},
+  packageNlsJSON: {
+    'test.label': 'this is label',
+    'test.category': 'this is category',
+  },
+  defaultPkgNlsJSON: {
+    'test.label': 'this is alias',
+    'test.category': 'this is aliasCategory',
+  },
 };
 
 @Injectable()

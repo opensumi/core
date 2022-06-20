@@ -135,38 +135,56 @@ export class QuickCommandHandler implements QuickOpenHandler {
     return items;
   }
 
-  protected getOtherCommands() {
+  protected getCommands(): { recent: Command[]; other: Command[] } {
     const menus = this.menuService.createMenu(MenuId.CommandPalette, this.contextKeyService);
-    const menuNodes = menus
-      .getMenuNodes()
-      .reduce((r, [, actions]) => [...r, ...actions], [] as MenuItemNode[])
-      .filter((item) => item instanceof MenuItemNode && !item.disabled)
-      .filter((item, index, array) => array.findIndex((n) => n.id === item.id) === index) as MenuItemNode[];
+
+    const _recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
+    const limit = this.corePreferences['workbench.commandPalette.history'];
+    const recentCommands = _recentCommands.slice(0, limit);
+    const recentCommandIds = new Set<string>(recentCommands.map((command) => command.id));
+    // 用来记录某个命令 id 已被保存。相同的命令 id 只保存第一次
+    const availableCommandIds = new Set<string>();
+    const nodes = [] as MenuItemNode[];
+    const otherCommands = [] as Command[];
+
+    for (const [, actions] of menus.getMenuNodes()) {
+      for (const item of actions) {
+        if (!(item instanceof MenuItemNode) || item.disabled || availableCommandIds.has(item.id)) {
+          continue;
+        }
+        // 这里先添加进来
+        availableCommandIds.add(item.id);
+        // 与上一句判断不能交换位置，allCommandIds 代表了所有命令的 id，也包括 recent 的
+        if (recentCommandIds.has(item.id)) {
+          continue;
+        }
+        nodes.push(item);
+        const command = this.commandRegistry.getCommand(item.id);
+
+        // 过滤掉可能存在的 command "没有注册" 的情况
+        if (command) {
+          // 使用 Menu 中存在的 label
+          otherCommands.push({
+            ...command,
+            label: item.label,
+          });
+        }
+      }
+    }
+
+    // 过滤掉无效的命令，可能此时该命令还没有被激活（when 条件为 False）
+    for (let index = recentCommands.length - 1; index >= 0; index--) {
+      const element = recentCommands[index];
+      if (!availableCommandIds.has(element.id)) {
+        recentCommands.splice(index, 1);
+      }
+    }
+
     menus.dispose();
 
-    return menuNodes.reduce((prev, item) => {
-      const command = this.commandRegistry.getCommand(item.id);
-      // 过滤掉可能存在的 command "没有注册" 的情况
-      if (command) {
-        // 使用 Menu 中存在的 label
-        prev.push({
-          ...command,
-          label: item.label,
-        });
-      }
-      return prev;
-    }, [] as Command[]);
-  }
-
-  protected getCommands(): { recent: Command[]; other: Command[] } {
-    const otherCommands = this.getOtherCommands();
-    const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
-    const limit = this.corePreferences['workbench.commandPalette.history'];
     return {
-      recent: recentCommands.slice(0, limit),
+      recent: recentCommands,
       other: otherCommands
-        // 过滤掉最近使用中含有的命令
-        .filter((command) => !recentCommands.some((recent) => recent.id === command.id))
         // 命令重新排序
         .sort((a, b) => Command.compareCommands(a, b)),
     };
@@ -214,7 +232,20 @@ export class CommandQuickOpenItem extends QuickOpenItem {
   }
 
   getDetail(): string | undefined {
-    return this.command.label !== this.command.alias ? this.command.alias : undefined;
+    if (this.command.label === this.command.alias) {
+      return;
+    }
+    let detail: string | undefined;
+    if (this.command.alias) {
+      const category = this.command.aliasCategory ?? this.command.category;
+      if (category) {
+        detail = `${category}: ${this.command.alias}`;
+      } else {
+        detail = this.command.alias;
+      }
+    }
+
+    return detail;
   }
 
   getKeybinding(): Keybinding | undefined {
