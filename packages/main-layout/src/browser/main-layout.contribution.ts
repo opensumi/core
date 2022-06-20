@@ -34,6 +34,12 @@ export const HIDE_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.hide',
   label: '%main-layout.left-panel.hide%',
 };
+
+export const WORKBENCH_ACTION_CLOSESIDECAR: Command = {
+  id: 'workbench.action.closeSidebar',
+  label: '%main-layout.sidebar.hide%',
+};
+
 export const SHOW_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.show',
   label: '%main-layout.left-panel.show%',
@@ -59,6 +65,12 @@ export const HIDE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.hide',
   label: '%main-layout.bottom-panel.hide%',
 };
+
+export const WORKBENCH_ACTION_CLOSEPANEL: Command = {
+  id: 'workbench.action.closePanel',
+  delegate: HIDE_BOTTOM_PANEL_COMMAND.id,
+};
+
 export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.show',
   label: '%main-layout.bottom-panel.show%',
@@ -204,18 +216,26 @@ export class MainLayoutModuleContribution
       },
     });
 
-    // @deprecated
+    commands.registerCommand(WORKBENCH_ACTION_CLOSESIDECAR, {
+      execute: () =>
+        Promise.all([
+          this.mainLayoutService.toggleSlot(SlotLocation.left, false),
+          this.mainLayoutService.toggleSlot(SlotLocation.right, false),
+        ]),
+    });
+
     commands.registerCommand(SHOW_BOTTOM_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, true);
       },
     });
-    // @deprecated
+
     commands.registerCommand(HIDE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, false);
       },
     });
+    commands.registerCommand(WORKBENCH_ACTION_CLOSEPANEL);
     commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
       execute: (show?: boolean, size?: number) => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom, show, size);
