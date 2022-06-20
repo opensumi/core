@@ -10,6 +10,7 @@ import { argv } from '../../packages/core-common/src/node/cli';
 import { pLimit } from '../../packages/utils/src/promises';
 
 import { getShardPackages } from '../jest/shard';
+import { runTest } from './runTest';
 
 const cacheDir = join(__dirname, '../.tests-cache');
 
@@ -75,32 +76,22 @@ const funcs = packagesDirNames.map((target) => {
       console.log(`${checkPointKey} 命中 successCheckPoint，跳过`);
       return;
     }
-    const env = {};
+
     if ((argv as any).strictPromise) {
-      env['EXIT_ON_UNHANDLED_REJECTION'] = 'true';
-    }
-    let cmd = `yarn test:module --module=${target}`;
-
-    // 串行执行
-    cmd += ' --runInBand';
-    // 快速失败
-    cmd += ' --bail';
-    if ((argv as any).coverage) {
-      cmd += ' --coverage';
+      process.env['EXIT_ON_UNHANDLED_REJECTION'] = 'true';
     }
 
-    console.log('cmd:', cmd, 'env:', env);
-    const runResult = await command(cmd, {
-      reject: false,
-      stdio: 'inherit',
-      shell: true,
-      env,
+    const runResult = await runTest([target], undefined, {
+      runInBand: true,
+      bail: true,
+      ...argv,
     });
+
     const info = {
       info: runResult,
     };
 
-    if (!runResult.failed) {
+    if (!runResult.results.success) {
       successCheckPoint.set(checkPointKey, info);
       info['status'] = 'success';
     } else {
@@ -114,6 +105,6 @@ const funcs = packagesDirNames.map((target) => {
   };
 });
 
-pLimit(funcs, 5).then(() => {
+pLimit(funcs, 6).then(() => {
   writeJSONSync(join(cacheDir, 'tests.json'), testResult);
 });

@@ -9,9 +9,9 @@ const packagesDirNames = pkgs.map((pkg) => pkg.dirname);
 
 const main = async () => {
   console.log(`current jest modules:`, packagesDirNames);
-  const env = {};
+
   if ((argv as any).strictPromise) {
-    env['EXIT_ON_UNHANDLED_REJECTION'] = 'true';
+    process.env['EXIT_ON_UNHANDLED_REJECTION'] = 'true';
   }
 
   const v = await runTest(packagesDirNames);
