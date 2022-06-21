@@ -9,7 +9,6 @@ import { Injector } from '@opensumi/di';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
 import { ConstructorOf, ILogService, LogLevel, MaybePromise, BasicModule } from '@opensumi/ide-core-common';
 
-
 export abstract class NodeModule extends BasicModule {}
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
@@ -120,7 +119,7 @@ export interface IServerAppOpts extends Partial<Config> {
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
   wsServerOptions?: ws.ServerOptions;
-  pathMatcheOptions?: {
+  pathMatchOptions?: {
     // When true the regexp will match to the end of the string.
     end?: boolean;
   };
