@@ -1,7 +1,7 @@
 import React from 'react';
 
 import type { Injector } from '@opensumi/di';
-import type { ExtensionCandidate, ExtensionConnectOption } from '@opensumi/ide-core-common';
+import type { ExtensionCandidate, ExtensionConnectOption, UrlProvider } from '@opensumi/ide-core-common';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
 
@@ -78,7 +78,7 @@ export interface AppConfig {
   /**
    * 定义 WebScoket 通信路径
    */
-  wsPath: string;
+  wsPath: UrlProvider;
   /**
    * 定义 IDE 各个布局区块默认加载的模块，可针对性对模块进行增删改
    * 默认值可参考：https://github.com/opensumi/core/tree/58b998d9e1f721928f576579f16ded46b7505e84/packages/main-layout/src/browser/default-config.ts

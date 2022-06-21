@@ -86,12 +86,12 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   public handlerId = 'common-channel';
   private wsServer: ws.Server;
-  private handlerRoute: (wsPathname: string) => any;
+  protected handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<string | number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
-  constructor(routePath: string, private logger: any = console) {
+  constructor(routePath: string, private logger: any = console, private serverOptions: ws.ServerOptions) {
     super();
     this.handlerRoute = route(`${routePath}`);
     this.initWSServer();
@@ -108,7 +108,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({ noServer: true });
+    this.wsServer = new ws.Server({ noServer: true, ...this.serverOptions });
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
       connection.on('message', (msg: string) => {

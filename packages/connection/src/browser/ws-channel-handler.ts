@@ -1,15 +1,10 @@
+import ReconnectingWebSocket from 'reconnecting-websocket';
+
 import { uuid } from '@opensumi/ide-core-common';
-import { IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
+import { IReporterService, REPORT_NAME, UrlProvider } from '@opensumi/ide-core-common';
 
 import { stringify, parse } from '../common/utils';
 import { WSChannel, MessageString } from '../common/ws-channel';
-
-let ReconnectingWebSocket = require('reconnecting-websocket');
-
-if (ReconnectingWebSocket.default) {
-  /* istanbul ignore next */
-  ReconnectingWebSocket = ReconnectingWebSocket.default;
-}
 
 // 前台链接管理类
 export class WSChannelHandler {
@@ -20,10 +15,10 @@ export class WSChannelHandler {
   private heartbeatMessageTimer: NodeJS.Timer | null;
   private reporterService: IReporterService;
 
-  constructor(public wsPath: string, logger: any, public protocols?: string[], clientId?: string) {
+  constructor(public wsPath: UrlProvider, logger: any, public protocols?: string[], clientId?: string) {
     this.logger = logger || this.logger;
     this.clientId = clientId || `CLIENT_ID_${uuid()}`;
-    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
+    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}) as WebSocket; // new WebSocket(wsPath, protocols);
   }
   // 为解决建立连接之后，替换成可落盘的 logger
   replaceLogger(logger: any) {

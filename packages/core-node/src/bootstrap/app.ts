@@ -6,6 +6,7 @@ import os from 'os';
 import path from 'path';
 
 import Koa from 'koa';
+import ws from 'ws';
 
 import { Injector, ConstructorOf } from '@opensumi/di';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
@@ -131,6 +132,7 @@ export interface IServerAppOpts extends Partial<Config> {
   contributions?: ContributionConstructor[];
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
+  wsServerOptions?: ws.ServerOptions;
   marketplace?: Partial<MarketplaceConfig>;
   use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, any>>): void;
 }
@@ -152,7 +154,7 @@ export interface IServerApp {
 export class ServerApp implements IServerApp {
   private injector: Injector;
 
-  private config: AppConfig;
+  private config: IServerAppOpts;
 
   private logger: ILogService;
 
@@ -172,7 +174,7 @@ export class ServerApp implements IServerApp {
    * 4. 设置默认的实例
    * @param opts
    */
-  constructor(opts: IServerAppOpts) {
+  constructor(private opts: IServerAppOpts) {
     this.injector = opts.injector || new Injector();
     this.webSocketHandler = opts.webSocketHandler || [];
     // 使用外部传入的中间件
@@ -284,7 +286,13 @@ export class ServerApp implements IServerApp {
     } else {
       if (server instanceof http.Server || server instanceof https.Server) {
         // 创建 websocket 通道
-        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler);
+        serviceCenter = createServerConnection2(
+          server,
+          this.injector,
+          this.modulesInstances,
+          this.webSocketHandler,
+          this.opts.wsServerOptions,
+        );
       } else if (server instanceof net.Server) {
         serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);
       }

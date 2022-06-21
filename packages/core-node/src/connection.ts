@@ -14,7 +14,6 @@ import {
   createSocketConnection,
 } from '@opensumi/ide-connection/lib/node';
 
-
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
 
@@ -24,11 +23,12 @@ export function createServerConnection2(
   server: http.Server,
   injector,
   modulesInstances,
-  handlerArr?: WebSocketHandler[],
+  handlerArr: WebSocketHandler[],
+  wsServerOptions: ws.ServerOptions = {},
 ) {
   const logger = injector.get(INodeLogger);
   const socketRoute = new WebSocketServerRoute(server, logger);
-  const channelHandler = new CommonChannelHandler('/service', logger);
+  const channelHandler = new CommonChannelHandler('/service', logger, wsServerOptions);
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
