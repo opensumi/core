@@ -54,6 +54,7 @@ const baseConfig = {
       statements: 0,
     },
   },
+  testSequencer: '<rootDir>/tools/dev-tool/src/jest-sequencer.js',
 };
 /**
  * @type {import('@jest/types').Config.InitialOptions}

@@ -33,9 +33,7 @@ jobs:
       - name: Build & Test
         run: |
           npm i
-          npm run ci
-        env:
-          SHARD: ${{ matrix.shard }}
+          npm run ci -- --shard=${{ matrix.shard }}
 
       - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
