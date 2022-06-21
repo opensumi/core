@@ -4,8 +4,7 @@ import ws from 'ws';
 import { stringify, parse } from '../common/utils';
 import { WSChannel, ChannelMessage } from '../common/ws-channel';
 
-import { WebSocketHandler } from './ws';
-const route = pathMatch();
+import { WebSocketHandler, CommonChannelHandlerOptions } from './ws';
 
 export interface IPathHander {
   dispose: (connection: any, connectionId: string) => void;
@@ -91,8 +90,9 @@ export class CommonChannelHandler extends WebSocketHandler {
   private connectionMap: Map<string, ws> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
-  constructor(routePath: string, private logger: any = console, private serverOptions: ws.ServerOptions) {
+  constructor(routePath: string, private logger: any = console, private options: CommonChannelHandlerOptions = {}) {
     super();
+    const route = pathMatch(options);
     this.handlerRoute = route(`${routePath}`);
     this.initWSServer();
   }
@@ -108,7 +108,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({ noServer: true, ...this.serverOptions });
+    this.wsServer = new ws.Server({ noServer: true, ...this.options.wsServerOptions });
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
       connection.on('message', (msg: string) => {

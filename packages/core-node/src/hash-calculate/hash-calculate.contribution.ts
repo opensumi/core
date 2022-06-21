@@ -2,7 +2,7 @@ import { Autowired } from '@opensumi/di';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 
-import { ServerAppContribution } from '../bootstrap';
+import { ServerAppContribution } from '../types';
 
 @Domain(ServerAppContribution)
 export class HashCalculateContribution implements ServerAppContribution {

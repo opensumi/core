@@ -16,6 +16,7 @@ import {
 
 import { INodeLogger } from './logger/node-logger';
 import { NodeModule } from './node-module';
+import { IServerAppOpts } from './types';
 
 export { RPCServiceCenter };
 
@@ -24,11 +25,14 @@ export function createServerConnection2(
   injector,
   modulesInstances,
   handlerArr: WebSocketHandler[],
-  wsServerOptions: ws.ServerOptions = {},
+  serverAppOpts: IServerAppOpts,
 ) {
   const logger = injector.get(INodeLogger);
   const socketRoute = new WebSocketServerRoute(server, logger);
-  const channelHandler = new CommonChannelHandler('/service', logger, wsServerOptions);
+  const channelHandler = new CommonChannelHandler('/service', logger, {
+    pathMatcheOptions: serverAppOpts.pathMatcheOptions,
+    wsServerOptions: serverAppOpts.wsServerOptions,
+  });
 
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {

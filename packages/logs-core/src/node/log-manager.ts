@@ -2,7 +2,7 @@ import path from 'path';
 
 import { Injectable, Autowired, ConstructorOf } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+import { AppConfig } from '@opensumi/ide-core-node';
 
 import {
   ILogService,
