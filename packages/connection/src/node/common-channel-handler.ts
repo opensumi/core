@@ -92,7 +92,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   constructor(routePath: string, private logger: any = console, private options: CommonChannelHandlerOptions = {}) {
     super();
-    const route = pathMatch(options);
+    const route = pathMatch(options.pathMatchOptions);
     this.handlerRoute = route(`${routePath}`);
     this.initWSServer();
   }

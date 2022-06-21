@@ -11,7 +11,7 @@ export abstract class WebSocketHandler {
 
 export interface CommonChannelHandlerOptions {
   wsServerOptions?: ws.ServerOptions;
-  pathMatcheOptions?: {
+  pathMatchOptions?: {
     // When true the regexp will match to the end of the string.
     end?: boolean;
   };

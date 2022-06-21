@@ -30,7 +30,7 @@ export function createServerConnection2(
   const logger = injector.get(INodeLogger);
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger, {
-    pathMatcheOptions: serverAppOpts.pathMatcheOptions,
+    pathMatchOptions: serverAppOpts.pathMatchOptions,
     wsServerOptions: serverAppOpts.wsServerOptions,
   });
 
