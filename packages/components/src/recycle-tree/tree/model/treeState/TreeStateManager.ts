@@ -79,6 +79,9 @@ export class TreeStateManager {
       for (const relPath of state.expandedDirectories.buried) {
         try {
           const node = await this.root.loadTreeNodeByPath(relPath);
+          if (!node) {
+            break;
+          }
           if (node && CompositeTreeNode.is(node)) {
             (node as CompositeTreeNode).setCollapsed();
           }
@@ -86,7 +89,10 @@ export class TreeStateManager {
       }
       for (const relPath of state.expandedDirectories.atSurface) {
         try {
-          await this.root.loadTreeNodeByPath(relPath);
+          const node = await this.root.loadTreeNodeByPath(relPath);
+          if (!node) {
+            break;
+          }
         } catch (error) {}
       }
       this._scrollOffset =
