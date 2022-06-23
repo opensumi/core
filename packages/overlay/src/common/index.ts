@@ -5,9 +5,24 @@ import { MessageType, URI } from '@opensumi/ide-core-common';
 export const IMessageService = Symbol('IMessageService');
 
 export interface IMessageService {
-  info(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
-  warning(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
-  error(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined>;
+  info(
+    message: string | React.ReactNode,
+    buttons?: string[],
+    closable?: boolean,
+    props?: Record<string, any>,
+  ): Promise<string | undefined>;
+  warning(
+    message: string | React.ReactNode,
+    buttons?: string[],
+    closable?: boolean,
+    props?: Record<string, any>,
+  ): Promise<string | undefined>;
+  error(
+    message: string | React.ReactNode,
+    buttons?: string[],
+    closable?: boolean,
+    props?: Record<string, any>,
+  ): Promise<string | undefined>;
   open<T = string>(
     message: string | React.ReactNode,
     type: MessageType,
@@ -39,16 +54,31 @@ export interface IDialogService extends IMessageService {
 }
 
 export abstract class AbstractMessageService implements IMessageService {
-  info(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined> {
-    return this.open(message, MessageType.Info, buttons, closable);
+  info(
+    message: string | React.ReactNode,
+    buttons?: string[],
+    closable?: boolean,
+    props?: Record<string, any>,
+  ): Promise<string | undefined> {
+    return this.open(message, MessageType.Info, buttons, closable, undefined, props);
   }
 
-  warning(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined> {
-    return this.open(message, MessageType.Warning, buttons, closable);
+  warning(
+    message: string | React.ReactNode,
+    buttons?: string[],
+    closable?: boolean,
+    props?: Record<string, any>,
+  ): Promise<string | undefined> {
+    return this.open(message, MessageType.Warning, buttons, closable, undefined, props);
   }
 
-  error(message: string | React.ReactNode, buttons?: string[], closable?: boolean): Promise<string | undefined> {
-    return this.open(message, MessageType.Error, buttons, closable);
+  error(
+    message: string | React.ReactNode,
+    buttons?: string[],
+    closable?: boolean,
+    props?: Record<string, any>,
+  ): Promise<string | undefined> {
+    return this.open(message, MessageType.Error, buttons, closable, undefined, props);
   }
   abstract open<T = string>(
     message: string | React.ReactNode,
