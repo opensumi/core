@@ -19,19 +19,14 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   @observable
   protected visible = false;
 
-  @observable
   protected message: string | React.ReactNode = '';
 
-  @observable
   protected title = '';
 
-  @observable
   public closable = true;
 
-  @observable
   protected buttons: string[] = [];
 
-  @observable
   protected props: Record<string, any> = {};
 
   @action
