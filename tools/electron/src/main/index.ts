@@ -11,7 +11,7 @@ const getExtensionDir = () => {
   if (appPath.indexOf('app.asar') > -1) {
     return join(appPath, './../extensions');
   }
-  return join(appPath, './extensions');
+  return join(appPath, '../extensions');
 };
 
 const electronApp = new ElectronMainApp({
