@@ -137,6 +137,8 @@ export class ClientApp implements IClientApp, IDisposable {
 
   contributionsProvider: ContributionProvider<ClientAppContribution>;
 
+  contributions: ClientAppContribution[] = [];
+
   commandRegistry: CommandRegistry;
 
   // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
@@ -235,6 +237,7 @@ export class ClientApp implements IClientApp, IDisposable {
     type?: 'electron' | 'web',
     connection?: RPCMessageConnection,
   ): Promise<void> {
+    this.contributions = this.contributionsProvider.getContributions();
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
@@ -350,10 +353,6 @@ export class ClientApp implements IClientApp, IDisposable {
         }
       }
     }
-  }
-
-  get contributions(): ClientAppContribution[] {
-    return this.contributionsProvider.getContributions();
   }
 
   protected async startContributions(container) {
