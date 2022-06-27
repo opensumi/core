@@ -4,7 +4,6 @@ const fs = require('fs-extra');
 const yauzl = require('yauzl');
 const log = require('debug')('InstallExtension');
 const os = require('os');
-const got = require('got');
 const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const { v4 } = require('uuid');
@@ -56,10 +55,10 @@ async function downloadExtension(url, namespace, extensionName) {
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
-  const data = await got.default.stream(url, { timeout: 100000 });
+  const res = await nodeFetch(url, { timeout: 100000 });
 
-  data.pipe(tmpStream);
-  await Promise.race([awaitEvent(data, 'end'), awaitEvent(data, 'error')]);
+  res.body.pipe(tmpStream);
+  await Promise.race([awaitEvent(res.body, 'end'), awaitEvent(res.body, 'error')]);
   tmpStream.close();
 
   const targetDirName = path.basename(`${namespace}.${extensionName}`);
