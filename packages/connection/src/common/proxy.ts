@@ -126,8 +126,14 @@ export class RPCProxy {
                       const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
+                    if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
+                      window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive(['错误', error]);
+                    }
                     reject(error);
                   } else {
+                    if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
+                      window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive(['requestResult', result.data]);
+                    }
                     resolve(result.data);
                   }
                 });
@@ -163,8 +169,20 @@ export class RPCProxy {
       methods.forEach((method) => {
         if (method.startsWith('on')) {
           connection.onNotification(method, (...args) => this.onNotification(method, ...args));
+          connection.onNotification(method, (...args) => {
+            if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
+              window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive(['onNotification', method, ...args]);
+            }
+            this.onNotification(method, ...args);
+          });
         } else {
-          connection.onRequest(method, (...args) => this.onRequest(method, ...args));
+          // connection.onRequest(method, (...args) => this.onRequest(method, ...args));
+          connection.onRequest(method, (...args) => {
+            if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
+              window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive(['onRequest', method, ...args]);
+            }
+            return this.onRequest(method, ...args);
+          });
         }
 
         if (cb) {
@@ -174,6 +192,9 @@ export class RPCProxy {
 
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
+          if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
+            window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive(`onRequest: ${method} is not registered!`);
+          }
           return {
             data: NOTREGISTERMETHOD,
           };
