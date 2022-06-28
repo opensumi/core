@@ -327,34 +327,33 @@ export class ExtensionCommandContribution implements CommandContribution {
     registry.registerCommand(VSCodeBuiltinCommands.OPEN, {
       execute: (
         uriComponents: UriComponents,
-        columnOrOptions?: ViewColumn | TextDocumentShowOptions,
+        columnOrOptions?: [ViewColumn?, TextDocumentShowOptions?],
         label?: string,
       ) => {
+        const [columnArg, optionsArg] = columnOrOptions ?? [];
         const uri = URI.from(uriComponents);
         const options: IResourceOpenOptions = {};
-        if (columnOrOptions) {
-          if (typeof columnOrOptions === 'number') {
-            options.groupIndex = columnOrOptions;
-          } else {
-            options.groupIndex = columnOrOptions.viewColumn;
-            options.focus = options.preserveFocus = columnOrOptions.preserveFocus;
-            // 这个range 可能是 vscode.range， 因为不会经过args转换
-            if (columnOrOptions.selection && isLikelyVscodeRange(columnOrOptions.selection)) {
-              columnOrOptions.selection = fromRange(columnOrOptions.selection);
-            }
-            if (Array.isArray(columnOrOptions.selection) && columnOrOptions.selection.length === 2) {
-              const [start, end] = columnOrOptions.selection;
-              options.range = {
-                startLineNumber: start.line + 1,
-                startColumn: start.character + 1,
-                endLineNumber: end.line + 1,
-                endColumn: end.character + 1,
-              };
-            } else {
-              options.range = columnOrOptions.selection;
-            }
-            options.preview = columnOrOptions.preview;
+        if (typeof columnArg === 'number') {
+          options.groupIndex = columnArg;
+        }
+        if (optionsArg) {
+          options.focus = options.preserveFocus = optionsArg.preserveFocus;
+          // 这个range 可能是 vscode.range， 因为不会经过args转换
+          if (optionsArg.selection && isLikelyVscodeRange(optionsArg.selection)) {
+            optionsArg.selection = fromRange(optionsArg.selection);
           }
+          if (Array.isArray(optionsArg.selection) && optionsArg.selection.length === 2) {
+            const [start, end] = optionsArg.selection;
+            options.range = {
+              startLineNumber: start.line + 1,
+              startColumn: start.character + 1,
+              endLineNumber: end.line + 1,
+              endColumn: end.character + 1,
+            };
+          } else {
+            options.range = optionsArg.selection;
+          }
+          options.preview = optionsArg.preview;
         }
         if (label) {
           options.label = label;
