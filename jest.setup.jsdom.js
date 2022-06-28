@@ -24,6 +24,9 @@ window.navigator = Object.assign(window.navigator, {
 });
 
 window.fetch = fetch.default;
+window.Response = fetch.Response;
+window.Request = fetch.Request;
+window.Headers = fetch.Headers;
 
 // https://github.com/jsdom/jsdom/issues/1742
 document.queryCommandSupported = () => {};
@@ -89,12 +92,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-});
-
-process.on('unhandledRejection', (error) => {
-  // eslint-disable-next-line no-console
-  console.error('unhandledRejection', error);
-  if (process.env.EXIT_ON_UNHANDLED_REJECTION) {
-    process.exit(1); // To exit with a 'failure' code
-  }
 });

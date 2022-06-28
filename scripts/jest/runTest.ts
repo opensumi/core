@@ -5,7 +5,8 @@ import { argv } from '../../packages/core-common/src/node/cli';
 export async function runTest(targets?: string[], projects?: string[], config?: Config.Argv) {
   console.log('test argv', argv);
   const testPathPattern = targets?.map((v) => `packages\/${v}\/__tests?__\/.*\\.(test|spec)\\.[jt]sx?$`);
-
+  // @ts-ignore
+  delete argv['$0'];
   return await jest.runCLI(
     {
       passWithNoTests: true,

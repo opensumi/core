@@ -273,9 +273,7 @@ export class DebugLog implements IDebugLog {
     return console.log(this.getPre('log', 'green'), ...args);
   };
 
-  error = (...args: any[]) =>
-    // 错误一直显示
-    console.error(this.getPre('error', 'red'), ...args);
+  error = (...args: any[]) => console.error(this.getPre('error', 'red'), ...args);
 
   warn = (...args: any[]) => {
     if (!this.isEnable) {
