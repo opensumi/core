@@ -116,14 +116,14 @@ export function createWebSocketConnection(socket: any) {
       }
 
       // onNotification很多的，onRequest我都试不出来
-      if (prop === 'onRequest' || prop === 'onNotification') {
-        return function (...args: any) {
-          if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
-            window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive([prop, ...args]);
-          }
-          return target[prop].apply(target, [...args]);
-        };
-      }
+      // if (prop === 'onRequest' || prop === 'onNotification') {
+      //   return function (...args: any) {
+      //     if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
+      //       window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive([prop, ...args]);
+      //     }
+      //     return target[prop].apply(target, [...args]);
+      //   };
+      // }
       return target[prop];
     },
   });
