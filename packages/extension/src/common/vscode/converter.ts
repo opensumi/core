@@ -208,6 +208,7 @@ export namespace MarkdownString {
         isTrusted: markup.isTrusted,
         supportHtml: markup.supportHtml,
         supportThemeIcons: markup.supportThemeIcons,
+        baseUri: markup.baseUri,
       };
     } else if (typeof markup === 'string') {
       res = { value: markup };
@@ -273,6 +274,8 @@ export namespace MarkdownString {
   export function to(value: IMarkdownString): vscode.MarkdownString {
     const result = new types.MarkdownString(value.value, value.supportThemeIcons);
     result.isTrusted = value.isTrusted;
+    result.supportHtml = value.supportHtml;
+    result.baseUri = value.baseUri ? URI.revive(value.baseUri) : undefined;
     return result;
   }
 

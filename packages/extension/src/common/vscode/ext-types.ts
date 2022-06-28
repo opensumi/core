@@ -790,6 +790,7 @@ export class MarkdownString {
   value: string;
   isTrusted?: boolean;
   supportHtml?: boolean;
+  baseUri?: vscode.Uri;
   readonly supportThemeIcons?: boolean;
 
   constructor(value?: string, supportThemeIcons = false) {
