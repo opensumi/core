@@ -1,6 +1,7 @@
-import { clamp } from 'lodash';
+import clamp from 'lodash/clamp';
 
 import { Injectable, Autowired } from '@opensumi/di';
+import { path } from '@opensumi/ide-core-common';
 import {
   Event,
   FileSystemProvider,
@@ -15,6 +16,7 @@ import {
   ILogger,
 } from '@opensumi/ide-core-common';
 
+
 import {
   DEBUG_MEMORY_SCHEME,
   IDebugSession,
@@ -25,7 +27,9 @@ import {
   MemoryRangeType,
 } from '../common';
 
-import { DebugSessionManager } from '.';
+import { DebugSessionManager } from './debug-session-manager';
+
+const { Path } = path;
 
 @Injectable()
 export class DebugMemoryFileSystemProvider implements FileSystemProvider {
@@ -60,9 +64,13 @@ export class DebugMemoryFileSystemProvider implements FileSystemProvider {
 
   public async readFile(uri: Uri): Promise<void | Uint8Array> {
     const parse = this.parseUri(uri);
-    if (!parse) {return this.toBuffer('');}
+    if (!parse) {
+      return this.toBuffer('');
+    }
 
-    if (!parse.offset) {return this.toBuffer('');}
+    if (!parse.offset) {
+      return this.toBuffer('');
+    }
 
     const { session, memoryReference, offset } = parse;
 
@@ -136,7 +144,7 @@ export class DebugMemoryFileSystemProvider implements FileSystemProvider {
       offset = { fromOffset: Number(rangeMatch[1]), toOffset: Number(rangeMatch[2]) };
     }
 
-    const [, memoryReference] = uri.path.split('/');
+    const [, memoryReference] = uri.path.split(Path.separator);
 
     return {
       session,
