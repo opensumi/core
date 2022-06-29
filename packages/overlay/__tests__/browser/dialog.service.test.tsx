@@ -66,14 +66,16 @@ describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {
 
   it('get field', () => {
     act(() => {
-      dialogService.info('hello', ['btnA', 'btnB']);
+      dialogService.info('hello', ['btnA', 'btnB'], undefined, { className: 'dialog-class-test' });
     });
 
     expect($$('.ant-modal')).toHaveLength(1);
+    expect($$('.dialog-class-test')).toHaveLength(1);
     expect(dialogService.getMessage()).toBe('hello');
     expect(dialogService.isVisible()).toBe(true);
     expect(dialogService.getIcon()!.className).toBe('info-circle');
     expect(dialogService.getButtons()).toEqual(['btnA', 'btnB']);
+    expect(dialogService.getProps()).toEqual({ className: 'dialog-class-test' });
   });
 
   it.skip('select btn', (done) => {
