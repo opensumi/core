@@ -1,3 +1,5 @@
+import { act } from 'react-dom/test-utils';
+
 import { Injector } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { URI, positionToRange, Disposable } from '@opensumi/ide-core-common';
@@ -9,17 +11,15 @@ import { IconService } from '@opensumi/ide-theme/lib/browser';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
 import { ICommentsService, CommentMode } from '../../src/common';
-
+Error.stackTraceLimit = 100;
 describe('comment service test', () => {
   let injector: MockInjector;
   let commentsService: ICommentsService;
   let currentEditor: IEditor;
   beforeAll(() => {
-    (global as any).monaco = createMockedMonaco() as any;
     const monacoEditor = mockService({
       getConfiguration: () => ({
         lineHeight: 20,
@@ -60,27 +60,22 @@ describe('comment service test', () => {
         },
       ]),
     );
-  });
-
-  beforeEach(() => {
     commentsService = injector.get<ICommentsService>(ICommentsService);
     commentsService.init();
   });
 
   afterEach(() => {
-    commentsService.dispose();
-  });
-
-  afterAll(() => {
-    (global as any).monaco = undefined;
+    commentsService['threads'].clear();
   });
 
   it('create thread', () => {
     const uri = URI.file('/test');
-    const [thread] = createTestThreads(uri);
-    expect(thread.uri.isEqual(uri));
-    expect(thread.range.startLineNumber).toBe(1);
-    expect(thread.comments[0].body).toBe('评论内容1');
+    act(() => {
+      const [thread] = createTestThreads(uri);
+      expect(thread.uri.isEqual(uri));
+      expect(thread.range.startLineNumber).toBe(1);
+      expect(thread.comments[0].body).toBe('评论内容1');
+    });
   });
 
   it('get commentsThreads', () => {
@@ -176,14 +171,16 @@ describe('comment service test', () => {
     expect(threadsChangedListener.mock.calls.length).toBe(1);
   });
 
-  it('调用 showWidgetsIfShowed 时已经被隐藏的 widget 不会被调用 show 方法', async () => {
+  it('调用 showWidgetsIfShowed 时已经被隐藏的 widget 不会被调用 show 方法', () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
-    currentEditor.currentUri = uri;
-    // 生成一个 widget
-    thread.show(currentEditor);
-    // 调用隐藏方法，此时 isShow 为 false
-    thread.hide();
+    act(() => {
+      currentEditor.currentUri = uri;
+      // 生成一个 widget
+      thread.show(currentEditor);
+      // 调用隐藏方法，此时 isShow 为 false
+      thread.hide();
+    });
     const widget = thread.getWidgetByEditor(currentEditor);
     expect(widget?.isShow).toBeFalsy();
     const onShow = jest.fn();
@@ -194,14 +191,16 @@ describe('comment service test', () => {
     expect(widget?.isShow).toBeFalsy();
   });
 
-  it('如果 isShow 为 true 才会调用 show 方法', async () => {
+  it('如果 isShow 为 true 才会调用 show 方法', () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
-    // 生成一个 widget
-    thread.show(currentEditor);
-    // 先通过 dispose 方式隐藏，此时 isShow 仍为 true
-    thread.hideWidgetsByDispose();
+    act(() => {
+      // 生成一个 widget
+      thread.show(currentEditor);
+      // 先通过 dispose 方式隐藏，此时 isShow 仍为 true
+      thread.hideWidgetsByDispose();
+    });
     const widget = thread.getWidgetByEditor(currentEditor);
     expect(widget?.isShow).toBeTruthy();
     const onShow = jest.fn();
@@ -210,12 +209,14 @@ describe('comment service test', () => {
     expect(onShow).toBeCalled();
   });
 
-  it('通过 dispose 的方式隐藏 widget，不会影响 isShow', async () => {
+  it('通过 dispose 的方式隐藏 widget，不会影响 isShow', () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
-    // 生成一个 widget
-    thread.show(currentEditor);
+    act(() => {
+      // 生成一个 widget
+      thread.show(currentEditor);
+    });
     const widget = thread.getWidgetByEditor(currentEditor);
     expect(widget?.isShow).toBeTruthy();
     thread.hideWidgetsByDispose();
