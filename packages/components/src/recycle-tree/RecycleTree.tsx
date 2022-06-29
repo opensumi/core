@@ -479,7 +479,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     } else {
       this.tryScrollIntoViewWhileStable(this.promptHandle as any);
     }
-
     return this.promptHandle as NewPromptHandle;
   }
 
@@ -584,7 +583,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
 
   private tryScrollIntoViewWhileStable(
     node: TreeNode | CompositeTreeNode | PromptHandle,
-    align: IRecycleTreeAlign = 'auto',
+    align: IRecycleTreeAlign = 'smart',
   ) {
     const { root } = this.props.model;
     if (this.tryEnsureVisibleTimes > RecycleTree.TRY_ENSURE_VISIBLE_MAX_TIMES) {
@@ -711,8 +710,20 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   };
 
   private handleListScroll = ({ scrollOffset }) => {
-    const { model } = this.props;
+    const { model, height, itemHeight } = this.props;
     model.state.saveScrollOffset(scrollOffset);
+    if (!this.promptHandle || !itemHeight) {
+      return;
+    }
+    let promptIndex;
+    if (this.promptHandle instanceof NewPromptHandle && this.newPromptInsertionIndex > -1) {
+      promptIndex = this.newPromptInsertionIndex;
+    } else {
+      promptIndex = model.root.getIndexAtTreeNodeId(this.promptHandle.id);
+    }
+    if (scrollOffset + height < promptIndex * itemHeight || promptIndex * itemHeight < scrollOffset) {
+      this.promptHandle.destroy();
+    }
   };
 
   // 根据是否携带新建输入框计算行数
