@@ -103,7 +103,7 @@ export default observer(() => {
             onChange={searchInput}
             onKeyDown={searchKeyDown}
           />
-          <div className={getIcon('close')} onClick={searchService.close}></div>
+          <div className={getIcon('close')} onClick={() => searchService.close()}></div>
         </div>
       )}
       {groups.map((group, index) => {
