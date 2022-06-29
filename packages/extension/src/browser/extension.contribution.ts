@@ -33,6 +33,7 @@ import {
   StatusBarEntryAccessor,
 } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
 import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
+import { IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
 import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
@@ -327,56 +328,26 @@ export class ExtensionCommandContribution implements CommandContribution {
     registry.registerCommand(VSCodeBuiltinCommands.OPEN, {
       execute: (
         uriComponents: UriComponents,
-        columnOrOptions?: [ViewColumn?, TextDocumentShowOptions?],
+        columnAndOptions?: [ViewColumn?, TextDocumentShowOptions?],
         label?: string,
       ) => {
-        const [columnArg, optionsArg] = columnOrOptions ?? [];
         const uri = URI.from(uriComponents);
-        const options: IResourceOpenOptions = {};
-        if (typeof columnArg === 'number') {
-          options.groupIndex = columnArg;
-        }
-        if (optionsArg) {
-          options.focus = options.preserveFocus = optionsArg.preserveFocus;
-          // 这个range 可能是 vscode.range， 因为不会经过args转换
-          if (optionsArg.selection && isLikelyVscodeRange(optionsArg.selection)) {
-            optionsArg.selection = fromRange(optionsArg.selection);
-          }
-          if (Array.isArray(optionsArg.selection) && optionsArg.selection.length === 2) {
-            const [start, end] = optionsArg.selection;
-            options.range = {
-              startLineNumber: start.line + 1,
-              startColumn: start.character + 1,
-              endLineNumber: end.line + 1,
-              endColumn: end.character + 1,
-            };
-          } else {
-            options.range = optionsArg.selection;
-          }
-          options.preview = optionsArg.preview;
-        }
-        if (label) {
-          options.label = label;
-        }
-        return this.workbenchEditorService.open(uri, options);
+        return this.doOpenWith(uri, columnAndOptions, label, undefined);
       },
     });
 
     registry.registerCommand(VSCodeBuiltinCommands.OPEN_WITH, {
-      execute: (resource: UriComponents, id: string, columnAndOptions?: [EditorGroupColumn?, ITextEditorOptions?]) => {
+      execute: (resource: UriComponents, id: string, columnAndOptions?: [ViewColumn?, TextDocumentShowOptions?]) => {
         const uri = URI.from(resource);
-        const options: IResourceOpenOptions = {};
-        const [columnArg] = columnAndOptions ?? [];
-        if (id !== 'default') {
-          options.forceOpenType = {
-            type: 'component',
-            componentId: `${CUSTOM_EDITOR_SCHEME}-${id}`,
-          };
-        }
-        if (typeof columnArg === 'number') {
-          options.groupIndex = columnArg;
-        }
-        return this.workbenchEditorService.open(uri, options);
+        // 指定使用某种 editor 打开资源，如果 id 传入 default，则使用默认的 editor
+        const openType: IEditorOpenType | undefined =
+          id === 'default'
+            ? undefined
+            : {
+                type: 'component',
+                componentId: `${CUSTOM_EDITOR_SCHEME}-${id}`,
+              };
+        return this.doOpenWith(uri, columnAndOptions, undefined, openType);
       },
     });
 
@@ -458,6 +429,45 @@ export class ExtensionCommandContribution implements CommandContribution {
     ].forEach((command) => {
       registry.registerCommand(command);
     });
+  }
+
+  private doOpenWith(
+    uri: URI,
+    columnAndOptions?: [ViewColumn?, TextDocumentShowOptions?],
+    label?: string,
+    forceOpenType?: IEditorOpenType | undefined,
+  ) {
+    const [columnArg, optionsArg] = columnAndOptions ?? [];
+    const options: IResourceOpenOptions = {};
+    if (typeof columnArg === 'number') {
+      options.groupIndex = columnArg;
+    }
+    if (optionsArg) {
+      options.focus = options.preserveFocus = optionsArg.preserveFocus;
+      // 这个range 可能是 vscode.range， 因为不会经过args转换
+      if (optionsArg.selection && isLikelyVscodeRange(optionsArg.selection)) {
+        optionsArg.selection = fromRange(optionsArg.selection);
+      }
+      if (Array.isArray(optionsArg.selection) && optionsArg.selection.length === 2) {
+        const [start, end] = optionsArg.selection;
+        options.range = {
+          startLineNumber: start.line + 1,
+          startColumn: start.character + 1,
+          endLineNumber: end.line + 1,
+          endColumn: end.character + 1,
+        };
+      } else {
+        options.range = optionsArg.selection;
+      }
+      options.preview = optionsArg.preview;
+    }
+    if (forceOpenType) {
+      options.forceOpenType = forceOpenType;
+    }
+    if (label) {
+      options.label = label;
+    }
+    return this.workbenchEditorService.open(uri, options);
   }
 
   private asQuickOpenItems(activated: {
