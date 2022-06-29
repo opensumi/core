@@ -245,7 +245,7 @@ export class Storage implements IStorage {
     };
     // 同时在 LocalStroage 中同步缓存变化
     if (this.browserLocalStroage) {
-      let cache = (await this.browserLocalStroage.getData<any>(this.storageName)) || this.mapToJson(this.cache);
+      let cache = this.mapToJson(this.cache);
       for (const del of updateRequest?.delete || []) {
         delete cache[del];
       }
@@ -272,7 +272,15 @@ export class Storage implements IStorage {
     return obj;
   }
 
-  private jsonToMap(json) {
+  private jsonToMap(json: string | any) {
+    if (typeof json === 'string') {
+      try {
+        json = JSON.parse(json);
+      } catch (e) {
+        this.logger.debug(e);
+        return json;
+      }
+    }
     const itemsMap: Map<string, string> = new Map();
     for (const key of Object.keys(json)) {
       itemsMap.set(key, json[key]);
