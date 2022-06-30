@@ -23,7 +23,7 @@ export class ExpressFileServerContribution implements StaticResourceContribution
          * uri.path 在 Windows 下会被解析为 /c:/Path/to/file
          * fsPath C:\\Path\\to\\file
          */
-        return assetsUri.withPath(`assets${decodeURIComponent(uri.codeUri.path)}`);
+        return assetsUri.resolve(`assets${decodeURIComponent(uri.codeUri.path)}`);
       },
       roots: [this.appConfig.staticServicePath || EXPRESS_SERVER_PATH],
     });
