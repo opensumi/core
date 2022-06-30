@@ -140,7 +140,7 @@ const _submenuDescRegistry = new Map<string /* submenu id */, SubmenusSchema>();
 @Injectable()
 @Contributes('submenus')
 export class SubmenusContributionPoint extends VSCodeContributePoint<SubmenusSchema> {
-  schema = {};
+  static schema = {};
 
   contribute() {
     _submenuDescRegistry.set(this.extension.id, this.json);

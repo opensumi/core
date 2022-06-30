@@ -48,7 +48,7 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
   @Autowired(IIconService)
   protected readonly iconService: IIconService;
 
-  schema = {
+  static schema = {
     description: localize('kaitianContributes.submenu', 'Contributes extension defined submenu'),
     type: 'array',
     items: {

@@ -257,7 +257,8 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
   ) {
     super();
   }
-  schema?: IJSONSchema;
+
+  static schema: IJSONSchema;
 
   protected readonly iconService?: IIconService;
 

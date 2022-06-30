@@ -13,7 +13,7 @@ export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema>
   @Autowired(IThemeService)
   themeService: IThemeService;
 
-  schema = {
+  static schema = {
     description: localize('contributes.color', 'Contributes extension defined themable colors'),
     type: 'array',
     items: {

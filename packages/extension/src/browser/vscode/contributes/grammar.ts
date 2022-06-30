@@ -25,7 +25,7 @@ export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSche
     }
   }
 
-  schema = {
+  static schema = {
     description: localize('vscode.extension.contributes.grammars', 'Contributes textmate tokenizers.'),
     type: 'array',
     defaultSnippets: [
