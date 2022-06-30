@@ -36,7 +36,7 @@
     "lint:fix": "npm run lint -- --fix",
     "format": "npm run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
     "rebuild:node": "node ./scripts/rebuild-native.js",
-    "test": "ts-node -P scripts/tsconfig.scripts.json scripts/run-tests.ts",
+    "test": "./node_modules/.bin/jest --forceExit",
     "test:module": "cross-env NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
     "prepare:test": "npm run init:deps && npm run compile && npm run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 npm run test -- --coverage",
