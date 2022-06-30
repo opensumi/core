@@ -1,3 +1,5 @@
+require('./jest.setup.base');
+
 const { JSDOM, ResourceLoader } = require('jsdom');
 
 const resourceLoader = new ResourceLoader({
