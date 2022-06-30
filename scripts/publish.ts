@@ -4,7 +4,7 @@ import { readFileSync, writeFileSync, ensureFileSync } from 'fs-extra';
 import { execSync } from 'child_process';
 import { createInterface } from 'readline';
 import semver from 'semver';
-import { argv } from 'yargs';
+import { argv } from '../packages/core-common/src/node/cli';
 import git from 'git-rev-sync';
 import chalk from 'chalk';
 

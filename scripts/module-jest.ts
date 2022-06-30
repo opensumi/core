@@ -1,4 +1,5 @@
-import { argv } from 'yargs';
+import { argv } from '../packages/core-common/src/node/cli';
+
 import { runTest } from './jest/runTest';
 
 const modulePath: string | undefined = argv.module as any;

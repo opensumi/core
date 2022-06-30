@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getPrList } from './changelog/github';
 import { formatBytes, getChangelog } from './changelog/util';
-import { argv } from 'yargs';
+import { argv } from '../packages/core-common/src/node/cli';
 
 import chalk from 'chalk';
 
@@ -33,9 +33,9 @@ if (!process.env.GITHUB_TOKEN) {
   const plan = `<!-- This plan captures our work in February. This is a 3-week iteration. We will ship in mid-April. -->
 
 # Plan Items
-  
+
 Legend of annotations:
-  
+
 |  Mark   | Description  |
 |  ----  | ----  |
 |🏃| work in progress |
@@ -43,7 +43,7 @@ Legend of annotations:
 |💪| stretch goal for this iteration |
 |👨🏻‍💻| a large work item, larger than one iteration |
 |🐚| under discussion within the team |
-  
+
 Below is a summary of the top-level plan items.
 
 ## [Draft]
@@ -53,7 +53,7 @@ ${draftLog.join('\n')}
 ## Editor
 
 ## Extension Manager
-    
+
 ## FileTree
 
 ## Debug
@@ -67,15 +67,15 @@ ${draftLog.join('\n')}
 ## Preference
 
 ## Keymaps
-  
+
 ## Theme
- 
+
 ## Webview
 
 ## StatusBar
- 
+
 ## Extension API
- 
+
 ## QuickOpen
 
 ## Refactor
@@ -83,12 +83,12 @@ ${draftLog.join('\n')}
 ## Electron
 
 ## Storage
- 
+
 ## Style Change
 
 ## Tabbar
 
-## Others 
+## Others
 
 Release Notes 见：[release-notes/v${version}.md](https://github.com/opensumi/doc/blob/main/release-notes/v${version}.md).
 `;

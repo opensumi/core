@@ -2,7 +2,7 @@ import { join } from 'path';
 import { readdirSync, existsSync } from 'fs-extra';
 import { createInterface } from 'readline';
 import * as semver from 'semver';
-import { argv } from 'yargs';
+import { argv } from '../packages/core-common/src/node/cli';
 
 import Package from './pkg';
 
@@ -16,7 +16,7 @@ const packagesDir = join(__dirname, '../packages');
 /**
  * todos
  * 统一修改 npm dist-tags
-*/
+ */
 
 interface IDisposable {
   dispose: () => void;
