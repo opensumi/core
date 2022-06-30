@@ -659,7 +659,7 @@ export const newCommands: ApiCommand[] = [
     'Opens the provided resources in the diff editor to compare their contents.',
     [
       ApiCommandArgument.Uri.with('left', 'Left-hand side resource of the diff editor'),
-      ApiCommandArgument.Uri.with('right', 'Rigth-hand side resource of the diff editor'),
+      ApiCommandArgument.Uri.with('right', 'Right-hand side resource of the diff editor'),
       ApiCommandArgument.String.with('title', 'Human readable title for the diff editor').optional(),
       new ApiCommandArgument<
         typeConverters.TextEditorOpenOptions | undefined,
