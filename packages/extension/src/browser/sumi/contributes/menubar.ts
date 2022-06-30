@@ -13,7 +13,7 @@ export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsS
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
 
-  schema = {
+  static schema = {
     description: localize('extensionContributes.menubars', 'Contributes extension defined menubars'),
     type: 'array',
     items: {

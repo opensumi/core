@@ -18,7 +18,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   }
 
   // copied from vscode
-  schema = {
+  static schema = {
     allowComments: true,
     allowTrailingCommas: true,
     default: {
