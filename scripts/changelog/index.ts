@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-import { argv } from 'yargs';
+import { argv } from '../../packages/core-common/src/node/cli';
+
 import { run } from './run';
 import chalk from 'chalk';
 

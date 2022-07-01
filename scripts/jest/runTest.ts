@@ -1,6 +1,6 @@
 import * as jest from 'jest';
 import { Config } from '@jest/types';
-import { argv } from 'yargs';
+import { argv } from '../../packages/core-common/src/node/cli';
 
 export async function runTest(target: string, project?: string) {
   console.log(argv);

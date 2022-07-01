@@ -1,3 +1,5 @@
+require('./jest.setup.base');
+
 const { JSDOM, ResourceLoader } = require('jsdom');
 
 const resourceLoader = new ResourceLoader({
@@ -85,8 +87,6 @@ class MockLocalStorage {
 
 global.localStorage = new MockLocalStorage();
 
-process.env.IS_JEST_TEST = true;
-
 // https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -100,12 +100,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-});
-
-process.on('unhandledRejection', (error) => {
-  // eslint-disable-next-line no-console
-  console.error('unhandledRejection', error);
-  if (process.env.EXIT_ON_UNHANDLED_REJECTION) {
-    process.exit(1); // To exit with a 'failure' code
-  }
 });

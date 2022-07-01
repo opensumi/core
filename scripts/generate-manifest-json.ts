@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, ensureFileSync } from 'fs-extra';
 import { generateManifest } from './manifest';
 import Package, { readAllMainPackages } from './pkg';
-import { argv } from 'yargs';
+import { argv } from '../packages/core-common/src/node/cli';
 import { join } from 'path';
 
 // npm run manifest -- -v=2.19.0

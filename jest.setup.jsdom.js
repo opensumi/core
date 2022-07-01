@@ -1,3 +1,4 @@
+require('./jest.setup.base');
 require('jest-canvas-mock');
 const { Buffer } = require('buffer');
 const timer = require('timers');
@@ -24,6 +25,9 @@ window.navigator = Object.assign(window.navigator, {
 });
 
 window.fetch = fetch.default;
+window.Response = fetch.Response;
+window.Request = fetch.Request;
+window.Headers = fetch.Headers;
 
 // https://github.com/jsdom/jsdom/issues/1742
 document.queryCommandSupported = () => {};
@@ -74,8 +78,6 @@ class MockLocalStorage {
 
 global.localStorage = new MockLocalStorage();
 
-process.env.IS_JEST_TEST = true;
-
 // https://jestjs.io/docs/manual-mocks#mocking-methods-which-are-not-implemented-in-jsdom
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -89,12 +91,4 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
-});
-
-process.on('unhandledRejection', (error) => {
-  // eslint-disable-next-line no-console
-  console.error('unhandledRejection', error);
-  if (process.env.EXIT_ON_UNHANDLED_REJECTION) {
-    process.exit(1); // To exit with a 'failure' code
-  }
 });
