@@ -1,0 +1,13 @@
+export const browserViews = {
+  "kaitianContributes.browserViews": "Provide a custom view to the editor",
+  "kaitianContributes.browserViews.left": "Provide a view in the left activity bar container",
+  "kaitianContributes.browserViews.right": "Provide a view in the right activity bar container",
+  "kaitianContributes.browserViews.bottom": "Provides a view in the bottom tab bar container (no icon will be rendered, so a title is required)",
+  "kaitianContributes.browserViews.location.custom": "Provide a view to the \"{0}\" container",
+  "kaitianContributes.browserViews.view.id": "View id, browser/index needs to export a component with the same name as this id",
+  "kaitianContributes.browserViews.view.icon": "Icon name, reference: [icon](https://docs.antfin-inc.com/iconfont-demo/)",
+  "kaitianContributes.browserViews.view.iconPath": "local icon relative path",
+  "kaitianContributes.browserViews.view.title": "View title (will be displayed when type is bottom)",
+  "kaitianContributes.browserViews.view.titleComponentId": "The id of the custom view title component, the characteristics are exactly the same as the normal browserView",
+  "kaitianContributes.browserViews.view.expanded": "Do you need to expand to full screen, which will cover up the editor area",
+}

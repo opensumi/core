@@ -118,6 +118,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
   private config: AppConfig;
 
   register(key: string, views: View | View[], options?: ViewContainerOptions, location?: SlotLocation) {
+    console.log('ComponentRegistryImpl: >>>> ', options?.containerId)
     if (Array.isArray(views)) {
       this.componentsMap.set(key, {
         views,

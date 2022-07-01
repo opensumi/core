@@ -21,7 +21,9 @@ import {
   PreferenceService,
   IPreferenceSettingsService,
   COMMON_COMMANDS,
+  IExtensionsPointService,
 } from '@opensumi/ide-core-browser';
+import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI } from '@opensumi/ide-core-common';
@@ -327,6 +329,9 @@ export class DebugContribution
   @Autowired(DebugContextKey)
   protected readonly debugContextKey: DebugContextKey;
 
+  @Autowired(IExtensionsPointService)
+  protected readonly extensionsPointService: IExtensionsPointService;
+
   private firstSessionStart = true;
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
@@ -452,6 +457,15 @@ export class DebugContribution
     this.breakpointManager.onDidChangeBreakpoints(() => this.breakpointManager.save());
     this.breakpointManager.onDidChangeExceptionsBreakpoints(() => this.breakpointManager.save());
     this.breakpointManager.onDidChangeMarkers(() => this.breakpointManager.save());
+
+    this.extensionsPointService.appendExtensionPoint(['browserViews'], {
+      extensionPoint: DEBUG_CONTAINER_ID,
+      frameworkKind: ['opensumi'],
+      jsonSchema: {
+        ...browserViews.properties,
+        description: formatLocalize('kaitianContributes.browserViews.location.custom', localize('menu-bar.title.debug'))
+      }
+    })
   }
 
   // 左侧调试面板
