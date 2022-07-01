@@ -136,6 +136,14 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
             }),
         });
       });
+  }
+
+  async onStart() {
+    this.preferenceSettingsService.registerSettingGroup({
+      id: 'extension',
+      title: localize('settings.group.extension'),
+      iconClass: getIcon('extension'),
+    });
 
     for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
@@ -154,14 +162,6 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
         frameworkKind: ['opensumi']
       });
     }
-  }
-
-  async onStart() {
-    this.preferenceSettingsService.registerSettingGroup({
-      id: 'extension',
-      title: localize('settings.group.extension'),
-      iconClass: getIcon('extension'),
-    });
   }
 
   onDisposeSideEffects() {

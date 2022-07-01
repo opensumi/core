@@ -83,10 +83,6 @@ export class ExtensionModule extends BrowserModule {
       token: IRequireInterceptorService,
       useClass: RequireInterceptorService,
     },
-    {
-      token: IExtensionsPointService,
-      useClass: ExtensionsPointServiceImpl,
-    },
     ExtensionCommandContribution,
     ExtensionClientAppContribution,
     BrowserRequireInterceptorContribution,

@@ -1,15 +1,16 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IJSONSchema, localize } from '@opensumi/ide-core-common';
 import { IJSONSchemaRegistry } from '../monaco';
+import lodashSet from 'lodash/set';
+import lodashHas from 'lodash/has';
+import lodashGet from 'lodash/get';
+import lodashAssign from 'lodash/assign';
 
 export const EXTENSION_JSON_URI = 'vscode://schemas/vscode-extensions';
 export const OPENSUMI_EXTENSION_JSON_URI = 'vscode://schemas/opensumi-extensions';
 
 type FrameworkKind = 'vscode' | 'opensumi';
 
-export interface IExtensionPoint {
-  readonly name: string;
-}
 
 export interface IExtensionPointDescriptor {
   extensionPoint: string;
@@ -20,7 +21,8 @@ export interface IExtensionPointDescriptor {
 export const IExtensionsPointService = Symbol('IExtensionsPointService');
 
 export interface IExtensionsPointService {
-  registerExtensionPoint(desc: IExtensionPointDescriptor): IExtensionPoint
+  registerExtensionPoint(desc: IExtensionPointDescriptor): void
+  appendExtensionPoint(points: string[], desc: IExtensionPointDescriptor): void
 }
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9-A-Z]*)\\.([a-z0-9A-Z][a-z0-9-A-Z]*)$';
@@ -372,19 +374,55 @@ export class ExtensionsPointServiceImpl implements IExtensionsPointService {
   @Autowired(IJSONSchemaRegistry)
   private schemaRegistry: IJSONSchemaRegistry;
 
-  registerExtensionPoint(desc: IExtensionPointDescriptor): any {
-
-    const { extensionPoint, jsonSchema, frameworkKind = ['vscode'] } = desc;
-
-    if (frameworkKind?.includes('opensumi')) {
-      OpensumiExtensionPackageSchema.properties!.kaitianContributes.properties![extensionPoint] = jsonSchema;
-    }
-
-    if (frameworkKind?.includes('vscode')) {
-      VSCodeExtensionPackageSchema.properties!.contributes.properties![extensionPoint] = jsonSchema;
-    }
-
+  private registerSchema(): void {
     this.schemaRegistry.registerSchema(OPENSUMI_EXTENSION_JSON_URI, OpensumiExtensionPackageSchema, ['package.json']);
     this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, VSCodeExtensionPackageSchema, ['package.json']);
+  }
+
+  private appendPropertiesFactory(kind: FrameworkKind): (points: string[], desc: IExtensionPointDescriptor) => void {
+    const properties = kind === 'opensumi'
+      ? OpensumiExtensionPackageSchema.properties!.kaitianContributes.properties
+      : VSCodeExtensionPackageSchema.properties!.contributes.properties
+
+    return (points: string[], desc: IExtensionPointDescriptor) => {
+      const { extensionPoint, jsonSchema } = desc;
+      /**
+       * ['a', 'b', 'c'] ---> ['a', 'properties', 'b', 'properties', 'c', 'properties']
+       *
+       */
+      const assignExtensionPoint = points.map(p => [p, 'properties']).flat().concat(extensionPoint);
+
+      if (lodashHas(properties, assignExtensionPoint)) {
+        const perProp = lodashGet(properties, assignExtensionPoint.concat('properties'));
+        lodashAssign(jsonSchema.properties, perProp);
+      }
+      lodashSet(properties, assignExtensionPoint, jsonSchema);
+    }
+  }
+
+  private appendOpensumiProperties(points: string[], desc: IExtensionPointDescriptor): void {
+    this.appendPropertiesFactory('opensumi')(points, desc);
+  }
+
+  private appendVScodeProperties(points: string[], desc: IExtensionPointDescriptor): void {
+    this.appendPropertiesFactory('vscode')(points, desc);
+  }
+
+  public appendExtensionPoint(points: string[], desc: IExtensionPointDescriptor): void {
+    const { frameworkKind = ['vscode'] } = desc;
+
+    if (frameworkKind.includes('opensumi')) {
+      this.appendOpensumiProperties(points, desc)
+    }
+
+    if (frameworkKind.includes('vscode')) {
+      this.appendVScodeProperties(points, desc)
+    }
+
+    this.registerSchema();
+  }
+
+  public registerExtensionPoint(desc: IExtensionPointDescriptor): void {
+    this.appendExtensionPoint([], desc);
   }
 }
