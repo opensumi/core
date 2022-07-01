@@ -1,3 +1,5 @@
+import { browserViews } from "./contributes/en-US.lang";
+
 export const localizationBundle = {
   languageId: 'en-US',
   languageName: 'english',
@@ -957,5 +959,8 @@ export const localizationBundle = {
     'connection.stop.rtt': 'Developer Tool: Stop Connection RTT',
 
     'debug.terminal.label': 'Javascript Debug Terminal',
+
+    // extension contribute
+    ...browserViews
   },
 };

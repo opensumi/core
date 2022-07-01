@@ -4,9 +4,11 @@ import {
   PreferenceContribution,
   PreferenceService,
   getExternalIcon,
+  IExtensionsPointService,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { Disposable, URI } from '@opensumi/ide-core-browser';
+import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
@@ -16,6 +18,7 @@ import {
   PreferenceSchema,
   localize,
   PreferenceScope,
+  formatLocalize,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@opensumi/ide-editor/lib/common';
@@ -91,11 +94,22 @@ export class SCMContribution
   @Autowired(IViewsRegistry)
   private readonly viewsRegistry: IViewsRegistry;
 
+  @Autowired(IExtensionsPointService)
+  protected readonly extensionsPointService: IExtensionsPointService;
+
   onStart() {
     this.viewsRegistry.registerViewWelcomeContent(scmResourceViewId, {
       content: localize('welcome-view.noOpenRepo', 'No source control providers registered.'),
       when: 'default',
     });
+    this.extensionsPointService.appendExtensionPoint(['browserViews'], {
+      extensionPoint: scmContainerId,
+      frameworkKind: ['opensumi'],
+      jsonSchema: {
+        ...browserViews.properties,
+        description: formatLocalize('kaitianContributes.browserViews.location.custom', localize('status-bar.scm'))
+      }
+    })
   }
 
   onDidRender() {

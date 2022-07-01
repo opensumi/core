@@ -32,7 +32,7 @@ export interface ISumiExtensionContributions extends IExtensionContributions {
   menubars?: IContributeMenubarItem[];
   browserViews?: {
     [location: string]: {
-      type: string;
+      type: 'add' | 'replace';
       view: ITabBarViewContribution[];
     };
   };
