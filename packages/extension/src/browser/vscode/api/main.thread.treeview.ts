@@ -356,8 +356,6 @@ export class TreeViewDataProvider extends Tree {
       actions,
       item.accessibilityInformation,
       expanded,
-      // 传入缓存的节点id，保障节点在初始化之后path及id一直保持一致
-      this.treeItemId2TreeNode.get(item.id)?.id,
     );
     return node;
   }
@@ -378,8 +376,6 @@ export class TreeViewDataProvider extends Tree {
       item.id,
       actions,
       item.accessibilityInformation,
-      // 传入缓存的节点id，保障节点在初始化之后path及id一直保持一致
-      this.treeItemId2TreeNode.get(item.id)?.id,
     );
     return node;
   }
