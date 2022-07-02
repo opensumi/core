@@ -124,7 +124,7 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     return ExtensionTreeViewModel.createModel(this.injector, dataProvider, treeViewId, options || {});
   }
 
-  $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions): void {
+  async $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions) {
     if (this.treeModels.has(treeViewId)) {
       return;
     }
@@ -198,32 +198,32 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     this.disposableCollection.set(treeViewId, disposable);
   }
 
-  $unregisterTreeDataProvider(treeViewId: string) {
+  async $unregisterTreeDataProvider(treeViewId: string) {
     const disposable = this.disposableCollection.get(treeViewId);
     if (disposable) {
       disposable.dispose();
     }
   }
 
-  $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem) {
+  async $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem) {
     const treeModel = this.treeModels.get(treeViewId);
     if (treeModel) {
-      treeModel.refresh(itemsToRefresh);
+      await treeModel.refresh(itemsToRefresh);
     }
   }
 
-  $setTitle(treeViewId: string, title: string) {
+  async $setTitle(treeViewId: string, title: string) {
     const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
     if (handler) {
       handler.updateViewTitle(treeViewId, title);
     }
   }
 
-  $setDescription(treeViewId: string, description: string) {
+  async $setDescription(treeViewId: string, description: string) {
     // TODO: 框架的 Panel 暂无存储 descrition 信息，暂时为空实现
   }
 
-  $setMessage(treeViewId: string, description: string) {
+  async $setMessage(treeViewId: string, description: string) {
     // TODO: 框架的 Panel 暂无存储 message 信息，暂时为空实现
   }
 

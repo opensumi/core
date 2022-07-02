@@ -52,7 +52,6 @@ const ITreeViewDataProvider = Symbol('ITreeViewDataProvider');
 @Injectable()
 export class ExtensionTreeViewModel {
   static DEFAULT_REVEAL_DELAY = 500;
-  static DEFAULT_REFRESH_DELAY = 500;
 
   static createContainer(
     injector: Injector,
@@ -145,7 +144,6 @@ export class ExtensionTreeViewModel {
   }> = new Emitter();
 
   private _isMultiSelected = false;
-  private refreshDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REFRESH_DELAY);
   private revealDelayer = new ThrottledDelayer<void>(ExtensionTreeViewModel.DEFAULT_REVEAL_DELAY);
   private revealDeferred: Deferred<void> | null;
   private refreshDeferred: Deferred<void> | null;
@@ -615,40 +613,23 @@ export class ExtensionTreeViewModel {
 
   async refresh(item?: TreeViewItem) {
     await this.whenReady;
-    if (!this.refreshDelayer.isTriggered()) {
-      this.refreshDelayer.cancel();
+    if (!item) {
+      await this.treeModel.root?.refresh();
     } else {
-      if (this.refreshDeferred) {
-        await this.refreshDeferred.promise;
+      const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(item.id);
+      if (!id) {
+        return;
+      }
+      const treeNode = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
+      if (!treeNode) {
+        return;
+      }
+      if (ExtensionCompositeTreeNode.is(treeNode)) {
+        await (treeNode as ExtensionCompositeTreeNode).refresh();
+      } else if (treeNode.parent) {
+        await (treeNode.parent as ExtensionCompositeTreeNode).refresh();
       }
     }
-    return this.refreshDelayer.trigger(async () => {
-      this.refreshDeferred = new Deferred();
-      if (!item) {
-        this.treeModel.root?.refresh();
-      } else {
-        const id = this.treeViewDataProvider.getTreeNodeIdByTreeItemId(item.id);
-        if (!id) {
-          return;
-        }
-        const cache = (this.treeModel.root as ExtensionTreeRoot).getTreeNodeById(id);
-        if (!cache) {
-          return;
-        }
-        let path;
-        if (ExtensionCompositeTreeNode.is(cache)) {
-          path = (cache as ExtensionCompositeTreeNode).path;
-        } else if (cache.parent) {
-          path = (cache.parent as ExtensionCompositeTreeNode).path;
-        }
-        const watcher = this.treeModel.root?.watchEvents.get(path);
-        if (watcher && typeof watcher.callback === 'function') {
-          await watcher.callback({ type: WatchEvent.Changed, path });
-        }
-      }
-      this.refreshDeferred.resolve();
-      this.refreshDeferred = null;
-    });
   }
 
   async reveal(treeItemId: string, options: ITreeViewRevealOptions = {}) {
