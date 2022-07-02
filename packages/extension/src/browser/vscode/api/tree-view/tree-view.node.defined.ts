@@ -1,6 +1,6 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IAccessibilityInformation } from '@opensumi/ide-core-common';
+import { IAccessibilityInformation, isObject, isString } from '@opensumi/ide-core-common';
 
 import { ITreeItemLabel } from '../../../../common/vscode';
 import { ICommand } from '../../../../common/vscode/models';
@@ -30,7 +30,7 @@ export class ExtensionTreeRoot extends CompositeTreeNode {
   }
 
   get displayName() {
-    return this._displayName || this.name;
+    return this._displayName;
   }
 
   dispose() {
@@ -59,16 +59,14 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     public actions: MenuNode[],
     private _accessibilityInformation?: IAccessibilityInformation,
     expanded?: boolean,
-    id?: number,
   ) {
-    super(tree, parent, undefined, {});
+    super(tree, parent, undefined, { name: treeItemId });
     this.isExpanded = expanded || false;
-    this.id = id || this.id;
     this._command = command;
     this._tooltip = tooltip;
-    if (typeof label === 'string') {
+    if (isString(label)) {
       this._displayName = label;
-    } else if (typeof label === 'object') {
+    } else if (isObject(label)) {
       this._displayName = label.label;
       this._hightlights = label.highlights;
       this._strikethrough = label.strikethrough;
@@ -142,16 +140,11 @@ export class ExtensionTreeNode extends TreeNode {
     public treeItemId: string = '',
     public actions: MenuNode[],
     private _accessibilityInformation?: IAccessibilityInformation,
-    id?: number,
   ) {
-    super(tree as ITree, parent, undefined, {});
-    this.id = id || this.id;
-    // 每个节点应该拥有自己独立的路径，不存在重复性
-    // displayName 作为展示用的字段
-    this.name = String(this.id);
-    if (typeof label === 'string') {
+    super(tree as ITree, parent, undefined, { name: treeItemId });
+    if (isString(label)) {
       this._displayName = label;
-    } else if (typeof label === 'object') {
+    } else if (isObject(label)) {
       this._displayName = label.label;
       this._hightlights = label.highlights;
       this._strikethrough = label.strikethrough;
