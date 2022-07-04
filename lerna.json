@@ -1,7 +1,7 @@
 {
   "version": "2.19.6",
   "npmClient": "npm",
-  "packages": ["packages/*", "tools/dev-tool"],
+  "packages": ["packages/*", "tools/dev-tool", "tools/playwright"],
   "command": {
     "bootstrap": {
       "npmClientArgs": ["--no-package-lock"]
