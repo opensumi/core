@@ -11,7 +11,7 @@ describe('ExtensionStorage service should be work', () => {
   let injector: MockInjector;
   let extensionStorageService: IExtensionStorageService;
   let mockInit;
-  beforeEach(async () => {
+  beforeAll(async () => {
     injector = createBrowserInjector([]);
 
     // mock used instance
@@ -41,7 +41,7 @@ describe('ExtensionStorage service should be work', () => {
     await extensionStorageService.whenReady;
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await injector.disposeAll();
   });
 
