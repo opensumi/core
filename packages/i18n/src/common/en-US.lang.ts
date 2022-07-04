@@ -551,8 +551,8 @@ export const localizationBundle = {
     'preference.item.notValid': '{0} is not a valid option',
 
     'editor.configuration.formatOnSaveTimeout':
-      '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
-    'editor.configuration.renderLineHighlight': '控制编辑器的当前行突出显示方式。',
+      'Control the timeout time of formatting (ms). Effective Only when `#editor.formatOnSave#` enables.',
+    'editor.configuration.renderLineHighlight': "Control the highlight of the editor's current line",
     'editor.configuration.enablePreviewFromCodeNavigation':
       'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'editor.configuration.wrapTab':
@@ -560,7 +560,7 @@ export const localizationBundle = {
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
     'editor.configuration.autoSave': 'Controls how dirty files are auto saved.',
     'editor.configuration.autoSaveDelay':
-      "Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to 'Save After Delay'.",
+      "Controls the delay in ms after which a dirty file is saved automatically. Only applies when `#editor.formatOnSave#` is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
     'editor.configuration.tabSize':
       'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
