@@ -1,4 +1,4 @@
-import * as jsoncparser from 'jsonc-parser';
+import * as jsoncParser from 'jsonc-parser';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import {
@@ -333,39 +333,44 @@ export class PreferenceContribution
         let text = editor.monacoEditor.getValue();
         let lines;
         let numReturns;
-        let preferenceLine;
+        let preferenceLine: string | undefined;
+        let preferenceLineNumber: number | undefined;
         const { index } = text.match(new RegExp(`\\"${preferenceId}\\"`)) || {};
         if (index && index >= 0) {
           numReturns = text.slice(0, index).match(new RegExp('\\n', 'g'))?.length || -1 + 1;
           if (numReturns > 0) {
             lines = text.split('\n');
             preferenceLine = lines[numReturns];
+            preferenceLineNumber = numReturns;
           }
         } else {
           // 如果不存在配置项，追加配置项内容
           const formattingOptions = { tabSize: 2, insertSpaces: true, eol: '' };
-          const edits = jsoncparser.modify(text, [preferenceId], '', { formattingOptions });
-          const content = jsoncparser.applyEdits(text, edits);
+          const edits = jsoncParser.modify(text, [preferenceId], '', { formattingOptions });
+          const content = jsoncParser.applyEdits(text, edits);
           editor.monacoEditor.setValue(content);
           text = content;
           numReturns = text.slice(0, index).match(new RegExp('\\n', 'g'))?.length || -1;
           if (numReturns > 1) {
             lines = text.split('\n');
             preferenceLine = lines[numReturns - 1];
+            preferenceLineNumber = numReturns - 1;
           }
         }
-        if (!preferenceLine) {
+
+        if (!(preferenceLine && preferenceLineNumber)) {
           return;
         }
+
         const regStr = `\\s+\\"${preferenceId}\\":\\s?["|{|t|f|[]`;
         const match = new RegExp(regStr, 'g').exec(preferenceLine);
         if (match) {
           const isStringExpr = match[0].slice(-1) === '"';
-          editor.monacoEditor.revealPositionInCenterIfOutsideViewport(
-            { lineNumber: numReturns + 1, column: match[0].length + 1 },
+          editor.monacoEditor.setPosition({ lineNumber: preferenceLineNumber + 1, column: match[0].length + 1 });
+          editor.monacoEditor.revealPositionInCenter(
+            { lineNumber: preferenceLineNumber + 1, column: match[0].length + 1 },
             1,
           );
-          editor.monacoEditor.setPosition({ lineNumber: numReturns + 1, column: match[0].length + 1 });
           if (isStringExpr) {
             // 只对 String 类型配置展示提示，包括不存在配置项时追加的情况
             await commandService.executeCommand('editor.action.triggerSuggest');

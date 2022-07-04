@@ -64,7 +64,7 @@ export const localizationBundle = {
     'file.search.folder': 'Search on this folder',
     'file.focus.files': 'Focus on Files Explorer',
     'file.filetree.filter': 'Filter on opened files',
-    'file.filetree.openTerminalWithPath': 'Open In The Terminal',
+    'file.filetree.openTerminalWithPath': 'Open In Integrated Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
     'file.resource-deleted': '(Deleted)',
 
@@ -332,11 +332,11 @@ export const localizationBundle = {
     'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
     'debug.launch.existed': 'Debug configuration "{0}" is already running',
     'debug.expression.log.placeholder':
-      'Message to log when breakpoint is hit. Expressions within {} are interpolated. Press  "Enter " to confirm and  "Esc " to cancel.',
+      'Message to log when breakpoint is hit. Expressions within {} are interpolated. Press "Enter" to confirm and "Esc" to cancel.',
     'debug.expression.hit.placeholder':
-      'Break when hit count condition is met. Press  "Enter " to confirm and  "Esc " to cancel.',
+      'Break when hit count condition is met. Press "Enter" to confirm and "Esc" to cancel.',
     'debug.expression.condition.placeholder':
-      'Break when the expression evaluates to true. Press  "Enter " to confirm and  "Esc " to cancel.',
+      'Break when the expression evaluates to true. Press "Enter" to confirm and "Esc" to cancel.',
     'debug.expression.condition': 'Expression',
     'debug.expression.hitCondition': 'Hit Count',
     'debug.expression.logMessage': 'Log Message',
@@ -550,6 +550,9 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} is not a valid option',
 
+    'editor.configuration.formatOnSaveTimeout':
+      '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
+    'editor.configuration.renderLineHighlight': '控制编辑器的当前行突出显示方式。',
     'editor.configuration.enablePreviewFromCodeNavigation':
       'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'editor.configuration.wrapTab':
@@ -617,12 +620,12 @@ export const localizationBundle = {
     'terminal.split': 'Split Terminal',
     'terminal.clear': 'Remove All Terminals',
     'terminal.clear.content': 'Clear All Terminals',
-    'terminal.independ': 'Independ Terminal',
+    'terminal.independ': 'Independent Terminal',
     'terminal.maximum': 'Maximum Terminal Panel',
     'terminal.or': 'Or',
     'terminal.search': 'Search',
     'terminal.search.next': 'Search Next',
-    'terminal.openWithPath': 'Open In The Terminal',
+    'terminal.openWithPath': 'Open In Integrated Terminal',
     'terminal.remove': 'Kill terminal',
     'terminal.menu.search': 'Search',
     'terminal.menu.split': 'Split',
