@@ -67,6 +67,8 @@ export class ExtensionsPointServiceImpl implements IExtensionsPointService {
   }
 
   public appendExtensionPoint(points: string[], desc: IExtensionPointDescriptor): void {
+    if (!desc) return;
+
     const { frameworkKind = ['vscode'] } = desc;
 
     if (frameworkKind.includes('opensumi')) {
@@ -81,6 +83,8 @@ export class ExtensionsPointServiceImpl implements IExtensionsPointService {
   }
 
   public registerExtensionPoint(desc: IExtensionPointDescriptor): void {
+    if (!desc) return;
+
     this.appendExtensionPoint([], desc);
   }
 }

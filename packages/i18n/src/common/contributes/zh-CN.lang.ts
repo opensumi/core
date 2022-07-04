@@ -1,4 +1,5 @@
 export const browserViews = {
+  // browserViews
   "kaitianContributes.browserViews": "向编辑器提供前端视图",
   "kaitianContributes.browserViews.left": "在左侧活动栏容器提供视图",
   "kaitianContributes.browserViews.right": "在右侧活动栏容器提供视图",
@@ -10,4 +11,7 @@ export const browserViews = {
   "kaitianContributes.browserViews.view.title": "视图标题（当 type 为 bottom 时，将展示）",
   "kaitianContributes.browserViews.view.titleComponentId": "自定义视图标题组件 id, 特性与普通的 browserView 完全一致",
   "kaitianContributes.browserViews.view.expanded": "是否需要全屏展开，这会遮盖掉 editor 区域",
+
+  // browserMain
+  "kaitianContributes.browserMain": "声明插件 browser 入口（相对于插件目录的编译后的代码文件路径）",
 }
