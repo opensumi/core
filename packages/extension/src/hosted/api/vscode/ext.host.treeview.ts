@@ -214,6 +214,7 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private id2Element: Map<string, T> = new Map<string, T>();
   private element2TreeViewItem: Map<T, TreeViewItem> = new Map<T, TreeViewItem>();
+  private element2VSCodeTreeItem: Map<T, vscode.TreeItem> = new Map<T, vscode.TreeItem>();
 
   private disposable: DisposableStore = new DisposableStore();
 
@@ -261,6 +262,7 @@ class ExtHostTreeView<T> implements IDisposable {
 
     this.disposable.add(toDisposable(() => this.id2Element.clear()));
     this.disposable.add(toDisposable(() => this.element2TreeViewItem.clear()));
+    this.disposable.add(toDisposable(() => this.element2VSCodeTreeItem.clear()));
     this.disposable.add(toDisposable(() => this.nodes.clear()));
     this.disposable.add(toDisposable(() => proxy.$unregisterTreeDataProvider(treeViewId)));
     let refreshingPromise: Promise<void> | null;
@@ -334,6 +336,7 @@ class ExtHostTreeView<T> implements IDisposable {
     this.nodes.clear();
     this.id2Element.clear();
     this.element2TreeViewItem.clear();
+    this.element2VSCodeTreeItem.clear();
   }
 
   private getTreesNodeToRefresh(elements: T[]) {
@@ -440,9 +443,14 @@ class ExtHostTreeView<T> implements IDisposable {
     }
     const cache = this.getTreeItem(treeItemId);
     if (cache) {
-      const node = this.element2TreeViewItem.get(cache);
-
-      return node;
+      const node = this.element2VSCodeTreeItem.get(cache);
+      if (!node) {
+        return undefined;
+      }
+      const resolve = (await this.treeDataProvider.resolveTreeItem(node, cache, token)) ?? node;
+      node.tooltip = resolve.tooltip;
+      node.command = resolve.command;
+      return this.toTreeViewItem(node);
     }
     return;
   }
@@ -497,6 +505,7 @@ class ExtHostTreeView<T> implements IDisposable {
             id,
           });
           this.element2TreeViewItem.set(value, treeViewItem);
+          this.element2VSCodeTreeItem.set(value, treeItem);
           treeItems.push(treeViewItem);
         });
 
