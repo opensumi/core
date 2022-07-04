@@ -89,6 +89,40 @@ describe('connection', () => {
     await deferred.promise;
   });
 
+  it('get 401 error if websocket verification failed', async () => {
+    const server = http.createServer();
+    const deferred = new Deferred();
+    const socketRoute = new WebSocketServerRoute(server, console);
+    const channelHandler = new CommonChannelHandler('/service', console, {
+      wsServerOptions: {
+        verifyClient: () => false,
+      },
+    });
+    socketRoute.registerHandler(channelHandler);
+    socketRoute.init();
+
+    await new Promise<void>((resolve) => {
+      server.listen(7788, () => {
+        resolve(undefined);
+      });
+    });
+
+    const mockHandler = jest.fn();
+    commonChannelPathHandler.register('TEST_CHANNEL', {
+      handler: mockHandler,
+      dispose: () => {},
+    });
+
+    const connection = new WebSocket('ws://0.0.0.0:7788/service');
+
+    connection.on('error', (e) => {
+      deferred.reject(e);
+      connection.close();
+    });
+    await expect(deferred.promise).rejects.toThrow('Unexpected server response: 401');
+    server.close();
+  });
+
   it('RPCService', async () => {
     const wss = new WebSocket.Server({ port: 7788 });
     const notificationMock = jest.fn();
