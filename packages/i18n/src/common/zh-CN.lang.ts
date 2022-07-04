@@ -776,7 +776,7 @@ export const localizationBundle = {
     'outline.follow.cursor': '跟随光标',
 
     'welcome.title': '开始使用',
-    'welcome.quckstart': '开始使用',
+    'welcome.quickStart': '开始使用',
     'welcome.recent.workspace': '最近打开的工作区',
 
     'markers.title': '问题',
@@ -784,7 +784,7 @@ export const localizationBundle = {
     'markers.panel.filter.errors': '错误',
     'markers.panel.filter.warnings': '警告',
     'markers.panel.filter.infos': '信息',
-    'markers.filter.placefolder': '筛选器，例如：text、**/*.ts、!**/node_modules/**',
+    'markers.filter.placeholder': '筛选器，例如：text、**/*.ts、!**/node_modules/**',
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
 

@@ -4,7 +4,7 @@ export default class Messages {
   public static markerTitle = () => localize('markers.title', '问题');
   public static markerPanelContentEmpty = () => localize('markers.panel.content.empty', '目前尚未在工作区检测到问题。');
   public static markerPanelFilterInputPlaceholder = () =>
-    localize('markers.filter.placefolder', '筛选器，例如：text、**/*.ts、!**/node_modules/**');
+    localize('markers.filter.placeholder', '筛选器，例如：text、**/*.ts、!**/node_modules/**');
   public static markerPanelFilterErrors = () => localize('markers.panel.filter.errors', 'errors');
   public static markerPanelFilterWarnings = () => localize('markers.panel.filter.warnings', 'warnings');
   public static markerPanelFilterInfos = () => localize('markers.panel.filter.infos', 'infos');

@@ -21,7 +21,7 @@ export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({
   return (
     <div className={styles.welcome}>
       <div>
-        <h1>{localize('welcome.quckstart')}</h1>
+        <h1>{localize('welcome.quickStart')}</h1>
         <div>
           <a
             onClick={() => {

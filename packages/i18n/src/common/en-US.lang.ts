@@ -805,7 +805,7 @@ export const localizationBundle = {
     'outline.follow.cursor': 'Follow Cursor',
 
     'welcome.title': 'Welcome',
-    'welcome.quckstart': 'Quick Start',
+    'welcome.quickStart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
 
     'markers.title': 'PROBLEMS',
@@ -813,7 +813,7 @@ export const localizationBundle = {
     'markers.panel.filter.errors': 'errors',
     'markers.panel.filter.warnings': 'warnings',
     'markers.panel.filter.infos': 'infos',
-    'markers.filter.placefolder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
+    'markers.filter.placeholder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
     'markers.filter.content.empty': 'No results found with provided filter criteria.',
     'markers.filter.reset': 'Clear Filter.',
 
@@ -823,11 +823,11 @@ export const localizationBundle = {
     'view.zoomOut': 'Zoom Out',
 
     'extension.invalidExthostReload.confirm.content':
-      'Ext-host process is invalid. Click to refresh to resume this process.',
+      'Extension Host process is invalid. Click to refresh to resume this process.',
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
-    'extension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
-    'extension.exthostRestarting.content': 'Ext-host process is restarting',
+    'extension.crashedExthostReload.confirm': 'Extension Host process crashed, restart this process?',
+    'extension.exthostRestarting.content': 'Extension Host process is restarting',
 
     'extension.no.view.found':
       'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
