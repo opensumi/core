@@ -447,10 +447,7 @@ class CharacterPrediction implements IPrediction {
     if (!this.appliedAt) {
       return ''; // not applied
     }
-
-    const str = cursor.clone().moveTo(this.appliedAt.pos) + input;
-    console.log('#DEBUG#', JSON.stringify(str));
-    return str;
+    return cursor.clone().moveTo(this.appliedAt.pos) + input;
   }
 
   matches(input: StringReader, lookBehind?: IPrediction) {
@@ -1440,7 +1437,6 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
   }
 
   activate(terminal: Terminal): void {
-    // @ts-ignore
     // window.xterm = terminal;
 
     typeAheadLogger('#DEBUG1# activate terminal type ahead addon');
