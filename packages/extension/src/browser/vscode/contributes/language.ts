@@ -55,10 +55,10 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
         type: 'array',
         items: [
           {
-            $ref: '#definitions/openBracket',
+            // $ref: '#definitions/openBracket',
           },
           {
-            $ref: '#definitions/closeBracket',
+            // $ref: '#definitions/closeBracket',
           },
         ],
       },
@@ -107,7 +107,7 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
         ),
         type: 'array',
         items: {
-          $ref: '#definitions/bracketPair',
+          // $ref: '#definitions/bracketPair',
         },
       },
       autoClosingPairs: {
@@ -124,16 +124,16 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
         items: {
           oneOf: [
             {
-              $ref: '#definitions/bracketPair',
+              // $ref: '#definitions/bracketPair',
             },
             {
               type: 'object',
               properties: {
                 open: {
-                  $ref: '#definitions/openBracket',
+                  // $ref: '#definitions/openBracket',
                 },
                 close: {
-                  $ref: '#definitions/closeBracket',
+                  // $ref: '#definitions/closeBracket',
                 },
                 notIn: {
                   type: 'array',
@@ -172,16 +172,16 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
         items: {
           oneOf: [
             {
-              $ref: '#definitions/bracketPair',
+              // $ref: '#definitions/bracketPair',
             },
             {
               type: 'object',
               properties: {
                 open: {
-                  $ref: '#definitions/openBracket',
+                  // $ref: '#definitions/openBracket',
                 },
                 close: {
-                  $ref: '#definitions/closeBracket',
+                  // $ref: '#definitions/closeBracket',
                 },
               },
             },

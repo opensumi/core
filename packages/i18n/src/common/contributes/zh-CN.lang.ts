@@ -23,4 +23,101 @@ export const browserViews = {
 
   // viewsProxies
   "kaitianContributes.viewsProxies": "声明需要绑定 componentProxy 调用的组件 id, 与导出名相同。例如声明 [\"component\"] 后, 即可在 node 层通过 **`context.componentProxy.component.xxxx`** 调用 browser 层 component 组件的 xxxx 函数",
+
+  // toolbar
+  "kaitianContributes.toolbar": "Toolbar 默认位于 IDE 顶部菜单栏的右侧, 也可以展现为单独的一栏",
+  "kaitianContributes.toolbar.actions": "用于描述 Toolbar 上的元素, 目前仅支持 `button` 和 `select`, 我们称之为 action, 某些情况下需要搭配 Toolbar API 来使用",
+  "kaitianContributes.toolbar.actions.id": "唯一标识符",
+  "kaitianContributes.toolbar.actions.weight": "顺序权重, 数值越大，排在越前面",
+  "kaitianContributes.toolbar.actions.preferredPosition": `注册这个 action 的位置， 如果 strictPosition 存在，这个选项无效
+规则：
+注： 每个 location 默认存在 _head  _tail 两个group，代表了第一个和最后一个group
+1. 如果提供 group 值, 且 group 不为 _head 和 _tail
+    1. 如果 group 已注册, 将其注册在group内，跟随 group 出现
+    3. 如果 group 未注册
+        1. 如果 location 存在， 它会出现在指定 location 的 _tail
+        2. 如果 location 不存在， 它会出现在默认 location 的 _tail
+2. 如果提供 group 值, 且 group 为 _head 或 _tail
+    1. 如果 location 已注册, 它会出现在指定 location 的 group 位置。
+    2. 如果 location 未注册 它会出现在默认 location 的 group 位置。
+3. 如果仅仅提供 location 值
+    1. 如果 location 已注册, 它会出现在指定 location 的 _tail 位置。
+    2. 如果 location 未注册 它会出现在默认 location 的 _tail 位置。
+4. 如果什么 position 建议都没有，出现在 默认location 的 _tail
+真实的位置不会反复计算，仅仅在Toolbar首次渲染时（onStart）计算，或者渲染后 action 注册时计算。
+但是 order 会反复计算。`,
+  "kaitianContributes.toolbar.actions.preferredPosition.location": `location 是指一个工具条单元的位置，由于框架的集成不同，在不同的 IDE 集成产品中，
+可能存在不同的 location 可选值。
+
+一般来说，桌面版本版默认的位置会有
+toolbar-left（工具条左侧）
+toolbar-right（工具条右侧）
+toolbar-center (工具条中央)
+
+在 web 版本的 IDE 上，会额外存在这两个
+menu-left (顶部菜单右侧靠左）
+menu-right (顶部菜单左侧靠右)
+
+其他位置可能需要具体的集成产品提供
+
+每个集成产品都会有一个默认的 location，如果找不到 preferredPosition 指定的位置
+则会放到默认的 locaiton`,
+  "kaitianContributes.toolbar.actions.preferredPosition.group": `多个按钮可以成组，组与组之间会存在分割线表示分割
+目前插件只能注册到集成 IDE 按钮已经存在的组中，而不能自定义组，这个特性可能未来添加
+每个 location 都默认存在 _head 和 _tail 两个内置组，分别用来表示这个位置的最左侧和最右侧
+没有指定 group 的按钮都会默认放到 _tail 中`,
+  "kaitianContributes.toolbar.actions.strictPosition": `如果存在这个值，会永远寻找指定的位置。
+如果这位置无法被找到（比如 location 不存在，或者group不存在），则这个按钮不会被显示`,
+  "kaitianContributes.toolbar.actions.description": "当前 action 的介绍，为了让用户能明白这个组件是做什么的，理论上必填",
+  "kaitianContributes.toolbar.actions.command": "要执行的命令",
+  "kaitianContributes.toolbar.actions.defaultState": "默认样式状态的 key",
+  "kaitianContributes.toolbar.actions.type": "action 的类型",
+  "kaitianContributes.toolbar.actions.type.button": "按钮类型",
+  "kaitianContributes.toolbar.actions.type.select": "下拉框类型",
+  "kaitianContributes.toolbar.actions.title": "按钮文案",
+  "kaitianContributes.toolbar.actions.iconPath": "按钮图标路径，相对于插件根目录",
+  "kaitianContributes.toolbar.actions.iconMaskMode": "图标渲染模式",
+  "kaitianContributes.toolbar.actions.button.states": "按钮状态，除了可以修改不同文案、图标路径和渲染模式外，还可以修改样式，类似声明一组 classname，可通过 API 改变按钮的状态",
+  "kaitianContributes.toolbar.actions.button.states.width": "指定按钮宽度，不指定则默认为 8px",
+  "kaitianContributes.toolbar.actions.button.states.height": "指定按钮高度，不指定则默认为 22px",
+  "kaitianContributes.toolbar.actions.button.states.showTitle": "是否显示 title, 默认为 true",
+  "kaitianContributes.toolbar.actions.button.states.iconForeground": "图标前景色",
+  "kaitianContributes.toolbar.actions.button.states.iconBackground": "图标背景色",
+  "kaitianContributes.toolbar.actions.button.states.titleForeground": "title 前景色",
+  "kaitianContributes.toolbar.actions.button.states.titleBackground": "title 背景色",
+  "kaitianContributes.toolbar.actions.button.states.titleSize": "title 字体大小",
+  "kaitianContributes.toolbar.actions.button.states.iconSize": "图标大小",
+  "kaitianContributes.toolbar.actions.button.states.background": "整体背景色",
+  "kaitianContributes.toolbar.actions.button.states.btnStyle": `样式类型，
+inline 则不会有外边框
+button 则为按钮样式
+不指定则默认为 button
+inline 模式 showTitle 会失效, 只显示 icon`,
+  "kaitianContributes.toolbar.actions.button.states.btnTitleStyle": "button 的文本位置样式",
+  "kaitianContributes.toolbar.actions.button.states.btnTitleStyle.vertical": "上 icon 下文本",
+  "kaitianContributes.toolbar.actions.button.states.btnTitleStyle.horizontal": "左 icon 右文本",
+  "kaitianContributes.toolbar.actions.popoverComponent": "指定自定义的 Popover 组件 id",
+  "kaitianContributes.toolbar.actions.popoverStyle": "指定 Popover 的样式",
+  "kaitianContributes.toolbar.actions.popoverStyle.position": "指定位置，默认为 bottom",
+  "kaitianContributes.toolbar.actions.popoverStyle.position.top": "在 action 的上方",
+  "kaitianContributes.toolbar.actions.popoverStyle.position.bottom": "在 action 的下方",
+  "kaitianContributes.toolbar.actions.popoverStyle.horizontalOffset": "距离右边的偏移量(px), 默认 30px",
+  "kaitianContributes.toolbar.actions.popoverStyle.hideOnClickOutside": "点击组件外部时自动隐藏, 默认 true",
+  "kaitianContributes.toolbar.actions.popoverStyle.noContainerStyle": "不要带箭头，阴影，背景色等默认样式",
+  "kaitianContributes.toolbar.actions.popoverStyle.minWidth": "指定 popOver 的最小宽度",
+  "kaitianContributes.toolbar.actions.popoverStyle.minHeight": "指定 popOver 的最小高度",
+  "kaitianContributes.toolbar.actions.when": "当满足条件时",
+  "kaitianContributes.toolbar.actions.select.options": "定义 select 下拉列表项",
+  "kaitianContributes.toolbar.actions.select.options.iconPath": "按钮图标路径，相对于插件根目录",
+  "kaitianContributes.toolbar.actions.select.options.iconMaskMode": "图标渲染模式",
+  "kaitianContributes.toolbar.actions.select.options.label": "显示的文案",
+  "kaitianContributes.toolbar.actions.select.options.value": "选中的值",
+  "kaitianContributes.toolbar.actions.select.defaultValue": "默认值",
+  "kaitianContributes.toolbar.actions.select.optionEqualityKey": "用于对比值是否相等的 key",
+  "kaitianContributes.toolbar.actions.select.states": "样式状态",
+  "kaitianContributes.toolbar.actions.select.states.backgroundColor": "背景色",
+  "kaitianContributes.toolbar.actions.select.states.labelForegroundColor": "文案前景色",
+  "kaitianContributes.toolbar.actions.select.states.iconForegroundColor": "图标前景色",
+  "kaitianContributes.toolbar.actions.select.states.width": "宽度",
+  "kaitianContributes.toolbar.actions.select.states.minWidth": "最小宽度",
 }

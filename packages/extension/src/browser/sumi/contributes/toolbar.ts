@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IToolbarRegistry } from '@opensumi/ide-core-browser';
+import { IJSONSchema, IToolbarRegistry } from '@opensumi/ide-core-browser';
+import { toolbar } from '@opensumi/ide-core-browser/lib/extensions/schema/toolbar';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { KaitianExtensionToolbarService } from '../main.thread.toolbar';
@@ -22,6 +23,8 @@ export class ToolbarContributionPoint extends VSCodeContributePoint<KtToolbarSch
 
   @Autowired(IToolbarRegistry)
   private readonly toolbarRegistry: IToolbarRegistry;
+
+  static schema: IJSONSchema = toolbar.schema;
 
   private toLocalized<T extends IToolbarActionBasicContribution>(action: T, props: string[]): T {
     return props.reduce((pre, cur) => {
