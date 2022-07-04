@@ -17,4 +17,7 @@ export const browserViews = {
 
   // nodeMain
   "kaitianContributes.nodeMain": "声明插件 node 入口（相对于插件目录的编译后的代码文件路径）",
+
+  // workerMain
+  "kaitianContributes.workerMain": "声明插件 worker 入口（相对于插件目录的编译后的代码文件路径）",
 }

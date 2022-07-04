@@ -11,6 +11,7 @@ import { MenubarsContributionPoint } from './menubar';
 import { SubmenusContributionPoint } from './submenu';
 import { ToolbarContributionPoint } from './toolbar';
 import { NodeMainContributionPoint } from './node-main';
+import { WorkerMainContributionPoint } from './worker-main';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 
@@ -24,6 +25,7 @@ export class SumiContributesRunner extends WithEventBus {
     BrowserViewContributionPoint,
     BrowserMainContributionPoint,
     NodeMainContributionPoint,
+    WorkerMainContributionPoint,
     MenubarsContributionPoint,
     SubmenusContributionPoint,
     ToolbarContributionPoint,
