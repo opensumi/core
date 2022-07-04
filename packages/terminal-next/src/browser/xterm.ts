@@ -7,6 +7,7 @@ import { IClipboardService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
+import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-registry';
 import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { SupportedOptions } from '../common/preference';
@@ -14,6 +15,7 @@ import { IXTerm } from '../common/xterm';
 
 import styles from './component/terminal.module.less';
 import {
+  TERMINAL_BACKGROUND_COLOR,
   TERMINAL_FIND_MATCH_BACKGROUND_COLOR,
   TERMINAL_FIND_MATCH_BORDER_COLOR,
   TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR,
@@ -99,6 +101,7 @@ export class XTerm extends Disposable implements IXTerm {
     // The mapping is as follows:
     // - findMatch -> activeMatch
     // - findMatchHighlight -> match
+    const terminalBackground = theme.getColor(TERMINAL_BACKGROUND_COLOR) || theme.getColor(PANEL_BACKGROUND);
     const findMatchBackground = theme.getColor(TERMINAL_FIND_MATCH_BACKGROUND_COLOR);
     const findMatchBorder = theme.getColor(TERMINAL_FIND_MATCH_BORDER_COLOR);
     const findMatchOverviewRuler = theme.getColor(TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR);
@@ -107,10 +110,12 @@ export class XTerm extends Disposable implements IXTerm {
     const findMatchHighlightOverviewRuler = theme.getColor(TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR);
 
     return {
-      activeMatchBackground: findMatchBackground?.toString() || 'transparent',
+      activeMatchBackground: findMatchBackground?.toString(),
       activeMatchBorder: findMatchBorder?.toString() || 'transparent',
       activeMatchColorOverviewRuler: findMatchOverviewRuler?.toString() || 'transparent',
-      matchBackground: findMatchHighlightBackground?.toString() || 'transparent',
+      matchBackground: terminalBackground
+        ? findMatchHighlightBackground?.blend(terminalBackground).toString()
+        : undefined,
       matchBorder: findMatchHighlightBorder?.toString() || 'transparent',
       matchOverviewRuler: findMatchHighlightOverviewRuler?.toString() || 'transparent',
     };

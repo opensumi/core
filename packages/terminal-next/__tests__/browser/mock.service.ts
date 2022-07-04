@@ -4,6 +4,7 @@ import { Terminal } from 'xterm';
 import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { uuid, URI, Emitter, IDisposable, PreferenceScope, Deferred, OperatingSystem } from '@opensumi/ide-core-common';
+import { Color, RGBA } from '@opensumi/ide-theme/lib/common/color';
 
 import {
   ITerminalService,
@@ -260,7 +261,7 @@ export const MainTerminalThemeOnThemeChange = new Emitter<any>();
 export class MockThemeService {
   onThemeChange = MainTerminalThemeOnThemeChange.event;
   getCurrentThemeSync = () => ({
-    getColor: () => '#ff004f',
+    getColor: () => new Color(new RGBA(128, 128, 0, 1)),
   });
 }
 /** End */

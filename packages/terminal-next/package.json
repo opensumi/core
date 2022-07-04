@@ -23,9 +23,9 @@
     "event-kit": "^2.5.3",
     "node-pty": "0.11.0-beta19",
     "os-locale": "^4.0.0",
-    "xterm": "4.19.0-beta.15",
-    "xterm-addon-fit": "^0.5.0",
-    "xterm-addon-search": "0.9.0-beta.16"
+    "xterm": "4.19.0-beta.58",
+    "xterm-addon-fit": "^0.6.0-beta.11",
+    "xterm-addon-search": "0.9.0-beta.39"
   },
   "devDependencies": {
     "@opensumi/ide-components": "2.18.7",
