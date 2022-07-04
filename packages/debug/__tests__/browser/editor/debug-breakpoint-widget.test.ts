@@ -1,5 +1,6 @@
-import { Disposable, IFileServiceClient } from '@opensumi/ide-core-browser';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { act } from 'react-dom/test-utils';
+
+import { Disposable, IContextKeyService, IFileServiceClient } from '@opensumi/ide-core-browser';
 import { DebugEditor, IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugBreakpointWidget } from '@opensumi/ide-debug/lib/browser/editor';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -56,7 +57,9 @@ describe('Debug Breakpoint Widget', () => {
 
   it('show method should be work', () => {
     const position = { lineNumber: 1, column: 2 } as Position;
-    debugBreakpointWidget.show(position);
+    act(() => {
+      debugBreakpointWidget.show(position);
+    });
     expect(mockDebugEditor.onDidLayoutChange).toBeCalledTimes(1);
     expect(mockDebugEditor.getLayoutInfo).toBeCalledTimes(1);
     expect(mockDebugEditor.changeViewZones).toBeCalledTimes(1);
@@ -65,7 +68,9 @@ describe('Debug Breakpoint Widget', () => {
   });
 
   it('hide method should be work', (done) => {
-    debugBreakpointWidget.hide();
+    act(() => {
+      debugBreakpointWidget.hide();
+    });
     done();
   });
 });
