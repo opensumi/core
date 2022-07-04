@@ -14,4 +14,7 @@ export const browserViews = {
 
   // browserMain
   "kaitianContributes.browserMain": "Declare the extension browser entry (the path to the compiled code file relative to the extension directory)",
+
+  // nodeMain
+  "kaitianContributes.nodeMain": "Declare the extension node entry (the path to the compiled code file relative to the extension directory)",
 }
