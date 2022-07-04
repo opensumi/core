@@ -571,6 +571,10 @@ export const defaultSettingSections: {
           id: 'terminal.integrated.localEchoExcludePrograms',
           localized: 'preference.terminal.integrated.localEchoExcludePrograms',
         },
+        {
+          id: 'terminal.integrated.cursorStyle',
+          localized: 'preference.terminal.integrated.cursorStyle',
+        },
         { id: 'terminal.integrated.localEchoStyle', localized: 'preference.terminal.integrated.localEchoStyle' },
       ],
     },
