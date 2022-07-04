@@ -24,6 +24,7 @@ export class TerminalPreference implements ITerminalPreference {
     fontSize: 12,
     copyOnSelection: false,
     fontFamily: "Menlo, Monaco, 'Courier New', monospace",
+    cursorStyle: 'block',
   };
 
   private _onChange = new Emitter<IPreferenceValue>();

@@ -457,7 +457,8 @@ export const localizationBundle = {
     'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
     'preference.terminal.integrated.localEchoStyleDesc':
       'Terminal style of locally echoed text; either a font style or an RGB color.',
-
+    'preference.terminal.integrated.cursorStyle': 'Cursor Style',
+    'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
     'common.about': 'About',

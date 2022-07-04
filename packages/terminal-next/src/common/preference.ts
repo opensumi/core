@@ -22,6 +22,7 @@ export interface SupportedOptions {
   fontSize: number;
   copyOnSelection: boolean;
   fontFamily: string;
+  cursorStyle: 'block' | 'underline' | 'bar'; // bar is line
 }
 
 export const SupportedOptionsName = {
@@ -128,6 +129,12 @@ export const enum CodeTerminalSettingId {
   IgnoreProcessNames = 'terminal.integrated.ignoreProcessNames',
   AutoReplies = 'terminal.integrated.autoReplies',
 }
+
+export const TerminalCursorStyle = {
+  BLOCK: 'block',
+  LINE: 'bar', // Xterm 中的 "bar" Style，就是一条线也就是Line
+  UNDERLINE: 'underline',
+};
 
 const shellDeprecationMessageLinux = localize(
   'terminal.integrated.shell.linux.deprecation',
@@ -318,6 +325,12 @@ export const terminalPreferenceSchema: PreferenceSchema = {
       type: 'string',
       description: '%preference.terminal.integrated.localEchoStyleDesc%',
       default: 'dim',
+    },
+    [CodeTerminalSettingId.CursorStyle]: {
+      type: 'string',
+      description: '%preference.terminal.integrated.cursorStyleDesc%',
+      enum: [TerminalCursorStyle.BLOCK, TerminalCursorStyle.LINE, TerminalCursorStyle.UNDERLINE],
+      default: TerminalCursorStyle.BLOCK,
     },
   },
 };
