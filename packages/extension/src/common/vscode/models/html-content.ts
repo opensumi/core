@@ -1,4 +1,4 @@
-import { IMarkdownString } from '@opensumi/ide-core-common';
+import { IMarkdownString, UriComponents } from '@opensumi/ide-core-common';
 
 import { illegalArgument } from '../utils';
 
@@ -20,6 +20,7 @@ export class MarkdownString implements IMarkdownString {
   public value: string;
   public isTrusted?: boolean;
   public supportThemeIcons?: boolean;
+  public baseUri?: UriComponents;
 
   constructor(value = '', isTrustedOrOptions: boolean | { isTrusted?: boolean; supportThemeIcons?: boolean } = false) {
     this.value = value;

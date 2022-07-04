@@ -5,5 +5,6 @@ export interface IMarkdownString {
   isTrusted?: boolean;
   supportThemeIcons?: boolean;
   supportHtml?: boolean;
+  baseUri?: UriComponents;
   uris?: { [href: string]: UriComponents };
 }
