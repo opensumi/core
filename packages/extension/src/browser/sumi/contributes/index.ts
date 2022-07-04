@@ -5,6 +5,7 @@ import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 
 import { BrowserViewContributionPoint, KtViewsSchema } from './browser-views';
+import { BrowserMainContributionPoint } from './browser-main';
 import { MenuExtendContributionPoint } from './menu-extend';
 import { MenubarsContributionPoint } from './menubar';
 import { SubmenusContributionPoint } from './submenu';
@@ -20,6 +21,7 @@ export interface KaitianContributesSchema {
 export class SumiContributesRunner extends WithEventBus {
   static ContributePoints = [
     BrowserViewContributionPoint,
+    BrowserMainContributionPoint,
     MenubarsContributionPoint,
     SubmenusContributionPoint,
     ToolbarContributionPoint,

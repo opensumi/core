@@ -1,4 +1,5 @@
 export const browserViews = {
+  // browserViews
   "kaitianContributes.browserViews": "Provide a custom view to the editor",
   "kaitianContributes.browserViews.left": "Provide a view in the left activity bar container",
   "kaitianContributes.browserViews.right": "Provide a view in the right activity bar container",
@@ -10,4 +11,7 @@ export const browserViews = {
   "kaitianContributes.browserViews.view.title": "View title (will be displayed when type is bottom)",
   "kaitianContributes.browserViews.view.titleComponentId": "The id of the custom view title component, the characteristics are exactly the same as the normal browserView",
   "kaitianContributes.browserViews.view.expanded": "Do you need to expand to full screen, which will cover up the editor area",
+
+  // browserMain
+  "kaitianContributes.browserMain": "Declare the extension browser entry (the path to the compiled code file relative to the extension directory)",
 }
