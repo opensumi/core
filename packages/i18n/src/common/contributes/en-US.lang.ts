@@ -20,4 +20,7 @@ export const browserViews = {
 
   // workerMain
   "kaitianContributes.workerMain": "Declare the extension workser entry (the path to the compiled code file relative to the extension directory)",
+
+  // viewsProxies
+  "kaitianContributes.viewsProxies": "Declare the component id that needs to be bound to the componentProxy call, which is the same as the export name. For example, after declaring [\"component\"], the xxxx function of the component component of the browser layer can be called at the node layer through **`context.componentProxy.component.xxxx`**",
 }

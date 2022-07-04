@@ -20,4 +20,7 @@ export const browserViews = {
 
   // workerMain
   "kaitianContributes.workerMain": "声明插件 worker 入口（相对于插件目录的编译后的代码文件路径）",
+
+  // viewsProxies
+  "kaitianContributes.viewsProxies": "声明需要绑定 componentProxy 调用的组件 id, 与导出名相同。例如声明 [\"component\"] 后, 即可在 node 层通过 **`context.componentProxy.component.xxxx`** 调用 browser 层 component 组件的 xxxx 函数",
 }
