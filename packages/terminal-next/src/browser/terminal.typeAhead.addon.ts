@@ -82,9 +82,9 @@ const flushOutput = (terminal: Terminal) => {
 
 // 本地变量控制是否打开Log，因为这部分Log目前不需要落盘
 // TODO: DEBUG环境监测来自动化本变量
-let debugLog = false;
+const SHOW_DEBUG_LOG = false;
 const typeAheadLogger = (...message) => {
-  if (debugLog) {
+  if (SHOW_DEBUG_LOG) {
     console.log(message);
   }
 };
@@ -448,7 +448,9 @@ class CharacterPrediction implements IPrediction {
       return ''; // not applied
     }
 
-    return cursor.clone().moveTo(this.appliedAt.pos) + input;
+    const str = cursor.clone().moveTo(this.appliedAt.pos) + input;
+    console.log('#DEBUG#', JSON.stringify(str));
+    return str;
   }
 
   matches(input: StringReader, lookBehind?: IPrediction) {
