@@ -120,4 +120,11 @@ inline 模式 showTitle 会失效, 只显示 icon`,
   "kaitianContributes.toolbar.actions.select.states.iconForegroundColor": "图标前景色",
   "kaitianContributes.toolbar.actions.select.states.width": "宽度",
   "kaitianContributes.toolbar.actions.select.states.minWidth": "最小宽度",
+
+  // menubars
+  "kaitianContributes.menubars": "注册菜单栏",
+  "kaitianContributes.menubars.id": "作为 menubar item 的 menu id, 后续可通过 menus 往这里贡献菜单项",
+  "kaitianContributes.menubars.title": "展示的文案",
+  "kaitianContributes.menubars.order": "排序权重，越小越靠前",
+  "kaitianContributes.menubars.nativeRole": "electron native 菜单使用（web 端可不填）",
 }
