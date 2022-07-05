@@ -24,7 +24,7 @@ export class ExplorerContribution implements ComponentContribution {
   }
 
   onStart() {
-    this.extensionsPointService.appendExtensionPoint(['browserViews'], {
+    this.extensionsPointService.appendExtensionPoint(['browserViews', 'properties'], {
       extensionPoint: EXPLORER_CONTAINER_ID,
       frameworkKind: ['opensumi'],
       jsonSchema: {

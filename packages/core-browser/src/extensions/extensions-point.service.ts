@@ -11,7 +11,7 @@ import { OpensumiExtensionPackageSchema } from './schema/opensumiExtensionPackag
 export const EXTENSION_JSON_URI = 'vscode://schemas/vscode-extensions';
 export const OPENSUMI_EXTENSION_JSON_URI = 'vscode://schemas/opensumi-extensions';
 
-type FrameworkKind = 'vscode' | 'opensumi';
+export type FrameworkKind = 'vscode' | 'opensumi';
 
 export interface IExtensionPointDescriptor {
   extensionPoint: string;
@@ -44,11 +44,7 @@ export class ExtensionsPointServiceImpl implements IExtensionsPointService {
 
     return (points: string[], desc: IExtensionPointDescriptor) => {
       const { extensionPoint, jsonSchema } = desc;
-      /**
-       * ['a', 'b', 'c'] ---> ['a', 'properties', 'b', 'properties', 'c', 'properties']
-       *
-       */
-      const assignExtensionPoint = points.map(p => [p, 'properties']).flat().concat(extensionPoint);
+      const assignExtensionPoint = points.concat(extensionPoint).filter(Boolean);
 
       if (lodashHas(properties, assignExtensionPoint)) {
         const perProp = lodashGet(properties, assignExtensionPoint.concat('properties'));
