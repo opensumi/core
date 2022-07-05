@@ -783,28 +783,18 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             }
           }
         } else if (CompositeTreeNode.is(child)) {
-          if ((child as CompositeTreeNode).expanded) {
-            // 说明此时节点初始化时已默认展开，需要进一步加载一下节点内容
-            await (child as CompositeTreeNode).resolveChildrens(token);
+          if (!(child as CompositeTreeNode).expanded) {
+            // 如果节点没有默认展开，则设置一下展开状态
+            (child as CompositeTreeNode).isExpanded = true;
+          }
+          await (child as CompositeTreeNode).resolveChildrens(token);
+          if (token?.isCancellationRequested) {
+            return;
+          }
+          if (expandedPaths.length > 0 && !token?.isCancellationRequested) {
+            await (child as CompositeTreeNode).refreshTreeNodeByPaths(expandedPaths, false, token);
             if (token?.isCancellationRequested) {
               return;
-            }
-          } else {
-            (child as CompositeTreeNode).isExpanded = true;
-            if (expandedPaths.length > 0) {
-              await (child as CompositeTreeNode).resolveChildrens(token);
-              if (token?.isCancellationRequested) {
-                return;
-              }
-              await (child as CompositeTreeNode).refreshTreeNodeByPaths(expandedPaths, false, token);
-              if (token?.isCancellationRequested) {
-                return;
-              }
-            } else {
-              await (child as CompositeTreeNode).resolveChildrens(token);
-              if (token?.isCancellationRequested) {
-                return;
-              }
             }
           }
         }

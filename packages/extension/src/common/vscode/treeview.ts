@@ -13,14 +13,14 @@ export interface ITreeViewRevealOptions {
   expand?: boolean | number;
 }
 export interface IMainThreadTreeView {
-  $unregisterTreeDataProvider(treeViewId: string): void;
-  $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewBaseOptions): void;
-  $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): void;
-  $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): void;
+  $unregisterTreeDataProvider(treeViewId: string): Promise<void>;
+  $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewBaseOptions): Promise<void>;
+  $refresh<T>(treeViewId: string, itemsToRefresh?: T | null): Promise<void>;
+  $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem): Promise<void>;
   $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions): Promise<any>;
-  $setTitle(treeViewId: string, message: string): void;
-  $setDescription(treeViewId: string, message: string): void;
-  $setMessage(treeViewId: string, message: string): void;
+  $setTitle(treeViewId: string, message: string): Promise<void>;
+  $setDescription(treeViewId: string, message: string): Promise<void>;
+  $setMessage(treeViewId: string, message: string): Promise<void>;
 }
 
 export interface IExtHostTreeView {

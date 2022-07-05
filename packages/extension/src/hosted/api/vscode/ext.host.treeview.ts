@@ -1,7 +1,16 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { IDisposable, Emitter, Disposable, Uri, DisposableStore, toDisposable } from '@opensumi/ide-core-common';
+import {
+  IDisposable,
+  Emitter,
+  Disposable,
+  Uri,
+  DisposableStore,
+  toDisposable,
+  Event,
+  CancellationTokenSource,
+} from '@opensumi/ide-core-common';
 import type { CancellationToken } from '@opensumi/ide-core-common';
 
 import {
@@ -15,6 +24,12 @@ import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../.
 import { ThemeIcon } from '../../../common/vscode/ext-types';
 
 import { ExtHostCommands } from './ext.host.command';
+
+type Root = null | undefined | void;
+interface TreeData<T> {
+  message: boolean;
+  element: T | T[] | Root | false;
+}
 
 export class ExtHostTreeViews implements IExtHostTreeView {
   private proxy: IMainThreadTreeView;
@@ -197,17 +212,26 @@ class ExtHostTreeView<T> implements IDisposable {
 
   private selectedItemIds = new Set<string>();
 
-  private cache: Map<string, T> = new Map<string, T>();
-  private cacheTreeItems: Map<T, vscode.TreeItem> = new Map<T, vscode.TreeItem>();
+  private id2Element: Map<string, T> = new Map<string, T>();
+  private element2TreeViewItem: Map<T, TreeViewItem> = new Map<T, TreeViewItem>();
+  private element2VSCodeTreeItem: Map<T, vscode.TreeItem> = new Map<T, vscode.TreeItem>();
 
   private disposable: DisposableStore = new DisposableStore();
 
   private treeDataProvider: vscode.TreeDataProvider<T>;
+  private _onDidChangeData: Emitter<TreeData<T>> = new Emitter<TreeData<T>>();
 
   private _title: string;
   private _description: string;
   private _message: string;
 
+  private roots: TreeViewItem[] | undefined = undefined;
+  private nodes: Map<T, TreeViewItem[] | undefined> = new Map();
+
+  private refreshPromise: Promise<void> = Promise.resolve();
+  private refreshQueue: Promise<void> = Promise.resolve();
+
+  private isFetchingChildren = false;
   constructor(
     private treeViewId: string,
     private options: TreeViewOptions<T>,
@@ -216,6 +240,7 @@ class ExtHostTreeView<T> implements IDisposable {
   ) {
     this.treeDataProvider = this.options.treeDataProvider;
 
+    this.disposable.add(this._onDidChangeData);
     // 将 options 直接取值，避免循环引用导致序列化异常
     proxy.$registerTreeDataProvider(treeViewId, {
       showCollapseAll: !!options.showCollapseAll,
@@ -224,19 +249,123 @@ class ExtHostTreeView<T> implements IDisposable {
 
     if (this.treeDataProvider.onDidChangeTreeData) {
       const dispose = this.treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
-        proxy.$refresh<T>(treeViewId);
+        if (this.isFetchingChildren) {
+          // cause of https://github.com/opensumi/core/issues/723.
+          return;
+        }
+        this._onDidChangeData.fire({ element: itemToRefresh, message: false });
       });
       if (dispose) {
         this.disposable.add(dispose);
       }
     }
 
-    this.disposable.add(toDisposable(() => this.cache.clear()));
+    this.disposable.add(toDisposable(() => this.id2Element.clear()));
+    this.disposable.add(toDisposable(() => this.element2TreeViewItem.clear()));
+    this.disposable.add(toDisposable(() => this.element2VSCodeTreeItem.clear()));
+    this.disposable.add(toDisposable(() => this.nodes.clear()));
     this.disposable.add(toDisposable(() => proxy.$unregisterTreeDataProvider(treeViewId)));
+    let refreshingPromise: Promise<void> | null;
+    let promiseCallback: () => void;
+    this.disposable.add(
+      Event.debounce<TreeData<T>, { message: boolean; elements: (T | Root)[] }>(
+        this.onDidChangeData,
+        (result, current) => {
+          if (!result) {
+            result = { message: false, elements: [] };
+            if (this.isFetchingChildren) {
+              return result;
+            }
+          }
+          if (current.element !== false) {
+            if (!refreshingPromise) {
+              refreshingPromise = new Promise((c) => (promiseCallback = c));
+              this.refreshPromise = this.refreshPromise.then(() => refreshingPromise!);
+            }
+            if (Array.isArray(current.element)) {
+              result.elements.push(...current.element);
+            } else {
+              result.elements.push(current.element);
+            }
+          }
+          if (current.message) {
+            result.message = true;
+          }
+          return result;
+        },
+        200,
+        true,
+      )(({ message, elements }) => {
+        if (elements.length) {
+          this.refreshQueue = this.refreshQueue.then(() => {
+            const _promiseCallback = promiseCallback;
+            refreshingPromise = null;
+            return this.refresh(elements).then(() => _promiseCallback());
+          });
+        }
+        if (message) {
+          this.proxy.$setMessage(this.treeViewId, this._message);
+        }
+      }),
+    );
+  }
+
+  private _refreshCancellationSource = new CancellationTokenSource();
+
+  private refresh(elements: (T | Root)[]): Promise<void> {
+    const hasRoot = elements.some((element) => !element);
+    // 当存在根节点时，整颗树刷新，无需考虑子节点情况
+    if (hasRoot) {
+      // 取消正在进行的刷新操作
+      this._refreshCancellationSource.cancel();
+      this._refreshCancellationSource = new CancellationTokenSource();
+      this.clearCache();
+      return this.proxy.$refresh(this.treeViewId);
+    } else {
+      // TODO: 这里可以根据路径关系进一步合并多余的刷新操作，目前实现必要性不大
+      const handlesToRefresh = this.getTreesNodeToRefresh(elements as T[]);
+      if (handlesToRefresh.length) {
+        return this.refreshTreeNodes(handlesToRefresh);
+      }
+    }
+    return Promise.resolve(undefined);
+  }
+
+  private clearCache() {
+    this.roots = undefined;
+    this.nodes.clear();
+    this.id2Element.clear();
+    this.element2TreeViewItem.clear();
+    this.element2VSCodeTreeItem.clear();
+  }
+
+  private getTreesNodeToRefresh(elements: T[]) {
+    const treeNodeToUpdate = new Set<TreeViewItem>();
+    const nodes = elements.map((element) => {
+      const treeViewItem = this.element2TreeViewItem.get(element);
+      if (treeViewItem) {
+        return treeViewItem;
+      }
+    });
+    for (const node of nodes) {
+      if (node) {
+        treeNodeToUpdate.add(node);
+      }
+    }
+    return Array.from(treeNodeToUpdate);
+  }
+
+  private async refreshTreeNodes(itemHandles: TreeViewItem[]) {
+    await Promise.all(itemHandles.map((itemsToRefresh) => this.proxy.$refresh(this.treeViewId, itemsToRefresh)));
   }
 
   dispose() {
+    this._refreshCancellationSource.dispose();
     this.disposable.dispose();
+  }
+
+  get onDidChangeData() {
+    return this._onDidChangeData.event;
   }
 
   get title() {
@@ -262,8 +391,8 @@ class ExtHostTreeView<T> implements IDisposable {
   }
 
   set message(value: string) {
-    this.proxy.$setMessage(this.treeViewId, value);
     this._message = value;
+    this._onDidChangeData.fire({ message: true, element: false });
   }
 
   get visible(): boolean {
@@ -284,7 +413,7 @@ class ExtHostTreeView<T> implements IDisposable {
   async reveal(element: T, options?: ITreeViewRevealOptions): Promise<void> {
     // 在缓存中查找对应节点
     let elementId;
-    this.cache.forEach((el, id) => {
+    this.id2Element.forEach((el, id) => {
       if (Object.is(el, element)) {
         elementId = id;
       }
@@ -297,7 +426,7 @@ class ExtHostTreeView<T> implements IDisposable {
 
   getTreeItem(treeItemId?: string): T | undefined {
     if (treeItemId) {
-      return this.cache.get(treeItemId);
+      return this.id2Element.get(treeItemId);
     }
   }
 
@@ -309,16 +438,19 @@ class ExtHostTreeView<T> implements IDisposable {
     if (!this.treeDataProvider.resolveTreeItem) {
       return;
     }
+    if (token.isCancellationRequested) {
+      return;
+    }
     const cache = this.getTreeItem(treeItemId);
     if (cache) {
-      const node = this.cacheTreeItems.get(cache);
-
-      if (node) {
-        const resolve = (await this.treeDataProvider.resolveTreeItem(node!, cache, token)) ?? node;
-        node.tooltip = resolve.tooltip;
-        node.command = resolve.command;
-        return this.toTreeViewItem(node);
+      const node = this.element2VSCodeTreeItem.get(cache);
+      if (!node) {
+        return undefined;
       }
+      const resolve = (await this.treeDataProvider.resolveTreeItem(node, cache, token)) ?? node;
+      node.tooltip = resolve.tooltip;
+      node.command = resolve.command;
+      return this.toTreeViewItem(node);
     }
     return;
   }
@@ -326,47 +458,73 @@ class ExtHostTreeView<T> implements IDisposable {
   async getChildren(treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     // 缓存中获取节点
     const cachedElement = this.getTreeItem(treeItemId);
-
-    // 从treeDataProvider中查询子节点存放于缓存中
-    const result = await this.treeDataProvider.getChildren(cachedElement);
-    if (result) {
-      const treeItems: TreeViewItem[] = [];
-      const promises = result.map(async (value, index) => {
-        // 遍历treeDataProvider获取的值生成节点
-        const treeItem = await this.treeDataProvider.getTreeItem(value);
-        this.cacheTreeItems.set(value, treeItem);
-
-        // 获取Label属性
-        let label: string | ITreeItemLabel | undefined;
-        const treeItemLabel: string | vscode.TreeItemLabel | undefined = treeItem.label;
-        if (treeItemLabel) {
-          label = treeItemLabel;
-        }
-        // 当没有指定label时尝试使用resourceUri
-        if (!label && treeItem.resourceUri) {
-          label = treeItem.resourceUri.path.toString();
-          label = decodeURIComponent(label);
-          if (label.indexOf('/') >= 0) {
-            label = label.substring(label.lastIndexOf('/') + 1);
-          }
-        }
-
-        // 生成ID用于存储缓存
-        const id =
-          treeItem.id || `${treeItemId || 'root'}/${index}:${typeof label === 'string' ? label : label?.label}`;
-        this.cache.set(id, value);
-
-        const treeViewItem = this.toTreeViewItem(treeItem, {
-          id,
-        });
-        treeItems.push(treeViewItem);
-      });
-
-      await Promise.all(promises);
-      return treeItems;
-    } else {
-      return undefined;
+    // 如果存在缓存数据，优先从缓存中获取子节点
+    if (!cachedElement && this.roots) {
+      return this.roots;
+    } else if (cachedElement) {
+      const cache = this.nodes.get(cachedElement);
+      if (cache) {
+        return cache;
+      }
     }
+    let children: TreeViewItem[] | undefined;
+    this.isFetchingChildren = true;
+    const results = await this.treeDataProvider.getChildren(cachedElement);
+    this.isFetchingChildren = false;
+    if (this._refreshCancellationSource.token.isCancellationRequested) {
+      children = undefined;
+    } else {
+      if (results) {
+        const treeItems: TreeViewItem[] = [];
+        const promises = results.map(async (value, index) => {
+          // 遍历treeDataProvider获取的值生成节点
+          const treeItem = await this.treeDataProvider.getTreeItem(value);
+          if (this._refreshCancellationSource.token.isCancellationRequested) {
+            return;
+          }
+          // 获取Label属性
+          let label: string | ITreeItemLabel | undefined;
+          const treeItemLabel: string | vscode.TreeItemLabel | undefined = treeItem.label;
+          if (treeItemLabel) {
+            label = treeItemLabel;
+          }
+          // 当没有指定label时尝试使用resourceUri
+          if (!label && treeItem.resourceUri) {
+            label = treeItem.resourceUri.path.toString();
+            label = decodeURIComponent(label);
+            if (label.indexOf('/') >= 0) {
+              label = label.substring(label.lastIndexOf('/') + 1);
+            }
+          }
+          // 生成ID用于存储缓存
+          const id =
+            treeItem.id || `${treeItemId || 'root'}/${index}:${typeof label === 'string' ? label : label?.label}`;
+          this.id2Element.set(id, value);
+
+          const treeViewItem = this.toTreeViewItem(treeItem, {
+            id,
+          });
+          this.element2TreeViewItem.set(value, treeViewItem);
+          this.element2VSCodeTreeItem.set(value, treeItem);
+          treeItems.push(treeViewItem);
+        });
+
+        await Promise.all(promises);
+        if (this._refreshCancellationSource.token.isCancellationRequested) {
+          children = undefined;
+        } else {
+          children = treeItems;
+        }
+      } else {
+        children = undefined;
+      }
+    }
+    if (!cachedElement) {
+      this.roots = children;
+    } else {
+      this.nodes.set(cachedElement, children);
+    }
+    return children;
   }
 
   /**
