@@ -12,10 +12,10 @@ import {
   Disposable,
   LRUMap,
 } from '@opensumi/ide-core-common';
-import type { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modelService';
+import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import type { IModeService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { getIcon } from '../style/icon/icon';
 
@@ -293,17 +293,17 @@ const getIconClass = (
     }
     // Language Mode探测
     if (!modeService) {
-      modeService = StaticServices.modeService.get();
+      modeService = StandaloneServices.modeService.get();
     }
     if (!modelService) {
-      modelService = StaticServices.modelService.get();
+      modelService = StandaloneServices.get(IModelService);
     }
     const detectedModeId = detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()));
     if (detectedModeId) {
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
     } else {
       _onDidChange = new Emitter<void>();
-      StaticServices.modeService.get().onDidEncounterLanguage(() => {
+      StandaloneServices.modeService.get().onDidEncounterLanguage(() => {
         if (detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()))) {
           _onDidChange?.fire();
           _onDidChange?.dispose();
@@ -364,8 +364,8 @@ export function detectModeId(
 }
 
 export function getLanguageIdFromMonaco(uri: URI) {
-  modeService = StaticServices.modeService.get();
-  modelService = StaticServices.modelService.get();
+  modeService = StandaloneServices.modeService.get();
+  modelService = StandaloneServices.get(IModelService);
   return detectModeId(modelService, modeService, monaco.Uri.parse(uri.toString()));
 }
 
