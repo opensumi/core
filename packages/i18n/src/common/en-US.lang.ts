@@ -64,7 +64,7 @@ export const localizationBundle = {
     'file.search.folder': 'Search on this folder',
     'file.focus.files': 'Focus on Files Explorer',
     'file.filetree.filter': 'Filter on opened files',
-    'file.filetree.openTerminalWithPath': 'Open In The Terminal',
+    'file.filetree.openTerminalWithPath': 'Open In Integrated Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
     'file.resource-deleted': '(Deleted)',
 
@@ -332,11 +332,11 @@ export const localizationBundle = {
     'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
     'debug.launch.existed': 'Debug configuration "{0}" is already running',
     'debug.expression.log.placeholder':
-      'Message to log when breakpoint is hit. Expressions within {} are interpolated. Press  "Enter " to confirm and  "Esc " to cancel.',
+      'Message to log when breakpoint is hit. Expressions within {} are interpolated. Press "Enter" to confirm and "Esc" to cancel.',
     'debug.expression.hit.placeholder':
-      'Break when hit count condition is met. Press  "Enter " to confirm and  "Esc " to cancel.',
+      'Break when hit count condition is met. Press "Enter" to confirm and "Esc" to cancel.',
     'debug.expression.condition.placeholder':
-      'Break when the expression evaluates to true. Press  "Enter " to confirm and  "Esc " to cancel.',
+      'Break when the expression evaluates to true. Press "Enter" to confirm and "Esc" to cancel.',
     'debug.expression.condition': 'Expression',
     'debug.expression.hitCondition': 'Hit Count',
     'debug.expression.logMessage': 'Log Message',
@@ -551,6 +551,9 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} is not a valid option',
 
+    'editor.configuration.formatOnSaveTimeout':
+      'Control the timeout time of formatting (ms). Effective Only when `#editor.formatOnSave#` enables.',
+    'editor.configuration.renderLineHighlight': "Control the highlight of the editor's current line",
     'editor.configuration.enablePreviewFromCodeNavigation':
       'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'editor.configuration.wrapTab':
@@ -558,7 +561,7 @@ export const localizationBundle = {
     'editor.configuration.askIfDiff': 'When saving files, throw error if the file on disk has a newer version.',
     'editor.configuration.autoSave': 'Controls how dirty files are auto saved.',
     'editor.configuration.autoSaveDelay':
-      "Controls the delay in ms after which a dirty file is saved automatically. Only applies when Editor Auto Save is set to 'Save After Delay'.",
+      "Controls the delay in ms after which a dirty file is saved automatically. Only applies when `#editor.formatOnSave#` is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
     'editor.configuration.tabSize':
       'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
@@ -618,12 +621,12 @@ export const localizationBundle = {
     'terminal.split': 'Split Terminal',
     'terminal.clear': 'Remove All Terminals',
     'terminal.clear.content': 'Clear All Terminals',
-    'terminal.independ': 'Independ Terminal',
+    'terminal.independ': 'Independent Terminal',
     'terminal.maximum': 'Maximum Terminal Panel',
     'terminal.or': 'Or',
     'terminal.search': 'Search',
     'terminal.search.next': 'Search Next',
-    'terminal.openWithPath': 'Open In The Terminal',
+    'terminal.openWithPath': 'Open In Integrated Terminal',
     'terminal.remove': 'Kill terminal',
     'terminal.menu.search': 'Search',
     'terminal.menu.split': 'Split',
@@ -803,7 +806,7 @@ export const localizationBundle = {
     'outline.follow.cursor': 'Follow Cursor',
 
     'welcome.title': 'Welcome',
-    'welcome.quckstart': 'Quick Start',
+    'welcome.quickStart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
 
     'markers.title': 'PROBLEMS',
@@ -811,7 +814,7 @@ export const localizationBundle = {
     'markers.panel.filter.errors': 'errors',
     'markers.panel.filter.warnings': 'warnings',
     'markers.panel.filter.infos': 'infos',
-    'markers.filter.placefolder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
+    'markers.filter.placeholder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
     'markers.filter.content.empty': 'No results found with provided filter criteria.',
     'markers.filter.reset': 'Clear Filter.',
 
@@ -821,11 +824,11 @@ export const localizationBundle = {
     'view.zoomOut': 'Zoom Out',
 
     'extension.invalidExthostReload.confirm.content':
-      'Ext-host process is invalid. Click to refresh to resume this process.',
+      'Extension Host process is invalid. Click to refresh to resume this process.',
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
-    'extension.crashedExthostReload.confirm': 'Ext-host process crashed, restart this process?',
-    'extension.exthostRestarting.content': 'Ext-host process is restarting',
+    'extension.crashedExthostReload.confirm': 'Extension Host process crashed, restart this process?',
+    'extension.exthostRestarting.content': 'Extension Host process is restarting',
 
     'extension.no.view.found':
       'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
