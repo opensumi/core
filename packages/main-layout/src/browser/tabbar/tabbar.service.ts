@@ -33,6 +33,7 @@ import {
   generateCtxMenu,
   IMenu,
   MenuId,
+  getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
@@ -616,7 +617,7 @@ export class TabbarService extends WithEventBus {
   }
 
   protected registerPanelMenus() {
-    this.menuRegistry.registerMenuItems('tabbar/bottom/common', [
+    this.menuRegistry.registerMenuItems(getTabbarCommonMenuId('bottom'), [
       {
         command: EXPAND_BOTTOM_PANEL.id,
         group: 'navigation',

@@ -96,7 +96,7 @@ export class AccordionService extends WithEventBus {
 
   private headerSize: number;
   private minSize: number;
-  private menuId = `accordion/${this.containerId}`;
+  private menuId = `${MenuId.AccordionContext}/${this.containerId}`;
   private toDispose: Map<string, DisposableCollection> = new Map();
 
   private topViewKey: IContextKey<string>;

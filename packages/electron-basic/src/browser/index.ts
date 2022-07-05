@@ -147,9 +147,7 @@ export class ElectronBasicContribution
   }
 
   registerMenus(menuRegistry: IMenuRegistry) {
-    const menuId = MenuId.MenubarAppMenu;
-
-    menuRegistry.registerMenuItem(menuId, {
+    menuRegistry.registerMenuItem(MenuId.MenubarAppMenu, {
       command: {
         id: 'electron.about',
         label: localize('about'),
