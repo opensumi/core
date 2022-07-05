@@ -458,7 +458,7 @@ export class DebugContribution
     this.breakpointManager.onDidChangeExceptionsBreakpoints(() => this.breakpointManager.save());
     this.breakpointManager.onDidChangeMarkers(() => this.breakpointManager.save());
 
-    this.extensionsPointService.appendExtensionPoint(['browserViews'], {
+    this.extensionsPointService.appendExtensionPoint(['browserViews', 'properties'], {
       extensionPoint: DEBUG_CONTAINER_ID,
       frameworkKind: ['opensumi'],
       jsonSchema: {

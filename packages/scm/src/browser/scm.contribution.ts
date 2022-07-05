@@ -102,7 +102,7 @@ export class SCMContribution
       content: localize('welcome-view.noOpenRepo', 'No source control providers registered.'),
       when: 'default',
     });
-    this.extensionsPointService.appendExtensionPoint(['browserViews'], {
+    this.extensionsPointService.appendExtensionPoint(['browserViews', 'properties'], {
       extensionPoint: scmContainerId,
       frameworkKind: ['opensumi'],
       jsonSchema: {
