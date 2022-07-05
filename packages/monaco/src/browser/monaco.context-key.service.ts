@@ -16,7 +16,7 @@ import {
 import { Disposable, ILogger } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { Emitter as EventEmitter } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import {
   ConfigurationTarget,
   IConfigurationChangeEvent,
@@ -58,7 +58,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
   constructor() {
     super();
     this.preferenceService.onPreferencesChanged(this.triggerPreferencesChanged, this, this.disposables);
-    const monacoConfigService = StaticServices.configurationService.get();
+    const monacoConfigService = StandaloneServices.get(IConfigurationService);
     monacoConfigService.getValue = this.getValue.bind(this);
   }
 

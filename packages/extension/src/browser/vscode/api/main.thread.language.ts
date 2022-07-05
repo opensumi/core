@@ -28,10 +28,11 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { ILanguageService as IMonacoLanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import {
   ExtHostAPIIdentifier,
@@ -140,8 +141,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   async $changeLanguage(resource: UriComponents, languageId: string): Promise<void> {
-    const languageIdentifier = StaticServices.modeService.get().getLanguageIdentifier(languageId);
-    if (!languageIdentifier || languageIdentifier.language !== languageId) {
+    // FIXME: modeService has been deprecated. use languageService instead.
+    const languageIdentifier = StandaloneServices.get(IMonacoLanguageService).getLanguageIdByLanguageName(languageId);
+    if (!languageIdentifier || languageIdentifier !== languageId) {
       return Promise.reject(new Error(`Unknown language id: ${languageId}`));
     }
 

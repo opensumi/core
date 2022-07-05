@@ -37,6 +37,7 @@ import {
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
+import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
 import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
@@ -47,12 +48,14 @@ import {
   IFormattingEditProviderSelector,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
 import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
 import {
   ContextKeyExpr,
   ContextKeyExprType,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 
 import {
@@ -203,7 +206,7 @@ export class MonacoClientContribution
     );
 
     // Monaco CommandService
-    const standaloneCommandService = new StandaloneCommandService(StaticServices.instantiationService.get());
+    const standaloneCommandService = new StandaloneCommandService(StandaloneServices.get(IInstantiationService));
     // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
     this.monacoCommandService.setDelegate(standaloneCommandService);
     // 替换 monaco 内部的 commandService
@@ -222,7 +225,8 @@ export class MonacoClientContribution
 
     const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
     // 替换 StaticServices 上挂载的 codeEditorService 实例
-    (StaticServices as unknown as any).codeEditorService = {
+    // FIXME: 如何替换成 StandaloneServices.get(ICodeEditorService)
+    (StandaloneServices as unknown as any).codeEditorService = {
       get: () => codeEditorService,
     };
   }
@@ -293,7 +297,7 @@ export class MonacoClientContribution
   }
 
   private patchMonacoThemeService() {
-    const standaloneThemeService = StaticServices.standaloneThemeService.get();
+    const standaloneThemeService = StandaloneServices.get(IStandaloneThemeService);
     const originalGetColorTheme: typeof standaloneThemeService.getColorTheme =
       standaloneThemeService.getColorTheme.bind(standaloneThemeService);
     const patchedGetTokenStyleMetadataFlag = '__patched_getTokenStyleMetadata';

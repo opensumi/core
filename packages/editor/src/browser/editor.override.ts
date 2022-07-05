@@ -3,10 +3,11 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import { URI, IRange } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
-import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { SimpleLayoutService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditorService';
+import { EditorScopedLayoutService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneLayoutService';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import { ContextViewService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
 
 /* istanbul ignore file */
@@ -17,7 +18,7 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
 
 @Injectable()
-export class MonacoCodeService extends CodeEditorServiceImpl {
+export class MonacoCodeService extends StandaloneCodeEditorService {
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
@@ -25,7 +26,7 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
   private preferenceService: PreferenceService;
 
   constructor() {
-    super(null, StaticServices.standaloneThemeService.get());
+    super(null, StandaloneServices.get(IStandaloneThemeService));
   }
 
   getActiveCodeEditor(): IMonacoCodeEditor | null {
@@ -109,11 +110,13 @@ export class MonacoCodeService extends CodeEditorServiceImpl {
   }
 }
 
+// @ts-ignore
+
 export class MonacoContextViewService extends ContextViewService {
   private menuContainer: HTMLDivElement;
 
   constructor(codeEditorService: ICodeEditorService) {
-    super(new SimpleLayoutService(codeEditorService, document.body));
+    super(new EditorScopedLayoutService(document.body, codeEditorService));
   }
 
   setContainer(container) {
@@ -126,6 +129,6 @@ export class MonacoContextViewService extends ContextViewService {
       this.menuContainer.style.zIndex = '10';
       document.body.append(this.menuContainer);
     }
-    super.setContainer(this.menuContainer);
+    super['setContainer'](this.menuContainer);
   }
 }
