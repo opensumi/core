@@ -6,11 +6,8 @@ coverage:
         # allow coverage to drop by this amount and still post success
         threshold: 0.5%
         if_ci_failed: error
-    patch:
-      default:
-        target: 0%
-        if_ci_failed: error
-        only_pulls: true
+    patch: off # no github status notice for coverage of the PR diff.
+
 codecov:
   require_ci_to_pass: true
   notify:
