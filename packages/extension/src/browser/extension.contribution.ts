@@ -150,7 +150,7 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       this.extensionsPointService.registerExtensionPoint({
         extensionPoint: contributeName,
         jsonSchema: contributeCls.schema,
-        frameworkKind: ['vscode']
+        frameworkKind: ['vscode', 'opensumi']
       });
     }
 

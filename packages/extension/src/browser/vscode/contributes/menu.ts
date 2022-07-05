@@ -9,6 +9,7 @@ import {
   URI,
   localize,
 } from '@opensumi/ide-core-browser';
+import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IEditorGroup } from '@opensumi/ide-editor';
@@ -173,6 +174,8 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
   @Autowired(IIconService)
   iconService: IIconService;
+
+  static schema = menus.schema;
 
   protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string): string {
     const command = menu.command;
