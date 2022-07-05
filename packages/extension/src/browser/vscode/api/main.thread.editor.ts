@@ -35,8 +35,9 @@ import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide
 import { EndOfLineSequence } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import {
   IMainThreadEditorsService,
@@ -551,8 +552,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   private _setIndentConfiguration(model: ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {
-    const creationOpts = StaticServices.modelService
-      .get()
+    const creationOpts = StandaloneServices.get(IModelService)
       .getCreationOptions((model as any).getLanguageIdentifier().language, model.uri, (model as any).isForSimpleWidget);
 
     if (newConfiguration.tabSize === 'auto' || newConfiguration.insertSpaces === 'auto') {
