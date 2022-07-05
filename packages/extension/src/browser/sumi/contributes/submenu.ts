@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { IMenuRegistry, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { localize, formatLocalize, isUndefined } from '@opensumi/ide-core-common';
 import { IIconService, IconType } from '@opensumi/ide-theme';
@@ -48,31 +49,7 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
   @Autowired(IIconService)
   protected readonly iconService: IIconService;
 
-  static schema = {
-    description: localize('kaitianContributes.submenu', 'Contributes extension defined submenu'),
-    type: 'array',
-    items: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'string',
-          description: localize('kaitianContributes.submenu.id', 'The identifier of submenu item, used as menu-id'),
-        },
-        title: {
-          type: 'string',
-          description: localize('kaitianContributes.submenu.title', 'The title of submenu item'),
-        },
-        group: {
-          type: 'string',
-          description: localize('kaitianContributes.submenu.group', 'The order of submenu item'),
-        },
-        when: {
-          type: 'string',
-          description: localize('kaitianContributes.submenu.when', 'The when expression string of submenu item'),
-        },
-      },
-    },
-  };
+  static schema = menus.subMenusSchema
 
   contribute() {
     const collector = console;
