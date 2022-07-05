@@ -142,6 +142,9 @@
       "path": "./references/tsconfig.markdown.json"
     },
     {
+      "path": "./references/tsconfig.collaboration.json"
+    },
+    {
       "path": "./references/tsconfig.task.json"
     },
     {
