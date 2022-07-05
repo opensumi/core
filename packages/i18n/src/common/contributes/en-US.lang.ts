@@ -81,4 +81,11 @@ export const browserViews = {
   "kaitianContributes.toolbar.actions.select.states.iconForegroundColor": "",
   "kaitianContributes.toolbar.actions.select.states.width": "",
   "kaitianContributes.toolbar.actions.select.states.minWidth": "",
+
+  // menubars
+  "kaitianContributes.menubars": "",
+  "kaitianContributes.menubars.id": "",
+  "kaitianContributes.menubars.title": "",
+  "kaitianContributes.menubars.order": "",
+  "kaitianContributes.menubars.nativeRole": "",
 }

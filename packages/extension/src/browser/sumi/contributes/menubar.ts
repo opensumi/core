@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { localize } from '@opensumi/ide-core-common';
+import { IJSONSchema, localize } from '@opensumi/ide-core-common';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 import { IContributeMenubarItem } from '../../../common/sumi/extension';
@@ -13,27 +13,36 @@ export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsS
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
 
-  static schema = {
-    description: localize('extensionContributes.menubars', 'Contributes extension defined menubars'),
+  static schema: IJSONSchema = {
+    description: localize('kaitianContributes.menubars'),
     type: 'array',
     items: {
       type: 'object',
+      required: ['id', 'title'],
+      defaultSnippets: [
+        {
+          body: {
+            id: '${1}',
+            title: '${2}'
+          }
+        }
+      ],
       properties: {
         id: {
           type: 'string',
-          description: localize('extensionContributes.menubars.id', 'The identifier of menubar item, used as menu-id'),
+          description: localize('kaitianContributes.menubars.id'),
         },
         title: {
           type: 'string',
-          description: localize('extensionContributes.menubars.title', 'The title of menubar item'),
+          description: localize('kaitianContributes.menubars.title'),
         },
         order: {
           type: 'number',
-          description: localize('extensionContributes.menubars.order', 'The order of  menubar item'),
+          description: localize('kaitianContributes.menubars.order'),
         },
         nativeRole: {
           type: 'string',
-          description: localize('extensionContributes.menubars.order', 'The nativeRole of  menubar item'),
+          description: localize('kaitianContributes.menubars.order'),
         },
       },
     },
