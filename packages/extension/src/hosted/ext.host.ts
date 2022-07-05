@@ -16,7 +16,7 @@ import {
   IExtensionLogger,
   arrays,
 } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node/lib/bootstrap/app';
+import { AppConfig } from '@opensumi/ide-core-node';
 
 import { EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy, getExtensionId } from '../common';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from '../common/activator';

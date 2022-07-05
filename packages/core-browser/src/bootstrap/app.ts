@@ -32,6 +32,7 @@ import {
   Deferred,
   isUndefined,
   GeneralSettingsId,
+  UrlProvider,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -87,7 +88,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
-  connectionPath?: string;
+  connectionPath?: UrlProvider;
   connectionProtocols?: string[];
   iconStyleSheets?: IconInfo[];
   useCdnIcon?: boolean;
@@ -125,7 +126,7 @@ export class ClientApp implements IClientApp, IDisposable {
 
   logger: ILogServiceClient;
 
-  connectionPath: string;
+  connectionPath: UrlProvider;
 
   connectionProtocols?: string[];
 

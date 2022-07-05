@@ -10,6 +10,7 @@ import {
   BrowserConnectionOpenEvent,
   BrowserConnectionErrorEvent,
   IEventBus,
+  UrlProvider,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
@@ -24,7 +25,7 @@ const initialLogger = getDebugLogger();
 export async function createClientConnection2(
   injector: Injector,
   modules: ModuleConstructor[],
-  wsPath: string,
+  wsPath: UrlProvider,
   onReconnect: () => void,
   protocols?: string[],
   clientId?: string,

@@ -10,3 +10,5 @@ export interface ICommonServer {
    */
   getBackendOS(): Promise<OperatingSystem>;
 }
+
+export type UrlProvider = string | (() => string) | (() => Promise<string>);

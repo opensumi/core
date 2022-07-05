@@ -1,19 +1,29 @@
 import http from 'http';
 import url from 'url';
 
+import ws from 'ws';
+
 export abstract class WebSocketHandler {
   abstract handlerId: string;
   abstract handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean;
   init?(): void;
 }
 
+export interface CommonChannelHandlerOptions {
+  wsServerOptions?: ws.ServerOptions;
+  pathMatchOptions?: {
+    // When true the regexp will match to the end of the string.
+    end?: boolean;
+  };
+}
+
 export class WebSocketServerRoute {
-  public port?: number;
   public server: http.Server;
+  public port?: number;
   private wsServerHandlerArr: WebSocketHandler[];
 
   constructor(
-    server?: http.Server,
+    server: http.Server,
     private logger: any = console,
     port = 8729,
     wsServerHandlerArr: WebSocketHandler[] = [],
