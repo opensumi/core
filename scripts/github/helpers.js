@@ -1,4 +1,4 @@
-export const createVersionText = (type = 'Pre-Release', version) => {
+const createVersionText = (type = 'Pre-Release', version) => {
   return (
     `🎉 ${type} version ` +
     version +
@@ -18,4 +18,6 @@ export const createVersionText = (type = 'Pre-Release', version) => {
   );
 };
 
-module.exports = {};
+module.exports = {
+  createVersionText,
+};
