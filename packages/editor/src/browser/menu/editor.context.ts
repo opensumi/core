@@ -7,7 +7,7 @@ import { KeyCode } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCode
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { ContextMenuController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/contextmenu/contextmenu';
+import { ContextMenuController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/contextmenu/browser/contextmenu';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export class EditorContextMenuController extends Disposable implements IEditorContribution {
