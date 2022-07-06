@@ -26,6 +26,7 @@ import {
   URI,
   ILogger,
   AppConfig,
+  Disposable,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -76,7 +77,7 @@ export const getClientId = (injector: Injector) => {
 };
 
 @Domain(ClientAppContribution)
-export class ExtensionClientAppContribution implements ClientAppContribution {
+export class ExtensionClientAppContribution extends Disposable implements ClientAppContribution {
   @Autowired(IPreferenceSettingsService)
   private readonly preferenceSettingsService: IPreferenceSettingsService;
 
@@ -139,11 +140,13 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   }
 
   onDisposeSideEffects() {
-    /**
-     * IDE 关闭或者刷新时销毁插件进程
-     * 最好在这里直接关掉插件进程，调用链路太长可能导致请求调不到后端
-     */
-    this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
+    if (!this.disposed) {
+      /**
+       * IDE 关闭或者刷新时销毁插件进程
+       * 最好在这里直接关掉插件进程，调用链路太长可能导致请求调不到后端
+       */
+      this.extensionNodeClient.disposeClientExtProcess(this.clientId, false);
+    }
   }
 
   /**
