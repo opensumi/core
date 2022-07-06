@@ -62,7 +62,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
       return undefined;
     }
     // TODO embed languageId, get languageId at position
-    const languageId = model.getModeId();
+    const languageId = model.getLanguageId();
     await this.loadSnippets(languageId);
     const languageSnippets = this.snippets.get(languageId) || [];
     const pos = { lineNumber: position.lineNumber, column: 1 };
