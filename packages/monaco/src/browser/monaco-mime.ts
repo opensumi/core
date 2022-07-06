@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IMimeService, CorePreferences, MimeAssociation } from '@opensumi/ide-core-browser';
-import * as mime from '@opensumi/monaco-editor-core/esm/vs/base/common/mime';
+import { registerPlatformLanguageAssociation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/languagesAssociations';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 @Injectable()
@@ -11,8 +11,8 @@ export class MonacoMimeService implements IMimeService {
   updateMime(): void {
     for (const association of this.getPreferenceFileAssociations()) {
       const mimetype = this.getMimeForMode(association.id) || `text/x-${association.id}`;
-      mime.registerTextMime(
-        { id: association.id, mime: mimetype, filepattern: association.filePattern, userConfigured: true },
+      registerPlatformLanguageAssociation(
+        { id: association.id, mime: mimetype, filepattern: association.filePattern },
         true,
       );
     }
