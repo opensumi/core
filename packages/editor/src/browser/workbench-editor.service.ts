@@ -90,6 +90,7 @@ import {
   RegisterEditorComponentEvent,
   AskSaveResult,
 } from './types';
+import { UntitledDocumentIdCounter } from './untitled-resource';
 
 const MAX_CONFIRM_RESOURCES = 10;
 
@@ -151,7 +152,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(IEditorDocumentModelService)
   protected documentModelManager: IEditorDocumentModelService;
 
-  private untitledIndex = 1;
+  @Autowired()
+  private untitledIndex: UntitledDocumentIdCounter;
 
   private untitledCloseIndex: number[] = [];
 
@@ -549,7 +551,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
-    const index = this.untitledCloseIndex.shift() || this.untitledIndex++;
+    const index = this.untitledCloseIndex.shift() || this.untitledIndex.id;
     return new URI().withScheme(Schemes.untitled).withQuery(`name=Untitled-${index}&index=${index}`);
   }
 
