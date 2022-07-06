@@ -184,7 +184,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     },
     [TerminalSettingsId.Scrollback]: {
       type: 'number',
-      default: 5000,
+      default: 1000,
     },
     [CodeTerminalSettingId.ShellArgsLinux]: {
       type: 'array',
