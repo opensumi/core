@@ -36,6 +36,7 @@ import {
   parseClassifierString,
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
@@ -398,19 +399,24 @@ export class MonacoClientContribution
             }
           }
         }
-        // 转换 monaco 快捷键
-        // FIXME: raw 变成了数组，获取 parts 需要先 keybinding.toChord()
-        const keybindingStr = raw.parts.map((part) => MonacoResolvedKeybinding.keyCode(part)).join(' ');
-        // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
-        const keybinding = {
-          command,
-          args: item.commandArgs,
-          keybinding: keybindingStr,
-          when,
-          priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
-        };
 
-        keybindings.registerKeybinding(keybinding);
+        // TODO: key 可能是 ScanCodeBinding，暂时没有处理
+        for(const key of raw) {
+          if (key instanceof SimpleKeybinding) {
+            const binding = key.toChord();
+            const keybindingStr = binding.parts.map((part) => MonacoResolvedKeybinding.keyCode(part)).join(' ');
+            // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
+            const keybinding = {
+              command,
+              args: item.commandArgs,
+              keybinding: keybindingStr,
+              when,
+              priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
+            };
+
+            keybindings.registerKeybinding(keybinding);
+          }
+        }
       }
     }
   }
