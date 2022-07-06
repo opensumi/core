@@ -18,7 +18,6 @@ import styles from './debug-configuration.module.less';
 import { DebugConfigurationService } from './debug-configuration.service';
 import { DebugToolbarService } from './debug-toolbar.service';
 
-
 @Injectable()
 class FloatController {
   @observable
@@ -238,6 +237,11 @@ const FloatDebugToolbarView = observer(() => {
   const customTop = preference.get<number>(DebugPreferenceTopKey) || 0;
   const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
 
+  const debugToolbarWrapperClass = cls({
+    [styles.debug_toolbar_wrapper]: true,
+    [styles.debug_toolbar_wrapper_electron]: isElectronRenderer(),
+  });
+
   if (state) {
     return (
       <div
@@ -251,7 +255,7 @@ const FloatDebugToolbarView = observer(() => {
             transform: `translateX(${controller.x}px) translateY(${customTop + controller.line * customHeight}px)`,
             height: `${customHeight}px`,
           }}
-          className={styles.debug_toolbar_wrapper}
+          className={debugToolbarWrapperClass}
         >
           <div className={cls(styles.debug_toolbar_drag_wrapper)}>
             <div
