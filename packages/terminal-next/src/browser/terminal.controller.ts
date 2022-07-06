@@ -134,10 +134,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(ICtxMenuRenderer)
   private ctxMenuRenderer: ICtxMenuRenderer;
 
-  @Autowired(WSChannelHandler)
-  protected readonly wsChannelHandler: WSChannelHandler;
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
 
-  viewReady = new Deferred<void>();
+  private _clientId: string;
+
+  public viewReady = new Deferred<void>();
 
   /**
    * 如果这个值在被用到的时候还是 undefined，那说明视图渲染出了问题。
@@ -170,6 +172,19 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     if (this.terminalContextKey) {
       return this.terminalContextKey.service;
     }
+  }
+
+  get clientId() {
+    if (this._clientId) {
+      return this._clientId;
+    }
+    if (this.appConfig.isElectronRenderer) {
+      this._clientId = (global as any).metadata?.windowClientId;
+    } else {
+      const WSHandler = this.injector.get(WSChannelHandler);
+      this._clientId = WSHandler.clientId;
+    }
+    return this._clientId;
   }
 
   private async _createClientOrIgnore(widget: IWidget) {
@@ -272,18 +287,16 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     // HACK: 因为现在的终端重连是有问题的，是ClientID机制导致的，因此在拿出记录恢复终端的时候，需要把里面的ClientID替换为当前活跃窗口的ClientID
     // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
 
-    // FIXME: 终端依赖 WS 提供的 clientId 是一种不太可靠的写法, 在 Electron 下会有问题
-    const currentClientId = this.wsChannelHandler.clientId;
     const currentRealSessionId = history.current?.split(TERMINAL_ID_SEPARATOR)?.[1];
     if (history.current && history.current.includes(TERMINAL_ID_SEPARATOR)) {
-      history.current = `${currentClientId}|${currentRealSessionId}`;
+      history.current = `${this.clientId}|${currentRealSessionId}`;
     }
     history.groups = history.groups.map((group) => {
       if (Array.isArray(group)) {
         // 替换clientId为当前窗口ClientID
         return group.map(({ client, ...other }) => ({
           client: client.includes(TERMINAL_ID_SEPARATOR)
-            ? `${currentClientId}${TERMINAL_ID_SEPARATOR}${(client as string)?.split(TERMINAL_ID_SEPARATOR)?.[1]}`
+            ? `${this.clientId}${TERMINAL_ID_SEPARATOR}${(client as string)?.split(TERMINAL_ID_SEPARATOR)?.[1]}`
             : client,
           ...other,
         }));
@@ -599,9 +612,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
-    const widgetId = options.id
-      ? this.wsChannelHandler.clientId + TERMINAL_ID_SEPARATOR + options.id
-      : this.service.generateSessionId();
+    const widgetId = options.id ? this.clientId + TERMINAL_ID_SEPARATOR + options.id : this.service.generateSessionId();
 
     const launchConfig = this.convertTerminalOptionsToLaunchConfig(options.terminalOptions);
 

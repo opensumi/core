@@ -238,15 +238,10 @@ export class ClientApp implements IClientApp, IDisposable {
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
 
     if (connection) {
-      await bindConnectionService(this.injector, this.modules, connection, this.config.clientId);
+      await bindConnectionService(this.injector, this.modules, connection);
     } else {
       if (type === 'electron') {
-        await bindConnectionService(
-          this.injector,
-          this.modules,
-          createElectronClientConnection(),
-          this.config.clientId,
-        );
+        await bindConnectionService(this.injector, this.modules, createElectronClientConnection());
       } else if (type === 'web') {
         await createClientConnection2(
           this.injector,
