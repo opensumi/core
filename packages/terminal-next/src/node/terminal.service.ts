@@ -43,6 +43,9 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   private batchedPtyDataTimer: Map<string, NodeJS.Timeout> = new Map();
 
   public setClient(clientId: string, client: ITerminalServiceClient) {
+    if (clientId.indexOf(TERMINAL_ID_SEPARATOR) >= 0) {
+      clientId = clientId.split(TERMINAL_ID_SEPARATOR)[0];
+    }
     this.serviceClientMap.set(clientId, client);
     // 如果有相同的setClient clientId被调用，则取消延时触发closeClient，否则会导致终端无响应
     const timeOutHandler = this.closeTimeOutMap.get(clientId);
