@@ -557,6 +557,10 @@ export interface IThemeDecorationRenderOptions {
   fontStyle?: string;
   fontWeight?: string;
   textDecoration?: string;
+  /**
+   * @proposal
+   */
+  textUnderlinePosition?: string;
   cursor?: string;
   color?: string | IThemeColor;
   opacity?: string;

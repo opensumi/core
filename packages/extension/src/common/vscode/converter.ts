@@ -770,6 +770,7 @@ export namespace ThemableDecorationRenderOptions {
       fontStyle: options.fontStyle,
       fontWeight: options.fontWeight,
       textDecoration: options.textDecoration,
+      textUnderlinePosition: options.textUnderlinePosition,
       cursor: options.cursor,
       color: options.color as string | IThemeColor,
       opacity: options.opacity,
