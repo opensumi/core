@@ -21,7 +21,7 @@ import {
   EditorOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { BareFontInfo, FontInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/fontInfo';
-import { CursorChangeReason } from '@opensumi/monaco-editor-core/esm/vs/editor/common/controller/cursorEvents';
+import { CursorChangeReason } from '@opensumi/monaco-editor-core/esm/vs/editor/common/cursorEvents';
 import { EditorType, ScrollType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { FindMatch, TextModelResolvedOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import {
