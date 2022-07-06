@@ -39,7 +39,6 @@ import {
   Disposable,
   makeRandomHexString,
 } from '@opensumi/ide-core-common';
-import { UntitledDocumentIdCounter } from '@opensumi/ide-editor/lib/browser/untitled-resource';
 import { IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -89,6 +88,7 @@ import {
   CodeEditorDidVisibleEvent,
   RegisterEditorComponentEvent,
 } from './types';
+import { UntitledDocumentIdCounter } from './untitled-resource';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
