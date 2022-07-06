@@ -5,7 +5,14 @@ import React from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { Option, Select } from '@opensumi/ide-components';
-import { getIcon, isElectronRenderer, localize, PreferenceService, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  AppConfig,
+  getIcon,
+  isElectronRenderer,
+  localize,
+  PreferenceService,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 
@@ -232,6 +239,7 @@ const DebugPreferenceHeightKey = 'debug.toolbar.height';
 const FloatDebugToolbarView = observer(() => {
   const controller = useInjectable<FloatController>(FloatController);
   const preference = useInjectable<PreferenceService>(PreferenceService);
+  const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
   const { state } = useInjectable<DebugToolbarService>(DebugToolbarService);
 
   const customTop = preference.get<number>(DebugPreferenceTopKey) || 0;
@@ -239,7 +247,7 @@ const FloatDebugToolbarView = observer(() => {
 
   const debugToolbarWrapperClass = cls({
     [styles.debug_toolbar_wrapper]: true,
-    [styles.debug_toolbar_wrapper_electron]: isElectronRenderer(),
+    [styles.debug_toolbar_wrapper_electron]: isElectronRenderer,
   });
 
   if (state) {
