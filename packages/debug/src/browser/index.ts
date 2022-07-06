@@ -23,7 +23,6 @@ import {
   DebugSessionContributionRegistry,
   DebugSessionContributionRegistryImpl,
   DebugSessionFactory,
-  DefaultDebugSessionFactory,
 } from './debug-session-contribution';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugExpressionProvider, DebugModel, DebugModelManager } from './editor';
@@ -49,10 +48,6 @@ export class DebugModule extends BrowserModule {
     {
       token: DebugExpressionProvider,
       useClass: DebugExpressionProvider,
-    },
-    {
-      token: DebugSessionFactory,
-      useClass: DefaultDebugSessionFactory,
     },
     {
       token: DebugModelManager,

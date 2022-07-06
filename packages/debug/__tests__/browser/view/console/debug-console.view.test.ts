@@ -10,13 +10,7 @@ import {
   IDebugSession,
   DebugSessionOptions,
 } from '@opensumi/ide-debug';
-import {
-  DebugPreferences,
-  DebugSessionContributionRegistry,
-  DebugSessionFactory,
-  DefaultDebugSessionFactory,
-  DebugSession,
-} from '@opensumi/ide-debug/lib/browser';
+import { DebugPreferences, DebugSessionContributionRegistry, DebugSession } from '@opensumi/ide-debug/lib/browser';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -32,15 +26,16 @@ import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { MockDebugSession } from '../../../../__mocks__/debug-session';
+
 describe('Debug console component Test Suites', () => {
   const mockInjector = createBrowserInjector([]);
   let debugConsoleModelService: DebugConsoleModelService;
   let debugConsoleFilterService: DebugConsoleFilterService;
-  let debugSessionFactory: DebugSessionFactory;
   let container;
 
   const createMockSession = (sessionId: string, options: Partial<DebugSessionOptions>): IDebugSession =>
-    debugSessionFactory.get(sessionId, options as any);
+    new MockDebugSession(sessionId, options);
 
   const mockCtxMenuRenderer = {
     show: jest.fn(),
@@ -49,9 +44,9 @@ describe('Debug console component Test Suites', () => {
   const mockDebugSessionManager = {
     onDidDestroyDebugSession: jest.fn(() => Disposable.create(() => {})),
     onDidChangeActiveDebugSession: jest.fn(() => Disposable.create(() => {})),
-    currentSession: IDebugSession,
+    currentSession: undefined,
     updateCurrentSession: jest.fn((session: IDebugSession | undefined) => {}),
-  };
+  } as any;
 
   beforeEach(() => {
     mockInjector.overrideProviders({
@@ -136,12 +131,7 @@ describe('Debug console component Test Suites', () => {
       token: IMainLayoutService,
       useClass: LayoutService,
     });
-    mockInjector.overrideProviders({
-      token: DebugSessionFactory,
-      useClass: DefaultDebugSessionFactory,
-    });
 
-    debugSessionFactory = mockInjector.get(DefaultDebugSessionFactory);
     debugConsoleModelService = mockInjector.get(DebugConsoleModelService);
     debugConsoleFilterService = mockInjector.get(DebugConsoleFilterService);
     container = document.createElement('div');
@@ -156,7 +146,6 @@ describe('Debug console component Test Suites', () => {
 
   it('repl can be filter', async () => {
     const session = createMockSession('mock', {});
-    // @ts-ignore
     mockDebugSessionManager.currentSession = session;
     await debugConsoleModelService.initTreeModel(session as DebugSession);
     const tree = debugConsoleModelService;

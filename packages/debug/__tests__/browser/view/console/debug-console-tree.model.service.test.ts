@@ -12,7 +12,6 @@ import {
 } from '@opensumi/ide-debug';
 import {
   DebugSessionFactory,
-  DefaultDebugSessionFactory,
   DebugPreferences,
   DebugSessionContributionRegistry,
 } from '@opensumi/ide-debug/lib/browser';
@@ -34,6 +33,7 @@ import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { MockDebugSession } from '../../../../__mocks__/debug-session';
 import styles from '../../../../src/browser/view/console/debug-console.module.less';
 
 describe('Debug Console Tree Model', () => {
@@ -46,7 +46,7 @@ describe('Debug Console Tree Model', () => {
   } as any;
 
   const createMockSession = (sessionId: string, options: Partial<DebugSessionOptions>): IDebugSession =>
-    debugSessionFactory.get(sessionId, options as any);
+    new MockDebugSession(sessionId, options);
 
   const mockWatcher = {
     callback: jest.fn(),
@@ -115,11 +115,6 @@ describe('Debug Console Tree Model', () => {
       token: IContextKeyService,
       useValue: mockContextKeyService,
     });
-    mockInjector.overrideProviders({
-      token: DebugSessionFactory,
-      useClass: DefaultDebugSessionFactory,
-    });
-
     mockInjector.overrideProviders({
       token: WorkbenchEditorService,
       useValue: {},
@@ -194,7 +189,6 @@ describe('Debug Console Tree Model', () => {
     });
 
     debugConsoleModelService = mockInjector.get(DebugConsoleModelService);
-    debugSessionFactory = mockInjector.get(DefaultDebugSessionFactory);
     debugConsoleFilterService = mockInjector.get(DebugConsoleFilterService);
     mockContextKeyService = mockInjector.get(IContextKeyService);
   });
