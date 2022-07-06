@@ -2,8 +2,8 @@ import { PreferenceService } from '@opensumi/ide-core-browser';
 import { ILogger, URI } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { DocumentFormatService } from '@opensumi/ide-editor/lib/browser/format/format.service';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { QuickPickService } from '@opensumi/ide-quick-open/lib/common';
-import { DocumentRangeFormattingEditProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/formattingEdit';
 
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -59,7 +59,7 @@ describe('FormatService', () => {
   const spyOnProvideDocumentFormattingEdits = jest.spyOn(provider, 'provideDocumentFormattingEdits');
   const spyOnProvideDocumentRangeFormattingEdits = jest.spyOn(provider, 'provideDocumentRangeFormattingEdits');
 
-  const originalOrdered = DocumentRangeFormattingEditProviderRegistry.ordered;
+  const originalOrdered = languageFeaturesService.documentRangeFormattingEditProvider.ordered;
 
   beforeAll(() => {
     injector.addProviders(
@@ -112,11 +112,11 @@ describe('FormatService', () => {
         },
       },
     );
-    DocumentRangeFormattingEditProviderRegistry.ordered = () => [provider];
+    languageFeaturesService.documentRangeFormattingEditProvider.ordered = () => [provider];
   });
   afterAll(async () => {
     await injector.disposeAll();
-    DocumentRangeFormattingEditProviderRegistry.ordered = originalOrdered;
+    languageFeaturesService.documentRangeFormattingEditProvider.ordered = originalOrdered;
   });
 
   it('Format Document With...', async () => {

@@ -17,7 +17,6 @@ import {
   path,
 } from '@opensumi/ide-core-common';
 import { IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
-import { InlineValuesProviderRegistry } from '@opensumi/ide-debug/lib/browser/editor/inline-values';
 import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
 import { ILanguageService } from '@opensumi/ide-editor';
 import {
@@ -28,6 +27,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
 import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { ILanguageService as IMonacoLanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -183,7 +183,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     const languageSelector = fromLanguageSelector(selector);
     const hoverProvider = this.createHoverProvider(handle, languageSelector);
-    this.disposables.set(handle, modes.HoverProviderRegistry.register(selector, hoverProvider));
+    this.disposables.set(handle, languageFeaturesService.hoverProvider.register(selector, hoverProvider));
   }
 
   protected createHoverProvider(handle: number, selector?: LanguageSelector): modes.HoverProvider {
@@ -933,10 +933,10 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const disposable = new DisposableCollection();
     for (const language of this.getUniqueLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
-        // 这里直接使用 modes.CodeActionProviderRegistry 来注册 QuickFixProvider,
+        // 这里直接使用 languageFeaturesService.codeActionProvider 来注册 QuickFixProvider,
         // 因为 monaco.languages.registerCodeActionProvider 过滤掉了 CodeActionKinds 参数
         // 会导致 supportedCodeAction ContextKey 失效，右键菜单缺失了 Refactor 和 Source Action
-        disposable.push(modes.CodeActionProviderRegistry.register(language, quickFixProvider));
+        disposable.push(languageFeaturesService.codeActionProvider.register(language, quickFixProvider));
       }
     }
     this.disposables.set(handle, disposable);
@@ -1421,7 +1421,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const provider = new DocumentSemanticTokensProvider(this.proxy, handle, legend);
     this.disposables.set(
       handle,
-      modes.DocumentSemanticTokensProviderRegistry.register(
+      languageFeaturesService.documentSemanticTokensProvider.register(
         fromLanguageSelector(selector)! as unknown as string,
         provider,
       ),
@@ -1436,7 +1436,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const provider = new DocumentRangeSemanticTokensProviderImpl(this.proxy, handle, legend);
     this.disposables.set(
       handle,
-      modes.DocumentRangeSemanticTokensProviderRegistry.register(
+      languageFeaturesService.documentRangeSemanticTokensProvider.register(
         fromLanguageSelector(selector)! as unknown as string,
         provider,
       ),
@@ -1479,7 +1479,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       provider.onDidChangeInlineValues = emitter.event;
     }
 
-    this.disposables.set(handler, InlineValuesProviderRegistry.register(selector, provider));
+    this.disposables.set(handler, languageFeaturesService.inlineValuesProvider.register(selector, provider));
   }
 
   $emitInlineValuesEvent(eventHandle: number, event?: any): void {
@@ -1493,7 +1493,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   // #region Linked Editing Range
   $registerLinkedEditingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
     const languageSelector = fromLanguageSelector(selector)!;
-    modes.LinkedEditingRangeProviderRegistry.register(languageSelector, {
+    languageFeaturesService.linkedEditingRangeProvider.register(languageSelector, {
       provideLinkedEditingRanges: async (
         model: ITextModel,
         position: monaco.Position,
@@ -1536,7 +1536,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       provider.onDidChangeInlayHints = emitter.event;
     }
 
-    this.disposables.set(handle, modes.InlayHintsProviderRegistry.register(selector, provider));
+    this.disposables.set(handle, languageFeaturesService.inlayHintsProvider.register(selector, provider));
   }
   $emitInlayHintsEvent(eventHandle: number, event?: any): void {
     const obj = this.disposables.get(eventHandle);

@@ -37,12 +37,10 @@ import {
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
-import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
 import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { CompletionProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import {
   FormattingConflicts,
   IFormattingEditProviderSelector,
@@ -67,6 +65,7 @@ import {
 } from './contrib/command';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { ICodeEditor } from './monaco-api/editor';
+import { languageFeaturesService } from './monaco-api/languages';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
@@ -196,8 +195,7 @@ export class MonacoClientContribution
   }
 
   onDidStart() {
-    // DefaultEndOfLine 类型冲突
-    CompletionProviderRegistry.register(this.snippetSuggestProvider.registeredLanguageIds, this.snippetSuggestProvider);
+    languageFeaturesService.completionProvider.register(this.snippetSuggestProvider.registeredLanguageIds, this.snippetSuggestProvider);
   }
 
   private registerOverrideServices() {

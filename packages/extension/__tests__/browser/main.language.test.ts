@@ -3,7 +3,7 @@ import type vscode from 'vscode';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { URI, Uri, Position } from '@opensumi/ide-core-common';
+import { URI, Uri, Position, language } from '@opensumi/ide-core-common';
 import {
   EvaluatableExpressionServiceImpl,
   IEvaluatableExpressionService,
@@ -21,8 +21,8 @@ import {
   EmptyDocCacheImpl,
 } from '@opensumi/ide-editor/src/browser';
 import { ICallHierarchyService, ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
 
@@ -167,7 +167,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.codeLensProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
       expect(value.lenses.length).toEqual(1);
@@ -191,7 +191,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.codeLensProvider.ordered(model)[0];
       const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
       expect(value.lenses.length).toEqual(1);
       const symbol = value.lenses[0];
@@ -212,7 +212,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.CodeLensProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.codeLensProvider.ordered(model)[0];
       const value = (await provider.provideCodeLenses(model, CancellationToken.None))!;
       expect(value.lenses.length).toEqual(1);
       const symbol = value.lenses[0];
@@ -232,7 +232,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.DefinitionProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.definitionProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideDefinition(
         model,
@@ -259,7 +259,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.ImplementationProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.implementationProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = await provider.provideImplementation(
         model,
@@ -285,7 +285,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.TypeDefinitionProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.typeDefinitionProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = await provider.provideTypeDefinition(
         model,
@@ -311,7 +311,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.HoverProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.hoverProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideHover(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
       expect(value.range).toStrictEqual({ startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 });
@@ -330,7 +330,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.HoverProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.hoverProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideHover(model, { lineNumber: 1, column: 1 } as any, CancellationToken.None))!;
       expect(value.range).toStrictEqual({ startLineNumber: 4, startColumn: 1, endLineNumber: 9, endColumn: 8 });
@@ -350,7 +350,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.DocumentHighlightProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.documentHighlightProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = await provider.provideDocumentHighlights(
         model,
@@ -380,7 +380,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.ReferenceProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.referenceProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = await provider.provideReferences(
         model,
@@ -417,7 +417,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.codeActionProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideCodeActions(
         model,
@@ -450,7 +450,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.codeActionProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideCodeActions(
         model,
@@ -481,7 +481,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.CodeActionProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.codeActionProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideCodeActions(
         model,
@@ -511,7 +511,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.RenameProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.renameProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideRenameEdits(
         model,
@@ -544,7 +544,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.SignatureHelpProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.signatureHelpProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = await provider.provideSignatureHelp(
         model,
@@ -573,7 +573,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.CompletionProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.completionProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideCompletionItems(
         model,
@@ -603,7 +603,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.DocumentRangeFormattingEditProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.documentRangeFormattingEditProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideDocumentRangeFormattingEdits(
         model,
@@ -634,7 +634,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.OnTypeFormattingEditProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.onTypeFormattingEditProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideOnTypeFormattingEdits(
         model,
@@ -665,7 +665,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.LinkProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.linkProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const { links } = (await provider.provideLinks(model, CancellationToken.None))!;
       expect(links.length).toEqual(1);
@@ -696,7 +696,7 @@ describe('ExtHostLanguageFeatures', () => {
     );
 
     setTimeout(async () => {
-      const provider = monacoModes.ColorProviderRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.colorProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const value = (await provider.provideDocumentColors(model, CancellationToken.None))!;
       expect(value.length).toEqual(1);
@@ -724,7 +724,7 @@ describe('ExtHostLanguageFeatures', () => {
       ),
     );
     setTimeout(async () => {
-      const provider = monacoModes.SelectionRangeRegistry.ordered(model)[0];
+      const provider = languageFeaturesService.selectionRangeProvider.ordered(model)[0];
       expect(provider).toBeDefined();
       const ranges = await provider.provideSelectionRanges(
         model,
@@ -903,7 +903,7 @@ An error case:
       expect(mockMainThreadFunc).toBeCalled();
       const uri = monaco.Uri.parse('file:///path/to/simple.semanticLanguage');
       const textModel = createModel('', 'semanticLanguage', uri);
-      expect(monacoModes.DocumentSemanticTokensProviderRegistry.ordered(textModel as any).length).toBe(1);
+      expect(languageFeaturesService.documentSemanticTokensProvider.ordered(textModel as any).length).toBe(1);
       textModel.dispose();
       done();
     }, 0);
@@ -913,7 +913,7 @@ An error case:
     const uri = monaco.Uri.parse('file:///path/to/simple1.semanticLanguage');
     const textModel = createModel('', 'semanticLanguage', uri);
 
-    const provider = monacoModes.DocumentSemanticTokensProviderRegistry.ordered(textModel as any)[0];
+    const provider = languageFeaturesService.documentSemanticTokensProvider.ordered(textModel as any)[0];
     expect(provider).toBeDefined();
 
     const legend = provider.getLegend();

@@ -16,6 +16,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { PrefixQuickOpenService } from '@opensumi/ide-quick-open';
 import { QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -191,7 +192,7 @@ describe('file-search-quickopen', () => {
     },
   ];
 
-  modes.DocumentSymbolProviderRegistry['all'] = () => [
+  languageFeaturesService.documentSymbolProvider['all'] = () => [
     {
       provideDocumentSymbols: () => testDS,
     },
