@@ -26,6 +26,15 @@ import { AskSaveResult, IResource, IResourceProvider, WorkbenchEditorService } f
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
 
 @Injectable()
+export class UntitledDocumentIdCounter {
+  private _id = 1;
+
+  get id() {
+    return this._id++;
+  }
+}
+
+@Injectable()
 export class UntitledSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
   @Autowired(IEditorDocumentModelService)
   editorDocumentModelService: IEditorDocumentModelService;

@@ -39,6 +39,7 @@ import {
   Disposable,
   makeRandomHexString,
 } from '@opensumi/ide-core-common';
+import { UntitledDocumentIdCounter } from '@opensumi/ide-editor/lib/browser/untitled-resource';
 import { IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -138,7 +139,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(IEditorDocumentModelService)
   protected documentModelManager: IEditorDocumentModelService;
 
-  private untitledIndex = 1;
+  @Autowired()
+  private untitledIndex: UntitledDocumentIdCounter;
 
   private untitledCloseIndex: number[] = [];
 
@@ -484,7 +486,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
-    const index = this.untitledCloseIndex.shift() || this.untitledIndex++;
+    const index = this.untitledCloseIndex.shift() || this.untitledIndex.id;
     return new URI().withScheme(Schemes.untitled).withQuery(`name=Untitled-${index}&index=${index}`);
   }
 
