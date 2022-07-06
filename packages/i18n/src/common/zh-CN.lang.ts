@@ -1,4 +1,4 @@
-import { browserViews } from "./contributes/zh-CN.lang";
+import { browserViews } from './contributes/zh-CN.lang';
 
 export const localizationBundle = {
   languageId: 'zh-CN',
@@ -1005,6 +1005,6 @@ export const localizationBundle = {
     'debug.terminal.label': '创建 Javascript Debug Terminal',
 
     // extension contribute
-    ...browserViews
+    ...browserViews,
   },
 };

@@ -1,4 +1,4 @@
-import { localize } from "@opensumi/ide-core-common";
+import { localize } from '@opensumi/ide-core-common';
 
 export const OpensumiExtensionPackageSchema = {
   properties: {

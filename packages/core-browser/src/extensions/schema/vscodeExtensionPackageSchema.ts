@@ -1,4 +1,4 @@
-import { localize } from "@opensumi/ide-core-common";
+import { localize } from '@opensumi/ide-core-common';
 
 export const EXTENSION_IDENTIFIER_PATTERN = '^([a-z0-9A-Z][a-z0-9-A-Z]*)\\.([a-z0-9A-Z][a-z0-9-A-Z]*)$';
 

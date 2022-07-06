@@ -23,9 +23,9 @@ export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsS
         {
           body: {
             id: '${1}',
-            title: '${2}'
-          }
-        }
+            title: '${2}',
+          },
+        },
       ],
       properties: {
         id: {

@@ -1,5 +1,6 @@
-import { IJSONSchema, localize } from "@opensumi/ide-core-common";
-import { MenuId } from "../../menu/next";
+import { IJSONSchema, localize } from '@opensumi/ide-core-common';
+
+import { MenuId } from '../../menu/next';
 
 interface IAPIMenu {
   readonly id: MenuId;
@@ -12,24 +13,24 @@ const menuItem: IJSONSchema = {
   defaultSnippets: [
     {
       body: {
-        command: '${1}'
-      }
-    }
+        command: '${1}',
+      },
+    },
   ],
   properties: {
     command: {
       description: localize('kaitianContributes.common.command'),
-      type: 'string'
+      type: 'string',
     },
     when: {
       description: localize('kaitianContributes.common.when'),
-      type: 'string'
+      type: 'string',
     },
     group: {
       description: localize('kaitianContributes.common.group'),
-      type: 'string'
-    }
-  }
+      type: 'string',
+    },
+  },
 };
 
 const submenu: IJSONSchema = {
@@ -38,15 +39,15 @@ const submenu: IJSONSchema = {
   properties: {
     id: {
       description: localize('kaitianContributes.submenus.id'),
-      type: 'string'
+      type: 'string',
     },
     title: {
       description: localize('kaitianContributes.submenus.title'),
-      type: 'string'
+      type: 'string',
     },
     group: {
       description: localize('kaitianContributes.common.group'),
-      type: 'string'
+      type: 'string',
     },
     when: {
       type: 'string',
@@ -55,23 +56,23 @@ const submenu: IJSONSchema = {
     icon: {
       description: localize('kaitianContributes.submenus.icon'),
       anyOf: [{
-        type: 'string'
+        type: 'string',
       },
       {
         type: 'object',
         properties: {
           light: {
             description: localize('kaitianContributes.submenus.icon.light'),
-            type: 'string'
+            type: 'string',
           },
           dark: {
             description: localize('kaitianContributes.submenus.dark'),
-            type: 'string'
-          }
-        }
-      }]
-    }
-  }
+            type: 'string',
+          },
+        },
+      }],
+    },
+  },
 };
 
 const apiMenus: IAPIMenu[] = [
@@ -210,31 +211,29 @@ const apiMenus: IAPIMenu[] = [
   {
     id: MenuId.SettingsIconMenu,
     description: localize('kaitianContributes.menu.api.SettingsIconMenu'),
-  }
+  },
 ];
 
-const index = <T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, mapper?: (t: T) => R): { [key: string]: R } => {
-  return array.reduce((r, t) => {
+const index = <T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, mapper?: (t: T) => R): { [key: string]: R } => array.reduce((r, t) => {
     r[indexer(t)] = mapper ? mapper(t) : t;
     return r;
   }, Object.create(null));
-}
 
 
 export namespace menus {
   export const schema: IJSONSchema = {
     description: localize('kaitianContributes.menu'),
     type: 'object',
-    properties: index(apiMenus, menu => menu.id, menu => ({
+    properties: index(apiMenus, (menu) => menu.id, (menu) => ({
       type: 'array',
       description: menu.description,
-      items: menuItem
-    }))
-  }
+      items: menuItem,
+    })),
+  };
 
   export const subMenusSchema: IJSONSchema = {
     description: localize('kaitianContributes.submenus'),
     type: 'object',
-    additionalProperties: submenu
-  }
+    additionalProperties: submenu,
+  };
 }

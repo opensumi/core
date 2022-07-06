@@ -12,12 +12,12 @@ export class ViewsProxiesContributionPoint extends VSCodeContributePoint<{ [key 
     markdownDescription: localize('kaitianContributes.viewsProxies'),
     defaultSnippets: [
       {
-        body: ["${1}"]
-      }
+        body: ['${1}'],
+      },
     ],
     items: {
-      type: 'string'
-    }
+      type: 'string',
+    },
   };
 
   contribute() {

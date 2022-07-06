@@ -1,4 +1,4 @@
-import { browserViews } from "./contributes/en-US.lang";
+import { browserViews } from './contributes/en-US.lang';
 
 export const localizationBundle = {
   languageId: 'en-US',
@@ -961,6 +961,6 @@ export const localizationBundle = {
     'debug.terminal.label': 'Javascript Debug Terminal',
 
     // extension contribute
-    ...browserViews
+    ...browserViews,
   },
 };

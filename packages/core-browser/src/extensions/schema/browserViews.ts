@@ -1,4 +1,4 @@
-import { localize } from "@opensumi/ide-core-common";
+import { localize } from '@opensumi/ide-core-common';
 
 export namespace browserViews {
 
@@ -9,13 +9,13 @@ export namespace browserViews {
       {
         label: 'type',
         bodyText: JSON.stringify({
-          type: "${1:add}",
+          type: '${1:add}',
           view: [
             {
-              id: "${2}"
-            }
-          ]
-        }, null, '\t')
+              id: '${2}',
+            },
+          ],
+        }, null, '\t'),
       },
     ],
     properties: {
@@ -31,10 +31,10 @@ export namespace browserViews {
           defaultSnippets: [
             {
               label: '{\"id\":\"\"}',
-              description: "",
+              description: '',
               bodyText: JSON.stringify({
-                id: "${3}"
-              }, null, '\t')
+                id: '${3}',
+              }, null, '\t'),
             },
           ],
           properties: {
@@ -61,12 +61,12 @@ export namespace browserViews {
             expanded: {
               type: 'boolean',
               description: localize('kaitianContributes.browserViews.view.expanded'),
-            }
-          }
-        }
-      }
-    }
-  }
+            },
+          },
+        },
+      },
+    },
+  };
 
   export const schema = {
     description: localize('kaitianContributes.browserViews'),
@@ -74,16 +74,16 @@ export namespace browserViews {
     properties: {
       left: {
         ...properties,
-        description: localize('kaitianContributes.browserViews.left')
+        description: localize('kaitianContributes.browserViews.left'),
       },
       right: {
         ...properties,
-        description: localize('kaitianContributes.browserViews.right')
+        description: localize('kaitianContributes.browserViews.right'),
       },
       bottom: {
         ...properties,
-        description: localize('kaitianContributes.browserViews.bottom')
+        description: localize('kaitianContributes.browserViews.bottom'),
       },
-    }
-  }
+    },
+  };
 }

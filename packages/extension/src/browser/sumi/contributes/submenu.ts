@@ -49,7 +49,7 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
   @Autowired(IIconService)
   protected readonly iconService: IIconService;
 
-  static schema = menus.subMenusSchema
+  static schema = menus.subMenusSchema;
 
   contribute() {
     const collector = console;
