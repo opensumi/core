@@ -11,15 +11,15 @@ if (!process.env.GITHUB_TOKEN) {
   console.log(chalk.green('You can access your own access token by https://github.com/settings/tokens'));
   console.log(chalk.yellow('Please keep your github access token carefully'));
   process.exit();
-} else if (!argv.time || !argv.version) {
-  console.log(chalk.yellow('Please process a time argv, like `npm run iteration -- --time=2022-2-2 --version=2.18`'));
+} else if (!argv.time || !argv.branch) {
+  console.log(chalk.yellow('Please process a time argv, like `npm run iteration -- --time=2022-2-2 --branch=2.18`'));
   process.exit();
 }
 
 // 当前仅会统计已合并的 PR 用于最初的迭代计划内容初始化，后续内容需要手动调整
 (async () => {
   const time = argv.time as string;
-  const version = argv.version as string;
+  const version = argv.branch as string;
   const items = await getPrList(new Date(time).getTime());
   const draftLog: string[] = [];
   for (const item of items) {
@@ -27,7 +27,7 @@ if (!process.env.GITHUB_TOKEN) {
     if (!changelog) {
       continue;
     }
-    draftLog.push(`- [x] ${changelog} [#${item.number}](${item.issue_url}). [@${item.user.login}](${item.user.url})`);
+    draftLog.push(`- [x] ${changelog} [#${item.number}](${item.html_url}). [@${item.user.login}](${item.user.url})`);
   }
 
   const plan = `<!-- This plan captures our work in February. This is a 3-week iteration. We will ship in mid-April. -->
