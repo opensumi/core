@@ -16,6 +16,7 @@ import { IVariableResolverService } from '@opensumi/ide-variable';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { MockDebugSession } from '../../__mocks__/debug-session';
 
 describe('DebugSessionManager', () => {
   let debugSessionManager: IDebugSessionManager;
@@ -51,25 +52,15 @@ describe('DebugSessionManager', () => {
   };
 
   const mockDebugSessionContributionRegistry = {
-    get: () => null,
-  };
-
-  const mockDebugSession = {
-    id: sessionId,
-    onDidChange: jest.fn(() => Disposable.create(() => {})),
-    onCurrentThreadChange: jest.fn(() => Disposable.create(() => {})),
-    on: jest.fn(),
-    start: jest.fn(() => new Promise(() => {})),
-    onDidCustomEvent: jest.fn(),
-    configuration: {
-      type: 'node',
-    },
-    state: {},
-    dispose: jest.fn(),
+    get: () => ({
+      debugSessionFactory: () => ({
+        get: () => new MockDebugSession(),
+      }),
+    }),
   };
 
   const mockDebugSessionFactory = {
-    get: jest.fn(() => mockDebugSession),
+    get: jest.fn(() => new MockDebugSession()),
   };
 
   const mockBreakpointManager = {
@@ -189,6 +180,5 @@ describe('DebugSessionManager', () => {
     });
     debugSessionManager.destroy(sessionId);
     expect(mockDebugServer.terminateDebugSession).toBeCalledTimes(1);
-    expect(mockDebugSession.dispose).toBeCalledTimes(1);
   });
 });
