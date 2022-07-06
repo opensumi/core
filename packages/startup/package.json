@@ -59,6 +59,7 @@
   },
   "dependencies": {
     "@opensumi/ide-addons": "2.18.7",
+    "@opensumi/ide-collaboration": "2.18.7",
     "@opensumi/ide-comments": "2.18.7",
     "@opensumi/ide-core-browser": "2.18.7",
     "@opensumi/ide-core-common": "2.18.7",

@@ -1,0 +1,26 @@
+{
+  "name": "@opensumi/ide-collaboration",
+  "version": "2.18.7",
+  "files": [
+    "lib"
+  ],
+  "license": "MIT",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.collaboration.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:opensumi/core.git"
+  },
+  "dependencies": {
+    "@opensumi/ide-core-common": "^2.18.7",
+    "@opensumi/ide-core-node": "^2.18.7"
+  },
+  "devDependencies": {
+    "@opensumi/ide-core-browser": "^2.18.7",
+    "@opensumi/ide-dev-tool": "^1.3.1"
+  }
+}
