@@ -19,7 +19,7 @@ import {
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
