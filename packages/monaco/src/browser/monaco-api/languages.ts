@@ -1,4 +1,4 @@
-import { FoldingRangeKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { FoldingRangeKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import {
   register,
   getLanguages,

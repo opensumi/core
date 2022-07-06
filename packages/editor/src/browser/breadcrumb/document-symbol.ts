@@ -11,8 +11,8 @@ import {
   Deferred,
   CancellationToken,
 } from '@opensumi/ide-core-browser';
+import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
