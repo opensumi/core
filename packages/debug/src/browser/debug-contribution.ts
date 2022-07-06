@@ -188,6 +188,9 @@ export namespace DEBUG_COMMANDS {
   export const ADD_TO_WATCH_ID = {
     id: 'debug.addToWatchExpressions',
   };
+  export const VIEW_MEMORY_ID = {
+    id: 'debug.variables.view.memory',
+  };
   // console commands
   export const CLEAR_CONSOLE = {
     id: 'debug.console.clear',

@@ -2,6 +2,7 @@ export * from './di-helper';
 export * from './event-bus';
 export * from './contribution-provider';
 export * from './declare';
+export * from './editor';
 export * from './reference';
 export * from './module';
 export * from './command';

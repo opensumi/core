@@ -173,4 +173,5 @@ export const defaultIconfont = {
   'warning-circle': 'warning-circle',
   'warning-circle-fill': 'warning-circle-fill',
   'window-maximize': 'window-maximize',
+  'hex': 'hex'
 };

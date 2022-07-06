@@ -308,3 +308,7 @@ export const REVEAL_IN_EXPLORER: Command = {
   id: 'revealInExplorer',
   delegate: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
 };
+
+export const GET_EXTENSION: Command = {
+  id: 'extension.getDescription',
+};

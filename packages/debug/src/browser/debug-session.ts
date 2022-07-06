@@ -32,11 +32,12 @@ import {
   IRuntimeBreakpoint,
   BreakpointsChangeEvent,
   IDebugBreakpoint,
+  IMemoryRegion,
 } from '../common';
 import { DebugConfiguration } from '../common';
 
 import { DebugEditor } from './../common/debug-editor';
-import { IDebugModel } from './../common/debug-model';
+import { IDebugModel, MemoryRegion } from './../common/debug-model';
 import { BreakpointManager, DebugBreakpoint } from './breakpoint';
 import { DebugSessionConnection } from './debug-session-connection';
 import { DebugModelManager } from './editor/debug-model-manager';
@@ -91,6 +92,9 @@ export class DebugSession implements IDebugSession {
 
   private readonly _onDidChangeState = new Emitter<DebugState>();
   readonly onDidChangeState: Event<DebugState> = this._onDidChangeState.event;
+
+  private readonly _onDidInvalidMemory = new Emitter<DebugProtocol.MemoryEvent>();
+  readonly onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent> = this._onDidInvalidMemory.event;
 
   protected readonly toDispose = new DisposableCollection();
 
@@ -241,6 +245,9 @@ export class DebugSession implements IDebugSession {
       this.on('progressEnd', (event: DebugProtocol.ProgressEndEvent) => {
         this._onDidProgressEnd.fire(event);
       }),
+      this.on('memory', (event: DebugProtocol.MemoryEvent) => {
+        this._onDidInvalidMemory.fire(event);
+      }),
       this.on('invalidated', async (event: DebugProtocol.InvalidatedEvent) => {
         this._onDidInvalidated.fire(event);
 
@@ -269,6 +276,10 @@ export class DebugSession implements IDebugSession {
         this.breakpointManager.clearAllStatus(this.id);
       }),
     ]);
+  }
+
+  getMemory(memoryReference: string): IMemoryRegion {
+    return new MemoryRegion(memoryReference, this);
   }
 
   get configuration(): DebugConfiguration {
@@ -340,6 +351,8 @@ export class DebugSession implements IDebugSession {
         supportsRunInTerminalRequest: true,
         supportsProgressReporting: true,
         supportsInvalidatedEvent: true,
+        supportsMemoryEvent: true,
+        supportsMemoryReferences: true,
       },
       this.configuration,
     );
@@ -1118,4 +1131,31 @@ export class DebugSession implements IDebugSession {
   public getModel(): IDebugModel | undefined {
     return this.modelManager.model;
   }
+
+  // memory
+
+  public async readMemory(
+    memoryReference: string,
+    offset: number,
+    count: number,
+  ): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
+    if (this.capabilities.supportsReadMemoryRequest) {
+      return await this.sendRequest('readMemory', { count, memoryReference, offset });
+    }
+    return Promise.resolve(undefined);
+  }
+
+  public async writeMemory(
+    memoryReference: string,
+    offset: number,
+    data: string,
+    allowPartial?: boolean,
+  ): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
+    if (this.capabilities.supportsWriteMemoryRequest) {
+      return await this.sendRequest('writeMemory', { memoryReference, offset, allowPartial, data });
+    }
+    return Promise.resolve(undefined);
+  }
+
+  // memory end
 }
