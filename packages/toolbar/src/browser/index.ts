@@ -65,9 +65,9 @@ export class ToolBarModuleContribution
       extensionPoint: '',
       frameworkKind: ['opensumi'] as FrameworkKind[],
       jsonSchema: {
-        enum: this.config.isElectronRenderer ? ['toolbar-left', 'toolbar-right', 'toolbar-center'] : ['menu-left', 'menu-right']
-      }
-    }
+        enum: this.config.isElectronRenderer ? ['toolbar-left', 'toolbar-right', 'toolbar-center'] : ['menu-left', 'menu-right'],
+      },
+    };
 
     this.extensionsPointService.appendExtensionPoint(locationPointPath('preferredPosition'), appendData);
     this.extensionsPointService.appendExtensionPoint(locationPointPath('strictPosition'), appendData);

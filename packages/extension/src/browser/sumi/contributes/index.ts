@@ -4,15 +4,15 @@ import { IJSONSchemaRegistry, ILogger, WithEventBus, IEventBus, EXTENSION_JSON_U
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 
-import { BrowserViewContributionPoint, KtViewsSchema } from './browser-views';
 import { BrowserMainContributionPoint } from './browser-main';
+import { BrowserViewContributionPoint, KtViewsSchema } from './browser-views';
 import { MenuExtendContributionPoint } from './menu-extend';
 import { MenubarsContributionPoint } from './menubar';
+import { NodeMainContributionPoint } from './node-main';
 import { SubmenusContributionPoint } from './submenu';
 import { ToolbarContributionPoint } from './toolbar';
-import { NodeMainContributionPoint } from './node-main';
-import { WorkerMainContributionPoint } from './worker-main';
 import { ViewsProxiesContributionPoint } from './views-proxies';
+import { WorkerMainContributionPoint } from './worker-main';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 

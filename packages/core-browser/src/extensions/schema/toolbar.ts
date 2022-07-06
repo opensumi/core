@@ -1,8 +1,6 @@
-import { IJSONSchema, localize } from "@opensumi/ide-core-common";
+import { IJSONSchema, localize } from '@opensumi/ide-core-common';
 
-const snippetLabel = (obj: { [key in string]: string }, desc: string) => {
-  return `${JSON.stringify(obj)}: ${desc}`
-}
+const snippetLabel = (obj: { [key in string]: string }, desc: string) => `${JSON.stringify(obj)}: ${desc}`;
 
 const ToolbarButtonStatesProperties = {
   type: 'object',
@@ -62,7 +60,7 @@ const ToolbarButtonStatesProperties = {
     btnStyle: {
       type: 'string',
       description: localize('kaitianContributes.toolbar.actions.button.states.btnStyle'),
-      enum: ['inline', 'button']
+      enum: ['inline', 'button'],
     },
     btnTitleStyle: {
       type: 'string',
@@ -72,9 +70,9 @@ const ToolbarButtonStatesProperties = {
         localize('kaitianContributes.toolbar.actions.button.states.btnTitleStyle.vertical'),
         localize('kaitianContributes.toolbar.actions.button.states.btnTitleStyle.horizontal'),
       ],
-    }
-  }
-}
+    },
+  },
+};
 
 const ToolbarSelectStatesProperties = {
   type: 'object',
@@ -98,9 +96,9 @@ const ToolbarSelectStatesProperties = {
     minWidth: {
       type: 'number',
       description: localize('kaitianContributes.toolbar.actions.select.states.minWidth'),
-    }
-  }
-}
+    },
+  },
+};
 
 export namespace toolbar {
   export const schema: IJSONSchema = {
@@ -118,22 +116,22 @@ export namespace toolbar {
               label: snippetLabel({ type: 'button' }, localize('kaitianContributes.toolbar.actions.type.button')),
               body: {
                 id: '${2}',
-                type: "button",
+                type: 'button',
                 description: '${3}',
                 title: '${4}',
-                iconPath: '${5}'
-              }
+                iconPath: '${5}',
+              },
             },
             {
               label: snippetLabel({ type: 'select' }, localize('kaitianContributes.toolbar.actions.type.select')),
               body: {
                 id: '${2}',
-                type: "select",
+                type: 'select',
                 description: '${3}',
                 options: ['${4}'],
-                defaultValue: '${5}'
-              }
-            }
+                defaultValue: '${5}',
+              },
+            },
           ],
           properties: {
             id: {
@@ -155,8 +153,8 @@ export namespace toolbar {
                 group: {
                   type: 'string',
                   description: localize('kaitianContributes.toolbar.actions.preferredPosition.group'),
-                }
-              }
+                },
+              },
             },
             strictPosition: {
               type: 'object',
@@ -166,9 +164,9 @@ export namespace toolbar {
                 {
                   body: {
                     location: '${1}',
-                    group: '${2}'
-                  }
-                }
+                    group: '${2}',
+                  },
+                },
               ],
               properties: {
                 location: {
@@ -178,8 +176,8 @@ export namespace toolbar {
                 group: {
                   type: 'string',
                   description: localize('kaitianContributes.toolbar.actions.preferredPosition.group'),
-                }
-              }
+                },
+              },
             },
             description: {
               type: 'string',
@@ -192,7 +190,7 @@ export namespace toolbar {
             defaultState: {
               type: 'string',
               description: localize('kaitianContributes.toolbar.actions.defaultState'),
-            }
+            },
           },
           oneOf: [
             {
@@ -203,9 +201,9 @@ export namespace toolbar {
                   description: localize('kaitianContributes.toolbar.actions.type'),
                   enum: ['button'],
                   enumDescriptions: [
-                    localize('kaitianContributes.toolbar.actions.type.button')
+                    localize('kaitianContributes.toolbar.actions.type.button'),
                   ],
-                  default: 'button'
+                  default: 'button',
                 },
                 title: {
                   type: 'string',
@@ -224,8 +222,8 @@ export namespace toolbar {
                   description: localize('kaitianContributes.toolbar.actions.button.states'),
                   additionalProperties: ToolbarButtonStatesProperties,
                   properties: {
-                    default: ToolbarButtonStatesProperties
-                  }
+                    default: ToolbarButtonStatesProperties,
+                  },
                 },
                 popoverComponent: {
                   type: 'string',
@@ -241,8 +239,8 @@ export namespace toolbar {
                       enum: ['top', 'bottom'],
                       enumDescriptions: [
                         localize('kaitianContributes.toolbar.actions.popoverStyle.position.top'),
-                        localize('kaitianContributes.toolbar.actions.popoverStyle.position.bottom')
-                      ]
+                        localize('kaitianContributes.toolbar.actions.popoverStyle.position.bottom'),
+                      ],
                     },
                     horizontalOffset: {
                       type: 'number',
@@ -263,14 +261,14 @@ export namespace toolbar {
                     minHeight: {
                       type: 'number',
                       description: localize('kaitianContributes.toolbar.actions.popoverStyle.minHeight'),
-                    }
-                  }
+                    },
+                  },
                 },
                 when: {
                   type: 'string',
                   description: localize('kaitianContributes.toolbar.actions.when'),
-                }
-              }
+                },
+              },
             },
             {
               required: ['type', 'options', 'defaultValue'],
@@ -280,9 +278,9 @@ export namespace toolbar {
                   description: localize('kaitianContributes.toolbar.actions.type'),
                   enum: ['select'],
                   enumDescriptions: [
-                    localize('kaitianContributes.toolbar.actions.type.select')
+                    localize('kaitianContributes.toolbar.actions.type.select'),
                   ],
-                  default: 'select'
+                  default: 'select',
                 },
                 options: {
                   type: 'array',
@@ -294,9 +292,9 @@ export namespace toolbar {
                       {
                         label: snippetLabel({ value: '' }, localize('kaitianContributes.toolbar.actions.select.options.value')),
                         body: {
-                          value: '${1}'
-                        }
-                      }
+                          value: '${1}',
+                        },
+                      },
                     ],
                     properties: {
                       iconPath: {
@@ -314,9 +312,9 @@ export namespace toolbar {
                       value: {
                         type: 'string',
                         description: localize('kaitianContributes.toolbar.actions.select.options.value'),
-                      }
-                    }
-                  }
+                      },
+                    },
+                  },
                 },
                 defaultValue: {
                   type: 'string',
@@ -329,13 +327,13 @@ export namespace toolbar {
                 states: {
                   type: 'object',
                   description: localize('kaitianContributes.toolbar.actions.select.states'),
-                  additionalProperties: ToolbarSelectStatesProperties
+                  additionalProperties: ToolbarSelectStatesProperties,
                 },
-              }
-            }
+              },
+            },
           ],
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  };
 }

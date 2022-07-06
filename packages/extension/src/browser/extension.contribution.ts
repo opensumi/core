@@ -54,6 +54,7 @@ import { ActivatedExtension } from '../common/activator';
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
+import { SumiContributesRunner } from './sumi/contributes';
 import {
   AbstractExtInstanceManagementService,
   ExtensionApiReadyEvent,
@@ -63,7 +64,6 @@ import {
 } from './types';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
 import { VSCodeContributeRunner } from './vscode/contributes';
-import { SumiContributesRunner } from './sumi/contributes';
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;
@@ -150,7 +150,7 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       this.extensionsPointService.registerExtensionPoint({
         extensionPoint: contributeName,
         jsonSchema: contributeCls.schema,
-        frameworkKind: ['vscode', 'opensumi']
+        frameworkKind: ['vscode', 'opensumi'],
       });
     }
 
@@ -159,7 +159,7 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       this.extensionsPointService.registerExtensionPoint({
         extensionPoint: contributeName,
         jsonSchema: contributeCls.schema,
-        frameworkKind: ['opensumi']
+        frameworkKind: ['opensumi'],
       });
     }
   }

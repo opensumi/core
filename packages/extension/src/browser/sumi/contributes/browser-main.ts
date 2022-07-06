@@ -11,8 +11,8 @@ export class BrowserMainContributionPoint extends VSCodeContributePoint<{ [key i
     type: 'string',
     defaultSnippets: [
       {
-        body: './out/browser/index.js'
-      }
+        body: './out/browser/index.js',
+      },
     ],
     description: localize('kaitianContributes.browserMain'),
   };

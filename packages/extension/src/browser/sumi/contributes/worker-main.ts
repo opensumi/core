@@ -11,8 +11,8 @@ export class WorkerMainContributionPoint extends VSCodeContributePoint<{ [key in
     type: 'string',
     defaultSnippets: [
       {
-        body: './out/worker/index.js'
-      }
+        body: './out/worker/index.js',
+      },
     ],
     description: localize('kaitianContributes.workerMain'),
   };

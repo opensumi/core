@@ -11,8 +11,8 @@ export class NodeMainContributionPoint extends VSCodeContributePoint<{ [key in s
     type: 'string',
     defaultSnippets: [
       {
-        body: './out/node/index.js'
-      }
+        body: './out/node/index.js',
+      },
     ],
     description: localize('kaitianContributes.nodeMain'),
   };
