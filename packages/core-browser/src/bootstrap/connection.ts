@@ -10,7 +10,6 @@ import {
   BrowserConnectionOpenEvent,
   BrowserConnectionErrorEvent,
   IEventBus,
-  uuid,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
