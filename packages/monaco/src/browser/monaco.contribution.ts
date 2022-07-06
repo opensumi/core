@@ -46,8 +46,8 @@ import { CompletionProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/
 import {
   FormattingConflicts,
   IFormattingEditProviderSelector,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
-import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
+import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';

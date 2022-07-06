@@ -8,18 +8,15 @@ import {
   Keystroke,
 } from '@opensumi/ide-core-browser';
 import { KeyCode as MonacoKeyCode } from '@opensumi/monaco-editor-core';
-import {
-  AriaLabelProvider,
-  Modifiers,
-  UILabelProvider,
-} from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindingLabels';
+import { AriaLabelProvider, UILabelProvider } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindingLabels';
 import {
   ChordKeybinding,
   KeybindingModifier,
   ResolvedKeybinding,
   ResolvedKeybindingPart,
   SimpleKeybinding,
-} from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
+  Modifiers,
+} from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import * as platform from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 import { USLayoutResolvedKeybinding } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
 
