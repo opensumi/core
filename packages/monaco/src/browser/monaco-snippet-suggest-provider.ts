@@ -13,7 +13,7 @@ import {
   isPatternInWord,
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
+import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { ITextModel } from './monaco-api/types';
