@@ -18,7 +18,6 @@ import { DebugSessionConnection } from './debug-session-connection';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugModelManager } from './editor/debug-model-manager';
 
-
 export const DebugSessionContribution = Symbol('DebugSessionContribution');
 
 export interface DebugSessionContribution {
@@ -100,6 +99,7 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
     const connection = this.injector.get(DebugSessionConnection, [
       sessionId,
+      // FIXME: 仅在 Web 下有效
       (sessionId: string) => this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`),
       this.getTraceOutputChannel(),
     ]);

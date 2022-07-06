@@ -10,6 +10,7 @@ import {
   BrowserConnectionOpenEvent,
   BrowserConnectionErrorEvent,
   IEventBus,
+  uuid,
 } from '@opensumi/ide-core-common';
 import { BackService } from '@opensumi/ide-core-common/lib/module';
 
@@ -67,6 +68,7 @@ export async function bindConnectionService(
   injector: Injector,
   modules: ModuleConstructor[],
   connection: RPCMessageConnection,
+  clientId?: string,
 ) {
   const clientCenter = new RPCServiceCenter();
   clientCenter.setConnection(connection);
@@ -81,6 +83,13 @@ export async function bindConnectionService(
   // 存放依赖前端后端服务，后端服务实例化后再去实例化这些 token
   const dependClientBackServices: BackService[] = [];
 
+  // FIXME： Use for Terminal Controller get clientID on Electron environment.
+  injector.addProviders({
+    token: WSChannelHandler,
+    useValue: {
+      clientId: clientId || `CLIENT_ID_${uuid()}`,
+    },
+  });
   for (const module of modules) {
     const moduleInstance = injector.get(module) as BasicModule;
     if (moduleInstance.backServices) {

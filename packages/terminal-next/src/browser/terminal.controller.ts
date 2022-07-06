@@ -272,6 +272,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     // HACK: 因为现在的终端重连是有问题的，是ClientID机制导致的，因此在拿出记录恢复终端的时候，需要把里面的ClientID替换为当前活跃窗口的ClientID
     // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
 
+    // FIXME: 终端依赖 WS 提供的 clientId 是一种不太可靠的写法, 在 Electron 下会有问题
     const currentClientId = this.wsChannelHandler.clientId;
     const currentRealSessionId = history.current?.split(TERMINAL_ID_SEPARATOR)?.[1];
     if (history.current && history.current.includes(TERMINAL_ID_SEPARATOR)) {
