@@ -28,7 +28,7 @@ import {
   CommentInput,
   CommentReaction as CoreCommentReaction,
   CommentMode as CoreCommentMode,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
   IMainThreadComments,
