@@ -12,8 +12,8 @@ import {
   Disposable,
   LRUMap,
 } from '@opensumi/ide-core-common';
+import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
-import type { IModeService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
@@ -259,6 +259,7 @@ export class LabelService extends WithEventBus {
 
 let modeService: any;
 let modelService: any;
+let languageService: any;
 const getIconClass = (
   resource: URI,
   options?: ILabelOptions,
@@ -293,18 +294,25 @@ const getIconClass = (
     }
     // Language Mode探测
     if (!modeService) {
-      modeService = StandaloneServices.modeService.get();
+      // modeService = StandaloneServices.modeService.get();
+    }
+    if (!languageService) {
+      languageService = StandaloneServices.get(ILanguageService);
     }
     if (!modelService) {
       modelService = StandaloneServices.get(IModelService);
     }
-    const detectedModeId = detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()));
+    const detectedModeId = detectModeId(
+      modelService,
+      languageService,
+      monaco.Uri.file(resource.withoutQuery().toString()),
+    );
     if (detectedModeId) {
       classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
     } else {
       _onDidChange = new Emitter<void>();
-      StandaloneServices.modeService.get().onDidEncounterLanguage(() => {
-        if (detectModeId(modelService, modeService, monaco.Uri.file(resource.withoutQuery().toString()))) {
+      languageService.onDidEncounterLanguage(() => {
+        if (detectModeId(modelService, languageService, monaco.Uri.file(resource.withoutQuery().toString()))) {
           _onDidChange?.fire();
           _onDidChange?.dispose();
         }
@@ -330,7 +338,7 @@ export function basenameOrAuthority(resource: URI) {
 
 export function detectModeId(
   modelService: IModelService,
-  modeService: IModeService,
+  languageService: ILanguageService,
   resource: monaco.Uri,
 ): string | null {
   if (!resource) {
@@ -345,12 +353,12 @@ export function detectModeId(
     const mime = metadata.get(DataUri.META_DATA_MIME);
 
     if (mime) {
-      modeId = modeService.getModeId(mime);
+      modeId = languageService.getLanguageIdByMimeType(mime);
     }
   } else {
     const model = modelService.getModel(resource);
     if (model) {
-      modeId = model.getModeId();
+      // modeId = model.getModeId(); // TODO: 不知道这里怎么改
     }
   }
 
@@ -360,13 +368,14 @@ export function detectModeId(
   }
 
   // otherwise fallback to path based detection
-  return modeService.getModeIdByFilepathOrFirstLine(resource);
+  // return modeService.getModeIdByFilepathOrFirstLine(resource);
+  return languageService.guessLanguageIdByFilepathOrFirstLine(resource);
 }
 
 export function getLanguageIdFromMonaco(uri: URI) {
-  modeService = StandaloneServices.modeService.get();
+  languageService = StandaloneServices.get(ILanguageService);
   modelService = StandaloneServices.get(IModelService);
-  return detectModeId(modelService, modeService, monaco.Uri.parse(uri.toString()));
+  return detectModeId(modelService, languageService, monaco.Uri.parse(uri.toString()));
 }
 
 /**
