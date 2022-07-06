@@ -18,7 +18,6 @@ import { DebugSessionConnection } from './debug-session-connection';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugModelManager } from './editor/debug-model-manager';
 
-
 export const DebugSessionContribution = Symbol('DebugSessionContribution');
 
 export interface DebugSessionContribution {
@@ -68,59 +67,4 @@ export const DebugSessionFactory = Symbol('DebugSessionFactory');
  */
 export interface DebugSessionFactory {
   get(sessionId: string, options: DebugSessionOptions): DebugSession;
-}
-
-@Injectable()
-export class DefaultDebugSessionFactory implements DebugSessionFactory {
-  @Autowired(WSChannelHandler)
-  protected readonly connectionProvider: WSChannelHandler;
-  @Autowired(WorkbenchEditorService)
-  protected readonly workbenchEditorService: WorkbenchEditorService;
-  @Autowired(BreakpointManager)
-  protected readonly breakpoints: BreakpointManager;
-  @Autowired(DebugModelManager)
-  protected readonly modelManager: DebugModelManager;
-  @Autowired(LabelService)
-  protected readonly labelService: LabelService;
-  @Autowired(IMessageService)
-  protected readonly messages: IMessageService;
-  @Autowired(DebugPreferences)
-  protected readonly debugPreferences: DebugPreferences;
-  @Autowired(IFileServiceClient)
-  protected readonly fileSystem: IFileServiceClient;
-  @Autowired(ITerminalApiService)
-  protected readonly terminalService: ITerminalApiService;
-  @Autowired(OutputService)
-  protected readonly outputService: OutputService;
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-  @Autowired(IDebugSessionManager)
-  protected readonly manager: DebugSessionManager;
-
-  get(sessionId: string, options: DebugSessionOptions): DebugSession {
-    const connection = this.injector.get(DebugSessionConnection, [
-      sessionId,
-      (sessionId: string) => this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`),
-      this.getTraceOutputChannel(),
-    ]);
-    return new DebugSession(
-      sessionId,
-      options,
-      connection,
-      this.terminalService,
-      this.workbenchEditorService,
-      this.breakpoints,
-      this.modelManager,
-      this.labelService,
-      this.messages,
-      this.fileSystem,
-      this.manager,
-    );
-  }
-
-  protected getTraceOutputChannel(): OutputChannel | undefined {
-    if (this.debugPreferences['debug.trace']) {
-      return this.outputService.getChannel('Debug adapters');
-    }
-  }
 }

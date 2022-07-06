@@ -59,7 +59,7 @@ import { IDebugProgress } from '../common/debug-progress';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 import { DebugSession } from './debug-session';
-import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
+import { DebugSessionContributionRegistry } from './debug-session-contribution';
 import { isRemoteAttach } from './debugUtils';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { DebugStackFrame } from './model/debug-stack-frame';
@@ -135,9 +135,6 @@ export class DebugSessionManager implements IDebugSessionManager {
 
   @Autowired(DebugSessionContributionRegistry)
   protected readonly sessionContributionRegistry: DebugSessionContributionRegistry;
-
-  @Autowired(DebugSessionFactory)
-  protected readonly debugSessionFactory: DebugSessionFactory;
 
   @Autowired(IDebugServer)
   protected readonly debug: DebugServer;
@@ -312,6 +309,11 @@ export class DebugSessionManager implements IDebugSessionManager {
       await this.fireWillStartDebugSession();
       const resolved = await this.resolveConfiguration(options);
       if (!resolved) {
+        if (options.configuration.type) {
+          this.messageService.error(formatLocalize('debug.notSupported.type', options.configuration.type));
+        } else {
+          this.messageService.error(localize('debug.notSupported.any'));
+        }
         return;
       } else if (resolved.configuration.preLaunchTask) {
         this.debugProgressService.onDebugServiceStateChange(DebugState.Initializing);
@@ -426,9 +428,12 @@ export class DebugSessionManager implements IDebugSessionManager {
     sessionId: string,
     options: DebugSessionOptions,
     extra: DebugSessionExtra,
-  ): Promise<DebugSession> {
+  ): Promise<DebugSession | undefined> {
     const contrib = this.sessionContributionRegistry.get(options.configuration.type);
-    const sessionFactory = contrib ? contrib.debugSessionFactory() : this.debugSessionFactory;
+    if (!contrib) {
+      return;
+    }
+    const sessionFactory = contrib.debugSessionFactory();
     const session = sessionFactory.get(sessionId, options);
     this._sessions.set(sessionId, session);
     this._extraMap.set(sessionId, extra);

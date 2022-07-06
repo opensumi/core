@@ -265,6 +265,8 @@ export const localizationBundle = {
     'debug.console.collapseAll': '折叠全部',
     'debug.console.followLink': '按住 {0} 并单击可访问链接',
     'debug.console.input.placeholder': '请发起调试会话来对表达式求值',
+    'debug.notSupported.type': '调试类型 "{0}" 不是支持的调试类型，请检查配置或安装对应调试插件',
+    'debug.notSupported.any': '当前调试配置不支持，请检查配置或安装对应调试插件',
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',

@@ -311,6 +311,8 @@ export const localizationBundle = {
     'debug.console.collapseAll': 'Collapse All',
     'debug.console.followLink': '{0} + click to follow link',
     'debug.console.input.placeholder': 'Please start a debug session to evaluate expressions',
+    'debug.notSupported.type': 'Debug type "{0}" is not supported, please check your launch config.',
+    'debug.notSupported.any': 'Debug is not supported, please check your launch config.',
 
     'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
