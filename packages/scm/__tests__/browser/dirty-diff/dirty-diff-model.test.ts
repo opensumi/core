@@ -5,9 +5,10 @@ import { EditorCollectionService } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModel, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { EditorDocumentModel } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import type { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import type { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/diffComputer';
+import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
@@ -83,10 +84,8 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
     const mockComputeDiff = jest.fn();
 
     beforeEach(() => {
-      StaticServices.editorWorkerService.get = (() => ({
-        canComputeDiff: (): boolean => true,
-        computeDiff: async () => computeDiffRet,
-      })) as any;
+      StandaloneServices.get(IEditorWorkerService).canComputeDirtyDiff = () => true;
+      StandaloneServices.get(IEditorWorkerService).computeDiff = async () => computeDiffRet;
 
       injector = createBrowserInjector(
         [],
