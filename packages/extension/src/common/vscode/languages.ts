@@ -28,8 +28,8 @@ import type {
   SignatureHelpContext,
   Command,
   CompletionItemLabel,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { Disposable } from './ext-types';
 import { IExtensionDescription } from './extension';

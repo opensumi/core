@@ -25,8 +25,8 @@ import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.overr
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 

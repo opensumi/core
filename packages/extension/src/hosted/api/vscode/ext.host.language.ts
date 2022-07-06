@@ -62,7 +62,7 @@ import {
   UriComponents,
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
   IMainThreadLanguages,

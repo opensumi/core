@@ -5,12 +5,12 @@ import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/ra
 import {
   DocumentFormattingEditProvider,
   DocumentRangeFormattingEditProvider,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import {
   getRealAndSyntheticDocumentFormattersOrdered,
   FormattingMode,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
-import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/formattingEdit';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
+import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/formattingEdit';
 
 import { WorkbenchEditorService } from '../types';
 import { WorkbenchEditorServiceImpl } from '../workbench-editor.service';
