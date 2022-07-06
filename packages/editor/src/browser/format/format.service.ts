@@ -1,10 +1,10 @@
 import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import { CancellationToken, ILogger } from '@opensumi/ide-core-common';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import {
   DocumentFormattingEditProvider,
   DocumentRangeFormattingEditProvider,
-  DocumentRangeFormattingEditProviderRegistry,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import {
   getRealAndSyntheticDocumentFormattersOrdered,
@@ -67,7 +67,7 @@ export class DocumentFormatService {
           model.getLineMaxColumn(range.startLineNumber),
         );
       }
-      const formatterProviders = DocumentRangeFormattingEditProviderRegistry.ordered(model);
+      const formatterProviders = languageFeaturesService.documentRangeFormattingEditProvider.ordered(model);
       const selector = this.injector.get(FormattingSelector);
       const formatter = await selector.select(formatterProviders, model, FormattingMode.Explicit, true);
       if (formatter) {

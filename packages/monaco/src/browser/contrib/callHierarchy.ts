@@ -3,6 +3,7 @@ import type { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common
 import { LanguageFeatureRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languageFeatureRegistry';
 import type { ProviderResult, SymbolKind } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { languageFeaturesService } from '../monaco-api/languages';
 
 export interface CallHierarchyItem {
   _sessionId: string;
