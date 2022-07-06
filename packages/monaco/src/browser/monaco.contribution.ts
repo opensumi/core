@@ -335,6 +335,7 @@ export class MonacoClientContribution
             bold: style.bold,
             underline: style.underline,
             italic: style.italic,
+            strikethrough: undefined,
           };
         };
       }
@@ -398,6 +399,7 @@ export class MonacoClientContribution
           }
         }
         // 转换 monaco 快捷键
+        // FIXME: raw 变成了数组，获取 parts 需要先 keybinding.toChord()
         const keybindingStr = raw.parts.map((part) => MonacoResolvedKeybinding.keyCode(part)).join(' ');
         // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
         const keybinding = {
