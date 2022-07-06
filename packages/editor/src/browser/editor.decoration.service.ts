@@ -6,7 +6,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions } from '../common';
 
-
 import {
   IEditorDecorationCollectionService,
   IBrowserTextEditorDecorationType,
@@ -164,6 +163,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       fontStyle: styles.fontStyle,
       fontWeight: styles.fontWeight,
       textDecoration: styles.textDecoration,
+      textUnderlinePosition: styles.textUnderlinePosition,
       cursor: styles.cursor,
       color: this.themeService.getColorVar(styles.color),
       opacity: styles.opacity,
