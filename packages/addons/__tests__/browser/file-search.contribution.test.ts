@@ -239,6 +239,7 @@ describe('file-search-quickopen', () => {
           getMonacoModel: () => ({
             uri,
             getLanguageIdentifier: () => 'javascript',
+            getLanguageId: () => 'plaintext',
           }),
         },
         dispose: jest.fn(),

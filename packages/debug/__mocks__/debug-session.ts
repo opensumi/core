@@ -28,6 +28,14 @@ export class MockDebugSession implements IDebugSession {
     this.disposable.push(this._onCurrentThreadChange);
     this.disposable.push(this._onDidInvalidateMemory);
   }
+  capabilities: DebugProtocol.Capabilities;
+  onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent>;
+  readMemory(memoryReference: string, offset: number, count: number): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
+  }
+  writeMemory(memoryReference: string, offset: number, data: string, allowPartial?: boolean | undefined): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
+  }
 
   private _configuration: DebugConfiguration = {
     name: 'mock',

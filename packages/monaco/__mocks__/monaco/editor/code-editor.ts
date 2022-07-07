@@ -14,6 +14,13 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     super();
     this.id = ++MockedCodeEditor.ID;
   }
+  onDidChangeHiddenAreas: monaco.IEvent<void>;
+  getDecorationsInRange(range: monaco.Range): monaco.editor.IModelDecoration[] | null {
+    throw new Error('Method not implemented.');
+  }
+  setBanner(bannerDomNode: HTMLElement | null, height: number): void {
+    throw new Error('Method not implemented.');
+  }
   onMouseDropCanceled(listener: () => void): monaco.IDisposable {
     throw new Error('Method not implemented.');
   }
@@ -219,7 +226,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   hasWidgetFocus(): boolean {
     return false;
   }
-  getContribution<T extends monaco.editor.IEditorContribution>(id: string): T {
+  getContribution<T>(id: string): T {
     return null as any;
   }
   getModel(): monaco.editor.ITextModel | null {
