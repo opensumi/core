@@ -40,6 +40,7 @@ import {
   ICodeActionDto,
   ICodeActionProviderMetadataDto,
   IExtHostLanguages,
+  IInlayHintDto,
   IMainThreadLanguages,
   ISuggestDataDto,
   ISuggestDataDtoField,
@@ -49,7 +50,7 @@ import {
   testGlob,
 } from '../../../common/vscode';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
-import { UriComponents } from '../../../common/vscode/ext-types';
+import { CancellationError, UriComponents } from '../../../common/vscode/ext-types';
 import { IExtensionDescription } from '../../../common/vscode/extension';
 import {
   ILink,
@@ -1518,6 +1519,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   $registerInlayHintsProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+    supportsResolve: boolean,
     eventHandle: number | undefined,
   ): void {
     const provider = {
@@ -1527,14 +1529,40 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         token: CancellationToken,
       ): Promise<modes.InlayHintList | undefined> => {
         const result = await this.proxy.$provideInlayHints(handle, model.uri, range, token);
+        if (!result) {
+          return;
+        }
         return {
           hints: revive(result?.hints),
           dispose: () => {
-            // TODO: 实现 dispose
-					},
+            if (result.cacheId) {
+              this.proxy.$releaseInlayHints(handle, result.cacheId);
+            }
+          },
         };
       },
     } as modes.InlayHintsProvider;
+
+    if (supportsResolve) {
+      provider.resolveInlayHint = async (hint, token) => {
+        const dto: IInlayHintDto = hint;
+        if (!dto.cacheId) {
+          return hint;
+        }
+        const result = await this.proxy.$resolveInlayHint(handle, dto.cacheId, token);
+        if (token.isCancellationRequested) {
+          throw new CancellationError();
+        }
+        if (!result) {
+          return hint;
+        }
+        return {
+          ...hint,
+          tooltip: result.tooltip,
+          label: revive(result.label),
+        };
+      };
+    }
 
     if (typeof eventHandle === 'number') {
       const emitter = new Emitter<void>();
