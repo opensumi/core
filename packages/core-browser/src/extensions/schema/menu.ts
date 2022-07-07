@@ -19,15 +19,15 @@ const menuItem: IJSONSchema = {
   ],
   properties: {
     command: {
-      description: localize('kaitianContributes.common.command'),
+      description: localize('sumiContributes.common.command'),
       type: 'string',
     },
     when: {
-      description: localize('kaitianContributes.common.when'),
+      description: localize('sumiContributes.common.when'),
       type: 'string',
     },
     group: {
-      description: localize('kaitianContributes.common.group'),
+      description: localize('sumiContributes.common.group'),
       type: 'string',
     },
   },
@@ -38,23 +38,23 @@ const submenu: IJSONSchema = {
   required: ['id', 'title'],
   properties: {
     id: {
-      description: localize('kaitianContributes.submenus.id'),
+      description: localize('sumiContributes.submenus.id'),
       type: 'string',
     },
     title: {
-      description: localize('kaitianContributes.submenus.title'),
+      description: localize('sumiContributes.submenus.title'),
       type: 'string',
     },
     group: {
-      description: localize('kaitianContributes.common.group'),
+      description: localize('sumiContributes.common.group'),
       type: 'string',
     },
     when: {
       type: 'string',
-      description: localize('kaitianContributes.common.when'),
+      description: localize('sumiContributes.common.when'),
     },
     icon: {
-      description: localize('kaitianContributes.submenus.icon'),
+      description: localize('sumiContributes.submenus.icon'),
       anyOf: [{
         type: 'string',
       },
@@ -62,11 +62,11 @@ const submenu: IJSONSchema = {
         type: 'object',
         properties: {
           light: {
-            description: localize('kaitianContributes.submenus.icon.light'),
+            description: localize('sumiContributes.submenus.icon.light'),
             type: 'string',
           },
           dark: {
-            description: localize('kaitianContributes.submenus.dark'),
+            description: localize('sumiContributes.submenus.dark'),
             type: 'string',
           },
         },
@@ -78,139 +78,139 @@ const submenu: IJSONSchema = {
 const apiMenus: IAPIMenu[] = [
   {
     id: MenuId.CommandPalette,
-    description: localize('kaitianContributes.menu.api.CommandPalette'),
+    description: localize('sumiContributes.menu.api.CommandPalette'),
   },
   {
     id: MenuId.ActivityBarExtra,
-    description: localize('kaitianContributes.menu.api.ActivityBarExtra'),
+    description: localize('sumiContributes.menu.api.ActivityBarExtra'),
   },
   {
     id: MenuId.DebugBreakpointsContext,
-    description: localize('kaitianContributes.menu.api.DebugBreakpointsContext'),
+    description: localize('sumiContributes.menu.api.DebugBreakpointsContext'),
   },
   {
     id: MenuId.DebugCallStackContext,
-    description: localize('kaitianContributes.menu.api.DebugCallStackContext'),
+    description: localize('sumiContributes.menu.api.DebugCallStackContext'),
   },
   {
     id: MenuId.DebugConsoleContext,
-    description: localize('kaitianContributes.menu.api.DebugConsoleContext'),
+    description: localize('sumiContributes.menu.api.DebugConsoleContext'),
   },
   {
     id: MenuId.DebugVariablesContext,
-    description: localize('kaitianContributes.menu.api.DebugVariablesContext'),
+    description: localize('sumiContributes.menu.api.DebugVariablesContext'),
   },
   {
     id: MenuId.DebugWatchContext,
-    description: localize('kaitianContributes.menu.api.DebugWatchContext'),
+    description: localize('sumiContributes.menu.api.DebugWatchContext'),
   },
   {
     id: MenuId.DebugToolBar,
-    description: localize('kaitianContributes.menu.api.DebugToolBar'),
+    description: localize('sumiContributes.menu.api.DebugToolBar'),
   },
   {
     id: MenuId.EditorContext,
-    description: localize('kaitianContributes.menu.api.EditorContext'),
+    description: localize('sumiContributes.menu.api.EditorContext'),
   },
   {
     id: MenuId.EditorTitle,
-    description: localize('kaitianContributes.menu.api.EditorTitle'),
+    description: localize('sumiContributes.menu.api.EditorTitle'),
   },
   {
     id: MenuId.EditorTitleContext,
-    description: localize('kaitianContributes.menu.api.EditorTitleContext'),
+    description: localize('sumiContributes.menu.api.EditorTitleContext'),
   },
   {
     id: MenuId.ExplorerContext,
-    description: localize('kaitianContributes.menu.api.ExplorerContext'),
+    description: localize('sumiContributes.menu.api.ExplorerContext'),
   },
   {
     id: MenuId.MenubarAppMenu,
-    description: localize('kaitianContributes.menu.api.MenubarAppMenu'),
+    description: localize('sumiContributes.menu.api.MenubarAppMenu'),
   },
   {
     id: MenuId.MenubarEditMenu,
-    description: localize('kaitianContributes.menu.api.MenubarEditMenu'),
+    description: localize('sumiContributes.menu.api.MenubarEditMenu'),
   },
   {
     id: MenuId.MenubarFileMenu,
-    description: localize('kaitianContributes.menu.api.MenubarFileMenu'),
+    description: localize('sumiContributes.menu.api.MenubarFileMenu'),
   },
   {
     id: MenuId.MenubarGoMenu,
-    description: localize('kaitianContributes.menu.api.MenubarGoMenu'),
+    description: localize('sumiContributes.menu.api.MenubarGoMenu'),
   },
   {
     id: MenuId.MenubarHelpMenu,
-    description: localize('kaitianContributes.menu.api.MenubarHelpMenu'),
+    description: localize('sumiContributes.menu.api.MenubarHelpMenu'),
   },
   {
     id: MenuId.MenubarViewMenu,
-    description: localize('kaitianContributes.menu.api.MenubarViewMenu'),
+    description: localize('sumiContributes.menu.api.MenubarViewMenu'),
   },
   {
     id: MenuId.MenubarSelectionMenu,
-    description: localize('kaitianContributes.menu.api.MenubarSelectionMenu'),
+    description: localize('sumiContributes.menu.api.MenubarSelectionMenu'),
   },
   {
     id: MenuId.MenubarTerminalMenu,
-    description: localize('kaitianContributes.menu.api.MenubarTerminalMenu'),
+    description: localize('sumiContributes.menu.api.MenubarTerminalMenu'),
   },
   {
     id: MenuId.TerminalInstanceContext,
-    description: localize('kaitianContributes.menu.api.TerminalInstanceContext'),
+    description: localize('sumiContributes.menu.api.TerminalInstanceContext'),
   },
   {
     id: MenuId.TerminalNewDropdownContext,
-    description: localize('kaitianContributes.menu.api.TerminalNewDropdownContext'),
+    description: localize('sumiContributes.menu.api.TerminalNewDropdownContext'),
   },
   {
     id: MenuId.TerminalTabContext,
-    description: localize('kaitianContributes.menu.api.TerminalTabContext'),
+    description: localize('sumiContributes.menu.api.TerminalTabContext'),
   },
   {
     id: MenuId.OpenEditorsContext,
-    description: localize('kaitianContributes.menu.api.OpenEditorsContext'),
+    description: localize('sumiContributes.menu.api.OpenEditorsContext'),
   },
   {
     id: MenuId.SCMResourceContext,
-    description: localize('kaitianContributes.menu.api.SCMResourceContext'),
+    description: localize('sumiContributes.menu.api.SCMResourceContext'),
   },
   {
     id: MenuId.SCMResourceGroupContext,
-    description: localize('kaitianContributes.menu.api.SCMResourceGroupContext'),
+    description: localize('sumiContributes.menu.api.SCMResourceGroupContext'),
   },
   {
     id: MenuId.SCMResourceFolderContext,
-    description: localize('kaitianContributes.menu.api.SCMResourceFolderContext'),
+    description: localize('sumiContributes.menu.api.SCMResourceFolderContext'),
   },
   {
     id: MenuId.SCMTitle,
-    description: localize('kaitianContributes.menu.api.SCMTitle'),
+    description: localize('sumiContributes.menu.api.SCMTitle'),
   },
   {
     id: MenuId.SCMInput,
-    description: localize('kaitianContributes.menu.api.SCMInput'),
+    description: localize('sumiContributes.menu.api.SCMInput'),
   },
   {
     id: MenuId.SearchContext,
-    description: localize('kaitianContributes.menu.api.SearchContext'),
+    description: localize('sumiContributes.menu.api.SearchContext'),
   },
   {
     id: MenuId.StatusBarContext,
-    description: localize('kaitianContributes.menu.api.StatusBarContext'),
+    description: localize('sumiContributes.menu.api.StatusBarContext'),
   },
   {
     id: MenuId.ViewItemContext,
-    description: localize('kaitianContributes.menu.api.ViewItemContext'),
+    description: localize('sumiContributes.menu.api.ViewItemContext'),
   },
   {
     id: MenuId.ViewTitle,
-    description: localize('kaitianContributes.menu.api.ViewTitle'),
+    description: localize('sumiContributes.menu.api.ViewTitle'),
   },
   {
     id: MenuId.SettingsIconMenu,
-    description: localize('kaitianContributes.menu.api.SettingsIconMenu'),
+    description: localize('sumiContributes.menu.api.SettingsIconMenu'),
   },
 ];
 
@@ -222,7 +222,7 @@ const index = <T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, mapper?
 
 export namespace menus {
   export const schema: IJSONSchema = {
-    description: localize('kaitianContributes.menu'),
+    description: localize('sumiContributes.menu'),
     type: 'object',
     properties: index(apiMenus, (menu) => menu.id, (menu) => ({
       type: 'array',
@@ -232,7 +232,7 @@ export namespace menus {
   };
 
   export const subMenusSchema: IJSONSchema = {
-    description: localize('kaitianContributes.submenus'),
+    description: localize('sumiContributes.submenus'),
     type: 'object',
     additionalProperties: submenu,
   };

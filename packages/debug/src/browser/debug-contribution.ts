@@ -463,7 +463,7 @@ export class DebugContribution
       frameworkKind: ['opensumi'],
       jsonSchema: {
         ...browserViews.properties,
-        description: formatLocalize('kaitianContributes.browserViews.location.custom', localize('menu-bar.title.debug')),
+        description: formatLocalize('sumiContributes.browserViews.location.custom', localize('menu-bar.title.debug')),
       },
     });
   }

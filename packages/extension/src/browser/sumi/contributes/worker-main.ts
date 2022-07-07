@@ -14,7 +14,7 @@ export class WorkerMainContributionPoint extends VSCodeContributePoint<{ [key in
         body: './out/worker/index.js',
       },
     ],
-    description: localize('kaitianContributes.workerMain'),
+    description: localize('sumiContributes.workerMain'),
   };
 
   contribute() {
