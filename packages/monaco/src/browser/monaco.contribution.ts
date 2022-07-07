@@ -196,7 +196,10 @@ export class MonacoClientContribution
   }
 
   onDidStart() {
-    languageFeaturesService.completionProvider.register(this.snippetSuggestProvider.registeredLanguageIds, this.snippetSuggestProvider);
+    languageFeaturesService.completionProvider.register(
+      this.snippetSuggestProvider.registeredLanguageIds,
+      this.snippetSuggestProvider,
+    );
   }
 
   private registerOverrideServices() {
@@ -399,24 +402,32 @@ export class MonacoClientContribution
             }
           }
         }
+        const keybindingStr = raw
+          .map((key) => {
+            if (key instanceof SimpleKeybinding) {
+              return key
+                .toChord()
+                .parts.map((part) => MonacoResolvedKeybinding.keyCode(part))
+                .join(' ');
+            } else {
+              // 目前 monaco 内的 key 没有 ScanCodeBinding 的情况，暂时没有处理
+              // eslint-disable-next-line no-console
+              console.warn('No handler ScanCodeBinding:', key);
+            }
+            return '';
+          })
+          .join(' ');
 
-        // TODO: key 可能是 ScanCodeBinding，暂时没有处理
-        for(const key of raw) {
-          if (key instanceof SimpleKeybinding) {
-            const binding = key.toChord();
-            const keybindingStr = binding.parts.map((part) => MonacoResolvedKeybinding.keyCode(part)).join(' ');
-            // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
-            const keybinding = {
-              command,
-              args: item.commandArgs,
-              keybinding: keybindingStr,
-              when,
-              priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
-            };
+        // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
+        const keybinding = {
+          command,
+          args: item.commandArgs,
+          keybinding: keybindingStr,
+          when,
+          priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
+        };
 
-            keybindings.registerKeybinding(keybinding);
-          }
-        }
+        keybindings.registerKeybinding(keybinding);
       }
     }
   }
