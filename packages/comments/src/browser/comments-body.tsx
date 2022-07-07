@@ -2,13 +2,15 @@ import { marked } from 'marked';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { IMarkdownString } from '@opensumi/ide-core-browser';
+
 import styles from './comments.module.less';
 import { markdownCss } from './markdown.style';
 
 const ShadowContent = ({ root, children }) => ReactDOM.createPortal(children, root);
 
 export const CommentsBody: React.FC<{
-  body: string;
+  body: string | IMarkdownString;
 }> = React.memo(({ body }) => {
   const shadowRootRef = React.useRef<HTMLDivElement | null>(null);
   const [shadowRoot, setShadowRoot] = React.useState<ShadowRoot | null>(null);
@@ -37,7 +39,7 @@ export const CommentsBody: React.FC<{
           <style>{markdownCss}</style>
           <div
             dangerouslySetInnerHTML={{
-              __html: marked(body, {
+              __html: marked(typeof body === 'string' ? body : body.value, {
                 gfm: true,
                 breaks: false,
                 pedantic: false,

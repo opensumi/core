@@ -358,7 +358,7 @@ export function detectModeId(
   } else {
     const model = modelService.getModel(resource);
     if (model) {
-      // modeId = model.getModeId(); // TODO: 不知道这里怎么改
+      modeId = model.getLanguageId();
     }
   }
 

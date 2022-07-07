@@ -363,7 +363,7 @@ export class CommentsService extends Disposable implements ICommentsService {
             backgroundSize: '14px 14px',
           },
           icon: this.iconService.fromIcon('', firstComment.author.iconPath?.toString(), IconType.Background),
-          description: firstComment.body,
+          description: typeof firstComment.body === 'string' ? firstComment.body : firstComment.body.value,
           uri: thread.uri,
           parent: rootNode,
           depth: 1,
@@ -378,7 +378,7 @@ export class CommentsService extends Disposable implements ICommentsService {
           const otherCommentNode: ICommentsTreeNode = {
             id: comment.id,
             name: comment.author.name,
-            description: comment.body,
+            description: typeof comment.body === 'string' ? comment.body : comment.body.value,
             uri: thread.uri,
             iconStyle: {
               marginRight: 5,

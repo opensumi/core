@@ -13,8 +13,9 @@ import {
   Progress,
 } from '@opensumi/ide-core-browser';
 import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import {
   getCodeActions,
   CodeActionItem,
@@ -145,10 +146,11 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
 
   private async getActionsToRun(model: ITextModel, codeActionKind: CodeActionKind, token: monaco.CancellationToken) {
     return getCodeActions(
+      languageFeaturesService.codeActionProvider,
       model,
       model.getFullModelRange(),
       {
-        type: modes.CodeActionTriggerType.Auto,
+        type: languages.CodeActionTriggerType.Auto,
         filter: { include: codeActionKind, includeSourceActions: true },
       },
       Progress.None,

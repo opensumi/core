@@ -38,7 +38,7 @@ import {
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
-import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
@@ -200,7 +200,7 @@ export class MonacoClientContribution
   }
 
   private registerOverrideServices() {
-    const codeEditorService = this.overrideServicesRegistry.getRegisteredService<CodeEditorServiceImpl>(
+    const codeEditorService = this.overrideServicesRegistry.getRegisteredService<AbstractCodeEditorService>(
       ServiceNames.CODE_EDITOR_SERVICE,
     );
 

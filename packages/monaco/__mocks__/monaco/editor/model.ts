@@ -415,7 +415,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
   ): monaco.editor.FindMatch | null {
     throw new Error('Method not implemented.');
   }
-  getModeId(): string {
+  getLanguageId(): string {
     return this.language;
   }
   getWordAtPosition(position: monaco.IPosition): monaco.editor.IWordAtPosition | null {
