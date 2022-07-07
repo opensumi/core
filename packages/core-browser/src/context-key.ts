@@ -1,5 +1,6 @@
 import { Event, BasicEvent } from '@opensumi/ide-core-common';
 import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';
+import { IContextKeyService as IMonacoContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import {
   ContextKeyExpr,
   IContextKeyServiceTarget,
@@ -23,6 +24,7 @@ export interface IContextKeyService {
   match(expression: string | ContextKeyExpr | undefined, context?: HTMLElement | null): boolean;
   getKeysInWhen(when: string | ContextKeyExpr | undefined): string[];
   getContextValue<T>(key: string): T | undefined;
+  contextKeyService: IMonacoContextKeyService;
 
   createScoped(target?: IContextKeyServiceTarget | ContextKeyService): IScopedContextKeyService;
 
