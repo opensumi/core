@@ -9,7 +9,7 @@ export class ViewsProxiesContributionPoint extends VSCodeContributePoint<{ [key 
 
   static schema = {
     type: 'array',
-    markdownDescription: localize('kaitianContributes.viewsProxies'),
+    markdownDescription: localize('sumiContributes.viewsProxies'),
     defaultSnippets: [
       {
         body: ['${1}'],

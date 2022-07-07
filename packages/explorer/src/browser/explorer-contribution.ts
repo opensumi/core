@@ -29,7 +29,7 @@ export class ExplorerContribution implements ComponentContribution {
       frameworkKind: ['opensumi'],
       jsonSchema: {
         ...browserViews.properties,
-        description: formatLocalize('kaitianContributes.browserViews.location.custom', localize('explorer.title')),
+        description: formatLocalize('sumiContributes.browserViews.location.custom', localize('explorer.title')),
       },
     });
   }

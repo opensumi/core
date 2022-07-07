@@ -14,7 +14,7 @@ export class BrowserMainContributionPoint extends VSCodeContributePoint<{ [key i
         body: './out/browser/index.js',
       },
     ],
-    description: localize('kaitianContributes.browserMain'),
+    description: localize('sumiContributes.browserMain'),
   };
 
   contribute() {

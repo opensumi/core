@@ -686,7 +686,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     }
 
     const response = await fetch(wasmUri);
-    const bytes = await response?.arrayBuffer();
+    const bytes = await response.arrayBuffer();
     await loadWASM(bytes);
     wasmLoaded = true;
     return new OnigasmLib();

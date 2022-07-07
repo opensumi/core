@@ -14,7 +14,7 @@ export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsS
   private readonly menuRegistry: IMenuRegistry;
 
   static schema: IJSONSchema = {
-    description: localize('kaitianContributes.menubars'),
+    description: localize('sumiContributes.menubars'),
     type: 'array',
     items: {
       type: 'object',
@@ -30,19 +30,19 @@ export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsS
       properties: {
         id: {
           type: 'string',
-          description: localize('kaitianContributes.menubars.id'),
+          description: localize('sumiContributes.menubars.id'),
         },
         title: {
           type: 'string',
-          description: localize('kaitianContributes.menubars.title'),
+          description: localize('sumiContributes.menubars.title'),
         },
         order: {
           type: 'number',
-          description: localize('kaitianContributes.menubars.order'),
+          description: localize('sumiContributes.menubars.order'),
         },
         nativeRole: {
           type: 'string',
-          description: localize('kaitianContributes.menubars.order'),
+          description: localize('sumiContributes.menubars.order'),
         },
       },
     },

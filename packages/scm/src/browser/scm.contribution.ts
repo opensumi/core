@@ -107,7 +107,7 @@ export class SCMContribution
       frameworkKind: ['opensumi'],
       jsonSchema: {
         ...browserViews.properties,
-        description: formatLocalize('kaitianContributes.browserViews.location.custom', localize('status-bar.scm')),
+        description: formatLocalize('sumiContributes.browserViews.location.custom', localize('status-bar.scm')),
       },
     });
   }

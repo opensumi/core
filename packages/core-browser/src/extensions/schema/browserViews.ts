@@ -40,27 +40,27 @@ export namespace browserViews {
           properties: {
             id: {
               type: 'string',
-              description: localize('kaitianContributes.browserViews.view.id'),
+              description: localize('sumiContributes.browserViews.view.id'),
             },
             icon: {
               type: 'string',
-              markdownDescription: localize('kaitianContributes.browserViews.view.icon'),
+              markdownDescription: localize('sumiContributes.browserViews.view.icon'),
             },
             iconPath: {
               type: 'string',
-              description: localize('kaitianContributes.browserViews.view.iconPath'),
+              description: localize('sumiContributes.browserViews.view.iconPath'),
             },
             title: {
               type: 'string',
-              description: localize('kaitianContributes.browserViews.view.title'),
+              description: localize('sumiContributes.browserViews.view.title'),
             },
             titleComponentId: {
               type: 'string',
-              description: localize('kaitianContributes.browserViews.view.titleComponentId'),
+              description: localize('sumiContributes.browserViews.view.titleComponentId'),
             },
             expanded: {
               type: 'boolean',
-              description: localize('kaitianContributes.browserViews.view.expanded'),
+              description: localize('sumiContributes.browserViews.view.expanded'),
             },
           },
         },
@@ -69,20 +69,20 @@ export namespace browserViews {
   };
 
   export const schema = {
-    description: localize('kaitianContributes.browserViews'),
+    description: localize('sumiContributes.browserViews'),
     type: 'object',
     properties: {
       left: {
         ...properties,
-        description: localize('kaitianContributes.browserViews.left'),
+        description: localize('sumiContributes.browserViews.left'),
       },
       right: {
         ...properties,
-        description: localize('kaitianContributes.browserViews.right'),
+        description: localize('sumiContributes.browserViews.right'),
       },
       bottom: {
         ...properties,
-        description: localize('kaitianContributes.browserViews.bottom'),
+        description: localize('sumiContributes.browserViews.bottom'),
       },
     },
   };

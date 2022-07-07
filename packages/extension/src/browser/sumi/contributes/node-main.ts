@@ -14,7 +14,7 @@ export class NodeMainContributionPoint extends VSCodeContributePoint<{ [key in s
         body: './out/node/index.js',
       },
     ],
-    description: localize('kaitianContributes.nodeMain'),
+    description: localize('sumiContributes.nodeMain'),
   };
 
   contribute() {
