@@ -15,6 +15,7 @@ import {
   REPORT_NAME,
   URI,
   path,
+  revive,
 } from '@opensumi/ide-core-common';
 import { IEvaluatableExpressionService } from '@opensumi/ide-debug/lib/browser/editor/evaluatable-expression';
 import { InlineValueContext, InlineValuesProvider, InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
@@ -1524,9 +1525,14 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         model: ITextModel,
         range: monaco.Range,
         token: CancellationToken,
-      ): Promise<modes.InlayHint[] | undefined> => {
+      ): Promise<modes.InlayHintList | undefined> => {
         const result = await this.proxy.$provideInlayHints(handle, model.uri, range, token);
-        return result?.hints;
+        return {
+          hints: revive(result?.hints),
+          dispose: () => {
+            // TODO: 实现 dispose
+					},
+        };
       },
     } as modes.InlayHintsProvider;
 
