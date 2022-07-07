@@ -49,7 +49,7 @@ import {
   TestMessageType,
 } from '@opensumi/ide-testing/lib/common/testCollection';
 import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 
@@ -1547,29 +1547,51 @@ export namespace InlineValueContext {
 }
 
 export namespace InlayHint {
-  export function from(hint: vscode.InlayHint): modes.InlayHint {
+  export function from(hint: vscode.InlayHint): languages.InlayHint {
     return {
-      text: hint.text,
+      label: hint.text,
       position: Position.from(hint.position),
-      kind: InlayHintKind.from(hint.kind ?? types.InlayHintKind.Other),
-      whitespaceBefore: hint.whitespaceBefore,
-      whitespaceAfter: hint.whitespaceAfter,
+      kind: hint.kind && InlayHintKind.from(hint.kind),
+      paddingLeft: hint.whitespaceBefore,
+      paddingRight: hint.whitespaceAfter,
     };
   }
 
-  export function to(hint: modes.InlayHint): vscode.InlayHint {
-    const res = new types.InlayHint(hint.text, Position.to(hint.position), InlayHintKind.to(hint.kind));
-    res.whitespaceAfter = hint.whitespaceAfter;
-    res.whitespaceBefore = hint.whitespaceBefore;
+  export function to(converter: CommandsConverter, hint: languages.InlayHint): vscode.InlayHint {
+    const res = new types.InlayHint(
+      typeof hint.label === 'string' ? hint.label : hint.label.map(InlayHintLabelPart.to.bind(undefined, converter)),
+      Position.to(hint.position),
+      hint.kind && InlayHintKind.to(hint.kind),
+    );
+    res.whitespaceAfter = hint.paddingLeft;
+    res.whitespaceBefore = hint.paddingRight;
     return res;
   }
 }
 
+export namespace InlayHintLabelPart {
+
+  export function to(converter: CommandsConverter, part: languages.InlayHintLabelPart): types.InlayHintLabelPart {
+    const result = new types.InlayHintLabelPart(part.label);
+    result.tooltip = isMarkdownString(part.tooltip)
+      ? MarkdownString.to(part.tooltip)
+      : part.tooltip;
+    if (languages.Command.is(part.command)) {
+      result.command = converter.fromInternal(part.command);
+    }
+    if (part.location) {
+      result.location = location.to(part.location);
+    }
+    return result;
+  }
+}
+
+
 export namespace InlayHintKind {
-  export function from(kind: vscode.InlayHintKind): modes.InlayHintKind {
+  export function from(kind: vscode.InlayHintKind): languages.InlayHintKind {
     return kind;
   }
-  export function to(kind: modes.InlayHintKind): vscode.InlayHintKind {
+  export function to(kind: languages.InlayHintKind): vscode.InlayHintKind {
     return kind;
   }
 }
