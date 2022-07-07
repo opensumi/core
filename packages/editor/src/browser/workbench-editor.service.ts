@@ -1048,7 +1048,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       dom,
       {},
       {
-        [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService,
+        [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
     setTimeout(() => {
