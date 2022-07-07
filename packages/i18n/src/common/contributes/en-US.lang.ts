@@ -52,7 +52,7 @@ Note: Each location has two groups _head _tail by default, representing the firs
 The actual position is not calculated repeatedly, only when the Toolbar is first rendered (onStart), or when the action is registered after rendering.
 But order is calculated repeatedly. `,
   'sumiContributes.toolbar.actions.preferredPosition.location': `location refers to the location of a toolbar unit. Due to the different integration of the framework, in different IDE integration products,
-There may be different optional values ​​for location.
+There may be different optional values for location.
 
 Generally speaking, the default location of the desktop version will have
 toolbar-left
