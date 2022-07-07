@@ -4,7 +4,7 @@ import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/i
 import { DocumentFormatService } from '@opensumi/ide-editor/lib/browser/format/format.service';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { QuickPickService } from '@opensumi/ide-quick-open/lib/common';
-import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/formattingEdit';
+import { FormattingEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/formattingEdit';
 
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { FormattingSelector } from '../../src/browser/format/formatterSelect';
