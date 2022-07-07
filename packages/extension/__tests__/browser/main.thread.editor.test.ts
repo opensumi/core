@@ -269,7 +269,6 @@ describe('MainThreadEditor Test Suites', () => {
   });
 
   it('should be able to get activeTextEditor and receive texteditor changed event', async () => {
-    expect.assertions(3);
     const defered = new Deferred();
 
     const group: EditorGroup = (workbenchEditorService as any).createEditorGroup();
