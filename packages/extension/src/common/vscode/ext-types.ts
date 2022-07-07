@@ -3080,11 +3080,13 @@ export enum InlayHintKind {
 @es5ClassCompat
 export class InlayHint {
   text: string;
-	label: string | InlayHintLabelPart[];
+  label: string | InlayHintLabelPart[];
   position: Position;
   kind?: vscode.InlayHintKind;
   whitespaceBefore?: boolean;
   whitespaceAfter?: boolean;
+  paddingLeft?: boolean;
+  paddingRight?: boolean;
 
   constructor(label: string | InlayHintLabelPart[], position: Position, kind?: vscode.InlayHintKind) {
     // InlayHint 新版本的 text 属性更新为 label
@@ -3101,7 +3103,6 @@ export class InlayHint {
 
 @es5ClassCompat
 export class InlayHintLabelPart {
-
   value: string;
   tooltip?: string | vscode.MarkdownString;
   location?: Location;

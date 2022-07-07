@@ -1549,11 +1549,11 @@ export namespace InlineValueContext {
 export namespace InlayHint {
   export function from(hint: vscode.InlayHint): languages.InlayHint {
     return {
-      label: hint.text,
+      label: hint.label as any,
       position: Position.from(hint.position),
       kind: hint.kind && InlayHintKind.from(hint.kind),
-      paddingLeft: hint.whitespaceBefore,
-      paddingRight: hint.whitespaceAfter,
+      paddingLeft: hint.paddingLeft,
+      paddingRight: hint.paddingRight,
     };
   }
 
@@ -1563,19 +1563,16 @@ export namespace InlayHint {
       Position.to(hint.position),
       hint.kind && InlayHintKind.to(hint.kind),
     );
-    res.whitespaceAfter = hint.paddingLeft;
-    res.whitespaceBefore = hint.paddingRight;
+    res.paddingLeft = hint.paddingLeft;
+    res.paddingRight = hint.paddingRight;
     return res;
   }
 }
 
 export namespace InlayHintLabelPart {
-
   export function to(converter: CommandsConverter, part: languages.InlayHintLabelPart): types.InlayHintLabelPart {
     const result = new types.InlayHintLabelPart(part.label);
-    result.tooltip = isMarkdownString(part.tooltip)
-      ? MarkdownString.to(part.tooltip)
-      : part.tooltip;
+    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : part.tooltip;
     if (languages.Command.is(part.command)) {
       result.command = converter.fromInternal(part.command);
     }
@@ -1585,7 +1582,6 @@ export namespace InlayHintLabelPart {
     return result;
   }
 }
-
 
 export namespace InlayHintKind {
   export function from(kind: vscode.InlayHintKind): languages.InlayHintKind {
