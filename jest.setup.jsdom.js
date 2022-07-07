@@ -24,10 +24,10 @@ window.navigator = Object.assign(window.navigator, {
   },
 });
 
-window.fetch = fetch.default;
-window.Response = fetch.Response;
-window.Request = fetch.Request;
-window.Headers = fetch.Headers;
+global.fetch = window.fetch = fetch.default;
+global.Response = window.Response = fetch.Response;
+global.Request = window.Request = fetch.Request;
+global.Headers = window.Headers = fetch.Headers;
 
 // https://github.com/jsdom/jsdom/issues/1742
 document.queryCommandSupported = () => {};
