@@ -20,7 +20,7 @@ import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco
 import { PrefixQuickOpenService } from '@opensumi/ide-quick-open';
 import { QuickOpenHandlerRegistry } from '@opensumi/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
