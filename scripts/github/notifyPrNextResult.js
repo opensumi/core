@@ -1,7 +1,7 @@
 const { createVersionText } = require('./helpers');
 
 module.exports = async ({ github, context, core }) => {
-  const commentBody = createVersionText('PR Next', process.env.CURRENT_VERSION);
+  const commentBody = createVersionText('PR Next', process.env.CURRENT_VERSION, context);
 
   await github.rest.issues.createComment({
     issue_number: context.issue.number,
