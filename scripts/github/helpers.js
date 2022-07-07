@@ -1,4 +1,4 @@
-const createVersionText = (type = 'Pre-Release', version) => {
+const createVersionText = (type = 'Pre-Release', version, context) => {
   return (
     `🎉 ${type} version ` +
     version +
