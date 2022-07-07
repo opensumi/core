@@ -40,8 +40,8 @@ import {
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
-import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
-import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
+import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/modesRegistry';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
 
@@ -152,7 +152,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       })),
     );
 
-    ModesRegistry.setDynamicLanguages(this.dynamicLanguages);
+    for (const language of this.dynamicLanguages) {
+      ModesRegistry.registerLanguage(language);
+    }
 
     const languageIds: string[] = [];
 
@@ -204,7 +206,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       for (const uri of uris) {
         const model = this.editorDocumentModelService.getModelReference(URI.parse(uri.codeUri.toString()));
         if (model && model.instance) {
-          const langId = model.instance.getMonacoModel().getModeId();
+          const langId = model.instance.getMonacoModel().getLanguageId();
           if (languageIds.includes(langId)) {
             this.activateLanguage(langId);
           }
