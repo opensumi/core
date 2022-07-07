@@ -320,7 +320,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   get languageId() {
-    return this.monacoModel.getModeId();
+    return this.monacoModel.getLanguageId();
   }
 
   get id() {

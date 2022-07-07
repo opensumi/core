@@ -318,7 +318,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     const model = session.currentEditor();
 
     if (model) {
-      this.inputEditor.monacoEditor.getModel()!.setMode(model.getModel()?.getLanguageIdentifier()!);
+      this.inputEditor.monacoEditor.getModel()!.setMode(model.getModel()?.getLanguageId()!);
     }
   }
 
@@ -346,7 +346,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     }
 
     this._updateDisposable = monaco.languages.registerCompletionItemProvider(
-      model.getModel()?.getLanguageIdentifier().language!,
+      model.getModel()?.getLanguageId()!,
       {
         triggerCharacters: ['.'],
         provideCompletionItems: async (model, position, ctx) => {
