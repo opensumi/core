@@ -2,9 +2,9 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { URI, IRange } from '@opensumi/ide-core-common';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { ICodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorService';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
-import { StandaloneCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditorService';
 import { EditorScopedLayoutService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneLayoutService';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
@@ -18,7 +18,7 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
 
 @Injectable()
-export class MonacoCodeService extends StandaloneCodeEditorService {
+export class MonacoCodeService extends AbstractCodeEditorService {
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
@@ -26,7 +26,7 @@ export class MonacoCodeService extends StandaloneCodeEditorService {
   private preferenceService: PreferenceService;
 
   constructor() {
-    super(null, StandaloneServices.get(IStandaloneThemeService));
+    super(StandaloneServices.get(IStandaloneThemeService));
   }
 
   getActiveCodeEditor(): IMonacoCodeEditor | null {
