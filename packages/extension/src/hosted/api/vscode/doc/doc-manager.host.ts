@@ -65,7 +65,10 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
   getDocument(uri: Uri | string) {
     const data = this.getDocumentData(uri);
-    return data ? data.document : undefined;
+    if (!data?.document) {
+      throw new Error(`Unable to retrieve document from URI '${uri}'`);
+    }
+    return data.document;
   }
 
   async openTextDocument(uriOrFileNameOrOptions?: Uri | string | { language?: string; content?: string }) {
