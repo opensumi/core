@@ -1,7 +1,7 @@
 import { SymbolInformation, Location } from 'vscode-languageserver-types';
 
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';

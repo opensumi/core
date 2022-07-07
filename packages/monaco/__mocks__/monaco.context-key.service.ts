@@ -123,6 +123,11 @@ class WhenExpressionParser {
 
 @Injectable()
 export class MockContextKeyService implements IScopedContextKeyService {
+
+  bufferChangeEvents(callback: Function): void {
+    callback();
+  }
+
   private _keys = new Map<string, IContextKey<any>>();
 
   public dispose(): void {
