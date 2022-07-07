@@ -230,12 +230,14 @@ describe('Debug Configuration Manager', () => {
     let mockGetLanguageIdentifier = jest.fn(() => ({ language: 'jsonc' }));
     let expected = debugConfigurationManager.canSetBreakpointsIn({
       getLanguageIdentifier: mockGetLanguageIdentifier,
+      getLanguageId: () => 'jsonc',
     } as any);
     expect(expected).toBeFalsy();
     // log
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'log' }));
     expected = debugConfigurationManager.canSetBreakpointsIn({
       getLanguageIdentifier: mockGetLanguageIdentifier,
+      getLanguageId: () => 'log',
     } as any);
     expect(expected).toBeFalsy();
     // undefined model
@@ -245,6 +247,7 @@ describe('Debug Configuration Manager', () => {
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'c' }));
     expected = debugConfigurationManager.canSetBreakpointsIn({
       getLanguageIdentifier: mockGetLanguageIdentifier,
+      getLanguageId: () => 'c',
     } as any);
     expect(expected).toBeTruthy();
     // if allowBreakpointsEverywhere = false
@@ -252,6 +255,7 @@ describe('Debug Configuration Manager', () => {
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'c' }));
     expected = debugConfigurationManager.canSetBreakpointsIn({
       getLanguageIdentifier: mockGetLanguageIdentifier,
+      getLanguageId: () => 'c',
     } as any);
     expect(expected).toBeFalsy();
     // while debug server support node language
@@ -259,6 +263,7 @@ describe('Debug Configuration Manager', () => {
     mockGetLanguageIdentifier = jest.fn(() => ({ language: 'node' }));
     expected = debugConfigurationManager.canSetBreakpointsIn({
       getLanguageIdentifier: mockGetLanguageIdentifier,
+      getLanguageId: () => 'node',
     } as any);
     expect(expected).toBeTruthy();
   });
@@ -268,6 +273,7 @@ describe('Debug Configuration Manager', () => {
     debugConfigurationManager.addSupportBreakpoints('abc');
     const expected = debugConfigurationManager.canSetBreakpointsIn({
       getLanguageIdentifier: mockGetLanguageIdentifier,
+      getLanguageId: () => 'abc',
     } as any);
     expect(expected).toBeTruthy();
   });
@@ -277,6 +283,7 @@ describe('Debug Configuration Manager', () => {
     debugConfigurationManager.removeSupportBreakpoints('abc');
     const expected = debugConfigurationManager.canSetBreakpointsIn({
       getLanguageIdentifier: mockGetLanguageIdentifier,
+      getLanguageId: () => 'abc',
     } as any);
     expect(expected).toBeFalsy();
   });

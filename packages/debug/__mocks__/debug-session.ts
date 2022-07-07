@@ -1,5 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import { DisposableCollection, Emitter } from '@opensumi/ide-core-common';
+import { DisposableCollection, Emitter, Event } from '@opensumi/ide-core-common';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { DebugConfiguration, DebugSessionOptions, DebugState, IDebugSession } from '../src/common';
 
@@ -24,6 +25,14 @@ export class MockDebugSession implements IDebugSession {
     this.disposable.push(this._onDidChange);
     this.disposable.push(this._onDidCustomEvent);
     this.disposable.push(this._onCurrentThreadChange);
+  }
+  capabilities: DebugProtocol.Capabilities;
+  onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent>;
+  readMemory(memoryReference: string, offset: number, count: number): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
+  }
+  writeMemory(memoryReference: string, offset: number, data: string, allowPartial?: boolean | undefined): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
   }
 
   private _configuration: DebugConfiguration = {

@@ -27,6 +27,7 @@ describe('FormatService', () => {
       getLineMaxColumn: () => 10,
       uri: new URI('file:///test/test.format.js').codeUri,
       getLanguageIdentifier: () => 'javascript',
+      getLanguageId: () => 'javascript',
       getFormattingOptions: () => ({}),
     }),
     getSelection: () => ({
