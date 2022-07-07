@@ -31,7 +31,11 @@ export class DocumentFormatService {
   async formatDocumentWith() {
     const model = this.workbenchEditorService.currentEditor?.monacoEditor.getModel();
     if (model) {
-      const formatterProviders = getRealAndSyntheticDocumentFormattersOrdered(model);
+      const formatterProviders = getRealAndSyntheticDocumentFormattersOrdered(
+        languageFeaturesService.documentFormattingEditProvider,
+        languageFeaturesService.documentRangeFormattingEditProvider,
+        model,
+      );
       const selector = this.injector.get(FormattingSelector);
       const formatter = await selector.select(formatterProviders, model, FormattingMode.Explicit, true);
       if (formatter) {
