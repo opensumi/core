@@ -138,7 +138,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
       // private property
       const editorWorkerServiceMethods = Object.keys(dirtyDiffModel['editorWorkerService']);
-      expect(editorWorkerServiceMethods).toContain('canComputeDiff');
+      expect(editorWorkerServiceMethods).toContain('canComputeDirtyDiff');
       expect(editorWorkerServiceMethods).toContain('computeDiff');
       fileTextModel.dispose();
     });
@@ -260,7 +260,6 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
       expect(dirtyDiffModel.modified).toEqual(fileTextModel);
       fileTextModel.getMonacoModel().setValue('insert some content for testing');
-      jest.runAllTimers();
 
       expect(eventSpy).toHaveBeenCalledTimes(0);
       // editor content changed trigger a `triggerDiff`
