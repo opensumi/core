@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Button } from '@opensumi/ide-components';
-import { useInjectable, localize, IContextKeyService, isUndefined } from '@opensumi/ide-core-browser';
+import { useInjectable, localize, IContextKeyService, isUndefined, IMarkdownString } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 
@@ -27,8 +27,8 @@ const useCommentContext = (
   contextKeyService: IContextKeyService,
   comment: IThreadComment,
 ): [
-  string,
-  React.Dispatch<React.SetStateAction<string>>,
+  string | IMarkdownString,
+  React.Dispatch<React.SetStateAction<string | IMarkdownString>>,
   (event: React.ChangeEvent<HTMLTextAreaElement>) => void,
   IMenu,
   IMenu,
@@ -36,7 +36,7 @@ const useCommentContext = (
 ] => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
   const { body, contextValue } = comment;
-  const [textValue, setTextValue] = React.useState('');
+  const [textValue, setTextValue] = React.useState<string | IMarkdownString>('');
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
   // set textValue when body changed
@@ -102,7 +102,7 @@ const ReplyItem: React.FC<{
 
   // 判断是正常 Inline Text 还是 Markdown Text
   const isInlineText = React.useMemo(() => {
-    const parsedStr = marked(body);
+    const parsedStr = marked(typeof body === 'string' ? body : body.value);
     // 解析出来非纯p标签的则为Markdown Text
     const isInline = /^\<p\>[^<>]+\<\/p\>\n$/.test(parsedStr);
     return isInline;
@@ -166,7 +166,7 @@ const ReplyItem: React.FC<{
       ) : (
         <div>
           <CommentsTextArea
-            value={textValue}
+            value={typeof textValue === 'string' ? textValue : textValue.value}
             autoFocus={true}
             onChange={onChangeTextArea}
             dragFiles={handleDragFiles}
@@ -274,7 +274,7 @@ export const CommentItem: React.FC<{
         ) : (
           <div>
             <CommentsTextArea
-              value={textValue}
+              value={typeof textValue === 'string' ? textValue : textValue.value}
               autoFocus={true}
               onChange={onChangeTextArea}
               dragFiles={handleDragFiles}

@@ -479,9 +479,9 @@ export interface ILinkedEditingRangesDto {
 }
 
 export interface IInlayHintDto {
-  text: string;
+  label: string | modes.InlayHintLabelPart[];
   position: Position;
-  kind: modes.InlayHintKind;
+  kind?: modes.InlayHintKind;
   whitespaceBefore?: boolean;
   whitespaceAfter?: boolean;
 }
@@ -599,7 +599,7 @@ export namespace MonacoModelIdentifier {
   export function fromModel(model: ITextModel): MonacoModelIdentifier {
     return {
       uri: model.uri,
-      languageId: model.getModeId(),
+      languageId: model.getLanguageId(),
     };
   }
 }

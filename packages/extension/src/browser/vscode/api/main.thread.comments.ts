@@ -37,6 +37,8 @@ import {
   IMainThreadCommands,
 } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { MarkdownString } from '../../../common/vscode/converter';
+import { MarkdownString as CodeMarkdownString } from '../../../common/vscode/ext-types';
 import {
   UriComponents,
   CommentThreadCollapsibleState,
@@ -262,7 +264,7 @@ export class MainThreadCommentThread implements CommentThread {
     return {
       id: comment.uniqueIdInThread.toString(),
       mode: comment.mode as unknown as CommentMode,
-      body: comment.body.value,
+      body: (typeof comment.body === 'string') ?  comment.body : MarkdownString.from(comment.body as CodeMarkdownString),
       label: comment.label,
       contextValue: comment.contextValue,
       author: {
@@ -299,9 +301,7 @@ export class MainThreadCommentThread implements CommentThread {
       contextValue: comment.contextValue,
       mode: comment.mode as unknown as CoreCommentMode,
       label: typeof comment.label === 'string' ? comment.label : '',
-      body: {
-        value: comment.body,
-      },
+      body: comment.body,
       userName: comment.author.name,
       commentReactions: comment.reactions?.map((reaction) => this.convertToCoreReaction(reaction)),
     };

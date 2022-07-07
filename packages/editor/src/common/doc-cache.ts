@@ -1,6 +1,6 @@
 import { URI, MaybePromise } from '@opensumi/ide-core-common';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import type { IModelContentChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModelEvents';
+import type { IModelContentChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 interface IDocBasicCacheData {
   path: string;

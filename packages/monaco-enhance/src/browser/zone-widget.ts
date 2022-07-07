@@ -230,7 +230,6 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
     this.addDispose(this._resizeSash);
 
     if (!this.options!.isResizeable) {
-      this._resizeSash.hide();
       this._resizeSash.state = SashState.Disabled;
     }
 

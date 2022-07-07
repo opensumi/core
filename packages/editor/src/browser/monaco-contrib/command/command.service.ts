@@ -26,7 +26,7 @@ import {
   MonacoEditorCommandHandler,
 } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
-import { StaticServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
+import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { Event, ICodeEditor, IEvent } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { EditorCollectionService, WorkbenchEditorService } from '../../types';
@@ -255,7 +255,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
     const codeEditorService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
     const textModelService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.TEXT_MODEL_SERVICE);
     const contextKeyService = this.overrideServiceRegistry.getRegisteredService(ServiceNames.CONTEXT_KEY_SERVICE);
-    const [, globalInstantiationService] = StaticServices.init({
+    const globalInstantiationService = StandaloneServices.initialize({
       codeEditorService,
       textModelService,
       contextKeyService,
