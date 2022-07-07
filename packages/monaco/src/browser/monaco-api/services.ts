@@ -4,7 +4,7 @@ import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/com
 import { IEditorWorkerService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorker';
 import { IMarkerDecorationsService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/markerDecorations';
 import { IModelService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/model';
-import { ITextResourceConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/textResourceConfiguration'
+import { ITextResourceConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/textResourceConfiguration';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import { ICommandService } from '@opensumi/monaco-editor-core/esm/vs/platform/commands/common/commands';
