@@ -411,7 +411,7 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
       // 如果找不到 ctx DOM 上的 context_id 返回 NaN
       // 如果遍历到父节点为 html 时，其 parentElement 为 null，也会返回 0
       const keyContext = this.contextKeyService.getContext(ctx);
-      return KeybindingResolver['contextMatchesRules'](keyContext, parsed as any);
+      return KeybindingResolver['_contextMatchesRules'](keyContext, parsed as any);
     } catch (e) {
       getDebugLogger().error(e);
       return false;
