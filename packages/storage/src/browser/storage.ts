@@ -45,7 +45,7 @@ export class Storage implements IStorage {
     private readonly workspace: IWorkspaceService,
     private readonly appConfig: AppConfig,
     private readonly storageName: string,
-    private readonly browserLocalStroage?: StorageService,
+    private readonly browserLocalStorage?: StorageService,
   ) {
     this.toDisposableCollection.push(this._onDidChangeStorage);
     this.toDisposableCollection.push(
@@ -76,14 +76,14 @@ export class Storage implements IStorage {
   async init(storageName: string) {
     const workspace = this.workspace.workspace;
     let cache;
-    if (this.browserLocalStroage) {
-      cache = await this.browserLocalStroage.getData(storageName);
+    if (this.browserLocalStorage) {
+      cache = await this.browserLocalStorage.getData(storageName);
     }
     if (!cache) {
       await this.database.init(this.appConfig.storageDirName, workspace && workspace.uri);
       cache = await this.database.getItems(storageName);
-      if (this.browserLocalStroage) {
-        this.browserLocalStroage.setData(storageName, cache);
+      if (this.browserLocalStorage) {
+        this.browserLocalStorage.setData(storageName, cache);
       }
       this.whenReadyToWriteDeferred.resolve();
     } else {
@@ -92,8 +92,8 @@ export class Storage implements IStorage {
         this.database.getItems(storageName).then(async (data) => {
           // 后续以服务端数据为准更新前端缓存数据，防止后续数据存取异常
           this.cache = this.jsonToMap(data);
-          if (this.browserLocalStroage) {
-            await this.browserLocalStroage.setData(storageName, JSON.stringify(data));
+          if (this.browserLocalStorage) {
+            await this.browserLocalStorage.setData(storageName, JSON.stringify(data));
           }
           this.whenReadyToWriteDeferred.resolve();
         });
@@ -244,7 +244,7 @@ export class Storage implements IStorage {
       delete: Array.from(this.pendingDeletes),
     };
     // 同时在 LocalStroage 中同步缓存变化
-    if (this.browserLocalStroage) {
+    if (this.browserLocalStorage) {
       let cache = this.mapToJson(this.cache);
       for (const del of updateRequest?.delete || []) {
         delete cache[del];
@@ -253,7 +253,7 @@ export class Storage implements IStorage {
         ...cache,
         ...updateRequest.insert,
       };
-      await this.browserLocalStroage.setData(this.storageName, cache);
+      await this.browserLocalStorage.setData(this.storageName, cache);
     }
 
     // 重置等待队列用于下次存储
