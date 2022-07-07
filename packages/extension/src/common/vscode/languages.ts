@@ -29,7 +29,7 @@ import type {
   Command,
   CompletionItemLabel,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { Disposable } from './ext-types';
 import { IExtensionDescription } from './extension';
@@ -164,7 +164,9 @@ export interface IMainThreadLanguages {
   $registerInlayHintsProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+    supportsResolve: boolean,
     eventHandle: number | undefined,
+    displayName: string | undefined,
   ): void;
   $emitInlayHintsEvent(eventHandle: number, event?: any): void;
   $setLanguageStatus(handle: number, status: ILanguageStatus): void;
@@ -471,6 +473,8 @@ export interface IExtHostLanguages {
     range: IRange,
     token: CancellationToken,
   ): Promise<IInlayHintsDto | undefined>;
+  $resolveInlayHint(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IInlayHintDto | undefined>;
+  $releaseInlayHints(handle: number, id: number): void;
 }
 
 export interface ILinkedEditingRangesDto {
@@ -479,15 +483,19 @@ export interface ILinkedEditingRangesDto {
 }
 
 export interface IInlayHintDto {
-  label: string | modes.InlayHintLabelPart[];
+  label: string | languages.InlayHintLabelPart[];
+  tooltip?: string | IMarkdownString;
+  textEdits?: languages.TextEdit[];
   position: Position;
-  kind?: modes.InlayHintKind;
-  whitespaceBefore?: boolean;
-  whitespaceAfter?: boolean;
+  kind?: languages.InlayHintKind;
+  paddingLeft?: boolean;
+  paddingRight?: boolean;
+  cacheId?: ChainedCacheId;
 }
 
 export interface IInlayHintsDto {
   hints: IInlayHintDto[];
+  cacheId?: CacheId;
 }
 
 export interface IInlineValueContextDto {
