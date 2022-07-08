@@ -20,7 +20,7 @@ import {
   getCodeActions,
   CodeActionItem,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/codeAction';
-import { CodeActionKind } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/types';
+import { CodeActionKind, CodeActionTriggerSource } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { SaveReason } from '../types';
@@ -152,6 +152,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
       {
         type: languages.CodeActionTriggerType.Auto,
         filter: { include: codeActionKind, includeSourceActions: true },
+        triggerAction: CodeActionTriggerSource.OnSave,
       },
       Progress.None,
       token,

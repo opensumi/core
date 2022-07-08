@@ -122,6 +122,11 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     });
   }
 
+  // FIXME: 需要实现新增的属性及事件
+  element: HTMLElement;
+  onDidFocus: Event<void>;
+  onDidBlur: Event<void>;
+
   private _onConsoleInputValueChange = new Emitter<URI>();
   public onConsoleInputValueChange: Event<URI> = this._onConsoleInputValueChange.event;
 
@@ -302,7 +307,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
       });
     }
 
-    this.inputEditor.monacoEditor.setDecorations('debug-console-input', DECORATION_KEY, decorations as any[]);
+    this.inputEditor.monacoEditor.setDecorationsByType('debug-console-input', DECORATION_KEY, decorations as any[]);
   }
 
   private setMode(): void {

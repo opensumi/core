@@ -211,7 +211,7 @@ export const CommentItem: React.FC<{
     useCommentContext(contextKeyService, comment);
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
-  const replyIsEmptyContext = React.useMemo(() => contextKeyService.createKey('commentIsEmpty', true), []);
+  const replyIsEmptyContext = React.useMemo(() => contextKeyService.createKey<boolean>('commentIsEmpty', true), []);
 
   // modify reply
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
