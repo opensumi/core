@@ -25,7 +25,7 @@ import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.overr
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import { StandardTokenType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/encodedTokenAttributes';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
@@ -149,8 +149,8 @@ function getWordToLineNumbersMap(model: ITextModel | null): Map<string, number[]
       continue;
     }
 
-    model.forceTokenization(lineNumber);
-    const lineTokens = model.getLineTokens(lineNumber);
+    model.tokenization.forceTokenization(lineNumber);
+    const lineTokens = model.tokenization.getLineTokens(lineNumber);
     for (let tokenIndex = 0, tokenCount = lineTokens.getCount(); tokenIndex < tokenCount; tokenIndex++) {
       const tokenType = lineTokens.getStandardTokenType(tokenIndex);
 
@@ -323,7 +323,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   }
 
   private removeInlineValuesScheduler(editor: IEditor): RunOnceScheduler {
-    return new RunOnceScheduler(() => editor.monacoEditor.removeDecorations(INLINE_VALUE_DECORATION_KEY), 100);
+    return new RunOnceScheduler(() => editor.monacoEditor.removeDecorations([INLINE_VALUE_DECORATION_KEY]), 100);
   }
 
   private async updateInlineValueDecorations(stackFrame: DebugStackFrame | undefined, editor: IEditor): Promise<void> {
@@ -482,6 +482,6 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       allDecorations = decorationsPerScope.reduce((previous, current) => previous.concat(current), []);
     }
 
-    editor.monacoEditor.setDecorations('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, allDecorations as any[]);
+    editor.monacoEditor.setDecorationsByType('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, allDecorations as any[]);
   }
 }
