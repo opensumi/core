@@ -39,7 +39,7 @@
     "node-pty": "0.11.0-beta19",
     "nsfw": "^2.2.0",
     "spdlog": "^0.9.0",
-    "vscode-oniguruma": "1.5.1",
+    "vscode-oniguruma": "1.6.1",
     "@opensumi/vscode-ripgrep": "^1.4.0"
   },
   "devDependencies": {
