@@ -10,6 +10,7 @@ export class MockDebugSession implements IDebugSession {
   private _onDidChange: Emitter<any> = new Emitter();
   private _onDidCustomEvent: Emitter<any> = new Emitter();
   private _onCurrentThreadChange: Emitter<any> = new Emitter();
+  private _onDidInvalidateMemory: Emitter<any> = new Emitter();
 
   private disposable = new DisposableCollection();
   private _id: string;
@@ -25,6 +26,15 @@ export class MockDebugSession implements IDebugSession {
     this.disposable.push(this._onDidChange);
     this.disposable.push(this._onDidCustomEvent);
     this.disposable.push(this._onCurrentThreadChange);
+    this.disposable.push(this._onDidInvalidateMemory);
+  }
+  capabilities: DebugProtocol.Capabilities;
+  onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent>;
+  readMemory(memoryReference: string, offset: number, count: number): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
+  }
+  writeMemory(memoryReference: string, offset: number, data: string, allowPartial?: boolean): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
   }
   capabilities: DebugProtocol.Capabilities;
   onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent>;
@@ -45,6 +55,10 @@ export class MockDebugSession implements IDebugSession {
     return this._on.event as any;
   }
 
+  get onDidInvalidateMemory() {
+    return this._onDidInvalidateMemory.event;
+  }
+
   get onDidChange() {
     return this._onDidChange.event;
   }
@@ -59,6 +73,10 @@ export class MockDebugSession implements IDebugSession {
 
   get configuration() {
     return this._configuration;
+  }
+
+  get capabilities() {
+    return {};
   }
 
   get state() {
@@ -103,6 +121,14 @@ export class MockDebugSession implements IDebugSession {
 
   async terminate() {
     // do nothing
+  }
+
+  async readMemory(memoryReference: string, offset: number, count: number) {
+    return undefined;
+  }
+
+  async writeMemory(memoryReference: string, offset: number, data: string, allowPartial?: boolean) {
+    return undefined;
   }
 
   dispose() {

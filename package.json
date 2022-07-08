@@ -65,9 +65,9 @@
     "lerna": "^4.0.0",
     "lint-staged": "^12.1.2",
     "lodash": "^4.17.15",
-    "tslib": "^2.4.0",
     "node-gyp": "^9.0.0",
     "ts-node": "^10.0.0",
+    "tslib": "^2.4.0",
     "typescript": "4.6.4",
     "webpack": "^4.39.3"
   },
@@ -124,6 +124,7 @@
     "jest": "^28.0.3",
     "jest-canvas-mock": "^2.4.0",
     "jest-environment-jsdom": "^28.0.2",
+    "jest-fetch-mock": "^3.0.3",
     "jest-jasmine2": "^28.0.3",
     "jsdom": "^20.0.0",
     "jsdom-worker": "^0.2.1",

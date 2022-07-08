@@ -45,7 +45,7 @@ export function startDebugAdapter(
       spawnOptions.cwd = options.cwd;
     }
 
-    childProcess = cp ? cp.spawn(command, args, options) : spawn(command, args, options);
+    childProcess = cp ? cp.spawn(command, args, spawnOptions) : spawn(command, args, spawnOptions);
   } else if ('modulePath' in executable) {
     const forkExecutable = executable as unknown as DebugAdapterForkExecutable;
     const { modulePath, args } = forkExecutable;
