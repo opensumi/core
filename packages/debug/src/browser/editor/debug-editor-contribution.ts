@@ -323,7 +323,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   }
 
   private removeInlineValuesScheduler(editor: IEditor): RunOnceScheduler {
-    return new RunOnceScheduler(() => editor.monacoEditor.removeDecorations([INLINE_VALUE_DECORATION_KEY]), 100);
+    return new RunOnceScheduler(() => editor.monacoEditor.removeDecorationsByType(INLINE_VALUE_DECORATION_KEY), 100);
   }
 
   private async updateInlineValueDecorations(stackFrame: DebugStackFrame | undefined, editor: IEditor): Promise<void> {
