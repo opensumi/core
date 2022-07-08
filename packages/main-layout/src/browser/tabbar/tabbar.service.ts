@@ -277,7 +277,7 @@ export class TabbarService extends WithEventBus {
     // 注册激活快捷键
     disposables.push(this.registerActivateKeyBinding(componentInfo, componentInfo.options!.fromExtension));
     // 注册视图是否存在的contextKey
-    const containerExistKey = this.contextKeyService.createKey(
+    const containerExistKey = this.contextKeyService.createKey<boolean>(
       `workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${componentInfo.options!.containerId}`,
       true,
     );

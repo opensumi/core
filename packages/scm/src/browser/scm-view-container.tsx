@@ -37,6 +37,8 @@ export const SCMResourcesView: React.FC<{
   React.useEffect(() => {
     // 更新 repository 到 scmRepository context key 上去
     if ($that.current.ctx) {
+      // FIXME: 严格的 contextKey 类型不支持使用对象作为 value
+      // @ts-ignore
       $that.current.ctx.createKey('scmRepository', repository);
     }
   }, [repository]);

@@ -30,6 +30,7 @@ import {
   ContextKeyExpression,
   IContextKeyServiceTarget,
   ContextKeyExpr,
+  ContextKeyValue,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { KeybindingResolver } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
 import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
@@ -323,7 +324,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     );
   }
 
-  createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T> {
+  createKey<T extends ContextKeyValue = any>(key: string, defaultValue: T | undefined): IContextKey<T> {
     return this.contextKeyService.createKey(key, defaultValue);
   }
 
