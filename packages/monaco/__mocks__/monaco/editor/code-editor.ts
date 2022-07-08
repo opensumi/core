@@ -14,6 +14,23 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     super();
     this.id = ++MockedCodeEditor.ID;
   }
+  onDidChangeModelTokens: monaco.IEvent<monaco.editor.IModelTokensChangedEvent>;
+  onDropIntoEditor: monaco.IEvent<{ readonly position: monaco.IPosition; readonly event: DragEvent; }>;
+  removeDecorations(decorationIds: string[]): void {
+    throw new Error('Method not implemented.');
+  }
+  setDecorationsByType(description: string, decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {
+    throw new Error('Method not implemented.');
+  }
+  setDecorationsByTypeFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
+    throw new Error('Method not implemented.');
+  }
+  removeDecorationsByType(decorationTypeKey: string): void {
+    throw new Error('Method not implemented.');
+  }
+  createDecorationsCollection(decorations?: monaco.editor.IModelDeltaDecoration[] | undefined): monaco.editor.IEditorDecorationsCollection {
+    throw new Error('Method not implemented.');
+  }
   onDidChangeHiddenAreas: monaco.IEvent<void>;
   getDecorationsInRange(range: monaco.Range): monaco.editor.IModelDecoration[] | null {
     throw new Error('Method not implemented.');
@@ -86,7 +103,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
     throw new Error('Method not implemented.');
   }
-  removeDecorations(decorationTypeKey: string): void {
+  removeDecoration(decorationTypeKey: string): void {
     throw new Error('Method not implemented.');
   }
   getWhitespaces(): monaco.editor.IEditorWhitespace[] {
