@@ -20,7 +20,7 @@
     "@opensumi/ide-core-node": "2.19.7",
     "@opensumi/ide-file-service": "2.19.7",
     "@opensumi/ide-monaco": "2.19.7",
-    "vscode-oniguruma": "1.5.1"
+    "vscode-oniguruma": "1.6.1"
   },
   "devDependencies": {
     "@opensumi/ide-components": "2.19.7",
