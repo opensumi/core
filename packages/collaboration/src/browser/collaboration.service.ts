@@ -28,17 +28,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private yDoc: Y.Doc;
 
-  private yText: Y.Text;
-
   private yWebSocketProvider: WebsocketProvider;
 
   private textMap: Map<string, string | undefined> = new Map();
 
   private yTextMap: Y.Map<Y.Text>;
-
-  private counterMap: Map<string, number> = new Map();
-
-  private openedTab: Set<string> = new Set();
 
   private currentCodeEditor: ICodeEditor | null;
 
@@ -46,7 +40,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   initialize() {
     this.yDoc = new Y.Doc();
-    this.yText = this.yDoc.getText('114514');
     this.yTextMap = this.yDoc.getMap('text-map');
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'monaco-opensumi', this.yDoc);
     this.logger.log('Collaboration initialized');
@@ -56,39 +49,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   @OnEvent(EditorGroupOpenEvent)
   private groupOpenHandler(e: EditorGroupOpenEvent) {
     this.logger.log('Group open tabs', e);
-    this.workbenchEditorService.getAllOpenedUris().forEach((u) => {
-      const uri = u.toString();
-      if (!this.openedTab.has(uri)) {
-        this.openedTab.add(uri);
-        if (!this.counterMap.has(uri)) {
-          this.counterMap.set(uri, 1);
-        } else {
-          this.counterMap.set(uri, this.counterMap.get(uri)! + 1);
-        }
-      }
-    });
-    this.logger.log('Counter map', this.counterMap);
   }
 
   @OnEvent(EditorGroupCloseEvent)
   private groupCloseHandler(e: EditorGroupCloseEvent) {
     this.logger.log('Group close tabs', e);
-    const uri = e.payload.resource.uri.toString();
-    if (
-      this.counterMap.has(uri) &&
-      !this.workbenchEditorService
-        .getAllOpenedUris()
-        .map((u) => u.toString())
-        .includes(uri)
-    ) {
-      this.counterMap.set(uri, this.counterMap.get(uri)! - 1);
-      if (this.counterMap.get(uri)! <= 0) {
-        this.counterMap.delete(uri);
-        this.openedTab.delete(uri);
-        this.textMap.delete(uri);
-      }
-    }
-    this.logger.log('Counter map', this.counterMap);
   }
 
   @OnEvent(EditorActiveResourceStateChangedEvent)
@@ -98,7 +63,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     if (this.currentCodeEditor !== this.workbenchEditorService.currentCodeEditor) {
       this.currentCodeEditor = this.workbenchEditorService.currentCodeEditor;
     }
-    this.logger.log(e);
 
     // get current uri
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
@@ -116,15 +80,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.logger.log('text map', [...this.textMap.keys()]);
 
     if (!this.yTextMap.has(uri)) {
-      this.yTextMap.set(uri, new Y.Text(this.currentCodeEditor?.currentDocumentModel?.getText()!));
+      this.yTextMap.set(uri, new Y.Text(text));
     }
 
-    // update counter according to currently opened uris
-    const uris = this.workbenchEditorService.getAllOpenedUris();
-    this.logger.log('Opened uris', uris);
-
     // this event was fired after text model
-    // this.logger.log('text model content', this.currentCodeEditor?.currentDocumentModel?.getText());
     const textModel = this.currentCodeEditor?.currentDocumentModel?.getMonacoModel();
     this.logger.log('textModel', textModel);
 
@@ -135,13 +94,15 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       }
       // just bind it
       const monacoEditor = this.currentCodeEditor?.monacoEditor;
-      this.currentBinding = new TextModelBinding(
-        this.yTextMap.get(uri)!,
-        textModel,
-        monacoEditor!,
-        this.yWebSocketProvider.awareness,
-      );
-      this.logger.log('binding', this.currentBinding);
+      if (monacoEditor) {
+        this.currentBinding = new TextModelBinding(
+          this.yTextMap.get(uri)!,
+          textModel,
+          monacoEditor,
+          this.yWebSocketProvider.awareness,
+        );
+        this.logger.log('binding', this.currentBinding);
+      }
     }
   }
 }
