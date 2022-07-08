@@ -74,6 +74,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @OnEvent(EditorActiveResourceStateChangedEvent)
   private editorActiveResourceStateChangedHandler(e: EditorActiveResourceStateChangedEvent) {
+    // only support code editor
+    if (e.payload.openType === null || e.payload.openType?.type !== 'code') {
+      return;
+    }
     // currently support single editor binding
     // current group changed <=> current editor changed
     if (this.currentCodeEditor !== this.workbenchEditorService.currentCodeEditor) {
