@@ -4,6 +4,7 @@ import * as Y from 'yjs';
 
 import { ITextModel, ICodeEditor, Position } from '@opensumi/ide-monaco';
 import {
+  editor,
   SelectionDirection,
   Selection,
   Range,
@@ -11,15 +12,28 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export class TextModelBinding {
-  savedSelections: RelativeSelection | undefined;
+  savedSelections: RelativeSelection | null;
 
   mutex = createMutex();
 
   doc: Y.Doc;
 
-  monacoChangeHandler: IDisposable;
+  disposableContentChangeHandler: IDisposable;
+
+  disposableDidChangeCursorSelectionHandler: IDisposable;
 
   decorations: string[] = [];
+
+  constructor(
+    private yText: Y.Text,
+    private textModel: ITextModel,
+    private editor: ICodeEditor,
+    private awareness: Awareness,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this.doc = yText.doc!;
+    this.initialize();
+  }
 
   /**
    * Render decorations
@@ -86,15 +100,15 @@ export class TextModelBinding {
         } else if (op.insert !== undefined) {
           const pos = this.textModel.getPositionAt(index);
           const range = new Selection(pos.lineNumber, pos.column, pos.lineNumber, pos.column);
-          this.textModel.applyEdits([{ range, text: op.insert }] as any);
-          index += op.insert.length;
+          this.textModel.applyEdits([{ range, text: op.insert as string }]);
+          index += (op.insert as string).length;
         } else if (op.delete !== undefined) {
           const pos = this.textModel.getPositionAt(index);
           const endPos = this.textModel.getPositionAt(index + op.delete);
           const range = new Selection(pos.lineNumber, pos.column, endPos.lineNumber, endPos.column);
           this.textModel.applyEdits([{ range, text: '' }]);
         } else {
-          throw new Error('Unexpected');
+          throw new Error('Unexpected error');
         }
       });
       // restore self-saved selection
@@ -113,9 +127,9 @@ export class TextModelBinding {
     this.renderDecorations();
   };
 
-  beforeAllTransactions = () => {
+  beforeAllTransactionsHandler = () => {
     this.mutex(() => {
-      this.savedSelections = undefined;
+      this.savedSelections = null;
       if (this.editor.getModel() === this.textModel) {
         // const relSelection = createRelativeSelection(this.editor, this.textModel, this.yText);
         const relSelection = this.createRelativeSelection();
@@ -140,70 +154,71 @@ export class TextModelBinding {
     return null;
   }
 
-  constructor(
-    private yText: Y.Text,
-    private textModel: ITextModel,
-    private editor: ICodeEditor,
-    private awareness: Awareness,
-  ) {
-    this.doc = yText.doc!;
-    this.initialize();
-  }
+  textModelOnDidChangeContentHandler = (event: editor.IModelContentChangedEvent) => {
+    // apply changes from right to left
+    this.mutex(() => {
+      this.doc.transact(() => {
+        event.changes
+          .sort((change1, change2) => change2.rangeOffset - change1.rangeOffset)
+          .forEach((change) => {
+            // it will trigger y.text event
+            this.yText.delete(change.rangeOffset, change.rangeLength);
+            this.yText.insert(change.rangeOffset, change.text);
+          });
+      }, this);
+    });
+  };
+
+  onDidChangeCursorSelectionHandler = () => {
+    if (this.editor.getModel() === this.textModel) {
+      const sel = this.editor.getSelection();
+      if (sel === null) {
+        return;
+      }
+      let anchor = this.textModel.getOffsetAt(sel.getStartPosition());
+      let head = this.textModel.getOffsetAt(sel.getEndPosition());
+      if (sel.getDirection() === SelectionDirection.RTL) {
+        const tmp = anchor;
+        anchor = head;
+        head = tmp;
+      }
+      this.awareness.setLocalStateField('selection', {
+        anchor: Y.createRelativePositionFromTypeIndex(this.yText, anchor),
+        head: Y.createRelativePositionFromTypeIndex(this.yText, head),
+      });
+    }
+  };
 
   initialize() {
-    this.yText.doc?.on('beforeAllTransactions', this.beforeAllTransactions);
+    // save current selections
+    this.yText.doc?.on('beforeAllTransactions', this.beforeAllTransactionsHandler);
 
     // yText observer
     this.yText.observe(this.yTextObserver);
 
-    // set value
+    this.disposableContentChangeHandler = this.textModel.onDidChangeContent(this.textModelOnDidChangeContentHandler);
+
+    // register awareness
+    this.disposableDidChangeCursorSelectionHandler = this.editor.onDidChangeCursorSelection(
+      this.onDidChangeCursorSelectionHandler,
+    );
+
+    // when awareness changed, render decorations again
+    this.awareness.on('change', this.renderDecorations);
+
+    this.setModelContent();
+  }
+
+  setModelContent() {
     const yTextValue = this.yText.toString();
     if (this.textModel.getValue() !== yTextValue) {
       this.textModel.setValue(yTextValue);
     }
-
-    this.monacoChangeHandler = this.textModel.onDidChangeContent((event) => {
-      // apply changes from right to left
-      this.mutex(() => {
-        this.doc.transact(() => {
-          event.changes
-            .sort((change1, change2) => change2.rangeOffset - change1.rangeOffset)
-            .forEach((change) => {
-              // it will trigger y.text event
-              this.yText.delete(change.rangeOffset, change.rangeLength);
-              this.yText.insert(change.rangeOffset, change.text);
-            });
-        }, this);
-      });
-    });
-
-    // register awareness
-    this.editor.onDidChangeCursorSelection(() => {
-      if (this.editor.getModel() === this.textModel) {
-        const sel = this.editor.getSelection();
-        if (sel === null) {
-          return;
-        }
-        let anchor = this.textModel.getOffsetAt(sel.getStartPosition());
-        let head = this.textModel.getOffsetAt(sel.getEndPosition());
-        if (sel.getDirection() === SelectionDirection.RTL) {
-          const tmp = anchor;
-          anchor = head;
-          head = tmp;
-        }
-        this.awareness.setLocalStateField('selection', {
-          anchor: Y.createRelativePositionFromTypeIndex(this.yText, anchor),
-          head: Y.createRelativePositionFromTypeIndex(this.yText, head),
-        });
-      }
-    });
-    // when awareness changed, render decorations again
-    this.awareness.on('change', this.renderDecorations);
   }
 
   dispose() {
-    this.monacoChangeHandler.dispose();
-    this.doc.off('beforeAllTransactions', this.beforeAllTransactions);
+    this.disposableContentChangeHandler.dispose();
+    this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);
     this.yText.unobserve(this.yTextObserver);
     this.awareness.off('change', this.renderDecorations);
   }
