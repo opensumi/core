@@ -20,7 +20,7 @@ export class TextModelBinding {
 
   disposableContentChangeHandler: IDisposable;
 
-  disposableDidChangeCursorSelectionHandler: IDisposable;
+  disposableDidChangeCursorSelectionHandler: IDisposable | undefined;
 
   decorations: string[] = [];
 
@@ -216,6 +216,33 @@ export class TextModelBinding {
     }
   }
 
+  /**
+   * Stop listening to some events
+   */
+  offEventListener() {
+    if (this.disposableDidChangeCursorSelectionHandler) {
+      this.disposableDidChangeCursorSelectionHandler.dispose();
+      this.awareness.off('change', this.renderDecorations);
+      this.disposableDidChangeCursorSelectionHandler = undefined;
+    }
+  }
+
+  /**
+   * Continue to listen on some events
+   */
+  onEventListener() {
+    if (!this.disposableDidChangeCursorSelectionHandler) {
+      this.disposableDidChangeCursorSelectionHandler = this.editor.onDidChangeCursorSelection(
+        this.onDidChangeCursorSelectionHandler,
+      );
+      this.awareness.on('change', this.renderDecorations);
+      this.renderDecorations();
+    }
+  }
+
+  /**
+   * Stop listening to all events
+   */
   dispose() {
     this.disposableContentChangeHandler.dispose();
     this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);

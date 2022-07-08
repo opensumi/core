@@ -38,6 +38,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private currentBinding: TextModelBinding;
 
+  private bindingMap: Map<string, TextModelBinding> = new Map();
+
+  private currentUri: string | undefined;
+
   initialize() {
     this.yDoc = new Y.Doc();
     this.yTextMap = this.yDoc.getMap('text-map');
@@ -88,20 +92,28 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.logger.log('textModel', textModel);
 
     if (textModel) {
-      if (this.currentBinding) {
-        // todo save to somewhere
-        this.currentBinding.dispose();
+      if (this.currentUri !== undefined && this.bindingMap.has(this.currentUri)) {
+        // this.currentBinding.dispose();
+        const binding = this.bindingMap.get(this.currentUri)!;
+        binding.offEventListener();
       }
+      this.currentUri = uri?.toString();
       // just bind it
       const monacoEditor = this.currentCodeEditor?.monacoEditor;
       if (monacoEditor) {
-        this.currentBinding = new TextModelBinding(
-          this.yTextMap.get(uri)!,
-          textModel,
-          monacoEditor,
-          this.yWebSocketProvider.awareness,
-        );
-        this.logger.log('binding', this.currentBinding);
+        if (this.bindingMap.has(this.currentUri)) {
+          this.currentBinding = this.bindingMap.get(this.currentUri)!;
+          this.currentBinding.onEventListener();
+        } else {
+          this.currentBinding = new TextModelBinding(
+            this.yTextMap.get(uri)!,
+            textModel,
+            monacoEditor,
+            this.yWebSocketProvider.awareness,
+          );
+          this.bindingMap.set(this.currentUri, this.currentBinding);
+          this.logger.log('binding', this.currentBinding);
+        }
       }
     }
   }
