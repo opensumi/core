@@ -7,7 +7,7 @@ import { VSCodeContributePoint, Contributes, ExtensionContributePoint } from '..
 @Injectable()
 @Contributes(ExtensionContributePoint.Terminal)
 export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalContributions> {
-  schema = {
+  static schema = {
     description: localize('vscode.extension.contributes.terminal', 'Contributes terminal functionality.'),
     type: 'object',
     properties: {

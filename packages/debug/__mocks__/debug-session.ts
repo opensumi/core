@@ -1,5 +1,6 @@
 import { Injectable } from '@opensumi/di';
-import { DisposableCollection, Emitter } from '@opensumi/ide-core-common';
+import { DisposableCollection, Emitter, Event } from '@opensumi/ide-core-common';
+import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { DebugConfiguration, DebugSessionOptions, DebugState, IDebugSession } from '../src/common';
 
