@@ -28,6 +28,7 @@ import {
   CommentInput,
   CommentReaction as CoreCommentReaction,
   CommentMode as CoreCommentMode,
+  CommentThreadState,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
@@ -407,6 +408,14 @@ export class MainThreadCommentThread implements CommentThread {
     }
     this._isDisposed = false;
   }
+  isDocumentCommentThread(): this is CommentThread<IRange> {
+    throw new Error('Method not implemented.');
+  }
+  // FIXME: 实现新增的属性
+  state?: CommentThreadState | undefined;
+  onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
+  onDidChangeState: Event<CommentThreadState | undefined>;
+  isTemplate: boolean;
 
   batchUpdate(changes: CommentThreadChanges) {
     const modified = (value: keyof CommentThreadChanges): boolean =>
