@@ -1,4 +1,7 @@
 export const browserViews = {
+  // kaitianContributes
+  'sumiContributes.opensumiContributes': 'All contributions of the Opensumi Extension represented by this package.',
+
   // 公用 properties，如 command
   'sumiContributes.common.command': 'The command to execute. The command must be declared in "contributes.command" (except built-in commands)',
   'sumiContributes.common.when': 'This condition must be true to display this item',
