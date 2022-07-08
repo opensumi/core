@@ -49,6 +49,18 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.logger.log('Collaboration initialized');
   }
 
+  undoOnCurrentBinding() {
+    if (this.currentBinding) {
+      this.currentBinding.undo();
+    }
+  }
+
+  redoOnCurrentBinding() {
+    if (this.currentBinding) {
+      this.currentBinding.redo();
+    }
+  }
+
   // TextModel loaded before this event
   @OnEvent(EditorGroupOpenEvent)
   private groupOpenHandler(e: EditorGroupOpenEvent) {

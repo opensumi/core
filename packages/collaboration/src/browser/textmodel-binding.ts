@@ -24,6 +24,8 @@ export class TextModelBinding {
 
   decorations: string[] = [];
 
+  undoManger: Y.UndoManager;
+
   constructor(
     private yText: Y.Text,
     private textModel: ITextModel,
@@ -190,6 +192,10 @@ export class TextModelBinding {
   };
 
   initialize() {
+    this.undoManger = new Y.UndoManager(this.yText, {
+      trackedOrigins: new Set([this]),
+    });
+
     // save current selections
     this.yText.doc?.on('beforeAllTransactions', this.beforeAllTransactionsHandler);
 
@@ -207,6 +213,14 @@ export class TextModelBinding {
     this.awareness.on('change', this.renderDecorations);
 
     this.setModelContent();
+  }
+
+  undo() {
+    this.undoManger.undo();
+  }
+
+  redo() {
+    this.undoManger.redo();
   }
 
   setModelContent() {

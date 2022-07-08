@@ -1,11 +1,16 @@
 import { Autowired } from '@opensumi/di';
-import { ClientAppContribution } from '@opensumi/ide-core-browser';
-import { Domain, ILogger } from '@opensumi/ide-core-common';
+import {
+  ClientAppContribution,
+  KeybindingContribution,
+  KeybindingRegistry,
+  KeybindingWeight,
+} from '@opensumi/ide-core-browser';
+import { CommandContribution, CommandRegistry, Domain, ILogger } from '@opensumi/ide-core-common';
 
 import { ICollaborationService } from '../common';
 
-@Domain(ClientAppContribution)
-export class CollaborationContribution implements ClientAppContribution {
+@Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
+export class CollaborationContribution implements ClientAppContribution, KeybindingContribution, CommandContribution {
   @Autowired(ILogger)
   private logger: ILogger;
 
@@ -18,4 +23,48 @@ export class CollaborationContribution implements ClientAppContribution {
   }
 
   onStop() {}
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    keybindings.registerKeybinding({
+      command: 'collaboration.undo',
+      keybinding: 'ctrlcmd+z',
+      when: 'editorFocus',
+      priority: KeybindingWeight.EditorContrib,
+    });
+
+    keybindings.registerKeybinding({
+      command: 'collaboration.redo',
+      keybinding: 'shift+ctrlcmd+z',
+      when: 'editorFocus',
+      priority: KeybindingWeight.EditorContrib,
+    });
+  }
+
+  registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(
+      {
+        id: 'collaboration.undo',
+        label: 'collaboration.undo',
+      },
+      {
+        execute: () => {
+          this.logger.log('Undo my change');
+          this.collaborationService.undoOnCurrentBinding();
+        },
+      },
+    );
+
+    commands.registerCommand(
+      {
+        id: 'collaboration.redo',
+        label: 'collaboration.redo',
+      },
+      {
+        execute: () => {
+          this.logger.log('Redo my change');
+          this.collaborationService.redoOnCurrentBinding();
+        },
+      },
+    );
+  }
 }
