@@ -14,7 +14,7 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 
 import { ICollaborationService } from '../common';
 
-import { TextModelBinding } from './editor-binding';
+import { TextModelBinding } from './textmodel-binding';
 
 import './styles.less';
 
