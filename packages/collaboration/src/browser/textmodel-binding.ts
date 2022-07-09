@@ -12,7 +12,7 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 export class TextModelBinding {
-  savedSelections: RelativeSelection | null;
+  savedSelections: Map<ICodeEditor, RelativeSelection> = new Map();
 
   mutex = createMutex();
 
@@ -20,20 +20,18 @@ export class TextModelBinding {
 
   disposableContentChangeHandler: IDisposable;
 
-  disposableDidChangeCursorSelectionHandler: IDisposable | undefined;
+  decorations: Map<ICodeEditor, string[]> = new Map();
 
-  decorations: string[] = [];
+  editors: Set<ICodeEditor>;
+
+  disposables: Map<ICodeEditor, IDisposable> = new Map();
 
   undoManger: Y.UndoManager;
 
-  constructor(
-    private yText: Y.Text,
-    private textModel: ITextModel,
-    private editor: ICodeEditor,
-    private awareness: Awareness,
-  ) {
+  constructor(private yText: Y.Text, private textModel: ITextModel, editor: ICodeEditor, private awareness: Awareness) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.doc = yText.doc!;
+    this.editors = new Set([editor]);
     this.initialize();
   }
 
@@ -41,55 +39,62 @@ export class TextModelBinding {
    * Render decorations
    */
   renderDecorations = () => {
-    if (this.editor.getModel() === this.textModel) {
-      const currentDecorations = this.decorations;
-      const newDecorations: any[] = []; // fixme
-      this.awareness.getStates().forEach((state, clientID) => {
-        // if clientID is not mine, and selection from this client is not empty
-        if (
-          clientID !== this.doc.clientID &&
-          state.selection != null &&
-          state.selection.anchor != null &&
-          state.selection.head != null
-        ) {
-          const anchorAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.anchor, this.doc);
-          const headAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.head, this.doc);
-          if (anchorAbs !== null && headAbs !== null && anchorAbs.type === this.yText && headAbs.type === this.yText) {
-            let start: Position;
-            let end: Position;
-            let afterContentClassName: string | null;
-            let beforeContentClassName: string | null;
+    this.editors.forEach((editor) => {
+      if (editor.getModel() === this.textModel) {
+        const currentDecorations = this.decorations.get(editor) ?? [];
+        const newDecorations: any[] = []; // fixme
+        this.awareness.getStates().forEach((state, clientID) => {
+          // if clientID is not mine, and selection from this client is not empty
+          if (
+            clientID !== this.doc.clientID &&
+            state.selection != null &&
+            state.selection.anchor != null &&
+            state.selection.head != null
+          ) {
+            const anchorAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.anchor, this.doc);
+            const headAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.head, this.doc);
+            if (
+              anchorAbs !== null &&
+              headAbs !== null &&
+              anchorAbs.type === this.yText &&
+              headAbs.type === this.yText
+            ) {
+              let start: Position;
+              let end: Position;
+              let afterContentClassName: string | null;
+              let beforeContentClassName: string | null;
 
-            // check if LTR or RTL
-            if (anchorAbs.index < headAbs.index) {
-              start = this.textModel.getPositionAt(anchorAbs.index);
-              end = this.textModel.getPositionAt(headAbs.index);
-              afterContentClassName = 'yRemoteSelectionHead yRemoteSelectionHead-' + clientID;
-              beforeContentClassName = null;
-            } else {
-              start = this.textModel.getPositionAt(headAbs.index);
-              end = this.textModel.getPositionAt(anchorAbs.index);
-              afterContentClassName = null;
-              beforeContentClassName = 'yRemoteSelectionHead yRemoteSelectionHead-' + clientID;
+              // check if LTR or RTL
+              if (anchorAbs.index < headAbs.index) {
+                start = this.textModel.getPositionAt(anchorAbs.index);
+                end = this.textModel.getPositionAt(headAbs.index);
+                afterContentClassName = 'yRemoteSelectionHead yRemoteSelectionHead-' + clientID;
+                beforeContentClassName = null;
+              } else {
+                start = this.textModel.getPositionAt(headAbs.index);
+                end = this.textModel.getPositionAt(anchorAbs.index);
+                afterContentClassName = null;
+                beforeContentClassName = 'yRemoteSelectionHead yRemoteSelectionHead-' + clientID;
+              }
+
+              newDecorations.push({
+                range: new Range(start.lineNumber, start.column, end.lineNumber, end.column),
+                options: {
+                  className: 'yRemoteSelection yRemoteSelection-' + clientID,
+                  afterContentClassName,
+                  beforeContentClassName,
+                },
+              });
             }
-
-            newDecorations.push({
-              range: new Range(start.lineNumber, start.column, end.lineNumber, end.column),
-              options: {
-                className: 'yRemoteSelection yRemoteSelection-' + clientID,
-                afterContentClassName,
-                beforeContentClassName,
-              },
-            });
           }
-        }
-      });
+        });
 
-      this.decorations = this.editor.deltaDecorations(currentDecorations, newDecorations);
-    } else {
-      // ignore decoration
-      this.decorations = [];
-    }
+        this.decorations.set(editor, editor.deltaDecorations(currentDecorations, newDecorations));
+      } else {
+        // ignore decoration
+        this.decorations.delete(editor);
+      }
+    });
   };
 
   yTextObserver = (event: Y.YTextEvent) => {
@@ -113,37 +118,33 @@ export class TextModelBinding {
           throw new Error('Unexpected error');
         }
       });
-      // restore self-saved selection
-      if (this.savedSelections) {
-        const sel = createMonacoSelectionFromRelativeSelection(
-          this.textModel,
-          this.yText,
-          this.savedSelections,
-          this.doc,
-        );
+      this.savedSelections.forEach((relSelection, editor) => {
+        // restore self-saved selection
+        const sel = createMonacoSelectionFromRelativeSelection(this.textModel, this.yText, relSelection, this.doc);
         if (sel !== null) {
-          this.editor.setSelection(sel);
+          editor.setSelection(sel);
         }
-      }
+      });
     });
     this.renderDecorations();
   };
 
   beforeAllTransactionsHandler = () => {
     this.mutex(() => {
-      this.savedSelections = null;
-      if (this.editor.getModel() === this.textModel) {
-        // const relSelection = createRelativeSelection(this.editor, this.textModel, this.yText);
-        const relSelection = this.createRelativeSelection();
-        if (relSelection !== null) {
-          this.savedSelections = relSelection;
+      this.savedSelections = new Map();
+      this.editors.forEach((editor) => {
+        if (editor.getModel() === this.textModel) {
+          const relSelection = this.createRelativeSelection(editor);
+          if (relSelection !== null) {
+            this.savedSelections.set(editor, relSelection);
+          }
         }
-      }
+      });
     });
   };
 
-  createRelativeSelection() {
-    const sel = this.editor.getSelection();
+  createRelativeSelection(editor: ICodeEditor) {
+    const sel = editor.getSelection();
     const monacoModel = this.textModel;
     const type = this.yText;
     if (sel !== null) {
@@ -171,9 +172,9 @@ export class TextModelBinding {
     });
   };
 
-  onDidChangeCursorSelectionHandler = () => {
-    if (this.editor.getModel() === this.textModel) {
-      const sel = this.editor.getSelection();
+  onDidChangeCursorSelectionHandler = (editor: ICodeEditor) => () => {
+    if (editor.getModel() === this.textModel) {
+      const sel = editor.getSelection();
       if (sel === null) {
         return;
       }
@@ -205,9 +206,9 @@ export class TextModelBinding {
     this.disposableContentChangeHandler = this.textModel.onDidChangeContent(this.textModelOnDidChangeContentHandler);
 
     // register awareness
-    this.disposableDidChangeCursorSelectionHandler = this.editor.onDidChangeCursorSelection(
-      this.onDidChangeCursorSelectionHandler,
-    );
+    this.editors.forEach((editor) => {
+      this.disposables.set(editor, editor.onDidChangeCursorSelection(this.onDidChangeCursorSelectionHandler(editor)));
+    });
 
     // when awareness changed, render decorations again
     this.awareness.on('change', this.renderDecorations);
@@ -234,23 +235,37 @@ export class TextModelBinding {
    * Stop listening to some events
    */
   offEventListener() {
-    if (this.disposableDidChangeCursorSelectionHandler) {
-      this.disposableDidChangeCursorSelectionHandler.dispose();
-      this.awareness.off('change', this.renderDecorations);
-      this.disposableDidChangeCursorSelectionHandler = undefined;
-    }
+    this.disposables.forEach((disposable, key) => {
+      disposable.dispose();
+      this.disposables.delete(key);
+    });
+    this.awareness.off('change', this.renderDecorations);
   }
 
   /**
    * Continue to listen on some events
    */
   onEventListener() {
-    if (!this.disposableDidChangeCursorSelectionHandler) {
-      this.disposableDidChangeCursorSelectionHandler = this.editor.onDidChangeCursorSelection(
-        this.onDidChangeCursorSelectionHandler,
-      );
-      this.awareness.on('change', this.renderDecorations);
-      this.renderDecorations();
+    this.editors.forEach((editor) => {
+      if (!this.disposables.has(editor)) {
+        this.disposables.set(editor, editor.onDidChangeCursorSelection(this.onDidChangeCursorSelectionHandler(editor)));
+      }
+    });
+    this.awareness.on('change', this.renderDecorations);
+    this.renderDecorations();
+  }
+
+  addEditor(editor: ICodeEditor) {
+    if (!this.editors.has(editor)) {
+      this.disposables.set(editor, editor.onDidChangeCursorSelection(this.onDidChangeCursorSelectionHandler(editor)));
+      this.editors.add(editor);
+    }
+  }
+
+  removeEditor(editor: ICodeEditor) {
+    if (this.editors.has(editor)) {
+      this.disposables.set(editor, editor.onDidChangeCursorSelection(this.onDidChangeCursorSelectionHandler(editor)));
+      this.editors.delete(editor);
     }
   }
 
@@ -258,7 +273,7 @@ export class TextModelBinding {
    * Stop listening to all events
    */
   dispose() {
-    this.disposableContentChangeHandler.dispose();
+    this.disposables.forEach((disposable) => disposable.dispose());
     this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);
     this.yText.unobserve(this.yTextObserver);
     this.awareness.off('change', this.renderDecorations);
