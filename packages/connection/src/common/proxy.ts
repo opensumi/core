@@ -1,7 +1,7 @@
 import { ApplicationError } from '@opensumi/ide-core-common';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { getCapturer } from './utils';
+import { getCapturer, genrateUniqueId } from './utils';
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];
@@ -109,12 +109,15 @@ export class RPCProxy {
               resolve(null);
             } else {
               let requestResult: Promise<any>;
+              // generate a unique requestId to associate request and requestResult
+              const requestId = genrateUniqueId();
+
               if (isSingleArray) {
                 requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
-                getCapturer() && getCapturer()(['sendRequest', prop, [...args]]);
+                getCapturer() && getCapturer()(['sendRequest', requestId, prop, [...args]]);
               } else {
                 requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
-                getCapturer() && getCapturer()(['sendRequest', prop, ...args]);
+                getCapturer() && getCapturer()(['sendRequest', requestId, prop, ...args]);
               }
 
               requestResult
@@ -132,10 +135,10 @@ export class RPCProxy {
                       const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
-                    getCapturer() && getCapturer()(['错误', error]);
+                    getCapturer() && getCapturer()(['错误', requestId, error]);
                     reject(error);
                   } else {
-                    getCapturer() && getCapturer()(['requestResult', result.data]);
+                    getCapturer() && getCapturer()(['requestResult', requestId, result.data]);
                     resolve(result.data);
                   }
                 });
