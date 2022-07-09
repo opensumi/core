@@ -30,17 +30,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private yWebSocketProvider: WebsocketProvider;
 
-  private textMap: Map<string, string | undefined> = new Map();
-
   private yTextMap: Y.Map<Y.Text>;
 
-  private currentCodeEditor: ICodeEditor | null;
-
-  private currentBinding: TextModelBinding;
+  private currentActiveBinding: TextModelBinding;
 
   private bindingMap: Map<string, TextModelBinding> = new Map();
-
-  private currentUri: string | undefined;
 
   initialize() {
     this.yDoc = new Y.Doc();
@@ -50,14 +44,14 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   }
 
   undoOnCurrentBinding() {
-    if (this.currentBinding) {
-      this.currentBinding.undo();
+    if (this.currentActiveBinding) {
+      this.currentActiveBinding.undo();
     }
   }
 
   redoOnCurrentBinding() {
-    if (this.currentBinding) {
-      this.currentBinding.redo();
+    if (this.currentActiveBinding) {
+      this.currentActiveBinding.redo();
     }
   }
 
@@ -78,58 +72,49 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     if (e.payload.openType === null || e.payload.openType?.type !== 'code') {
       return;
     }
-    // currently support single editor binding
-    // current group changed <=> current editor changed
-    if (this.currentCodeEditor !== this.workbenchEditorService.currentCodeEditor) {
-      this.currentCodeEditor = this.workbenchEditorService.currentCodeEditor;
-    }
 
     // get current uri
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     this.logger.log('Opened uri', uri);
-    const text = this.currentCodeEditor?.currentDocumentModel?.getText();
+    const text = this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.getText();
 
     if (!uri || text === undefined) {
       return;
     }
-
-    // only when a resourced is active, create and binding Y.Text to its textModel
-    if (!this.textMap.has(uri)) {
-      this.textMap.set(uri, this.currentCodeEditor?.currentDocumentModel?.getText());
-    }
-    this.logger.log('text map', [...this.textMap.keys()]);
 
     if (!this.yTextMap.has(uri)) {
       this.yTextMap.set(uri, new Y.Text(text));
     }
 
     // this event was fired after text model
-    const textModel = this.currentCodeEditor?.currentDocumentModel?.getMonacoModel();
+    const textModel = this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.getMonacoModel();
     this.logger.log('textModel', textModel);
 
-    if (textModel) {
-      if (this.currentUri !== undefined && this.bindingMap.has(this.currentUri)) {
-        // this.currentBinding.dispose();
-        const binding = this.bindingMap.get(this.currentUri)!;
+    const currentUri = uri;
+
+    const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
+    if (textModel && monacoEditor) {
+      // remove all editor, brute-force, will be optimized soon
+      this.bindingMap.forEach((binding) => {
+        binding.removeEditor(monacoEditor);
         binding.offEventListener();
-      }
-      this.currentUri = uri?.toString();
+      });
+
       // just bind it
-      const monacoEditor = this.currentCodeEditor?.monacoEditor;
-      if (monacoEditor) {
-        if (this.bindingMap.has(this.currentUri)) {
-          this.currentBinding = this.bindingMap.get(this.currentUri)!;
-          this.currentBinding.onEventListener();
-        } else {
-          this.currentBinding = new TextModelBinding(
-            this.yTextMap.get(uri)!,
-            textModel,
-            monacoEditor,
-            this.yWebSocketProvider.awareness,
-          );
-          this.bindingMap.set(this.currentUri, this.currentBinding);
-          this.logger.log('binding', this.currentBinding);
-        }
+      if (this.bindingMap.has(currentUri)) {
+        this.currentActiveBinding = this.bindingMap.get(currentUri)!;
+        this.currentActiveBinding.addEditor(monacoEditor); // debug
+        this.currentActiveBinding.onEventListener();
+      } else {
+        this.currentActiveBinding = new TextModelBinding(
+          this.yTextMap.get(uri)!,
+          textModel,
+          monacoEditor,
+          this.yWebSocketProvider.awareness,
+        );
+        this.currentActiveBinding.addEditor(monacoEditor); // debug
+        this.bindingMap.set(currentUri, this.currentActiveBinding);
+        this.logger.log('binding', this.currentActiveBinding);
       }
     }
   }
