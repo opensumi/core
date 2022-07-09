@@ -20,6 +20,7 @@ export interface IMainThreadComments {
     resource: UriComponents,
     range: IRange,
     extensionId: string,
+    isTemplate: boolean,
   ): modes.CommentThread | undefined;
   $updateCommentThread(
     handle: number,
@@ -32,7 +33,12 @@ export interface IMainThreadComments {
 }
 
 export interface IExtHostComments {
-  $createCommentThreadTemplate(commentControllerHandle: number, uriComponents: UriComponents, range: IRange): void;
+  $createCommentThreadTemplate(
+    commentControllerHandle: number,
+    uriComponents: UriComponents,
+    range: IRange,
+    isTemplate: boolean,
+  ): void;
   $updateCommentThreadTemplate(commentControllerHandle: number, threadHandle: number, range: IRange): Promise<void>;
   $deleteCommentThread(commentControllerHandle: number, commentThreadHandle: number): void;
   $provideCommentingRanges(

@@ -323,6 +323,7 @@ class ExtHostCommentController implements vscode.CommentController {
         arg2 as vscode.Range,
         arg3 as vscode.Comment[],
         this._extension,
+        false,
       );
       this._threads.set(commentThread.handle, commentThread);
       return commentThread;
@@ -335,6 +336,7 @@ class ExtHostCommentController implements vscode.CommentController {
         arg1 as vscode.Range,
         arg2 as vscode.Comment[],
         this._extension,
+        false,
       );
       this._threads.set(commentThread.handle, commentThread);
       return commentThread;
@@ -350,6 +352,7 @@ class ExtHostCommentController implements vscode.CommentController {
       extHostTypeConverter.toRange(range),
       [],
       this._extension,
+      true,
     );
     commentThread.collapsibleState = models.CommentThreadCollapsibleState.Expanded;
     this._threads.set(commentThread.handle, commentThread);
@@ -508,6 +511,7 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     private _range: vscode.Range,
     private _comments: vscode.Comment[],
     extension: IExtensionDescription,
+    private _isTemplate: boolean,
   ) {
     this._acceptInputDisposables.value = new DisposableStore();
 
@@ -522,6 +526,7 @@ export class ExtHostCommentThread implements vscode.CommentThread {
       this._uri,
       extHostTypeConverter.fromRange(this._range),
       extension.id,
+      this._isTemplate,
     );
 
     this._localDisposables = [];

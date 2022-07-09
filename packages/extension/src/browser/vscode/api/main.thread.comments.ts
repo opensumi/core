@@ -200,12 +200,13 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
     resource: UriComponents,
     range: IRange,
     extensionId: string,
+    isTemplate: boolean,
   ): CommentThread | undefined {
     const provider = this._commentControllers.get(handle);
     if (!provider) {
       return undefined;
     }
-    return provider.createCommentThread(extensionId, commentThreadHandle, threadId, resource, range);
+    return provider.createCommentThread(extensionId, commentThreadHandle, threadId, resource, range, isTemplate);
   }
   $deleteCommentThread(handle: number, commentThreadHandle: number): void {
     const provider = this._commentControllers.get(handle);
@@ -265,7 +266,7 @@ export class MainThreadCommentThread implements CommentThread {
     return {
       id: comment.uniqueIdInThread.toString(),
       mode: comment.mode as unknown as CommentMode,
-      body: (typeof comment.body === 'string') ?  comment.body : MarkdownString.from(comment.body as CodeMarkdownString),
+      body: typeof comment.body === 'string' ? comment.body : MarkdownString.from(comment.body as CodeMarkdownString),
       label: comment.label,
       contextValue: comment.contextValue,
       author: {
@@ -381,6 +382,7 @@ export class MainThreadCommentThread implements CommentThread {
     public resource: string,
     _range: IRange,
     _canReply: boolean,
+    private _isTemplate: boolean,
   ) {
     // 查找当前位置 的 threads
     // 框架支持同一个位置多个 thread
@@ -408,14 +410,16 @@ export class MainThreadCommentThread implements CommentThread {
     }
     this._isDisposed = false;
   }
+  state?: CommentThreadState | undefined;
+  onDidChangeState: Event<CommentThreadState | undefined>;
   isDocumentCommentThread(): this is CommentThread<IRange> {
     throw new Error('Method not implemented.');
   }
   // FIXME: 实现新增的属性
-  state?: CommentThreadState | undefined;
   onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
-  onDidChangeState: Event<CommentThreadState | undefined>;
-  isTemplate: boolean;
+  public get isTemplate(): boolean {
+    return this._isTemplate;
+  }
 
   batchUpdate(changes: CommentThreadChanges) {
     const modified = (value: keyof CommentThreadChanges): boolean =>
@@ -438,6 +442,10 @@ export class MainThreadCommentThread implements CommentThread {
     }
     if (modified('canReply')) {
       this.canReply = changes.canReply!;
+    }
+
+    if (modified('isTemplate')) {
+      this._isTemplate = changes.isTemplate!;
     }
   }
 
@@ -540,6 +548,7 @@ export class MainThreadCommentController extends WithEventBus {
     threadId: string,
     resource: UriComponents,
     range: IRange,
+    isTemplate: boolean,
   ): CommentThread {
     const uri = URI.from(resource);
     const thread = this.injector.get(MainThreadCommentThread, [
@@ -550,6 +559,7 @@ export class MainThreadCommentController extends WithEventBus {
       uri.toString(),
       range,
       true,
+      isTemplate,
     ]);
 
     this._threads.set(commentThreadHandle, thread);
@@ -622,7 +632,7 @@ export class MainThreadCommentController extends WithEventBus {
   }
 
   createCommentThreadTemplate(resource: UriComponents, range: IRange): void {
-    this._proxy.$createCommentThreadTemplate(this.handle, resource, range);
+    this._proxy.$createCommentThreadTemplate(this.handle, resource, range, true);
   }
 
   async updateCommentThreadTemplate(threadHandle: number, range: IRange) {
