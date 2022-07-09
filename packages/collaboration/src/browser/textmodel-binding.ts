@@ -231,42 +231,21 @@ export class TextModelBinding {
     }
   }
 
-  /**
-   * Stop listening to some events
-   */
-  offEventListener() {
-    this.disposables.forEach((disposable, key) => {
-      disposable.dispose();
-      this.disposables.delete(key);
-    });
-    this.awareness.off('change', this.renderDecorations);
-  }
-
-  /**
-   * Continue to listen on some events
-   */
-  onEventListener() {
-    this.editors.forEach((editor) => {
-      if (!this.disposables.has(editor)) {
-        this.disposables.set(editor, editor.onDidChangeCursorSelection(this.onDidChangeCursorSelectionHandler(editor)));
-      }
-    });
-    this.awareness.on('change', this.renderDecorations);
-    this.renderDecorations();
-  }
-
   addEditor(editor: ICodeEditor) {
     if (!this.editors.has(editor)) {
       this.disposables.set(editor, editor.onDidChangeCursorSelection(this.onDidChangeCursorSelectionHandler(editor)));
       this.editors.add(editor);
     }
+    this.renderDecorations();
   }
 
   removeEditor(editor: ICodeEditor) {
     if (this.editors.has(editor)) {
-      this.disposables.set(editor, editor.onDidChangeCursorSelection(this.onDidChangeCursorSelectionHandler(editor)));
+      this.disposables.get(editor)?.dispose();
+      this.disposables.delete(editor);
       this.editors.delete(editor);
     }
+    this.renderDecorations();
   }
 
   /**

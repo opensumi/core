@@ -68,6 +68,15 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @OnEvent(EditorActiveResourceStateChangedEvent)
   private editorActiveResourceStateChangedHandler(e: EditorActiveResourceStateChangedEvent) {
+    const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
+    // remove all editor, brute-force, will be optimized soon
+    if (monacoEditor) {
+      this.bindingMap.forEach((binding) => {
+        binding.removeEditor(monacoEditor);
+        // binding.offEventListener();
+      });
+    }
+
     // only support code editor
     if (e.payload.openType === null || e.payload.openType?.type !== 'code') {
       return;
@@ -92,19 +101,13 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     const currentUri = uri;
 
-    const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
-    if (textModel && monacoEditor) {
-      // remove all editor, brute-force, will be optimized soon
-      this.bindingMap.forEach((binding) => {
-        binding.removeEditor(monacoEditor);
-        binding.offEventListener();
-      });
+    // todo only switch active(focus) binding here
 
+    if (textModel && monacoEditor) {
       // just bind it
       if (this.bindingMap.has(currentUri)) {
         this.currentActiveBinding = this.bindingMap.get(currentUri)!;
         this.currentActiveBinding.addEditor(monacoEditor); // debug
-        this.currentActiveBinding.onEventListener();
       } else {
         this.currentActiveBinding = new TextModelBinding(
           this.yTextMap.get(uri)!,
