@@ -5,3 +5,16 @@ export function stringify(obj: any): string {
 export function parse(input: string, reviver?: (this: any, key: string, value: any) => any): any {
   return JSON.parse(input, reviver);
 }
+
+declare global {
+  interface Window {
+    __opensumi_devtools: any;
+  }
+}
+
+export function getCapturer() {
+  if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
+    return window.__opensumi_devtools.capture;
+  }
+  return;
+}

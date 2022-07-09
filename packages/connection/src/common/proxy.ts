@@ -1,6 +1,8 @@
 import { ApplicationError } from '@opensumi/ide-core-common';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
+import { getCapturer } from './utils';
+
 export abstract class RPCService<T = any> {
   rpcClient?: T[];
   rpcRegistered?: boolean;
@@ -98,8 +100,10 @@ export class RPCProxy {
             if (prop.startsWith('on')) {
               if (isSingleArray) {
                 connection.sendNotification(prop, [...args]);
+                getCapturer() && getCapturer()(['sendNotification', prop, [...args]]);
               } else {
                 connection.sendNotification(prop, ...args);
+                getCapturer() && getCapturer()(['sendNotification', prop, ...args]);
               }
 
               resolve(null);
@@ -107,8 +111,10 @@ export class RPCProxy {
               let requestResult: Promise<any>;
               if (isSingleArray) {
                 requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
+                getCapturer() && getCapturer()(['sendRequest', prop, [...args]]);
               } else {
                 requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
+                getCapturer() && getCapturer()(['sendRequest', prop, ...args]);
               }
 
               requestResult
@@ -126,22 +132,10 @@ export class RPCProxy {
                       const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
-                    if (
-                      typeof window !== 'undefined' &&
-                      window.__opensumi_devtools &&
-                      window.__opensumi_devtools.capture
-                    ) {
-                      window.__opensumi_devtools.capture(['错误', error]);
-                    }
+                    getCapturer() && getCapturer()(['错误', error]);
                     reject(error);
                   } else {
-                    if (
-                      typeof window !== 'undefined' &&
-                      window.__opensumi_devtools &&
-                      window.__opensumi_devtools.capture
-                    ) {
-                      window.__opensumi_devtools.capture(['requestResult', result.data]);
-                    }
+                    getCapturer() && getCapturer()(['requestResult', result.data]);
                     resolve(result.data);
                   }
                 });
@@ -176,19 +170,13 @@ export class RPCProxy {
       const methods = this.getServiceMethod(service);
       methods.forEach((method) => {
         if (method.startsWith('on')) {
-          connection.onNotification(method, (...args) => this.onNotification(method, ...args));
           connection.onNotification(method, (...args) => {
-            if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
-              window.__opensumi_devtools.capture(['onNotification', method, ...args]);
-            }
+            getCapturer() && getCapturer()(['onNotification', method, ...args]);
             this.onNotification(method, ...args);
           });
         } else {
-          // connection.onRequest(method, (...args) => this.onRequest(method, ...args));
           connection.onRequest(method, (...args) => {
-            if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
-              window.__opensumi_devtools.capture(['onRequest', method, ...args]);
-            }
+            getCapturer() && getCapturer()(['onRequest', method, ...args]);
             return this.onRequest(method, ...args);
           });
         }
@@ -200,9 +188,7 @@ export class RPCProxy {
 
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
-          if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
-            window.__opensumi_devtools.capture(`onRequest: ${method} is not registered!`);
-          }
+          getCapturer() && getCapturer()(`onRequest: ${method} is not registered!`);
           return {
             data: NOTREGISTERMETHOD,
           };

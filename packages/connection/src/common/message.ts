@@ -83,50 +83,11 @@ export class WebSocketMessageWriter extends AbstractMessageWriter implements Mes
   public end(): void {}
 }
 
-declare global {
-  interface Window {
-    __opensumi_devtools: any;
-  }
-}
-
 /**
  * 给服务端的 WebSocket 及 Browser 端的 WebSocket 实例共用的方法
  * @param socket
  * @returns
  */
 export function createWebSocketConnection(socket: any) {
-  // return createMessageConnection(new WebSocketMessageReader(socket), new WebSocketMessageWriter(socket));
-
-  const messageConnection = createMessageConnection(
-    new WebSocketMessageReader(socket),
-    new WebSocketMessageWriter(socket),
-  );
-
-  // sendRequest是有回复的，在proxy.ts中处理requestResult
-  const messageConnectionProxy = new Proxy(messageConnection, {
-    get(target, prop) {
-      if (prop === 'sendRequest' || prop === 'sendNotification') {
-        return function (...args: any) {
-          // 注意这是common/xxx，所以要同时考虑在browser和在node的情况，node是没有window的
-          if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
-            window.__opensumi_devtools.capture([prop, ...args]);
-          }
-          return target[prop].apply(target, [...args]);
-        };
-      }
-
-      // onNotification很多的，onRequest我都试不出来
-      // if (prop === 'onRequest' || prop === 'onNotification') {
-      //   return function (...args: any) {
-      //     if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
-      //       window.__opensumi_devtools.capture([prop, ...args]);
-      //     }
-      //     return target[prop].apply(target, [...args]);
-      //   };
-      // }
-      return target[prop];
-    },
-  });
-
-  return messageConnectionProxy;
+  return createMessageConnection(new WebSocketMessageReader(socket), new WebSocketMessageWriter(socket));
 }
