@@ -85,7 +85,7 @@ export class WebSocketMessageWriter extends AbstractMessageWriter implements Mes
 
 declare global {
   interface Window {
-    __OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__: any;
+    __opensumi_devtools: any;
   }
 }
 
@@ -108,8 +108,8 @@ export function createWebSocketConnection(socket: any) {
       if (prop === 'sendRequest' || prop === 'sendNotification') {
         return function (...args: any) {
           // 注意这是common/xxx，所以要同时考虑在browser和在node的情况，node是没有window的
-          if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
-            window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.send([prop, ...args]);
+          if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
+            window.__opensumi_devtools.capture([prop, ...args]);
           }
           return target[prop].apply(target, [...args]);
         };
@@ -118,8 +118,8 @@ export function createWebSocketConnection(socket: any) {
       // onNotification很多的，onRequest我都试不出来
       // if (prop === 'onRequest' || prop === 'onNotification') {
       //   return function (...args: any) {
-      //     if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__) {
-      //       window.__OPENSUMI_DEVTOOL_EVENT_SOURCE_TOKEN__.traffic.receive([prop, ...args]);
+      //     if (typeof window !== 'undefined' && window.__opensumi_devtools && window.__opensumi_devtools.capture) {
+      //       window.__opensumi_devtools.capture([prop, ...args]);
       //     }
       //     return target[prop].apply(target, [...args]);
       //   };
