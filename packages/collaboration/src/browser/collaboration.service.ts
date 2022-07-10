@@ -83,9 +83,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   removeBindingFromUri(uri: string) {
     const binding = this.bindingMap.get(uri);
-    if (binding && binding.isEditorSetEmpty()) {
+    if (binding) {
       binding.dispose();
       this.bindingMap.delete(uri);
+      this.logger.log('Removed binding');
     }
   }
 
@@ -99,12 +100,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   private groupCloseHandler(e: EditorGroupCloseEvent) {
     this.logger.log('Group close tabs', e);
     const uri = e.payload.resource.uri.toString();
-    // todo delete from map, drop binding and remove editor from binding
-    // remove editor from binding
-    const binding = this.getBindingFromUri(uri);
-    const editor = e.payload.group.codeEditor as any as ICodeEditor;
-    if (binding) {
-      binding.removeEditor(editor);
+    // scan all opened uri
+    const anyGroupHasThisUri = this.workbenchEditorService.getAllOpenedUris().find((u) => u === e.payload.resource.uri);
+    if (!anyGroupHasThisUri) {
       // remove binding from uri
       this.removeBindingFromUri(uri);
     }
