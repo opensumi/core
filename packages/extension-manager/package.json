@@ -18,7 +18,7 @@
     "fs-extra": "^10.1.0",
     "node-fetch": "^2.6.7",
     "requestretry": "^7.0.0",
-    "yauzl": "^2.10.0"
+    "compressing": "^1.6.0"
   },
   "devDependencies": {
     "@opensumi/ide-components": "2.18.8",
@@ -29,6 +29,7 @@
     "@opensumi/ide-overlay": "2.18.8",
     "@opensumi/ide-theme": "2.18.8",
     "@types/node-fetch": "^2.6.1",
-    "@types/requestretry": "^1.12.7"
+    "@types/requestretry": "^1.12.7",
+    "@types/uuid": "^8.3.4"
   }
 }
