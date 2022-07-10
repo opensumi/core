@@ -4,8 +4,9 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingWeight,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { CommandContribution, CommandRegistry, Domain, ILogger } from '@opensumi/ide-core-common';
+import { CommandContribution, CommandRegistry, Domain, ILogger, PreferenceScope } from '@opensumi/ide-core-common';
 
 import { ICollaborationService } from '../common';
 
@@ -17,12 +18,25 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
   @Autowired(ICollaborationService)
   private collaborationService: ICollaborationService;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
   onDidStart() {
     this.logger.log('Collaboration Contribution initialized');
+    this.logger.log('preference got', this.preferenceService.get('editor.askIfDiff'));
+    if (this.preferenceService.get('editor.askIfDiff') === true) {
+      this.logger.log('Set ask diff to false');
+      this.preferenceService.set('editor.askIfDiff', false);
+    }
     this.collaborationService.initialize();
   }
 
-  onStop() {}
+  onStop() {
+    if (this.preferenceService.get('editor.askIfDiff') === false) {
+      this.logger.log('Set ask diff to true');
+      this.preferenceService.set('editor.askIfDiff', true);
+    }
+  }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
