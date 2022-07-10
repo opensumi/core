@@ -3,14 +3,15 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
-import { WorkbenchEditorService, ICodeEditor } from '@opensumi/ide-editor';
+import { ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
+import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorActiveResourceStateChangedEvent,
   EditorGroupCloseEvent,
   EditorGroupOpenEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 
 import { ICollaborationService } from '../common';
 
@@ -32,26 +33,59 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private yTextMap: Y.Map<Y.Text>;
 
-  private currentActiveBinding: TextModelBinding;
-
   private bindingMap: Map<string, TextModelBinding> = new Map();
 
   initialize() {
     this.yDoc = new Y.Doc();
-    this.yTextMap = this.yDoc.getMap('text-map');
+    this.yTextMap = this.yDoc.getMap();
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'monaco-opensumi', this.yDoc);
     this.logger.log('Collaboration initialized');
   }
 
   undoOnCurrentBinding() {
-    if (this.currentActiveBinding) {
-      this.currentActiveBinding.undo();
+    const uri = this.workbenchEditorService.currentResource?.uri.toString();
+    if (uri && this.bindingMap.has(uri)) {
+      this.bindingMap.get(uri)!.undo();
     }
   }
 
   redoOnCurrentBinding() {
-    if (this.currentActiveBinding) {
-      this.currentActiveBinding.redo();
+    const uri = this.workbenchEditorService.currentResource?.uri.toString();
+    if (uri && this.bindingMap.has(uri)) {
+      this.bindingMap.get(uri)!.redo();
+    }
+  }
+
+  createBindingFromUri(uri: string, text: string, model: ITextModel): TextModelBinding {
+    const cond = this.bindingMap.has(uri);
+
+    if (!cond) {
+      // add yText
+      if (!this.yTextMap.has(uri)) {
+        this.yTextMap.set(uri, new Y.Text(text));
+      }
+      const binding = new TextModelBinding(this.yTextMap.get(uri)!, model, this.yWebSocketProvider.awareness);
+      this.bindingMap.set(uri, binding);
+      return binding;
+    } else {
+      return this.bindingMap.get(uri)!;
+    }
+  }
+
+  getBindingFromUri(uri: string) {
+    const cond = this.bindingMap.has(uri);
+    if (cond) {
+      return this.bindingMap.get(uri)!;
+    } else {
+      return null;
+    }
+  }
+
+  removeBindingFromUri(uri: string) {
+    const binding = this.bindingMap.get(uri);
+    if (binding && binding.isEditorSetEmpty()) {
+      binding.dispose();
+      this.bindingMap.delete(uri);
     }
   }
 
@@ -64,18 +98,23 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   @OnEvent(EditorGroupCloseEvent)
   private groupCloseHandler(e: EditorGroupCloseEvent) {
     this.logger.log('Group close tabs', e);
+    const uri = e.payload.resource.uri.toString();
+    // todo delete from map, drop binding and remove editor from binding
+    // remove editor from binding
+    const binding = this.getBindingFromUri(uri);
+    const editor = e.payload.group.codeEditor as any as ICodeEditor;
+    if (binding) {
+      binding.removeEditor(editor);
+      // remove binding from uri
+      this.removeBindingFromUri(uri);
+    }
   }
 
   @OnEvent(EditorActiveResourceStateChangedEvent)
   private editorActiveResourceStateChangedHandler(e: EditorActiveResourceStateChangedEvent) {
-    const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
-    // remove all editor, brute-force, will be optimized soon
-    if (monacoEditor) {
-      this.bindingMap.forEach((binding) => {
-        binding.removeEditor(monacoEditor);
-        // binding.offEventListener();
-      });
-    }
+    // todo add to map, create binding
+    // todo switch current current binding(maybe)
+    // todo add editor from binding
 
     // only support code editor
     if (e.payload.openType === null || e.payload.openType?.type !== 'code') {
@@ -84,41 +123,21 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     // get current uri
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
-    this.logger.log('Opened uri', uri);
     const text = this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.getText();
+    const textModel = this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.getMonacoModel();
 
-    if (!uri || text === undefined) {
+    if (!uri || text === undefined || textModel === undefined) {
       return;
     }
 
-    if (!this.yTextMap.has(uri)) {
-      this.yTextMap.set(uri, new Y.Text(text));
+    let binding: TextModelBinding | null;
+    binding = this.getBindingFromUri(uri);
+    if (!binding) {
+      binding = this.createBindingFromUri(uri, text, textModel);
     }
-
-    // this event was fired after text model
-    const textModel = this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.getMonacoModel();
-    this.logger.log('textModel', textModel);
-
-    const currentUri = uri;
-
-    // todo only switch active(focus) binding here
-
-    if (textModel && monacoEditor) {
-      // just bind it
-      if (this.bindingMap.has(currentUri)) {
-        this.currentActiveBinding = this.bindingMap.get(currentUri)!;
-        this.currentActiveBinding.addEditor(monacoEditor); // debug
-      } else {
-        this.currentActiveBinding = new TextModelBinding(
-          this.yTextMap.get(uri)!,
-          textModel,
-          monacoEditor,
-          this.yWebSocketProvider.awareness,
-        );
-        this.currentActiveBinding.addEditor(monacoEditor); // debug
-        this.bindingMap.set(currentUri, this.currentActiveBinding);
-        this.logger.log('binding', this.currentActiveBinding);
-      }
+    const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
+    if (monacoEditor) {
+      binding.addEditor(monacoEditor);
     }
   }
 }

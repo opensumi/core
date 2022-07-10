@@ -28,10 +28,18 @@ export class TextModelBinding {
 
   undoManger: Y.UndoManager;
 
-  constructor(private yText: Y.Text, private textModel: ITextModel, editor: ICodeEditor, private awareness: Awareness) {
+  constructor(
+    private yText: Y.Text,
+    private textModel: ITextModel,
+    private awareness: Awareness,
+    editor?: ICodeEditor,
+  ) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.doc = yText.doc!;
-    this.editors = new Set([editor]);
+    this.editors = new Set();
+    if (editor) {
+      this.editors.add(editor);
+    }
     this.initialize();
   }
 
@@ -248,11 +256,16 @@ export class TextModelBinding {
     this.renderDecorations();
   }
 
+  isEditorSetEmpty() {
+    return this.editors.size === 0;
+  }
+
   /**
    * Stop listening to all events
    */
   dispose() {
     this.disposables.forEach((disposable) => disposable.dispose());
+    this.disposableContentChangeHandler.dispose();
     this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);
     this.yText.unobserve(this.yTextObserver);
     this.awareness.off('change', this.renderDecorations);
