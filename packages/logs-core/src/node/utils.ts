@@ -1,11 +1,11 @@
 import path from 'path';
 
-import archiver from 'archiver';
+import compressing from 'compressing';
 import * as fs from 'fs-extra';
 
-import { toLocalISOString, getDebugLogger, Archive } from '@opensumi/ide-core-common';
+import { toLocalISOString, Archive } from '@opensumi/ide-core-common';
 
-const debugLog = getDebugLogger('LogUtils');
+// const debugLog = getDebugLogger('LogUtils');
 
 /**
  * @param date 不传则返回当天日志文件夹名
@@ -87,22 +87,7 @@ export async function getLogZipArchiveByFolder(foldPath: string, waitPromise?: P
   if (!fs.existsSync(foldPath)) {
     throw new Error(`日志目录不存在 ${foldPath}`);
   }
-  const archive = archiver('zip');
-  archive.on('error', (err) => {
+  return new compressing.zip.FileStream({ source: foldPath }).on('error', (err) => {
     throw err;
   });
-
-  archive.on('entry', (entry) => {});
-
-  archive.on('warning', (warning) => {
-    debugLog.debug('archive warning', warning);
-  });
-
-  archive.on('progress', (progress) => {
-    debugLog.debug('archive progress', progress);
-  });
-
-  archive.directory(foldPath, 'log');
-  archive.finalize();
-  return archive;
 }
