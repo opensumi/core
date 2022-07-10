@@ -40,7 +40,7 @@ export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWe
   @Autowired(IViewsRegistry)
   viewsRegistry: IViewsRegistry;
 
-  schema = {
+  static schema = {
     type: 'array',
     description: localize(
       'contributes.viewsWelcome',

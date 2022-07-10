@@ -143,7 +143,7 @@ export const SCMResourceGroupNode: React.FC<ISCMResourceGroupRenderProps> = ({
       <div className={clx(styles.scm_tree_node_content)}>
         {renderFolderToggle(item, handleTwistierClick)}
         <div className={styles.scm_tree_node_overflow_wrap}>
-          <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_display_name)}>{item.name}</div>
+          <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_display_name)}>{item.displayName}</div>
         </div>
         {renderActionBar()}
         <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_tail)}>
@@ -234,7 +234,7 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
 
   const renderDisplayName = (node: SCMResourceFolder | SCMResourceFile) => (
     <div className={clx(styles.scm_tree_node_segment, styles.scm_tree_node_display_name)}>
-      {SCMResourceFolder.is(node) ? node.name : labelService.getName(node.uri)}
+      {SCMResourceFolder.is(node) ? node.displayName : labelService.getName(node.uri)}
     </div>
   );
 

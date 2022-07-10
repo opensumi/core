@@ -27,6 +27,7 @@ import {
   ILogger,
   AppConfig,
   CUSTOM_EDITOR_SCHEME,
+  IExtensionsPointService,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -47,11 +48,13 @@ import {
   ExtensionService,
   IExtensionHostProfilerService,
   ExtensionHostTypeUpperCase,
+  CONTRIBUTE_NAME_KEY,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
+import { SumiContributesRunner } from './sumi/contributes';
 import {
   AbstractExtInstanceManagementService,
   ExtensionApiReadyEvent,
@@ -60,6 +63,7 @@ import {
   Serializable,
 } from './types';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
+import { VSCodeContributeRunner } from './vscode/contributes';
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;
@@ -102,6 +106,9 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(ExtensionService)
   private readonly extensionService: ExtensionService;
 
+  @Autowired(IExtensionsPointService)
+  private readonly extensionsPointService: IExtensionsPointService;
+
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -137,6 +144,24 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       title: localize('settings.group.extension'),
       iconClass: getIcon('extension'),
     });
+
+    for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
+      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
+      this.extensionsPointService.registerExtensionPoint({
+        extensionPoint: contributeName,
+        jsonSchema: contributeCls.schema,
+        frameworkKind: ['vscode', 'opensumi'],
+      });
+    }
+
+    for (const contributeCls of SumiContributesRunner.ContributePoints) {
+      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
+      this.extensionsPointService.registerExtensionPoint({
+        extensionPoint: contributeName,
+        jsonSchema: contributeCls.schema,
+        frameworkKind: ['opensumi'],
+      });
+    }
   }
 
   onDisposeSideEffects() {

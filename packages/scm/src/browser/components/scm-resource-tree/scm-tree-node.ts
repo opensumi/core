@@ -43,10 +43,8 @@ export class SCMResourceGroup extends CompositeTreeNode {
     parent: CompositeTreeNode | undefined,
     public raw: ISCMTreeNodeDescription<ISCMResourceGroup>,
     public readonly resource: ISCMResourceGroup,
-    id?: number,
   ) {
     super(tree as ITree, parent, undefined, { name: resource.label });
-    this.id = id || this.id;
     // 目录节点默认全部展开
     this.isExpanded = true;
   }
@@ -69,12 +67,15 @@ export class SCMResourceFolder extends CompositeTreeNode {
     parent: CompositeTreeNode | undefined,
     public raw: ISCMTreeNodeDescription<ISCMResource>,
     public readonly resource: ISCMResource,
-    id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.name });
-    this.id = id || this.id;
+    super(tree as ITree, parent, undefined, { name: raw.resource.sourceUri.toString() });
     // 目录节点默认全部展开
     this.isExpanded = true;
+  }
+
+  @memoize
+  get displayName(): string {
+    return this.raw.name;
   }
 
   @memoize
@@ -106,10 +107,13 @@ export class SCMResourceFile extends TreeNode {
     public raw: ISCMTreeNodeDescription<ISCMResource>,
     public readonly resource: ISCMResource,
     private readonly isTree?: boolean,
-    id?: number,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.pathname });
-    this.id = id || this.id;
+    super(tree as ITree, parent, undefined, { name: raw.resource.sourceUri.toString() });
+  }
+
+  @memoize
+  get displayName(): string {
+    return this.raw.name;
   }
 
   @memoize

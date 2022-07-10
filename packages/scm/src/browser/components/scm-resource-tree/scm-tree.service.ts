@@ -131,14 +131,14 @@ export class SCMTreeService extends Tree {
   private toNode(child: ISCMTreeNodeDescription, parent: SCMResourceNotFile, isTree: boolean) {
     if (child.type === 'group') {
       const c = child as ISCMTreeNodeDescription<ISCMResourceGroup>;
-      return new SCMResourceGroup(this, parent, c, c.resource, this.getCachedNodeItem(c.id)?.id);
+      return new SCMResourceGroup(this, parent, c, c.resource);
     }
 
     const c = child as ISCMTreeNodeDescription<ISCMResource>;
     if (child.type === 'file') {
-      return new SCMResourceFile(this, parent, c, c.resource, isTree, this.getCachedNodeItem(c.id)?.id);
+      return new SCMResourceFile(this, parent, c, c.resource, isTree);
     } else {
-      return new SCMResourceFolder(this, parent, c, c.resource, this.getCachedNodeItem(c.id)?.id);
+      return new SCMResourceFolder(this, parent, c, c.resource);
     }
   }
 
