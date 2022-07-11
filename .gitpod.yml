@@ -6,7 +6,7 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: sudo apt-get -y install build-essential g++ libx11-dev libxkbfile-dev libsecret-1-dev python-is-python3 && npm install && npm run init
+  - init: npm install && npm run init
     command: npm run start
 
 ports:
