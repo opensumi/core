@@ -342,7 +342,7 @@ export class FileServiceClient implements IFileServiceClient {
 
     const watcherId = await provider.watch(_uri.codeUri, {
       recursive: true,
-      excludes: excludes || [],
+      excludes,
     });
 
     this.watcherDisposerMap.set(id, {

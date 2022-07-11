@@ -96,7 +96,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
    * @param {{ recursive: boolean; excludes: string[] }} [options]  // 还不支持 recursive 参数
    * @memberof DiskFileSystemProvider
    */
-  async watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }): Promise<number> {
+  async watch(uri: UriComponents, options?: { recursive: boolean; excludes?: string[] }): Promise<number> {
     const _uri = Uri.revive(uri);
     const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
       excludes: options?.excludes ?? [],
