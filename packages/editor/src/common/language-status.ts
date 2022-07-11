@@ -29,4 +29,5 @@ export interface ILanguageStatus {
   readonly source: string;
   readonly command?: StatusBarHoverCommand;
   readonly accessibilityInfo: IAccessibilityInformation | undefined;
+  readonly busy: boolean;
 }
