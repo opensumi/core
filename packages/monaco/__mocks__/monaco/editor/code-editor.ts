@@ -15,7 +15,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     this.id = ++MockedCodeEditor.ID;
   }
   onDidChangeModelTokens: monaco.IEvent<monaco.editor.IModelTokensChangedEvent>;
-  onDropIntoEditor: monaco.IEvent<{ readonly position: monaco.IPosition; readonly event: DragEvent; }>;
+  onDropIntoEditor: monaco.IEvent<{ readonly position: monaco.IPosition; readonly event: DragEvent }>;
   removeDecorations(decorationIds: string[]): void {
     throw new Error('Method not implemented.');
   }
