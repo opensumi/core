@@ -60,12 +60,23 @@ export class ToolBarModuleContribution
     /**
      * 在这里根据是否是 electron 来给 preferredPosition location 或 strictPosition location 定义枚举项 snippet
      */
-    const locationPointPath = (type: 'preferredPosition' | 'strictPosition') => ['toolbar', 'properties', 'actions', 'items', 'properties', type, 'properties', 'location'];
+    const locationPointPath = (type: 'preferredPosition' | 'strictPosition') => [
+      'toolbar',
+      'properties',
+      'actions',
+      'items',
+      'properties',
+      type,
+      'properties',
+      'location',
+    ];
     const appendData = {
       extensionPoint: '',
       frameworkKind: ['opensumi'] as FrameworkKind[],
       jsonSchema: {
-        enum: this.config.isElectronRenderer ? ['toolbar-left', 'toolbar-right', 'toolbar-center'] : ['menu-left', 'menu-right'],
+        enum: this.config.isElectronRenderer
+          ? ['toolbar-left', 'toolbar-right', 'toolbar-center']
+          : ['menu-left', 'menu-right'],
       },
     };
 

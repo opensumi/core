@@ -1,11 +1,12 @@
 const path = require('path');
 const rimraf = require('rimraf');
 const fs = require('fs-extra');
-const yauzl = require('yauzl');
+const compressing = require('compressing');
 const log = require('debug')('InstallExtension');
 const os = require('os');
 const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
+const pipeline = require('stream').pipeline;
 const { v4 } = require('uuid');
 
 // 放置 extension 的目录
@@ -66,94 +67,51 @@ async function downloadExtension(url, namespace, extensionName) {
   return { tmpZipFile, targetDirName };
 }
 
-function openZipStream(zipFile, entry) {
-  return new Promise((resolve, reject) => {
-    zipFile.openReadStream(entry, (error, stream) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(stream);
-      }
-    });
-  });
-}
-
-function modeFromEntry(entry) {
-  const attr = entry.externalFileAttributes >> 16 || 33188;
-
-  return [448 /* S_IRWXU */, 56 /* S_IRWXG */, 7 /* S_IRWXO */]
-    .map((mask) => attr & mask)
-    .reduce((a, b) => a + b, attr & 61440 /* S_IFMT */);
-}
-
-function createZipFile(zipFilePath) {
-  return new Promise((resolve, reject) => {
-    yauzl.open(zipFilePath, { lazyEntries: true }, (err, zipfile) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(zipfile);
-    });
-  });
-}
-
 function unzipFile(dist, targetDirName, tmpZipFile) {
   const sourcePathRegex = new RegExp('^extension');
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     try {
       const extensionDir = path.join(dist, targetDirName);
-      // 创建插件目录
-      await fs.mkdirp(extensionDir);
-
-      const zipFile = await createZipFile(tmpZipFile);
-      zipFile.readEntry();
-      zipFile.on('error', (e) => {
-        reject(e);
-      });
-
-      zipFile.on('close', () => {
-        if (!fs.pathExistsSync(path.join(extensionDir, 'package.json'))) {
-          reject(`Download Error: ${extensionDir}/package.json`);
-          return;
-        }
-        fs.remove(tmpZipFile).then(() => resolve(extensionDir));
-      });
-
-      zipFile.on('entry', (entry) => {
-        if (!sourcePathRegex.test(entry.fileName)) {
-          zipFile.readEntry();
-          return;
-        }
-        let fileName = entry.fileName.replace(sourcePathRegex, '');
-
-        if (/\/$/.test(fileName)) {
-          const targetFileName = path.join(extensionDir, fileName);
-          fs.mkdirp(targetFileName).then(() => zipFile.readEntry());
-          return;
-        }
-
-        const readStream = openZipStream(zipFile, entry);
-        const mode = modeFromEntry(entry);
-        readStream.then((stream) => {
-          const dirname = path.dirname(fileName);
-          const targetDirName = path.join(extensionDir, dirname);
-          if (targetDirName.indexOf(extensionDir) !== 0) {
-            throw new Error(`invalid file path ${targetDirName}`);
+      const stream = new compressing.zip.UncompressStream({ source: tmpZipFile });
+      stream
+        .on('error', reject)
+        .on('finish', () => {
+          if (!fs.pathExistsSync(path.join(extensionDir, 'package.json'))) {
+            reject(`Download Error: ${extensionDir}/package.json`);
+            return;
+          }
+          fs.remove(tmpZipFile).then(() => resolve(extensionDir));
+        })
+        .on('entry', (header, stream, next) => {
+          stream.on('end', next);
+          if (!sourcePathRegex.test(header.name)) {
+            stream.resume();
+            return;
+          }
+          let fileName = header.name.replace(sourcePathRegex, '');
+          if (/\/$/.test(fileName)) {
+            const targetFileName = path.join(extensionDir, fileName);
+            fs.mkdirp(targetFileName, (err) => {
+              if (err) {
+                return reject(err);
+              }
+              stream.resume();
+            });
+            return;
           }
           const targetFileName = path.join(extensionDir, fileName);
-
-          fs.mkdirp(targetDirName).then(() => {
-            const writerStream = fs.createWriteStream(targetFileName, { mode });
-            writerStream.on('close', () => {
-              zipFile.readEntry();
+          fs.mkdirp(path.dirname(targetFileName), (err) => {
+            if (err) {
+              return reject(err);
+            }
+            const writerStream = fs.createWriteStream(targetFileName, { mode: header.mode });
+            pipeline(stream, writerStream, (err) => {
+              if (err) {
+                return reject(err);
+              }
             });
-            stream.on('error', (err) => {
-              throw err;
-            });
-            stream.pipe(writerStream);
           });
         });
-      });
     } catch (err) {
       reject(err);
     }

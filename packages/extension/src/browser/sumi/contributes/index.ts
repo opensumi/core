@@ -1,5 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { IJSONSchemaRegistry, ILogger, WithEventBus, IEventBus, EXTENSION_JSON_URI, OpensumiExtensionPackageSchema } from '@opensumi/ide-core-browser';
+import {
+  IJSONSchemaRegistry,
+  ILogger,
+  WithEventBus,
+  IEventBus,
+  EXTENSION_JSON_URI,
+  OpensumiExtensionPackageSchema,
+} from '@opensumi/ide-core-browser';
 
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
@@ -75,7 +82,8 @@ export class SumiContributesRunner extends WithEventBus {
           ]);
 
           if (contributeCls.schema) {
-            OpensumiExtensionPackageSchema.properties.kaitianContributes.properties[contributeName] = contributeCls.schema;
+            OpensumiExtensionPackageSchema.properties.kaitianContributes.properties[contributeName] =
+              contributeCls.schema;
           }
 
           this.addDispose(contributePoint);

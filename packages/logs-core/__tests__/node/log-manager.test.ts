@@ -53,7 +53,7 @@ describe('LogServiceManager', () => {
   test('GetLogZipArchiveByDay', async () => {
     const archive = await loggerManager.getLogZipArchiveByDay(today);
 
-    expect(archive.pipe).toBeInstanceOf(Function);
+    expect(typeof archive.pipe).toBe('function');
   });
 
   test('Clean log folder cleanOldLogs', () => {

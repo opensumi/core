@@ -6,7 +6,6 @@ import { VSCodeContributePoint, Contributes } from '../../../common';
 @Injectable()
 @Contributes('nodeMain')
 export class NodeMainContributionPoint extends VSCodeContributePoint<{ [key in string]: string }> {
-
   static schema = {
     type: 'string',
     defaultSnippets: [

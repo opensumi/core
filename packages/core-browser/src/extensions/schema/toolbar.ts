@@ -200,9 +200,7 @@ export namespace toolbar {
                   type: 'string',
                   description: localize('sumiContributes.toolbar.actions.type'),
                   enum: ['button'],
-                  enumDescriptions: [
-                    localize('sumiContributes.toolbar.actions.type.button'),
-                  ],
+                  enumDescriptions: [localize('sumiContributes.toolbar.actions.type.button')],
                   default: 'button',
                 },
                 title: {
@@ -277,9 +275,7 @@ export namespace toolbar {
                   type: 'string',
                   description: localize('sumiContributes.toolbar.actions.type'),
                   enum: ['select'],
-                  enumDescriptions: [
-                    localize('sumiContributes.toolbar.actions.type.select'),
-                  ],
+                  enumDescriptions: [localize('sumiContributes.toolbar.actions.type.select')],
                   default: 'select',
                 },
                 options: {
@@ -290,7 +286,10 @@ export namespace toolbar {
                     type: 'object',
                     defaultSnippets: [
                       {
-                        label: snippetLabel({ value: '' }, localize('sumiContributes.toolbar.actions.select.options.value')),
+                        label: snippetLabel(
+                          { value: '' },
+                          localize('sumiContributes.toolbar.actions.select.options.value'),
+                        ),
                         body: {
                           value: '${1}',
                         },

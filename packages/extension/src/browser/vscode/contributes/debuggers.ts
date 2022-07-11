@@ -48,98 +48,130 @@ export interface DebuggersContributionScheme extends VSCodePlatformSpecificAdapt
 @Injectable()
 @Contributes('debuggers')
 export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersContributionScheme[]> {
-
   static schema = {
-		description: localize('vscode.extension.contributes.debuggers', 'Contributes debug adapters.'),
-		type: 'array',
-		defaultSnippets: [{ body: [{ type: '' }] }],
-		items: {
-			additionalProperties: false,
-			type: 'object',
-			defaultSnippets: [{ body: { type: '', program: '', runtime: '' } }],
-			properties: {
-				type: {
-					description: localize('vscode.extension.contributes.debuggers.type', 'Unique identifier for this debug adapter.'),
-					type: 'string',
-				},
-				label: {
-					description: localize('vscode.extension.contributes.debuggers.label', 'Display name for this debug adapter.'),
-					type: 'string',
-				},
-				program: {
-					description: localize('vscode.extension.contributes.debuggers.program', 'Path to the debug adapter program. Path is either absolute or relative to the extension folder.'),
-					type: 'string',
-				},
-				args: {
-					description: localize('vscode.extension.contributes.debuggers.args', 'Optional arguments to pass to the adapter.'),
-					type: 'array',
-				},
-				runtime: {
-					description: localize('vscode.extension.contributes.debuggers.runtime', 'Optional runtime in case the program attribute is not an executable but requires a runtime.'),
-					type: 'string',
-				},
-				runtimeArgs: {
-					description: localize('vscode.extension.contributes.debuggers.runtimeArgs', 'Optional runtime arguments.'),
-					type: 'array',
-				},
-				variables: {
-					description: localize('vscode.extension.contributes.debuggers.variables', 'Mapping from interactive variables (e.g. ${action.pickProcess}) in `launch.json` to a command.'),
-					type: 'object',
-				},
-				initialConfigurations: {
-					description: localize('vscode.extension.contributes.debuggers.initialConfigurations', "Configurations for generating the initial \'launch.json\'."),
-					type: ['array', 'string'],
-				},
-				languages: {
-					description: localize('vscode.extension.contributes.debuggers.languages', 'List of languages for which the debug extension could be considered the "default debugger".'),
-					type: 'array',
-				},
-				configurationSnippets: {
-					description: localize('vscode.extension.contributes.debuggers.configurationSnippets', "Snippets for adding new configurations in \'launch.json\'."),
-					type: 'array',
-				},
-				configurationAttributes: {
-					description: localize('vscode.extension.contributes.debuggers.configurationAttributes', "JSON schema configurations for validating \'launch.json\'."),
-					type: 'object',
-				},
-				when: {
-					description: localize('vscode.extension.contributes.debuggers.when', "Condition which must be true to enable this type of debugger. Consider using 'shellExecutionSupported', 'virtualWorkspace', 'resourceScheme' or an extension-defined context key as appropriate for this."),
-					type: 'string',
-					default: '',
-				},
-				windows: {
-					description: localize('vscode.extension.contributes.debuggers.windows', 'Windows specific settings.'),
-					type: 'object',
-					properties: {
-						runtime: {
-							description: localize('vscode.extension.contributes.debuggers.windows.runtime', 'Runtime used for Windows.'),
-							type: 'string',
-						},
-					},
-				},
-				osx: {
-					description: localize('vscode.extension.contributes.debuggers.osx', 'macOS specific settings.'),
-					type: 'object',
-					properties: {
-						runtime: {
-							description: localize('vscode.extension.contributes.debuggers.osx.runtime', 'Runtime used for macOS.'),
-							type: 'string',
-						},
-					},
-				},
-				linux: {
-					description: localize('vscode.extension.contributes.debuggers.linux', 'Linux specific settings.'),
-					type: 'object',
-					properties: {
-						runtime: {
-							description: localize('vscode.extension.contributes.debuggers.linux.runtime', 'Runtime used for Linux.'),
-							type: 'string',
-						},
-					},
-				},
-			},
-		},
-	};
+    description: localize('vscode.extension.contributes.debuggers', 'Contributes debug adapters.'),
+    type: 'array',
+    defaultSnippets: [{ body: [{ type: '' }] }],
+    items: {
+      additionalProperties: false,
+      type: 'object',
+      defaultSnippets: [{ body: { type: '', program: '', runtime: '' } }],
+      properties: {
+        type: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.type',
+            'Unique identifier for this debug adapter.',
+          ),
+          type: 'string',
+        },
+        label: {
+          description: localize('vscode.extension.contributes.debuggers.label', 'Display name for this debug adapter.'),
+          type: 'string',
+        },
+        program: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.program',
+            'Path to the debug adapter program. Path is either absolute or relative to the extension folder.',
+          ),
+          type: 'string',
+        },
+        args: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.args',
+            'Optional arguments to pass to the adapter.',
+          ),
+          type: 'array',
+        },
+        runtime: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.runtime',
+            'Optional runtime in case the program attribute is not an executable but requires a runtime.',
+          ),
+          type: 'string',
+        },
+        runtimeArgs: {
+          description: localize('vscode.extension.contributes.debuggers.runtimeArgs', 'Optional runtime arguments.'),
+          type: 'array',
+        },
+        variables: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.variables',
+            'Mapping from interactive variables (e.g. ${action.pickProcess}) in `launch.json` to a command.',
+          ),
+          type: 'object',
+        },
+        initialConfigurations: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.initialConfigurations',
+            "Configurations for generating the initial 'launch.json'.",
+          ),
+          type: ['array', 'string'],
+        },
+        languages: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.languages',
+            'List of languages for which the debug extension could be considered the "default debugger".',
+          ),
+          type: 'array',
+        },
+        configurationSnippets: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.configurationSnippets',
+            "Snippets for adding new configurations in 'launch.json'.",
+          ),
+          type: 'array',
+        },
+        configurationAttributes: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.configurationAttributes',
+            "JSON schema configurations for validating 'launch.json'.",
+          ),
+          type: 'object',
+        },
+        when: {
+          description: localize(
+            'vscode.extension.contributes.debuggers.when',
+            "Condition which must be true to enable this type of debugger. Consider using 'shellExecutionSupported', 'virtualWorkspace', 'resourceScheme' or an extension-defined context key as appropriate for this.",
+          ),
+          type: 'string',
+          default: '',
+        },
+        windows: {
+          description: localize('vscode.extension.contributes.debuggers.windows', 'Windows specific settings.'),
+          type: 'object',
+          properties: {
+            runtime: {
+              description: localize(
+                'vscode.extension.contributes.debuggers.windows.runtime',
+                'Runtime used for Windows.',
+              ),
+              type: 'string',
+            },
+          },
+        },
+        osx: {
+          description: localize('vscode.extension.contributes.debuggers.osx', 'macOS specific settings.'),
+          type: 'object',
+          properties: {
+            runtime: {
+              description: localize('vscode.extension.contributes.debuggers.osx.runtime', 'Runtime used for macOS.'),
+              type: 'string',
+            },
+          },
+        },
+        linux: {
+          description: localize('vscode.extension.contributes.debuggers.linux', 'Linux specific settings.'),
+          type: 'object',
+          properties: {
+            runtime: {
+              description: localize('vscode.extension.contributes.debuggers.linux.runtime', 'Runtime used for Linux.'),
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  };
 
   @Autowired(IDebugService)
   private debugService: IDebugService;

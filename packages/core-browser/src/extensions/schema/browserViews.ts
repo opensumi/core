@@ -1,21 +1,24 @@
 import { localize } from '@opensumi/ide-core-common';
 
 export namespace browserViews {
-
   export const properties = {
     type: 'object',
     required: ['type', 'view'],
     defaultSnippets: [
       {
         label: 'type',
-        bodyText: JSON.stringify({
-          type: '${1:add}',
-          view: [
-            {
-              id: '${2}',
-            },
-          ],
-        }, null, '\t'),
+        bodyText: JSON.stringify(
+          {
+            type: '${1:add}',
+            view: [
+              {
+                id: '${2}',
+              },
+            ],
+          },
+          null,
+          '\t',
+        ),
       },
     ],
     properties: {
@@ -30,11 +33,15 @@ export namespace browserViews {
           required: ['id'],
           defaultSnippets: [
             {
-              label: '{\"id\":\"\"}',
+              label: '{"id":""}',
               description: '',
-              bodyText: JSON.stringify({
-                id: '${3}',
-              }, null, '\t'),
+              bodyText: JSON.stringify(
+                {
+                  id: '${3}',
+                },
+                null,
+                '\t',
+              ),
             },
           ],
           properties: {

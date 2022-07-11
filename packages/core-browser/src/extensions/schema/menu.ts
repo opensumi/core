@@ -55,22 +55,24 @@ const submenu: IJSONSchema = {
     },
     icon: {
       description: localize('sumiContributes.submenus.icon'),
-      anyOf: [{
-        type: 'string',
-      },
-      {
-        type: 'object',
-        properties: {
-          light: {
-            description: localize('sumiContributes.submenus.icon.light'),
-            type: 'string',
-          },
-          dark: {
-            description: localize('sumiContributes.submenus.dark'),
-            type: 'string',
+      anyOf: [
+        {
+          type: 'string',
+        },
+        {
+          type: 'object',
+          properties: {
+            light: {
+              description: localize('sumiContributes.submenus.icon.light'),
+              type: 'string',
+            },
+            dark: {
+              description: localize('sumiContributes.submenus.dark'),
+              type: 'string',
+            },
           },
         },
-      }],
+      ],
     },
   },
 };
@@ -214,21 +216,25 @@ const apiMenus: IAPIMenu[] = [
   },
 ];
 
-const index = <T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, mapper?: (t: T) => R): { [key: string]: R } => array.reduce((r, t) => {
+const index = <T, R>(array: ReadonlyArray<T>, indexer: (t: T) => string, mapper?: (t: T) => R): { [key: string]: R } =>
+  array.reduce((r, t) => {
     r[indexer(t)] = mapper ? mapper(t) : t;
     return r;
   }, Object.create(null));
-
 
 export namespace menus {
   export const schema: IJSONSchema = {
     description: localize('sumiContributes.menu'),
     type: 'object',
-    properties: index(apiMenus, (menu) => menu.id, (menu) => ({
-      type: 'array',
-      description: menu.description,
-      items: menuItem,
-    })),
+    properties: index(
+      apiMenus,
+      (menu) => menu.id,
+      (menu) => ({
+        type: 'array',
+        description: menu.description,
+        items: menuItem,
+      }),
+    ),
   };
 
   export const subMenusSchema: IJSONSchema = {
