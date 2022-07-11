@@ -7,7 +7,7 @@ RUN bash -c 'VERSION="14.19.3" \
 
 RUN echo "nvm use default &>/dev/null" >> ~/.bashrc.d/51-nvm-fix
 
-RUN sudo apt-get update && apt-get install -y \
+RUN sudo apt-get update && sudo apt-get install -y \
   build-essential \
   g++ \
   libx11-dev \
