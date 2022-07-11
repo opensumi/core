@@ -2620,6 +2620,11 @@ export enum CommentMode {
   Preview = 1,
 }
 
+export enum CommentThreadState {
+  Unresolved = 0,
+  Resolved = 1,
+}
+
 /**
  * thread 展开模式
  */

@@ -8,6 +8,7 @@ import {
   CommentInput,
   CommentMode,
   CommentThreadCollapsibleState,
+  CommentThreadState,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { ICommand } from './command';
@@ -37,6 +38,7 @@ export {
   CommentMode,
   CommentThreadCollapsibleState,
   CommentOptions,
+  CommentThreadState,
 };
 
 /**
@@ -80,6 +82,7 @@ export type CommentThreadChanges = Partial<{
   comments: Comment[];
   collapseState: CommentThreadCollapsibleState;
   canReply: boolean;
+  state: CommentThreadState;
   isTemplate: boolean;
 }>;
 

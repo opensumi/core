@@ -365,6 +365,21 @@ export class MainThreadCommentThread implements CommentThread {
 
   private readonly _onDidChangeCollasibleState = new Emitter<CommentThreadCollapsibleState | undefined>();
   public onDidChangeCollasibleState = this._onDidChangeCollasibleState.event;
+  // 新版修改了事件名称
+  public onDidChangeCollapsibleState = this._onDidChangeCollasibleState.event;
+
+  private readonly _onDidChangeState = new Emitter<CommentThreadState | undefined>();
+  public onDidChangeState = this._onDidChangeState.event;
+
+  private _state: CommentThreadState | undefined;
+  get state() {
+    return this._state;
+  }
+
+  set state(newState: CommentThreadState | undefined) {
+    this._state = newState;
+    this._onDidChangeState.fire(this._state);
+  }
 
   private _isDisposed: boolean;
 
@@ -410,13 +425,9 @@ export class MainThreadCommentThread implements CommentThread {
     }
     this._isDisposed = false;
   }
-  state?: CommentThreadState | undefined;
-  onDidChangeState: Event<CommentThreadState | undefined>;
   isDocumentCommentThread(): this is CommentThread<IRange> {
     throw new Error('Method not implemented.');
   }
-  // FIXME: 实现新增的属性
-  onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
   public get isTemplate(): boolean {
     return this._isTemplate;
   }
@@ -443,7 +454,9 @@ export class MainThreadCommentThread implements CommentThread {
     if (modified('canReply')) {
       this.canReply = changes.canReply!;
     }
-
+    if (modified('state')) {
+      this.state = changes.state!;
+    }
     if (modified('isTemplate')) {
       this._isTemplate = changes.isTemplate!;
     }
@@ -456,6 +469,7 @@ export class MainThreadCommentThread implements CommentThread {
     this._onDidChangeInput.dispose();
     this._onDidChangeLabel.dispose();
     this._onDidChangeRange.dispose();
+    this._onDidChangeState.dispose();
     this._thread.dispose();
   }
 

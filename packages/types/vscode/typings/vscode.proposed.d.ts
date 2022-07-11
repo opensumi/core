@@ -607,122 +607,122 @@ declare module 'vscode' {
     Parameter = 2,
   }
 
-  	/**
-	 * An inlay hint label part allows for interactive and composite labels of inlay hints.
-	 */
-	export class InlayHintLabelPart {
+    /**
+   * An inlay hint label part allows for interactive and composite labels of inlay hints.
+   */
+  export class InlayHintLabelPart {
 
-		/**
-		 * The value of this label part.
-		 */
-		value: string;
+    /**
+     * The value of this label part.
+     */
+    value: string;
 
-		/**
-		 * The tooltip text when you hover over this label part.
-		 *
-		 * *Note* that this property can be set late during
-		 * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
-		 */
-		tooltip?: string | MarkdownString | undefined;
+    /**
+     * The tooltip text when you hover over this label part.
+     *
+     * *Note* that this property can be set late during
+     * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
+     */
+    tooltip?: string | MarkdownString | undefined;
 
-		/**
-		 * An optional {@link Location source code location} that represents this label
-		 * part.
-		 *
-		 * The editor will use this location for the hover and for code navigation features: This
-		 * part will become a clickable link that resolves to the definition of the symbol at the
-		 * given location (not necessarily the location itself), it shows the hover that shows at
-		 * the given location, and it shows a context menu with further code navigation commands.
-		 *
-		 * *Note* that this property can be set late during
-		 * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
-		 */
-		location?: Location | undefined;
+    /**
+     * An optional {@link Location source code location} that represents this label
+     * part.
+     *
+     * The editor will use this location for the hover and for code navigation features: This
+     * part will become a clickable link that resolves to the definition of the symbol at the
+     * given location (not necessarily the location itself), it shows the hover that shows at
+     * the given location, and it shows a context menu with further code navigation commands.
+     *
+     * *Note* that this property can be set late during
+     * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
+     */
+    location?: Location | undefined;
 
-		/**
-		 * An optional command for this label part.
-		 *
-		 * The editor renders parts with commands as clickable links. The command is added to the context menu
-		 * when a label part defines {@link InlayHintLabelPart.location location} and {@link InlayHintLabelPart.command command} .
-		 *
-		 * *Note* that this property can be set late during
-		 * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
-		 */
-		command?: Command | undefined;
+    /**
+     * An optional command for this label part.
+     *
+     * The editor renders parts with commands as clickable links. The command is added to the context menu
+     * when a label part defines {@link InlayHintLabelPart.location location} and {@link InlayHintLabelPart.command command} .
+     *
+     * *Note* that this property can be set late during
+     * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
+     */
+    command?: Command | undefined;
 
-		/**
-		 * Creates a new inlay hint label part.
-		 *
-		 * @param value The value of the part.
-		 */
-		constructor(value: string);
-	}
+    /**
+     * Creates a new inlay hint label part.
+     *
+     * @param value The value of the part.
+     */
+    constructor(value: string);
+  }
 
   /**
    * Inlay hint information.
    */
    export class InlayHint {
 
-		/**
-		 * The position of this hint.
-		 */
-		position: Position;
+    /**
+     * The position of this hint.
+     */
+    position: Position;
 
-		/**
-		 * The label of this hint. A human readable string or an array of {@link InlayHintLabelPart label parts}.
-		 *
-		 * *Note* that neither the string nor the label part can be empty.
-		 */
-		label: string | InlayHintLabelPart[];
+    /**
+     * The label of this hint. A human readable string or an array of {@link InlayHintLabelPart label parts}.
+     *
+     * *Note* that neither the string nor the label part can be empty.
+     */
+    label: string | InlayHintLabelPart[];
 
-		/**
-		 * The tooltip text when you hover over this item.
-		 *
-		 * *Note* that this property can be set late during
-		 * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
-		 */
-		tooltip?: string | MarkdownString | undefined;
+    /**
+     * The tooltip text when you hover over this item.
+     *
+     * *Note* that this property can be set late during
+     * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
+     */
+    tooltip?: string | MarkdownString | undefined;
 
-		/**
-		 * The kind of this hint. The inlay hint kind defines the appearance of this inlay hint.
-		 */
-		kind?: InlayHintKind;
+    /**
+     * The kind of this hint. The inlay hint kind defines the appearance of this inlay hint.
+     */
+    kind?: InlayHintKind;
 
-		/**
-		 * Optional {@link TextEdit text edits} that are performed when accepting this inlay hint. The default
-		 * gesture for accepting an inlay hint is the double click.
-		 *
-		 * *Note* that edits are expected to change the document so that the inlay hint (or its nearest variant) is
-		 * now part of the document and the inlay hint itself is now obsolete.
-		 *
-		 * *Note* that this property can be set late during
-		 * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
-		 */
-		textEdits?: TextEdit[];
+    /**
+     * Optional {@link TextEdit text edits} that are performed when accepting this inlay hint. The default
+     * gesture for accepting an inlay hint is the double click.
+     *
+     * *Note* that edits are expected to change the document so that the inlay hint (or its nearest variant) is
+     * now part of the document and the inlay hint itself is now obsolete.
+     *
+     * *Note* that this property can be set late during
+     * {@link InlayHintsProvider.resolveInlayHint resolving} of inlay hints.
+     */
+    textEdits?: TextEdit[];
 
-		/**
-		 * Render padding before the hint. Padding will use the editor's background color,
-		 * not the background color of the hint itself. That means padding can be used to visually
-		 * align/separate an inlay hint.
-		 */
-		paddingLeft?: boolean;
+    /**
+     * Render padding before the hint. Padding will use the editor's background color,
+     * not the background color of the hint itself. That means padding can be used to visually
+     * align/separate an inlay hint.
+     */
+    paddingLeft?: boolean;
 
-		/**
-		 * Render padding after the hint. Padding will use the editor's background color,
-		 * not the background color of the hint itself. That means padding can be used to visually
-		 * align/separate an inlay hint.
-		 */
-		paddingRight?: boolean;
+    /**
+     * Render padding after the hint. Padding will use the editor's background color,
+     * not the background color of the hint itself. That means padding can be used to visually
+     * align/separate an inlay hint.
+     */
+    paddingRight?: boolean;
 
-		/**
-		 * Creates a new inlay hint.
-		 *
-		 * @param position The position of the hint.
-		 * @param label The label of the hint.
-		 * @param kind The {@link InlayHintKind kind} of the hint.
-		 */
-		constructor(position: Position, label: string | InlayHintLabelPart[], kind?: InlayHintKind);
-	}
+    /**
+     * Creates a new inlay hint.
+     *
+     * @param position The position of the hint.
+     * @param label The label of the hint.
+     * @param kind The {@link InlayHintKind kind} of the hint.
+     */
+    constructor(position: Position, label: string | InlayHintLabelPart[], kind?: InlayHintKind);
+  }
 
   /**
    * The inlay hints provider interface defines the contract between extensions and
@@ -746,16 +746,16 @@ declare module 'vscode' {
     provideInlayHints(model: TextDocument, range: Range, token: CancellationToken): ProviderResult<T[]>;
 
     /**
-		 * Given an inlay hint fill in {@link InlayHint.tooltip tooltip}, {@link InlayHint.textEdits text edits},
-		 * or complete label {@link InlayHintLabelPart parts}.
-		 *
-		 * *Note* that the editor will resolve an inlay hint at most once.
-		 *
-		 * @param hint An inlay hint.
-		 * @param token A cancellation token.
-		 * @return The resolved inlay hint or a thenable that resolves to such. It is OK to return the given `item`. When no result is returned, the given `item` will be used.
-		 */
-		resolveInlayHint?(hint: T, token: CancellationToken): ProviderResult<T>;
+     * Given an inlay hint fill in {@link InlayHint.tooltip tooltip}, {@link InlayHint.textEdits text edits},
+     * or complete label {@link InlayHintLabelPart parts}.
+     *
+     * *Note* that the editor will resolve an inlay hint at most once.
+     *
+     * @param hint An inlay hint.
+     * @param token A cancellation token.
+     * @return The resolved inlay hint or a thenable that resolves to such. It is OK to return the given `item`. When no result is returned, the given `item` will be used.
+     */
+    resolveInlayHint?(hint: T, token: CancellationToken): ProviderResult<T>;
   }
   //#endregion
 
@@ -785,5 +785,22 @@ declare module 'vscode' {
      */
     export const allAcrossExtensionHosts: readonly Extension<void>[];
 
+  }
+
+  // https://github.com/microsoft/vscode/issues/127473
+
+  /**
+   * The state of a comment thread.
+   */
+  export enum CommentThreadState {
+    Unresolved = 0,
+    Resolved = 1
+  }
+
+  export interface CommentThread {
+    /**
+     * The optional state of a comment thread, which may affect how the comment is displayed.
+     */
+    state?: CommentThreadState;
   }
 }

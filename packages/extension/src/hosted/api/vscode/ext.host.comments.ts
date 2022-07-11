@@ -41,6 +41,7 @@ type CommentThreadModification = Partial<{
   comments: vscode.Comment[];
   collapsibleState: vscode.CommentThreadCollapsibleState;
   canReply: boolean;
+  state: vscode.CommentThreadState;
 }>;
 
 export function createCommentsApiFactory(extension: IExtensionDescription, extHostComments: ExtHostComments) {
@@ -416,6 +417,18 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     return this._uri;
   }
 
+  private _state?: vscode.CommentThreadState;
+
+  get state(): vscode.CommentThreadState {
+    return this._state!;
+  }
+
+  set state(newState: vscode.CommentThreadState) {
+    this._state = newState;
+    this.modifications.state = newState;
+    this._onDidUpdateCommentThread.fire();
+  }
+
   private readonly _onDidUpdateCommentThread = new Emitter<void>();
   readonly onDidUpdateCommentThread = this._onDidUpdateCommentThread.event;
 
@@ -575,6 +588,9 @@ export class ExtHostCommentThread implements vscode.CommentThread {
     if (modified('collapsibleState')) {
       formattedModifications.collapseState = convertToCollapsibleState(this._collapseState);
     }
+    if (modified('state')) {
+      formattedModifications.state = convertToState(this._state);
+    }
     if (modified('canReply')) {
       formattedModifications.canReply = this.canReply;
     }
@@ -668,4 +684,16 @@ function convertToCollapsibleState(
     }
   }
   return models.CommentThreadCollapsibleState.Collapsed;
+}
+
+function convertToState(kind: vscode.CommentThreadState | undefined): models.CommentThreadState {
+  if (kind !== undefined) {
+    switch (kind) {
+      case types.CommentThreadState.Unresolved:
+        return models.CommentThreadState.Unresolved;
+      case types.CommentThreadState.Resolved:
+        return models.CommentThreadState.Resolved;
+    }
+  }
+  return models.CommentThreadState.Unresolved;
 }
