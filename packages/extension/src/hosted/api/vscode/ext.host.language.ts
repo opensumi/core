@@ -1501,6 +1501,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
       command: undefined,
       text: '',
       detail: '',
+      busy: false,
     };
 
     let soonHandle: IDisposable | undefined;
@@ -1526,6 +1527,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
               : Severity.Info,
           command: data.command && this.commands.converter.toInternal(data.command, commandDisposables),
           accessibilityInfo: data.accessibilityInformation,
+          busy: data.busy,
         });
       }, 0);
     };
@@ -1587,6 +1589,13 @@ export class ExtHostLanguages implements IExtHostLanguages {
       },
       set command(value) {
         data.command = value;
+        updateAsync();
+      },
+      get busy() {
+        return data.busy;
+      },
+      set busy(value: boolean) {
+        data.busy = value;
         updateAsync();
       },
     };

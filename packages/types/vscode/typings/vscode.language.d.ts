@@ -315,6 +315,14 @@ declare module 'vscode' {
     export function createDiagnosticCollection(name?: string): DiagnosticCollection;
 
     /**
+     * Creates a new {@link LanguageStatusItem language status item}.
+     *
+     * @param id The identifier of the item.
+     * @param selector The document selector that defines for what editors the item shows.
+     */
+    export function createLanguageStatusItem(id: string, selector: DocumentSelector): LanguageStatusItem;
+
+    /**
      * Register a code action provider.
      *
      * Multiple providers can be registered for a language. In that case providers are asked in
