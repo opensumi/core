@@ -87,8 +87,8 @@ export class VSXExtensionService implements IVSXExtensionBackService {
             }
 
             let originalFileName;
-            // 在Electron中，如果解包的文件中存在.asar文件，会由于Electron本身的bug导致无法对.asar创建writeStream
-            // 此处先把.asar文件写到另外一个目标文件中，完成后再进行重命名
+            // 在 Electron 中，如果解包的文件中存在 .asar 文件，会由于 Electron 本身的 bug 导致无法对 .asar 创建 writeStream
+            // 此处先把 .asar 文件写到另外一个目标文件中，完成后再进行重命名
             if (fileName.endsWith('.asar')) {
               originalFileName = fileName;
               fileName += '_prevent_bug';
