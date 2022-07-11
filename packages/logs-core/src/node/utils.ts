@@ -5,8 +5,6 @@ import * as fs from 'fs-extra';
 
 import { toLocalISOString, Archive } from '@opensumi/ide-core-common';
 
-// const debugLog = getDebugLogger('LogUtils');
-
 /**
  * @param date 不传则返回当天日志文件夹名
  */
@@ -85,7 +83,7 @@ export async function getLogZipArchiveByFolder(foldPath: string, waitPromise?: P
     await waitPromise;
   }
   if (!fs.existsSync(foldPath)) {
-    throw new Error(`日志目录不存在 ${foldPath}`);
+    throw new Error(`The log directory does not exist: ${foldPath}`);
   }
   return new compressing.zip.FileStream({ source: foldPath }).on('error', (err) => {
     throw err;
