@@ -68,7 +68,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
             }
             fs.remove(downloadPath).then(() => resolve(distPath));
           })
-          .on('entry', (header, stream: fs.ReadStream, next) => {
+          .on('entry', (header, stream, next) => {
             stream.on('end', next);
             if (!sourcePathRegex.test(header.name)) {
               stream.resume();
