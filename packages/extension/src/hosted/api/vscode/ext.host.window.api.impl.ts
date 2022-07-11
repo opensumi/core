@@ -256,6 +256,8 @@ export function createWindowApiFactory(
 
     onDidOpenTerminal: extHostTerminal.onDidOpenTerminal,
 
+    onDidChangeTerminalState: extHostTerminal.onDidChangeTerminalState,
+
     createTerminal(
       nameOrOptions?: vscode.TerminalOptions | vscode.ExtensionTerminalOptions | string,
       shellPath?: string,

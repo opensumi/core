@@ -340,6 +340,11 @@ declare module 'vscode' {
     export const onDidCloseTerminal: Event<Terminal>;
 
     /**
+		 * An {@link Event} which fires when a {@link Terminal.state terminal's state} has changed.
+		 */
+		export const onDidChangeTerminalState: Event<Terminal>;
+
+    /**
      * Represents the current window's state.
      */
     export const state: WindowState;

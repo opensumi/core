@@ -2607,6 +2607,11 @@ declare module 'vscode' {
     readonly processId: Thenable<number>;
 
     /**
+		 * The current state of the {@link Terminal}.
+		 */
+		readonly state: TerminalState;
+
+    /**
      * The object used to initialize the terminal, this is useful for example to detecting the
      * shell type of when the terminal was not launched by this extension or for detecting what
      * folder the shell was launched in.
