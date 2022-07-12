@@ -93,11 +93,11 @@ export class SearchContribution
         if (options && options.includeValue) {
           this.searchBrowserService.includeValue = options.includeValue;
           this.searchBrowserService.updateUIState({ isDetailOpen: true });
-          this.searchBrowserService.search();
-          return;
+        } else {
+          this.searchBrowserService.setSearchValueFromActivatedEditor();
         }
-        this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.focus();
+        this.searchBrowserService.search();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.REFRESH, {
