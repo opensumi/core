@@ -51,11 +51,12 @@ export const Scrollbars = ({
   );
 
   const handleUpdate = (values) => {
+    if (!shadowTopRef) {
+      return;
+    }
     const { scrollTop } = values;
     const shadowTopOpacity = (1 / 20) * Math.min(scrollTop, 20);
-    if (shadowTopRef) {
-      shadowTopRef.style.opacity = String(shadowTopOpacity);
-    }
+    shadowTopRef.style.opacity = String(shadowTopOpacity);
 
     handleReachBottom(values);
     onUpdate && onUpdate(values);

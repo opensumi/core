@@ -251,7 +251,9 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
     const disposer = group.onDidEditorGroupTabChanged(() => {
       setIsEmpty(group.resources.length === 0);
     });
-    return disposer.dispose.bind(disposer);
+    return () => {
+      disposer.dispose();
+    };
   }, []);
 
   const [showActionWhenGroupEmpty, setShowActionWhenGroupEmpty] = React.useState(

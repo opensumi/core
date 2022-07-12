@@ -57,8 +57,8 @@ export const Tabs = ({ group }: ITabsProps) => {
   useUpdateOnGroupTabChange(group);
   useUpdateOnEventBusEvent(
     ResourceDidUpdateEvent,
-    [group.resources.length],
-    (uri) => group.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1,
+    [group.resources],
+    (uri) => !!contentRef && group.resources.findIndex((r) => r.uri.isEqual(uri)) !== -1,
   );
 
   useEffect(() => {
