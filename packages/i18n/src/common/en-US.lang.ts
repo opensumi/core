@@ -208,7 +208,7 @@ export const localizationBundle = {
     'search.excludes.default.enable': 'Enable default exclusions',
     'search.replaceAll.label': 'Replace all',
     'search.replace.label': 'Replace',
-    'search.files.result.kt': '{0} results found in {1} files',
+    'search.files.result': '{0} results found in {1} files',
     'search.CollapseDeepestExpandedLevelAction.label': 'Collapse All',
     'search.ExpandDeepestExpandedLevelAction.label': 'Expand All',
     'search.ClearSearchResultsAction.label': 'Clear Search Results',

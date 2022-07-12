@@ -173,7 +173,7 @@ export const localizationBundle = {
     'search.excludes.default.enable': '启用默认排除项',
     'search.replaceAll.label': '替换全部',
     'search.replace.label': '替换为',
-    'search.files.result.kt': '找到 {1} 个文件，共 {0} 个结果',
+    'search.files.result': '找到 {1} 个文件，共 {0} 个结果',
     'search.CollapseDeepestExpandedLevelAction.label': '全部折叠',
     'search.ExpandDeepestExpandedLevelAction.label': '全部展开',
     'search.ClearSearchResultsAction.label': '清空搜索结果',
