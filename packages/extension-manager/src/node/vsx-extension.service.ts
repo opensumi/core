@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 import yauzl from 'yauzl';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { IVSXExtensionBackService, IExtensionInstallParam } from '../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../common/vsx-registry-types';

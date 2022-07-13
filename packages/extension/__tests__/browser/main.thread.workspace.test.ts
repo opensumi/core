@@ -31,8 +31,7 @@ import {
   Deferred,
 } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { AppConfig } from '@opensumi/ide-core-node';
-import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   IEditorDocumentModelContentRegistry,
