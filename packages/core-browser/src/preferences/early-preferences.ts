@@ -44,7 +44,7 @@ export function getPreferenceIconThemeId(): string {
 export function getPreferenceLanguageId(defaultPreferences?: IPreferences): string {
   // 因为语言加载的时机比较早，因此会优先从 defaultPreferences 里面读取
   const langFromDefaultPreferences = defaultPreferences && defaultPreferences[GeneralSettingsId.Language];
-  return langFromDefaultPreferences || getExternalPreference<string>(GeneralSettingsId.Language).value || 'zh-CN';
+  return langFromDefaultPreferences || getExternalPreference<string>(GeneralSettingsId.Language).value || 'en-US';
 }
 
 // 默认使用 localStorage
