@@ -5,17 +5,11 @@ import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@o
 import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
 
-import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer, NextBottomTabbarRenderer } from './bar.view';
-import {
-  RightTabPanelRenderer,
-  LeftTabPanelRenderer,
-  BottomTabPanelRenderer,
-  NextBottomTabPanelRenderer,
-} from './panel.view';
+import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer } from './bar.view';
+import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer } from './panel.view';
 import styles from './styles.module.less';
 import { TabbarServiceFactory, TabbarService } from './tabbar.service';
 
-// TODO 将过深的prop挪到这里
 export const TabbarConfig = React.createContext<{
   side: string;
   direction: Layout.direction;
@@ -35,7 +29,7 @@ export const TabRendererBase: React.FC<{
   TabpanelView: React.FC;
   // @deprecated
   noAccordion?: boolean;
-}> = ({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView, ...restProps }) => {
+}> = ({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const resizeHandle = React.useContext(PanelContext);
@@ -114,28 +108,7 @@ export const LeftTabRenderer = ({
   />
 );
 
-/**
- * @deprecation 已废弃，请使用 NextBottomTabRenderer
- **/
 export const BottomTabRenderer = ({
-  className,
-  components,
-}: {
-  className: string;
-  components: ComponentRegistryInfo[];
-}) => (
-  <TabRendererBase
-    side='bottom'
-    direction='top-to-bottom'
-    className={clsx(className, 'bottom-slot')}
-    components={components}
-    TabbarView={BottomTabbarRenderer}
-    TabpanelView={BottomTabPanelRenderer}
-    noAccordion={true}
-  />
-);
-
-export const NextBottomTabRenderer = ({
   className,
   components,
 }: {
@@ -147,8 +120,8 @@ export const NextBottomTabRenderer = ({
     direction='bottom-to-top'
     className={clsx(className, 'bottom-slot')}
     components={components}
-    TabbarView={NextBottomTabbarRenderer}
-    TabpanelView={NextBottomTabPanelRenderer}
+    TabbarView={BottomTabbarRenderer}
+    TabpanelView={BottomTabPanelRenderer}
     noAccordion={true}
   />
 );

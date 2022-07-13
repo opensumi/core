@@ -12,6 +12,8 @@ import {
   IReporter,
   setLanguageId,
   ILogService,
+  isPromiseCanceledError,
+  locale,
 } from '@opensumi/ide-core-common';
 import { isPromiseCanceledError, locale } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';

@@ -27,7 +27,7 @@ import { CommandContribution, CommandRegistry, Command, CommandService } from '@
 
 import { IMainLayoutService } from '../common';
 
-import { RightTabRenderer, LeftTabRenderer, NextBottomTabRenderer } from './tabbar/renderer.view';
+import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -176,7 +176,7 @@ export class MainLayoutModuleContribution
   registerRenderer(registry: SlotRendererRegistry) {
     registry.registerSlotRenderer(SlotLocation.right, RightTabRenderer);
     registry.registerSlotRenderer(SlotLocation.left, LeftTabRenderer);
-    registry.registerSlotRenderer(SlotLocation.bottom, NextBottomTabRenderer);
+    registry.registerSlotRenderer(SlotLocation.bottom, BottomTabRenderer);
   }
 
   registerCommands(commands: CommandRegistry): void {
