@@ -5,9 +5,10 @@ import type https from 'https';
 import type Koa from 'koa';
 import type ws from 'ws';
 
-import { Injector } from '@opensumi/di';
-import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
-import { ConstructorOf, ILogService, LogLevel, MaybePromise, BasicModule } from '@opensumi/ide-core-common';
+import type { Injector } from '@opensumi/di';
+import type { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
+import type { ConstructorOf, ILogService, LogLevel, MaybePromise } from '@opensumi/ide-core-common';
+import { BasicModule } from '@opensumi/ide-core-common';
 
 export abstract class NodeModule extends BasicModule {}
 

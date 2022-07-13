@@ -4,7 +4,7 @@ import path from 'path';
 import * as fs from 'fs-extra';
 
 import { toLocalISOString, ILogService } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { LogServiceManager } from '../../lib/node/log-manager';
