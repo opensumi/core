@@ -499,8 +499,8 @@ export const localizationBundle = {
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
       'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
-    'preference.general.language.change.refresh.now': 'now',
-    'preference.general.language.change.refresh.later': 'later',
+    'preference.general.language.change.refresh.now': 'Now',
+    'preference.general.language.change.refresh.later': 'Later',
 
     'preference.debug.internalConsoleOptions': 'Controls when the internal debug console should open.',
     'preference.debug.openDebug': 'Controls when the debug view should open.',
@@ -955,8 +955,10 @@ export const localizationBundle = {
     'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',
     'menu.dupe.command': 'menuId {0} register command({1}) is duplicated with alt({2})',
 
-    'connection.start.rtt': 'Developer Tool: Measure Connection RTT',
-    'connection.stop.rtt': 'Developer Tool: Stop Connection RTT',
+    'command.category.developerTools': 'Developer Tool',
+
+    'connection.start.rtt': 'Measure Connection RTT',
+    'connection.stop.rtt': 'Stop Connection RTT',
 
     'debug.terminal.label': 'Javascript Debug Terminal',
 

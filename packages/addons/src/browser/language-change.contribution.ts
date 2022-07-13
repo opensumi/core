@@ -19,13 +19,16 @@ export class LanguageChangeHintContribution implements ClientAppContribution {
         const shouldAsk = this.preferenceService.get('general.askReloadOnLanguageChange');
         if (shouldAsk) {
           const msg = await this.dialogService.info(
-            localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
+            localize(
+              'preference.general.language.change.refresh.info',
+              'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
+            ),
             [
-              localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
-              localize('preference.general.language.change.refresh.now', '立即刷新'),
+              localize('preference.general.language.change.refresh.later', 'Later'),
+              localize('preference.general.language.change.refresh.now', 'Now'),
             ],
           );
-          if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
+          if (msg === localize('preference.general.language.change.refresh.now', 'Now')) {
             this.clientApp.fireOnReload();
           }
         }

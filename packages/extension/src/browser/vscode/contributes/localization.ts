@@ -7,6 +7,7 @@ import {
   parseWithComments,
   getLanguageId,
   path,
+  GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
@@ -100,7 +101,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
       }
     });
 
-    const currentLanguage: string = this.preferenceService.get('general.language') || 'zh-CN';
+    const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || 'en-US';
     const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
     promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path, storagePath));
     await Promise.all(promises);
