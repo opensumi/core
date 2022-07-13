@@ -99,6 +99,7 @@ export const localizationBundle = {
     editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
+    'editor.saveAll': 'Save All',
     'editor.saveCurrent': 'Save Current File',
     'editor.title.context.close': 'Close',
     'editor.closeCurrent': 'Close Current Editor',

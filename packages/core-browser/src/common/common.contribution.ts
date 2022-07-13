@@ -275,7 +275,7 @@ export class ClientCommonContribution
       menus.registerMenuItem(MenuId.MenubarHelpMenu, {
         command: {
           id: COMMON_COMMANDS.ABOUT_COMMAND.id,
-          label: localize('common.about'),
+          label: COMMON_COMMANDS.ABOUT_COMMAND.label!,
         },
         nativeRole: 'about',
         group: '0_about',

@@ -1,6 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { getPreferenceLanguageId } from '@opensumi/ide-core-browser';
-import { ILogger, WithEventBus } from '@opensumi/ide-core-common';
+import { getLanguageId, ILogger, WithEventBus } from '@opensumi/ide-core-common';
 
 import {
   AbstractExtensionManagementService,
@@ -37,7 +36,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
   ): Promise<IExtensionProps | undefined> {
     const extensionMetaData = await this.extensionNodeClient.getExtension(
       extensionPath,
-      getPreferenceLanguageId(),
+      getLanguageId(),
       extraMetaData,
     );
     if (extensionMetaData) {

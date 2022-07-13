@@ -23,6 +23,7 @@ export class LanguageChangeHintContribution implements ClientAppContribution {
 
   onStart() {
     this.preferenceService.onSpecificPreferenceChange(GeneralSettingsId.Language, async (change) => {
+      setLanguageId(change.newValue);
       const shouldAsk = this.preferenceService.get('general.askReloadOnLanguageChange');
       if (shouldAsk) {
         const msg = await this.dialogService.info(
