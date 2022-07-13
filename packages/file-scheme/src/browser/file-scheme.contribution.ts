@@ -14,7 +14,11 @@ import {
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { BinaryEditorComponent } from './external.view';
-import { FileSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
+import {
+  FileSchemeDocumentProvider,
+  VscodeSchemeDocumentProvider,
+  WalkThroughSnippetSchemeDocumentProvider,
+} from './file-doc';
 import { LargeFilePrevent } from './prevent.view';
 import { ImagePreview, VideoPreview } from './preview.view';
 
@@ -32,6 +36,9 @@ export class FileSystemEditorResourceContribution implements BrowserEditorContri
   private readonly vscodeSchemeDocumentProvider: VscodeSchemeDocumentProvider;
 
   @Autowired()
+  private readonly walkThroughSnippetSchemeDocumentProvider: WalkThroughSnippetSchemeDocumentProvider;
+
+  @Autowired()
   private readonly untitledResourceProvider: UntitledSchemeResourceProvider;
 
   @Autowired()
@@ -46,6 +53,7 @@ export class FileSystemEditorResourceContribution implements BrowserEditorContri
     // 注册 provider 提供 doc / 文档的内容和 meta 信息
     registry.registerEditorDocumentModelContentProvider(this.fileSchemeDocumentProvider);
     registry.registerEditorDocumentModelContentProvider(this.vscodeSchemeDocumentProvider);
+    registry.registerEditorDocumentModelContentProvider(this.walkThroughSnippetSchemeDocumentProvider);
     registry.registerEditorDocumentModelContentProvider(this.untitledSchemeDocumentProvider);
   }
 }
