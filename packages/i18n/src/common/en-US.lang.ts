@@ -829,11 +829,12 @@ export const localizationBundle = {
     'tabCompletion.onlySnippets':
       "Tab complete snippets when their prefix match. Works best when 'quickSuggestions' aren't enabled.",
     'extension.invalidExthostReload.confirm.content':
-      'Extension Host process is invalid. Click to refresh to resume this process.',
+      'Extension Host Process is invalid. Click to refresh to resume the process.',
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
-    'extension.crashedExthostReload.confirm': 'Extension Host process crashed, restart this process?',
-    'extension.exthostRestarting.content': 'Extension Host process is restarting',
+    'extension.crashedExthostReload.confirm': 'Extension Host Process is crashed, do you want to restart the process?',
+    'extension.exthostRestarting.content': 'Extension Host Process is restarting',
+    'extension.host.restart': 'Restart Extension Host Process',
 
     'extension.no.view.found':
       'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',

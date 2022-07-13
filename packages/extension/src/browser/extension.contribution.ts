@@ -233,7 +233,7 @@ export class ExtensionCommandContribution implements CommandContribution {
     registry.registerCommand(
       {
         id: 'ext.restart',
-        label: '重启进程',
+        label: '%extension.host.restart%',
       },
       {
         execute: async () => {

@@ -12,7 +12,13 @@ import {
   canceled,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { CancellationTokenSource, CancellationToken, Disposable, Schemes } from '@opensumi/ide-core-common';
+import {
+  CancellationTokenSource,
+  CancellationToken,
+  Disposable,
+  Schemes,
+  getLanguageId,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -342,7 +348,7 @@ export class DebugSession implements IDebugSession {
         clientID: 'OpenSumi',
         clientName: 'OpenSumi IDE',
         adapterID: this.configuration.type,
-        locale: 'en-US',
+        locale: getLanguageId(),
         linesStartAt1: true,
         columnsStartAt1: true,
         pathFormat: 'path',

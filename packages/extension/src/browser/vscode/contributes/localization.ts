@@ -101,7 +101,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
       }
     });
 
-    const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || 'en-US';
+    const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
     const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
     promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path, storagePath));
     await Promise.all(promises);

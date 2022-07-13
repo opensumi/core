@@ -1,4 +1,4 @@
-import { PreferenceItem, Event, GeneralSettingsId } from '@opensumi/ide-core-common';
+import { PreferenceItem, Event, GeneralSettingsId, getLanguageId } from '@opensumi/ide-core-common';
 
 import { IPreferences } from '../bootstrap';
 
@@ -42,13 +42,15 @@ export function getPreferenceIconThemeId(): string {
 }
 
 /**
- * 如果要判断当前语言，请使用 getLanguageId 来判断。
- * 因为集成方可能会在之后调用 setLanguageId 来更新默认语言，所以统一收口到 getLanguageId。
+ * 如果要判断当前语言，请使用 `getLanguageId` 来判断。
+ * 因为集成方可能会在集成后自己设置后调用 `setLanguageId` 来更新默认语言，所以统一收口到 `getLanguageId`。
  */
 export function getPreferenceLanguageId(defaultPreferences?: IPreferences): string {
   // 因为语言加载的时机比较早，因此会优先从 defaultPreferences 里面读取
   const langFromDefaultPreferences = defaultPreferences && defaultPreferences[GeneralSettingsId.Language];
-  return langFromDefaultPreferences || getExternalPreference<string>(GeneralSettingsId.Language).value || 'en-US';
+  return (
+    langFromDefaultPreferences || getExternalPreference<string>(GeneralSettingsId.Language).value || getLanguageId()
+  );
 }
 
 // 默认使用 localStorage
