@@ -2,7 +2,7 @@
 import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, Inject } from '@opensumi/di';
 import { ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -13,7 +13,7 @@ import {
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 
-import { ICollaborationService } from '../common';
+import { CollaborationServiceForClientPath, ICollaborationService, ICollaborationServiceForClient } from '../common';
 
 import { TextModelBinding } from './textmodel-binding';
 
@@ -34,6 +34,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   private yTextMap: Y.Map<Y.Text>;
 
   private bindingMap: Map<string, TextModelBinding> = new Map();
+
+  constructor(@Inject(CollaborationServiceForClientPath) private readonly backService: ICollaborationServiceForClient) {
+    super();
+  }
 
   initialize() {
     this.yDoc = new Y.Doc();
@@ -127,6 +131,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     if (!uri || text === undefined || textModel === undefined) {
       return;
     }
+
+    // todo will be removed, try to call back service
+    this.backService.setInitContent(uri, text);
 
     let binding: TextModelBinding | null;
     binding = this.getBindingFromUri(uri);
