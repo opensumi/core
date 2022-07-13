@@ -38,7 +38,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   initialize() {
     this.yDoc = new Y.Doc();
     this.yTextMap = this.yDoc.getMap();
-    this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'monaco-opensumi', this.yDoc);
+    this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'y-room-opensumi', this.yDoc);
     this.logger.log('Collaboration initialized');
   }
 
