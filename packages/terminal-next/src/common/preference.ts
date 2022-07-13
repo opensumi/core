@@ -22,7 +22,7 @@ export interface SupportedOptions {
   fontSize: number;
   copyOnSelection: boolean;
   fontFamily: string;
-  cursorStyle: 'block' | 'underline' | 'line'; // line 会在后续Xterm的初始化中传入 'bar'
+  cursorStyle: 'block' | 'underline' | 'bar'; // line 会在后续Xterm的初始化中传入 'bar'
 }
 
 export const SupportedOptionsName = {
