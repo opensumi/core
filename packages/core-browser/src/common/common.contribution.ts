@@ -33,8 +33,6 @@ export class ClientCommonContribution
     MenuContribution,
     KeybindingContribution
 {
-  schema: PreferenceSchema = corePreferenceSchema;
-
   private inputFocusedContext: IContextKey<boolean>;
 
   @Autowired(CommandService)
@@ -45,6 +43,20 @@ export class ClientCommonContribution
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
+
+  schema: PreferenceSchema = corePreferenceSchema;
+
+  constructor() {
+    const overridePropertiesDefault = {
+      'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer,
+      'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer,
+      'debug.toolbar.top': this.appConfig.isElectronRenderer ? 35 : 70,
+    };
+    const keys = Object.keys(this.schema.properties);
+    for (const key of keys) {
+      this.schema.properties[key].default = overridePropertiesDefault[key] || this.schema.properties[key].default;
+    }
+  }
 
   onStart() {
     this.contextKeyService.createKey(locationProtocolContextKey, window.location.protocol.split(':')[0]);
