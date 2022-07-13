@@ -1216,7 +1216,7 @@ An error case:
       provideInlayHints(): vscode.ProviderResult<vscode.InlayHint[]> {
         return [
           {
-            text: 'sumi',
+            label: 'sumi',
             position: new types.Position(0, 0),
           },
         ];

@@ -1,10 +1,14 @@
 import { Injectable } from '@opensumi/di';
 import { ContextKeyChangeEvent, IScopedContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
 import { Event, strings } from '@opensumi/ide-core-common';
-import { ContextKeyExpression, ContextKeyValue, IContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyExpression,
+  ContextKeyValue,
+  IContextKeyService,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 const { isFalsyOrWhitespace } = strings;
-class MockKeybindingContextKey<T> implements IContextKey<T> {
+class MockKeybindingContextKey<T extends ContextKeyValue> implements IContextKey<T> {
   private _defaultValue: T | undefined;
   private _value: T | undefined;
 
@@ -123,7 +127,6 @@ class WhenExpressionParser {
 
 @Injectable()
 export class MockContextKeyService implements IScopedContextKeyService {
-
   // @ts-ignore
   contextKeyService: IContextKeyService = this;
 
@@ -137,7 +140,10 @@ export class MockContextKeyService implements IScopedContextKeyService {
     //
   }
 
-  public createKey<T extends ContextKeyValue = ContextKeyValue>(key: string, defaultValue: T | undefined): IContextKey<T> {
+  public createKey<T extends ContextKeyValue = ContextKeyValue>(
+    key: string,
+    defaultValue: T | undefined,
+  ): IContextKey<T> {
     const ret = new MockKeybindingContextKey(defaultValue);
     this._keys.set(key, ret);
     return ret;
