@@ -1,5 +1,6 @@
 import { Emitter, Event, Disposable, IDisposable } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
   static ID = 0;
@@ -19,7 +20,11 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   removeDecorations(decorationIds: string[]): void {
     throw new Error('Method not implemented.');
   }
-  setDecorationsByType(description: string, decorationTypeKey: string, ranges: monaco.editor.IDecorationOptions[]): void {
+  setDecorationsByType(
+    description: string,
+    decorationTypeKey: string,
+    ranges: monaco.editor.IDecorationOptions[],
+  ): void {
     throw new Error('Method not implemented.');
   }
   setDecorationsByTypeFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
@@ -28,7 +33,9 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   removeDecorationsByType(decorationTypeKey: string): void {
     throw new Error('Method not implemented.');
   }
-  createDecorationsCollection(decorations?: monaco.editor.IModelDeltaDecoration[] | undefined): monaco.editor.IEditorDecorationsCollection {
+  createDecorationsCollection(
+    decorations?: monaco.editor.IModelDeltaDecoration[] | undefined,
+  ): monaco.editor.IEditorDecorationsCollection {
     throw new Error('Method not implemented.');
   }
   onDidChangeHiddenAreas: monaco.IEvent<void>;
@@ -528,7 +535,7 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor {
     throw new Error('Method not implemented.');
   }
 
-  createContextKey<T>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
+  createContextKey<T extends ContextKeyValue>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
     throw new Error('Method not implemented.');
   }
   addAction(descriptor: monaco.editor.IActionDescriptor): monaco.IDisposable {
