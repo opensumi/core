@@ -668,6 +668,7 @@ export const localizationBundle = {
     'terminal.openWithPath': '在终端中打开',
     'terminal.remove': '终止终端',
     'terminal.relaunch': '重启终端',
+    'terminal.menu.clearGroups': '清除所有终端',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分终端',
     'terminal.menu.rename': '重命名',
