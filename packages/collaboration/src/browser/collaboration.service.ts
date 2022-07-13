@@ -3,7 +3,7 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject } from '@opensumi/di';
-import { ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
+import { FileChangeType, ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorActiveResourceStateChangedEvent,
@@ -11,6 +11,7 @@ import {
   EditorGroupOpenEvent,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 
 import { CollaborationServiceForClientPath, ICollaborationService, ICollaborationServiceForClient } from '../common';
@@ -32,6 +33,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   private yDoc: Y.Doc;
 
@@ -59,7 +63,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
           this.logger.debug('Binding created', binding);
         }
       } else if (change.action === 'delete') {
-        // todo remove binding, for deletion or move of file
+        this.removeBinding(key);
       }
     });
   };
@@ -73,6 +77,16 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yTextMap = this.yDoc.getMap();
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'y-room-opensumi', this.yDoc);
     this.yTextMap.observe(this.yMapObserver);
+
+    this.fileServiceClient.onFilesChanged((e) => {
+      e.forEach((e) => {
+        if (e.type === FileChangeType.DELETED) {
+          this.logger.debug('DELETED', e.uri);
+          this.backService.removeYText(e.uri);
+        }
+      });
+    });
+
     this.logger.debug('Collaboration initialized');
   }
 

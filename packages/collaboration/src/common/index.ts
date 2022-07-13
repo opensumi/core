@@ -20,6 +20,7 @@ export const CollaborationServiceForClientPath = 'CollaborationServiceForClientP
 export const ICollaborationServiceForClient = Symbol('ICollaborationServiceForClient');
 
 export interface ICollaborationServiceForClient {
+  removeYText(uri: string): void;
   setInitContent(uri: string, initContent: string): void;
 }
 

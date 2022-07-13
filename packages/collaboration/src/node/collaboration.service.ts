@@ -32,7 +32,13 @@ export class CollaborationServiceForClient implements ICollaborationServiceForCl
     });
   }
 
-  // todo make action on move, rename, and deletion of file
+  removeYText(uri: string) {
+    this.logger.debug('trying to remove uri', uri);
+    if (this.yMap.has(uri)) {
+      this.yMap.delete(uri);
+      this.logger.debug('removed', uri);
+    }
+  }
 
   // todo maybe we can directly pass uri to read from file service?
   setInitContent(uri: string, initContent: string): void {
