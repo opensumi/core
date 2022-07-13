@@ -41,6 +41,10 @@ export function getPreferenceIconThemeId(): string {
   return getExternalPreference<string>(GeneralSettingsId.Icon).value as string;
 }
 
+/**
+ * 如果要判断当前语言，请使用 getLanguageId 来判断。
+ * 因为集成方可能会在之后调用 setLanguageId 来更新默认语言，所以统一收口到 getLanguageId。
+ */
 export function getPreferenceLanguageId(defaultPreferences?: IPreferences): string {
   // 因为语言加载的时机比较早，因此会优先从 defaultPreferences 里面读取
   const langFromDefaultPreferences = defaultPreferences && defaultPreferences[GeneralSettingsId.Language];
