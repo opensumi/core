@@ -36,6 +36,7 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
       this.logger.log('Set ask diff to true');
       this.preferenceService.set('editor.askIfDiff', true);
     }
+    this.collaborationService.destroy();
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

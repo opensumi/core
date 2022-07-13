@@ -4,6 +4,7 @@ export const ICollaborationService = Symbol('ICollaborationService');
 
 export interface ICollaborationService {
   initialize(): void;
+  destroy(): void;
   undoOnCurrentBinding(): void;
   redoOnCurrentBinding(): void;
 }
@@ -21,3 +22,5 @@ export const ICollaborationServiceForClient = Symbol('ICollaborationServiceForCl
 export interface ICollaborationServiceForClient {
   setInitContent(uri: string, initContent: string): void;
 }
+
+export const ROOM_NAME = 'y-room-opensumi';

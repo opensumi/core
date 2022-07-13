@@ -18,8 +18,6 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
 
   private server: http.Server;
 
-  private yMap: Y.Map<Y.Text>;
-
   initialize() {
     this.logger.debug('init y-websocket server');
 
@@ -28,17 +26,7 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
       res.end('hello');
     });
 
-    const { setupWSConnection, getYDoc } = utils;
-
-    const ROOM_NAME = 'y-room-opensumi';
-
-    const doc: Y.Doc = getYDoc(ROOM_NAME);
-    this.yMap = doc.getMap(); // todo set or delete
-    this.yMap.observe((e) => {
-      e.changes.keys.forEach((change, key) => {
-        this.logger.debug(`[Collaboration] operation ${change.action} occurs on key ${key}`);
-      });
-    });
+    const { setupWSConnection } = utils; // todo add typing?
 
     this.websocketServer = new ws.Server({ noServer: true });
 
@@ -62,6 +50,7 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
   }
 
   getYDoc(room: string): Y.Doc {
-    throw new Error('Method not implemented.');
+    const { getYDoc } = utils;
+    return getYDoc(room);
   }
 }
