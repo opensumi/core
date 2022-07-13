@@ -212,7 +212,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.logger.log(`setup client ${client.id}`);
     client.addDispose(
       client.onExit((e) => {
-        this.terminalView.removeWidget(client.id);
+        // 直接使用removeWidget会导致TerminalTask场景下任务执行完毕直接退出而不是用户手动触发onKeyDown退出
+        // this.terminalView.removeWidget(client.id);
         this.clients.delete(client.id);
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
       }),
