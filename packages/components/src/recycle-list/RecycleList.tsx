@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
 
@@ -123,7 +123,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   style,
   data,
   onReady,
-  onScroll,
+  onScroll: handleScroll,
   itemHeight,
   header: Header,
   footer: Footer,
@@ -132,7 +132,9 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   getSize: customGetSize,
 }) => {
   const listRef = useRef<FixedSizeList | VariableSizeList>();
+  const outerRef = useRef<HTMLDivElement>();
   const sizeMap = useRef<{ [key: string]: number }>({});
+  const prevScrollOffset = useRef<number>(0);
   const scrollToIndexTimer = useRef<any>();
 
   useEffect(() => {
@@ -357,12 +359,23 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     );
   });
 
+  const onScroll = (props) => {
+    // 当 width/height 改变时，FixedSizeList 会重置 scrollTop
+    // 这里存储一下上次的滚动条高度后用于下次渲染时进行同步
+    prevScrollOffset.current = props.scrollOffset;
+    handleScroll && handleScroll(props);
+  };
+
   const render = () => {
     const isDynamicList = typeof itemHeight !== 'number';
     const isAutoSizeList = !width || !height;
 
     const renderList = () => {
       const renderContent = ({ width, height }) => {
+        if (outerRef.current) {
+          // 渲染时同步一下上次记录的滚动条高度
+          outerRef.current.scrollTop = prevScrollOffset.current;
+        }
         const maxH = getMaxListHeight();
         const minH = getMinListHeight();
         let currentHeight = height;
@@ -407,6 +420,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
               itemCount={adjustedRowCount}
               overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
               ref={listRef as any}
+              outerRef={outerRef as any}
               style={{
                 transform: 'translate3d(0px, 0px, 0px)',
                 ...style,
