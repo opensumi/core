@@ -79,7 +79,7 @@ Licensed under the [MIT](LICENSE) license.
 
 ## ✨ Contributors
 
-❤️ Thanks goes to these wonderful people!
+❤️ Thanks go to these wonderful people!
 
 <a href="https://github.com/opensumi/core/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=opensumi/core" />
