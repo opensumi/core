@@ -213,17 +213,19 @@ export class WorkerExtProcessService
   }
 
   private getWorkerExtensionProps(extension: IExtension, workerMain: string) {
-    // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
-    let workerScriptPath = new URI(
-      extension.extensionLocation.with({
-        path: posix.join(extension.extensionLocation.path, workerMain),
-      }),
-    ).toString();
+    let entryScript = workerMain;
 
     // 有部分 web extension 在申明 browser 入口字段的时候，不会带上文件后缀，导致 fetch 获取文件 404
-    if (!workerScriptPath.endsWith('.js')) {
-      workerScriptPath += '.js';
+    if (!entryScript.endsWith('.js')) {
+      entryScript += '.js';
     }
+
+    // 这里路径遵循 posix 方式，fsPath 会自动根据平台转换
+    const workerScriptPath = new URI(
+      extension.extensionLocation.with({
+        path: posix.join(extension.extensionLocation.path, entryScript),
+      }),
+    ).toString();
 
     return Object.assign({}, extension.toJSON(), { workerScriptPath });
   }
