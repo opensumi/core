@@ -94,6 +94,8 @@ import { UntitledDocumentIdCounter } from './untitled-resource';
 
 const MAX_CONFIRM_RESOURCES = 10;
 
+const couldRevive = (r: IResource): boolean => !!(r.supportsRevive && !r.deleted);
+
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
   editorGroups: EditorGroup[] = [];
@@ -1946,8 +1948,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   getState(): IEditorGroupState {
-    const couldRevive = (r: IResource): boolean => !!(r.supportsRevive && !r.deleted);
-
     const uris = this.resources.filter(couldRevive).map((r) => r.uri.toString());
     return {
       uris,
@@ -1971,7 +1971,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   async restoreState(state: IEditorGroupState) {
     this._restoringState = true;
-    this.previewURI = state.uris[state.previewIndex] ? null : new URI(state.uris[state.previewIndex]);
+    this.previewURI = state.uris[state.previewIndex] ? new URI(state.uris[state.previewIndex]) : null;
     for (const uri of state.uris) {
       await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false, deletedPolicy: 'skip' });
     }
