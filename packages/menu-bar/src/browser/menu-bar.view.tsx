@@ -7,6 +7,7 @@ import { Dropdown } from '@opensumi/ide-components/lib/dropdown';
 import { Deprecated } from '@opensumi/ide-components/lib/utils/deprecated';
 import { useInjectable, SlotRenderer, ComponentRegistry } from '@opensumi/ide-core-browser';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IMenubarItem } from '@opensumi/ide-core-browser/lib/menu/next';
 
 import styles from './menu-bar.module.less';
@@ -90,7 +91,12 @@ export const MenuBar = observer(() => {
   const LogoIcon = componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar-logo')?.views[0].component;
 
   return (
-    <ClickOutside className={styles.menubars} mouseEvents={['click', 'contextmenu']} onOutsideClick={handleMouseLeave}>
+    <ClickOutside
+      className={styles.menubars}
+      style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}
+      mouseEvents={['click', 'contextmenu']}
+      onOutsideClick={handleMouseLeave}
+    >
       {LogoIcon ? <LogoIcon /> : <div className={styles.logoIconEmpty}></div>}
       {menubarStore.menubarItems.map(({ id, label }) => (
         <MenubarItem
