@@ -799,6 +799,8 @@ export const localizationBundle = {
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
 
+    'output.channel.clear': '清除输出面板的内容',
+
     'app.quit': '退出',
 
     'view.zoomReset': '重置窗口缩放',

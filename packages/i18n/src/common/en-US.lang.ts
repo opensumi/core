@@ -961,6 +961,8 @@ export const localizationBundle = {
 
     'debug.terminal.label': 'Javascript Debug Terminal',
 
+    'output.channel.clear': 'Clear Output Panel',
+
     // extension contribute
     ...browserViews,
   },

@@ -25,7 +25,7 @@ import { Output, ChannelSelector } from './output.view';
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',
   iconClass: getIcon('clear'),
-  label: localize('output.channel.clear', '清理日志'),
+  label: localize('output.channel.clear', 'Clear Output Panel'),
 };
 const OUTPUT_CONTAINER_ID = 'ide-output';
 @Domain(
