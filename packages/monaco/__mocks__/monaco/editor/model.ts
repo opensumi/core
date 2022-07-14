@@ -5,7 +5,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { EndOfLineSequence, EOL } from '../../../src/browser/monaco-api/types';
 import { MockedMonacoUri } from '../common/uri';
 
-
 let id = 1;
 
 const eolStringMap = new Map<number, string>([
@@ -66,6 +65,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     },
     bracketPairColorizationOptions: {
       enabled: true,
+      independentColorPoolPerBracketType: true,
     },
   };
 
@@ -77,6 +77,7 @@ export class MockedMonacoModel extends Disposable implements monaco.editor.IText
     this.language = language;
     this.value = value;
   }
+  tokenization: any;
   getLanguageIdAtPosition(lineNumber: number, column: number): string {
     throw new Error('Method not implemented.');
   }
