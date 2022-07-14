@@ -214,7 +214,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
     this.disposableCollection.push(
       this.terminalClient?.onExit(async (e) => {
-        if (e.id === this.terminalClient?.id) {
+        if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
           this.onTaskExit(e.code);
           this.processExited = true;
           this.taskStatus = TaskStatus.PROCESS_EXITED;
@@ -225,7 +225,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
     this.disposableCollection.push(
       this.terminalService.onExit(async (e) => {
-        if (e.sessionId === this.terminalClient?.id) {
+        if (e.sessionId === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
           await this.processReady.promise;
           this.onTaskExit(e.code);
           this.processExited = true;
