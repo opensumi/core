@@ -4,6 +4,7 @@ import React from 'react';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { IContextKeyService, View, useInjectable } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { localize } from '@opensumi/ide-core-common';
 import { AccordionContainer } from '@opensumi/ide-main-layout/lib/browser/accordion/accordion.view';
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
@@ -164,7 +165,11 @@ export const SCMViewContainer: React.FC<{ viewState: ViewState }> = observer((pr
           ) : null
         }
       />
-      <AccordionContainer views={views} containerId={scmContainerId} className={styles.scm_accordion} />
+      <AccordionContainer
+        views={views}
+        containerId={scmContainerId}
+        style={{ height: `calc(100% - ${LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT}px)` }}
+      />
     </div>
   );
 });

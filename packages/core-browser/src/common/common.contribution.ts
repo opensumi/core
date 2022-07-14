@@ -14,6 +14,7 @@ import { IContextKeyService, IContextKey } from '../context-key';
 import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
+import { LAYOUT_VIEW_SIZE } from '../layout/constants';
 import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
 import { PreferenceContribution } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
@@ -48,9 +49,11 @@ export class ClientCommonContribution
 
   constructor() {
     const overridePropertiesDefault = {
-      'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer,
-      'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer,
-      'debug.toolbar.top': this.appConfig.isElectronRenderer ? 35 : 70,
+      'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
+      'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
+      'debug.toolbar.top': this.appConfig.isElectronRenderer
+        ? LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT
+        : LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT + LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT,
     };
     const keys = Object.keys(this.schema.properties);
     for (const key of keys) {

@@ -17,6 +17,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { DebugState } from '../../../common';
@@ -254,12 +255,22 @@ const FloatDebugToolbarView = observer(() => {
       const isNewMacHeaderBar = () => isMacintosh && parseFloat(electronEnv.osRelease) >= 20;
       // Electron 环境下需要在非全屏情况下追加 Header 高度
       uiService.isFullScreen(electronEnv.currentWindowId).then((fullScreen) => {
-        fullScreen ? setToolbarOffsetTop(value) : setToolbarOffsetTop(value + (isNewMacHeaderBar() ? 28 : 35));
+        fullScreen
+          ? setToolbarOffsetTop(value)
+          : setToolbarOffsetTop(
+              value +
+                (isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT),
+            );
       });
       disposableCollection.push(
         uiService.on('fullScreenStatusChange', (windowId, fullScreen) => {
           if (windowId === electronEnv.currentWindowId) {
-            fullScreen ? setToolbarOffsetTop(value) : setToolbarOffsetTop(value + (isNewMacHeaderBar() ? 28 : 35));
+            fullScreen
+              ? setToolbarOffsetTop(value)
+              : setToolbarOffsetTop(
+                  value +
+                    (isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT),
+                );
           }
         }),
       );
