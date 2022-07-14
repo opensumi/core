@@ -4,7 +4,7 @@ const { format, mnemonicButtonLabel } = strings;
 
 export type ILocalizationKey = string; // ts不支持symbol作为key
 
-let _currentLanguageId = 'en-US';
+let _currentLanguageId = 'zh-CN';
 
 const localizationRegistryMap = new CaseInsensitiveMap<string, LocalizationRegistry>();
 

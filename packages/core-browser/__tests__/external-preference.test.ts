@@ -70,11 +70,11 @@ describe('external preference tests', () => {
       getItem: (key: string) => store.get(key),
     };
 
-    // 默认值为 en-US
-    expect(getPreferenceLanguageId()).toBe('en-US');
+    // 默认值为 zh-CN
+    expect(getPreferenceLanguageId()).toBe('zh-CN');
     // 工作空间级别不生效
     getExternalPreferenceProvider('general.language')!.set('testLanguage', PreferenceScope.Workspace);
-    expect(getPreferenceLanguageId()).toBe('en-US');
+    expect(getPreferenceLanguageId()).toBe('zh-CN');
     // 全局级别可生效
     getExternalPreferenceProvider('general.language')!.set('testLanguage', PreferenceScope.Default);
     expect(getPreferenceLanguageId()).toBe('testLanguage');

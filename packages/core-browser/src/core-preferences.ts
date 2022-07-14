@@ -40,7 +40,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     'general.language': {
       type: 'string',
       enum: getAvailableLanguages().map((l) => l.languageId),
-      default: 'en-US',
+      default: 'zh-CN',
     },
     'general.theme': {
       type: 'string',
