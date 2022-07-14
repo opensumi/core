@@ -1,5 +1,4 @@
 import * as fuzzy from 'fuzzy';
-import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
@@ -73,9 +72,9 @@ export class KeymapService implements IKeymapService {
 
   protected resource: FileStat | undefined;
 
-  protected readonly keymapChangeEmitter = new Emitter<void>();
+  protected readonly keymapChangeEmitter = new Emitter<KeybindingItem[]>();
 
-  get onDidKeymapChanges(): Event<void> {
+  get onDidKeymapChanges(): Event<KeybindingItem[]> {
     return this.keymapChangeEmitter.event;
   }
 
@@ -118,7 +117,6 @@ export class KeymapService implements IKeymapService {
     this._storeKeybindings = value;
   }
 
-  @observable.shallow
   keybindings: KeybindingItem[] = [];
 
   get whenReady() {
@@ -289,14 +287,13 @@ export class KeymapService implements IKeymapService {
   /**
    * 更新keybindings列表
    */
-  @action
   private updateKeybindings() {
     if (this.currentSearchValue) {
       this.doSearchKeybindings(this.currentSearchValue);
     } else {
       this.keybindings = this.getKeybindingItems();
     }
-    this.keymapChangeEmitter.fire();
+    this.keymapChangeEmitter.fire(this.keybindings);
   }
 
   /**
@@ -578,7 +575,6 @@ export class KeymapService implements IKeymapService {
   /**
    * 搜索快捷键
    */
-  @action
   searchKeybindings = (search: string) => {
     this.currentSearchValue = search;
     // throttle
@@ -596,7 +592,6 @@ export class KeymapService implements IKeymapService {
    * 模糊搜索匹配的快捷键
    * @protected
    */
-  @action
   protected readonly doSearchKeybindings = (search) => {
     if (search) {
       this.isSearching = true;
@@ -694,6 +689,7 @@ export class KeymapService implements IKeymapService {
       }
     });
     this.keybindings = result;
+    this.keymapChangeEmitter.fire(this.keybindings);
   };
 
   /**
