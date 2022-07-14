@@ -1,117 +1,20 @@
-:global {
-  .expansion-collapse {
-    &:before {
-      margin-right: 5px;
-      font-size: 12px;
-      transform: rotate(90deg);
-      display: block;
-    }
-    &.collapse {
-      &:before {
-        transform: rotate(0);
-      }
-    }
-  }
-  .side-container {
-    min-width: 100%;
-  }
-  /*-----------------------------------------------------------------------------
-  | Sidepanel Toolbar
-  |----------------------------------------------------------------------------*/
-  .panel-titlebar {
-    min-height: var(--tabBar-height);
-  }
-  .title-wrap {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .panel-titlebar .sidepanel-title {
-    color: var(--sideBarTitle-foreground);
-    font-weight: 500;
-    margin-left: 10px;
-    text-transform: uppercase;
-    font-size: 12px;
-    line-height: var(--tabBar-height);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .panel-titlebar .p-TabBar-toolbar {
-    display: flex;
-    flex-direction: row;
-    padding-right: 10px;
-  }
-
-  .panel-titlebar .p-TabBar-toolbar .item {
-    color: var(--sideBarTitle-foreground);
-    margin-left: 8px;
-    opacity: 0.4;
-    > div {
-      width: 16px;
-      background-repeat: no-repeat;
-      &.mask-mode {
-        background-color: var(--foreground);
-      }
-    }
-    &.enabled {
-      opacity: 1;
-      cursor: pointer;
-    }
-  }
-
-  .p-TabBar-toolbar .item .big {
-    transform: scale(1.2);
-    transition: transform 0.2s;
-  }
-
-  .sidepanel-component {
-    width: 100%;
-  }
-  .toolbar-container {
-    position: absolute;
-    z-index: 99;
-    top: -27px;
-    right: 0;
-    height: 24px;
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    .p-TabBar-toolbar {
-      overflow: visible;
-    }
-  }
-
-  .views-container {
-    overflow: hidden;
-    height: 100%;
-    > div {
-      height: 100%;
-    }
-  }
-
-  .views-container:focus {
-    border: none;
-    outline: none;
-  }
-}
 .split-panel {
   display: flex;
   flex: 1;
   width: 100%;
   height: 100%;
 }
+
 .box-panel {
   display: flex;
   width: 100%;
   height: 100%;
 }
+
 .ease {
   transition: height 0.1s ease-out, width 0.1s ease-out;
 }
+
 .wrapper {
   position: relative;
   z-index: 1;
