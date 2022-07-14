@@ -61,7 +61,7 @@ const ResultTotalContent = observer<{
   if (total.resultNum > 0) {
     return (
       <p className={styles.result_describe}>
-        {localize('search.files.result.kt', '{0} result in {1} files')
+        {localize('search.files.result', '{0} result in {1} files')
           .replace('{0}', String(total.resultNum))
           .replace('{1}', String(total.fileNum))}
         <span

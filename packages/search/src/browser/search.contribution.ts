@@ -98,6 +98,7 @@ export class SearchContribution
         }
         this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.focus();
+        this.searchBrowserService.search();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.REFRESH, {
