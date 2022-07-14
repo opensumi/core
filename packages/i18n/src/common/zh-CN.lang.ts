@@ -1011,6 +1011,7 @@ export const localizationBundle = {
     'connection.stop.rtt': '关闭通信延迟检查',
 
     'debug.terminal.label': '创建 Javascript Debug Terminal',
+    'command.runTask': '运行任务',
 
     // extension contribute
     ...browserViews,

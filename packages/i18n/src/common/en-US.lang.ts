@@ -962,7 +962,7 @@ export const localizationBundle = {
     'debug.terminal.label': 'Javascript Debug Terminal',
 
     'output.channel.clear': 'Clear Output Panel',
-
+    'command.runTask': 'Run Task',
     // extension contribute
     ...browserViews,
   },
