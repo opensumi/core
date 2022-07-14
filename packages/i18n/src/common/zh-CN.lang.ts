@@ -494,6 +494,8 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} 不是有效选项',
 
+    'editor.saveAll': '保存全部',
+
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
     'editor.configuration.renderLineHighlight': '控制编辑器的当前行突出显示方式。',
@@ -666,6 +668,7 @@ export const localizationBundle = {
     'terminal.openWithPath': '在终端中打开',
     'terminal.remove': '终止终端',
     'terminal.relaunch': '重启终端',
+    'terminal.menu.clearGroups': '清除所有终端',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分终端',
     'terminal.menu.rename': '重命名',
@@ -745,7 +748,7 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.toggle': '切换面板',
+    'layout.tabbar.toggle': '隐藏面板',
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
@@ -796,6 +799,8 @@ export const localizationBundle = {
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
 
+    'output.channel.clear': '清除输出面板的内容',
+
     'app.quit': '退出',
 
     'view.zoomReset': '重置窗口缩放',
@@ -807,6 +812,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'extension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
     'extension.exthostRestarting.content': '插件进程重启中...',
+    'extension.host.restart': '重启插件主进程',
 
     'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',
     'extension.profilingExtensionHost': '分析扩展主机',
@@ -999,10 +1005,13 @@ export const localizationBundle = {
     'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
     'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
 
-    'connection.start.rtt': '开发人员工具：查看通信延迟',
-    'connection.stop.rtt': '开发人员工具：关闭通信延迟检查',
+    'command.category.developerTools': '开发人员工具',
+
+    'connection.start.rtt': '查看通信延迟',
+    'connection.stop.rtt': '关闭通信延迟检查',
 
     'debug.terminal.label': '创建 Javascript Debug Terminal',
+    'command.runTask': '运行任务',
 
     // extension contribute
     ...browserViews,

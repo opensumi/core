@@ -94,11 +94,10 @@ export const localizationBundle = {
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
-    selectAll: 'Select All',
-
     editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
+    'editor.saveAll': 'Save All',
     'editor.saveCurrent': 'Save Current File',
     'editor.title.context.close': 'Close',
     'editor.closeCurrent': 'Close Current Editor',
@@ -112,7 +111,6 @@ export const localizationBundle = {
     'editor.closeToRight': 'Close To Right',
     'editor.closeSaved': 'Close Saved',
     'editor.cannotSaveWithoutDirectory': 'Cannot save file without directory',
-    'editor.close': 'Close',
     'editor.action.accept': 'Accept Changes (Use version on the right)',
     'editor.action.revert': 'Revert Changes (Use version on the left)',
     'editor.format.chooseFormatter': 'Choose the Formatter',
@@ -490,8 +488,6 @@ export const localizationBundle = {
     'settings.group.view': 'View',
     'settings.group.terminal': 'Terminal',
 
-    'settings.menu.keymaps': 'Settings',
-
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
     'preference.workbench.colorCustomizations': 'Overwrite colors of current color theme',
@@ -499,8 +495,8 @@ export const localizationBundle = {
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
       'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
-    'preference.general.language.change.refresh.now': 'now',
-    'preference.general.language.change.refresh.later': 'later',
+    'preference.general.language.change.refresh.now': 'Now',
+    'preference.general.language.change.refresh.later': 'Later',
 
     'preference.debug.internalConsoleOptions': 'Controls when the internal debug console should open.',
     'preference.debug.openDebug': 'Controls when the debug view should open.',
@@ -644,7 +640,6 @@ export const localizationBundle = {
     'terminal.menu.clear': 'Clear',
     'terminal.menu.stop': 'Stop',
     'terminal.menu.stopGroup': 'Stop Group',
-    'terminal.menu.stopGroups': 'Stop All Terminals',
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
@@ -653,7 +648,6 @@ export const localizationBundle = {
     'terminal.menu.clearAllContents': 'Clear All Terminals Content',
     'terminal.menu.selectAllContent': 'Select All Terminals Content',
     'terminal.environment.changed': "Extensions have made changes to this terminal's environment",
-    'terminal.environment.relaunch': 'Relaunch Terminal',
     'terminal.environment.changes': "Extensions want to make the following changes to the terminal's environment:",
     'terminal.environment.removal': "Extensions want to remove these existing changes from the terminal's environment:",
     'terminal.launchFail.cwdNotDirectory': 'Starting directory (cwd) "{0}" is not a directory',
@@ -663,6 +657,7 @@ export const localizationBundle = {
     'terminal.openFile': 'Open file in editor',
     'terminal.focusFolder': 'Focus folder in explorer',
     'terminal.openFolder': 'Open folder in new window',
+    'terminal.relaunch': 'Relaunch Terminal',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
@@ -718,7 +713,7 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.toggle': 'Toggle Panel',
+    'layout.tabbar.toggle': 'Hide Panel',
     'layout.tabbar.expand': 'Maximize Bottom Panel',
     'layout.tabbar.retract': 'Retract Bottom Panel',
     'layout.view.hide': 'HIDE',
@@ -802,7 +797,6 @@ export const localizationBundle = {
 
     'window.toggleDevTools': 'Toggle Developer Tools',
     'window.reload': 'Reload Window',
-    about: 'About',
 
     'outline.title': 'OutLine',
     'outline.noinfo': 'There is no outline information',
@@ -829,13 +823,18 @@ export const localizationBundle = {
     'view.zoomReset': 'Zoom Reset',
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
-
+    tabCompletion: 'Enables tab completions.',
+    'tabCompletion.off': 'Disable tab completions.',
+    'tabCompletion.on': 'Tab complete will insert the best matching suggestion when pressing tab.',
+    'tabCompletion.onlySnippets':
+      "Tab complete snippets when their prefix match. Works best when 'quickSuggestions' aren't enabled.",
     'extension.invalidExthostReload.confirm.content':
-      'Extension Host process is invalid. Click to refresh to resume this process.',
+      'Extension Host Process is invalid. Click to refresh to resume the process.',
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
-    'extension.crashedExthostReload.confirm': 'Extension Host process crashed, restart this process?',
-    'extension.exthostRestarting.content': 'Extension Host process is restarting',
+    'extension.crashedExthostReload.confirm': 'Extension Host Process is crashed, do you want to restart the process?',
+    'extension.exthostRestarting.content': 'Extension Host Process is restarting',
+    'extension.host.restart': 'Restart Extension Host Process',
 
     'extension.no.view.found':
       'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
@@ -955,11 +954,15 @@ export const localizationBundle = {
     'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',
     'menu.dupe.command': 'menuId {0} register command({1}) is duplicated with alt({2})',
 
-    'connection.start.rtt': 'Developer Tool: Measure Connection RTT',
-    'connection.stop.rtt': 'Developer Tool: Stop Connection RTT',
+    'command.category.developerTools': 'Developer Tool',
+
+    'connection.start.rtt': 'Measure Connection RTT',
+    'connection.stop.rtt': 'Stop Connection RTT',
 
     'debug.terminal.label': 'Javascript Debug Terminal',
 
+    'output.channel.clear': 'Clear Output Panel',
+    'command.runTask': 'Run Task',
     // extension contribute
     ...browserViews,
   },

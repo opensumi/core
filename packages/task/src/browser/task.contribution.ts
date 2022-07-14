@@ -20,7 +20,7 @@ import { schema, taskSchemaUri } from './task.schema';
 export class TaskContribution extends WithEventBus implements CommandContribution, JsonSchemaContribution {
   static readonly RUN_TASK_COMMAND: Command = {
     id: 'workbench.action.tasks.runTask',
-    label: '运行任务',
+    label: '%command.runTask%',
     category: 'Task',
   };
 
