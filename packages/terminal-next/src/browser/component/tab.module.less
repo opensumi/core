@@ -41,10 +41,9 @@
   padding: 0px 12px 0px 12px;
   cursor: pointer;
   user-select: none;
-  height: var(--tabBar-height);
-  line-height: var(--tabBar-height);
-  font-size: var(--tab-fontSize);
-  min-width: var(--tab-min-size);
+  line-height: 100%;
+  font-size: 12px;
+  min-width: 112px;
   display: flex;
   color: var(--kt-panelTab-inactiveForeground);
   background-color: var(--kt-panelTab-inactiveBackground);
@@ -56,21 +55,31 @@
   .close_icon {
     transition: opacity 0.2s ease-in-out;
     opacity: 0;
-    line-height: var(--tabBar-height);
     border-right: 0;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    box-sizing: content-box;
+    text-align: center;
+    border-radius: 4px;
+    &:hover {
+      transform: scale(1.2);
+      background-color: var(--kt-defaultButton-hoverBackground);
+    }
   }
 }
 
 .item_container:hover {
   .close_icon {
     opacity: 1;
+    color: var(--tab-activeForeground);
   }
 }
 
 .item_info_name {
   margin-right: 8px;
   position: relative;
-  min-width: var(--tab-min-size);
+  min-width: 112px;
   display: flex;
   align-items: center;
 

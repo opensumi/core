@@ -66,12 +66,12 @@ export const corePreferenceSchema: PreferenceSchema = {
     // 是否允许打开文件夹
     'application.supportsOpenFolder': {
       type: 'boolean',
-      default: isElectronRenderer(),
+      default: false,
       description: 'Whether default open folder behavior is supported',
     },
     'application.supportsOpenWorkspace': {
       type: 'boolean',
-      default: isElectronRenderer(),
+      default: false,
       description: 'Whether default open workspace behavior is supported',
     },
     'application.confirmExit': {

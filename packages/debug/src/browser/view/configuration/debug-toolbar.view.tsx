@@ -1,20 +1,24 @@
 import cls from 'classnames';
 import { action, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { Option, Select } from '@opensumi/ide-components';
 import {
   AppConfig,
   getIcon,
-  isElectronRenderer,
   localize,
   PreferenceService,
   useInjectable,
+  DisposableCollection,
+  electronEnv,
+  isMacintosh,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { DebugState } from '../../../common';
 import { DebugAction } from '../../components';
@@ -92,7 +96,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
     sessions,
     updateCurrentSession,
   } = useInjectable<DebugToolbarService>(DebugToolbarService);
-
+  const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
   const isAttach =
     !!currentSession &&
     currentSession.configuration.request === 'attach' &&
@@ -142,7 +146,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
 
   const renderSessionOptions = (sessions: DebugSession[]) =>
     sessions.map((session: DebugSession) => {
-      if (isElectronRenderer()) {
+      if (isElectronRenderer) {
         return (
           <option key={session.id} value={session.id}>
             {session.label}
@@ -160,7 +164,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
     if (sessions.length > 1) {
       return (
         <div className={cls(styles.debug_selection)}>
-          {isElectronRenderer() ? (
+          {isElectronRenderer ? (
             <NativeSelect value={currentSessionId} onChange={setCurrentSession}>
               {renderSessionOptions(sessions)}
             </NativeSelect>
@@ -181,7 +185,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
 
   const setCurrentSession = (event: React.ChangeEvent<HTMLSelectElement> | string | number) => {
     let value = event;
-    if (isElectronRenderer()) {
+    if (isElectronRenderer) {
       value = (event as React.ChangeEvent<HTMLSelectElement>).target.value;
     }
 
@@ -241,8 +245,43 @@ const FloatDebugToolbarView = observer(() => {
   const preference = useInjectable<PreferenceService>(PreferenceService);
   const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
   const { state } = useInjectable<DebugToolbarService>(DebugToolbarService);
+  const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
 
-  const customTop = preference.get<number>(DebugPreferenceTopKey) || 0;
+  useEffect(() => {
+    const disposableCollection = new DisposableCollection();
+    const value = preference.get<number>(DebugPreferenceTopKey) || 0;
+    if (isElectronRenderer) {
+      const uiService: IElectronMainUIService = useInjectable(IElectronMainUIService);
+      const isNewMacHeaderBar = () => isMacintosh && parseFloat(electronEnv.osRelease) >= 20;
+      // Electron 环境下需要在非全屏情况下追加 Header 高度
+      uiService.isFullScreen(electronEnv.currentWindowId).then((fullScreen) => {
+        fullScreen
+          ? setToolbarOffsetTop(value)
+          : setToolbarOffsetTop(
+              value +
+                (isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT),
+            );
+      });
+      disposableCollection.push(
+        uiService.on('fullScreenStatusChange', (windowId, fullScreen) => {
+          if (windowId === electronEnv.currentWindowId) {
+            fullScreen
+              ? setToolbarOffsetTop(value)
+              : setToolbarOffsetTop(
+                  value +
+                    (isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT),
+                );
+          }
+        }),
+      );
+    } else {
+      setToolbarOffsetTop(value);
+    }
+    return () => {
+      disposableCollection.dispose();
+    };
+  }, []);
+
   const customHeight = preference.get<number>(DebugPreferenceHeightKey) || 0;
 
   const debugToolbarWrapperClass = cls({
@@ -260,7 +299,9 @@ const FloatDebugToolbarView = observer(() => {
       >
         <div
           style={{
-            transform: `translateX(${controller.x}px) translateY(${customTop + controller.line * customHeight}px)`,
+            transform: `translateX(${controller.x}px) translateY(${
+              toolbarOffsetTop + controller.line * customHeight
+            }px)`,
             height: `${customHeight}px`,
           }}
           className={debugToolbarWrapperClass}

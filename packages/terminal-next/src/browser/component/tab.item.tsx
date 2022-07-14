@@ -6,6 +6,7 @@ import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
 import { getIcon, useInjectable, URI } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
@@ -52,6 +53,7 @@ export const renderInfoItem = observer((props: ItemProps) => {
         [styles.item_container]: true,
         [styles.item_selected]: !!props.selected,
       })}
+      style={{ height: LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT }}
       onClick={() => handleSelect()}
       onContextMenu={(event) => props.onContextMenu && props.onContextMenu(event)}
     >

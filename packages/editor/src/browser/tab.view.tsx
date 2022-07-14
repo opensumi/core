@@ -17,6 +17,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable, useUpdateOnEventBusEvent } from '@opensumi/ide-core-browser/lib/react-hooks';
 
@@ -260,8 +261,9 @@ export const Tabs = ({ group }: ITabsProps) => {
   const renderTabContent = () => (
     <div
       className={styles.kt_editor_tabs_content}
+      style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
       ref={contentRef as any}
-      onDragLeave={(e) => {
+      onDragLeave={() => {
         if (contentRef.current) {
           contentRef.current.classList.remove(styles.kt_on_drag_over);
         }
@@ -426,7 +428,11 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       : undefined;
     // 第三个参数是当前编辑器的URI（如果有）
     return (
-      <div ref={ref} className={classnames(styles.editor_actions, className)}>
+      <div
+        ref={ref}
+        className={classnames(styles.editor_actions, className)}
+        style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
+      >
         <InlineActionBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}
           context={args as any /* 这个推断过不去.. */}

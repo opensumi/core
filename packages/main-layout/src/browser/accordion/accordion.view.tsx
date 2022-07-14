@@ -17,6 +17,7 @@ interface AccordionContainerProps {
   minSize?: number;
   noRestore?: boolean;
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export const AccordionContainer = observer(
@@ -28,6 +29,7 @@ export const AccordionContainer = observer(
     minSize = 120,
     className,
     noRestore,
+    style,
   }: AccordionContainerProps) => {
     const accordionService: AccordionService = useInjectable(AccordionServiceFactory)(containerId, noRestore);
     React.useEffect(() => {
@@ -50,6 +52,7 @@ export const AccordionContainer = observer(
     return (
       <SplitPanel
         className={className}
+        style={style}
         dynamicTarget={true}
         id={containerId}
         resizeKeep={false}

@@ -50,6 +50,7 @@ interface SplitChildProps {
 
 export interface SplitPanelProps extends SplitChildProps {
   className?: string;
+  style?: React.CSSProperties;
   direction?: Layout.direction;
   id: string;
   // setAbsoluteSize 时保证相邻节点总宽度不变
@@ -64,6 +65,7 @@ const getProp = (child: React.ReactNode, prop: string) => child && child['props'
 export const SplitPanel: React.FC<SplitPanelProps> = ({
   id,
   className,
+  style,
   children = [],
   direction = 'left-to-right',
   resizeKeep = true,
@@ -285,7 +287,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       ref={(ele) => (rootRef.current = ele!)}
       {...restProps}
       className={clsx(styles['split-panel'], className)}
-      style={{ flexDirection: Layout.getFlexDirection(direction) }}
+      style={{ flexDirection: Layout.getFlexDirection(direction), ...style }}
     >
       {elements}
     </div>
