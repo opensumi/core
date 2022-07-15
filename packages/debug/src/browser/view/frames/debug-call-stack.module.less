@@ -124,9 +124,6 @@
 
 .debug_stack_frames_item_label {
   flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   margin-right: 12px;
   &.label {
     text-align: center;
@@ -138,8 +135,10 @@
   }
 }
 .debug_stack_frames_item_description {
+  opacity: 0.6;
+  overflow: hidden;
   white-space: nowrap;
-  opacity: 0.9;
+  text-overflow: ellipsis;
 }
 .debug_stack_frames_item_badge {
   display: inline-block;
@@ -187,6 +186,7 @@
 
 .debug_stack_session_operations {
   display: flex;
+  margin-right: 5px;
   div {
     padding: 0px 10px;
   }
