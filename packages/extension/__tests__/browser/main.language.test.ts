@@ -912,6 +912,14 @@ An error case:
   it('provideDocumentSemanticTokens should be work', async () => {
     const uri = monaco.Uri.parse('file:///path/to/simple1.semanticLanguage');
     const textModel = createModel('', 'semanticLanguage', uri);
+    extHostDocuments.$fireModelOpenedEvent({
+      uri: textModel.uri.toString(),
+      dirty: false,
+      versionId: textModel.getVersionId(),
+      languageId: 'a',
+      lines: textModel.getValue().split(textModel.getEOL()),
+      eol: textModel.getEOL(),
+    });
 
     const provider = languageFeaturesService.documentSemanticTokensProvider.ordered(textModel as any)[0];
     expect(provider).toBeDefined();
@@ -1164,6 +1172,14 @@ An error case:
   });
 
   it('provideEvaluatableExpression should be work', async () => {
+    extHostDocuments.$fireModelOpenedEvent({
+      uri: textModel.uri.toString(),
+      dirty: false,
+      versionId: textModel.getVersionId(),
+      languageId: 'a',
+      lines: textModel.getValue().split(textModel.getEOL()),
+      eol: textModel.getEOL(),
+    });
     const providers = evaluatableExpressionService.getSupportedEvaluatableExpressionProvider(textModel);
 
     expect(providers.length).toBe(1);
@@ -1229,6 +1245,8 @@ An error case:
     expect(mockMainThreadFunc).toBeCalledWith(
       expect.anything(),
       [{ $serialized: true, language: 'plaintext' }],
+      false,
+      undefined,
       undefined,
     );
   });
