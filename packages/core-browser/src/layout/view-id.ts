@@ -11,4 +11,8 @@ export namespace VIEW_CONTAINERS {
   export const MENU_BAR = `${VIEW_CONTAINERS_PREFIX}-menu-bar`;
   export const EDITOR = `${VIEW_CONTAINERS_PREFIX}-editor`;
   export const EDITOR_TABS = `${VIEW_CONTAINERS_PREFIX}-editor-tabs`;
+  export const QUICKPICK = `${VIEW_CONTAINERS_PREFIX}-quickpick`;
+  export const QUICKPICK_INPUT = `${VIEW_CONTAINERS_PREFIX}-quickpick-input`;
+  export const QUICKPICK_TABS = `${VIEW_CONTAINERS_PREFIX}-quickpick-tabs`;
+  export const QUICKPICK_ITEM = `${VIEW_CONTAINERS_PREFIX}-quickpick-item`;
 }

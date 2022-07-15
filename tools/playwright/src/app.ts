@@ -1,5 +1,7 @@
 import { Page } from '@playwright/test';
 
+import { OpenSumiCommandPalette } from './quick-command-palette';
+
 export interface AppData {
   loadingSelector: string;
   mainSelector: string;
@@ -10,20 +12,27 @@ export const DefaultAppData: AppData = {
   mainSelector: '#main',
 };
 
-export class App {
+export class OpenSumiApp {
   private _loaded = false;
+  private _quickCommandPalette: OpenSumiCommandPalette;
 
-  static async load(page: Page): Promise<App> {
-    return this.loadApp(page, App);
+  static async load(page: Page): Promise<OpenSumiApp> {
+    return this.loadApp(page, OpenSumiApp);
   }
 
-  static async loadApp<T extends App>(page: Page, appFactory: new (page: Page) => T): Promise<T> {
+  static async loadApp<T extends OpenSumiApp>(page: Page, appFactory: new (page: Page) => T): Promise<T> {
     const app = new appFactory(page);
     await app.load();
     return app;
   }
 
-  public constructor(public page: Page, protected appData = DefaultAppData) {}
+  public constructor(public page: Page, protected appData = DefaultAppData) {
+    this._quickCommandPalette = new OpenSumiCommandPalette(this);
+  }
+
+  get quickCommandPalette() {
+    return this._quickCommandPalette;
+  }
 
   protected async load(): Promise<void> {
     const now = Date.now();

@@ -28,7 +28,7 @@
     "@playwright/test": "1.22.2"
   },
   "devDependencies": {
-    "@opensumi/ide-utils": "2.18.7",
+    "@opensumi/ide-core-browser": "2.18.7",
     "allure-commandline": "^2.13.8",
     "allure-playwright": "^2.0.0-beta.14"
   }
