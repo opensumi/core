@@ -27,7 +27,7 @@ const OUTPUT_CLEAR: Command = {
   iconClass: getIcon('clear'),
   label: localize('output.channel.clear', 'Clear Output Panel'),
 };
-const OUTPUT_CONTAINER_ID = 'ide-output';
+const OUTPUT_CONTAINER_ID = 'output';
 @Domain(
   CommandContribution,
   ComponentContribution,

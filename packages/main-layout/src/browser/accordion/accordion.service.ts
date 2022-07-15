@@ -123,7 +123,7 @@ export class AccordionService extends WithEventBus {
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerGlobalToggleCommand(),
-        label: localize('layout.view.hide', '隐藏'),
+        label: localize('layout.view.hide', 'Hide'),
       },
       group: '0_global',
       when: 'triggerWithSection == true',
