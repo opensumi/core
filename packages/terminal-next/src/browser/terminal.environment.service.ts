@@ -3,7 +3,7 @@ import throttle from 'lodash/throttle';
 import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { getIcon, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser';
+import { getIcon, StatusBarAlignment, StatusBarEntryAccessor, TERMINAL_COMMANDS } from '@opensumi/ide-core-browser';
 import {
   CommandService,
   Emitter,
@@ -18,7 +18,6 @@ import { IStatusBarService } from '@opensumi/ide-status-bar/lib/common';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common';
 
 import { ITerminalProcessPath, ITerminalProcessService } from '../common';
-import { TERMINAL_COMMANDS } from '../common/commands';
 import {
   deserializeEnvironmentVariableCollection,
   IEnvironmentVariableCollectionWithPersistence,

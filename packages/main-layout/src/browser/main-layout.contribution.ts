@@ -7,6 +7,9 @@ import {
   SlotRendererRegistry,
   slotRendererRegistry,
   KeybindingRegistry,
+  LAYOUT_COMMANDS,
+  IQuickOpenHandlerRegistry,
+  QuickOpenContribution,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import {
@@ -24,9 +27,11 @@ import {
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@opensumi/ide-core-common';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
+import { QUICK_OPEN_COMMANDS } from '@opensumi/ide-quick-open';
 
 import { IMainLayoutService } from '../common';
 
+import { ViewQuickOpenHandler } from './quick-open-view';
 import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
 
 // NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
@@ -103,10 +108,15 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   iconClass: getIcon('shrink'),
 };
 
-@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution)
+@Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution, QuickOpenContribution)
 export class MainLayoutModuleContribution
   extends WithEventBus
-  implements CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution
+  implements
+    CommandContribution,
+    ClientAppContribution,
+    SlotRendererContribution,
+    MenuContribution,
+    QuickOpenContribution
 {
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -140,6 +150,9 @@ export class MainLayoutModuleContribution
 
   @Autowired(KeybindingRegistry)
   protected keybindingRegistry: KeybindingRegistry;
+
+  @Autowired(ViewQuickOpenHandler)
+  private quickOpenViewHandler: ViewQuickOpenHandler;
 
   async initialize() {
     // 全局只要初始化一次
@@ -306,6 +319,12 @@ export class MainLayoutModuleContribution
         },
       },
     );
+
+    commands.registerCommand(LAYOUT_COMMANDS.OPEN_VIEW, {
+      execute: () => {
+        this.commandService.executeCommand(QUICK_OPEN_COMMANDS.OPEN.id, 'view ');
+      },
+    });
   }
 
   registerMenus(menus: IMenuRegistry) {
@@ -346,6 +365,15 @@ export class MainLayoutModuleContribution
       keybinding: 'ctrlcmd+shift+j',
       command: RETRACT_BOTTOM_PANEL.id,
       when: 'bottomFullExpanded',
+    });
+  }
+
+  registerQuickOpenHandlers(handlers: IQuickOpenHandlerRegistry): void {
+    handlers.registerHandler(this.quickOpenViewHandler, {
+      title: localize('layout.action.openView'),
+      commandId: LAYOUT_COMMANDS.QUICK_OPEN_VIEW.id,
+      order: 5,
+      hideTab: true,
     });
   }
 }

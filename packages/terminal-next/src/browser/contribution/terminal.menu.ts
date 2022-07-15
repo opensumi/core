@@ -6,6 +6,7 @@ import {
   getSlotLocation,
   AppConfig,
   getTabbarCtxKey,
+  TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import {
   MenuContribution,
@@ -21,7 +22,6 @@ import {
   ITerminalGroupViewService,
   ITerminalSearchService,
   TerminalContainerId,
-  TERMINAL_COMMANDS,
 } from '../../common';
 
 export const group = 'panel_menu';
