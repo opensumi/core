@@ -2,7 +2,7 @@
 import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
-import { Injectable, Autowired, Inject } from '@opensumi/di';
+import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { FileChangeType, ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -33,6 +33,9 @@ class PendingBindingPayload {
 
 @Injectable()
 export class CollaborationService extends WithEventBus implements ICollaborationService {
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
   @Autowired(ILogger)
   private logger: ILogger;
 
@@ -119,7 +122,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     const cond = this.bindingMap.has(uri);
 
     if (!cond) {
-      const binding = new TextModelBinding(this.yTextMap.get(uri)!, model, this.yWebSocketProvider.awareness);
+      const binding = this.injector.get(TextModelBinding, [
+        this.yTextMap.get(uri)!,
+        model,
+        this.yWebSocketProvider.awareness,
+      ]);
       this.bindingMap.set(uri, binding);
       return binding;
     } else {

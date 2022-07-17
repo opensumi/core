@@ -2,6 +2,7 @@ import { createMutex } from 'lib0/mutex';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
+import { Injectable } from '@opensumi/di';
 import { ITextModel, ICodeEditor, Position } from '@opensumi/ide-monaco';
 import {
   editor,
@@ -11,6 +12,7 @@ import {
   IDisposable,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+@Injectable({ multiple: true })
 export class TextModelBinding {
   savedSelections: Map<ICodeEditor, RelativeSelection> = new Map();
 
