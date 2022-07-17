@@ -9,6 +9,7 @@ import {
 import { CommandContribution, CommandRegistry, Domain, ILogger, PreferenceScope } from '@opensumi/ide-core-common';
 
 import { ICollaborationService } from '../common';
+import { REDO, UNDO } from '../common/commands';
 
 @Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
 export class CollaborationContribution implements ClientAppContribution, KeybindingContribution, CommandContribution {
@@ -41,14 +42,14 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: 'collaboration.undo',
+      command: UNDO.id,
       keybinding: 'ctrlcmd+z',
       when: 'editorFocus',
       priority: KeybindingWeight.EditorContrib,
     });
 
     keybindings.registerKeybinding({
-      command: 'collaboration.redo',
+      command: REDO.id,
       keybinding: 'shift+ctrlcmd+z',
       when: 'editorFocus',
       priority: KeybindingWeight.EditorContrib,
@@ -56,30 +57,16 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
   }
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(
-      {
-        id: 'collaboration.undo',
-        label: 'collaboration.undo',
+    commands.registerCommand(UNDO, {
+      execute: () => {
+        this.collaborationService.undoOnCurrentBinding();
       },
-      {
-        execute: () => {
-          this.logger.log('Undo my change');
-          this.collaborationService.undoOnCurrentBinding();
-        },
-      },
-    );
+    });
 
-    commands.registerCommand(
-      {
-        id: 'collaboration.redo',
-        label: 'collaboration.redo',
+    commands.registerCommand(REDO, {
+      execute: () => {
+        this.collaborationService.redoOnCurrentBinding();
       },
-      {
-        execute: () => {
-          this.logger.log('Redo my change');
-          this.collaborationService.redoOnCurrentBinding();
-        },
-      },
-    );
+    });
   }
 }
