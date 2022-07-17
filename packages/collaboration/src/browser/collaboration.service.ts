@@ -93,6 +93,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   destroy() {
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
+    this.bindingMap.forEach((binding) => binding.dispose());
   }
 
   undoOnCurrentBinding() {
