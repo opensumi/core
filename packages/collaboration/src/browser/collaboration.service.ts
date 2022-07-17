@@ -14,7 +14,12 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 
-import { CollaborationServiceForClientPath, ICollaborationService, ICollaborationServiceForClient } from '../common';
+import {
+  CollaborationServiceForClientPath,
+  ICollaborationService,
+  ICollaborationServiceForClient,
+  ROOM_NAME,
+} from '../common';
 
 import { TextModelBinding } from './textmodel-binding';
 
@@ -75,7 +80,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   initialize() {
     this.yDoc = new Y.Doc();
     this.yTextMap = this.yDoc.getMap();
-    this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'y-room-opensumi', this.yDoc);
+    this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc);
     this.yTextMap.observe(this.yMapObserver);
 
     this.fileServiceClient.onFilesChanged((e) => {
