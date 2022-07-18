@@ -1521,17 +1521,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     state.refreshCancelToken.cancel();
-    let token;
-    if (state.loadPathCancelToken.token.isCancellationRequested) {
-      const loadPathCancelToken = new CancellationTokenSource();
-      TreeNode.setGlobalTreeState(this.path, {
-        isLoadingPath: true,
-        loadPathCancelToken,
-      });
-      token = loadPathCancelToken.token;
-    } else {
-      token = state.loadPathCancelToken.token;
-    }
+    state.loadPathCancelToken.cancel();
+    const loadPathCancelToken = new CancellationTokenSource();
+    TreeNode.setGlobalTreeState(this.path, {
+      isLoadingPath: true,
+      loadPathCancelToken,
+    });
+    const token = loadPathCancelToken.token;
 
     const flattenedBranchChilds: CompositeTreeNode[] = [];
     const { splitPath, isRelative } = Path;
