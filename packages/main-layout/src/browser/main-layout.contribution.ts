@@ -10,6 +10,7 @@ import {
   LAYOUT_COMMANDS,
   IQuickOpenHandlerRegistry,
   QuickOpenContribution,
+  QUICK_OPEN_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import {
@@ -27,7 +28,6 @@ import {
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from '@opensumi/ide-core-common';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
-import { QUICK_OPEN_COMMANDS } from '@opensumi/ide-quick-open';
 
 import { IMainLayoutService } from '../common';
 

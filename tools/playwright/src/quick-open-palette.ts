@@ -5,11 +5,11 @@ import { isMacintosh } from '@opensumi/ide-utils';
 import { VIEW_CONTAINERS } from './constans';
 import { OpenSumiViewBase } from './view-base';
 
-export class OpenSumiCommandPalette extends OpenSumiViewBase {
+export class OpenSumiQuickOpenPalette extends OpenSumiViewBase {
   static USER_KEY_TYPING_DELAY = 100;
 
   async open() {
-    await this.page.keyboard.press(isMacintosh ? 'Meta+Shift+p' : 'Control+Shift+p');
+    await this.page.keyboard.press(isMacintosh ? 'Meta+p' : 'Control+p');
     await this.page.waitForSelector(`#${VIEW_CONTAINERS.QUICKPICK}`);
   }
 
@@ -47,7 +47,7 @@ export class OpenSumiCommandPalette extends OpenSumiViewBase {
     const input = await this.page.waitForSelector(`#${VIEW_CONTAINERS.QUICKPICK_INPUT}`);
     if (input != null) {
       await input.focus();
-      await input.type(command, { delay: OpenSumiCommandPalette.USER_KEY_TYPING_DELAY });
+      await input.type(command, { delay: OpenSumiQuickOpenPalette.USER_KEY_TYPING_DELAY });
     }
   }
 

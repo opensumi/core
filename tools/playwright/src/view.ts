@@ -4,14 +4,14 @@ import { OpenSumiApp } from './app';
 import { isElementVisible, containsClass } from './tests/utils';
 import { OpenSumiViewBase } from './view-base';
 
-export interface OpenSumiPanelViewInfo {
+export interface OpenSumiViewInfo {
   tabSelector: string;
   viewSelector: string;
   name?: string;
 }
 
-export class OpenSumiPanelView extends OpenSumiViewBase {
-  constructor(app: OpenSumiApp, private readonly data: OpenSumiPanelViewInfo) {
+export class OpenSumiView extends OpenSumiViewBase {
+  constructor(app: OpenSumiApp, private readonly data: OpenSumiViewInfo) {
     super(app);
   }
 
@@ -35,12 +35,12 @@ export class OpenSumiPanelView extends OpenSumiViewBase {
     return this.page.$(this.tabSelector);
   }
 
-  async open(): Promise<OpenSumiPanelView> {
+  async open(): Promise<OpenSumiView> {
     if (!this.name) {
       throw new Error('View name must be specified to open via command palette');
     }
     await this.app.quickCommandPalette.type('View: Open View');
-    await this.app.quickCommandPalette.trigger('View: Open View...', this.name);
+    await this.app.quickCommandPalette.trigger('View: Open View ...', this.name);
     await this.waitForVisible();
     return this;
   }
@@ -78,6 +78,10 @@ export class OpenSumiPanelView extends OpenSumiViewBase {
 
   async isClosable(): Promise<boolean> {
     return (await this.isTabVisible()) && containsClass(this.getTabElement(), 'p-mod-closable');
+  }
+
+  async isVisible() {
+    return this.isTabVisible();
   }
 
   protected async waitUntilClosed(): Promise<void> {
