@@ -172,7 +172,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this.editorContextKeyService = contextKeyService;
   }
 
-  setCurrentGroup(editorGroup) {
+  setCurrentGroup(editorGroup: EditorGroup) {
     if (editorGroup) {
       if (this._currentEditorGroup === editorGroup) {
         return;
