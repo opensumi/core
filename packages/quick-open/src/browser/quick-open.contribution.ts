@@ -7,12 +7,11 @@ import {
   CommandRegistry,
   KeybindingRegistry,
   localize,
+  QUICK_OPEN_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { PrefixQuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
-
-import { QUICK_OPEN_COMMANDS } from '../common';
 
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';

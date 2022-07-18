@@ -1,3 +1,5 @@
-import { OpenSumiViewBase } from './view-base';
+import { OpenSumiPanel } from './panel';
 
-export class OpenSumiExplorerView extends OpenSumiViewBase {}
+export class OpenSumiExplorerView extends OpenSumiPanel {
+  id = 'explorer';
+}

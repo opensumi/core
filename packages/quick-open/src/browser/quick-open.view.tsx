@@ -231,13 +231,18 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   return (
     <div
+      id={VIEW_CONTAINERS.QUICKPICK_ITEM}
       tabIndex={0}
-      className={clx(styles.item, {
-        [styles.item_selected]: widget.selectIndex === index,
-        [styles.item_border]: showBorder,
-      })}
+      className={clx(
+        {
+          [styles.item_selected]: widget.selectIndex === index,
+          [styles.item_border]: showBorder,
+        },
+        styles.item,
+      )}
       onMouseEnter={() => setMouseOver(true)}
       onMouseLeave={() => setMouseOver(false)}
+      aria-label={label}
     >
       {widget.canSelectMany && (
         <CheckBox
@@ -247,13 +252,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
         />
       )}
       {/* tabIndex is needed here, pls see https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null */}
-      <div
-        id={VIEW_CONTAINERS.QUICKPICK_ITEM}
-        tabIndex={0}
-        className={styles.item_label_container}
-        onMouseDown={runQuickOpenItem}
-        aria-label={label}
-      >
+      <div tabIndex={0} className={styles.item_label_container} onMouseDown={runQuickOpenItem}>
         <div className={styles.item_label}>
           {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
           <HighlightLabel

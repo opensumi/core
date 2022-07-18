@@ -1,6 +1,8 @@
 import { Page } from '@playwright/test';
 
+import { OpenSumiPanel } from './panel';
 import { OpenSumiCommandPalette } from './quick-command-palette';
+import { OpenSumiQuickOpenPalette } from './quick-open-palette';
 
 export interface AppData {
   loadingSelector: string;
@@ -15,6 +17,7 @@ export const DefaultAppData: AppData = {
 export class OpenSumiApp {
   private _loaded = false;
   private _quickCommandPalette: OpenSumiCommandPalette;
+  private _quickOpenPalette: OpenSumiQuickOpenPalette;
 
   static async load(page: Page): Promise<OpenSumiApp> {
     return this.loadApp(page, OpenSumiApp);
@@ -28,10 +31,15 @@ export class OpenSumiApp {
 
   public constructor(public page: Page, protected appData = DefaultAppData) {
     this._quickCommandPalette = new OpenSumiCommandPalette(this);
+    this._quickOpenPalette = new OpenSumiQuickOpenPalette(this);
   }
 
   get quickCommandPalette() {
     return this._quickCommandPalette;
+  }
+
+  get quickOpenPalette() {
+    return this._quickOpenPalette;
   }
 
   protected async load(): Promise<void> {
@@ -63,8 +71,17 @@ export class OpenSumiApp {
     return !!contentPanel && contentPanel.isVisible();
   }
 
-  /** Specific apps may add additional conditions to wait for. */
+  async open<T extends OpenSumiPanel>(panelConstruction: new (app: OpenSumiApp) => T) {
+    const panel = new panelConstruction(this);
+    if (await panel.isVisible()) {
+      return panel;
+    }
+    await panel.open();
+    return panel;
+  }
+
   async waitForInitialized(): Promise<void> {
+    // custom app initialize process.
     // empty by default
   }
 }

@@ -8,13 +8,13 @@ import {
   EDITOR_COMMANDS,
   SEARCH_COMMANDS,
   AppConfig,
+  QUICK_OPEN_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
 import { IKeymapService } from '@opensumi/ide-keymaps/lib/common/keymaps';
 import { KeybindingView } from '@opensumi/ide-quick-open/lib/browser/components/keybinding';
-import { QUICK_OPEN_COMMANDS } from '@opensumi/ide-quick-open/lib/common';
 
 import styles from './editor-empty-component.module.less';
 

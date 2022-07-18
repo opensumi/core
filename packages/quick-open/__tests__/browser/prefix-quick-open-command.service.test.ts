@@ -1,4 +1,10 @@
-import { QuickOpenService, QuickOpenModel, QuickOpenOptions, IContextKeyService } from '@opensumi/ide-core-browser/src';
+import {
+  QuickOpenService,
+  QuickOpenModel,
+  QuickOpenOptions,
+  IContextKeyService,
+  QUICK_OPEN_COMMANDS,
+} from '@opensumi/ide-core-browser/src';
 import { ILogger, localize, Deferred, CommandRegistry } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
@@ -9,7 +15,6 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { QuickOpenHandlerRegistry, PrefixQuickOpenServiceImpl } from '../../src/browser/prefix-quick-open.service';
 import { QuickCommandHandler } from '../../src/browser/quick-open.command.service';
 import { QuickTitleBar } from '../../src/browser/quick-title-bar';
-import { QUICK_OPEN_COMMANDS } from '../../src/common';
 
 describe('prefix quick open command service test', () => {
   let injector: MockInjector;

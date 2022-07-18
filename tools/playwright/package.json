@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/playwright",
-  "version": "2.18.7",
+  "version": "2.18.10",
   "description": "E2E test module for OpenSumi",
   "files": [
     "lib"
@@ -28,7 +28,7 @@
     "@playwright/test": "1.22.2"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.18.7",
+    "@opensumi/ide-utils": "2.18.10",
     "allure-commandline": "^2.13.8",
     "allure-playwright": "^2.0.0-beta.14"
   }
