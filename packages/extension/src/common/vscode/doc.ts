@@ -41,7 +41,7 @@ export interface IMainThreadDocumentsShape extends IDisposable {
 }
 
 export interface ExtensionDocumentDataManager extends IExtensionHostDocService {
-  getDocument(resource: Uri | string): vscode.TextDocument | undefined;
+  getDocument(resource: Uri | string): vscode.TextDocument;
   getDocumentData(resource: Uri | string): ExtHostDocumentData | undefined;
   getAllDocument(): vscode.TextDocument[];
   openTextDocument(

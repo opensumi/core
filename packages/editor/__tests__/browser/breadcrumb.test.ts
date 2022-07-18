@@ -7,8 +7,9 @@ import {
   DocumentSymbolChangedEvent,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -59,6 +60,7 @@ describe('breadcrumb test', () => {
           getMonacoModel: () => ({
             uri,
             getLanguageIdentifier: () => 'javascript',
+            getLanguageId: () => 'javascript',
           }),
         },
         dispose: jest.fn(),
@@ -165,7 +167,7 @@ describe('breadcrumb test', () => {
       },
     ];
 
-    modes.DocumentSymbolProviderRegistry['all'] = () => [
+    languageFeaturesService.documentSymbolProvider['all'] = () => [
       {
         provideDocumentSymbols: () => testDS,
       },

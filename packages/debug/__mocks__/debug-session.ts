@@ -29,6 +29,22 @@ export class MockDebugSession implements IDebugSession {
     this.disposable.push(this._onDidInvalidateMemory);
   }
 
+  readMemory(
+    memoryReference: string,
+    offset: number,
+    count: number,
+  ): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
+  }
+  writeMemory(
+    memoryReference: string,
+    offset: number,
+    data: string,
+    allowPartial?: boolean | undefined,
+  ): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
+    throw new Error('Method not implemented.');
+  }
+
   private _configuration: DebugConfiguration = {
     name: 'mock',
     type: 'mock',
@@ -105,14 +121,6 @@ export class MockDebugSession implements IDebugSession {
 
   async terminate() {
     // do nothing
-  }
-
-  async readMemory(memoryReference: string, offset: number, count: number) {
-    return undefined;
-  }
-
-  async writeMemory(memoryReference: string, offset: number, data: string, allowPartial?: boolean) {
-    return undefined;
   }
 
   dispose() {

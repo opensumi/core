@@ -7,7 +7,6 @@ import {
   PreferenceScope,
   KeybindingRegistryImpl,
   KeybindingRegistry,
-  setLanguageId,
 } from '@opensumi/ide-core-browser';
 import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';

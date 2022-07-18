@@ -36,23 +36,25 @@ import {
   parseClassifierString,
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
+import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
-import { CodeEditorServiceImpl } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/codeEditorServiceImpl';
+import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
-import { CompletionProviderRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import {
   FormattingConflicts,
   IFormattingEditProviderSelector,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
-import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/simpleServices';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
+import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
 import {
   ContextKeyExpr,
   ContextKeyExprType,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 
 import {
@@ -64,6 +66,7 @@ import {
 } from './contrib/command';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { ICodeEditor } from './monaco-api/editor';
+import { languageFeaturesService } from './monaco-api/languages';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
@@ -193,17 +196,19 @@ export class MonacoClientContribution
   }
 
   onDidStart() {
-    // DefaultEndOfLine 类型冲突
-    CompletionProviderRegistry.register(this.snippetSuggestProvider.registeredLanguageIds, this.snippetSuggestProvider);
+    languageFeaturesService.completionProvider.register(
+      this.snippetSuggestProvider.registeredLanguageIds,
+      this.snippetSuggestProvider,
+    );
   }
 
   private registerOverrideServices() {
-    const codeEditorService = this.overrideServicesRegistry.getRegisteredService<CodeEditorServiceImpl>(
+    const codeEditorService = this.overrideServicesRegistry.getRegisteredService<AbstractCodeEditorService>(
       ServiceNames.CODE_EDITOR_SERVICE,
     );
 
     // Monaco CommandService
-    const standaloneCommandService = new StandaloneCommandService(StaticServices.instantiationService.get());
+    const standaloneCommandService = new StandaloneCommandService(StandaloneServices.get(IInstantiationService));
     // 给 monacoCommandService 设置委托，执行 monaco 命令使用 standaloneCommandService 执行
     this.monacoCommandService.setDelegate(standaloneCommandService);
     // 替换 monaco 内部的 commandService
@@ -222,7 +227,8 @@ export class MonacoClientContribution
 
     const codeEditorService = this.overrideServicesRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
     // 替换 StaticServices 上挂载的 codeEditorService 实例
-    (StaticServices as unknown as any).codeEditorService = {
+    // FIXME: 如何替换成 StandaloneServices.get(ICodeEditorService)
+    (StandaloneServices as unknown as any).codeEditorService = {
       get: () => codeEditorService,
     };
   }
@@ -293,7 +299,7 @@ export class MonacoClientContribution
   }
 
   private patchMonacoThemeService() {
-    const standaloneThemeService = StaticServices.standaloneThemeService.get();
+    const standaloneThemeService = StandaloneServices.get(IStandaloneThemeService);
     const originalGetColorTheme: typeof standaloneThemeService.getColorTheme =
       standaloneThemeService.getColorTheme.bind(standaloneThemeService);
     const patchedGetTokenStyleMetadataFlag = '__patched_getTokenStyleMetadata';
@@ -333,6 +339,7 @@ export class MonacoClientContribution
             bold: style.bold,
             underline: style.underline,
             italic: style.italic,
+            strikethrough: undefined,
           };
         };
       }
@@ -395,8 +402,22 @@ export class MonacoClientContribution
             }
           }
         }
-        // 转换 monaco 快捷键
-        const keybindingStr = raw.parts.map((part) => MonacoResolvedKeybinding.keyCode(part)).join(' ');
+        const keybindingStr = raw
+          .map((key) => {
+            if (key instanceof SimpleKeybinding) {
+              return key
+                .toChord()
+                .parts.map((part) => MonacoResolvedKeybinding.keyCode(part))
+                .join(' ');
+            } else {
+              // 目前 monaco 内的 key 没有 ScanCodeBinding 的情况，暂时没有处理
+              // eslint-disable-next-line no-console
+              console.warn('No handler ScanCodeBinding:', key);
+            }
+            return '';
+          })
+          .join(' ');
+
         // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
         const keybinding = {
           command,

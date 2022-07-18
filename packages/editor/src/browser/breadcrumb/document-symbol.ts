@@ -11,8 +11,8 @@ import {
   Deferred,
   CancellationToken,
 } from '@opensumi/ide-core-browser';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
+import { DocumentSymbol, SymbolTag } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { WorkbenchEditorService } from '../../common';
 import { IEditorDocumentModelService, EditorDocumentModelContentChangedEvent } from '../doc-model/types';
@@ -36,7 +36,7 @@ export class DocumentSymbolStore extends WithEventBus {
   constructor() {
     super();
     this.addDispose(
-      modes.DocumentSymbolProviderRegistry.onDidChange(() => {
+      languageFeaturesService.documentSymbolProvider.onDidChange(() => {
         Array.from(this.documentSymbols.keys()).forEach((uriString) => {
           this.markNeedUpdate(new URI(uriString));
         });
@@ -86,7 +86,7 @@ export class DocumentSymbolStore extends WithEventBus {
       return;
     }
     try {
-      const supports = await modes.DocumentSymbolProviderRegistry.all(modelRef.instance.getMonacoModel());
+      const supports = languageFeaturesService.documentSymbolProvider.all(modelRef.instance.getMonacoModel());
       let result: MaybeNull<DocumentSymbol[]>;
       for (const support of supports) {
         result = await support.provideDocumentSymbols(

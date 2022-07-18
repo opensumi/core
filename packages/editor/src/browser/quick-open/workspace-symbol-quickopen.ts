@@ -15,7 +15,7 @@ import {
 import { ILogger, localize, IReporterService, REPORT_NAME } from '@opensumi/ide-core-common';
 import { QuickOpenBaseAction, QuickOpenActionProvider } from '@opensumi/ide-quick-open';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import { SymbolKind as SymbolKindEnum } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
   WorkspaceSymbolProvider,

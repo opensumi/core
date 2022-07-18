@@ -218,22 +218,10 @@ export class ExtHostSCMInputBox implements vscode.SourceControlInputBox {
   private _validateInput: IValidateInput;
 
   get validateInput(): IValidateInput {
-    if (!this._extension.enableProposedApi) {
-      throw new Error(
-        `[${this._extension.id}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${this._extension.id}`,
-      );
-    }
-
     return this._validateInput;
   }
 
   set validateInput(fn: IValidateInput) {
-    if (!this._extension.enableProposedApi) {
-      throw new Error(
-        `[${this._extension.id}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${this._extension.id}`,
-      );
-    }
-
     if (fn && typeof fn !== 'function') {
       getDebugLogger().warn('Invalid SCM input box validation function');
       return;

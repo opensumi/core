@@ -1,5 +1,5 @@
+import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IExtHostLanguages } from '../../../../common/vscode/languages';
@@ -26,9 +26,9 @@ export class DocumentSemanticTokensProvider {
   constructor(
     private readonly proxy: IExtHostLanguages,
     public handleId: number,
-    private legend: modes.SemanticTokensLegend,
+    private legend: languages.SemanticTokensLegend,
   ) {}
-  getLegend(): modes.SemanticTokensLegend {
+  getLegend(): languages.SemanticTokensLegend {
     return this.legend;
   }
 
@@ -36,7 +36,7 @@ export class DocumentSemanticTokensProvider {
     model: model.ITextModel,
     lastResultId: string | null,
     token: monaco.CancellationToken,
-  ): Promise<modes.SemanticTokens | modes.SemanticTokensEdits | null> {
+  ): Promise<languages.SemanticTokens | languages.SemanticTokensEdits | null> {
     const nLastResultId = lastResultId ? parseInt(lastResultId, 10) : 0;
     const encodedDto = await this.proxy.$provideDocumentSemanticTokens(this.handleId, model.uri, nLastResultId, token);
     if (!encodedDto) {
@@ -66,7 +66,7 @@ export class DocumentSemanticTokensProvider {
   }
 }
 
-export class DocumentRangeSemanticTokensProviderImpl implements modes.DocumentRangeSemanticTokensProvider {
+export class DocumentRangeSemanticTokensProviderImpl implements languages.DocumentRangeSemanticTokensProvider {
   constructor(
     private readonly proxy: IExtHostLanguages,
     public handleId: number,

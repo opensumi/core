@@ -62,7 +62,7 @@ import {
   UriComponents,
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
   IMainThreadLanguages,
@@ -74,6 +74,8 @@ import {
   ICodeActionListDto,
   IInlineValueContextDto,
   ILinkedEditingRangesDto,
+  IInlayHintDto,
+  IInlayHintsDto,
 } from '../../../common/vscode';
 import * as typeConvert from '../../../common/vscode/converter';
 import { CancellationError, Disposable, LanguageStatusSeverity } from '../../../common/vscode/ext-types';
@@ -401,6 +403,10 @@ export class ExtHostLanguages implements IExtHostLanguages {
     const callId = this.nextCallId();
     this.adaptersMap.set(callId, adapter);
     return callId;
+  }
+
+  private static _extLabel(ext: IExtensionDescription): string {
+    return ext.displayName || ext.name;
   }
 
   private withAdapter<A, R>(
@@ -1452,9 +1458,18 @@ export class ExtHostLanguages implements IExtHostLanguages {
     provider: vscode.InlayHintsProvider,
   ): Disposable {
     const eventHandle = typeof provider.onDidChangeInlayHints === 'function' ? this.nextCallId() : undefined;
-    const handle = this.addNewAdapter(new InlayHintsAdapter(this.documents, provider), extension);
+    const handle = this.addNewAdapter(
+      new InlayHintsAdapter(this.documents, provider, this.commands.converter),
+      extension,
+    );
 
-    this.proxy.$registerInlayHintsProvider(handle, this.transformDocumentSelector(selector), eventHandle);
+    this.proxy.$registerInlayHintsProvider(
+      handle,
+      this.transformDocumentSelector(selector),
+      typeof provider.resolveInlayHint === 'function',
+      eventHandle,
+      ExtHostLanguages._extLabel(extension),
+    );
     let result = this.createDisposable(handle);
 
     if (eventHandle !== undefined) {
@@ -1464,7 +1479,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return result;
   }
 
-  $provideInlayHints(handle: number, resource: UriComponents, range: Range, token: CancellationToken) {
+  $provideInlayHints(
+    handle: number,
+    resource: UriComponents,
+    range: Range,
+    token: CancellationToken,
+  ): Promise<IInlayHintsDto | undefined> {
     return this.withAdapter(
       handle,
       InlayHintsAdapter,
@@ -1472,6 +1492,20 @@ export class ExtHostLanguages implements IExtHostLanguages {
       false,
       undefined,
     );
+  }
+
+  $resolveInlayHint(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IInlayHintDto | undefined> {
+    return this.withAdapter(
+      handle,
+      InlayHintsAdapter,
+      (adapter) => adapter.resolveInlayHint(id, token),
+      true,
+      undefined,
+    );
+  }
+
+  $releaseInlayHints(handle: number, id: number): void {
+    this.withAdapter(handle, InlayHintsAdapter, (adapter) => adapter.releaseHints(id), false, undefined);
   }
 
   private _handlePool = 0;

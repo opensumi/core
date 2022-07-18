@@ -6,7 +6,7 @@ import { Deferred, localize, MessageType } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import type { WorkspaceFileEdit, WorkspaceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type { WorkspaceFileEdit, WorkspaceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { RefactorPreview } from './refactor-preview';
 

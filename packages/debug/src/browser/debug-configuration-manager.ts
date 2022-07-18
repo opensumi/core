@@ -472,7 +472,7 @@ export class DebugConfigurationManager {
     if (!model) {
       return false;
     }
-    const modeId = (model as any).getLanguageIdentifier().language;
+    const modeId = model.getLanguageId();
     if (!modeId || modeId === 'jsonc' || modeId === 'log') {
       // 不允许在JSONC类型文件及log文件中断点
       return false;
