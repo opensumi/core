@@ -78,7 +78,7 @@ export class OpenedEditorModelService {
   @Autowired(IMainLayoutService)
   private readonly layoutService: IMainLayoutService;
 
-  private _treeModel: OpenedEditorModel;
+  private _treeModel: OpenedEditorModel | null;
   private _whenReady: Promise<void>;
 
   private _decorations: DecorationsManager;
@@ -103,13 +103,12 @@ export class OpenedEditorModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
+  private onTreeModelChangeEmitter: Emitter<OpenedEditorModel | null> = new Emitter();
   private locationDelayer = new ThrottledDelayer<void>(OpenedEditorModelService.DEFAULT_LOCATION_FLUSH_DELAY);
 
   // 右键菜单局部ContextKeyService
   private _contextMenuContextKeyService: IContextKeyService;
   private _currentDirtyNodes: EditorFile[] = [];
-
-  private ignoreRefreshAndActiveTimes: number;
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -160,6 +159,11 @@ export class OpenedEditorModelService {
   get onDidRefreshed(): Event<void> {
     return this.onDidRefreshedEmitter.event;
   }
+
+  get onTreeModelChange(): Event<OpenedEditorModel | null> {
+    return this.onTreeModelChangeEmitter.event;
+  }
+
   async initTreeModel() {
     // 根据是否为多工作区创建不同根节点
     const root = (await this.openedEditorService.resolveChildren())[0];
@@ -179,7 +183,7 @@ export class OpenedEditorModelService {
         }
         this._currentDirtyNodes = this._currentDirtyNodes.concat(nodes);
         this.setExplorerTabBarBadge();
-        this.treeModel.dispatchChange();
+        this.treeModel?.dispatchChange();
       }),
     );
 
@@ -193,9 +197,6 @@ export class OpenedEditorModelService {
 
     this.disposableCollection.push(
       this.editorService.onActiveResourceChange(() => {
-        if (this.ignoreRefreshAndActiveTimes > 0 && this.ignoreRefreshAndActiveTimes--) {
-          return;
-        }
         this._currentDirtyNodes = [];
         this.refresh();
       }),
@@ -221,6 +222,9 @@ export class OpenedEditorModelService {
         if (!payload) {
           return;
         }
+        if (!this.treeModel) {
+          return;
+        }
         for (let index = 0; index < this.treeModel.root.branchSize; index++) {
           const node = this.treeModel.root.getTreeNodeAtIndex(index);
           if (!!node && !EditorFileGroup.is(node as EditorFileGroup)) {
@@ -236,7 +240,7 @@ export class OpenedEditorModelService {
         }
         if (shouldUpdate) {
           this.setExplorerTabBarBadge();
-          this.treeModel.dispatchChange();
+          this.treeModel?.dispatchChange();
         }
       }),
     );
@@ -285,6 +289,7 @@ export class OpenedEditorModelService {
         this.setExplorerTabBarBadge();
       }),
     );
+    this.onTreeModelChangeEmitter.fire(this._treeModel);
   }
 
   initDecorations(root) {
@@ -317,7 +322,7 @@ export class OpenedEditorModelService {
 
       // 通知视图更新
       if (dispatchChange) {
-        this.treeModel.dispatchChange();
+        this.treeModel?.dispatchChange();
       }
     }
   };
@@ -342,7 +347,7 @@ export class OpenedEditorModelService {
 
       // 通知视图更新
       if (dispatchChange) {
-        this.treeModel.dispatchChange();
+        this.treeModel?.dispatchChange();
       }
     }
   };
@@ -358,7 +363,7 @@ export class OpenedEditorModelService {
     }
     this.contextMenuDecoration.addTarget(target);
     this._contextMenuFile = target;
-    this.treeModel.dispatchChange();
+    this.treeModel?.dispatchChange();
   };
 
   // 取消选中节点焦点
@@ -370,7 +375,7 @@ export class OpenedEditorModelService {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
-    this.treeModel.dispatchChange();
+    this.treeModel?.dispatchChange();
   };
 
   handleContextMenu = (ev: React.MouseEvent, file?: EditorFileGroup | EditorFile) => {
@@ -417,10 +422,19 @@ export class OpenedEditorModelService {
     }
   };
 
+  clear() {
+    this._treeModel = null;
+    this.onTreeModelChangeEmitter.fire(this._treeModel);
+  }
+
   /**
    * 刷新指定下的所有子节点
    */
-  async refresh(node: EditorFileGroup = this.treeModel.root as EditorFileGroup) {
+  async refresh(node: EditorFileGroup = this.treeModel?.root as EditorFileGroup) {
+    if (!this._treeModel) {
+      await this.initTreeModel();
+      return;
+    }
     if (!EditorFileGroup.is(node) && (node as EditorFileGroup).parent) {
       node = (node as EditorFileGroup).parent as EditorFileGroup;
     }
@@ -468,7 +482,7 @@ export class OpenedEditorModelService {
     }
     promise = pSeries(
       roots.map((path) => async () => {
-        const watcher = this.treeModel.root?.watchEvents.get(path);
+        const watcher = this.treeModel?.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
           await watcher.callback({ type: WatchEvent.Changed, path });
         }
@@ -499,8 +513,6 @@ export class OpenedEditorModelService {
   };
 
   public openFile = (node: EditorFile) => {
-    // 手动打开文件时，屏蔽刷新及激活实际，防闪烁
-    this.ignoreRefreshAndActiveTimes = 1;
     let groupIndex = 0;
     if (node.parent && EditorFileGroup.is(node.parent as EditorFileGroup)) {
       groupIndex = (node.parent as EditorFileGroup).group.index;
