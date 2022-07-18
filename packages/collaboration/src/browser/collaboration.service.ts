@@ -3,13 +3,9 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { FileChangeType, ILogger, OnEvent, URI, WithEventBus } from '@opensumi/ide-core-common';
+import { FileChangeEvent, FileChangeType, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import {
-  EditorActiveResourceStateChangedEvent,
-  EditorGroupCloseEvent,
-  EditorGroupOpenEvent,
-} from '@opensumi/ide-editor/lib/browser';
+import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
@@ -25,7 +21,6 @@ import { TextModelBinding } from './textmodel-binding';
 
 import './styles.less';
 
-// todo move to common
 class PendingBindingPayload {
   model: ITextModel;
   editor: ICodeEditor | undefined;
@@ -60,8 +55,8 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.logger.debug('Change occurs', changes);
     changes.forEach((change, key) => {
       if (change.action === 'add') {
-        // retrieve from payload object, then make new binding
         if (this.pendingBinding.has(key) && !this.bindingMap.has(key)) {
+          // retrieve from payload object, then create new binding
           const payload = this.pendingBinding.get(key)!;
           const binding = this.createAndSetBinding(key, payload.model);
           if (payload.editor) {
@@ -76,6 +71,15 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     });
   };
 
+  private fileChangeEventHandler = (e: FileChangeEvent) => {
+    e.forEach((e) => {
+      if (e.type === FileChangeType.DELETED) {
+        this.logger.debug('DELETED', e.uri);
+        this.backService.removeYText(e.uri);
+      }
+    });
+  };
+
   constructor(@Inject(CollaborationServiceForClientPath) private readonly backService: ICollaborationServiceForClient) {
     super();
   }
@@ -83,18 +87,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   initialize() {
     this.yDoc = new Y.Doc();
     this.yTextMap = this.yDoc.getMap();
-    this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc);
+    this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
     this.yTextMap.observe(this.yMapObserver);
-
-    this.fileServiceClient.onFilesChanged((e) => {
-      e.forEach((e) => {
-        if (e.type === FileChangeType.DELETED) {
-          this.logger.debug('DELETED', e.uri);
-          this.backService.removeYText(e.uri);
-        }
-      });
-    });
-
+    this.fileServiceClient.onFilesChanged(this.fileChangeEventHandler);
     this.logger.debug('Collaboration initialized');
   }
 
@@ -123,7 +118,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     if (!cond) {
       const binding = this.injector.get(TextModelBinding, [
-        this.yTextMap.get(uri)!,
+        this.yTextMap.get(uri)!, // only be called after yMap event
         model,
         this.yWebSocketProvider.awareness,
       ]);
@@ -136,6 +131,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   getBinding(uri: string) {
     const cond = this.bindingMap.has(uri);
+
     if (cond) {
       return this.bindingMap.get(uri)!;
     } else {
@@ -145,17 +141,13 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   removeBinding(uri: string) {
     const binding = this.bindingMap.get(uri);
+
     if (binding) {
       binding.dispose();
       this.bindingMap.delete(uri);
       // todo ref = ref - 1 (through back service)
       this.logger.debug('Removed binding');
     }
-  }
-
-  @OnEvent(EditorGroupOpenEvent)
-  private groupOpenHandler(e: EditorGroupOpenEvent) {
-    this.logger.debug('Group open tabs', e);
   }
 
   @OnEvent(EditorGroupCloseEvent)
@@ -188,20 +180,27 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
     const binding = this.getBinding(uri);
+
     // check if there exists any binding
     if (!binding) {
       if (this.yTextMap.has(uri)) {
         const binding = this.createAndSetBinding(uri, textModel);
         if (monacoEditor) {
+          // add current editor after binding creation
           binding.addEditor(monacoEditor);
         }
         this.logger.debug('Binding created', binding);
       } else {
+        // tell server to set init content
         this.backService.setInitContent(uri, text);
+        // binding will be eventually created on yMap event
         this.pendingBinding.set(uri, { model: textModel, editor: monacoEditor });
       }
-    } else if (binding && monacoEditor) {
-      binding.addEditor(monacoEditor);
+    } else {
+      if (monacoEditor) {
+        // if binding, directly add current editor
+        binding.addEditor(monacoEditor);
+      }
     }
   }
 }
