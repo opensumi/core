@@ -41,7 +41,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
-import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
+import { IFileTreeAPI, IFileTreeService, PasteTypes, PASTE_FILE_LOCAL_TOKEN } from '../../common';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeModel } from '../file-tree-model';
 import { FILE_TREE_NODE_HEIGHT } from '../file-tree-node';
@@ -1570,7 +1570,7 @@ export class FileTreeModelService {
 
     // Also update pasteStore in localStorage
     try {
-      localStorage.setItem('paste-uri-list', JSON.stringify(from.map((uri) => uri.toString())));
+      localStorage.setItem(PASTE_FILE_LOCAL_TOKEN, JSON.stringify(from.map((uri) => uri.toString())));
     } catch {}
   };
 
@@ -1582,7 +1582,7 @@ export class FileTreeModelService {
     let pasteStore = this.pasteStore;
     if (!pasteStore) {
       try {
-        const localStorgeUriList = JSON.parse(localStorage.getItem('paste-uri-list') ?? '');
+        const localStorgeUriList = JSON.parse(localStorage.getItem(PASTE_FILE_LOCAL_TOKEN) ?? '');
         if (
           !Array.isArray(localStorgeUriList) ||
           !localStorgeUriList.length ||
