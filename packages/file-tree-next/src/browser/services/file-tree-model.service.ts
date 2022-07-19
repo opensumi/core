@@ -33,6 +33,7 @@ import {
   IApplicationService,
   FILE_COMMANDS,
   path,
+  IClipboardService,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -41,7 +42,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
-import { IFileTreeAPI, IFileTreeService, PasteTypes, PASTE_FILE_LOCAL_TOKEN } from '../../common';
+import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeModel } from '../file-tree-model';
 import { FILE_TREE_NODE_HEIGHT } from '../file-tree-node';
@@ -118,6 +119,9 @@ export class FileTreeModelService {
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
 
   private _isDisposed = false;
 
@@ -1569,9 +1573,7 @@ export class FileTreeModelService {
     };
 
     // Also update pasteStore in localStorage
-    try {
-      localStorage.setItem(PASTE_FILE_LOCAL_TOKEN, JSON.stringify(from.map((uri) => uri.toString())));
-    } catch {}
+    this.clipboardService.writeResources(from);
   };
 
   public pasteFile = async (to: URI) => {
@@ -1581,27 +1583,15 @@ export class FileTreeModelService {
     }
     let pasteStore = this.pasteStore;
     if (!pasteStore) {
-      try {
-        const localStorgeUriList = JSON.parse(localStorage.getItem(PASTE_FILE_LOCAL_TOKEN) ?? '');
-        if (
-          !Array.isArray(localStorgeUriList) ||
-          !localStorgeUriList.length ||
-          !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
-        ) {
-          return;
-        }
-        const uriList = localStorgeUriList.map((str) => URI.parse(str));
-        const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
-        if (!fileTreeList || !fileTreeList.length) {
-          return;
-        }
-        pasteStore = {
-          files: uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)) as (File | Directory)[],
-          type: PasteTypes.COPY,
-        };
-      } catch {
+      const uriList = await this.clipboardService.readResources();
+      const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
+      if (!fileTreeList || !fileTreeList.length) {
         return;
       }
+      pasteStore = {
+        files: fileTreeList as (File | Directory)[],
+        type: PasteTypes.COPY,
+      };
     }
     if (!pasteStore) {
       return;
