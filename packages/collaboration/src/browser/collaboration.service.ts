@@ -100,7 +100,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
-  createAndSetBinding(uri: string, model: ITextModel): TextModelBinding {
+  private createAndSetBinding(uri: string, model: ITextModel): TextModelBinding {
     const cond = this.bindingMap.has(uri);
 
     if (!cond) {
@@ -116,7 +116,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
-  getBinding(uri: string) {
+  private getBinding(uri: string) {
     const cond = this.bindingMap.has(uri);
 
     if (cond) {
@@ -126,7 +126,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
-  removeBinding(uri: string) {
+  private removeBinding(uri: string) {
     const binding = this.bindingMap.get(uri);
 
     if (binding) {
