@@ -1567,11 +1567,43 @@ export class FileTreeModelService {
       files: files as (File | Directory)[],
       type: PasteTypes.COPY,
     };
+
+    // Also update pasteStore in localStorage
+    try {
+      localStorage.setItem('paste-uri-list', JSON.stringify(from.map((uri) => uri.toString())));
+    } catch {}
   };
 
   public pasteFile = async (to: URI) => {
     let parent = this.fileTreeService.getNodeByPathOrUri(to.toString());
-    if (!parent || !this.pasteStore) {
+    if (!parent) {
+      return;
+    }
+    let pasteStore = this.pasteStore;
+    if (!pasteStore) {
+      try {
+        const localStorgeUriList = JSON.parse(localStorage.getItem('paste-uri-list') ?? '');
+        if (
+          !Array.isArray(localStorgeUriList) ||
+          !localStorgeUriList.length ||
+          !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
+        ) {
+          return;
+        }
+        const uriList = localStorgeUriList.map((str) => URI.parse(str));
+        const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
+        if (!fileTreeList || !fileTreeList.length) {
+          return;
+        }
+        pasteStore = {
+          files: uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)) as (File | Directory)[],
+          type: PasteTypes.COPY,
+        };
+      } catch {
+        return;
+      }
+    }
+    if (!pasteStore) {
       return;
     }
     if (!Directory.is(parent)) {
@@ -1582,8 +1614,8 @@ export class FileTreeModelService {
       // 压缩路径的粘贴操作，使用刷新操作进行更新
       useRefresh = true;
     }
-    if (this.pasteStore.type === PasteTypes.CUT) {
-      for (const file of this.pasteStore.files) {
+    if (pasteStore.type === PasteTypes.CUT) {
+      for (const file of pasteStore.files) {
         if (file) {
           this.cutDecoration.removeTarget(file);
         }
@@ -1592,7 +1624,7 @@ export class FileTreeModelService {
         }
       }
       const errors = await this.fileTreeAPI.mvFiles(
-        this.pasteStore.files.map((file) => file.uri),
+        pasteStore.files.map((file) => file.uri),
         parent.uri,
       );
       if (errors && errors.length > 0) {
@@ -1608,8 +1640,8 @@ export class FileTreeModelService {
         files: [],
         type: PasteTypes.NONE,
       };
-    } else if (this.pasteStore.type === PasteTypes.COPY) {
-      for (const file of this.pasteStore.files) {
+    } else if (pasteStore.type === PasteTypes.COPY) {
+      for (const file of pasteStore.files) {
         const newUri = parent.uri.resolve(file.uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
