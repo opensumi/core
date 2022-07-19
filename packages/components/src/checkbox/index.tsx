@@ -34,7 +34,7 @@ export const CheckBox: React.FC<
   const checkboxProps = restProps;
 
   if (!isUndefined(checked)) {
-    checkboxProps['chcked'] = checked;
+    checkboxProps['checked'] = checked;
   }
 
   return (
