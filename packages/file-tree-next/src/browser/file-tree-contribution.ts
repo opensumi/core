@@ -29,6 +29,7 @@ import {
   match,
   Schemes,
   TERMINAL_COMMANDS,
+  PASTE_FILE_LOCAL_TOKEN,
 } from '@opensumi/ide-core-browser';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
@@ -50,7 +51,7 @@ import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-r
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
 import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 
-import { IFileTreeService, PasteTypes, PASTE_FILE_LOCAL_TOKEN, RESOURCE_VIEW_ID } from '../common';
+import { IFileTreeService, PasteTypes, RESOURCE_VIEW_ID } from '../common';
 import { Directory } from '../common/file-tree-node.define';
 
 import { FileTree } from './file-tree';
