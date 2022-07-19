@@ -42,7 +42,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
-import { IFileTreeAPI, IFileTreeService, PasteTypes, PASTE_FILE_LOCAL_TOKEN } from '../../common';
+import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
 import { Directory, File } from '../../common/file-tree-node.define';
 import { FileTreeModel } from '../file-tree-model';
 import { FILE_TREE_NODE_HEIGHT } from '../file-tree-node';
@@ -1574,12 +1574,16 @@ export class FileTreeModelService {
 
     // Also update pasteStore in localStorage
 <<<<<<< HEAD
+<<<<<<< HEAD
     this.clipboardService.writeResources(from);
 =======
     try {
       localStorage.setItem(PASTE_FILE_LOCAL_TOKEN, JSON.stringify(from.map((uri) => uri.toString())));
     } catch {}
 >>>>>>> 0f27531d5 (chore: constant token)
+=======
+    this.clipboardService.writeResources(from);
+>>>>>>> 647f030bd (refactor: localStorage with clipboardService)
   };
 
   public pasteFile = async (to: URI) => {
@@ -1589,6 +1593,7 @@ export class FileTreeModelService {
     }
     let pasteStore = this.pasteStore;
     if (!pasteStore) {
+<<<<<<< HEAD
 <<<<<<< HEAD
       const uriList = await this.clipboardService.readResources();
       const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
@@ -1614,6 +1619,11 @@ export class FileTreeModelService {
         };
       } catch {
 >>>>>>> 0f27531d5 (chore: constant token)
+=======
+      const uriList = await this.clipboardService.readResources();
+      const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
+      if (!fileTreeList || !fileTreeList.length) {
+>>>>>>> 647f030bd (refactor: localStorage with clipboardService)
         return;
       }
       pasteStore = {
