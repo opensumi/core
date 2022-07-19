@@ -267,7 +267,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
     if (typeof iconContrib === 'string' && VAR_REGEXP.test(iconContrib)) {
       return this.iconService?.fromString(iconContrib);
     }
-    return this.iconService?.fromIcon(this.extension.path, iconContrib, IconType.Mask);
+    return this.iconService?.fromIcon(this.extension.path, iconContrib, IconType.Background);
   }
 
   protected getLocalizeFromNlsJSON(title: string): string {
