@@ -3,11 +3,11 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { FileChangeEvent, FileChangeType, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { FilesChangeEvent } from '@opensumi/ide-core-browser';
+import { FileChangeType, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
-import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 
 import {
@@ -36,9 +36,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
-
-  @Autowired(IFileServiceClient)
-  private fileServiceClient: IFileServiceClient;
 
   private yDoc: Y.Doc;
 
@@ -71,15 +68,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     });
   };
 
-  private fileChangeEventHandler = (e: FileChangeEvent) => {
-    e.forEach((e) => {
-      if (e.type === FileChangeType.DELETED) {
-        this.logger.debug('DELETED', e.uri);
-        this.backService.removeYText(e.uri);
-      }
-    });
-  };
-
   constructor(@Inject(CollaborationServiceForClientPath) private readonly backService: ICollaborationServiceForClient) {
     super();
   }
@@ -89,7 +77,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yTextMap = this.yDoc.getMap();
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
     this.yTextMap.observe(this.yMapObserver);
-    this.fileServiceClient.onFilesChanged(this.fileChangeEventHandler);
     this.logger.debug('Collaboration initialized');
   }
 
@@ -148,6 +135,16 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       // todo ref = ref - 1 (through back service)
       this.logger.debug('Removed binding');
     }
+  }
+
+  @OnEvent(FilesChangeEvent)
+  private fileChangeEventHandler(e: FilesChangeEvent) {
+    e.payload.forEach((e) => {
+      if (e.type === FileChangeType.DELETED) {
+        this.logger.debug('DELETED', e.uri);
+        this.backService.removeYText(e.uri);
+      }
+    });
   }
 
   @OnEvent(EditorGroupCloseEvent)
