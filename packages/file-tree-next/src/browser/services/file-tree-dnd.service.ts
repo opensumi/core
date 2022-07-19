@@ -94,6 +94,11 @@ export class DragAndDropService extends WithEventBus {
       ev.dataTransfer.setData('uri', draggedFile.uri.toString());
     }
 
+    ev.dataTransfer.setData(
+      'beingDraggedNodes',
+      JSON.stringify(this.beingDraggedNodes.map((node) => node.uri.toString())),
+    );
+
     draggedNodes.forEach((node) => {
       // 添加拖拽样式
       this.beingDraggedDec.addTarget(node, TargetMatchMode.Self);
@@ -232,6 +237,16 @@ export class DragAndDropService extends WithEventBus {
         ];
       } else {
         resources = this.beingDraggedNodes;
+        if (!resources || resources.length === 0) {
+          try {
+            const transUriList = JSON.parse(ev.dataTransfer.getData('beingDraggedNodes'));
+            if (transUriList && transUriList.length !== 0) {
+              resources = transUriList
+                .map((uri: string) => this.fileTreeService.getNodeByPathOrUri(new URI(uri)))
+                .filter(Boolean);
+            }
+          } catch {}
+        }
       }
       if (resources.length > 0) {
         const targetContainerUri = activeUri ? activeUri : (containing && containing.uri)!;
