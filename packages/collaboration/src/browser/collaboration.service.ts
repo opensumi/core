@@ -86,14 +86,14 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.bindingMap.forEach((binding) => binding.dispose());
   }
 
-  undoOnCurrentBinding() {
+  undoOnCurrentResource() {
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     if (uri && this.bindingMap.has(uri)) {
       this.bindingMap.get(uri)!.undo();
     }
   }
 
-  redoOnCurrentBinding() {
+  redoOnCurrentResource() {
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     if (uri && this.bindingMap.has(uri)) {
       this.bindingMap.get(uri)!.redo();

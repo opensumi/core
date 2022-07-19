@@ -5,8 +5,8 @@ export const ICollaborationService = Symbol('ICollaborationService');
 export interface ICollaborationService {
   initialize(): void;
   destroy(): void;
-  undoOnCurrentBinding(): void;
-  redoOnCurrentBinding(): void;
+  undoOnCurrentResource(): void;
+  redoOnCurrentResource(): void;
 }
 
 export const IYWebsocketServer = Symbol('IYWebsocketServer');
