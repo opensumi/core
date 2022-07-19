@@ -10,6 +10,8 @@ import {
   ViewColumn,
   TextEditorSelectionChangeKind,
   IExtensionDescription,
+  IMainThreadEnv,
+  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
@@ -156,6 +158,7 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostAuthentication,
     new ExtHostAuthentication(rpcProtocol),
   ) as ExtHostAuthentication;
+  const proxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
   const reporter = new DefaultReporter();
   const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
@@ -173,6 +176,7 @@ export function createAPIFactory(
     env: {
       // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
       uriScheme: Schemes.file,
+      openExternal: (target: vscode.Uri) => proxy.$openExternal(target),
     },
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
