@@ -11,7 +11,7 @@ import { REDO, UNDO } from '../../src/common/commands';
 import { CollaborationServiceForClient } from '../../src/node/collaboration.service';
 import { YWebsocketServerImpl } from '../../src/node/y-websocket-server';
 
-describe('collaboration contribution', () => {
+describe('CollaborationContribution test', () => {
   let injector: MockInjector;
   let contribution: CollaborationContribution;
   let collaborationService: ICollaborationService;
@@ -48,7 +48,7 @@ describe('collaboration contribution', () => {
     preferenceService = injector.get(PreferenceService);
   });
 
-  it('correctly calls life cycle method', () => {
+  it('should correctly call life cycle method', () => {
     // modify preference
     jest.spyOn(preferenceService, 'get').mockReturnValueOnce(true).mockReturnValueOnce(false);
     const preferenceGetSpy = jest.spyOn(preferenceService, 'get');
@@ -72,7 +72,7 @@ describe('collaboration contribution', () => {
     expect(preferenceSetSpy.mock.calls[1][1]).toBe(true);
   });
 
-  it('registers key bindings with correct id, priority and when clause', () => {
+  it('should register key bindings with correct id, priority and when clause', () => {
     const registry: KeybindingRegistry = injector.get(KeybindingRegistry);
     const commandIds = [UNDO.id, REDO.id];
 
@@ -87,7 +87,7 @@ describe('collaboration contribution', () => {
     contribution.registerKeybindings(registry);
   });
 
-  it('registers commands', () => {
+  it('should register commands', () => {
     const registry: CommandRegistryImpl = injector.get(CommandRegistry);
 
     contribution.registerCommands(registry);
