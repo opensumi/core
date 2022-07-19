@@ -120,7 +120,7 @@ export const NextPreferenceItem = ({
           [styles.preference_item]: true,
         })}
       >
-        {{ preferenceName }} schema not found.
+        {preferenceName} schema not found.
       </div>
     );
   }
