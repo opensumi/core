@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-browser",
-  "version": "2.18.13",
+  "version": "2.18.14",
   "description": "@opensumi/ide-core-browser",
   "files": [
     "lib"
@@ -17,9 +17,9 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-browser.json"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.18.13",
-    "@opensumi/ide-connection": "2.18.13",
-    "@opensumi/ide-core-common": "2.18.13",
+    "@opensumi/ide-components": "2.18.14",
+    "@opensumi/ide-connection": "2.18.14",
+    "@opensumi/ide-core-common": "2.18.14",
     "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
     "@vscode/codicons": "0.0.27",
     "ajv": "^6.10.0",
