@@ -28,7 +28,6 @@ import { createAPIFactory } from './api/worker/worker.host.api.impl';
 import { ExtensionLogger } from './extension-log';
 import { KTWorkerExtension } from './vscode.extension';
 
-
 export function initRPCProtocol() {
   const onMessageEmitter = new Emitter<string>();
   const channel = new MessageChannel();
@@ -75,14 +74,13 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
 
   constructor(private rpcProtocol: RPCProtocol, private injector: Injector) {
     const reporter = this.injector.get(IReporter);
-
+    this.logger = new ExtensionLogger(rpcProtocol);
+    this.storage = new ExtHostStorage(rpcProtocol);
+    this.secret = new ExtHostSecret(rpcProtocol);
     this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this, 'worker');
     this.mainThreadExtensionService = this.rpcProtocol.getProxy<SumiWorkerExtensionService>(
       MainThreadAPIIdentifier.MainThreadExtensionService,
     );
-    this.logger = new ExtensionLogger(rpcProtocol);
-    this.storage = new ExtHostStorage(rpcProtocol);
-    this.secret = new ExtHostSecret(rpcProtocol);
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
 
     this.reporterService = new ReporterService(reporter, {
