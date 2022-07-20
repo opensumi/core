@@ -15,6 +15,8 @@ export function randomPort(): number {
   return min + Math.floor((max - min) * Math.random());
 }
 
+const defaultHost = process.env.HOST || '127.0.0.1';
+
 /**
  * Given a start point and a max number of retries, will find a port that
  * is openable. Will return 0 in case no free port can be found.
@@ -70,7 +72,7 @@ function doFindFreePort(startPort: number, giveUpAfter: number, clb: (port: numb
     return clb(startPort);
   });
 
-  client.connect(startPort, '127.0.0.1');
+  client.connect(startPort, defaultHost);
 }
 
 /**
@@ -106,7 +108,7 @@ export function findFreePortFaster(startPort: number, giveUpAfter: number, timeo
       if (err && ((err as any).code === 'EADDRINUSE' || (err as any).code === 'EACCES') && countTried < giveUpAfter) {
         startPort++;
         countTried++;
-        server.listen(startPort, '127.0.0.1');
+        server.listen(startPort, defaultHost);
       } else {
         doResolve(0, resolve);
       }
@@ -114,7 +116,7 @@ export function findFreePortFaster(startPort: number, giveUpAfter: number, timeo
     server.on('close', () => {
       doResolve(0, resolve);
     });
-    server.listen(startPort, '127.0.0.1');
+    server.listen(startPort, defaultHost);
   });
 }
 
