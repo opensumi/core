@@ -1,11 +1,10 @@
 import { statSync, existsSync } from 'fs';
 import { join } from 'path';
 
-import { green, yellow, red } from 'chalk';
+import { green, red } from 'chalk';
 import got from 'got';
 import yargs from 'yargs';
 
-const CLI_NAME = process.env.CLI_NAME || 'sumi';
 const PRODUCTION_NAME = process.env.PRODUCTION_NAME || 'OpenSumi';
 const CLIENT_ID = process.env.CLIENT_ID;
 const SUMI_SERVER_HOST = process.env.SUMI_SERVER_HOST || 'http://0.0.0.0:8000';

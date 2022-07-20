@@ -8,16 +8,16 @@ import { uuid } from '@opensumi/ide-core-common';
 
 const CLIENT_ID = 'W_' + uuid();
 export async function renderApp(opts: IClientAppOpts) {
+  const defaultHost = process.env.HOST || window.location.hostname;
   const injector = new Injector();
   opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
 
   opts.injector = injector;
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
-  opts.wsPath = process.env.WS_PATH || 'ws://0.0.0.0:8000';
+  opts.wsPath = process.env.WS_PATH || `ws://${defaultHost}:8000`;
 
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST;
-  const anotherHostName =
-    process.env.WEBVIEW_HOST || (window.location.hostname === 'localhost' ? '0.0.0.0' : 'localhost');
+  const anotherHostName = process.env.WEBVIEW_HOST || defaultHost;
   opts.webviewEndpoint = `http://${anotherHostName}:8899`;
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
