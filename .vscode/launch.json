@@ -106,6 +106,16 @@
       "request": "launch",
       "name": "changelog",
       "program": "${workspaceFolder}/scripts/changelog/index.js"
+    },
+    {
+      "name": "Playwright Current File",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/playwright/node_modules/.bin/playwright",
+      "args": ["test", "--debug", "--config=./configs/playwright.debug.config.ts", "${fileBasenameNoExtension}"],
+      "cwd": "${workspaceFolder}/tools/playwright",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen"
     }
   ]
 }
