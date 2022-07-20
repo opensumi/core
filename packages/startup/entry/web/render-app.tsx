@@ -9,7 +9,10 @@ import { uuid } from '@opensumi/ide-core-common';
 const CLIENT_ID = 'W_' + uuid();
 export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
-  opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
+  opts.workspaceDir =
+    opts.workspaceDir || process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH
+      ? window.location.hash.slice(1)
+      : process.env.WORKSPACE_DIR;
 
   opts.injector = injector;
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
