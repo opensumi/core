@@ -263,11 +263,14 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 
   abstract contribute(): void;
 
-  protected toIconClass(iconContrib: { [index in ThemeType]: string } | string): string | undefined {
+  protected toIconClass(
+    iconContrib: { [index in ThemeType]: string } | string,
+    type: IconType = IconType.Mask,
+  ): string | undefined {
     if (typeof iconContrib === 'string' && VAR_REGEXP.test(iconContrib)) {
       return this.iconService?.fromString(iconContrib);
     }
-    return this.iconService?.fromIcon(this.extension.path, iconContrib, IconType.Background);
+    return this.iconService?.fromIcon(this.extension.path, iconContrib, type);
   }
 
   protected getLocalizeFromNlsJSON(title: string): string {
