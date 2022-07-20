@@ -35,12 +35,12 @@ export class OpenSumiView extends OpenSumiViewBase {
     return this.page.$(this.tabSelector);
   }
 
-  async open(): Promise<OpenSumiView> {
+  async open(): Promise<OpenSumiView | undefined> {
     if (!this.name) {
-      throw new Error('View name must be specified to open via command palette');
+      return;
     }
-    await this.app.quickCommandPalette.type('View: Open View');
-    await this.app.quickCommandPalette.trigger('View: Open View ...', this.name);
+    await this.app.quickOpenPalette.type('view ');
+    await this.app.quickOpenPalette.trigger(this.name);
     await this.waitForVisible();
     return this;
   }
