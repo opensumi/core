@@ -23,6 +23,10 @@ export const Tooltip: React.FC<{
       return;
     }
     timer = setTimeout(() => {
+      if (!targetRef.current) {
+        clearTimeout(timer);
+        return;
+      }
       setVisible(true);
       if (tooltipRef.current && targetRef.current && arrowRef.current) {
         const { x, y, width, height } = targetRef.current.getBoundingClientRect();
