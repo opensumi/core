@@ -111,7 +111,7 @@ jobs:
           tag_name: v${{ github.event.inputs.version }}
           release_name: v${{ github.event.inputs.version }}
           body_path: ./releaselog.md
-          draft: false
+          draft: true
           prerelease: false
 
       # 在 main 分支运行时，自动切下一个 Release 分支
