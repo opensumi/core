@@ -1,6 +1,6 @@
 import cxs from 'classnames';
 import React from 'react';
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import './style.less';
 
@@ -13,20 +13,18 @@ export const Tooltip: React.FC<{
   const targetRef = useRef<HTMLParagraphElement | null>(null);
   const tooltipRef = useRef<HTMLSpanElement | null>(null);
   const arrowRef = useRef<HTMLSpanElement | null>(null);
-  let timer;
+  const timerRef = useRef<any>(null);
+
+  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   function handleMouseEnter() {
     if (visible) {
-      if (timer) {
-        clearTimeout(timer);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
       }
       return;
     }
-    timer = setTimeout(() => {
-      if (!targetRef.current) {
-        clearTimeout(timer);
-        return;
-      }
+    timerRef.current = setTimeout(() => {
       setVisible(true);
       if (tooltipRef.current && targetRef.current && arrowRef.current) {
         const { x, y, width, height } = targetRef.current.getBoundingClientRect();
@@ -48,13 +46,13 @@ export const Tooltip: React.FC<{
           tooltipRef.current.style.left = `${x + width / 2 - tooltipRect.width / 2}px`;
         }
       }
-      clearTimeout(timer);
+      clearTimeout(timerRef.current);
     }, delay || 500);
   }
 
   function handleMouseLeave() {
-    if (timer) {
-      clearTimeout(timer);
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
     }
     setVisible(false);
   }
