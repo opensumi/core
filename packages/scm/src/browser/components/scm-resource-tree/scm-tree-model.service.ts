@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
 
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType, WatchEvent } from '@opensumi/ide-components';
+import { Decoration, DecorationsManager, IRecycleTreeHandle, TreeNodeType } from '@opensumi/ide-components';
 import {
   CommandService,
   CorePreferences,
@@ -10,7 +10,7 @@ import {
   ILogger,
   pSeries,
 } from '@opensumi/ide-core-browser';
-import { path, Deferred, DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
+import { path, DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -100,7 +100,6 @@ export class SCMTreeModelService {
   private _activeDecorations: DecorationsManager;
   private _scmTreeHandle: IEditorTreeHandle;
 
-  public flushEventQueueDeferred: Deferred<void> | null;
   private _changeEventDispatchQueue: string[] = [];
 
   // 装饰器
@@ -190,10 +189,6 @@ export class SCMTreeModelService {
   private showProgress(promise: Promise<any>) {
     // 展示一个进度条
     this.progressService.withProgress({ location: scmResourceViewId }, () => promise);
-  }
-
-  get flushEventQueuePromise() {
-    return this.flushEventQueueDeferred && this.flushEventQueueDeferred.promise;
   }
 
   get scmTreeHandle() {
@@ -684,36 +679,4 @@ export class SCMTreeModelService {
   async refresh(node: SCMResourceFolder = this.treeModel?.root as SCMResourceFolder) {
     node?.refresh();
   }
-
-  public flushEventQueue = () => {
-    let promise: Promise<any>;
-    if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
-      return;
-    }
-    this._changeEventDispatchQueue.sort((pathA, pathB) => {
-      const pathADepth = Path.pathDepth(pathA);
-      const pathBDepth = Path.pathDepth(pathB);
-      return pathADepth - pathBDepth;
-    });
-    const roots = [this._changeEventDispatchQueue[0]];
-    for (const path of this._changeEventDispatchQueue) {
-      if (roots.some((root) => path.indexOf(root) === 0)) {
-        continue;
-      } else {
-        roots.push(path);
-      }
-    }
-    promise = pSeries(
-      roots.map((path) => async () => {
-        const watcher = this.treeModel.root?.watchEvents.get(path);
-        if (watcher && typeof watcher.callback === 'function') {
-          await watcher.callback({ type: WatchEvent.Changed, path });
-        }
-        return null;
-      }),
-    );
-    // 重置更新队列
-    this._changeEventDispatchQueue = [];
-    return promise;
-  };
 }

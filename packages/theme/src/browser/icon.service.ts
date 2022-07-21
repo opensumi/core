@@ -170,7 +170,7 @@ export class IconService extends WithEventBus implements IIconService {
   }
 
   protected getMaskStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
-    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url("${iconUrl}") no-repeat 50% 50% / 24px;}`;
+    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url("${iconUrl}") no-repeat 0 0;}`;
     return cssRule;
   }
 

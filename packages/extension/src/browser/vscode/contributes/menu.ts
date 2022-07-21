@@ -14,7 +14,7 @@ import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IEditorGroup } from '@opensumi/ide-editor';
 import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
-import { ThemeType } from '@opensumi/ide-theme';
+import { ThemeType, IconType } from '@opensumi/ide-theme';
 import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
@@ -270,7 +270,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
               when: item.when,
               group,
               order,
-              iconClass: submenuDesc.icon && this.toIconClass(submenuDesc.icon),
+              iconClass: submenuDesc.icon && this.toIconClass(submenuDesc.icon, IconType.Background),
             } as ISubmenuItem),
           );
         }
