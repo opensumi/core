@@ -28,6 +28,7 @@ import {
   Throttler,
   match,
   Schemes,
+  PASTE_FILE_LOCAL_TOKEN,
 } from '@opensumi/ide-core-browser';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
@@ -840,7 +841,8 @@ export class FileTreeContribution
         }
       },
       isEnabled: () =>
-        this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE,
+        (this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE) ||
+        !!localStorage.getItem(PASTE_FILE_LOCAL_TOKEN),
     });
 
     if (this.appConfig.isElectronRenderer) {

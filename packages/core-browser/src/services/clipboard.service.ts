@@ -1,20 +1,32 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { URI } from '@opensumi/ide-core-common';
 
 import { ILogger } from '../logger';
 
 export const IClipboardService = Symbol('IClipboardService');
+export const PASTE_FILE_LOCAL_TOKEN = 'paste-uri-list';
+
 export interface IClipboardService {
   /**
-   * 写到粘贴板
+   * 写入文本
    */
   writeText(text: string): Promise<void>;
 
   /**
-   * 读取粘贴板
+   * 读取文本
    */
   readText(): Promise<string>;
-}
 
+  /**
+   * 写入资源
+   */
+  writeResources(resources: URI[]): Promise<void>;
+
+  /**
+   * 读取资源
+   */
+  readResources(): Promise<URI[]>;
+}
 @Injectable()
 export class BrowserClipboardService implements IClipboardService {
   @Autowired(ILogger)
@@ -62,6 +74,29 @@ export class BrowserClipboardService implements IClipboardService {
     } catch (error) {
       this.logger.error(error);
       return '';
+    }
+  }
+  async writeResources(resources: URI[], field = PASTE_FILE_LOCAL_TOKEN): Promise<void> {
+    try {
+      localStorage.setItem(field, JSON.stringify(resources.map((uri) => uri.toString())));
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+  async readResources(field = PASTE_FILE_LOCAL_TOKEN): Promise<URI[]> {
+    try {
+      const localStorgeUriList = JSON.parse(localStorage.getItem(field) ?? '');
+      if (
+        !Array.isArray(localStorgeUriList) ||
+        !localStorgeUriList.length ||
+        !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
+      ) {
+        return [];
+      }
+      return localStorgeUriList.map((str) => URI.parse(str));
+    } catch (e) {
+      this.logger.error(e);
+      return [];
     }
   }
 }
