@@ -14,7 +14,6 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { BrowserEditorContribution, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
 
 import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { DebugContextKey } from '../../contextkeys/debug-contextkey.service';
@@ -25,23 +24,15 @@ import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { DebugConsoleFilterView } from './debug-console-filter.view';
 import { DebugConsoleModelService } from './debug-console-tree.model.service';
-import { DebugConsoleInputDocumentProvider, DebugConsoleService } from './debug-console.service';
+import { DebugConsoleService } from './debug-console.service';
 import { DebugConsoleView } from './debug-console.view';
 
 export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
-@Domain(
-  ComponentContribution,
-  BrowserEditorContribution,
-  TabBarToolbarContribution,
-  CommandContribution,
-  MenuContribution,
-  KeybindingContribution,
-)
+@Domain(ComponentContribution, TabBarToolbarContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class DebugConsoleContribution
   implements
     ComponentContribution,
-    BrowserEditorContribution,
     TabBarToolbarContribution,
     CommandContribution,
     MenuContribution,
@@ -49,9 +40,6 @@ export class DebugConsoleContribution
 {
   @Autowired()
   private readonly debugConsoleModelService: DebugConsoleModelService;
-
-  @Autowired()
-  private readonly debugConsoleInputDocumentProvider: DebugConsoleInputDocumentProvider;
 
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
@@ -90,10 +78,6 @@ export class DebugConsoleContribution
       viewId: DEBUG_CONSOLE_CONTAINER_ID,
       tooltip: DEBUG_COMMANDS.CLEAR_CONSOLE.label,
     });
-  }
-
-  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
-    registry.registerEditorDocumentModelContentProvider(this.debugConsoleInputDocumentProvider);
   }
 
   registerCommands(registry: CommandRegistry) {
