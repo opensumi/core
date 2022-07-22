@@ -87,7 +87,7 @@ export class FileTreeDialogService extends Tree {
         root = root.parent;
       }
     } else {
-      directory.push(root.path.toString());
+      directory.push(root.codeUri.fsPath.toString());
     }
     return directory;
   }
