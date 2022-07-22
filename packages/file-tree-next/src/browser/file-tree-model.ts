@@ -31,7 +31,7 @@ export class FileTreeModel extends TreeModel {
     return this.onWillUpdateEmitter.event;
   }
 
-  init(root: CompositeTreeNode) {
+  init(root: Directory) {
     this.root = root;
     // 分支更新时通知树刷新, 不是立即更新，而是延迟更新，待树稳定后再更新
     // 100ms的延迟并不能保证树稳定，特别是在node_modules展开的情况下

@@ -88,6 +88,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
     // 这里需要重新取一下treeModel的值确保为最新的TreeModel
     await model.treeModel.root.ensureLoaded();
+    setSelectPath((model.treeModel.root as Directory).uri.codeUri.fsPath);
     setIsReady(true);
   };
 
@@ -152,11 +153,8 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     }
   };
 
-  React.useEffect(() => {
-    setIsReady(false);
-  }, [selectPath]);
-
   const onRootChangeHandler = async (value: string) => {
+    setIsReady(false);
     setSelectPath(value);
     await model.updateTreeModel(value);
     setIsReady(true);
