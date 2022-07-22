@@ -11,6 +11,7 @@
 [![CLA assistant][cla-image]][cla-url]
 [![License][license-image]][license-url]
 [![Discussions][discussions-image]][discussions-url]
+[![Contribute with Gitpod][gitpod-image]][gitpod-url]
 
 [ci-image]: https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg
 [ci-url]: https://github.com/opensumi/core/actions/workflows/ci.yml
@@ -26,6 +27,8 @@
 [cla-url]: https://cla-assistant.io/opensumi/core
 [test-image]: https://codecov.io/gh/opensumi/core/branch/main/graph/badge.svg?token=07JAPLU957
 [test-url]: https://codecov.io/gh/opensumi/core
+[gitpod-image]: https://img.shields.io/badge/Contribute%20with-Gitpod-908a85?logo=gitpod
+[gitpod-url]: https://gitpod.io/#https://github.com/opensumi/core
 
 </div>
 <h1 align="center">OpenSumi</h1>
