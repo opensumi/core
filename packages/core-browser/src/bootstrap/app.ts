@@ -184,7 +184,6 @@ export class ClientApp implements IClientApp, IDisposable {
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,
-      defaultPreferences,
     };
 
     if (this.config.isElectronRenderer && electronEnv.metadata?.extensionDevelopmentHost) {

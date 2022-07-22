@@ -14,7 +14,6 @@ import {
   Mode,
   ClientAppContribution,
   GeneralSettingsId,
-  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
@@ -42,9 +41,6 @@ export const ICON_THEME_TOGGLE_COMMAND: Command = {
 
 @Domain(MenuContribution, CommandContribution, ClientAppContribution)
 export class ThemeContribution implements MenuContribution, CommandContribution, ClientAppContribution {
-  @Autowired(AppConfig)
-  private appConfig: AppConfig;
-
   @Autowired(IThemeService)
   themeService: IThemeService;
 
@@ -75,10 +71,8 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
    * 如果没有设置默认 theme 或者 设置的 theme 为 dark 类型，为了有体感上的加速，设置默认的 theme
    */
   private registerDefaultColorTheme() {
-    const shouldApplyDefaultThemeId =
-      !this.appConfig.defaultPreferences ||
-      !this.appConfig.defaultPreferences['general.theme'] ||
-      this.appConfig.defaultPreferences['general.theme'].includes('dark');
+    const themeId = this.preferenceService.get<string>('general.theme');
+    const shouldApplyDefaultThemeId = !themeId || themeId.includes('dark');
 
     if (shouldApplyDefaultThemeId) {
       this.themeService.applyTheme(DEFAULT_THEME_ID);
