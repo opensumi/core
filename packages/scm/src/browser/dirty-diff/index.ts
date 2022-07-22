@@ -200,7 +200,6 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
 
         // 每次都创建一个新的 widget
         widget = new DirtyDiffWidget(codeEditor, dirtyModel, this.commandService);
-        // FIXME: 这一行貌似不会触发 @木农
         widget.onDispose(() => {
           this.widgets.delete(codeEditor.getId());
         });
