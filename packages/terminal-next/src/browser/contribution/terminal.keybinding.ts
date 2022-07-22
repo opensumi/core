@@ -1,9 +1,7 @@
-import { KeybindingContribution, KeybindingRegistry } from '@opensumi/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, TERMINAL_COMMANDS } from '@opensumi/ide-core-browser';
 import { IsTerminalFocused } from '@opensumi/ide-core-browser/lib/contextkey';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { Domain, isWindows } from '@opensumi/ide-core-common';
-
-import { TERMINAL_COMMANDS } from '../../common';
 
 @Domain(KeybindingContribution)
 export class TerminalKeybindinngContribution implements KeybindingContribution {

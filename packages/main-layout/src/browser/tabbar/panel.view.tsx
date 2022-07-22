@@ -14,6 +14,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -34,11 +35,14 @@ const NoUpdateBoundary: React.FC<{ visible: boolean; children: React.ReactElemen
 const panelVisible = { zIndex: 1, display: 'block' };
 const panelInVisible = { zIndex: -1, display: 'none' };
 
-export const BaseTabPanelView: React.FC<{
+export interface IBaseTabPanelView {
   PanelView: React.FC<{ component: ComponentRegistryInfo; side: string; titleMenu: IMenu }>;
   // tabPanel的尺寸（横向为宽，纵向高）
+  id?: string;
   panelSize?: number;
-}> = observer(({ PanelView, panelSize }) => {
+}
+
+export const BaseTabPanelView: React.FC<IBaseTabPanelView> = observer(({ PanelView, panelSize, id }) => {
   const { side } = React.useContext(TabbarConfig);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const appConfig: AppConfig = useInjectable(AppConfig);
@@ -52,12 +56,16 @@ export const BaseTabPanelView: React.FC<{
 
   return (
     <div
+      id={id}
       className={clsx(styles.tab_panel, {
         [styles.tab_panel_hidden]: !currentContainerId || currentContainerId === '',
       })}
     >
       {tabbarService.visibleContainers.map((component) => {
-        const containerId = component.options!.containerId;
+        const containerId = component.options?.containerId;
+        if (!containerId) {
+          return null;
+        }
         const titleMenu = tabbarService.getTitleToolbarMenu(containerId);
         return (
           <div
@@ -65,6 +73,7 @@ export const BaseTabPanelView: React.FC<{
             className={clsx(styles.panel_wrap, containerId) /* @deprecated: query by data-viewlet-id */}
             data-viewlet-id={containerId}
             style={currentContainerId === containerId ? panelVisible : panelInVisible}
+            id={id}
           >
             <ErrorBoundary>
               <NoUpdateBoundary visible={currentContainerId === containerId}>
@@ -86,21 +95,27 @@ const ContainerView: React.FC<{
   const ref = React.useRef<HTMLElement | null>();
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const configContext = useInjectable<AppConfig>(AppConfig);
-  const { title, titleComponent, component: CustomComponent, containerId } = component.options!;
+  const { title, titleComponent, component: CustomComponent, containerId } = component.options || {};
   const injector: Injector = useInjectable(INJECTOR_TOKEN);
   const handleContextMenu = (e: React.MouseEvent) => {
     const accordionService: AccordionService = injector.get(AccordionServiceFactory)(containerId);
     accordionService.handleContextMenu(e);
   };
+  if (!containerId) {
+    return null;
+  }
   const progressService: IProgressService = useInjectable(IProgressService);
-  const indicator = progressService.getIndicator(containerId)!;
+  const indicator = progressService.getIndicator(containerId);
+  if (!indicator) {
+    return null;
+  }
   const viewState = useViewState(side, containerRef);
 
   return (
     <div ref={containerRef} className={styles.view_container}>
       {!CustomComponent && (
         <div onContextMenu={handleContextMenu} className={styles.panel_titlebar}>
-          {!title ? null : <TitleBar title={title!} menubar={<InlineActionBar menus={titleMenu} />} />}
+          {!title ? null : <TitleBar title={title} menubar={<InlineActionBar menus={titleMenu} />} />}
           {titleComponent && (
             <div className={styles.panel_component}>
               <ConfigProvider value={configContext}>
@@ -115,44 +130,19 @@ const ContainerView: React.FC<{
         {CustomComponent ? (
           <ConfigProvider value={configContext}>
             <ComponentRenderer
-              initialProps={{ viewState, ...component.options!.initialProps }}
+              initialProps={{ viewState, ...component.options?.initialProps }}
               Component={CustomComponent}
             />
           </ConfigProvider>
         ) : (
-          <AccordionContainer views={component.views} containerId={component.options!.containerId} />
+          <AccordionContainer views={component.views} containerId={component.options?.containerId!} />
         )}
       </div>
     </div>
   );
 };
 
-const PanelView: React.FC<{
-  component: ComponentRegistryInfo;
-  side: string;
-  titleMenu: IMenu;
-}> = ({ component, titleMenu, side }) => {
-  const contentRef = React.useRef<HTMLDivElement | null>();
-  const titleComponent = component.options && component.options.titleComponent;
-  return (
-    <div className={styles.panel_container} ref={(ele) => (contentRef.current = ele)}>
-      <div className={styles.float_container}>
-        {titleComponent && (
-          <div className={styles.toolbar_container}>
-            <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
-          </div>
-        )}
-        <div className='toolbar_container'>{titleMenu && <InlineActionBar menus={titleMenu} />}</div>
-      </div>
-      <ComponentRenderer
-        initialProps={component.options && component.options.initialProps}
-        Component={component.views[0].component || component.options!.component!}
-      />
-    </div>
-  );
-};
-
-const NextPanelView: React.FC<{
+const BottomPanelView: React.FC<{
   component: ComponentRegistryInfo;
   side: string;
   titleMenu: IMenu;
@@ -190,12 +180,14 @@ const NextPanelView: React.FC<{
   );
 };
 
-export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
+export const RightTabPanelRenderer: React.FC = () => (
+  <BaseTabPanelView PanelView={ContainerView} id={VIEW_CONTAINERS.RIGHT_TABBAR_PANEL} />
+);
 
-export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
+export const LeftTabPanelRenderer: React.FC = () => (
+  <BaseTabPanelView PanelView={ContainerView} id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL} />
+);
 
-export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={PanelView} />;
-
-export const NextBottomTabPanelRenderer: React.FC = () => (
-  <BaseTabPanelView PanelView={NextPanelView} panelSize={280} />
+export const BottomTabPanelRenderer: React.FC = () => (
+  <BaseTabPanelView PanelView={BottomPanelView} panelSize={280} id={VIEW_CONTAINERS.BOTTOM_TABBAR_PANEL} />
 );

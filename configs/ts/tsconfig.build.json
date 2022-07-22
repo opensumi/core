@@ -173,6 +173,9 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
+    },
+    {
+      "path": "./references/tsconfig.playwright.json"
     }
   ]
 }

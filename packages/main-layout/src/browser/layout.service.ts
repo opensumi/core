@@ -275,6 +275,10 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return service;
   }
 
+  openAllRegisterViews() {
+    return this.accordionServices;
+  }
+
   getAccordionService(containerId: string, noRestore?: boolean) {
     let service = this.accordionServices.get(containerId);
     if (!service) {
