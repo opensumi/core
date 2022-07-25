@@ -82,7 +82,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     this.addDispose(
       Disposable.create(() => {
         if (this.diffDelayer) {
-          if (this.diffDelayer.isTriggered()) {
+          if (!this.diffDelayer.isTriggered()) {
             this.diffDelayer.cancel();
           }
           this.diffDelayer = null;
