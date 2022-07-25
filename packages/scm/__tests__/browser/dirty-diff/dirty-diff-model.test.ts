@@ -46,6 +46,9 @@ jest.mock('@opensumi/ide-core-common', () => ({
     trigger(promiseFactory: () => Promise<any>) {
       return promiseFactory();
     }
+    isTriggered() {
+      return false;
+    }
     cancel() {}
   },
 }));
