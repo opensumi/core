@@ -266,6 +266,7 @@ export class TextModelBinding {
    * Stop listening to all events
    */
   dispose() {
+    this.undoManger.destroy();
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposableContentChangeHandler.dispose();
     this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);
