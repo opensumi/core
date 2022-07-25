@@ -3,10 +3,12 @@ import * as Y from 'yjs';
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { FileStat, IFileService } from '@opensumi/ide-file-service';
+import { FileService } from '@opensumi/ide-file-service/src/node';
 
-import { ICollaborationServiceForClient, IYWebsocketServer, ROOM_NAME } from '../../lib';
-import { CollaborationServiceForClient } from '../../lib/node/collaboration.service';
-import { YWebsocketServerImpl } from '../../lib/node/y-websocket-server';
+import { ICollaborationServiceForClient, IYWebsocketServer, ROOM_NAME } from '../../src';
+import { CollaborationServiceForClient } from '../../src/node/collaboration.service';
+import { YWebsocketServerImpl } from '../../src/node/y-websocket-server';
 
 describe('Collaboration node ws server test', () => {
   let injector: MockInjector;
@@ -14,9 +16,12 @@ describe('Collaboration node ws server test', () => {
   let service: CollaborationServiceForClient;
   let yDoc: Y.Doc;
 
+  const MOCK_CONTENT = 'init mock content';
+
   beforeAll(() => {
     injector = createNodeInjector([]);
     injector.mockService(INodeLogger);
+    injector.mockService(IFileService);
     injector.addProviders(
       {
         token: IYWebsocketServer,
@@ -27,6 +32,9 @@ describe('Collaboration node ws server test', () => {
         useClass: CollaborationServiceForClient,
       },
     );
+
+    const fileService: FileService = injector.get(IFileService);
+    jest.spyOn(fileService, 'resolveContent').mockImplementation(async () => ({ content: MOCK_CONTENT } as any));
 
     server = injector.get(IYWebsocketServer);
     service = injector.get(ICollaborationServiceForClient);
@@ -45,10 +53,13 @@ describe('Collaboration node ws server test', () => {
 
   const TEST_URI = 'file://foo';
 
-  it('should set init content correctly', () => {
-    service.setInitContent(TEST_URI, 'Hello');
-    const yMap = yDoc.getMap();
+  it('should set init content correctly', async () => {
+    await service.requestInitContent(TEST_URI);
+    const yMap: Y.Map<Y.Text> = yDoc.getMap();
     expect(yMap.has(TEST_URI)).toBeTruthy();
+    expect(yMap.get(TEST_URI)).toBeInstanceOf(Y.Text);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    expect(yMap.get(TEST_URI)!.toString()).toBe(MOCK_CONTENT);
   });
 
   it('should remove Y.Text', () => {

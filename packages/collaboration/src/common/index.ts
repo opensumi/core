@@ -21,7 +21,7 @@ export const ICollaborationServiceForClient = Symbol('ICollaborationServiceForCl
 
 export interface ICollaborationServiceForClient {
   removeYText(uri: string): void;
-  setInitContent(uri: string, initContent: string): void;
+  requestInitContent(uri: string): Promise<void>;
 }
 
 export const ROOM_NAME = 'y-room-opensumi';
