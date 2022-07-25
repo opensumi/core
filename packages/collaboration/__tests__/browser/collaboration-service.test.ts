@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import * as Y from 'yjs';
+
 import { Injectable } from '@opensumi/di';
 import { FilesChangeEvent } from '@opensumi/ide-core-browser';
 import { EventBusImpl, FileChangeType, IEventBus, ILogger, URI } from '@opensumi/ide-core-common';
@@ -7,6 +9,7 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
+import { IFileService } from '@opensumi/ide-file-service';
 import { ITextModel } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { createModel } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneEditor';
@@ -60,6 +63,7 @@ describe('CollaborationService basic routines', () => {
     injector = createBrowserInjector([]);
     injector.mockService(ILogger);
     injector.mockService(INodeLogger);
+    injector.mockService(IFileService);
     injector.addProviders(
       {
         token: ICollaborationService,
@@ -87,9 +91,17 @@ describe('CollaborationService basic routines', () => {
     workbenchEditorService.updateUri('file://home/situ2001/114514/1919810');
     workbenchEditorService.updateCurrentTextModelWithString('');
 
-    service = injector.get(ICollaborationService);
     server = injector.get(YWebsocketServerImpl);
     eventBus = injector.get(IEventBus);
+    service = injector.get(ICollaborationService);
+
+    // mock impl, because origin impl comes with nodejs
+    const serviceForClient: CollaborationServiceForClient = injector.get(CollaborationServiceForClientPath);
+    jest.spyOn(serviceForClient, 'requestInitContent').mockImplementation(async (uri: string) => {
+      if (!serviceForClient['yMap'].has(uri)) {
+        serviceForClient['yMap'].set(uri, new Y.Text('init content'));
+      }
+    });
 
     // start server
     server.initialize();
@@ -170,20 +182,15 @@ describe('CollaborationService basic routines', () => {
     expect(service['getBinding'](workbenchEditorService.uri.toString())).toBeInstanceOf(TextModelBinding);
   });
 
+  // TODO move to node side
   it('should react on FileChangeEvent', () => {
-    const handlerSpy = jest.spyOn(service as any, 'fileChangeEventHandler');
+    // const handlerSpy = jest.spyOn(service as any, 'fileChangeEventHandler');
     const removeBindingSpy = jest.spyOn(service as any, 'removeBinding');
 
-    // delete a file
-    const event = new FilesChangeEvent([
-      {
-        uri: workbenchEditorService.uri.toString(),
-        type: FileChangeType.DELETED,
-      },
-    ]);
-    eventBus.fire(event);
+    // delete a file in a naive way
+    service['yTextMap'].delete(workbenchEditorService.uri.toString());
 
-    expect(handlerSpy).toBeCalled();
+    // expect(handlerSpy).toBeCalled();
     expect(removeBindingSpy).toBeCalled();
   });
 

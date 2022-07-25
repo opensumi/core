@@ -2,7 +2,7 @@ import { KeybindingRegistry, KeybindingWeight, PreferenceService } from '@opensu
 import { CommandRegistry, CommandRegistryImpl, IDisposable, ILogger } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IFileService, IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { CollaborationServiceForClientPath, ICollaborationService, IYWebsocketServer } from '../../src';
 import { CollaborationContribution } from '../../src/browser/collaboration.contribution';
@@ -22,6 +22,7 @@ describe('CollaborationContribution test', () => {
     injector.mockService(ILogger);
     injector.mockService(PreferenceService);
     injector.mockService(IFileServiceClient);
+    injector.mockService(IFileService);
     injector.mockService(KeybindingRegistry);
     injector.addProviders(
       CollaborationContribution,

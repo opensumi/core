@@ -2,6 +2,8 @@ import * as Y from 'yjs';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';
+import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
+import { FileService } from '@opensumi/ide-file-service/lib/node';
 
 import { ICollaborationServiceForClient, IYWebsocketServer, ROOM_NAME } from '../common';
 
@@ -12,6 +14,9 @@ export class CollaborationServiceForClient implements ICollaborationServiceForCl
 
   @Autowired(IYWebsocketServer)
   private server: IYWebsocketServer;
+
+  @Autowired(IFileService)
+  private fileService: FileService;
 
   private yDoc: Y.Doc;
 
@@ -30,6 +35,16 @@ export class CollaborationServiceForClient implements ICollaborationServiceForCl
         this.logger.debug(`[Collaboration] operation ${change.action} occurs on key ${key}`);
       });
     });
+
+    this.fileService.onFilesChanged((e) => {
+      e.changes.forEach((v) => {
+        if (v.type === FileChangeType.DELETED) {
+          this.logger.debug('on file event deleted', v);
+          this.removeYText(v.uri);
+          this.logger.debug('removed Y.Text of', v.uri);
+        }
+      });
+    });
   }
 
   removeYText(uri: string) {
@@ -40,12 +55,17 @@ export class CollaborationServiceForClient implements ICollaborationServiceForCl
     }
   }
 
-  // todo maybe we can directly pass uri to read from file service?
-  setInitContent(uri: string, initContent: string): void {
-    this.logger.debug('pong', uri, 'with', initContent.slice(0, 20));
-    if (!this.yMap.has(uri)) {
-      const yText = new Y.Text(initContent); // create yText with initial content
-      this.yMap.set(uri, yText);
+  async requestInitContent(uri: string): Promise<void> {
+    try {
+      // load content from disk, not client
+      const { content } = await this.fileService.resolveContent(uri);
+      this.logger.debug('resolved content', content.substring(0, 20), 'from', uri);
+      if (!this.yMap.has(uri)) {
+        const yText = new Y.Text(content); // create yText with initial content
+        this.yMap.set(uri, yText);
+      }
+    } catch (e) {
+      this.logger.error(e);
     }
   }
 }

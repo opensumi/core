@@ -3,8 +3,7 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { FilesChangeEvent } from '@opensumi/ide-core-browser';
-import { FileChangeType, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
@@ -137,16 +136,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
-  @OnEvent(FilesChangeEvent)
-  private fileChangeEventHandler(e: FilesChangeEvent) {
-    e.payload.forEach((e) => {
-      if (e.type === FileChangeType.DELETED) {
-        this.logger.debug('DELETED', e.uri);
-        this.backService.removeYText(e.uri);
-      }
-    });
-  }
-
   @OnEvent(EditorGroupCloseEvent)
   private groupCloseHandler(e: EditorGroupCloseEvent) {
     this.logger.debug('Group close tabs', e);
@@ -189,8 +178,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
         this.logger.debug('Binding created', binding);
       } else {
         // tell server to set init content
-        this.backService.setInitContent(uri, text);
+        this.backService.requestInitContent(uri);
         // binding will be eventually created on yMap event
+
+        // FIXME if file not found?
         this.pendingBinding.set(uri, { model: textModel, editor: monacoEditor });
       }
     } else {
