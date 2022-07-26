@@ -100,10 +100,20 @@ export class RPCProxy {
             if (prop.startsWith('on')) {
               if (isSingleArray) {
                 connection.sendNotification(prop, [...args]);
-                getCapturer() && getCapturer()(['sendNotification', prop, [...args]]);
+                getCapturer() &&
+                  getCapturer()({
+                    type: 'sendNotification',
+                    serviceMethod: prop,
+                    arguments: args,
+                  });
               } else {
                 connection.sendNotification(prop, ...args);
-                getCapturer() && getCapturer()(['sendNotification', prop, ...args]);
+                getCapturer() &&
+                  getCapturer()({
+                    type: 'sendNotification',
+                    serviceMethod: prop,
+                    arguments: args,
+                  });
               }
 
               resolve(null);
@@ -114,10 +124,22 @@ export class RPCProxy {
 
               if (isSingleArray) {
                 requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
-                getCapturer() && getCapturer()(['sendRequest', requestId, prop, [...args]]);
+                getCapturer() &&
+                  getCapturer()({
+                    type: 'sendRequest',
+                    requestId,
+                    serviceMethod: prop,
+                    arguments: args,
+                  });
               } else {
                 requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
-                getCapturer() && getCapturer()(['sendRequest', requestId, prop, ...args]);
+                getCapturer() &&
+                  getCapturer()({
+                    type: 'sendRequest',
+                    requestId,
+                    serviceMethod: prop,
+                    arguments: args,
+                  });
               }
 
               requestResult
@@ -135,10 +157,22 @@ export class RPCProxy {
                       const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
-                    getCapturer() && getCapturer()(['错误', requestId, error]);
+                    getCapturer() &&
+                      getCapturer()({
+                        type: 'requestResult',
+                        status: 'fail',
+                        requestId,
+                        error,
+                      });
                     reject(error);
                   } else {
-                    getCapturer() && getCapturer()(['requestResult', requestId, result.data]);
+                    getCapturer() &&
+                      getCapturer()({
+                        type: 'requestResult',
+                        status: 'success',
+                        requestId,
+                        data: result.data,
+                      });
                     resolve(result.data);
                   }
                 });
@@ -174,12 +208,23 @@ export class RPCProxy {
       methods.forEach((method) => {
         if (method.startsWith('on')) {
           connection.onNotification(method, (...args) => {
-            getCapturer() && getCapturer()(['onNotification', method, ...args]);
+            getCapturer() &&
+              getCapturer()({
+                type: 'onNotification',
+                serviceMethod: method,
+                arguments: args,
+              });
             this.onNotification(method, ...args);
           });
         } else {
           connection.onRequest(method, (...args) => {
-            getCapturer() && getCapturer()(['onRequest', method, ...args]);
+            getCapturer() &&
+              getCapturer()({
+                type: 'onRequest',
+                status: 'success',
+                serviceMethod: method,
+                arguments: args,
+              });
             return this.onRequest(method, ...args);
           });
         }
@@ -191,7 +236,12 @@ export class RPCProxy {
 
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
-          getCapturer() && getCapturer()(`onRequest: ${method} is not registered!`);
+          getCapturer() &&
+            getCapturer()({
+              type: 'onRequest',
+              status: 'fail',
+              serviceMethod: method,
+            });
           return {
             data: NOTREGISTERMETHOD,
           };
