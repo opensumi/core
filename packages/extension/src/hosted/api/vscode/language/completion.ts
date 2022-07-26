@@ -88,6 +88,7 @@ export class CompletionAdapter {
         [ISuggestDataDtoField.kind]: item.kind ? Converter.CompletionItemKind.from(item.kind) : undefined,
         [ISuggestDataDtoField.sortText]: item.sortText,
         [ISuggestDataDtoField.filterText]: item.filterText,
+        [ISuggestDataDtoField.command]: this.commandConverter.toInternal(item.command, disposables),
         x: [pid, i] as [number, number],
       };
 
