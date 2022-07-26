@@ -17,7 +17,9 @@
         savedLayout = JSON.parse(localStorage.getItem('layout') || '{}');
         savedColors = JSON.parse(localStorage.getItem('theme') || '{}');
       } catch (err) {}
-      document.getElementsByTagName('html')[0].style.backgroundColor = savedColors.editorBackground || '#2a2a2a';
+      if (savedColors.editorBackground) {
+        document.getElementsByTagName('html')[0].style.backgroundColor = savedColors.editorBackground;
+      }
     </script>
   </head>
   <body>

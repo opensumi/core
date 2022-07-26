@@ -10,6 +10,7 @@ import {
   IPosition,
   Mutable,
   canceled,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
@@ -136,9 +137,10 @@ export class DebugSession implements IDebugSession {
     protected readonly fileSystem: IFileServiceClient,
     protected readonly sessionManager: IDebugSessionManager,
   ) {
-    this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => {
-      this.runInTerminal(request);
-    });
+    this.connection.onRequest(
+      'runInTerminal',
+      async (request: DebugProtocol.RunInTerminalRequest) => await this.runInTerminal(request),
+    );
 
     this.toDispose.pushAll([
       this.onDidChangeEmitter,
@@ -378,7 +380,7 @@ export class DebugSession implements IDebugSession {
       }
     } catch (reason) {
       this.fireExited(reason);
-      this.messages.error(reason.message || 'Debug session initialization failed. See console for details.');
+      this.messages.error(reason.message || reason.body?.error.format || localize('debug.console.errorMessage'));
       throw reason && reason.message;
     }
   }

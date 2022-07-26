@@ -649,8 +649,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * @param token CancellationToken
    */
   private async resolveChildrens(token?: CancellationToken) {
-    let childrens;
-
+    let childrens = this.children;
+    let expandedPaths: string[] = [];
     try {
       childrens = (await this._tree.resolveChildren(this)) || [];
     } catch (e) {
@@ -680,7 +680,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     for (let i = 0; i < (this.children || []).length; i++) {
       const subChild = this.children![i];
       if (CompositeTreeNode.is(subChild) && subChild.expanded) {
-        await (subChild as CompositeTreeNode).resolveChildrens(token);
+        const paths = await (subChild as CompositeTreeNode).resolveChildrens(token);
+        if (paths) {
+          expandedPaths = expandedPaths.concat(paths);
+        }
         if (token?.isCancellationRequested) {
           return;
         }
@@ -693,6 +696,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       const child = expandedChilds[i];
       child.expandBranch(child, true);
     }
+    return expandedPaths.concat(expandedChilds.map((child) => child.path.toString()));
   }
 
   private updateTreeNodeCache(child: CompositeTreeNode | TreeNode) {
@@ -765,8 +769,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
               }
               (child as CompositeTreeNode).isExpanded = true;
               // 加载路径包含当前判断路径，尝试加载该节点再匹配
-              await (child as CompositeTreeNode).resolveChildrens(token);
-
+              const extraExpandedPaths = await (child as CompositeTreeNode).resolveChildrens(token);
+              if (extraExpandedPaths) {
+                expandedPaths = expandedPaths.filter((path) => !extraExpandedPaths.find((a) => a === path));
+              }
               if (token?.isCancellationRequested) {
                 return;
               }
@@ -787,7 +793,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             // 如果节点没有默认展开，则设置一下展开状态
             (child as CompositeTreeNode).isExpanded = true;
           }
-          await (child as CompositeTreeNode).resolveChildrens(token);
+          const extraExpandedPaths = await (child as CompositeTreeNode).resolveChildrens(token);
+          if (extraExpandedPaths) {
+            expandedPaths = expandedPaths.filter((path) => !extraExpandedPaths.find((a) => a === path));
+          }
           if (token?.isCancellationRequested) {
             return;
           }
