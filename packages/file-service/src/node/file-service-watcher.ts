@@ -175,36 +175,20 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     if (events.length < 2) {
       return events;
     }
-
-    let renameEvent: INsfw.ChangeEvent;
-
+    // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
+    const TEMP_FILE_REG = /\.\d{7}\d+$/g;
     events = events.filter((event: INsfw.ChangeEvent) => {
-      if (event.file) {
-        if (/\.\d{7}\d+$/.test(event.file)) {
-          // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434
-          // 这类文件的更新应当完全隐藏掉
+      if (event.action === INsfw.actions.RENAMED && event.oldFile) {
+        if (TEMP_FILE_REG.test(event.oldFile)) {
+          return false;
+        }
+      } else if (event.file) {
+        if (TEMP_FILE_REG.test(event.file)) {
           return false;
         }
       }
-
-      // Fix https://github.com/Axosoft/nsfw/issues/26
-      if (isWindows) {
-        if (
-          renameEvent &&
-          event.action === INsfw.actions.CREATED &&
-          event.directory === renameEvent.directory &&
-          event.file === renameEvent.oldFile
-        ) {
-          return false;
-        }
-        if (event.action === INsfw.actions.RENAMED) {
-          renameEvent = event;
-        }
-      }
-
       return true;
     });
-
     return events;
   }
 
