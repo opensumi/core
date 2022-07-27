@@ -1027,6 +1027,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     const state = TreeNode.getGlobalTreeState(this.path);
+    if (state.isExpanding) {
+      // 当节点处于加载子节点过程时，尽管为展开状态，但此时不应该支持折叠节点
+      return;
+    }
     state.loadPathCancelToken.cancel();
     state.refreshCancelToken.cancel();
     this._watcher.notifyWillChangeExpansionState(this, false);
