@@ -3,6 +3,15 @@ import { localize } from '@opensumi/ide-core-common';
 import { RGBA, Color } from '../../color';
 import { registerColor } from '../../color-registry';
 import { foreground } from '../base';
+import {
+  buttonBorder,
+  buttonBackground,
+  buttonForeground,
+  buttonHoverBackground,
+  buttonSecondaryBackground,
+  buttonSecondaryHoverBackground,
+  buttonSecondaryForeground,
+} from '../button';
 
 /* disable button */
 export const ktButtonDisableForeground = registerColor(
@@ -32,17 +41,17 @@ export const ktButtonDisableBorder = registerColor(
 /* primary button */
 export const ktPrimaryButtonForeground = registerColor(
   'kt.primaryButton.foreground',
-  { dark: Color.white, light: Color.white, hc: Color.white },
+  { dark: buttonForeground, light: buttonForeground, hc: buttonForeground },
   localize('primaryButtonForground', 'Primary Button Forground color.'),
 );
 export const ktPrimaryButtonBackground = registerColor(
   'kt.primaryButton.background',
-  { dark: '#167CDB', light: '#167CDB', hc: null },
+  { dark: buttonBackground, light: buttonBackground, hc: buttonBackground },
   localize('primaryButtonBackground', 'Primary Button Background color.'),
 );
 export const ktPrimaryButtonHoverBackground = registerColor(
   'kt.primaryButton.hoverBackground',
-  { dark: '#3892DB', light: '#3892DB', hc: null },
+  { dark: buttonHoverBackground, light: buttonHoverBackground, hc: buttonHoverBackground },
   localize('primaryButtonHoverBackground', 'Primary Button Hover Background color'),
 );
 export const ktPrimaryButtonClickBackground = registerColor(
@@ -81,22 +90,22 @@ export const ktPrimaryGhostButtonClickBorder = registerColor(
 /* secondary button */
 export const ktSecondaryButtonForeground = registerColor(
   'kt.secondaryButton.foreground',
-  { dark: '#D7DBDE', light: foreground, hc: null },
+  { dark: buttonSecondaryForeground, light: buttonSecondaryForeground, hc: buttonSecondaryForeground },
   localize('ktSecondaryButtonForeground', 'Secondary Button Foreground color.'),
 );
 export const ktSecondaryButtonBackground = registerColor(
   'kt.secondaryButton.background',
-  { dark: null, light: null, hc: null },
+  { dark: buttonSecondaryBackground, light: buttonSecondaryBackground, hc: buttonSecondaryBackground },
   localize('ktSecondaryButtonBackground', 'Secondary Button Background color.'),
 );
 export const ktSecondaryButtonBorder = registerColor(
   'kt.secondaryButton.border',
-  { dark: '#5F656B', light: '#5F656B', hc: null },
+  { dark: buttonBorder, light: buttonBorder, hc: buttonBorder },
   localize('ktSecondaryButtonForeground', 'Secondary Button Foreground color.'),
 );
 export const ktSecondaryButtonHoverBackground = registerColor(
   'kt.secondaryButton.hoverBackground',
-  { dark: null, light: null, hc: null },
+  { dark: buttonSecondaryHoverBackground, light: buttonSecondaryHoverBackground, hc: buttonSecondaryHoverBackground },
   localize('ktSecondaryButtonHoverBackground', 'Secondary Button Hover Background color'),
 );
 export const ktSecondaryButtonHoverForeground = registerColor(
