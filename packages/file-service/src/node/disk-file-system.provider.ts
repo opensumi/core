@@ -4,10 +4,9 @@ import paths from 'path';
 import fileType from 'file-type';
 import * as fse from 'fs-extra';
 import trash from 'trash';
-import { v4 } from 'uuid';
 import writeFileAtomic from 'write-file-atomic';
 
-import { Injectable } from '@opensumi/di';
+import { Injectable, INJECTOR_TOKEN, Autowired, Injector } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { getDebugLogger } from '@opensumi/ide-core-node';
 import {
@@ -24,6 +23,7 @@ import {
   DisposableCollection,
   isWindows,
   FileUri,
+  uuid,
 } from '@opensumi/ide-core-node';
 
 import {
@@ -40,7 +40,7 @@ import {
   FileSystemProviderCapabilities,
 } from '../common/';
 
-import { NsfwFileSystemWatcherServer } from './file-service-watcher';
+import { ParcelWatcherServer } from './file-service-watcher';
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -52,7 +52,7 @@ export interface IRPCDiskFileSystemProvider {
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
-  private watcherServer: NsfwFileSystemWatcherServer;
+  private watcherServer: ParcelWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected toDispose = new DisposableCollection();
 
@@ -61,6 +61,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   protected watchFileExcludesMatcherList: ParsedPattern[] = [];
 
   static H5VideoExtList = ['mp4', 'ogg', 'webm'];
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   constructor() {
     super();
@@ -242,7 +245,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       return trash([FileUri.fsPath(new URI(_uri))]);
     } else {
       const filePath = FileUri.fsPath(new URI(_uri));
-      const outputRootPath = paths.join(os.tmpdir(), v4());
+      const outputRootPath = paths.join(os.tmpdir(), uuid());
       try {
         await new Promise<void>((resolve, reject) => {
           fse.rename(filePath, outputRootPath, async (error) => {
@@ -321,9 +324,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   protected initWatcher() {
-    this.watcherServer = new NsfwFileSystemWatcherServer({
-      verbose: true,
-    });
+    this.watcherServer = this.injector.get(ParcelWatcherServer);
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         const filteredChange = events.changes.filter((file) => {

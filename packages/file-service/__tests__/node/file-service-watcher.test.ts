@@ -3,33 +3,37 @@ import { execSync } from 'child_process';
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { URI } from '@opensumi/ide-core-common';
+import { ILogServiceManager, URI } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
-
-function createNsfwFileSystemWatcherServer() {
-  return new NsfwFileSystemWatcherServer({
-    verbose: true,
-  });
-}
+import { ParcelWatcherServer } from '../../src/node/file-service-watcher';
 
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-describe('nsfw-filesystem-watcher', () => {
+describe('ParceWatcher Test', () => {
   const track = temp.track();
   const sleepTime = 1500;
+  let injector: MockInjector;
   let root: URI;
-  let watcherServer: NsfwFileSystemWatcherServer;
+  let watcherServer: ParcelWatcherServer;
   let watcherId: number;
   jest.setTimeout(10000);
 
   beforeEach(async () => {
+    injector = createBrowserInjector([]);
+    injector.addProviders({
+      token: ILogServiceManager,
+      useValue: {
+        getLogger: () => console,
+      },
+    });
     root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
-    watcherServer = createNsfwFileSystemWatcherServer();
+    watcherServer = injector.get(ParcelWatcherServer);
     watcherId = await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
   });
@@ -40,10 +44,6 @@ describe('nsfw-filesystem-watcher', () => {
   });
 
   it('Should receive file changes events from in the workspace by default.', async () => {
-    // if (process.platform === 'win32') {
-    //   // this.skip();
-    //   return;
-    // }
     const actualUris = new Set<string>();
 
     const watcherClient = {
@@ -76,10 +76,6 @@ describe('nsfw-filesystem-watcher', () => {
   });
 
   it('Should not receive file changes events from in the workspace by default if unwatched', async () => {
-    // if (process.platform === 'win32') {
-    //   // this.skip();
-    //   return;
-    // }
     const actualUris = new Set<string>();
 
     const watcherClient = {
@@ -110,28 +106,36 @@ describe('nsfw-filesystem-watcher', () => {
   });
 });
 
-describe('测试重命名、移动、新建相关', () => {
+describe('Watch file rename/move/new', () => {
   const track = temp.track();
   const sleepTime = 1500;
   let root: URI;
-  let watcherServer: NsfwFileSystemWatcherServer;
+  let watcherServer: ParcelWatcherServer;
+  let injector: MockInjector;
   jest.setTimeout(10000);
 
   beforeEach(async () => {
+    injector = createBrowserInjector([]);
+    injector.addProviders({
+      token: ILogServiceManager,
+      useValue: {
+        getLogger: () => console,
+      },
+    });
     root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
-    watcherServer = createNsfwFileSystemWatcherServer();
+    watcherServer = injector.get(ParcelWatcherServer);
     await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     track.cleanupSync();
     watcherServer.dispose();
   });
 
-  it('重命名文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+  it('Rename file', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -161,7 +165,7 @@ describe('测试重命名、移动、新建相关', () => {
     expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
 
-  it('移动文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+  it('Move file', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -197,7 +201,7 @@ describe('测试重命名、移动、新建相关', () => {
     expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
 
-  it('同目录移动文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+  it('Move file on current directry', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -229,7 +233,7 @@ describe('测试重命名、移动、新建相关', () => {
     expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
 
-  it.skip('新建中文文件，需要收到新文件的ADDED', async () => {
+  it.skip('new file', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
