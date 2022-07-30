@@ -1,7 +1,7 @@
 import { ApplicationError } from '@opensumi/ide-core-common';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
 
-import { getCapturer, genrateUniqueId } from './utils';
+import { getCapturer, generateUniqueId } from './utils';
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];
@@ -120,7 +120,7 @@ export class RPCProxy {
             } else {
               let requestResult: Promise<any>;
               // generate a unique requestId to associate request and requestResult
-              const requestId = genrateUniqueId();
+              const requestId = generateUniqueId();
 
               if (isSingleArray) {
                 requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
