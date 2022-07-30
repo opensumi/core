@@ -162,7 +162,7 @@ export class RPCProxy {
                         type: 'requestResult',
                         status: 'fail',
                         requestId,
-                        error,
+                        error: result.data,
                       });
                     reject(error);
                   } else {
@@ -218,14 +218,39 @@ export class RPCProxy {
           });
         } else {
           connection.onRequest(method, (...args) => {
+            // *** capturer ***
+            const requestId = generateUniqueId();
             getCapturer() &&
               getCapturer()({
                 type: 'onRequest',
-                status: 'success',
+                requestId,
                 serviceMethod: method,
                 arguments: args,
               });
-            return this.onRequest(method, ...args);
+            // ****************
+            const result = this.onRequest(method, ...args);
+            // *** capturer ***
+            result
+              .then((result) => {
+                getCapturer() &&
+                  getCapturer()({
+                    type: 'onRequestResult',
+                    status: 'success',
+                    requestId,
+                    data: result.data,
+                  });
+              })
+              .catch((err) => {
+                getCapturer() &&
+                  getCapturer()({
+                    type: 'onRequestResult',
+                    status: 'fail',
+                    requestId,
+                    error: err.data,
+                  });
+              });
+            // ****************
+            return result;
           });
         }
 
@@ -236,15 +261,28 @@ export class RPCProxy {
 
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
+          // *** capturer ***
+          const requestId = generateUniqueId();
           getCapturer() &&
             getCapturer()({
               type: 'onRequest',
-              status: 'fail',
+              requestId,
               serviceMethod: method,
             });
-          return {
+          // ****************
+          const result = {
             data: NOTREGISTERMETHOD,
           };
+          // *** capturer ***
+          getCapturer() &&
+            getCapturer()({
+              type: 'onRequestResult',
+              status: 'fail',
+              requestId,
+              error: result.data,
+            });
+          // ****************
+          return result;
         }
       });
     }
