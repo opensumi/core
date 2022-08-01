@@ -714,6 +714,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     expandedPaths: string[] = this.getAllExpandedNodePath(),
     needReload = true,
     token?: CancellationToken,
+    root?: CompositeTreeNode,
   ) {
     if (!CompositeTreeNode.is(this)) {
       return;
@@ -778,12 +779,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
               }
               if (expandedPaths.length > 0) {
                 // 不需要重新reload压缩节点的子节点内容
-                await (child as CompositeTreeNode).refreshTreeNodeByPaths(expandedPaths, false, token);
+                await (child as CompositeTreeNode).refreshTreeNodeByPaths(expandedPaths, false, token, root);
                 if (token?.isCancellationRequested) {
                   return;
                 }
               } else {
-                (child as CompositeTreeNode).expandBranch(child as CompositeTreeNode, true);
+                if (child.parent !== root) {
+                  (child as CompositeTreeNode).expandBranch(child as CompositeTreeNode, true);
+                }
               }
               break;
             }
@@ -801,7 +804,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             return;
           }
           if (expandedPaths.length > 0 && !token?.isCancellationRequested) {
-            await (child as CompositeTreeNode).refreshTreeNodeByPaths(expandedPaths, false, token);
+            await (child as CompositeTreeNode).refreshTreeNodeByPaths(expandedPaths, false, token, root);
             if (token?.isCancellationRequested) {
               return;
             }
@@ -839,12 +842,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           this._branchSize = flatTree.length;
           this.setFlattenedBranch(flatTree, true);
         }
-        this.expandBranch(this, true);
+        if (this.parent !== root) {
+          // 第二层节点不处理
+          this.expandBranch(this, true);
+        }
       } else if (CompositeTreeNode.isRoot(this)) {
         if (token?.isCancellationRequested) {
           return;
         }
-        // 通知节点更新
         if (this.children) {
           // 重置旧的节点分支
           this.shrinkBranch(this, true);
@@ -929,7 +934,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             (child as TreeNode).id = TreeNode.getIdByPath(child.path) || (child as TreeNode).id;
             this._children[i] = child;
             TreeNode.setIdByPath(child.path, child.id);
-            if ((child as CompositeTreeNode).expanded) {
+            if (CompositeTreeNode.is(child) && (child as CompositeTreeNode).expanded) {
               expandedChilds.push(child as CompositeTreeNode);
             }
             this.updateTreeNodeCache(child as TreeNode | CompositeTreeNode);
@@ -943,6 +948,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
           this._branchSize = flatTree.length;
           this.setFlattenedBranch(flatTree);
+          for (let i = 0; i < expandedChilds.length; i++) {
+            const child = expandedChilds[i];
+            child.expandBranch(child, true);
+          }
         } else {
           for (let i = 0; i < childrens.length; i++) {
             const child = childrens[i];
@@ -1027,6 +1036,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     const state = TreeNode.getGlobalTreeState(this.path);
+    if (state.isExpanding) {
+      // 当节点处于加载子节点过程时，尽管为展开状态，但此时不应该支持折叠节点
+      return;
+    }
     state.loadPathCancelToken.cancel();
     state.refreshCancelToken.cancel();
     this._watcher.notifyWillChangeExpansionState(this, false);
@@ -1485,7 +1498,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   private async doRefresh(token?: CancellationToken) {
     const paths = this.getAllExpandedNodePath();
-    await this.refreshTreeNodeByPaths(paths, true, token);
+    await this.refreshTreeNodeByPaths(paths, true, token, this);
   }
 
   private isItemVisibleAtRootSurface(node: TreeNode) {
