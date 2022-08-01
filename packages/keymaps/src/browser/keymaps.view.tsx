@@ -137,13 +137,13 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
     const renderPlaceholder = () => <div className={styles.keybinding_key_input_placeholder}>⏎</div>;
 
     const renderReset = (source?: string) => {
-      // 修改时固定设置页面
-      if (!isDirty) {
-        fixed();
-        setIsDirty(true);
-      }
       const reset = (event) => {
         event.preventDefault();
+        // 修改时固定设置页面
+        if (!isDirty) {
+          fixed();
+          setIsDirty(true);
+        }
         resetKeybinding({
           command: getRaw(id),
           when: getRaw(when) || '',
