@@ -26,7 +26,7 @@
     "nsfw": "2.2.0",
     "trash": "^5.2.0",
     "vscode-languageserver-types": "^3.16.0",
-    "write-file-atomic": "^3.0.0"
+    "write-file-atomic": "^4.0.1"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "2.19.2",
