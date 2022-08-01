@@ -154,6 +154,8 @@ export const localizationBundle = {
     'edit.copy': 'Copy',
     'edit.paste': 'Paste',
     'edit.selectAll': 'Select All',
+    'editor.copy_path': 'Copy Path',
+    'editor.copy_relative_path': 'Copy Relative Path',
 
     'editor.goBack': 'Back',
     'editor.goForward': 'Forward',

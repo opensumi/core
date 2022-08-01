@@ -114,6 +114,8 @@ export const localizationBundle = {
     'editor.lineHeight': '行高',
     'editor.lineHeight.description':
       '控制行高。\r\n - 使用 0 根据字号自动计算行高。\r\n - 介于 0 和 8 之间的值将用作字号的乘数。\r\n - 大于 8 的值将用作有效值。',
+    'editor.copy_path': '复制路径',
+    'editor.copy_relative_path': '复制相对路径',
 
     'editor.workspaceSymbol.quickopen': '搜索工作区符号',
     'editor.workspaceSymbolClass.quickopen': '搜索工作区类',
