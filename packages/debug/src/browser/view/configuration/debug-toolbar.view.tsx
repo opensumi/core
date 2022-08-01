@@ -244,14 +244,15 @@ const FloatDebugToolbarView = observer(() => {
   const controller = useInjectable<FloatController>(FloatController);
   const preference = useInjectable<PreferenceService>(PreferenceService);
   const { isElectronRenderer } = useInjectable<AppConfig>(AppConfig);
-  const { state } = useInjectable<DebugToolbarService>(DebugToolbarService);
+  const debugToolbarService = useInjectable<DebugToolbarService>(DebugToolbarService);
   const [toolbarOffsetTop, setToolbarOffsetTop] = useState<number>(0);
+  const { state } = debugToolbarService;
 
   useEffect(() => {
     const disposableCollection = new DisposableCollection();
     const value = preference.get<number>(DebugPreferenceTopKey) || 0;
     if (isElectronRenderer) {
-      const uiService: IElectronMainUIService = useInjectable(IElectronMainUIService);
+      const uiService: IElectronMainUIService = debugToolbarService.mainUIService;
       const isNewMacHeaderBar = () => isMacintosh && parseFloat(electronEnv.osRelease) >= 20;
       // Electron 环境下需要在非全屏情况下追加 Header 高度
       uiService.isFullScreen(electronEnv.currentWindowId).then((fullScreen) => {
