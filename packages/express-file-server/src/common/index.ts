@@ -5,6 +5,7 @@ export const ALLOW_MIME = {
   gif: 'image/gif',
   jpg: 'image/jpeg',
   png: 'image/png',
+  webp: 'image/webp',
   svg: 'image/svg+xml',
   ttf: 'font/ttf',
   eot: 'font/eot',
