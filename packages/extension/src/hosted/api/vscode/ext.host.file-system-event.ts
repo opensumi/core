@@ -240,21 +240,24 @@ export class ExtHostFileSystemEvent implements IExtHostFileSystemEvent {
       case FileOperation.MOVE:
         return await this._fireWillEvent(
           this._onWillRenameFile,
-          { files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })) },
+          {
+            files: files.map((f) => ({ oldUri: URI.revive(f.source!), newUri: URI.revive(f.target) })),
+            token,
+          },
           timeout,
           token,
         );
       case FileOperation.DELETE:
         return await this._fireWillEvent(
           this._onWillDeleteFile,
-          { files: files.map((f) => URI.revive(f.target)) },
+          { files: files.map((f) => URI.revive(f.target)), token },
           timeout,
           token,
         );
       case FileOperation.CREATE:
         return await this._fireWillEvent(
           this._onWillCreateFile,
-          { files: files.map((f) => URI.revive(f.target)) },
+          { files: files.map((f) => URI.revive(f.target)), token },
           timeout,
           token,
         );
