@@ -1,10 +1,11 @@
 import { observable } from 'mobx';
 import React from 'react';
 
-import { VALIDATE_TYPE } from '@opensumi/ide-components';
-import { URI, Uri, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
+import type { VALIDATE_TYPE } from '@opensumi/ide-components';
+import type { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
+import type { KeyMods } from '@opensumi/ide-quick-open/lib/browser/quick-open.type';
 
-import { Keybinding } from '../keybinding';
+import type { Keybinding } from '../keybinding';
 
 export enum Mode {
   /**
@@ -292,7 +293,11 @@ export namespace QuickOpenOptions {
      * 在输入框修改文字时触发
      * @param value
      */
-    onChangeValue(value: string): void;
+    onChangeValue: (value: string) => void;
+    /**
+     * 在 quick pick 时监听是否有 modifer 按下
+     */
+    onKeyMods?: (mods: KeyMods) => void;
     /**
      * 是否模糊匹配标签
      * 使用 vscode filter matchesFuzzy 方法

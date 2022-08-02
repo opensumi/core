@@ -38,6 +38,10 @@ export interface IQuickOpenCallbacks {
    * 多选确定后的回调
    */
   onConfirm: (items: QuickOpenItem[]) => void;
+  /**
+   * 获取用户是否按了 modifier 按键
+   */
+  onKeyMods: (mods: KeyMods) => void;
 }
 
 export interface IQuickOpenModel {
@@ -101,4 +105,9 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   show(prefix: string, options: QuickOpenInputOptions): void;
   hide(reason?: HideReason): void;
   blur(): void;
+}
+
+export interface KeyMods {
+  ctrlCmd: boolean;
+  alt: boolean;
 }

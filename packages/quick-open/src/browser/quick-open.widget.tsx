@@ -1,7 +1,14 @@
 import { observable, computed, action } from 'mobx';
 
 import { Injectable } from '@opensumi/di';
-import { QuickOpenItem, HideReason, QuickOpenActionProvider } from '@opensumi/ide-core-browser';
+import {
+  QuickOpenItem,
+  HideReason,
+  QuickOpenActionProvider,
+  addDisposableListener,
+  EventType,
+  DisposableCollection,
+} from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
 import {
@@ -10,6 +17,7 @@ import {
   IQuickOpenModel,
   IQuickOpenWidget,
   QuickOpenInputOptions,
+  KeyMods,
 } from './quick-open.type';
 
 @Injectable({ multiple: true })
@@ -113,6 +121,8 @@ export class QuickOpenWidget implements IQuickOpenWidget {
   public renderTab?: () => React.ReactNode;
   public toggleTab?: () => void;
 
+  private modifierListeners: DisposableCollection = new DisposableCollection();
+
   constructor(public callbacks: IQuickOpenCallbacks) {}
 
   @action
@@ -129,10 +139,15 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this.toggleTab = options.toggleTab;
     // 获取第一次要展示的内容
     this.callbacks.onType(prefix);
+    this.registerKeyModsListeners();
   }
 
   @action
   hide(reason?: HideReason): void {
+    if (!this.modifierListeners.disposed) {
+      this.modifierListeners.dispose();
+    }
+
     if (!this._isShow) {
       return;
     }
@@ -167,5 +182,18 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     this._items = model.items;
     this._actionProvider = model.actionProvider;
     this._autoFocus = autoFocus;
+  }
+
+  private registerKeyModsListeners() {
+    const listener = (e: KeyboardEvent | MouseEvent) => {
+      const keyMods: KeyMods = {
+        ctrlCmd: e.ctrlKey || e.metaKey,
+        alt: e.altKey,
+      };
+      this.callbacks.onKeyMods(keyMods);
+    };
+    this.modifierListeners.push(addDisposableListener(window, EventType.KEY_DOWN, listener, true));
+    this.modifierListeners.push(addDisposableListener(window, EventType.KEY_UP, listener, true));
+    this.modifierListeners.push(addDisposableListener(window, EventType.MOUSE_DOWN, listener, true));
   }
 }
