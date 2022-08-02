@@ -8,6 +8,7 @@ import {
   addDisposableListener,
   EventType,
   DisposableCollection,
+  IKeyMods,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
@@ -17,7 +18,6 @@ import {
   IQuickOpenModel,
   IQuickOpenWidget,
   QuickOpenInputOptions,
-  KeyMods,
 } from './quick-open.type';
 
 @Injectable({ multiple: true })
@@ -118,10 +118,10 @@ export class QuickOpenWidget implements IQuickOpenWidget {
     return this._keepScrollPosition;
   }
 
+  private modifierListeners: DisposableCollection = new DisposableCollection();
+
   public renderTab?: () => React.ReactNode;
   public toggleTab?: () => void;
-
-  private modifierListeners: DisposableCollection = new DisposableCollection();
 
   constructor(public callbacks: IQuickOpenCallbacks) {}
 
@@ -186,7 +186,7 @@ export class QuickOpenWidget implements IQuickOpenWidget {
 
   private registerKeyModsListeners() {
     const listener = (e: KeyboardEvent | MouseEvent) => {
-      const keyMods: KeyMods = {
+      const keyMods: IKeyMods = {
         ctrlCmd: e.ctrlKey || e.metaKey,
         alt: e.altKey,
       };

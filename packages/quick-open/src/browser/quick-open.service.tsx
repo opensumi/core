@@ -16,6 +16,7 @@ import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
   HideReason,
   Highlight,
+  IKeyMods,
   QuickOpenItem,
   QuickOpenModel as IKaitianQuickOpenModel,
   QuickOpenOptions,
@@ -24,7 +25,7 @@ import {
 import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco.context-key.service';
 import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
 
-import { IAutoFocus, IQuickOpenModel, KeyMods, QuickOpenContext } from './quick-open.type';
+import { IAutoFocus, IQuickOpenModel, QuickOpenContext } from './quick-open.type';
 import { QuickOpenView } from './quick-open.view';
 import { QuickOpenWidget } from './quick-open.widget';
 
@@ -42,7 +43,7 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   onSelect?(item: QuickOpenItem, index: number): void;
   onConfirm?(items: QuickOpenItem[]): void;
   onChangeValue?(lookFor: string): void;
-  onKeyMods?(mods: KeyMods): void;
+  onKeyMods?(mods: IKeyMods): void;
   keepScrollPosition?: boolean | undefined;
 }
 

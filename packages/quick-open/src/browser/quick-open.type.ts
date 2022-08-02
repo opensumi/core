@@ -1,6 +1,12 @@
 import React from 'react';
 
-import { QuickOpenItem, HideReason, QuickOpenActionProvider, QuickOpenTabOptions } from '@opensumi/ide-core-browser';
+import {
+  QuickOpenItem,
+  HideReason,
+  QuickOpenActionProvider,
+  QuickOpenTabOptions,
+  IKeyMods,
+} from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 
 export const QuickOpenContext = React.createContext<{
@@ -41,7 +47,7 @@ export interface IQuickOpenCallbacks {
   /**
    * 获取用户是否按了 modifier 按键
    */
-  onKeyMods: (mods: KeyMods) => void;
+  onKeyMods: (mods: IKeyMods) => void;
 }
 
 export interface IQuickOpenModel {
@@ -105,9 +111,4 @@ export interface IQuickOpenWidget extends QuickOpenTabOptions {
   show(prefix: string, options: QuickOpenInputOptions): void;
   hide(reason?: HideReason): void;
   blur(): void;
-}
-
-export interface KeyMods {
-  ctrlCmd: boolean;
-  alt: boolean;
 }

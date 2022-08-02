@@ -3,7 +3,6 @@ import React from 'react';
 
 import type { VALIDATE_TYPE } from '@opensumi/ide-components';
 import type { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
-import type { KeyMods } from '@opensumi/ide-quick-open/lib/browser/quick-open.type';
 
 import type { Keybinding } from '../keybinding';
 
@@ -36,6 +35,11 @@ export interface Highlight {
  * 该类型使用 monaco-editor-core/esm 中导入的版本
  */
 export { Mode as QuickOpenMode };
+
+export interface IKeyMods {
+  readonly ctrlCmd: boolean;
+  readonly alt: boolean;
+}
 
 export interface QuickTitleButton {
   iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
@@ -297,7 +301,7 @@ export namespace QuickOpenOptions {
     /**
      * 在 quick pick 时监听是否有 modifer 按下
      */
-    onKeyMods?: (mods: KeyMods) => void;
+    onKeyMods?: (mods: IKeyMods) => void;
     /**
      * 是否模糊匹配标签
      * 使用 vscode filter matchesFuzzy 方法
