@@ -16,8 +16,10 @@ import {
   isLinux,
   strings,
   path,
+  ILoggerManagerClient,
+  ILogServiceClient,
+  SupportLogNamespace,
 } from '@opensumi/ide-core-node';
-import { ILogServiceManager, SupportLogNamespace, ILogService } from '@opensumi/ide-logs/lib/node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, WatchOptions } from '../common';
 
@@ -56,10 +58,10 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
 
   protected changes = new FileChangeCollection();
 
-  @Autowired(ILogServiceManager)
-  private readonly loggerManager: ILogServiceManager;
+  @Autowired(ILoggerManagerClient)
+  private readonly loggerManager: ILoggerManagerClient;
 
-  private logger: ILogService;
+  private logger: ILogServiceClient;
 
   constructor() {
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
