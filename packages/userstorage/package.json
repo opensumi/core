@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-userstorage",
-  "version": "2.18.15",
+  "version": "2.18.17",
   "files": [
     "lib"
   ],
@@ -16,10 +16,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.18.15"
+    "@opensumi/ide-core-common": "2.18.17"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.18.15",
+    "@opensumi/ide-core-browser": "2.18.17",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }
