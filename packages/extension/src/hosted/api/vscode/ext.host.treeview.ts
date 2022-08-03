@@ -476,7 +476,7 @@ class ExtHostTreeView<T> implements IDisposable {
     } else {
       if (results) {
         const treeItems: TreeViewItem[] = [];
-        const promises = results.map(async (value, index) => {
+        for (const [index, value] of results.entries()) {
           // 遍历treeDataProvider获取的值生成节点
           const treeItem = await this.treeDataProvider.getTreeItem(value);
           if (this._refreshCancellationSource.token.isCancellationRequested) {
@@ -507,9 +507,8 @@ class ExtHostTreeView<T> implements IDisposable {
           this.element2TreeViewItem.set(value, treeViewItem);
           this.element2VSCodeTreeItem.set(value, treeItem);
           treeItems.push(treeViewItem);
-        });
+        }
 
-        await Promise.all(promises);
         if (this._refreshCancellationSource.token.isCancellationRequested) {
           children = undefined;
         } else {
