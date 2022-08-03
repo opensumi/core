@@ -323,15 +323,15 @@ describe('MainThreadEditor Test Suites', () => {
     expect(visibleTextEditors.length).toBe(1);
   });
 
-  it('should receive Selectionchanged event when editor selection is changed', (done) => {
+  it('should receive Selectionchanged event when editor selection is changed', async () => {
     const disposer = extEditor.onDidChangeTextEditorSelection((e) => {
-      disposer.dispose();
       expect(e.selections.length).toBe(1);
       expect(e.selections[0]).toBeDefined();
       expect(isEqual(TypeConverts.Selection.from(e.selections[0]), selection)).toBeTruthy();
-      done();
+      disposer.dispose();
     });
-
+    const editorDocModelService: IEditorDocumentModelService = injector.get(IEditorDocumentModelService);
+    await editorDocModelService.createModelReference(URI.file(path.join(__dirname, 'main.thread.output.test1.ts')));
     const resource: IResource = {
       name: 'test-file',
       uri: URI.file(path.join(__dirname, 'main.thread.output.test1.ts')),

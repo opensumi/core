@@ -202,9 +202,16 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       }
       if (
         group.currentOpenType?.type === 'diff' &&
-        id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.original, true)
+        id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.original, 'original')
       ) {
         return group.diffEditor.originalEditor;
+      }
+
+      if (
+        group.currentOpenType?.type === 'diff' &&
+        id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.modified, 'modified')
+      ) {
+        return group.diffEditor.modifiedEditor;
       }
     }
   }
@@ -231,25 +238,46 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
             } else if (!this.documents.isDocSyncEnabled(editor.currentDocumentModel.uri)) {
               // noop
             } else {
-              change.created = [
-                {
-                  id: getTextEditorId(payload.group, payload.newResource!.uri),
-                  uri: editor.currentDocumentModel!.uri.toString(),
-                  selections: editor!.getSelections() || [],
-                  options: getEditorOption(editor.monacoEditor),
-                  viewColumn: getViewColumn(payload.group),
-                  visibleRanges: editor.monacoEditor.getVisibleRanges(),
-                },
-              ];
+              change.created = [];
               if (payload.newOpenType.type === 'diff') {
                 const diffOriginalEditor = payload.group.diffEditor.originalEditor;
+                const diffMorifidedEditor = payload.group.diffEditor.modifiedEditor;
+
+                const originalEditorId = getTextEditorId(
+                  payload.group,
+                  (payload.newResource as IDiffResource).metadata!.original,
+                  'original',
+                );
                 change.created.push({
-                  id: getTextEditorId(payload.group, (payload.newResource as IDiffResource).metadata!.original, true),
+                  id: originalEditorId,
                   uri: diffOriginalEditor.currentUri!.toString(),
-                  selections: diffOriginalEditor!.getSelections() || [],
+                  selections: diffOriginalEditor.getSelections() || [],
                   options: getEditorOption(diffOriginalEditor.monacoEditor),
                   viewColumn: getViewColumn(payload.group),
                   visibleRanges: diffOriginalEditor.monacoEditor.getVisibleRanges(),
+                });
+
+                const modifiedEditorId = getTextEditorId(
+                  payload.group,
+                  (payload.newResource as IDiffResource).metadata!.modified,
+                  'modified',
+                );
+                change.created.push({
+                  id: modifiedEditorId,
+                  uri: diffMorifidedEditor.currentUri!.toString(),
+                  selections: diffMorifidedEditor.getSelections() || [],
+                  options: getEditorOption(diffMorifidedEditor.monacoEditor),
+                  viewColumn: getViewColumn(payload.group),
+                  visibleRanges: diffMorifidedEditor.monacoEditor.getVisibleRanges(),
+                });
+              } else {
+                change.created.push({
+                  id: getTextEditorId(payload.group, payload.newResource!.uri),
+                  uri: editor.currentDocumentModel!.uri.toString(),
+                  selections: editor.getSelections() || [],
+                  options: getEditorOption(editor.monacoEditor),
+                  viewColumn: getViewColumn(payload.group),
+                  visibleRanges: editor.monacoEditor.getVisibleRanges(),
                 });
               }
             }
@@ -263,11 +291,17 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
             }
           }
           if (payload.oldOpenType && (payload.oldOpenType.type === 'code' || payload.oldOpenType.type === 'diff')) {
-            change.removed = [getTextEditorId(payload.group, payload.oldResource!.uri)];
+            change.removed = [];
             if (payload.oldOpenType.type === 'diff') {
               change.removed.push(
-                getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original, true),
+                getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original, 'original'),
               );
+
+              change.removed.push(
+                getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.modified, 'modified'),
+              );
+            } else {
+              change.removed = [getTextEditorId(payload.group, payload.oldResource!.uri)];
             }
           }
           this.proxy.$acceptChange(change);
@@ -282,12 +316,27 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           this.editorService.currentEditorGroup &&
           isEditor(this.editorService.currentEditorGroup.currentOpenType)
         ) {
+          let side: string | undefined;
+
           const isDiffOriginal =
             this.editorService.currentEditorGroup.currentOpenType?.type === 'diff' &&
             this.editorService.currentEditorGroup.diffEditor.originalEditor.currentUri?.isEqual(uri);
+
+          const isDiffMorified =
+            this.editorService.currentEditorGroup.currentOpenType?.type === 'diff' &&
+            this.editorService.currentEditorGroup.diffEditor.modifiedEditor.currentUri?.isEqual(uri);
+
           if (isDiffOriginal) {
+            side = 'original';
+          }
+
+          if (isDiffMorified) {
+            side = 'modified';
+          }
+
+          if (side) {
             this.proxy.$acceptChange({
-              actived: getTextEditorId(this.editorService.currentEditorGroup, uri, true),
+              actived: getTextEditorId(this.editorService.currentEditorGroup, uri, side),
             });
           } else {
             // 这里 id 还是兼容旧逻辑不做改动
@@ -307,7 +356,8 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     );
 
     const selectionChange = (e: EditorSelectionChangeEvent) => {
-      const editorId = getTextEditorId(e.payload.group, e.payload.resource.uri);
+      const editorId = getTextEditorId(e.payload.group, e.payload.editorUri, e.payload.side);
+
       this.proxy.$acceptPropertiesChange({
         id: editorId,
         selections: {
@@ -540,8 +590,8 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 }
 
-function getTextEditorId(group: IEditorGroup, uri: URI, isDiffOriginal?: boolean): string {
-  return group.name + '.' + (isDiffOriginal ? 'diffOriginal.' : '') + uri.toString();
+function getTextEditorId(group: IEditorGroup, uri: URI, side?: string): string {
+  return group.name + '.' + (side ? `${side}.` : '') + uri.toString();
 }
 
 function getGroupIdFromTextEditorId(id: string): string {
