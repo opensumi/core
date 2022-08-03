@@ -16,7 +16,7 @@ import {
   FileUri,
   BrowserModule,
   AppConfig,
-  ILoggerManagerClient,
+  ILogServiceManager,
 } from '@opensumi/ide-core-browser';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
@@ -117,7 +117,7 @@ describe('KeymapsService should be work', () => {
         },
       },
       {
-        token: ILoggerManagerClient,
+        token: ILogServiceManager,
         useClass: MockLoggerManageClient,
       },
     );

@@ -8,7 +8,7 @@ import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   IContextKeyService,
-  ILoggerManagerClient,
+  ILogServiceManager,
   StorageProvider,
   DefaultStorageProvider,
   createContributionProvider,
@@ -516,20 +516,6 @@ export function setupExtensionServiceInjector() {
     {
       token: IIconService,
       useClass: IconService,
-    },
-    {
-      token: ILoggerManagerClient,
-      useValue: {
-        getLogger: () => ({
-          log: () => {},
-          debug: () => {},
-          error: () => {},
-          verbose: () => {},
-          warn: () => {},
-        }),
-        onDidChangeLogLevel: () => {},
-        getGlobalLogLevel: () => 0,
-      },
     },
     {
       token: StorageProvider,

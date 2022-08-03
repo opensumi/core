@@ -16,9 +16,9 @@ import {
   isLinux,
   strings,
   path,
-  ILoggerManagerClient,
-  ILogServiceClient,
+  ILogService,
   SupportLogNamespace,
+  ILogServiceManager,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, WatchOptions } from '../common';
@@ -58,10 +58,10 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
 
   protected changes = new FileChangeCollection();
 
-  @Autowired(ILoggerManagerClient)
-  private readonly loggerManager: ILoggerManagerClient;
+  @Autowired(ILogServiceManager)
+  private readonly loggerManager: ILogServiceManager;
 
-  private logger: ILogServiceClient;
+  private logger: ILogService;
 
   constructor() {
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
@@ -109,7 +109,8 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     watcherId = this.watcherSequence++;
     this.logger.log('Starting watching:', basePath, options);
     const toDisposeWatcher = new DisposableCollection();
-    if (await fs.pathExists(basePath)) {
+    const stat = await fs.lstatSync(basePath);
+    if (stat && stat.isDirectory()) {
       this.watchers.set(watcherId, {
         path: realpath,
         disposable: toDisposeWatcher,
@@ -143,9 +144,9 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
    * @param count 向上查找层级
    */
   protected async lookup(path: string, count = 3) {
-    let uri = new URI(path);
+    let uri = new URI(path).parent;
     let times = 0;
-    while (!(await fs.pathExists(uri.codeUri.fsPath)) && times <= count) {
+    while (!(await fs.pathExists(uri.codeUri.fsPath)) && times < count) {
       uri = uri.parent;
       times++;
     }
