@@ -318,7 +318,7 @@ export const Tabs = ({ group }: ITabsProps) => {
             }}
             onMouseDown={(e) => {
               if (e.nativeEvent.which === 1) {
-                group.open(resource.uri);
+                group.open(resource.uri, { focus: true });
               }
             }}
             onDragOver={(e) => {

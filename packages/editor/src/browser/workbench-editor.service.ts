@@ -1124,49 +1124,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     setTimeout(() => {
       this.diffEditor.layout();
     });
-    // 这里应该还要加上 originalEditor 的相关监听，目前为了避免复杂度，先不放
-    this.toDispose.push(
-      this.diffEditor.modifiedEditor.onSelectionsChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
-          this.eventBus.fire(
-            new EditorSelectionChangeEvent({
-              group: this,
-              resource: this.currentResource!,
-              selections: e.selections,
-              source: e.source,
-              editorUri: this.diffEditor.modifiedEditor.currentUri!,
-            }),
-          );
-        }
-      }),
-    );
-    this.toDispose.push(
-      this.diffEditor.modifiedEditor.onVisibleRangesChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
-          this.eventBus.fire(
-            new EditorVisibleChangeEvent({
-              group: this,
-              resource: this.currentResource!,
-              visibleRanges: e,
-              editorUri: this.diffEditor.modifiedEditor.currentUri!,
-            }),
-          );
-        }
-      }),
-    );
-    this.toDispose.push(
-      this.diffEditor.modifiedEditor.onConfigurationChanged(() => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
-          this.eventBus.fire(
-            new EditorConfigurationChangedEvent({
-              group: this,
-              resource: this.currentResource!,
-              editorUri: this.diffEditor.modifiedEditor.currentUri!,
-            }),
-          );
-        }
-      }),
-    );
+
+    this.addDiffEditorEventListeners(this.diffEditor.originalEditor, 'original');
+    this.addDiffEditorEventListeners(this.diffEditor.modifiedEditor, 'modified');
+
     this.eventBus.fire(
       new CodeEditorDidVisibleEvent({
         groupName: this.name,
@@ -1174,7 +1135,63 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         editorId: this.diffEditor.modifiedEditor.getId(),
       }),
     );
+
+    this.eventBus.fire(
+      new CodeEditorDidVisibleEvent({
+        groupName: this.name,
+        type: 'diff',
+        editorId: this.diffEditor.originalEditor.getId(),
+      }),
+    );
     this.diffEditorReady.ready();
+  }
+
+  private addDiffEditorEventListeners(editor: IEditor, side?: 'modified' | 'original') {
+    this.toDispose.push(
+      editor.onSelectionsChanged((e) => {
+        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+          this.eventBus.fire(
+            new EditorSelectionChangeEvent({
+              group: this,
+              resource: this.currentResource!,
+              selections: e.selections,
+              source: e.source,
+              editorUri: URI.from(editor.monacoEditor.getModel()?.uri!),
+              side,
+            }),
+          );
+        }
+      }),
+    );
+
+    this.toDispose.push(
+      editor.onVisibleRangesChanged((e) => {
+        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+          this.eventBus.fire(
+            new EditorVisibleChangeEvent({
+              group: this,
+              resource: this.currentResource!,
+              visibleRanges: e,
+              editorUri: editor.currentUri!,
+            }),
+          );
+        }
+      }),
+    );
+
+    this.toDispose.push(
+      editor.onConfigurationChanged(() => {
+        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+          this.eventBus.fire(
+            new EditorConfigurationChangedEvent({
+              group: this,
+              resource: this.currentResource!,
+              editorUri: editor.currentUri!,
+            }),
+          );
+        }
+      }),
+    );
   }
 
   async split(action: EditorGroupSplitAction, uri: URI, options?: IResourceOpenOptions) {
