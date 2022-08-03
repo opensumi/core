@@ -177,6 +177,14 @@ export function createAPIFactory(
       // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
       uriScheme: Schemes.file,
       openExternal: (target: vscode.Uri) => proxy.$openExternal(target),
+      clipboard: {
+        readText(): Thenable<string> {
+          return proxy.$clipboardReadText();
+        },
+        writeText(value: string): Thenable<void> {
+          return proxy.$clipboardWriteText(value);
+        },
+      },
     },
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),

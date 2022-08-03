@@ -219,6 +219,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [workerProtocol]);
   const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [workerProtocol]);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [workerProtocol]);
+  const MainThreadEnvAPI = injector.get(MainThreadEnv, [workerProtocol, MainThreadStorageAPI]);
 
   workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
   workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
@@ -227,6 +228,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadAPIIdentifier.MainThreadDocuments,
     MainThreadExtensionDocumentDataAPI,
   );
+  workerProtocol.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadEnv, MainThreadEnvAPI);
   workerProtocol.set<IMainThreadWebviewView>(MainThreadAPIIdentifier.MainThreadWebviewView, MainThreadWebviewViewAPI);
   workerProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, MainThreadStatusBarAPI);
   workerProtocol.set<IMainThreadQuickOpen>(MainThreadAPIIdentifier.MainThreadQuickOpen, MainThreadQuickOpenAPI);
@@ -271,6 +273,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
     MainThreadQuickOpenAPI.dispose();
     MainThreadExtensionDocumentDataAPI.dispose();
     MainThreadEditorServiceAPI.dispose();
+    MainThreadEnvAPI.dispose();
     MainThreadProgressAPI.dispose();
     MainThreadWorkspaceAPI.dispose();
     MainThreadFileSystemAPI.dispose();
