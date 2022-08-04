@@ -48,7 +48,7 @@ console.log(a);`,
     expect(isDirty).toBeFalsy();
   });
 
-  test('copy path from file explorer to the editor content', async () => {
+  test.skip('copy path from file explorer to the editor content', async () => {
     const node = await explorer.getFileStatTreeNodeByPath('editor.js');
     let fileMenu = await node?.openContextMenu();
     expect(await fileMenu?.isOpen()).toBeTruthy();
@@ -70,6 +70,7 @@ console.log(a);`,
     fileMenu = await node?.openContextMenu();
     const copyRelativePath = await fileMenu?.menuItemByName('Copy Relative Path');
     await copyRelativePath?.click();
+    await app.page.waitForTimeout(200);
     await editor.addTextToNewLineAfterLineByLineNumber(4, 'File Relative Path: ');
     await editor.pasteContentAfterLineByLineNumber(5);
     expect(await editor.numberOfLines()).toBe(6);
