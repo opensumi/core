@@ -12,7 +12,11 @@ import * as styles from './menu-bar.module.less';
  * opensumi's original menubar.
  */
 export const MenuBarView = () => (
-  <div id={VIEW_CONTAINERS.MENU_BAR} className={styles.menu_bar_view} style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}>
+  <div
+    id={VIEW_CONTAINERS.MENUBAR}
+    className={styles.menu_bar_view}
+    style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}
+  >
     <span className={styles.menu_bar_logo} />
     <MenuBar />
   </div>

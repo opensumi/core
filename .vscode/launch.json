@@ -115,7 +115,8 @@
       "args": ["test", "--debug", "--config=./configs/playwright.debug.config.ts", "${fileBasenameNoExtension}"],
       "cwd": "${workspaceFolder}/tools/playwright",
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "internalConsoleOptions": "neverOpen",
+      "preLaunchTask": "npm: build - tools/playwright"
     }
   ]
 }

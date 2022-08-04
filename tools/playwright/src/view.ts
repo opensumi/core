@@ -1,7 +1,7 @@
 import { ElementHandle } from '@playwright/test';
 
 import { OpenSumiApp } from './app';
-import { isElementVisible, containsClass } from './tests/utils';
+import { isElementVisible, containsClass } from './utils';
 import { OpenSumiViewBase } from './view-base';
 
 export interface OpenSumiViewInfo {

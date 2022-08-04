@@ -29,7 +29,7 @@ export class OpenSumiWorkspace extends Disposable {
     }
     for (const file of this.filesToWorkspace) {
       if (fse.existsSync(file)) {
-        await fse.copy(file, path.join(this.workspacePath, path.basename(file)));
+        await fse.copy(file, this.workspacePath);
       }
     }
   }

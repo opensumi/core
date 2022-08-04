@@ -2,9 +2,13 @@ import { Page } from '@playwright/test';
 
 import { Disposable } from '@opensumi/ide-utils';
 
+import { OpenSumiEditor } from './editor';
+import { OpenSumiExplorerView } from './explorer-view';
+import { OpenSumiMenubar } from './menubar';
 import { OpenSumiPanel } from './panel';
 import { OpenSumiCommandPalette } from './quick-command-palette';
 import { OpenSumiQuickOpenPalette } from './quick-open-palette';
+import { OpenSumiTreeNode } from './tree-node';
 import { OpenSumiWorkspace } from './workspace';
 
 export interface AppData {
@@ -21,6 +25,7 @@ export class OpenSumiApp extends Disposable {
   private _loaded = false;
   private _quickCommandPalette: OpenSumiCommandPalette;
   private _quickOpenPalette: OpenSumiQuickOpenPalette;
+  private _menubar: OpenSumiMenubar;
 
   static async load(page: Page, workspace: OpenSumiWorkspace): Promise<OpenSumiApp> {
     return this.loadApp(page, workspace, OpenSumiApp);
@@ -41,6 +46,7 @@ export class OpenSumiApp extends Disposable {
     super();
     this._quickCommandPalette = new OpenSumiCommandPalette(this);
     this._quickOpenPalette = new OpenSumiQuickOpenPalette(this);
+    this._menubar = new OpenSumiMenubar(this);
   }
 
   get quickCommandPalette() {
@@ -49,6 +55,10 @@ export class OpenSumiApp extends Disposable {
 
   get quickOpenPalette() {
     return this._quickOpenPalette;
+  }
+
+  get menubar() {
+    return this._menubar;
   }
 
   protected async load(workspace: OpenSumiWorkspace): Promise<void> {
@@ -81,13 +91,27 @@ export class OpenSumiApp extends Disposable {
     return !!contentPanel && contentPanel.isVisible();
   }
 
-  async open<T extends OpenSumiPanel>(panelConstruction: new (app: OpenSumiApp) => T) {
-    const panel = new panelConstruction(this);
+  async open<T extends OpenSumiPanel>(PanelConstruction: new (app: OpenSumiApp) => T) {
+    const panel = new PanelConstruction(this);
     if (await panel.isVisible()) {
       return panel;
     }
     await panel.open();
     return panel;
+  }
+
+  async openEditor<T extends OpenSumiEditor>(
+    EditorConstruction: new (app: OpenSumiApp, element: OpenSumiTreeNode) => T,
+    explorer: OpenSumiExplorerView,
+    filePath: string,
+  ) {
+    const node = await explorer.getFileStatTreeNodeByPath(filePath);
+    if (!node || (await node?.isFolder())) {
+      throw Error(`File ${filePath} could not be opened on the editor`);
+    }
+    const editor = new EditorConstruction(this, node);
+    await editor.open();
+    return editor;
   }
 
   async waitForInitialized(): Promise<void> {
