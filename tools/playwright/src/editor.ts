@@ -16,8 +16,8 @@ export class OpenSumiEditor extends OpenSumiView {
     return await (await this.getTabElement())?.waitForSelector("[class*='kt_editor_tab_current___']");
   }
 
-  async open() {
-    await this.filestatElement.open();
+  async open(preview?: boolean) {
+    await this.filestatElement.open(preview);
     return this;
   }
 

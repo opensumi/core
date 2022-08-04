@@ -51,6 +51,7 @@ test.describe('OpenSumi Explorer Panel', () => {
       await input.type(newFileName, { delay: 200 });
       await app.page.keyboard.press('Enter');
     }
+    await app.page.waitForTimeout(200);
     const newFile = await explorer.getFileStatTreeNodeByPath(`test/${newFileName}`);
     expect(newFile).toBeDefined();
     expect(await newFile?.isFolder()).toBeFalsy();
@@ -75,6 +76,7 @@ test.describe('OpenSumi Explorer Panel', () => {
       await input.type(newFileName, { delay: 200 });
       await app.page.keyboard.press('Enter');
     }
+    await app.page.waitForTimeout(200);
     const newFile = await explorer.getFileStatTreeNodeByPath(`test/${newFileName}`);
     expect(newFile).toBeDefined();
     expect(await newFile?.isFolder()).toBeTruthy();

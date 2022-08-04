@@ -34,6 +34,12 @@ test.describe('OpenSumi Editor', () => {
     expect(isPreview).toBeTruthy();
   });
 
+  test('open editor.js on the editor without preview', async () => {
+    editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor.js', false);
+    const isPreview = await editor.isPreview();
+    expect(isPreview).toBeFalsy();
+  });
+
   test('editor dirty status should be update immediately after typing and saving', async () => {
     await editor.addTextToNewLineAfterLineByLineNumber(
       1,

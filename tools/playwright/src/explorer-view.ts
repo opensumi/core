@@ -20,8 +20,8 @@ export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
     return menuItem;
   }
 
-  async open(options?: { fixed: boolean }) {
-    if (options?.fixed) {
+  async open(preview = true) {
+    if (!preview) {
       await this.elementHandle.dblclick();
     } else {
       await this.elementHandle.click();

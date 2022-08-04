@@ -104,13 +104,14 @@ export class OpenSumiApp extends Disposable {
     EditorConstruction: new (app: OpenSumiApp, element: OpenSumiTreeNode) => T,
     explorer: OpenSumiExplorerView,
     filePath: string,
+    preview = true,
   ) {
     const node = await explorer.getFileStatTreeNodeByPath(filePath);
     if (!node || (await node?.isFolder())) {
       throw Error(`File ${filePath} could not be opened on the editor`);
     }
     const editor = new EditorConstruction(this, node);
-    await editor.open();
+    await editor.open(preview);
     return editor;
   }
 
