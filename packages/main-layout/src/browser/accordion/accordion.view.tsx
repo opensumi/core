@@ -74,6 +74,7 @@ export const AccordionContainer = observer(
               key={view.id}
               expanded={!collapsed}
               id={view.id}
+              accordionService={accordionService}
               index={index}
               headerSize={headerSize}
               minSize={headerSize}
