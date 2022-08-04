@@ -89,8 +89,6 @@ export class AccordionService extends WithEventBus {
   @observable.shallow views: View[] = [];
 
   @observable state: { [viewId: string]: SectionState } = {};
-  // 提供给Mobx强刷，有没有更好的办法？
-  @observable forceUpdate = 0;
 
   rendered = false;
 
@@ -101,6 +99,12 @@ export class AccordionService extends WithEventBus {
 
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService: IScopedContextKeyService;
+
+  private didChangeViewTitleEmitter: Emitter<{ id: string; title: string }> = new Emitter<{
+    id: string;
+    title: string;
+  }>();
+  public onDidChangeViewTiele: Event<{ id: string; title: string }> = this.didChangeViewTitleEmitter.event;
 
   private beforeAppendViewEmitter = new Emitter<string>();
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
@@ -139,6 +143,10 @@ export class AccordionService extends WithEventBus {
       )((e) => e && this.handleContextKeyChange(), this),
     );
     this.listenWindowResize();
+  }
+
+  updateViewTiele(viewId: string, title: string) {
+    this.didChangeViewTitleEmitter.fire({ id: viewId, title });
   }
 
   tryUpdateResize() {
