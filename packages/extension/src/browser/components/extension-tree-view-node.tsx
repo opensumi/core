@@ -73,8 +73,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 8}px`;
 
   const fileTreeNodeStyle = {
-    height: TREE_VIEW_NODE_HEIGHT,
-    lineHeight: `${TREE_VIEW_NODE_HEIGHT}px`,
+    maxHeight: TREE_VIEW_NODE_HEIGHT,
     paddingLeft,
   } as React.CSSProperties;
 
