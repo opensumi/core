@@ -89,6 +89,7 @@ console.log(a);`,
     expect(await editorMenu?.isOpen()).toBeTruthy();
     const goto = await editorMenu?.menuItemByName('Go to Symbol...');
     await goto?.click();
+    await app.page.waitForTimeout(200);
     const input = await app.page.waitForSelector(`#${OPENSUMI_VIEW_CONTAINERS.QUICKPICK_INPUT}`);
     await input.focus();
     await app.page.keyboard.press('ArrowDown');
