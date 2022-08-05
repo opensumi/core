@@ -1,7 +1,6 @@
 import fs from 'fs-extra';
 import temp from 'temp';
 
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { FileUri, ILoggerManagerClient, UTF8 } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
@@ -24,10 +23,6 @@ describe('FileServiceClient should be work', () => {
     {
       token: IDiskFileProvider,
       useClass: DiskFileSystemProvider,
-    },
-    {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManageClient,
     },
   );
 

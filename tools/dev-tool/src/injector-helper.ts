@@ -6,13 +6,16 @@ import {
   CommonServerPath,
   ConstructorOf,
   getDebugLogger,
+  ILogger,
   ILoggerManagerClient,
+  ILogServiceManager,
   LogLevel,
   LogServiceForClientPath,
   OS,
 } from '@opensumi/ide-core-common';
 import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
 
+import { MockLogger, MockLoggerManageClient, MockLoggerService } from '../../../packages/core-browser/__mocks__/logger';
 import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage';
 import { MockContextKeyService } from '../../../packages/monaco/__mocks__/monaco.context-key.service';
 
@@ -110,6 +113,18 @@ function getBrowserMockInjector() {
         getMostRecentlyOpenedFiles: () => [],
       },
     },
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManageClient,
+    },
+    {
+      token: ILogServiceManager,
+      useClass: MockLoggerService,
+    },
+    {
+      token: ILogger,
+      useClass: MockLogger,
+    },
   );
   return injector;
 }
@@ -120,7 +135,6 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
   afterAll(() => {
     app.injector.disposeAll();
   });
-
   return app.injector as MockInjector;
 }
 

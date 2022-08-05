@@ -1,6 +1,5 @@
-import { CommandRegistry, IContextKeyService, ILoggerManagerClient } from '@opensumi/ide-core-browser';
+import { CommandRegistry, IContextKeyService } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
@@ -24,10 +23,6 @@ describe('template test', () => {
   beforeEach(async () => {
     injector = createBrowserInjector([StatusBarModule]);
     injector.overrideProviders(
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
-      },
       {
         token: IContextKeyService,
         useClass: MockContextKeyService,

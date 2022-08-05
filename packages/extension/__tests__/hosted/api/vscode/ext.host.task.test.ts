@@ -2,12 +2,10 @@ import path from 'path';
 
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
   Emitter as EventEmitter,
   Disposable,
-  ILoggerManagerClient,
   StorageProvider,
   Uri,
   IFileServiceClient,
@@ -149,10 +147,6 @@ describe('ExtHostTask API', () => {
     {
       token: ITaskSystem,
       useClass: TerminalTaskSystem,
-    },
-    {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManageClient,
     },
     {
       token: ITerminalClientFactory,

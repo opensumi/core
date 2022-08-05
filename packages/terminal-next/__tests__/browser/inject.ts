@@ -7,12 +7,10 @@ import {
   CorePreferences,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IEventBus,
   CommandService,
-  ILogger,
   IFileServiceClient,
   Disposable,
   OperatingSystem,
@@ -142,10 +140,6 @@ export const injector = new MockInjector([
   {
     token: AppConfig,
     useValue: {},
-  },
-  {
-    token: ILogger,
-    useClass: MockLogger,
   },
   {
     token: IMessageService,

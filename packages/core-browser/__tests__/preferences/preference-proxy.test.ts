@@ -1,7 +1,6 @@
 import {
   createPreferenceProxy,
   DefaultPreferenceProvider,
-  ILogger,
   PreferenceChangeEvent,
   PreferenceConfigurations,
   PreferenceContribution,
@@ -18,7 +17,6 @@ import {
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockLogger } from '../../__mocks__/logger';
 import { injectMockPreferences, MockPreferenceProvider } from '../../__mocks__/preference';
 
 describe('Preference Proxy', () => {
@@ -43,10 +41,6 @@ describe('Preference Proxy', () => {
         useValue: {
           getContributions: () => [],
         },
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
       },
       {
         token: PreferenceProviderProvider,

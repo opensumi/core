@@ -9,13 +9,11 @@ import {
   FileUri,
   Disposable,
   DisposableCollection,
-  ILogger,
   PreferenceScope,
   ILoggerManagerClient,
   URI,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { DebugContribution, DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { EditorCollectionService } from '@opensumi/ide-editor/lib/browser';
@@ -427,10 +425,6 @@ describe('Launch Preferences', () => {
           {
             token: IUserStorageService,
             useClass: UserStorageServiceImpl,
-          },
-          {
-            token: ILogger,
-            useClass: MockLogger,
           },
           {
             token: IMessageService,

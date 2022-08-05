@@ -18,9 +18,7 @@ import {
   injectPreferenceConfigurations,
   injectPreferenceSchemaProvider,
   IEventBus,
-  ILogServiceManager,
 } from '@opensumi/ide-core-browser';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
@@ -143,16 +141,10 @@ describe('PreferenceService should be work', () => {
     };
 
     // Mock
-    injector.addProviders(
-      {
-        token: IWorkspaceService,
-        useValue: mockWorkspaceService,
-      },
-      {
-        token: ILogServiceManager,
-        useClass: MockLoggerManageClient,
-      },
-    );
+    injector.addProviders({
+      token: IWorkspaceService,
+      useValue: mockWorkspaceService,
+    });
 
     injectPreferenceConfigurations(injector);
     injectPreferenceSchemaProvider(injector);

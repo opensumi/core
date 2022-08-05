@@ -1,5 +1,14 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { ILogServiceClient, LogLevel } from '@opensumi/ide-core-common';
+import {
+  Archive,
+  BaseLogServiceOptions,
+  Emitter,
+  ILogService,
+  ILogServiceClient,
+  ILogServiceManager,
+  LogLevel,
+  SupportLogNamespace,
+} from '@opensumi/ide-core-common';
 
 @Injectable()
 export class MockLogger implements ILogServiceClient {
@@ -39,5 +48,55 @@ export class MockLoggerManageClient {
 
   getLogger() {
     return this.logger;
+  }
+}
+
+@Injectable()
+export class MockLoggerService implements ILogServiceManager {
+  @Autowired(MockLogger)
+  private readonly logger: MockLogger;
+
+  private onDidChangeLogLevelEmitter = new Emitter<LogLevel>();
+
+  get onDidChangeLogLevel() {
+    return this.onDidChangeLogLevelEmitter.event;
+  }
+
+  getLogger(namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions) {
+    return this.logger as any;
+  }
+
+  getGlobalLogLevel() {
+    return LogLevel.Info;
+  }
+
+  removeLogger(namespace: SupportLogNamespace) {}
+
+  setGlobalLogLevel(level: LogLevel) {}
+
+  getLogFolder() {
+    return '';
+  }
+
+  getRootLogFolder() {
+    return '';
+  }
+
+  async cleanOldLogs() {}
+
+  async cleanAllLogs() {}
+
+  async cleanExpiredLogs(day: number) {}
+
+  getLogZipArchiveByDay(day: number): Promise<Archive> {
+    throw Error('Not implement');
+  }
+
+  async getLogZipArchiveByFolder(foldPath: string): Promise<Archive> {
+    throw Error('Not implement');
+  }
+
+  dispose() {
+    this.onDidChangeLogLevelEmitter.dispose();
   }
 }

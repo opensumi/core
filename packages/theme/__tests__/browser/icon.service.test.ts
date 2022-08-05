@@ -2,11 +2,9 @@ import { Injectable } from '@opensumi/di';
 import {
   PreferenceSchemaProvider,
   IPreferenceSettingsService,
-  ILoggerManagerClient,
   IFileServiceClient,
   URI,
 } from '@opensumi/ide-core-browser';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
@@ -17,7 +15,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IIconService, IconType } from '../../src';
 import { IconService } from '../../src/browser';
-
 
 @Injectable()
 class MockFileServiceClient {
@@ -164,10 +161,6 @@ describe('icon theme test', () => {
       {
         token: IPreferenceSettingsService,
         useClass: MockPreferenceSettingsService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
       },
       {
         token: IFileServiceClient,

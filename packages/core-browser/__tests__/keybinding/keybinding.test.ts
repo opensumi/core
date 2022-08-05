@@ -5,7 +5,6 @@ import {
   KeybindingRegistryImpl,
   Keybinding,
   KeybindingScope,
-  ILogger,
   BrowserKeyboardLayoutImpl,
   KeybindingService,
   SpecialCases,
@@ -25,7 +24,6 @@ import {
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockLogger } from '../../__mocks__/logger';
 import { KeybindingsResultCollection } from '../../src';
 import { KeyboardLayoutService } from '../../src/keyboard/keyboard-layout-service';
 import { GlobalBrowserStorageService, IStatusBarService } from '../../src/services';
@@ -74,10 +72,6 @@ describe('KeybindingRegistry', () => {
       {
         token: KeybindingContribution,
         useValue: {},
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
       },
       {
         token: IContextKeyService,
@@ -330,10 +324,6 @@ describe('KeybindingService', () => {
       {
         token: KeybindingContribution,
         useValue: {},
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
       },
       {
         token: IContextKeyService,
