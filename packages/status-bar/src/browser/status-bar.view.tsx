@@ -31,7 +31,7 @@ export const StatusBarView = React.memo(
 
     return (
       <div
-        id={VIEW_CONTAINERS.STATUS_BAR}
+        id={VIEW_CONTAINERS.STATUSBAR}
         className={styles.statusBar}
         style={{ backgroundColor }}
         onContextMenu={handleCtxMenu}
