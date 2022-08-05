@@ -73,7 +73,8 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     : `${defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + 8}px`;
 
   const fileTreeNodeStyle = {
-    maxHeight: TREE_VIEW_NODE_HEIGHT,
+    height: TREE_VIEW_NODE_HEIGHT,
+    lineHeight: `${TREE_VIEW_NODE_HEIGHT}px`,
     paddingLeft,
   } as React.CSSProperties;
 
@@ -92,10 +93,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   };
 
   const renderIcon = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => (
-    <div
-      className={cls(styles.file_icon, node.icon)}
-      style={{ height: TREE_VIEW_NODE_HEIGHT, lineHeight: `${TREE_VIEW_NODE_HEIGHT}px` }}
-    ></div>
+    <div className={cls(styles.file_icon, node.icon)} style={{ maxHeight: TREE_VIEW_NODE_HEIGHT }}></div>
   );
 
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
