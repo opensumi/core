@@ -5,7 +5,11 @@ import * as Y from 'yjs';
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorActiveResourceStateChangedEvent,
+  EditorDocumentModelCreationEvent,
+  EditorGroupCloseEvent,
+} from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 
@@ -14,8 +18,11 @@ import {
   ICollaborationService,
   ICollaborationServiceForClient,
   ROOM_NAME,
+  UserInfo,
+  UserInfoForCollaborationContribution,
 } from '../common';
 
+import { CursorWidgetRegistry } from './cursor-widget';
 import { TextModelBinding } from './textmodel-binding';
 
 import './styles.less';
@@ -35,6 +42,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  // hold editor => registry
+  private cursorRegistryMap: Map<ICodeEditor, CursorWidgetRegistry> = new Map();
+
+  private userInfo: UserInfo;
 
   private yDoc: Y.Doc;
 
@@ -76,6 +88,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yTextMap = this.yDoc.getMap();
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
     this.yTextMap.observe(this.yMapObserver);
+
+    // TODO add userInfo to awareness field
+    this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
+
     this.logger.debug('Collaboration initialized');
   }
 
@@ -83,6 +99,24 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
     this.bindingMap.forEach((binding) => binding.dispose());
+  }
+
+  getUseInfo(): UserInfo {
+    if (!this.userInfo) {
+      throw new Error('User info is not registered');
+    }
+
+    return this.userInfo;
+  }
+
+  setUserInfo(contribution: UserInfoForCollaborationContribution) {
+    if (this.userInfo) {
+      throw new Error('User info is already registered');
+    }
+
+    if (contribution.info) {
+      this.userInfo = contribution.info;
+    }
   }
 
   undoOnCurrentResource() {
@@ -136,6 +170,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
+  // TODO TextModel的创建可以监听EditorDocumentModelCreationEvent 由于Binding和TextModel是一一对应的 这样做会容易处理得多
   @OnEvent(EditorGroupCloseEvent)
   private groupCloseHandler(e: EditorGroupCloseEvent) {
     this.logger.debug('Group close tabs', e);
@@ -166,6 +201,14 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
     const binding = this.getBinding(uri);
+
+    // check if editor has its widgetRegistry
+    if (monacoEditor && !this.cursorRegistryMap.has(monacoEditor)) {
+      this.cursorRegistryMap.set(
+        monacoEditor,
+        this.injector.get(CursorWidgetRegistry, [monacoEditor, this.yWebSocketProvider.awareness]),
+      );
+    }
 
     // check if there exists any binding
     if (!binding) {

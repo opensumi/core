@@ -2,8 +2,9 @@ import { createMutex } from 'lib0/mutex';
 import { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
-import { Injectable } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { ITextModel, ICodeEditor, Position } from '@opensumi/ide-monaco';
+import { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
 import {
   editor,
   SelectionDirection,
@@ -12,8 +13,16 @@ import {
   IDisposable,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+import { ICollaborationService, UserInfo } from '../common';
+
+import { CollaborationService } from './collaboration.service';
+import { CursorWidgetRegistry } from './cursor-widget';
+
 @Injectable({ multiple: true })
 export class TextModelBinding {
+  @Autowired(ICollaborationService)
+  private collaborationService: CollaborationService;
+
   savedSelections: Map<ICodeEditor, RelativeSelection> = new Map();
 
   mutex = createMutex();
@@ -52,7 +61,14 @@ export class TextModelBinding {
     this.editors.forEach((editor) => {
       if (editor.getModel() === this.textModel) {
         const currentDecorations = this.decorations.get(editor) ?? [];
-        const newDecorations: any[] = []; // fixme
+        const newDecorations: IModelDeltaDecoration[] = []; // re-populate decorations
+
+        // FIXME it is just a test, will call method from collaboration service
+        const cursorWidgetRegistry: CursorWidgetRegistry = this.collaborationService['cursorRegistryMap'].get(editor)!;
+
+        // set position of CursorWidget to null
+        cursorWidgetRegistry.removeAllPositions();
+
         this.awareness.getStates().forEach((state, clientID) => {
           // if clientID is not mine, and selection from this client is not empty
           if (
@@ -63,9 +79,11 @@ export class TextModelBinding {
           ) {
             const anchorAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.anchor, this.doc);
             const headAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.head, this.doc);
+
             if (
               anchorAbs !== null &&
               headAbs !== null &&
+              // ensure that the client is in the same Y.Text with mine
               anchorAbs.type === this.yText &&
               headAbs.type === this.yText
             ) {
@@ -90,19 +108,30 @@ export class TextModelBinding {
               newDecorations.push({
                 range: new Range(start.lineNumber, start.column, end.lineNumber, end.column),
                 options: {
+                  description: 'yjs decoration ' + clientID,
                   className: 'yRemoteSelection yRemoteSelection-' + clientID,
                   afterContentClassName,
                   beforeContentClassName,
                 },
               });
+
+              // update position
+              const { nickname }: UserInfo = state['user-info'];
+              cursorWidgetRegistry.updatePositionOf(nickname, end.lineNumber, end.column);
             }
           }
         });
 
+        // invoke layoutWidget method to update update all cursor widgets
+        cursorWidgetRegistry.layoutAllWidgets();
+
+        // delta update decorations
         this.decorations.set(editor, editor.deltaDecorations(currentDecorations, newDecorations));
       } else {
-        // ignore decoration
+        // remove all decoration, when current active TextModel of this editor is not this.textModel
         this.decorations.delete(editor);
+        // TODO may need to remove all widgets
+        // widgets.remove()
       }
     });
   };
@@ -272,7 +301,11 @@ export class TextModelBinding {
     this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);
     this.yText.unobserve(this.yTextObserver);
     this.awareness.off('change', this.renderDecorations);
+
+    // destroy all widgets, no no no, should manage widget in collab service
   }
+
+  // TODO when active resource changed, re-render decoration?
 }
 
 class RelativeSelection {
