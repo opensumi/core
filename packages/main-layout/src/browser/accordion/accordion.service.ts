@@ -145,7 +145,7 @@ export class AccordionService extends WithEventBus {
     this.listenWindowResize();
   }
 
-  updateViewTiele(viewId: string, title: string) {
+  updateViewTitle(viewId: string, title: string) {
     this.didChangeViewTitleEmitter.fire({ id: viewId, title });
   }
 
