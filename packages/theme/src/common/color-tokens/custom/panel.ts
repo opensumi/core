@@ -1,11 +1,11 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor, transparent, lighten, darken } from '../../color-registry';
+import { registerColor } from '../../color-registry';
+import { transparent, lighten, darken } from '../../utils';
 import { ACTIVITY_BAR_BACKGROUND, ACTIVITY_BAR_BORDER } from '../activity-bar';
 import { foreground } from '../base';
 import { EDITOR_GROUP_HEADER_TABS_BACKGROUND } from '../editor';
 import { PANEL_BACKGROUND, PANEL_INACTIVE_TITLE_FOREGROUND } from '../panel';
-import { SIDE_BAR_BORDER } from '../sidebar';
 import { TAB_INACTIVE_BACKGROUND } from '../tab';
 import { textLinkActiveForeground } from '../text';
 

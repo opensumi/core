@@ -1,6 +1,4 @@
-import { FileSystemProvider, IDisposable, FileChange } from '@opensumi/ide-core-common';
-
-import { BasicEvent } from '..';
+import { BasicEvent, FileSystemProvider, IDisposable, FileChange } from '@opensumi/ide-core-common';
 
 export class FilesChangeEvent extends BasicEvent<FileChange[]> {}
 

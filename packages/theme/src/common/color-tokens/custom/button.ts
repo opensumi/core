@@ -1,7 +1,8 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { RGBA, Color } from '../../color';
-import { darken, lighten, registerColor } from '../../color-registry';
+import { registerColor } from '../../color-registry';
+import { darken, lighten } from '../../utils';
 import { foreground } from '../base';
 import {
   buttonBackground,
