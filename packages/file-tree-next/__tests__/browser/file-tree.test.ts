@@ -313,7 +313,7 @@ describe('FileTree should be work while on single workspace model', () => {
       handleItemClick(fileNode, TreeNodeType.TreeNode);
       const fileDecoration = decorations.getDecorations(fileNode);
       expect(fileDecoration?.classlist).toEqual([styles.mod_selected, styles.mod_focused]);
-      expect(openFile).toBeCalledWith(fileNode.uri, { disableNavigate: true, preview: true, focus: true });
+      expect(openFile).toBeCalledWith(fileNode.uri, { disableNavigate: true, preview: true });
     });
 
     it('Style decoration should be right while click with ctrl/cmd/shift', async () => {

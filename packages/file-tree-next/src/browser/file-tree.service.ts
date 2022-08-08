@@ -775,7 +775,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, {
       disableNavigate: true,
       preview,
-      focus: true,
     });
   }
 
