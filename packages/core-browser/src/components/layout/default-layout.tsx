@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SlotRenderer } from '../../react-providers';
+import { SlotRenderer } from '../../react-providers/slot';
 
 import { BoxPanel } from './box-panel';
 import { SplitPanel } from './split-panel';

@@ -20,7 +20,7 @@ import {
   JsonType,
 } from '@opensumi/ide-core-common/lib/preferences/preference-schema';
 
-import { AppConfig } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
 
 import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
 import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';

@@ -3,7 +3,7 @@ import { Domain, ContributionProvider } from '@opensumi/ide-core-common';
 import { IElectronRendererURLService, IElectronURLService } from '@opensumi/ide-core-common/lib/electron';
 
 import { ClientAppContribution } from '../common/common.define';
-import { AppConfig } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
 import { electronEnv } from '../utils/electron';
 
 import { CommandOpener } from './command-opener';
