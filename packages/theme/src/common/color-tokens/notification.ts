@@ -1,6 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor, lighten, darken } from '../color-registry';
+import { registerColor } from '../color-registry';
+import { lighten, darken } from '../utils';
 
 import { contrastBorder } from './base';
 import {
