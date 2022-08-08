@@ -62,7 +62,7 @@ import {
   getPreferenceLanguageId,
   registerLocalStorageProvider,
 } from '../preferences';
-import { AppConfig } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import { electronEnv } from '../utils';
 

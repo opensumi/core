@@ -5,8 +5,8 @@ import { BasicEvent, getDebugLogger, IEventBus, MaybeNull } from '@opensumi/ide-
 
 import { IMenu, IContextMenu } from '../menu/next';
 import { useInjectable } from '../react-hooks';
-import { SlotLocation, AppConfig } from '../react-providers';
-
+import { AppConfig } from '../react-providers/config-provider';
+import { SlotLocation } from '../react-providers/slot';
 
 export class VisibleChangedPayload {
   constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
