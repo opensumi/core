@@ -261,7 +261,6 @@ export const Tabs = ({ group }: ITabsProps) => {
   const renderTabContent = () => (
     <div
       className={styles.kt_editor_tabs_content}
-      style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
       ref={contentRef as any}
       onDragLeave={() => {
         if (contentRef.current) {
@@ -303,7 +302,11 @@ export const Tabs = ({ group }: ITabsProps) => {
               [styles.kt_editor_tab_current]: group.currentResource === resource,
               [styles.kt_editor_tab_preview]: group.previewURI && group.previewURI.isEqual(resource.uri),
             })}
-            style={wrapMode && i === group.resources.length - 1 ? { marginRight: lastMarginRight } : {}}
+            style={
+              wrapMode && i === group.resources.length - 1
+                ? { marginRight: lastMarginRight, height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
+                : { height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }
+            }
             onContextMenu={(event) => {
               tabTitleMenuService.show(event.nativeEvent.x, event.nativeEvent.y, resource && resource.uri, group);
               event.preventDefault();
