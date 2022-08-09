@@ -650,7 +650,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   showFirstDiff() {
     const diffs = this.monacoDiffEditor.getLineChanges();
     if (diffs && diffs.length > 0) {
-      this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
+      setTimeout(() => {
+        this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
+      }, 0);
     }
   }
 
