@@ -6,3 +6,5 @@ export * from './plistParser';
 export * from './style';
 export * from './theme.service';
 export * from './themeCompatibility';
+// 导出所有的 color token
+export * from './color-tokens';

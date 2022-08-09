@@ -1,6 +1,8 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor, actionbarForeground } from '../../color-registry';
+import { registerColor } from '../../color-registry';
+
+import { actionbarForeground } from './actionbar';
 
 export const ktIconForeground = registerColor(
   'kt.icon.foreground',

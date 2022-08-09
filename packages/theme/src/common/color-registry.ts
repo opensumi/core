@@ -132,5 +132,3 @@ export function WORKBENCH_BACKGROUND(theme: ITheme): Color {
 }
 
 export { lighten, darken, transparent, lessProminent, resolveColorValue };
-// 导出所有的 color token
-export * from './color-tokens';

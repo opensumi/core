@@ -5,6 +5,8 @@
 
 import { Color } from './color';
 import * as colorRegistry from './color-registry';
+// 导出所有的 color token
+import * as colorTokens from './color-tokens';
 import { ITokenColorizationRule, IColorMap } from './theme.service';
 
 const settingToColorIdMapping: { [settingId: string]: string[] } = {};
@@ -51,25 +53,25 @@ export function convertSettings(
   }
 }
 
-addSettingMapping('background', colorRegistry.editorBackground);
-addSettingMapping('foreground', colorRegistry.editorForeground);
-addSettingMapping('selection', colorRegistry.editorSelectionBackground);
-addSettingMapping('inactiveSelection', colorRegistry.editorInactiveSelection);
-addSettingMapping('selectionHighlightColor', colorRegistry.editorSelectionHighlight);
-addSettingMapping('findMatchHighlight', colorRegistry.editorFindMatchHighlight);
-addSettingMapping('currentFindMatchHighlight', colorRegistry.editorFindMatch);
-addSettingMapping('hoverHighlight', colorRegistry.editorHoverHighlight);
+addSettingMapping('background', colorTokens.editorBackground);
+addSettingMapping('foreground', colorTokens.editorForeground);
+addSettingMapping('selection', colorTokens.editorSelectionBackground);
+addSettingMapping('inactiveSelection', colorTokens.editorInactiveSelection);
+addSettingMapping('selectionHighlightColor', colorTokens.editorSelectionHighlight);
+addSettingMapping('findMatchHighlight', colorTokens.editorFindMatchHighlight);
+addSettingMapping('currentFindMatchHighlight', colorTokens.editorFindMatch);
+addSettingMapping('hoverHighlight', colorTokens.editorHoverHighlight);
 addSettingMapping('wordHighlight', 'editor.wordHighlightBackground'); // inlined to avoid editor/contrib dependenies
 addSettingMapping('wordHighlightStrong', 'editor.wordHighlightStrongBackground');
-addSettingMapping('findRangeHighlight', colorRegistry.editorFindRangeHighlight);
+addSettingMapping('findRangeHighlight', colorTokens.editorFindRangeHighlight);
 addSettingMapping('findMatchHighlight', 'peekViewResult.matchHighlightBackground');
 addSettingMapping('referenceHighlight', 'peekViewEditor.matchHighlightBackground');
-addSettingMapping('lineHighlight', colorRegistry.editorLineHighlight);
-addSettingMapping('rangeHighlight', colorRegistry.editorRangeHighlight);
-addSettingMapping('caret', colorRegistry.editorCursorForeground);
-addSettingMapping('invisibles', colorRegistry.editorWhitespaces);
-addSettingMapping('guide', colorRegistry.editorIndentGuides);
-addSettingMapping('activeGuide', colorRegistry.editorActiveIndentGuides);
+addSettingMapping('lineHighlight', colorTokens.editorLineHighlight);
+addSettingMapping('rangeHighlight', colorTokens.editorRangeHighlight);
+addSettingMapping('caret', colorTokens.editorCursorForeground);
+addSettingMapping('invisibles', colorTokens.editorWhitespaces);
+addSettingMapping('guide', colorTokens.editorIndentGuides);
+addSettingMapping('activeGuide', colorTokens.editorActiveIndentGuides);
 
 const ansiColorMap = [
   'ansiBlack',

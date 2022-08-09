@@ -4,14 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 // Some code copied and modified from https://github.com/microsoft/vscode/blob/1.44.0/src/vs/editor/standalone/common/themes.ts
 
+// import {
+//   editorActiveIndentGuides,
+//   editorIndentGuides,
+//   editorBackground,
+//   editorForeground,
+//   editorInactiveSelection,
+//   editorSelectionHighlight,
+// } from './color-registry';
 import {
   editorActiveIndentGuides,
-  editorIndentGuides,
   editorBackground,
   editorForeground,
   editorInactiveSelection,
+  editorIndentGuides,
   editorSelectionHighlight,
-} from './color-registry';
+} from './color-tokens/editor';
 import { IStandaloneThemeData } from './theme.service';
 // tslint:disable:variable-name
 /* -------------------------------- Begin vs theme -------------------------------- */
