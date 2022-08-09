@@ -326,8 +326,8 @@ export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem 
   readonly detail: string;
   readonly sortText: string;
   readonly noAutoAccept = true;
-  readonly type = 'snippet';
-  readonly snippetType = 'textmate';
+  readonly type: 'snippet' = 'snippet' as const;
+  readonly snippetType: 'textmate' = 'textmate' as const;
   readonly kind = monaco.languages.CompletionItemKind.Snippet;
   range: IRange;
 
