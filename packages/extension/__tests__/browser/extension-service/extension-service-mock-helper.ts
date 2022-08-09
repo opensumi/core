@@ -370,23 +370,19 @@ export const mockKaitianExtensionProviders: Provider[] = [
 export function setupExtensionServiceInjector() {
   mockGlobals();
 
-  const injector = createBrowserInjector(
-    [],
-    new MockInjector([
-      DatabaseStorageContribution,
-      {
-        token: AppConfig,
-        useValue: {
-          isElectronRenderer: false,
-          isRemote: true,
-          noExtHost: true,
-          extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
-        },
-      },
-    ]),
-  );
+  const injector = createBrowserInjector([]);
   injector.addProviders(
     ...mockKaitianExtensionProviders,
+    DatabaseStorageContribution,
+    {
+      token: AppConfig,
+      useValue: {
+        isElectronRenderer: false,
+        isRemote: true,
+        noExtHost: true,
+        extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
+      },
+    },
     {
       token: ISemanticTokenRegistry,
       useClass: SemanticTokenRegistryImpl,

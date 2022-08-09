@@ -26,7 +26,7 @@ const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
 
 describe('MainThreadStatusBar API Test Suites', () => {
-  const injector = createBrowserInjector([], new Injector([]));
+  const injector = createBrowserInjector([]);
   let extHostStatusBar: ExtHostStatusBar;
   let mainthreadStatusbar: MainThreadStatusBar;
   let statusbarService: IStatusBarService;

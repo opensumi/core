@@ -21,15 +21,11 @@ describe('BrowserKeyboardLayoutService should be work', () => {
   };
 
   beforeAll(async () => {
-    injector = createBrowserInjector(
-      [],
-      new MockInjector([
-        {
-          token: GlobalBrowserStorageService,
-          useValue: mockGlobalBrowserStorageService,
-        },
-      ]),
-    );
+    injector = createBrowserInjector([]);
+    injector.addProviders({
+      token: GlobalBrowserStorageService,
+      useValue: mockGlobalBrowserStorageService,
+    });
 
     keyboardNativeLayoutService = injector.get(KeyboardNativeLayoutService);
 

@@ -61,7 +61,7 @@ class MockLogServiceForClient {
 }
 
 describe('MainThreadEnvAPI Test Suites ', () => {
-  const injector = createBrowserInjector([], new Injector([]));
+  const injector = createBrowserInjector([]);
   let extHostEnvAPI: ReturnType<typeof createEnvApiFactory>;
   const appConfig = {
     appName: 'sumi',

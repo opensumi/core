@@ -12,18 +12,16 @@ import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 describe('MainThreadCommandAPI Test Suites ', () => {
   let extHostCommands: ExtHostCommands;
   let mainThreadCommands: MainThreadCommands;
-  const injector = createBrowserInjector(
-    [],
-    new Injector([
-      {
-        token: ICommandServiceToken,
-        useClass: MonacoCommandService,
-      },
-      {
-        token: CommandRegistry,
-        useClass: CommandRegistryImpl,
-      },
-    ]),
+  const injector = createBrowserInjector([]);
+  injector.addProviders(
+    {
+      token: ICommandServiceToken,
+      useClass: MonacoCommandService,
+    },
+    {
+      token: CommandRegistry,
+      useClass: CommandRegistryImpl,
+    },
   );
 
   const emitterA = new Emitter<any>();

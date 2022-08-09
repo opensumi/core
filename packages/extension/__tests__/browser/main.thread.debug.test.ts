@@ -111,70 +111,68 @@ describe('MainThreadDebug API Test Suite', () => {
   beforeAll(() => {
     jest.clearAllMocks();
 
-    injector = createBrowserInjector(
-      [],
-      new MockInjector([
-        {
-          token: BreakpointManager,
-          useValue: mockBreakpointManager,
-        },
-        {
-          token: IDebugSessionManager,
-          useValue: mockDebugSessionManager,
-        },
-        {
-          token: DebugModelManager,
-          useValue: mockDebugModelManager,
-        },
-        {
-          token: IDebugService,
-          useValue: mockDebugService,
-        },
-        {
-          token: DebugConsoleModelService,
-          useValue: mockDebugConsoleModelService,
-        },
-        {
-          token: ITerminalApiService,
-          useValue: {},
-        },
-        {
-          token: WorkbenchEditorService,
-          useValue: {},
-        },
-        {
-          token: DebugSessionContributionRegistry,
-          useValue: mockDebugSessionContributionRegistry,
-        },
-        {
-          token: IMessageService,
-          useValue: {},
-        },
-        {
-          token: IFileServiceClient,
-          useValue: {},
-        },
-        {
-          token: DebugPreferences,
-          useValue: {},
-        },
-        {
-          token: LabelService,
-          useValue: {},
-        },
-        {
-          token: DebugConfigurationManager,
-          useValue: mockDebugConfigurationManager,
-        },
-        {
-          token: IDebugServer,
-          useValue: mockDebugServer,
-        },
-        {
-          token: IEditorDocumentModelService,
-          useValue: {},
-        },
-      ]),
+    injector = createBrowserInjector([]);
+    injector.addProviders(
+      {
+        token: BreakpointManager,
+        useValue: mockBreakpointManager,
+      },
+      {
+        token: IDebugSessionManager,
+        useValue: mockDebugSessionManager,
+      },
+      {
+        token: DebugModelManager,
+        useValue: mockDebugModelManager,
+      },
+      {
+        token: IDebugService,
+        useValue: mockDebugService,
+      },
+      {
+        token: DebugConsoleModelService,
+        useValue: mockDebugConsoleModelService,
+      },
+      {
+        token: ITerminalApiService,
+        useValue: {},
+      },
+      {
+        token: WorkbenchEditorService,
+        useValue: {},
+      },
+      {
+        token: DebugSessionContributionRegistry,
+        useValue: mockDebugSessionContributionRegistry,
+      },
+      {
+        token: IMessageService,
+        useValue: {},
+      },
+      {
+        token: IFileServiceClient,
+        useValue: {},
+      },
+      {
+        token: DebugPreferences,
+        useValue: {},
+      },
+      {
+        token: LabelService,
+        useValue: {},
+      },
+      {
+        token: DebugConfigurationManager,
+        useValue: mockDebugConfigurationManager,
+      },
+      {
+        token: IDebugServer,
+        useValue: mockDebugServer,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useValue: {},
+      },
     );
     addEditorProviders(injector);
 

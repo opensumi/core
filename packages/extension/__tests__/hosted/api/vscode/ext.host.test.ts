@@ -1,5 +1,5 @@
 import { Injector } from '@opensumi/di';
-import { Deferred, IReporter } from '@opensumi/ide-core-common';
+import { Deferred, ILoggerManagerClient, IReporter } from '@opensumi/ide-core-common';
 import { REPORT_NAME } from '@opensumi/ide-core-common';
 import { AppConfig, DefaultReporter } from '@opensumi/ide-core-node';
 
@@ -8,7 +8,6 @@ import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread
 import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
 import { mockExtensionProps, mockExtensionProps2 } from '../../../../__mocks__/extensions';
 import { initMockRPCProtocol } from '../../../../__mocks__/initRPCProtocol';
-import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import ExtensionHostServiceImpl from '../../../../src/hosted/ext.host';
 
 const enum MessageType {
@@ -17,7 +16,6 @@ const enum MessageType {
   ReplyErr = 3,
   Cancel = 4,
 }
-const mockLoggger = new MockLoggerManagerClient().getLogger();
 
 describe('Extension process test', () => {
   describe('RPCProtocol', () => {
@@ -71,7 +69,7 @@ describe('Extension process test', () => {
         onMessage: (fn) => handler.resolve(fn),
       };
       const rpcProtocol = await initMockRPCProtocol(mockClient);
-      extHostImpl = new ExtensionHostServiceImpl(rpcProtocol, mockLoggger, injector);
+      extHostImpl = new ExtensionHostServiceImpl(rpcProtocol, injector.get(ILoggerManagerClient).getLogger(), injector);
       await extHostImpl.init();
       await extHostImpl.$updateExtHostData();
     });
