@@ -7,7 +7,7 @@ import { IClipboardService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { MessageService } from '@opensumi/ide-overlay/lib/browser/message.service';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
-import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-registry';
+import { PANEL_BACKGROUND } from '@opensumi/ide-theme/lib/common/color-tokens';
 import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import { SupportedOptions } from '../common/preference';
