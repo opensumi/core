@@ -623,9 +623,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       // 此处 添加一个onDidUpdateDiff 监听
       const disposer = this.monacoDiffEditor.onDidUpdateDiff(() => {
         disposer.dispose();
+        currentEditor.setSelection(range);
         setTimeout(() => {
           currentEditor.revealRangeInCenter(range);
-          currentEditor.setSelection(range);
         });
       });
     } else {

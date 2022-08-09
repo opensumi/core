@@ -1281,7 +1281,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
         if (options.range && this.currentEditor) {
           this.currentEditor.monacoEditor.setSelection(options.range as monaco.IRange);
-          this.currentEditor.monacoEditor.revealRangeInCenterIfOutsideViewport(options.range as monaco.IRange, 0);
+          setTimeout(() => {
+            this.currentEditor?.monacoEditor.revealRangeInCenter(options.range as monaco.IRange, 0);
+          }, 0);
         }
         if ((options && options.disableNavigate) || (options && options.backend)) {
           // no-op
@@ -1470,15 +1472,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
               options.range.endLineNumber!,
               options.range.endColumn!,
             );
-            this.codeEditor.monacoEditor.setSelection(range);
-            // 这里使用 queueMicrotask 在下一次事件循环时将编辑器滚动到指定位置
+            // 这里使用 setTimeout 在下一次事件循环时将编辑器滚动到指定位置
             // 原因是在打开新文件的情况下
-            // setModel 后立即调用 revealRangeInCenterIfOutsideViewport 编辑器无法获取到 viewport 宽高
+            // setModel 后立即调用 revealRangeInCenter 编辑器无法获取到 viewport 宽高
             // 导致无法正确计算滚动位置
-            // 相比 setTimeout, queueMicrotask 优先级更高
-            // ref: https://developer.mozilla.org/zh-CN/docs/Web/API/queueMicrotask
-            queueMicrotask(() => {
-              this.codeEditor.monacoEditor.revealRangeInCenterIfOutsideViewport(range, 0);
+            this.codeEditor.monacoEditor.setSelection(range);
+            setTimeout(() => {
+              this.codeEditor.monacoEditor.revealRangeInCenter(range, 1);
             });
           }
 
