@@ -1,7 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
-import { transparent } from '../../utils';
+import { transparent, registerColor } from '../../utils';
 import { foreground } from '../base';
 import { hcBorderColor } from '../basic-color';
 

@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { RGBA, Color } from '../color';
-import { registerColor } from '../color-registry';
+import { registerColor } from '../utils';
 
 import { editorWarningForeground, editorWarningBorder } from './editor';
 

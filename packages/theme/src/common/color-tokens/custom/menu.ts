@@ -1,7 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
-import { transparent } from '../../utils';
+import { transparent, registerColor } from '../../utils';
 import { ACTIVITY_BAR_BORDER } from '../activity-bar';
 import { widgetShadow, foreground, descriptionForeground } from '../base';
 import { editorBackground } from '../editor';

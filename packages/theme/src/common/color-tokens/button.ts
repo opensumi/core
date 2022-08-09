@@ -1,8 +1,9 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { Color } from '../../common/color';
-import { registerColor, contrastBorder } from '../color-registry';
-import { darken, lighten } from '../utils';
+import { Color } from '../color';
+import { registerColor, darken, lighten } from '../utils';
+
+import { contrastBorder } from './base';
 
 /** default button */
 export const buttonForeground = registerColor(
