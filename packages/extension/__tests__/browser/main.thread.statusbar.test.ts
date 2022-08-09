@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { Emitter, CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
 import { MainThreadStatusBar } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.statusbar';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { StatusBarAlignment } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
@@ -10,7 +10,6 @@ import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-ba
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockExtensionDescription } from '../../__mocks__/extensions';
-import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 
@@ -37,10 +36,6 @@ describe('MainThreadStatusBar API Test Suites', () => {
       {
         token: IStatusBarService,
         useClass: StatusBarService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManagerClient,
       },
       {
         token: CommandRegistry,

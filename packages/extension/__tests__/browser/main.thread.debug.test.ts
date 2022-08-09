@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/src';
-import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@opensumi/ide-core-common';
+import { Disposable, IFileServiceClient, URI, Uri } from '@opensumi/ide-core-common';
 import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
@@ -145,19 +145,6 @@ describe('MainThreadDebug API Test Suite', () => {
         {
           token: DebugSessionContributionRegistry,
           useValue: mockDebugSessionContributionRegistry,
-        },
-        {
-          token: ILoggerManagerClient,
-          useValue: {
-            getLogger: () => ({
-              log() {},
-              debug() {},
-              error() {},
-              verbose() {},
-              warn() {},
-              dispose() {},
-            }),
-          },
         },
         {
           token: IMessageService,

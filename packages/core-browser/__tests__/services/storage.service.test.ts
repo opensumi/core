@@ -9,12 +9,6 @@ describe('test for core-browser/src/services/storage-service.ts', () => {
   let browserStorageService: GlobalBrowserStorageService;
   beforeAll(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ILoggerManagerClient,
-      useValue: {
-        getLogger: jest.fn(),
-      },
-    });
     browserStorageService = injector.get<GlobalBrowserStorageService>(GlobalBrowserStorageService);
   });
 

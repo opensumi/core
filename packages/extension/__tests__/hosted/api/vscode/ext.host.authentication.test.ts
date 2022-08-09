@@ -4,13 +4,7 @@ import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { IMenuRegistry, MenuId, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
-import {
-  Emitter,
-  ILoggerManagerClient,
-  StorageProvider,
-  IAuthenticationService,
-  CommandRegistry,
-} from '@opensumi/ide-core-common';
+import { Emitter, StorageProvider, IAuthenticationService, CommandRegistry } from '@opensumi/ide-core-common';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { IActivationEventService } from '@opensumi/ide-extension/lib/browser/types';
 import { MainThreadAuthentication } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.authentication';
@@ -28,7 +22,6 @@ import { QuickPickService } from '@opensumi/ide-quick-open';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 
 describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts', () => {
   let injector: Injector;
@@ -58,10 +51,6 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.authentication.test.ts'
       {
         token: IActivationEventService,
         useClass: ActivationEventServiceImpl,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManagerClient,
       },
       {
         token: IMessageService,

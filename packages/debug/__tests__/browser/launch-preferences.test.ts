@@ -3,14 +3,12 @@ import path from 'path';
 
 import * as fs from 'fs-extra';
 
-import { Injectable } from '@opensumi/di';
 import {
   PreferenceService,
   FileUri,
   Disposable,
   DisposableCollection,
   PreferenceScope,
-  ILoggerManagerClient,
   URI,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
@@ -32,17 +30,6 @@ import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-
-@Injectable()
-export class MockLoggerManagerClient {
-  getLogger = () => ({
-    log() {},
-    debug() {},
-    error() {},
-    verbose() {},
-    warn() {},
-  });
-}
 
 /**
  * launch配置项需要与VSCode中的配置项对齐
@@ -439,10 +426,6 @@ describe('Launch Preferences', () => {
           {
             token: IDiskFileProvider,
             useClass: DiskFileSystemProvider,
-          },
-          {
-            token: ILoggerManagerClient,
-            useClass: MockLoggerManagerClient,
           },
           {
             token: EditorCollectionService,

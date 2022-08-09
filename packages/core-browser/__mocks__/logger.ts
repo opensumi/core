@@ -3,6 +3,7 @@ import {
   Archive,
   BaseLogServiceOptions,
   Emitter,
+  ILoggerManagerClient,
   ILogService,
   ILogServiceClient,
   ILogServiceManager,
@@ -42,12 +43,38 @@ export class MockLogger implements ILogServiceClient {
 }
 
 @Injectable()
-export class MockLoggerManageClient {
+export class MockLoggerManageClient implements ILoggerManagerClient {
   @Autowired(MockLogger)
   private readonly logger: MockLogger;
 
+  private globalLoglevel: LogLevel = LogLevel.Info;
+
+  private onDidChangeLogLevelEmitter = new Emitter<LogLevel>();
+
+  get onDidChangeLogLevel() {
+    return this.onDidChangeLogLevelEmitter.event;
+  }
+
+  async setGlobalLogLevel(level: LogLevel) {
+    this.globalLoglevel = level;
+  }
+
+  onDidLogLevelChanged(level: LogLevel) {}
+
   getLogger() {
     return this.logger;
+  }
+
+  async getLogFolder() {
+    return '';
+  }
+
+  async getGlobalLogLevel() {
+    return this.globalLoglevel;
+  }
+
+  async dispose() {
+    this.onDidChangeLogLevelEmitter.dispose();
   }
 }
 
