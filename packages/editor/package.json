@@ -16,30 +16,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-<<<<<<< HEAD
-<<<<<<< HEAD
     "@opensumi/ide-core-common": "2.19.5",
     "@opensumi/ide-core-node": "2.19.5",
     "@opensumi/ide-file-service": "2.19.5",
     "@opensumi/ide-monaco": "2.19.5",
-=======
-<<<<<<< HEAD
-=======
->>>>>>> chore: conflict
-    "@opensumi/ide-core-common": "2.19.4",
-    "@opensumi/ide-core-node": "2.19.4",
-    "@opensumi/ide-file-service": "2.19.4",
-    "@opensumi/ide-monaco": "2.19.4",
-<<<<<<< HEAD
->>>>>>> chore: monaco 0.34.0
-    "vscode-oniguruma": "1.5.1"
-=======
-    "@opensumi/ide-core-common": "2.18.10",
-    "@opensumi/ide-core-node": "2.18.10",
-    "@opensumi/ide-file-service": "2.18.10",
-    "@opensumi/ide-monaco": "2.18.10",
-=======
->>>>>>> chore: conflict
     "vscode-oniguruma": "1.6.1"
   },
   "devDependencies": {
