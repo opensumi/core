@@ -623,9 +623,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       // 此处 添加一个onDidUpdateDiff 监听
       const disposer = this.monacoDiffEditor.onDidUpdateDiff(() => {
         disposer.dispose();
+        currentEditor.setSelection(range);
         setTimeout(() => {
           currentEditor.revealRangeInCenter(range);
-          currentEditor.setSelection(range);
         });
       });
     } else {
@@ -650,7 +650,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   showFirstDiff() {
     const diffs = this.monacoDiffEditor.getLineChanges();
     if (diffs && diffs.length > 0) {
-      this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
+      setTimeout(() => {
+        this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
+      }, 0);
     }
   }
 
