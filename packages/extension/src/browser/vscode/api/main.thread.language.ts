@@ -1253,8 +1253,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (typeof (edit as ResourceTextEditDto).resource === 'object') {
           (edit as ResourceTextEditDto).resource = monaco.Uri.revive((edit as ResourceTextEditDto).resource);
         } else {
-          (edit as ResourceFileEditDto).newUri = monaco.Uri.revive((edit as ResourceFileEditDto).newUri);
-          (edit as ResourceFileEditDto).oldUri = monaco.Uri.revive((edit as ResourceFileEditDto).oldUri);
+          (edit as ResourceFileEditDto).newResource = monaco.Uri.revive((edit as ResourceFileEditDto).newResource);
+          (edit as ResourceFileEditDto).oldResource = monaco.Uri.revive((edit as ResourceFileEditDto).oldResource);
         }
       }
     }

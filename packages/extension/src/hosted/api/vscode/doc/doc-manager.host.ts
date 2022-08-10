@@ -271,7 +271,8 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       edits: [
         {
           resource: uri,
-          edit,
+          textEdit: edit,
+          versionId: undefined,
         },
       ],
     };

@@ -825,8 +825,8 @@ export namespace WorkspaceEdit {
         result.edits.push({
           _type: types.WorkspaceEditType.Text,
           resource: entry.uri,
-          edit: TextEdit.from(entry.edit),
-          modelVersionId: doc?.version,
+          textEdit: TextEdit.from(entry.edit),
+          versionId: doc?.version,
           metadata: entry.metadata,
         } as model.ResourceTextEditDto);
       }
@@ -837,16 +837,16 @@ export namespace WorkspaceEdit {
   export function to(value: model.WorkspaceEditDto) {
     const result = new types.WorkspaceEdit();
     for (const edit of value.edits) {
-      if ((edit as model.ResourceTextEditDto).edit) {
+      if ((edit as model.ResourceTextEditDto).textEdit) {
         result.replace(
           URI.revive((edit as model.ResourceTextEditDto).resource),
-          Range.to((edit as model.ResourceTextEditDto).edit.range),
-          (edit as model.ResourceTextEditDto).edit.text,
+          Range.to((edit as model.ResourceTextEditDto).textEdit.range),
+          (edit as model.ResourceTextEditDto).textEdit.text,
         );
       } else {
         result.renameFile(
-          URI.revive((edit as model.ResourceFileEditDto).oldUri!),
-          URI.revive((edit as model.ResourceFileEditDto).newUri!),
+          URI.revive((edit as model.ResourceFileEditDto).oldResource!),
+          URI.revive((edit as model.ResourceFileEditDto).newResource!),
           (edit as model.ResourceFileEditDto).options,
         );
       }
