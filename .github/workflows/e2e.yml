@@ -41,15 +41,15 @@ jobs:
         shell: bash
         working-directory: ./opensumi
         run: |
-          yarn
-          yarn init
+          npm i
+          npm run init
 
       - name: Run
         shell: bash
         working-directory: ./opensumi
-        run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start
+        run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start
 
       - name: Test (playwright)
         uses: GabrielBB/xvfb-action@v1
         with:
-          run: yarn test:ui-ci
+          run: npm run test:ui-ci
