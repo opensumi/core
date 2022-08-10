@@ -78,6 +78,11 @@ html {
   li {
     list-style: none;
   }
+
+  ::selection {
+    color: inherit;
+    background: var(--editor-selectionBackground);
+  }
 }
 
 /* ---- 该样式主要用于让带 tabindex='-1' 的元素焦点态时拥有高亮边框，以便于实现如Tree，List组件焦点态时的自动高亮边框效果  ---- */
