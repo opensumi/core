@@ -11,9 +11,9 @@ on:
 
 jobs:
   build:
-    name: ubuntu-latest,  Node.js 14.x
+    name: ubuntu-20.04,  Node.js 14.x
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     timeout-minutes: 60
 
     steps:
