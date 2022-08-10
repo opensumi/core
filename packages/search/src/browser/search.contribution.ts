@@ -280,7 +280,6 @@ export class SearchContribution
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
       handler.onActivate(() => {
-        this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.searchHistory.initSearchHistory();
         this.searchBrowserService.focus();
       });
