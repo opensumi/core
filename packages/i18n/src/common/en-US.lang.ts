@@ -589,6 +589,8 @@ export const localizationBundle = {
     'editor.workspaceSymbol.notfound': 'No symbols matching',
     'editor.workspaceSymbolClass.notfound': 'No class symbols matching',
 
+    'editor.experimental.stickyScroll.enabled.description': 'Shows the nested current scopes during the scroll at the top of the editor.',
+
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
     'diffEditor.configuration.renderSideBySide':
