@@ -540,6 +540,7 @@ export const localizationBundle = {
     'editor.closeEditorsInOtherGroups': '关闭其他组中的编辑器',
     'editor.resetEditorGroups': '重置编辑器组大小',
     'editor.revert': '还原文档',
+    'editor.experimental.stickyScroll.enabled.description': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
 
     'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
     'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',

@@ -184,7 +184,7 @@ export const EDITOR_DEFAULTS = {
     guides: {
       indentation: true,
       highlightActiveIndentGuide: true,
-      bracketPairs: false,
+      bracketPairs: true,
     },
     fixedOverflowWidgets: true,
   },
@@ -564,6 +564,11 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: EDITOR_INLINE_SUGGEST_DEFAULTS.enabled,
     description: localize('inlineSuggest.enabled', 'Enable or disable the rendering of automatic inline completions.'),
+  },
+  'editor.experimental.stickyScroll.enabled': {
+    type: 'boolean',
+    default: true,
+    description: localize('editor.experimental.stickyScroll', 'Shows the nested current scopes during the scroll at the top of the editor.'),
   },
   'editor.letterSpacing': {
     type: 'number',
@@ -1789,7 +1794,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.bracketPairColorization.enabled': {
     type: 'boolean',
-    default: false,
+    default: true,
     description: '%editor.configuration.bracketPairColorization.enabled%',
   },
   'editor.largeFile': {
@@ -1823,6 +1828,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: false, // 开天修改
     description: '%diffEditor.configuration.ignoreTrimWhitespace%',
+  },
+  'editor.experimental.stickyScroll.enabled': {
+    type: 'boolean',
+    default: true,
+    description: '%editor.experimental.stickyScroll.enabled.description%',
   },
 };
 
