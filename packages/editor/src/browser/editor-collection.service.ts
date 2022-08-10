@@ -89,12 +89,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 
   createCodeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): ICodeEditor {
-    const mergedOptions = { ...getConvertedMonacoOptions(this.configurationService).editorOptions, ...options, 
-    experimental: {
-        stickyScroll: {
-          enabled: true
-        },
-    } };
+    const mergedOptions = { ...getConvertedMonacoOptions(this.configurationService).editorOptions, ...options };
     const monacoCodeEditor = this.monacoService.createCodeEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor, options]);
 
