@@ -1,0 +1,55 @@
+name: E2E Test
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: ubuntu-latest,  Node.js 14.x
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Use Node.js "14.x"
+        uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Use Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
+
+      - name: Checkout opensumi/core
+        uses: actions/checkout@master
+        with:
+          repository: opensumi/core
+          path: ./opensumi
+
+      - name: Build
+        shell: bash
+        working-directory: ./opensumi
+        run: |
+          yarn
+          yarn init
+
+      - name: Run
+        shell: bash
+        working-directory: ./opensumi
+        run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start
+
+      - name: Test (playwright)
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: yarn test:ui-ci
