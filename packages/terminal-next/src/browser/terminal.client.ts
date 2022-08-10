@@ -635,7 +635,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     try {
       this.xterm.raw.setOption(name, value);
       this._layout();
-    } catch {
+    } catch (_e) {
       /** nothing */
     }
   }
@@ -652,7 +652,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (this.xterm.raw.element) {
       try {
         this.xterm.fit();
-      } catch {
+      } catch (_e) {
         // noop
       }
     }

@@ -104,7 +104,7 @@ export function createPty(
   ptyProcess.onExit(() => {
     try {
       socket.close();
-    } catch {}
+    } catch (_e) {}
   });
 
   cache.set(sessionId, ptyProcess);

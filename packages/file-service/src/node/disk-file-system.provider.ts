@@ -324,6 +324,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   protected initWatcher() {
+    if (!this.injector) {
+      return;
+    }
     this.watcherServer = this.injector.get(ParcelWatcherServer);
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
@@ -351,8 +354,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       },
     });
   }
-
-  // Protected or private
 
   protected async createFile(uri: UriComponents, options: { content: Buffer }): Promise<FileStat> {
     const _uri = Uri.revive(uri);

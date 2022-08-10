@@ -205,7 +205,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       const uri = this.getUri();
       const { content } = await this.fileSystem.readFile(uri.toString());
       return content.toString();
-    } catch {
+    } catch (e) {
       return undefined;
     }
   }

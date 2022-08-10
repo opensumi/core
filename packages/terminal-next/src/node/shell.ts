@@ -38,7 +38,7 @@ export const exists = async (p: string) => {
   try {
     await fs.promises.access(path.normalize(p));
     return p;
-  } catch {
+  } catch (_e) {
     return;
   }
 };

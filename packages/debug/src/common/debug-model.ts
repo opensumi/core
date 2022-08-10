@@ -206,8 +206,8 @@ export class MemoryRegion extends Disposable implements IMemoryRegion {
     let data: BinaryBuffer;
     try {
       data = decodeBase64(result.body.data);
-    } catch {
-      return [{ type: MemoryRangeType.Error, offset, length, error: 'Invalid base64 data from debug adapter' }];
+    } catch (e) {
+      return [{ type: MemoryRangeType.Error, offset, length, error: e.message }];
     }
 
     const unreadable = result.body.unreadableBytes || 0;

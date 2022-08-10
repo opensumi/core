@@ -373,11 +373,11 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     if (isLinux) {
       try {
         return fs.realpathSync.native(path);
-      } catch {
+      } catch (_e) {
         try {
           // file does not exist try to resolve directory
           return paths.join(fs.realpathSync.native(directory), file);
-        } catch {
+        } catch (_e) {
           // directory does not exist fall back to symlink
           return path;
         }

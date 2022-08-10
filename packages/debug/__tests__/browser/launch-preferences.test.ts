@@ -431,10 +431,6 @@ describe('Launch Preferences', () => {
             token: EditorCollectionService,
             useValue: mockEditorCollectionService,
           },
-          UserStorageContribution,
-        );
-
-        injector.addProviders(
           {
             token: IWorkspaceService,
             useClass: WorkspaceService,
@@ -445,35 +441,35 @@ describe('Launch Preferences', () => {
               onPreferenceChanged: () => {},
             },
           },
-        );
-
-        injector.overrideProviders({
-          token: IWorkspaceService,
-          useValue: {
-            isMultiRootWorkspaceOpened: false,
-            workspace: {
-              uri: rootUri,
-              isDirectory: true,
-              lastModification: new Date().getTime(),
+          {
+            token: IWorkspaceService,
+            useValue: {
+              isMultiRootWorkspaceOpened: false,
+              workspace: {
+                uri: rootUri,
+                isDirectory: true,
+                lastModification: new Date().getTime(),
+              },
+              roots: Promise.resolve([
+                {
+                  uri: rootUri,
+                  isDirectory: true,
+                  lastModification: new Date().getTime(),
+                },
+              ]),
+              onWorkspaceChanged: () => {},
+              onWorkspaceLocationChanged: () => {},
+              tryGetRoots: () => [
+                {
+                  uri: rootUri,
+                  isDirectory: true,
+                  lastModification: new Date().getTime(),
+                },
+              ],
             },
-            roots: Promise.resolve([
-              {
-                uri: rootUri,
-                isDirectory: true,
-                lastModification: new Date().getTime(),
-              },
-            ]),
-            onWorkspaceChanged: () => {},
-            onWorkspaceLocationChanged: () => {},
-            tryGetRoots: () => [
-              {
-                uri: rootUri,
-                isDirectory: true,
-                lastModification: new Date().getTime(),
-              },
-            ],
           },
-        });
+          UserStorageContribution,
+        );
 
         // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
         injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
@@ -513,6 +509,7 @@ describe('Launch Preferences', () => {
       afterEach(async () => {
         await toTearDown.dispose();
         await fs.remove(rootPath);
+        await injector.disposeAll();
       });
 
       const settingsLaunch = settings ? settings.launch : undefined;

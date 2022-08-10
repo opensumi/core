@@ -104,14 +104,14 @@ function getBrowserMockInjector() {
       useClass: MockContextKeyService,
     },
     {
-      token: LogServiceForClientPath,
-      useClass: MockLogServiceForClient,
-    },
-    {
       token: RecentFilesManager,
       useValue: {
         getMostRecentlyOpenedFiles: () => [],
       },
+    },
+    {
+      token: LogServiceForClientPath,
+      useClass: MockLogServiceForClient,
     },
     {
       token: ILoggerManagerClient,

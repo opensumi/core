@@ -206,7 +206,7 @@ export class MockSocketService implements ITerminalService {
     if (socket) {
       try {
         socket.close();
-      } catch {
+      } catch (_e) {
         /** nothing */
       }
     }

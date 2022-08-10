@@ -94,7 +94,6 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { mockExtensions } from '../../__mocks__/extensions';
-import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 import { MainThreadFileSystemEvent } from '../../lib/browser/vscode/api/main.thread.file-system-event';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';
 import { MainThreadWorkspace } from '../../src/browser/vscode/api/main.thread.workspace';
@@ -142,118 +141,112 @@ describe('MainThreadWorkspace API Test Suite', () => {
   const track = temp.track();
   const testEventDir = FileUri.create(fs.realpathSync(temp.mkdirSync('workspace-api-test')));
 
-  const injector = createBrowserInjector(
-    [ExtensionStorageModule],
-    new MockInjector([
-      {
-        token: IWorkspaceService,
-        useClass: MockWorkspaceService,
+  const injector = createBrowserInjector([ExtensionStorageModule]);
+  injector.overrideProviders(
+    {
+      token: IWorkspaceService,
+      useClass: MockWorkspaceService,
+    },
+    {
+      token: IWorkspaceEditService,
+      useClass: WorkspaceEditServiceImpl,
+    },
+    {
+      token: IWorkspaceFileService,
+      useClass: WorkspaceFileService,
+    },
+    {
+      token: WorkbenchEditorService,
+      useClass: WorkbenchEditorServiceImpl,
+    },
+    {
+      token: FileServicePath,
+      useClass: FileService,
+    },
+    {
+      token: MonacoService,
+      useClass: MonacoServiceImpl,
+    },
+    {
+      token: AppConfig,
+      useValue: {},
+    },
+    {
+      token: IEditorDocumentModelContentRegistry,
+      useClass: EditorDocumentModelContentRegistryImpl,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useClass: EditorDocumentModelServiceImpl,
+    },
+    {
+      token: 'FileServiceOptions',
+      useValue: FileSystemNodeOptions.DEFAULT,
+    },
+    {
+      token: IDocPersistentCacheProvider,
+      useClass: EmptyDocCacheImpl,
+    },
+    {
+      token: StaticResourceService,
+      useClass: StaticResourceServiceImpl,
+    },
+    {
+      token: ResourceService,
+      useClass: ResourceServiceImpl,
+    },
+    {
+      token: EditorComponentRegistry,
+      useClass: EditorComponentRegistryImpl,
+    },
+    {
+      token: IBrowserFileSystemRegistry,
+      useClass: BrowserFileSystemRegistryImpl,
+    },
+    {
+      token: ExtensionService,
+      useClass: ExtensionServiceImpl,
+    },
+    {
+      token: FileSchemeDocumentProvider,
+      useClass: FileSchemeDocumentProvider,
+    },
+    {
+      token: PreferenceProviderProvider,
+      useFactory: () => (scope: PreferenceScope) => injector.get(PreferenceProvider, { tag: scope }),
+    },
+    {
+      token: PreferenceService,
+      useClass: PreferenceServiceImpl,
+    },
+    {
+      token: IFileServiceClient,
+      useClass: FileServiceClient,
+    },
+    {
+      token: IDiskFileProvider,
+      useClass: DiskFileSystemProvider,
+    },
+    {
+      token: EditorPreferences,
+      useValue: {},
+    },
+    {
+      token: IWebviewService,
+      useValue: mockService({}),
+    },
+    {
+      token: CommonServerPath,
+      useValue: {
+        getBackendOS: () => Promise.resolve(OS.type()),
       },
-      {
-        token: IWorkspaceEditService,
-        useClass: WorkspaceEditServiceImpl,
+    },
+    {
+      token: IApplicationService,
+      useValue: {
+        getBackendOS: () => Promise.resolve(OS.type()),
       },
-      {
-        token: IWorkspaceFileService,
-        useClass: WorkspaceFileService,
-      },
-      {
-        token: WorkbenchEditorService,
-        useClass: WorkbenchEditorServiceImpl,
-      },
-      {
-        token: FileServicePath,
-        useClass: FileService,
-      },
-      {
-        token: MonacoService,
-        useClass: MonacoServiceImpl,
-      },
-      {
-        token: AppConfig,
-        useValue: {},
-      },
-      {
-        token: IEditorDocumentModelContentRegistry,
-        useClass: EditorDocumentModelContentRegistryImpl,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManagerClient,
-      },
-      {
-        token: IEditorDocumentModelService,
-        useClass: EditorDocumentModelServiceImpl,
-      },
-      {
-        token: 'FileServiceOptions',
-        useValue: FileSystemNodeOptions.DEFAULT,
-      },
-      {
-        token: IDocPersistentCacheProvider,
-        useClass: EmptyDocCacheImpl,
-      },
-      {
-        token: StaticResourceService,
-        useClass: StaticResourceServiceImpl,
-      },
-      {
-        token: ResourceService,
-        useClass: ResourceServiceImpl,
-      },
-      {
-        token: EditorComponentRegistry,
-        useClass: EditorComponentRegistryImpl,
-      },
-      {
-        token: IBrowserFileSystemRegistry,
-        useClass: BrowserFileSystemRegistryImpl,
-      },
-      {
-        token: ExtensionService,
-        useClass: ExtensionServiceImpl,
-      },
-      {
-        token: FileSchemeDocumentProvider,
-        useClass: FileSchemeDocumentProvider,
-      },
-      {
-        token: PreferenceProviderProvider,
-        useFactory: () => (scope: PreferenceScope) => injector.get(PreferenceProvider, { tag: scope }),
-      },
-      {
-        token: PreferenceService,
-        useClass: PreferenceServiceImpl,
-      },
-      {
-        token: IFileServiceClient,
-        useClass: FileServiceClient,
-      },
-      {
-        token: IDiskFileProvider,
-        useClass: DiskFileSystemProvider,
-      },
-      {
-        token: EditorPreferences,
-        useValue: {},
-      },
-      {
-        token: IWebviewService,
-        useValue: mockService({}),
-      },
-      {
-        token: CommonServerPath,
-        useValue: {
-          getBackendOS: () => Promise.resolve(OS.type()),
-        },
-      },
-      {
-        token: IApplicationService,
-        useValue: {
-          getBackendOS: () => Promise.resolve(OS.type()),
-        },
-      },
-    ]),
+    },
   );
 
   injectMockPreferences(injector);

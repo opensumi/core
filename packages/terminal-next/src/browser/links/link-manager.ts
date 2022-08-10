@@ -371,7 +371,7 @@ export class TerminalLinkManager extends Disposable {
       if (stat) {
         return { uri, isDirectory: stat.isDirectory };
       }
-    } catch {
+    } catch (_e) {
       // Errors in parsing the path
       return undefined;
     }

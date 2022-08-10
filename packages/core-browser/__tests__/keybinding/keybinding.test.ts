@@ -41,31 +41,7 @@ describe('KeybindingRegistry', () => {
   };
 
   beforeAll(() => {
-    injector = createBrowserInjector(
-      [],
-      new MockInjector([
-        {
-          token: GlobalBrowserStorageService,
-          useValue: mockGlobalBrowserStorageService,
-        },
-        {
-          token: KeyboardNativeLayoutService,
-          useClass: BrowserKeyboardLayoutImpl,
-        },
-        {
-          token: KeyboardLayoutChangeNotifierService,
-          useClass: BrowserKeyboardLayoutImpl,
-        },
-        {
-          token: KeyboardLayoutService,
-          useClass: KeyboardLayoutService,
-        },
-        {
-          token: KeybindingRegistry,
-          useClass: KeybindingRegistryImpl,
-        },
-      ]),
-    );
+    injector = createBrowserInjector([]);
 
     // mock used instance
     injector.overrideProviders(
@@ -85,6 +61,26 @@ describe('KeybindingRegistry', () => {
           removeElement: () => {},
           addElement: () => {},
         },
+      },
+      {
+        token: GlobalBrowserStorageService,
+        useValue: mockGlobalBrowserStorageService,
+      },
+      {
+        token: KeyboardNativeLayoutService,
+        useClass: BrowserKeyboardLayoutImpl,
+      },
+      {
+        token: KeyboardLayoutChangeNotifierService,
+        useClass: BrowserKeyboardLayoutImpl,
+      },
+      {
+        token: KeyboardLayoutService,
+        useClass: KeyboardLayoutService,
+      },
+      {
+        token: KeybindingRegistry,
+        useClass: KeybindingRegistryImpl,
       },
     );
 
@@ -289,35 +285,7 @@ describe('KeybindingService', () => {
   };
 
   beforeAll(() => {
-    injector = createBrowserInjector(
-      [],
-      new MockInjector([
-        {
-          token: GlobalBrowserStorageService,
-          useValue: mockGlobalBrowserStorageService,
-        },
-        {
-          token: KeyboardNativeLayoutService,
-          useClass: BrowserKeyboardLayoutImpl,
-        },
-        {
-          token: KeyboardLayoutChangeNotifierService,
-          useClass: BrowserKeyboardLayoutImpl,
-        },
-        {
-          token: KeyboardLayoutService,
-          useClass: KeyboardLayoutService,
-        },
-        {
-          token: KeybindingService,
-          useClass: KeybindingRegistryImpl,
-        },
-        {
-          token: KeybindingRegistry,
-          useFactory: (injector) => injector.get(KeybindingService),
-        },
-      ]),
-    );
+    injector = createBrowserInjector([]);
 
     // mock used instance
     injector.overrideProviders(
@@ -337,6 +305,30 @@ describe('KeybindingService', () => {
           removeElement: () => {},
           addElement: () => {},
         },
+      },
+      {
+        token: GlobalBrowserStorageService,
+        useValue: mockGlobalBrowserStorageService,
+      },
+      {
+        token: KeyboardNativeLayoutService,
+        useClass: BrowserKeyboardLayoutImpl,
+      },
+      {
+        token: KeyboardLayoutChangeNotifierService,
+        useClass: BrowserKeyboardLayoutImpl,
+      },
+      {
+        token: KeyboardLayoutService,
+        useClass: KeyboardLayoutService,
+      },
+      {
+        token: KeybindingService,
+        useClass: KeybindingRegistryImpl,
+      },
+      {
+        token: KeybindingRegistry,
+        useFactory: (injector) => injector.get(KeybindingService),
       },
     );
     keybindingRegistry = injector.get(KeybindingRegistry);

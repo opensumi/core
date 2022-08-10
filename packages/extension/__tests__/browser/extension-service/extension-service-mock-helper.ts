@@ -68,7 +68,7 @@ import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/w
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
+import { mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { MockWorker, MessagePort } from '../../../__mocks__/worker';
 import { ExtCommandManagementImpl } from '../../../src/browser/extension-command-management';
@@ -371,7 +371,7 @@ export function setupExtensionServiceInjector() {
   mockGlobals();
 
   const injector = createBrowserInjector([]);
-  injector.addProviders(
+  injector.overrideProviders(
     ...mockKaitianExtensionProviders,
     DatabaseStorageContribution,
     {

@@ -1,6 +1,6 @@
-import { Injector } from '@opensumi/di';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { CommandService, CommandServiceImpl } from '@opensumi/ide-core-common/lib/command';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IDialogService } from '@opensumi/ide-overlay/lib/common';
 import { IStatusBarService } from '@opensumi/ide-status-bar';
@@ -20,7 +20,7 @@ const mockData = [
 ];
 
 describe('terminal.environment.service', () => {
-  const injector = new Injector();
+  const injector = createBrowserInjector([]);
   let terminalEnvService: TerminalEnvironmentService;
   let storageService: IWorkspaceStorageService;
 
