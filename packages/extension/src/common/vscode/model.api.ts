@@ -513,9 +513,9 @@ export interface FileOperationOptions {
   recursive?: boolean;
 }
 
-export type ResourceFileEditDto = languages.WorkspaceFileEdit;
+export type ResourceFileEditDto = languages.IWorkspaceFileEdit;
 
-export type ResourceTextEditDto = languages.WorkspaceTextEdit;
+export type ResourceTextEditDto = languages.IWorkspaceTextEdit;
 
 export interface DocumentLink {
   range: Range;
