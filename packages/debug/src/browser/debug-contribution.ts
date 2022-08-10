@@ -851,6 +851,14 @@ export class DebugContribution
       group: 'debug',
       order: 2,
     });
+
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      submenu: MenuId.EditorTitleRun,
+      label: localize('debug.menu.title.run'),
+      iconClass: getIcon('start'),
+      group: 'navigation',
+      order: -1,
+    });
   }
 
   protected isPosition(position: monaco.Position): boolean {
