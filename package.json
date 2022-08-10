@@ -69,11 +69,7 @@
     "lerna": "^4.0.0",
     "lint-staged": "^12.1.2",
     "lodash": "^4.17.15",
-    "node-gyp": "^9.0.0",
-    "ts-node": "^10.0.0",
-    "tslib": "^2.4.0",
-    "typescript": "4.6.4",
-    "webpack": "^4.39.3"
+    "node-gyp": "^9.0.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
@@ -140,6 +136,10 @@
     "simple-git": "^3.3.0",
     "temp": "^0.9.4",
     "ts-jest": "^28.0.0",
+    "ts-node": "^10.0.0",
+    "tslib": "^2.4.0",
+    "typescript": "4.6.4",
+    "webpack": "^4.39.3",
     "yargs": "^17.5.0",
     "yauzl": "^2.10.0"
   }
