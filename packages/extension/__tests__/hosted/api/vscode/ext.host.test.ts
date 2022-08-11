@@ -3,6 +3,8 @@ import { Deferred, ILoggerManagerClient, IReporter } from '@opensumi/ide-core-co
 import { REPORT_NAME } from '@opensumi/ide-core-common';
 import { AppConfig, DefaultReporter } from '@opensumi/ide-core-node';
 
+import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MainThreadExtensionLog } from '../../../../__mocks__/api/mainthread.extension.log';
 import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread.extension.service';
 import { MainThreadStorage } from '../../../../__mocks__/api/mathread.storage';
@@ -21,10 +23,10 @@ describe('Extension process test', () => {
   describe('RPCProtocol', () => {
     const proxyMaps = new Map();
     let extHostImpl: ExtensionHostServiceImpl;
-    let injector: Injector;
+    let injector: MockInjector;
 
     beforeEach(async () => {
-      injector = new Injector();
+      injector = createBrowserInjector([]);
       injector.addProviders(
         {
           token: AppConfig,
