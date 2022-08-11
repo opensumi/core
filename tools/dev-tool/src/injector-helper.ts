@@ -138,14 +138,27 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
   return app.injector as MockInjector;
 }
 
-export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
-  const injector = inj || new MockInjector();
+function getNodeMockInjector() {
+  const injector = new MockInjector();
+  injector.addProviders(
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManageClient,
+    },
+    {
+      token: ILogServiceManager,
+      useClass: MockLoggerService,
+    },
+    {
+      token: INodeLogger,
+      useValue: getDebugLogger(),
+    },
+  );
+  return injector;
+}
 
-  // Mock logger
-  injector.addProviders({
-    token: INodeLogger,
-    useValue: getDebugLogger(),
-  });
+export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
+  const injector = inj || getNodeMockInjector();
 
   for (const item of constructors) {
     const instance = injector.get(item);
