@@ -24,10 +24,11 @@ describe('TextModelBinding test for yText and TextModel', () => {
   let doc: Y.Doc;
   let user1: ReturnType<typeof createBindingWithTextModel>;
   let user2: ReturnType<typeof createBindingWithTextModel>;
+  let wsProvider: WebsocketProvider;
 
   beforeEach(() => {
     doc = new Y.Doc();
-    const wsProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'test', doc, { connect: false }); // we don't use wsProvider here
+    wsProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'test', doc, { connect: false }); // we don't use wsProvider here
     user1 = createBindingWithTextModel(doc, wsProvider.awareness);
     user2 = createBindingWithTextModel(doc, wsProvider.awareness);
   });
@@ -76,6 +77,21 @@ describe('TextModelBinding test for yText and TextModel', () => {
 
     disposable1.dispose();
     disposable2.dispose();
+  });
+
+  it('should set value of TextModel when current content of TextModel is not the same with Y.Text', () => {
+    user1.yText.insert(0, '1145141919810');
+
+    const model = monaco.editor.createModel('114514');
+    const modelSpy = jest.spyOn(model, 'setValue');
+    const binding = new TextModelBinding(doc.getText('test'), model, wsProvider.awareness);
+
+    expect(modelSpy).toBeCalled();
+    expect(model.getValue()).toBe('1145141919810');
+    expect(user1.textModel.getValue()).toBe('1145141919810');
+
+    model.dispose();
+    binding.dispose();
   });
 
   it('should correctly handle Y.Text event', () => {
