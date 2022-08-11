@@ -49,7 +49,6 @@ jobs:
         working-directory: ./opensumi
         run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
       
+      - uses: microsoft/playwright-github-action@v1
       - name: Init & Test
-        uses: microsoft/playwright-github-action@v1
-        with:
-          run: npm i && npm run init && npm run test:ui-ci
+        run: npm i && npm run init && npm run test:ui-ci
