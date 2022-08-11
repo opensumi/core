@@ -701,7 +701,7 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey, NoConverter | IM
       convert: (value) => ({
         stickyScroll: {
           enabled: value,
-        }
+        },
       }),
     }],
 

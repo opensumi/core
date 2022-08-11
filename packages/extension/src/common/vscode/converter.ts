@@ -814,8 +814,8 @@ export namespace WorkspaceEdit {
         // file operation
         result.edits.push({
           _type: types.WorkspaceEditType.File,
-          oldUri: entry.from,
-          newUri: entry.to,
+          oldResource: entry.from,
+          newResource: entry.to,
           options: entry.options,
           metadata: entry.metadata,
         } as model.ResourceFileEditDto);

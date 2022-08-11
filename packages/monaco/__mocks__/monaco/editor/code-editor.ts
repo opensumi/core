@@ -15,6 +15,11 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     super();
     this.id = ++MockedCodeEditor.ID;
   }
+
+  getBottomForLineNumber(lineNumber: number): number {
+    throw new Error('Method not implemented.');
+  }
+
   onDidChangeModelTokens: monaco.IEvent<monaco.editor.IModelTokensChangedEvent>;
   onDropIntoEditor: monaco.IEvent<{ readonly position: monaco.IPosition; readonly event: DragEvent }>;
   removeDecorations(decorationIds: string[]): void {
