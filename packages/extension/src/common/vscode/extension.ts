@@ -216,9 +216,9 @@ export function isLanguagePackExtension(manifest: { [key: string]: any }): boole
     : false;
 }
 
-export function throwProposedApiError(extension: IExtensionDescription): never {
-  // do we support `--enable-proposed-api`
-  throw new Error(
+export function throwProposedApiError(extension: IExtensionDescription): void {
+  // eslint-disable-next-line no-console
+  console.warn(
     `[${extension.name}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`,
   );
 }
