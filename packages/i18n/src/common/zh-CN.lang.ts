@@ -329,6 +329,7 @@ export const localizationBundle = {
     'debug.menu.add.conditional': '添加条件断点',
     'debug.menu.add.breakpoint': '添加断点',
     'debug.menu.disable.logpoint': '禁用记录点',
+    'debug.menu.title.run': '运行或调试...',
     'debug.stack.frame.noSource': '未知源',
     'debug.stack.frame.because': '因',
     'debug.stack.frame.stopped': '已暂停',
