@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
-import { AppConfig } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
 import { IExternalUriService } from '../services';
 import { electronEnv } from '../utils/electron';
 
