@@ -236,6 +236,8 @@ export class TextModelBinding {
       trackedOrigins: new Set([this]),
     });
 
+    this.setModelContent();
+
     // save current selections
     this.yText.doc?.on('beforeAllTransactions', this.beforeAllTransactionsHandler);
 
@@ -251,8 +253,6 @@ export class TextModelBinding {
 
     // when awareness changed, render decorations again
     this.awareness.on('change', this.renderDecorations);
-
-    this.setModelContent();
   }
 
   undo() {
