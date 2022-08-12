@@ -13,7 +13,7 @@ import {
   LogServiceForClientPath,
   OS,
 } from '@opensumi/ide-core-common';
-import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
+import { NodeModule, INodeLogger, ServerApp } from '@opensumi/ide-core-node';
 
 import { MockLogger, MockLoggerManageClient, MockLoggerService } from '../../../packages/core-browser/__mocks__/logger';
 import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage';
@@ -157,19 +157,13 @@ function getNodeMockInjector() {
   return injector;
 }
 
-export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
+export function createNodeInjector(modules: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
   const injector = inj || getNodeMockInjector();
-
-  for (const item of constructors) {
-    const instance = injector.get(item);
-    if (instance.providers) {
-      injector.addProviders(...instance.providers);
-    }
-  }
+  const app = new ServerApp({ modules, injector } as any);
 
   afterAll(() => {
-    injector.disposeAll();
+    app.injector.disposeAll();
   });
 
-  return injector as MockInjector;
+  return app.injector as MockInjector;
 }

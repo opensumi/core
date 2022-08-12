@@ -19,7 +19,7 @@ import { AppConfig, IServerApp, IServerAppOpts, ModuleConstructor, ServerAppCont
 import { injectInnerProviders } from './inner-providers';
 
 export class ServerApp implements IServerApp {
-  private injector: Injector;
+  private _injector: Injector;
 
   private config: IServerAppOpts;
 
@@ -42,7 +42,7 @@ export class ServerApp implements IServerApp {
    * @param opts
    */
   constructor(private opts: IServerAppOpts) {
-    this.injector = opts.injector || new Injector();
+    this._injector = opts.injector || new Injector();
     this.webSocketHandler = opts.webSocketHandler || [];
     // 使用外部传入的中间件
     this.use = opts.use || ((middleware) => null);
@@ -80,10 +80,14 @@ export class ServerApp implements IServerApp {
       extHostForkOptions: opts.extHostForkOptions,
     };
     this.bindProcessHandler();
-    this.initBaseProvider(opts);
+    this.initBaseProvider();
     this.createNodeModules(opts.modules, opts.modulesInstances);
     this.logger = this.injector.get(ILogServiceManager).getLogger(SupportLogNamespace.App);
     this.contributionsProvider = this.injector.get(ServerAppContribution);
+  }
+
+  get injector() {
+    return this._injector;
   }
 
   /**
@@ -104,7 +108,7 @@ export class ServerApp implements IServerApp {
     return this.contributionsProvider.getContributions();
   }
 
-  private initBaseProvider(opts: IServerAppOpts) {
+  private initBaseProvider() {
     // 创建 contributionsProvider
     createContributionProvider(this.injector, ServerAppContribution);
 
