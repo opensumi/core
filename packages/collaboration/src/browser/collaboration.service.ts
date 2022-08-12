@@ -17,6 +17,8 @@ import {
   ROOM_NAME,
   UserInfo,
   UserInfoForCollaborationContribution,
+  Y_REMOTE_SELECTION,
+  Y_REMOTE_SELECTION_HEAD,
 } from '../common';
 
 import { getColorByClientID } from './color';
@@ -103,9 +105,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   destroy() {
     this.yWebSocketProvider.awareness.off('update', this.updateCSSManagerWhenAwarenessUpdated);
     this.clientIDStyleAddedSet.forEach((clientID) => {
-      this.cssManager.removeClass(`yRemoteSelection-${clientID}`);
-      this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}`);
-      this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}::after`);
+      this.cssManager.removeClass(`${Y_REMOTE_SELECTION}-${clientID}`);
+      this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`);
+      this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`);
     });
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
@@ -176,7 +178,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     if (binding) {
       binding.dispose();
       this.bindingMap.delete(uri);
-      // todo ref = ref - 1 (through back service)
       this.logger.debug('Removed binding');
     }
   }
@@ -192,9 +193,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   }) => {
     if (changes.removed.length > 0) {
       changes.removed.forEach((clientID) => {
-        this.cssManager.removeClass(`yRemoteSelection-${clientID}`);
-        this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}`);
-        this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}::after`);
+        this.cssManager.removeClass(`${Y_REMOTE_SELECTION}-${clientID}`);
+        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`);
+        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`);
         this.clientIDStyleAddedSet.delete(clientID);
       });
     }
@@ -202,11 +203,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       changes.added.forEach((clientID) => {
         if (!this.clientIDStyleAddedSet.has(clientID)) {
           const color = getColorByClientID(clientID);
-          this.cssManager.addClass(`yRemoteSelection-${clientID}`, {
+          this.cssManager.addClass(`${Y_REMOTE_SELECTION}-${clientID}`, {
             backgroundColor: color,
             opacity: '0.25',
           });
-          this.cssManager.addClass(`yRemoteSelectionHead-${clientID}`, {
+          this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`, {
             position: 'absolute',
             borderLeft: `${color} solid 2px`,
             borderBottom: `${color} solid 2px`,
@@ -214,7 +215,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
             height: '100%',
             boxSizing: 'border-box',
           });
-          this.cssManager.addClass(`yRemoteSelectionHead-${clientID}::after`, {
+          this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`, {
             position: 'absolute',
             content: ' ',
             border: `3px solid ${color}`,

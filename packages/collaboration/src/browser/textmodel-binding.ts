@@ -13,7 +13,7 @@ import {
   IDisposable,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { ICollaborationService, UserInfo } from '../common';
+import { ICollaborationService, UserInfo, Y_REMOTE_SELECTION, Y_REMOTE_SELECTION_HEAD } from '../common';
 
 import { CollaborationService } from './collaboration.service';
 import { CursorWidgetRegistry } from './cursor-widget';
@@ -95,20 +95,20 @@ export class TextModelBinding {
               if (anchorAbs.index < headAbs.index) {
                 start = this.textModel.getPositionAt(anchorAbs.index);
                 end = this.textModel.getPositionAt(headAbs.index);
-                afterContentClassName = 'yRemoteSelectionHead yRemoteSelectionHead-' + clientID;
+                afterContentClassName = `${Y_REMOTE_SELECTION} ${Y_REMOTE_SELECTION_HEAD}-${clientID}`;
                 beforeContentClassName = null;
               } else {
                 start = this.textModel.getPositionAt(headAbs.index);
                 end = this.textModel.getPositionAt(anchorAbs.index);
                 afterContentClassName = null;
-                beforeContentClassName = 'yRemoteSelectionHead yRemoteSelectionHead-' + clientID;
+                beforeContentClassName = `${Y_REMOTE_SELECTION_HEAD} ${Y_REMOTE_SELECTION_HEAD}-${clientID}`;
               }
 
               newDecorations.push({
                 range: new Range(start.lineNumber, start.column, end.lineNumber, end.column),
                 options: {
                   description: 'yjs decoration ' + clientID,
-                  className: 'yRemoteSelection yRemoteSelection-' + clientID,
+                  className: `${Y_REMOTE_SELECTION} ${Y_REMOTE_SELECTION}-${clientID}`,
                   afterContentClassName,
                   beforeContentClassName,
                 },

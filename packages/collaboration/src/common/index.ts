@@ -1,5 +1,7 @@
 import * as Y from 'yjs';
 
+import { ICodeEditor } from '@opensumi/ide-monaco';
+
 export const ICollaborationService = Symbol('ICollaborationService');
 
 export interface ICollaborationService {
@@ -40,3 +42,26 @@ export interface UserInfo {
   nickname: string; // will be displayed on live cursor
   // may be more data fields
 }
+
+export interface ICursorWidgetRegistry {
+  /**
+   * update specified position of widget, but not invoke `layoutWidget`
+   */
+  updatePositionOf(clientID: number, lineNumber: number, column: number): void;
+  /**
+   * set all position of widget to null
+   * @param editor
+   */
+  removeAllPositions(editor: ICodeEditor): void;
+  /**
+   * update all position of widget, `layoutWidget` is invoked
+   */
+  layoutAllWidgets(): void;
+  /**
+   * destroy this registry and all its widgets
+   */
+  destroy(): void;
+}
+
+export const Y_REMOTE_SELECTION = 'yRemoteSelection';
+export const Y_REMOTE_SELECTION_HEAD = 'yRemoteSelectionHead';

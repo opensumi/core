@@ -9,31 +9,7 @@ import {
   IContentWidgetPosition,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 
-import { UserInfo } from '../common';
-
-import { getColorByClientID } from './color';
-
-export interface ICursorWidgetRegistry {
-  /**
-   * update specified position of widget, but not invoke `layoutWidget`
-   * @param id
-   * @param pos
-   */
-  updatePositionOf(clientID: number, lineNumber: number, column: number): void;
-  /**
-   * set all position of widget to null
-   * @param editor
-   */
-  removeAllPositions(editor: ICodeEditor): void;
-  /**
-   * update all position of widget, `layoutWidget` is invoked
-   */
-  layoutAllWidgets(): void;
-  /**
-   * destroy this registry and all its widgets
-   */
-  destroy(): void;
-}
+import { ICursorWidgetRegistry, UserInfo, Y_REMOTE_SELECTION } from '../common';
 
 const createPositionFrom = (lineNumber: number, column: number): IContentWidgetPosition => ({
   position: { lineNumber, column },
@@ -155,7 +131,7 @@ export class CursorWidget implements IContentWidget {
     this.domNode = document.createElement('div');
     this.domNode.innerHTML = nickname;
     this.domNode.style.opacity = '1';
-    this.domNode.className = `yRemoteSelection-${clientID}`;
+    this.domNode.className = `${Y_REMOTE_SELECTION}-${clientID}`;
     // set id
     this.id = `cursor-widget-${nickname}`;
   }
