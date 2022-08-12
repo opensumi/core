@@ -5,13 +5,10 @@ import * as Y from 'yjs';
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import {
-  EditorActiveResourceStateChangedEvent,
-  EditorDocumentModelCreationEvent,
-  EditorGroupCloseEvent,
-} from '@opensumi/ide-editor/lib/browser';
+import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
+import { ICSSStyleService } from '@opensumi/ide-theme';
 
 import {
   CollaborationServiceForClientPath,
@@ -22,6 +19,7 @@ import {
   UserInfoForCollaborationContribution,
 } from '../common';
 
+import { getColorByClientID } from './color';
 import { CursorWidgetRegistry } from './cursor-widget';
 import { TextModelBinding } from './textmodel-binding';
 
@@ -42,6 +40,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(ICSSStyleService)
+  private cssManager: ICSSStyleService;
+
+  private clientIDStyleAddedSet: Set<number> = new Set();
 
   // hold editor => registry
   private cursorRegistryMap: Map<ICodeEditor, CursorWidgetRegistry> = new Map();
@@ -89,13 +92,21 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
     this.yTextMap.observe(this.yMapObserver);
 
-    // TODO add userInfo to awareness field
+    // add userInfo to awareness field
     this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
 
     this.logger.debug('Collaboration initialized');
+
+    this.yWebSocketProvider.awareness.on('update', this.updateCSSManagerWhenAwarenessUpdated);
   }
 
   destroy() {
+    this.yWebSocketProvider.awareness.off('update', this.updateCSSManagerWhenAwarenessUpdated);
+    this.clientIDStyleAddedSet.forEach((clientID) => {
+      this.cssManager.removeClass(`yRemoteSelection-${clientID}`);
+      this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}`);
+      this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}::after`);
+    });
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
     this.bindingMap.forEach((binding) => binding.dispose());
@@ -170,7 +181,52 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
-  // TODO TextModel的创建可以监听EditorDocumentModelCreationEvent 由于Binding和TextModel是一一对应的 这样做会容易处理得多
+  public getCursorWidgetRegistry(editor: ICodeEditor) {
+    return this.cursorRegistryMap.get(editor);
+  }
+
+  private updateCSSManagerWhenAwarenessUpdated = (changes: {
+    added: number[];
+    updated: number[];
+    removed: number[];
+  }) => {
+    if (changes.removed.length > 0) {
+      changes.removed.forEach((clientID) => {
+        this.cssManager.removeClass(`yRemoteSelection-${clientID}`);
+        this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}`);
+        this.cssManager.removeClass(`yRemoteSelectionHead-${clientID}::after`);
+        this.clientIDStyleAddedSet.delete(clientID);
+      });
+    }
+    if (changes.added.length > 0 || changes.updated.length > 0) {
+      changes.added.forEach((clientID) => {
+        if (!this.clientIDStyleAddedSet.has(clientID)) {
+          const color = getColorByClientID(clientID);
+          this.cssManager.addClass(`yRemoteSelection-${clientID}`, {
+            backgroundColor: color,
+            opacity: '0.25',
+          });
+          this.cssManager.addClass(`yRemoteSelectionHead-${clientID}`, {
+            position: 'absolute',
+            borderLeft: `${color} solid 2px`,
+            borderBottom: `${color} solid 2px`,
+            borderTop: `${color} solid 2px`,
+            height: '100%',
+            boxSizing: 'border-box',
+          });
+          this.cssManager.addClass(`yRemoteSelectionHead-${clientID}::after`, {
+            position: 'absolute',
+            content: ' ',
+            border: `3px solid ${color}`,
+            left: '-4px',
+            top: '-5px',
+          });
+          this.clientIDStyleAddedSet.add(clientID);
+        }
+      });
+    }
+  };
+
   @OnEvent(EditorGroupCloseEvent)
   private groupCloseHandler(e: EditorGroupCloseEvent) {
     this.logger.debug('Group close tabs', e);
@@ -204,10 +260,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     // check if editor has its widgetRegistry
     if (monacoEditor && !this.cursorRegistryMap.has(monacoEditor)) {
-      this.cursorRegistryMap.set(
-        monacoEditor,
-        this.injector.get(CursorWidgetRegistry, [monacoEditor, this.yWebSocketProvider.awareness]),
-      );
+      const registry = this.injector.get(CursorWidgetRegistry, [monacoEditor, this.yWebSocketProvider.awareness]);
+      this.cursorRegistryMap.set(monacoEditor, registry);
+      monacoEditor.onDidDispose(() => {
+        registry.destroy();
+      });
     }
 
     // check if there exists any binding

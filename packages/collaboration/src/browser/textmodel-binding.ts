@@ -63,11 +63,10 @@ export class TextModelBinding {
         const currentDecorations = this.decorations.get(editor) ?? [];
         const newDecorations: IModelDeltaDecoration[] = []; // re-populate decorations
 
-        // FIXME it is just a test, will call method from collaboration service
-        const cursorWidgetRegistry: CursorWidgetRegistry = this.collaborationService['cursorRegistryMap'].get(editor)!;
+        const cursorWidgetRegistry = this.collaborationService.getCursorWidgetRegistry(editor);
 
         // set position of CursorWidget to null
-        cursorWidgetRegistry.removeAllPositions();
+        cursorWidgetRegistry?.removeAllPositions();
 
         this.awareness.getStates().forEach((state, clientID) => {
           // if clientID is not mine, and selection from this client is not empty
@@ -116,14 +115,13 @@ export class TextModelBinding {
               });
 
               // update position
-              const { nickname }: UserInfo = state['user-info'];
-              cursorWidgetRegistry.updatePositionOf(nickname, end.lineNumber, end.column);
+              cursorWidgetRegistry?.updatePositionOf(clientID, end.lineNumber, end.column);
             }
           }
         });
 
         // invoke layoutWidget method to update update all cursor widgets
-        cursorWidgetRegistry.layoutAllWidgets();
+        cursorWidgetRegistry?.layoutAllWidgets();
 
         // delta update decorations
         this.decorations.set(editor, editor.deltaDecorations(currentDecorations, newDecorations));

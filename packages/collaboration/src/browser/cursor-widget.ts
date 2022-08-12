@@ -11,13 +11,15 @@ import {
 
 import { UserInfo } from '../common';
 
+import { getColorByClientID } from './color';
+
 export interface ICursorWidgetRegistry {
   /**
    * update specified position of widget, but not invoke `layoutWidget`
    * @param id
    * @param pos
    */
-  updatePositionOf(id: string, lineNumber: number, column: number): void;
+  updatePositionOf(clientID: number, lineNumber: number, column: number): void;
   /**
    * set all position of widget to null
    * @param editor
@@ -52,9 +54,9 @@ export class CursorWidgetRegistry implements ICursorWidgetRegistry {
   /**
    * store all widgets here, and widgets will be automatically added or removed from this registry
    *
-   * nickname => widget
+   * clientID => widget
    */
-  widgets: Map<string, CursorWidget> = new Map();
+  widgets: Map<number, CursorWidget> = new Map();
 
   // target editor
   editor: ICodeEditor;
@@ -67,23 +69,23 @@ export class CursorWidgetRegistry implements ICursorWidgetRegistry {
     this.editor = editor;
     this.awareness = awareness;
     this.disposable = editor.onDidDispose(() => this.destroy());
-    awareness.on('change', this.onAwarenessStateChange);
+    awareness.on('update', this.onAwarenessStateChange);
 
     this.getWidgetFromRegistry();
   }
 
   private getWidgetFromRegistry() {
     // create widget from awareness
-    this.awareness.getStates().forEach((state) => {
+    this.awareness.getStates().forEach((state, clientID) => {
       const info: UserInfo = state['user-info'];
       if (info) {
-        this.createWidget(info.nickname);
+        this.createWidget(clientID, info.nickname);
       }
     });
   }
 
-  updatePositionOf(nickname: string, lineNumber: number, column: number) {
-    const widget = this.widgets.get(nickname);
+  updatePositionOf(clientID: number, lineNumber: number, column: number) {
+    const widget = this.widgets.get(clientID);
     if (widget) {
       widget.position = createPositionFrom(lineNumber, column);
     }
@@ -106,58 +108,54 @@ export class CursorWidgetRegistry implements ICursorWidgetRegistry {
     this.widgets.forEach((widget) => {
       this.editor.removeContentWidget(widget);
     });
-    this.awareness.off('change', this.onAwarenessStateChange);
+    this.awareness.off('update', this.onAwarenessStateChange);
     if (this.disposable) {
       this.disposable.dispose();
     }
   }
 
-  private createWidget(nickname: string) {
-    if (!this.widgets.has(nickname)) {
-      const widget = this.injector.get(CursorWidget, [nickname]);
+  private createWidget(clientID: number, nickname: string) {
+    if (!this.widgets.has(clientID)) {
+      const widget = this.injector.get(CursorWidget, [nickname, clientID]);
       this.editor.addContentWidget(widget);
-      this.widgets.set(nickname, widget);
+      this.widgets.set(clientID, widget);
     }
   }
 
-  private deleteWidget(nickname: string) {
-    const widget = this.widgets.get(nickname);
+  private deleteWidget(clientID: number) {
+    const widget = this.widgets.get(clientID);
     if (widget) {
       this.editor.removeContentWidget(widget);
-      this.widgets.delete(nickname);
+      this.widgets.delete(clientID);
     }
   }
 
   private onAwarenessStateChange = (changes: { added: number[]; updated: number[]; removed: number[] }) => {
-    this.getWidgetFromRegistry();
-
-    // TODO when was removed
-    if (changes.added.length > 0) {
+    // clientID added, updated or removed
+    if (changes.added.length > 0 || changes.updated.length > 0) {
+      this.getWidgetFromRegistry();
     }
+
     if (changes.removed.length > 0) {
+      changes.removed.forEach((clientID) => this.deleteWidget(clientID));
     }
   };
 }
 
-// TODO get color by nick name
-const getColorByNickName = (nickname: string): string => 'pink';
-
 @Injectable({ multiple: true })
 export class CursorWidget implements IContentWidget {
-  // domNode
   private domNode: HTMLElement;
 
   private id: string;
 
   position: IContentWidgetPosition | null = null;
 
-  constructor(nickname: string) {
+  constructor(nickname: string, clientID: string) {
     // init dom node
     this.domNode = document.createElement('div');
     this.domNode.innerHTML = nickname;
-    this.domNode.style.color = 'white';
-    this.domNode.style.background = getColorByNickName(nickname);
-    this.domNode.style.fontSize = '0.8rem';
+    this.domNode.style.opacity = '1';
+    this.domNode.className = `yRemoteSelection-${clientID}`;
     // set id
     this.id = `cursor-widget-${nickname}`;
   }
