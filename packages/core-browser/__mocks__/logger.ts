@@ -4,7 +4,6 @@ import {
   BaseLogServiceOptions,
   Emitter,
   ILoggerManagerClient,
-  ILogService,
   ILogServiceClient,
   ILogServiceManager,
   LogLevel,

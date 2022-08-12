@@ -25,17 +25,9 @@ describe('encoding', () => {
   let injector: Injector;
 
   beforeEach(() => {
-    root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+    root = FileUri.create(temp.mkdirSync('node-fs-root'));
 
-    injector = createNodeInjector(
-      [FileServiceModule],
-      new Injector([
-        {
-          token: AppConfig,
-          useValue: {},
-        },
-      ]),
-    );
+    injector = createNodeInjector([FileServiceModule]);
 
     fileService = injector.get(IFileService);
   });

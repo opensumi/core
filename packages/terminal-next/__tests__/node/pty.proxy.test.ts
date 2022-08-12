@@ -27,7 +27,7 @@ describe('PtyService function should be valid', () => {
   }
 
   beforeAll(async () => {
-    injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
+    injector = createNodeInjector([TerminalNodePtyModule]);
 
     // 双容器模式下，需要以本文件作为entry单独打包出一个可执行文件，运行在DEV容器中
     proxyProvider = new PtyServiceProxyRPCProvider({ path: ipcPath });
