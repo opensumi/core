@@ -8,14 +8,21 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
+import { ICSSStyleService } from '@opensumi/ide-theme';
 
 import {
   CollaborationServiceForClientPath,
   ICollaborationService,
   ICollaborationServiceForClient,
   ROOM_NAME,
+  UserInfo,
+  UserInfoForCollaborationContribution,
+  Y_REMOTE_SELECTION,
+  Y_REMOTE_SELECTION_HEAD,
 } from '../common';
 
+import { getColorByClientID } from './color';
+import { CursorWidgetRegistry } from './cursor-widget';
 import { TextModelBinding } from './textmodel-binding';
 
 import './styles.less';
@@ -35,6 +42,16 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(ICSSStyleService)
+  private cssManager: ICSSStyleService;
+
+  private clientIDStyleAddedSet: Set<number> = new Set();
+
+  // hold editor => registry
+  private cursorRegistryMap: Map<ICodeEditor, CursorWidgetRegistry> = new Map();
+
+  private userInfo: UserInfo;
 
   private yDoc: Y.Doc;
 
@@ -76,13 +93,43 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yTextMap = this.yDoc.getMap();
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
     this.yTextMap.observe(this.yMapObserver);
+
+    // add userInfo to awareness field
+    this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
+
     this.logger.debug('Collaboration initialized');
+
+    this.yWebSocketProvider.awareness.on('update', this.updateCSSManagerWhenAwarenessUpdated);
   }
 
   destroy() {
+    this.yWebSocketProvider.awareness.off('update', this.updateCSSManagerWhenAwarenessUpdated);
+    this.clientIDStyleAddedSet.forEach((clientID) => {
+      this.cssManager.removeClass(`${Y_REMOTE_SELECTION}-${clientID}`);
+      this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`);
+      this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`);
+    });
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
     this.bindingMap.forEach((binding) => binding.dispose());
+  }
+
+  getUseInfo(): UserInfo {
+    if (!this.userInfo) {
+      throw new Error('User info is not registered');
+    }
+
+    return this.userInfo;
+  }
+
+  setUserInfo(contribution: UserInfoForCollaborationContribution) {
+    if (this.userInfo) {
+      throw new Error('User info is already registered');
+    }
+
+    if (contribution.info) {
+      this.userInfo = contribution.info;
+    }
   }
 
   undoOnCurrentResource() {
@@ -131,10 +178,55 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     if (binding) {
       binding.dispose();
       this.bindingMap.delete(uri);
-      // todo ref = ref - 1 (through back service)
       this.logger.debug('Removed binding');
     }
   }
+
+  public getCursorWidgetRegistry(editor: ICodeEditor) {
+    return this.cursorRegistryMap.get(editor);
+  }
+
+  private updateCSSManagerWhenAwarenessUpdated = (changes: {
+    added: number[];
+    updated: number[];
+    removed: number[];
+  }) => {
+    if (changes.removed.length > 0) {
+      changes.removed.forEach((clientID) => {
+        this.cssManager.removeClass(`${Y_REMOTE_SELECTION}-${clientID}`);
+        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`);
+        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`);
+        this.clientIDStyleAddedSet.delete(clientID);
+      });
+    }
+    if (changes.added.length > 0 || changes.updated.length > 0) {
+      changes.added.forEach((clientID) => {
+        if (!this.clientIDStyleAddedSet.has(clientID)) {
+          const color = getColorByClientID(clientID);
+          this.cssManager.addClass(`${Y_REMOTE_SELECTION}-${clientID}`, {
+            backgroundColor: color,
+            opacity: '0.25',
+          });
+          this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`, {
+            position: 'absolute',
+            borderLeft: `${color} solid 2px`,
+            borderBottom: `${color} solid 2px`,
+            borderTop: `${color} solid 2px`,
+            height: '100%',
+            boxSizing: 'border-box',
+          });
+          this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`, {
+            position: 'absolute',
+            content: ' ',
+            border: `3px solid ${color}`,
+            left: '-4px',
+            top: '-5px',
+          });
+          this.clientIDStyleAddedSet.add(clientID);
+        }
+      });
+    }
+  };
 
   @OnEvent(EditorGroupCloseEvent)
   private groupCloseHandler(e: EditorGroupCloseEvent) {
@@ -166,6 +258,15 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
     const binding = this.getBinding(uri);
+
+    // check if editor has its widgetRegistry
+    if (monacoEditor && !this.cursorRegistryMap.has(monacoEditor)) {
+      const registry = this.injector.get(CursorWidgetRegistry, [monacoEditor, this.yWebSocketProvider.awareness]);
+      this.cursorRegistryMap.set(monacoEditor, registry);
+      monacoEditor.onDidDispose(() => {
+        registry.destroy();
+      });
+    }
 
     // check if there exists any binding
     if (!binding) {

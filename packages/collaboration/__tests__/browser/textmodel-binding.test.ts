@@ -3,16 +3,28 @@ import { Awareness } from 'y-protocols/awareness';
 import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
+import { Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
+import { ICollaborationService } from '../../src/common';
+
+const injector = new Injector();
+
+injector.addProviders({
+  token: ICollaborationService,
+  useValue: {
+    getCursorWidgetRegistry: jest.fn(),
+  },
+});
 
 const createBindingWithTextModel = (doc: Y.Doc, awareness: Awareness) => {
   const textModel = monaco.editor.createModel('');
   const yText = doc.getText('test');
-  const binding = new TextModelBinding(yText, textModel, awareness);
+  // const binding = new TextModelBinding(yText, textModel, awareness);
+  const binding = injector.get(TextModelBinding, [yText, textModel, awareness]);
   return {
     textModel,
     binding,
@@ -31,6 +43,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     wsProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'test', doc, { connect: false }); // we don't use wsProvider here
     user1 = createBindingWithTextModel(doc, wsProvider.awareness);
     user2 = createBindingWithTextModel(doc, wsProvider.awareness);
+    jest.mock('@opensumi/di');
   });
 
   afterEach(() => {
