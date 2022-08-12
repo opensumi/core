@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color, RGBA } from '../../common/color';
-import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
+import { registerColor, transparent, lighten, darken, lessProminent } from '../utils';
 
 import { badgeBackground, badgeForeground } from './badge';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';

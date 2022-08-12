@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
+import { registerColor } from '../../utils';
 import { ACTIVITY_BAR_BACKGROUND } from '../activity-bar';
 
 /* --- activity bar --- */

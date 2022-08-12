@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color, RGBA } from '../../common/color';
-import { registerColor } from '../color-registry';
+import { registerColor } from '../utils';
 
 import { dropdownBackground, dropdownForeground, dropdownBorder } from './dropdown';
 import { editorWidgetBorder } from './editor';

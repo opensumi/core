@@ -9,7 +9,7 @@ import { DomListener } from '../dom';
 import { AbstractMenuService, MenuId, generateCtxMenu, ICtxMenuRenderer } from '../menu/next';
 import { PreferenceService } from '../preferences';
 import { useInjectable } from '../react-hooks';
-import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers';
+import { ConfigContext, ConfigProvider, AppConfig } from '../react-providers/config-provider';
 import { getIcon } from '../style/icon/icon';
 
 import {

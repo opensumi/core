@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
+import { registerColor } from '../../utils';
 
 // 断网是状态栏用的颜色
 // 没有很好的 backup token，先写死这个色值

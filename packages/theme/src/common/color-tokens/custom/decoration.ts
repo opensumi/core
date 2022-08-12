@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
+import { registerColor } from '../../utils';
 
 // https://github.com/microsoft/vscode/blob/master/extensions/git/package.json#L1696
 // 将 vscode git 插件的颜色变量复制一份，应对不存在 git 插件的场景，比如 web scm/文件树/变更树等场景
