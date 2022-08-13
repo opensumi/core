@@ -644,7 +644,7 @@ export namespace SEARCH_COMMANDS {
   const CATEGORY = 'search';
 
   export const OPEN_SEARCH: Command = {
-    id: 'content-search.openSearch',
+    id: 'workbench.action.findInFiles',
     category: CATEGORY,
     label: 'Open search sidebar',
   };
