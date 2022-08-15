@@ -25,17 +25,19 @@ import {
   toDisposable,
   dispose,
   parseLinkedText,
-  isDefined,
+  IDisposable,
+  timeout,
 } from '@opensumi/ide-core-common';
 
-import { timeout, IDisposable, IOpenerService, toMarkdown } from '..';
 import { open } from '../components';
+import { toMarkdown } from '../markdown';
+import { IOpenerService } from '../opener';
 import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
 
 import { ProgressBar } from './progress-bar';
 import { ProgressIndicator } from './progress-indicator';
 
-import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
+import { IProgressService, IProgressIndicator, IProgressRunner } from './index';
 
 const { format } = strings;
 
@@ -304,7 +306,7 @@ export class ProgressService implements IProgressService {
 
     const createNotification = (message: string, silent: boolean, increment?: number): string => {
       const buttons: string[] = [];
-      const closeable = isDefined(options.closeable) ? options.closeable : true;
+      const closeable = options.closeable ?? true;
       if (options.buttons) {
         // TODO: with progress Notification暂不支持自定义按钮
       }
