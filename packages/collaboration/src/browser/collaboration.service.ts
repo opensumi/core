@@ -3,9 +3,15 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { Deferred, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { EditorActiveResourceStateChangedEvent, EditorGroupCloseEvent } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorDocumentModelCreationEvent,
+  EditorDocumentModelRemovalEvent,
+  EditorGroupCloseEvent,
+  EditorGroupOpenEvent,
+  IEditorDocumentModelService,
+} from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
@@ -27,11 +33,6 @@ import { TextModelBinding } from './textmodel-binding';
 
 import './styles.less';
 
-class PendingBindingPayload {
-  model: ITextModel;
-  editor: ICodeEditor | undefined;
-}
-
 @Injectable()
 export class CollaborationService extends WithEventBus implements ICollaborationService {
   @Autowired(INJECTOR_TOKEN)
@@ -45,6 +46,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @Autowired(ICSSStyleService)
   private cssManager: ICSSStyleService;
+
+  @Autowired(IEditorDocumentModelService)
+  private docModelManager: IEditorDocumentModelService;
 
   private clientIDStyleAddedSet: Set<number> = new Set();
 
@@ -61,25 +65,24 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private bindingMap: Map<string, TextModelBinding> = new Map();
 
-  private pendingBinding: Map<string, PendingBindingPayload> = new Map();
+  private yMapReadyMap: Map<string, Deferred<void>> = new Map();
+
+  private bindingReadyMap: Map<string, Deferred<void>> = new Map();
 
   private yMapObserver = (event: Y.YMapEvent<Y.Text>) => {
     const changes = event.changes.keys;
-    this.logger.debug('Change occurs', changes);
     changes.forEach((change, key) => {
+      this.logger.debug('change action', change.action, key);
       if (change.action === 'add') {
-        if (this.pendingBinding.has(key) && !this.bindingMap.has(key)) {
-          // retrieve from payload object, then create new binding
-          const payload = this.pendingBinding.get(key)!;
-          const binding = this.createAndSetBinding(key, payload.model);
-          if (payload.editor) {
-            binding.addEditor(payload.editor);
-          }
-          this.pendingBinding.delete(key);
-          this.logger.debug('Binding created', binding);
+        const { yMapReady } = this.getDeferred(key);
+        const binding = this.getBinding(key);
+        if (binding) {
+          const text = this.yTextMap.get(key)!;
+          binding.changeYText(text);
         }
+        yMapReady.resolve();
       } else if (change.action === 'delete') {
-        this.removeBinding(key);
+        this.resetDeferredYMapKey(key);
       }
     });
   };
@@ -143,6 +146,32 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     if (uri && this.bindingMap.has(uri)) {
       this.bindingMap.get(uri)!.redo();
+    }
+  }
+
+  private getDeferred(uri: string) {
+    if (!this.bindingReadyMap.has(uri)) {
+      this.bindingReadyMap.set(uri, new Deferred());
+    }
+    if (!this.yMapReadyMap.has(uri)) {
+      this.yMapReadyMap.set(uri, new Deferred());
+    }
+
+    const bindingReady = this.bindingReadyMap.get(uri)!;
+    const yMapReady = this.yMapReadyMap.get(uri)!;
+
+    return { bindingReady, yMapReady };
+  }
+
+  private resetDeferredYMapKey(uri: string) {
+    if (this.yMapReadyMap.has(uri)) {
+      this.yMapReadyMap.set(uri, new Deferred());
+    }
+  }
+
+  private resetDeferredBinding(uri: string) {
+    if (this.bindingReadyMap.has(uri)) {
+      this.bindingReadyMap.set(uri, new Deferred());
     }
   }
 
@@ -228,68 +257,67 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   };
 
-  @OnEvent(EditorGroupCloseEvent)
-  private groupCloseHandler(e: EditorGroupCloseEvent) {
-    this.logger.debug('Group close tabs', e);
-    const uri = e.payload.resource.uri.toString();
-    // scan all opened uri
-    const anyGroupHasThisUri = this.workbenchEditorService.getAllOpenedUris().find((u) => u === e.payload.resource.uri);
-    if (!anyGroupHasThisUri) {
-      // remove binding from uri
-      this.removeBinding(uri);
+  @OnEvent(EditorDocumentModelCreationEvent)
+  private async editorDocumentModelCreationHandler(e: EditorDocumentModelCreationEvent) {
+    const uriString = e.payload.uri.toString();
+    this.logger.debug('editor doc model created', uriString);
+    const { bindingReady, yMapReady } = this.getDeferred(uriString);
+    await this.backService.requestInitContent(uriString);
+    this.logger.debug('init content requested');
+    await yMapReady.promise;
+    this.logger.debug('yMap ready');
+    // get monaco model from model ref by uri
+    const ref = this.docModelManager.getModelReference(e.payload.uri);
+    const monacoModel = ref?.instance.getMonacoModel();
+    ref?.dispose();
+    if (monacoModel) {
+      this.createAndSetBinding(uriString, monacoModel);
     }
+    bindingReady.resolve();
+    this.logger.debug('binding ready');
   }
 
-  @OnEvent(EditorActiveResourceStateChangedEvent)
-  private editorActiveResourceStateChangedHandler(e: EditorActiveResourceStateChangedEvent) {
-    // only support code editor
-    if (e.payload.openType === null || e.payload.openType?.type !== 'code') {
-      return;
+  @OnEvent(EditorDocumentModelRemovalEvent)
+  private async editorDocumentModelRemovalHandler(e: EditorDocumentModelRemovalEvent) {
+    const uriString = e.payload.codeUri.toString();
+    const { bindingReady } = this.getDeferred(uriString);
+    await bindingReady.promise;
+    this.removeBinding(uriString);
+    this.resetDeferredBinding(uriString);
+    this.logger.debug('editor doc model removed');
+  }
+
+  @OnEvent(EditorGroupOpenEvent)
+  private async groupOpenHandler(e: EditorGroupOpenEvent) {
+    const uriString = e.payload.resource.uri.toString();
+    const { bindingReady } = this.getDeferred(uriString);
+    await bindingReady.promise;
+    const binding = this.getBinding(uriString);
+    if (binding) {
+      binding.addEditor(e.payload.group.codeEditor.monacoEditor);
     }
-
-    // get current uri
-    const uri = this.workbenchEditorService.currentResource?.uri.toString();
-    const text = this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.getText();
-    const textModel = this.workbenchEditorService.currentCodeEditor?.currentDocumentModel?.getMonacoModel();
-
-    if (!uri || text === undefined || textModel === undefined) {
-      return;
-    }
-
-    const monacoEditor = this.workbenchEditorService.currentCodeEditor?.monacoEditor;
-    const binding = this.getBinding(uri);
-
+    // create content widget registry
     // check if editor has its widgetRegistry
-    if (monacoEditor && !this.cursorRegistryMap.has(monacoEditor)) {
+    const monacoEditor = e.payload.group.codeEditor.monacoEditor;
+    if (!this.cursorRegistryMap.has(monacoEditor) && monacoEditor) {
       const registry = this.injector.get(CursorWidgetRegistry, [monacoEditor, this.yWebSocketProvider.awareness]);
       this.cursorRegistryMap.set(monacoEditor, registry);
       monacoEditor.onDidDispose(() => {
+        this.cursorRegistryMap.delete(monacoEditor);
         registry.destroy();
       });
     }
+  }
 
-    // check if there exists any binding
-    if (!binding) {
-      if (this.yTextMap.has(uri)) {
-        const binding = this.createAndSetBinding(uri, textModel);
-        if (monacoEditor) {
-          // add current editor after binding creation
-          binding.addEditor(monacoEditor);
-        }
-        this.logger.debug('Binding created', binding);
-      } else {
-        // tell server to set init content
-        this.backService.requestInitContent(uri);
-        // binding will be eventually created on yMap event
-
-        // FIXME if file not found?
-        this.pendingBinding.set(uri, { model: textModel, editor: monacoEditor });
-      }
-    } else {
-      if (monacoEditor) {
-        // if binding, directly add current editor
-        binding.addEditor(monacoEditor);
-      }
+  @OnEvent(EditorGroupCloseEvent)
+  private async groupCloseHandler(e: EditorGroupCloseEvent) {
+    this.logger.debug('Group close tabs', e);
+    const uriString = e.payload.resource.uri.toString();
+    const { bindingReady } = this.getDeferred(uriString);
+    await bindingReady.promise;
+    const binding = this.getBinding(uriString);
+    if (binding) {
+      binding.removeEditor(e.payload.group.codeEditor.monacoEditor);
     }
   }
 }

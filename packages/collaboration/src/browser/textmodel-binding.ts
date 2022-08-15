@@ -54,6 +54,12 @@ export class TextModelBinding {
     this.initialize();
   }
 
+  changeYText(newText: Y.Text) {
+    this.dispose();
+    this.yText = newText;
+    this.initialize();
+  }
+
   /**
    * Render decorations
    */
@@ -299,11 +305,7 @@ export class TextModelBinding {
     this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);
     this.yText.unobserve(this.yTextObserver);
     this.awareness.off('change', this.renderDecorations);
-
-    // destroy all widgets, no no no, should manage widget in collab service
   }
-
-  // TODO when active resource changed, re-render decoration?
 }
 
 class RelativeSelection {
