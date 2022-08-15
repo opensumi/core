@@ -137,6 +137,25 @@ describe('CollaborationService basic routines', () => {
     expect(redoSpy).toBeCalled();
   });
 
+  it('should change Y.Text when remote Y.Text was changed', async () => {
+    // simulate Y.Text delete and add
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const binding = service['bindingMap'].get(workbenchEditorService.uri.toString())!;
+    expect(binding).toBeInstanceOf(TextModelBinding);
+    expect(binding['yText'].toJSON()).toBeTruthy();
+
+    const spy = jest.spyOn(binding, 'changeYText');
+    const { yMapReady } = service['getDeferred'](workbenchEditorService.uri.toString());
+
+    service['yTextMap'].delete(workbenchEditorService.uri.toString());
+    service['yTextMap'].set(workbenchEditorService.uri.toString(), new Y.Text('1919810'));
+
+    await yMapReady.promise;
+
+    expect(spy).toBeCalled();
+    expect(binding['yText'].toJSON()).toBe('1919810');
+  });
+
   it('should remove binding on EditorDocumentModelRemovalEvent', async () => {
     const event = new EditorDocumentModelRemovalEvent({
       codeUri: new URI(workbenchEditorService.uri.toString()),
