@@ -22,9 +22,6 @@ export class CollaborationServiceForClient implements ICollaborationServiceForCl
 
   private yMap: Y.Map<Y.Text>;
 
-  // todo record ref count?
-  private openedUriSet: Set<string> = new Set();
-
   constructor() {
     // init
     this.yDoc = this.server.getYDoc(ROOM_NAME);
@@ -37,13 +34,22 @@ export class CollaborationServiceForClient implements ICollaborationServiceForCl
     });
 
     this.fileService.onFilesChanged((e) => {
-      e.changes.forEach((v) => {
-        if (v.type === FileChangeType.DELETED) {
-          this.logger.debug('on file event deleted', v);
-          this.removeYText(v.uri);
-          this.logger.debug('removed Y.Text of', v.uri);
-        }
-      });
+      e.changes
+        .filter((e) => e.type === FileChangeType.DELETED)
+        .forEach((e) => {
+          if (e.type === FileChangeType.DELETED) {
+            this.logger.debug('on file event deleted', e);
+            this.removeYText(e.uri);
+            this.logger.debug('removed Y.Text of', e.uri);
+          }
+        });
+
+      e.changes
+        .filter((e) => e.type === FileChangeType.ADDED)
+        .forEach((e) => {
+          this.logger.debug('on file event added', e);
+          this.requestInitContent(e.uri);
+        });
     });
   }
 
