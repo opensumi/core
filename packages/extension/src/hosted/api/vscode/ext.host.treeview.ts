@@ -461,11 +461,6 @@ class ExtHostTreeView<T> implements IDisposable {
     // 如果存在缓存数据，优先从缓存中获取子节点
     if (!cachedElement && this.roots) {
       return this.roots;
-    } else if (cachedElement) {
-      const cache = this.nodes.get(cachedElement);
-      if (cache) {
-        return cache;
-      }
     }
     let children: TreeViewItem[] | undefined;
     this.isFetchingChildren = true;
