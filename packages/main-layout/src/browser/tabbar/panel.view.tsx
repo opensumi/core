@@ -120,7 +120,11 @@ const ContainerView: React.FC<{
             />
           </ConfigProvider>
         ) : (
-          <AccordionContainer views={component.views} containerId={component.options!.containerId} />
+          <AccordionContainer
+            views={component.views}
+            minSize={component.options!.miniSize}
+            containerId={component.options!.containerId}
+          />
         )}
       </div>
     </div>
