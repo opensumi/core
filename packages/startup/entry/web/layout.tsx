@@ -29,7 +29,6 @@ export function DefaultLayout() {
           />
         </SplitPanel>
         <SlotRenderer
-          backgroundColor={colors.sideBarBackground}
           slot='right'
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
