@@ -257,10 +257,12 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
           const schema = this.schemaProvider.getPreferenceProperty(prefId);
           const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : getPreferenceItemLabel(pref);
           const description = schema && replaceLocalizePlaceholder(schema.description);
+          const markdownDescription = schema && replaceLocalizePlaceholder(schema.markdownDescription);
           return (
             this.isContainSearchValue(prefId, search) ||
             this.isContainSearchValue(prefLabel, search) ||
-            (description && this.isContainSearchValue(description, search))
+            (description && this.isContainSearchValue(description, search)) ||
+            (markdownDescription && this.isContainSearchValue(markdownDescription, search))
           );
         });
         if (sec.preferences.length > 0) {

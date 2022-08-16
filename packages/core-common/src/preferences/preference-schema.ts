@@ -78,6 +78,9 @@ export interface PreferenceItem {
   [name: string]: any;
   overridable?: boolean;
 
+  description?: string;
+  markdownDescription?: string;
+
   deprecationMessage?: string;
   markdownDeprecationMessage?: string;
 }
