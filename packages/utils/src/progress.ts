@@ -25,6 +25,7 @@ export interface IProgressOptions {
   readonly source?: string;
   readonly total?: number;
   readonly cancellable?: boolean;
+  readonly closeable?: boolean;
   // 暂不支持
   readonly buttons?: string[];
 }
