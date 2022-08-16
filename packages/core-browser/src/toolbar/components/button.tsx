@@ -9,7 +9,7 @@ import { BasicEvent, Disposable, Emitter, IDisposable } from '@opensumi/ide-core
 import { DomListener } from '../../dom';
 import { PreferenceService } from '../../preferences';
 import { useInjectable } from '../../react-hooks';
-import { AppConfig, ConfigProvider } from '../../react-providers';
+import { AppConfig, ConfigProvider } from '../../react-providers/config-provider';
 import {
   IToolbarActionReactElement,
   IToolbarActionElementProps,

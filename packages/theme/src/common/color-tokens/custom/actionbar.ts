@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor, transparent } from '../../color-registry';
+import { transparent, registerColor } from '../../utils';
 import { foreground } from '../base';
 import { inputOptionActiveBorder, inputOptionActiveBackground } from '../input';
 
