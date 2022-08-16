@@ -250,16 +250,6 @@ export class MainLayoutModuleContribution
         this.mainLayoutService.setFloatSize(size);
       },
     });
-    // commands.registerCommand(EXPAND_BOTTOM_PANEL, {
-    //   execute: () => {
-    //     this.mainLayoutService.expandBottom(true);
-    //   },
-    // });
-    // commands.registerCommand(RETRACT_BOTTOM_PANEL, {
-    //   execute: () => {
-    //     this.mainLayoutService.expandBottom(false);
-    //   },
-    // });
 
     commands.registerCommand(
       {
