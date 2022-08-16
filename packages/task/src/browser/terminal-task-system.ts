@@ -164,21 +164,37 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   }
 
   private onTaskExit(code?: number) {
-    const { term, id } = this.terminalClient!;
-    term.setOption('disableStdin', true);
+    if (!this.terminalClient) {
+      return;
+    }
+    const { term, id } = this.terminalClient;
+    term.options.disableStdin = true;
     term.writeln(formatLocalize('terminal.integrated.exitedWithCode', code));
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m`);
     this._onDidTaskProcessExit.fire(code);
     this.disposableCollection.push(
-      term.onKey(() => {
+      term.onKey((data) => {
+        const key = data.key;
+        if (key.toLowerCase() === 'r') {
+          // rerun the task
+          // this.reset();
+        }
+        // console.log(`🚀 ~ file: terminal-task-system.ts ~ line 174 ~ TerminalTaskExecutor ~ term.onKey ~ data`, data);
         this.terminalView.removeWidget(id);
       }),
     );
   }
 
+  /**
+   * 监听 Terminal 的相关事件，一个 Executor 仅需监听一次即可，否则多次监听会导致输出重复内容。
+   */
   private bindTerminalClientEvent() {
+    if (!this.terminalClient) {
+      return;
+    }
+
     this.addDispose(
-      this.terminalClient?.onOutput((e) => {
+      this.terminalClient.onOutput((e) => {
         const output = removeAnsiEscapeCodes(e.data.toString());
         const isBegin = this.collector.matchBeginMatcher(output);
         if (isBegin) {
@@ -208,18 +224,18 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
         if (isEnd) {
           this._onDidBackgroundTaskEnd.fire();
         }
-      }) || Disposable.NULL,
+      }),
     );
 
     this.disposableCollection.push(
-      this.terminalClient?.onExit(async (e) => {
+      this.terminalClient.onExit(async (e) => {
         if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
           this.onTaskExit(e.code);
           this.processExited = true;
           this.taskStatus = TaskStatus.PROCESS_EXITED;
           this.exitDefer.resolve({ exitCode: e.code });
         }
-      }) || Disposable.NULL,
+      }),
     );
 
     this.disposableCollection.push(
@@ -249,10 +265,10 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
           this._onDidTerminalCreated.fire(terminalId);
         },
       });
+      this.bindTerminalClientEvent();
     }
 
     this.terminalController.showTerminalPanel();
-    this.bindTerminalClientEvent();
   }
 
   async attach(terminalClient: ITerminalClient): Promise<{ exitCode?: number }> {

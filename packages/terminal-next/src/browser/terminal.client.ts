@@ -490,10 +490,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   _prepare() {
-    this._attached?.reject();
-    this._firstStdout?.reject();
-    this._error?.reject();
-    this._show?.reject();
+    this._attached?.reject('TerminalClient is Re-initialization');
+    this._firstStdout?.reject('TerminalClient is Re-initialization');
+    this._error?.reject('TerminalClient is Re-initialization');
+    this._show?.reject('TerminalClient is Re-initialization');
     this._ready = false;
     this._hasOutput = false;
     this._attached = new Deferred<void>();

@@ -118,7 +118,7 @@ export class TaskService extends Disposable implements ITaskService {
 
   constructor() {
     super();
-    this.outputChannel = this.outputService.getChannel(localize('task.outputchannel.name'));
+    this.outputChannel = this.outputService.getChannel('task.output.channel');
     this.providers = new Map();
     this.providerTypes = new Map();
     this.addDispose([
@@ -238,7 +238,7 @@ export class TaskService extends Disposable implements ITaskService {
       if (this.runningTasks.has(task._id)) {
         this.runningTasks.delete(task._id);
       }
-      this.outputChannel.appendLine(`task ${task._label} done, exit code ${res.exitCode}`);
+      this.outputChannel.appendLine(`Task ${task._label} done, exit code ${res.exitCode}`);
     });
 
     this.runningTasks.set(task._id, task);
