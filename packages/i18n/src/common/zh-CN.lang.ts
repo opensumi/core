@@ -173,7 +173,7 @@ export const localizationBundle = {
     'search.excludes.default.enable': '启用默认排除项',
     'search.replaceAll.label': '替换全部',
     'search.replace.label': '替换为',
-    'search.files.result.kt': '找到 {1} 个文件，共 {0} 个结果',
+    'search.files.result': '找到 {1} 个文件，共 {0} 个结果',
     'search.CollapseDeepestExpandedLevelAction.label': '全部折叠',
     'search.ExpandDeepestExpandedLevelAction.label': '全部展开',
     'search.ClearSearchResultsAction.label': '清空搜索结果',
@@ -266,6 +266,7 @@ export const localizationBundle = {
     'debug.console.copyAll': '复制全部',
     'debug.console.collapseAll': '折叠全部',
     'debug.console.followLink': '按住 {0} 并单击可访问链接',
+    'debug.console.errorMessage': '调试进程初始化异常，请打开控制面板查看错误日志',
     'debug.console.input.placeholder': '请发起调试会话来对表达式求值',
     'debug.notSupported.type': '调试类型 "{0}" 不是支持的调试类型，请检查配置或安装对应调试插件',
     'debug.notSupported.any': '当前调试配置不支持，请检查配置或安装对应调试插件',
@@ -328,6 +329,7 @@ export const localizationBundle = {
     'debug.menu.add.conditional': '添加条件断点',
     'debug.menu.add.breakpoint': '添加断点',
     'debug.menu.disable.logpoint': '禁用记录点',
+    'debug.menu.title.run': '运行或调试...',
     'debug.stack.frame.noSource': '未知源',
     'debug.stack.frame.because': '因',
     'debug.stack.frame.stopped': '已暂停',
@@ -493,6 +495,8 @@ export const localizationBundle = {
     'preference.array.additem': '添加',
 
     'preference.item.notValid': '{0} 不是有效选项',
+
+    'editor.saveAll': '保存全部',
 
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
@@ -666,6 +670,7 @@ export const localizationBundle = {
     'terminal.openWithPath': '在终端中打开',
     'terminal.remove': '终止终端',
     'terminal.relaunch': '重启终端',
+    'terminal.menu.clearGroups': '清除所有终端',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分终端',
     'terminal.menu.rename': '重命名',
@@ -745,7 +750,7 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.toggle': '切换面板',
+    'layout.tabbar.toggle': '隐藏面板',
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
@@ -796,6 +801,8 @@ export const localizationBundle = {
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
 
+    'output.channel.clear': '清除输出面板的内容',
+
     'app.quit': '退出',
 
     'view.zoomReset': '重置窗口缩放',
@@ -807,6 +814,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'extension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
     'extension.exthostRestarting.content': '插件进程重启中...',
+    'extension.host.restart': '重启插件主进程',
 
     'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',
     'extension.profilingExtensionHost': '分析扩展主机',
@@ -999,10 +1007,13 @@ export const localizationBundle = {
     'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
     'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
 
-    'connection.start.rtt': '开发人员工具：查看通信延迟',
-    'connection.stop.rtt': '开发人员工具：关闭通信延迟检查',
+    'command.category.developerTools': '开发人员工具',
+
+    'connection.start.rtt': '查看通信延迟',
+    'connection.stop.rtt': '关闭通信延迟检查',
 
     'debug.terminal.label': '创建 Javascript Debug Terminal',
+    'command.runTask': '运行任务',
 
     // extension contribute
     ...browserViews,

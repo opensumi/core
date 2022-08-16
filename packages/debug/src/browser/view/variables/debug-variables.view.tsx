@@ -110,7 +110,7 @@ export const DebugVariableView = observer(({ viewState }: React.PropsWithChildre
           onClick={handleTwistierClick}
           onTwistierClick={handleTwistierClick}
           onContextMenu={handlerContextMenu}
-          defaultLeftPadding={8}
+          defaultLeftPadding={0}
           leftPadding={8}
         />
       );

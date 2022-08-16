@@ -1,14 +1,5 @@
 @import '~@opensumi/ide-components/lib/style/mixins.less';
 @import '~@opensumi/ide-core-browser/lib/style/variable.less';
-@TAB_HEIGHT: var(--tabBar-height);
-
-:global {
-  :root {
-    --tab-fontSize: 12px;
-    --tab-min-size: 112px;
-    --tab-max-size: 800px;
-  }
-}
 
 .kt_workbench_editor {
   height: 100%;
@@ -62,7 +53,7 @@
     display: flex;
     .editor_actions {
       flex-shrink: 0;
-      height: @TAB_HEIGHT;
+      height: 100%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
@@ -176,10 +167,10 @@
       flex-grow: 0.5;
       padding: 0 12px;
       border-right: 1px solid var(--tab-border);
-      height: @TAB_HEIGHT;
-      line-height: @TAB_HEIGHT;
-      font-size: var(--tab-fontSize);
-      min-width: var(--tab-min-size);
+      height: 100%;
+      line-height: 100%;
+      font-size: 12px;
+      min-width: 112px;
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
@@ -219,11 +210,8 @@
         }
       }
       div:nth-child(2) {
-        white-space: nowrap;
         flex-grow: 1;
         text-align: left;
-        text-overflow: ellipsis;
-        overflow: hidden;
       }
       .subname {
         color: var(--descriptionForeground);
@@ -296,7 +284,7 @@
   }
 
   .kt_editor_body {
-    height: calc(~'100% - @{TAB_HEIGHT}');
+    flex: 1;
     position: relative;
     background-repeat: no-repeat;
     background-position: center;

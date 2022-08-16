@@ -13,6 +13,7 @@ import {
   useViewState,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -119,7 +120,11 @@ const ContainerView: React.FC<{
             />
           </ConfigProvider>
         ) : (
-          <AccordionContainer views={component.views} containerId={component.options!.containerId} />
+          <AccordionContainer
+            views={component.views}
+            minSize={component.options!.miniSize}
+            containerId={component.options!.containerId}
+          />
         )}
       </div>
     </div>
@@ -166,8 +171,8 @@ const NextPanelView: React.FC<{
 
   return (
     <div className={styles.panel_container}>
-      <div className={styles.panel_title_bar}>
-        <h1>{component.options!.title}</h1>
+      <div className={styles.panel_title_bar} style={{ height: LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT }}>
+        <h1>{component.options?.title}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (
             <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />
@@ -181,8 +186,8 @@ const NextPanelView: React.FC<{
       <div ref={(ele) => (contentRef.current = ele)} className={styles.panel_wrapper}>
         <ProgressBar progressModel={indicator.progressModel} />
         <ComponentRenderer
-          initialProps={{ viewState, ...component.options!.initialProps }}
-          Component={component.options!.component ? component.options!.component : component.views[0].component!}
+          initialProps={{ viewState, ...component.options?.initialProps }}
+          Component={component.options?.component ? component.options.component : component.views[0].component!}
         />
       </div>
     </div>

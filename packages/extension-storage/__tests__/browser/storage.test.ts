@@ -6,7 +6,7 @@ import temp from 'temp';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { IExtensionStorageServer, IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { FileStat, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';

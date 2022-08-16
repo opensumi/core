@@ -16,6 +16,7 @@ import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
   HideReason,
   Highlight,
+  IKeyMods,
   QuickOpenItem,
   QuickOpenModel as IKaitianQuickOpenModel,
   QuickOpenOptions,
@@ -42,6 +43,7 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   onSelect?(item: QuickOpenItem, index: number): void;
   onConfirm?(items: QuickOpenItem[]): void;
   onChangeValue?(lookFor: string): void;
+  onKeyMods?(mods: IKeyMods): void;
   keepScrollPosition?: boolean | undefined;
 }
 
@@ -166,6 +168,11 @@ export class MonacoQuickOpenService implements QuickOpenService {
             this.opts.onConfirm(items);
           }
         },
+        onKeyMods: (mods) => {
+          if (this.opts.onKeyMods) {
+            this.opts.onKeyMods(mods);
+          }
+        },
       },
     ]);
     this.initWidgetView(this._widget);
@@ -285,6 +292,12 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
       const result = this.toOpenModel(lookFor, items, actionProvider);
       acceptor(result);
     });
+  }
+
+  onKeyMods(keyMods: any) {
+    if (this.options.onKeyMods) {
+      this.options.onKeyMods(keyMods);
+    }
   }
 
   /**

@@ -389,7 +389,7 @@ describe('FileTree should be work while on single workspace model', () => {
       await location(fileNode.uri);
       expect(mockTreeHandle.ensureVisible).toBeCalledWith(
         await fileTreeService.getFileTreeNodePathByUri(fileNode.uri),
-        'smart',
+        'center',
         true,
       );
       const fileDecoration = decorations.getDecorations(fileNode);
@@ -406,7 +406,7 @@ describe('FileTree should be work while on single workspace model', () => {
       await performLocationOnHandleShow();
       expect(mockTreeHandle.ensureVisible).toBeCalledWith(
         await fileTreeService.getFileTreeNodePathByUri(fileNode.uri),
-        'smart',
+        'center',
         true,
       );
       const fileDecoration = decorations.getDecorations(fileNode);

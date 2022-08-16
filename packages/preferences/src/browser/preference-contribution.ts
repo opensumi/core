@@ -367,10 +367,12 @@ export class PreferenceContribution
         if (match) {
           const isStringExpr = match[0].slice(-1) === '"';
           editor.monacoEditor.setPosition({ lineNumber: preferenceLineNumber + 1, column: match[0].length + 1 });
-          editor.monacoEditor.revealPositionInCenter(
-            { lineNumber: preferenceLineNumber + 1, column: match[0].length + 1 },
-            1,
-          );
+          setTimeout(() => {
+            editor.monacoEditor.revealPositionInCenter(
+              { lineNumber: preferenceLineNumber! + 1, column: match[0].length + 1 },
+              1,
+            );
+          });
           if (isStringExpr) {
             // 只对 String 类型配置展示提示，包括不存在配置项时追加的情况
             await commandService.executeCommand('editor.action.triggerSuggest');

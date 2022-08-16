@@ -70,7 +70,7 @@ module.exports = {
         // 有个 webview 的 case 应该放在 electron 下测，也会被第一条规则匹配到
         // - packages/webview/__tests__/webview/webview.channel.test.ts
         '**/packages/*/__test?(s)__/!(browser)/**/?(*.)+(spec|test).[jt]s?(x)',
-        '**/packages/{core-common,core-electron-main,core-node,electron-basic,utils}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
+        '**/packages/{core-common,core-electron-main,core-node,electron-basic,utils,i18n}/__tests__/**/?(*.)+(spec|test).[jt]s?(x)',
         // exclude 的要放最后
         '!**/packages/{components,core-browser}/__tests__/**',
         '!**/packages/extension/__tests__/hosted/**',

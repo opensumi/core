@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
 
@@ -123,7 +123,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   style,
   data,
   onReady,
-  onScroll,
+  onScroll: handleScroll,
   itemHeight,
   header: Header,
   footer: Footer,
@@ -131,11 +131,13 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   paddingBottomSize,
   getSize: customGetSize,
 }) => {
-  const listRef = React.useRef<FixedSizeList | VariableSizeList>();
-  const sizeMap = React.useRef<{ [key: string]: number }>({});
-  const scrollToIndexTimer = React.useRef<any>();
+  const listRef = useRef<FixedSizeList | VariableSizeList>();
+  const outerRef = useRef<HTMLDivElement>();
+  const sizeMap = useRef<{ [key: string]: number }>({});
+  const prevScrollOffset = useRef<number>(0);
+  const scrollToIndexTimer = useRef<any>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof onReady === 'function') {
       const api = {
         scrollTo: (offset: number) => {
@@ -182,7 +184,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     }
   };
 
-  const getSize = React.useCallback(
+  const getSize = useCallback(
     (index: string | number) => {
       if (customGetSize) {
         return customGetSize(Number(index));
@@ -192,7 +194,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     [itemHeight, customGetSize],
   );
 
-  const getMaxListHeight = React.useCallback(() => {
+  const getMaxListHeight = useCallback(() => {
     if (maxHeight) {
       let height = 0;
       for (let i = 0; i < data.length; i++) {
@@ -206,13 +208,13 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     }
   }, [maxHeight, data]);
 
-  const getMinListHeight = React.useCallback(() => {
+  const getMinListHeight = useCallback(() => {
     if (minHeight) {
       return minHeight;
     }
   }, [minHeight, data]);
 
-  const adjustedRowCount = React.useMemo(() => {
+  const adjustedRowCount = useMemo(() => {
     let count = data.length;
     if (Header) {
       count++;
@@ -266,8 +268,8 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   };
 
   const renderDynamicItem = ({ index, style }): JSX.Element => {
-    const rowRoot = React.useRef<null | HTMLDivElement>(null);
-    const observer = React.useRef<any>();
+    const rowRoot = useRef<null | HTMLDivElement>(null);
+    const observer = useRef<any>();
     const setItemSize = () => {
       if (rowRoot.current) {
         let height = 0;
@@ -278,7 +280,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
         setSize(index, height);
       }
     };
-    React.useEffect(() => {
+    useEffect(() => {
       if (rowRoot.current && listRef.current) {
         observer.current = new MutationObserver((mutations, observer) => {
           setItemSize();
@@ -337,13 +339,13 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
 
   // 通过计算平均行高来提高准确性
   // 修复滚动条行为，见: https://github.com/bvaughn/react-window/issues/408
-  const calcEstimatedSize = React.useMemo(() => {
+  const calcEstimatedSize = useMemo(() => {
     const estimatedHeight = data.reduce((p, i) => p + getSize(i), 0);
     return estimatedHeight / data.length;
   }, [data]);
 
   // 为 List 添加下边距
-  const InnerElementType = React.forwardRef((props, ref) => {
+  const InnerElementType = forwardRef((props, ref) => {
     const { style, ...rest } = props as any;
     return (
       <div
@@ -357,12 +359,23 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     );
   });
 
+  const onScroll = (props) => {
+    // 当 width/height 改变时，FixedSizeList 会重置 scrollTop
+    // 这里存储一下上次的滚动条高度后用于下次渲染时进行同步
+    prevScrollOffset.current = props.scrollOffset;
+    handleScroll && handleScroll(props);
+  };
+
   const render = () => {
     const isDynamicList = typeof itemHeight !== 'number';
     const isAutoSizeList = !width || !height;
 
     const renderList = () => {
       const renderContent = ({ width, height }) => {
+        if (outerRef.current) {
+          // 渲染时同步一下上次记录的滚动条高度
+          outerRef.current.scrollTop = prevScrollOffset.current;
+        }
         const maxH = getMaxListHeight();
         const minH = getMinListHeight();
         let currentHeight = height;
@@ -407,11 +420,12 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
               itemCount={adjustedRowCount}
               overscanCount={RECYCLE_LIST_OVER_SCAN_COUNT}
               ref={listRef as any}
+              outerRef={outerRef as any}
               style={{
                 transform: 'translate3d(0px, 0px, 0px)',
                 ...style,
               }}
-              className={cls(className, 'kt-recycle-list')}
+              className={cls(className, 'recycle-list')}
               innerElementType={InnerElementType}
               outerElementType={ScrollbarsVirtualList}
             >

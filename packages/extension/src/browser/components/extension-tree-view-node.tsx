@@ -93,10 +93,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   };
 
   const renderIcon = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => (
-    <div
-      className={cls(styles.file_icon, node.icon)}
-      style={{ height: TREE_VIEW_NODE_HEIGHT, lineHeight: `${TREE_VIEW_NODE_HEIGHT}px` }}
-    ></div>
+    <div className={cls(styles.file_icon, node.icon)} style={{ maxHeight: TREE_VIEW_NODE_HEIGHT }}></div>
   );
 
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {

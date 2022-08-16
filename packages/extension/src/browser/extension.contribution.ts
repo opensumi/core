@@ -149,7 +149,7 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
       this.extensionsPointService.registerExtensionPoint({
         extensionPoint: contributeName,
-        jsonSchema: contributeCls.schema,
+        jsonSchema: contributeCls.schema || {},
         frameworkKind: ['vscode', 'opensumi'],
       });
     }
@@ -158,7 +158,7 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
       this.extensionsPointService.registerExtensionPoint({
         extensionPoint: contributeName,
-        jsonSchema: contributeCls.schema,
+        jsonSchema: contributeCls.schema || {},
         frameworkKind: ['opensumi'],
       });
     }
@@ -233,7 +233,7 @@ export class ExtensionCommandContribution implements CommandContribution {
     registry.registerCommand(
       {
         id: 'ext.restart',
-        label: '重启进程',
+        label: '%extension.host.restart%',
       },
       {
         execute: async () => {

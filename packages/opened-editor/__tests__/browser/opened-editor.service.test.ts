@@ -147,7 +147,7 @@ describe('OpenedEditorModelService should be work', () => {
     openedEditorModelService = injector.get(OpenedEditorModelService);
     openedEditorService = injector.get(OpenedEditorService);
     await openedEditorModelService.whenReady;
-    await openedEditorModelService.treeModel.root.ensureLoaded();
+    await openedEditorModelService.treeModel?.root.ensureLoaded();
   });
 
   afterEach(() => {
@@ -183,7 +183,7 @@ describe('OpenedEditorModelService should be work', () => {
 
   describe('02 #API should be worked.', () => {
     it('The tree data should no be empty', async () => {
-      expect(openedEditorModelService.treeModel.root.branchSize > 0).toBeTruthy();
+      expect(openedEditorModelService.treeModel?.root.branchSize! > 0).toBeTruthy();
     });
 
     it('File should be dirty while file change', async () => {

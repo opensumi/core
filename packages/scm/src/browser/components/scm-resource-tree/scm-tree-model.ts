@@ -27,19 +27,9 @@ export class SCMTreeModel extends TreeModel {
 
   init(root: CompositeTreeNode) {
     this.root = root;
-    // 分支更新时通知树刷新, 不是立即更新，而是延迟更新，待树稳定后再更新
-    // 100ms的延迟并不能保证树稳定，特别是在node_modules展开的情况下
-    // 但在普通使用上已经足够可用，即不会有渲染闪烁问题
     this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, () => {
-      if (!this.flushDispatchChangeDelayer.isTriggered()) {
-        this.flushDispatchChangeDelayer.cancel();
-      }
-      this.flushDispatchChangeDelayer.trigger(async () => {
-        await this.onWillUpdateEmitter.fireAndAwait();
-        this.dispatchChange();
-      });
+      this.dispatchChange();
     });
-    // this.root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.dispatchChange);
     // 主题或装饰器更新时，更新树
     this.decorationService.onDidChange(this.dispatchChange);
   }

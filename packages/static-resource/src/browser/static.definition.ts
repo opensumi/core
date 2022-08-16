@@ -32,7 +32,7 @@ export abstract class StaticResourceService {
    * 用于webview的cspResource字段,
    * webview需要能够知道什么样的资源是可以被访问的。
    *
-   * 例: ['http://0.0.0.0:8000']
+   * 例: ['http://127.0.0.1:8000']
    */
   public readonly resourceRoots: Set<string>;
 }

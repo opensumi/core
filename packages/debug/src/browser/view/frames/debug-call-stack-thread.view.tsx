@@ -81,7 +81,7 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
       )}
       {(!mutiple || unfold) && thread.frames.length > 0 && (
         <DebugStackFramesView
-          indent={mutiple ? (mutipleS ? 32 + 14 : 16 + 14) : 8}
+          indent={mutiple ? (mutipleS ? 24 + 14 : 16 + 14) : 8}
           viewState={viewState}
           thread={thread}
           frames={thread.frames}

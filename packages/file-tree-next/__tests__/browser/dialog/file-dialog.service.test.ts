@@ -116,7 +116,7 @@ describe('FileDialogService should be work', () => {
   it('getDirectoryList method should be work', async () => {
     await fileTreeDialogService.resolveRoot(rootUri.toString());
     const directory = fileTreeDialogService.getDirectoryList();
-    expect(directory.length === 1).toBeTruthy();
+    expect(directory.length === 2).toBeTruthy();
   });
 
   it('sortComparator method should be work', () => {

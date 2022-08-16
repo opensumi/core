@@ -98,6 +98,7 @@ export class SearchContribution
         }
         this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.focus();
+        this.searchBrowserService.search();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.REFRESH, {
@@ -279,7 +280,6 @@ export class SearchContribution
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
       handler.onActivate(() => {
-        this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.searchHistory.initSearchHistory();
         this.searchBrowserService.focus();
       });

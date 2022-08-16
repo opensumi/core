@@ -14,6 +14,7 @@ import { IContextKeyService, IContextKey } from '../context-key';
 import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
+import { LAYOUT_VIEW_SIZE } from '../layout/constants';
 import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
 import { PreferenceContribution } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
@@ -33,8 +34,6 @@ export class ClientCommonContribution
     MenuContribution,
     KeybindingContribution
 {
-  schema: PreferenceSchema = corePreferenceSchema;
-
   private inputFocusedContext: IContextKey<boolean>;
 
   @Autowired(CommandService)
@@ -45,6 +44,20 @@ export class ClientCommonContribution
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
+
+  schema: PreferenceSchema = corePreferenceSchema;
+
+  constructor() {
+    const overridePropertiesDefault = {
+      'application.supportsOpenFolder': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
+      'application.supportsOpenWorkspace': !!this.appConfig.isElectronRenderer && !this.appConfig.isRemote,
+      'debug.toolbar.top': this.appConfig.isElectronRenderer ? 0 : LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT,
+    };
+    const keys = Object.keys(this.schema.properties);
+    for (const key of keys) {
+      this.schema.properties[key].default = overridePropertiesDefault[key] || this.schema.properties[key].default;
+    }
+  }
 
   onStart() {
     this.contextKeyService.createKey(locationProtocolContextKey, window.location.protocol.split(':')[0]);
@@ -275,7 +288,7 @@ export class ClientCommonContribution
       menus.registerMenuItem(MenuId.MenubarHelpMenu, {
         command: {
           id: COMMON_COMMANDS.ABOUT_COMMAND.id,
-          label: localize('common.about'),
+          label: COMMON_COMMANDS.ABOUT_COMMAND.label!,
         },
         nativeRole: 'about',
         group: '0_about',

@@ -1,4 +1,4 @@
-import { registerColor } from '../color-registry';
+import { registerColor } from '../utils';
 
 import { foreground, errorForeground } from './base';
 import { editorInfoForeground, editorWarningForeground } from './editor';

@@ -150,7 +150,7 @@ export class ElectronBasicContribution
     menuRegistry.registerMenuItem(MenuId.MenubarAppMenu, {
       command: {
         id: 'electron.about',
-        label: localize('about'),
+        label: localize('common.about'),
       },
       group: '0_about',
       nativeRole: 'about',

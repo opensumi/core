@@ -6,12 +6,7 @@ import {
   ResourceDecorationChangeEvent,
   IResourceDecorationChangeEventPayload,
 } from '@opensumi/ide-editor';
-import {
-  EditorGroupOpenEvent,
-  EditorGroupCloseEvent,
-  EditorGroupDisposeEvent,
-  EditorGroupChangeEvent,
-} from '@opensumi/ide-editor/lib/browser';
+import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent } from '@opensumi/ide-editor/lib/browser';
 
 export type OpenedEditorData = IEditorGroup | IResource;
 export interface OpenedEditorEvent {

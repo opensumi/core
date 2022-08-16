@@ -5,13 +5,19 @@ import {
   CorePreferences,
   Deferred,
   ExtensionActivateEvent,
-  getPreferenceLanguageId,
   IClientApp,
   ILogger,
   Disposable,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { localize, OnEvent, WithEventBus, ProgressLocation, ExtensionDidContributes } from '@opensumi/ide-core-common';
+import {
+  localize,
+  OnEvent,
+  WithEventBus,
+  ProgressLocation,
+  ExtensionDidContributes,
+  getLanguageId,
+} from '@opensumi/ide-core-common';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
@@ -495,7 +501,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       const extensions = await this.extensionNodeClient.getAllExtensions(
         extensionScanDir,
         extensionCandidatePath,
-        getPreferenceLanguageId(),
+        getLanguageId(),
         ExtensionServiceImpl.extraMetadata,
       );
       this.extensionMetaDataArr = extensions;

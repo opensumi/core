@@ -15,6 +15,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { path, isMacintosh, Disposable } from '@opensumi/ide-core-browser';
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { localize } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
@@ -109,7 +110,12 @@ export const ElectronHeaderBar = observer(
       }
 
       return (
-        <div className={styles.windowActions}>
+        <div
+          className={styles.windowActions}
+          style={{
+            height: isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
+          }}
+        >
           <div className={getIcon('min')} onClick={() => windowService.minimize()} />
           {maximized ? (
             <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
@@ -132,7 +138,10 @@ export const ElectronHeaderBar = observer(
 
     return (
       <div
-        className={cls(styles.header, isNewMacHeaderBar() ? styles.macNewHeader : null)}
+        className={styles.header}
+        style={{
+          height: isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
+        }}
         onDoubleClick={async () => {
           if (await getMaximized()) {
             windowService.unmaximize();

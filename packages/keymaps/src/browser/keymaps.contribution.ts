@@ -29,7 +29,6 @@ import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 
 import { KeymapsView } from './keymaps.view';
 
-
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
 @Injectable()
@@ -42,6 +41,7 @@ export class KeymapsResourceProvider extends WithEventBus implements IResourcePr
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     return {
+      supportsRevive: true,
       name: localize('keymaps.tab.name'),
       icon: getIcon('setting'),
       uri,

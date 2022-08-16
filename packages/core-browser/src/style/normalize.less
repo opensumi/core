@@ -16,7 +16,6 @@ body {
 
 :root {
   --base-font-size: 13px;
-  --tabBar-height: 35px;
 }
 
 html {
@@ -78,6 +77,11 @@ html {
 
   li {
     list-style: none;
+  }
+
+  ::selection {
+    color: inherit;
+    background: var(--editor-selectionBackground);
   }
 }
 

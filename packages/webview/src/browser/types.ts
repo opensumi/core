@@ -45,7 +45,7 @@ export interface IWebview extends IDisposable {
   layout(): void;
 
   /**
-   * 挂在一个
+   * 挂载一个
    * @param parent
    */
   appendTo(container: HTMLElement): void;

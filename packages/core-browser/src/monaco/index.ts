@@ -1,3 +1,4 @@
+import { IJSONSchema, Event, IDisposable, BasicEvent } from '@opensumi/ide-core-common';
 import type {
   ICodeEditor,
   IDiffEditor,
@@ -17,7 +18,6 @@ import type {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
 import type { BrandedService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 
-import { Event, IJSONSchema, IDisposable, BasicEvent } from '..';
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
   TEXT_MODEL_SERVICE = 'textModelService',

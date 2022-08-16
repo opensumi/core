@@ -1,6 +1,5 @@
 import cls from 'classnames';
-import { observer } from 'mobx-react-lite';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
 import { Input, ValidateInput, VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
 import { RecycleList } from '@opensumi/ide-components';
@@ -21,9 +20,9 @@ import { IKeymapService, KeybindingItem } from '../common';
 import styles from './keymaps.module.less';
 import { KeymapService } from './keymaps.service';
 
-export const KeymapsView: ReactEditorComponent<null> = observer(() => {
+export const KeymapsView: ReactEditorComponent<null> = () => {
   const {
-    keybindings,
+    keybindings: defaultKeybindings,
     searchKeybindings,
     validateKeybinding,
     detectKeybindings,
@@ -34,10 +33,12 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     covert,
     clearCovert,
     fixed,
+    onDidKeymapChanges,
   }: KeymapService = useInjectable(IKeymapService);
   const [activeKeyboardSearch, setActiveKeyboardSearch] = React.useState<boolean>(false);
 
   const [search, setSearch] = React.useState<string>('');
+  const [keybindings, setKeybindings] = React.useState<KeybindingItem[]>(defaultKeybindings);
 
   const template = ({ data, index }) => {
     const { id, command, when, source, keybinding }: KeybindingItem = data;
@@ -88,7 +89,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
     };
 
-    const blurHandler = (event) => {
+    const blurHandler = () => {
       setIsEditing(false);
     };
 
@@ -136,13 +137,13 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     const renderPlaceholder = () => <div className={styles.keybinding_key_input_placeholder}>⏎</div>;
 
     const renderReset = (source?: string) => {
-      // 修改时固定设置页面
-      if (!isDirty) {
-        fixed();
-        setIsDirty(true);
-      }
       const reset = (event) => {
         event.preventDefault();
+        // 修改时固定设置页面
+        if (!isDirty) {
+          fixed();
+          setIsDirty(true);
+        }
         resetKeybinding({
           command: getRaw(id),
           when: getRaw(when) || '',
@@ -246,7 +247,7 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       }
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
       // 当值变化时清空错误信息
       if (validateMessage) {
         setValidateMessage(undefined);
@@ -279,36 +280,6 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
         <div className={styles.keybinding_list_item_box}>
           <div title={getRaw(source)} dangerouslySetInnerHTML={{ __html: source || '' }}></div>
         </div>
-      </div>
-    );
-  };
-
-  const header = () => {
-    const headers = [
-      {
-        title: localize('keymaps.header.command.title'),
-        classname: styles.keybinding_header_item,
-      },
-      {
-        title: localize('keymaps.header.keybinding.title'),
-        classname: styles.keybinding_header_item,
-      },
-      {
-        title: localize('keymaps.header.when.title'),
-        classname: styles.keybinding_header_item,
-      },
-      {
-        title: localize('keymaps.header.source.title'),
-        classname: styles.keybinding_header_item,
-      },
-    ];
-    return (
-      <div className={styles.keybinding_header}>
-        {headers.map((h, index) => (
-          <div className={h.classname} key={`${h.title}_${index}`}>
-            {h.title}
-          </div>
-        ))}
       </div>
     );
   };
@@ -392,13 +363,52 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
     </div>
   );
 
+  const KeybindingHeader = useMemo(() => {
+    const headers = [
+      {
+        title: localize('keymaps.header.command.title'),
+        classname: styles.keybinding_header_item,
+      },
+      {
+        title: localize('keymaps.header.keybinding.title'),
+        classname: styles.keybinding_header_item,
+      },
+      {
+        title: localize('keymaps.header.when.title'),
+        classname: styles.keybinding_header_item,
+      },
+      {
+        title: localize('keymaps.header.source.title'),
+        classname: styles.keybinding_header_item,
+      },
+    ];
+    return (
+      <div className={styles.keybinding_header}>
+        {headers.map((h, index) => (
+          <div className={h.classname} key={`${h.title}_${index}`}>
+            {h.title}
+          </div>
+        ))}
+      </div>
+    );
+  }, []);
+
+  useEffect(() => {
+    const dispose = onDidKeymapChanges((kbs) => {
+      setKeybindings(kbs);
+    });
+    return () => {
+      dispose.dispose();
+    };
+  }, []);
+
   return (
     <div className={styles.keybinding_container}>
       <div className={styles.keybinding_header}>{renderSearchInput()}</div>
       <div className={styles.keybinding_body}>
+        {KeybindingHeader}
         <RecycleList
           itemHeight={24}
-          header={header}
           data={keybindings}
           template={template}
           className={styles.keybinding_list_container}
@@ -406,4 +416,4 @@ export const KeymapsView: ReactEditorComponent<null> = observer(() => {
       </div>
     </div>
   );
-});
+};

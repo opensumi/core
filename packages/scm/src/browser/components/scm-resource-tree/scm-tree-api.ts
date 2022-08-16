@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { PreferenceService, URI } from '@opensumi/ide-core-browser';
 import { Disposable, path } from '@opensumi/ide-core-common';
 
 import { ISCMResource, ISCMResourceGroup, SCMViewModelMode } from '../../../common';
@@ -108,14 +108,21 @@ export class SCMTreeAPI extends Disposable {
           if (!acc[cur]) {
             acc[cur] = this._initPlainCounterObject(kResult, []);
             const pathname = pathList.slice(0, index + 1).join(Path.separator);
+            const type = index === pathList.length - 1 ? 'file' : 'folder';
             const resource = {
               id: `${this.providerId}_${element.resourceGroup.id}_${pathname}`,
               name: cur,
               pathname,
               children: acc[cur][kResult],
-              resource: element,
+              resource:
+                type === 'file'
+                  ? element
+                  : {
+                      ...element,
+                      sourceUri: URI.from(element.sourceUri).parent.codeUri,
+                    },
               // 将 children 为 [] 时判断为文件
-              type: index === pathList.length - 1 ? 'file' : 'folder',
+              type,
             } as ISCMTreeNodeDescription;
 
             acc[kResult].push(resource);

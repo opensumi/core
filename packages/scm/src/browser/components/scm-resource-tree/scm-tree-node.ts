@@ -68,7 +68,7 @@ export class SCMResourceFolder extends CompositeTreeNode {
     public raw: ISCMTreeNodeDescription<ISCMResource>,
     public readonly resource: ISCMResource,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.resource.sourceUri.toString() });
+    super(tree as ITree, parent, undefined, { name: raw.pathname });
     // 目录节点默认全部展开
     this.isExpanded = true;
   }
@@ -108,7 +108,7 @@ export class SCMResourceFile extends TreeNode {
     public readonly resource: ISCMResource,
     private readonly isTree?: boolean,
   ) {
-    super(tree as ITree, parent, undefined, { name: raw.resource.sourceUri.toString() });
+    super(tree as ITree, parent, undefined, { name: raw.pathname });
   }
 
   @memoize

@@ -73,7 +73,10 @@ export class TerminalPreference implements ITerminalPreference {
       fontFamily: this.service.get(CodeTerminalSettingId.FontFamily) || this.service.get('editor.fontFamily'),
       fontWeight: this.service.get(CodeTerminalSettingId.FontWeight),
       fontWeightBold: this.service.get(CodeTerminalSettingId.FontWeightBold),
-      cursorStyle: this.service.get(CodeTerminalSettingId.CursorStyle),
+      cursorStyle:
+        this.service.get(CodeTerminalSettingId.CursorStyle) === 'line'
+          ? 'bar'
+          : this.service.get(CodeTerminalSettingId.CursorStyle),
       cursorWidth: this.service.get(CodeTerminalSettingId.CursorWidth),
       lineHeight: this.service.get(CodeTerminalSettingId.LineHeight),
       letterSpacing: this.service.get(CodeTerminalSettingId.LetterSpacing),
@@ -102,6 +105,8 @@ export class TerminalPreference implements ITerminalPreference {
     switch (option) {
       case SupportedOptionsName.fontSize:
         return value > 5 ? value : 5;
+      case SupportedOptionsName.cursorStyle:
+        return value === 'line' ? 'bar' : value;
       default:
         return value;
     }

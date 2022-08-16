@@ -1,19 +1,21 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
-import { CommandContribution, CommandRegistry } from '@opensumi/ide-core-common/lib/command';
+import { Command, CommandContribution, CommandRegistry } from '@opensumi/ide-core-common/lib/command';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 
 import { ConnectionBackServicePath, IConnectionBackService } from '../common';
 
-const START_CONNECTION_RTT_COMMAND = {
+const START_CONNECTION_RTT_COMMAND: Command = {
   id: 'connection.start.rtt',
-  label: localize('connection.start.rtt', '开发人员工具：查看通信延迟'),
+  label: localize('connection.start.rtt', 'Measure Connection RTT'),
+  category: localize('command.category.developerTools', 'Developer Tool'),
 };
 
 const STOP_CONNECTION_RTT_COMMAND = {
   id: 'connection.stop.rtt',
-  label: localize('connection.stop.rtt', '开发人员工具：关闭通信延迟检查'),
+  label: localize('connection.stop.rtt', 'Stop Connection RTT'),
+  category: localize('command.category.developerTools', 'Developer Tool'),
 };
 
 const statusBarOption = {

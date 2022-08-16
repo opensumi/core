@@ -67,8 +67,16 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
     ]);
   }
 
+  /**
+   * 如果没有设置默认 theme 或者 设置的 theme 为 dark 类型，为了有体感上的加速，设置默认的 theme
+   */
   private registerDefaultColorTheme() {
-    this.themeService.applyTheme(DEFAULT_THEME_ID);
+    const themeId = this.preferenceService.get<string>('general.theme');
+    const shouldApplyDefaultThemeId = !themeId || themeId.includes('dark');
+
+    if (shouldApplyDefaultThemeId) {
+      this.themeService.applyTheme(DEFAULT_THEME_ID);
+    }
   }
 
   private registerDefaultTokenModifier() {

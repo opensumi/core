@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor, transparent } from '../color-registry';
+import { transparent, registerColor } from '../utils';
 
 import { contrastBorder } from './base';
 import { editorErrorForeground } from './editor';
