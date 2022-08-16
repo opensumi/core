@@ -149,8 +149,27 @@ export class TabbarService extends WithEventBus {
     });
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
+      this.registerPanelCommands();
       this.registerPanelMenus();
     }
+  }
+
+  registerPanelCommands(): void {
+    this.commandRegistry.registerCommand(EXPAND_BOTTOM_PANEL, {
+      execute: () => {
+        this.layoutService.expandBottom(true);
+      },
+    });
+    this.commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
+      execute: () => {
+        this.layoutService.expandBottom(false);
+      },
+    });
+    this.commandRegistry.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
+      execute: (show?: boolean, size?: number) => {
+        this.layoutService.toggleSlot(SlotLocation.bottom, show, size);
+      },
+    });
   }
 
   public getContainerState(containerId: string) {
