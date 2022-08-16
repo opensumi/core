@@ -601,7 +601,7 @@ export class KeymapService implements IKeymapService {
     const items = this.getKeybindingItems();
     const result: KeybindingItem[] = [];
     items.forEach((item) => {
-      const keys: string[] = ['command', 'keybinding', 'when', 'context', 'source'];
+      const keys: string[] = ['id', 'command', 'keybinding', 'when', 'context', 'source'];
       let matched = false;
       for (const key of keys) {
         const str = item[key];

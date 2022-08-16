@@ -729,6 +729,7 @@ export const localizationBundle = {
     'keymaps.header.source.title': '作用域',
     'keymaps.header.keybinding.title': '快捷键',
     'keymaps.header.when.title': '条件',
+    'keymaps.commandId.title': '命令 ID：{0}',
 
     'keymaps.source.default': '默认',
     'keymaps.source.user': '用户',
