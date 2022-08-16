@@ -6,6 +6,7 @@ import {
   ComponentRegistry,
   Domain,
   Logger,
+  MARKER_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 
@@ -15,12 +16,6 @@ import { MarkerFilterPanel } from './markers-filter.view';
 import { MarkerService } from './markers-service';
 import { MarkerPanel } from './markers-tree.view';
 import Messages from './messages';
-
-export namespace MARKER_COMMANDS {
-  export const SHOW_ERRORS_WARNINGS = {
-    id: 'workbench.action.showErrorsWarnings',
-  };
-}
 
 @Domain(CommandContribution, ComponentContribution, MainLayoutContribution)
 export class MarkersContribution implements CommandContribution, ComponentContribution, MainLayoutContribution {
