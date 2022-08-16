@@ -11,7 +11,7 @@ import { Task, ConfiguringTask, ContributedTask, TaskSet, KeyedTaskIdentifier, T
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface TaskMap {}
 
-interface TaskFileter {
+interface TaskFilter {
   version?: string;
   type?: string;
 }
@@ -131,7 +131,7 @@ export interface ITaskSystem {
   onDidProblemMatched: Event<TaskEvent>;
   attach(task: Task | ConfiguringTask, terminalClient: ITerminalClient): Promise<ITaskExecuteResult>;
   run(task: Task | ConfiguringTask): Promise<ITaskExecuteResult>;
-  rerun(): ITaskExecuteResult | undefined;
+  rerun(): Promise<ITaskExecuteResult | undefined>;
   isActive(): Promise<boolean>;
   isActiveSync(): boolean;
   getActiveTasks(): Task[];
@@ -149,12 +149,13 @@ export interface ITaskService {
   run(task: Task | ConfiguringTask): Promise<ITaskSummary>;
 
   runTaskCommand(): void;
+  rerunLastTask(): void;
 
   updateWorkspaceTasks(tasks: TaskMap): void;
 
   registerTaskProvider(provider: ITaskProvider, type: string): IDisposable;
 
-  tasks(filter?: TaskFileter): Promise<Task[]>;
+  tasks(filter?: TaskFilter): Promise<Task[]>;
 
   getTask(workspaceFolder: Uri, identifier: string | TaskIdentifier, compareId?: boolean): Promise<Task | undefined>;
 

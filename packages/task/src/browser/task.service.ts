@@ -19,7 +19,6 @@ import {
   Event,
   IProblemPatternRegistry,
   Emitter,
-  WithEventBus,
   platform,
 } from '@opensumi/ide-core-common';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
@@ -144,7 +143,7 @@ export class TaskService extends Disposable implements ITaskService {
   public async runTaskCommand() {
     const groupedTaskSet: TaskSet[] = await this.getGroupedTasks();
     const workspaceTasks = await this.getWorkspaceTasks(groupedTaskSet);
-    const [workspaces, grouped] = this.combineQuickItems(groupedTaskSet, workspaceTasks!);
+    const [workspaces, grouped] = this.combineQuickItems(groupedTaskSet, workspaceTasks);
     this.quickOpenService.open(
       {
         onType: (lookFor: string, acceptor) => acceptor([...workspaces, ...grouped]),
@@ -313,7 +312,7 @@ export class TaskService extends Disposable implements ITaskService {
 
   private toQuickOpenGroupItem(showBorder: boolean, run, type?: string): QuickOpenItem {
     return new QuickOpenItem({
-      groupLabel: showBorder ? '贡献' : undefined,
+      groupLabel: showBorder ? formatLocalize('task.contribute') : undefined,
       run,
       showBorder,
       label: type,
@@ -322,7 +321,10 @@ export class TaskService extends Disposable implements ITaskService {
     });
   }
 
-  private combineQuickItems(contributedTaskSet: TaskSet[], workspaceTasks: Map<string, WorkspaceFolderTaskResult>) {
+  private combineQuickItems(
+    contributedTaskSet: TaskSet[],
+    workspaceTasks: Map<string, WorkspaceFolderTaskResult> | undefined,
+  ) {
     const groups: QuickOpenItem[] = [];
     const workspace: QuickOpenItem[] = [];
     let showBorder = true;
@@ -335,7 +337,7 @@ export class TaskService extends Disposable implements ITaskService {
                 return acceptor([
                   new QuickOpenItem({
                     value: 'none',
-                    label: `未找到 ${taskSet.type} 的任务，按回车键返回`,
+                    label: formatLocalize('task.cannotFindTask', taskSet.type),
                     run: (mode: Mode) => {
                       if (mode === Mode.OPEN) {
                         return true;
@@ -475,6 +477,10 @@ export class TaskService extends Disposable implements ITaskService {
 
   protected showOutput(): void {
     this.outputChannel.appendLine('There are task errors. See the output for details.');
+  }
+
+  public rerunLastTask() {
+    return this.taskSystem.rerun();
   }
 
   public registerTaskProvider(provider: ITaskProvider, type: string): IDisposable {

@@ -332,6 +332,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
   private executorId = 0;
 
+  private lastTask: CustomTask | ContributedTask | undefined;
   protected currentTask: Task;
 
   private activeTaskExecutors: Map<string, IActivateTaskExecutorData> = new Map();
@@ -423,6 +424,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   ): Promise<ITaskExecuteResult> {
     const taskExecutor = await this.createTaskExecutor(task, terminalClient.options);
     const p = taskExecutor.attach(terminalClient);
+    this.lastTask = task;
     return {
       task,
       kind: TaskExecuteKind.Started,
@@ -507,6 +509,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     await executor.processReady.promise;
 
     this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessStarted, task, executor.processId));
+    this.lastTask = task;
     return {
       task,
       kind: TaskExecuteKind.Started,
@@ -577,11 +580,9 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     }
     return result;
   }
-
   getActiveTasks(): Task[] {
     return Array.from(this.activeTaskExecutors.values()).map((e) => e.task);
   }
-
   async terminate(task: Task): Promise<TaskTerminateResponse> {
     const key = task.getMapKey();
     const activeExecutor = this.activeTaskExecutors.get(key);
@@ -592,9 +593,8 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     this.activeTaskExecutors.delete(key);
     return { task, success };
   }
-
-  rerun(): import('../common').ITaskExecuteResult | undefined {
-    throw new Error('Method not implemented.');
+  async rerun(): Promise<ITaskExecuteResult | undefined> {
+    return this.lastTask && (await this.executeTask(this.lastTask));
   }
   isActive(): Promise<boolean> {
     throw new Error('Method not implemented.');
@@ -602,21 +602,19 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   isActiveSync(): boolean {
     throw new Error('Method not implemented.');
   }
-
-  getBusyTasks(): import('../common/task').Task[] {
+  getBusyTasks(): Task[] {
     throw new Error('Method not implemented.');
   }
   canAutoTerminate(): boolean {
     throw new Error('Method not implemented.');
   }
-
-  terminateAll(): Promise<import('../common').TaskTerminateResponse[]> {
+  terminateAll(): Promise<TaskTerminateResponse[]> {
     throw new Error('Method not implemented.');
   }
-  revealTask(task: import('../common/task').Task): boolean {
+  revealTask(task: Task): boolean {
     throw new Error('Method not implemented.');
   }
-  customExecutionComplete(task: import('../common/task').Task, result: number): Promise<void> {
+  customExecutionComplete(task: Task, result: number): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

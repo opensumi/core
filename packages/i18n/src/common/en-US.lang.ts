@@ -973,7 +973,16 @@ export const localizationBundle = {
     'debug.terminal.label': 'Javascript Debug Terminal',
 
     'output.channel.clear': 'Clear Output Panel',
-    'command.runTask': 'Run Task',
+
+    'workbench.action.tasks.runTask': 'Run Task',
+    'workbench.action.tasks.reRunTask': 'Rerun Last Task',
+    'workbench.action.tasks.restartTask': 'Restart Running Task',
+    'workbench.action.tasks.terminate': 'Terminate Task',
+    'workbench.action.tasks.showTasks': 'Show Running Tasks',
+    'workbench.action.tasks.showLog': 'Show Task Log',
+    'task.contribute': 'Contribute',
+    'task.cannotFindTask': 'Cannot find task for {0}. Press Enter key to return.',
+
     // extension contribute
     ...browserViews,
   },
