@@ -42,6 +42,7 @@ jobs:
         working-directory: ./opensumi
         run: |
           npm i
+          npm run download-extension
           npm run init
 
       - name: Run
