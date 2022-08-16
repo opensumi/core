@@ -3,8 +3,9 @@ console.time('Render');
 
 import { Injector } from '@opensumi/di';
 import { ClientApp, IClientAppOpts } from '@opensumi/ide-core-browser';
-import { ToolbarActionBasedLayout } from '@opensumi/ide-core-browser/lib/components';
 import { uuid } from '@opensumi/ide-core-common';
+
+import { DefaultLayout } from './layout';
 
 const CLIENT_ID = 'W_' + uuid();
 export async function renderApp(opts: IClientAppOpts) {
@@ -21,7 +22,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.webviewEndpoint = `http://${anotherHostName}:8899`;
   opts.editorBackgroundImage =
     'https://img.alicdn.com/imgextra/i2/O1CN01dqjQei1tpbj9z9VPH_!!6000000005951-55-tps-87-78.svg';
-  opts.layoutComponent = ToolbarActionBasedLayout;
+  opts.layoutComponent = DefaultLayout;
   opts.clientId = CLIENT_ID;
   opts.didRendered = () => {
     // eslint-disable-next-line no-console
