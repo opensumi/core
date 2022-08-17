@@ -108,6 +108,8 @@ class MockLoggerManagerClient {
     verbose() {},
     warn() {},
   });
+  onDidChangeLogLevel: () => {};
+  getGlobalLogLevel: () => 0;
 }
 
 const mockExtensionProps: IExtensionProps = {
