@@ -307,7 +307,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     this.setupWidget(widget);
 
     if (!options || Object.keys(options).length === 0) {
-      // 应该是必定能 resolve 到 profile 的
+      // Must be able to resolve a profile
       const defaultProfile = await this.terminalProfileInternalService.resolveDefaultProfile();
       options = {
         id: this._uid,

@@ -648,7 +648,7 @@ export const localizationBundle = {
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
-    'terminal.menu.clearCurrentContent': 'Clear All',
+    'terminal.menu.clearCurrentContent': 'Clear',
     'terminal.menu.selectCurrentContent': 'Select All',
     'terminal.menu.clearAllContents': 'Clear All Terminals Content',
     'terminal.menu.selectAllContent': 'Select All Terminals Content',

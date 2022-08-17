@@ -59,7 +59,7 @@ export class PtyServiceManager implements IPtyServiceManager {
   }
 
   protected initLocal() {
-    const callback = async (callId, ...args) => {
+    const callback = async (callId: number, ...args) => {
       const callback = this.callbackMap.get(callId);
       if (!callback) {
         return Promise.reject(new Error(`no found callback: ${callId}`));
@@ -91,16 +91,16 @@ export class PtyServiceManager implements IPtyServiceManager {
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
   ): Promise<IPtyProcessProxy> {
-    const iPtyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options, sessionId)) as pty.IPty;
-    // 局部功能的 Ipty, 代理所有常量
-    return new PtyProcessProxy(iPtyRemoteProxy, this);
+    const ptyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options, sessionId)) as pty.IPty;
+    // 局部功能的 IPty, 代理所有常量
+    return new PtyProcessProxy(ptyRemoteProxy, this);
   }
 
   async getProcess(pid: any): Promise<string> {
     return await this.ptyServiceProxy.$getProcess(pid);
   }
 
-  // 实现 Ipty 的需要回调的逻辑接口，同时注入
+  // 实现 IPty 的需要回调的逻辑接口，同时注入
   onData(pid: number, listener: (e: string) => any): pty.IDisposable {
     const monitorListener = (resString) => {
       listener(resString);

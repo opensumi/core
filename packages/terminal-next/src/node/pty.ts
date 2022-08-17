@@ -150,7 +150,7 @@ export class PtyService extends Disposable {
   async start(): Promise<ITerminalLaunchError | undefined> {
     const options = this.shellLaunchConfig;
 
-    const locale = osLocale.sync();
+    const locale = await osLocale.default();
     let ptyEnv: { [key: string]: string };
 
     if (options.strictEnv) {

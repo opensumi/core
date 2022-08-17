@@ -292,7 +292,7 @@ export interface INodePtyInstance {
   id: string;
   name: string;
   pid: number;
-  proess: string;
+  process: string;
   shellPath?: string;
 }
 
