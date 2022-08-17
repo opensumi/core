@@ -267,9 +267,6 @@ export class MonacoClientContribution
 
   private initTextmateService() {
     this.textmateService.init();
-    const currentTheme = this.themeService.getCurrentThemeSync();
-    const themeData = currentTheme.themeData;
-    this.textmateService.setTheme(themeData);
     this.textmateService.initialized = true;
   }
 
