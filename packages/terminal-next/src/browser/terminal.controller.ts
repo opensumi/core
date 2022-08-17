@@ -29,7 +29,6 @@ import { IThemeService } from '@opensumi/ide-theme';
 import {
   ITerminalController,
   ITerminalClient,
-  ITerminalClientFactory,
   IWidget,
   ITerminalInfo,
   ITerminalBrowserHistory,
@@ -97,9 +96,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ITerminalGroupViewService)
   protected readonly terminalView: TerminalGroupViewService;
-
-  @Autowired(ITerminalClientFactory)
-  protected readonly clientFactory: ITerminalClientFactory;
 
   @Autowired(ITerminalClientFactory2)
   protected readonly clientFactory2: ITerminalClientFactory2;

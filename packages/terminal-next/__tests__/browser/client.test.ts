@@ -12,7 +12,6 @@ import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
-  ITerminalClientFactory,
   ITerminalGroupViewService,
   ITerminalClient,
   IWidget,
@@ -39,7 +38,7 @@ describe('Terminal Client', () => {
   let proxy: httpProxy;
   let server: WebSocket.Server;
   let view: ITerminalGroupViewService;
-  let factory: ITerminalClientFactory;
+  let factory2: ITerminalClientFactory2;
   let workspaceService: IWorkspaceService;
   let root: URI | null;
 
@@ -56,7 +55,7 @@ describe('Terminal Client', () => {
       isDirectory: true,
     });
     resetPort();
-    factory = injector.get(ITerminalClientFactory);
+    factory2 = injector.get(ITerminalClientFactory2);
     view = injector.get(ITerminalGroupViewService);
     server = createWsServer();
     proxy = createProxyServer();
@@ -72,7 +71,7 @@ describe('Terminal Client', () => {
         return target[prop];
       },
     });
-    client = await factory(widget, {});
+    client = await factory2(widget, {});
     client.addDispose(
       Disposable.create(async () => {
         if (root) {
@@ -157,7 +156,7 @@ describe('Terminal Client', () => {
     client.clear();
   });
 
-  it('should use isExtentionOwnedTerminal to determine the terminal process', async () => {
+  it('should use isExtensionOwnedTerminal to determine the terminal process', async () => {
     let launchConfig1: IShellLaunchConfig | undefined;
     injector.mock(
       ITerminalInternalService,

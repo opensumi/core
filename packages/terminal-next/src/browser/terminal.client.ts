@@ -272,17 +272,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
-  /**
-   * 目前 core 内不再有代码调用这个函数，只有测试用例中会调用这里。
-   * 后续移除掉该函数
-   * @deprecated Please use `init2` instead.
-   */
-  async init(widget: IWidget, options: TerminalOptions = {}) {
-    this._terminalOptions = options;
-    await this.init2(widget, {
-      config: this.controller.convertTerminalOptionsToLaunchConfig(options),
-    });
-  }
   convertProfileToLaunchConfig(
     shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
     cwd?: Uri | string,
@@ -761,25 +750,6 @@ export class TerminalClientFactory {
   /**
    * 创建 terminal 实例最终都会调用该方法
    */
-  static async createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
-    // 每一个 widget.id 对应一个 TerminalClient
-    // 但是 TerminalClient 内部又依赖了一堆的其他要注入的，所以这里新创建一个 child injector
-    // 让 TerminalClient 依赖的所有类都重新初始化一遍
-
-    const child = injector.createChild([
-      {
-        token: TerminalClient,
-        useClass: TerminalClient,
-      },
-    ]);
-
-    const client = child.get(TerminalClient);
-    await client.init(widget, options);
-    return client;
-  }
-  /**
-   * 创建 terminal 实例最终都会调用该方法
-   */
   static async createClient2(injector: Injector, widget: IWidget, options?: ICreateTerminalOptions) {
     const child = injector.createChild([
       {
@@ -793,9 +763,6 @@ export class TerminalClientFactory {
     return client;
   }
 }
-
-export const createTerminalClientFactory = (injector: Injector) => (widget: IWidget, options?: TerminalOptions) =>
-  TerminalClientFactory.createClient(injector, widget, options);
 
 export const createTerminalClientFactory2 =
   (injector: Injector) => (widget: IWidget, options?: ICreateTerminalOptions) =>
