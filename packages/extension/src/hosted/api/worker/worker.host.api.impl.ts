@@ -15,6 +15,8 @@ import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
+import { ExtHostEnv } from '../vscode/env/ext.host.env';
+import { createWorkerHostEnvAPIFactory } from '../vscode/env/workerEnvApiFactory';
 import { ExtHostWebviewService, ExtHostWebviewViews } from '../vscode/ext.host.api.webview';
 import { createAuthenticationApiFactory, ExtHostAuthentication } from '../vscode/ext.host.authentication';
 import { ExtHostCommands, createCommandsApiFactory } from '../vscode/ext.host.command';
@@ -42,7 +44,6 @@ import { ExtHostWindowState } from '../vscode/ext.host.window-state';
 import { createWindowApiFactory, ExtHostWindow } from '../vscode/ext.host.window.api.impl';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from '../vscode/ext.host.workspace';
 import { ExtHostTasks } from '../vscode/tasks/ext.host.tasks';
-import { createWorkerHostEnvAPIFactory, WorkerHostEnv } from '../vscode/worker.host.env';
 
 import * as workerExtTypes from './worker.ext-types';
 
@@ -156,7 +157,7 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostAuthentication,
     new ExtHostAuthentication(rpcProtocol),
   ) as ExtHostAuthentication;
-  rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new WorkerHostEnv(rpcProtocol)) as WorkerHostEnv;
+  rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol)) as ExtHostEnv;
 
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
   const reporter = new DefaultReporter();
