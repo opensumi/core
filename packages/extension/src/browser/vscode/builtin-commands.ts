@@ -1,4 +1,4 @@
-import { FILE_COMMANDS, Command, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { FILE_COMMANDS, Command, EDITOR_COMMANDS, COMMON_COMMANDS } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 
@@ -232,6 +232,11 @@ export const COPY_RELATIVE_FILE_PATH: Command = {
 export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
   id: 'workbench.action.openSettings',
   delegate: 'core.openpreference',
+};
+
+export const SETTINGS_COMMAND_OPEN_GLOBAL_SETTINGS: Command = {
+  id: 'workbench.action.openGlobalSettings',
+  delegate: COMMON_COMMANDS.OPEN_PREFERENCES.id,
 };
 
 export const SETTINGS_COMMAND_OPEN_SETTINGS_JSON: Command = {
