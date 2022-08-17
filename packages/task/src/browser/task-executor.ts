@@ -142,7 +142,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     const { term, id } = this.terminalClient;
     term.options.disableStdin = true;
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
-    term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m`);
+    term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m\r\n`);
     this._onDidTaskProcessExit.fire(code);
     this.eventToDispose.push(
       term.onKey((data) => {
@@ -204,18 +204,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       this.terminalClient.onExit(async (e) => {
         if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
           this.taskStatus = TaskStatus.PROCESS_EXITED;
-          this.onTaskExit(e.code);
-          this.processExited = true;
-          this.exitDefer.resolve({ exitCode: e.code });
-        }
-      }),
-    );
-
-    this.eventToDispose.push(
-      this.terminalService.onExit(async (e) => {
-        if (e.sessionId === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
-          this.taskStatus = TaskStatus.PROCESS_EXITED;
-          await this.processReady.promise;
           this.onTaskExit(e.code);
           this.processExited = true;
           this.exitDefer.resolve({ exitCode: e.code });
