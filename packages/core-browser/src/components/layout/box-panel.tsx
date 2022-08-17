@@ -40,6 +40,7 @@ export const BoxPanel: React.FC<{
                   overflow: child['props'].overflow,
                   zIndex: child['props'].zIndex || child['props']['z-index'],
                   [Layout.getMinSizeProperty(direction)]: child['props'].defaultSize,
+                  backgroundColor: child['props'].backgroundColor,
                 }
               : {}
           }

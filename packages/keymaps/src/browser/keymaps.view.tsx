@@ -262,11 +262,16 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
 
     return (
       <div className={cls(styles.keybinding_list_item, index % 2 === 1 && styles.odd)}>
-        <div className={styles.keybinding_list_item_box}>
+        <div className={cls(styles.keybinding_list_item_box, styles.keybinding_command)}>
           <div
-            className={styles.limit_warp}
+            className={styles.command_name}
             title={getRaw(command)}
             dangerouslySetInnerHTML={{ __html: command }}
+          ></div>
+          <div
+            className={cls(styles.limit_warp, styles.command_id)}
+            title={getRaw(id)}
+            dangerouslySetInnerHTML={{ __html: formatLocalize('keymaps.commandId.title', id) }}
           ></div>
         </div>
         <div className={cls(styles.keybinding_list_item_box)}>{renderKeybinding()}</div>
@@ -404,15 +409,17 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
 
   return (
     <div className={styles.keybinding_container}>
-      <div className={styles.keybinding_header}>{renderSearchInput()}</div>
+      <div className={styles.keybinding_searchbar}>{renderSearchInput()}</div>
       <div className={styles.keybinding_body}>
         {KeybindingHeader}
-        <RecycleList
-          itemHeight={24}
-          data={keybindings}
-          template={template}
-          className={styles.keybinding_list_container}
-        />
+        <div className={styles.keybinding_list}>
+          <RecycleList
+            itemHeight={40}
+            data={keybindings}
+            template={template}
+            className={styles.keybinding_list_container}
+          />
+        </div>
       </div>
     </div>
   );

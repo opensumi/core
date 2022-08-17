@@ -2,7 +2,7 @@ import type vscode from 'vscode';
 
 import { Uri as URI, Cache } from '@opensumi/ide-core-common';
 import { DisposableStore } from '@opensumi/ide-core-common';
-import type { CodeActionContext, WorkspaceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type { CodeActionContext, WorkspaceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { ExtensionDocumentDataManager, ICodeActionDto, ICodeActionListDto } from '../../../../common/vscode';
 import * as Converter from '../../../../common/vscode/converter';
@@ -12,7 +12,6 @@ import { CommandsConverter } from '../ext.host.command';
 
 import { Diagnostics } from './diagnostics';
 import { createToken } from './util';
-
 
 export class CodeActionAdapter {
   private readonly _cache = new Cache<vscode.CodeAction | vscode.Command>('CodeAction');

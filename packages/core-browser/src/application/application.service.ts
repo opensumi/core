@@ -8,7 +8,7 @@ import {
   Deferred,
 } from '@opensumi/ide-core-common';
 
-import { AppConfig } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
 
 @Injectable()
 export class ApplicationService implements IApplicationService {

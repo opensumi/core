@@ -722,6 +722,7 @@ export class MainThreadWebviewView extends WithEventBus implements IMainThreadWe
       if (!options?.retainContextWhenHidden) {
         if (isVisible) {
           webview.appendTo(container);
+          webviewView.addDispose(this.mainThreadWebview.connectWebview(id, webview));
         } else {
           webview.remove();
         }

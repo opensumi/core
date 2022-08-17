@@ -96,7 +96,7 @@ export class ErrorBoundary extends React.Component {
 
 export const allSlot: { slot: string; dom: HTMLElement }[] = [];
 
-export const SlotDecorator: React.FC<{ slot: string; color?: string }> = ({ slot, ...props }) => {
+export const SlotDecorator: React.FC<{ slot: string; backgroundColor?: string }> = ({ slot, ...props }) => {
   const ref = React.useRef<HTMLElement>();
   React.useEffect(() => {
     if (ref.current) {
@@ -162,6 +162,10 @@ export const slotRendererRegistry = new SlotRendererRegistry();
 
 export interface SlotProps {
   slot: string;
+  /**
+   * slot 默认的背景色
+   */
+  backgroundColor?: string;
   isTabbar?: boolean;
   [key: string]: any;
 }
@@ -198,7 +202,7 @@ export function SlotRenderer({ slot, isTabbar, ...props }: SlotProps) {
   const Renderer = slotRendererRegistry.getSlotRenderer(slot);
   return (
     <ErrorBoundary>
-      <SlotDecorator slot={slot} color={props.color}>
+      <SlotDecorator slot={slot} backgroundColor={props.backgroundColor}>
         <Renderer components={componentInfos} {...props} />
       </SlotDecorator>
     </ErrorBoundary>

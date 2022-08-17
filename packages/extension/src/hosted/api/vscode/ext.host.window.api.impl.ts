@@ -84,9 +84,6 @@ export function createWindowApiFactory(
         token: vscode.CancellationToken,
       ) => Thenable<R>,
     ) {
-      if (typeof options.location === 'object') {
-        throwProposedApiError(extension);
-      }
       return extHostProgress.withProgress(extension, options, task);
     },
     createStatusBarItem(

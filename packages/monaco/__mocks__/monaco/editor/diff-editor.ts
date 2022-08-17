@@ -1,5 +1,6 @@
 import { Disposable, Event } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { MockedStandaloneCodeEditor } from './code-editor';
 
@@ -15,6 +16,11 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
     this.originalEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.modifiedEditor = new MockedStandaloneCodeEditor(dom, options, override);
     this.onDidDispose = this.onDispose;
+  }
+  createDecorationsCollection(
+    decorations?: monaco.editor.IModelDeltaDecoration[] | undefined,
+  ): monaco.editor.IEditorDecorationsCollection {
+    throw new Error('Method not implemented.');
   }
   revealLineNearTop(lineNumber: number, scrollType?: monaco.editor.ScrollType): void {
     throw new Error('Method not implemented.');
@@ -55,7 +61,7 @@ export class MockedDiffEditor extends Disposable implements monaco.editor.IStand
     return null;
   }
 
-  createContextKey<T>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
+  createContextKey<T extends ContextKeyValue>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
     throw new Error('Method not implemented.');
   }
   addAction(descriptor: monaco.editor.IActionDescriptor): monaco.IDisposable {

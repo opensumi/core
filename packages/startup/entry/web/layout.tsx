@@ -1,32 +1,14 @@
 import React from 'react';
 
-import { SlotRenderer } from '../../react-providers/slot';
+import { SlotRenderer } from '@opensumi/ide-core-browser';
+import { BoxPanel, getStorageValue, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 
-import { BoxPanel } from './box-panel';
-import { SplitPanel } from './split-panel';
-
-export const getStorageValue = () => {
-  // 启动时渲染的颜色和尺寸，弱依赖
-  let savedLayout: { [key: string]: { size: number; currentId: string } } = {};
-  let savedColors: { [colorKey: string]: string } = {};
-  try {
-    savedLayout = JSON.parse(localStorage.getItem('layout') || '{}');
-    savedColors = JSON.parse(localStorage.getItem('theme') || '{}');
-  } catch (err) {}
-  return {
-    layout: savedLayout,
-    colors: savedColors,
-  };
-};
-
-export const DefaultLayout = ToolbarActionBasedLayout;
-
-export function ToolbarActionBasedLayout() {
+export function DefaultLayout() {
   const { colors, layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={0} slot='top' z-index={2} />
-      <SplitPanel id='main-horizontal' flex={1}>
+      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={34} slot='top' z-index={2} />
+      <SplitPanel id='main-horizontal' overflow='hidden' flex={1}>
         <SlotRenderer
           backgroundColor={colors.sideBarBackground}
           slot='left'
@@ -47,7 +29,6 @@ export function ToolbarActionBasedLayout() {
           />
         </SplitPanel>
         <SlotRenderer
-          backgroundColor={colors.sideBarBackground}
           slot='right'
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}

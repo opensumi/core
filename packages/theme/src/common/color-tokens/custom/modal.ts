@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
+import { registerColor } from '../../utils';
 import {
   NOTIFICATIONS_BACKGROUND,
   NOTIFICATIONS_ERROR_ICON_FOREGROUND,

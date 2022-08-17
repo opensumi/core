@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI } from '@opensumi/ide-core-common';
 
-import { AppConfig } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
 
 export const IExternalUriService = Symbol('IExternalUriService');
 
