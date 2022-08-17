@@ -191,6 +191,12 @@ export async function createApiFactory(
 
 export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, injector: Injector, extensionService) {
   const MainThreadCommandsAPI = injector.get(MainThreadCommands, [workerProtocol, true]);
+  const MainThreadExtensionLogAPI = injector.get(MainThreadExtensionLog);
+
+  workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
+  workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
+  workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, MainThreadExtensionLogAPI);
+
   const MainThreadLanguagesAPI = injector.get(MainThreadLanguages, [workerProtocol]);
   const MainThreadStatusBarAPI = injector.get(MainThreadStatusBar, [workerProtocol]);
   const MainThreadQuickOpenAPI = injector.get(MainThreadQuickOpen, [workerProtocol]);
@@ -206,10 +212,10 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadPreferenceAPI = injector.get(MainThreadPreference, [workerProtocol]);
   const MainThreadOutputAPI = injector.get(MainThreadOutput);
   const MainThreadMessageAPI = injector.get(MainThreadMessage, [workerProtocol]);
-  const MainThreadExtensionLogAPI = injector.get(MainThreadExtensionLog);
   const MainThreadWebviewAPI = injector.get(MainThreadWebview, [workerProtocol]);
   const MainThreadWebviewViewAPI = injector.get(MainThreadWebviewView, [workerProtocol, MainThreadWebviewAPI]);
   const MainThreadStorageAPI = injector.get(MainThreadStorage, [workerProtocol]);
+  const MainThreadEnvAPI = injector.get(MainThreadEnv, [workerProtocol, MainThreadStorageAPI]);
   const MainThreadUrlsAPI = injector.get(MainThreadUrls, [workerProtocol]);
   const MainthreadCommentsAPI = injector.get(MainthreadComments, [workerProtocol, MainThreadCommandsAPI]);
   const MainThreadThemingAPI = injector.get(MainThreadTheming, [workerProtocol]);
@@ -219,10 +225,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [workerProtocol]);
   const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [workerProtocol]);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [workerProtocol]);
-  const MainThreadEnvAPI = injector.get(MainThreadEnv, [workerProtocol, MainThreadStorageAPI]);
 
-  workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionService, extensionService);
-  workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, MainThreadCommandsAPI);
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
   workerProtocol.set<MainThreadExtensionDocumentData>(
     MainThreadAPIIdentifier.MainThreadDocuments,
@@ -241,7 +244,6 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   ) as MainThreadOutput;
   workerProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, MainThreadEditorServiceAPI);
   workerProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, MainThreadMessageAPI);
-  workerProtocol.set<IMainThreadExtensionLog>(MainThreadExtensionLogIdentifier, MainThreadExtensionLogAPI);
   workerProtocol.set<IMainThreadWebview>(MainThreadAPIIdentifier.MainThreadWebview, MainThreadWebviewAPI);
   workerProtocol.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, MainThreadStorageAPI);
   workerProtocol.set<IMainThreadUrls>(MainThreadAPIIdentifier.MainThreadUrls, MainThreadUrlsAPI);

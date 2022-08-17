@@ -10,8 +10,6 @@ import {
   ViewColumn,
   TextEditorSelectionChangeKind,
   IExtensionDescription,
-  IMainThreadEnv,
-  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
@@ -44,13 +42,13 @@ import { ExtHostWindowState } from '../vscode/ext.host.window-state';
 import { createWindowApiFactory, ExtHostWindow } from '../vscode/ext.host.window.api.impl';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from '../vscode/ext.host.workspace';
 import { ExtHostTasks } from '../vscode/tasks/ext.host.tasks';
+import { createWorkerHostEnvAPIFactory, WorkerHostEnv } from '../vscode/worker.host.env';
 
 import * as workerExtTypes from './worker.ext-types';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService | IExtensionWorkerHost,
-  type: string,
 ) {
   rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
 
@@ -158,7 +156,8 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostAuthentication,
     new ExtHostAuthentication(rpcProtocol),
   ) as ExtHostAuthentication;
-  const proxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
+  rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new WorkerHostEnv(rpcProtocol)) as WorkerHostEnv;
+
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
   const reporter = new DefaultReporter();
   const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
@@ -176,15 +175,7 @@ export function createAPIFactory(
     env: {
       // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
       uriScheme: Schemes.file,
-      openExternal: (target: vscode.Uri) => proxy.$openExternal(target),
-      clipboard: {
-        readText(): Thenable<string> {
-          return proxy.$clipboardReadText();
-        },
-        writeText(value: string): Thenable<void> {
-          return proxy.$clipboardWriteText(value);
-        },
-      },
+      ...createWorkerHostEnvAPIFactory(rpcProtocol),
     },
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),
