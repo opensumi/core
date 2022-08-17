@@ -568,7 +568,10 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.experimental.stickyScroll.enabled': {
     type: 'boolean',
     default: true,
-    description: localize('editor.experimental.stickyScroll', 'Shows the nested current scopes during the scroll at the top of the editor.'),
+    description: localize(
+      'editor.experimental.stickyScroll',
+      'Shows the nested current scopes during the scroll at the top of the editor.',
+    ),
   },
   'editor.letterSpacing': {
     type: 'number',
@@ -1831,7 +1834,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.experimental.stickyScroll.enabled': {
     type: 'boolean',
-    default: true,
+    default: false,
     description: '%editor.experimental.stickyScroll.enabled.description%',
   },
 };
