@@ -2,7 +2,7 @@ import { Terminal } from 'xterm';
 
 import { IDisposable, Disposable, Event, Deferred } from '@opensumi/ide-core-common';
 
-import { INodePtyInstance, TerminalOptions, ICreateTerminalOptions } from './pty';
+import { INodePtyInstance, TerminalOptions, ICreateTerminalOptions, IShellLaunchConfig } from './pty';
 import { IWidget } from './resize';
 
 export interface ITerminalDataEvent {
@@ -38,10 +38,11 @@ export interface ITerminalClient extends Disposable {
   name: string;
 
   /**
+   * @deprecated 请使用 launchConfig
    * 终端客户端创建所使用的后端选项
    */
-  options: TerminalOptions;
-
+  options1: TerminalOptions;
+  launchConfig: IShellLaunchConfig;
   /**
    * 终端客户端渲染所使用的上层 dom 节点
    */
@@ -138,9 +139,13 @@ export interface ITerminalClient extends Disposable {
 
   /**
    * 更新终端客户端配置
+   * @deprecated 请使用 IShellLaunchConfig
    */
   updateOptions(options: TerminalOptions): void;
-
+  /**
+   * 更新终端客户端配置
+   */
+  updateLaunchConfig(launchConfig: IShellLaunchConfig): void;
   /**
    * clear 参数用于判断是否需要清理 meta 信息，
    * 不需要 clear 参数的时候基本为正常推出，

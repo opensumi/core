@@ -10,7 +10,7 @@ import {
   objects,
   path,
 } from '@opensumi/ide-core-common';
-import { TerminalOptions, ITerminalClient } from '@opensumi/ide-terminal-next/lib/common';
+import { ITerminalClient, IShellLaunchConfig } from '@opensumi/ide-terminal-next/lib/common';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 
 import {
@@ -114,17 +114,17 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
         result.push(await this.resolveVariable(arg));
       }
     }
-    return { shellArgs: ['-c', `${result.join(' ')}`] };
+    return { args: ['-c', `${result.join(' ')}`] };
   }
 
   private findAvailableExecutor(): TerminalTaskExecutor | undefined {
     return this.taskExecutors.find((e) => e.taskStatus === TaskStatus.PROCESS_EXITED);
   }
 
-  private async createTaskExecutor(task: CustomTask | ContributedTask, options: TerminalOptions) {
+  private async createTaskExecutor(task: CustomTask | ContributedTask, launchConfig: IShellLaunchConfig) {
     const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
     const collector = new ProblemCollector(matchers);
-    const executor = this.injector.get(TerminalTaskExecutor, [task, options, collector, this.executorId]);
+    const executor = this.injector.get(TerminalTaskExecutor, [task, launchConfig, collector, this.executorId]);
     this.executorId += 1;
     this.taskExecutors.push(executor);
     this.addDispose(
@@ -140,7 +140,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     task: CustomTask | ContributedTask,
     terminalClient: ITerminalClient,
   ): Promise<ITaskExecuteResult> {
-    const taskExecutor = await this.createTaskExecutor(task, terminalClient.options);
+    const taskExecutor = await this.createTaskExecutor(task, terminalClient.launchConfig);
     const p = taskExecutor.attach(terminalClient);
     this.lastTask = task;
     return {
@@ -156,26 +156,28 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
     const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
     const collector = new ProblemCollector(matchers);
-    const { shellArgs } = await this.buildShellConfig(task.command);
+    const { args } = await this.buildShellConfig(task.command);
 
-    const terminalOptions: TerminalOptions = {
+    const launchConfig: IShellLaunchConfig = {
       name: this.createTerminalName(task),
-      shellArgs,
-      isExtensionTerminal: isCustomExecution,
+      args,
+      isExtensionOwnedTerminal: isCustomExecution,
       env: task.command.options?.env || {},
       cwd: task.command.options?.cwd
         ? await this.resolveVariable(task.command.options?.cwd)
         : await this.resolveVariable('${workspaceFolder}'),
+      // 不需要历史记录
+      disablePreserveHistory: true,
     };
 
     let executor: TerminalTaskExecutor | undefined = this.findAvailableExecutor();
     let reuse = false;
     if (!executor) {
-      executor = await this.createTaskExecutor(task, terminalOptions);
+      executor = await this.createTaskExecutor(task, launchConfig);
     } else {
       reuse = true;
       executor.updateProblemCollector(collector);
-      executor.updateTerminalOptions(terminalOptions);
+      executor.updateLaunchConfig(launchConfig);
       executor.reset();
     }
 

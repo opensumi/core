@@ -1,7 +1,7 @@
 import { IJSONSchemaMap } from '@opensumi/ide-core-browser';
 import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
-import { ITerminalClient, TerminalOptions } from '@opensumi/ide-terminal-next/lib/common';
+import { IShellLaunchConfig, ITerminalClient } from '@opensumi/ide-terminal-next/lib/common';
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { ProblemCollector } from '../browser/problem-collector';
@@ -113,7 +113,7 @@ export interface ITaskExecutor {
   execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }>;
   reset(): void;
   terminate(): Promise<{ success: boolean }>;
-  updateTerminalOptions(options: TerminalOptions): void;
+  updateLaunchConfig(launchConfig: IShellLaunchConfig): void;
   updateProblemCollector(collector: ProblemCollector): void;
   onDidTerminalWidgetRemove: Event<void>;
   onDidTaskProcessExit: Event<number | undefined>;

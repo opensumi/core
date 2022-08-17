@@ -18,7 +18,7 @@ import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
 import { IProcessReadyEvent, IProcessExitEvent } from '../common/process';
-import { IPtyProcess } from '../common/pty';
+import { IPtyProcess, IPtySpawnOptions } from '../common/pty';
 
 import { IPtyServiceManager, PtyServiceManagerToken } from './pty.manager';
 import { findExecutable } from './shell';
@@ -201,13 +201,16 @@ export class PtyService extends Disposable {
 
   protected async setupPtyProcess() {
     const options = this.shellLaunchConfig;
-
+    const ptySpawnOptions: IPtySpawnOptions = {
+      preserveHistory: !options?.disablePreserveHistory,
+    };
     const args = options.args || [];
     const ptyProcess = await this.ptyServiceManager.spawn(
       options.executable as string,
       args,
       this._ptyOptions,
       this.sessionId,
+      ptySpawnOptions,
     );
 
     this.addDispose(

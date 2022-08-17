@@ -10,6 +10,23 @@ import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } 
 import { IDetectProfileOptions, ITerminalProfile } from './profile';
 import { WindowsShellType } from './shell';
 
+export interface IPtySpawnOptions {
+  /**
+   * 恢复终端的历史记录的特性
+   *
+   * 在 Task 启动终端的时候我们要关掉这个特性，因为我们期望每一次 Task 仅返回当次执行的结果
+   *
+   * @default true
+   */
+  preserveHistory?: boolean;
+  /**
+   * 保存的终端历史记录的行数
+   * TODO: 可以通过设置项改变
+   * @default 500
+   */
+  ptyLineCacheSize?: number;
+}
+
 export interface IPtyProcess extends INodePty {
   /**
    * @deprecated 请使用 `IPty.launchConfig` 的 shellPath 字段
@@ -44,6 +61,7 @@ export interface IPtyProxyRPCService {
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
+    spawnOptions?: IPtySpawnOptions,
   ): Promise<pty.IPty>;
 
   /**
@@ -533,6 +551,11 @@ export interface IShellLaunchConfig {
    * Opt-out of the default terminal persistence on restart and reload
    */
   disablePersistence?: boolean;
+
+  /**
+   * 禁用保持 Shell 历史的特性
+   */
+  disablePreserveHistory?: boolean;
 
   __fromTerminalOptions?: TerminalOptions;
 }

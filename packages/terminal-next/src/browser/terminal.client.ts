@@ -38,17 +38,11 @@ import {
   ITerminalConnection,
   ITerminalExternalLinkProvider,
   ICreateTerminalOptions,
-  ITerminalProfile,
   IShellLaunchConfig,
   ITerminalProfileInternalService,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import {
-  SupportedOptions,
-  ITerminalPreference,
-  CodeTerminalSettingId,
-  SupportedOptionsName,
-} from '../common/preference';
+import { SupportedOptions, ITerminalPreference, CodeTerminalSettingId } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
@@ -272,36 +266,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
-  convertProfileToLaunchConfig(
-    shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
-    cwd?: Uri | string,
-  ): IShellLaunchConfig {
-    if (!shellLaunchConfigOrProfile) {
-      return {};
-    }
-    // Profile was provided
-    if (shellLaunchConfigOrProfile && 'profileName' in shellLaunchConfigOrProfile) {
-      const profile = shellLaunchConfigOrProfile;
-      if (!profile.path) {
-        return shellLaunchConfigOrProfile;
-      }
-      return {
-        executable: profile.path,
-        args: profile.args,
-        env: profile.env,
-        // icon: profile.icon,
-        color: profile.color,
-        name: profile.overrideName ? profile.profileName : undefined,
-        cwd,
-      };
-    }
-
-    if (cwd) {
-      shellLaunchConfigOrProfile.cwd = cwd;
-    }
-    return shellLaunchConfigOrProfile;
-  }
-
   async init2(widget: IWidget, options?: ICreateTerminalOptions) {
     this._uid = options?.id || widget.id;
     this.setupWidget(widget);
@@ -317,7 +281,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     await this._checkWorkspace();
 
     const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
-    const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
+    const launchConfig = this.controller.convertProfileToLaunchConfig(options.config, cwd);
     this._launchConfig = launchConfig;
     if (this._launchConfig.__fromTerminalOptions) {
       this._terminalOptions = this._launchConfig.__fromTerminalOptions;
@@ -362,8 +326,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this.internalService.getProcessId(this.id);
   }
 
-  get options() {
+  get options1() {
     return this._terminalOptions;
+  }
+
+  get launchConfig(): IShellLaunchConfig {
+    return this._launchConfig;
   }
 
   get createOptions() {
@@ -713,6 +681,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   updateTheme() {
     return this.xterm.updateTheme(this.theme.terminalTheme);
+  }
+  updateLaunchConfig(launchConfig: IShellLaunchConfig) {
+    this._launchConfig = {
+      ...this._launchConfig,
+      ...launchConfig,
+    };
   }
 
   updateOptions(options: TerminalOptions) {

@@ -1,5 +1,5 @@
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Event, Disposable, Deferred, IDisposable } from '@opensumi/ide-core-common';
+import { Event, Disposable, Deferred, IDisposable, Uri } from '@opensumi/ide-core-common';
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { ILinkHoverTargetOptions } from '../browser/links/link-manager';
@@ -11,6 +11,7 @@ import {
   ITerminalExternalLinkProvider,
 } from './client';
 import { ITerminalLaunchError, ITerminalProcessExtHostProxy, IStartExtensionTerminalRequest } from './extension';
+import { ITerminalProfile } from './profile';
 import { ITerminalInfo, ICreateTerminalOptions, TerminalOptions, IShellLaunchConfig } from './pty';
 import { IWidgetGroup, IWidget } from './resize';
 
@@ -28,6 +29,35 @@ export interface IBoundSize {
   height: number;
 }
 
+export interface ICreateTerminalWithWidgetOptions {
+  options: ICreateTerminalOptions;
+
+  /**
+   * 插件进程传递的唯一 ID
+   */
+  id?: string;
+  /**
+   * pty 进程退出后是否自动关闭 terminal 控件
+   */
+  closeWhenExited?: boolean;
+
+  /**
+   * 是否为 TaskExecutor
+   */
+  isTaskExecutor?: boolean;
+
+  /**
+   * 作为 TaskExecutor 时对应的 taskId
+   */
+  taskId?: string;
+
+  /**
+   * 自定义的参数，由上层集成方自行控制
+   */
+  args?: any;
+
+  beforeCreate?: (terminalId: string) => void;
+}
 export interface ICreateClientWithWidgetOptions {
   terminalOptions: TerminalOptions;
   /**
@@ -74,19 +104,19 @@ export interface ITerminalController extends Disposable {
   blur(): void;
   onContextMenu(e: React.MouseEvent<HTMLElement>): void;
   findClientFromWidgetId(widgetId: string): ITerminalClient | undefined;
-  /**
-   * @deprecated 请使用 `createClientWithWidget2` Will removed in 2.17.0
-   */
-  createClientWithWidget(options: TerminalOptions): Promise<ITerminalClient>;
-  createClientWithWidget2(options: ICreateClientWithWidgetOptions): Promise<ITerminalClient>;
+  createTerminalWithWidgetByTerminalOptions(options: ICreateClientWithWidgetOptions): Promise<ITerminalClient>;
   createTerminal(options: ICreateTerminalOptions): Promise<ITerminalClient>;
+  createTerminalWithWidget(options: ICreateTerminalWithWidgetOptions): Promise<ITerminalClient>;
   clearCurrentGroup(): void;
   clearAllGroups(): void;
   showTerminalPanel(): void;
   hideTerminalPanel(): void;
   toJSON(): ITerminalBrowserHistory;
   convertTerminalOptionsToLaunchConfig(options: TerminalOptions): IShellLaunchConfig;
-
+  convertProfileToLaunchConfig(
+    shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
+    cwd?: Uri | string,
+  ): IShellLaunchConfig;
   onDidOpenTerminal: Event<ITerminalInfo>;
   onDidCloseTerminal: Event<ITerminalExitEvent>;
   onDidTerminalTitleChange: Event<ITerminalTitleChangeEvent>;

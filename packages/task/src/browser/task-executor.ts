@@ -11,11 +11,11 @@ import {
   ProblemMatchData,
 } from '@opensumi/ide-core-common';
 import {
-  TerminalOptions,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalClient,
   ITerminalService,
+  IShellLaunchConfig,
 } from '@opensumi/ide-terminal-next/lib/common';
 
 import { ITaskExecutor } from '../common';
@@ -98,7 +98,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   constructor(
     private task: Task,
-    private terminalOptions: TerminalOptions,
+    private shellLaunchConfig: IShellLaunchConfig,
     private collector: ProblemCollector,
     public executorId: number,
   ) {
@@ -141,6 +141,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     }
     const { term, id } = this.terminalClient;
     term.options.disableStdin = true;
+
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m\r\n`);
     this._onDidTaskProcessExit.fire(code);
@@ -214,11 +215,11 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   private async createTerminal(reuse?: boolean) {
     if (reuse && this.terminalClient) {
-      this.terminalClient.updateOptions(this.terminalOptions);
+      this.terminalClient.updateLaunchConfig(this.shellLaunchConfig);
       this.terminalClient.reset();
     } else {
-      this.terminalClient = await this.terminalController.createClientWithWidget2({
-        terminalOptions: this.terminalOptions,
+      this.terminalClient = await this.terminalController.createTerminalWithWidget({
+        options: this.shellLaunchConfig,
         closeWhenExited: false,
         isTaskExecutor: true,
         taskId: this.task._id,
@@ -234,7 +235,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   async attach(terminalClient: ITerminalClient): Promise<{ exitCode?: number }> {
     this.taskStatus = TaskStatus.PROCESS_READY;
     this.terminalClient = terminalClient;
-    this.terminalOptions = terminalClient.options;
+    this.shellLaunchConfig = terminalClient.launchConfig;
     this.bindTerminalClientEvent();
     this.taskStatus = TaskStatus.PROCESS_RUNNING;
     this.pid = await this.terminalClient?.pid;
@@ -251,20 +252,18 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     await this.createTerminal(reuse);
 
     this.terminalClient?.term.writeln(`\x1b[3m> Executing task: ${task._label} <\x1b[0m\n`);
-    const { shellArgs } = this.terminalOptions;
+    const { args } = this.shellLaunchConfig;
 
     // extensionTerminal 由插件自身接管，不需要执行和输出 Command
-    if (!this.terminalOptions.isExtensionTerminal && shellArgs) {
-      this.terminalClient?.term.writeln(
-        `\x1b[3m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs[1]} <\x1b[0m\n`,
-      );
+    if (!this.shellLaunchConfig.isExtensionOwnedTerminal && args) {
+      this.terminalClient?.term.writeln(`\x1b[3m> Command: ${typeof args === 'string' ? args : args[1]} <\x1b[0m\n`);
     }
 
     await this.terminalClient?.attached.promise;
     this.taskStatus = TaskStatus.PROCESS_RUNNING;
     this.pid = await this.terminalClient?.pid;
     this.processReady.resolve();
-    this.terminalClient?.term.write('\n\x1b[G');
+    this.terminalClient?.term.write('\x1b[G');
     return this.exitDefer.promise;
   }
 
@@ -280,8 +279,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     return this.terminalClient && this.terminalClient.widget.id;
   }
 
-  public updateTerminalOptions(terminalOptions: TerminalOptions) {
-    this.terminalOptions = terminalOptions;
+  public updateLaunchConfig(launchConfig: IShellLaunchConfig) {
+    this.shellLaunchConfig = launchConfig;
   }
 
   public updateProblemCollector(collector: ProblemCollector) {

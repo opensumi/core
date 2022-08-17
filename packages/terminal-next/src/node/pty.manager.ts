@@ -3,7 +3,7 @@ import * as pty from 'node-pty';
 import { Injectable, Autowired } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';
 
-import { IPtyProcessProxy, IPtyProxyRPCService, IShellLaunchConfig } from '../common';
+import { IPtyProcessProxy, IPtyProxyRPCService, IPtySpawnOptions, IShellLaunchConfig } from '../common';
 
 import { PtyServiceProxy } from './pty.proxy';
 
@@ -18,8 +18,9 @@ export interface IPtyServiceManager {
   spawn(
     file: string,
     args: string[] | string,
-    options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
+    ptyOptions: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
+    spawnOptions?: IPtySpawnOptions,
   ): Promise<IPtyProcessProxy>;
   // 因为 PtyServiceManage 是 PtyClient 端统筹所有 Pty 的管理类，因此每一个具体方法的调用都需要传入 pid 来对指定 pid 做某些操作
   onData(pid: number, listener: (e: string) => any): pty.IDisposable;
@@ -90,8 +91,15 @@ export class PtyServiceManager implements IPtyServiceManager {
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
+    spawnOptions?: IPtySpawnOptions,
   ): Promise<IPtyProcessProxy> {
-    const ptyRemoteProxy = (await this.ptyServiceProxy.$spawn(file, args, options, sessionId)) as pty.IPty;
+    const ptyRemoteProxy = (await this.ptyServiceProxy.$spawn(
+      file,
+      args,
+      options,
+      sessionId,
+      spawnOptions,
+    )) as pty.IPty;
     // 局部功能的 IPty, 代理所有常量
     return new PtyProcessProxy(ptyRemoteProxy, this);
   }
@@ -161,13 +169,13 @@ export class PtyServiceManager implements IPtyServiceManager {
 // 实现了 IPtyProcessProxy 背后是 NodePty 的 INodePty, 因此可以做到和本地化直接调用 NodePty 的代码兼容
 class PtyProcessProxy implements IPtyProcessProxy {
   private ptyServiceManager: IPtyServiceManager;
-  constructor(iptyProxy: pty.IPty, ptyServiceManager: IPtyServiceManager) {
+  constructor(ptyProxy: pty.IPty, ptyServiceManager: IPtyServiceManager) {
     this.ptyServiceManager = ptyServiceManager;
-    this.pid = iptyProxy.pid;
-    this.cols = iptyProxy.cols;
-    this.rows = iptyProxy.rows;
-    this._process = iptyProxy.process;
-    this.handleFlowControl = iptyProxy.handleFlowControl;
+    this.pid = ptyProxy.pid;
+    this.cols = ptyProxy.cols;
+    this.rows = ptyProxy.rows;
+    this._process = ptyProxy.process;
+    this.handleFlowControl = ptyProxy.handleFlowControl;
 
     this.onData = (listener: (e: string) => any) => this.ptyServiceManager.onData(this.pid, listener);
     this.onExit = (listener: (e: { exitCode: number; signal?: number }) => any) =>
