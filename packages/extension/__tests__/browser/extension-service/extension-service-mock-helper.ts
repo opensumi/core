@@ -519,7 +519,17 @@ export function setupExtensionServiceInjector() {
     },
     {
       token: ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
+      useValue: {
+        getLogger: () => ({
+          log: () => {},
+          debug: () => {},
+          error: () => {},
+          verbose: () => {},
+          warn: () => {},
+        }),
+        onDidChangeLogLevel: () => {},
+        getGlobalLogLevel: () => 0,
+      },
     },
     {
       token: StorageProvider,
