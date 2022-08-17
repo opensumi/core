@@ -236,11 +236,6 @@ export class MainLayoutModuleContribution
       },
     });
     commands.registerCommand(WORKBENCH_ACTION_CLOSEPANEL);
-    commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
-      execute: (show?: boolean, size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.bottom, show, size);
-      },
-    });
     commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
       execute: () => this.mainLayoutService.getTabbarService('bottom').currentContainerId !== '',
     });
@@ -253,16 +248,6 @@ export class MainLayoutModuleContribution
     commands.registerCommand(SET_PANEL_SIZE_COMMAND, {
       execute: (size: number) => {
         this.mainLayoutService.setFloatSize(size);
-      },
-    });
-    commands.registerCommand(EXPAND_BOTTOM_PANEL, {
-      execute: () => {
-        this.mainLayoutService.expandBottom(true);
-      },
-    });
-    commands.registerCommand(RETRACT_BOTTOM_PANEL, {
-      execute: () => {
-        this.mainLayoutService.expandBottom(false);
       },
     });
 
