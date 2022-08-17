@@ -28,7 +28,7 @@ import {
   TerminalMenuContribution,
   TerminalLifeCycleContribution,
   TerminalRenderContribution,
-  TerminalKeybindinngContribution,
+  TerminalKeybindingContribution,
   TerminalNetworkContribution,
   TerminalPreferenceContribution,
 } from './contribution';
@@ -57,7 +57,7 @@ export class TerminalNextModule extends BrowserModule {
     TerminalRenderContribution,
     TerminalCommandContribution,
     TerminalMenuContribution,
-    TerminalKeybindinngContribution,
+    TerminalKeybindingContribution,
     TerminalNetworkContribution,
     TerminalPreferenceContribution,
     {

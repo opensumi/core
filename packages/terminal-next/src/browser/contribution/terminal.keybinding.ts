@@ -4,7 +4,7 @@ import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { Domain, isWindows } from '@opensumi/ide-core-common';
 
 @Domain(KeybindingContribution)
-export class TerminalKeybindinngContribution implements KeybindingContribution {
+export class TerminalKeybindingContribution implements KeybindingContribution {
   registerKeybindings(registry: KeybindingRegistry) {
     registry.registerKeybinding({
       command: TERMINAL_COMMANDS.OPEN_SEARCH.id,
