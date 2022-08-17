@@ -3,7 +3,7 @@ import vscode from 'vscode';
 import type {
   OnEnterRule,
   IndentationRule,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/languageConfiguration';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/languageConfiguration';
 
 import * as types from './ext-types';
 import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule } from './model.api';

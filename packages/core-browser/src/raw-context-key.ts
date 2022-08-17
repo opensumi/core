@@ -1,6 +1,8 @@
+import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+
 import { IContextKeyService, IContextKey } from './context-key';
 
-export abstract class IRawContextKey<T> {
+export abstract class IRawContextKey<T extends ContextKeyValue> {
   raw: string;
   not: string;
   abstract equalsTo(value: string): string;
@@ -10,7 +12,7 @@ export abstract class IRawContextKey<T> {
   abstract getValue(target: IContextKeyService): T | undefined;
 }
 
-type ContextkeyCombinedClause<T = any> = Array<RawContextKey<T> | string>;
+type ContextkeyCombinedClause<T extends ContextKeyValue = ContextKeyValue> = Array<RawContextKey<T> | string>;
 
 function whenNormalizer(arr: ContextkeyCombinedClause, separator: '&&' | '||'): string {
   const result: string[] = [];
@@ -35,7 +37,7 @@ function whenNormalizer(arr: ContextkeyCombinedClause, separator: '&&' | '||'): 
  * when: RawContextKey.and(ExplorerRootContext, ExplorerFolderContext)
  * 参考 https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
  */
-export class RawContextKey<T> implements IRawContextKey<T> {
+export class RawContextKey<T extends ContextKeyValue> implements IRawContextKey<T> {
   private key: string;
   private defaultValue: T | undefined;
 
