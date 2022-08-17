@@ -712,6 +712,7 @@ export const localizationBundle = {
     'keymaps.edit.placeholder': 'Press Enter to save',
     'keymaps.editorTitle.openSource': 'Open Keymap ShortCut(JSON)',
     'keymaps.editorTitle.openKeymap': 'Open Keymap ShortCut',
+    'keymaps.commandId.title': 'Command ID: {0}',
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
