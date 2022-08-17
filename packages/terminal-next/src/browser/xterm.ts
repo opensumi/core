@@ -80,7 +80,7 @@ export class XTerm extends Disposable implements IXTerm {
 
   updateTheme(theme: ITheme | undefined) {
     if (theme) {
-      this.raw.setOption('theme', theme);
+      this.raw.options.theme = theme;
       this.xtermOptions = {
         ...this.xtermOptions,
         theme,

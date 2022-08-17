@@ -423,7 +423,7 @@ export class TaskService extends Disposable implements ITaskService {
         const parseResult = parse(
           { uri: folderUri, name: folderUri.path, index: 0 },
           platform,
-          tasksConfig!,
+          tasksConfig,
           problemReporter,
           this.taskDefinitionRegistry,
           this.problemMatcher,
@@ -438,11 +438,10 @@ export class TaskService extends Disposable implements ITaskService {
             byIdentifier: Object.create(null),
           };
           for (const task of parseResult.configured) {
-            // @ts-ignore
             customizedTasks.byIdentifier[task.configures._key] = task;
           }
         }
-        taskSet.push(...parseResult.custom!);
+        taskSet.push(...parseResult.custom);
         /**
          * Converter configuringTask to customTask
          */

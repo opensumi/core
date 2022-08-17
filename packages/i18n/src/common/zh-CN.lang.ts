@@ -848,7 +848,8 @@ export const localizationBundle = {
     'TaskService.pickRunTask': '选择要运行的任务',
     'TerminalTaskSystem.terminalName': '任务 - {0}',
     'terminal.integrated.exitedWithCode': '终端进程已终止，退出代码: {0}',
-    reuseTerminal: '终端将被任务重用，按 r 键重新执行该任务，按其他任意键关闭。',
+    // reuseTerminal: '终端将被任务重用，按 r 键重新执行该任务，按其他任意键关闭。',
+    reuseTerminal: '终端将被任务重用，按任意键关闭。',
 
     'toolbar-customize.buttonDisplay.description': '按钮展示形式',
     'toolbar-customize.buttonDisplay.icon': '仅图标',

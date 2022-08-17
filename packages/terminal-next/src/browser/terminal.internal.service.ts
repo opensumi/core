@@ -12,7 +12,6 @@ import {
   IShellLaunchConfig,
   ITerminalConnection,
   IPtyProcessChangeEvent,
-  TERMINAL_ID_SEPARATOR,
 } from '../common';
 import { IXTerm } from '../common/xterm';
 

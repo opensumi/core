@@ -114,7 +114,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   protected readonly view: ITerminalGroupViewService;
 
   @Autowired(ITerminalPreference)
-  protected readonly preference: ITerminalPreference;
+  protected readonly terminalPreference: ITerminalPreference;
 
   @Autowired(TerminalKeyBoardInputService)
   protected readonly keyboard: TerminalKeyBoardInputService;
@@ -173,7 +173,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         xtermOptions: {
           theme: this.theme.terminalTheme,
           ...this.internalService.getOptions(),
-          ...this.preference.toJSON(),
+          ...this.terminalPreference.toJSON(),
         },
       },
     ]);
@@ -222,7 +222,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
 
     this.addDispose(
-      this.preference.onChange(async ({ name, value }) => {
+      this.terminalPreference.onChange(async ({ name, value }) => {
         if (!widget.show && !this._show) {
           this._show = new Deferred();
         }
@@ -566,11 +566,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async attach() {
     if (!this._ready) {
-      return this._doAttach2();
+      return this._doAttach();
     }
   }
 
-  private async _doAttach2() {
+  private async _doAttach() {
     const sessionId = this.id;
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this.xterm.raw;
 
@@ -633,7 +633,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
      * 这种情况可能会报错
      */
     try {
-      this.xterm.raw.setOption(name, value);
+      this.xterm.raw.options[name] = value;
       this._layout();
     } catch (_e) {
       /** nothing */

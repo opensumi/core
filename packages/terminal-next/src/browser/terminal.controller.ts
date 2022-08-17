@@ -195,15 +195,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private async _createClient(widget: IWidget, options?: ICreateTerminalOptions) {
-    let client: ITerminalClient;
-
-    if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
-      client = await this.clientFactory2(widget, /** @type ICreateTerminalOptions */ options);
-      this.logger.log('create client with clientFactory2', client);
-    } else {
-      client = await this.clientFactory(widget, /** @type TerminalOptions */ options);
-      this.logger.log('create client with clientFactory', client);
-    }
+    const client = await this.clientFactory2(widget, /** @type ICreateTerminalOptions */ options);
+    this.logger.log('create client with clientFactory2', client);
     return this.setupClient(widget, client);
   }
 
@@ -212,8 +205,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.logger.log(`setup client ${client.id}`);
     client.addDispose(
       client.onExit((e) => {
-        // 直接使用removeWidget会导致TerminalTask场景下任务执行完毕直接退出而不是用户手动触发onKeyDown退出
-        // this.terminalView.removeWidget(client.id);
+        // 在这个函数内不要 removeWidget，会导致 TerminalTask 场景下任务执行完毕直接退出而不是用户手动触发 onKeyDown 退出
+
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
       }),
     );
@@ -549,7 +542,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           return;
         }
 
-        if (client?.options?.isExtensionTerminal || client?.options?.isTransient) {
+        if (client.options?.isExtensionTerminal || client.options?.isTransient) {
           return;
         }
 

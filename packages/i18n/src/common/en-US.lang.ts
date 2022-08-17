@@ -873,7 +873,8 @@ export const localizationBundle = {
     'TaskService.pickRunTask': 'Select the task to run',
     'TerminalTaskSystem.terminalName': 'Task - {0}',
     'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
-    reuseTerminal: "Terminal will be reused by tasks, press 'r' to rerun task. press any other key to close it.",
+    // reuseTerminal: "Terminal will be reused by tasks, press 'r' to rerun task. press any other key to close it.",
+    reuseTerminal: 'Terminal will be reused by tasks, press any key to close it.',
 
     'toolbar-customize.buttonDisplay.description': 'Button Style',
     'toolbar-customize.buttonDisplay.icon': 'Icon Only',
