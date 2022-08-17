@@ -92,7 +92,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   private processExited = false;
 
-  private disposableCollection: DisposableCollection = new DisposableCollection();
+  private eventToDispose: DisposableCollection = new DisposableCollection();
 
   public taskStatus: TaskStatus = TaskStatus.PROCESS_INIT;
 
@@ -141,10 +141,10 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     }
     const { term, id } = this.terminalClient;
     term.options.disableStdin = true;
-    term.writeln(formatLocalize('terminal.integrated.exitedWithCode', code));
+    term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m`);
     this._onDidTaskProcessExit.fire(code);
-    this.disposableCollection.push(
+    this.eventToDispose.push(
       term.onKey((data) => {
         const key = data.key;
         if (key.toLowerCase() === 'r') {
@@ -158,13 +158,15 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   /**
    * 监听 Terminal 的相关事件，一个 Executor 仅需监听一次即可，否则多次监听会导致输出重复内容。
+   * 注意里面的 event 用完要及时 dispose
    */
   private bindTerminalClientEvent() {
     if (!this.terminalClient) {
       return;
     }
+    this.eventToDispose.dispose();
 
-    this.addDispose(
+    this.eventToDispose.push(
       this.terminalClient.onOutput((e) => {
         const output = removeAnsiEscapeCodes(e.data.toString());
         const isBegin = this.collector.matchBeginMatcher(output);
@@ -198,24 +200,24 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       }),
     );
 
-    this.disposableCollection.push(
+    this.eventToDispose.push(
       this.terminalClient.onExit(async (e) => {
         if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
+          this.taskStatus = TaskStatus.PROCESS_EXITED;
           this.onTaskExit(e.code);
           this.processExited = true;
-          this.taskStatus = TaskStatus.PROCESS_EXITED;
           this.exitDefer.resolve({ exitCode: e.code });
         }
       }),
     );
 
-    this.disposableCollection.push(
+    this.eventToDispose.push(
       this.terminalService.onExit(async (e) => {
         if (e.sessionId === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
+          this.taskStatus = TaskStatus.PROCESS_EXITED;
           await this.processReady.promise;
           this.onTaskExit(e.code);
           this.processExited = true;
-          this.taskStatus = TaskStatus.PROCESS_EXITED;
           this.exitDefer.resolve({ exitCode: e.code });
         }
       }),
@@ -236,9 +238,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
           this._onDidTerminalCreated.fire(terminalId);
         },
       });
-      this.bindTerminalClientEvent();
     }
-
+    this.bindTerminalClientEvent();
     this.terminalController.showTerminalPanel();
   }
 
@@ -300,7 +301,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   }
 
   public reset() {
-    this.disposableCollection.dispose();
+    this.eventToDispose.dispose();
     this.taskStatus = TaskStatus.PROCESS_INIT;
     this.exitDefer = new Deferred();
   }
