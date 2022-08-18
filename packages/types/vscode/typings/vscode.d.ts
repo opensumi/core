@@ -3395,7 +3395,7 @@ declare module 'vscode' {
     /**
      * The location at which progress should show.
      */
-    location: ProgressLocation;
+    location: ProgressLocation | { viewId: string };
 
     /**
      * A human-readable string which will be used to describe the

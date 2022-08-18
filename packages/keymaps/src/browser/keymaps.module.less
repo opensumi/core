@@ -3,20 +3,60 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  box-sizing: border-box;
+  width: calc(100% - 22px);
+  &:hover {
+    .keybinding_list_item_box {
+      border-left: 1px solid var(--sideBar-border);
+      border-bottom: 1px solid var(--sideBar-border);
+      &:nth-child(4) {
+        border-right: 1px solid var(--sideBar-border);
+      }
+    }
+    .keybinding_header {
+      border-top: 1px solid var(--sideBar-border);
+      border-bottom: 1px solid var(--sideBar-border);
+      .keybinding_header_item {
+        border-left: 1px solid var(--sideBar-border);
+        &:nth-child(4) {
+          border-right: 1px solid var(--sideBar-border);
+        }
+      }
+    }
+  }
 }
 
-.keybinding_header {
-  padding: 0 10px 11px 0;
+.keybinding_searchbar {
+  padding: 0 0 10px 0;
   display: flex;
   flex-direction: row;
   box-sizing: content-box;
   font-size: 14px;
 }
 
+.keybinding_header {
+  display: flex;
+  flex-direction: row;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-weight: bolder;
+  height: 40px;
+  line-height: 40px;
+  border-top: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  .keybinding_header_item {
+    &:nth-child(4) {
+      border-right: 1px solid transparent;
+    }
+  }
+}
+
 .keybinding_body {
-  height: calc(100% - 52px);
   position: relative;
+  height: calc(100% - 56px);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   .keybinding_loading {
     position: absolute;
     width: 100%;
@@ -28,6 +68,10 @@
   }
 }
 
+.keybinding_list {
+  flex: 1;
+}
+
 .keybinding_list_header {
   background-color: hsla(0, 0%, 51%, 0.04);
   height: 30px;
@@ -36,7 +80,7 @@
 
 .keybinding_key_input_container {
   position: relative;
-  height: 100%;
+  height: 30px;
   width: 100%;
   &:hover {
     .keybinding_optional_actions {
@@ -53,13 +97,13 @@
   z-index: 100;
   position: absolute;
   left: 0;
-  top: 24px;
+  top: 40px;
   max-height: 175px;
   min-width: 100%;
   padding: 10px;
   max-width: 600px;
   background: var(--kt-selectDropdown-background);
-  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.24), 0 3px 6px -4px rgba(0, 0, 0, 0.36);
+  box-shadow: 0 9px 28px 8px rgba(0, 0, 0, 0.15), 0 6px 16px 0 rgba(0, 0, 0, 0.4), 0 3px 6px -4px rgba(0, 0, 0, 0.4);
   border-radius: 2px;
   overflow-y: scroll;
   overflow-x: hidden;
@@ -131,8 +175,8 @@
   justify-content: center;
   color: var(--inputicon-foreground);
   width: 16px;
-  height: 24px;
-  line-height: 24px;
+  height: 40px;
+  line-height: 40px;
   text-align: center;
 }
 
@@ -157,11 +201,12 @@
   border-radius: 2px;
   background-color: rgba(134, 140, 145, 0.1);
   font-size: 12px;
-  padding: 0 2px;
-  height: 16px;
-  line-height: 16px;
+  padding: 1px 6px;
+  height: 20px;
+  line-height: 17px;
   margin-right: 3px;
   text-align: center;
+  border-bottom: 2px solid rgba(25, 25, 25, 0.1);
 }
 
 .keybinding_list_container {
@@ -169,7 +214,6 @@
   border-spacing: 0;
   border-collapse: separate;
   height: calc(100% - 30px);
-
   span {
     display: inline-block;
   }
@@ -178,11 +222,10 @@
 .keybinding_list_item {
   cursor: default;
   display: flex;
-  height: 24px;
+  height: 40px;
   flex-direction: row;
-  line-height: 24px;
+  line-height: 40px;
   position: relative;
-
   match {
     color: #ff7673;
   }
@@ -191,14 +234,64 @@
     align-items: center;
     width: 25%;
     font-size: 12px;
+    border-left: 1px solid transparent;
+    border-bottom: 1px solid transparent;
     box-sizing: border-box;
     padding-left: 30px;
+    height: 40px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    &:nth-child(1) {
+      width: 30%;
+    }
+    &:nth-child(4) {
+      width: 20%;
+      border-right: 1px solid transparent;
+    }
+    &:hover {
+      .keybinding_optional_actions {
+        display: flex;
+      }
+    }
+  }
+  .keybinding_command {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
   }
 
   .limit_warp {
+    font-size: 13px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .command_name {
+    height: 20px;
+    font-size: 13px;
+    line-height: 20px;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+    margin-top: 2px;
+  }
+
+  .command_id {
+    height: 16px;
+    line-height: 16px;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    opacity: 0.6;
+    width: 100%;
   }
 
   &.odd {
@@ -207,13 +300,12 @@
 
   .keybinding_inline_action {
     display: none;
-    height: 24px;
-    line-height: 24px;
+    height: 40px;
+    line-height: 40px;
     width: 20px;
     text-align: left;
     text-align: center;
     cursor: pointer;
-    background-color: var(--list-hoverBackground);
     &:hover {
       transform: scale(1.2);
     }
@@ -222,9 +314,9 @@
   .keybinding_action {
     display: none;
     position: absolute;
-    right: 0;
-    height: 24px;
-    line-height: 24px;
+    right: 5px;
+    height: 40px;
+    line-height: 40px;
     text-align: center;
     z-index: 10;
     cursor: pointer;
@@ -243,13 +335,20 @@
 
 .keybinding_header_item {
   width: 25%;
-  box-sizing: content-box;
+  border-left: 1px solid transparent;
+  box-sizing: border-box;
   padding-left: 30px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  height: 24px;
-  line-height: 24px;
+  height: 40px;
+  line-height: 40px;
+  &:nth-child(1) {
+    width: 30%;
+  }
+  &:nth-child(4) {
+    width: 20%;
+  }
 }
 
 .search_container {
@@ -264,7 +363,7 @@
 }
 
 .search_input {
-  height: 30px;
+  height: 40px;
   width: 100%;
 }
 

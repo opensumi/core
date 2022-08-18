@@ -8,7 +8,8 @@ import { localize } from '@opensumi/ide-core-common';
 import { IClientApp } from '../browser-module';
 import { DefaultLayout } from '../components/layout/default-layout';
 import { ResizeEvent } from '../layout';
-import { ConfigProvider, allSlot } from '../react-providers';
+import { ConfigProvider } from '../react-providers/config-provider';
+import { allSlot } from '../react-providers/slot';
 import { LabelService } from '../services';
 import { getIcon } from '../style/icon/icon';
 

@@ -1,23 +1,20 @@
-import type {
-  ICodeEditor,
-  IDiffEditor,
-  IEditorConstructionOptions,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { IJSONSchema, Event, IDisposable, BasicEvent } from '@opensumi/ide-core-common';
+import type { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
+import type { ICodeEditor, IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import type {
   DocumentFormattingEditProvider,
   DocumentRangeFormattingEditProvider,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import type { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/format';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import type { IFormattingEditProviderSelector } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
 import type {
   ISelectedSuggestion,
   SuggestWidget,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestWidget';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestWidget';
 import type { BrandedService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 
-import { Event, IJSONSchema, IDisposable, BasicEvent } from '..';
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
   TEXT_MODEL_SERVICE = 'textModelService',

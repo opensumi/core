@@ -12,6 +12,7 @@ export enum MenuId {
   DebugToolBar = 'debug/toolbar',
   EditorContext = 'editor/context',
   EditorTitle = 'editor/title',
+  EditorTitleRun = 'editor/title/run',
   EditorTitleContext = 'editor/title/context',
   EmptyEditorGroupContext = 'empty/editor/group/context',
   ExplorerContext = 'explorer/context',

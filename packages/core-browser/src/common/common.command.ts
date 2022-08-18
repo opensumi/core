@@ -931,6 +931,14 @@ export namespace LAYOUT_COMMANDS {
     category: CATEGORY,
   };
 }
+export namespace MARKER_COMMANDS {
+  const CATEGORY = 'marker';
+
+  export const SHOW_ERRORS_WARNINGS = {
+    id: 'marker.action.showErrorsWarnings',
+    category: CATEGORY,
+  };
+}
 
 export namespace QUICK_OPEN_COMMANDS {
   export const OPEN: Command = {

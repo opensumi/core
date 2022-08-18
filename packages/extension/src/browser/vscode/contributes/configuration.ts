@@ -31,22 +31,30 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
   contribute() {
     let configurations = this.json;
-    let properties = {};
+    // 当前函数里只创建声明这一次变量，然后后面给这个函数赋值
+    let tmpProperties = {};
     if (!Array.isArray(configurations)) {
       configurations = [configurations];
     }
     for (const configuration of configurations) {
       if (configuration && configuration.properties) {
         for (const prop of Object.keys(configuration.properties)) {
-          properties[prop] = configuration.properties[prop];
-          if (configuration.properties[prop].description) {
-            properties[prop].description = replaceLocalizePlaceholder(
-              configuration.properties[prop].description,
+          const originalConfiguration = configuration.properties[prop];
+          tmpProperties[prop] = originalConfiguration;
+          if (originalConfiguration.description) {
+            tmpProperties[prop].description = replaceLocalizePlaceholder(
+              originalConfiguration.description,
+              this.extension.id,
+            );
+          }
+          if (originalConfiguration.markdownDescription) {
+            tmpProperties[prop].markdownDescription = replaceLocalizePlaceholder(
+              originalConfiguration.markdownDescription,
               this.extension.id,
             );
           }
         }
-        configuration.properties = properties;
+        configuration.properties = tmpProperties;
         configuration.title =
           replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
         this.updateConfigurationSchema(configuration);
@@ -56,7 +64,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
             preferences: Object.keys(configuration.properties),
           }),
         );
-        properties = {};
+        tmpProperties = {};
       }
     }
   }

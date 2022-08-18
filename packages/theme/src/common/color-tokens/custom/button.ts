@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { RGBA, Color } from '../../color';
-import { darken, lighten, registerColor } from '../../color-registry';
+import { registerColor, darken, lighten } from '../../utils';
 import { foreground } from '../base';
 import {
   buttonBackground,
@@ -277,7 +277,7 @@ export const ktDefaultButtonBorder = registerColor(
 );
 export const ktDefaultButtonHoverBackground = registerColor(
   'kt.defaultButton.hoverBackground',
-  { dark: '#5F656B', light: '#FFFFFF', hc: null },
+  { dark: '#b8b8b82f', light: '#b8b8b82f', hc: null },
   localize('ktDefaultButtonHoverBackground', 'Danger Ghost Button Hover Background color.'),
 );
 export const ktDefaultButtonHoverForeground = registerColor(

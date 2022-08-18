@@ -195,7 +195,7 @@ export class FileTreeAPI implements IFileTreeAPI {
     } catch (e) {
       return e.message;
     }
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, focus: true });
     return;
   }
 
