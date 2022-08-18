@@ -1,10 +1,10 @@
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
 import { Command, CommandContribution, CommandRegistry } from '@opensumi/ide-core-common/lib/command';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
 
-import { ConnectionBackServicePath, IConnectionBackService } from '../common';
+import { ConnectionRTTBrowserServiceToken, ConnectionRTTBrowserService } from './connection-rtt-service';
 
 const START_CONNECTION_RTT_COMMAND: Command = {
   id: 'connection.start.rtt',
@@ -22,18 +22,6 @@ const statusBarOption = {
   alignment: StatusBarAlignment.LEFT,
   priority: Infinity - 1,
 };
-
-export const ConnectionRTTBrowserServiceToken = Symbol('ConnectionRTTBrowserService');
-
-@Injectable()
-export class ConnectionRTTBrowserService {
-  @Autowired(ConnectionBackServicePath)
-  protected readonly connectionBackService: IConnectionBackService;
-
-  async measure() {
-    await this.connectionBackService.$measure();
-  }
-}
 
 @Domain(CommandContribution)
 export class ConnectionRTTContribution implements CommandContribution {
