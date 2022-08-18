@@ -1,8 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
-import { createEnvApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/envApiFactory';
-import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ext.host.env';
 
 import { IExtensionHostService } from '../../../common';
 import {
@@ -24,6 +22,8 @@ import { IExtHostEditorTabs } from './../../../common/vscode/editor-tabs';
 import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtensionDocumentDataManagerImpl } from './doc';
 import { ExtensionHostEditorService } from './editor/editor.host';
+import { createEnvApiFactory } from './env/envApiFactory';
+import { ExtHostEnv } from './env/ext.host.env';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import { ExtHostAuthentication, createAuthenticationApiFactory } from './ext.host.authentication';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
