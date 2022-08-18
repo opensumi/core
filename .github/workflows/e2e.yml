@@ -52,10 +52,10 @@ jobs:
       
       - uses: microsoft/playwright-github-action@v1
       - name: Init & Test
-        run: npm i && npm run init && npm run test:ui-ci
+        run: npm i && npm run init && npm run test:ui-headful
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: playwright-report
-          path: playwright-report
+          path: ../../tools/playwright/test-results

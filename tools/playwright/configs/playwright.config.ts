@@ -1,3 +1,5 @@
+import path from 'path';
+
 import { PlaywrightTestConfig } from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
@@ -11,7 +13,7 @@ const config: PlaywrightTestConfig = {
     screenshot: 'only-on-failure',
     viewport: { width: 1920, height: 1080 },
   },
-  snapshotDir: '../src/tests/snapshots',
+  snapshotDir: path.join(__dirname, '../src/tests/snapshots'),
   expect: {
     toMatchSnapshot: { threshold: 0.15 },
   },
