@@ -54,7 +54,7 @@ console.log(a);`,
     expect(isDirty).toBeFalsy();
   });
 
-  test.skip('copy path from file explorer to the editor content', async () => {
+  test('copy path from file explorer to the editor content', async () => {
     const node = await explorer.getFileStatTreeNodeByPath('editor.js');
     let fileMenu = await node?.openContextMenu();
     expect(await fileMenu?.isOpen()).toBeTruthy();
@@ -63,11 +63,12 @@ console.log(a);`,
     await editor.addTextToNewLineAfterLineByLineNumber(3, 'File Path: ');
     // cause of https://github.com/microsoft/playwright/issues/8114
     // we can just using keypress to fake the paste feature
-    // let editorMenu = await editor.openLineContextMenuByLineNumber(4);
-    // expect(await editorMenu?.isOpen()).toBeTruthy();
-    // let paste = await editorMenu?.menuItemByName('Paste');
-    await editor.pasteContentAfterLineByLineNumber(4);
-    expect(await editor.numberOfLines()).toBe(5);
+    let editorMenu = await editor.openLineContextMenuByLineNumber(4);
+    expect(await editorMenu?.isOpen()).toBeTruthy();
+    let paste = await editorMenu?.menuItemByName('Paste');
+    await paste?.click();
+    await app.page.waitForTimeout(200);
+    expect(await editor.numberOfLines()).toBe(4);
     expect(
       await editor.textContentOfLineContainingText(
         `File Path: ${workspace.workspace.resolve('editor.js').codeUri.fsPath.toString()}`,
@@ -78,8 +79,12 @@ console.log(a);`,
     await copyRelativePath?.click();
     await app.page.waitForTimeout(200);
     await editor.addTextToNewLineAfterLineByLineNumber(4, 'File Relative Path: ');
-    await editor.pasteContentAfterLineByLineNumber(5);
-    expect(await editor.numberOfLines()).toBe(6);
+    editorMenu = await editor.openLineContextMenuByLineNumber(5);
+    expect(await editorMenu?.isOpen()).toBeTruthy();
+    paste = await editorMenu?.menuItemByName('Paste');
+    await paste?.click();
+    await app.page.waitForTimeout(200);
+    expect(await editor.numberOfLines()).toBe(5);
     expect(await editor.textContentOfLineContainingText('File Relative Path: editor.js')).toBeTruthy();
   });
 
