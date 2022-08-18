@@ -246,6 +246,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
             // resize flex模式下应用flexGrow
             ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: element['props'].flexGrow } : {}),
             display: hides[index] ? 'none' : 'block',
+            backgroundColor: element['props'].backgroundColor,
           }}
         >
           {element}

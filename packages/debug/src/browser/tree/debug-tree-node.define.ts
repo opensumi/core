@@ -1,6 +1,6 @@
 import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { MessageType, localize } from '@opensumi/ide-core-browser';
-import { IRange } from '@opensumi/ide-core-common';
+import { IRange, isDefined } from '@opensumi/ide-core-common';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -111,8 +111,11 @@ export class ExpressionTreeService {
     }
   }
 
-  // 可折叠节点展示优先级默认较低
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+    // 当存在 variablesReference 属性时，默认按大小进行排序
+    if (isDefined((a as any).variablesReference) && isDefined((b as any).variablesReference)) {
+      return (a as any).variablesReference - (b as any).variablesReference;
+    }
     if (a.constructor === b.constructor) {
       return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
     }

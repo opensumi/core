@@ -8,7 +8,7 @@ import {
   CommentInput,
   CommentMode,
   CommentThreadCollapsibleState,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { ICommand } from './command';
 

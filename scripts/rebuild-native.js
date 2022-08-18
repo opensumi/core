@@ -43,7 +43,11 @@ function rebuildModule(modulePath, type, version, arch) {
   console.log(`cache dir ${cache}`);
   if (pathExistsSync(cache) && !force) {
     console.log('cache found for ' + info.name);
-    copySync(cache, join(modulePath, 'build'));
+    if (process.platform === 'linux') {
+      execSync(`cp -r ${cache} ${join(modulePath, 'build')}`);
+    } else {
+      copySync(cache, join(modulePath, 'build'));
+    }
   } else {
     console.log(`running command ${commands.join(' ')}`);
     execSync(commands.join(' '), {
@@ -59,7 +63,7 @@ function getBuildCacheDir(modulePath, type, version, arch) {
   const info = require(join(modulePath, './package.json'));
   return join(
     require('os').tmpdir(),
-    'kaitian_build_cache',
+    'opensumi_build_cache',
     `${type}-${version}-${arch}`,
     info.name + '-' + info.version,
   );

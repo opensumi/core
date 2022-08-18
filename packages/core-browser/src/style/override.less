@@ -1,6 +1,10 @@
 @import '~@opensumi/ide-components/lib/style/mixins.less';
 @import './variable.less';
 
+.codicon[class*='codicon-'] {
+  display: inline-flex !important;
+}
+
 .overrideMenu(@n, @i: 1) when (@i =< @n) {
   @clsx: extract(@menuClx, @i);
 

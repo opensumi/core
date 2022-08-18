@@ -20,7 +20,7 @@ const SystemPathSeparatorRegex = isWindows ? /\\/g : /\//g;
  * └──────┴───────────────┴──────┴─────┘
  */
 export class Path {
-  static separator: '/' = '/';
+  static separator: '/' = '/' as const;
 
   static nativeSeparator = isWindows ? '\\' : '/';
 

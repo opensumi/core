@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
+import { registerColor } from '../../utils';
 import { foreground } from '../base';
 import { TAB_BORDER } from '../tab';
 

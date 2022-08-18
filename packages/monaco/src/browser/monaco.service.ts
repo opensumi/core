@@ -6,13 +6,10 @@ import {
   ServiceNames,
   ILogger,
 } from '@opensumi/ide-core-browser';
-import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keyCodes';
+import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
-import {
-  IEditorConstructionOptions,
-  isDiffEditor,
-  MouseTargetType,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
+import { isDiffEditor, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';

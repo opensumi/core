@@ -274,6 +274,8 @@ export interface IEditorSelectionChangeEventPayload {
   source: string | undefined;
 
   editorUri: URI;
+
+  side?: 'original' | 'modified';
 }
 
 export class EditorVisibleChangeEvent extends BasicEvent<IEditorVisibleChangeEventPayload> {}

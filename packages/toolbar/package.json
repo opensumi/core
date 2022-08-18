@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-toolbar",
-  "version": "2.19.3",
+  "version": "2.19.7",
   "files": [
     "lib"
   ],
@@ -16,10 +16,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.19.3"
+    "@opensumi/ide-core-common": "2.19.7"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.19.3",
+    "@opensumi/ide-core-browser": "2.19.7",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }

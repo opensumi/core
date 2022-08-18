@@ -77,11 +77,13 @@ export class IconService extends WithEventBus implements IIconService {
 
   private getPath(basePath: string, relativePath: string): URI {
     if (relativePath.startsWith('./')) {
-      return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
+      const uri = new URI(basePath).resolve(relativePath.replace(/^\.\//, ''));
+      return uri.scheme ? uri : URI.file(uri.toString());
     } else if (/^http(s)?/.test(relativePath)) {
       return new URI(relativePath);
     } else if (basePath) {
-      return URI.file(new Path(basePath).join(relativePath).toString());
+      const uri = new URI(basePath).resolve(relativePath);
+      return uri.scheme ? uri : URI.file(uri.toString());
     } else if (/^file:\/\//.test(relativePath)) {
       return new URI(relativePath);
     } else {
@@ -170,30 +172,24 @@ export class IconService extends WithEventBus implements IIconService {
   }
 
   protected getMaskStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
-    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url("${iconUrl}") no-repeat 0 0;}`;
+    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url("${iconUrl}") no-repeat 50% 50%;}`;
     return cssRule;
   }
 
   protected getMaskStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
-    const iconUrl =
-      path.scheme === Schemes.file
-        ? this.staticResourceService.resolveStaticResource(path).toString()
-        : path.toString();
+    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
     return this.getMaskStyleSheet(iconUrl, className, baseTheme);
   }
 
   protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
     const cssRule = `${
       baseTheme || ''
-    } .${className} {background: url("${iconUrl}") no-repeat 50% 50%;background-size:contain;}`;
+    } .${className} {background: url("${iconUrl}") no-repeat 50% 50%;background-size:cover;}`;
     return cssRule;
   }
 
   protected getBackgroundStyleSheetWithStaticService(path: URI, className: string, baseTheme?: string): string {
-    const iconUrl =
-      path.scheme === Schemes.file
-        ? this.staticResourceService.resolveStaticResource(path).toString()
-        : path.toString();
+    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
     return this.getBackgroundStyleSheet(iconUrl, className, baseTheme);
   }
 

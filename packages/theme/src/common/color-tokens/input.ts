@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color } from '../../common/color';
-import { registerColor } from '../color-registry';
+import { registerColor } from '../utils';
 
 import { contrastBorder, foreground } from './base';
 import { secondaryForegroundColor } from './basic-color';

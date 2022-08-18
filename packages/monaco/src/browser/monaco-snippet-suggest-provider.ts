@@ -13,7 +13,7 @@ import {
   isPatternInWord,
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/snippetParser';
+import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { ITextModel } from './monaco-api/types';
@@ -62,7 +62,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
       return undefined;
     }
     // TODO embed languageId, get languageId at position
-    const languageId = model.getModeId();
+    const languageId = model.getLanguageId();
     await this.loadSnippets(languageId);
     const languageSnippets = this.snippets.get(languageId) || [];
     const pos = { lineNumber: position.lineNumber, column: 1 };
@@ -326,8 +326,8 @@ export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem 
   readonly detail: string;
   readonly sortText: string;
   readonly noAutoAccept = true;
-  readonly type: 'snippet' = 'snippet';
-  readonly snippetType: 'textmate' = 'textmate';
+  readonly type: 'snippet' = 'snippet' as const;
+  readonly snippetType: 'textmate' = 'textmate' as const;
   readonly kind = monaco.languages.CompletionItemKind.Snippet;
   range: IRange;
 

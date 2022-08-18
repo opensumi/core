@@ -729,6 +729,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
         } catch (e) {
           childrens = [];
         }
+
         if (token?.isCancellationRequested) {
           return;
         }

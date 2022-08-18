@@ -141,35 +141,35 @@ export namespace DEBUG_COMMANDS {
   // menu commands
   export const DELETE_BREAKPOINT = {
     id: 'debug.delete.breakpoint',
-    label: localize('debug.menu.delete.breakpoint'),
+    label: '%debug.menu.delete.breakpoint%',
   };
   export const EDIT_BREAKPOINT = {
     id: 'debug.edit.breakpoint',
-    label: localize('debug.menu.edit.breakpoint'),
+    label: '%debug.menu.edit.breakpoint%',
   };
   export const DISABLE_BREAKPOINT = {
     id: 'debug.disable.breakpoint',
-    label: localize('debug.menu.disable.breakpoint'),
+    label: '%debug.menu.disable.breakpoint%',
   };
   export const ENABLE_BREAKPOINT = {
     id: 'debug.enable.breakpoint',
-    label: localize('debug.menu.enable.breakpoint'),
+    label: '%debug.menu.enable.breakpoint%',
   };
   export const ENABLE_LOGPOINT = {
     id: 'debug.enable.logpoint',
-    label: localize('debug.menu.enable.logpoint'),
+    label: '%debug.menu.enable.logpoint',
   };
   export const ADD_BREAKPOINT = {
     id: 'debug.add.breakpoint',
-    label: localize('debug.menu.add.breakpoint'),
+    label: '%debug.menu.add.breakpoint%',
   };
   export const ADD_LOGPOINT = {
     id: 'debug.add.logpoint',
-    label: localize('debug.menu.add.logpoint'),
+    label: '%debug.menu.add.logpoint%',
   };
   export const ADD_CONDITIONAL_BREAKPOINT = {
     id: 'debug.add.conditional',
-    label: localize('debug.menu.add.conditional'),
+    label: '%debug.menu.add.conditional%',
   };
   export const RESTART_FRAME = {
     id: 'debug.callstack.restart.frame',
@@ -196,7 +196,7 @@ export namespace DEBUG_COMMANDS {
   // console commands
   export const CLEAR_CONSOLE = {
     id: 'debug.console.clear',
-    label: localize('debug.console.clear'),
+    label: '%debug.console.clear%',
   };
   export const COPY_CONSOLE_ITEM = {
     id: 'debug.console.copy',
@@ -206,7 +206,7 @@ export namespace DEBUG_COMMANDS {
   };
   export const COLLAPSE_ALL_CONSOLE_ITEM = {
     id: 'debug.console.collapseAll',
-    label: localize('debug.console.collapseAll'),
+    label: '%debug.console.collapseAll%',
   };
   export const CONSOLE_ENTER_EVALUATE = {
     id: 'debug.console.keybing.enter.evaluate',
@@ -222,11 +222,11 @@ export namespace DEBUG_COMMANDS {
   };
   export const RUN_TO_CURSOR = {
     id: 'debug.action.runToCursor',
-    label: localize('debug.action.runToCursor'),
+    label: '%debug.action.runToCursor%',
   };
   export const FORCE_RUN_TO_CURSOR = {
     id: 'debug.action.forceRunToCursor',
-    label: localize('debug.action.forceRunToCursor'),
+    label: '%debug.action.forceRunToCursor%',
   };
 }
 
@@ -850,6 +850,14 @@ export class DebugContribution
       when: `${CONTEXT_IN_DEBUG_MODE.raw}`,
       group: 'debug',
       order: 2,
+    });
+
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      submenu: MenuId.EditorTitleRun,
+      label: localize('debug.menu.title.run'),
+      iconClass: getIcon('start'),
+      group: 'navigation',
+      order: -1,
     });
   }
 

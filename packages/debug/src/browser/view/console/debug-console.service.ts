@@ -122,6 +122,11 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     });
   }
 
+  // FIXME: 需要实现新增的属性及事件
+  element: HTMLElement;
+  onDidFocus: Event<void>;
+  onDidBlur: Event<void>;
+
   private _onConsoleInputValueChange = new Emitter<URI>();
   public onConsoleInputValueChange: Event<URI> = this._onConsoleInputValueChange.event;
 
@@ -302,7 +307,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
       });
     }
 
-    this.inputEditor.monacoEditor.setDecorations('debug-console-input', DECORATION_KEY, decorations as any[]);
+    this.inputEditor.monacoEditor.setDecorationsByType('debug-console-input', DECORATION_KEY, decorations as any[]);
   }
 
   private setMode(): void {
@@ -318,7 +323,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     const model = session.currentEditor();
 
     if (model) {
-      this.inputEditor.monacoEditor.getModel()!.setMode(model.getModel()?.getLanguageIdentifier()!);
+      this.inputEditor.monacoEditor.getModel()!.setMode(model.getModel()?.getLanguageId()!);
     }
   }
 
@@ -346,7 +351,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     }
 
     this._updateDisposable = monaco.languages.registerCompletionItemProvider(
-      model.getModel()?.getLanguageIdentifier().language!,
+      model.getModel()?.getLanguageId()!,
       {
         triggerCharacters: ['.'],
         provideCompletionItems: async (model, position, ctx) => {

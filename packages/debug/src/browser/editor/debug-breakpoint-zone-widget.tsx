@@ -7,7 +7,7 @@ import { localize, Emitter, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/ide-editor';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 import { ICSSStyleService } from '@opensumi/ide-theme';
-import * as monacoModes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as monacoLanguages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
@@ -176,11 +176,11 @@ export class DebugBreakpointZoneWidget extends ZoneWidget {
   };
 
   private setInputMode(): void {
-    const languageIdentifier = this.editor.getModel()?.getLanguageIdentifier();
+    const languageIdentifier = this.editor.getModel()?.getLanguageId();
     const model = this.input!.monacoEditor.getModel();
     if (model && languageIdentifier) {
       model.setMode(
-        this.context === 'logMessage' ? new monacoModes.LanguageIdentifier('plaintext', 1) : languageIdentifier,
+        this.context === 'logMessage' ? 'plaintext' : languageIdentifier,
       );
     }
   }
