@@ -96,6 +96,8 @@ export interface ExtViewContainerOptions {
   hideTab?: boolean;
   noResize?: boolean;
   fromExtension?: boolean;
+  // viewContainer 最小高度，默认 120
+  miniSize?: number;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
