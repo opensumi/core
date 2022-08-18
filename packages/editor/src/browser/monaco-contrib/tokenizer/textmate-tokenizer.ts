@@ -18,7 +18,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-
 export class TokenizerState implements monaco.languages.IState {
   constructor(public readonly ruleStack: StackElement) {}
 

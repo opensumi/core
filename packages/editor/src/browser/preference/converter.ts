@@ -695,7 +695,8 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey, NoConverter | IM
    */
   ['editor.wrappingStrategy', { monaco: 'wrappingStrategy' }],
 
-  ['editor.experimental.stickyScroll.enabled',
+  [
+    'editor.experimental.stickyScroll.enabled',
     {
       monaco: 'experimental',
       convert: (value) => ({
@@ -703,7 +704,8 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey, NoConverter | IM
           enabled: value,
         },
       }),
-    }],
+    },
+  ],
 
   /**
    * 是否强行readonly

@@ -16,7 +16,6 @@ import { WorkbenchEditorService } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
-
 @Injectable()
 export class MonacoCodeService extends AbstractCodeEditorService {
   @Autowired(WorkbenchEditorService)
