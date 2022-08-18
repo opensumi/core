@@ -140,11 +140,11 @@ export class RPCProxy {
                       error.cause = applicationError;
                     }
                     // prettier-ignore
-                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'fail', requestId, error: result.data });
+                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'fail', requestId, serviceMethod: prop, error: result.data });
                     reject(error);
                   } else {
                     // prettier-ignore
-                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'success', requestId, data: result.data });
+                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'success', requestId, serviceMethod: prop, data: result.data });
                     resolve(result.data);
                   }
                 });
@@ -194,11 +194,11 @@ export class RPCProxy {
             result
               .then((result) => {
                 // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'success', requestId, data: result.data });
+                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'success', requestId, serviceMethod: method,  data: result.data });
               })
               .catch((err) => {
                 // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, error: err.data });
+                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, serviceMethod: method, error: err.data });
               });
 
             return result;
@@ -219,7 +219,7 @@ export class RPCProxy {
             data: NOTREGISTERMETHOD,
           };
           // prettier-ignore
-          getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, error: result.data });
+          getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, serviceMethod: method, error: result.data });
           return result;
         }
       });
