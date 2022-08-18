@@ -275,7 +275,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return service;
   }
 
-  openAllRegisterViews() {
+  getAllAccordionService() {
     return this.accordionServices;
   }
 

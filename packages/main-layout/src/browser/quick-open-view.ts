@@ -32,7 +32,7 @@ export class ViewQuickOpenHandler implements QuickOpenHandler {
   }
 
   getViewQuickOpenItems() {
-    const maps = this.layoutService.openAllRegisterViews();
+    const maps = this.layoutService.getAllAccordionService();
     const containerIds = Array.from(maps.keys());
     let items: (ContainerQuickOpenItem | ViewQuickOpenItem)[] = [];
     items = items.concat(
