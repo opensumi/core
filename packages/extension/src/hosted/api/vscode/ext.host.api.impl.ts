@@ -1,4 +1,3 @@
-
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { CancellationTokenSource, Emitter, Event } from '@opensumi/ide-core-common';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
@@ -23,6 +22,8 @@ import { IExtHostEditorTabs } from './../../../common/vscode/editor-tabs';
 import { ExtHostDebug, createDebugApiFactory } from './debug';
 import { ExtensionDocumentDataManagerImpl } from './doc';
 import { ExtensionHostEditorService } from './editor/editor.host';
+import { createEnvApiFactory } from './env/envApiFactory';
+import { ExtHostEnv } from './env/ext.host.env';
 import { ExtHostWebviewService, ExtHostWebviewViews } from './ext.host.api.webview';
 import { ExtHostAuthentication, createAuthenticationApiFactory } from './ext.host.authentication';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
@@ -31,7 +32,6 @@ import { ExtHostConnection } from './ext.host.connection';
 import { ExtHostCustomEditorImpl } from './ext.host.custom-editor';
 import { ExtHostDecorations } from './ext.host.decoration';
 import { ExtHostEditorTabs } from './ext.host.editor-tabs';
-import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { ExtHostFileSystem } from './ext.host.file-system';
 import { ExtHostFileSystemEvent } from './ext.host.file-system-event';
