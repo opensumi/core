@@ -8,10 +8,11 @@ import {
   ILogServiceManager,
 } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
+import { LogServiceManager } from '@opensumi/ide-logs/lib/node/log-manager';
 
 export class ExtensionLogger2 implements IExtensionLogger {
   private injector: Injector;
-  private loggerManager: ILogServiceManager;
+  private loggerManager: LogServiceManager;
   private logger: ILogService;
   private config: any;
 
@@ -20,7 +21,7 @@ export class ExtensionLogger2 implements IExtensionLogger {
     this.config = this.injector.get(AppConfig);
     this.injectLogService();
 
-    this.loggerManager = this.injector.get(ILogServiceManager);
+    this.loggerManager = this.injector.get(LogServiceManager);
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost, this.config);
   }
 
