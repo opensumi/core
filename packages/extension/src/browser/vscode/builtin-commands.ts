@@ -1,4 +1,11 @@
-import { FILE_COMMANDS, Command, EDITOR_COMMANDS, COMMON_COMMANDS, MARKER_COMMANDS } from '@opensumi/ide-core-browser';
+import {
+  FILE_COMMANDS,
+  Command,
+  EDITOR_COMMANDS,
+  COMMON_COMMANDS,
+  MARKER_COMMANDS,
+  EXPLORER_COMMANDS,
+} from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 
@@ -312,6 +319,11 @@ export const EDITOR_SHOW_ALL_SYMBOLS: Command = {
 export const REVEAL_IN_EXPLORER: Command = {
   id: 'revealInExplorer',
   delegate: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
+};
+
+export const EXPLORER_COMMAND_TOGGLE_VISIBILITY: Command = {
+  id: 'workbench.action.toggleSidebarVisibility',
+  delegate: EXPLORER_COMMANDS.TOGGLE_VISIBILITY.id,
 };
 
 export const GET_EXTENSION: Command = {

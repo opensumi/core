@@ -450,6 +450,7 @@ export class ExtensionCommandContribution implements CommandContribution {
       // explorer builtin commands
       VSCodeBuiltinCommands.REVEAL_IN_EXPLORER,
       VSCodeBuiltinCommands.OPEN_FOLDER,
+      VSCodeBuiltinCommands.EXPLORER_COMMAND_TOGGLE_VISIBILITY,
       // terminal builtin commands
       VSCodeBuiltinCommands.CLEAR_TERMINAL,
       VSCodeBuiltinCommands.TOGGLE_WORKBENCH_VIEW_TERMINAL,

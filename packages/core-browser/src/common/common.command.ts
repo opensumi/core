@@ -795,4 +795,13 @@ export namespace MARKER_COMMANDS {
   };
 }
 
+export namespace EXPLORER_COMMANDS {
+  const CATEGORY = 'explorer';
+
+  export const TOGGLE_VISIBILITY = {
+    id: 'explorer.action.toggleVisibility',
+    category: CATEGORY,
+  };
+}
+
 export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';
