@@ -100,20 +100,12 @@ export class RPCProxy {
             if (prop.startsWith('on')) {
               if (isSingleArray) {
                 connection.sendNotification(prop, [...args]);
-                getCapturer() &&
-                  getCapturer()({
-                    type: 'sendNotification',
-                    serviceMethod: prop,
-                    arguments: args,
-                  });
+                // prettier-ignore
+                getCapturer() && getCapturer()({ type: 'sendNotification', serviceMethod: prop, arguments: args });
               } else {
                 connection.sendNotification(prop, ...args);
-                getCapturer() &&
-                  getCapturer()({
-                    type: 'sendNotification',
-                    serviceMethod: prop,
-                    arguments: args,
-                  });
+                // prettier-ignore
+                getCapturer() && getCapturer()({ type: 'sendNotification', serviceMethod: prop, arguments: args });
               }
 
               resolve(null);
@@ -124,22 +116,12 @@ export class RPCProxy {
 
               if (isSingleArray) {
                 requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
-                getCapturer() &&
-                  getCapturer()({
-                    type: 'sendRequest',
-                    requestId,
-                    serviceMethod: prop,
-                    arguments: args,
-                  });
+                // prettier-ignore
+                getCapturer() && getCapturer()({ type: 'sendRequest', requestId, serviceMethod: prop, arguments: args });
               } else {
                 requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
-                getCapturer() &&
-                  getCapturer()({
-                    type: 'sendRequest',
-                    requestId,
-                    serviceMethod: prop,
-                    arguments: args,
-                  });
+                // prettier-ignore
+                getCapturer() && getCapturer()({ type: 'sendRequest', requestId, serviceMethod: prop, arguments: args });
               }
 
               requestResult
@@ -157,22 +139,12 @@ export class RPCProxy {
                       const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
-                    getCapturer() &&
-                      getCapturer()({
-                        type: 'requestResult',
-                        status: 'fail',
-                        requestId,
-                        error: result.data,
-                      });
+                    // prettier-ignore
+                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'fail', requestId, error: result.data });
                     reject(error);
                   } else {
-                    getCapturer() &&
-                      getCapturer()({
-                        type: 'requestResult',
-                        status: 'success',
-                        requestId,
-                        data: result.data,
-                      });
+                    // prettier-ignore
+                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'success', requestId, data: result.data });
                     resolve(result.data);
                   }
                 });
@@ -208,48 +180,27 @@ export class RPCProxy {
       methods.forEach((method) => {
         if (method.startsWith('on')) {
           connection.onNotification(method, (...args) => {
-            getCapturer() &&
-              getCapturer()({
-                type: 'onNotification',
-                serviceMethod: method,
-                arguments: args,
-              });
             this.onNotification(method, ...args);
+            // prettier-ignore
+            getCapturer() && getCapturer()({ type: 'onNotification', serviceMethod: method, arguments: args });
           });
         } else {
           connection.onRequest(method, (...args) => {
-            // *** capturer ***
             const requestId = generateUniqueId();
-            getCapturer() &&
-              getCapturer()({
-                type: 'onRequest',
-                requestId,
-                serviceMethod: method,
-                arguments: args,
-              });
-            // ****************
             const result = this.onRequest(method, ...args);
-            // *** capturer ***
+            // prettier-ignore
+            getCapturer() && getCapturer()({ type: 'onRequest', requestId, serviceMethod: method, arguments: args });
+
             result
               .then((result) => {
-                getCapturer() &&
-                  getCapturer()({
-                    type: 'onRequestResult',
-                    status: 'success',
-                    requestId,
-                    data: result.data,
-                  });
+                // prettier-ignore
+                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'success', requestId, data: result.data });
               })
               .catch((err) => {
-                getCapturer() &&
-                  getCapturer()({
-                    type: 'onRequestResult',
-                    status: 'fail',
-                    requestId,
-                    error: err.data,
-                  });
+                // prettier-ignore
+                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, error: err.data });
               });
-            // ****************
+
             return result;
           });
         }
@@ -261,27 +212,14 @@ export class RPCProxy {
 
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
-          // *** capturer ***
           const requestId = generateUniqueId();
-          getCapturer() &&
-            getCapturer()({
-              type: 'onRequest',
-              requestId,
-              serviceMethod: method,
-            });
-          // ****************
+          // prettier-ignore
+          getCapturer() && getCapturer()({ type: 'onRequest', requestId, serviceMethod: method });
           const result = {
             data: NOTREGISTERMETHOD,
           };
-          // *** capturer ***
-          getCapturer() &&
-            getCapturer()({
-              type: 'onRequestResult',
-              status: 'fail',
-              requestId,
-              error: result.data,
-            });
-          // ****************
+          // prettier-ignore
+          getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, error: result.data });
           return result;
         }
       });
