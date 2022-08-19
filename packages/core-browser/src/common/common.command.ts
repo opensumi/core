@@ -800,4 +800,13 @@ export namespace MARKER_COMMANDS {
   };
 }
 
+export namespace SCM_COMMANDS {
+  const CATEGORY = 'scm';
+
+  export const TOGGLE_VISIBILITY = {
+    id: 'scm.action.toggleVisibility',
+    category: CATEGORY,
+  };
+}
+
 export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';

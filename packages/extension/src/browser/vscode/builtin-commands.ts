@@ -1,4 +1,11 @@
-import { FILE_COMMANDS, Command, EDITOR_COMMANDS, COMMON_COMMANDS, MARKER_COMMANDS } from '@opensumi/ide-core-browser';
+import {
+  FILE_COMMANDS,
+  Command,
+  EDITOR_COMMANDS,
+  COMMON_COMMANDS,
+  MARKER_COMMANDS,
+  SCM_COMMANDS,
+} from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 
@@ -326,4 +333,9 @@ export const MARKER_COMMAND_SHOW_ERRORS_WARNINGS: Command = {
 export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
   id: 'workbench.actions.view.problems',
   delegate: MARKER_COMMANDS.TOGGLE_SHOW_ERRORS_WARNINGS.id,
+};
+
+export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
+  id: 'workbench.action.toggleSidebarVisibility',
+  delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
 };
