@@ -65,5 +65,17 @@ export class MarkersContribution implements CommandContribution, ComponentContri
         },
       },
     );
+
+    commands.registerCommand(
+      { id: MARKER_COMMANDS.TOGGLE_SHOW_ERRORS_WARNINGS.id },
+      {
+        execute: () => {
+          const tabbarHandler = this.mainlayoutService.getTabbarHandler(MARKER_CONTAINER_ID);
+          if (tabbarHandler) {
+            tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
+          }
+        },
+      },
+    );
   }
 }

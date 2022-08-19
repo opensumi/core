@@ -793,6 +793,11 @@ export namespace MARKER_COMMANDS {
     id: 'marker.action.showErrorsWarnings',
     category: CATEGORY,
   };
+
+  export const TOGGLE_SHOW_ERRORS_WARNINGS = {
+    id: 'marker.action.toggleShowErrorsWarnings',
+    category: CATEGORY,
+  };
 }
 
 export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';

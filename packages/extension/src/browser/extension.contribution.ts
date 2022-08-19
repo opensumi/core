@@ -456,6 +456,7 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.NEW_WORKBENCH_VIEW_TERMINAL,
       // marker builtin commands
       VSCodeBuiltinCommands.MARKER_COMMAND_SHOW_ERRORS_WARNINGS,
+      VSCodeBuiltinCommands.MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS,
       // others
       VSCodeBuiltinCommands.RELOAD_WINDOW,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS,

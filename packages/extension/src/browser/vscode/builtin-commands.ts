@@ -322,3 +322,8 @@ export const MARKER_COMMAND_SHOW_ERRORS_WARNINGS: Command = {
   id: 'workbench.action.showErrorsWarnings',
   delegate: MARKER_COMMANDS.SHOW_ERRORS_WARNINGS.id,
 };
+
+export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
+  id: 'workbench.actions.view.problems',
+  delegate: MARKER_COMMANDS.TOGGLE_SHOW_ERRORS_WARNINGS.id,
+};
