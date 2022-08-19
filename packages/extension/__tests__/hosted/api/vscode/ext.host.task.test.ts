@@ -17,7 +17,7 @@ import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/ho
 import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
 import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
-import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.defination';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
@@ -44,7 +44,7 @@ import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 import { VariableResolverService } from '@opensumi/ide-variable/lib/browser/variable-resolver.service';
-import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace-defination';
+import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';

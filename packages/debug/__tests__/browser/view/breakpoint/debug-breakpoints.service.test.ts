@@ -10,7 +10,7 @@ import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
-import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common/workspace-defination';
+import { IWorkspaceStorageService } from '@opensumi/ide-workspace/lib/common/workspace.definition';
 
 describe('Debug Breakpoints Service', () => {
   const mockInjector = createBrowserInjector(
