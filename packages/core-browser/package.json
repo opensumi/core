@@ -20,6 +20,7 @@
     "@opensumi/ide-components": "2.19.8",
     "@opensumi/ide-connection": "2.19.8",
     "@opensumi/ide-core-common": "2.19.8",
+    "@opensumi/ide-utils": "2.19.8",
     "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
     "@vscode/codicons": "0.0.27",
     "ajv": "^6.10.0",

@@ -41,6 +41,7 @@ import {
   DEFAULT_URI_SCHEME,
 } from '@opensumi/ide-core-common/lib/const/application';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+import { memoize } from '@opensumi/ide-utils';
 
 import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';
@@ -353,6 +354,7 @@ export class ClientApp implements IClientApp, IDisposable {
     }
   }
 
+  @memoize
   get contributions(): ClientAppContribution[] {
     return this.contributionsProvider.getContributions();
   }
