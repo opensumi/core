@@ -33,6 +33,7 @@ import {
   isUndefined,
   GeneralSettingsId,
   UrlProvider,
+  memoize,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -353,6 +354,7 @@ export class ClientApp implements IClientApp, IDisposable {
     }
   }
 
+  @memoize
   get contributions(): ClientAppContribution[] {
     return this.contributionsProvider.getContributions();
   }
