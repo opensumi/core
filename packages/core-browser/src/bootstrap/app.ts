@@ -146,6 +146,10 @@ export class ClientApp implements IClientApp, IDisposable {
   stateService: ClientAppStateService;
 
   constructor(opts: IClientAppOpts) {
+    // set a global so the opensumi devtools can identify that
+    // the current page is powered by opensumi core
+    window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
+
     const {
       modules,
       contributions,
