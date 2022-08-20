@@ -156,6 +156,19 @@
         opacity: 0.75;
         color: var(--descriptionForeground);
         margin-bottom: 5px;
+        ul {
+          list-style: none;
+        }
+        code {
+          color: var(--editor-foreground);
+        }
+        ul li::before {
+          content: '\2022'; /* content: \2022 is the CSS Code/unicode for a bullet */
+          font-weight: bold;
+          display: inline-block;
+          width: 1em;
+          margin-left: -1em;
+        }
       }
       .control_wrap {
         input[type='number']::-webkit-outer-spin-button,

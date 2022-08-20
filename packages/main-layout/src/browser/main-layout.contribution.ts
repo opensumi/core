@@ -78,7 +78,7 @@ export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
 export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.toggle',
   iconClass: getIcon('minus'),
-  label: localize('layout.tabbar.toggle'),
+  label: '%layout.tabbar.toggle%',
 };
 export const IS_VISIBLE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.is-visible',
@@ -94,12 +94,12 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
 };
 export const EXPAND_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.expand',
-  label: localize('layout.tabbar.expand'),
+  label: '%layout.tabbar.expand%',
   iconClass: getIcon('expand'),
 };
 export const RETRACT_BOTTOM_PANEL: Command = {
   id: 'main-layout.bottom-panel.retract',
-  label: localize('layout.tabbar.retract'),
+  label: '%layout.tabbar.retract%',
   iconClass: getIcon('shrink'),
 };
 
@@ -236,11 +236,6 @@ export class MainLayoutModuleContribution
       },
     });
     commands.registerCommand(WORKBENCH_ACTION_CLOSEPANEL);
-    commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
-      execute: (show?: boolean, size?: number) => {
-        this.mainLayoutService.toggleSlot(SlotLocation.bottom, show, size);
-      },
-    });
     commands.registerCommand(IS_VISIBLE_BOTTOM_PANEL_COMMAND, {
       execute: () => this.mainLayoutService.getTabbarService('bottom').currentContainerId !== '',
     });
@@ -253,16 +248,6 @@ export class MainLayoutModuleContribution
     commands.registerCommand(SET_PANEL_SIZE_COMMAND, {
       execute: (size: number) => {
         this.mainLayoutService.setFloatSize(size);
-      },
-    });
-    commands.registerCommand(EXPAND_BOTTOM_PANEL, {
-      execute: () => {
-        this.mainLayoutService.expandBottom(true);
-      },
-    });
-    commands.registerCommand(RETRACT_BOTTOM_PANEL, {
-      execute: () => {
-        this.mainLayoutService.expandBottom(false);
       },
     });
 

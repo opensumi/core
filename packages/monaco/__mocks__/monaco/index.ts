@@ -1,5 +1,5 @@
 import { Uri } from '@opensumi/ide-core-common';
-import { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/editorWorkerService';
+import { IDiffComputationResult } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/diffComputer';
 
 import { MockedMonacoUri } from './common/uri';
 import { createMockedMonacoEditorApi } from './editor';
@@ -38,6 +38,7 @@ export function createMockedMonaco() {
               Promise.resolve({
                 getId: () => {},
                 getLanguageIdentifier: () => {},
+                getLanguageId: () => 'javascript',
               }),
             getModeIdByFilepathOrFirstLine: () => {},
           }),

@@ -214,7 +214,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       return;
     }
 
-    const { position, detail, type, element } = target;
+    const { position, type, element } = target;
     if (
       type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
       element &&
@@ -222,7 +222,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       position
     ) {
       const offsetLeftInGutter = (element as HTMLElement).offsetLeft;
-      const gutterOffsetX = detail.offsetX - offsetLeftInGutter;
+      const gutterOffsetX = target.detail.offsetX - offsetLeftInGutter;
 
       /**
        * 这段逻辑来自于 vscode 的源代码，由于 folding 的 icon 和 decorations 是父子关系，

@@ -16,7 +16,7 @@ import {
 import { Disposable, ILogger } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { Emitter as EventEmitter } from '@opensumi/monaco-editor-core/esm/vs/base/common/event';
-import { StaticServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import {
   ConfigurationTarget,
   IConfigurationChangeEvent,
@@ -30,6 +30,7 @@ import {
   ContextKeyExpression,
   IContextKeyServiceTarget,
   ContextKeyExpr,
+  ContextKeyValue,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { KeybindingResolver } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingResolver';
 import { IWorkspaceFolder } from '@opensumi/monaco-editor-core/esm/vs/platform/workspace/common/workspace';
@@ -58,7 +59,7 @@ export class ConfigurationService extends Disposable implements IConfigurationSe
   constructor() {
     super();
     this.preferenceService.onPreferencesChanged(this.triggerPreferencesChanged, this, this.disposables);
-    const monacoConfigService = StaticServices.configurationService.get();
+    const monacoConfigService = StandaloneServices.get(IConfigurationService);
     monacoConfigService.getValue = this.getValue.bind(this);
   }
 
@@ -311,6 +312,10 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     super();
   }
 
+  bufferChangeEvents(callback: Function): void {
+    this.contextKeyService.bufferChangeEvents(callback);
+  }
+
   listenToContextChanges() {
     this.addDispose(
       this.contextKeyService.onDidChangeContext((payload) => {
@@ -319,7 +324,7 @@ abstract class BaseContextKeyService extends Disposable implements IContextKeySe
     );
   }
 
-  createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T> {
+  createKey<T extends ContextKeyValue = any>(key: string, defaultValue: T | undefined): IContextKey<T> {
     return this.contextKeyService.createKey(key, defaultValue);
   }
 
@@ -411,7 +416,7 @@ export class MonacoContextKeyService extends BaseContextKeyService implements IC
       // 如果找不到 ctx DOM 上的 context_id 返回 NaN
       // 如果遍历到父节点为 html 时，其 parentElement 为 null，也会返回 0
       const keyContext = this.contextKeyService.getContext(ctx);
-      return KeybindingResolver.contextMatchesRules(keyContext, parsed as any);
+      return KeybindingResolver['_contextMatchesRules'](keyContext, parsed as any);
     } catch (e) {
       getDebugLogger().error(e);
       return false;

@@ -6,19 +6,22 @@ import { Deferred, localize, MessageType } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { ResourceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
-import type { WorkspaceFileEdit, WorkspaceTextEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type {
+  IWorkspaceFileEdit,
+  IWorkspaceTextEdit,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { RefactorPreview } from './refactor-preview';
 
 export const PreviewViewId = 'RefactorPreview';
 
 export interface IRefactorPreviewService {
-  edits: Array<WorkspaceTextEdit | WorkspaceFileEdit>;
-  selectedFileOrTextEdits: Set<WorkspaceTextEdit | WorkspaceFileEdit>;
+  edits: Array<IWorkspaceTextEdit | IWorkspaceFileEdit>;
+  selectedFileOrTextEdits: Set<IWorkspaceTextEdit | IWorkspaceFileEdit>;
 
   previewEdits(edit: ResourceEdit[]): Promise<ResourceEdit[]>;
 
-  filterEdit(edit: WorkspaceTextEdit | WorkspaceFileEdit, checked: boolean): void;
+  filterEdit(edit: IWorkspaceTextEdit | IWorkspaceFileEdit, checked: boolean): void;
 
   applyEdits(): void;
 
@@ -30,9 +33,9 @@ export const IRefactorPreviewService = Symbol('IRefactorPreviewService');
 @Injectable()
 export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   @observable.shallow
-  public edits: Array<WorkspaceTextEdit | WorkspaceFileEdit> = [];
+  public edits: Array<IWorkspaceTextEdit | IWorkspaceFileEdit> = [];
 
-  public selectedFileOrTextEdits = observable.set<WorkspaceTextEdit | WorkspaceFileEdit>([], { deep: false });
+  public selectedFileOrTextEdits = observable.set<IWorkspaceTextEdit | IWorkspaceFileEdit>([], { deep: false });
 
   @Autowired(IMainLayoutService)
   protected readonly mainLayout: IMainLayoutService;
@@ -43,7 +46,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   @Autowired(INJECTOR_TOKEN)
   protected readonly injector: Injector;
 
-  private previewDeferred: Deferred<Array<WorkspaceTextEdit | WorkspaceFileEdit>> | null;
+  private previewDeferred: Deferred<Array<IWorkspaceTextEdit | IWorkspaceFileEdit>> | null;
 
   private clear() {
     this.togglePreviewView(false);
@@ -117,7 +120,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
   }
 
   @action
-  filterEdit(edit: WorkspaceTextEdit | WorkspaceFileEdit, checked: boolean) {
+  filterEdit(edit: IWorkspaceTextEdit | IWorkspaceFileEdit, checked: boolean) {
     if (checked) {
       this.selectedFileOrTextEdits.add(edit);
     } else {
@@ -131,7 +134,7 @@ export class RefactorPreviewServiceImpl implements IRefactorPreviewService {
       return;
     }
 
-    const candidate = this.edits.filter((edit: WorkspaceTextEdit) => this.selectedFileOrTextEdits.has(edit));
+    const candidate = this.edits.filter((edit: IWorkspaceTextEdit) => this.selectedFileOrTextEdits.has(edit));
 
     this.previewDeferred.resolve(candidate);
     this.clear();

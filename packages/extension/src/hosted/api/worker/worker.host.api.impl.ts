@@ -10,13 +10,13 @@ import {
   ViewColumn,
   TextEditorSelectionChangeKind,
   IExtensionDescription,
-  IMainThreadEnv,
-  MainThreadAPIIdentifier,
 } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { createAPIFactory as createSumiAPIFactory } from '../sumi/ext.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../vscode/doc';
 import { ExtensionHostEditorService } from '../vscode/editor/editor.host';
+import { ExtHostEnv } from '../vscode/env/ext.host.env';
+import { createWorkerHostEnvAPIFactory } from '../vscode/env/workerEnvApiFactory';
 import { ExtHostWebviewService, ExtHostWebviewViews } from '../vscode/ext.host.api.webview';
 import { createAuthenticationApiFactory, ExtHostAuthentication } from '../vscode/ext.host.authentication';
 import { ExtHostCommands, createCommandsApiFactory } from '../vscode/ext.host.command';
@@ -50,7 +50,6 @@ import * as workerExtTypes from './worker.ext-types';
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService | IExtensionWorkerHost,
-  type: string,
 ) {
   rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
 
@@ -158,7 +157,8 @@ export function createAPIFactory(
     ExtHostAPIIdentifier.ExtHostAuthentication,
     new ExtHostAuthentication(rpcProtocol),
   ) as ExtHostAuthentication;
-  const proxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
+  rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol)) as ExtHostEnv;
+
   // TODO: 目前 worker reporter 缺少一条通信链路，先默认实现
   const reporter = new DefaultReporter();
   const sumiAPI = createSumiAPIFactory(rpcProtocol, extensionService, 'worker', reporter);
@@ -176,7 +176,7 @@ export function createAPIFactory(
     env: {
       // ENV 用处貌似比较少, 现有的实现依赖 node  模块，后面需要再重新实现
       uriScheme: Schemes.file,
-      openExternal: (target: vscode.Uri) => proxy.$openExternal(target),
+      ...createWorkerHostEnvAPIFactory(rpcProtocol),
     },
     languages: createLanguagesApiFactory(extHostLanguages, extension),
     commands: createCommandsApiFactory(extHostCommands, extHostEditors, extension),

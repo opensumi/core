@@ -17,7 +17,8 @@ import {
   ExtHostAPIIdentifier,
   IMainThreadStorage,
 } from '@opensumi/ide-extension/lib/common/vscode';
-import { createEnvApiFactory, ExtHostEnv, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
+import { createEnvApiFactory, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/envApiFactory';
+import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ext.host.env';
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.host';
