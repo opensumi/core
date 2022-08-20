@@ -447,6 +447,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.DEBUG_COMMAND_RESTART,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STOP,
       VSCodeBuiltinCommands.EDITOR_SHOW_ALL_SYMBOLS,
+      // search builtin commands
+      VSCodeBuiltinCommands.SEARCH_COMMAND_OPEN_SEARCH,
       // explorer builtin commands
       VSCodeBuiltinCommands.REVEAL_IN_EXPLORER,
       VSCodeBuiltinCommands.OPEN_FOLDER,
