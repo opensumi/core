@@ -695,6 +695,18 @@ export const editorOptionsConverters: Map<KaitianPreferenceKey, NoConverter | IM
    */
   ['editor.wrappingStrategy', { monaco: 'wrappingStrategy' }],
 
+  [
+    'editor.experimental.stickyScroll.enabled',
+    {
+      monaco: 'experimental',
+      convert: (value) => ({
+        stickyScroll: {
+          enabled: value,
+        },
+      }),
+    },
+  ],
+
   /**
    * 是否强行readonly
    */

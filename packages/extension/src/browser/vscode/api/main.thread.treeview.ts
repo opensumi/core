@@ -448,6 +448,7 @@ export class TreeViewDataProvider extends Tree {
       if (children && Array.isArray(children)) {
         for (const child of children) {
           const node = await this.createTreeNode(child, parent);
+          this.treeItemId2TreeNode.set(child.id, node);
           nodes.push(node);
         }
       }

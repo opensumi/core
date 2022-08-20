@@ -28,7 +28,8 @@ import {
   CommentInput,
   CommentReaction as CoreCommentReaction,
   CommentMode as CoreCommentMode,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+  CommentThreadState,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
   IMainThreadComments,
@@ -37,6 +38,8 @@ import {
   IMainThreadCommands,
 } from '../../../common/vscode';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
+import { MarkdownString } from '../../../common/vscode/converter';
+import { MarkdownString as CodeMarkdownString } from '../../../common/vscode/ext-types';
 import {
   UriComponents,
   CommentThreadCollapsibleState,
@@ -262,7 +265,7 @@ export class MainThreadCommentThread implements CommentThread {
     return {
       id: comment.uniqueIdInThread.toString(),
       mode: comment.mode as unknown as CommentMode,
-      body: comment.body.value,
+      body: typeof comment.body === 'string' ? comment.body : MarkdownString.from(comment.body as CodeMarkdownString),
       label: comment.label,
       contextValue: comment.contextValue,
       author: {
@@ -299,9 +302,7 @@ export class MainThreadCommentThread implements CommentThread {
       contextValue: comment.contextValue,
       mode: comment.mode as unknown as CoreCommentMode,
       label: typeof comment.label === 'string' ? comment.label : '',
-      body: {
-        value: comment.body,
-      },
+      body: comment.body,
       userName: comment.author.name,
       commentReactions: comment.reactions?.map((reaction) => this.convertToCoreReaction(reaction)),
     };
@@ -407,6 +408,14 @@ export class MainThreadCommentThread implements CommentThread {
     }
     this._isDisposed = false;
   }
+  isDocumentCommentThread(): this is CommentThread<IRange> {
+    throw new Error('Method not implemented.');
+  }
+  // FIXME: 实现新增的属性
+  state?: CommentThreadState | undefined;
+  onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
+  onDidChangeState: Event<CommentThreadState | undefined>;
+  isTemplate: boolean;
 
   batchUpdate(changes: CommentThreadChanges) {
     const modified = (value: keyof CommentThreadChanges): boolean =>

@@ -1,5 +1,6 @@
 import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
 
+import { MetadataConsts } from '@opensumi/monaco-editor-core/esm/vs/editor/common/encodedTokenAttributes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 /** ******************************************************************************
  * Copyright (C) 2018 Ericsson and others.
@@ -16,7 +17,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-
 
 export class TokenizerState implements monaco.languages.IState {
   constructor(public readonly ruleStack: StackElement) {}
@@ -42,30 +42,6 @@ export interface TokenizerOption {
    * integer or an error will be thrown.
    */
   readonly lineLimit?: number;
-}
-
-export const enum MetadataConsts {
-  LANGUAGEID_MASK = 0b00000000000000000000000011111111,
-  TOKEN_TYPE_MASK = 0b00000000000000000000011100000000,
-  FONT_STYLE_MASK = 0b00000000000000000011100000000000,
-  FOREGROUND_MASK = 0b00000000011111111100000000000000,
-  BACKGROUND_MASK = 0b11111111100000000000000000000000,
-
-  ITALIC_MASK = 0b00000000000000000000100000000000,
-  BOLD_MASK = 0b00000000000000000001000000000000,
-  UNDERLINE_MASK = 0b00000000000000000010000000000000,
-
-  SEMANTIC_USE_ITALIC = 0b00000000000000000000000000000001,
-  SEMANTIC_USE_BOLD = 0b00000000000000000000000000000010,
-  SEMANTIC_USE_UNDERLINE = 0b00000000000000000000000000000100,
-  SEMANTIC_USE_FOREGROUND = 0b00000000000000000000000000001000,
-  SEMANTIC_USE_BACKGROUND = 0b00000000000000000000000000010000,
-
-  LANGUAGEID_OFFSET = 0,
-  TOKEN_TYPE_OFFSET = 8,
-  FONT_STYLE_OFFSET = 11,
-  FOREGROUND_OFFSET = 14,
-  BACKGROUND_OFFSET = 23,
 }
 
 export function createTextmateTokenizer(

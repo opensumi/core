@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color } from '../../common/color';
-import { darken, registerColor } from '../color-registry';
+import { darken, registerColor } from '../utils';
 
 import { ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND } from './activity-bar';
 import { contrastBorder, errorForeground } from './base';

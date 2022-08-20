@@ -17,6 +17,7 @@ import {
   formatLocalize,
   MessageType,
   path,
+  isWindows,
 } from '@opensumi/ide-core-browser';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
@@ -122,7 +123,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     const saveUri = await this.commandService.tryExecuteCommand<URI>('file.save', {
       showNameInput: true,
       defaultFileName: name || uri.displayName,
-      defaultUri: URI.file(defaultPath),
+      defaultUri: URI.file(isWindows ? defaultPath.replaceAll('\\', '/') : defaultPath),
     });
     if (saveUri) {
       await this.editorDocumentModelService.saveEditorDocumentModel(

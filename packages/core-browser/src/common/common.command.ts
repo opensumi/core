@@ -786,4 +786,27 @@ export namespace DIALOG_COMMANDS {
   };
 }
 
+export namespace MARKER_COMMANDS {
+  const CATEGORY = 'marker';
+
+  export const SHOW_ERRORS_WARNINGS = {
+    id: 'marker.action.showErrorsWarnings',
+    category: CATEGORY,
+  };
+
+  export const TOGGLE_SHOW_ERRORS_WARNINGS = {
+    id: 'marker.action.toggleShowErrorsWarnings',
+    category: CATEGORY,
+  };
+}
+
+export namespace SCM_COMMANDS {
+  const CATEGORY = 'scm';
+
+  export const TOGGLE_VISIBILITY = {
+    id: 'scm.action.toggleVisibility',
+    category: CATEGORY,
+  };
+}
+
 export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';

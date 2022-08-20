@@ -25,16 +25,19 @@ import {
   toDisposable,
   dispose,
   parseLinkedText,
+  IDisposable,
+  timeout,
 } from '@opensumi/ide-core-common';
 
-import { timeout, IDisposable, IOpenerService, toMarkdown } from '..';
 import { open } from '../components';
+import { toMarkdown } from '../markdown';
+import { IOpenerService } from '../opener';
 import { StatusBarEntry, StatusBarAlignment, StatusBarEntryAccessor } from '../services';
 
 import { ProgressBar } from './progress-bar';
 import { ProgressIndicator } from './progress-indicator';
 
-import { IProgressService, IProgressIndicator, IProgressRunner } from '.';
+import { IProgressService, IProgressIndicator, IProgressRunner } from './index';
 
 const { format } = strings;
 
@@ -303,6 +306,7 @@ export class ProgressService implements IProgressService {
 
     const createNotification = (message: string, silent: boolean, increment?: number): string => {
       const buttons: string[] = [];
+      const closeable = options.closeable ?? true;
       if (options.buttons) {
         // TODO: with progress Notification暂不支持自定义按钮
       }
@@ -330,7 +334,7 @@ export class ProgressService implements IProgressService {
         }
       };
       progressBar = <ProgressBar progressModel={indicator.progressModel} />;
-      open(message, MessageType.Info, true, notificationKey, buttons, progressBar, 0, () =>
+      open(message, MessageType.Info, closeable, notificationKey, buttons, progressBar, 0, () =>
         onVisibilityChange(false),
       )?.then(() => {
         progressStateModel.cancel();

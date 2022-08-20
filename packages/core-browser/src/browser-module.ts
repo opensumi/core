@@ -1,7 +1,7 @@
 import { Injector, Autowired } from '@opensumi/di';
 import { BasicModule, CommandRegistry, Deferred } from '@opensumi/ide-core-common';
 
-import { AppConfig } from './react-providers';
+import { AppConfig } from './react-providers/config-provider';
 
 export const IClientApp = Symbol('CLIENT_APP_TOKEN');
 

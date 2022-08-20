@@ -159,15 +159,15 @@ export function reviveWorkspaceEditDto(data: model.WorkspaceEditDto | undefined)
       if (typeof (edit as model.ResourceTextEditDto).resource === 'object') {
         (edit as unknown as IResourceTextEdit).resource = URI.from((edit as model.ResourceTextEditDto).resource);
         (edit as unknown as IResourceTextEdit).options = { openDirtyInEditor: true };
-        (edit as unknown as IResourceTextEdit).textEdit = (edit as model.ResourceTextEditDto).edit;
-        (edit as unknown as IResourceTextEdit).versionId = (edit as model.ResourceTextEditDto).modelVersionId;
+        (edit as unknown as IResourceTextEdit).textEdit = (edit as model.ResourceTextEditDto).textEdit;
+        (edit as unknown as IResourceTextEdit).versionId = (edit as model.ResourceTextEditDto).versionId;
       } else {
         const resourceFileEdit = edit as unknown as IResourceFileEdit;
-        resourceFileEdit.newResource = (edit as model.ResourceFileEditDto).newUri
-          ? URI.from((edit as model.ResourceFileEditDto).newUri!)
+        resourceFileEdit.newResource = (edit as model.ResourceFileEditDto).newResource
+          ? URI.from((edit as model.ResourceFileEditDto).newResource!)
           : undefined;
-        resourceFileEdit.oldResource = (edit as model.ResourceFileEditDto).oldUri
-          ? URI.from((edit as model.ResourceFileEditDto).oldUri!)
+        resourceFileEdit.oldResource = (edit as model.ResourceFileEditDto).oldResource
+          ? URI.from((edit as model.ResourceFileEditDto).oldResource!)
           : undefined;
         // 似乎 vscode 的行为默认不会 showInEditor，参考来自 codeMe 插件
         resourceFileEdit.options = {

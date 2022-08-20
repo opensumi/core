@@ -22,6 +22,7 @@ import {
   IEditorDocumentModelService,
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelContentProvider,
+  IEditorDocumentModelRef,
 } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -49,6 +50,7 @@ const toReplaceResource = (fileResource: URI): URI =>
 export class RangeHighlightDecorations implements IDisposable {
   private _decorationId: string | null = null;
   private _model: ITextModel | null = null;
+  private _modelRef: IEditorDocumentModelRef | null = null;
   private readonly _modelDisposables = new DisposableStore();
 
   @Autowired(IEditorDocumentModelService)
@@ -64,9 +66,10 @@ export class RangeHighlightDecorations implements IDisposable {
   highlightRange(resource: URI | ITextModel, range: IRange, ownerId = 0): void {
     let model: ITextModel | null = null;
     if (URI.isUri(resource)) {
-      const modelRef = this.documentModelManager.getModelReference(resource);
+      const modelRef = this.documentModelManager.getModelReference(resource, 'highlight-range');
       if (modelRef) {
         model = modelRef.instance.getMonacoModel();
+        this._modelRef = modelRef;
       }
     } else {
       model = resource;
@@ -92,6 +95,8 @@ export class RangeHighlightDecorations implements IDisposable {
       this._model = model;
       this._modelDisposables.add(
         this._model.onDidChangeDecorations((e) => {
+          this._modelRef?.dispose();
+          this._modelRef = null;
           this.clearModelListeners();
           this.removeHighlightRange();
           this._model = null;
@@ -99,6 +104,8 @@ export class RangeHighlightDecorations implements IDisposable {
       );
       this._modelDisposables.add(
         this._model.onWillDispose(() => {
+          this._modelRef?.dispose();
+          this._modelRef = null;
           this.clearModelListeners();
           this.removeHighlightRange();
           this._model = null;

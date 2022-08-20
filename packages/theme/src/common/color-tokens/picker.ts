@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color } from '../../common/color';
-import { registerColor } from '../color-registry';
+import { registerColor } from '../utils';
 
 export const pickerGroupForeground = registerColor(
   'pickerGroup.foreground',
