@@ -915,6 +915,10 @@ export namespace TERMINAL_COMMANDS {
   export const RE_LAUNCH = {
     id: 'terminal.relaunch',
   };
+
+  export const TOGGLE_VISIBILITY = {
+    id: 'terminal.action.toggleVisibility',
+  };
 }
 
 export namespace LAYOUT_COMMANDS {

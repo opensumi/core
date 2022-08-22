@@ -15,6 +15,7 @@ import {
   TerminalSettingsId,
   TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import {
   ITerminalController,
@@ -28,6 +29,8 @@ import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';
 
 import { EnvironmentVariableServiceToken } from './../../common/environmentVariable';
+
+export const TERMINAL_CONTAINER_ID = 'ide-terminal-next';
 
 @Domain(CommandContribution)
 export class TerminalCommandContribution implements CommandContribution {
@@ -57,6 +60,9 @@ export class TerminalCommandContribution implements CommandContribution {
 
   @Autowired(CommandService)
   protected readonly commands: CommandService;
+
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
 
   @Autowired(AppConfig)
   protected readonly config: AppConfig;
@@ -314,6 +320,15 @@ export class TerminalCommandContribution implements CommandContribution {
         }
         const client = this.getNextOrPrevTerminalClient('prev');
         client?.focus();
+      },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.TOGGLE_VISIBILITY, {
+      execute: () => {
+        const tabbarHandler = this.mainlayoutService.getTabbarHandler(TERMINAL_CONTAINER_ID);
+        if (tabbarHandler) {
+          tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
+        }
       },
     });
   }

@@ -454,7 +454,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.SCM_COMMAND_TOGGLE_VISIBILITY,
       // terminal builtin commands
       VSCodeBuiltinCommands.CLEAR_TERMINAL,
-      VSCodeBuiltinCommands.TOGGLE_WORKBENCH_VIEW_TERMINAL,
+      VSCodeBuiltinCommands.TERMINAL_COMMAND_FOCUS,
+      VSCodeBuiltinCommands.TERMINAL_COMMAND_TOGGLE_VISIBILITY,
       VSCodeBuiltinCommands.NEW_WORKBENCH_VIEW_TERMINAL,
       // marker builtin commands
       VSCodeBuiltinCommands.MARKER_COMMAND_SHOW_ERRORS_WARNINGS,

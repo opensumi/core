@@ -139,10 +139,14 @@ export const REVERT_FILES: Command = {
   delegate: EDITOR_COMMANDS.REVERT_DOCUMENT.id,
 };
 
-// 打开或关闭终端
-export const TOGGLE_WORKBENCH_VIEW_TERMINAL: Command = {
-  id: 'workbench.action.terminal.toggleTerminal',
+export const TERMINAL_COMMAND_FOCUS: Command = {
+  id: 'workbench.action.terminal.focus',
   delegate: 'workbench.view.terminal',
+};
+
+export const TERMINAL_COMMAND_TOGGLE_VISIBILITY: Command = {
+  id: 'workbench.action.terminal.toggleTerminal',
+  delegate: TERMINAL_COMMANDS.TOGGLE_VISIBILITY.id,
 };
 
 export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {
