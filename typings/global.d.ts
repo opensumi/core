@@ -14,13 +14,22 @@ interface DOMRectReadOnly {
   readonly left: number;
 }
 
-interface ResizeObserverCallback {
-  (entries: ResizeObserverEntry[], observer: ResizeObserver): void
-}
+declare global {
+  interface ResizeObserverCallback {
+      (entries: ResizeObserverEntry[], observer: ResizeObserver): void
+  }
 
-interface ResizeObserverEntry {
-  readonly target: Element;
-  readonly contentRect: DOMRectReadOnly;
+  interface ResizeObserverEntry {
+      readonly target: Element;
+      readonly contentRect: DOMRectReadOnly;
+  }
+
+  class ResizeObserver {
+      constructor(callback: ResizeObserverCallback);
+      observe(target: Element): void;
+      unobserve(target: Element): void;
+      disconnect(): void;
+  }
 }
 
 declare var ResizeObserver: {
@@ -34,6 +43,4 @@ interface ResizeObserver {
   disconnect(): void;
 }
 
-interface Window {
-  __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
-}
+export default ResizeObserver;

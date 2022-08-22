@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
+  }
+}
+
 export function stringify(obj: any): string {
   return JSON.stringify(obj);
 }
