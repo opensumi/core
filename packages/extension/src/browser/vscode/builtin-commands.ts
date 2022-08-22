@@ -6,7 +6,7 @@ import {
   TERMINAL_COMMANDS,
   MARKER_COMMANDS,
   SCM_COMMANDS,
-  MAIN_LAYOUT_COMMANDS,
+  LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 
@@ -341,7 +341,7 @@ export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
   delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
 };
 
-export const MAIN_LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
+export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
   id: 'workbench.action.maximizeEditor',
-  delegate: MAIN_LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
+  delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
 };
