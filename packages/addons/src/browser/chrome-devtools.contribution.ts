@@ -18,7 +18,7 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
     global.setInterval(() => {
       // if devtools is in capturing state, rtt should be measured and
       // will be presented as network latency in opensumi devtools
-      if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture) {
+      if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ && window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture) {
         if (!this.interval) {
           this.startRTTInterval();
         }
