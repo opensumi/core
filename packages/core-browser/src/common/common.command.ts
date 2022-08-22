@@ -809,4 +809,13 @@ export namespace SCM_COMMANDS {
   };
 }
 
+export namespace MAIN_LAYOUT_COMMANDS {
+  const CATEGORY = 'main-layout';
+
+  export const MAXIMIZE_EDITOR = {
+    id: 'mainLayout.action.Maximizeeditor',
+    category: CATEGORY,
+  };
+}
+
 export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';

@@ -7,6 +7,7 @@ import {
   SlotRendererRegistry,
   slotRendererRegistry,
   KeybindingRegistry,
+  MAIN_LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import {
@@ -288,6 +289,18 @@ export class MainLayoutModuleContribution
       {
         execute: (size?: number) => {
           this.commandService.executeCommand('main-layout.left-panel.toggle', true, size);
+        },
+      },
+    );
+
+    commands.registerCommand(
+      {
+        id: MAIN_LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
+      },
+      {
+        execute: () => {
+          this.commandService.executeCommand('main-layout.right-panel.toggle', false);
+          this.commandService.executeCommand('main-layout.left-panel.toggle', false);
         },
       },
     );
