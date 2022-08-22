@@ -36,6 +36,7 @@ renderApp({
   useCdnIcon: true,
   useExperimentalShadowDom: true,
   defaultPreferences: {
+    'general.language': 'en-US',
     'general.theme': 'opensumi-dark',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
