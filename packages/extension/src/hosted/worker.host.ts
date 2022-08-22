@@ -77,7 +77,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.logger = new ExtensionLogger(rpcProtocol);
     this.storage = new ExtHostStorage(rpcProtocol);
     this.secret = new ExtHostSecret(rpcProtocol);
-    this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this, 'worker');
+    this.sumiAPIFactory = createAPIFactory(this.rpcProtocol, this);
     this.mainThreadExtensionService = this.rpcProtocol.getProxy<SumiWorkerExtensionService>(
       MainThreadAPIIdentifier.MainThreadExtensionService,
     );

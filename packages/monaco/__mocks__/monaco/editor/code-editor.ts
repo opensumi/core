@@ -1,5 +1,6 @@
 import { Emitter, Event, Disposable, IDisposable } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+import { ContextKeyValue } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeEditor {
   static ID = 0;
@@ -13,6 +14,41 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   constructor(public dom: any, public options: any, public override: any) {
     super();
     this.id = ++MockedCodeEditor.ID;
+  }
+
+  getBottomForLineNumber(lineNumber: number): number {
+    throw new Error('Method not implemented.');
+  }
+
+  onDidChangeModelTokens: monaco.IEvent<monaco.editor.IModelTokensChangedEvent>;
+  onDropIntoEditor: monaco.IEvent<{ readonly position: monaco.IPosition; readonly event: DragEvent }>;
+  removeDecorations(decorationIds: string[]): void {
+    throw new Error('Method not implemented.');
+  }
+  setDecorationsByType(
+    description: string,
+    decorationTypeKey: string,
+    ranges: monaco.editor.IDecorationOptions[],
+  ): void {
+    throw new Error('Method not implemented.');
+  }
+  setDecorationsByTypeFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
+    throw new Error('Method not implemented.');
+  }
+  removeDecorationsByType(decorationTypeKey: string): void {
+    throw new Error('Method not implemented.');
+  }
+  createDecorationsCollection(
+    decorations?: monaco.editor.IModelDeltaDecoration[] | undefined,
+  ): monaco.editor.IEditorDecorationsCollection {
+    throw new Error('Method not implemented.');
+  }
+  onDidChangeHiddenAreas: monaco.IEvent<void>;
+  getDecorationsInRange(range: monaco.Range): monaco.editor.IModelDecoration[] | null {
+    throw new Error('Method not implemented.');
+  }
+  setBanner(bannerDomNode: HTMLElement | null, height: number): void {
+    throw new Error('Method not implemented.');
   }
   onMouseDropCanceled(listener: () => void): monaco.IDisposable {
     throw new Error('Method not implemented.');
@@ -79,7 +115,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   setDecorationsFast(decorationTypeKey: string, ranges: monaco.IRange[]): void {
     throw new Error('Method not implemented.');
   }
-  removeDecorations(decorationTypeKey: string): void {
+  removeDecoration(decorationTypeKey: string): void {
     throw new Error('Method not implemented.');
   }
   getWhitespaces(): monaco.editor.IEditorWhitespace[] {
@@ -219,7 +255,7 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
   hasWidgetFocus(): boolean {
     return false;
   }
-  getContribution<T extends monaco.editor.IEditorContribution>(id: string): T {
+  getContribution<T>(id: string): T {
     return null as any;
   }
   getModel(): monaco.editor.ITextModel | null {
@@ -504,7 +540,7 @@ export class MockedStandaloneCodeEditor extends MockedCodeEditor {
     throw new Error('Method not implemented.');
   }
 
-  createContextKey<T>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
+  createContextKey<T extends ContextKeyValue>(key: string, defaultValue: T): monaco.editor.IContextKey<T> {
     throw new Error('Method not implemented.');
   }
   addAction(descriptor: monaco.editor.IActionDescriptor): monaco.IDisposable {

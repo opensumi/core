@@ -1013,7 +1013,7 @@ export class ReadyEvent<T = void> implements IDisposable {
       this._param = param;
     }
     this._emitter.fire(param);
-    this._emitter.dispose;
+    this._emitter.dispose();
     this._emitter = null as any;
   }
 

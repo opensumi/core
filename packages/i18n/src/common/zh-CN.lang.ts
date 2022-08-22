@@ -541,6 +541,7 @@ export const localizationBundle = {
     'editor.closeEditorsInOtherGroups': '关闭其他组中的编辑器',
     'editor.resetEditorGroups': '重置编辑器组大小',
     'editor.revert': '还原文档',
+    'editor.experimental.stickyScroll.enabled.description': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
 
     'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
     'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',
@@ -729,6 +730,7 @@ export const localizationBundle = {
     'keymaps.header.source.title': '作用域',
     'keymaps.header.keybinding.title': '快捷键',
     'keymaps.header.when.title': '条件',
+    'keymaps.commandId.title': '命令 ID：{0}',
 
     'keymaps.source.default': '默认',
     'keymaps.source.user': '用户',
@@ -754,6 +756,9 @@ export const localizationBundle = {
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
+    'layout.action.openView': '打开视图 ...',
+    'layout.openView.containerTitle': '侧边栏 / 面板',
+    'layout.openView.viewTitle': '{0} / 视图',
     'status-bar.label.line': '行',
     'status-bar.label.column': '列',
     'status-bar.label.selected': '已选择',

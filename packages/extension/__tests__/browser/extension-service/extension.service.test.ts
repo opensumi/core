@@ -7,7 +7,6 @@ import {
   PreferenceScope,
   KeybindingRegistryImpl,
   KeybindingRegistry,
-  setLanguageId,
 } from '@opensumi/ide-core-browser';
 import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
@@ -107,7 +106,10 @@ describe('Extension service', () => {
 
   describe('activate extension', () => {
     it('should activate mock browser extension without ext process', async () => {
-      await extensionService.activeExtension(MOCK_EXTENSIONS[0]);
+      const ext = MOCK_EXTENSIONS[0];
+      // @ts-ignore
+      delete ext.extendConfig;
+      await extensionService.activeExtension(ext);
       const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
       const tabbarService: TabbarService = layoutService.getTabbarService('left');
       const containerInfo = tabbarService.getContainer('test.sumi-extension:Leftview');
