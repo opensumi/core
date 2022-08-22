@@ -1,6 +1,6 @@
 import { join } from 'path';
 
-import { app, session } from 'electron';
+import { app } from 'electron';
 
 import { URI } from '@opensumi/ide-core-common';
 import { ElectronMainApp } from '@opensumi/ide-core-electron-main';
@@ -31,10 +31,4 @@ const electronApp = new ElectronMainApp({
 
 electronApp.init().then(() => {
   electronApp.loadWorkspace();
-
-  const devtronPath = join(require('os').homedir(), 'Projects/ASOC2022/devtron');
-  session.defaultSession.loadExtension(devtronPath);
-
-  const opensumicrxPath = join(require('os').homedir(), 'Projects/ASOC2022/opensumi/opensumi-devtools/build');
-  session.defaultSession.loadExtension(opensumicrxPath);
 });
