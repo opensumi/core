@@ -2,6 +2,7 @@ import { Injector } from '@opensumi/di';
 import { Deferred, ILoggerManagerClient, IReporter } from '@opensumi/ide-core-common';
 import { REPORT_NAME } from '@opensumi/ide-core-common';
 import { AppConfig, DefaultReporter } from '@opensumi/ide-core-node';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../../tools/dev-tool/src/mock-injector';

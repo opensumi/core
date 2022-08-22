@@ -786,6 +786,151 @@ export namespace DIALOG_COMMANDS {
   };
 }
 
+export namespace TERMINAL_COMMANDS {
+  const CATEGORY = '%terminal.name%';
+
+  export const FOCUS_NEXT_TERMINAL = {
+    id: 'workbench.action.terminal.focusNextPane',
+    label: '%terminal.focusNext.inTerminalGroup%',
+    category: CATEGORY,
+  };
+
+  export const FOCUS_PREVIOUS_TERMINAL = {
+    id: 'workbench.action.terminal.focusPreviousPane',
+    label: '%terminal.focusPrevious.inTerminalGroup%',
+    category: CATEGORY,
+  };
+
+  export const SPLIT = {
+    id: 'terminal.split',
+    label: '%terminal.split%',
+    category: CATEGORY,
+  };
+
+  export const ADD = {
+    id: 'terminal.add',
+    label: '%terminal.new%',
+    category: CATEGORY,
+  };
+
+  export const REMOVE = {
+    id: 'terminal.remove',
+    label: '%terminal.remove%',
+    category: CATEGORY,
+  };
+
+  export const CLEAR = {
+    id: 'terminal.clear',
+    label: '%terminal.clear%',
+    category: CATEGORY,
+  };
+
+  export const OPEN_SEARCH = {
+    id: 'terminal.search',
+    label: '%terminal.search%',
+    category: CATEGORY,
+  };
+
+  export const SEARCH_NEXT = {
+    id: 'terminal.search.next',
+    label: '%terminal.search.next%',
+    category: CATEGORY,
+  };
+
+  export const OPEN_WITH_PATH = {
+    id: 'terminal.openWithPath',
+    category: CATEGORY,
+  };
+
+  export const CLEAR_CONTENT = {
+    id: 'terminal.clearContent',
+    label: '%terminal.menu.clearCurrentContent%',
+    category: CATEGORY,
+  };
+
+  export const CLEAR_ALL_CONTENT = {
+    id: 'terminal.clearAllContent',
+    label: '%terminal.menu.clearAllContents%',
+  };
+
+  export const TAB_RENAME = {
+    id: 'terminal.tabRename',
+  };
+
+  export const SELECT_ALL_CONTENT = {
+    id: 'terminal.selectAllContent',
+    label: '%terminal.menu.selectAllContent%',
+  };
+
+  export const MORE_SETTINGS = {
+    id: 'terminal.moreSettings',
+    label: '%terminal.menu.moreSettings%',
+  };
+
+  export const SELECT_TYPE = {
+    id: 'terminal.selectType',
+  };
+
+  export const SELECT_ZSH = {
+    id: 'terminal.selectTypeZsh',
+    label: 'zsh',
+  };
+
+  export const SELECT_BASH = {
+    id: 'terminal.selectTypeBash',
+    label: 'bash',
+  };
+
+  export const SELECT_SH = {
+    id: 'terminal.selectTypeSh',
+    label: 'sh',
+  };
+
+  export const SELECT_CMD = {
+    id: 'terminal.selectTypeCMD',
+    label: 'cmd',
+  };
+
+  export const SELECT_POWERSHELL = {
+    id: 'terminal.selectTypePowerShell',
+    label: 'powershell',
+  };
+
+  export const COPY = {
+    id: 'terminal.copy',
+    label: '%edit.copy%',
+  };
+
+  export const PASTE = {
+    id: 'terminal.paste',
+    label: '%edit.paste%',
+  };
+
+  export const SELECT_ALL = {
+    id: 'terminal.selectAll',
+    label: '%terminal.menu.selectCurrentContent%',
+    category: CATEGORY,
+  };
+
+  export const RE_LAUNCH = {
+    id: 'terminal.relaunch',
+  };
+}
+
+export namespace LAYOUT_COMMANDS {
+  const CATEGORY = 'view';
+
+  export const QUICK_OPEN_VIEW: Command = {
+    id: 'layout.action.quickOpenView',
+    category: CATEGORY,
+  };
+
+  export const OPEN_VIEW: Command = {
+    id: 'layout.action.openView',
+    label: '%layout.action.openView%',
+    category: CATEGORY,
+  };
+}
 export namespace MARKER_COMMANDS {
   const CATEGORY = 'marker';
 
@@ -793,6 +938,27 @@ export namespace MARKER_COMMANDS {
     id: 'marker.action.showErrorsWarnings',
     category: CATEGORY,
   };
+
+  export const TOGGLE_SHOW_ERRORS_WARNINGS = {
+    id: 'marker.action.toggleShowErrorsWarnings',
+    category: CATEGORY,
+  };
 }
 
-export { TERMINAL_COMMANDS } from '@opensumi/ide-core-common/lib/commands/terminal';
+export namespace SCM_COMMANDS {
+  const CATEGORY = 'scm';
+
+  export const TOGGLE_VISIBILITY = {
+    id: 'scm.action.toggleVisibility',
+    category: CATEGORY,
+  };
+}
+
+export namespace QUICK_OPEN_COMMANDS {
+  export const OPEN: Command = {
+    id: 'editor.action.quickCommand',
+  };
+  export const OPEN_OUTLINE: Command = {
+    id: 'editor.action.quickOutline',
+  };
+}
