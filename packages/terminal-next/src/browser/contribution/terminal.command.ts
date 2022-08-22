@@ -13,6 +13,7 @@ import {
   ILogger,
   IClipboardService,
   TerminalSettingsId,
+  TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
 
 import {
@@ -21,7 +22,6 @@ import {
   ITerminalGroupViewService,
   ITerminalSearchService,
   ITerminalApiService,
-  TERMINAL_COMMANDS,
   ITerminalClient,
 } from '../../common';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
