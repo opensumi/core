@@ -413,6 +413,11 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
     const menu = editorActionRegistry.getMenu(group);
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
+    const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(
+      group.currentResource
+        ? [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri]
+        : undefined,
+    );
 
     useEffect(() => {
       const disposableCollection = new DisposableCollection();
@@ -421,14 +426,20 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
           setHasFocus(editorService.currentEditorGroup === group);
         }),
       );
+      disposableCollection.push(
+        editorService.onActiveResourceChange(() => {
+          setArgs(
+            group.currentResource
+              ? [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri]
+              : undefined,
+          );
+        }),
+      );
       return () => {
         disposableCollection.dispose();
       };
     }, []);
 
-    const args: [URI, IEditorGroup, MaybeNull<URI>] | undefined = group.currentResource
-      ? [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri]
-      : undefined;
     // 第三个参数是当前编辑器的URI（如果有）
     return (
       <div
