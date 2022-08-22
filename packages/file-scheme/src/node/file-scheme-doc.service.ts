@@ -8,6 +8,7 @@ import {
   IEditorDocumentChange,
   BasicTextLines,
   isEditChange,
+  CancellationToken,
 } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
@@ -29,12 +30,19 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     change: IContentChange,
     encoding?: string | undefined,
     force = false,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult> {
     try {
       const fsPath = new URI(uri).codeUri.fsPath;
       if (existsSync(fsPath)) {
         const mtime = statSync(fsPath).mtime.getTime();
         const contentBuffer = await readFile(fsPath);
+        if (token?.isCancellationRequested) {
+          return {
+            state: 'error',
+            errorMessage: 'cancel',
+          };
+        }
         const content = decode(contentBuffer, encoding ? encoding : 'utf8');
         if (!force) {
           const currentMd5 = this.hashCalculateService.calculate(content);
@@ -71,12 +79,25 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
     content: ISavingContent,
     encoding?: string | undefined,
     force = false,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult> {
     try {
       const stat = await this.fileService.getFileStat(uri);
+      if (token?.isCancellationRequested) {
+        return {
+          state: 'error',
+          errorMessage: 'cancel',
+        };
+      }
       if (stat) {
         if (!force) {
           const res = await this.fileService.resolveContent(uri, { encoding });
+          if (token?.isCancellationRequested) {
+            return {
+              state: 'error',
+              errorMessage: 'cancel',
+            };
+          }
           if (content.baseMd5 !== this.hashCalculateService.calculate(res.content)) {
             return {
               state: 'diff',
