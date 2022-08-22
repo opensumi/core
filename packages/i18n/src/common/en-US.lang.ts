@@ -948,6 +948,8 @@ export const localizationBundle = {
     'keyboard.autoDetect.description': "(Current: '{0} ')",
     'keyboard.autoDetect.detail': 'Try to detect the keyboard layout from browser information and pressed keys.',
 
+    'editor.suggest.details.visible': 'Controls whether editor code completion expands details by default',
+
     'view.component.renderedError': 'View Component Rendering Exception',
     'view.component.tryAgain': 'Refresh',
 
