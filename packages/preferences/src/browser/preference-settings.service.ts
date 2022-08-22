@@ -504,7 +504,10 @@ export const defaultSettingSections: {
         // 行内补全
         { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
 
-        { id: 'editor.experimental.stickyScroll.enabled', localized: 'preference.editor.experimental.stickyScroll.enabled' },
+        {
+          id: 'editor.experimental.stickyScroll.enabled',
+          localized: 'preference.editor.experimental.stickyScroll.enabled',
+        },
 
         // 缩进
         { id: 'editor.detectIndentation', localized: 'preference.editor.detectIndentation' },

@@ -78,6 +78,9 @@ export class TerminalContextMenuService extends Disposable {
   }
 
   onTabContextMenu(event: React.MouseEvent<HTMLElement>, index: number) {
+    event.stopPropagation();
+    event.preventDefault();
+
     const { x, y } = event.nativeEvent;
     const menus = this.tabContextMenu;
     const menuNodes = generateMergedCtxMenu({ menus });

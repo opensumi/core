@@ -184,7 +184,7 @@ export class IconService extends WithEventBus implements IIconService {
   protected getBackgroundStyleSheet(iconUrl: string, className: string, baseTheme?: string): string {
     const cssRule = `${
       baseTheme || ''
-    } .${className} {background: url("${iconUrl}") no-repeat 50% 50%;background-size:cover;}`;
+    } .${className} {background: url("${iconUrl}") no-repeat 0 0;background-size:cover;}`;
     return cssRule;
   }
 

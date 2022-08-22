@@ -482,6 +482,10 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       allDecorations = decorationsPerScope.reduce((previous, current) => previous.concat(current), []);
     }
 
-    editor.monacoEditor.setDecorationsByType('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, allDecorations as any[]);
+    editor.monacoEditor.setDecorationsByType(
+      'inline-value-decoration',
+      INLINE_VALUE_DECORATION_KEY,
+      allDecorations as any[],
+    );
   }
 }

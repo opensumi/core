@@ -589,7 +589,8 @@ export const localizationBundle = {
     'editor.workspaceSymbol.notfound': 'No symbols matching',
     'editor.workspaceSymbolClass.notfound': 'No class symbols matching',
 
-    'editor.experimental.stickyScroll.enabled.description': 'Shows the nested current scopes during the scroll at the top of the editor.',
+    'editor.experimental.stickyScroll.enabled.description':
+      'Shows the nested current scopes during the scroll at the top of the editor.',
 
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
@@ -722,6 +723,9 @@ export const localizationBundle = {
     'layout.tabbar.expand': 'Maximize Bottom Panel',
     'layout.tabbar.retract': 'Retract Bottom Panel',
     'layout.view.hide': 'HIDE',
+    'layout.action.openView': 'Open View ...',
+    'layout.openView.containerTitle': 'SideBar / Panel',
+    'layout.openView.viewTitle': '{0} / View',
     'marketplace.extension.update.now': 'Update now',
     'marketplace.extension.update.delay': 'Update later',
     'marketplace.extension.uninstall.failed': 'Failed to uninstall',

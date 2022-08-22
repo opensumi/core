@@ -265,7 +265,7 @@ export class MainThreadCommentThread implements CommentThread {
     return {
       id: comment.uniqueIdInThread.toString(),
       mode: comment.mode as unknown as CommentMode,
-      body: (typeof comment.body === 'string') ?  comment.body : MarkdownString.from(comment.body as CodeMarkdownString),
+      body: typeof comment.body === 'string' ? comment.body : MarkdownString.from(comment.body as CodeMarkdownString),
       label: comment.label,
       contextValue: comment.contextValue,
       author: {

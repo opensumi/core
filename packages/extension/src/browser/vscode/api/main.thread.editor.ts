@@ -552,8 +552,11 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   private _setIndentConfiguration(model: ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {
-    const creationOpts = StandaloneServices.get(IModelService)
-      .getCreationOptions(model.getLanguageId(), model.uri, (model as any).isForSimpleWidget);
+    const creationOpts = StandaloneServices.get(IModelService).getCreationOptions(
+      model.getLanguageId(),
+      model.uri,
+      (model as any).isForSimpleWidget,
+    );
 
     if (newConfiguration.tabSize === 'auto' || newConfiguration.insertSpaces === 'auto') {
       // one of the options was set to 'auto' => detect indentation
