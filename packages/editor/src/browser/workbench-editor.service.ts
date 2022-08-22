@@ -231,6 +231,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return false;
   }
 
+  calcDirtyCount(): number {
+    return this.editorGroups.reduce((pre, cur) => pre + cur.calcDirtyCount(), 0);
+  }
+
   createEditorGroup(): EditorGroup {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
@@ -2075,6 +2079,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     return false;
+  }
+
+  /**
+   * 计算 dirty 数量
+   */
+  calcDirtyCount(): number {
+    let count = 0;
+    for (const r of this.resources) {
+      const docRef = this.documentModelManager.getModelReference(r.uri);
+      if (docRef) {
+        const isDirty = docRef.instance.dirty;
+        docRef.dispose();
+        if (isDirty) {
+          count += 1;
+        }
+      }
+    }
+    return count;
   }
 
   componentUndo() {

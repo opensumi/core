@@ -23,6 +23,7 @@ import {
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IEditorGroup, IResource } from '@opensumi/ide-editor/lib/browser';
+import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
@@ -70,7 +71,7 @@ export class OpenedEditorModelService {
   public readonly openedEditorEventService: OpenedEditorEventService;
 
   @Autowired(WorkbenchEditorService)
-  private readonly editorService: WorkbenchEditorService;
+  private readonly editorService: WorkbenchEditorServiceImpl;
 
   @Autowired(CommandService)
   public readonly commandService: CommandService;
@@ -539,12 +540,8 @@ export class OpenedEditorModelService {
   };
 
   private setExplorerTabBarBadge() {
-    const targetSets = new Set();
-    for (const target of this.dirtyDecoration.appliedTargets.keys()) {
-      targetSets.add((target as EditorFile).uri.toString());
-    }
-    const dirtyCount = targetSets.size;
     const handler = this.layoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
+    const dirtyCount = this.editorService.calcDirtyCount();
     if (handler) {
       handler.setBadge(dirtyCount > 0 ? dirtyCount.toString() : '');
     }
