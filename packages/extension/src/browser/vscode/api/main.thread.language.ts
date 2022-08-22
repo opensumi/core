@@ -39,9 +39,12 @@ import {
   ExtHostAPIIdentifier,
   ICodeActionDto,
   ICodeActionProviderMetadataDto,
+  IdentifiableInlineCompletion,
+  IdentifiableInlineCompletions,
   IExtHostLanguages,
   IInlayHintDto,
   IMainThreadLanguages,
+  InlineCompletionContext,
   ISuggestDataDto,
   ISuggestDataDtoField,
   ISuggestResultDtoField,
@@ -332,6 +335,37 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             }
           : undefined,
       }),
+    );
+  }
+
+  $registerInlineCompletionsSupport(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    supportsHandleDidShowCompletionItem: boolean,
+  ): void {
+    const provider: monaco.languages.InlineCompletionsProvider<IdentifiableInlineCompletions> = {
+      provideInlineCompletions: async (
+        model: ITextModel,
+        position: monaco.Position,
+        context: InlineCompletionContext,
+        token: CancellationToken,
+      ): Promise<IdentifiableInlineCompletions | undefined> =>
+        this.proxy.$provideInlineCompletions(handle, model.uri, position, context, token),
+      handleItemDidShow: async (
+        completions: IdentifiableInlineCompletions,
+        item: IdentifiableInlineCompletion,
+      ): Promise<void> => {
+        if (supportsHandleDidShowCompletionItem) {
+          await this.proxy.$handleInlineCompletionDidShow(handle, completions.pid, item.idx);
+        }
+      },
+      freeInlineCompletions: (completions: IdentifiableInlineCompletions): void => {
+        this.proxy.$freeInlineCompletionsList(handle, completions.pid);
+      },
+    };
+    this.disposables.set(
+      handle,
+      monaco.languages.registerInlineCompletionsProvider(fromLanguageSelector(selector)!, provider),
     );
   }
 

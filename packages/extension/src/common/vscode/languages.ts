@@ -13,6 +13,7 @@ import {
   CallHierarchyProvider,
   TypeHierarchyProvider,
   InlayHintsProvider,
+  InlineCompletionItemProvider,
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
@@ -87,6 +88,11 @@ export interface IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
     triggerCharacters: string[],
     supportsResolveDetails: boolean,
+  ): void;
+  $registerInlineCompletionsSupport(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    supportsHandleDidShowCompletionItem: boolean,
   ): void;
   $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
@@ -203,6 +209,17 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<ISuggestDataDto | undefined>;
   $releaseCompletionItems(handle: number, id: number): void;
+
+  registerInlineCompletionsProvider(selector: DocumentSelector, provider: InlineCompletionItemProvider): Disposable;
+  $provideInlineCompletions(
+    handle: number,
+    resource: UriComponents,
+    position: Position,
+    context: languages.InlineCompletionContext,
+    token: CancellationToken,
+  ): Promise<IdentifiableInlineCompletions | undefined>;
+  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void;
+  $freeInlineCompletionsList(handle: number, pid: number): void;
 
   $provideDefinition(
     handle: number,
@@ -632,3 +649,47 @@ export interface ICodeActionProviderMetadataDto {
   readonly providedKinds?: readonly string[];
   readonly documentation?: ReadonlyArray<{ readonly kind: string; readonly command: Command }>;
 }
+
+// inline completion begin
+export interface IdentifiableInlineCompletions extends languages.InlineCompletions<IdentifiableInlineCompletion> {
+  pid: number;
+}
+
+export interface IdentifiableInlineCompletion extends languages.InlineCompletion {
+  idx: number;
+}
+
+/**
+ * How an {@link InlineCompletionsProvider inline completion provider} was triggered.
+ */
+export enum InlineCompletionTriggerKind {
+  /**
+   * Completion was triggered automatically while editing.
+   * It is sufficient to return a single completion item in this case.
+   */
+  Automatic = 0,
+
+  /**
+   * Completion was triggered explicitly by a user gesture.
+   * Return multiple completion items to enable cycling through them.
+   */
+  Explicit = 1,
+}
+
+export interface InlineCompletionContext {
+  /**
+   * How the completion was triggered.
+   */
+  readonly triggerKind: InlineCompletionTriggerKind;
+
+  readonly selectedSuggestionInfo: SelectedSuggestionInfo | undefined;
+}
+
+export interface SelectedSuggestionInfo {
+  range: IRange;
+  text: string;
+  isSnippetText: boolean;
+  completionKind: CompletionItemKind;
+}
+
+// inline completion end
