@@ -3,12 +3,12 @@ import {
   Command,
   EDITOR_COMMANDS,
   COMMON_COMMANDS,
+  TERMINAL_COMMANDS,
   MARKER_COMMANDS,
   SCM_COMMANDS,
   MAIN_LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
-import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 
 /**
  * 插件进程内置 command 的命名空间
