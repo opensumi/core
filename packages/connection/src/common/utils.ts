@@ -6,12 +6,6 @@ export function parse(input: string, reviver?: (this: any, key: string, value: a
   return JSON.parse(input, reviver);
 }
 
-declare global {
-  interface Window {
-    __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
-  }
-}
-
 export function getCapturer() {
   if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture) {
     return window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture;

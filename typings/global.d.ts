@@ -30,6 +30,10 @@ declare global {
       unobserve(target: Element): void;
       disconnect(): void;
   }
+
+  interface Window {
+    __OPENSUMI_DEVTOOLS_GLOBAL_HOOK__: any;
+  }
 }
 
 declare var ResizeObserver: {
