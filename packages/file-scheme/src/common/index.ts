@@ -1,4 +1,4 @@
-import { IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-common';
+import { CancellationToken, IEditorDocumentChange, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-common';
 
 export const FILE_ON_DISK_SCHEME = 'fileOnDisk';
 
@@ -18,6 +18,7 @@ export interface IFileSchemeDocClient {
     change: IContentChange,
     encoding?: string,
     force?: boolean,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult>;
   /**
    * 直接使用文件内容进行保存，适用于较小的文件
@@ -31,6 +32,7 @@ export interface IFileSchemeDocClient {
     content: ISavingContent,
     encoding?: string,
     force?: boolean,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult>;
   getMd5(uri: string, encoding?: string): Promise<string | undefined>;
 }
@@ -48,6 +50,7 @@ export interface IFileSchemeDocNodeService {
     change: IContentChange,
     encoding?: string,
     force?: boolean,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult>;
 
   /**
@@ -62,6 +65,7 @@ export interface IFileSchemeDocNodeService {
     content: ISavingContent,
     encoding?: string,
     force?: boolean,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult>;
 
   $getMd5(uri: string, encoding?: string): Promise<string | undefined>;
