@@ -13,3 +13,6 @@ export const REDO: Command = {
   label: 'collaboration.redo', // TODO i18n
   category,
 };
+
+export const Y_REMOTE_SELECTION = 'yRemoteSelection';
+export const Y_REMOTE_SELECTION_HEAD = 'yRemoteSelectionHead';
