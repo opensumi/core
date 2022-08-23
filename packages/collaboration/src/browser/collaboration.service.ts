@@ -3,6 +3,7 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { AppConfig } from '@opensumi/ide-core-browser';
 import { Deferred, ILogger, OnEvent, uuid, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -25,6 +26,7 @@ import {
   CollaborationModuleContribution,
   Y_REMOTE_SELECTION,
   Y_REMOTE_SELECTION_HEAD,
+  COLLABORATION_PORT,
 } from '../common';
 
 import { getColorByClientID } from './color';
@@ -49,6 +51,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @Autowired(IEditorDocumentModelService)
   private docModelManager: IEditorDocumentModelService;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   private clientIDStyleAddedSet: Set<number> = new Set();
 
@@ -92,7 +97,12 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   initialize() {
     this.yDoc = new Y.Doc();
     this.yTextMap = this.yDoc.getMap();
-    this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
+
+    // transform url
+    const wsPath = new URL(this.appConfig.wsPath.toString());
+    wsPath.port = String(COLLABORATION_PORT);
+    this.yWebSocketProvider = new WebsocketProvider(wsPath.toString(), ROOM_NAME, this.yDoc);
+
     this.yTextMap.observe(this.yMapObserver);
 
     if (this.userInfo === undefined) {
