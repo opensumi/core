@@ -222,15 +222,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     updated: number[];
     removed: number[];
   }) => {
-    if (changes.removed.length > 0) {
-      changes.removed.forEach((clientID) => {
-        this.cssManager.removeClass(`${Y_REMOTE_SELECTION}-${clientID}`);
-        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`);
-        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`);
-        this.clientIDStyleAddedSet.delete(clientID);
-      });
-    }
-    if (changes.added.length > 0 || changes.updated.length > 0) {
+    if (changes.added.length > 0) {
       changes.added.forEach((clientID) => {
         if (!this.clientIDStyleAddedSet.has(clientID)) {
           const color = getColorByClientID(clientID);
