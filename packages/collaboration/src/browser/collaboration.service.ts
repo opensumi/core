@@ -52,7 +52,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private clientIDStyleAddedSet: Set<number> = new Set();
 
-  // hold editor => registry
   private cursorRegistryMap: Map<ICodeEditor, CursorWidgetRegistry> = new Map();
 
   private userInfo: UserInfo;
@@ -72,7 +71,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   private yMapObserver = (event: Y.YMapEvent<Y.Text>) => {
     const changes = event.changes.keys;
     changes.forEach((change, key) => {
-      this.logger.debug('change action', change.action, key);
       if (change.action === 'add') {
         const { yMapReady } = this.getDeferred(key);
         const binding = this.getBinding(key);
@@ -106,8 +104,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
     // add userInfo to awareness field
     this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
-
-    this.logger.debug('Collaboration initialized');
 
     this.yWebSocketProvider.awareness.on('update', this.updateCSSManagerWhenAwarenessUpdated);
   }
@@ -187,7 +183,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     if (!cond) {
       const binding = this.injector.get(TextModelBinding, [
-        this.yTextMap.get(uri)!, // only be called after yMap event
+        this.yTextMap.get(uri)!, // only be called when entry of yMap is ready
         model,
         this.yWebSocketProvider.awareness,
       ]);
@@ -214,7 +210,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     if (binding) {
       binding.dispose();
       this.bindingMap.delete(uri);
-      this.logger.debug('Removed binding');
     }
   }
 
@@ -267,12 +262,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   @OnEvent(EditorDocumentModelCreationEvent)
   private async editorDocumentModelCreationHandler(e: EditorDocumentModelCreationEvent) {
     const uriString = e.payload.uri.toString();
-    this.logger.debug('editor doc model created', uriString);
     const { bindingReady, yMapReady } = this.getDeferred(uriString);
     await this.backService.requestInitContent(uriString);
-    this.logger.debug('init content requested');
     await yMapReady.promise;
-    this.logger.debug('yMap ready');
     // get monaco model from model ref by uri
     const ref = this.docModelManager.getModelReference(e.payload.uri);
     const monacoModel = ref?.instance.getMonacoModel();
@@ -281,7 +273,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       this.createAndSetBinding(uriString, monacoModel);
     }
     bindingReady.resolve();
-    this.logger.debug('binding ready');
   }
 
   @OnEvent(EditorDocumentModelRemovalEvent)
@@ -291,7 +282,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     await bindingReady.promise;
     this.removeBinding(uriString);
     this.resetDeferredBinding(uriString);
-    this.logger.debug('editor doc model removed');
   }
 
   @OnEvent(EditorGroupOpenEvent)
@@ -318,7 +308,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @OnEvent(EditorGroupCloseEvent)
   private async groupCloseHandler(e: EditorGroupCloseEvent) {
-    this.logger.debug('Group close tabs', e);
     const uriString = e.payload.resource.uri.toString();
     const { bindingReady } = this.getDeferred(uriString);
     await bindingReady.promise;
