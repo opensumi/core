@@ -138,14 +138,14 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
-  undoOnCurrentResource() {
+  undoOnFocusedTextModel() {
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     if (uri && this.bindingMap.has(uri)) {
       this.bindingMap.get(uri)!.undo();
     }
   }
 
-  redoOnCurrentResource() {
+  redoOnFocusedTextModel() {
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     if (uri && this.bindingMap.has(uri)) {
       this.bindingMap.get(uri)!.redo();

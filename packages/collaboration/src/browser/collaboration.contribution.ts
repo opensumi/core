@@ -62,13 +62,13 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(UNDO, {
       execute: () => {
-        this.collaborationService.undoOnCurrentResource();
+        this.collaborationService.undoOnFocusedTextModel();
       },
     });
 
     commands.registerCommand(REDO, {
       execute: () => {
-        this.collaborationService.redoOnCurrentResource();
+        this.collaborationService.redoOnFocusedTextModel();
       },
     });
   }

@@ -7,8 +7,8 @@ export const ICollaborationService = Symbol('ICollaborationService');
 export interface ICollaborationService {
   initialize(): void;
   destroy(): void;
-  undoOnCurrentResource(): void;
-  redoOnCurrentResource(): void;
+  undoOnFocusedTextModel(): void;
+  redoOnFocusedTextModel(): void;
   getUseInfo(): UserInfo;
   setUserInfo(contribution: CollaborationModuleContribution): void;
 }

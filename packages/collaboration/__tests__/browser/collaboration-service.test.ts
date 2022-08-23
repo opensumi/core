@@ -130,8 +130,8 @@ describe('CollaborationService basic routines', () => {
     expect(targetBinding).toBeInstanceOf(TextModelBinding);
     const undoSpy = jest.spyOn(targetBinding, 'undo');
     const redoSpy = jest.spyOn(targetBinding, 'redo');
-    service.undoOnCurrentResource();
-    service.redoOnCurrentResource();
+    service.undoOnFocusedTextModel();
+    service.redoOnFocusedTextModel();
     expect(undoSpy).toBeCalled();
     expect(redoSpy).toBeCalled();
   });
