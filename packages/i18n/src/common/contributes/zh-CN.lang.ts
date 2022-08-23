@@ -30,11 +30,13 @@ export const browserViews = {
   'sumiContributes.workerMain': '声明插件 worker 入口（相对于插件目录的编译后的代码文件路径）',
 
   // viewsProxies
-  'sumiContributes.viewsProxies': '声明需要绑定 componentProxy 调用的组件 id, 与导出名相同。例如声明 ["component"] 后, 即可在 node 层通过 **`context.componentProxy.component.xxxx`** 调用 browser 层 component 组件的 xxxx 函数',
+  'sumiContributes.viewsProxies':
+    '声明需要绑定 componentProxy 调用的组件 id, 与导出名相同。例如声明 ["component"] 后, 即可在 node 层通过 **`context.componentProxy.component.xxxx`** 调用 browser 层 component 组件的 xxxx 函数',
 
   // toolbar
   'sumiContributes.toolbar': 'Toolbar 默认位于 IDE 顶部菜单栏的右侧, 也可以展现为单独的一栏',
-  'sumiContributes.toolbar.actions': '用于描述 Toolbar 上的元素, 目前仅支持 `button` 和 `select`, 我们称之为 action, 某些情况下需要搭配 Toolbar API 来使用',
+  'sumiContributes.toolbar.actions':
+    '用于描述 Toolbar 上的元素, 目前仅支持 `button` 和 `select`, 我们称之为 action, 某些情况下需要搭配 Toolbar API 来使用',
   'sumiContributes.toolbar.actions.id': '唯一标识符',
   'sumiContributes.toolbar.actions.weight': '顺序权重, 数值越大，排在越前面',
   'sumiContributes.toolbar.actions.preferredPosition': `注册这个 action 的位置， 如果 strictPosition 存在，这个选项无效
@@ -85,7 +87,8 @@ menu-right (顶部菜单左侧靠右)
   'sumiContributes.toolbar.actions.title': '按钮文案',
   'sumiContributes.toolbar.actions.iconPath': '按钮图标路径，相对于插件根目录',
   'sumiContributes.toolbar.actions.iconMaskMode': '图标渲染模式',
-  'sumiContributes.toolbar.actions.button.states': '按钮状态，除了可以修改不同文案、图标路径和渲染模式外，还可以修改样式，类似声明一组 ClassName，可通过 API 改变按钮的状态',
+  'sumiContributes.toolbar.actions.button.states':
+    '按钮状态，除了可以修改不同文案、图标路径和渲染模式外，还可以修改样式，类似声明一组 ClassName，可通过 API 改变按钮的状态',
   'sumiContributes.toolbar.actions.button.states.width': '指定按钮宽度，不指定则默认为 8px',
   'sumiContributes.toolbar.actions.button.states.height': '指定按钮高度，不指定则默认为 22px',
   'sumiContributes.toolbar.actions.button.states.showTitle': '是否显示 title, 默认为 true',
@@ -171,13 +174,14 @@ inline 模式 showTitle 会失效, 只显示 icon`,
   'sumiContributes.menu.api.StatusBarContext': '最底部状态栏的右键菜单',
   'sumiContributes.menu.api.ViewItemContext': '提供的自定义视图的右键菜单',
   'sumiContributes.menu.api.ViewTitle': '提供的自定义视图的顶部菜单项',
-  'sumiContributes.menu.api.SettingsIconMenu': '左下角 \“偏好设置" 的右键菜单',
+  'sumiContributes.menu.api.SettingsIconMenu': '左下角 “偏好设置" 的右键菜单',
 
   // submenu
   'sumiContributes.submenus': '提供子菜单项（属性的 key 是已经在 "contributes.menubars" 注册好的 menubar id）',
   'sumiContributes.submenus.id': '是已经在 "contributes.menus" 注册好的 menu id',
   'sumiContributes.submenus.title': '子菜单项的名称',
-  'sumiContributes.submenus.icon': '(可选) 用于表示 UI 中的子菜单的图标。文件路径、具有深色和浅色主题的文件路径的对象，或者主题图标引用(如 "$(zap)")',
+  'sumiContributes.submenus.icon':
+    '(可选) 用于表示 UI 中的子菜单的图标。文件路径、具有深色和浅色主题的文件路径的对象，或者主题图标引用(如 "$(zap)")',
   'sumiContributes.submenus.icon.light': '使用浅色主题时的图标路径',
   'sumiContributes.submenus.icon.dark': '使用深色主题时的图标路径',
 };

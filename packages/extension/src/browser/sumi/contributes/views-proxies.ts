@@ -6,7 +6,6 @@ import { VSCodeContributePoint, Contributes } from '../../../common';
 @Injectable()
 @Contributes('viewsProxies')
 export class ViewsProxiesContributionPoint extends VSCodeContributePoint<{ [key in string]: string }> {
-
   static schema = {
     type: 'array',
     markdownDescription: localize('sumiContributes.viewsProxies'),
