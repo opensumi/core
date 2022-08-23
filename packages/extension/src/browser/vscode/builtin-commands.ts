@@ -8,6 +8,7 @@ import {
   SCM_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
+import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 /**
  * 插件进程内置 command 的命名空间
@@ -338,4 +339,9 @@ export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
 export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.toggleSidebarVisibility',
   delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
+};
+
+export const THEME_COMMAND_QUICK_SELECT: Command = {
+  id: 'workbench.action.selectTheme',
+  delegate: THEME_TOGGLE_COMMAND.id,
 };
