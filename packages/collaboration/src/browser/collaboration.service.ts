@@ -3,7 +3,7 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Deferred, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { Deferred, ILogger, OnEvent, uuid, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorDocumentModelCreationEvent,
@@ -97,6 +97,13 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
     this.yTextMap.observe(this.yMapObserver);
 
+    if (this.userInfo === undefined) {
+      // fallback
+      this.userInfo = {
+        id: uuid().slice(0, 4),
+        nickname: `${uuid().slice(0, 4)}`,
+      };
+    }
     // add userInfo to awareness field
     this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
 

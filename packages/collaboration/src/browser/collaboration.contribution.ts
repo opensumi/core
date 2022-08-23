@@ -6,19 +6,10 @@ import {
   KeybindingWeight,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { CommandContribution, CommandRegistry, ContributionProvider, Domain, uuid } from '@opensumi/ide-core-common';
+import { CommandContribution, CommandRegistry, ContributionProvider, Domain } from '@opensumi/ide-core-common';
 
-import { ICollaborationService, UserInfo, UserInfoForCollaborationContribution } from '../common';
+import { ICollaborationService, UserInfoForCollaborationContribution } from '../common';
 import { REDO, UNDO } from '../common/commands';
-
-// mock user info
-@Domain(UserInfoForCollaborationContribution)
-export class MyUserInfo implements UserInfoForCollaborationContribution {
-  info: UserInfo = {
-    id: uuid().slice(0, 4),
-    nickname: `${uuid().slice(0, 4)}`,
-  };
-}
 
 @Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
 export class CollaborationContribution implements ClientAppContribution, KeybindingContribution, CommandContribution {
