@@ -18,6 +18,6 @@ export class CollaborationNodeContribution implements ServerAppContribution {
   }
 
   onStop() {
-    this.server.dispose();
+    this.server.destroy();
   }
 }

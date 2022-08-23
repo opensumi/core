@@ -170,6 +170,6 @@ describe('CollaborationService basic routines', () => {
   });
 
   afterAll(() => {
-    server.dispose();
+    server.destroy();
   });
 });

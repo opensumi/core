@@ -104,7 +104,7 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
     }
   }
 
-  dispose() {
+  destroy() {
     this.websocketServer.close();
     this.server.close();
   }
