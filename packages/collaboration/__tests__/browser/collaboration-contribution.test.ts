@@ -2,6 +2,7 @@ import { KeybindingRegistry, KeybindingWeight, PreferenceService } from '@opensu
 import { CommandRegistry, CommandRegistryImpl, IDisposable, ILogger } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
+import { AUTO_SAVE_MODE } from '@opensumi/ide-editor';
 import { IFileService, IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {
@@ -58,30 +59,6 @@ describe('CollaborationContribution test', () => {
     contribution = injector.get(CollaborationContribution);
     collaborationService = injector.get(ICollaborationService);
     preferenceService = injector.get(PreferenceService);
-  });
-
-  it('should correctly call life cycle method', () => {
-    // modify preference
-    jest.spyOn(preferenceService, 'get').mockReturnValueOnce(true).mockReturnValueOnce(false);
-    const preferenceGetSpy = jest.spyOn(preferenceService, 'get');
-    const preferenceSetSpy = jest.spyOn(preferenceService, 'set');
-
-    const onDidStartSpy = jest.spyOn(contribution, 'onDidStart');
-    const collaborationServiceInitSpy = jest.spyOn(collaborationService, 'initialize');
-    contribution.onDidStart();
-    expect(onDidStartSpy).toBeCalled();
-    expect(collaborationServiceInitSpy).toBeCalled();
-
-    const onStopSpy = jest.spyOn(contribution, 'onStop');
-    const collaborationServiceDestroySpy = jest.spyOn(collaborationService, 'destroy');
-    contribution.onStop();
-    expect(onStopSpy).toBeCalled();
-    expect(collaborationServiceDestroySpy).toBeCalled();
-
-    expect(preferenceGetSpy).toBeCalledTimes(2);
-    expect(preferenceSetSpy).toBeCalledTimes(2);
-    expect(preferenceSetSpy.mock.calls[0][1]).toBe(false);
-    expect(preferenceSetSpy.mock.calls[1][1]).toBe(true);
   });
 
   it('should register key bindings with correct id, priority and when clause', () => {
