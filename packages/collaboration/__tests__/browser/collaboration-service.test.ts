@@ -16,9 +16,9 @@ import { IFileService } from '@opensumi/ide-file-service';
 import { ITextModel } from '@opensumi/ide-monaco';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { CollaborationServiceForClientPath, ICollaborationService, IYWebsocketServer } from '../../src';
 import { CollaborationService } from '../../src/browser/collaboration.service';
 import { TextModelBinding } from '../../src/browser/textmodel-binding';
+import { CollaborationServiceForClientPath, ICollaborationService, IYWebsocketServer } from '../../src/common';
 import { CollaborationServiceForClient } from '../../src/node/collaboration.service';
 import { YWebsocketServerImpl } from '../../src/node/y-websocket-server';
 
@@ -96,15 +96,14 @@ describe('CollaborationService basic routines', () => {
       useClass: MockDocModelService,
     });
 
-    server = injector.get(YWebsocketServerImpl);
+    server = injector.get(IYWebsocketServer);
     eventBus = injector.get(IEventBus);
     service = injector.get(ICollaborationService);
 
     // mock impl, because origin impl comes with nodejs
-    const serviceForClient: CollaborationServiceForClient = injector.get(CollaborationServiceForClientPath);
-    jest.spyOn(serviceForClient, 'requestInitContent').mockImplementation(async (uri: string) => {
-      if (!serviceForClient['yMap'].has(uri)) {
-        serviceForClient['yMap'].set(uri, new Y.Text('init content'));
+    jest.spyOn(server, 'requestInitContent').mockImplementation(async (uri: string) => {
+      if (!server['yMap'].has(uri)) {
+        server['yMap'].set(uri, new Y.Text('init content'));
       }
     });
 
@@ -171,6 +170,6 @@ describe('CollaborationService basic routines', () => {
   });
 
   afterAll(() => {
-    server.dispose();
+    server.destroy();
   });
 });

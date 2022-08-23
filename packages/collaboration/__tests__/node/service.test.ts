@@ -63,14 +63,14 @@ describe('Collaboration node ws server test', () => {
   });
 
   it('should remove Y.Text', () => {
-    service.removeYText(TEST_URI);
+    server.removeYText(TEST_URI);
     const yMap = yDoc.getMap();
     expect(yMap.has(TEST_URI)).toBeFalsy();
   });
 
   it('should correctly dispose', () => {
-    const spy = jest.spyOn(server, 'dispose');
-    server.dispose();
+    const spy = jest.spyOn(server, 'destroy');
+    server.destroy();
     expect(spy).toBeCalled();
   });
 
