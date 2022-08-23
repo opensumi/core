@@ -649,16 +649,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       extension,
       languageSelector,
     );
-
-    const disposable = new DisposableCollection();
-    for (const language of this.getUniqueLanguages()) {
-      if (this.matchLanguage(languageSelector, language)) {
-        disposable.push(
-          monaco.languages.registerDocumentFormattingEditProvider(language, documentFormattingEditProvider),
-        );
-      }
-    }
-    this.disposables.set(handle, disposable);
+    // NOTE api显示只能传string，实际内部实现支持DocumentSelector
+    this.disposables.set(
+      handle,
+      monaco.languages.registerDocumentFormattingEditProvider(languageSelector! as any, documentFormattingEditProvider),
+    );
   }
 
   createDocumentFormattingEditProvider(
@@ -699,15 +694,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       extension,
       languageSelector,
     );
-    const disposable = new DisposableCollection();
-    for (const language of this.getUniqueLanguages()) {
-      if (this.matchLanguage(languageSelector, language)) {
-        disposable.push(
-          monaco.languages.registerDocumentRangeFormattingEditProvider(language, documentHighlightProvider),
-        );
-      }
-    }
-    this.disposables.set(handle, disposable);
+
+    this.disposables.set(
+      handle,
+      monaco.languages.registerDocumentRangeFormattingEditProvider(languageSelector! as any, documentHighlightProvider),
+    );
   }
 
   createDocumentRangeFormattingEditProvider(
@@ -748,13 +739,11 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       languageSelector,
       autoFormatTriggerCharacters,
     );
-    const disposable = new DisposableCollection();
-    for (const language of this.getUniqueLanguages()) {
-      if (this.matchLanguage(languageSelector, language)) {
-        disposable.push(monaco.languages.registerOnTypeFormattingEditProvider(language, onTypeFormattingProvider));
-      }
-    }
-    this.disposables.set(handle, disposable);
+    // NOTE api显示只能传string，实际内部实现支持DocumentSelector
+    this.disposables.set(
+      handle,
+      monaco.languages.registerOnTypeFormattingEditProvider(languageSelector! as any, onTypeFormattingProvider),
+    );
   }
 
   createOnTypeFormattingProvider(
