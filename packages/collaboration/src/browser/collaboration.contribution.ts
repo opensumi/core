@@ -6,19 +6,10 @@ import {
   KeybindingWeight,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { CommandContribution, CommandRegistry, ContributionProvider, Domain, uuid } from '@opensumi/ide-core-common';
+import { CommandContribution, CommandRegistry, ContributionProvider, Domain } from '@opensumi/ide-core-common';
 
-import { ICollaborationService, UserInfo, UserInfoForCollaborationContribution } from '../common';
+import { ICollaborationService, CollaborationModuleContribution } from '../common';
 import { REDO, UNDO } from '../common/commands';
-
-// mock user info
-@Domain(UserInfoForCollaborationContribution)
-export class MyUserInfo implements UserInfoForCollaborationContribution {
-  info: UserInfo = {
-    id: uuid().slice(0, 4),
-    nickname: `${uuid().slice(0, 4)}`,
-  };
-}
 
 @Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
 export class CollaborationContribution implements ClientAppContribution, KeybindingContribution, CommandContribution {
@@ -28,8 +19,8 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
-  @Autowired(UserInfoForCollaborationContribution)
-  private readonly userInfoProvider: ContributionProvider<UserInfoForCollaborationContribution>;
+  @Autowired(CollaborationModuleContribution)
+  private readonly contributionProvider: ContributionProvider<CollaborationModuleContribution>;
 
   onDidStart() {
     if (this.preferenceService.get('editor.askIfDiff') === true) {
@@ -37,9 +28,9 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
     }
 
     // before init
-    const providers = this.userInfoProvider.getContributions();
+    const providers = this.contributionProvider.getContributions();
     for (const provider of providers) {
-      this.collaborationService.setUserInfo(provider);
+      this.collaborationService.registerContribution(provider);
     }
 
     this.collaborationService.initialize();
@@ -71,13 +62,13 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(UNDO, {
       execute: () => {
-        this.collaborationService.undoOnCurrentResource();
+        this.collaborationService.undoOnFocusedTextModel();
       },
     });
 
     commands.registerCommand(REDO, {
       execute: () => {
-        this.collaborationService.redoOnCurrentResource();
+        this.collaborationService.redoOnFocusedTextModel();
       },
     });
   }

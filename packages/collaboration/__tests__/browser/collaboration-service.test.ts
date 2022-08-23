@@ -14,6 +14,7 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { IFileService } from '@opensumi/ide-file-service';
 import { ITextModel } from '@opensumi/ide-monaco';
+import { ICSSStyleService } from '@opensumi/ide-theme';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { CollaborationService } from '../../src/browser/collaboration.service';
@@ -64,6 +65,7 @@ describe('CollaborationService basic routines', () => {
     injector.mockService(ILogger);
     injector.mockService(INodeLogger);
     injector.mockService(IFileService);
+    injector.mockService(ICSSStyleService);
     injector.addProviders(
       {
         token: ICollaborationService,
@@ -130,8 +132,8 @@ describe('CollaborationService basic routines', () => {
     expect(targetBinding).toBeInstanceOf(TextModelBinding);
     const undoSpy = jest.spyOn(targetBinding, 'undo');
     const redoSpy = jest.spyOn(targetBinding, 'redo');
-    service.undoOnCurrentResource();
-    service.redoOnCurrentResource();
+    service.undoOnFocusedTextModel();
+    service.redoOnFocusedTextModel();
     expect(undoSpy).toBeCalled();
     expect(redoSpy).toBeCalled();
   });

@@ -107,13 +107,8 @@ export class CursorWidgetRegistry implements ICursorWidgetRegistry {
   }
 
   private onAwarenessStateChange = (changes: { added: number[]; updated: number[]; removed: number[] }) => {
-    // clientID added, updated or removed
-    if (changes.added.length > 0 || changes.updated.length > 0) {
+    if (changes.added.length > 0) {
       this.getWidgetFromRegistry();
-    }
-
-    if (changes.removed.length > 0) {
-      changes.removed.forEach((clientID) => this.deleteWidget(clientID));
     }
   };
 }
@@ -131,6 +126,7 @@ export class CursorWidget implements IContentWidget {
     this.domNode = document.createElement('div');
     this.domNode.innerHTML = nickname;
     this.domNode.style.opacity = '1';
+    this.domNode.style.whiteSpace = 'nowrap';
     this.domNode.className = `${Y_REMOTE_SELECTION}-${clientID}`;
     // set id
     this.id = `cursor-widget-${nickname}`;

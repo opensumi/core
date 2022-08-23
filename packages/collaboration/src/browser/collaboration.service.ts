@@ -3,7 +3,7 @@ import { WebsocketProvider } from 'y-websocket';
 import * as Y from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Deferred, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { Deferred, ILogger, OnEvent, uuid, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
   EditorDocumentModelCreationEvent,
@@ -22,7 +22,7 @@ import {
   ICollaborationServiceForClient,
   ROOM_NAME,
   UserInfo,
-  UserInfoForCollaborationContribution,
+  CollaborationModuleContribution,
   Y_REMOTE_SELECTION,
   Y_REMOTE_SELECTION_HEAD,
 } from '../common';
@@ -52,7 +52,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private clientIDStyleAddedSet: Set<number> = new Set();
 
-  // hold editor => registry
   private cursorRegistryMap: Map<ICodeEditor, CursorWidgetRegistry> = new Map();
 
   private userInfo: UserInfo;
@@ -72,7 +71,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   private yMapObserver = (event: Y.YMapEvent<Y.Text>) => {
     const changes = event.changes.keys;
     changes.forEach((change, key) => {
-      this.logger.debug('change action', change.action, key);
       if (change.action === 'add') {
         const { yMapReady } = this.getDeferred(key);
         const binding = this.getBinding(key);
@@ -97,10 +95,15 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yWebSocketProvider = new WebsocketProvider('ws://127.0.0.1:12345', ROOM_NAME, this.yDoc); // TODO configurable uri and room name
     this.yTextMap.observe(this.yMapObserver);
 
+    if (this.userInfo === undefined) {
+      // fallback
+      this.userInfo = {
+        id: uuid().slice(0, 4),
+        nickname: `${uuid().slice(0, 4)}`,
+      };
+    }
     // add userInfo to awareness field
     this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
-
-    this.logger.debug('Collaboration initialized');
 
     this.yWebSocketProvider.awareness.on('update', this.updateCSSManagerWhenAwarenessUpdated);
   }
@@ -114,18 +117,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     });
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
-    this.bindingMap.forEach((binding) => binding.dispose());
+    this.bindingMap.forEach((binding) => binding.destroy());
   }
 
-  getUseInfo(): UserInfo {
-    if (!this.userInfo) {
-      throw new Error('User info is not registered');
-    }
-
-    return this.userInfo;
-  }
-
-  setUserInfo(contribution: UserInfoForCollaborationContribution) {
+  registerContribution(contribution: CollaborationModuleContribution) {
     if (this.userInfo) {
       throw new Error('User info is already registered');
     }
@@ -135,14 +130,14 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
   }
 
-  undoOnCurrentResource() {
+  undoOnFocusedTextModel() {
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     if (uri && this.bindingMap.has(uri)) {
       this.bindingMap.get(uri)!.undo();
     }
   }
 
-  redoOnCurrentResource() {
+  redoOnFocusedTextModel() {
     const uri = this.workbenchEditorService.currentResource?.uri.toString();
     if (uri && this.bindingMap.has(uri)) {
       this.bindingMap.get(uri)!.redo();
@@ -180,7 +175,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     if (!cond) {
       const binding = this.injector.get(TextModelBinding, [
-        this.yTextMap.get(uri)!, // only be called after yMap event
+        this.yTextMap.get(uri)!, // only be called when entry of yMap is ready
         model,
         this.yWebSocketProvider.awareness,
       ]);
@@ -205,9 +200,8 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     const binding = this.bindingMap.get(uri);
 
     if (binding) {
-      binding.dispose();
+      binding.destroy();
       this.bindingMap.delete(uri);
-      this.logger.debug('Removed binding');
     }
   }
 
@@ -220,15 +214,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     updated: number[];
     removed: number[];
   }) => {
-    if (changes.removed.length > 0) {
-      changes.removed.forEach((clientID) => {
-        this.cssManager.removeClass(`${Y_REMOTE_SELECTION}-${clientID}`);
-        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`);
-        this.cssManager.removeClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`);
-        this.clientIDStyleAddedSet.delete(clientID);
-      });
-    }
-    if (changes.added.length > 0 || changes.updated.length > 0) {
+    if (changes.added.length > 0) {
       changes.added.forEach((clientID) => {
         if (!this.clientIDStyleAddedSet.has(clientID)) {
           const color = getColorByClientID(clientID);
@@ -260,12 +246,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   @OnEvent(EditorDocumentModelCreationEvent)
   private async editorDocumentModelCreationHandler(e: EditorDocumentModelCreationEvent) {
     const uriString = e.payload.uri.toString();
-    this.logger.debug('editor doc model created', uriString);
     const { bindingReady, yMapReady } = this.getDeferred(uriString);
     await this.backService.requestInitContent(uriString);
-    this.logger.debug('init content requested');
     await yMapReady.promise;
-    this.logger.debug('yMap ready');
     // get monaco model from model ref by uri
     const ref = this.docModelManager.getModelReference(e.payload.uri);
     const monacoModel = ref?.instance.getMonacoModel();
@@ -274,7 +257,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       this.createAndSetBinding(uriString, monacoModel);
     }
     bindingReady.resolve();
-    this.logger.debug('binding ready');
   }
 
   @OnEvent(EditorDocumentModelRemovalEvent)
@@ -284,7 +266,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     await bindingReady.promise;
     this.removeBinding(uriString);
     this.resetDeferredBinding(uriString);
-    this.logger.debug('editor doc model removed');
   }
 
   @OnEvent(EditorGroupOpenEvent)
@@ -311,7 +292,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @OnEvent(EditorGroupCloseEvent)
   private async groupCloseHandler(e: EditorGroupCloseEvent) {
-    this.logger.debug('Group close tabs', e);
     const uriString = e.payload.resource.uri.toString();
     const { bindingReady } = this.getDeferred(uriString);
     await bindingReady.promise;
