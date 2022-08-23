@@ -9,7 +9,6 @@ export interface ICollaborationService {
   destroy(): void;
   undoOnFocusedTextModel(): void;
   redoOnFocusedTextModel(): void;
-  getUseInfo(): UserInfo;
   registerContribution(contribution: CollaborationModuleContribution): void;
 }
 

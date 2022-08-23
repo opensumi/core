@@ -120,14 +120,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.bindingMap.forEach((binding) => binding.destroy());
   }
 
-  getUseInfo(): UserInfo {
-    if (!this.userInfo) {
-      throw new Error('User info is not registered');
-    }
-
-    return this.userInfo;
-  }
-
   registerContribution(contribution: CollaborationModuleContribution) {
     if (this.userInfo) {
       throw new Error('User info is already registered');
