@@ -13,31 +13,30 @@ import {
   IDisposable,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { ICollaborationService, UserInfo, Y_REMOTE_SELECTION, Y_REMOTE_SELECTION_HEAD } from '../common';
+import { ICollaborationService, ITextModelBinding, Y_REMOTE_SELECTION, Y_REMOTE_SELECTION_HEAD } from '../common';
 
 import { CollaborationService } from './collaboration.service';
-import { CursorWidgetRegistry } from './cursor-widget';
 
 @Injectable({ multiple: true })
-export class TextModelBinding {
+export class TextModelBinding implements ITextModelBinding {
   @Autowired(ICollaborationService)
   private collaborationService: CollaborationService;
 
-  savedSelections: Map<ICodeEditor, RelativeSelection> = new Map();
+  private savedSelections: Map<ICodeEditor, RelativeSelection> = new Map();
 
-  mutex = createMutex();
+  private mutex = createMutex();
 
-  doc: Y.Doc;
+  private doc: Y.Doc;
 
-  disposableContentChangeHandler: IDisposable;
+  private disposableContentChangeHandler: IDisposable;
 
-  decorations: Map<ICodeEditor, string[]> = new Map();
+  private decorations: Map<ICodeEditor, string[]> = new Map();
 
-  editors: Set<ICodeEditor>;
+  private editors: Set<ICodeEditor>;
 
-  disposables: Map<ICodeEditor, IDisposable> = new Map();
+  private disposables: Map<ICodeEditor, IDisposable> = new Map();
 
-  undoManger: Y.UndoManager;
+  private undoManger: Y.UndoManager;
 
   constructor(
     private yText: Y.Text,
@@ -54,16 +53,10 @@ export class TextModelBinding {
     this.initialize();
   }
 
-  changeYText(newText: Y.Text) {
-    this.destroy();
-    this.yText = newText;
-    this.initialize();
-  }
-
   /**
    * Render decorations
    */
-  renderDecorations = () => {
+  private renderDecorations = () => {
     this.editors.forEach((editor) => {
       if (editor.getModel() === this.textModel) {
         const currentDecorations = this.decorations.get(editor) ?? [];
@@ -134,13 +127,11 @@ export class TextModelBinding {
       } else {
         // remove all decoration, when current active TextModel of this editor is not this.textModel
         this.decorations.delete(editor);
-        // TODO may need to remove all widgets
-        // widgets.remove()
       }
     });
   };
 
-  yTextObserver = (event: Y.YTextEvent) => {
+  private yTextObserver = (event: Y.YTextEvent) => {
     this.mutex(() => {
       // fixme line seq issue
       let index = 0;
@@ -163,7 +154,7 @@ export class TextModelBinding {
       });
       this.savedSelections.forEach((relSelection, editor) => {
         // restore self-saved selection
-        const sel = createMonacoSelectionFromRelativeSelection(this.textModel, this.yText, relSelection, this.doc);
+        const sel = this.createMonacoSelectionFromRelativeSelection(relSelection);
         if (sel !== null) {
           editor.setSelection(sel);
         }
@@ -172,7 +163,7 @@ export class TextModelBinding {
     this.renderDecorations();
   };
 
-  beforeAllTransactionsHandler = () => {
+  private beforeAllTransactionsHandler = () => {
     this.mutex(() => {
       this.savedSelections = new Map();
       this.editors.forEach((editor) => {
@@ -186,7 +177,7 @@ export class TextModelBinding {
     });
   };
 
-  createRelativeSelection(editor: ICodeEditor) {
+  private createRelativeSelection(editor: ICodeEditor) {
     const sel = editor.getSelection();
     const monacoModel = this.textModel;
     const type = this.yText;
@@ -200,7 +191,27 @@ export class TextModelBinding {
     return null;
   }
 
-  textModelOnDidChangeContentHandler = (event: editor.IModelContentChangedEvent) => {
+  private createMonacoSelectionFromRelativeSelection(relSel: RelativeSelection) {
+    const doc = this.doc;
+    const start = Y.createAbsolutePositionFromRelativePosition(relSel.start, doc);
+    const end = Y.createAbsolutePositionFromRelativePosition(relSel.end, doc);
+    const type = this.yText;
+    const model = this.textModel;
+    if (start !== null && end !== null && start.type === type && end.type === type) {
+      const startPos = model.getPositionAt(start.index);
+      const endPos = model.getPositionAt(end.index);
+      return Selection.createWithDirection(
+        startPos.lineNumber,
+        startPos.column,
+        endPos.lineNumber,
+        endPos.column,
+        relSel.direction,
+      );
+    }
+    return null;
+  }
+
+  private textModelOnDidChangeContentHandler = (event: editor.IModelContentChangedEvent) => {
     // apply changes from right to left
     this.mutex(() => {
       this.doc.transact(() => {
@@ -215,7 +226,7 @@ export class TextModelBinding {
     });
   };
 
-  onDidChangeCursorSelectionHandler = (editor: ICodeEditor) => () => {
+  private onDidChangeCursorSelectionHandler = (editor: ICodeEditor) => () => {
     if (editor.getModel() === this.textModel) {
       const sel = editor.getSelection();
       if (sel === null) {
@@ -234,6 +245,13 @@ export class TextModelBinding {
       });
     }
   };
+
+  private setModelContent() {
+    const yTextValue = this.yText.toString();
+    if (this.textModel.getValue() !== yTextValue) {
+      this.textModel.setValue(yTextValue);
+    }
+  }
 
   initialize() {
     this.undoManger = new Y.UndoManager(this.yText, {
@@ -259,19 +277,18 @@ export class TextModelBinding {
     this.awareness.on('change', this.renderDecorations);
   }
 
+  changeYText(newText: Y.Text) {
+    this.destroy();
+    this.yText = newText;
+    this.initialize();
+  }
+
   undo() {
     this.undoManger.undo();
   }
 
   redo() {
     this.undoManger.redo();
-  }
-
-  setModelContent() {
-    const yTextValue = this.yText.toString();
-    if (this.textModel.getValue() !== yTextValue) {
-      this.textModel.setValue(yTextValue);
-    }
   }
 
   addEditor(editor: ICodeEditor) {
@@ -289,10 +306,6 @@ export class TextModelBinding {
       this.editors.delete(editor);
     }
     this.renderDecorations();
-  }
-
-  isEditorSetEmpty() {
-    return this.editors.size === 0;
   }
 
   /**
@@ -319,25 +332,3 @@ class RelativeSelection {
     this.direction = direction;
   }
 }
-
-const createMonacoSelectionFromRelativeSelection = (
-  model: ITextModel,
-  type: Y.Text,
-  relSel: RelativeSelection,
-  doc: Y.Doc,
-) => {
-  const start = Y.createAbsolutePositionFromRelativePosition(relSel.start, doc);
-  const end = Y.createAbsolutePositionFromRelativePosition(relSel.end, doc);
-  if (start !== null && end !== null && start.type === type && end.type === type) {
-    const startPos = model.getPositionAt(start.index);
-    const endPos = model.getPositionAt(end.index);
-    return Selection.createWithDirection(
-      startPos.lineNumber,
-      startPos.column,
-      endPos.lineNumber,
-      endPos.column,
-      relSel.direction,
-    );
-  }
-  return null;
-};

@@ -55,14 +55,14 @@ describe('TextModelBinding test for yText and TextModel', () => {
   it('should initialize properly', () => {
     const yText = doc.getText('test');
 
-    expect(user1.binding.undoManger).toBeTruthy();
-    expect(user2.binding.undoManger).toBeTruthy();
+    expect(user1.binding['undoManger']).toBeTruthy();
+    expect(user2.binding['undoManger']).toBeTruthy();
     expect(user1.binding['textModel'] === user1.textModel).toBeTruthy();
     expect(user2.binding['textModel'] === user2.textModel).toBeTruthy();
     expect(user1.binding['yText'] === yText).toBeTruthy();
     expect(user2.binding['yText'] === yText).toBeTruthy();
-    expect(user1.binding.doc === doc).toBeTruthy();
-    expect(user2.binding.doc === doc).toBeTruthy();
+    expect(user1.binding['doc'] === doc).toBeTruthy();
+    expect(user2.binding['doc'] === doc).toBeTruthy();
   });
 
   it('should fire event onDidChangeContent when yText is modified or text model content is changed', () => {
@@ -122,7 +122,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
   });
 
   it('should mutex on two events mentioned above', () => {
-    let mutex = user1.binding.mutex;
+    let mutex = user1.binding['mutex'];
     let yTextEventFn = jest.fn();
     let TextModelEventFn = jest.fn();
 
@@ -137,7 +137,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     expect(TextModelEventFn).toBeCalledTimes(0);
 
     // the same
-    mutex = user2.binding.mutex;
+    mutex = user2.binding['mutex'];
     yTextEventFn = jest.fn();
     TextModelEventFn = jest.fn();
 
@@ -296,9 +296,9 @@ describe('TextModelBinding test for editor', () => {
     expect(probeFnForYDocBeforeAllTransaction).toBeCalled();
 
     // check selection backup result, check if it can be restored correctly
-    expect(binding.savedSelections.has(editor)).toBeTruthy();
+    expect(binding['savedSelections'].has(editor)).toBeTruthy();
     {
-      const savedSelection = binding.savedSelections.get(editor)!;
+      const savedSelection = binding['savedSelections'].get(editor)!;
       const absStart = Y.createAbsolutePositionFromRelativePosition(savedSelection.start, doc)!;
       const absEnd = Y.createAbsolutePositionFromRelativePosition(savedSelection.end, doc)!;
       expect(absStart).toBeInstanceOf(Y.AbsolutePosition);

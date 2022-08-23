@@ -1,3 +1,5 @@
+import { YText } from 'yjs/dist/src/internals';
+
 import { ICodeEditor } from '@opensumi/ide-monaco';
 
 export const ICollaborationService = Symbol('ICollaborationService');
@@ -9,6 +11,16 @@ export interface ICollaborationService {
   redoOnCurrentResource(): void;
   getUseInfo(): UserInfo;
   setUserInfo(contribution: CollaborationModuleContribution): void;
+}
+
+export interface ITextModelBinding {
+  initialize(): void;
+  changeYText(newText: YText): void;
+  undo(): void;
+  redo(): void;
+  addEditor(editor: ICodeEditor): void;
+  removeEditor(editor: ICodeEditor): void;
+  destroy(): void;
 }
 
 export const IYWebsocketServer = Symbol('IYWebsocketServer');
