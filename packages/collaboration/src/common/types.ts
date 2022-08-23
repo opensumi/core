@@ -10,7 +10,7 @@ export interface ICollaborationService {
   undoOnFocusedTextModel(): void;
   redoOnFocusedTextModel(): void;
   getUseInfo(): UserInfo;
-  setUserInfo(contribution: CollaborationModuleContribution): void;
+  registerContribution(contribution: CollaborationModuleContribution): void;
 }
 
 export interface ITextModelBinding {

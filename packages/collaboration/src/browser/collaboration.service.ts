@@ -128,7 +128,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     return this.userInfo;
   }
 
-  setUserInfo(contribution: CollaborationModuleContribution) {
+  registerContribution(contribution: CollaborationModuleContribution) {
     if (this.userInfo) {
       throw new Error('User info is already registered');
     }

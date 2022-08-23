@@ -30,7 +30,7 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
     // before init
     const providers = this.contributionProvider.getContributions();
     for (const provider of providers) {
-      this.collaborationService.setUserInfo(provider);
+      this.collaborationService.registerContribution(provider);
     }
 
     this.collaborationService.initialize();
