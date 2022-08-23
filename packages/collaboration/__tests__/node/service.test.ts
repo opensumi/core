@@ -69,7 +69,7 @@ describe('Collaboration node ws server test', () => {
   });
 
   it('should correctly dispose', () => {
-    const spy = jest.spyOn(server, 'dispose');
+    const spy = jest.spyOn(server, 'destroy');
     server.destroy();
     expect(spy).toBeCalled();
   });
