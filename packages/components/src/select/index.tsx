@@ -397,8 +397,6 @@ export function Select<T = string>({
       if (!maxHeight || toBottom < parseInt(maxHeight, 10)) {
         overlayRef.current.style.maxHeight = `${toBottom}px`;
       }
-      overlayRef.current.style.top =
-        dropdownRenderType === 'fixed' ? `${boxRect.top + boxRect.height}px` : `${boxRect.height}px`;
       overlayRef.current.style.position = dropdownRenderType === 'fixed' ? 'fixed' : 'absolute';
     }
     if (open) {
