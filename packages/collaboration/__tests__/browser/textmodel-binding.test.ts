@@ -47,8 +47,8 @@ describe('TextModelBinding test for yText and TextModel', () => {
   });
 
   afterEach(() => {
-    user1.binding.dispose();
-    user2.binding.dispose();
+    user1.binding.destroy();
+    user2.binding.destroy();
     doc.destroy();
   });
 
@@ -104,7 +104,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     expect(user1.textModel.getValue()).toBe('1145141919810');
 
     model.dispose();
-    binding.dispose();
+    binding.destroy();
   });
 
   it('should correctly handle Y.Text event', () => {
@@ -317,6 +317,6 @@ describe('TextModelBinding test for editor', () => {
   });
 
   afterAll(() => {
-    binding.dispose();
+    binding.destroy();
   });
 });

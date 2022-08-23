@@ -117,7 +117,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     });
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
-    this.bindingMap.forEach((binding) => binding.dispose());
+    this.bindingMap.forEach((binding) => binding.destroy());
   }
 
   getUseInfo(): UserInfo {
@@ -208,7 +208,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     const binding = this.bindingMap.get(uri);
 
     if (binding) {
-      binding.dispose();
+      binding.destroy();
       this.bindingMap.delete(uri);
     }
   }

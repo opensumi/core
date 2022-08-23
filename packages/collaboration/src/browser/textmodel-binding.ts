@@ -55,7 +55,7 @@ export class TextModelBinding {
   }
 
   changeYText(newText: Y.Text) {
-    this.dispose();
+    this.destroy();
     this.yText = newText;
     this.initialize();
   }
@@ -298,7 +298,7 @@ export class TextModelBinding {
   /**
    * Stop listening to all events
    */
-  dispose() {
+  destroy() {
     this.undoManger.destroy();
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposableContentChangeHandler.dispose();
