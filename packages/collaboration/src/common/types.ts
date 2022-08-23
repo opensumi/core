@@ -8,7 +8,7 @@ export interface ICollaborationService {
   undoOnCurrentResource(): void;
   redoOnCurrentResource(): void;
   getUseInfo(): UserInfo;
-  setUserInfo(contribution: UserInfoForCollaborationContribution): void;
+  setUserInfo(contribution: CollaborationModuleContribution): void;
 }
 
 export const IYWebsocketServer = Symbol('IYWebsocketServer');
@@ -28,9 +28,9 @@ export interface ICollaborationServiceForClient {
 export const ROOM_NAME = 'y-room-opensumi';
 
 // user model for collaboration module
-export const UserInfoForCollaborationContribution = Symbol('UserInfoForCollaborationContribution');
+export const CollaborationModuleContribution = Symbol('CollaborationModuleContribution');
 
-export interface UserInfoForCollaborationContribution {
+export interface CollaborationModuleContribution {
   info: UserInfo;
 }
 

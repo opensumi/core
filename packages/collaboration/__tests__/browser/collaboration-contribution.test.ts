@@ -4,7 +4,12 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IFileService, IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { CollaborationServiceForClientPath, ICollaborationService, IYWebsocketServer } from '../../src';
+import {
+  CollaborationServiceForClientPath,
+  ICollaborationService,
+  IYWebsocketServer,
+  CollaborationModuleContribution,
+} from '../../src';
 import { CollaborationContribution } from '../../src/browser/collaboration.contribution';
 import { CollaborationService } from '../../src/browser/collaboration.service';
 import { REDO, UNDO } from '../../src/common/commands';
@@ -26,6 +31,7 @@ describe('CollaborationContribution test', () => {
     injector.mockService(KeybindingRegistry);
     injector.addProviders(
       CollaborationContribution,
+
       {
         token: ICollaborationService,
         useClass: CollaborationService,
@@ -43,6 +49,11 @@ describe('CollaborationContribution test', () => {
         useClass: CommandRegistryImpl,
       },
     );
+
+    injector.addProviders({
+      token: CollaborationModuleContribution,
+      useValue: { getContributions: () => [] },
+    });
 
     contribution = injector.get(CollaborationContribution);
     collaborationService = injector.get(ICollaborationService);

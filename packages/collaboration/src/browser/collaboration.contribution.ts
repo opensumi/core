@@ -8,7 +8,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { CommandContribution, CommandRegistry, ContributionProvider, Domain } from '@opensumi/ide-core-common';
 
-import { ICollaborationService, UserInfoForCollaborationContribution } from '../common';
+import { ICollaborationService, CollaborationModuleContribution } from '../common';
 import { REDO, UNDO } from '../common/commands';
 
 @Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
@@ -19,8 +19,8 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
-  @Autowired(UserInfoForCollaborationContribution)
-  private readonly userInfoProvider: ContributionProvider<UserInfoForCollaborationContribution>;
+  @Autowired(CollaborationModuleContribution)
+  private readonly contributionProvider: ContributionProvider<CollaborationModuleContribution>;
 
   onDidStart() {
     if (this.preferenceService.get('editor.askIfDiff') === true) {
@@ -28,7 +28,7 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
     }
 
     // before init
-    const providers = this.userInfoProvider.getContributions();
+    const providers = this.contributionProvider.getContributions();
     for (const provider of providers) {
       this.collaborationService.setUserInfo(provider);
     }

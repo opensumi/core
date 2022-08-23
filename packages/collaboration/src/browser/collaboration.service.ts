@@ -22,7 +22,7 @@ import {
   ICollaborationServiceForClient,
   ROOM_NAME,
   UserInfo,
-  UserInfoForCollaborationContribution,
+  CollaborationModuleContribution,
   Y_REMOTE_SELECTION,
   Y_REMOTE_SELECTION_HEAD,
 } from '../common';
@@ -132,7 +132,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     return this.userInfo;
   }
 
-  setUserInfo(contribution: UserInfoForCollaborationContribution) {
+  setUserInfo(contribution: CollaborationModuleContribution) {
     if (this.userInfo) {
       throw new Error('User info is already registered');
     }
