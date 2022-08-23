@@ -17,6 +17,8 @@ export const IYWebsocketServer = Symbol('IYWebsocketServer');
 
 export interface IYWebsocketServer {
   getYDoc(room: string): Y.Doc;
+  removeYText(uri: string): void;
+  requestInitContent(uri: string): Promise<void>;
 }
 
 export const CollaborationServiceForClientPath = 'CollaborationServiceForClientPath';
@@ -24,7 +26,6 @@ export const CollaborationServiceForClientPath = 'CollaborationServiceForClientP
 export const ICollaborationServiceForClient = Symbol('ICollaborationServiceForClient');
 
 export interface ICollaborationServiceForClient {
-  removeYText(uri: string): void;
   requestInitContent(uri: string): Promise<void>;
 }
 

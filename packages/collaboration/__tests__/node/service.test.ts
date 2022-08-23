@@ -63,7 +63,7 @@ describe('Collaboration node ws server test', () => {
   });
 
   it('should remove Y.Text', () => {
-    service.removeYText(TEST_URI);
+    server.removeYText(TEST_URI);
     const yMap = yDoc.getMap();
     expect(yMap.has(TEST_URI)).toBeFalsy();
   });
