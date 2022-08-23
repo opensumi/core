@@ -16,8 +16,6 @@ export interface ICollaborationService {
 export const IYWebsocketServer = Symbol('IYWebsocketServer');
 
 export interface IYWebsocketServer {
-  getYDoc(room: string): Y.Doc;
-  removeYText(uri: string): void;
   requestInitContent(uri: string): Promise<void>;
 }
 
