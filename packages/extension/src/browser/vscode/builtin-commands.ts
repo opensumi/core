@@ -6,6 +6,7 @@ import {
   TERMINAL_COMMANDS,
   MARKER_COMMANDS,
   SCM_COMMANDS,
+  SEARCH_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
@@ -344,6 +345,11 @@ export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
 export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.toggleSidebarVisibility',
   delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
+};
+
+export const SEARCH_COMMAND_OPEN_SEARCH: Command = {
+  id: 'workbench.action.findInFiles',
+  delegate: SEARCH_COMMANDS.OPEN_SEARCH.id,
 };
 
 export const THEME_COMMAND_QUICK_SELECT: Command = {
