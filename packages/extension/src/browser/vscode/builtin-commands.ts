@@ -157,6 +157,11 @@ export const WORKBENCH_FOCUS_FILES_EXPLORER: Command = {
   delegate: FILE_COMMANDS.FOCUS_FILES.id,
 };
 
+export const FILE_COMMAND_RENAME_FILE: Command = {
+  id: 'renameFile',
+  delegate: FILE_COMMANDS.RENAME_FILE.id,
+};
+
 // 打开激活的编辑器组
 export const WORKBENCH_FOCUS_ACTIVE_EDITOR_GROUP: Command = {
   id: 'workbench.action.focusActiveEditorGroup',

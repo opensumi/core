@@ -456,6 +456,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.CLEAR_TERMINAL,
       VSCodeBuiltinCommands.TOGGLE_WORKBENCH_VIEW_TERMINAL,
       VSCodeBuiltinCommands.NEW_WORKBENCH_VIEW_TERMINAL,
+      // file builtin commmands
+      VSCodeBuiltinCommands.FILE_COMMAND_RENAME_FILE,
       // marker builtin commands
       VSCodeBuiltinCommands.MARKER_COMMAND_SHOW_ERRORS_WARNINGS,
       VSCodeBuiltinCommands.MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS,
