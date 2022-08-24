@@ -1,13 +1,7 @@
 import path from 'path';
 
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import {
-  Emitter,
-  FileUri,
-  ILoggerManagerClient,
-  ITaskDefinitionRegistry,
-  TaskDefinitionRegistryImpl,
-} from '@opensumi/ide-core-common';
+import { Emitter, FileUri, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common';
 import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/src/browser';
@@ -25,7 +19,6 @@ import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ex
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
 import { ExtHostTasks, createTaskApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
-import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { MonacoService } from '@opensumi/ide-monaco';
@@ -131,10 +124,6 @@ describe('MainThreadTask Test Suite', () => {
       {
         token: IMainLayoutService,
         useClass: LayoutService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: LoggerManagerClient,
       },
       {
         token: IExtensionStorageService,

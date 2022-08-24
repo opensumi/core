@@ -31,7 +31,7 @@ function doAllLog(logger: ILogService) {
 
 describe('LogService', () => {
   const injector = createNodeInjector([LogServiceModule]);
-  injector.addProviders(
+  injector.overrideProviders(
     {
       token: AppConfig,
       useValue: {

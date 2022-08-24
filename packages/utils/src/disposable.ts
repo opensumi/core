@@ -291,7 +291,7 @@ function markTracked<T extends IDisposable>(x: T): void {
   if (x && x !== Disposable.None) {
     try {
       (x as any)[__is_disposable_tracked__] = true;
-    } catch {
+    } catch (_e) {
       // noop
     }
   }

@@ -6,13 +6,16 @@ import {
   CommonServerPath,
   ConstructorOf,
   getDebugLogger,
+  ILogger,
   ILoggerManagerClient,
+  ILogServiceManager,
   LogLevel,
   LogServiceForClientPath,
   OS,
 } from '@opensumi/ide-core-common';
-import { NodeModule, INodeLogger } from '@opensumi/ide-core-node';
+import { NodeModule, INodeLogger, ServerApp } from '@opensumi/ide-core-node';
 
+import { MockLogger, MockLoggerManageClient, MockLoggerService } from '../../../packages/core-browser/__mocks__/logger';
 import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage';
 import { MockContextKeyService } from '../../../packages/monaco/__mocks__/monaco.context-key.service';
 
@@ -101,14 +104,26 @@ function getBrowserMockInjector() {
       useClass: MockContextKeyService,
     },
     {
-      token: LogServiceForClientPath,
-      useClass: MockLogServiceForClient,
-    },
-    {
       token: RecentFilesManager,
       useValue: {
         getMostRecentlyOpenedFiles: () => [],
       },
+    },
+    {
+      token: LogServiceForClientPath,
+      useClass: MockLogServiceForClient,
+    },
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManageClient,
+    },
+    {
+      token: ILogServiceManager,
+      useClass: MockLoggerService,
+    },
+    {
+      token: ILogger,
+      useClass: MockLogger,
     },
   );
   return injector;
@@ -120,29 +135,35 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
   afterAll(() => {
     app.injector.disposeAll();
   });
-
   return app.injector as MockInjector;
 }
 
-export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
-  const injector = inj || new MockInjector();
+function getNodeMockInjector() {
+  const injector = new MockInjector();
+  injector.addProviders(
+    {
+      token: ILoggerManagerClient,
+      useClass: MockLoggerManageClient,
+    },
+    {
+      token: ILogServiceManager,
+      useClass: MockLoggerService,
+    },
+    {
+      token: INodeLogger,
+      useValue: getDebugLogger(),
+    },
+  );
+  return injector;
+}
 
-  // Mock logger
-  injector.addProviders({
-    token: INodeLogger,
-    useValue: getDebugLogger(),
-  });
-
-  for (const item of constructors) {
-    const instance = injector.get(item);
-    if (instance.providers) {
-      injector.addProviders(...instance.providers);
-    }
-  }
+export function createNodeInjector(modules: Array<ConstructorOf<NodeModule>>, inj?: Injector): MockInjector {
+  const injector = inj || getNodeMockInjector();
+  const app = new ServerApp({ modules, injector } as any);
 
   afterAll(() => {
-    injector.disposeAll();
+    app.injector.disposeAll();
   });
 
-  return injector as MockInjector;
+  return app.injector as MockInjector;
 }

@@ -1,5 +1,3 @@
-import { ILogger } from '@opensumi/ide-core-browser';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IReporterService } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
 import { DebugWatch, DebugThread } from '@opensumi/ide-debug/lib/browser';
@@ -7,7 +5,6 @@ import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol'
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
-
 
 describe('DebugWatch Model', () => {
   describe('DebugWatch should be work after init', () => {
@@ -52,10 +49,6 @@ describe('DebugWatch Model', () => {
         point: jest.fn(),
       };
       injector = createBrowserInjector([]);
-      injector.addProviders({
-        token: ILogger,
-        useClass: MockLogger,
-      });
       injector.addProviders({
         token: IDebugSessionManager,
         useValue: debugManager,

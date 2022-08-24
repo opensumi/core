@@ -1,6 +1,6 @@
 import uniqueId from 'lodash/uniqueId';
 
-import { ILoggerManagerClient, URI } from '@opensumi/ide-core-browser';
+import { URI } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { LocalStorageDocCacheImpl } from '@opensumi/ide-editor/lib/browser/doc-cache';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace';
@@ -21,18 +21,6 @@ describe('LocalStorageDocCacheImpl', () => {
       {
         token: IDocPersistentCacheProvider,
         useClass: LocalStorageDocCacheImpl,
-      },
-      {
-        token: ILoggerManagerClient,
-        useValue: {
-          getLogger: () => ({
-            log: () => {},
-            debug: () => {},
-            error: () => {},
-            verbose: () => {},
-            warn: () => {},
-          }),
-        },
       },
       {
         token: IWorkspaceStorageService,

@@ -8,7 +8,7 @@ import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import {
   IContextKeyService,
-  ILoggerManagerClient,
+  ILogServiceManager,
   StorageProvider,
   DefaultStorageProvider,
   createContributionProvider,
@@ -68,7 +68,7 @@ import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/w
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '../../../../../tools/dev-tool/src/mock-injector';
+import { mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { MockWorker, MessagePort } from '../../../__mocks__/worker';
 import { ExtCommandManagementImpl } from '../../../src/browser/extension-command-management';
@@ -370,23 +370,19 @@ export const mockKaitianExtensionProviders: Provider[] = [
 export function setupExtensionServiceInjector() {
   mockGlobals();
 
-  const injector = createBrowserInjector(
-    [],
-    new MockInjector([
-      DatabaseStorageContribution,
-      {
-        token: AppConfig,
-        useValue: {
-          isElectronRenderer: false,
-          isRemote: true,
-          noExtHost: true,
-          extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
-        },
-      },
-    ]),
-  );
-  injector.addProviders(
+  const injector = createBrowserInjector([]);
+  injector.overrideProviders(
     ...mockKaitianExtensionProviders,
+    DatabaseStorageContribution,
+    {
+      token: AppConfig,
+      useValue: {
+        isElectronRenderer: false,
+        isRemote: true,
+        noExtHost: true,
+        extWorkerHost: path.join(__dirname, '../../lib/worker-host.js'),
+      },
+    },
     {
       token: ISemanticTokenRegistry,
       useClass: SemanticTokenRegistryImpl,
@@ -516,20 +512,6 @@ export function setupExtensionServiceInjector() {
     {
       token: IIconService,
       useClass: IconService,
-    },
-    {
-      token: ILoggerManagerClient,
-      useValue: {
-        getLogger: () => ({
-          log: () => {},
-          debug: () => {},
-          error: () => {},
-          verbose: () => {},
-          warn: () => {},
-        }),
-        onDidChangeLogLevel: () => {},
-        getGlobalLogLevel: () => 0,
-      },
     },
     {
       token: StorageProvider,

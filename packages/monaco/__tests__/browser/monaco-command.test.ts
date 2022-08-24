@@ -1,5 +1,5 @@
 import { MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
-import { ILoggerManagerClient, Emitter, CommandRegistry } from '@opensumi/ide-core-common';
+import { Emitter, CommandRegistry } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService, EditorCollectionService } from '@opensumi/ide-editor';
 import {
   MonacoActionRegistry,
@@ -49,18 +49,6 @@ describe(' monaco command service test', () => {
       {
         token: WorkbenchEditorService,
         useValue: {},
-      },
-      {
-        token: ILoggerManagerClient,
-        useValue: {
-          getLogger: () => ({
-            log() {},
-            debug() {},
-            error() {},
-            verbose() {},
-            warn() {},
-          }),
-        },
       },
     );
     commandRegistry = injector.get(CommandRegistry);

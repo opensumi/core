@@ -16,7 +16,7 @@ describe('template test', () => {
   beforeAll(() => {
     const injector = createNodeInjector([ExpressFileServerModule]);
 
-    injector.addProviders({
+    injector.overrideProviders({
       token: AppConfig,
       useValue: {
         marketplace: {},

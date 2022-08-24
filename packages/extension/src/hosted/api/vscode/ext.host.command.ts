@@ -43,7 +43,7 @@ export function createCommandsApiFactory(
     registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
       try {
         return extHostCommands.registerCommand(true, id, command, thisArgs);
-      } catch {
+      } catch (_e) {
         return new Disposable(() => {});
       }
     },

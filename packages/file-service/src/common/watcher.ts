@@ -13,37 +13,3 @@ export interface IFileServiceWatcher {
   onFilesChanged: Event<FileChange[]>;
   dispose(): Promise<void>;
 }
-
-export type INsfwFunction = (
-  dir: string,
-  eventHandler: (events: INsfw.ChangeEvent[]) => void,
-  options?: INsfw.Options,
-) => Promise<INsfw.NSFW>;
-
-export namespace INsfw {
-  export interface NSFW {
-    start(): Promise<void>;
-    stop(): Promise<void>;
-  }
-
-  export interface Options {
-    debounceMS?: number;
-    errorCallback?: (error: string) => void;
-  }
-
-  export interface ChangeEvent {
-    action: number;
-    directory: string;
-    file?: string;
-    oldFile?: string;
-    newFile?: string;
-    newDirectory?: string;
-  }
-
-  export enum actions {
-    CREATED,
-    DELETED,
-    MODIFIED,
-    RENAMED,
-  }
-}

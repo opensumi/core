@@ -5,16 +5,9 @@ import * as fs from 'fs-extra';
 
 import { Injector } from '@opensumi/di';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { AppConfig, INodeLogger, getDebugLogger } from '@opensumi/ide-core-node';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage/lib/common';
-import { IFileService, IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
-import { FileSystemNodeOptions, FileService } from '@opensumi/ide-file-service/lib/node';
-import { DiskFileSystemProvider } from '@opensumi/ide-file-service/lib/node/disk-file-system.provider';
 
-import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { IExtensionNodeClientService, IExtensionNodeService } from '../../src/common';
-import { ExtensionNodeServiceImpl } from '../../src/node/extension.service';
-import { ExtensionServiceClientImpl } from '../../src/node/extension.service.client';
+import { IExtensionNodeClientService } from '../../src/common';
 
 import { extensionDir, getBaseInjector } from './baseInjector';
 

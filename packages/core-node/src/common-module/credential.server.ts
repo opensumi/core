@@ -60,7 +60,7 @@ export class CredentialService implements INativeCredentialService {
         }
 
         return content;
-      } catch {
+      } catch (_e) {
         return password;
       }
     }
