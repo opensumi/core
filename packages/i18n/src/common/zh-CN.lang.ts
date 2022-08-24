@@ -995,6 +995,7 @@ export const localizationBundle = {
     'editor.suggest.showVariables': '启用后，IntelliSense 将显示“变量”建议。',
     'editor.suggest.maxVisibleSuggestions': '控制 IntelliSense 在显示滚动条之前将显示的建议数量（最多 15 个）。',
     'editor.suggest.preview': '启用或禁用建议预览的呈现。',
+    'editor.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
     'editor.guides.indentation': '控制编辑器是否显示缩进参考线。',
     'editor.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
