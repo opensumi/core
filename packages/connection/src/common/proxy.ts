@@ -48,6 +48,13 @@ export class RPCProxy {
   private connection: MessageConnection;
   private proxyService: any = {};
   private logger: any;
+  // capture messages for opensumi devtools
+  private capture(message: any): void {
+    const capturer = getCapturer();
+    if (capturer !== undefined) {
+      capturer(message);
+    }
+  }
 
   constructor(public target?: RPCService, logger?: any) {
     this.waitForConnection();
@@ -100,12 +107,10 @@ export class RPCProxy {
             if (prop.startsWith('on')) {
               if (isSingleArray) {
                 connection.sendNotification(prop, [...args]);
-                // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'sendNotification', serviceMethod: prop, arguments: args });
+                this.capture({ type: 'sendNotification', serviceMethod: prop, arguments: args });
               } else {
                 connection.sendNotification(prop, ...args);
-                // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'sendNotification', serviceMethod: prop, arguments: args });
+                this.capture({ type: 'sendNotification', serviceMethod: prop, arguments: args });
               }
 
               resolve(null);
@@ -116,12 +121,10 @@ export class RPCProxy {
 
               if (isSingleArray) {
                 requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
-                // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'sendRequest', requestId, serviceMethod: prop, arguments: args });
+                this.capture({ type: 'sendRequest', requestId, serviceMethod: prop, arguments: args });
               } else {
                 requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
-                // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'sendRequest', requestId, serviceMethod: prop, arguments: args });
+                this.capture({ type: 'sendRequest', requestId, serviceMethod: prop, arguments: args });
               }
 
               requestResult
@@ -139,12 +142,22 @@ export class RPCProxy {
                       const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
-                    // prettier-ignore
-                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'fail', requestId, serviceMethod: prop, error: result.data });
+                    this.capture({
+                      type: 'requestResult',
+                      status: 'fail',
+                      requestId,
+                      serviceMethod: prop,
+                      error: result.data,
+                    });
                     reject(error);
                   } else {
-                    // prettier-ignore
-                    getCapturer() && getCapturer()({ type: 'requestResult', status: 'success', requestId, serviceMethod: prop, data: result.data });
+                    this.capture({
+                      type: 'requestResult',
+                      status: 'success',
+                      requestId,
+                      serviceMethod: prop,
+                      data: result.data,
+                    });
                     resolve(result.data);
                   }
                 });
@@ -181,24 +194,32 @@ export class RPCProxy {
         if (method.startsWith('on')) {
           connection.onNotification(method, (...args) => {
             this.onNotification(method, ...args);
-            // prettier-ignore
-            getCapturer() && getCapturer()({ type: 'onNotification', serviceMethod: method, arguments: args });
+            this.capture({ type: 'onNotification', serviceMethod: method, arguments: args });
           });
         } else {
           connection.onRequest(method, (...args) => {
             const requestId = generateUniqueId();
             const result = this.onRequest(method, ...args);
-            // prettier-ignore
-            getCapturer() && getCapturer()({ type: 'onRequest', requestId, serviceMethod: method, arguments: args });
+            this.capture({ type: 'onRequest', requestId, serviceMethod: method, arguments: args });
 
             result
               .then((result) => {
-                // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'success', requestId, serviceMethod: method,  data: result.data });
+                this.capture({
+                  type: 'onRequestResult',
+                  status: 'success',
+                  requestId,
+                  serviceMethod: method,
+                  data: result.data,
+                });
               })
               .catch((err) => {
-                // prettier-ignore
-                getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, serviceMethod: method, error: err.data });
+                this.capture({
+                  type: 'onRequestResult',
+                  status: 'fail',
+                  requestId,
+                  serviceMethod: method,
+                  error: err.data,
+                });
               });
 
             return result;
@@ -213,13 +234,17 @@ export class RPCProxy {
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
           const requestId = generateUniqueId();
-          // prettier-ignore
-          getCapturer() && getCapturer()({ type: 'onRequest', requestId, serviceMethod: method });
+          this.capture({ type: 'onRequest', requestId, serviceMethod: method });
           const result = {
             data: NOTREGISTERMETHOD,
           };
-          // prettier-ignore
-          getCapturer() && getCapturer()({ type: 'onRequestResult', status: 'fail', requestId, serviceMethod: method, error: result.data });
+          this.capture({
+            type: 'onRequestResult',
+            status: 'fail',
+            requestId,
+            serviceMethod: method,
+            error: result.data,
+          });
           return result;
         }
       });
