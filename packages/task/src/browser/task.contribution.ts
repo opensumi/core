@@ -20,7 +20,8 @@ const Category = 'Tasks';
 
 @Domain(CommandContribution, JsonSchemaContribution)
 export class TaskContribution extends WithEventBus implements CommandContribution, JsonSchemaContribution {
-  // 以下命令的 ID 最好和 VSCode 保持一致，因为部分插件会执行 Task 相关的命令
+  // 因为部分插件会执行 Task 相关的命令，所以如果你要添加 Task 相关的命令：
+  // 请注意要和 VSCode 的同功能命名对齐，可以通过插件进程的 delegate 逻辑做命令调用的转发
   static readonly RUN_TASK_COMMAND: Command = {
     id: 'workbench.action.tasks.runTask',
     label: '%workbench.action.tasks.runTask%',
@@ -31,26 +32,26 @@ export class TaskContribution extends WithEventBus implements CommandContributio
     label: '%workbench.action.tasks.reRunTask%',
     category: Category,
   };
-  static readonly RESTART_RUNNING_TASK: Command = {
-    id: 'workbench.action.tasks.restartTask',
-    label: '%workbench.action.tasks.restartTask%',
-    category: Category,
-  };
-  static readonly TERMINATE_TASK: Command = {
-    id: 'workbench.action.tasks.terminate',
-    label: '%workbench.action.tasks.terminate%',
-    category: Category,
-  };
-  static readonly SHOW_TASK: Command = {
-    id: 'workbench.action.tasks.showTasks',
-    label: '%workbench.action.tasks.showTasks%',
-    category: Category,
-  };
-  static readonly SHOW_TASK_LOG: Command = {
-    id: 'workbench.action.tasks.showLog',
-    label: '%workbench.action.tasks.showLog%',
-    category: Category,
-  };
+  // static readonly RESTART_RUNNING_TASK: Command = {
+  //   id: 'workbench.action.tasks.restartTask',
+  //   label: '%workbench.action.tasks.restartTask%',
+  //   category: Category,
+  // };
+  // static readonly TERMINATE_TASK: Command = {
+  //   id: 'workbench.action.tasks.terminate',
+  //   label: '%workbench.action.tasks.terminate%',
+  //   category: Category,
+  // };
+  // static readonly SHOW_TASK: Command = {
+  //   id: 'workbench.action.tasks.showTasks',
+  //   label: '%workbench.action.tasks.showTasks%',
+  //   category: Category,
+  // };
+  // static readonly SHOW_TASK_LOG: Command = {
+  //   id: 'workbench.action.tasks.showLog',
+  //   label: '%workbench.action.tasks.showLog%',
+  //   category: Category,
+  // };
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
 
