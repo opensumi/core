@@ -76,6 +76,8 @@ import {
   ILinkedEditingRangesDto,
   IInlayHintDto,
   IInlayHintsDto,
+  InlineCompletionContext,
+  IdentifiableInlineCompletions,
 } from '../../../common/vscode';
 import * as typeConvert from '../../../common/vscode/converter';
 import { CancellationError, Disposable, LanguageStatusSeverity } from '../../../common/vscode/ext-types';
@@ -131,6 +133,7 @@ import { HoverAdapter } from './language/hover';
 import { ImplementationAdapter } from './language/implementation';
 import { InlayHintsAdapter } from './language/inlay-hints';
 import { InlineValuesAdapter } from './language/inline-values';
+import { InlineCompletionAdapter, InlineCompletionAdapterBase } from './language/inlineCompletion';
 import { CodeLensAdapter } from './language/lens';
 import { LinkProviderAdapter } from './language/link-provider';
 import { LinkedEditingRangeAdapter } from './language/linked-editing-range';
@@ -164,6 +167,12 @@ export function createLanguagesApiFactory(
       ...triggerCharacters: string[]
     ): Disposable {
       return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters);
+    },
+    registerInlineCompletionItemProvider(
+      selector: vscode.DocumentSelector,
+      provider: vscode.InlineCompletionItemProvider,
+    ): vscode.Disposable {
+      return extHostLanguages.registerInlineCompletionsProvider(selector, provider);
     },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
       return extHostLanguages.registerDefinitionProvider(selector, provider);
@@ -344,7 +353,8 @@ export type Adapter =
   | EvaluatableExpressionAdapter
   | InlineValuesAdapter
   | LinkedEditingRangeAdapter
-  | InlayHintsAdapter;
+  | InlayHintsAdapter
+  | InlineCompletionAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -558,6 +568,55 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
   // ### Completion end
+
+  // ### Inline Completion begin
+  registerInlineCompletionsProvider(
+    selector: vscode.DocumentSelector,
+    provider: vscode.InlineCompletionItemProvider,
+  ): Disposable {
+    const callId = this.addNewAdapter(new InlineCompletionAdapter(this.documents, provider, this.commands.converter));
+    this.proxy.$registerInlineCompletionsSupport(callId, this.transformDocumentSelector(selector), true);
+    return this.createDisposable(callId);
+  }
+  $provideInlineCompletions(
+    handle: number,
+    resource: UriComponents,
+    position: Position,
+    context: InlineCompletionContext,
+    token: CancellationToken,
+  ): Promise<IdentifiableInlineCompletions | undefined> {
+    return this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
+      handle,
+      InlineCompletionAdapterBase,
+      (adapter) => adapter.provideInlineCompletions(Uri.revive(resource), position, context, token),
+      undefined,
+      undefined,
+    );
+  }
+  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void {
+    this.withAdapter(
+      handle,
+      InlineCompletionAdapterBase,
+      async (adapter) => {
+        adapter.handleDidShowCompletionItem(pid, idx);
+      },
+      undefined,
+      undefined,
+    );
+  }
+
+  $freeInlineCompletionsList(handle: number, pid: number): void {
+    this.withAdapter(
+      handle,
+      InlineCompletionAdapterBase,
+      async (adapter) => {
+        adapter.disposeCompletions(pid);
+      },
+      undefined,
+      undefined,
+    );
+  }
+  // ### Inline Completion end
 
   // ### Definition provider begin
   $provideDefinition(
