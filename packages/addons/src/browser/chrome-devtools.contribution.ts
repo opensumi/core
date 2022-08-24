@@ -14,21 +14,27 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
   static INTERVAL = 1000;
 
   initialize() {
-    // keep polling for the states of opensumi devtools
-    global.setInterval(() => {
-      // if devtools is in capturing state, rtt should be measured and
-      // will be presented as network latency in opensumi devtools
-      if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ && window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture) {
+    // receive notification from opensumi devtools by custom event
+    window.addEventListener('devtools:latency', (event) => {
+      const { command } = event.detail;
+      if (command === 'start') {
         if (!this.interval) {
           this.startRTTInterval();
         }
-      } else {
+      } else if (command === 'stop') {
         if (this.interval) {
           global.clearInterval(this.interval);
           this.interval = undefined;
         }
       }
-    }, 1000);
+    });
+
+    // if opensumi devtools has started capturing before this contribution point is registered
+    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ && window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture) {
+      if (!this.interval) {
+        this.startRTTInterval();
+      }
+    }
   }
 
   private startRTTInterval() {
