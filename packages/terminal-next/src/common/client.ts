@@ -37,11 +37,6 @@ export interface ITerminalClient extends Disposable {
    */
   name: string;
 
-  /**
-   * @deprecated 请使用 launchConfig
-   * 终端客户端创建所使用的后端选项
-   */
-  options1: TerminalOptions;
   launchConfig: IShellLaunchConfig;
   /**
    * 终端客户端渲染所使用的上层 dom 节点
@@ -141,7 +136,7 @@ export interface ITerminalClient extends Disposable {
    * 更新终端客户端配置
    * @deprecated 请使用 IShellLaunchConfig
    */
-  updateOptions(options: TerminalOptions): void;
+  updateTerminalName(options: TerminalOptions): void;
   /**
    * 更新终端客户端配置
    */

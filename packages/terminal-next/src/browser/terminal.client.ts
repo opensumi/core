@@ -178,11 +178,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       this.internalService.onError((error) => {
         this.messageService.error(error.message);
         if (error.launchConfig?.executable) {
-          this.updateOptions({
+          this.updateTerminalName({
             name: 'error: ' + error.launchConfig.executable,
           });
         } else {
-          this.updateOptions({
+          this.updateTerminalName({
             name: 'error',
           });
         }
@@ -324,10 +324,6 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   get pid() {
     return this.internalService.getProcessId(this.id);
-  }
-
-  get options1() {
-    return this._terminalOptions;
   }
 
   get launchConfig(): IShellLaunchConfig {
@@ -689,10 +685,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     };
   }
 
-  updateOptions(options: TerminalOptions) {
-    this._terminalOptions = { ...this._terminalOptions, ...options };
-    this._launchConfig = this.controller.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
-
+  updateTerminalName(options: { name: string }) {
     if (!this.name && !this._widget.name) {
       this._widget.name = options.name || this.name;
     }
