@@ -4,6 +4,15 @@ import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
 import { ConnectionRTTBrowserServiceToken, ConnectionRTTBrowserService } from './connection-rtt-service';
 
+enum DevtoolsEvent {
+  Latency = 'devtools:latency',
+}
+
+enum DevtoolsCommand {
+  Start = 'start',
+  Stop = 'stop',
+}
+
 @Domain(ClientAppContribution)
 export class ChromeDevtoolsContribution implements ClientAppContribution {
   @Autowired(ConnectionRTTBrowserServiceToken)
@@ -15,13 +24,13 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
 
   initialize() {
     // receive notification from opensumi devtools by custom event
-    window.addEventListener('devtools:latency', (event) => {
+    window.addEventListener(DevtoolsEvent.Latency, (event) => {
       const { command } = event.detail;
-      if (command === 'start') {
+      if (command === DevtoolsCommand.Start) {
         if (!this.interval) {
           this.startRTTInterval();
         }
-      } else if (command === 'stop') {
+      } else if (command === DevtoolsCommand.Stop) {
         if (this.interval) {
           global.clearInterval(this.interval);
           this.interval = undefined;
