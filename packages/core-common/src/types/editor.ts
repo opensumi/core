@@ -218,8 +218,10 @@ export function isEditChange(change: IEditorDocumentChange): change is IEditorDo
   return !!(change as IEditorDocumentEditChange).changes;
 }
 
+export type EditorDocumentModelSaveResultState = 'success' | 'error' | 'diff';
+
 export interface IEditorDocumentModelSaveResult {
-  state: 'success' | 'error' | 'diff';
+  state: EditorDocumentModelSaveResultState;
 
   errorMessage?: string;
 }

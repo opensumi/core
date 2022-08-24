@@ -9,6 +9,7 @@ import {
   LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
+import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 /**
  * 插件进程内置 command 的命名空间
@@ -344,4 +345,9 @@ export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
 export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
   id: 'workbench.action.maximizeEditor',
   delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
+};
+
+export const THEME_COMMAND_QUICK_SELECT: Command = {
+  id: 'workbench.action.selectTheme',
+  delegate: THEME_TOGGLE_COMMAND.id,
 };
