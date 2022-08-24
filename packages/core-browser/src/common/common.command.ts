@@ -640,15 +640,15 @@ export namespace EDITOR_COMMANDS {
   };
 
   export const COPY_PATH: Command = {
-    id: 'editor.action.copy_path',
+    id: 'editor.action.copyPath',
     category: CATEGORY,
-    label: '%editor.copy_path%',
+    label: '%editor.copyPath%',
   };
 
   export const COPY_RELATIVE_PATH: Command = {
-    id: 'editor.action.copy_relative_path',
+    id: 'editor.action.copyRelativePath',
     category: CATEGORY,
-    label: '%editor.copy_relative_path%',
+    label: '%editor.copyRelativePath%',
   };
 }
 
