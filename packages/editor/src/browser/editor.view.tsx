@@ -24,6 +24,7 @@ import {
   ResizeHandleVertical,
 } from '@opensumi/ide-core-browser/lib/components';
 import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
@@ -408,6 +409,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
 
   return (
     <div
+      id={VIEW_CONTAINERS.EDITOR}
       ref={editorBodyRef}
       className={styles.kt_editor_body}
       onDragOver={(e) => {

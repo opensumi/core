@@ -2,6 +2,7 @@ import { Injector } from '@opensumi/di';
 import { Deferred, IReporter } from '@opensumi/ide-core-common';
 import { REPORT_NAME } from '@opensumi/ide-core-common';
 import { AppConfig, DefaultReporter } from '@opensumi/ide-core-node';
+import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { MainThreadExtensionLog } from '../../../../__mocks__/api/mainthread.extension.log';
 import { MainThreadExtensionService } from '../../../../__mocks__/api/mainthread.extension.service';
@@ -26,7 +27,7 @@ describe('Extension process test', () => {
     let injector: Injector;
 
     beforeEach(async () => {
-      injector = new Injector();
+      injector = createBrowserInjector([]);
       injector.addProviders(
         {
           token: AppConfig,

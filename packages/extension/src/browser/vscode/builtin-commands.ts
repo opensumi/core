@@ -3,12 +3,13 @@ import {
   Command,
   EDITOR_COMMANDS,
   COMMON_COMMANDS,
+  TERMINAL_COMMANDS,
   MARKER_COMMANDS,
   SCM_COMMANDS,
   SEARCH_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
-import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
+import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 /**
  * 插件进程内置 command 的命名空间
@@ -344,4 +345,9 @@ export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
 export const SEARCH_COMMAND_OPEN_SEARCH: Command = {
   id: 'workbench.action.findInFiles',
   delegate: SEARCH_COMMANDS.OPEN_SEARCH.id,
+};
+
+export const THEME_COMMAND_QUICK_SELECT: Command = {
+  id: 'workbench.action.selectTheme',
+  delegate: THEME_TOGGLE_COMMAND.id,
 };

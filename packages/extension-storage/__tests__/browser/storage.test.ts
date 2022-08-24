@@ -4,7 +4,14 @@ import * as fs from 'fs-extra';
 import temp from 'temp';
 
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { URI, StoragePaths, FileUri, IFileServiceClient, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import {
+  URI,
+  StoragePaths,
+  FileUri,
+  IFileServiceClient,
+  ILoggerManagerClient,
+  ILogServiceManager,
+} from '@opensumi/ide-core-common';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { IExtensionStorageServer, IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
@@ -32,6 +39,10 @@ describe('Extension Storage Server -- Setup directory should be worked', () => {
     injector.addProviders(
       {
         token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
+      },
+      {
+        token: ILogServiceManager,
         useClass: MockLoggerManageClient,
       },
       {

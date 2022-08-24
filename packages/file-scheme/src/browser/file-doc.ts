@@ -12,6 +12,7 @@ import {
   replaceLocalizePlaceholder,
   PreferenceService,
   Schemes,
+  CancellationToken,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
@@ -58,6 +59,7 @@ export class FileSchemeDocumentProvider
     encoding: string,
     ignoreDiff = false,
     eol: EOL = EOL.LF,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult> {
     const baseMd5 = this.hashCalculateService.calculate(baseContent);
     if (content.length > FILE_SAVE_BY_CHANGE_THRESHOLD) {
@@ -70,6 +72,7 @@ export class FileSchemeDocumentProvider
         },
         encoding,
         ignoreDiff,
+        token,
       );
     } else {
       return await this.fileSchemeDocClient.saveByContent(
@@ -80,6 +83,7 @@ export class FileSchemeDocumentProvider
         },
         encoding,
         ignoreDiff,
+        token,
       );
     }
   }

@@ -1,5 +1,5 @@
 import { quickFileOpen } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
-import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import { EDITOR_COMMANDS, QUICK_OPEN_COMMANDS } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
   QuickOpenService,
@@ -14,7 +14,6 @@ import { IIconService, IThemeService } from '@opensumi/ide-theme';
 
 import { QuickOpenHandlerRegistry, PrefixQuickOpenServiceImpl } from '../../src/browser/prefix-quick-open.service';
 import { QuickTitleBar } from '../../src/browser/quick-title-bar';
-import { QUICK_OPEN_COMMANDS } from '../../src/common';
 
 describe('prefix quick open service test', () => {
   let injector: MockInjector;

@@ -148,7 +148,11 @@ export class SCMContribution
       execute: () => {
         const editor = this.editorService.currentEditor;
         if (editor && editor.currentUri) {
-          editor.monacoEditor.revealLineInCenter(this.getDiffChangeLineNumber(editor.currentUri, editor, 'previous'));
+          const number = this.getDiffChangeLineNumber(editor.currentUri, editor, 'previous');
+          editor.monacoEditor.focus();
+          const pos = editor.monacoEditor.getPosition()?.with(number, 0)!;
+          editor.monacoEditor.setPosition(pos);
+          editor.monacoEditor.revealLineInCenter(number);
         }
       },
     });
@@ -157,7 +161,11 @@ export class SCMContribution
       execute: () => {
         const editor = this.editorService.currentEditor;
         if (editor && editor.currentUri) {
-          editor.monacoEditor.revealLineInCenter(this.getDiffChangeLineNumber(editor.currentUri, editor, 'next'));
+          const number = this.getDiffChangeLineNumber(editor.currentUri, editor, 'next');
+          editor.monacoEditor.focus();
+          const pos = editor.monacoEditor.getPosition()?.with(number, 0)!;
+          editor.monacoEditor.setPosition(pos);
+          editor.monacoEditor.revealLineInCenter(number);
         }
       },
     });
