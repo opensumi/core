@@ -67,7 +67,7 @@ async function main() {
           const targetDir = path.join(packagesPath, dir);
           const pkgJson = await fse.readJson(path.join(targetDir, 'package.json'));
           mapping[dir] = pkgJson.name;
-        } catch {}
+        } catch (_e) {}
       })(),
     );
   }

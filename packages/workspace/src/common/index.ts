@@ -1,1 +1,1 @@
-export * from './workspace-defination';
+export * from './workspace.definition';

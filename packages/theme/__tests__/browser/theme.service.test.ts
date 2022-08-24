@@ -1,11 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import {
-  PreferenceSchemaProvider,
-  IPreferenceSettingsService,
-  ILoggerManagerClient,
-  URI,
-} from '@opensumi/ide-core-browser';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { PreferenceSchemaProvider, IPreferenceSettingsService, URI } from '@opensumi/ide-core-browser';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
@@ -19,7 +13,6 @@ import { IThemeService } from '../../';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
-
 
 @Injectable()
 class MockFileServiceClient {
@@ -126,10 +119,6 @@ describe('color theme service test', () => {
       {
         token: IPreferenceSettingsService,
         useClass: MockPreferenceSettingsService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
       },
       {
         token: IFileServiceClient,

@@ -2,13 +2,12 @@ import { RPCProtocol } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { IContextKeyService, IStatusBarService } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { Emitter, ILoggerManagerClient, uuid } from '@opensumi/ide-core-common';
+import { Emitter, uuid } from '@opensumi/ide-core-common';
 import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { mockExtensionDescription } from '../../../../__mocks__/extensions';
-import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 import { MainThreadStatusBar } from '../../../../src/browser/vscode/api/main.thread.statusbar';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
 import { ThemeColor } from '../../../../src/common/vscode/ext-types';
@@ -38,10 +37,6 @@ describe('vscode MainThreadStatusBar Test', () => {
   beforeEach(() => {
     injector = createBrowserInjector([]);
     injector.addProviders(
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManagerClient,
-      },
       {
         token: WSChannelHandler,
         useValue: mockService({

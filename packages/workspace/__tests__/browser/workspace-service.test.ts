@@ -1,7 +1,6 @@
 import { PreferenceService, FILES_DEFAULTS, IClientApp, IWindowService } from '@opensumi/ide-core-browser';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { URI, StorageProvider, Disposable, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { URI, StorageProvider, Disposable } from '@opensumi/ide-core-common';
 import { FileStat, DiskFileServicePath } from '@opensumi/ide-file-service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { MockFsProvider } from '@opensumi/ide-file-service/lib/common/mocks';
@@ -12,7 +11,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkspaceModule } from '../../src/browser';
 import { WorkspacePreferences } from '../../src/browser/workspace-preferences';
-
 
 describe('WorkspaceService should be work while workspace was a single directory', () => {
   let workspaceService: WorkspaceService;
@@ -100,10 +98,6 @@ describe('WorkspaceService should be work while workspace was a single directory
       {
         token: IClientApp,
         useValue: mockClientApp,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
       },
       {
         token: IWindowService,

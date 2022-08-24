@@ -60,7 +60,7 @@ export class FilePathAddon extends Disposable implements ITerminalAddon {
       return stats
         .filter((s) => !!s && !s.isDirectory && new URI(s!.uri).scheme === Schemes.file)
         .map((s) => new URI(s!.uri).codeUri.fsPath);
-    } catch {
+    } catch (_e) {
       return [];
     }
   }

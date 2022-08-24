@@ -14,15 +14,6 @@ import { OutputPreferences } from '../../src/browser/output-preference';
 import { OutputService } from '../../src/browser/output.service';
 
 @Injectable()
-class MockLoggerManagerClient {
-  getLogger = () => ({
-    log() {},
-    debug() {},
-    error() {},
-  });
-}
-
-@Injectable()
 class MockMainLayoutService {
   getTabbarHandler() {
     return {
@@ -53,10 +44,6 @@ describe('Output.service.ts', () => {
   const injector: Injector = createBrowserInjector(
     [],
     new Injector([
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManagerClient,
-      },
       {
         token: IMainLayoutService,
         useClass: MockMainLayoutService,

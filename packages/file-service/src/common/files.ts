@@ -18,7 +18,7 @@
 
 import { Range } from 'vscode-languageserver-types';
 
-import { FileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
+import { IFileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
 import {
   ApplicationError,
   Event,
@@ -60,7 +60,7 @@ export interface TextDocumentContentChangeEvent {
   text: string;
 }
 
-export interface IFileService extends FileSystemWatcherServer {
+export interface IFileService extends IFileSystemWatcherServer {
   /**
    * Returns the file stat for the given URI.
    *

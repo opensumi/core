@@ -13,7 +13,7 @@ const debugLog = getDebugLogger('LogUtils');
 export function getLogFolderName(date?: Date) {
   return toLocalISOString(date || new Date())
     .replace(/-/g, '')
-    .match(/^\d{8}/)![0];
+    .match(/^\d{8}/)?.[0];
 }
 
 /**
@@ -22,7 +22,7 @@ export function getLogFolderName(date?: Date) {
  * @param logRootPath
  */
 export function getLogFolder(logRootPath: string): string {
-  const folderName = getLogFolderName();
+  const folderName = getLogFolderName() || '';
   return path.join(logRootPath, folderName);
 }
 
@@ -32,13 +32,12 @@ export function getLogFolder(logRootPath: string): string {
 export async function cleanOldLogs(logsRoot: string) {
   try {
     const currentLog = getLogFolderName();
-    const children = fs.readdirSync(logsRoot);
+    const children = await fs.readdir(logsRoot);
     const allSessions = children.filter((name) => /^\d{8}$/.test(name));
-    const oldSessions = allSessions.sort().filter((d, i) => d !== currentLog);
+    const oldSessions = allSessions.sort().filter((d) => d !== currentLog);
     const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 4));
-
     for (const name of toDelete) {
-      fs.removeSync(path.join(logsRoot, name));
+      await fs.remove(path.join(logsRoot, name));
     }
   } catch (e) {}
 }

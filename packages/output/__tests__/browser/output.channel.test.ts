@@ -1,6 +1,6 @@
 import { Injector, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { ILoggerManagerClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
+import { IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
@@ -9,15 +9,6 @@ import { ContentChangeEvent, ContentChangeType } from '@opensumi/ide-output/lib/
 
 import { OutputPreferences } from '../../src/browser/output-preference';
 import { OutputChannel } from '../../src/browser/output.channel';
-
-@Injectable()
-class MockLoggerManagerClient {
-  getLogger = () => ({
-    log() {},
-    debug() {},
-    error() {},
-  });
-}
 
 @Injectable()
 class MockMainLayoutService {
@@ -45,10 +36,6 @@ describe('OutputChannel Test Sutes', () => {
   const injector: Injector = createBrowserInjector(
     [],
     new Injector([
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManagerClient,
-      },
       {
         token: IMainLayoutService,
         useClass: MockMainLayoutService,

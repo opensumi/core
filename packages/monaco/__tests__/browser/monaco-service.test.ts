@@ -1,6 +1,4 @@
 import { MonacoOverrideServiceRegistry } from '@opensumi/ide-core-browser';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { ILogger } from '@opensumi/ide-core-common';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
@@ -21,10 +19,6 @@ describe(' monaco service test', () => {
       {
         token: MonacoOverrideServiceRegistry,
         useClass: MonacoOverrideServiceRegistryImpl,
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
       },
     ],
   );

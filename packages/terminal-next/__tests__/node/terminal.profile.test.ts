@@ -9,7 +9,7 @@ describe('TerminalServiceClientImpl', () => {
   let terminalProfileService: TerminalProfileServiceNode;
 
   beforeEach(() => {
-    injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
+    injector = createNodeInjector([TerminalNodePtyModule]);
     terminalProfileService = injector.get(TerminalProfileServiceNode);
   });
 
