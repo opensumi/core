@@ -99,7 +99,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
           t.shellLaunchConfig.isExtensionOwnedTerminal ||
           isElectronNodeEnv
         ) {
-          t.kill(); // terminalProfile 有 isTransient 的参数化，要Kill，不保活
+          t.kill(); // shellLaunchConfig 有 isTransient 的参数时，要Kill，不保活
         }
         // t.kill(); // 这个是窗口关闭时候触发，终端默认在这种场景下保活, 不kill
         // TODO: 后续看看有没有更加优雅的方案
