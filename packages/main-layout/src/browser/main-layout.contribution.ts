@@ -311,8 +311,8 @@ export class MainLayoutModuleContribution
       },
       {
         execute: () => {
-          this.commandService.executeCommand('main-layout.right-panel.toggle', false);
-          this.commandService.executeCommand('main-layout.left-panel.toggle', false);
+          this.commandService.executeCommand(TOGGLE_RIGHT_PANEL_COMMAND.id, false);
+          this.commandService.executeCommand(TOGGLE_LEFT_PANEL_COMMAND.id, false);
         },
       },
     );
