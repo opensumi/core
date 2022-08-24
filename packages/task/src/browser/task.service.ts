@@ -118,7 +118,7 @@ export class TaskService extends Disposable implements ITaskService {
 
   constructor() {
     super();
-    this.outputChannel = this.outputService.getChannel('task.output.channel');
+    this.outputChannel = this.outputService.getChannel(localize('task.output.channel'));
     this.providers = new Map();
     this.providerTypes = new Map();
     this.addDispose([
