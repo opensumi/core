@@ -4,6 +4,30 @@ declare global {
   }
 }
 
+export enum MessageType {
+  SendNotification = 'sendNotification',
+  SendRequest = 'sendRequest',
+  RequestResult = 'requestResult',
+  OnNotification = 'onNotification',
+  OnRequest = 'onRequest',
+  OnRequestResult = 'onRequestResult',
+}
+
+export enum ResponseStatus {
+  Success = 'success',
+  Fail = 'fail',
+}
+
+export interface ICapturedMessage {
+  type: MessageType;
+  serviceMethod: string;
+  arguments?: any;
+  requestId?: string;
+  status?: ResponseStatus;
+  data?: any;
+  error?: any;
+}
+
 export function stringify(obj: any): string {
   return JSON.stringify(obj);
 }
