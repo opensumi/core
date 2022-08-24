@@ -6,11 +6,7 @@ import {
   URI,
   EDITOR_COMMANDS,
   FILE_COMMANDS,
-  ILoggerManagerClient,
   IApplicationService,
-  isWindows,
-  OperatingSystem,
-  isLinux,
   PreferenceService,
   QuickOpenService,
   OS,
@@ -124,10 +120,6 @@ describe('FileTree Service should be work alone', () => {
         useValue: {
           hasFolderIcon: true,
         },
-      },
-      {
-        token: ILoggerManagerClient,
-        useValue: {},
       },
       {
         token: IFileTreeAPI,
@@ -344,10 +336,6 @@ describe('FileTree Service should be work alone on multiple workspace mode', () 
         useValue: {
           hasFolderIcon: true,
         },
-      },
-      {
-        token: ILoggerManagerClient,
-        useValue: {},
       },
       {
         token: IFileTreeAPI,

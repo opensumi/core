@@ -173,6 +173,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
               className={cls(styles.debug_selection, styles.special_radius)}
               size={props.float ? 'small' : 'default'}
               value={currentSessionId}
+              options={sessions.map((s) => ({ label: s.label, value: s.id }))}
               onChange={setCurrentSession}
             >
               {renderSessionOptions(sessions)}

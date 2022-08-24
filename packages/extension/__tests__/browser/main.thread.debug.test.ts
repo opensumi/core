@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/src';
-import { Disposable, IFileServiceClient, ILoggerManagerClient, URI, Uri } from '@opensumi/ide-core-common';
+import { Disposable, IFileServiceClient, URI, Uri } from '@opensumi/ide-core-common';
 import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
@@ -111,83 +111,68 @@ describe('MainThreadDebug API Test Suite', () => {
   beforeAll(() => {
     jest.clearAllMocks();
 
-    injector = createBrowserInjector(
-      [],
-      new MockInjector([
-        {
-          token: BreakpointManager,
-          useValue: mockBreakpointManager,
-        },
-        {
-          token: IDebugSessionManager,
-          useValue: mockDebugSessionManager,
-        },
-        {
-          token: DebugModelManager,
-          useValue: mockDebugModelManager,
-        },
-        {
-          token: IDebugService,
-          useValue: mockDebugService,
-        },
-        {
-          token: DebugConsoleModelService,
-          useValue: mockDebugConsoleModelService,
-        },
-        {
-          token: ITerminalApiService,
-          useValue: {},
-        },
-        {
-          token: WorkbenchEditorService,
-          useValue: {},
-        },
-        {
-          token: DebugSessionContributionRegistry,
-          useValue: mockDebugSessionContributionRegistry,
-        },
-        {
-          token: ILoggerManagerClient,
-          useValue: {
-            getLogger: () => ({
-              log() {},
-              debug() {},
-              error() {},
-              verbose() {},
-              warn() {},
-              dispose() {},
-            }),
-          },
-        },
-        {
-          token: IMessageService,
-          useValue: {},
-        },
-        {
-          token: IFileServiceClient,
-          useValue: {},
-        },
-        {
-          token: DebugPreferences,
-          useValue: {},
-        },
-        {
-          token: LabelService,
-          useValue: {},
-        },
-        {
-          token: DebugConfigurationManager,
-          useValue: mockDebugConfigurationManager,
-        },
-        {
-          token: IDebugServer,
-          useValue: mockDebugServer,
-        },
-        {
-          token: IEditorDocumentModelService,
-          useValue: {},
-        },
-      ]),
+    injector = createBrowserInjector([]);
+    injector.addProviders(
+      {
+        token: BreakpointManager,
+        useValue: mockBreakpointManager,
+      },
+      {
+        token: IDebugSessionManager,
+        useValue: mockDebugSessionManager,
+      },
+      {
+        token: DebugModelManager,
+        useValue: mockDebugModelManager,
+      },
+      {
+        token: IDebugService,
+        useValue: mockDebugService,
+      },
+      {
+        token: DebugConsoleModelService,
+        useValue: mockDebugConsoleModelService,
+      },
+      {
+        token: ITerminalApiService,
+        useValue: {},
+      },
+      {
+        token: WorkbenchEditorService,
+        useValue: {},
+      },
+      {
+        token: DebugSessionContributionRegistry,
+        useValue: mockDebugSessionContributionRegistry,
+      },
+      {
+        token: IMessageService,
+        useValue: {},
+      },
+      {
+        token: IFileServiceClient,
+        useValue: {},
+      },
+      {
+        token: DebugPreferences,
+        useValue: {},
+      },
+      {
+        token: LabelService,
+        useValue: {},
+      },
+      {
+        token: DebugConfigurationManager,
+        useValue: mockDebugConfigurationManager,
+      },
+      {
+        token: IDebugServer,
+        useValue: mockDebugServer,
+      },
+      {
+        token: IEditorDocumentModelService,
+        useValue: {},
+      },
     );
     addEditorProviders(injector);
 

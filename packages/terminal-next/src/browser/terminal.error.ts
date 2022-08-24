@@ -36,7 +36,7 @@ export class TerminalErrorService implements ITerminalErrorService {
         if (!widget.reuse) {
           this.view.removeWidget(event.sessionId);
         }
-      } catch {
+      } catch (_e) {
         /** nothing */
       }
     });

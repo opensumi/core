@@ -2,12 +2,10 @@
 import { IViewportRange, Terminal } from 'xterm';
 
 import { Injector } from '@opensumi/di';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { Disposable } from '@opensumi/ide-core-common';
 import { CommandService, CommandServiceImpl } from '@opensumi/ide-core-common/lib/command';
 import { mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { ILogger } from '@opensumi/ide-logs/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay/lib/common';
 import { IStatusBarService } from '@opensumi/ide-status-bar';
 import { StatusBarService } from '@opensumi/ide-status-bar/lib/browser/status-bar.service';
@@ -20,7 +18,6 @@ import { convertBufferRangeToViewport, convertLinkRangeToBuffer } from '../../sr
 import { TerminalHoverManagerService } from '../../src/browser/terminal.hover.manager';
 
 import { createBufferLineArray } from './utils';
-
 
 const mockData = [
   {
@@ -48,10 +45,6 @@ describe('terminal.environment.service', () => {
       {
         token: CommandService,
         useClass: CommandServiceImpl,
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
       },
       {
         token: ITerminalHoverManagerService,

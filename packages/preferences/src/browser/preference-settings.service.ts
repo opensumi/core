@@ -492,6 +492,7 @@ export const defaultSettingSections: {
         { id: 'editor.suggest.showUsers' },
         { id: 'editor.suggest.showIssues' },
         { id: 'editor.suggest.preview' },
+        { id: 'editor.suggest.details.visible' },
 
         // Guides
         { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },

@@ -1,5 +1,4 @@
 import {
-  ILogger,
   GlobalBrowserStorageService,
   KeyboardNativeLayoutService,
   BrowserKeyboardLayoutImpl,
@@ -8,7 +7,6 @@ import {
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockLogger } from '../../__mocks__/logger';
 
 describe('BrowserKeyboardLayoutService should be work', () => {
   let keyboardNativeLayoutService: BrowserKeyboardLayoutImpl;
@@ -23,19 +21,11 @@ describe('BrowserKeyboardLayoutService should be work', () => {
   };
 
   beforeAll(async () => {
-    injector = createBrowserInjector(
-      [],
-      new MockInjector([
-        {
-          token: GlobalBrowserStorageService,
-          useValue: mockGlobalBrowserStorageService,
-        },
-        {
-          token: ILogger,
-          useClass: MockLogger,
-        },
-      ]),
-    );
+    injector = createBrowserInjector([]);
+    injector.addProviders({
+      token: GlobalBrowserStorageService,
+      useValue: mockGlobalBrowserStorageService,
+    });
 
     keyboardNativeLayoutService = injector.get(KeyboardNativeLayoutService);
 

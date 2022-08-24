@@ -2,14 +2,13 @@ import path from 'path';
 
 import { Injector, Injectable } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { ILoggerManagerClient, Uri, URI } from '@opensumi/ide-core-common';
+import { Uri, URI } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { LoggerManagerClient } from '@opensumi/ide-logs/src/browser/log-manage';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
 import { SearchPreferences } from '@opensumi/ide-search/lib/browser/search-preferences';
@@ -135,10 +134,6 @@ describe('search.service.ts', () => {
       {
         token: ContentSearchClientService,
         useClass: ContentSearchClientService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: LoggerManagerClient,
       },
       {
         token: IWorkspaceService,

@@ -17,11 +17,11 @@ export class CommandOpener implements IOpener {
     let args: any = [];
     try {
       args = JSON.parse(decodeURIComponent(uri.query));
-    } catch {
+    } catch (e) {
       // ignore and retry
       try {
         args = JSON.parse(uri.query);
-      } catch {
+      } catch (e) {
         // ignore error
       }
     }

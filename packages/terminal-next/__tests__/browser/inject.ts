@@ -7,17 +7,19 @@ import {
   CorePreferences,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { MockLogger, MockLoggerManageClient, MockLoggerService } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IEventBus,
   CommandService,
-  ILogger,
   IFileServiceClient,
   Disposable,
   OperatingSystem,
   CommandRegistry,
   CoreCommandRegistryImpl,
+  ILoggerManagerClient,
+  ILogServiceManager,
+  ILogger,
 } from '@opensumi/ide-core-common';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -144,10 +146,6 @@ export const injector = new MockInjector([
     useValue: {},
   },
   {
-    token: ILogger,
-    useClass: MockLogger,
-  },
-  {
     token: IMessageService,
     useValue: {
       error: jest.fn(),
@@ -213,5 +211,17 @@ export const injector = new MockInjector([
   {
     token: IMenuRegistry,
     useClass: MenuRegistryImpl,
+  },
+  {
+    token: ILoggerManagerClient,
+    useClass: MockLoggerManageClient,
+  },
+  {
+    token: ILogServiceManager,
+    useClass: MockLoggerService,
+  },
+  {
+    token: ILogger,
+    useClass: MockLogger,
   },
 ]);

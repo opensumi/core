@@ -11,7 +11,6 @@ import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ex
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -33,18 +32,12 @@ let mainThread: MainThreadEnv;
 
 describe('vscode extHostEnv Test', () => {
   const injector = createBrowserInjector([]);
-  injector.addProviders(
-    {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
-    },
-    {
-      token: WSChannelHandler,
-      useValue: mockService({
-        clientId: uuid(),
-      }),
-    },
-  );
+  injector.addProviders({
+    token: WSChannelHandler,
+    useValue: mockService({
+      clientId: uuid(),
+    }),
+  });
   const extensionService = mockService({});
   const extStorage = mockService({});
   const extHostTerminal = mockService({

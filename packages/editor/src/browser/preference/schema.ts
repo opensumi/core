@@ -71,6 +71,7 @@ export const EDITOR_SUGGEST_DEFAULTS = {
   showSnippets: true,
   showUsers: true,
   showIssues: true,
+  detailsVisible: true,
   preview: true,
   statusBar: {
     visible: false,
@@ -559,6 +560,11 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.preview,
     description: localize('editor.suggest.preview', 'Enable or disable the rendering of the suggestion preview.'),
+  },
+  'editor.suggest.details.visible': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.detailsVisible,
+    description: localize('editor.suggest.details.visible'),
   },
   'editor.inlineSuggest.enabled': {
     type: 'boolean',

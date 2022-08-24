@@ -35,7 +35,7 @@ const rpcProtocolExt = new RPCProtocol(mockClientA);
 const rpcProtocolMain = new RPCProtocol(mockClientB);
 
 describe('MainThreadDecorationAPI Test Suites ', () => {
-  const injector = createBrowserInjector([], new Injector([]));
+  const injector = createBrowserInjector([]);
   let extWindowAPI: ReturnType<typeof createWindowApiFactory>;
   let extHostDecorations: ExtHostDecorations;
   let decorationsService: IDecorationsService;

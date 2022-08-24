@@ -2,16 +2,12 @@ import os from 'os';
 
 import { Injector } from '@opensumi/di';
 import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
-import { MockLogger, MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
   CommandRegistry,
   CommandService,
   CommandServiceImpl,
   EventBusImpl,
   IEventBus,
-  ILogger,
-  ILoggerManagerClient,
   Uri,
 } from '@opensumi/ide-core-common';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
@@ -102,20 +98,12 @@ describe('VSCodeContributeRunner', () => {
           useClass: SchemaRegistry,
         },
         {
-          token: ILoggerManagerClient,
-          useClass: MockLoggerManageClient,
-        },
-        {
           token: IFileServiceClient,
           useValue: {
             resolveContent: (uri) => ({
               content: '',
             }),
           },
-        },
-        {
-          token: ILogger,
-          useClass: MockLogger,
         },
         {
           token: ITextmateTokenizer,

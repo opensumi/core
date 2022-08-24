@@ -1,5 +1,14 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { ILogServiceClient, LogLevel } from '@opensumi/ide-core-common';
+import {
+  Archive,
+  BaseLogServiceOptions,
+  Emitter,
+  ILoggerManagerClient,
+  ILogServiceClient,
+  ILogServiceManager,
+  LogLevel,
+  SupportLogNamespace,
+} from '@opensumi/ide-core-common';
 
 @Injectable()
 export class MockLogger implements ILogServiceClient {
@@ -33,11 +42,87 @@ export class MockLogger implements ILogServiceClient {
 }
 
 @Injectable()
-export class MockLoggerManageClient {
+export class MockLoggerManageClient implements ILoggerManagerClient {
   @Autowired(MockLogger)
   private readonly logger: MockLogger;
 
+  private globalLoglevel: LogLevel = LogLevel.Info;
+
+  private onDidChangeLogLevelEmitter = new Emitter<LogLevel>();
+
+  get onDidChangeLogLevel() {
+    return this.onDidChangeLogLevelEmitter.event;
+  }
+
+  async setGlobalLogLevel(level: LogLevel) {
+    this.globalLoglevel = level;
+  }
+
+  onDidLogLevelChanged(level: LogLevel) {}
+
   getLogger() {
     return this.logger;
+  }
+
+  async getLogFolder() {
+    return '';
+  }
+
+  async getGlobalLogLevel() {
+    return this.globalLoglevel;
+  }
+
+  async dispose() {
+    this.onDidChangeLogLevelEmitter.dispose();
+  }
+}
+
+@Injectable()
+export class MockLoggerService implements ILogServiceManager {
+  @Autowired(MockLogger)
+  private readonly logger: MockLogger;
+
+  private onDidChangeLogLevelEmitter = new Emitter<LogLevel>();
+
+  get onDidChangeLogLevel() {
+    return this.onDidChangeLogLevelEmitter.event;
+  }
+
+  getLogger(namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions) {
+    return this.logger as any;
+  }
+
+  getGlobalLogLevel() {
+    return LogLevel.Info;
+  }
+
+  removeLogger(namespace: SupportLogNamespace) {}
+
+  setGlobalLogLevel(level: LogLevel) {}
+
+  getLogFolder() {
+    return '';
+  }
+
+  getRootLogFolder() {
+    return '';
+  }
+
+  async cleanOldLogs() {}
+
+  async cleanAllLogs() {}
+
+  async cleanExpiredLogs(day: number) {}
+
+  getLogZipArchiveByDay(day: number): Promise<Archive> {
+    throw Error('Not implement');
+  }
+
+  async getLogZipArchiveByFolder(foldPath: string): Promise<Archive> {
+    throw Error('Not implement');
+  }
+
+  dispose() {
+    this.onDidChangeLogLevelEmitter.dispose();
   }
 }

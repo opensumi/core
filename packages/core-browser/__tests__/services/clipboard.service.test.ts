@@ -9,18 +9,6 @@ describe('clipboard service test', () => {
   let clipboardService: IClipboardService;
   beforeAll(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ILoggerManagerClient,
-      useValue: {
-        getLogger: () => ({
-          log() {},
-          debug() {},
-          error() {},
-          verbose() {},
-          warn() {},
-        }),
-      },
-    });
     clipboardService = injector.get<IClipboardService>(IClipboardService);
   });
 

@@ -1342,7 +1342,7 @@ class TypeAheadStyle implements IDisposable {
         let color: Color;
         try {
           color = Color.fromHex(style);
-        } catch {
+        } catch (_e) {
           color = new Color(new RGBA(255, 0, 0, 1));
         }
 

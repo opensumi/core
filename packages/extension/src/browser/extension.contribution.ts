@@ -447,6 +447,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.DEBUG_COMMAND_RESTART,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STOP,
       VSCodeBuiltinCommands.EDITOR_SHOW_ALL_SYMBOLS,
+      // search builtin commands
+      VSCodeBuiltinCommands.SEARCH_COMMAND_OPEN_SEARCH,
       // explorer builtin commands
       VSCodeBuiltinCommands.REVEAL_IN_EXPLORER,
       VSCodeBuiltinCommands.OPEN_FOLDER,
@@ -456,6 +458,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.CLEAR_TERMINAL,
       VSCodeBuiltinCommands.TOGGLE_WORKBENCH_VIEW_TERMINAL,
       VSCodeBuiltinCommands.NEW_WORKBENCH_VIEW_TERMINAL,
+      // file builtin commmands
+      VSCodeBuiltinCommands.FILE_COMMAND_RENAME_FILE,
       // marker builtin commands
       VSCodeBuiltinCommands.MARKER_COMMAND_SHOW_ERRORS_WARNINGS,
       VSCodeBuiltinCommands.MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS,
@@ -464,6 +468,7 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_GLOBAL_SETTINGS,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS_JSON,
+      VSCodeBuiltinCommands.THEME_COMMAND_QUICK_SELECT,
     ].forEach((command) => {
       registry.registerCommand(command);
     });
