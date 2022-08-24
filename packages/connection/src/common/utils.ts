@@ -37,11 +37,7 @@ export function parse(input: string, reviver?: (this: any, key: string, value: a
 }
 
 export function getCapturer() {
-  if (
-    typeof window !== 'undefined' &&
-    window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ &&
-    window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture
-  ) {
+  if (typeof window !== 'undefined' && window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.capture) {
     return window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture;
   }
   return;

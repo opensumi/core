@@ -30,7 +30,7 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
     });
 
     // if opensumi devtools has started capturing before this contribution point is registered
-    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ && window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.capture) {
+    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.capture) {
       if (!this.interval) {
         this.startRTTInterval();
       }
