@@ -24,13 +24,12 @@ import {
   ITerminalSearchService,
   ITerminalApiService,
   ITerminalClient,
+  TerminalContainerId,
 } from '../../common';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';
 
 import { EnvironmentVariableServiceToken } from './../../common/environmentVariable';
-
-export const TERMINAL_CONTAINER_ID = 'ide-terminal-next';
 
 @Domain(CommandContribution)
 export class TerminalCommandContribution implements CommandContribution {
@@ -325,7 +324,7 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.TOGGLE_VISIBILITY, {
       execute: () => {
-        const tabbarHandler = this.mainlayoutService.getTabbarHandler(TERMINAL_CONTAINER_ID);
+        const tabbarHandler = this.mainlayoutService.getTabbarHandler(TerminalContainerId);
         if (tabbarHandler) {
           tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
         }
