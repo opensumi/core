@@ -22,7 +22,6 @@ const today = Number(
 describe('LogServiceManager', () => {
   let injector: MockInjector;
   let loggerManager: ILogServiceManager;
-  let archive;
 
   beforeAll(async () => {
     track = temp.track();
@@ -40,7 +39,6 @@ describe('LogServiceManager', () => {
     );
     loggerManager = injector.get(ILogServiceManager);
     loggerManager.setGlobalLogLevel(LogLevel.Error);
-    archive = await loggerManager.getLogZipArchiveByDay(today);
   });
 
   afterAll(() => {
@@ -63,7 +61,6 @@ describe('LogServiceManager', () => {
 
   test.skip('GetLogZipArchiveByDay', async () => {
     const archive = await loggerManager.getLogZipArchiveByDay(today);
-
     expect(archive.pipe).toBeInstanceOf(archive.pipe.constructor);
   });
 
@@ -71,7 +68,7 @@ describe('LogServiceManager', () => {
     await loggerManager.cleanOldLogs();
 
     const children = fs.readdirSync(logDir);
-    expect(children.length).toBe(4);
+    expect(children.length).toBe(5);
     expect(children.some((child) => child === '20190801')).toBe(false);
   });
 
@@ -79,6 +76,6 @@ describe('LogServiceManager', () => {
     await loggerManager.cleanExpiredLogs(today);
 
     const children = fs.readdirSync(logDir);
-    expect(children.length).toBe(0);
+    expect(children.length).toBe(1);
   });
 });
