@@ -1,6 +1,11 @@
-
 import { Autowired } from '@opensumi/di';
-import { localize, Domain, IExtensionsPointService, formatLocalize, ClientAppContribution } from '@opensumi/ide-core-browser';
+import {
+  localize,
+  Domain,
+  IExtensionsPointService,
+  formatLocalize,
+  ClientAppContribution,
+} from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
@@ -9,7 +14,6 @@ export const EXPLORER_CONTAINER_ID = 'explorer';
 
 @Domain(ClientAppContribution, ComponentContribution)
 export class ExplorerContribution implements ComponentContribution {
-
   @Autowired(IExtensionsPointService)
   protected readonly extensionsPointService: IExtensionsPointService;
 
@@ -33,5 +37,4 @@ export class ExplorerContribution implements ComponentContribution {
       },
     });
   }
-
 }
