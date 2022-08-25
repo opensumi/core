@@ -4,7 +4,7 @@ import ParcelWatcher from '@parcel/watcher';
 import * as fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, Optional } from '@opensumi/di';
 import {
   FileUri,
   ParsedPattern,
@@ -49,10 +49,13 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     GlobStarPathEndWindows: '\\**',
   };
 
-  protected client: FileSystemWatcherClient | undefined;
+  private static WATCHER_HANDLERS = new Map<
+    number,
+    { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
+  >();
+  private static WATCHER_SEQUENCE = 1;
 
-  protected watcherSequence = 1;
-  protected readonly watchers = new Map<number, { path: string; disposable: IDisposable }>();
+  protected client: FileSystemWatcherClient | undefined;
 
   protected readonly toDispose = new DisposableCollection(Disposable.create(() => this.setClient(undefined)));
 
@@ -63,31 +66,25 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
 
   private logger: ILogService;
 
-  constructor() {
+  constructor(@Optional() private readonly excludes: string[] = []) {
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
   dispose(): void {
     this.toDispose.dispose();
+    ParcelWatcherServer.WATCHER_HANDLERS.clear();
   }
 
   /**
-   * 查找父目录是否已经在监听
+   * 查找某个路径是否已被监听
    * @param watcherPath
    */
-  checkIsAlreadyWatched(watcherPath: string): number {
-    let watcherId;
-    for (const [_id, watcher] of this.watchers) {
+  checkIsAlreadyWatched(watcherPath: string): number | undefined {
+    for (const [watcherId, watcher] of ParcelWatcherServer.WATCHER_HANDLERS) {
       if (watcherPath.indexOf(watcher.path) === 0) {
-        watcherId = this.watcherSequence++;
-        this.watchers.set(watcherId, {
-          path: watcherPath,
-          disposable: new DisposableCollection(),
-        });
-        break;
+        return watcherId;
       }
     }
-    return watcherId;
   }
 
   /**
@@ -106,30 +103,83 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     if (watcherId) {
       return watcherId;
     }
-    watcherId = this.watcherSequence++;
+    watcherId = ParcelWatcherServer.WATCHER_SEQUENCE++;
     this.logger.log('Starting watching:', basePath, options);
     const toDisposeWatcher = new DisposableCollection();
-    const stat = await fs.lstatSync(basePath);
-    if (stat && stat.isDirectory()) {
-      this.watchers.set(watcherId, {
-        path: realpath,
-        disposable: toDisposeWatcher,
-      });
-      toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
-      await this.start(watcherId, basePath, options, toDisposeWatcher);
+    if (fs.existsSync(basePath)) {
+      const stat = await fs.lstatSync(basePath);
+      if (stat && stat.isDirectory()) {
+        const handler = (err, events: ParcelWatcher.Event[]) => {
+          if (err) {
+            this.logger.error(`Watch path ${realpath} error: `, err);
+            return;
+          }
+          events = this.trimChangeEvent(events);
+          for (const event of events) {
+            if (event.type === 'create') {
+              this.pushAdded(watcherId, event.path);
+            }
+            if (event.type === 'delete') {
+              this.pushDeleted(watcherId, event.path);
+            }
+            if (event.type === 'update') {
+              this.pushUpdated(watcherId, event.path);
+            }
+          }
+        };
+        ParcelWatcherServer.WATCHER_HANDLERS.set(watcherId, {
+          path: realpath,
+          disposable: toDisposeWatcher,
+          handlers: [handler],
+        });
+        toDisposeWatcher.push(Disposable.create(() => ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId)));
+        toDisposeWatcher.push(await this.start(watcherId, basePath, options));
+      }
     } else {
       const watchPath = await this.lookup(basePath);
       if (watchPath) {
-        const existingWatcher = watchPath && this.checkIsAlreadyWatched(watchPath);
-        if (existingWatcher) {
-          return existingWatcher;
+        const parentWatcherId = this.checkIsAlreadyWatched(watchPath);
+        let handlers;
+        this.logger.log('Has Parent Watch ID', parentWatcherId);
+
+        if (parentWatcherId) {
+          handlers = ParcelWatcherServer.WATCHER_HANDLERS.get(parentWatcherId)?.handlers || [];
+        } else {
+          handlers = [];
+          toDisposeWatcher.push(Disposable.create(() => ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId)));
         }
-        this.watchers.set(watcherId, {
+        this.logger.log('Current Id', watcherId);
+        const handler = (err, events: ParcelWatcher.Event[]) => {
+          if (toDisposeWatcher.disposed) {
+            return;
+          }
+          if (err) {
+            this.logger.error(`Watch path ${realpath} error: `, err);
+            return;
+          }
+          events = this.trimChangeEvent(events);
+          for (const event of events) {
+            if (!event.path.startsWith(basePath)) {
+              continue;
+            }
+            if (event.type === 'create') {
+              this.pushAdded(watcherId, event.path);
+            }
+            if (event.type === 'delete') {
+              this.pushDeleted(watcherId, event.path);
+            }
+            if (event.type === 'update') {
+              this.pushUpdated(watcherId, event.path);
+            }
+          }
+        };
+        handlers.push(handler);
+        ParcelWatcherServer.WATCHER_HANDLERS.set(watcherId, {
           path: watchPath,
           disposable: toDisposeWatcher,
+          handlers,
         });
-        toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
-        await this.start(watcherId, watchPath, options, toDisposeWatcher);
+        toDisposeWatcher.push(await this.start(watcherId, basePath, options));
       }
     }
     this.toDispose.push(toDisposeWatcher);
@@ -138,12 +188,12 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
 
   /**
    * 向上查找存在的目录
-   * 默认向上查找 3 层，避免造成较大的目录监听带来的性能问题
-   * 当前框架内所有配置文件可能存在的路径层级均不超过 3 层
+   * 默认向上查找 5 层，避免造成较大的目录监听带来的性能问题
+   * 当前框架内所有配置文件可能存在的路径层级均不超过 5 层
    * @param path 监听路径
    * @param count 向上查找层级
    */
-  protected async lookup(path: string, count = 3) {
+  protected async lookup(path: string, count = 5) {
     let uri = new URI(path).parent;
     let times = 0;
     while (!(await fs.pathExists(uri.codeUri.fsPath)) && times < count) {
@@ -285,32 +335,25 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     watcherId: number,
     basePath: string,
     rawOptions: WatchOptions | undefined,
-    toDisposeWatcher: DisposableCollection,
-  ): Promise<void> {
+  ): Promise<DisposableCollection> {
+    const disposables = new DisposableCollection();
     let hanlder: ParcelWatcher.AsyncSubscription;
     if (!(await fs.pathExists(basePath))) {
-      return;
+      return disposables;
     }
     const realPath = await fs.realpath(basePath);
-    const ignore = this.toExcludePaths(realPath, rawOptions?.excludes);
+    const ignore = this.toExcludePaths(realPath, this.excludes.concat(rawOptions?.excludes || []));
     hanlder = await ParcelWatcher.subscribe(
       realPath,
       (err, events: ParcelWatcher.Event[]) => {
-        if (err) {
-          this.logger.error(`Watch path ${realPath} error: `, err);
+        const handlers = ParcelWatcherServer.WATCHER_HANDLERS.get(watcherId)?.handlers;
+        this.logger.log('handlers => ', handlers?.length);
+        this.logger.log('events => ', events);
+        if (!handlers) {
           return;
         }
-        events = this.trimChangeEvent(events);
-        for (const event of events) {
-          if (event.type === 'create') {
-            this.pushAdded(watcherId, event.path);
-          }
-          if (event.type === 'delete') {
-            this.pushDeleted(watcherId, event.path);
-          }
-          if (event.type === 'update') {
-            this.pushUpdated(watcherId, event.path);
-          }
+        for (const handler of handlers) {
+          handler(err, events);
         }
       },
       {
@@ -318,24 +361,20 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
         ignore,
       },
     );
-
-    if (toDisposeWatcher.disposed) {
-      await hanlder.unsubscribe();
-      return;
-    }
-    toDisposeWatcher.push(
+    disposables.push(
       Disposable.create(async () => {
         if (hanlder) {
           await hanlder.unsubscribe();
         }
       }),
     );
+    return disposables;
   }
 
   unwatchFileChanges(watcherId: number): Promise<void> {
-    const watcher = this.watchers.get(watcherId);
+    const watcher = ParcelWatcherServer.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
-      this.watchers.delete(watcherId);
+      ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId);
       watcher.disposable.dispose();
     }
     return Promise.resolve();
