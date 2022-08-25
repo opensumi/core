@@ -352,7 +352,17 @@ export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
   delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
 };
 
+export const SEARCH_COMMAND_OPEN_SEARCH: Command = {
+  id: 'workbench.action.findInFiles',
+  delegate: SEARCH_COMMANDS.OPEN_SEARCH.id,
+};
+
 export const THEME_COMMAND_QUICK_SELECT: Command = {
   id: 'workbench.action.selectTheme',
   delegate: THEME_TOGGLE_COMMAND.id,
+};
+
+export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
+  id: 'workbench.action.maximizeEditor',
+  delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
 };
