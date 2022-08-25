@@ -66,6 +66,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private _nodeReady = new Deferred<void>();
 
+  private _options: BrowserWindowConstructorOptions & ICodeWindowOptions = {};
+
   private rpcListenPath: string | undefined = undefined;
 
   constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions & ICodeWindowOptions = {}) {
@@ -76,79 +78,23 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     }
     this.metadata = metadata;
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + ++windowClientCount;
+    this._options = options;
 
-    this.browser = new BrowserWindow({
-      show: false,
-      webPreferences: {
-        ...defaultWebPreferences,
-        ...this.appConfig?.overrideWebPreferences,
-        nodeIntegration: this.appConfig?.browserNodeIntegrated,
-        preload: this.appConfig?.browserPreload,
-      },
-      frame: isMacintosh,
-      titleBarStyle: 'hidden',
-      height: DEFAULT_WINDOW_HEIGHT,
-      width: DEFAULT_WINDOW_WIDTH,
-      // trafficLight position: Center vertically
-      trafficLightPosition: { x: 10, y: 10 },
-      ...this.appConfig.overrideBrowserOptions,
-      ...options,
-    });
-    if (options) {
-      if (options.extensionDir) {
-        this.extensionDir = options.extensionDir;
-      }
-
-      if (options.extensionCandidate) {
-        this.extensionCandidate = options.extensionCandidate;
-      }
-
-      if (options.query) {
-        this.query = options.query;
-      }
-
-      if (options.isRemote) {
-        this.isRemote = options.isRemote;
-      }
+    if (options?.extensionDir) {
+      this.extensionDir = options.extensionDir;
     }
 
-    this.browser.on('closed', () => {
-      this.dispose();
-    });
-    const metadataResponser = async (event: IpcMainEvent, windowId: number) => {
-      if (windowId === this.browser.id) {
-        event.returnValue = JSON.stringify({
-          workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
-          webview: {
-            webviewPreload: URI.file(this.appConfig.webviewPreload).toString(),
-            plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
-          },
-          extensionDir: this.extensionDir,
-          extensionCandidate: this.appConfig.extensionCandidate.concat(this.extensionCandidate).filter(Boolean),
-          ...this.metadata,
-          isRemote: this.isRemote,
-          windowClientId: this.windowClientId,
-          workerHostEntry: this.appConfig.extensionWorkerEntry,
-          extensionDevelopmentHost: this.appConfig.extensionDevelopmentHost,
-          appPath: app.getAppPath(),
-        });
-      }
-    };
+    if (options?.extensionCandidate) {
+      this.extensionCandidate = options.extensionCandidate;
+    }
 
-    const rpcListenPathResponser = async (event: IpcMainEvent, windowId: number) => {
-      await this._nodeReady.promise;
-      if (windowId === this.browser.id) {
-        event.returnValue = this.rpcListenPath;
-      }
-    };
-    ipcMain.on('window-metadata', metadataResponser);
-    ipcMain.on('window-rpc-listen-path', rpcListenPathResponser);
-    this.addDispose({
-      dispose: () => {
-        ipcMain.removeListener('window-metadata', metadataResponser);
-        ipcMain.removeListener('window-rpc-listen-path', rpcListenPathResponser);
-      },
-    });
+    if (options?.query) {
+      this.query = options.query;
+    }
+
+    if (options?.isRemote) {
+      this.isRemote = options.isRemote;
+    }
   }
 
   get workspace() {
@@ -177,6 +123,60 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     } else {
       this.startNode();
     }
+
+    this.browser = new BrowserWindow({
+      show: false,
+      webPreferences: {
+        ...defaultWebPreferences,
+        ...this.appConfig?.overrideWebPreferences,
+        nodeIntegration: this.appConfig?.browserNodeIntegrated,
+        preload: this.appConfig?.browserPreload,
+      },
+      frame: isMacintosh,
+      titleBarStyle: 'hidden',
+      height: DEFAULT_WINDOW_HEIGHT,
+      width: DEFAULT_WINDOW_WIDTH,
+      // trafficLight position: Center vertically
+      trafficLightPosition: { x: 10, y: 10 },
+      ...this.appConfig.overrideBrowserOptions,
+      ...this._options,
+    });
+
+    this.browser.on('closed', () => {
+      this.dispose();
+    });
+
+    const metadataResponser = async (event: IpcMainEvent) => {
+      event.returnValue = JSON.stringify({
+        workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
+        webview: {
+          webviewPreload: URI.file(this.appConfig.webviewPreload).toString(),
+          plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
+        },
+        extensionDir: this.extensionDir,
+        extensionCandidate: this.appConfig.extensionCandidate.concat(this.extensionCandidate).filter(Boolean),
+        ...this.metadata,
+        isRemote: this.isRemote,
+        windowClientId: this.windowClientId,
+        workerHostEntry: this.appConfig.extensionWorkerEntry,
+        extensionDevelopmentHost: this.appConfig.extensionDevelopmentHost,
+        appPath: app.getAppPath(),
+      });
+    };
+
+    const rpcListenPathResponser = async (event: IpcMainEvent) => {
+      await this._nodeReady.promise;
+      return this.rpcListenPath;
+    };
+
+    ipcMain.on(`window-metadata:${this.browser.id}`, metadataResponser);
+    ipcMain.handle(`window-rpc-listen-path:${this.browser.id}`, rpcListenPathResponser);
+    this.addDispose({
+      dispose: () => {
+        ipcMain.removeListener(`window-metadata:${this.browser.id}`, metadataResponser);
+        ipcMain.removeListener(`window-rpc-listen-path:${this.browser.id}`, rpcListenPathResponser);
+      },
+    });
 
     try {
       getDebugLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
