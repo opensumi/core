@@ -19,7 +19,7 @@
     "@opensumi/ide-connection": "2.19.9",
     "@opensumi/ide-core-common": "2.19.9",
     "@opensumi/ide-core-node": "2.19.9",
-    "compressing": "^1.6.0",
+    "compressing": "^1.6.2",
     "spdlog": "^0.9.0"
   },
   "devDependencies": {

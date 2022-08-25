@@ -141,6 +141,6 @@
     "typescript": "4.6.4",
     "webpack": "^4.39.3",
     "yargs": "^17.5.0",
-    "compressing": "^1.6.0"
+    "compressing": "^1.6.2"
   }
 }
