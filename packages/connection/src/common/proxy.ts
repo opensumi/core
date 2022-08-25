@@ -1,5 +1,7 @@
-import { ApplicationError } from '@opensumi/ide-core-common';
+import { ApplicationError, uuid } from '@opensumi/ide-core-common';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc/lib/common/connection';
+
+import { MessageType, ResponseStatus, ICapturedMessage, getCapturer } from './utils';
 
 export abstract class RPCService<T = any> {
   rpcClient?: T[];
@@ -46,6 +48,13 @@ export class RPCProxy {
   private connection: MessageConnection;
   private proxyService: any = {};
   private logger: any;
+  // capture messages for opensumi devtools
+  private capture(message: ICapturedMessage): void {
+    const capturer = getCapturer();
+    if (capturer !== undefined) {
+      capturer(message);
+    }
+  }
 
   constructor(public target?: RPCService, logger?: any) {
     this.waitForConnection();
@@ -98,17 +107,24 @@ export class RPCProxy {
             if (prop.startsWith('on')) {
               if (isSingleArray) {
                 connection.sendNotification(prop, [...args]);
+                this.capture({ type: MessageType.SendNotification, serviceMethod: prop, arguments: args });
               } else {
                 connection.sendNotification(prop, ...args);
+                this.capture({ type: MessageType.SendNotification, serviceMethod: prop, arguments: args });
               }
 
               resolve(null);
             } else {
               let requestResult: Promise<any>;
+              // generate a unique requestId to associate request and requestResult
+              const requestId = uuid();
+
               if (isSingleArray) {
                 requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
+                this.capture({ type: MessageType.SendRequest, requestId, serviceMethod: prop, arguments: args });
               } else {
                 requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
+                this.capture({ type: MessageType.SendRequest, requestId, serviceMethod: prop, arguments: args });
               }
 
               requestResult
@@ -126,8 +142,22 @@ export class RPCProxy {
                       const applicationError = ApplicationError.fromJson(result.error.code, result.error.data);
                       error.cause = applicationError;
                     }
+                    this.capture({
+                      type: MessageType.RequestResult,
+                      status: ResponseStatus.Fail,
+                      requestId,
+                      serviceMethod: prop,
+                      error: result.data,
+                    });
                     reject(error);
                   } else {
+                    this.capture({
+                      type: MessageType.RequestResult,
+                      status: ResponseStatus.Success,
+                      requestId,
+                      serviceMethod: prop,
+                      data: result.data,
+                    });
                     resolve(result.data);
                   }
                 });
@@ -162,9 +192,38 @@ export class RPCProxy {
       const methods = this.getServiceMethod(service);
       methods.forEach((method) => {
         if (method.startsWith('on')) {
-          connection.onNotification(method, (...args) => this.onNotification(method, ...args));
+          connection.onNotification(method, (...args) => {
+            this.onNotification(method, ...args);
+            this.capture({ type: MessageType.OnNotification, serviceMethod: method, arguments: args });
+          });
         } else {
-          connection.onRequest(method, (...args) => this.onRequest(method, ...args));
+          connection.onRequest(method, (...args) => {
+            const requestId = uuid();
+            const result = this.onRequest(method, ...args);
+            this.capture({ type: MessageType.OnRequest, requestId, serviceMethod: method, arguments: args });
+
+            result
+              .then((result) => {
+                this.capture({
+                  type: MessageType.OnRequestResult,
+                  status: ResponseStatus.Success,
+                  requestId,
+                  serviceMethod: method,
+                  data: result.data,
+                });
+              })
+              .catch((err) => {
+                this.capture({
+                  type: MessageType.OnRequestResult,
+                  status: ResponseStatus.Fail,
+                  requestId,
+                  serviceMethod: method,
+                  error: err.data,
+                });
+              });
+
+            return result;
+          });
         }
 
         if (cb) {
@@ -174,9 +233,19 @@ export class RPCProxy {
 
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
-          return {
+          const requestId = uuid();
+          this.capture({ type: MessageType.OnRequest, requestId, serviceMethod: method });
+          const result = {
             data: NOTREGISTERMETHOD,
           };
+          this.capture({
+            type: MessageType.OnRequestResult,
+            status: ResponseStatus.Fail,
+            requestId,
+            serviceMethod: method,
+            error: result.data,
+          });
+          return result;
         }
       });
     }
