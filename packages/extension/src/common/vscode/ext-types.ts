@@ -3161,3 +3161,10 @@ export class TestTag implements vscode.TestTag {
   constructor(public readonly id: string) {}
 }
 // #endregion
+
+// inline completion begin
+export enum InlineCompletionTriggerKind {
+  Invoke = 0,
+  Automatic = 1,
+}
+// inline completion end

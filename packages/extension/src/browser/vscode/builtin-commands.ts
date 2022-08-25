@@ -6,6 +6,7 @@ import {
   TERMINAL_COMMANDS,
   MARKER_COMMANDS,
   SCM_COMMANDS,
+  SEARCH_COMMANDS,
   LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
@@ -141,10 +142,14 @@ export const REVERT_FILES: Command = {
   delegate: EDITOR_COMMANDS.REVERT_DOCUMENT.id,
 };
 
-// 打开或关闭终端
-export const TOGGLE_WORKBENCH_VIEW_TERMINAL: Command = {
-  id: 'workbench.action.terminal.toggleTerminal',
+export const TERMINAL_COMMAND_FOCUS: Command = {
+  id: 'workbench.action.terminal.focus',
   delegate: 'workbench.view.terminal',
+};
+
+export const TERMINAL_COMMAND_TOGGLE_VISIBILITY: Command = {
+  id: 'workbench.action.terminal.toggleTerminal',
+  delegate: TERMINAL_COMMANDS.TOGGLE_VISIBILITY.id,
 };
 
 export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {
@@ -156,6 +161,11 @@ export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {
 export const WORKBENCH_FOCUS_FILES_EXPLORER: Command = {
   id: 'workbench.files.action.focusFilesExplorer',
   delegate: FILE_COMMANDS.FOCUS_FILES.id,
+};
+
+export const FILE_COMMAND_RENAME_FILE: Command = {
+  id: 'renameFile',
+  delegate: FILE_COMMANDS.RENAME_FILE.id,
 };
 
 // 打开激活的编辑器组
@@ -340,11 +350,6 @@ export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
 export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.toggleSidebarVisibility',
   delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
-};
-
-export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
-  id: 'workbench.action.maximizeEditor',
-  delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
 };
 
 export const THEME_COMMAND_QUICK_SELECT: Command = {
