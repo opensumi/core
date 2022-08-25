@@ -11,8 +11,8 @@ export function getWorkerBootstrapUrl(scriptPath: string, label: string, ignoreC
     );
     if (scriptPath.substring(0, currentOrigin.length) !== currentOrigin) {
       const js = `/*${label}*/importScripts('${scriptPath}');/*${label}*/`;
-      const url = `data:text/javascript;charset=utf-8,${encodeURIComponent(js)}`;
-      return url;
+      const blob = new Blob([js], { type: 'application/javascript' });
+      return URL.createObjectURL(blob);
     }
   }
   return scriptPath;
