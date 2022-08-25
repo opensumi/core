@@ -638,6 +638,18 @@ export namespace EDITOR_COMMANDS {
     label: '%editor.formatSelection.label.multiple%',
     alias: 'Format Selection With...',
   };
+
+  export const COPY_PATH: Command = {
+    id: 'editor.action.copyPath',
+    category: CATEGORY,
+    label: '%editor.copyPath%',
+  };
+
+  export const COPY_RELATIVE_PATH: Command = {
+    id: 'editor.action.copyRelativePath',
+    category: CATEGORY,
+    label: '%editor.copyRelativePath%',
+  };
 }
 
 export namespace SEARCH_COMMANDS {
