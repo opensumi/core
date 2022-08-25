@@ -15,7 +15,8 @@ if (self.Worker) {
     const js = `importScripts('${stringUrl}');`;
     options = options || {};
     options.name = options.name || path.basename(stringUrl.toString());
-    return new _Worker(`data:text/javascript;charset=utf-8,${encodeURIComponent(js)}`, options);
+    const blob = new Blob([js], { type: 'application/javascript' });
+    return new _Worker(URL.createObjectURL(blob));
   } as any;
 }
 
