@@ -305,6 +305,18 @@ export class MainLayoutModuleContribution
       },
     );
 
+    commands.registerCommand(
+      {
+        id: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
+      },
+      {
+        execute: () => {
+          this.commandService.executeCommand(TOGGLE_RIGHT_PANEL_COMMAND.id, false);
+          this.commandService.executeCommand(TOGGLE_LEFT_PANEL_COMMAND.id, false);
+        },
+      },
+    );
+
     commands.registerCommand(LAYOUT_COMMANDS.OPEN_VIEW, {
       execute: () => {
         this.commandService.executeCommand(QUICK_OPEN_COMMANDS.OPEN.id, 'view ');

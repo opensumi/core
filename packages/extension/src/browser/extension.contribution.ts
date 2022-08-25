@@ -403,6 +403,8 @@ export class ExtensionCommandContribution implements CommandContribution {
     });
 
     [
+      // layout builtin commands
+      VSCodeBuiltinCommands.LAYOUT_COMMAND_MAXIMIZE_EDITOR,
       // editor builtin commands
       VSCodeBuiltinCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR,
       VSCodeBuiltinCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR,

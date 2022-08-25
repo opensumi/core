@@ -7,6 +7,7 @@ import {
   MARKER_COMMANDS,
   SCM_COMMANDS,
   SEARCH_COMMANDS,
+  LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
 import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
@@ -359,4 +360,9 @@ export const SEARCH_COMMAND_OPEN_SEARCH: Command = {
 export const THEME_COMMAND_QUICK_SELECT: Command = {
   id: 'workbench.action.selectTheme',
   delegate: THEME_TOGGLE_COMMAND.id,
+};
+
+export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
+  id: 'workbench.action.maximizeEditor',
+  delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
 };

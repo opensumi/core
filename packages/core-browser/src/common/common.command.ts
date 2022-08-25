@@ -934,7 +934,13 @@ export namespace LAYOUT_COMMANDS {
     label: '%layout.action.openView%',
     category: CATEGORY,
   };
+
+  export const MAXIMIZE_EDITOR = {
+    id: 'layout.action.Maximizeeditor',
+    category: CATEGORY,
+  };
 }
+
 export namespace MARKER_COMMANDS {
   const CATEGORY = 'marker';
 
