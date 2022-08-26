@@ -3,6 +3,63 @@ const os = require('os');
 
 const { ipcRenderer } = require('electron');
 
+const initForDevtools = () => {
+  const getCapturer = () => {
+    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureIpc) {
+      return window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureIpc;
+    }
+    return;
+  };
+
+  const capture = (message) => {
+    const capturer = getCapturer();
+    if (capturer !== undefined) {
+      capturer(message);
+    }
+  };
+
+  // ipcRenderer.on
+  const originalIpcRendererOn = ipcRenderer.on;
+  ipcRenderer.on = (channel, handler) => {
+    const proxyHandler = (event, ...args) => {
+      if (channel !== 'main->browser') {
+        capture({ ipcMethod: 'ipcRenderer.on', channel, args });
+      }
+      handler(event, ...args);
+    };
+    return originalIpcRendererOn.call(ipcRenderer, channel, proxyHandler);
+  };
+
+  // ipcRenderer.send
+  const originalIpcRendererSend = ipcRenderer.send;
+  ipcRenderer.send = (channel, ...args) => {
+    capture({ ipcMethod: 'ipcRenderer.send', channel, args });
+    return originalIpcRendererSend.call(ipcRenderer, channel, ...args);
+  };
+
+  // ipcRenderer.sendSync
+  const originalIpcRendererSendSync = ipcRenderer.sendSync;
+  ipcRenderer.sendSync = (channel, ...args) => {
+    capture({ ipcMethod: 'ipcRenderer.sendSync', channel, args });
+    return originalIpcRendererSendSync.call(ipcRenderer, channel, ...args);
+  };
+
+  // ipcRenderer.invoke
+  const originalIpcRendererInvoke = ipcRenderer.invoke;
+  ipcRenderer.invoke = (channel, ...args) => {
+    capture({ ipcMethod: 'ipcRenderer.invoke', channel, args });
+    return originalIpcRendererInvoke.call(ipcRenderer, channel, ...args);
+  };
+
+  // receive messages that transfered from main process and capture them
+  ipcRenderer.on('main->browser', (event, message) => {
+    capture(message);
+  });
+};
+
+// initialize for OpenSumi DevTools
+initForDevtools();
+
 const electronEnv = {};
 
 const urlParams = new URLSearchParams(decodeURIComponent(window.location.search));
