@@ -349,6 +349,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   protected initWatchServer(excludes?: string[]) {
+    if (!this.injector) {
+      return;
+    }
     if (this.watcherServerDisposeCollection) {
       this.watcherServerDisposeCollection.dispose();
     }

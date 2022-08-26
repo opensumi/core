@@ -95,93 +95,51 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
    */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
-    let realpath;
-    if (await fs.pathExists(basePath)) {
-      realpath = basePath;
-    }
-    let watcherId = realpath && this.checkIsAlreadyWatched(realpath);
+    let exist = await fs.pathExists(basePath);
+
+    let watcherId = this.checkIsAlreadyWatched(basePath);
     if (watcherId) {
       return watcherId;
     }
     watcherId = ParcelWatcherServer.WATCHER_SEQUENCE++;
-    this.logger.log('Starting watching:', basePath, options);
     const toDisposeWatcher = new DisposableCollection();
-    if (fs.existsSync(basePath)) {
+    let watchPath;
+    if (exist) {
       const stat = await fs.lstatSync(basePath);
       if (stat && stat.isDirectory()) {
-        const handler = (err, events: ParcelWatcher.Event[]) => {
-          if (err) {
-            this.logger.error(`Watch path ${realpath} error: `, err);
-            return;
-          }
-          events = this.trimChangeEvent(events);
-          for (const event of events) {
-            if (event.type === 'create') {
-              this.pushAdded(watcherId, event.path);
-            }
-            if (event.type === 'delete') {
-              this.pushDeleted(watcherId, event.path);
-            }
-            if (event.type === 'update') {
-              this.pushUpdated(watcherId, event.path);
-            }
-          }
-        };
-        ParcelWatcherServer.WATCHER_HANDLERS.set(watcherId, {
-          path: realpath,
-          disposable: toDisposeWatcher,
-          handlers: [handler],
-        });
-        toDisposeWatcher.push(Disposable.create(() => ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId)));
-        toDisposeWatcher.push(await this.start(watcherId, basePath, options));
+        watchPath = basePath;
+      } else {
+        watchPath = await this.lookup(basePath);
       }
     } else {
-      const watchPath = await this.lookup(basePath);
-      if (watchPath) {
-        const parentWatcherId = this.checkIsAlreadyWatched(watchPath);
-        let handlers;
-        this.logger.log('Has Parent Watch ID', parentWatcherId);
-
-        if (parentWatcherId) {
-          handlers = ParcelWatcherServer.WATCHER_HANDLERS.get(parentWatcherId)?.handlers || [];
-        } else {
-          handlers = [];
-          toDisposeWatcher.push(Disposable.create(() => ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId)));
-        }
-        this.logger.log('Current Id', watcherId);
-        const handler = (err, events: ParcelWatcher.Event[]) => {
-          if (toDisposeWatcher.disposed) {
-            return;
-          }
-          if (err) {
-            this.logger.error(`Watch path ${realpath} error: `, err);
-            return;
-          }
-          events = this.trimChangeEvent(events);
-          for (const event of events) {
-            if (!event.path.startsWith(basePath)) {
-              continue;
-            }
-            if (event.type === 'create') {
-              this.pushAdded(watcherId, event.path);
-            }
-            if (event.type === 'delete') {
-              this.pushDeleted(watcherId, event.path);
-            }
-            if (event.type === 'update') {
-              this.pushUpdated(watcherId, event.path);
-            }
-          }
-        };
-        handlers.push(handler);
-        ParcelWatcherServer.WATCHER_HANDLERS.set(watcherId, {
-          path: watchPath,
-          disposable: toDisposeWatcher,
-          handlers,
-        });
-        toDisposeWatcher.push(await this.start(watcherId, basePath, options));
-      }
+      watchPath = await this.lookup(basePath);
     }
+    this.logger.log('Starting watching:', watchPath, options);
+    const handler = (err, events: ParcelWatcher.Event[]) => {
+      if (err) {
+        this.logger.error(`Watching ${watchPath} error: `, err);
+        return;
+      }
+      events = this.trimChangeEvent(events);
+      for (const event of events) {
+        if (event.type === 'create') {
+          this.pushAdded(event.path);
+        }
+        if (event.type === 'delete') {
+          this.pushDeleted(event.path);
+        }
+        if (event.type === 'update') {
+          this.pushUpdated(event.path);
+        }
+      }
+    };
+    ParcelWatcherServer.WATCHER_HANDLERS.set(watcherId, {
+      path: watchPath,
+      disposable: toDisposeWatcher,
+      handlers: [handler],
+    });
+    toDisposeWatcher.push(Disposable.create(() => ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId as number)));
+    toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
     this.toDispose.push(toDisposeWatcher);
     return watcherId;
   }
@@ -347,8 +305,6 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
       realPath,
       (err, events: ParcelWatcher.Event[]) => {
         const handlers = ParcelWatcherServer.WATCHER_HANDLERS.get(watcherId)?.handlers;
-        this.logger.log('handlers => ', handlers?.length);
-        this.logger.log('events => ', events);
         if (!handlers) {
           return;
         }
@@ -387,19 +343,19 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     this.client = client;
   }
 
-  protected pushAdded(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.ADDED);
+  protected pushAdded(path: string): void {
+    this.pushFileChange(path, FileChangeType.ADDED);
   }
 
-  protected pushUpdated(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
+  protected pushUpdated(path: string): void {
+    this.pushFileChange(path, FileChangeType.UPDATED);
   }
 
-  protected pushDeleted(watcherId: number, path: string): void {
-    this.pushFileChange(watcherId, path, FileChangeType.DELETED);
+  protected pushDeleted(path: string): void {
+    this.pushFileChange(path, FileChangeType.DELETED);
   }
 
-  protected pushFileChange(watcherId: number, path: string, type: FileChangeType): void {
+  protected pushFileChange(path: string, type: FileChangeType): void {
     const uri = FileUri.create(path).toString();
     this.changes.push({ uri, type });
 

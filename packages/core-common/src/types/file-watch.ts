@@ -38,6 +38,7 @@ export interface FileChange {
   uri: string;
   type: FileChangeType;
 }
+
 export namespace FileChange {
   export function isUpdated(change: FileChange, uri: URI): boolean {
     return change.type === FileChangeType.UPDATED && uri.toString() === change.uri;

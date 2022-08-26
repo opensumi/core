@@ -17,7 +17,7 @@ function sleep(time: number) {
 
 describe('ParceWatcher Test', () => {
   const track = temp.track();
-  const sleepTime = 1500;
+  const sleepTime = 500;
   let injector: MockInjector;
   let root: URI;
   let watcherServer: ParcelWatcherServer;
@@ -26,12 +26,6 @@ describe('ParceWatcher Test', () => {
 
   beforeEach(async () => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ILogServiceManager,
-      useValue: {
-        getLogger: () => console,
-      },
-    });
     root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
     watcherServer = injector.get(ParcelWatcherServer);
     watcherId = await watcherServer.watchFileChanges(root.toString());
@@ -104,11 +98,52 @@ describe('ParceWatcher Test', () => {
 
     expect(actualUris.size).toEqual(0);
   });
+
+  it('Merge common events on one watcher', async () => {
+    const newFolder = FileUri.fsPath(root.resolve('test'));
+    expect(watcherId).toBeDefined();
+    fse.mkdirSync(newFolder);
+    const newWatcherId = await watcherServer.watchFileChanges(newFolder);
+    expect(newWatcherId === watcherId).toBeTruthy();
+  });
+
+  it('Can receive events while watch file is not existed', async () => {
+    const newFolder = FileUri.fsPath(root.resolve('test'));
+    expect(watcherId).toBeDefined();
+    fse.mkdirSync(newFolder);
+    const parentId = await watcherServer.watchFileChanges(newFolder);
+    const childFile = FileUri.fsPath(root.resolve('test').resolve('index.js'));
+    const childId = await watcherServer.watchFileChanges(childFile);
+    expect(parentId === childId).toBeTruthy();
+  });
+
+  it('Excludes options should be worked', async () => {
+    const watcherClient = {
+      onDidFilesChanged: jest.fn(),
+    };
+    watcherServer.setClient(watcherClient);
+    const folder1 = FileUri.fsPath(root.resolve('folder1'));
+    const fileA = FileUri.fsPath(root.resolve('folder1').resolve('a'));
+    const fileB = FileUri.fsPath(root.resolve('folder1').resolve('b'));
+    fse.mkdirSync(folder1);
+    await sleep(sleepTime);
+    watcherClient.onDidFilesChanged.mockClear();
+    let id = await watcherServer.watchFileChanges(folder1, { excludes: [] });
+    await fse.ensureFile(fileA);
+    await sleep(sleepTime);
+    expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
+    await watcherServer.unwatchFileChanges(id);
+    id = await watcherServer.watchFileChanges(folder1, { excludes: ['**/b/**'] });
+    await fse.ensureFile(fileB);
+    await sleep(sleepTime);
+    expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
+    watcherServer.unwatchFileChanges(id);
+  });
 });
 
 describe('Watch file rename/move/new', () => {
   const track = temp.track();
-  const sleepTime = 1500;
+  const sleepTime = 500;
   let root: URI;
   let watcherServer: ParcelWatcherServer;
   let injector: MockInjector;
@@ -116,12 +151,6 @@ describe('Watch file rename/move/new', () => {
 
   beforeEach(async () => {
     injector = createBrowserInjector([]);
-    injector.addProviders({
-      token: ILogServiceManager,
-      useValue: {
-        getLogger: () => console,
-      },
-    });
     root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
@@ -267,9 +296,4 @@ describe('Watch file rename/move/new', () => {
     expect([...addUris]).toEqual(expectedAddUris);
     expect([...deleteUris]).toEqual(expectedDeleteUris);
   });
-});
-
-process.on('unhandledRejection', (reason: any) => {
-  // eslint-disable-next-line no-console
-  console.error('Unhandled promise rejection: ' + reason);
 });
