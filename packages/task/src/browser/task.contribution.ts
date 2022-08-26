@@ -32,26 +32,7 @@ export class TaskContribution extends WithEventBus implements CommandContributio
     label: '%workbench.action.tasks.reRunTask%',
     category: Category,
   };
-  // static readonly RESTART_RUNNING_TASK: Command = {
-  //   id: 'workbench.action.tasks.restartTask',
-  //   label: '%workbench.action.tasks.restartTask%',
-  //   category: Category,
-  // };
-  // static readonly TERMINATE_TASK: Command = {
-  //   id: 'workbench.action.tasks.terminate',
-  //   label: '%workbench.action.tasks.terminate%',
-  //   category: Category,
-  // };
-  // static readonly SHOW_TASK: Command = {
-  //   id: 'workbench.action.tasks.showTasks',
-  //   label: '%workbench.action.tasks.showTasks%',
-  //   category: Category,
-  // };
-  // static readonly SHOW_TASK_LOG: Command = {
-  //   id: 'workbench.action.tasks.showLog',
-  //   label: '%workbench.action.tasks.showLog%',
-  //   category: Category,
-  // };
+
   @Autowired(ITerminalController)
   protected readonly terminalController: ITerminalController;
 
@@ -85,25 +66,5 @@ export class TaskContribution extends WithEventBus implements CommandContributio
         this.taskService.rerunLastTask();
       },
     });
-    // commandRegister.registerCommand(TaskContribution.RESTART_RUNNING_TASK, {
-    //   execute: () => {
-    //     this.taskService.runTaskCommand();
-    //   },
-    // });
-    // commandRegister.registerCommand(TaskContribution.SHOW_TASK, {
-    //   execute: () => {
-    //     this.taskService.runTaskCommand();
-    //   },
-    // });
-    // commandRegister.registerCommand(TaskContribution.SHOW_TASK_LOG, {
-    //   execute: () => {
-    //     this.taskService.runTaskCommand();
-    //   },
-    // });
-    // commandRegister.registerCommand(TaskContribution.TERMINATE_TASK, {
-    //   execute: () => {
-    //     this.taskService.runTaskCommand();
-    //   },
-    // });
   }
 }
