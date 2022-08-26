@@ -1,8 +1,6 @@
 import classNames from 'classnames';
 import React from 'react';
 
-import { isUndefined } from '@opensumi/ide-utils';
-
 import { warning } from '../utils/warning';
 
 import './style.less';
@@ -33,9 +31,7 @@ export const CheckBox: React.FC<
 
   const checkboxProps = restProps;
 
-  if (!isUndefined(checked)) {
-    checkboxProps['checked'] = checked;
-  }
+  checkboxProps['checked'] = checked ?? false;
 
   return (
     <label className={cls} tabIndex={wrapTabIndex}>
@@ -50,4 +46,4 @@ export const CheckBox: React.FC<
   );
 };
 
-CheckBox.displayName = 'KTCheckBox';
+CheckBox.displayName = 'OpenSumiCheckBox';
