@@ -1,6 +1,6 @@
 import { join } from 'path';
 
-import { app, session } from 'electron';
+import { app } from 'electron';
 
 import { URI } from '@opensumi/ide-core-common';
 import { ElectronMainApp } from '@opensumi/ide-core-electron-main';
@@ -15,7 +15,7 @@ const getExtensionDir = () => {
 };
 
 const electronApp = new ElectronMainApp({
-  browserNodeIntegrated: true,
+  browserNodeIntegrated: false,
   browserUrl: URI.file(join(__dirname, '../browser/index.html')).toString(),
   modules: [WebviewElectronMainModule],
   nodeEntry: join(__dirname, '../node/index.js'),
@@ -31,7 +31,4 @@ const electronApp = new ElectronMainApp({
 
 electronApp.init().then(() => {
   electronApp.loadWorkspace();
-
-  const opensumicrxPath = join(require('os').homedir(), 'Projects/ASOC2022/opensumi/opensumi-devtools/build');
-  session.defaultSession.loadExtension(opensumicrxPath);
 });
