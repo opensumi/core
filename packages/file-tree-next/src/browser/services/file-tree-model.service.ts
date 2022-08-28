@@ -1573,17 +1573,7 @@ export class FileTreeModelService {
     };
 
     // Also update pasteStore in localStorage
-<<<<<<< HEAD
-<<<<<<< HEAD
     this.clipboardService.writeResources(from);
-=======
-    try {
-      localStorage.setItem(PASTE_FILE_LOCAL_TOKEN, JSON.stringify(from.map((uri) => uri.toString())));
-    } catch {}
->>>>>>> 0f27531d5 (chore: constant token)
-=======
-    this.clipboardService.writeResources(from);
->>>>>>> 647f030bd (refactor: localStorage with clipboardService)
   };
 
   public pasteFile = async (to: URI) => {
@@ -1593,37 +1583,9 @@ export class FileTreeModelService {
     }
     let pasteStore = this.pasteStore;
     if (!pasteStore) {
-<<<<<<< HEAD
-<<<<<<< HEAD
       const uriList = await this.clipboardService.readResources();
       const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
       if (!fileTreeList || !fileTreeList.length) {
-=======
-      try {
-        const localStorgeUriList = JSON.parse(localStorage.getItem(PASTE_FILE_LOCAL_TOKEN) ?? '');
-        if (
-          !Array.isArray(localStorgeUriList) ||
-          !localStorgeUriList.length ||
-          !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
-        ) {
-          return;
-        }
-        const uriList = localStorgeUriList.map((str) => URI.parse(str));
-        const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
-        if (!fileTreeList || !fileTreeList.length) {
-          return;
-        }
-        pasteStore = {
-          files: uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)) as (File | Directory)[],
-          type: PasteTypes.COPY,
-        };
-      } catch {
->>>>>>> 0f27531d5 (chore: constant token)
-=======
-      const uriList = await this.clipboardService.readResources();
-      const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
-      if (!fileTreeList || !fileTreeList.length) {
->>>>>>> 647f030bd (refactor: localStorage with clipboardService)
         return;
       }
       pasteStore = {
