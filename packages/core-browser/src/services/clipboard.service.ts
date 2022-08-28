@@ -1,32 +1,12 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { IClipboardService } from '@opensumi/ide-core-common';
 import { URI } from '@opensumi/ide-core-common';
 
 import { ILogger } from '../logger';
 
-export const IClipboardService = Symbol('IClipboardService');
 export const PASTE_FILE_LOCAL_TOKEN = 'paste-uri-list';
+export { IClipboardService } from '@opensumi/ide-core-common';
 
-export interface IClipboardService {
-  /**
-   * 写入文本
-   */
-  writeText(text: string): Promise<void>;
-
-  /**
-   * 读取文本
-   */
-  readText(): Promise<string>;
-
-  /**
-   * 写入资源
-   */
-  writeResources(resources: URI[]): Promise<void>;
-
-  /**
-   * 读取资源
-   */
-  readResources(): Promise<URI[]>;
-}
 @Injectable()
 export class BrowserClipboardService implements IClipboardService {
   @Autowired(ILogger)
