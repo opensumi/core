@@ -64,6 +64,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   public metadata: any;
 
+  private windowId: number;
+
   private _nodeReady = new Deferred<void>();
 
   private _options: BrowserWindowConstructorOptions & ICodeWindowOptions = {};
@@ -141,6 +143,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       ...this.appConfig.overrideBrowserOptions,
       ...this._options,
     });
+    this.windowId = this.browser.id;
 
     this.browser.on('closed', () => {
       this.dispose();
@@ -164,17 +167,17 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       });
     };
 
-    const rpcListenPathResponser = async (event: IpcMainEvent) => {
+    const rpcListenPathResponser = async () => {
       await this._nodeReady.promise;
       return this.rpcListenPath;
     };
 
-    ipcMain.on(`window-metadata:${this.browser.id}`, metadataResponser);
-    ipcMain.handle(`window-rpc-listen-path:${this.browser.id}`, rpcListenPathResponser);
+    ipcMain.on(`window-metadata:${this.windowId}`, metadataResponser);
+    ipcMain.handle(`window-rpc-listen-path:${this.windowId}`, rpcListenPathResponser);
     this.addDispose({
       dispose: () => {
-        ipcMain.removeListener(`window-metadata:${this.browser.id}`, metadataResponser);
-        ipcMain.removeListener(`window-rpc-listen-path:${this.browser.id}`, rpcListenPathResponser);
+        ipcMain.removeListener(`window-metadata:${this.windowId}`, metadataResponser);
+        ipcMain.removeHandler(`window-rpc-listen-path:${this.windowId}`);
       },
     });
 
