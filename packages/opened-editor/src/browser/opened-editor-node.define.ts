@@ -70,7 +70,7 @@ export class EditorFile extends TreeNode {
     public tooltip: string,
     parent: EditorFileGroup | undefined,
   ) {
-    super(tree as ITree, parent, undefined, { name: `${resource.uri.path.toString()}` });
+    super(tree as ITree, parent, undefined, { name: `${resource.uri.toString()}` });
   }
 
   get displayName() {
