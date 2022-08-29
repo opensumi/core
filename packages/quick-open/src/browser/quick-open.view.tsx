@@ -11,7 +11,7 @@ import {
   ValidateInput,
   VALIDATE_TYPE,
 } from '@opensumi/ide-components';
-import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
+import { Key, KeyCode, useInjectable, localize, isUndefined } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import {
   HideReason,
@@ -122,7 +122,7 @@ export const QuickOpenInput = observer(() => {
   }, [widget.valueSelection]);
 
   const validateMessage = React.useMemo(() => {
-    if (widget.validateType) {
+    if (!isUndefined(widget.validateType)) {
       return {
         type: widget.validateType,
         message: '',
@@ -324,6 +324,7 @@ export const QuickOpenList: React.FC<{
       onScroll={onScroll}
       className={clx(styles.quickopen_list, {
         [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
+        [styles.validate_warning]: widget.validateType === VALIDATE_TYPE.WARNING,
       })}
       data={widget.items}
       template={QuickOpenItemView}
