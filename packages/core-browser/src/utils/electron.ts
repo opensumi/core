@@ -3,7 +3,7 @@ import type net from 'net';
 import { IDisposable } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
-import { createMessageConnection } from '@opensumi/vscode-jsonrpc/lib/node-client/main';
+import { createMessageConnection } from '@opensumi/vscode-jsonrpc/lib/electron-renderer/main';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
 
