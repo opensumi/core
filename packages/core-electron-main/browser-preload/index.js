@@ -10,7 +10,7 @@ window.id = Number(urlParams.get('windowId'));
 const webContentsId = Number(urlParams.get('webContentsId'));
 
 function createRPCNetConnection() {
-  const rpcListenPath = ipcRenderer.sendSync('window-rpc-listen-path', electronEnv.currentWindowId);
+  const rpcListenPath = ipcRenderer.sendSync(`window-rpc-listen-path:${electronEnv.currentWindowId}`);
   return net.createConnection(rpcListenPath);
 }
 
@@ -31,7 +31,7 @@ electronEnv.currentWindowId = window.id;
 electronEnv.currentWebContentsId = webContentsId;
 electronEnv.onigWasmPath = require.resolve('vscode-oniguruma/release/onig.wasm');
 
-const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
+const metaData = JSON.parse(ipcRenderer.sendSync(`window-metadata:${electronEnv.currentWindowId}`));
 
 electronEnv.metadata = metaData;
 process.env = Object.assign({}, process.env, metaData.env, { WORKSPACE_DIR: metaData.workspace });

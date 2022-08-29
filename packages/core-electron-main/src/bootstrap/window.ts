@@ -167,17 +167,17 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       });
     };
 
-    const rpcListenPathResponser = async () => {
+    const rpcListenPathResponser = async (event: IpcMainEvent) => {
       await this._nodeReady.promise;
-      return this.rpcListenPath;
+      event.returnValue = this.rpcListenPath;
     };
 
     ipcMain.on(`window-metadata:${this.windowId}`, metadataResponser);
-    ipcMain.handle(`window-rpc-listen-path:${this.windowId}`, rpcListenPathResponser);
+    ipcMain.on(`window-rpc-listen-path:${this.windowId}`, rpcListenPathResponser);
     this.addDispose({
       dispose: () => {
         ipcMain.removeListener(`window-metadata:${this.windowId}`, metadataResponser);
-        ipcMain.removeHandler(`window-rpc-listen-path:${this.windowId}`);
+        ipcMain.removeListener(`window-rpc-listen-path:${this.windowId}`, rpcListenPathResponser);
       },
     });
 
