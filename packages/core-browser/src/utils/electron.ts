@@ -1,6 +1,9 @@
+import type net from 'net';
+
 import { IDisposable } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
+import { createMessageConnection } from '@opensumi/vscode-jsonrpc/lib/node-client/main';
 
 declare const ElectronIpcRenderer: IElectronIpcRenderer;
 
@@ -80,13 +83,15 @@ export interface IElectronNativeDialogService {
 
 export const IElectronNativeDialogService = Symbol('IElectronNativeDialogService');
 
+/**
+ * Browser 版本客户端实现，用于连接 Node.js 服务端
+ */
 export function createElectronClientConnection(connectPath?: string): MessageConnection {
-  let socket;
+  let socket: net.Socket;
   if (connectPath) {
     socket = electronEnv.createNetConnection(connectPath);
   } else {
     socket = electronEnv.createRPCNetConnection();
   }
-  const { createSocketConnection } = require('@opensumi/ide-connection/lib/node/connect');
-  return createSocketConnection(socket);
+  return createMessageConnection(socket, socket);
 }
