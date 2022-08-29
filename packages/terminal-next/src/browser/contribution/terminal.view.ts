@@ -27,7 +27,7 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
       id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
       command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
       viewId: TerminalRenderContribution.viewId,
-      tooltip: localize('terminal.menu.clearGroups'),
+      tooltip: localize('terminal.menu.clearCurrentContent'),
     });
     registry.registerItem({
       id: TERMINAL_COMMANDS.SPLIT.id,

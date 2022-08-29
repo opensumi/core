@@ -20,6 +20,7 @@ import {
   replaceLocalizePlaceholder,
   withNullAsUndefined,
   isThemeColor,
+  Uri,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -29,7 +30,6 @@ import { IThemeService } from '@opensumi/ide-theme';
 import {
   ITerminalController,
   ITerminalClient,
-  ITerminalClientFactory,
   IWidget,
   ITerminalInfo,
   ITerminalBrowserHistory,
@@ -52,6 +52,8 @@ import {
   TerminalOptions,
   asTerminalIcon,
   TERMINAL_ID_SEPARATOR,
+  ICreateTerminalWithWidgetOptions,
+  ITerminalProfile,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -97,9 +99,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
   @Autowired(ITerminalGroupViewService)
   protected readonly terminalView: TerminalGroupViewService;
-
-  @Autowired(ITerminalClientFactory)
-  protected readonly clientFactory: ITerminalClientFactory;
 
   @Autowired(ITerminalClientFactory2)
   protected readonly clientFactory2: ITerminalClientFactory2;
@@ -195,15 +194,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private async _createClient(widget: IWidget, options?: ICreateTerminalOptions) {
-    let client: ITerminalClient;
-
-    if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
-      client = await this.clientFactory2(widget, /** @type ICreateTerminalOptions */ options);
-      this.logger.log('create client with clientFactory2', client);
-    } else {
-      client = await this.clientFactory(widget, /** @type TerminalOptions */ options);
-      this.logger.log('create client with clientFactory', client);
-    }
+    const client = await this.clientFactory2(widget, /** @type ICreateTerminalOptions */ options);
+    this.logger.log('create client with clientFactory2', client);
     return this.setupClient(widget, client);
   }
 
@@ -212,8 +204,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.logger.log(`setup client ${client.id}`);
     client.addDispose(
       client.onExit((e) => {
-        // 直接使用removeWidget会导致TerminalTask场景下任务执行完毕直接退出而不是用户手动触发onKeyDown退出
-        // this.terminalView.removeWidget(client.id);
+        // 在这个函数内不要 removeWidget，会导致 TerminalTask 场景下任务执行完毕直接退出而不是用户手动触发 onKeyDown 退出
+
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
       }),
     );
@@ -549,7 +541,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           return;
         }
 
-        if (client?.options?.isExtensionTerminal || client?.options?.isTransient) {
+        if (client.launchConfig?.isExtensionOwnedTerminal || client.launchConfig?.disablePersistence) {
           return;
         }
 
@@ -575,18 +567,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._clients.get(widgetId);
   }
 
-  /**
-   * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.17.0
-   */
-  async createClientWithWidget(options: TerminalOptions) {
-    return await this.createClientWithWidget2({
-      terminalOptions: options,
-      args: options.args,
-      beforeCreate: options.beforeCreate,
-      closeWhenExited: options.closeWhenExited,
-    });
-  }
-
   public convertTerminalOptionsToLaunchConfig(options: TerminalOptions): IShellLaunchConfig {
     const shellLaunchConfig: IShellLaunchConfig = {
       name: options.name,
@@ -610,11 +590,57 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     shellLaunchConfig.__fromTerminalOptions = options;
     return shellLaunchConfig;
   }
+  convertProfileToLaunchConfig(
+    shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
+    cwd?: Uri | string,
+  ): IShellLaunchConfig {
+    if (!shellLaunchConfigOrProfile) {
+      return {};
+    }
+    // Profile was provided
+    if (shellLaunchConfigOrProfile && 'profileName' in shellLaunchConfigOrProfile) {
+      const profile = shellLaunchConfigOrProfile;
+      if (!profile.path) {
+        return shellLaunchConfigOrProfile;
+      }
+      return {
+        executable: profile.path,
+        args: profile.args,
+        env: profile.env,
+        // icon: profile.icon,
+        color: profile.color,
+        name: profile.overrideName ? profile.profileName : undefined,
+        cwd,
+      };
+    }
 
-  async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
+    if (cwd) {
+      shellLaunchConfigOrProfile.cwd = cwd;
+    }
+    return shellLaunchConfigOrProfile;
+  }
+
+  async createTerminalWithWidgetByTerminalOptions(options: ICreateClientWithWidgetOptions) {
+    const launchConfig = this.convertTerminalOptionsToLaunchConfig(options.terminalOptions);
+    return this.createTerminalWithWidget({
+      ...options,
+      options: launchConfig,
+    });
+  }
+
+  async createTerminal(options: ICreateTerminalOptions) {
+    const widgetId = options.id || this.service.generateSessionId();
+    const { group } = this._createOneGroup();
+    const widget = this.terminalView.createWidget(group, widgetId, false, true);
+
+    const client = await this._createClient(widget, options);
+
+    return client;
+  }
+  async createTerminalWithWidget(options: ICreateTerminalWithWidgetOptions) {
     const widgetId = options.id ? this.clientId + TERMINAL_ID_SEPARATOR + options.id : this.service.generateSessionId();
 
-    const launchConfig = this.convertTerminalOptionsToLaunchConfig(options.terminalOptions);
+    const launchConfig = this.convertProfileToLaunchConfig(options.options);
 
     const { group } = this._createOneGroup(launchConfig);
     const widget = this.terminalView.createWidget(
@@ -631,22 +657,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const client = await this._createClient(widget, {
       id: widgetId,
       config: launchConfig,
+      cwd: options.options?.cwd,
+      location: options.options?.location,
+      resource: options.options?.resource,
     });
 
     if (options.isTaskExecutor) {
       client.isTaskExecutor = true;
       client.taskId = options.taskId;
     }
-    return client;
-  }
-
-  async createTerminal(options: ICreateTerminalOptions) {
-    const widgetId = options.id || this.service.generateSessionId();
-    const { group } = this._createOneGroup();
-    const widget = this.terminalView.createWidget(group, widgetId, false, true);
-
-    const client = await this._createClient(widget, options);
-
     return client;
   }
 
