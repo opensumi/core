@@ -597,10 +597,11 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (this.root && rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(pathURI)) {
-          path = new Path(this.root.path)
-            .join(rootUri.displayName)
-            .join(rootUri.relative(pathURI)!.toString())
-            .toString();
+          let basePath = new Path(this.root.path);
+          if (this.isMultipleWorkspace) {
+            basePath = basePath.join(rootUri.displayName);
+          }
+          path = basePath.join(rootUri.relative(pathURI)!.toString()).toString();
         }
       }
     }
