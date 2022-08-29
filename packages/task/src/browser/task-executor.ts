@@ -64,7 +64,17 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   @Autowired(ITerminalService)
   protected readonly terminalService: ITerminalService;
 
-  private terminalClient: ITerminalClient | undefined;
+  private _terminalClient: ITerminalClient | undefined;
+
+  get terminalClient() {
+    return this._terminalClient;
+  }
+
+  set terminalClient(v) {
+    // 重新赋值之前，先清除之前的事件绑定，否则给 this.terminalClient 赋值之后就无法清除以前的事件监听了。
+    this.resetEventDispose();
+    this._terminalClient = v;
+  }
 
   private pid: number | undefined;
 
@@ -93,6 +103,10 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   private processExited = false;
 
   private eventToDispose: DisposableCollection = new DisposableCollection();
+  resetEventDispose() {
+    this.eventToDispose.dispose();
+    this.eventToDispose = new DisposableCollection();
+  }
 
   public taskStatus: TaskStatus = TaskStatus.PROCESS_INIT;
 
@@ -135,24 +149,21 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     });
   }
 
-  private onTaskExit(code?: number) {
+  private handleTaskExit(code?: number) {
     if (!this.terminalClient) {
       return;
     }
-    const { term, id } = this.terminalClient;
+    const { term } = this.terminalClient;
     term.options.disableStdin = true;
 
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m\r\n`);
     this._onDidTaskProcessExit.fire(code);
+
+    // 按任意键退出
     this.eventToDispose.push(
-      term.onKey((data) => {
-        const key = data.key;
-        if (key.toLowerCase() === 'r') {
-          // rerun the task
-          // this.reset();
-        }
-        this.terminalView.removeWidget(id);
+      this.terminalClient?.term.onKey(() => {
+        this.terminalClient?.id && this.terminalView.removeWidget(this.terminalClient.id);
       }),
     );
   }
@@ -165,8 +176,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     if (!this.terminalClient) {
       return;
     }
-    this.eventToDispose.dispose();
-
+    this.resetEventDispose();
     this.eventToDispose.push(
       this.terminalClient.onOutput((e) => {
         const output = removeAnsiEscapeCodes(e.data.toString());
@@ -205,7 +215,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       this.terminalClient.onExit(async (e) => {
         if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
           this.taskStatus = TaskStatus.PROCESS_EXITED;
-          this.onTaskExit(e.code);
+          this.handleTaskExit(e.code);
           this.processExited = true;
           this.exitDefer.resolve({ exitCode: e.code });
         }
@@ -288,7 +298,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   }
 
   public reset() {
-    this.eventToDispose.dispose();
+    this.resetEventDispose();
     this.taskStatus = TaskStatus.PROCESS_INIT;
     this.exitDefer = new Deferred();
   }
