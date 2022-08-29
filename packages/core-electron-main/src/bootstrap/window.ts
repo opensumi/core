@@ -139,7 +139,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,
       // trafficLight position: Center vertically
-      trafficLightPosition: { x: 10, y: 10 },
+      trafficLightPosition: { x: 9, y: 6 },
       ...this.appConfig.overrideBrowserOptions,
       ...this._options,
     });
