@@ -98,7 +98,6 @@ export class FileService implements IFileService {
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
     const watcherId = provider.watch(_uri.codeUri, {
-      recursive: true,
       excludes: (options && options.excludes) || [],
     }) as number;
     this.watcherDisposerMap.set(id, {
