@@ -39,7 +39,7 @@ import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/re
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileStat } from '@opensumi/ide-file-service';
+import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
@@ -58,6 +58,7 @@ const { trim, rtrim } = strings;
 export interface IPasteStore {
   files: (File | Directory)[];
   type: PasteTypes;
+  crossFiles?: URI[];
 }
 
 /**
@@ -98,6 +99,9 @@ export class FileTreeModelService {
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
+
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
 
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
@@ -1584,13 +1588,13 @@ export class FileTreeModelService {
     let pasteStore = this.pasteStore;
     if (!pasteStore) {
       const uriList = await this.clipboardService.readResources();
-      const fileTreeList = uriList.map((uri) => this.fileTreeService.getNodeByPathOrUri(uri)).filter(Boolean);
-      if (!fileTreeList || !fileTreeList.length) {
+      if (!uriList || !uriList.length) {
         return;
       }
       pasteStore = {
-        files: fileTreeList as (File | Directory)[],
+        files: [],
         type: PasteTypes.COPY,
+        crossFiles: uriList,
       };
     }
     if (!pasteStore) {
@@ -1605,16 +1609,18 @@ export class FileTreeModelService {
       useRefresh = true;
     }
     if (pasteStore.type === PasteTypes.CUT) {
-      for (const file of pasteStore.files) {
-        if (file) {
-          this.cutDecoration.removeTarget(file);
-        }
-        if (!(parent as Directory).expanded) {
-          await (parent as Directory).setExpanded(true);
+      if (!pasteStore.crossFiles) {
+        for (const file of pasteStore.files) {
+          if (file) {
+            this.cutDecoration.removeTarget(file);
+          }
+          if (!(parent as Directory).expanded) {
+            await (parent as Directory).setExpanded(true);
+          }
         }
       }
       const errors = await this.fileTreeAPI.mvFiles(
-        pasteStore.files.map((file) => file.uri),
+        pasteStore.crossFiles ? pasteStore.crossFiles : pasteStore.files.map((file) => file.uri),
         parent.uri,
       );
       if (errors && errors.length > 0) {
@@ -1629,23 +1635,26 @@ export class FileTreeModelService {
       this._pasteStore = {
         files: [],
         type: PasteTypes.NONE,
+        crossFiles: undefined,
       };
     } else if (pasteStore.type === PasteTypes.COPY) {
-      for (const file of pasteStore.files) {
-        const newUri = parent.uri.resolve(file.uri.displayName);
+      const uriList = pasteStore.crossFiles ? pasteStore.crossFiles : pasteStore.files.map((file) => file.uri);
+      for (const uri of uriList) {
+        const newUri = parent.uri.resolve(uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
         }
-        const res = await this.fileTreeAPI.copyFile(file.uri, newUri);
+        const res = await this.fileTreeAPI.copyFile(uri, newUri);
         if (useRefresh) {
           this.fileTreeService.refresh(parent.parent as Directory);
         } else if (res) {
           if ((res as FileStat).uri) {
             const copyUri = new URI((res as FileStat).uri);
+            const fileStat = await this.filesystem.getFileStat(uri.toString());
             this.fileTreeService.addNode(
               parent as Directory,
               copyUri.displayName,
-              Directory.is(file) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
+              fileStat?.isDirectory ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
             );
           } else {
             this.messageService.error(res);
