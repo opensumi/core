@@ -1,10 +1,12 @@
-.kt-tooltip-wrapper {
+@import '../style/variable.less';
+
+.@{prefix}-tooltip-wrapper {
   position: relative;
   margin: 0px;
   padding: 0px;
   display: inline-block;
 
-  .kt-tooltip-content {
+  .@{prefix}-tooltip-content {
     display: inline-block;
     position: fixed;
     font-size: 12px;
@@ -19,7 +21,7 @@
     box-shadow: 0px 6px 16px -8px rgba(0, 0, 0, 0.24), 0px 9px 28px 0px rgba(0, 0, 0, 0.15),
       0px 12px 48px 16px rgba(0, 0, 0, 0.09);
 
-    .kt-tooltip-arrow-placeholder {
+    .@{prefix}-tooltip-arrow-placeholder {
       position: absolute;
       top: 100%;
       width: 0;
@@ -28,7 +30,7 @@
       border-width: 7px 7px 0 7px;
       border-color: var(--kt-tooltip-background) transparent transparent transparent;
 
-      &.kt-tooltip-reverse-arrow {
+      &.@{prefix}-tooltip-reverse-arrow {
         top: auto !important;
         bottom: 100% !important;
         border-width: 0px 7px 7px 7px !important;
