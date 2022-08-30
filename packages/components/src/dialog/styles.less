@@ -47,7 +47,12 @@
 }
 
 .@{prefix}-dialog-icon {
-  margin-right: 12px;
+  margin-right: 10px;
+  border: none;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  padding: 0px;
 
   &:before {
     font-size: 20px;
@@ -62,6 +67,14 @@
   flex-direction: column;
   padding: 0px;
   cursor: pointer;
+  margin-left: 6px;
+  height: 20px;
+  width: 20px;
+  align-items: center;
+  line-height: 20px;
+  &:hover {
+    transform: scale(1.2);
+  }
 }
 
 .@{prefix}-dialog-buttonWrap {
