@@ -153,7 +153,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     if (!this.terminalClient) {
       return;
     }
-    const { term } = this.terminalClient;
+    const { id, term } = this.terminalClient;
     term.options.disableStdin = true;
 
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
@@ -162,8 +162,8 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
     // 按任意键退出
     this.eventToDispose.push(
-      this.terminalClient?.term.onKey(() => {
-        this.terminalClient?.id && this.terminalView.removeWidget(this.terminalClient.id);
+      Event.once(term.onKey)(() => {
+        id && this.terminalView.removeWidget(id);
       }),
     );
   }
@@ -212,7 +212,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     );
 
     this.eventToDispose.push(
-      this.terminalClient.onExit(async (e) => {
+      Event.once(this.terminalClient.onExit)(async (e) => {
         if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
           this.taskStatus = TaskStatus.PROCESS_EXITED;
           this.handleTaskExit(e.code);

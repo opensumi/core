@@ -101,7 +101,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   protected readonly terminalView: TerminalGroupViewService;
 
   @Autowired(ITerminalClientFactory2)
-  protected readonly clientFactory2: ITerminalClientFactory2;
+  protected readonly clientFactory: ITerminalClientFactory2;
 
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
@@ -194,7 +194,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private async _createClient(widget: IWidget, options?: ICreateTerminalOptions) {
-    const client = await this.clientFactory2(widget, /** @type ICreateTerminalOptions */ options);
+    const client = await this.clientFactory(widget, /** @type ICreateTerminalOptions */ options);
     this.logger.log('create client with clientFactory2', client);
     return this.setupClient(widget, client);
   }
@@ -272,13 +272,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     // 先对recovery数据做一个简单校验，因为之前groups数据可能是字符串或object，而现在抛弃了字符串的方式
     // 所以为了避免旧逻辑写入localStorage的数据混乱，这里做一个简单的校验
-    if (!history.current || !lodashGet(history, 'groups[0][0].client')) {
+    if (!history.current || !history?.groups?.[0]?.[0]?.client) {
       return;
     }
 
     // HACK: 因为现在的终端重连是有问题的，是ClientID机制导致的，因此在拿出记录恢复终端的时候，需要把里面的ClientID替换为当前活跃窗口的ClientID
     // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
-
     const currentRealSessionId = history.current?.split(TERMINAL_ID_SEPARATOR)?.[1];
     if (history.current && history.current.includes(TERMINAL_ID_SEPARATOR)) {
       history.current = `${this.clientId}|${currentRealSessionId}`;
@@ -286,23 +285,32 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     history.groups = history.groups.map((group) => {
       if (Array.isArray(group)) {
         // 替换clientId为当前窗口ClientID
-        return group.map(({ client, ...other }) => ({
-          client: client.includes(TERMINAL_ID_SEPARATOR)
-            ? `${this.clientId}${TERMINAL_ID_SEPARATOR}${(client as string)?.split(TERMINAL_ID_SEPARATOR)?.[1]}`
-            : client,
-          ...other,
-        }));
+        return group
+          .map(({ client, ...other }) => {
+            if (other.task) {
+              // #1531 不恢复 Task 类型的终端
+              return undefined;
+            }
+            return {
+              client: client.includes(TERMINAL_ID_SEPARATOR)
+                ? `${this.clientId}${TERMINAL_ID_SEPARATOR}${(client as string)?.split(TERMINAL_ID_SEPARATOR)?.[1]}`
+                : client,
+              ...other,
+            };
+          })
+          .filter(Boolean) as { client: string }[];
       } else {
         return group;
       }
     });
 
     let currentWidgetId = '';
+    let firstAvailableId = '';
     const { groups, current } = history;
 
-    const ids: (string | { client: string })[] = [];
+    // const ids: (string | { client: string })[] = [];
 
-    groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
+    // groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
 
     // 之前OpenSumi的Check终端活跃机制是有问题的，暂时不启用，这部分逻辑在PtyService会兜住
     // const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
@@ -311,62 +319,75 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     // }
 
     for (const widgets of groups) {
-      const { group } = this._createOneGroup();
-
       if (!widgets) {
         continue;
       }
+      if (widgets.length === 0) {
+        continue;
+      }
 
+      const { group } = this._createOneGroup();
+
+      const promises = [] as Promise<void>[];
       for (const session of widgets) {
         if (!session) {
           continue;
         }
+        promises.push(
+          (async () => {
+            /**
+             * widget 创建完成后会同时创建 client
+             */
+            const widget = this.terminalView.createWidget(
+              group,
+              typeof session === 'string' ? session : session.client,
+              !!session.task,
+            );
+            const client = await this.clientFactory(widget);
 
-        /**
-         * widget 创建完成后会同时创建 client
-         */
-        const widget = this.terminalView.createWidget(
-          group,
-          typeof session === 'string' ? session : session.client,
-          !!session.task,
+            // 终端被Resume的场景下也要绑定终端事件，避免意料之外的BUG
+            this.setupClient(widget, client);
+
+            if (session.task) {
+              client.isTaskExecutor = true;
+              client.taskId = session.task;
+            }
+
+            this._clients.set(client.id, client);
+
+            if (current === client.id) {
+              currentWidgetId = widget.id;
+            }
+            if (!firstAvailableId) {
+              firstAvailableId = widget.id;
+            }
+            /**
+             * 等待预先连接成功
+             */
+            client.attached.promise.then(() => {
+              widget.name = client.name;
+              // client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
+
+              /**
+               * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
+               */
+              if (!client.ready) {
+                this.terminalView.removeWidget(widget.id);
+              }
+            });
+          })(),
         );
-        const client = await this.clientFactory2(widget, {});
-
-        // 终端被Resume的场景下也要绑定终端事件，避免意料之外的BUG
-        this.setupClient(widget, client);
-
-        if (session.task) {
-          client.isTaskExecutor = true;
-          client.taskId = session.task;
-        }
-
-        this._clients.set(client.id, client);
-
-        if (current === client.id) {
-          currentWidgetId = widget.id;
-        }
-
-        /**
-         * 等待预先连接成功
-         */
-        client.attached.promise.then(() => {
-          widget.name = client.name;
-          // client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
-
-          /**
-           * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
-           */
-          if (!client.ready) {
-            this.terminalView.removeWidget(widget.id);
-          }
-        });
       }
+
+      await Promise.all(promises);
     }
 
     const selectedIndex = this.terminalView.groups.findIndex((group) => group.widgetsMap.has(currentWidgetId));
 
     if (selectedIndex > -1 && currentWidgetId) {
       this.terminalView.selectWidget(currentWidgetId);
+    } else if (firstAvailableId) {
+      this.terminalView.selectWidget(firstAvailableId);
     }
   }
 
