@@ -435,10 +435,19 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
           );
         }),
       );
+      disposableCollection.push(
+        group.onDidEditorGroupTabChanged(() => {
+          setArgs(
+            group.currentResource
+              ? [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri]
+              : undefined,
+          );
+        }),
+      );
       return () => {
         disposableCollection.dispose();
       };
-    }, []);
+    }, [group]);
 
     // 第三个参数是当前编辑器的URI（如果有）
     return (
