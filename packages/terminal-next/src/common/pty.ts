@@ -584,6 +584,28 @@ export interface ICreateTerminalOptions {
    * The terminal's location (editor or panel), it's terminal parent (split to the right), or editor group
    */
   location?: ITerminalLocationOptions;
+
+  /**
+   * pty 进程退出后是否自动关闭 terminal 控件
+   */
+  closeWhenExited?: boolean;
+
+  /**
+   * 是否为 TaskExecutor
+   */
+  isTaskExecutor?: boolean;
+
+  /**
+   * 作为 TaskExecutor 时对应的 taskId
+   */
+  taskId?: string;
+
+  /**
+   * 自定义的参数，由上层集成方自行控制
+   */
+  args?: any;
+
+  beforeCreate?: (terminalId: string) => void;
 }
 
 export function asTerminalIcon(

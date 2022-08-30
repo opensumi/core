@@ -1,4 +1,3 @@
-import lodashGet from 'lodash/get';
 import { observable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
@@ -52,7 +51,6 @@ import {
   TerminalOptions,
   asTerminalIcon,
   TERMINAL_ID_SEPARATOR,
-  ICreateTerminalWithWidgetOptions,
   ITerminalProfile,
 } from '../common';
 
@@ -645,7 +643,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const launchConfig = this.convertTerminalOptionsToLaunchConfig(options.terminalOptions);
     return this.createTerminalWithWidget({
       ...options,
-      options: launchConfig,
+      config: launchConfig,
     });
   }
 
@@ -658,10 +656,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     return client;
   }
-  async createTerminalWithWidget(options: ICreateTerminalWithWidgetOptions) {
+  async createTerminalWithWidget(options: ICreateTerminalOptions) {
     const widgetId = options.id ? this.clientId + TERMINAL_ID_SEPARATOR + options.id : this.service.generateSessionId();
-
-    const launchConfig = this.convertProfileToLaunchConfig(options.options);
+    const launchConfig = this.convertProfileToLaunchConfig(options.config);
 
     const { group } = this._createOneGroup(launchConfig);
     const widget = this.terminalView.createWidget(
@@ -678,9 +675,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const client = await this._createClient(widget, {
       id: widgetId,
       config: launchConfig,
-      cwd: options.options?.cwd,
-      location: options.options?.location,
-      resource: options.options?.resource,
+      cwd: options?.cwd,
+      location: options?.location,
+      resource: options?.resource,
     });
 
     if (options.isTaskExecutor) {

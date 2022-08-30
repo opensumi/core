@@ -155,7 +155,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     }
     const { id, term } = this.terminalClient;
     term.options.disableStdin = true;
-
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m\r\n`);
     this._onDidTaskProcessExit.fire(code);
@@ -229,7 +228,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       this.terminalClient.reset();
     } else {
       this.terminalClient = await this.terminalController.createTerminalWithWidget({
-        options: this.shellLaunchConfig,
+        config: this.shellLaunchConfig,
         closeWhenExited: false,
         isTaskExecutor: true,
         taskId: this.task._id,
