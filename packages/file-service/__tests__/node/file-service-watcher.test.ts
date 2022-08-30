@@ -3,7 +3,7 @@ import { execSync } from 'child_process';
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { ILogServiceManager, URI } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -26,10 +26,9 @@ describe('ParceWatcher Test', () => {
 
   beforeEach(async () => {
     injector = createBrowserInjector([]);
-    root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
+    root = FileUri.create(await fse.realpath(await temp.mkdir('node-fs-root')));
     watcherServer = injector.get(ParcelWatcherServer);
     watcherId = await watcherServer.watchFileChanges(root.toString());
-    await sleep(sleepTime);
   });
 
   afterEach(async () => {
@@ -53,20 +52,18 @@ describe('ParceWatcher Test', () => {
       root.withPath(root.path.join('foo', 'bar', 'baz.txt')).toString(),
     ];
 
-    fse.mkdirSync(FileUri.fsPath(root.resolve('foo')));
+    await fse.mkdir(FileUri.fsPath(root.resolve('foo')));
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
-    await sleep(sleepTime);
 
-    fse.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
+    await fse.mkdir(FileUri.fsPath(root.resolve('foo').resolve('bar')));
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
-    await sleep(sleepTime);
 
-    fse.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
+    await fse.writeFile(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
     expect(fse.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual(
       'baz',
     );
     await sleep(sleepTime);
-    expect(expectedUris).toEqual([...actualUris]);
+    expect(expectedUris).toEqual(Array.from(actualUris));
   });
 
   it('Should not receive file changes events from in the workspace by default if unwatched', async () => {
@@ -226,8 +223,8 @@ describe('Watch file rename/move/new', () => {
 
     await sleep(sleepTime);
 
-    expect([...addUris]).toEqual(expectedAddUris);
-    expect([...deleteUris]).toEqual(expectedDeleteUris);
+    expect(Array.from(addUris)).toEqual(expectedAddUris);
+    expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
   });
 
   it('Move file on current directry', async () => {
@@ -258,11 +255,11 @@ describe('Watch file rename/move/new', () => {
 
     await sleep(sleepTime);
 
-    expect([...addUris]).toEqual(expectedAddUris);
-    expect([...deleteUris]).toEqual(expectedDeleteUris);
+    expect(Array.from(addUris)).toEqual(expectedAddUris);
+    expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
   });
 
-  it.skip('new file', async () => {
+  it('New file', async () => {
     const addUris = new Set<string>();
     const deleteUris = new Set<string>();
 
@@ -281,19 +278,14 @@ describe('Watch file rename/move/new', () => {
 
     watcherServer.setClient(watcherClient);
 
-    const expectedAddUris = [root.resolve('中文.md').toString()];
+    const expectedAddUris = [root.resolve('README.md').toString()];
 
     const expectedDeleteUris = [];
 
-    await new Promise<void>((resolve) => {
-      execSync('touch 中文.md', {
-        cwd: FileUri.fsPath(root),
-      });
-      resolve();
-    });
+    await fse.ensureFile(root.resolve('README.md').codeUri.fsPath.toString());
     await sleep(sleepTime);
 
-    expect([...addUris]).toEqual(expectedAddUris);
-    expect([...deleteUris]).toEqual(expectedDeleteUris);
+    expect(Array.from(addUris)).toEqual(expectedAddUris);
+    expect(Array.from(deleteUris)).toEqual(expectedDeleteUris);
   });
 });
