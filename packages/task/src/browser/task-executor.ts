@@ -105,7 +105,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   private eventToDispose: DisposableCollection = new DisposableCollection();
   resetEventDispose() {
     this.eventToDispose.dispose();
-    this.eventToDispose = new DisposableCollection();
   }
 
   public taskStatus: TaskStatus = TaskStatus.PROCESS_INIT;
@@ -169,6 +168,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
 
   /**
    * 监听 Terminal 的相关事件，一个 Executor 仅需监听一次即可，否则多次监听会导致输出重复内容。
+   * 仅需要在 createTerminal 中设置一次监听即可
    * 注意里面的 event 用完要及时 dispose
    */
   private bindTerminalClientEvent() {
@@ -245,7 +245,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.taskStatus = TaskStatus.PROCESS_READY;
     this.terminalClient = terminalClient;
     this.shellLaunchConfig = terminalClient.launchConfig;
-    this.bindTerminalClientEvent();
     this.taskStatus = TaskStatus.PROCESS_RUNNING;
     this.pid = await this.terminalClient?.pid;
     this.processReady.resolve();
