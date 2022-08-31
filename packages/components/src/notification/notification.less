@@ -1,7 +1,7 @@
 @import '../style/variable.less';
 @import '../style/mixins.less';
 
-@notification-prefix-cls: ~'@{kt-prefix}-notification';
+@notification-prefix-cls: ~'@{prefix}-notification';
 @notification-width: 384px;
 @notification-padding-vertical: 16px;
 @notification-padding-horizontal: 24px;
@@ -94,6 +94,7 @@
     }
 
     .@{iconfont-css-prefix}&-icon {
+      height: 20px;
       &-success {
         color: @success-color;
       }
@@ -112,6 +113,7 @@
       position: absolute;
       top: 16px;
       right: 22px;
+      height: 20px;
       color: @text-color-secondary;
       outline: none;
 
@@ -121,7 +123,10 @@
     }
 
     &-btn {
-      float: right;
+      display: flex;
+      flex-flow: wrap;
+      align-items: center;
+      justify-content: flex-start;
       margin-top: 16px;
     }
   }
@@ -207,7 +212,7 @@
 
   .@{iconfont-css-prefix} {
     font-size: 12px;
-    margin-top: 5px;
+    margin-top: 1px;
   }
 
   .@{notification-prefix-cls}-notice {
@@ -226,7 +231,8 @@
     }
 
     &-btn button {
-      margin: 0 0 0 10px;
+      flex: 1;
+      margin: 0 0 5px 10px;
     }
   }
 }

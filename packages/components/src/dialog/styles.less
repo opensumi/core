@@ -1,10 +1,12 @@
+@import '../style/variable.less';
+
 .wrapper {
-  .kt-modal-body {
+  .@{prefix}-modal-body {
     background: var(--kt-modal-background);
     border-color: var(--notifications-border);
   }
 
-  .kt-modal-footer {
+  .@{prefix}-modal-footer {
     align-items: center;
     justify-content: flex-end;
     display: flex;
@@ -14,7 +16,7 @@
     color: var(--kt-modalInfoIcon-foreground);
   }
 
-  .kt-modal-close-x {
+  .@{prefix}-modal-close-x {
     margin: 50% 50% 0 0;
     width: 20px;
     height: 20px;
@@ -23,16 +25,16 @@
   }
 }
 
-.kt-dialog-content {
+.@{prefix}-dialog-content {
   display: flex;
 
-  .kt-dialog-content_area {
+  .@{prefix}-dialog-content_area {
     display: flex;
     flex-direction: column;
     flex: 1;
     overflow: hidden;
 
-    .kt-dialog-content_title {
+    .@{prefix}-dialog-content_title {
       line-height: 22px;
       font-size: 14px;
       margin: 0px 0px 8px 0px;
@@ -44,15 +46,20 @@
   border-top: 1px solid var(--notifications-border);
 }
 
-.kt-dialog-icon {
-  margin-right: 12px;
+.@{prefix}-dialog-icon {
+  margin-right: 10px;
+  border: none;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  padding: 0px;
 
   &:before {
     font-size: 20px;
   }
 }
 
-.kt-dialog-closex {
+.@{prefix}-dialog-closex {
   background-color: transparent;
   border: none;
   outline: none;
@@ -60,9 +67,17 @@
   flex-direction: column;
   padding: 0px;
   cursor: pointer;
+  margin-left: 6px;
+  height: 20px;
+  width: 20px;
+  align-items: center;
+  line-height: 20px;
+  &:hover {
+    transform: scale(1.2);
+  }
 }
 
-.kt-dialog-buttonWrap {
+.@{prefix}-dialog-buttonWrap {
   display: flex;
   flex-wrap: wrap;
   margin-top: 14px;
@@ -73,7 +88,7 @@
   }
 }
 
-.kt-dialog-message {
+.@{prefix}-dialog-message {
   color: var(--kt-modal-foreground);
   line-height: 22px;
   font-size: 14px;

@@ -1,7 +1,6 @@
-@checkbox-default-size: 12px;
-@checkbox-large-size: 14px;
+@import '../style/variable.less';
 
-.kt-checkbox {
+.@{prefix}-checkbox {
   font-size: @checkbox-default-size;
   display: inline-flex;
   align-items: center;
@@ -22,7 +21,7 @@
       opacity: 0;
     }
 
-    input:checked + .kt-checkbox-icon {
+    input:checked + .@{prefix}-checkbox-icon {
       border-color: var(--kt-checkbox-selectionBackground);
       background-color: var(--kt-checkbox-selectionBackground);
       color: var(--kt-checkbox-selectionForeground);
@@ -67,11 +66,11 @@
     }
   }
 
-  &.kt-checkbox-disabled {
+  &.@{prefix}-checkbox-disabled {
     // disabled
     color: var(--kt-checkbox-disableForeground);
 
-    input:checked + .kt-checkbox-icon {
+    input:checked + .@{prefix}-checkbox-icon {
       background-color: var(--kt-checkbox-disableBackground);
       color: var(--kt-checkbox-disableForeground);
       border-color: transparent;
