@@ -9,7 +9,7 @@ export const schema: IJSONSchema = {
     version: {
       type: 'string',
       enum: ['2.0.0'],
-      description: localize('JsonSchema.version', "The config's version number.12"),
+      description: localize('JsonSchema.version', "The config's version number."),
     },
     windows: {
       $ref: '#/definitions/osSpecificTaskRunnerConfiguration',
