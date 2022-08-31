@@ -35,8 +35,7 @@ export namespace Event {
     return (listener, thisArgs = null, disposables?) => {
       // we need this, in case the event fires during the listener call
       let didFire = false;
-      let result: IDisposable;
-      result = event(
+      const result = event(
         (e) => {
           if (didFire) {
             return;

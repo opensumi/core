@@ -105,7 +105,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
   private eventToDispose: DisposableCollection = new DisposableCollection();
   resetEventDispose() {
     this.eventToDispose.dispose();
-    this.eventToDispose = new DisposableCollection();
   }
 
   public taskStatus: TaskStatus = TaskStatus.PROCESS_INIT;
@@ -153,23 +152,23 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     if (!this.terminalClient) {
       return;
     }
-    const { term } = this.terminalClient;
+    const { id, term } = this.terminalClient;
     term.options.disableStdin = true;
-
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
     term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m\r\n`);
     this._onDidTaskProcessExit.fire(code);
 
     // 按任意键退出
     this.eventToDispose.push(
-      this.terminalClient?.term.onKey(() => {
-        this.terminalClient?.id && this.terminalView.removeWidget(this.terminalClient.id);
+      Event.once(term.onKey)(() => {
+        id && this.terminalView.removeWidget(id);
       }),
     );
   }
 
   /**
    * 监听 Terminal 的相关事件，一个 Executor 仅需监听一次即可，否则多次监听会导致输出重复内容。
+   * 仅需要在 createTerminal 中设置一次监听即可
    * 注意里面的 event 用完要及时 dispose
    */
   private bindTerminalClientEvent() {
@@ -212,7 +211,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     );
 
     this.eventToDispose.push(
-      this.terminalClient.onExit(async (e) => {
+      Event.once(this.terminalClient.onExit)(async (e) => {
         if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
           this.taskStatus = TaskStatus.PROCESS_EXITED;
           this.handleTaskExit(e.code);
@@ -229,7 +228,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
       this.terminalClient.reset();
     } else {
       this.terminalClient = await this.terminalController.createTerminalWithWidget({
-        options: this.shellLaunchConfig,
+        config: this.shellLaunchConfig,
         closeWhenExited: false,
         isTaskExecutor: true,
         taskId: this.task._id,
@@ -246,7 +245,6 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     this.taskStatus = TaskStatus.PROCESS_READY;
     this.terminalClient = terminalClient;
     this.shellLaunchConfig = terminalClient.launchConfig;
-    this.bindTerminalClientEvent();
     this.taskStatus = TaskStatus.PROCESS_RUNNING;
     this.pid = await this.terminalClient?.pid;
     this.processReady.resolve();

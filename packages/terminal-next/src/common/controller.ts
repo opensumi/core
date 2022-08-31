@@ -29,35 +29,6 @@ export interface IBoundSize {
   height: number;
 }
 
-export interface ICreateTerminalWithWidgetOptions {
-  options: ICreateTerminalOptions;
-
-  /**
-   * 插件进程传递的唯一 ID
-   */
-  id?: string;
-  /**
-   * pty 进程退出后是否自动关闭 terminal 控件
-   */
-  closeWhenExited?: boolean;
-
-  /**
-   * 是否为 TaskExecutor
-   */
-  isTaskExecutor?: boolean;
-
-  /**
-   * 作为 TaskExecutor 时对应的 taskId
-   */
-  taskId?: string;
-
-  /**
-   * 自定义的参数，由上层集成方自行控制
-   */
-  args?: any;
-
-  beforeCreate?: (terminalId: string) => void;
-}
 export interface ICreateClientWithWidgetOptions {
   terminalOptions: TerminalOptions;
   /**
@@ -106,7 +77,7 @@ export interface ITerminalController extends Disposable {
   findClientFromWidgetId(widgetId: string): ITerminalClient | undefined;
   createTerminalWithWidgetByTerminalOptions(options: ICreateClientWithWidgetOptions): Promise<ITerminalClient>;
   createTerminal(options: ICreateTerminalOptions): Promise<ITerminalClient>;
-  createTerminalWithWidget(options: ICreateTerminalWithWidgetOptions): Promise<ITerminalClient>;
+  createTerminalWithWidget(options: ICreateTerminalOptions): Promise<ITerminalClient>;
   clearCurrentGroup(): void;
   clearAllGroups(): void;
   showTerminalPanel(): void;
