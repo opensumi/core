@@ -1,5 +1,3 @@
-import { execSync } from 'child_process';
-
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
@@ -17,7 +15,7 @@ function sleep(time: number) {
 
 describe('ParceWatcher Test', () => {
   const track = temp.track();
-  const sleepTime = 500;
+  const sleepTime = 1000;
   let injector: MockInjector;
   let root: URI;
   let watcherServer: ParcelWatcherServer;
