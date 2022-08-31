@@ -658,6 +658,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
   async createTerminalWithWidget(options: ICreateTerminalOptions) {
     const widgetId = options.id ? this.clientId + TERMINAL_ID_SEPARATOR + options.id : this.service.generateSessionId();
+    // 这里转一遍是为了拿到 LaunchConfig，但是在 TerminalClient 内部还是会对 options.config 做可用检测并转换
     const launchConfig = this.convertProfileToLaunchConfig(options.config);
 
     const { group } = this._createOneGroup(launchConfig);
