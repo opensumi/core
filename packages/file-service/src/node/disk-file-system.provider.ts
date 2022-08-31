@@ -664,7 +664,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  private _getFileType(ext) {
+  private _getFileType(ext: string) {
     let type = 'text';
 
     if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
