@@ -86,6 +86,9 @@ describe('terminal service test cases', () => {
         },
         create2: (sessionId, cols, rows, _launchConfig) => {
           launchConfig = _launchConfig;
+          setTimeout(() => {
+            (terminalService as any)?.$processChange(sessionId, 'zsh');
+          });
         },
         $resolveUnixShellPath(p) {
           return p;
@@ -138,16 +141,16 @@ describe('terminal service test cases', () => {
     expect(launchConfig?.executable).toEqual(shellPath);
   });
 
-  it('terminal process name', () => {
+  it('terminal process name will change', (done) => {
+    expect.assertions(2);
+    const launchConfig: IShellLaunchConfig = {
+      executable: shellPath,
+    };
     terminalService.onProcessChange((e) => {
-      const launchConfig: IShellLaunchConfig = {
-        executable: shellPath,
-      };
-      terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig, {} as any);
-      terminalService.onProcessChange((e) => {
-        expect(e.sessionId).toBe(sessionId);
-        expect(e.processName).toBe('zsh');
-      });
+      expect(e.sessionId).toBe(sessionId);
+      expect(e.processName).toBe('zsh');
+      done();
     });
+    terminalService.attachByLaunchConfig(sessionId, 200, 200, launchConfig, {} as any);
   });
 });
