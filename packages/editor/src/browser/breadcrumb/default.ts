@@ -20,7 +20,7 @@ import {
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { FileStat } from '@opensumi/ide-file-service/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-service-client';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { IWorkspaceService } from '@opensumi/ide-workspace/lib/common/workspace.interface';
 
 import { IEditor } from '../../common';
 import { EditorSelectionChangeEvent, IBreadCrumbPart, IBreadCrumbProvider } from '../types';
