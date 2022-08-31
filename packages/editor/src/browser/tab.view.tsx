@@ -409,15 +409,22 @@ export type IEditorActionsProps = IEditorActionsBaseProps & React.HTMLAttributes
 export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
   (props: IEditorActionsProps, ref: React.Ref<typeof EditorActions>) => {
     const { group, className } = props;
+
+    const acquireArgs = useCallback(() => (
+        group.currentResource
+          ? [
+              group.currentResource.uri,
+              group,
+              group.currentOrPreviousFocusedEditor?.currentUri || group.currentEditor?.currentUri,
+            ]
+          : undefined
+      ) as [URI, IEditorGroup, MaybeNull<URI>] | undefined, [group]);
+
     const editorActionRegistry = useInjectable<IEditorActionRegistry>(IEditorActionRegistry);
     const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
     const menu = editorActionRegistry.getMenu(group);
     const [hasFocus, setHasFocus] = useState<boolean>(editorService.currentEditorGroup === group);
-    const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(
-      group.currentResource
-        ? [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri]
-        : undefined,
-    );
+    const [args, setArgs] = useState<[URI, IEditorGroup, MaybeNull<URI>] | undefined>(acquireArgs());
 
     useEffect(() => {
       const disposableCollection = new DisposableCollection();
@@ -428,20 +435,12 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
       );
       disposableCollection.push(
         editorService.onActiveResourceChange(() => {
-          setArgs(
-            group.currentResource
-              ? [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri]
-              : undefined,
-          );
+          setArgs(acquireArgs());
         }),
       );
       disposableCollection.push(
         group.onDidEditorGroupTabChanged(() => {
-          setArgs(
-            group.currentResource
-              ? [group.currentResource.uri, group, group.currentOrPreviousFocusedEditor?.currentUri]
-              : undefined,
-          );
+          setArgs(acquireArgs());
         }),
       );
       return () => {
