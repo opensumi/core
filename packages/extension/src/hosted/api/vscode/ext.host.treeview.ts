@@ -191,7 +191,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   }
 }
 
-class ExtHostTreeView<T> implements IDisposable {
+class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private onDidExpandElementEmitter: Emitter<vscode.TreeViewExpansionEvent<T>> = new Emitter<
     vscode.TreeViewExpansionEvent<T>
   >();
@@ -412,12 +412,14 @@ class ExtHostTreeView<T> implements IDisposable {
 
   async reveal(element: T, options?: ITreeViewRevealOptions): Promise<void> {
     // 在缓存中查找对应节点
-    let elementId;
-    this.id2Element.forEach((el, id) => {
-      if (Object.is(el, element)) {
-        elementId = id;
-      }
-    });
+    let elementId = element.id;
+    if (!elementId) {
+      this.id2Element.forEach((el, id) => {
+        if (Object.is(el, element)) {
+          elementId = id;
+        }
+      });
+    }
 
     if (elementId) {
       return this.proxy.$reveal(this.treeViewId, elementId, options);

@@ -137,6 +137,11 @@ export interface AppConfig {
    * 但这会导致 workerHost 的 origin 为 null，使某些请求失败
    */
   useIframeWrapWorkerHost?: boolean;
+
+  /**
+   * 忽略 Worker Host 可能出现的跨域问题
+   */
+  ignoreWorkerHostCors?: boolean;
   /**
    * 自定义客户端 id，是 websocket 服务的唯一标识
    * 也是传给声明了 backServices 的后端 Service 的唯一标识
