@@ -15,7 +15,7 @@ function sleep(time: number) {
 
 describe('ParceWatcher Test', () => {
   const track = temp.track();
-  const sleepTime = 1000;
+  const sleepTime = 500;
   let injector: MockInjector;
   let root: URI;
   let watcherServer: ParcelWatcherServer;
