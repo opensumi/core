@@ -1,3 +1,4 @@
+import { toMarkdownHtml } from '@opensumi/ide-core-browser';
 import { DisposableCollection, Emitter, Event, IAsyncResult } from '@opensumi/ide-utils';
 
 import { bindInputElement, ProxiedInputProp } from '../../input';
@@ -61,7 +62,7 @@ export abstract class PromptHandle {
     this.$.addEventListener('focus', this.handleFocus);
     this.$.addEventListener('blur', this.handleBlur);
     this.$validate = document.createElement('div');
-    this.$validate.setAttribute('style', 'top: calc(100% - 1px);');
+    this.$validate.setAttribute('style', 'top: 100%;');
     this.$addonAfter = document.createElement('div');
     this.$addonAfter.setAttribute('class', 'kt-input-addon-after');
     // 可能存在PromptHandle创建后没被使用的情况
@@ -150,7 +151,7 @@ export abstract class PromptHandle {
     validateBoxClassName += this._validateClassName;
 
     this.$validate.classList.value = validateBoxClassName;
-    this.$validate.innerText = validateMessage.message || '';
+    this.$validate.innerHTML = toMarkdownHtml(validateMessage.message || '');
     this.$.parentElement?.parentElement?.classList.remove(
       VALIDATE_CLASS_NAME.INFO,
       VALIDATE_CLASS_NAME.ERROR,

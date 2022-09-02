@@ -36,26 +36,25 @@ const RenderWrapper = (props: { html: string; opener?: IOpenerService }) => {
   return <div dangerouslySetInnerHTML={{ __html: html }} ref={ref as unknown as RefObject<HTMLDivElement>}></div>;
 };
 
-export const toMarkdown = (message: string | React.ReactNode, opener: IOpenerService): React.ReactNode => {
+export const toMarkdown = (message: string | React.ReactNode, opener?: IOpenerService): React.ReactNode => typeof message === 'string' ? (
+    <RenderWrapper opener={opener} html={toMarkdownHtml(message)}></RenderWrapper>
+  ) : (
+    message
+  );
+
+export const toMarkdownHtml = (message: string): string => {
   const renderer = new marked.Renderer();
 
   renderer.link = (href, title, text) =>
     `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" href="javascript:void(0)" title="${title}">${text}</a>`;
 
-  return typeof message === 'string' ? (
-    <RenderWrapper
-      opener={opener}
-      html={marked(message, {
-        gfm: true,
-        breaks: false,
-        pedantic: false,
-        sanitize: true,
-        smartLists: true,
-        smartypants: false,
-        renderer,
-      })}
-    ></RenderWrapper>
-  ) : (
-    message
-  );
+  return marked(message, {
+    gfm: true,
+    breaks: false,
+    pedantic: false,
+    sanitize: true,
+    smartLists: true,
+    smartypants: false,
+    renderer,
+  });
 };
