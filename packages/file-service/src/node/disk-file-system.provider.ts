@@ -37,6 +37,8 @@ import {
   IDiskFileProvider,
   FileAccess,
   FileSystemProviderCapabilities,
+  EXT_LIST_VIDEO,
+  EXT_LIST_IMAGE,
 } from '../common/';
 
 import { ParcelWatcherServer } from './file-service-watcher';
@@ -58,8 +60,6 @@ export interface IWatcher {
 
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
-  static readonly H5VideoExtList = ['mp4', 'ogg', 'webm'];
-
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
   private watcherServer: ParcelWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
@@ -667,9 +667,9 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private _getFileType(ext: string) {
     let type = 'text';
 
-    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
+    if (EXT_LIST_IMAGE.indexOf(ext) !== -1) {
       type = 'image';
-    } else if (DiskFileSystemProvider.H5VideoExtList.indexOf(ext) !== -1) {
+    } else if (EXT_LIST_VIDEO.indexOf(ext) !== -1) {
       type = 'video';
     } else if (ext && ['xml'].indexOf(ext) === -1) {
       type = 'binary';
