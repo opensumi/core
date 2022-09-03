@@ -589,7 +589,7 @@ export class FileService implements IFileService {
     return true;
   }
 
-  private _getFileType(ext) {
+  private _getFileType(ext: string) {
     let type = 'text';
 
     if (EXT_LIST_IMAGE.indexOf(ext) !== -1) {
