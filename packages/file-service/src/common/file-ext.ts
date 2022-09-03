@@ -1,3 +1,25 @@
-export const EXT_LIST_VIDEO = ['mp4', 'ogg', 'webm'];
+export const EXT_LIST_VIDEO = ['mp4', 'webm', 'mkv', 'mov', 'mts', 'flv', 'avi', 'wmv'];
 
-export const EXT_LIST_IMAGE = ['png', 'gif', 'jpg', 'jpeg', 'svg'];
+export const EXT_LIST_IMAGE = [
+  'png',
+  'gif',
+  'jpg',
+  'jpeg',
+  'svg',
+  'bmp',
+  'avif',
+  'cr2',
+  'cr3',
+  'dng',
+  'flif',
+  'heic',
+  'icns',
+  'jxl',
+  'jpm',
+  'jpx',
+  'nef',
+  'raf',
+  'rw2',
+  'tif',
+  'orf',
+];
