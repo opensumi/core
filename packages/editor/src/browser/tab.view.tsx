@@ -1,6 +1,7 @@
 import classnames from 'classnames';
 import React, { useEffect, useState, useCallback, useRef, useContext, useMemo, forwardRef } from 'react';
 
+import { Scrollbars } from '@opensumi/ide-components';
 import {
   getIcon,
   MaybeNull,
@@ -16,7 +17,6 @@ import {
   Event,
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -131,7 +131,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         }
       }
     }
-  }, [group]);
+  }, [group, tabContainer.current]);
 
   const updateTabMarginRight = useCallback(() => {
     if (editorActionUpdateTimer.current) {
@@ -388,9 +388,13 @@ export const Tabs = ({ group }: ITabsProps) => {
     <div id={VIEW_CONTAINERS.EDITOR_TABS} className={styles.kt_editor_tabs}>
       <div className={styles.kt_editor_tabs_scroll_wrapper}>
         {!wrapMode ? (
-          <Scroll ref={(el) => (el ? (tabContainer.current = el.ref) : null)} className={styles.kt_editor_tabs_scroll}>
+          <Scrollbars
+            thumbSize={5}
+            forwardedRef={(el) => (el ? (tabContainer.current = el) : null)}
+            className={styles.kt_editor_tabs_scroll}
+          >
             {renderTabContent()}
-          </Scroll>
+          </Scrollbars>
         ) : (
           <div className={styles.kt_editor_wrap_container}>{renderTabContent()}</div>
         )}
@@ -471,10 +475,10 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
 );
 
 /**
- * 获取tab DOM在可视范围的位置
+ * 获取 Tab DOM 在可视范围的位置
  * @param {HTMLElement} container
  * @param {HTMLElement} el
- * @returns {number} -1左边或骑跨，0可见，1右边
+ * @returns {number} -1 左边，0 可见，1 右边
  */
 function getTabDOMPosition(container: HTMLElement, el: HTMLElement): number {
   const left = container.scrollLeft;
