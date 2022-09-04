@@ -1,7 +1,7 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { URI } from '@opensumi/ide-core-common';
+import { URI, isMacintosh } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
@@ -13,7 +13,7 @@ function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
-describe('ParceWatcher Test', () => {
+(isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
   const track = temp.track();
   const sleepTime = 500;
   let injector: MockInjector;
@@ -136,7 +136,7 @@ describe('ParceWatcher Test', () => {
   });
 });
 
-describe('Watch file rename/move/new', () => {
+(isMacintosh ? describe.skip : describe)('Watch file rename/move/new', () => {
   const track = temp.track();
   const sleepTime = 500;
   let root: URI;
