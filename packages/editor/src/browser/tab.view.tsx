@@ -124,7 +124,7 @@ export const Tabs = ({ group }: ITabsProps) => {
             '.' + styles.kt_editor_tab + "[data-uri='" + group.currentResource.uri.toString() + "']",
           );
           if (currentTab) {
-            scrollToTabEl(tabContainer.current, currentTab as HTMLDivElement);
+            currentTab.scrollIntoView();
           }
         } catch (e) {
           // noop
@@ -473,40 +473,6 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
     );
   },
 );
-
-/**
- * 获取 Tab DOM 在可视范围的位置
- * @param {HTMLElement} container
- * @param {HTMLElement} el
- * @returns {number} -1 左边，0 可见，1 右边
- */
-function getTabDOMPosition(container: HTMLElement, el: HTMLElement): number {
-  const left = container.scrollLeft;
-  const right = left + container.offsetWidth;
-  const elLeft = el.offsetLeft;
-  const elRight = el.offsetWidth + elLeft;
-  if (el.offsetWidth > container.offsetWidth) {
-    return -1;
-  }
-  if (left <= elLeft) {
-    if (right >= elRight) {
-      return 0;
-    } else {
-      return 1;
-    }
-  } else {
-    return -1;
-  }
-}
-
-function scrollToTabEl(container: HTMLElement, el: HTMLElement) {
-  const position = getTabDOMPosition(container, el);
-  if (position < 0) {
-    container.scrollLeft = el.offsetLeft;
-  } else if (position > 0) {
-    container.scrollLeft = el.offsetLeft + el.offsetWidth - container.offsetWidth;
-  }
-}
 
 function preventNavigation(this: HTMLDivElement, e: WheelEvent) {
   if (this.offsetWidth + this.scrollLeft + e.deltaX > this.scrollWidth) {
