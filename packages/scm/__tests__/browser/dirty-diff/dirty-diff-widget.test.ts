@@ -249,28 +249,28 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
       const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
       dirtyDiffModel['_changes'] = [
         {
-          originalStartLineNumber: 11,
-          originalEndLineNumber: 11,
-          modifiedStartLineNumber: 11,
-          modifiedEndLineNumber: 11,
+          originalStartLine: 11,
+          originalEndLine: 11,
+          modifiedStartLine: 11,
+          modifiedEndLine: 11,
         },
         {
-          originalStartLineNumber: 12,
-          originalEndLineNumber: 12,
-          modifiedStartLineNumber: 12,
-          modifiedEndLineNumber: 12,
+          originalStartLine: 12,
+          originalEndLine: 12,
+          modifiedStartLine: 12,
+          modifiedEndLine: 12,
         },
         {
-          originalStartLineNumber: 14,
-          originalEndLineNumber: 14,
-          modifiedStartLineNumber: 14,
-          modifiedEndLineNumber: 14,
+          originalStartLine: 14,
+          originalEndLine: 14,
+          modifiedStartLine: 14,
+          modifiedEndLine: 14,
         },
         {
-          originalStartLineNumber: 15,
-          originalEndLineNumber: 15,
-          modifiedStartLineNumber: 15,
-          modifiedEndLineNumber: 15,
+          originalStartLine: 15,
+          originalEndLine: 15,
+          modifiedStartLine: 15,
+          modifiedEndLine: 15,
         },
       ];
       const dirtyDiffWidget = injector.get(DirtyDiffWidget, [codeEditor, dirtyDiffModel, commandService]);

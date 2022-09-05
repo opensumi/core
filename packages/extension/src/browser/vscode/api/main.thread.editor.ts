@@ -539,7 +539,26 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     );
 
     if (diffEditor) {
-      return Promise.resolve((diffEditor as BrowserDiffEditor).monacoDiffEditor.getLineChanges() || []);
+      const diffChanges = (diffEditor as BrowserDiffEditor).monacoDiffEditor.getLineChanges();
+      if (!diffChanges) {
+        return Promise.resolve([]);
+      }
+      return Promise.resolve(diffChanges.map((change) => [
+        change.originalStartLineNumber,
+        change.originalEndLineNumber,
+        change.modifiedStartLineNumber,
+        change.modifiedEndLineNumber,
+        change.charChanges?.map((charChange) => ([
+          charChange.originalStartLineNumber,
+          charChange.originalStartColumn,
+          charChange.originalEndLineNumber,
+          charChange.originalEndColumn,
+          charChange.modifiedStartLineNumber,
+          charChange.modifiedStartColumn,
+          charChange.modifiedEndLineNumber,
+          charChange.modifiedEndColumn,
+        ])),
+      ]));
     }
 
     const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');

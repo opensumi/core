@@ -204,8 +204,14 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     return new ExtHostTextEditorDecorationType(key, this._proxy);
   }
 
-  getDiffInformation(id: string): Promise<vscode.LineChange[]> {
-    return Promise.resolve(this._proxy.$getDiffInformation(id));
+  async getDiffInformation(id: string): Promise<vscode.LineChange[]> {
+    const lineChanges = await this._proxy.$getDiffInformation(id);
+    return lineChanges.map((change) => ({
+      originalStartLineNumber: change[0],
+      originalEndLineNumber: change[1],
+      modifiedStartLineNumber: change[2],
+      modifiedEndLineNumber: change[3],
+    }));
   }
 }
 

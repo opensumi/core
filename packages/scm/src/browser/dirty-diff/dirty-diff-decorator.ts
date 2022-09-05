@@ -1,5 +1,5 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { Disposable, IChange } from '@opensumi/ide-core-browser';
+import { Disposable, ILineChange } from '@opensumi/ide-core-browser';
 import { OverviewRulerLane } from '@opensumi/ide-editor';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { themeColorFromId } from '@opensumi/ide-theme';
@@ -22,10 +22,10 @@ enum ChangeType {
   Delete = 'Delete',
 }
 
-function getChangeType(change: IChange): ChangeType {
-  if (change.originalEndLineNumber === 0) {
+function getChangeType(change: ILineChange): ChangeType {
+  if (change[1] === 0) {
     return ChangeType.Add;
-  } else if (change.modifiedEndLineNumber === 0) {
+  } else if (change[3] === 0) {
     return ChangeType.Delete;
   }
   return ChangeType.Modify;
@@ -105,8 +105,8 @@ export class DirtyDiffDecorator extends Disposable {
     }
     const decorations = this.model.changes.map((change) => {
       const changeType = getChangeType(change);
-      const startLineNumber = change.modifiedStartLineNumber;
-      const endLineNumber = change.modifiedEndLineNumber || startLineNumber;
+      const startLineNumber = change[2];
+      const endLineNumber = change[3] || startLineNumber;
 
       switch (changeType) {
         case ChangeType.Add:

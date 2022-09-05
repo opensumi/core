@@ -675,7 +675,26 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   }
 
   getLineChanges(): ILineChange[] | null {
-    return this.monacoDiffEditor.getLineChanges();
+    const diffChanges = this.monacoDiffEditor.getLineChanges();
+    if (!diffChanges) {
+      return null;
+    }
+    return diffChanges.map((change) => [
+      change.originalStartLineNumber,
+      change.originalEndLineNumber,
+      change.modifiedStartLineNumber,
+      change.modifiedEndLineNumber,
+      change.charChanges?.map((charChange) => ([
+        charChange.originalStartLineNumber,
+        charChange.originalStartColumn,
+        charChange.originalEndLineNumber,
+        charChange.originalEndColumn,
+        charChange.modifiedStartLineNumber,
+        charChange.modifiedStartColumn,
+        charChange.modifiedEndLineNumber,
+        charChange.modifiedEndColumn,
+      ])),
+    ]);
   }
 
   private wrapEditors() {
