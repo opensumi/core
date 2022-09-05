@@ -1560,8 +1560,6 @@ export class FileTreeModelService {
   }
 
   public copyFile = async (from: URI[]) => {
-    // eslint-disable-next-line no-console
-    console.log(this.appConfig.isElectronRenderer, 'isElectronRenderer');
     if (this.pasteStore && this.pasteStore.type === PasteTypes.CUT) {
       this._pasteStore.files.forEach((file) => {
         if (file) {
@@ -1586,7 +1584,11 @@ export class FileTreeModelService {
     };
 
     // Also update pasteStore in localStorage
-    this.clipboardService.writeResources(from);
+    if (this.appConfig.isElectronRenderer) {
+      this.nativeClipboardService.writeResources(from);
+    } else {
+      this.clipboardService.writeResources(from);
+    }
   };
 
   public pasteFile = async (to: URI) => {
@@ -1596,7 +1598,14 @@ export class FileTreeModelService {
     }
     let pasteStore = this.pasteStore;
     if (!pasteStore) {
-      const uriList = await this.clipboardService.readResources();
+      let uriList: URI[];
+
+      if (this.appConfig.isElectronRenderer) {
+        uriList = await this.nativeClipboardService.readResources();
+      } else {
+        uriList = await this.clipboardService.readResources();
+      }
+
       if (!uriList || !uriList.length) {
         return;
       }
