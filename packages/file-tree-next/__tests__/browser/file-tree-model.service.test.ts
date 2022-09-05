@@ -12,6 +12,7 @@ import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { IFileTreeAPI } from '@opensumi/ide-file-tree-next';
 import { FileContextKey } from '@opensumi/ide-file-tree-next/lib/browser/file-contextkey';
@@ -101,6 +102,7 @@ describe('FileTreeModelService should be work', () => {
       return contextKey;
     },
   };
+  const mockFileService = {};
   beforeEach(async () => {
     injector = createBrowserInjector([]);
 
@@ -120,6 +122,10 @@ describe('FileTreeModelService should be work', () => {
       {
         token: IFileTreeService,
         useValue: mockFileTreeService,
+      },
+      {
+        token: IFileServiceClient,
+        useValue: mockFileService,
       },
       {
         token: StorageProvider,
