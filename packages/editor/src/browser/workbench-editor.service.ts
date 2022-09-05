@@ -909,6 +909,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._onDidEditorFocusChange.fire();
       }),
       this.codeEditor.onFocus(() => {
+        if (this.codeEditor.currentUri) {
+          this.locateInFileTree(this.codeEditor.currentUri);
+        }
         this._currentOrPreviousFocusedEditor = this.codeEditor;
         this.setContextKeys();
         this._onDidEditorFocusChange.fire();
