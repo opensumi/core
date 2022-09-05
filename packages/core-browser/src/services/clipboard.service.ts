@@ -1,11 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { IClipboardService } from '@opensumi/ide-core-common';
+import { IClipboardService, CLIPBOARD_FILE_TOKEN } from '@opensumi/ide-core-common';
 import { URI } from '@opensumi/ide-core-common';
 
 import { ILogger } from '../logger';
 
-export const PASTE_FILE_LOCAL_TOKEN = 'paste-uri-list';
-export { IClipboardService } from '@opensumi/ide-core-common';
+export { CLIPBOARD_FILE_TOKEN, IClipboardService };
 
 @Injectable()
 export class BrowserClipboardService implements IClipboardService {
@@ -56,14 +55,14 @@ export class BrowserClipboardService implements IClipboardService {
       return '';
     }
   }
-  async writeResources(resources: URI[], field = PASTE_FILE_LOCAL_TOKEN): Promise<void> {
+  async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
     try {
       localStorage.setItem(field, JSON.stringify(resources.map((uri) => uri.toString())));
     } catch (e) {
       this.logger.error(e);
     }
   }
-  async readResources(field = PASTE_FILE_LOCAL_TOKEN): Promise<URI[]> {
+  async readResources(field = CLIPBOARD_FILE_TOKEN): Promise<URI[]> {
     try {
       const localStorgeUriList = JSON.parse(localStorage.getItem(field) ?? '');
       if (

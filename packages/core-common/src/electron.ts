@@ -105,6 +105,14 @@ export interface IElectronMainUIServiceShape {
    * @param windowId
    */
   getWebContentsId(windowId: number): Promise<number>;
+
+  /**
+   * clipboard 相关 read/write Text/Buffer
+   */
+  readClipboardText(): Promise<string>;
+  writeClipboardText(text: string): Promise<void>;
+  readClipboardBuffer(field: string): Promise<Uint8Array>;
+  writeClipboardBuffer(field: string, buffer: Uint8Array): Promise<void>;
 }
 
 export interface IElectronMainUIService

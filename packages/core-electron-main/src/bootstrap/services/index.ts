@@ -1,6 +1,5 @@
 import { Provider } from '@opensumi/di';
 
-import { ElectronClipboardService, IClipboardService } from './clipboard';
 import { MenuElectronMainContribution } from './menu';
 import { ProtocolElectronMainContribution } from './protocol';
 import { UIElectronMainContribution } from './ui';
@@ -11,8 +10,4 @@ export const serviceProviders: Provider[] = [
   UIElectronMainContribution,
   ProtocolElectronMainContribution,
   UrlElectronMainContribution,
-  {
-    token: IClipboardService,
-    useClass: ElectronClipboardService,
-  },
 ];
