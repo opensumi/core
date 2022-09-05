@@ -15,13 +15,24 @@ export class ElectronClipboardService implements IClipboardService {
     return clipboard.readText();
   }
   async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
-    // eslint-disable-next-line no-console
-    const buffer = Buffer.from('writeBuffer', 'utf8');
-    return;
+    try {
+      const buffer = Buffer.from(JSON.stringify(resources), 'utf8');
+      return clipboard.writeBuffer(field, Buffer.from(buffer));
+    } catch {}
   }
   async readResources(field = CLIPBOARD_FILE_TOKEN): Promise<URI[]> {
-    // eslint-disable-next-line no-console
-    console.log('electron: readResources', field);
-    return [];
+    try {
+      const list = clipboard.readBuffer(field).toJSON().data;
+      if (
+        !Array.isArray(list) ||
+        !list.length ||
+        !list.every((str) => typeof str === 'string' && URI.isUriString(str))
+      ) {
+        return [];
+      }
+      return list.map((str) => URI.parse(str));
+    } catch {
+      return [];
+    }
   }
 }
