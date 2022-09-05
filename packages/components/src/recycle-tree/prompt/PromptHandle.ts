@@ -1,7 +1,7 @@
-import { toMarkdownHtml } from '@opensumi/ide-core-browser';
 import { DisposableCollection, Emitter, Event, IAsyncResult } from '@opensumi/ide-utils';
 
 import { bindInputElement, ProxiedInputProp } from '../../input';
+import { createMarkedRenderer, toMarkdownHtml } from '../../utils';
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -45,6 +45,7 @@ export abstract class PromptHandle {
   private onFocusEmitter: Emitter<string> = new Emitter();
   private onBlurEmitter: Emitter<string> = new Emitter();
   private onDestroyEmitter: Emitter<string> = new Emitter();
+  private markdownRenderer = createMarkedRenderer();
 
   constructor() {
     this.$ = document.createElement('input');
@@ -151,7 +152,7 @@ export abstract class PromptHandle {
     validateBoxClassName += this._validateClassName;
 
     this.$validate.classList.value = validateBoxClassName;
-    this.$validate.innerHTML = toMarkdownHtml(validateMessage.message || '');
+    this.$validate.innerHTML = toMarkdownHtml(validateMessage.message || '', { renderer: this.markdownRenderer });
     this.$.parentElement?.parentElement?.classList.remove(
       VALIDATE_CLASS_NAME.INFO,
       VALIDATE_CLASS_NAME.ERROR,
