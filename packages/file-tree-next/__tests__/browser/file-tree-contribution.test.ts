@@ -2,9 +2,7 @@ import {
   IApplicationService,
   IClipboardService,
   IContextKeyService,
-  isLinux,
-  isWindows,
-  OperatingSystem,
+  INativeClipboardService,
   OS,
   PreferenceService,
   QuickOpenService,
@@ -110,6 +108,10 @@ describe('FileTreeContribution', () => {
       },
       {
         token: IClipboardService,
+        useValue: {},
+      },
+      {
+        token: INativeClipboardService,
         useValue: {},
       },
       {

@@ -1,4 +1,5 @@
 import { TreeNodeType } from '@opensumi/ide-components';
+import { INativeClipboardService } from '@opensumi/ide-core-browser';
 import {
   URI,
   Disposable,
@@ -121,6 +122,11 @@ describe('FileTreeModelService should be work', () => {
         token: IFileTreeService,
         useValue: mockFileTreeService,
       },
+      {
+        token: IFileServiceClient,
+        useValue: mockFileService,
+      },
+      { token: INativeClipboardService, useValue: {} },
       {
         token: StorageProvider,
         useValue: () => mockExploreStorage,
