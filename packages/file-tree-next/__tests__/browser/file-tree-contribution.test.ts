@@ -2,7 +2,6 @@ import {
   IApplicationService,
   IClipboardService,
   IContextKeyService,
-  INativeClipboardService,
   OS,
   PreferenceService,
   QuickOpenService,
@@ -13,6 +12,7 @@ import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IFileTreeAPI, IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { FileTreeContribution } from '@opensumi/ide-file-tree-next/lib/browser/file-tree-contribution';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
@@ -69,6 +69,7 @@ describe('FileTreeContribution', () => {
     },
     onWorkspaceLocationChanged: onWorkspaceLocationChangedEmitter.event,
   };
+  const mockFileService = {};
 
   beforeEach(() => {
     mockInjector = createBrowserInjector([OutlineModule]);
@@ -81,6 +82,10 @@ describe('FileTreeContribution', () => {
       {
         token: IFileTreeService,
         useValue: mockFileTreeService,
+      },
+      {
+        token: IFileServiceClient,
+        useValue: mockFileService,
       },
       {
         token: IWorkspaceService,
