@@ -11,8 +11,7 @@ const CLIENT_ID = 'W_' + uuid();
 export async function renderApp(opts: IClientAppOpts) {
   const defaultHost = process.env.HOST || window.location.hostname;
   const injector = new Injector();
-  opts.workspaceDir =
-    opts.workspaceDir || process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH
+  opts.workspaceDir = opts.workspaceDir || process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH
       ? window.location.hash.slice(1)
       : process.env.WORKSPACE_DIR;
 
