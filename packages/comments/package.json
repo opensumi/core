@@ -17,7 +17,6 @@
   },
   "dependencies": {
     "@opensumi/ide-core-common": "2.19.11",
-    "marked": "4.0.10",
     "react-mentions": "^3.3.1"
   },
   "devDependencies": {
@@ -27,7 +26,6 @@
     "@opensumi/ide-editor": "2.19.11",
     "@opensumi/ide-main-layout": "2.19.11",
     "@opensumi/ide-monaco-enhance": "2.19.11",
-    "@opensumi/ide-theme": "2.19.11",
-    "@types/marked": "4.0.1"
+    "@opensumi/ide-theme": "2.19.11"
   }
 }

@@ -1,6 +1,5 @@
-import { marked } from 'marked';
-
 import { Injectable, Autowired } from '@opensumi/di';
+import { parseMarkdown } from '@opensumi/ide-components/lib/utils';
 import { IDisposable, Disposable, CancellationToken, Event, URI, IOpenerService } from '@opensumi/ide-core-browser';
 import { HttpOpener } from '@opensumi/ide-core-browser/lib/opener/http-opener';
 import { IWebviewService } from '@opensumi/ide-webview';
@@ -8,7 +7,6 @@ import { IWebviewService } from '@opensumi/ide-webview';
 import { IMarkdownService } from '../common';
 
 import { markdownCss } from './mardown.style';
-
 
 @Injectable()
 export class MarkdownServiceImpl implements IMarkdownService {
@@ -74,7 +72,7 @@ export class MarkdownServiceImpl implements IMarkdownService {
 
   async getBody(content): Promise<string> {
     return new Promise((resolve, reject) => {
-      marked.parse(content, (err, result) => {
+      parseMarkdown(content, undefined, (err, result) => {
         if (err) {
           reject(err);
         }
