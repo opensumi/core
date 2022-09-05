@@ -76,7 +76,14 @@ import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
 import { AppConfig } from '../react-providers/config-provider';
 import { SlotRendererContribution } from '../react-providers/slot';
-import { CredentialsService, ICredentialsService, CryptoService, ICryptoService } from '../services';
+import {
+  CredentialsService,
+  ICredentialsService,
+  CryptoService,
+  ICryptoService,
+  ElectronClipboardService,
+  INativeClipboardService,
+} from '../services';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
 import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
@@ -283,6 +290,10 @@ export function injectInnerProviders(injector: Injector) {
       {
         token: IElectronMenuBarService,
         useClass: ElectronMenuBarService,
+      },
+      {
+        token: INativeClipboardService,
+        useClass: ElectronClipboardService,
       },
     );
   }

@@ -34,10 +34,11 @@ import {
   FILE_COMMANDS,
   path,
   IClipboardService,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { INativeClipboardService, LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
@@ -126,6 +127,12 @@ export class FileTreeModelService {
 
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
+
+  @Autowired(INativeClipboardService)
+  private readonly nativeClipboardService: INativeClipboardService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   private _isDisposed = false;
 
@@ -1553,6 +1560,8 @@ export class FileTreeModelService {
   }
 
   public copyFile = async (from: URI[]) => {
+    // eslint-disable-next-line no-console
+    console.log(this.appConfig.isElectronRenderer, 'isElectronRenderer');
     if (this.pasteStore && this.pasteStore.type === PasteTypes.CUT) {
       this._pasteStore.files.forEach((file) => {
         if (file) {
