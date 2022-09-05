@@ -1,24 +1,25 @@
 import { Injectable } from '@opensumi/di';
-import { IClipboardService } from '@opensumi/ide-core-common';
+import { IClipboardService, CLIPBOARD_FILE_TOKEN } from '@opensumi/ide-core-common';
 import { URI } from '@opensumi/ide-core-common';
 
-export const PASTE_FILE_LOCAL_TOKEN = 'paste-uri-list';
-export { IClipboardService } from '@opensumi/ide-core-common';
+export { IClipboardService, CLIPBOARD_FILE_TOKEN };
+
+const { clipboard } = require('electron');
 
 @Injectable()
 export class ElectronClipboardService implements IClipboardService {
-  async writeText(): Promise<void> {
-    return;
+  async writeText(text: string): Promise<void> {
+    return clipboard.writeText(text);
   }
   async readText(): Promise<string> {
-    return '';
+    return clipboard.readText();
   }
-  async writeResources(resources: URI[], field = PASTE_FILE_LOCAL_TOKEN): Promise<void> {
+  async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
     // eslint-disable-next-line no-console
-    console.log('electron: writeResources', resources, field);
+    const buffer = Buffer.from('writeBuffer', 'utf8');
     return;
   }
-  async readResources(field = PASTE_FILE_LOCAL_TOKEN): Promise<URI[]> {
+  async readResources(field = CLIPBOARD_FILE_TOKEN): Promise<URI[]> {
     // eslint-disable-next-line no-console
     console.log('electron: readResources', field);
     return [];
