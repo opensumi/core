@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { URI } from '@opensumi/ide-core-common';
+import { ILineChange, URI } from '@opensumi/ide-core-common';
 import { OverviewRulerLane, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl } from '@opensumi/ide-editor/src/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
@@ -55,12 +55,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
 
       // ChangeType#Add
-      const change0 = {
-        originalEndLineNumber: 0,
-        originalStartLineNumber: 10,
-        modifiedStartLineNumber: 111,
-        modifiedEndLineNumber: 0,
-      };
+      const change0: ILineChange = [0, 10, 111, 0, []];
       dirtyDiffModel['_changes'] = [change0];
       dirtyDiffModel['_onDidChange'].fire([
         {
@@ -74,9 +69,9 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
       expect(decos[0].range).toEqual({
-        startLineNumber: change0.modifiedStartLineNumber,
+        startLineNumber: change0[2],
         startColumn: 1,
-        endLineNumber: change0.modifiedStartLineNumber,
+        endLineNumber: change0[2],
         endColumn: 1,
       });
       expect(decos[0].options.linesDecorationsClassName).toBe('dirty-diff-glyph dirty-diff-added');
@@ -104,12 +99,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
 
       // ChangeType#Delete
-      const change0 = {
-        originalEndLineNumber: 1,
-        originalStartLineNumber: 10,
-        modifiedStartLineNumber: 111,
-        modifiedEndLineNumber: 0,
-      };
+      const change0: ILineChange = [1, 10, 111, 0, []];
       dirtyDiffModel['_changes'] = [change0];
       dirtyDiffModel['_onDidChange'].fire([
         {
@@ -123,9 +113,9 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
       expect(decos[0].range).toEqual({
-        startLineNumber: change0.modifiedStartLineNumber,
+        startLineNumber: change0[2],
         startColumn: Number.MAX_VALUE,
-        endLineNumber: change0.modifiedStartLineNumber,
+        endLineNumber: change0[2],
         endColumn: Number.MAX_VALUE,
       });
       expect(decos[0].options.linesDecorationsClassName).toBeNull();
@@ -153,12 +143,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
 
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
       // ChangeType#Modify
-      const change0 = {
-        originalEndLineNumber: 1,
-        originalStartLineNumber: 10,
-        modifiedStartLineNumber: 111,
-        modifiedEndLineNumber: 1,
-      };
+      const change0: ILineChange = [1, 10, 111, 0, []];
       dirtyDiffModel['_changes'] = [change0];
       dirtyDiffModel['_onDidChange'].fire([
         {
@@ -172,9 +157,9 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
       expect(decos[0].range).toEqual({
-        startLineNumber: change0.modifiedStartLineNumber,
+        startLineNumber: change0[2],
         startColumn: 1,
-        endLineNumber: change0.modifiedEndLineNumber,
+        endLineNumber: change0[3],
         endColumn: 1,
       });
       expect(decos[0].options.linesDecorationsClassName).toBeNull();
@@ -199,12 +184,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
 
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
       // ChangeType#Add
-      const change0 = {
-        originalEndLineNumber: 0,
-        originalStartLineNumber: 10,
-        modifiedStartLineNumber: 111,
-        modifiedEndLineNumber: 0,
-      };
+      const change0: ILineChange = [1, 10, 111, 0, []];
       dirtyDiffModel['_changes'] = [change0];
 
       dirtyDiffDecorator['editorModel'] = null;
