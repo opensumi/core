@@ -35,6 +35,7 @@ import { DebugConsoleModelService } from './debug-console-tree.model.service';
 
 const DECORATION_KEY = 'consoleinputdecoration';
 const HISTORY_STORAGE_KEY = 'debug.console.history';
+const DEBUG_CONSOLE_DEFAULT_HEIGHT = 18;
 
 const firstUpperCase = (str: string) => str.replace(/^\S/, (s) => s.toUpperCase());
 
@@ -45,7 +46,6 @@ const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
     vertical: 'hidden',
     handleMouseWheel: true,
   },
-  lineHeight: 26,
   acceptSuggestionOnEnter: 'on',
   readOnly: true,
 };
@@ -262,7 +262,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
 
     const { monacoEditor } = this.inputEditor;
 
-    const h = Math.max(height || 26, monacoEditor.getContentHeight());
+    const h = Math.max(height || DEBUG_CONSOLE_DEFAULT_HEIGHT, monacoEditor.getContentHeight());
 
     monacoEditor.layout({
       width: width || this._consoleInputElement?.offsetWidth!,
