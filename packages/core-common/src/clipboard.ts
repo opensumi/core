@@ -1,6 +1,7 @@
 import { URI } from '@opensumi/ide-utils';
 
 export const IClipboardService = Symbol('IClipboardService');
+export const CLIPBOARD_FILE_TOKEN = 'clipboard/file-list';
 
 export interface IClipboardService {
   /**
