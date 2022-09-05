@@ -17,7 +17,7 @@ export class ElectronClipboardService implements IClipboardService {
   }
   async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
     try {
-      const buffer = Buffer.from(JSON.stringify(resources), 'utf8');
+      const buffer = Buffer.from(JSON.stringify(resources.map((uri) => uri.toString())), 'utf8');
       return clipboard.writeBuffer(field, Buffer.from(buffer));
     } catch {}
   }

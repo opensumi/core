@@ -23,13 +23,14 @@ export class ElectronClipboardService implements INativeClipboardService {
   }
   async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
     try {
-      const buffer = Buffer.from(JSON.stringify(resources), 'utf8');
-      return await this.electronMainUIService.writeClipboardBuffer(field, Buffer.from(buffer));
+      const buffer = Buffer.from(JSON.stringify(resources.map((uri) => uri.toString())), 'utf8');
+      return await this.electronMainUIService.writeClipboardBuffer(field, buffer);
     } catch {}
   }
   async readResources(field = CLIPBOARD_FILE_TOKEN): Promise<URI[]> {
     try {
-      const list = Buffer.from(await this.electronMainUIService.readClipboardBuffer(field)).toJSON().data;
+      const buffer = await this.electronMainUIService.readClipboardBuffer(field);
+      const list = JSON.parse(Buffer.from(buffer).toString('utf8'));
       if (
         !Array.isArray(list) ||
         !list.length ||
