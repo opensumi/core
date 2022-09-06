@@ -1,4 +1,5 @@
 import { URI } from '@opensumi/ide-core-common';
+import { LanguagesContribution } from '../../common';
 
 import {
   FoldingRules,
@@ -18,29 +19,6 @@ export interface ITextmateTokenizerService {
   registerLanguage(language: LanguagesContribution, extPath: URI): Promise<void>;
   registerLanguages(language: LanguagesContribution[], extPath: URI): Promise<void>;
   testTokenize(line: string, languageId: string): void;
-}
-
-export interface LanguagesContribution {
-  id: string;
-  // 扩展名
-  extensions: string[];
-  // 语言别名
-  aliases?: string[];
-  // 正则表达式字符串 如 "^#!/.*\\bpython[0-9.-]*\\b"
-  firstLine?: string;
-  // 配置文件路径
-  configuration?: string;
-  // 如["text/css"]
-  mimetypes?: string[];
-  filenames?: string[];
-  filenamePatterns?: string[];
-
-  /**
-   * 定义统一的 resolvedConfiguration 数据
-   * 其中的值为 configuration 指向的 json 配置文件的内容
-   * 主要解决无需多个插件即可注册多个 language 进来
-   */
-  resolvedConfiguration?: LanguageConfiguration;
 }
 
 export interface ScopeMap {

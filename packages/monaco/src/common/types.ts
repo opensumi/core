@@ -9,6 +9,8 @@ export {
   IndentationRule,
   IAutoClosingPairConditional,
   IAutoClosingPair,
+  OnEnterRule,
+  EnterAction,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/languageConfiguration';
 export { CodeActionTriggerType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 

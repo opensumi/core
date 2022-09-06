@@ -1552,6 +1552,16 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_DEFAULTS.showUnused,
     description: localize('showUnused', 'Controls fading out of unused code.'),
   },
+  'editor.comments.insertSpace': {
+    type: 'boolean',
+    default: true,
+    description: localize('insertSpace', 'Insert a space after the line comment token and inside the block comments tokens.'),
+  },
+  'editor.comments.ignoreEmptyLines': {
+    type: 'boolean',
+    default: true,
+    description: localize('insertSpace', 'Ignore empty lines when inserting line comments.'),
+  },
   'editor.links': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.links,
