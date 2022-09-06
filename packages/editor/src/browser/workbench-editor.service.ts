@@ -2105,7 +2105,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   componentUndo() {
     const currentOpenType = this.currentOpenType;
-    console.log('currentOpenType>', currentOpenType);
     if (currentOpenType?.undo) {
       currentOpenType.undo(this.currentResource!);
     }

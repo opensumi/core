@@ -5,7 +5,6 @@ import {
   FoldingRules,
   IAutoClosingPair,
   IAutoClosingPairConditional,
-  LanguageConfiguration,
 } from '../monaco-api/types';
 
 export const ITextmateTokenizer = Symbol('ITextmateTokenizer');
