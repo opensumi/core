@@ -14,7 +14,7 @@ export const ktPanelTitleBackground = registerColor(
   {
     dark: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
     light: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
-    hc: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
+    hc: null,
   },
   localize(
     'panelTitle.background',
