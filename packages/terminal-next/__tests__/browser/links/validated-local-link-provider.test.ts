@@ -63,7 +63,7 @@ describe('Workbench - TerminalValidatedLocalLinkProvider', () => {
   const injector = createBrowserInjector([]);
 
   async function assertLink(text: string, isWindows: boolean, expected: { text: string; range: [number, number][] }[]) {
-    const xterm = new Terminal();
+    const xterm = new Terminal({ allowProposedApi: true });
     const client = { os: isWindows ? OperatingSystem.Windows : OperatingSystem.Linux } as any;
     const provider = injector.get(TerminalValidatedLocalLinkProvider, [
       xterm,
