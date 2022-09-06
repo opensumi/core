@@ -55,7 +55,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
 
       // ChangeType#Add
-      const change0: ILineChange = [0, 10, 111, 0, []];
+      const change0: ILineChange = [10, 0, 111, 0, []];
       dirtyDiffModel['_changes'] = [change0];
       dirtyDiffModel['_onDidChange'].fire([
         {
@@ -143,7 +143,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
 
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
       // ChangeType#Modify
-      const change0: ILineChange = [1, 10, 111, 0, []];
+      const change0: ILineChange = [1, 10, 111, 1, []];
       dirtyDiffModel['_changes'] = [change0];
       dirtyDiffModel['_onDidChange'].fire([
         {

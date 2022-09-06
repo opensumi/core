@@ -5,7 +5,6 @@ import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { themeColorFromId } from '@opensumi/ide-theme';
 import * as model from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import * as textModel from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   overviewRulerModifiedForeground,
@@ -144,7 +143,7 @@ export class DirtyDiffDecorator extends Disposable {
 
     this.decorations = this.editorModel
       .getMonacoModel()
-      .deltaDecorations(this.decorations, decorations as unknown as monaco.editor.IModelDeltaDecoration[]);
+      .deltaDecorations(this.decorations, decorations);
   }
 
   dispose(): void {
