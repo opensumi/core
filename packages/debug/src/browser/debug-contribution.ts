@@ -448,7 +448,7 @@ export class DebugContribution
     this.sessionManager.onDidDestroyDebugSession((session) => {
       if (this.sessionManager.sessions.length === 0) {
         this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
-        this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
+        this.commandService.tryExecuteCommand('statusbar.changeColor');
       }
     });
     this.configurations.load();
