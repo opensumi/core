@@ -1,46 +1,51 @@
+import { ILineChange } from '@opensumi/ide-core-common/lib/types/editor';
 import { compareChanges, getModifiedEndLineNumber } from '../../../src/browser/dirty-diff/dirty-diff-util';
 
 describe('test for browser/dirty-diff/dirty-diff-util.ts', () => {
   it('compareChanges', () => {
-    const change0 = {
-      originalStartLineNumber: 10,
-      originalEndLineNumber: 12,
-      modifiedStartLineNumber: 111,
-      modifiedEndLineNumber: 2,
-    };
-    const change1 = {
-      originalStartLineNumber: 3,
-      originalEndLineNumber: 12,
-      modifiedStartLineNumber: 110,
-      modifiedEndLineNumber: 0,
-    };
+    const change0: ILineChange = [
+      10,
+      12,
+      111,
+      2,
+      [],
+    ];
+    const change1: ILineChange = [
+      3,
+      12,
+      110,
+      0,
+      [],
+    ];
     expect(compareChanges(change0, change1)).toBe(1);
 
-    change1.modifiedStartLineNumber = 111;
+    change1[2] = 111;
     expect(compareChanges(change0, change1)).toBe(2);
 
-    change1.modifiedEndLineNumber = 2;
+    change1[3] = 2;
     expect(compareChanges(change0, change1)).toBe(7);
 
-    change1.originalStartLineNumber = 10;
+    change1[0] = 10;
     expect(compareChanges(change0, change1)).toBe(0);
   });
 
   it('getModifiedEndLineNumber', () => {
-    const change0 = {
-      originalStartLineNumber: 0,
-      originalEndLineNumber: 110,
-      modifiedStartLineNumber: 110,
-      modifiedEndLineNumber: 0,
-    };
+    const change0: ILineChange = [
+      0,
+      110,
+      110,
+      0,
+      [],
+    ];
     expect(getModifiedEndLineNumber(change0)).toBe(110);
 
-    const change1 = {
-      originalStartLineNumber: 0,
-      originalEndLineNumber: 0,
-      modifiedStartLineNumber: 110,
-      modifiedEndLineNumber: 2,
-    };
+    const change1: ILineChange = [
+      0,
+      0,
+      110,
+      2,
+      [],
+    ];
     expect(getModifiedEndLineNumber(change1)).toBe(2);
   });
 });
