@@ -1,4 +1,5 @@
 import { ILineChange } from '@opensumi/ide-core-common/lib/types/editor';
+
 import { compareChanges, getModifiedEndLineNumber } from '../../../src/browser/dirty-diff/dirty-diff-util';
 
 describe('test for browser/dirty-diff/dirty-diff-util.ts', () => {
