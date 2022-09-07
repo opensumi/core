@@ -309,7 +309,7 @@ export function Select<T = string>({
       const nodeOption: IDataOption<T> = children && getLabelWithChildrenProps<T>(value, children);
       if (nodeOption) {
         return {
-          label: nodeOption.label,
+          label: nodeOption.label || (nodeOption.value as any),
           value: nodeOption.value,
         };
       }
