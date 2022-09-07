@@ -15,6 +15,7 @@ export const StatusBarView = React.memo(
     const statusBar: IStatusBarService = useInjectable(IStatusBarService);
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
     const backgroundColor = statusBar.getBackgroundColor();
+    const color = statusBar.getColor();
 
     const handleCtxMenu = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
       e.preventDefault();
@@ -38,12 +39,12 @@ export const StatusBarView = React.memo(
       >
         <div className={cls(styles.area, styles.left)}>
           {statusBar.leftEntries.map((entry) => (
-            <StatusBarItem key={entry.entryId} {...entry} />
+            <StatusBarItem key={entry.entryId} {...{ ...entry, color: color ?? entry.color }} />
           ))}
         </div>
         <div className={cls(styles.area, styles.right)}>
           {statusBar.rightEntries.map((entry) => (
-            <StatusBarItem key={entry.entryId} {...entry} />
+            <StatusBarItem key={entry.entryId} {...{ ...entry, color: color ?? entry.color }} />
           ))}
         </div>
       </div>

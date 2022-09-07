@@ -46,11 +46,11 @@ describe('template test', () => {
     await injector.disposeAll();
   });
 
-  it('新增 statusBar Item', () => {
+  it('new StatusBar elements', () => {
     expect(statusBarService.leftEntries.length).toBe(1);
   });
 
-  it('修改 statusBar Item', () => {
+  it('modify StatusBar elements', () => {
     statusBarService.setElement(EN_CODING_ENTRY_ID, {
       text: 'GBK',
       alignment: StatusBarAlignment.RIGHT,
@@ -58,7 +58,7 @@ describe('template test', () => {
     expect(statusBarService.rightEntries[0].text).toBe('GBK');
   });
 
-  it('修改 statusBar Item 未找到时抛异常', () => {
+  it('modify not exists StatusBar elements will throw error', () => {
     expect(() => {
       statusBarService.setElement('encoding1', {
         text: 'GBK',
@@ -67,7 +67,7 @@ describe('template test', () => {
     }).toThrowError('not found id is encoding1 element');
   });
 
-  it('执行 onclick 方法', () => {
+  it('execute onclick function', () => {
     const commandRegistry = injector.get<CommandRegistry>(CommandRegistry);
     const $execute = jest.fn();
     commandRegistry.registerCommand(
@@ -85,13 +85,13 @@ describe('template test', () => {
     expect($execute).toBeCalled();
   });
 
-  it('删除一个 item', () => {
+  it('delete elements', () => {
     statusBarService.removeElement(EN_CODING_ENTRY_ID);
 
     expect(statusBarService.leftEntries.length).toBe(0);
   });
 
-  it('权重对比', () => {
+  it('compare elements', () => {
     statusBarService.addElement('git', {
       text: 'UTF-8',
       alignment: StatusBarAlignment.LEFT,
@@ -107,15 +107,15 @@ describe('template test', () => {
     statusBarService.removeElement('git');
   });
 
-  it('设置背景色颜色', () => {
+  it('set background color', () => {
     statusBarService.setColor('red');
     statusBarService.setBackgroundColor('blue');
 
-    expect(statusBarService.leftEntries[0].color).toBe('red');
+    expect(statusBarService.getColor()).toBe('red');
     expect(statusBarService.getBackgroundColor()).toBe('blue');
   });
 
-  it('设置 name 时注册菜单', () => {
+  it('registry menu while setting name', () => {
     const menuRegistry = injector.get(IMenuRegistry);
     const $registerMenu = jest.spyOn(menuRegistry, 'registerMenuItem');
     statusBarService.addElement('status.scm', {
@@ -133,7 +133,7 @@ describe('template test', () => {
     });
   });
 
-  it('设置两个 id 一样的状态栏元素时应该只注册一次菜单', () => {
+  it('the menu should only be registered once when setting two StatusBar elements with the same id', () => {
     const menuRegistry = injector.get(IMenuRegistry);
     const $registerMenu = jest.spyOn(menuRegistry, 'registerMenuItem');
     statusBarService.addElement('status.scm', {
@@ -154,7 +154,7 @@ describe('template test', () => {
     expect($registerMenu).toBeCalledTimes(1);
   });
 
-  it('注册状态栏后菜单应该按照左右排序', () => {
+  it('the menu should be sorted left and right', () => {
     const menuRegistry = injector.get<IMenuRegistry>(IMenuRegistry);
     statusBarService.addElement('status.left', {
       name: 'Source Control',
@@ -183,7 +183,7 @@ describe('template test', () => {
     expect(statusBarOrder2).toBeLessThan(statusBarOrder3);
   });
 
-  it('设置隐藏', () => {
+  it('setting element tobe hidden', () => {
     expect(statusBarService.leftEntries.length).toBe(1);
 
     statusBarService.addElement('status.scm', {
@@ -195,7 +195,7 @@ describe('template test', () => {
     expect(statusBarService.leftEntries.length).toBe(1);
   });
 
-  it('触发显隐', () => {
+  it('toggle element visible', () => {
     // 默认显示
     expect(statusBarService.leftEntries[0].hidden).toBeFalsy();
     statusBarService.toggleElement(EN_CODING_ENTRY_ID);
@@ -203,7 +203,7 @@ describe('template test', () => {
     expect(statusBarService.leftEntries.length).toBe(0);
   });
 
-  it('statusbar id 相同则都触发显隐', () => {
+  it('the same StatusBar elements should be triggered at the same time', () => {
     // 注册两个 id 相同的 scm 状态栏元素
     statusBarService.addElement('status.scm', {
       id: 'status.scm',
