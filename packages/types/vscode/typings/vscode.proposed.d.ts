@@ -633,8 +633,7 @@ declare module 'vscode' {
      */
     whitespaceAfter?: boolean;
 
-    // todo@API make range first argument
-    constructor(text: string, position: Position, kind?: InlayHintKind);
+    constructor(position: Position, text: string, kind?: InlayHintKind);
   }
 
   /**

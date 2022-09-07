@@ -3085,7 +3085,7 @@ export class InlayHint {
   whitespaceBefore?: boolean;
   whitespaceAfter?: boolean;
 
-  constructor(text: string, position: Position, kind?: vscode.InlayHintKind) {
+  constructor(position: Position, text: string, kind?: vscode.InlayHintKind) {
     this.text = text;
     this.position = position;
     this.kind = kind;

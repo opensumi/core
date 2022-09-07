@@ -1558,7 +1558,7 @@ export namespace InlayHint {
   }
 
   export function to(hint: modes.InlayHint): vscode.InlayHint {
-    const res = new types.InlayHint(hint.text, Position.to(hint.position), InlayHintKind.to(hint.kind));
+    const res = new types.InlayHint(Position.to(hint.position), hint.text, InlayHintKind.to(hint.kind));
     res.whitespaceAfter = hint.whitespaceAfter;
     res.whitespaceBefore = hint.whitespaceBefore;
     return res;
