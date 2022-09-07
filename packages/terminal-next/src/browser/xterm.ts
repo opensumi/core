@@ -64,7 +64,10 @@ export class XTerm extends Disposable implements IXTerm {
 
     this.xtermOptions = options.xtermOptions;
 
-    this.raw = new Terminal(this.xtermOptions);
+    this.raw = new Terminal({
+      allowProposedApi: true,
+      ...this.xtermOptions,
+    });
     this._prepareAddons();
     this.raw.onSelectionChange(this.onSelectionChange.bind(this));
   }

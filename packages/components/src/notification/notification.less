@@ -126,7 +126,7 @@
       display: flex;
       flex-flow: wrap;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: flex-end;
       margin-top: 16px;
     }
   }
@@ -230,8 +230,12 @@
       top: 12px;
     }
 
-    &-btn button {
+    &-btn.tile button {
       flex: 1;
+    }
+
+    &-btn button {
+      flex: 0 0 auto;
       margin: 0 0 5px 10px;
     }
   }

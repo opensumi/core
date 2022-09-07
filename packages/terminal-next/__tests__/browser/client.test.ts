@@ -105,7 +105,7 @@ describe('Terminal Client', () => {
   it('Terminal SelectAll', () => {
     client.selectAll();
     const position = client.term.getSelectionPosition();
-    expect(position && position.endColumn).toEqual(client.term.cols);
+    expect(position && position.end.x).toEqual(client.term.cols);
   });
 
   it('Terminal getSelection', async () => {

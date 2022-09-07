@@ -18,7 +18,10 @@ import { CommandService, DisposableCollection, memoize } from '@opensumi/ide-cor
 @Injectable()
 export class StatusBarService extends Disposable implements IStatusBarService {
   @observable
-  private backgroundColor: string | undefined;
+  private background: string | undefined;
+
+  @observable
+  private foreground: string | undefined;
 
   @observable
   private entries: Map<string, StatusBarEntry> = new Map();
@@ -50,7 +53,11 @@ export class StatusBarService extends Disposable implements IStatusBarService {
     if (this.appConfig.extensionDevelopmentHost) {
       return 'var(--kt-statusBar-extensionDebuggingBackground)';
     }
-    return this.backgroundColor;
+    return this.background;
+  }
+
+  getColor() {
+    return this.foreground;
   }
 
   /**
@@ -59,17 +66,15 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    */
   @action
   setBackgroundColor(color?: string | undefined) {
-    this.backgroundColor = color;
+    this.background = color;
   }
   /**
-   * 设置 Status Bar 所有文字颜色
+   * 设置 Status Bar 所有文字颜色，当设置值为 undefined 时，文件将回复原有颜色配置
    * @param color
    */
   @action
   setColor(color?: string | undefined) {
-    for (const [, value] of this.entries) {
-      value.color = color;
-    }
+    this.foreground = color;
   }
 
   // 暴露给其他地方获取配置数据以自定义渲染
@@ -113,7 +118,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
   }
 
   /**
-   * 设置一个 Status Bar Item
+   * 设置一个 StatusBar Item
    * @param id
    * @param entry
    */

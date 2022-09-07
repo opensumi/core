@@ -4,7 +4,6 @@
 .kt_workbench_editor {
   height: 100%;
   background-color: var(--editor-background);
-  border-top: 1px solid var(--tab-border);
   display: flex;
 }
 .kt_editor_main_wrapper {
@@ -61,6 +60,7 @@
       padding: 0 5px 0 10px;
       background: var(--editorGroupHeader-tabsBackground);
       border-bottom: 1px solid var(--tab-border);
+      border-top: 1px solid var(--tab-border);
       .editor_action_wrapper {
         margin-left: 8px;
         position: relative;
@@ -89,27 +89,33 @@
 
   .kt_editor_tabs_scroll_wrapper {
     flex-grow: 1;
-    width: 10px;
-    :global(.thumb-vertical) {
-      opacity: 0 !important;
+    width: 100%;
+    position: relative;
+    &::before {
+      position: absolute;
+      content: '';
+      height: 1px;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      background-color: var(--tab-border);
+    }
+    &::after {
+      position: absolute;
+      content: '';
+      height: 1px;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+      z-index: 10;
+      background-color: var(--tab-border);
     }
   }
 
   .kt_editor_tabs_scroll {
     overflow-y: hidden;
     background: var(--editorGroupHeader-tabsBackground);
-    &::before {
-      content: '';
-      height: 1px;
-      background: var(--tab-border);
-      bottom: 0;
-      width: 100%;
-      left: 0;
-      position: absolute;
-      display: block;
-      z-index: 0;
-    }
-
     :global(.loading_indicator) {
       width: 16px;
       height: 22px;
@@ -250,12 +256,21 @@
         }
       }
       &.kt_editor_tab_current {
+        position: relative;
         background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
         border-bottom: 1px solid var(--tab-activeBackground);
         border-bottom-color: var(--tab-activeBorder);
-        border-top: 1px solid var(--tab-activeBackground);
-        border-top-color: var(--tab-activeBorderTop);
+        &::before {
+          position: absolute;
+          content: '';
+          height: 2px;
+          width: 100%;
+          top: 0;
+          left: 0;
+          z-index: 999;
+          background-color: var(--tab-activeBorderTop);
+        }
         .dirty {
           &::before {
             background-color: var(--kt-dirtyDot-foreground);
