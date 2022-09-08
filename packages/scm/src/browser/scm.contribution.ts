@@ -293,6 +293,6 @@ export class SCMContribution
       index = diffChangesIndex >= lineChanges.length - 1 ? 0 : diffChangesIndex + 1;
     }
     this.diffChangesIndex.set(uri, index);
-    return lineChanges[index].modifiedStartLineNumber;
+    return lineChanges[index][2];
   }
 }

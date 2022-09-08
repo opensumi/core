@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { positionToRange, URI, CommandService } from '@opensumi/ide-core-common';
+import { positionToRange, URI, CommandService, ILineChange } from '@opensumi/ide-core-common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EmptyDocCacheImpl, IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/src/browser/';
@@ -98,31 +98,11 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
       const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
       const dirtyDiffWidget = injector.get(DirtyDiffWidget, [codeEditor, dirtyDiffModel, commandService]);
 
-      const changes = [
-        {
-          originalStartLineNumber: 11,
-          originalEndLineNumber: 11,
-          modifiedStartLineNumber: 11,
-          modifiedEndLineNumber: 11,
-        },
-        {
-          originalStartLineNumber: 12,
-          originalEndLineNumber: 12,
-          modifiedStartLineNumber: 12,
-          modifiedEndLineNumber: 12,
-        },
-        {
-          originalStartLineNumber: 14,
-          originalEndLineNumber: 14,
-          modifiedStartLineNumber: 14,
-          modifiedEndLineNumber: 14,
-        },
-        {
-          originalStartLineNumber: 15,
-          originalEndLineNumber: 15,
-          modifiedStartLineNumber: 15,
-          modifiedEndLineNumber: 15,
-        },
+      const changes: ILineChange[] = [
+        [11, 11, 11, 11, []],
+        [12, 12, 12, 12, []],
+        [14, 14, 14, 14, []],
+        [15, 15, 15, 15, []],
       ];
       dirtyDiffModel['_changes'] = changes;
       dirtyDiffWidget.updateCurrent(2);
@@ -168,31 +148,11 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
       const fakeDispose = jest.fn();
       dirtyDiffWidget['dispose'] = fakeDispose;
 
-      const changes = [
-        {
-          originalStartLineNumber: 11,
-          originalEndLineNumber: 11,
-          modifiedStartLineNumber: 11,
-          modifiedEndLineNumber: 11,
-        },
-        {
-          originalStartLineNumber: 12,
-          originalEndLineNumber: 12,
-          modifiedStartLineNumber: 12,
-          modifiedEndLineNumber: 12,
-        },
-        {
-          originalStartLineNumber: 14,
-          originalEndLineNumber: 14,
-          modifiedStartLineNumber: 14,
-          modifiedEndLineNumber: 14,
-        },
-        {
-          originalStartLineNumber: 15,
-          originalEndLineNumber: 15,
-          modifiedStartLineNumber: 15,
-          modifiedEndLineNumber: 15,
-        },
+      const changes: ILineChange[] = [
+        [11, 11, 11, 11, []],
+        [12, 12, 12, 12, []],
+        [14, 14, 14, 14, []],
+        [15, 15, 15, 15, []],
       ];
       dirtyDiffModel['_changes'] = changes;
       dirtyDiffWidget.updateCurrent(2);
@@ -248,30 +208,10 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
     it('ok for applyStyle', () => {
       const dirtyDiffModel = injector.get(DirtyDiffModel, [editorModel]);
       dirtyDiffModel['_changes'] = [
-        {
-          originalStartLineNumber: 11,
-          originalEndLineNumber: 11,
-          modifiedStartLineNumber: 11,
-          modifiedEndLineNumber: 11,
-        },
-        {
-          originalStartLineNumber: 12,
-          originalEndLineNumber: 12,
-          modifiedStartLineNumber: 12,
-          modifiedEndLineNumber: 12,
-        },
-        {
-          originalStartLineNumber: 14,
-          originalEndLineNumber: 14,
-          modifiedStartLineNumber: 14,
-          modifiedEndLineNumber: 14,
-        },
-        {
-          originalStartLineNumber: 15,
-          originalEndLineNumber: 15,
-          modifiedStartLineNumber: 15,
-          modifiedEndLineNumber: 15,
-        },
+        [11, 11, 11, 11, []],
+        [12, 12, 12, 12, []],
+        [14, 14, 14, 14, []],
+        [15, 15, 15, 15, []],
       ];
       const dirtyDiffWidget = injector.get(DirtyDiffWidget, [codeEditor, dirtyDiffModel, commandService]);
 
