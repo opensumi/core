@@ -36,6 +36,7 @@ export interface IResourceTextEdit {
   options?: {
     openDirtyInEditor?: boolean;
     dirtyIfInEditor?: boolean;
+    content?: string;
   };
 }
 
