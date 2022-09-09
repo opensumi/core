@@ -7,8 +7,8 @@ export function DefaultLayout() {
   const { colors, layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={34} slot='top' z-index={2} />
-      <SplitPanel id='main-horizontal' overflow='hidden' flex={1}>
+      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={35} slot='top' z-index={2} />
+      <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           backgroundColor={colors.sideBarBackground}
           slot='left'

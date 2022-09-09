@@ -341,7 +341,6 @@ export class FileServiceClient implements IFileServiceClient {
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
     const watcherId = await provider.watch(_uri.codeUri, {
-      recursive: true,
       excludes,
     });
 

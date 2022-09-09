@@ -99,19 +99,27 @@ export class TerminalServiceImpl implements ITerminalNodeService {
           t.shellLaunchConfig.isExtensionOwnedTerminal ||
           isElectronNodeEnv
         ) {
-          t.kill(); // terminalProfile有isTransient的参数化，要Kill，不保活
+          t.kill(); // shellLaunchConfig 有 isTransient 的参数时，要Kill，不保活
         }
         // t.kill(); // 这个是窗口关闭时候触发，终端默认在这种场景下保活, 不kill
-        // TOOD 后续看看有没有更加优雅的方案
+        // TODO: 后续看看有没有更加优雅的方案
       });
       this.clientTerminalMap.delete(clientId);
     }
   }
 
   private flushPtyData(clientId: string, sessionId: string) {
+    if (!this.batchedPtyDataMap.has(sessionId)) {
+      return;
+    }
+
     const ptyData = this.batchedPtyDataMap.get(sessionId)!;
     this.batchedPtyDataMap.delete(sessionId);
-    this.batchedPtyDataTimer.delete(sessionId);
+
+    if (this.batchedPtyDataTimer.has(sessionId)) {
+      global.clearTimeout(this.batchedPtyDataTimer.get(sessionId)!);
+      this.batchedPtyDataTimer.delete(sessionId);
+    }
 
     const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
     serviceClient.clientMessage(sessionId, ptyData);
@@ -125,12 +133,12 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     options: IShellLaunchConfig,
   ): Promise<IPtyProcess | undefined>;
   public async create2(
-    id: string,
+    sessionId: string,
     _cols: unknown,
     _rows?: unknown,
     _launchConfig?: unknown,
   ): Promise<IPtyProcess | undefined> {
-    const clientId = id.split(TERMINAL_ID_SEPARATOR)[0];
+    const clientId = sessionId.split(TERMINAL_ID_SEPARATOR)[0];
     let ptyService: PtyService | undefined;
     let cols = _cols as number;
     let rows = _rows as number;
@@ -145,8 +153,8 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     }
 
     try {
-      ptyService = this.injector.get(PtyService, [id, launchConfig, cols, rows]);
-      this.terminalProcessMap.set(id, ptyService);
+      ptyService = this.injector.get(PtyService, [sessionId, launchConfig, cols, rows]);
+      this.terminalProcessMap.set(sessionId, ptyService);
 
       // ref: https://hyper.is/blog
       // 合并 pty 输出的数据，16ms 后发送给客户端，如
@@ -155,27 +163,22 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       // 存的数据，避免因为输出较多时阻塞 RPC 通信
       ptyService.onData((chunk: string) => {
         if (this.serviceClientMap.has(clientId)) {
-          if (!this.batchedPtyDataMap.has(id)) {
-            this.batchedPtyDataMap.set(id, '');
+          if (!this.batchedPtyDataMap.has(sessionId)) {
+            this.batchedPtyDataMap.set(sessionId, '');
           }
 
-          this.batchedPtyDataMap.set(id, this.batchedPtyDataMap.get(id) + chunk);
+          this.batchedPtyDataMap.set(sessionId, this.batchedPtyDataMap.get(sessionId) + chunk);
 
-          const ptyData = this.batchedPtyDataMap.get(id) || '';
+          const ptyData = this.batchedPtyDataMap.get(sessionId) || '';
 
           if (ptyData?.length + chunk.length >= BATCH_MAX_SIZE) {
-            if (this.batchedPtyDataTimer.has(id)) {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              global.clearTimeout(this.batchedPtyDataTimer.get(id)!);
-              this.batchedPtyDataTimer.delete(id);
-            }
-            this.flushPtyData(clientId, id);
+            this.flushPtyData(clientId, sessionId);
           }
 
-          if (!this.batchedPtyDataTimer.has(id)) {
+          if (!this.batchedPtyDataTimer.has(sessionId)) {
             this.batchedPtyDataTimer.set(
-              id,
-              global.setTimeout(() => this.flushPtyData(clientId, id), BATCH_DURATION_MS),
+              sessionId,
+              global.setTimeout(() => this.flushPtyData(clientId, sessionId), BATCH_DURATION_MS),
             );
           }
         } else {
@@ -184,10 +187,11 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       });
 
       ptyService.onExit(({ exitCode, signal }) => {
-        this.logger.debug(`Terminal process exit (instanceId: ${id}) with code ${exitCode}`);
+        this.logger.debug(`Terminal process exit (instanceId: ${sessionId}) with code ${exitCode}`);
         if (this.serviceClientMap.has(clientId)) {
+          this.flushPtyData(clientId, sessionId);
           const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-          serviceClient.closeClient(id, {
+          serviceClient.closeClient(sessionId, {
             code: exitCode,
             signal,
           });
@@ -200,7 +204,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
         this.logger.debug(`Terminal process change (${processName})`);
         if (this.serviceClientMap.has(clientId)) {
           const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-          serviceClient.processChange(id, processName);
+          serviceClient.processChange(sessionId, processName);
         } else {
           this.logger.warn(`terminal: pty ${clientId} on data not found`);
         }
@@ -208,22 +212,22 @@ export class TerminalServiceImpl implements ITerminalNodeService {
 
       const error = await ptyService.start();
       if (error) {
-        this.logger.error(`Terminal process start error (instanceId: ${id})`, error);
+        this.logger.error(`Terminal process start error (instanceId: ${sessionId})`, error);
         throw error;
       }
 
       if (!this.clientTerminalMap.has(clientId)) {
         this.clientTerminalMap.set(clientId, new Map());
       }
-      this.clientTerminalMap.get(clientId)?.set(id, ptyService);
+      this.clientTerminalMap.get(clientId)?.set(sessionId, ptyService);
     } catch (error) {
       this.logger.error(
-        `${id} create terminal error: ${JSON.stringify(error)}, options: ${JSON.stringify(launchConfig)}`,
+        `${sessionId} create terminal error: ${JSON.stringify(error)}, options: ${JSON.stringify(launchConfig)}`,
       );
       if (this.serviceClientMap.has(clientId)) {
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
-        serviceClient.closeClient(id, {
-          id,
+        serviceClient.closeClient(sessionId, {
+          id: sessionId,
           message: error?.message,
           type: ETerminalErrorType.CREATE_FAIL,
           stopped: true,

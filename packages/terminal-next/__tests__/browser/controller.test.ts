@@ -42,7 +42,7 @@ describe('Terminal Controller', () => {
       setTimeout(resolve, 0);
     });
   });
-  it('create terminal', async () => {
+  it('create terminal by profile', async () => {
     await controller.createTerminal({
       config: {
         profileName: 'bash',
@@ -51,7 +51,13 @@ describe('Terminal Controller', () => {
       },
     });
   });
-
+  it('create terminal by launchConfig', async () => {
+    const id = 'test-id';
+    const client = await controller.createTerminal({
+      id,
+    });
+    expect(client.id).toEqual(id);
+  });
   it('can transform terminal options', async () => {
     const terminalOptions = {
       name: 'name',

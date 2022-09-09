@@ -1,11 +1,11 @@
-import { ITerminalOptions as IXtermTerminalOptions, Terminal } from 'xterm';
+import { ITerminalOptions as IXtermTerminalOptions } from 'xterm';
 
 import { IDisposable, OperatingSystem } from '@opensumi/ide-core-common';
 
 import { ITerminalConnection } from './client';
 import { ITerminalError } from './error';
 import { ITerminalProfile } from './profile';
-import { IShellLaunchConfig, TerminalOptions } from './pty';
+import { IShellLaunchConfig } from './pty';
 import { IXTerm } from './xterm';
 
 export interface IPtyExitEvent {
@@ -22,11 +22,11 @@ export interface IPtyProcessChangeEvent {
 export const ITerminalService = Symbol('ITerminalService');
 export interface ITerminalService {
   /**
-   * 自定义 sessionId
+   * generate sessionId
    */
   generateSessionId?(): string;
   /**
-   * Xterm 终端的构造选项，
+   * Xterm 终端的构造选项
    * 默认返回为 {}
    */
   getOptions?(): IXtermTerminalOptions;

@@ -1,7 +1,7 @@
 @import '../style/variable.less';
 @import '../style/mixins.less';
 
-@dropdown-prefix-cls: ~'@{kt-prefix}-dropdown';
+@dropdown-prefix-cls: ~'@{prefix}-dropdown';
 
 .@{dropdown-prefix-cls} {
   .reset-component;
@@ -26,7 +26,7 @@
   &-wrap {
     position: relative;
 
-    .@{kt-prefix}-btn > .@{iconfont-css-prefix}-down {
+    .@{prefix}-btn > .@{iconfont-css-prefix}-down {
       .iconfont-size-under-12px(10px);
     }
 
@@ -244,7 +244,7 @@
 .@{dropdown-prefix-cls}-button {
   white-space: nowrap;
 
-  &.@{kt-prefix}-btn-group > .@{kt-prefix}-btn:last-child:not(:first-child) {
+  &.@{prefix}-btn-group > .@{prefix}-btn:last-child:not(:first-child) {
     padding-right: @padding-xs;
     padding-left: @padding-xs;
   }

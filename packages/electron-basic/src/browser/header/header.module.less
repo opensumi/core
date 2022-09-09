@@ -9,6 +9,8 @@
   user-select: none;
 
   .title_info {
+    display: flex;
+    align-items: center;
     -webkit-app-region: drag;
     flex-grow: 1;
     text-align: left;
@@ -25,12 +27,17 @@
 
 .windowActions {
   display: flex;
+  align-items: center;
   -webkit-app-region: no-drag;
   user-select: none;
 
   > div {
     font-size: 16px;
     padding: 0 15px;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
 
     &:hover {
       background-color: hsla(0, 0%, 100%, 0.1);

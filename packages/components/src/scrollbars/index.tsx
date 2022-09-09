@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import throttle from 'lodash/throttle';
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars';
 import './styles.less';
 
@@ -12,6 +12,7 @@ export interface ICustomScrollbarProps {
   className?: string;
   children?: React.ReactNode;
   onReachBottom?: any;
+  thumbSize?: number;
 }
 
 export const Scrollbars = ({
@@ -22,16 +23,17 @@ export const Scrollbars = ({
   children,
   className,
   onReachBottom,
+  thumbSize = 10,
 }: ICustomScrollbarProps) => {
-  const refSetter = React.useCallback((scrollbarsRef) => {
+  const refSetter = useCallback((scrollbarsRef) => {
     if (scrollbarsRef) {
       forwardedRef && forwardedRef(scrollbarsRef.view);
     } else {
       forwardedRef && forwardedRef(null);
     }
   }, []);
-
-  let shadowTopRef: HTMLDivElement | null;
+  const verticalShadowRef = useRef<HTMLDivElement | null>();
+  const horizontalShadowRef = useRef<HTMLDivElement | null>();
 
   const handleReachBottom = React.useCallback(
     throttle((values) => {
@@ -51,13 +53,15 @@ export const Scrollbars = ({
   );
 
   const handleUpdate = (values) => {
-    if (!shadowTopRef) {
-      return;
-    }
-    const { scrollTop } = values;
+    const { scrollTop, scrollLeft } = values;
     const shadowTopOpacity = (1 / 20) * Math.min(scrollTop, 20);
-    shadowTopRef.style.opacity = String(shadowTopOpacity);
-
+    const shadowLeftOpacity = (1 / 20) * Math.min(scrollLeft, 20);
+    if (verticalShadowRef.current) {
+      verticalShadowRef.current.style.opacity = String(shadowTopOpacity);
+    }
+    if (horizontalShadowRef.current) {
+      horizontalShadowRef.current.style.opacity = String(shadowLeftOpacity);
+    }
     handleReachBottom(values);
     onUpdate && onUpdate(values);
   };
@@ -69,14 +73,31 @@ export const Scrollbars = ({
       className={cls(className, 'kt-scrollbar')}
       onUpdate={handleUpdate}
       onScroll={onScroll}
-      renderThumbVertical={({ style, ...props }) => <div {...props} className={'scrollbar-thumb-vertical'} />}
-      renderThumbHorizontal={({ style, ...props }) => <div {...props} className={'scrollbar-thumb-horizontal'} />}
+      renderTrackHorizontal={({ style, ...props }) => (
+        <div {...props} style={{ ...style, left: 0, right: 0, bottom: 0, height: thumbSize }} />
+      )}
+      renderTrackVertical={({ style, ...props }) => (
+        <div {...props} style={{ ...style, top: 0, right: 0, bottom: 0, width: thumbSize }} />
+      )}
+      renderThumbVertical={({ style, ...props }) => (
+        <div {...props} style={{ ...style, width: thumbSize }} className={'scrollbar-thumb-vertical'} />
+      )}
+      renderThumbHorizontal={({ style, ...props }) => (
+        <div {...props} style={{ ...style, height: thumbSize }} className={'scrollbar-thumb-horizontal'} />
+      )}
+      // renderView={(props) => <div id='xxx' {...props} />}
     >
       <div
         ref={(ref) => {
-          shadowTopRef = ref;
+          verticalShadowRef.current = ref;
         }}
-        className={'scrollbar-decoration'}
+        className={'scrollbar-decoration-vertical'}
+      />
+      <div
+        ref={(ref) => {
+          horizontalShadowRef.current = ref;
+        }}
+        className={'scrollbar-decoration-horizontal'}
       />
       {children}
     </CustomScrollbars>

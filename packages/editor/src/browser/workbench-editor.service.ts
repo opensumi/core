@@ -909,6 +909,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._onDidEditorFocusChange.fire();
       }),
       this.codeEditor.onFocus(() => {
+        if (this.codeEditor.currentUri) {
+          this.locateInFileTree(this.codeEditor.currentUri);
+        }
         this._currentOrPreviousFocusedEditor = this.codeEditor;
         this.setContextKeys();
         this._onDidEditorFocusChange.fire();
@@ -1356,10 +1359,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             });
           }
         }
-        this._currentResource = resource;
-        this.notifyTabChanged();
         this._currentOpenType = null;
-        this.notifyBodyChanged();
+        this._currentResource = resource;
 
         // 只有真正打开的文件才会走到这里，backend模式的只更新了tab，文件内容并未加载
         const reportTimer = this.reporterService.time(REPORT_NAME.EDITOR_REACTIVE);
@@ -1370,10 +1371,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this.notifyTabLoading(resource!);
         }, 60);
         await this.displayResourceComponent(resource, options);
+        this._currentOrPreviousFocusedEditor = this.currentEditor;
+        this.notifyTabChanged();
+        this.notifyBodyChanged();
+
         clearTimeout(delayTimer);
         resourceReady.resolve();
         reportTimer.timeEnd(resource.uri.toString());
-        this._currentOrPreviousFocusedEditor = this.currentEditor;
         this._onDidEditorFocusChange.fire();
         this.setContextKeys();
         this.eventBus.fire(

@@ -28,11 +28,11 @@ export class StatusBarContribution implements ComponentContribution, CommandCont
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(StatusBarCommand.changeBackgroundColor, {
-      execute: (backgroundColor: string) => this.statusBarService.setBackgroundColor(backgroundColor),
+      execute: (backgroundColor?: string) => this.statusBarService.setBackgroundColor(backgroundColor),
     });
 
     commands.registerCommand(StatusBarCommand.changeColor, {
-      execute: (color: string) => this.statusBarService.setColor(color),
+      execute: (color?: string) => this.statusBarService.setColor(color),
     });
 
     commands.registerCommand(StatusBarCommand.addElement, {

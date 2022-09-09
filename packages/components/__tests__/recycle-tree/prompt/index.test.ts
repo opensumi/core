@@ -1,3 +1,5 @@
+import { createMarkedRenderer, toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
+
 import { TreeNodeType, PromptValidateMessage, PROMPT_VALIDATE_TYPE } from '../../../src';
 import { NewPromptHandle, RenamePromptHandle } from '../../../src/recycle-tree/prompt';
 import { Tree } from '../../../src/recycle-tree/tree/Tree';
@@ -98,11 +100,12 @@ describe('NewPromptHandle', () => {
     prompt.$.parentElement?.parentElement;
 
     prompt.addValidateMessage(info);
-    expect(prompt.$validate.innerText).toBe(info.message);
+    const renderer = createMarkedRenderer();
+    expect(prompt.$validate.innerHTML).toBe(toMarkdownHtml(info.message || '', { renderer }));
     prompt.addValidateMessage(error);
-    expect(prompt.$validate.innerText).toBe(error.message);
+    expect(prompt.$validate.innerHTML).toBe(toMarkdownHtml(error.message || '', { renderer }));
     prompt.addValidateMessage(warn);
-    expect(prompt.$validate.innerText).toBe(warn.message);
+    expect(prompt.$validate.innerHTML).toBe(toMarkdownHtml(warn.message || '', { renderer }));
   });
 
   test('removeValidateMessage', () => {

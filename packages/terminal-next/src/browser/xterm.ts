@@ -64,7 +64,10 @@ export class XTerm extends Disposable implements IXTerm {
 
     this.xtermOptions = options.xtermOptions;
 
-    this.raw = new Terminal(this.xtermOptions);
+    this.raw = new Terminal({
+      allowProposedApi: true,
+      ...this.xtermOptions,
+    });
     this._prepareAddons();
     this.raw.onSelectionChange(this.onSelectionChange.bind(this));
   }
@@ -80,7 +83,7 @@ export class XTerm extends Disposable implements IXTerm {
 
   updateTheme(theme: ITheme | undefined) {
     if (theme) {
-      this.raw.setOption('theme', theme);
+      this.raw.options.theme = theme;
       this.xtermOptions = {
         ...this.xtermOptions,
         theme,

@@ -1,4 +1,6 @@
-.kt-clickable-icon {
+@import '../style/variable.less';
+
+.@{prefix}-clickable-icon {
   &:hover {
     transform: scale(1.2);
   }
@@ -8,7 +10,7 @@
   }
 }
 
-.kt-icon-resource::before {
+.@{prefix}-icon-resource::before {
   display: inherit;
   background-size: 16px;
   background-position: center;
@@ -19,7 +21,7 @@
   flex-shrink: 0;
 }
 
-.kt-button {
+.@{prefix}-button {
   border: none;
   outline: none;
   cursor: pointer;
@@ -41,7 +43,7 @@
     width: 100%;
   }
 
-  & > .kt-button-secondary-more {
+  & > .@{prefix}-button-secondary-more {
     color: inherit;
     margin-left: 5px;
   }
@@ -63,7 +65,7 @@
   }
 }
 
-.kt-button-anticon-spin {
+.@{prefix}-button-anticon-spin {
   animation: loadingCircle 1s infinite linear;
   margin-right: 5px;
 }
@@ -170,16 +172,16 @@
 .secondary-button:disabled,
 .primary-button:disabled,
 .ghost-danger-button:disabled,
-.kt-danger-button-loading,
-.kt-primary-button-loading,
-.kt-secondary-button-loading {
+.@{prefix}-danger-button-loading,
+.@{prefix}-primary-button-loading,
+.@{prefix}-secondary-button-loading {
   color: var(--kt-button-disableForeground) !important;
   border-color: var(--kt-button-disableBorder) !important;
   background-color: var(--kt-button-disableBackground) !important;
   border-style: solid;
   border-width: 1px;
 
-  & > .kt-button-secondary-more {
+  & > .@{prefix}-button-secondary-more {
     color: var(--kt-button-disableForeground);
   }
 }

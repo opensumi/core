@@ -1,8 +1,8 @@
-import { marked } from 'marked';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Button } from '@opensumi/ide-components';
+import { toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
 import { useInjectable, localize, IContextKeyService, isUndefined, IMarkdownString } from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -102,7 +102,7 @@ const ReplyItem: React.FC<{
 
   // 判断是正常 Inline Text 还是 Markdown Text
   const isInlineText = React.useMemo(() => {
-    const parsedStr = marked(typeof body === 'string' ? body : body.value);
+    const parsedStr = toMarkdownHtml(typeof body === 'string' ? body : body.value);
     // 解析出来非纯p标签的则为Markdown Text
     const isInline = /^\<p\>[^<>]+\<\/p\>\n$/.test(parsedStr);
     return isInline;

@@ -112,7 +112,7 @@ export class NodePtyTerminalService implements ITerminalService {
       launchConfig.executable = await this.getDefaultSystemShell();
     }
 
-    this.logger.log(`attachByLaunchConfig ${sessionId} with launchConfig `, launchConfig);
+    this.logger.log(`attach terminal ${sessionId} with launchConfig `, launchConfig);
 
     const ptyInstance = await this.serviceClientRPC.create2(sessionId, cols, rows, launchConfig);
     if (ptyInstance && (ptyInstance.pid || ptyInstance.name)) {

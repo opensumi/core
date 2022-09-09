@@ -24,7 +24,6 @@ import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task
 import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import {
   ITerminalApiService,
-  ITerminalClientFactory,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
@@ -147,13 +146,6 @@ describe('ExtHostTask API', () => {
     {
       token: ITaskSystem,
       useClass: TerminalTaskSystem,
-    },
-    {
-      token: ITerminalClientFactory,
-      useFactory:
-        (injector) =>
-        (widget, options = {}) =>
-          TerminalClientFactory.createClient(injector, widget, options),
     },
     {
       token: IVariableResolverService,

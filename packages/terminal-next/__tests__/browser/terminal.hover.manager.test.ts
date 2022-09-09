@@ -75,7 +75,7 @@ describe('terminal.environment.service', () => {
   });
 
   it('TerminalHoverManagerService#init', async () => {
-    const _xterm = new Terminal();
+    const _xterm = new Terminal({ allowProposedApi: true });
     const lines = createBufferLineArray([
       { text: 'AA http://t', width: 11 },
       { text: '.com/f/', width: 8 },
