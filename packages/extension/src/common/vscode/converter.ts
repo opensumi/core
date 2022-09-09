@@ -1561,8 +1561,8 @@ export namespace InlayHint {
 
   export function to(converter: CommandsConverter, hint: languages.InlayHint): vscode.InlayHint {
     const res = new types.InlayHint(
-      typeof hint.label === 'string' ? hint.label : hint.label.map(InlayHintLabelPart.to.bind(undefined, converter)),
       Position.to(hint.position),
+      typeof hint.label === 'string' ? hint.label : hint.label.map(InlayHintLabelPart.to.bind(undefined, converter)),
       hint.kind && InlayHintKind.to(hint.kind),
     );
     res.paddingLeft = hint.paddingLeft;

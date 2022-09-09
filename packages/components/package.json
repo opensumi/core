@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-components",
-  "version": "2.19.12",
+  "version": "2.19.13",
   "description": "@opensumi/ide-components",
   "license": "MIT",
   "main": "lib/index.js",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
-    "@opensumi/ide-utils": "2.19.12",
+    "@opensumi/ide-utils": "2.19.13",
     "@types/react-window": "^1.8.5",
     "marked": "4.0.10",
     "fuzzy": "^0.1.3",

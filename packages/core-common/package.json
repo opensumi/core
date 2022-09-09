@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-common",
-  "version": "2.19.12",
+  "version": "2.19.13",
   "description": "@opensumi/ide-core-common",
   "files": [
     "lib"
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@opensumi/di": "^1.4.0",
-    "@opensumi/ide-utils": "2.19.12",
+    "@opensumi/ide-utils": "2.19.13",
     "jschardet": "3.0.0"
   },
   "devDependencies": {
