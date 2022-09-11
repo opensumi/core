@@ -39,7 +39,7 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
     });
 
     // if opensumi devtools has started capturing before this contribution point is registered
-    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureRpc) {
+    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureRPC) {
       if (!this.interval) {
         this.startRTTInterval();
       }
@@ -52,7 +52,7 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
       await this.rttService.measure();
       const rtt = Date.now() - start;
       // "if" below is to prevent setting latency after stoping capturing
-      if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureRpc) {
+      if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureRPC) {
         window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.latency = rtt;
       }
     }, ChromeDevtoolsContribution.INTERVAL);

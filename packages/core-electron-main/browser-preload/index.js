@@ -5,8 +5,8 @@ const { ipcRenderer } = require('electron');
 
 const initForDevtools = () => {
   const getCapturer = () => {
-    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureIpc) {
-      return window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureIpc;
+    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureIPC) {
+      return window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.captureIPC;
     }
     return;
   };

@@ -3,7 +3,7 @@ import { ipcMain, BrowserWindow } from 'electron';
 export const initForDevtools = (mainWindow: BrowserWindow) => {
   // `mainWindow.webContents.send` is used to transfer messages to main window
   // wherer ipcRenderer.on('main->browser', xxx) is set to receive the messages
-  // then put them to window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.ipcMessages
+  // then put them to window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__.IPCMessages
 
   // ipcMain.on
   const originalIpcMainOn = ipcMain.on;
