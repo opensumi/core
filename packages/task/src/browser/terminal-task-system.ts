@@ -4,30 +4,18 @@ import {
   formatLocalize,
   IProblemMatcherRegistry,
   Disposable,
-  Deferred,
   ProblemMatcher,
   isString,
-  strings,
   Emitter,
-  DisposableCollection,
-  ProblemMatch,
-  ProblemMatchData,
   objects,
   path,
 } from '@opensumi/ide-core-common';
-import {
-  TerminalOptions,
-  ITerminalController,
-  ITerminalGroupViewService,
-  ITerminalClient,
-  ITerminalService,
-} from '@opensumi/ide-terminal-next/lib/common';
+import { ITerminalClient, IShellLaunchConfig } from '@opensumi/ide-terminal-next/lib/common';
 import { IVariableResolverService } from '@opensumi/ide-variable';
 
 import {
   ITaskSystem,
   ITaskExecuteResult,
-  ITaskExecutor,
   TaskExecuteKind,
   IActivateTaskExecutorData,
   TaskTerminateResponse,
@@ -44,280 +32,10 @@ import {
 import { CustomTask } from '../common/task';
 
 import { ProblemCollector } from './problem-collector';
+import { TaskStatus, TerminalTaskExecutor } from './task-executor';
 
 const { deepClone } = objects;
-const { removeAnsiEscapeCodes } = strings;
 const { Path } = path;
-
-enum TaskStatus {
-  PROCESS_INIT,
-  PROCESS_READY,
-  PROCESS_RUNNING,
-  PROCESS_EXITED,
-}
-
-function rangeAreEqual(a, b) {
-  return (
-    a.start.line === b.start.line &&
-    a.start.character === b.start.character &&
-    a.end.line === b.end.line &&
-    a.end.character === b.end.character
-  );
-}
-
-function problemAreEquals(a: ProblemMatchData | ProblemMatch, b: ProblemMatchData | ProblemMatch) {
-  return (
-    a.resource?.toString() === b.resource?.toString() &&
-    a.description.owner === b.description.owner &&
-    a.description.severity === b.description.severity &&
-    a.description.source === b.description.source &&
-    (a as ProblemMatchData)?.marker.code === (b as ProblemMatchData)?.marker.code &&
-    (a as ProblemMatchData)?.marker.message === (b as ProblemMatchData)?.marker.message &&
-    (a as ProblemMatchData)?.marker.source === (b as ProblemMatchData)?.marker.source &&
-    rangeAreEqual((a as ProblemMatchData).marker.range, (b as ProblemMatchData).marker.range)
-  );
-}
-
-@Injectable({ multiple: true })
-export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
-  @Autowired(ITerminalGroupViewService)
-  protected readonly terminalView: ITerminalGroupViewService;
-
-  @Autowired(ITerminalController)
-  protected readonly terminalController: ITerminalController;
-
-  @Autowired(ITerminalService)
-  protected readonly terminalService: ITerminalService;
-
-  private terminalClient: ITerminalClient | undefined;
-
-  private pid: number | undefined;
-
-  private exitDefer: Deferred<{ exitCode?: number }> = new Deferred();
-
-  private _onDidTerminalCreated: Emitter<string> = new Emitter();
-
-  private _onDidTaskProcessExit: Emitter<number | undefined> = new Emitter();
-
-  private _onDidBackgroundTaskBegin: Emitter<void> = new Emitter();
-  public onDidBackgroundTaskBegin: Event<void> = this._onDidBackgroundTaskBegin.event;
-
-  private _onDidBackgroundTaskEnd: Emitter<void> = new Emitter();
-  public onDidBackgroundTaskEnd: Event<void> = this._onDidBackgroundTaskEnd.event;
-
-  private _onDidProblemMatched: Emitter<ProblemMatch[]> = new Emitter();
-  public onDidProblemMatched: Event<ProblemMatch[]> = this._onDidProblemMatched.event;
-
-  private _onDidTerminalWidgetRemove: Emitter<void> = new Emitter();
-
-  public onDidTerminalCreated: Event<string> = this._onDidTerminalCreated.event;
-
-  public onDidTerminalWidgetRemove: Event<void> = this._onDidTerminalWidgetRemove.event;
-
-  public onDidTaskProcessExit: Event<number | undefined> = this._onDidTaskProcessExit.event;
-
-  public processReady: Deferred<void> = new Deferred<void>();
-
-  private processExited = false;
-
-  private disposableCollection: DisposableCollection = new DisposableCollection();
-
-  public taskStatus: TaskStatus = TaskStatus.PROCESS_INIT;
-
-  constructor(
-    private task: Task,
-    private terminalOptions: TerminalOptions,
-    private collector: ProblemCollector,
-    public executorId: number,
-  ) {
-    super();
-
-    this.addDispose(
-      this.terminalView.onWidgetDisposed((e) => {
-        if (this.terminalClient && e.id === this.terminalClient.id) {
-          this._onDidTerminalWidgetRemove.fire();
-        }
-      }),
-    );
-  }
-
-  terminate(): Promise<{ success: boolean }> {
-    return new Promise((resolve) => {
-      if (this.terminalClient) {
-        this.terminalClient.dispose();
-        if (this.processExited) {
-          // 如果在调 terminate 之前进程已经退出，直接删掉 terminalWidget 即可
-          this.terminalView.removeWidget(this.terminalClient.id);
-          resolve({ success: true });
-        } else {
-          this.terminalService.onExit((e) => {
-            if (e.sessionId === this.terminalClient?.id) {
-              this.terminalView.removeWidget(this.terminalClient.id);
-              resolve({ success: true });
-            }
-          });
-        }
-      } else {
-        resolve({ success: true });
-      }
-    });
-  }
-
-  private onTaskExit(code?: number) {
-    const { term, id } = this.terminalClient!;
-    term.setOption('disableStdin', true);
-    term.writeln(formatLocalize('terminal.integrated.exitedWithCode', code));
-    term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m`);
-    this._onDidTaskProcessExit.fire(code);
-    this.disposableCollection.push(
-      term.onKey(() => {
-        this.terminalView.removeWidget(id);
-      }),
-    );
-  }
-
-  private bindTerminalClientEvent() {
-    this.addDispose(
-      this.terminalClient?.onOutput((e) => {
-        const output = removeAnsiEscapeCodes(e.data.toString());
-        const isBegin = this.collector.matchBeginMatcher(output);
-        if (isBegin) {
-          this._onDidBackgroundTaskBegin.fire();
-        }
-
-        // process multi-line output
-        const lines = output.split(/\r?\n/g).filter((e) => e);
-        const markerResults: ProblemMatch[] = [];
-        for (const l of lines) {
-          const markers = this.collector.processLine(l);
-          if (markers && markers.length > 0) {
-            for (const marker of markers) {
-              const existing = markerResults.findIndex((e) => problemAreEquals(e, marker));
-              if (existing === -1) {
-                markerResults.push(marker);
-              }
-            }
-          }
-        }
-
-        if (markerResults.length > 0) {
-          this._onDidProblemMatched.fire(markerResults);
-        }
-
-        const isEnd = this.collector.matchEndMatcher(output);
-        if (isEnd) {
-          this._onDidBackgroundTaskEnd.fire();
-        }
-      }) || Disposable.NULL,
-    );
-
-    this.disposableCollection.push(
-      this.terminalClient?.onExit(async (e) => {
-        if (e.id === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
-          this.onTaskExit(e.code);
-          this.processExited = true;
-          this.taskStatus = TaskStatus.PROCESS_EXITED;
-          this.exitDefer.resolve({ exitCode: e.code });
-        }
-      }) || Disposable.NULL,
-    );
-
-    this.disposableCollection.push(
-      this.terminalService.onExit(async (e) => {
-        if (e.sessionId === this.terminalClient?.id && this.taskStatus !== TaskStatus.PROCESS_EXITED) {
-          await this.processReady.promise;
-          this.onTaskExit(e.code);
-          this.processExited = true;
-          this.taskStatus = TaskStatus.PROCESS_EXITED;
-          this.exitDefer.resolve({ exitCode: e.code });
-        }
-      }),
-    );
-  }
-
-  private async createTerminal(reuse?: boolean) {
-    if (reuse && this.terminalClient) {
-      this.terminalClient.updateOptions(this.terminalOptions);
-      this.terminalClient.reset();
-    } else {
-      this.terminalClient = await this.terminalController.createClientWithWidget2({
-        terminalOptions: this.terminalOptions,
-        closeWhenExited: false,
-        isTaskExecutor: true,
-        taskId: this.task._id,
-        beforeCreate: (terminalId) => {
-          this._onDidTerminalCreated.fire(terminalId);
-        },
-      });
-    }
-
-    this.terminalController.showTerminalPanel();
-    this.bindTerminalClientEvent();
-  }
-
-  async attach(terminalClient: ITerminalClient): Promise<{ exitCode?: number }> {
-    this.taskStatus = TaskStatus.PROCESS_READY;
-    this.terminalClient = terminalClient;
-    this.terminalOptions = terminalClient.options;
-    this.bindTerminalClientEvent();
-    this.taskStatus = TaskStatus.PROCESS_RUNNING;
-    this.pid = await this.terminalClient?.pid;
-    this.processReady.resolve();
-
-    this._onDidTerminalCreated.fire(terminalClient.id);
-
-    return this.exitDefer.promise;
-  }
-
-  async execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }> {
-    this.taskStatus = TaskStatus.PROCESS_READY;
-
-    await this.createTerminal(reuse);
-
-    this.terminalClient?.term.writeln(`\x1b[3m> Executing task: ${task._label} <\x1b[0m\n`);
-    const { shellArgs } = this.terminalOptions;
-
-    // extensionTerminal 由插件自身接管，不需要执行和输出 Command
-    if (!this.terminalOptions.isExtensionTerminal && shellArgs) {
-      this.terminalClient?.term.writeln(
-        `\x1b[3m> Command: ${typeof shellArgs === 'string' ? shellArgs : shellArgs[1]} <\x1b[0m\n`,
-      );
-    }
-
-    await this.terminalClient?.attached.promise;
-    this.taskStatus = TaskStatus.PROCESS_RUNNING;
-    this.pid = await this.terminalClient?.pid;
-    this.processReady.resolve();
-    this.terminalClient?.term.write('\n\x1b[G');
-    return this.exitDefer.promise;
-  }
-
-  get processId(): number | undefined {
-    return this.pid;
-  }
-
-  get terminalId(): string | undefined {
-    return this.terminalClient && this.terminalClient.id;
-  }
-
-  get widgetId(): string | undefined {
-    return this.terminalClient && this.terminalClient.widget.id;
-  }
-
-  public updateTerminalOptions(terminalOptions: TerminalOptions) {
-    this.terminalOptions = terminalOptions;
-  }
-
-  public updateProblemCollector(collector: ProblemCollector) {
-    this.collector = collector;
-  }
-
-  public reset() {
-    this.disposableCollection.dispose();
-    this.taskStatus = TaskStatus.PROCESS_INIT;
-    this.exitDefer = new Deferred();
-  }
-}
 
 @Injectable()
 export class TerminalTaskSystem extends Disposable implements ITaskSystem {
@@ -332,6 +50,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
   private executorId = 0;
 
+  private lastTask: CustomTask | ContributedTask | undefined;
   protected currentTask: Task;
 
   private activeTaskExecutors: Map<string, IActivateTaskExecutorData> = new Map();
@@ -395,17 +114,17 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
         result.push(await this.resolveVariable(arg));
       }
     }
-    return { shellArgs: ['-c', `${result.join(' ')}`] };
+    return { args: ['-c', `${result.join(' ')}`] };
   }
 
   private findAvailableExecutor(): TerminalTaskExecutor | undefined {
     return this.taskExecutors.find((e) => e.taskStatus === TaskStatus.PROCESS_EXITED);
   }
 
-  private async createTaskExecutor(task: CustomTask | ContributedTask, options: TerminalOptions) {
+  private async createTaskExecutor(task: CustomTask | ContributedTask, launchConfig: IShellLaunchConfig) {
     const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
     const collector = new ProblemCollector(matchers);
-    const executor = this.injector.get(TerminalTaskExecutor, [task, options, collector, this.executorId]);
+    const executor = this.injector.get(TerminalTaskExecutor, [task, launchConfig, collector, this.executorId]);
     this.executorId += 1;
     this.taskExecutors.push(executor);
     this.addDispose(
@@ -421,8 +140,9 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     task: CustomTask | ContributedTask,
     terminalClient: ITerminalClient,
   ): Promise<ITaskExecuteResult> {
-    const taskExecutor = await this.createTaskExecutor(task, terminalClient.options);
+    const taskExecutor = await this.createTaskExecutor(task, terminalClient.launchConfig);
     const p = taskExecutor.attach(terminalClient);
+    this.lastTask = task;
     return {
       task,
       kind: TaskExecuteKind.Started,
@@ -436,26 +156,28 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 
     const matchers = await this.resolveMatchers(task.configurationProperties.problemMatchers);
     const collector = new ProblemCollector(matchers);
-    const { shellArgs } = await this.buildShellConfig(task.command);
+    const { args } = await this.buildShellConfig(task.command);
 
-    const terminalOptions: TerminalOptions = {
+    const launchConfig: IShellLaunchConfig = {
       name: this.createTerminalName(task),
-      shellArgs,
-      isExtensionTerminal: isCustomExecution,
+      args,
+      isExtensionOwnedTerminal: isCustomExecution,
       env: task.command.options?.env || {},
       cwd: task.command.options?.cwd
         ? await this.resolveVariable(task.command.options?.cwd)
         : await this.resolveVariable('${workspaceFolder}'),
+      // 不需要历史记录
+      disablePreserveHistory: true,
     };
 
     let executor: TerminalTaskExecutor | undefined = this.findAvailableExecutor();
     let reuse = false;
     if (!executor) {
-      executor = await this.createTaskExecutor(task, terminalOptions);
+      executor = await this.createTaskExecutor(task, launchConfig);
     } else {
       reuse = true;
       executor.updateProblemCollector(collector);
-      executor.updateTerminalOptions(terminalOptions);
+      executor.updateLaunchConfig(launchConfig);
       executor.reset();
     }
 
@@ -507,6 +229,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     await executor.processReady.promise;
 
     this._onDidStateChange.fire(TaskEvent.create(TaskEventKind.ProcessStarted, task, executor.processId));
+    this.lastTask = task;
     return {
       task,
       kind: TaskExecuteKind.Started,
@@ -577,11 +300,9 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     }
     return result;
   }
-
   getActiveTasks(): Task[] {
     return Array.from(this.activeTaskExecutors.values()).map((e) => e.task);
   }
-
   async terminate(task: Task): Promise<TaskTerminateResponse> {
     const key = task.getMapKey();
     const activeExecutor = this.activeTaskExecutors.get(key);
@@ -592,9 +313,8 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
     this.activeTaskExecutors.delete(key);
     return { task, success };
   }
-
-  rerun(): import('../common').ITaskExecuteResult | undefined {
-    throw new Error('Method not implemented.');
+  async rerun(): Promise<ITaskExecuteResult | undefined> {
+    return this.lastTask && (await this.executeTask(this.lastTask));
   }
   isActive(): Promise<boolean> {
     throw new Error('Method not implemented.');
@@ -602,21 +322,19 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
   isActiveSync(): boolean {
     throw new Error('Method not implemented.');
   }
-
-  getBusyTasks(): import('../common/task').Task[] {
+  getBusyTasks(): Task[] {
     throw new Error('Method not implemented.');
   }
   canAutoTerminate(): boolean {
     throw new Error('Method not implemented.');
   }
-
-  terminateAll(): Promise<import('../common').TaskTerminateResponse[]> {
+  terminateAll(): Promise<TaskTerminateResponse[]> {
     throw new Error('Method not implemented.');
   }
-  revealTask(task: import('../common/task').Task): boolean {
+  revealTask(task: Task): boolean {
     throw new Error('Method not implemented.');
   }
-  customExecutionComplete(task: import('../common/task').Task, result: number): Promise<void> {
+  customExecutionComplete(task: Task, result: number): Promise<void> {
     throw new Error('Method not implemented.');
   }
 }

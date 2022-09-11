@@ -10,18 +10,21 @@ import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-node';
 
 import {
   IPtyProxyRPCService,
+  IPtySpawnOptions,
   PTY_SERVICE_PROXY_CALLBACK_PROTOCOL,
   PTY_SERVICE_PROXY_PROTOCOL,
   PTY_SERVICE_PROXY_SERVER_PORT,
   TERMINAL_ID_SEPARATOR,
 } from '../common';
 
+const PTY_LINE_DATA_CACHE_DEFAULT_SIZE = 500;
+
 // 存储Pty-onData返回的数据行，用于用户Resume场景下的数据恢复
 class PtyLineDataCache {
   private size: number;
   private dataArray: string[] = [];
 
-  constructor(size = 100) {
+  constructor(size = PTY_LINE_DATA_CACHE_DEFAULT_SIZE) {
     this.size = size;
   }
 
@@ -92,6 +95,7 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     longSessionId?: string,
+    spawnOptions?: IPtySpawnOptions,
   ): any {
     // 切割sessionId到短Id
     const sessionId = longSessionId?.split(TERMINAL_ID_SEPARATOR)?.[1];
@@ -109,11 +113,13 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
         // 有Session ID 但是没有 Process，说明是被系统杀了，此时需要重新spawn一个Pty
         this.ptyInstanceMap.delete(pid);
         ptyInstance = pty.spawn(file, args, options);
-        // 这种情况下，需要把之前的PtyCache给attach上去，方便用户查看记录
-        const oldLineCache = this.ptyDataCacheMap.get(pid);
-        if (oldLineCache) {
-          this.ptyDataCacheMap.set(ptyInstance.pid, oldLineCache);
-          this.ptyDataCacheMap.delete(pid);
+        if (spawnOptions?.preserveHistory) {
+          // 这种情况下，需要把之前的PtyCache给attach上去，方便用户查看记录
+          const oldLineCache = this.ptyDataCacheMap.get(pid);
+          if (oldLineCache) {
+            this.ptyDataCacheMap.set(ptyInstance.pid, oldLineCache);
+            this.ptyDataCacheMap.delete(pid);
+          }
         }
       }
     }
@@ -129,9 +135,10 @@ export class PtyServiceProxy implements IPtyProxyRPCService {
     }
 
     const pid = ptyInstance.pid;
+    const cacheSize = spawnOptions?.ptyLineCacheSize ?? PTY_LINE_DATA_CACHE_DEFAULT_SIZE;
     // 初始化PtyLineCache
     if (!this.ptyDataCacheMap.has(pid)) {
-      this.ptyDataCacheMap.set(pid, new PtyLineDataCache());
+      this.ptyDataCacheMap.set(pid, new PtyLineDataCache(cacheSize));
     }
     // 初始化ptyDisposableMap
     if (!this.ptyDisposableMap.has(pid)) {

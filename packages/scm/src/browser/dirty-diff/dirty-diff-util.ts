@@ -1,31 +1,31 @@
-import { IChange } from '@opensumi/ide-core-common';
+import { ILineChange } from '@opensumi/ide-core-common';
 
-export function compareChanges(a: IChange, b: IChange): number {
-  let result = a.modifiedStartLineNumber - b.modifiedStartLineNumber;
-
-  if (result !== 0) {
-    return result;
-  }
-
-  result = a.modifiedEndLineNumber - b.modifiedEndLineNumber;
+export function compareChanges(a: ILineChange, b: ILineChange): number {
+  let result = a[2] - b[2];
 
   if (result !== 0) {
     return result;
   }
 
-  result = a.originalStartLineNumber - b.originalStartLineNumber;
+  result = a[3] - b[3];
 
   if (result !== 0) {
     return result;
   }
 
-  return a.originalEndLineNumber - b.originalEndLineNumber;
+  result = a[0] - b[0];
+
+  if (result !== 0) {
+    return result;
+  }
+
+  return a[1] - b[1];
 }
 
-export function getModifiedEndLineNumber(change: IChange): number {
-  if (change.modifiedEndLineNumber === 0) {
-    return change.modifiedStartLineNumber === 0 ? 1 : change.modifiedStartLineNumber;
+export function getModifiedEndLineNumber(change: ILineChange): number {
+  if (change[3] === 0) {
+    return change[2] === 0 ? 1 : change[2];
   } else {
-    return change.modifiedEndLineNumber;
+    return change[3];
   }
 }

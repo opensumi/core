@@ -230,4 +230,4 @@ export const Input = React.forwardRef<HTMLInputElement, IInputBaseProps>((props,
   );
 });
 
-Input.displayName = 'KTInput';
+Input.displayName = 'OpenSumiInput';

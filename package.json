@@ -9,7 +9,7 @@
     "init:deps": "ts-node ./scripts/bootstrap",
     "init": "npm run init:deps && npm run clean && npm run build:all",
     "start": "node ./scripts/rebuild-native.js && cross-env HOST=127.0.0.1 WS_PATH=ws://127.0.0.1:8000 NODE_ENV=development ts-node ./scripts/start",
-    "start:remote": "node ./scripts/rebuild-native.js && cross-env HOST=0.0.0.0 NODE_ENV=development ts-node ./scripts/start",
+    "start:remote": "node ./scripts/rebuild-native.js && cross-env NODE_ENV=development ts-node ./scripts/start",
     "start:electron": "cross-env NODE_ENV=development ts-node ./scripts/start-electron",
     "build:components": "cd packages/components && npm run build:dist",
     "start:lite": "cross-env NODE_ENV=development ts-node ./scripts/start --script=start:lite",
@@ -141,6 +141,6 @@
     "typescript": "4.6.4",
     "webpack": "^4.39.3",
     "yargs": "^17.5.0",
-    "yauzl": "^2.10.0"
+    "compressing": "^1.6.2"
   }
 }

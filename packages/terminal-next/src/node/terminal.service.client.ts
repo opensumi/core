@@ -13,7 +13,7 @@ import { IDetectProfileOptions, ITerminalProfile } from '../common/profile';
 import { IPtyProcess } from '../common/pty';
 import { WindowsShellType, WINDOWS_DEFAULT_SHELL_PATH_MAPS } from '../common/shell';
 
-import { findExecutable, findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
+import { findShellExecutableAsync, getSystemShell, WINDOWS_GIT_BASH_PATHS } from './shell';
 import { ITerminalProfileServiceNode, TerminalProfileServiceNode } from './terminal.profile.service';
 
 /**
@@ -96,7 +96,7 @@ export class TerminalServiceClientImpl extends RPCService<IRPCTerminalService> i
         return {
           id,
           pid: pty.pid,
-          proess: pty.process,
+          process: pty.process,
           name: pty.parsedName,
           shellPath: pty.launchConfig.executable,
         };

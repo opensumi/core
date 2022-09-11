@@ -8,6 +8,7 @@ import {
   editorFindMatch,
   editorFindMatchHighlight,
   overviewRulerFindMatchForeground,
+  transparent,
 } from '@opensumi/ide-theme';
 
 // copied from vscode terminal color registry
@@ -63,6 +64,32 @@ export const TERMINAL_SELECTION_BACKGROUND_COLOR = registerColor(
     hc: '#FFFFFF80',
   },
   localize('terminal.selectionBackground', 'The selection background color of the terminal.'),
+);
+
+export const TERMINAL_SELECTION_FOREGROUND_COLOR = registerColor(
+  'terminal.selectionForeground',
+  {
+    light: null,
+    dark: null,
+    hc: '#000000',
+  },
+  localize(
+    'terminal.selectionForeground',
+    'The selection foreground color of the terminal. When this is null the selection foreground will be retained and have the minimum contrast ratio feature applied.',
+  ),
+);
+
+export const TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR = registerColor(
+  'terminal.inactiveSelectionBackground',
+  {
+    light: transparent(TERMINAL_SELECTION_BACKGROUND_COLOR, 0.5),
+    dark: transparent(TERMINAL_SELECTION_BACKGROUND_COLOR, 0.5),
+    hc: transparent(TERMINAL_SELECTION_BACKGROUND_COLOR, 0.7),
+  },
+  localize(
+    'terminal.inactiveSelectionBackground',
+    'The selection background color of the terminal when it does not have focus.',
+  ),
 );
 
 export const TERMINAL_BORDER_COLOR = registerColor(

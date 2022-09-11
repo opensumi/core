@@ -850,6 +850,7 @@ export const localizationBundle = {
     'TaskService.pickRunTask': '选择要运行的任务',
     'TerminalTaskSystem.terminalName': '任务 - {0}',
     'terminal.integrated.exitedWithCode': '终端进程已终止，退出代码: {0}',
+    // reuseTerminal: '终端将被任务重用，按 r 键重新执行该任务，按其他任意键关闭。',
     reuseTerminal: '终端将被任务重用，按任意键关闭。',
 
     'toolbar-customize.buttonDisplay.description': '按钮展示形式',
@@ -1021,8 +1022,15 @@ export const localizationBundle = {
     'connection.stop.rtt': '关闭通信延迟检查',
 
     'debug.terminal.label': '创建 Javascript Debug Terminal',
-    'command.runTask': '运行任务',
+    'workbench.action.tasks.runTask': '运行任务',
+    'workbench.action.tasks.reRunTask': '执行上次运行的任务',
+    'workbench.action.tasks.restartTask': '重新开始运行中的任务',
+    'workbench.action.tasks.terminate': '终止任务',
+    'workbench.action.tasks.showTasks': '展示任务',
+    'workbench.action.tasks.showLog': '展示任务日志',
 
+    'task.contribute': '贡献',
+    'task.cannotFindTask': '未找到 {0} 的任务，按回车键返回',
     // extension contribute
     ...browserViews,
   },

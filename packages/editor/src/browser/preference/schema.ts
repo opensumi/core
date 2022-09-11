@@ -579,6 +579,22 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
       'Shows the nested current scopes during the scroll at the top of the editor.',
     ),
   },
+  'editor.customCodeActionMenu.showHeaders': {
+    type: 'boolean',
+    default: true,
+    description: localize(
+      'editor.customCodeActionMenu.showHeaders',
+      'Enabling this will show the code action menu with group headers, if the custom code action menu is enabled.',
+    ),
+  },
+  'editor.useCustomCodeActionMenu': {
+    type: 'boolean',
+    default: true,
+    description: localize(
+      'editor.useCustomCodeActionMenu',
+      'Enabling this adjusts how the code action menu is rendered.',
+    ),
+  },
   'editor.letterSpacing': {
     type: 'number',
     default: EDITOR_FONT_DEFAULTS.letterSpacing,

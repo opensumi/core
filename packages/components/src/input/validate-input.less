@@ -6,30 +6,28 @@
   height: 100%;
   position: relative;
 
-  .kt-input {
+  .@{prefix}-input {
     &.validate-error {
       border: 1px solid var(--inputValidation-errorBorder);
-      background-color: var(--inputValidation-errorBackground);
     }
 
     &.validate-info {
       border: 1px solid var(--inputValidation-infoBorder);
-      background-color: var(--inputValidation-infoBackground);
     }
 
     &.validate-warning {
       border: 1px solid var(--inputValidation-warningBorder);
-      background-color: var(--inputValidation-warningBackground);
     }
   }
 
   &.popup {
-    .kt-input {
+    .@{prefix}-input {
       background-color: var(--input-background);
     }
   }
 
   .validate-message {
+    margin-top: 4px;
     display: inline-block;
     overflow: hidden;
     text-align: left;
@@ -46,7 +44,6 @@
     left: 0;
     top: 100%;
     z-index: 10;
-    border-top: none !important;
     border-radius: 0px 0px 2px 2px;
 
     &.popup {

@@ -31,7 +31,6 @@ export interface IExtensionsPointService {
 
 @Injectable()
 export class ExtensionsPointServiceImpl implements IExtensionsPointService {
-
   @Autowired(IJSONSchemaRegistry)
   private schemaRegistry: IJSONSchemaRegistry;
 
@@ -41,9 +40,10 @@ export class ExtensionsPointServiceImpl implements IExtensionsPointService {
   }
 
   private appendPropertiesFactory(kind: FrameworkKind): (points: string[], desc: IExtensionPointDescriptor) => void {
-    const properties = kind === 'opensumi'
-      ? OpensumiExtensionPackageSchema.properties!.kaitianContributes.properties
-      : VSCodeExtensionPackageSchema.properties!.contributes.properties;
+    const properties =
+      kind === 'opensumi'
+        ? OpensumiExtensionPackageSchema.properties!.kaitianContributes.properties
+        : VSCodeExtensionPackageSchema.properties!.contributes.properties;
 
     return (points: string[], desc: IExtensionPointDescriptor) => {
       const { extensionPoint, jsonSchema } = desc;
@@ -66,7 +66,9 @@ export class ExtensionsPointServiceImpl implements IExtensionsPointService {
   }
 
   public appendExtensionPoint(points: string[], desc: IExtensionPointDescriptor): void {
-    if (!desc) {return;}
+    if (!desc) {
+      return;
+    }
 
     const { frameworkKind = ['vscode'] } = desc;
 
@@ -82,7 +84,9 @@ export class ExtensionsPointServiceImpl implements IExtensionsPointService {
   }
 
   public registerExtensionPoint(desc: IExtensionPointDescriptor): void {
-    if (!desc) {return;}
+    if (!desc) {
+      return;
+    }
 
     this.appendExtensionPoint([], desc);
   }

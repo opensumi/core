@@ -1,6 +1,6 @@
 import type vscode from 'vscode';
 
-import { URI, IChange } from '@opensumi/ide-core-common';
+import { URI, ILineChange } from '@opensumi/ide-core-common';
 
 // explorer/context
 // 资源管理器 ctxmenu
@@ -58,7 +58,7 @@ export type ScmResourceStateContextCallback = (...args: [vscode.SourceControlRes
 // diff editor 的最右侧 ellipsis 图标点击 dropdown
 // 此处 Uri 是 git scheme 的
 // todo: scm/change/title 是 diff widget 的菜单，这里不对待更新
-export type ScmChangeTitleCallback = (...args: [URI, IChange[], number]) => void;
+export type ScmChangeTitleCallback = (...args: [URI, ILineChange[], number]) => void;
 
 // view/title
 // 自定义 contributed view 的 inline actions/more actions

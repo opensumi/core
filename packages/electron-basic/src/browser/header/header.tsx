@@ -1,4 +1,3 @@
-import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -74,58 +73,75 @@ const useMaximize = () => {
 // Big Sur increases title bar height
 const isNewMacHeaderBar = () => isMacintosh && parseFloat(electronEnv.osRelease) >= 20;
 
+export const HeaderBarLeftComponent = () => {
+  const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
+
+  if (isMacintosh) {
+    return null;
+  }
+
+  const initialProps = {
+    className: 'menubarWrapper',
+  };
+
+  return (
+    <>
+      <ComponentRenderer
+        Component={componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar')!.views[0].component!}
+        initialProps={initialProps}
+      />
+    </>
+  );
+};
+
+export const HeaderBarRightComponent = () => {
+  const { maximized } = useMaximize();
+  const windowService: IWindowService = useInjectable(IWindowService);
+
+  if (isMacintosh) {
+    return null;
+  }
+
+  return (
+    <div
+      className={styles.windowActions}
+      style={{
+        height: isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
+      }}
+    >
+      <div className={getIcon('min')} onClick={() => windowService.minimize()} />
+      {maximized ? (
+        <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
+      ) : (
+        <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
+      )}
+      <div className={getIcon('close1')} onClick={() => windowService.close()} />
+    </div>
+  );
+};
+
+interface ElectronHeaderBarPorps {
+  LeftComponent?: React.FunctionComponent;
+  RightComponent?: React.FunctionComponent;
+  Icon?: React.FunctionComponent;
+  autoHide?: boolean;
+}
+
 /**
  * autoHide: Hide the HeaderBar when the macOS full screen
  */
 export const ElectronHeaderBar = observer(
-  ({ Icon, autoHide = true }: React.PropsWithChildren<{ Icon?: React.FunctionComponent; autoHide?: boolean }>) => {
+  ({ LeftComponent, RightComponent, Icon, autoHide = true }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
-    const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
 
     const { isFullScreen } = useFullScreen();
-    const { maximized, getMaximized } = useMaximize();
-
-    const LeftComponent = () => {
-      if (isMacintosh) {
-        return null;
-      }
-
-      const initialProps = {
-        className: 'menubarWrapper',
-      };
-
-      return (
-        <>
-          <ComponentRenderer
-            Component={componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar')!.views[0].component!}
-            initialProps={initialProps}
-          />
-        </>
-      );
-    };
-
-    const RightComponent = () => {
-      if (isMacintosh) {
-        return null;
-      }
-
-      return (
-        <div
-          className={styles.windowActions}
-          style={{
-            height: isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
-          }}
-        >
-          <div className={getIcon('min')} onClick={() => windowService.minimize()} />
-          {maximized ? (
-            <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
-          ) : (
-            <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
-          )}
-          <div className={getIcon('close1')} onClick={() => windowService.close()} />
-        </div>
-      );
-    };
+    const { getMaximized } = useMaximize();
+    if (!LeftComponent) {
+      LeftComponent = HeaderBarLeftComponent;
+    }
+    if (!RightComponent) {
+      RightComponent = HeaderBarRightComponent;
+    }
 
     // in Mac, hide the header bar if it is in full screen mode
     if (isMacintosh && isFullScreen && autoHide) {

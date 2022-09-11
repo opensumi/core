@@ -8,6 +8,7 @@ import {
   Emitter,
   CommandService,
   toDisposable,
+  ILineChange,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService, IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import {
@@ -422,18 +423,20 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
       const dirtyDiffDecorator = injector.get(DirtyDiffDecorator, [editorModel, dirtyDiffModel]);
       const dirtyDiffWidget = injector.get(DirtyDiffWidget, [monacoEditor, dirtyDiffModel, commandService]);
 
-      const change0 = {
-        originalStartLineNumber: 11,
-        originalEndLineNumber: 11,
-        modifiedStartLineNumber: 11,
-        modifiedEndLineNumber: 11,
-      };
-      const change1 = {
-        originalStartLineNumber: 12,
-        originalEndLineNumber: 12,
-        modifiedStartLineNumber: 12,
-        modifiedEndLineNumber: 12,
-      };
+      const change0: ILineChange = [
+        11,
+        11,
+        11,
+        11,
+        [],
+      ];
+      const change1: ILineChange = [
+        12,
+        12,
+        12,
+        12,
+        [],
+      ];
 
       dirtyDiffModel['_changes'] = [change0, change1];
       dirtyDiffWidget.updateCurrent(1);

@@ -83,17 +83,17 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
     });
     it('tree kill', async () => {
       expect.assertions(2);
-      const defered = new Deferred();
+      const deferred = new Deferred();
 
       const pid = await extensionHostManager.fork(extHostPath);
       extensionHostManager.onExit(pid, async (code, signal) => {
         expect(signal).toBe('SIGTERM');
         // tree-kill 使用 process.kill 不能使用 killed 判断
         expect(await extensionHostManager.isRunning(pid)).toBeFalsy();
-        defered.resolve();
+        deferred.resolve();
       });
       await extensionHostManager.treeKill(pid);
-      await defered.promise;
+      await deferred.promise;
     });
 
     it('findDebugPort', async () => {
@@ -104,14 +104,14 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
 
     it('on output', async () => {
       expect.assertions(1);
-      const defered = new Deferred();
+      const deferred = new Deferred();
 
       const pid = await extensionHostManager.fork(extHostPath, [], { silent: true });
       extensionHostManager.onOutput(pid, (output) => {
         expect(output.data).toContain('send ready');
-        defered.resolve();
+        deferred.resolve();
       });
-      await defered.promise;
+      await deferred.promise;
     });
     it('dispose process', async () => {
       const pid = await extensionHostManager.fork(extHostPath);

@@ -1,4 +1,3 @@
-import lodashGet from 'lodash/get';
 import { observable } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
@@ -20,6 +19,7 @@ import {
   replaceLocalizePlaceholder,
   withNullAsUndefined,
   isThemeColor,
+  Uri,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -29,7 +29,6 @@ import { IThemeService } from '@opensumi/ide-theme';
 import {
   ITerminalController,
   ITerminalClient,
-  ITerminalClientFactory,
   IWidget,
   ITerminalInfo,
   ITerminalBrowserHistory,
@@ -52,6 +51,7 @@ import {
   TerminalOptions,
   asTerminalIcon,
   TERMINAL_ID_SEPARATOR,
+  ITerminalProfile,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -98,11 +98,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(ITerminalGroupViewService)
   protected readonly terminalView: TerminalGroupViewService;
 
-  @Autowired(ITerminalClientFactory)
-  protected readonly clientFactory: ITerminalClientFactory;
-
   @Autowired(ITerminalClientFactory2)
-  protected readonly clientFactory2: ITerminalClientFactory2;
+  protected readonly clientFactory: ITerminalClientFactory2;
 
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
@@ -195,15 +192,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   private async _createClient(widget: IWidget, options?: ICreateTerminalOptions) {
-    let client: ITerminalClient;
-
-    if (!options || (options as ICreateTerminalOptions).config || Object.keys(options).length === 0) {
-      client = await this.clientFactory2(widget, /** @type ICreateTerminalOptions */ options);
-      this.logger.log('create client with clientFactory2', client);
-    } else {
-      client = await this.clientFactory(widget, /** @type TerminalOptions */ options);
-      this.logger.log('create client with clientFactory', client);
-    }
+    const client = await this.clientFactory(widget, /** @type ICreateTerminalOptions */ options);
+    this.logger.log('create client with clientFactory2', client);
     return this.setupClient(widget, client);
   }
 
@@ -212,8 +202,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     this.logger.log(`setup client ${client.id}`);
     client.addDispose(
       client.onExit((e) => {
-        // 直接使用removeWidget会导致TerminalTask场景下任务执行完毕直接退出而不是用户手动触发onKeyDown退出
-        // this.terminalView.removeWidget(client.id);
+        // 在这个函数内不要 removeWidget，会导致 TerminalTask 场景下任务执行完毕直接退出而不是用户手动触发 onKeyDown 退出
+
         this._onDidCloseTerminal.fire({ id: client.id, code: e.code });
       }),
     );
@@ -280,13 +270,12 @@ export class TerminalController extends WithEventBus implements ITerminalControl
 
     // 先对recovery数据做一个简单校验，因为之前groups数据可能是字符串或object，而现在抛弃了字符串的方式
     // 所以为了避免旧逻辑写入localStorage的数据混乱，这里做一个简单的校验
-    if (!history.current || !lodashGet(history, 'groups[0][0].client')) {
+    if (!history.current || !history?.groups?.[0]?.[0]?.client) {
       return;
     }
 
     // HACK: 因为现在的终端重连是有问题的，是ClientID机制导致的，因此在拿出记录恢复终端的时候，需要把里面的ClientID替换为当前活跃窗口的ClientID
     // 同时在独立PtyService中，把终端重连的标识转变为真正的realSessionId  也就是 ${clientId}|${realSessionId}
-
     const currentRealSessionId = history.current?.split(TERMINAL_ID_SEPARATOR)?.[1];
     if (history.current && history.current.includes(TERMINAL_ID_SEPARATOR)) {
       history.current = `${this.clientId}|${currentRealSessionId}`;
@@ -294,23 +283,32 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     history.groups = history.groups.map((group) => {
       if (Array.isArray(group)) {
         // 替换clientId为当前窗口ClientID
-        return group.map(({ client, ...other }) => ({
-          client: client.includes(TERMINAL_ID_SEPARATOR)
-            ? `${this.clientId}${TERMINAL_ID_SEPARATOR}${(client as string)?.split(TERMINAL_ID_SEPARATOR)?.[1]}`
-            : client,
-          ...other,
-        }));
+        return group
+          .map(({ client, ...other }) => {
+            if (other.task) {
+              // #1531 不恢复 Task 类型的终端
+              return undefined;
+            }
+            return {
+              client: client.includes(TERMINAL_ID_SEPARATOR)
+                ? `${this.clientId}${TERMINAL_ID_SEPARATOR}${(client as string)?.split(TERMINAL_ID_SEPARATOR)?.[1]}`
+                : client,
+              ...other,
+            };
+          })
+          .filter(Boolean) as { client: string }[];
       } else {
         return group;
       }
     });
 
     let currentWidgetId = '';
+    let firstAvailableId = '';
     const { groups, current } = history;
 
-    const ids: (string | { client: string })[] = [];
+    // const ids: (string | { client: string })[] = [];
 
-    groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
+    // groups.forEach((widgets) => ids.push(...widgets.map((widget) => widget.client)));
 
     // 之前OpenSumi的Check终端活跃机制是有问题的，暂时不启用，这部分逻辑在PtyService会兜住
     // const checked = await this.service.check(ids.map((id) => (typeof id === 'string' ? id : id.clientId)));
@@ -319,62 +317,75 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     // }
 
     for (const widgets of groups) {
-      const { group } = this._createOneGroup();
-
       if (!widgets) {
         continue;
       }
+      if (widgets.length === 0) {
+        continue;
+      }
 
+      const { group } = this._createOneGroup();
+
+      const promises = [] as Promise<void>[];
       for (const session of widgets) {
         if (!session) {
           continue;
         }
+        promises.push(
+          (async () => {
+            /**
+             * widget 创建完成后会同时创建 client
+             */
+            const widget = this.terminalView.createWidget(
+              group,
+              typeof session === 'string' ? session : session.client,
+              !!session.task,
+            );
+            const client = await this.clientFactory(widget);
 
-        /**
-         * widget 创建完成后会同时创建 client
-         */
-        const widget = this.terminalView.createWidget(
-          group,
-          typeof session === 'string' ? session : session.client,
-          !!session.task,
+            // 终端被Resume的场景下也要绑定终端事件，避免意料之外的BUG
+            this.setupClient(widget, client);
+
+            if (session.task) {
+              client.isTaskExecutor = true;
+              client.taskId = session.task;
+            }
+
+            this._clients.set(client.id, client);
+
+            if (current === client.id) {
+              currentWidgetId = widget.id;
+            }
+            if (!firstAvailableId) {
+              firstAvailableId = widget.id;
+            }
+            /**
+             * 等待预先连接成功
+             */
+            client.attached.promise.then(() => {
+              widget.name = client.name;
+              // client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
+
+              /**
+               * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
+               */
+              if (!client.ready) {
+                this.terminalView.removeWidget(widget.id);
+              }
+            });
+          })(),
         );
-        const client = await this.clientFactory2(widget, {});
-
-        // 终端被Resume的场景下也要绑定终端事件，避免意料之外的BUG
-        this.setupClient(widget, client);
-
-        if (session.task) {
-          client.isTaskExecutor = true;
-          client.taskId = session.task;
-        }
-
-        this._clients.set(client.id, client);
-
-        if (current === client.id) {
-          currentWidgetId = widget.id;
-        }
-
-        /**
-         * 等待预先连接成功
-         */
-        client.attached.promise.then(() => {
-          widget.name = client.name;
-          // client.term.writeln('\x1b[2mTerminal restored\x1b[22m');
-
-          /**
-           * 不成功的时候则认为这个连接已经失效了，去掉这个 widget
-           */
-          if (!client.ready) {
-            this.terminalView.removeWidget(widget.id);
-          }
-        });
       }
+
+      await Promise.all(promises);
     }
 
     const selectedIndex = this.terminalView.groups.findIndex((group) => group.widgetsMap.has(currentWidgetId));
 
     if (selectedIndex > -1 && currentWidgetId) {
       this.terminalView.selectWidget(currentWidgetId);
+    } else if (firstAvailableId) {
+      this.terminalView.selectWidget(firstAvailableId);
     }
   }
 
@@ -549,7 +560,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           return;
         }
 
-        if (client?.options?.isExtensionTerminal || client?.options?.isTransient) {
+        if (client.launchConfig?.isExtensionOwnedTerminal || client.launchConfig?.disablePersistence) {
           return;
         }
 
@@ -575,18 +586,6 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     return this._clients.get(widgetId);
   }
 
-  /**
-   * @deprecated 请使用 `createClientWithWidget2`. Will removed in 2.17.0
-   */
-  async createClientWithWidget(options: TerminalOptions) {
-    return await this.createClientWithWidget2({
-      terminalOptions: options,
-      args: options.args,
-      beforeCreate: options.beforeCreate,
-      closeWhenExited: options.closeWhenExited,
-    });
-  }
-
   public convertTerminalOptionsToLaunchConfig(options: TerminalOptions): IShellLaunchConfig {
     const shellLaunchConfig: IShellLaunchConfig = {
       name: options.name,
@@ -610,11 +609,57 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     shellLaunchConfig.__fromTerminalOptions = options;
     return shellLaunchConfig;
   }
+  convertProfileToLaunchConfig(
+    shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
+    cwd?: Uri | string,
+  ): IShellLaunchConfig {
+    if (!shellLaunchConfigOrProfile) {
+      return {};
+    }
+    // Profile was provided
+    if (shellLaunchConfigOrProfile && 'profileName' in shellLaunchConfigOrProfile) {
+      const profile = shellLaunchConfigOrProfile;
+      if (!profile.path) {
+        return shellLaunchConfigOrProfile;
+      }
+      return {
+        executable: profile.path,
+        args: profile.args,
+        env: profile.env,
+        // icon: profile.icon,
+        color: profile.color,
+        name: profile.overrideName ? profile.profileName : undefined,
+        cwd,
+      };
+    }
 
-  async createClientWithWidget2(options: ICreateClientWithWidgetOptions) {
-    const widgetId = options.id ? this.clientId + TERMINAL_ID_SEPARATOR + options.id : this.service.generateSessionId();
+    if (cwd) {
+      shellLaunchConfigOrProfile.cwd = cwd;
+    }
+    return shellLaunchConfigOrProfile;
+  }
 
+  async createTerminalWithWidgetByTerminalOptions(options: ICreateClientWithWidgetOptions) {
     const launchConfig = this.convertTerminalOptionsToLaunchConfig(options.terminalOptions);
+    return this.createTerminalWithWidget({
+      ...options,
+      config: launchConfig,
+    });
+  }
+
+  async createTerminal(options: ICreateTerminalOptions) {
+    const widgetId = options.id || this.service.generateSessionId();
+    const { group } = this._createOneGroup();
+    const widget = this.terminalView.createWidget(group, widgetId, false, true);
+
+    const client = await this._createClient(widget, options);
+
+    return client;
+  }
+  async createTerminalWithWidget(options: ICreateTerminalOptions) {
+    const widgetId = options.id ? this.clientId + TERMINAL_ID_SEPARATOR + options.id : this.service.generateSessionId();
+    // 这里转一遍是为了拿到 LaunchConfig，但是在 TerminalClient 内部还是会对 options.config 做可用检测并转换
+    const launchConfig = this.convertProfileToLaunchConfig(options.config);
 
     const { group } = this._createOneGroup(launchConfig);
     const widget = this.terminalView.createWidget(
@@ -631,22 +676,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     const client = await this._createClient(widget, {
       id: widgetId,
       config: launchConfig,
+      cwd: options?.cwd,
+      location: options?.location,
+      resource: options?.resource,
     });
 
     if (options.isTaskExecutor) {
       client.isTaskExecutor = true;
       client.taskId = options.taskId;
     }
-    return client;
-  }
-
-  async createTerminal(options: ICreateTerminalOptions) {
-    const widgetId = options.id || this.service.generateSessionId();
-    const { group } = this._createOneGroup();
-    const widget = this.terminalView.createWidget(group, widgetId, false, true);
-
-    const client = await this._createClient(widget, options);
-
     return client;
   }
 

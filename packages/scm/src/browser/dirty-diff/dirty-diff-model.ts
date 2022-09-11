@@ -13,8 +13,8 @@ import {
   ISplice,
   ThrottledDelayer,
   first,
-  IChange,
   positionToRange,
+  ILineChange,
 } from '@opensumi/ide-core-browser';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
@@ -41,16 +41,16 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     return this._editorModel;
   }
 
-  private diffDelayer: ThrottledDelayer<IChange[] | null> | null;
+  private diffDelayer: ThrottledDelayer<ILineChange[] | null> | null;
   private _originalURIPromise?: Promise<Uri | null>;
   private repositoryDisposables = new Set<IDisposable>();
   private readonly originalModelDisposables: DisposableStore;
 
-  private _onDidChange = new Emitter<ISplice<IChange>[]>();
-  readonly onDidChange: Event<ISplice<IChange>[]> = this._onDidChange.event;
+  private _onDidChange = new Emitter<ISplice<ILineChange>[]>();
+  readonly onDidChange: Event<ISplice<ILineChange>[]> = this._onDidChange.event;
 
-  private _changes: IChange[] = [];
-  get changes(): IChange[] {
+  private _changes: ILineChange[] = [];
+  get changes(): ILineChange[] {
     return this._changes;
   }
 
@@ -78,7 +78,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   constructor(@Optional() editorModel: IEditorDocumentModel) {
     super();
     this._editorModel = editorModel;
-    this.diffDelayer = new ThrottledDelayer<IChange[]>(200);
+    this.diffDelayer = new ThrottledDelayer<ILineChange[]>(200);
     this.addDispose(
       Disposable.create(() => {
         if (this.diffDelayer) {
@@ -164,7 +164,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   }
 
   // 计算 diff
-  private async diff(): Promise<IChange[] | null> {
+  private async diff(): Promise<ILineChange[] | null> {
     const originalURI = await this.getOriginalURIPromise();
     if (!this._editorModel || this._editorModel.getMonacoModel().isDisposed() || !originalURI) {
       return []; // disposed
@@ -183,9 +183,11 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
     const ret = await this.editorWorkerService.computeDiff(
       originalURI as monaco.Uri,
       this._editorModel.getMonacoModel().uri,
-      false,
-      // 新版本多了一个 maxComputationTime 参数，参考 VS Code 默认值设置为 1000
-      1000,
+      {
+        diffAlgorithm: 'smart',
+        ignoreTrimWhitespace: false,
+        maxComputationTime: 1000,
+      },
     );
     return ret && ret.changes;
   }
@@ -257,7 +259,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
           return i;
         }
       } else {
-        if (change.modifiedStartLineNumber > lineNumber) {
+        if (change[2] > lineNumber) {
           return i;
         }
       }
@@ -269,7 +271,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   findNextClosestChangeLineNumber(lineNumber: number, inclusive = true) {
     // FIXME: handle changes = []
     const index = this.findNextClosestChange(lineNumber, inclusive);
-    return this.changes[index].modifiedStartLineNumber;
+    return this.changes[index][2];
   }
 
   // 查找上一个changes
@@ -278,7 +280,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
       const change = this.changes[i];
 
       if (inclusive) {
-        if (change.modifiedStartLineNumber <= lineNumber) {
+        if (change[2] <= lineNumber) {
           return i;
         }
       } else {
@@ -294,7 +296,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   findPreviousClosestChangeLineNumber(lineNumber: number, inclusive = true) {
     const index = this.findPreviousClosestChange(lineNumber, inclusive);
     // FIXME: handle changes = []
-    return this.changes[index].modifiedStartLineNumber;
+    return this.changes[index][2];
   }
 
   getChangeFromRange(range: monaco.IRange) {
@@ -352,10 +354,10 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
         refreshWidget(count, change);
       }
 
-      function refreshWidget(current: number, currentChange: IChange) {
+      function refreshWidget(current: number, currentChange: ILineChange) {
         widget.updateCurrent(current);
         widget.show(
-          positionToRange(currentChange.modifiedEndLineNumber || currentChange.modifiedStartLineNumber),
+          positionToRange(currentChange[3] || currentChange[2]),
           DirtyDiffModel.heightInLines,
         );
       }

@@ -19,7 +19,6 @@ import {
   Event,
   IProblemPatternRegistry,
   Emitter,
-  WithEventBus,
   platform,
 } from '@opensumi/ide-core-common';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
@@ -144,7 +143,7 @@ export class TaskService extends Disposable implements ITaskService {
   public async runTaskCommand() {
     const groupedTaskSet: TaskSet[] = await this.getGroupedTasks();
     const workspaceTasks = await this.getWorkspaceTasks(groupedTaskSet);
-    const [workspaces, grouped] = this.combineQuickItems(groupedTaskSet, workspaceTasks!);
+    const [workspaces, grouped] = this.combineQuickItems(groupedTaskSet, workspaceTasks);
     this.quickOpenService.open(
       {
         onType: (lookFor: string, acceptor) => acceptor([...workspaces, ...grouped]),
@@ -239,7 +238,7 @@ export class TaskService extends Disposable implements ITaskService {
       if (this.runningTasks.has(task._id)) {
         this.runningTasks.delete(task._id);
       }
-      this.outputChannel.appendLine(`task ${task._label} done, exit code ${res.exitCode}`);
+      this.outputChannel.appendLine(`Task ${task._label} done, exit code ${res.exitCode}`);
     });
 
     this.runningTasks.set(task._id, task);
@@ -313,7 +312,7 @@ export class TaskService extends Disposable implements ITaskService {
 
   private toQuickOpenGroupItem(showBorder: boolean, run, type?: string): QuickOpenItem {
     return new QuickOpenItem({
-      groupLabel: showBorder ? '贡献' : undefined,
+      groupLabel: showBorder ? formatLocalize('task.contribute') : undefined,
       run,
       showBorder,
       label: type,
@@ -322,7 +321,10 @@ export class TaskService extends Disposable implements ITaskService {
     });
   }
 
-  private combineQuickItems(contributedTaskSet: TaskSet[], workspaceTasks: Map<string, WorkspaceFolderTaskResult>) {
+  private combineQuickItems(
+    contributedTaskSet: TaskSet[],
+    workspaceTasks: Map<string, WorkspaceFolderTaskResult> | undefined,
+  ) {
     const groups: QuickOpenItem[] = [];
     const workspace: QuickOpenItem[] = [];
     let showBorder = true;
@@ -335,7 +337,7 @@ export class TaskService extends Disposable implements ITaskService {
                 return acceptor([
                   new QuickOpenItem({
                     value: 'none',
-                    label: `未找到 ${taskSet.type} 的任务，按回车键返回`,
+                    label: formatLocalize('task.cannotFindTask', taskSet.type),
                     run: (mode: Mode) => {
                       if (mode === Mode.OPEN) {
                         return true;
@@ -421,7 +423,7 @@ export class TaskService extends Disposable implements ITaskService {
         const parseResult = parse(
           { uri: folderUri, name: folderUri.path, index: 0 },
           platform,
-          tasksConfig!,
+          tasksConfig,
           problemReporter,
           this.taskDefinitionRegistry,
           this.problemMatcher,
@@ -436,11 +438,10 @@ export class TaskService extends Disposable implements ITaskService {
             byIdentifier: Object.create(null),
           };
           for (const task of parseResult.configured) {
-            // @ts-ignore
             customizedTasks.byIdentifier[task.configures._key] = task;
           }
         }
-        taskSet.push(...parseResult.custom!);
+        taskSet.push(...parseResult.custom);
         /**
          * Converter configuringTask to customTask
          */
@@ -475,6 +476,10 @@ export class TaskService extends Disposable implements ITaskService {
 
   protected showOutput(): void {
     this.outputChannel.appendLine('There are task errors. See the output for details.');
+  }
+
+  public rerunLastTask() {
+    return this.taskSystem.rerun();
   }
 
   public registerTaskProvider(provider: ITaskProvider, type: string): IDisposable {

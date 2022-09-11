@@ -1,6 +1,7 @@
 import { DisposableCollection, Emitter, Event, IAsyncResult } from '@opensumi/ide-utils';
 
 import { bindInputElement, ProxiedInputProp } from '../../input';
+import { createMarkedRenderer, toMarkdownHtml } from '../../utils';
 
 const delay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -44,6 +45,7 @@ export abstract class PromptHandle {
   private onFocusEmitter: Emitter<string> = new Emitter();
   private onBlurEmitter: Emitter<string> = new Emitter();
   private onDestroyEmitter: Emitter<string> = new Emitter();
+  private markdownRenderer = createMarkedRenderer();
 
   constructor() {
     this.$ = document.createElement('input');
@@ -61,7 +63,7 @@ export abstract class PromptHandle {
     this.$.addEventListener('focus', this.handleFocus);
     this.$.addEventListener('blur', this.handleBlur);
     this.$validate = document.createElement('div');
-    this.$validate.setAttribute('style', 'top: calc(100% - 1px);');
+    this.$validate.setAttribute('style', 'top: 100%;');
     this.$addonAfter = document.createElement('div');
     this.$addonAfter.setAttribute('class', 'kt-input-addon-after');
     // 可能存在PromptHandle创建后没被使用的情况
@@ -150,7 +152,7 @@ export abstract class PromptHandle {
     validateBoxClassName += this._validateClassName;
 
     this.$validate.classList.value = validateBoxClassName;
-    this.$validate.innerText = validateMessage.message || '';
+    this.$validate.innerHTML = toMarkdownHtml(validateMessage.message || '', { renderer: this.markdownRenderer });
     this.$.parentElement?.parentElement?.classList.remove(
       VALIDATE_CLASS_NAME.INFO,
       VALIDATE_CLASS_NAME.ERROR,

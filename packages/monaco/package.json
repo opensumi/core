@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-monaco",
-  "version": "2.19.9",
+  "version": "2.19.13",
   "files": [
     "lib"
   ],
@@ -12,14 +12,14 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.monaco.json"
   },
   "dependencies": {
-    "@opensumi/ide-core-browser": "2.19.9",
-    "@opensumi/ide-core-common": "2.19.9",
-    "@opensumi/monaco-editor-core": "0.34.0-patch.5"
+    "@opensumi/ide-core-browser": "2.19.13",
+    "@opensumi/ide-core-common": "2.19.13",
+    "@opensumi/monaco-editor-core": "0.35.0-patch.0"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "^1.3.1",
-    "@opensumi/ide-file-service": "2.19.9",
-    "@opensumi/ide-theme": "2.19.9",
-    "@opensumi/ide-workspace": "2.19.9"
+    "@opensumi/ide-file-service": "2.19.13",
+    "@opensumi/ide-theme": "2.19.13",
+    "@opensumi/ide-workspace": "2.19.13"
   }
 }

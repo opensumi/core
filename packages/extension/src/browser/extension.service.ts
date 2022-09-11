@@ -386,7 +386,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     // 激活 worker 插件进程
     if (this.appConfig.extWorkerHost) {
       try {
-        const protocol = await this.workerExtensionService.activate();
+        const protocol = await this.workerExtensionService.activate(this.appConfig.ignoreWorkerHostCors);
         this.extensionCommandManager.registerProxyCommandExecutor(
           'worker',
           protocol.get(MainThreadAPIIdentifier.MainThreadCommands),

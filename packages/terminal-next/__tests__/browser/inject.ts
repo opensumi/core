@@ -30,7 +30,7 @@ import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { createTerminalClientFactory, createTerminalClientFactory2 } from '../../src/browser/terminal.client';
+import { createTerminalClientFactory2 } from '../../src/browser/terminal.client';
 import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalInternalService } from '../../src/browser/terminal.internal.service';
 import { TerminalNetworkService } from '../../src/browser/terminal.network';
@@ -39,7 +39,6 @@ import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import {
   ITerminalService,
   ITerminalTheme,
-  ITerminalClientFactory,
   ITerminalClientFactory2,
   ITerminalController,
   ITerminalGroupViewService,
@@ -128,10 +127,6 @@ export const injector = new MockInjector([
   {
     token: CorePreferences,
     useValue: mockPreferences,
-  },
-  {
-    token: ITerminalClientFactory,
-    useFactory: createTerminalClientFactory,
   },
   {
     token: ITerminalClientFactory2,

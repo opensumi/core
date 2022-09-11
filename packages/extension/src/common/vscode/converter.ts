@@ -1,7 +1,7 @@
-import { marked } from 'marked';
 import type vscode from 'vscode';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 
+import { createMarkedRenderer, toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
 import {
   URI,
   Uri,
@@ -230,11 +230,11 @@ export namespace MarkdownString {
       }
       return '';
     };
-    const renderer = new marked.Renderer();
+    const renderer = createMarkedRenderer();
     renderer.link = collectUri;
     renderer.image = (href) => (href ? collectUri(parseHrefAndDimensions(href).href) : '');
 
-    marked(res.value, { renderer });
+    toMarkdownHtml(res.value, { renderer });
 
     return res;
   }
@@ -1561,8 +1561,8 @@ export namespace InlayHint {
 
   export function to(converter: CommandsConverter, hint: languages.InlayHint): vscode.InlayHint {
     const res = new types.InlayHint(
-      typeof hint.label === 'string' ? hint.label : hint.label.map(InlayHintLabelPart.to.bind(undefined, converter)),
       Position.to(hint.position),
+      typeof hint.label === 'string' ? hint.label : hint.label.map(InlayHintLabelPart.to.bind(undefined, converter)),
       hint.kind && InlayHintKind.to(hint.kind),
     );
     res.paddingLeft = hint.paddingLeft;

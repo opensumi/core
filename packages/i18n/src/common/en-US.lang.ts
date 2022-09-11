@@ -630,7 +630,7 @@ export const localizationBundle = {
     'terminal.new': 'Create Terminal',
     'terminal.split': 'Split Terminal',
     'terminal.clear': 'Remove All Terminals',
-    'terminal.clear.content': 'Clear All Terminals',
+    'terminal.clear.content': 'Clear All Contents',
     'terminal.independ': 'Independent Terminal',
     'terminal.maximum': 'Maximum Terminal Panel',
     'terminal.or': 'Or',
@@ -650,7 +650,7 @@ export const localizationBundle = {
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
-    'terminal.menu.clearCurrentContent': 'Clear All',
+    'terminal.menu.clearCurrentContent': 'Clear',
     'terminal.menu.selectCurrentContent': 'Select All',
     'terminal.menu.clearAllContents': 'Clear All Terminals Content',
     'terminal.menu.selectAllContent': 'Select All Terminals Content',
@@ -875,6 +875,7 @@ export const localizationBundle = {
     'TaskService.pickRunTask': 'Select the task to run',
     'TerminalTaskSystem.terminalName': 'Task - {0}',
     'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
+    // reuseTerminal: "Terminal will be reused by tasks, press 'r' to rerun task. press any other key to close it.",
     reuseTerminal: 'Terminal will be reused by tasks, press any key to close it.',
 
     'toolbar-customize.buttonDisplay.description': 'Button Style',
@@ -975,7 +976,16 @@ export const localizationBundle = {
     'debug.terminal.label': 'Javascript Debug Terminal',
 
     'output.channel.clear': 'Clear Output Panel',
-    'command.runTask': 'Run Task',
+
+    'workbench.action.tasks.runTask': 'Run Task',
+    'workbench.action.tasks.reRunTask': 'Rerun Last Task',
+    'workbench.action.tasks.restartTask': 'Restart Running Task',
+    'workbench.action.tasks.terminate': 'Terminate Task',
+    'workbench.action.tasks.showTasks': 'Show Running Tasks',
+    'workbench.action.tasks.showLog': 'Show Task Log',
+    'task.contribute': 'Contribute',
+    'task.cannotFindTask': 'Cannot find task for {0}. Press Enter key to return.',
+
     // extension contribute
     ...browserViews,
   },

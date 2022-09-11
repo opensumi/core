@@ -1,4 +1,5 @@
 @import '../style/mixins.less';
+@import '../style/variable.less';
 
 .arrow(@position) {
   & when (@position = 'top'), (@position = 'bottom') {
@@ -86,7 +87,7 @@
   }
 }
 
-.kt-popover {
+.@{prefix}-popover {
   position: relative;
   display: flex;
   justify-content: center;
@@ -102,7 +103,7 @@
     justify-content: space-between;
     margin-bottom: 4px;
 
-    &.kt-button,
+    &.@{prefix}-button,
     .small-button-size {
       padding: 0px;
     }
