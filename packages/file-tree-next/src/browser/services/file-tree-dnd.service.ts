@@ -8,6 +8,8 @@ import {
   URI,
   ThrottledDelayer,
   FileStat,
+  encodeBase64,
+  BinaryBuffer,
 } from '@opensumi/ide-core-browser';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -102,6 +104,21 @@ export class DragAndDropService extends WithEventBus {
       'beingDraggedNodes',
       JSON.stringify(this.beingDraggedNodes.map((node) => node.uri.toString())),
     );
+
+    // 拖拽文件到桌面
+    // 仅支持单个文件 Chrome/Edge
+    if (draggedFile) {
+      const file = draggedFile as File;
+
+      if (file.uri.scheme === 'file') {
+        ev.dataTransfer.setData(
+          'DownloadURL',
+          `application/octet-stream:${file.displayName}:data:application/octet-stream;base64,${encodeBase64(
+            BinaryBuffer.fromString(file.filestat.uri),
+          )}`,
+        );
+      }
+    }
 
     draggedNodes.forEach((node) => {
       // 添加拖拽样式
