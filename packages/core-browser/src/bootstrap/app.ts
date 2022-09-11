@@ -97,6 +97,11 @@ export interface IClientAppOpts extends Partial<AppConfig> {
    * 插件开发模式下指定的插件路径
    */
   extensionDevelopmentPath?: string | string[];
+  /**
+   * 是否开启对 OpenSumi DevTools 的支持
+   * 默认值为 false
+   */
+  devtools?: boolean;
 }
 
 export interface LayoutConfig {
@@ -146,10 +151,6 @@ export class ClientApp implements IClientApp, IDisposable {
   stateService: ClientAppStateService;
 
   constructor(opts: IClientAppOpts) {
-    // set a global so the opensumi devtools can identify that
-    // the current page is powered by opensumi core
-    window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
-
     const {
       modules,
       contributions,
@@ -161,8 +162,10 @@ export class ClientApp implements IClientApp, IDisposable {
       editorBackgroundImage,
       defaultPreferences,
       allowSetDocumentTitleFollowWorkspaceDir = true,
+      devtools = false, // if not set, disable devtools support as default
       ...restOpts // rest part 为 AppConfig
     } = opts;
+
     this.initEarlyPreference(opts.workspaceDir || '');
     setLanguageId(getPreferenceLanguageId(defaultPreferences));
     this.injector = opts.injector || new Injector();
@@ -189,6 +192,12 @@ export class ClientApp implements IClientApp, IDisposable {
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,
     };
+
+    if (devtools) {
+      // set a global so the opensumi devtools can identify that
+      // the current page is powered by opensumi core
+      window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
+    }
 
     if (this.config.isElectronRenderer && electronEnv.metadata?.extensionDevelopmentHost) {
       this.config.extensionDevelopmentHost = electronEnv.metadata.extensionDevelopmentHost;

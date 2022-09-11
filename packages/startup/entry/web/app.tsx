@@ -46,4 +46,5 @@ renderApp({
     bottom: '@opensumi/ide-terminal-next',
     right: '',
   },
+  devtools: true, // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
 });

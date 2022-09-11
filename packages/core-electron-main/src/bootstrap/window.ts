@@ -96,8 +96,10 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       ...options,
     });
 
-    // initialize for OpenSumi DevTools
-    initForDevtools(this.browser);
+    if (this.appConfig.devtools) {
+      // initialize for OpenSumi DevTools
+      initForDevtools(this.browser);
+    }
 
     if (options) {
       if (options.extensionDir) {

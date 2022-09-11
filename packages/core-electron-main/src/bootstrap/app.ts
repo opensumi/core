@@ -100,6 +100,11 @@ export class ElectronMainApp {
     this.onBeforeReadyContribution();
     this.registerMainApis();
     this.registerURLHandlers();
+
+    // if not set, disable devtools support as default
+    if (this.config.devtools === undefined) {
+      this.config.devtools = false;
+    }
   }
 
   async init() {
