@@ -29,7 +29,6 @@ import {
   match,
   Schemes,
   TERMINAL_COMMANDS,
-  CLIPBOARD_FILE_TOKEN,
 } from '@opensumi/ide-core-browser';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
@@ -848,7 +847,7 @@ export class FileTreeContribution
       },
       isEnabled: () =>
         (this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE) ||
-        !!localStorage.getItem(CLIPBOARD_FILE_TOKEN),
+        !!this.clipboardService.hasResources(),
     });
 
     if (this.appConfig.isElectronRenderer) {

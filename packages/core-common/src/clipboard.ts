@@ -23,4 +23,9 @@ export interface IClipboardService {
    * 读取资源
    */
   readResources(field?: string): Promise<URI[]>;
+
+  /**
+   * 是否存在资源
+   */
+  hasResources(field?: string): Promise<boolean>;
 }
