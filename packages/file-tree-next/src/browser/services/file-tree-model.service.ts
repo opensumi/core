@@ -1597,6 +1597,7 @@ export class FileTreeModelService {
       return;
     }
     let pasteStore = this.pasteStore;
+    let shouldConfirm = false;
     if (!pasteStore) {
       let uriList: URI[];
 
@@ -1614,6 +1615,7 @@ export class FileTreeModelService {
         type: PasteTypes.COPY,
         crossFiles: uriList,
       };
+      shouldConfirm = true;
     }
     if (!pasteStore) {
       return;
@@ -1625,6 +1627,21 @@ export class FileTreeModelService {
     if (this.fileTreeService.isCompactMode && !parent.uri.isEqual(to)) {
       // 压缩路径的粘贴操作，使用刷新操作进行更新
       useRefresh = true;
+    }
+    if (shouldConfirm) {
+      const ok = localize('file.confirm.paste.ok');
+      const cancel = localize('file.confirm.paste.cancel');
+      const confirm = await this.dialogService.warning(
+        formatLocalize(
+          'file.confirm.paste',
+          `[ ${pasteStore.crossFiles?.map((uri) => uri.displayName).join(',')} ]`,
+          parent.displayName,
+        ),
+        [cancel, ok],
+      );
+      if (confirm !== ok) {
+        return;
+      }
     }
     if (pasteStore.type === PasteTypes.CUT) {
       if (!pasteStore.crossFiles) {
