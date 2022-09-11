@@ -121,7 +121,7 @@ export class FileDropService extends WithEventBus implements IFileDropFrontendSe
     await this.fs.createFile(Uri.file(filePath.toString()).toString());
     await this.dropService.$ensureFileExist(file.name, targetDir);
     const reader = file.stream().getReader();
-    let res: ReadableStreamReadResult<Uint8Array> = await reader.read();
+    let res: ReadableStreamDefaultReadResult<Uint8Array> = await reader.read();
     while (!res.done) {
       await this.dropService.$writeStream(this.toBinaryString(res.value), file.name, targetDir, res.done);
       reporter(res.value?.byteLength);
