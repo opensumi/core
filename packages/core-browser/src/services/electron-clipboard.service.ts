@@ -43,4 +43,20 @@ export class ElectronClipboardService implements INativeClipboardService {
       return [];
     }
   }
+  async hasResources(field?: string | undefined): Promise<boolean> {
+    try {
+      const buffer = await this.electronMainUIService.readClipboardBuffer(field ?? CLIPBOARD_FILE_TOKEN);
+      const list = JSON.parse(Buffer.from(buffer).toString('utf8'));
+      if (
+        !Array.isArray(list) ||
+        !list.length ||
+        !list.every((str) => typeof str === 'string' && URI.isUriString(str))
+      ) {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }

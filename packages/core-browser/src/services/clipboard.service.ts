@@ -78,4 +78,20 @@ export class BrowserClipboardService implements IClipboardService {
       return [];
     }
   }
+  async hasResources(field?: string | undefined): Promise<boolean> {
+    try {
+      const localStorgeUriList = JSON.parse(localStorage.getItem(field ?? CLIPBOARD_FILE_TOKEN) ?? '');
+      if (
+        !Array.isArray(localStorgeUriList) ||
+        !localStorgeUriList.length ||
+        !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
+      ) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      this.logger.error(e);
+      return false;
+    }
+  }
 }
