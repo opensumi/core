@@ -22,6 +22,7 @@ import {
   IApplicationService,
   OS,
   Deferred,
+  IClipboardService,
 } from '@opensumi/ide-core-common';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -57,6 +58,10 @@ describe('FileTree should be work while on single workspace model', () => {
   let fileTreeService: FileTreeService;
   let mockFileTreeApi;
   let mockTreeHandle;
+  const mockClipboardService = {
+    readResources: jest.fn(),
+    writeResources: jest.fn(),
+  };
   const mockGetContextValue = jest.fn();
   const mockConsole = {
     debug: () => {},
@@ -113,6 +118,7 @@ describe('FileTree should be work while on single workspace model', () => {
       }
     }
   });
+
   beforeEach(async () => {
     jest.useFakeTimers();
     injector = createBrowserInjector([FileTreeNextModule]);
@@ -192,6 +198,10 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: WorkbenchEditorService,
         useClass: MockWorkspaceService,
+      },
+      {
+        token: IClipboardService,
+        useValue: mockClipboardService,
       },
     );
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
@@ -378,6 +388,17 @@ describe('FileTree should be work while on single workspace model', () => {
       // paste type should be COPY after paste
       expect(fileTreeModelService.pasteStore.type).toBe(PasteTypes.COPY);
       expect(mockFileTreeApi.copyFile).toBeCalled();
+    });
+
+    it('Cross windows Copy - Paste should be work', () => {
+      const { pasteFile } = fileTreeModelService;
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
+      mockClipboardService.readResources = jest.fn(() => [URI.file('test')]);
+      pasteFile(directoryNode.uri);
+      expect(mockClipboardService.readResources).toBeCalled();
+      mockClipboardService.readResources = jest.fn();
     });
 
     it('Location file should be work', async () => {
