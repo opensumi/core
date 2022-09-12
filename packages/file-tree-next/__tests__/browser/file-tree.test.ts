@@ -563,6 +563,7 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(mockEvent.stopPropagation).toBeCalled();
       expect(mockEvent.dataTransfer.setDragImage).toBeCalled();
       expect(mockEvent.dataTransfer.setData).toBeCalled();
+      expect(mockEvent.dataTransfer.setData).toBeCalledTimes(3);
     });
 
     it('Dragging Enter should be work', async () => {
