@@ -36,10 +36,25 @@ describe('clipboard service test', () => {
     expect(mockElectronMainUIService.readClipboardText).toBeCalled();
   });
 
-  it('read resouce', async () => {
+  it('read resource', async () => {
     await clipboardService.writeResources([new URI('test')]);
     expect(mockElectronMainUIService.writeClipboardBuffer).toBeCalled();
     await clipboardService.readResources();
     expect(mockElectronMainUIService.readClipboardBuffer).toBeCalled();
+
+    mockElectronMainUIService.readClipboardBuffer = jest.fn(() => Buffer.from('test'));
+    await clipboardService.readResources();
+    expect(mockElectronMainUIService.readClipboardBuffer).toBeCalled();
+    mockElectronMainUIService.readClipboardBuffer = jest.fn();
+  });
+
+  it('has resource', async () => {
+    expect(await clipboardService.hasResources()).toBeFalsy();
+    expect(await clipboardService.readResources()).toEqual([]);
+
+    mockElectronMainUIService.readClipboardBuffer = jest.fn(() => Buffer.from('["file://test"]'));
+    const flag = await clipboardService.hasResources();
+    expect(flag).toBeTruthy();
+    mockElectronMainUIService.readClipboardBuffer = jest.fn();
   });
 });

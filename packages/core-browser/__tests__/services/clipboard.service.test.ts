@@ -18,12 +18,22 @@ describe('clipboard service test', () => {
     expect(text).toBe('test');
   });
 
-  it('read resouce', async () => {
+  it('has resouce', async () => {
+    expect(await clipboardService.hasResources()).toBeFalsy();
     expect(await clipboardService.readResources()).toEqual([]);
+
+    await clipboardService.writeResources([new URI('test')]);
+    expect(await clipboardService.hasResources()).toBeTruthy();
+  });
+
+  it('read resouce', async () => {
+    await clipboardService.writeResources([]);
+    expect(await clipboardService.readResources()).toEqual([]);
+
     await clipboardService.writeResources([new URI('test')]);
     await clipboardService.writeResources([undefined] as any);
-    expect(await clipboardService.hasResources()).toBeTruthy();
     const resources = await clipboardService.readResources();
+
     expect(resources?.[0].codeUri.path).toEqual('/test');
   });
 });
