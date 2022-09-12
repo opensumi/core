@@ -639,6 +639,27 @@ describe('FileTree should be work while on single workspace model', () => {
       const directoryDecoration = decorations.getDecorations(directoryNode);
       expect(directoryDecoration?.classlist).toEqual([]);
     });
+
+    it('Cross window drop should be work', async () => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const { dndService, decorations } = fileTreeModelService;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as File;
+      const mockEvent = {
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
+        dataTransfer: {
+          dropEffect: '',
+          getData: () => JSON.stringify([directoryNode].map((node) => node.uri.toString())),
+        },
+      };
+      dndService.handleDrop(mockEvent as any);
+      expect(mockEvent.stopPropagation).toBeCalled();
+      expect(mockEvent.preventDefault).toBeCalled();
+      expect(mockEvent.dataTransfer.dropEffect).toBe('copy');
+      const directoryDecoration = decorations.getDecorations(directoryNode);
+      expect(directoryDecoration?.classlist).toEqual([]);
+    });
   });
 
   describe('04 #Compact Mode should be work', () => {
