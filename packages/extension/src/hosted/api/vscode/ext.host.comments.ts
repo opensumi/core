@@ -623,13 +623,17 @@ function convertToModeComment(
     mode: vscodeComment.mode,
     contextValue: vscodeComment.contextValue,
     uniqueIdInThread: commentUniqueId,
-    body: extHostTypeConverter.fromManyMarkdown([vscodeComment.body])[0],
+    body:
+      typeof vscodeComment.body === 'string'
+        ? vscodeComment.body
+        : extHostTypeConverter.MarkdownString.from(vscodeComment.body),
     userName: vscodeComment.author.name,
     userIconPath: iconPath,
     label: vscodeComment.label,
     commentReactions: vscodeComment.reactions
       ? vscodeComment.reactions.map((reaction) => convertToReaction(reaction))
       : undefined,
+    timestamp: vscodeComment.timestamp?.toJSON(),
   };
 }
 

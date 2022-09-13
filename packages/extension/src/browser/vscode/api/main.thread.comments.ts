@@ -273,6 +273,7 @@ export class MainThreadCommentThread implements CommentThread {
         iconPath: comment.userIconPath,
       },
       reactions: comment.commentReactions?.map((reaction) => this.convertToCommentReaction(reaction)),
+      timestamp: comment.timestamp,
     };
   }
 
@@ -305,6 +306,7 @@ export class MainThreadCommentThread implements CommentThread {
       body: comment.body,
       userName: comment.author.name,
       commentReactions: comment.reactions?.map((reaction) => this.convertToCoreReaction(reaction)),
+      timestamp: comment.timestamp,
     };
   }
 
