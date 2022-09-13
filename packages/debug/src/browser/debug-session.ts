@@ -40,6 +40,7 @@ import {
   BreakpointsChangeEvent,
   IDebugBreakpoint,
   IMemoryRegion,
+  prepareCommand,
 } from '../common';
 import { DebugConfiguration } from '../common';
 
@@ -315,17 +316,16 @@ export class DebugSession implements IDebugSession {
   protected async runInTerminal({
     arguments: { title, cwd, args, env },
   }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    return this.doRunInTerminal({ name: title, cwd, env }, args.join(' '));
+    return this.doRunInTerminal({ name: title, cwd, env, args });
   }
 
-  protected async doRunInTerminal(
-    options: TerminalOptions,
-    command?: string,
-  ): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+  protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     const activeTerminal = this.terminalService.terminals.find(
       (terminal) => terminal.name === options.name && terminal.isActive,
     );
     let processId: number | undefined;
+    const shellPath = await this.terminalService.getDefaultShellPath();
+    const command = prepareCommand(shellPath, options.args, false, options.cwd?.toString(), options.env);
     // 当存在同名终端并且处于激活状态时，复用该终端
     if (activeTerminal) {
       if (command) {

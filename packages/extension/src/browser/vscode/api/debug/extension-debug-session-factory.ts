@@ -1,8 +1,8 @@
 import { Injector } from '@opensumi/di';
 import { IWebSocket } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { DebugSessionOptions } from '@opensumi/ide-debug';
+import { localize } from '@opensumi/ide-core-common';
+import { IDebugSessionManager, DebugSessionOptions } from '@opensumi/ide-debug';
 import {
   DebugSession,
   DebugSessionConnection,
@@ -18,6 +18,8 @@ import { OutputService } from '@opensumi/ide-output/lib/browser/output.service';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService, TerminalOptions } from '@opensumi/ide-terminal-next';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
+
+import { ThemeIcon } from '../../../../common/vscode/ext-types';
 
 export class ExtensionDebugSession extends DebugSession {
   constructor(
@@ -51,10 +53,19 @@ export class ExtensionDebugSession extends DebugSession {
 
   protected async doRunInTerminal(
     terminalOptions: TerminalOptions,
-    command?: string,
   ): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    const terminalWidgetOptions = Object.assign({}, terminalOptions, this.terminalOptionsExt);
-    return super.doRunInTerminal(terminalWidgetOptions, command);
+    if (!terminalOptions.name) {
+      terminalOptions.name = localize('debug.terminal.title', 'Debug Process');
+    }
+    if (!terminalOptions.iconPath) {
+      terminalOptions.iconPath = new ThemeIcon('debug');
+    }
+    const terminalWidgetOptions = {
+      ...terminalOptions,
+      ...this.terminalOptionsExt,
+    };
+
+    return super.doRunInTerminal(terminalWidgetOptions);
   }
 }
 

@@ -1022,6 +1022,7 @@ export const localizationBundle = {
     'connection.stop.rtt': '关闭通信延迟检查',
 
     'debug.terminal.label': '创建 Javascript Debug Terminal',
+    'debug.terminal.title': '调试进程',
     'workbench.action.tasks.runTask': '运行任务',
     'workbench.action.tasks.reRunTask': '执行上次运行的任务',
     'workbench.action.tasks.restartTask': '重新开始运行中的任务',
