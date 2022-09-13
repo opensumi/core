@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-static-resource",
-  "version": "2.19.13",
+  "version": "2.20.0",
   "files": [
     "lib"
   ],
@@ -16,7 +16,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.19.13",
+    "@opensumi/ide-core-browser": "2.20.0",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }

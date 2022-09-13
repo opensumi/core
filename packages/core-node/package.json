@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-node",
-  "version": "2.19.13",
+  "version": "2.20.0",
   "description": "@opensumi/ide-core-node",
   "files": [
     "lib"
@@ -17,8 +17,8 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.19.13",
-    "@opensumi/ide-core-common": "2.19.13",
+    "@opensumi/ide-connection": "2.20.0",
+    "@opensumi/ide-core-common": "2.20.0",
     "keytar": "^7.7.0"
   },
   "devDependencies": {
