@@ -703,6 +703,7 @@ export class EditorContribution
               });
             }
           }
+
         }
       },
     });
