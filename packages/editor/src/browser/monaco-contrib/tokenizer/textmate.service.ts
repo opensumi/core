@@ -24,7 +24,6 @@ import {
 import { URI, Disposable, isObject } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
-  CommentRule,
   GrammarsContribution,
   ITextmateTokenizerService,
   ScopeMap,
@@ -39,7 +38,15 @@ import {
   LanguageConfiguration,
   OnEnterRule,
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import { IIndentationRule, IndentAction, IndentationRuleDto, IRegExp, LanguageConfigurationDto, LanguagesContribution } from '@opensumi/ide-monaco/lib/common';
+import {
+  CommentRule,
+  IIndentationRule,
+  IndentAction,
+  IndentationRuleDto,
+  IRegExp,
+  LanguageConfigurationDto,
+  LanguagesContribution,
+} from '@opensumi/ide-monaco/lib/common';
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
@@ -368,18 +375,18 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
     if (isObject(value)) {
       if (typeof value.pattern !== 'string') {
-				return undefined;
-			}
+        return undefined;
+      }
 
       if (typeof value.flags !== 'undefined' && typeof value.flags !== 'string') {
-				return undefined;
-			}
+        return undefined;
+      }
 
       try {
-				return new RegExp(value.pattern, value.flags);
-			} catch (err) {
-				return undefined;
-			}
+        return new RegExp(value.pattern, value.flags);
+      } catch (err) {
+        return undefined;
+      }
     }
     return undefined;
   }
@@ -531,103 +538,121 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return result;
   }
 
-  private extractValidColorizedBracketPairs(languageId: string, configuration: LanguageConfigurationDto): CharacterPair[] | undefined {
-		const source = configuration.colorizedBracketPairs;
-		if (typeof source === 'undefined') {
-			return undefined;
-		}
-		if (!Array.isArray(source)) {
-			this.logger.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs\` to be an array.`);
-			return undefined;
-		}
+  private extractValidColorizedBracketPairs(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): CharacterPair[] | undefined {
+    const source = configuration.colorizedBracketPairs;
+    if (typeof source === 'undefined') {
+      return undefined;
+    }
+    if (!Array.isArray(source)) {
+      this.logger.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs\` to be an array.`);
+      return undefined;
+    }
 
-		const result: CharacterPair[] = [];
-		for (let i = 0, len = source.length; i < len; i++) {
-			const pair = source[i];
-			if (!isCharacterPair(pair)) {
-				this.logger.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs[${i}]\` to be an array of two strings.`);
-				continue;
-			}
-			result.push([pair[0], pair[1]]);
+    const result: CharacterPair[] = [];
+    for (let i = 0, len = source.length; i < len; i++) {
+      const pair = source[i];
+      if (!isCharacterPair(pair)) {
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`colorizedBracketPairs[${i}]\` to be an array of two strings.`,
+        );
+        continue;
+      }
+      result.push([pair[0], pair[1]]);
+    }
+    return result;
+  }
 
-		}
-		return result;
-	}
+  private extractValidOnEnterRules(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): OnEnterRule[] | undefined {
+    const source = configuration.onEnterRules;
+    if (typeof source === 'undefined') {
+      return undefined;
+    }
+    if (!Array.isArray(source)) {
+      this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules\` to be an array.`);
+      return undefined;
+    }
 
-  private extractValidOnEnterRules(languageId: string, configuration: LanguageConfigurationDto): OnEnterRule[] | undefined {
-		const source = configuration.onEnterRules;
-		if (typeof source === 'undefined') {
-			return undefined;
-		}
-		if (!Array.isArray(source)) {
-			this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules\` to be an array.`);
-			return undefined;
-		}
+    let result: OnEnterRule[] | undefined;
+    for (let i = 0, len = source.length; i < len; i++) {
+      const onEnterRule = source[i];
+      if (!isObject(onEnterRule)) {
+        this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}]\` to be an object.`);
+        continue;
+      }
+      if (!isObject(onEnterRule.action)) {
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action\` to be an object.`,
+        );
+        continue;
+      }
+      let indentAction: IndentAction;
+      if (onEnterRule.action.indent === 'none') {
+        indentAction = IndentAction.None;
+      } else if (onEnterRule.action.indent === 'indent') {
+        indentAction = IndentAction.Indent;
+      } else if (onEnterRule.action.indent === 'indentOutdent') {
+        indentAction = IndentAction.IndentOutdent;
+      } else if (onEnterRule.action.indent === 'outdent') {
+        indentAction = IndentAction.Outdent;
+      } else {
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.indent\` to be 'none', 'indent', 'indentOutdent' or 'outdent'.`,
+        );
+        continue;
+      }
+      const action: EnterAction = { indentAction };
+      if (onEnterRule.action.appendText) {
+        if (typeof onEnterRule.action.appendText === 'string') {
+          action.appendText = onEnterRule.action.appendText;
+        } else {
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.appendText\` to be undefined or a string.`,
+          );
+        }
+      }
+      if (onEnterRule.action.removeText) {
+        if (typeof onEnterRule.action.removeText === 'number') {
+          action.removeText = onEnterRule.action.removeText;
+        } else {
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.removeText\` to be undefined or a number.`,
+          );
+        }
+      }
+      const beforeText = this.createRegex(onEnterRule.beforeText);
+      if (!beforeText) {
+        continue;
+      }
+      const resultingOnEnterRule: OnEnterRule = { beforeText, action };
+      if (onEnterRule.afterText) {
+        const afterText = this.createRegex(onEnterRule.afterText);
+        if (afterText) {
+          resultingOnEnterRule.afterText = afterText;
+        }
+      }
+      if (onEnterRule.previousLineText) {
+        const previousLineText = this.createRegex(onEnterRule.previousLineText);
+        if (previousLineText) {
+          resultingOnEnterRule.previousLineText = previousLineText;
+        }
+      }
+      result = result || [];
+      result.push(resultingOnEnterRule);
+    }
 
-		let result: OnEnterRule[] | undefined;
-		for (let i = 0, len = source.length; i < len; i++) {
-			const onEnterRule = source[i];
-			if (!isObject(onEnterRule)) {
-				this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}]\` to be an object.`);
-				continue;
-			}
-			if (!isObject(onEnterRule.action)) {
-				this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action\` to be an object.`);
-				continue;
-			}
-			let indentAction: IndentAction;
-			if (onEnterRule.action.indent === 'none') {
-				indentAction = IndentAction.None;
-			} else if (onEnterRule.action.indent === 'indent') {
-				indentAction = IndentAction.Indent;
-			} else if (onEnterRule.action.indent === 'indentOutdent') {
-				indentAction = IndentAction.IndentOutdent;
-			} else if (onEnterRule.action.indent === 'outdent') {
-				indentAction = IndentAction.Outdent;
-			} else {
-				this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.indent\` to be 'none', 'indent', 'indentOutdent' or 'outdent'.`);
-				continue;
-			}
-			const action: EnterAction = { indentAction };
-			if (onEnterRule.action.appendText) {
-				if (typeof onEnterRule.action.appendText === 'string') {
-					action.appendText = onEnterRule.action.appendText;
-				} else {
-					this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.appendText\` to be undefined or a string.`);
-				}
-			}
-			if (onEnterRule.action.removeText) {
-				if (typeof onEnterRule.action.removeText === 'number') {
-					action.removeText = onEnterRule.action.removeText;
-				} else {
-					this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.removeText\` to be undefined or a number.`);
-				}
-			}
-			const beforeText = this.createRegex(onEnterRule.beforeText);
-			if (!beforeText) {
-				continue;
-			}
-			const resultingOnEnterRule: OnEnterRule = { beforeText, action };
-			if (onEnterRule.afterText) {
-				const afterText = this.createRegex(onEnterRule.afterText);
-				if (afterText) {
-					resultingOnEnterRule.afterText = afterText;
-				}
-			}
-			if (onEnterRule.previousLineText) {
-				const previousLineText = this.createRegex(onEnterRule.previousLineText);
-				if (previousLineText) {
-					resultingOnEnterRule.previousLineText = previousLineText;
-				}
-			}
-			result = result || [];
-			result.push(resultingOnEnterRule);
-		}
+    return result;
+  }
 
-		return result;
-	}
-
-  private extractValidBrackets(languageId: string, configuration: LanguageConfigurationDto): CharacterPair[] | undefined {
+  private extractValidBrackets(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): CharacterPair[] | undefined {
     const source = configuration.brackets;
     if (typeof source === 'undefined') {
       return undefined;
@@ -712,7 +737,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return result;
   }
 
-  private extractValidCommentRule(languageId: string, configuration: LanguageConfigurationDto): CommentRule | undefined {
+  private extractValidCommentRule(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): CommentRule | undefined {
     const source = configuration.comments;
     if (typeof source === 'undefined') {
       return undefined;

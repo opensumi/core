@@ -1,35 +1,32 @@
 import { URI } from '@opensumi/ide-core-common';
 
-import type {
-  IAutoClosingPair,
-  IAutoClosingPairConditional,
-} from './types';
+import type { IAutoClosingPair, IAutoClosingPairConditional } from './types';
 
 export * from '@opensumi/ide-core-browser/lib/monaco';
 
 export interface IRegExp {
-	pattern: string;
-	flags?: string;
+  pattern: string;
+  flags?: string;
 }
 
 export interface IEnterAction {
-	indent: 'none' | 'indent' | 'indentOutdent' | 'outdent';
-	appendText?: string;
-	removeText?: number;
+  indent: 'none' | 'indent' | 'indentOutdent' | 'outdent';
+  appendText?: string;
+  removeText?: number;
 }
 
 export interface IIndentationRule {
   decreaseIndentPattern: IRegExp;
-	increaseIndentPattern: IRegExp;
-	indentNextLinePattern?: IRegExp;
-	unIndentedLinePattern?: IRegExp;
+  increaseIndentPattern: IRegExp;
+  indentNextLinePattern?: IRegExp;
+  unIndentedLinePattern?: IRegExp;
 }
 
 export interface IOnEnterRule {
   beforeText: IRegExp;
-	afterText?: IRegExp;
-	previousLineText?: IRegExp;
-	action: IEnterAction;
+  afterText?: IRegExp;
+  previousLineText?: IRegExp;
+  action: IEnterAction;
 }
 
 export interface FoldingMarkers {
@@ -44,45 +41,45 @@ export interface IndentationRuleDto {
    * See [wikipedia](https://en.wikipedia.org/wiki/Off-side_rule) for more information.
    * If not set, `false` is used and empty lines belong to the previous block.
    */
-    offSide?: boolean;
-    /**
-    * Region markers used by the language.
-    */
-    markers?: FoldingMarkers;
+  offSide?: boolean;
+  /**
+   * Region markers used by the language.
+   */
+  markers?: FoldingMarkers;
 }
 
 export interface LanguageConfigurationDto {
-	comments?: CommentRule;
-	brackets?: CharacterPair[];
+  comments?: CommentRule;
+  brackets?: CharacterPair[];
   autoClosingPairs?: Array<CharacterPair | IAutoClosingPairConditional>;
   colorizedBracketPairs?: Array<CharacterPair>;
   surroundingPairs?: Array<CharacterPair | IAutoClosingPair>;
-	wordPattern?: IRegExp;
-	indentationRules?: IIndentationRule;
-	onEnterRules?: IOnEnterRule[];
+  wordPattern?: IRegExp;
+  indentationRules?: IIndentationRule;
+  onEnterRules?: IOnEnterRule[];
   folding?: IndentationRuleDto;
   autoCloseBefore?: string;
 }
 
 export enum IndentAction {
-	/**
-	 * Insert new line and copy the previous line's indentation.
-	 */
-	None = 0,
-	/**
-	 * Insert new line and indent once (relative to the previous line's indentation).
-	 */
-	Indent = 1,
-	/**
-	 * Insert two new lines:
-	 *  - the first one indented which will hold the cursor
-	 *  - the second one at the same indentation level
-	 */
-	IndentOutdent = 2,
-	/**
-	 * Insert new line and outdent once (relative to the previous line's indentation).
-	 */
-	Outdent = 3
+  /**
+   * Insert new line and copy the previous line's indentation.
+   */
+  None = 0,
+  /**
+   * Insert new line and indent once (relative to the previous line's indentation).
+   */
+  Indent = 1,
+  /**
+   * Insert two new lines:
+   *  - the first one indented which will hold the cursor
+   *  - the second one at the same indentation level
+   */
+  IndentOutdent = 2,
+  /**
+   * Insert new line and outdent once (relative to the previous line's indentation).
+   */
+  Outdent = 3,
 }
 
 export interface LanguagesContribution {
