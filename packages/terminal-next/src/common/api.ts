@@ -9,6 +9,7 @@ export interface ITerminalApiService {
   createTerminal(options: TerminalOptions, id?: string): Promise<ITerminalExternalClient>;
   sendText(id: string, text: string, addNewLine?: boolean): void;
   getProcessId(sessionId: string): Promise<number | undefined>;
+  getDefaultShellPath(): Promise<string>;
 
   onDidOpenTerminal: Event<ITerminalInfo>;
   onDidCloseTerminal: Event<ITerminalExitEvent>;

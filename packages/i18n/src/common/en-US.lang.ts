@@ -974,6 +974,7 @@ export const localizationBundle = {
     'connection.stop.rtt': 'Stop Connection RTT',
 
     'debug.terminal.label': 'Javascript Debug Terminal',
+    'debug.terminal.title': 'Debug Process',
 
     'output.channel.clear': 'Clear Output Panel',
 

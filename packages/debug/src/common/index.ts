@@ -11,3 +11,4 @@ export * from './debug-schema-updater';
 export * from './inline-values';
 export * from './types';
 export * from './constants';
+export * from './terminal';

@@ -14,6 +14,7 @@ import {
   ITerminalNetwork,
   ITerminalExitEvent,
   ITerminalTitleChangeEvent,
+  ITerminalProfileInternalService,
 } from '../common';
 
 @Injectable()
@@ -39,6 +40,9 @@ export class TerminalApiService implements ITerminalApiService {
 
   @Autowired(ITerminalNetwork)
   protected readonly network: ITerminalNetwork;
+
+  @Autowired(ITerminalProfileInternalService)
+  protected readonly terminalProfileInternalService: ITerminalProfileInternalService;
 
   constructor() {
     this.controller.onDidOpenTerminal((info) => {
@@ -113,6 +117,11 @@ export class TerminalApiService implements ITerminalApiService {
       return;
     }
     return client.pid;
+  }
+
+  async getDefaultShellPath() {
+    const defaultProfile = await this.terminalProfileInternalService.resolveDefaultProfile();
+    return defaultProfile?.path || '/bin/bash';
   }
 
   sendText(sessionId: string, text: string, addNewLine = true) {

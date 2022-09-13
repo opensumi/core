@@ -253,6 +253,13 @@ export interface TerminalOptions {
   iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon;
 
   /**
+   * The CLI arguments to use with executable, a string[] is in argv format and will be escaped,
+   * a string is in "CommandLine" pre-escaped format and will be used as is. The string option is
+   * only supported on Windows and will throw an exception if used on macOS or Linux.
+   */
+  args?: any;
+
+  /**
    * The icon {@link ThemeColor} for the terminal.
    * The `terminal.ansi*` theme keys are
    * recommended for the best contrast and consistency across themes.
@@ -264,12 +271,6 @@ export interface TerminalOptions {
    * pty 进程退出后是否自动关闭 terminal 控件
    */
   closeWhenExited?: boolean;
-
-  /**
-   * @deprecated Use `ICreateClientWithWidgetOptions.args` instead. Will removed in 2.17.0
-   * 自定义的参数，由上层集成方自行控制
-   */
-  args?: any;
 
   /**
    * @deprecated Use `ICreateClientWithWidgetOptions.beforeCreate` instead. Will removed in 2.17.0
