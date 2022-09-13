@@ -182,13 +182,13 @@ export class FileTreeAPI implements IFileTreeAPI {
     return;
   }
 
-  async createFile(uri: URI,content:string) {
+  async createFile(uri: URI, content: string) {
     try {
       await this.workspaceEditService.apply({
         edits: [
           {
             newResource: uri,
-            options: {content},
+            options: { content },
           },
         ],
       });
