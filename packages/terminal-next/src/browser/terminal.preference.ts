@@ -16,13 +16,20 @@ import {
 @Injectable()
 export class TerminalPreference implements ITerminalPreference {
   static defaultOptions: SupportedOptions & ITerminalOptions = {
-    allowTransparency: true,
+    allowTransparency: false,
     macOptionIsMeta: false,
     cursorBlink: false,
     scrollback: 2500,
     tabStopWidth: 8,
     fontSize: 12,
+    customGlyphs: true,
+    drawBoldTextInBrightColors: true,
+    fastScrollModifier: 'alt',
+    fastScrollSensitivity: 5,
+    scrollSensitivity: 1,
+    overviewRulerWidth: 10,
     copyOnSelection: false,
+    fontWeightBold: 'bold',
     fontFamily: "Menlo, Monaco, 'Courier New', monospace",
     cursorStyle: 'block',
   };
