@@ -3,7 +3,7 @@ import { URI } from '@opensumi/ide-core-common';
 import type {
   IAutoClosingPair,
   IAutoClosingPairConditional,
-} from '../browser/monaco-api/types';
+} from './types';
 
 export * from '@opensumi/ide-core-browser/lib/monaco';
 

@@ -1,6 +1,6 @@
 import { URI } from '@opensumi/ide-core-common';
-import { LanguagesContribution } from '../../common';
 
+import { LanguagesContribution } from '../../common';
 import {
   FoldingRules,
   IAutoClosingPair,

@@ -537,7 +537,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 			return undefined;
 		}
 		if (!Array.isArray(source)) {
-			console.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs\` to be an array.`);
+			this.logger.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs\` to be an array.`);
 			return undefined;
 		}
 
@@ -545,7 +545,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 		for (let i = 0, len = source.length; i < len; i++) {
 			const pair = source[i];
 			if (!isCharacterPair(pair)) {
-				console.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs[${i}]\` to be an array of two strings.`);
+				this.logger.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs[${i}]\` to be an array of two strings.`);
 				continue;
 			}
 			result.push([pair[0], pair[1]]);
@@ -560,7 +560,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 			return undefined;
 		}
 		if (!Array.isArray(source)) {
-			console.warn(`[${languageId}]: language configuration: expected \`onEnterRules\` to be an array.`);
+			this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules\` to be an array.`);
 			return undefined;
 		}
 
@@ -568,11 +568,11 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 		for (let i = 0, len = source.length; i < len; i++) {
 			const onEnterRule = source[i];
 			if (!isObject(onEnterRule)) {
-				console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}]\` to be an object.`);
+				this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}]\` to be an object.`);
 				continue;
 			}
 			if (!isObject(onEnterRule.action)) {
-				console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action\` to be an object.`);
+				this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action\` to be an object.`);
 				continue;
 			}
 			let indentAction: IndentAction;
@@ -585,7 +585,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 			} else if (onEnterRule.action.indent === 'outdent') {
 				indentAction = IndentAction.Outdent;
 			} else {
-				console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.indent\` to be 'none', 'indent', 'indentOutdent' or 'outdent'.`);
+				this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.indent\` to be 'none', 'indent', 'indentOutdent' or 'outdent'.`);
 				continue;
 			}
 			const action: EnterAction = { indentAction };
@@ -593,14 +593,14 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 				if (typeof onEnterRule.action.appendText === 'string') {
 					action.appendText = onEnterRule.action.appendText;
 				} else {
-					console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.appendText\` to be undefined or a string.`);
+					this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.appendText\` to be undefined or a string.`);
 				}
 			}
 			if (onEnterRule.action.removeText) {
 				if (typeof onEnterRule.action.removeText === 'number') {
 					action.removeText = onEnterRule.action.removeText;
 				} else {
-					console.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.removeText\` to be undefined or a number.`);
+					this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.removeText\` to be undefined or a number.`);
 				}
 			}
 			const beforeText = this.createRegex(onEnterRule.beforeText);
