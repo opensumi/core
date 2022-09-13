@@ -39,6 +39,7 @@ import {
   LanguageConfiguration,
   OnEnterRule,
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { IIndentationRule, IndentAction, IndentationRuleDto, IRegExp, LanguageConfigurationDto, LanguagesContribution } from '@opensumi/ide-monaco/lib/common';
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
@@ -48,7 +49,6 @@ import { IEditorDocumentModelService } from '../../doc-model/types';
 
 import { TextmateRegistry } from './textmate-registry';
 import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
-import { IIndentationRule, IndentAction, IndentationRuleDto, IRegExp, LanguageConfigurationDto, LanguagesContribution } from '@opensumi/ide-monaco/lib/common';
 
 let wasmLoaded = false;
 
@@ -564,7 +564,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 			return undefined;
 		}
 
-		let result: OnEnterRule[] | undefined = undefined;
+		let result: OnEnterRule[] | undefined;
 		for (let i = 0, len = source.length; i < len; i++) {
 			const onEnterRule = source[i];
 			if (!isObject(onEnterRule)) {
