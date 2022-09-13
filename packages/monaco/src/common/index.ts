@@ -1,14 +1,86 @@
 import { URI } from '@opensumi/ide-core-common';
 
-import type {
-  FoldingRules,
-  IAutoClosingPair,
-  IAutoClosingPairConditional,
-  LanguageConfiguration,
-  // eslint-disable-next-line import/no-restricted-paths
-} from '../browser/monaco-api/types';
+import type { IAutoClosingPair, IAutoClosingPairConditional } from './types';
 
 export * from '@opensumi/ide-core-browser/lib/monaco';
+
+export interface IRegExp {
+  pattern: string;
+  flags?: string;
+}
+
+export interface IEnterAction {
+  indent: 'none' | 'indent' | 'indentOutdent' | 'outdent';
+  appendText?: string;
+  removeText?: number;
+}
+
+export interface IIndentationRule {
+  decreaseIndentPattern: IRegExp;
+  increaseIndentPattern: IRegExp;
+  indentNextLinePattern?: IRegExp;
+  unIndentedLinePattern?: IRegExp;
+}
+
+export interface IOnEnterRule {
+  beforeText: IRegExp;
+  afterText?: IRegExp;
+  previousLineText?: IRegExp;
+  action: IEnterAction;
+}
+
+export interface FoldingMarkers {
+  start: RegExp;
+  end: RegExp;
+}
+
+export interface IndentationRuleDto {
+  /**
+   * Used by the indentation based strategy to decide whether empty lines belong to the previous or the next block.
+   * A language adheres to the off-side rule if blocks in that language are expressed by their indentation.
+   * See [wikipedia](https://en.wikipedia.org/wiki/Off-side_rule) for more information.
+   * If not set, `false` is used and empty lines belong to the previous block.
+   */
+  offSide?: boolean;
+  /**
+   * Region markers used by the language.
+   */
+  markers?: FoldingMarkers;
+}
+
+export interface LanguageConfigurationDto {
+  comments?: CommentRule;
+  brackets?: CharacterPair[];
+  autoClosingPairs?: Array<CharacterPair | IAutoClosingPairConditional>;
+  colorizedBracketPairs?: Array<CharacterPair>;
+  surroundingPairs?: Array<CharacterPair | IAutoClosingPair>;
+  wordPattern?: IRegExp;
+  indentationRules?: IIndentationRule;
+  onEnterRules?: IOnEnterRule[];
+  folding?: IndentationRuleDto;
+  autoCloseBefore?: string;
+}
+
+export enum IndentAction {
+  /**
+   * Insert new line and copy the previous line's indentation.
+   */
+  None = 0,
+  /**
+   * Insert new line and indent once (relative to the previous line's indentation).
+   */
+  Indent = 1,
+  /**
+   * Insert two new lines:
+   *  - the first one indented which will hold the cursor
+   *  - the second one at the same indentation level
+   */
+  IndentOutdent = 2,
+  /**
+   * Insert new line and outdent once (relative to the previous line's indentation).
+   */
+  Outdent = 3,
+}
 
 export interface LanguagesContribution {
   id: string;
@@ -30,7 +102,7 @@ export interface LanguagesContribution {
    * 其中的值为 configuration 指向的 json 配置文件的内容
    * 主要解决无需多个插件即可注册多个 language 进来
    */
-  resolvedConfiguration?: LanguageConfiguration;
+  resolvedConfiguration?: LanguageConfigurationDto;
 }
 
 export interface ScopeMap {
@@ -54,24 +126,6 @@ export interface GrammarsContribution {
   resolvedConfiguration?: object;
 }
 
-export interface IndentationRules {
-  increaseIndentPattern: string;
-  decreaseIndentPattern: string;
-  unIndentedLinePattern?: string;
-  indentNextLinePattern?: string;
-}
-
-export interface ILanguageConfiguration {
-  comments?: CommentRule;
-  brackets?: CharacterPair[];
-  autoClosingPairs?: Array<CharacterPair | IAutoClosingPairConditional>;
-  surroundingPairs?: Array<CharacterPair | IAutoClosingPair>;
-  wordPattern?: string | IRegExp;
-  indentationRules?: IIndentationRules;
-  folding?: FoldingRules;
-  autoCloseBefore?: string;
-}
-
 /**
  * Describes how comments for a language work.
  */
@@ -91,17 +145,5 @@ export interface CommentRule {
  * opening and closing brackets.
  */
 export type CharacterPair = [string, string];
-
-interface IRegExp {
-  pattern: string;
-  flags?: string;
-}
-
-interface IIndentationRules {
-  decreaseIndentPattern: string | IRegExp;
-  increaseIndentPattern: string | IRegExp;
-  indentNextLinePattern?: string | IRegExp;
-  unIndentedLinePattern?: string | IRegExp;
-}
 
 export * from './types';

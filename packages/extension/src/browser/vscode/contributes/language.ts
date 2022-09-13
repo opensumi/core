@@ -5,6 +5,7 @@ import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-mon
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
 
+
 export type LanguagesSchema = Array<LanguagesContribution>;
 
 @Injectable()
