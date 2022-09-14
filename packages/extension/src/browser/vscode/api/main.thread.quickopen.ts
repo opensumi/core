@@ -1,4 +1,5 @@
 import { Injectable, Optional, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { VALIDATE_TYPE } from '@opensumi/ide-components';
 import { IRPCProtocol } from '@opensumi/ide-connection';
 import { Disposable } from '@opensumi/ide-core-browser';
 import { IQuickInputService } from '@opensumi/ide-core-browser/lib/quick-open';
@@ -7,7 +8,7 @@ import { QuickOpenItemService } from '@opensumi/ide-quick-open/lib/browser/quick
 import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
 import { InputBoxImpl } from '@opensumi/ide-quick-open/lib/browser/quickInput.inputBox';
 
-import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { IMainThreadQuickOpen, IExtHostQuickOpen, ExtHostAPIIdentifier, Severity } from '../../../common/vscode';
 
 @Injectable({ multiple: true })
 export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickOpen {
@@ -65,10 +66,42 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
     this.quickPickService.hide();
   }
 
+  /**
+   * 将插件 severity 转换为前端组件识别的 VALIDATE_TYPE
+   * 由于插件进程不能依赖 @opensumi/ide-components 模块，所以在前端进行转换
+   * @param severity
+   * @returns
+   */
+  private severityToValidateType(severity?: Severity): VALIDATE_TYPE {
+    switch (severity) {
+      case Severity.Info:
+        return VALIDATE_TYPE.INFO;
+      case Severity.Warning:
+        return VALIDATE_TYPE.WARNING;
+      case Severity.Error:
+        return VALIDATE_TYPE.ERROR;
+      case Severity.Ignore:
+        return VALIDATE_TYPE.IGNORE;
+      default:
+        return VALIDATE_TYPE.ERROR;
+    }
+  }
+
   $showQuickInput(options: QuickInputOptions, validateInput: boolean): Promise<string | undefined> {
     // 校验逻辑在扩展进程中执行
     if (validateInput) {
-      options.validateInput = (val) => this.proxy.$validateInput(val);
+      options.validateInput = async (val) => {
+        const result = await this.proxy.$validateInput(val);
+        if (!result) {
+          return result;
+        }
+        return typeof result === 'string'
+          ? result
+          : {
+              message: result.message,
+              type: this.severityToValidateType(result.severity),
+            };
+      };
     }
 
     return this.quickInputService.open(options);
@@ -76,7 +109,11 @@ export class MainThreadQuickOpen extends Disposable implements IMainThreadQuickO
 
   private createdInputBox = new Map<number, InputBoxImpl>();
 
-  $createOrUpdateInputBox(id: number, options: QuickInputOptions) {
+  $createOrUpdateInputBox(id: number, inputOptions: QuickInputOptions & { severity?: Severity }) {
+    const options = {
+      ...inputOptions,
+      validationType: this.severityToValidateType(inputOptions?.severity),
+    };
     if (this.createdInputBox.has(id)) {
       // 已经存在，需要更新
       const box = this.createdInputBox.get(id);

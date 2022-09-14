@@ -10,6 +10,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { QuickPickItem, QuickPickOptions, QuickInputOptions, QuickTitleButton } from '@opensumi/ide-quick-open';
 
+import { Severity } from './enums';
 import * as types from './ext-types';
 import { UriComponents, QuickInputButton } from './ext-types';
 import { IExtensionDescription } from './extension';
@@ -81,9 +82,9 @@ export interface IExtHostQuickOpen {
   createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T>;
   createInputBox(): vscode.InputBox;
   hideQuickPick(): void;
-  showInputBox(options?: QuickInputOptions, token?: CancellationToken): PromiseLike<string | undefined>;
+  showInputBox(options?: vscode.InputBoxOptions, token?: CancellationToken): PromiseLike<string | undefined>;
   hideInputBox(): void;
-  $validateInput(input: string): MaybePromise<string | null | undefined>;
+  $validateInput(input: string): MaybePromise<string | { message: string; severity: Severity } | null | undefined>;
   $onDidChangeValue(sessionId: number, value: string): void;
   $onCreatedInputBoxDidChangeValue(sessionId: number, value: string): void;
   $onCreatedInputBoxDidAccept(sessionId: number): void;

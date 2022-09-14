@@ -199,6 +199,12 @@ export enum LanguageStatusSeverity {
   Error = 2,
 }
 
+export enum InputBoxValidationSeverity {
+  Info = 1,
+  Warning = 2,
+  Error = 3,
+}
+
 @es5ClassCompat
 export class CodeLens {
   range: Range;

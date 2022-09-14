@@ -9,9 +9,13 @@ import './validate-input.less';
 
 export enum VALIDATE_TYPE {
   INFO = 1,
+  /**
+   * @deprecated
+   */
   WRANING = 0,
   ERROR = 2,
   WARNING = 3,
+  IGNORE = 4,
 }
 
 export interface ValidateMessage {

@@ -335,7 +335,7 @@ declare module 'vscode' {
      * @return A human readable string which is presented as diagnostic message.
      * Return `undefined`, `null`, or the empty string when 'value' is valid.
      */
-    validateInput?(value: string): string | undefined | null | Thenable<string | undefined | null>;
+    validateInput?(value: string): string | InputBoxValidationMessage | undefined | null | Thenable<string | InputBoxValidationMessage | undefined | null>;
   }
 
   /**
@@ -390,7 +390,7 @@ declare module 'vscode' {
     /**
      * An optional validation message indicating a problem with the current input value.
      */
-    validationMessage: string | undefined;
+    validationMessage: string | InputBoxValidationMessage | undefined;
   }
 
 
@@ -522,6 +522,32 @@ declare module 'vscode' {
      * The item that the button belongs to.
      */
     readonly item: T;
+  }
+
+  /**
+   * Impacts the behavior and appearance of the validation message.
+   */
+  export enum InputBoxValidationSeverity {
+    Info = 1,
+    Warning = 2,
+    Error = 3
+  }
+
+  /**
+   * Object to configure the behavior of the validation message.
+   */
+  export interface  InputBoxValidationMessage {
+    /**
+     * The validation message to display.
+     */
+    readonly message: string;
+
+    /**
+     * The severity of the validation message.
+     * NOTE: When using `InputBoxValidationSeverity.Error`, the user will not be allowed to accept (hit ENTER) the input.
+     * `Info` and `Warning` will still allow the InputBox to accept the input.
+     */
+    readonly severity: InputBoxValidationSeverity;
   }
 
 }

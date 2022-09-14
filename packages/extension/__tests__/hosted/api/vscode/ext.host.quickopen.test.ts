@@ -3,7 +3,6 @@ import { Emitter, Disposable } from '@opensumi/ide-core-common';
 import { IQuickInputService, QuickOpenService, QuickPickService } from '@opensumi/ide-quick-open';
 import { QuickInputService } from '@opensumi/ide-quick-open/lib/browser/quick-input-service';
 import { QuickTitleBar } from '@opensumi/ide-quick-open/lib/browser/quick-title-bar';
-import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
@@ -11,7 +10,10 @@ import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/inje
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
 import { MainThreadQuickOpen } from '../../../../src/browser/vscode/api/main.thread.quickopen';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../../../../src/common/vscode';
+import { InputBoxValidationSeverity } from '../../../../src/common/vscode/ext-types';
 import { ExtHostQuickOpen } from '../../../../src/hosted/api/vscode/ext.host.quickopen';
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -68,14 +70,16 @@ describe('ext host quickopen test', () => {
       }),
     },
   );
-  const extHostWorkspace = mockService({});
-  extHost = new ExtHostQuickOpen(rpcProtocolExt, extHostWorkspace);
-  rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostQuickOpen, extHost);
 
-  mainThread = rpcProtocolMain.set(
-    MainThreadAPIIdentifier.MainThreadQuickOpen,
-    injector.get(MainThreadQuickOpen, [rpcProtocolMain]),
-  );
+  beforeAll(() => {
+    const extHostWorkspace = mockService({});
+    extHost = new ExtHostQuickOpen(rpcProtocolExt, extHostWorkspace);
+    rpcProtocolExt.set(ExtHostAPIIdentifier.ExtHostQuickOpen, extHost);
+    mainThread = rpcProtocolMain.set(
+      MainThreadAPIIdentifier.MainThreadQuickOpen,
+      injector.get(MainThreadQuickOpen, [rpcProtocolMain]),
+    );
+  });
 
   afterAll(() => {
     mainThread.dispose();
@@ -112,5 +116,30 @@ describe('ext host quickopen test', () => {
       },
     ];
     expect(quickPick.items.length).toBe(1);
+  });
+
+  it('set input validation message severity by default ', async () => {
+    const $createOrUpdateInputBox = jest.spyOn(mainThread, '$createOrUpdateInputBox');
+    const quickInput = extHost.createInputBox();
+    quickInput.validationMessage = 'test';
+    await sleep(10);
+    expect($createOrUpdateInputBox).toBeCalledWith(expect.anything(), {
+      validationMessage: 'test',
+      severity: InputBoxValidationSeverity.Error,
+    });
+  });
+
+  it('set input validation message severity is warning  ', async () => {
+    const $createOrUpdateInputBox = jest.spyOn(mainThread, '$createOrUpdateInputBox');
+    const quickInput = extHost.createInputBox();
+    quickInput.validationMessage = {
+      message: 'test',
+      severity: InputBoxValidationSeverity.Warning,
+    };
+    await sleep(10);
+    expect($createOrUpdateInputBox).toBeCalledWith(expect.anything(), {
+      validationMessage: 'test',
+      severity: InputBoxValidationSeverity.Warning,
+    });
   });
 });

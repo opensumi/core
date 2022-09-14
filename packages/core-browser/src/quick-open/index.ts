@@ -372,7 +372,7 @@ export namespace QuickOpenOptions {
     onConfirm: () => {
       /* no-op*/
     },
-    valueSelection: [-1, -1],
+    valueSelection: [-1, -1] as [number, number],
     fuzzyMatchLabel: false,
     fuzzyMatchDetail: false,
     fuzzyMatchDescription: false,
@@ -504,7 +504,7 @@ export interface QuickInputOptions {
    * Text for when there is a problem with the current input value
    */
   validationMessage?: string | undefined;
-
+  validationType?: VALIDATE_TYPE;
   /**
    * The prefill value.
    */
@@ -545,7 +545,7 @@ export interface QuickInputOptions {
    * @param value The current value of the input box.
    * @return Return `undefined`, or the empty string when 'value' is valid.
    */
-  validateInput?(value: string): MaybePromise<string | null | undefined>;
+  validateInput?(value: string): MaybePromise<string | { message: string; type: VALIDATE_TYPE } | null | undefined>;
 }
 
 export interface QuickOpenActionProvider {
