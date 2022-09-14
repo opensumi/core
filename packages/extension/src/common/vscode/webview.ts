@@ -95,9 +95,9 @@ export interface IExtHostWebviewView {
 }
 
 export interface IExtHostWebview {
-  $init(): Promise<void>;
-  $onMessage(id: string, message: any): Promise<void>;
-  $onDidChangeWebviewPanelViewState(id: string, newState: IWebviewPanelViewState): Promise<void>;
+  $init(): void;
+  $onMessage(id: string, message: any): void;
+  $onDidChangeWebviewPanelViewState(id: string, newState: IWebviewPanelViewState): void;
   $onDidDisposeWebviewPanel(id: string): Promise<void>;
   $deserializeWebviewPanel(
     newWebviewId: string,
