@@ -67,7 +67,14 @@ import {
 
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { EditorTabChangedError, isEditorError } from './error';
-import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
+import {
+  IGridEditorGroup,
+  EditorGrid,
+  SplitDirection,
+  IEditorGridState,
+  IEditorGridLayoutState,
+  GridIndexCounter,
+} from './grid/grid.service';
 import {
   EditorComponentRegistry,
   IEditorComponent,
@@ -444,31 +451,64 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
     state = this.openedResourceState.get<IEditorGridState>('grid', state);
-    this.topGrid = new EditorGrid();
-    this.topGrid.onDidGridAndDesendantStateChange(() => {
-      this._sortedEditorGroups = undefined;
-      this._onDidEditorGroupsChanged.fire();
-    });
-    const editorRestorePromises = [];
-    const promise = this.topGrid
-      .deserialize(state, () => this.createEditorGroup(), editorRestorePromises)
-      .then(() => {
-        if (this.topGrid.children.length === 0 && !this.topGrid.editorGroup) {
-          this.topGrid.setEditorGroup(this.createEditorGroup());
+    return this.doSetLayout(
+      state,
+      () => this.createEditorGroup(),
+      () => {
+        this._restoring = false;
+        for (const contribution of this.contributions.getContributions()) {
+          if (contribution.onDidRestoreState) {
+            contribution.onDidRestoreState();
+          }
         }
-        this.gridReady = true;
-        this._onDidGridReady.fire();
-        this.notifyGroupChanged();
-      });
-    Promise.all(editorRestorePromises).then(() => {
-      this._restoring = false;
-      for (const contribution of this.contributions.getContributions()) {
-        if (contribution.onDidRestoreState) {
-          contribution.onDidRestoreState();
-        }
+      },
+    );
+  }
+
+  public setLayout(state: IEditorGridLayoutState) {
+    const currentEditorGroups = this.sortedEditorGroups;
+    const notUsed = new Set(currentEditorGroups);
+    this.doSetLayout(state, (index: number) => {
+      const reusedEditorGroup = currentEditorGroups[index];
+      if (reusedEditorGroup) {
+        notUsed.delete(reusedEditorGroup);
+        return reusedEditorGroup;
+      } else {
+        return this.createEditorGroup();
       }
     });
-    return promise;
+    notUsed.forEach((g) => {
+      g.dispose();
+    });
+  }
+
+  private doSetLayout(
+    state: IEditorGridState | IEditorGridLayoutState,
+    editorGroupFactory: (index: number) => IGridEditorGroup,
+    onAllFinish?: () => void,
+  ) {
+    if (this.topGrid) {
+      this.topGrid.children.forEach((c) => c.destoryAll());
+    } else {
+      this.topGrid = new EditorGrid();
+      this.topGrid.onDidGridAndDesendantStateChange(() => {
+        this._sortedEditorGroups = undefined;
+        this._onDidEditorGroupsChanged.fire();
+      });
+    }
+    const editorRestorePromises = [];
+    this.topGrid.deserialize(state, editorGroupFactory, editorRestorePromises, new GridIndexCounter());
+    if (this.topGrid.children.length === 0 && !this.topGrid.editorGroup) {
+      this.topGrid.setEditorGroup(this.createEditorGroup());
+    }
+    this.gridReady = true;
+    this._onDidGridReady.fire();
+    this.notifyGroupChanged();
+    Promise.all(editorRestorePromises).then(() => {
+      if (onAllFinish) {
+        onAllFinish();
+      }
+    });
   }
 
   async closeAll(uri?: URI, force?: boolean) {

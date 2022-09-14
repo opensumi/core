@@ -592,6 +592,13 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.componentRedo',
   };
 
+  /**
+   * 设置编辑器的布局
+   */
+  export const SET_LAYOUT: Command = {
+    id: 'editor.setLayout',
+  };
+
   export const SEARCH_WORKSPACE_SYMBOL: Command = {
     id: 'editor.workspaceSymbol.quickopen',
     label: '%editor.workspaceSymbol.quickopen%',

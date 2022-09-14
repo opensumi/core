@@ -35,6 +35,7 @@ import {
   StatusBarEntryAccessor,
 } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
 import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
+import { IEditorGridLayoutState, SplitDirection } from '@opensumi/ide-editor/lib/browser/grid/grid.service';
 import { IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
@@ -79,6 +80,13 @@ export const getClientId = (injector: Injector) => {
   }
   return clientId;
 };
+
+interface IVSCodeLayoutArgs {
+  // 0 horizontal
+  // 1 vertical
+  orientation?: 0 | 1;
+  groups?: IVSCodeLayoutArgs[];
+}
 
 @Domain(ClientAppContribution)
 export class ExtensionClientAppContribution implements ClientAppContribution {
@@ -383,6 +391,15 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
     });
 
+    registry.registerCommand(VSCodeBuiltinCommands.SET_EDITOR_LAYOUT, {
+      execute: (args?: IVSCodeLayoutArgs) => {
+        if (!args) {
+          return;
+        }
+        this.commandService.executeCommand(EDITOR_COMMANDS.SET_LAYOUT.id, toEditorLayoutState(args));
+      },
+    });
+
     registry.registerCommand(VSCodeBuiltinCommands.DIFF, {
       execute: (left: UriComponents, right: UriComponents, title: string, options?: any) => {
         const openOptions: IResourceOpenOptions = {
@@ -544,4 +561,16 @@ export class ExtensionCommandContribution implements CommandContribution {
   private get clientId() {
     return getClientId(this.injector);
   }
+}
+
+function toEditorLayoutState(vscodeArgs: IVSCodeLayoutArgs): IEditorGridLayoutState {
+  return {
+    splitDirection:
+      vscodeArgs.orientation === 0
+        ? SplitDirection.Horizontal
+        : vscodeArgs.orientation === 1
+        ? SplitDirection.Vertical
+        : undefined,
+    children: vscodeArgs.groups?.map(toEditorLayoutState),
+  };
 }

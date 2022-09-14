@@ -67,6 +67,7 @@ import { EditorStatusBarService } from './editor.status-bar.service';
 import { EditorView } from './editor.view';
 import { DocumentFormatService } from './format/format.service';
 import { FormattingSelector } from './format/formatterSelect';
+import { IEditorGridState } from './grid/grid.service';
 import { EditorHistoryService } from './history';
 import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
@@ -642,6 +643,10 @@ export class EditorContribution
           }
         }
       },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.SET_LAYOUT, {
+      execute: async (layout: IEditorGridState) => this.workbenchEditorService.setLayout(layout),
     });
 
     commands.registerCommand(EDITOR_COMMANDS.FOCUS_ACTIVE_EDITOR_GROUP, {
@@ -1339,13 +1344,17 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
     });
     commands.registerCommand(EDITOR_COMMANDS.COPY_PATH, {
       execute: (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, uri);
       },
     });
     commands.registerCommand(EDITOR_COMMANDS.COPY_RELATIVE_PATH, {
       execute: (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, uri);
       },
     });

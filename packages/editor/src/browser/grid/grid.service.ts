@@ -4,6 +4,14 @@ import { makeRandomHexString } from '@opensumi/ide-core-common';
 import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
 import { GridResizeEvent } from '../types';
 
+export class GridIndexCounter {
+  private index = 0;
+
+  public getNext() {
+    return this.index++;
+  }
+}
+
 export const editorGridUid = new Set();
 
 export class EditorGrid implements IDisposable {
@@ -92,6 +100,7 @@ export class EditorGrid implements IDisposable {
   }
 
   public dispose() {
+    this.disposeListeners();
     if (this.editorGroup) {
       this.editorGroup = null;
       if (!this.parent) {
@@ -106,6 +115,22 @@ export class EditorGrid implements IDisposable {
     } else {
       // 应该不会落入这里
     }
+  }
+
+  private disposeListeners() {
+    this._onDidGridAndDesendantStateChange.dispose();
+    this._onDidGridStateChange.dispose();
+  }
+
+  public destoryAll() {
+    this.disposeListeners();
+    if (this.editorGroup) {
+      this.editorGroup.grid = null;
+      this.editorGroup = null;
+    }
+    this.children.forEach((c) => {
+      c.destoryAll();
+    });
   }
 
   public replaceBy(target: EditorGrid) {
@@ -154,24 +179,26 @@ export class EditorGrid implements IDisposable {
     }
   }
 
-  async deserialize(
-    state: IEditorGridState,
-    editorGroupFactory: () => IGridEditorGroup,
+  deserialize(
+    state: IEditorGridState | IEditorGridLayoutState,
+    editorGroupFactory: (index: number) => IGridEditorGroup,
     editorGroupRestoreStatePromises: Promise<any>[],
-  ): Promise<any> {
-    const promises: Promise<any>[] = [];
-    if (state.editorGroup) {
-      this.setEditorGroup(editorGroupFactory());
-      editorGroupRestoreStatePromises.push(this.editorGroup!.restoreState(state.editorGroup));
-    } else {
+    indexCounter: GridIndexCounter,
+  ): void {
+    if (state.splitDirection) {
       this.splitDirection = state.splitDirection;
       this.children = (state.children || []).map((c) => {
         const grid = new EditorGrid(this);
-        promises.push(grid.deserialize(c, editorGroupFactory, editorGroupRestoreStatePromises));
+        grid.deserialize(c, editorGroupFactory, editorGroupRestoreStatePromises, indexCounter);
         return grid;
       });
+    } else {
+      this.setEditorGroup(editorGroupFactory(indexCounter.getNext()));
+      if (isGridState(state)) {
+        editorGroupRestoreStatePromises.push(this.editorGroup!.restoreState(state.editorGroup));
+      }
     }
-    return Promise.all(promises);
+    this._onDidGridStateChange.fire();
   }
 
   findGird(direction: Direction, currentIndex = 0): MaybeNull<EditorGrid> {
@@ -252,10 +279,13 @@ export class EditorGrid implements IDisposable {
   }
 }
 
-export interface IEditorGridState {
+export interface IEditorGridState extends IEditorGridLayoutState {
   editorGroup?: IEditorGroupState;
+}
+
+export interface IEditorGridLayoutState {
   splitDirection?: SplitDirection;
-  children?: IEditorGridState[];
+  children?: this[];
 }
 
 export interface IGridChild {
@@ -272,7 +302,7 @@ export enum SplitDirection {
 }
 
 export interface IGridEditorGroup extends IEditorGroup {
-  grid: EditorGrid;
+  grid: EditorGrid | null;
 }
 
 export function splitDirectionMatches(split: SplitDirection, direction: Direction): boolean {
@@ -285,4 +315,8 @@ export function splitDirectionMatches(split: SplitDirection, direction: Directio
   }
 
   return false;
+}
+
+function isGridState(state: IEditorGridState | IEditorGridLayoutState): state is IEditorGridState {
+  return !!(state as IEditorGridState).editorGroup;
 }

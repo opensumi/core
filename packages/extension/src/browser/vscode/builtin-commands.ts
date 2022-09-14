@@ -199,6 +199,10 @@ export const OPEN_WITH: Command = {
   id: 'vscode.openWith',
 };
 
+export const SET_EDITOR_LAYOUT: Command = {
+  id: 'vscode.setEditorLayout',
+};
+
 export const API_OPEN_DIFF_EDITOR_COMMAND_ID: Command = {
   id: EDITOR_COMMANDS.API_OPEN_DIFF_EDITOR_COMMAND_ID,
   delegate: DIFF.id,

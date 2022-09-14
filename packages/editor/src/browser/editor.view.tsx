@@ -18,6 +18,7 @@ import {
   View,
 } from '@opensumi/ide-core-browser';
 import {
+  getIcon,
   IResizeHandleDelegate,
   ResizeFlexMode,
   ResizeHandleHorizontal,
@@ -234,7 +235,9 @@ const EditorEmptyComponent: React.FC<{
 };
 
 export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
-  const groupWrapperRef = React.useRef<HTMLElement | null>();
+  const groupWrapperRef = React.useRef<HTMLDivElement>(null);
+  const editorService: WorkbenchEditorServiceImpl = useInjectable(WorkbenchEditorService);
+  const eventBus: IEventBus = useInjectable(IEventBus);
 
   const preferenceService = useInjectable(PreferenceService) as PreferenceService;
   const [isEmpty, setIsEmpty] = React.useState(group.resources.length === 0);
@@ -294,6 +297,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
       onFocus={(e) => {
         group.gainFocus();
       }}
+      {...(isEmpty && createDropDownHandler(groupWrapperRef, group, editorService, eventBus))}
     >
       {(!isEmpty || showActionWhenGroupEmpty) && (
         <div className={styles.editorGroupHeader}>
@@ -314,6 +318,14 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             </ErrorBoundary>
           ) : null}
         </div>
+      )}
+      {isEmpty && (
+        <div
+          className={classnames(getIcon('close'), styles.kt_empty_group_close)}
+          onClick={() => {
+            group.dispose();
+          }}
+        />
       )}
     </div>
   );
@@ -410,42 +422,9 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   return (
     <div
       id={VIEW_CONTAINERS.EDITOR}
-      ref={editorBodyRef}
       className={styles.kt_editor_body}
-      onDragOver={(e) => {
-        e.preventDefault();
-        if (editorBodyRef.current) {
-          const position = getDragOverPosition(e.nativeEvent, editorBodyRef.current);
-          decorateDragOverElement(editorBodyRef.current, position);
-        }
-      }}
-      onDragLeave={(e) => {
-        if (editorBodyRef.current) {
-          removeDecorationDragOverElement(editorBodyRef.current);
-        }
-      }}
-      onDrop={(e) => {
-        if (editorBodyRef.current) {
-          removeDecorationDragOverElement(editorBodyRef.current);
-          if (e.dataTransfer.getData('uri')) {
-            const uri = new URI(e.dataTransfer.getData('uri'));
-            let sourceGroup: EditorGroup | undefined;
-            if (e.dataTransfer.getData('uri-source-group')) {
-              sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
-            }
-            group.dropUri(uri, getDragOverPosition(e.nativeEvent, editorBodyRef.current), sourceGroup);
-          }
-          if (e.dataTransfer.files.length > 0) {
-            eventBus.fire(
-              new EditorGroupFileDropEvent({
-                group,
-                files: e.dataTransfer.files,
-                position: getDragOverPosition(e.nativeEvent, editorBodyRef.current),
-              }),
-            );
-          }
-        }
-      }}
+      ref={editorBodyRef}
+      {...createDropDownHandler(editorBodyRef, group, editorService, eventBus)}
     >
       {!editorHasNoTab && <NavigationBar editorGroup={group} />}
       <div className={styles.kt_editor_components}>
@@ -476,6 +455,54 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
     </div>
   );
 });
+
+function createDropDownHandler(
+  htmlRef: React.RefObject<HTMLDivElement>,
+  group: EditorGroup,
+  editorService: WorkbenchEditorServiceImpl,
+  eventBus,
+): {
+  onDragOver: React.DragEventHandler<HTMLDivElement>;
+  onDrop: React.DragEventHandler<HTMLDivElement>;
+  onDragLeave: React.DragEventHandler<HTMLDivElement>;
+} {
+  return {
+    onDragOver: (e) => {
+      e.preventDefault();
+      if (htmlRef.current) {
+        const position = getDragOverPosition(e.nativeEvent, htmlRef.current);
+        decorateDragOverElement(htmlRef.current, position);
+      }
+    },
+    onDragLeave: (e) => {
+      if (htmlRef.current) {
+        removeDecorationDragOverElement(htmlRef.current);
+      }
+    },
+    onDrop: (e) => {
+      if (htmlRef.current) {
+        removeDecorationDragOverElement(htmlRef.current);
+        if (e.dataTransfer.getData('uri')) {
+          const uri = new URI(e.dataTransfer.getData('uri'));
+          let sourceGroup: EditorGroup | undefined;
+          if (e.dataTransfer.getData('uri-source-group')) {
+            sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+          }
+          group.dropUri(uri, getDragOverPosition(e.nativeEvent, htmlRef.current), sourceGroup);
+        }
+        if (e.dataTransfer.files.length > 0) {
+          eventBus.fire(
+            new EditorGroupFileDropEvent({
+              group,
+              files: e.dataTransfer.files,
+              position: getDragOverPosition(e.nativeEvent, htmlRef.current),
+            }),
+          );
+        }
+      }
+    },
+  };
+}
 
 export const ComponentsWrapper = ({
   component,

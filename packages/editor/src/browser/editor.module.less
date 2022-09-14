@@ -41,6 +41,34 @@
   position: relative;
   background-color: var(--editorGroup-emptyBackground);
 
+  &::after {
+    z-index: 100;
+    content: '';
+    background: var(--editorGroup-dropBackground);
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: none;
+    user-select: none;
+    pointer-events: none;
+    transition: all 200ms ease-in-out;
+  }
+
+  .kt_empty_group_close {
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    cursor: pointer;
+    &::before {
+      font-size: 14px;
+    }
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
   .kt_editor_background {
     background-position: center;
     background-repeat: no-repeat;
@@ -322,54 +350,60 @@
       transition: all 200ms ease-in-out;
     }
     &.kt_on_drag_over {
-      &::after {
-        opacity: 0.5;
-        display: block;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-      }
-      &.kt_on_drag_over_left {
-        &::after {
-          opacity: 0.5;
-          display: block;
-          width: 50%;
-          height: 100%;
-          top: 0;
-          left: 0;
-        }
-      }
-      &.kt_on_drag_over_right {
-        &::after {
-          opacity: 0.5;
-          display: block;
-          width: 50%;
-          height: 100%;
-          top: 0;
-          left: 50%;
-        }
-      }
-      &.kt_on_drag_over_top {
-        &::after {
-          opacity: 0.5;
-          display: block;
-          width: 100%;
-          height: 50%;
-          top: 0;
-          left: 0;
-        }
-      }
-      &.kt_on_drag_over_bottom {
-        &::after {
-          opacity: 0.5;
-          display: block;
-          width: 100%;
-          height: 50%;
-          top: 50%;
-          left: 0;
-        }
-      }
+      .kt_on_drag_over();
+    }
+  }
+}
+
+.kt_on_drag_over {
+  &::after {
+    opacity: 0.5;
+    display: block;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    content: '';
+  }
+  &.kt_on_drag_over_left {
+    &::after {
+      opacity: 0.5;
+      display: block;
+      width: 50%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+  }
+  &.kt_on_drag_over_right {
+    &::after {
+      opacity: 0.5;
+      display: block;
+      width: 50%;
+      height: 100%;
+      top: 0;
+      left: 50%;
+    }
+  }
+  &.kt_on_drag_over_top {
+    &::after {
+      opacity: 0.5;
+      display: block;
+      width: 100%;
+      height: 50%;
+      top: 0;
+      left: 0;
+    }
+  }
+  &.kt_on_drag_over_bottom {
+    &::after {
+      opacity: 0.5;
+      display: block;
+      width: 100%;
+      height: 50%;
+      top: 50%;
+      left: 0;
     }
   }
 }
