@@ -93,9 +93,9 @@ export interface IExtHostWebviewView {
 }
 
 export interface IExtHostWebview {
-  $init(): void;
-  $onMessage(id: string, message: any): void;
-  $onDidChangeWebviewPanelViewState(id: string, newState: IWebviewPanelViewState): void;
+  $init(): Promise<void>;
+  $onMessage(id: string, message: any): Promise<void>;
+  $onDidChangeWebviewPanelViewState(id: string, newState: IWebviewPanelViewState): Promise<void>;
   $onDidDisposeWebviewPanel(id: string): Promise<void>;
   $deserializeWebviewPanel(
     newWebviewId: string,
@@ -107,7 +107,7 @@ export interface IExtHostWebview {
   ): Promise<void>;
 
   /**
-   * browser主动创建了一个webview，把它交给 exthost 创建 webviewPanel
+   * browser 主动创建了一个 webview，把它交给 exthost 创建 webviewPanel
    * @param id
    */
   $pipeBrowserHostedWebviewPanel(id: string, viewType: string): void;
