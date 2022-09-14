@@ -4,7 +4,7 @@ import * as fs from 'fs-extra';
 import temp from 'temp';
 
 import { Injectable, Injector } from '@opensumi/di';
-import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA, ILoggerManagerClient } from '@opensumi/ide-core-browser';
+import { URI, FileUri, AppConfig, Disposable, STORAGE_SCHEMA } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
@@ -56,9 +56,6 @@ describe('WorkspaceStorage should be work', () => {
     },
     whenReady: Promise.resolve(),
   };
-  const MockLoggerManagerClient = {
-    getLogger: jest.fn(),
-  };
   beforeAll(() => {
     injector = createBrowserInjector([StorageModule]);
 
@@ -83,10 +80,6 @@ describe('WorkspaceStorage should be work', () => {
       {
         token: IWorkspaceService,
         useValue: MockWorkspaceService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useValue: MockLoggerManagerClient,
       },
     );
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);

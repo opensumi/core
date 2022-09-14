@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../../color-registry';
+import { registerColor } from '../../utils';
 import { dropdownBackground, dropdownBorder } from '../dropdown';
 import { inputForeground, inputBackground } from '../input';
 import { settingsSelectBorder } from '../settings';

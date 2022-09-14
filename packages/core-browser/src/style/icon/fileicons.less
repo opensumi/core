@@ -2,14 +2,14 @@
   .folder-icon::before,
   .rootfolder-icon::before {
     content: ' ';
-    -webkit-mask: data-uri('./fileicons/folder-default.svg') no-repeat 50% 50%;
-    -webkit-mask-size: 14px;
+    mask: data-uri('./fileicons/folder-default.svg') no-repeat 0 0;
+    mask-size: 14px;
     background-color: var(--foreground);
   }
   .file-icon::before {
     content: ' ';
-    -webkit-mask: data-uri('./fileicons/file-default.svg') no-repeat 50% 50%;
-    -webkit-mask-size: 14px;
+    mask: data-uri('./fileicons/file-default.svg') no-repeat 0 0;
+    mask-size: 14px;
     background-color: var(--foreground);
   }
 }

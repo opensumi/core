@@ -200,7 +200,6 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
 
         // 每次都创建一个新的 widget
         widget = new DirtyDiffWidget(codeEditor, dirtyModel, this.commandService);
-        // FIXME: 这一行貌似不会触发 @木农
         widget.onDispose(() => {
           this.widgets.delete(codeEditor.getId());
         });
@@ -215,7 +214,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       return;
     }
 
-    const { position, detail, type, element } = target;
+    const { position, type, element } = target;
     if (
       type === monaco.editor.MouseTargetType.GUTTER_LINE_DECORATIONS &&
       element &&
@@ -223,7 +222,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
       position
     ) {
       const offsetLeftInGutter = (element as HTMLElement).offsetLeft;
-      const gutterOffsetX = detail.offsetX - offsetLeftInGutter;
+      const gutterOffsetX = target.detail.offsetX - offsetLeftInGutter;
 
       /**
        * 这段逻辑来自于 vscode 的源代码，由于 folding 的 icon 和 decorations 是父子关系，

@@ -104,16 +104,16 @@ export class OpenedEditorService extends Tree {
           .join(groupName)
           .join(
             resource && (resource as IResource).uri
-              ? (resource as IResource).uri.path.toString()
-              : (resource as URI).path.toString(),
+              ? (resource as IResource).uri.toString()
+              : (resource as URI).toString(),
           )
           .toString();
       } else {
         path = new Path(path)
           .join(
             resource && (resource as IResource).uri
-              ? (resource as IResource).uri.path.toString()
-              : (resource as URI).path.toString(),
+              ? (resource as IResource).uri.toString()
+              : (resource as URI).toString(),
           )
           .toString();
       }

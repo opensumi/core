@@ -1,7 +1,7 @@
 import { IJSONSchemaMap } from '@opensumi/ide-core-browser';
 import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
-import { ITerminalClient, TerminalOptions } from '@opensumi/ide-terminal-next/lib/common';
+import { IShellLaunchConfig, ITerminalClient } from '@opensumi/ide-terminal-next/lib/common';
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { ProblemCollector } from '../browser/problem-collector';
@@ -11,7 +11,7 @@ import { Task, ConfiguringTask, ContributedTask, TaskSet, KeyedTaskIdentifier, T
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface TaskMap {}
 
-interface TaskFileter {
+interface TaskFilter {
   version?: string;
   type?: string;
 }
@@ -113,7 +113,7 @@ export interface ITaskExecutor {
   execute(task: Task, reuse?: boolean): Promise<{ exitCode?: number }>;
   reset(): void;
   terminate(): Promise<{ success: boolean }>;
-  updateTerminalOptions(options: TerminalOptions): void;
+  updateLaunchConfig(launchConfig: IShellLaunchConfig): void;
   updateProblemCollector(collector: ProblemCollector): void;
   onDidTerminalWidgetRemove: Event<void>;
   onDidTaskProcessExit: Event<number | undefined>;
@@ -131,7 +131,7 @@ export interface ITaskSystem {
   onDidProblemMatched: Event<TaskEvent>;
   attach(task: Task | ConfiguringTask, terminalClient: ITerminalClient): Promise<ITaskExecuteResult>;
   run(task: Task | ConfiguringTask): Promise<ITaskExecuteResult>;
-  rerun(): ITaskExecuteResult | undefined;
+  rerun(): Promise<ITaskExecuteResult | undefined>;
   isActive(): Promise<boolean>;
   isActiveSync(): boolean;
   getActiveTasks(): Task[];
@@ -149,12 +149,13 @@ export interface ITaskService {
   run(task: Task | ConfiguringTask): Promise<ITaskSummary>;
 
   runTaskCommand(): void;
+  rerunLastTask(): void;
 
   updateWorkspaceTasks(tasks: TaskMap): void;
 
   registerTaskProvider(provider: ITaskProvider, type: string): IDisposable;
 
-  tasks(filter?: TaskFileter): Promise<Task[]>;
+  tasks(filter?: TaskFilter): Promise<Task[]>;
 
   getTask(workspaceFolder: Uri, identifier: string | TaskIdentifier, compareId?: boolean): Promise<Task | undefined>;
 

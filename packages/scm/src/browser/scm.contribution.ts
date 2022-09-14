@@ -4,9 +4,12 @@ import {
   PreferenceContribution,
   PreferenceService,
   getExternalIcon,
+  IExtensionsPointService,
+  SCM_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { Disposable, URI } from '@opensumi/ide-core-browser';
+import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
@@ -16,10 +19,11 @@ import {
   PreferenceSchema,
   localize,
   PreferenceScope,
+  formatLocalize,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@opensumi/ide-editor/lib/common';
-import { IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
+import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 
 import {
   scmContainerId,
@@ -76,6 +80,9 @@ export class SCMContribution
   @Autowired(EditorCollectionService)
   private readonly editorCollectionService: EditorCollectionService;
 
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
+
   private toDispose = new Disposable();
 
   schema: PreferenceSchema = scmPreferenceSchema;
@@ -91,10 +98,21 @@ export class SCMContribution
   @Autowired(IViewsRegistry)
   private readonly viewsRegistry: IViewsRegistry;
 
+  @Autowired(IExtensionsPointService)
+  protected readonly extensionsPointService: IExtensionsPointService;
+
   onStart() {
     this.viewsRegistry.registerViewWelcomeContent(scmResourceViewId, {
       content: localize('welcome-view.noOpenRepo', 'No source control providers registered.'),
       when: 'default',
+    });
+    this.extensionsPointService.appendExtensionPoint(['browserViews', 'properties'], {
+      extensionPoint: scmContainerId,
+      frameworkKind: ['opensumi'],
+      jsonSchema: {
+        ...browserViews.properties,
+        description: formatLocalize('sumiContributes.browserViews.location.custom', localize('status-bar.scm')),
+      },
     });
   }
 
@@ -130,7 +148,11 @@ export class SCMContribution
       execute: () => {
         const editor = this.editorService.currentEditor;
         if (editor && editor.currentUri) {
-          editor.monacoEditor.revealLineInCenter(this.getDiffChangeLineNumber(editor.currentUri, editor, 'previous'));
+          const number = this.getDiffChangeLineNumber(editor.currentUri, editor, 'previous');
+          editor.monacoEditor.focus();
+          const pos = editor.monacoEditor.getPosition()?.with(number, 0)!;
+          editor.monacoEditor.setPosition(pos);
+          editor.monacoEditor.revealLineInCenter(number);
         }
       },
     });
@@ -139,7 +161,11 @@ export class SCMContribution
       execute: () => {
         const editor = this.editorService.currentEditor;
         if (editor && editor.currentUri) {
-          editor.monacoEditor.revealLineInCenter(this.getDiffChangeLineNumber(editor.currentUri, editor, 'next'));
+          const number = this.getDiffChangeLineNumber(editor.currentUri, editor, 'next');
+          editor.monacoEditor.focus();
+          const pos = editor.monacoEditor.getPosition()?.with(number, 0)!;
+          editor.monacoEditor.setPosition(pos);
+          editor.monacoEditor.revealLineInCenter(number);
         }
       },
     });
@@ -159,6 +185,15 @@ export class SCMContribution
     commands.registerCommand(SET_SCM_LIST_VIEW_MODE, {
       execute: () => {
         this.scmTreeService.changeTreeMode(false);
+      },
+    });
+
+    commands.registerCommand(SCM_COMMANDS.TOGGLE_VISIBILITY, {
+      execute: () => {
+        const tabbarHandler = this.mainlayoutService.getTabbarHandler(scmContainerId);
+        if (tabbarHandler) {
+          tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
+        }
       },
     });
   }
@@ -258,6 +293,6 @@ export class SCMContribution
       index = diffChangesIndex >= lineChanges.length - 1 ? 0 : diffChangesIndex + 1;
     }
     this.diffChangesIndex.set(uri, index);
-    return lineChanges[index].modifiedStartLineNumber;
+    return lineChanges[index][2];
   }
 }

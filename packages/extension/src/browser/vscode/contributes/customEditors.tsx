@@ -2,13 +2,13 @@ import React = require('react');
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
-import { CancellationTokenSource, Disposable, ILogger, match } from '@opensumi/ide-core-common';
+import { CancellationTokenSource, CUSTOM_EDITOR_SCHEME, Disposable, ILogger, match } from '@opensumi/ide-core-common';
 import { EditorComponentRegistry, IEditorPriority, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
 
 import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../common';
-import { ICustomEditorOptions, CUSTOM_EDITOR_SCHEME } from '../../../common/vscode';
+import { ICustomEditorOptions } from '../../../common/vscode';
 import {
   CustomEditorScheme,
   CustomEditorShouldDisplayEvent,

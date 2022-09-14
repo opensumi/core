@@ -1,7 +1,7 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { BinaryBuffer, CancellationTokenSource, Emitter, IDisposable, isUTF8 } from '@opensumi/ide-core-common';
+import { BinaryBuffer, CancellationTokenSource, Emitter, IDisposable, isUTF8, URI } from '@opensumi/ide-core-common';
 
 import {
   ExtensionDocumentDataManager,
@@ -65,16 +65,24 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
   getDocument(uri: Uri | string) {
     const data = this.getDocumentData(uri);
-    return data ? data.document : undefined;
+    if (!data?.document) {
+      throw new Error(`Unable to retrieve document from URI '${uri}'`);
+    }
+    return data.document;
   }
 
-  async openTextDocument(path: Uri | string) {
+  async openTextDocument(uriOrFileNameOrOptions?: Uri | string | { language?: string; content?: string }) {
     let uri: Uri;
+    const options = uriOrFileNameOrOptions as { language?: string; content?: string };
 
-    if (typeof path === 'string') {
-      uri = Uri.file(path);
+    if (typeof uriOrFileNameOrOptions === 'string') {
+      uri = Uri.file(uriOrFileNameOrOptions);
+    } else if (URI.isUri(uriOrFileNameOrOptions)) {
+      uri = Uri.parse(uriOrFileNameOrOptions.toString());
+    } else if (!options || typeof options === 'object') {
+      uri = Uri.parse(await this._proxy.$tryCreateDocument(options));
     } else {
-      uri = Uri.parse(path.toString());
+      throw new Error('illegal argument -  uriOrFileNameOrOptions');
     }
 
     const doc = this._documents.get(uri.toString());
@@ -263,7 +271,8 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       edits: [
         {
           resource: uri,
-          edit,
+          textEdit: edit,
+          versionId: undefined,
         },
       ],
     };

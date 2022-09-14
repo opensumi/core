@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { SlotRenderer } from '../../react-providers';
+import { SlotRenderer } from '../../react-providers/slot';
 
 import { BoxPanel } from './box-panel';
 import { SplitPanel } from './split-panel';
@@ -25,10 +25,10 @@ export function ToolbarActionBasedLayout() {
   const { colors, layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer color={colors.menuBarBackground} defaultSize={0} slot='top' z-index={2} />
+      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={0} slot='top' z-index={2} />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
-          color={colors.sideBarBackground}
+          backgroundColor={colors.sideBarBackground}
           slot='left'
           isTabbar={true}
           defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
@@ -36,9 +36,9 @@ export function ToolbarActionBasedLayout() {
           minSize={49}
         />
         <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
-          <SlotRenderer color={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
+          <SlotRenderer backgroundColor={colors.editorBackground} flex={2} flexGrow={1} minResize={200} slot='main' />
           <SlotRenderer
-            color={colors.panelBackground}
+            backgroundColor={colors.panelBackground}
             flex={1}
             defaultSize={layout.bottom?.size}
             minResize={160}
@@ -47,7 +47,7 @@ export function ToolbarActionBasedLayout() {
           />
         </SplitPanel>
         <SlotRenderer
-          color={colors.sideBarBackground}
+          backgroundColor={colors.sideBarBackground}
           slot='right'
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
@@ -55,7 +55,7 @@ export function ToolbarActionBasedLayout() {
           minSize={0}
         />
       </SplitPanel>
-      <SlotRenderer color={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
+      <SlotRenderer backgroundColor={colors.statusBarBackground} defaultSize={24} slot='statusBar' />
     </BoxPanel>
   );
 }

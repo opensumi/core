@@ -1,4 +1,5 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { VALIDATE_TYPE } from '@opensumi/ide-components';
 import { QuickInputOptions, IQuickInputService, QuickOpenService } from '@opensumi/ide-core-browser/lib/quick-open';
 import { Deferred, Emitter, Event, withNullAsUndefined } from '@opensumi/ide-core-common';
 
@@ -38,7 +39,8 @@ export class QuickInputService implements IQuickInputService {
       const error = validateInput && v !== undefined ? withNullAsUndefined(await validateInput(v)) : undefined;
       // 每次都要设置一下，因为 error 为空说明没有错
       return {
-        validationMessage: error,
+        validationMessage: typeof error === 'string' ? error : error?.message,
+        validationType: typeof error === 'string' ? VALIDATE_TYPE.ERROR : error?.type ?? VALIDATE_TYPE.ERROR,
       };
     };
 

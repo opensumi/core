@@ -12,6 +12,8 @@ import {
   FileSystemError,
   notEmpty,
   isErrnoException,
+  EXT_LIST_IMAGE,
+  EXT_LIST_VIDEO,
 } from '@opensumi/ide-file-service';
 
 import { HttpTreeList } from './http-file.service';
@@ -27,8 +29,6 @@ export const BROWSER_HOME_DIR = FileUri.create('/home');
 // 预览模式下，文件改动仅同步到本地；常规场景直接同步远端，本地不做文件存储
 // 利用storage来记录文件已加载的信息，dispose时记得清楚
 export class BrowserFsProvider implements IDiskFileProvider {
-  static H5VideoExtList = ['mp4', 'ogg', 'webm'];
-
   static binaryExtList = [
     'aac',
     'avi',
@@ -447,9 +447,9 @@ export class BrowserFsProvider implements IDiskFileProvider {
   private _getFileType(ext: string) {
     let type = 'text';
 
-    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) > -1) {
+    if (EXT_LIST_IMAGE.indexOf(ext) > -1) {
       type = 'image';
-    } else if (BrowserFsProvider.H5VideoExtList.indexOf(ext) > -1) {
+    } else if (EXT_LIST_VIDEO.indexOf(ext) > -1) {
       type = 'video';
     } else if (BrowserFsProvider.binaryExtList.indexOf(ext) > -1) {
       type = 'binary';

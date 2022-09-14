@@ -13,7 +13,9 @@ import {
   ILogger,
   IClipboardService,
   TerminalSettingsId,
+  TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import {
   ITerminalController,
@@ -21,8 +23,8 @@ import {
   ITerminalGroupViewService,
   ITerminalSearchService,
   ITerminalApiService,
-  TERMINAL_COMMANDS,
   ITerminalClient,
+  TerminalContainerId,
 } from '../../common';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';
@@ -57,6 +59,9 @@ export class TerminalCommandContribution implements CommandContribution {
 
   @Autowired(CommandService)
   protected readonly commands: CommandService;
+
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
 
   @Autowired(AppConfig)
   protected readonly config: AppConfig;
@@ -116,9 +121,7 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.ADD, {
       execute: async () => {
-        await this.terminalController.createClientWithWidget2({
-          terminalOptions: {},
-        });
+        await this.terminalController.createTerminalWithWidget({});
         this.terminalController.showTerminalPanel();
       },
     });
@@ -314,6 +317,15 @@ export class TerminalCommandContribution implements CommandContribution {
         }
         const client = this.getNextOrPrevTerminalClient('prev');
         client?.focus();
+      },
+    });
+
+    registry.registerCommand(TERMINAL_COMMANDS.TOGGLE_VISIBILITY, {
+      execute: () => {
+        const tabbarHandler = this.mainlayoutService.getTabbarHandler(TerminalContainerId);
+        if (tabbarHandler) {
+          tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
+        }
       },
     });
   }

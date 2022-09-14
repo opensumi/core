@@ -25,7 +25,9 @@
     min-width: 50px;
     margin-right: 10px;
     max-width: 200px;
-
+    &:focus-visible {
+      outline: 0;
+    }
     :global(.kt-select-value) {
       & > option {
         min-width: 22px;
@@ -87,6 +89,10 @@
   background-color: var(--debugToolBar-background);
   border: 1px solid var(--debugToolBar-border);
   .modal-shadow();
+}
+
+.debug_toolbar_wrapper_electron {
+  -webkit-app-region: none;
 }
 
 .debug_toolbar_drag {

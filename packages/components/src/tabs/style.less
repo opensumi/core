@@ -1,34 +1,36 @@
-.kt-tabs {
+@import '../style/variable.less';
+
+.@{prefix}-tabs {
   display: flex;
   align-items: center;
   border-bottom: 1px solid var(--kt-tab-borderDown);
 
-  .kt-tab,
-  .kt-custom-tab {
+  .@{prefix}-tab,
+  .@{prefix}-custom-tab {
     padding: 8px 0 8px;
     line-height: 20px;
     border-bottom: 2px solid transparent;
     color: var(--kt-tab-inactiveForeground);
     cursor: pointer;
 
-    &.kt-mini-tab {
+    &.@{prefix}-mini-tab {
       padding: 2px 0 2px;
     }
 
-    &.kt-tab-selected {
+    &.@{prefix}-tab-selected {
       color: var(--kt-tab-activeForeground);
       border-bottom-color: var(--kt-tab-activeBorder);
     }
   }
 
-  &.kt-tabs-mini {
+  &.@{prefix}-tabs-mini {
     border-bottom: none;
   }
 
-  .kt-tab + .kt-tab,
-  .kt-custom-tab + .kt-custom-tab,
-  .kt-tab + .kt-custom-tab,
-  .kt-custom-tab + .kt-tab {
+  .@{prefix}-tab + .@{prefix}-tab,
+  .@{prefix}-custom-tab + .@{prefix}-custom-tab,
+  .@{prefix}-tab + .@{prefix}-custom-tab,
+  .@{prefix}-custom-tab + .@{prefix}-tab {
     margin-left: 24px;
   }
 }

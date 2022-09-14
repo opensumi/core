@@ -21,27 +21,36 @@ import {
   electronEnv,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { URI, Disposable } from '@opensumi/ide-core-common';
+import { URI, Disposable, isObject } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
-  CommentRule,
   GrammarsContribution,
   ITextmateTokenizerService,
-  LanguagesContribution,
   ScopeMap,
 } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { monaco } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import {
+  EnterAction,
   FoldingRules,
   IAutoClosingPair,
   IAutoClosingPairConditional,
   IndentationRule,
   LanguageConfiguration,
+  OnEnterRule,
 } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import {
+  CommentRule,
+  IIndentationRule,
+  IndentAction,
+  IndentationRuleDto,
+  IRegExp,
+  LanguageConfigurationDto,
+  LanguagesContribution,
+} from '@opensumi/ide-monaco/lib/common';
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
-import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes/modesRegistry';
-import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/modeService';
+import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/modesRegistry';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
 
@@ -139,6 +148,21 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return this.registerLanguages([language], extPath);
   }
 
+  private reviveLanguageConfiguration(id: string, configuration: LanguageConfigurationDto): LanguageConfiguration {
+    return {
+      wordPattern: this.createRegex(configuration.wordPattern),
+      autoClosingPairs: this.extractValidAutoClosingPairs(id, configuration),
+      brackets: this.extractValidBrackets(id, configuration),
+      comments: this.extractValidCommentRule(id, configuration),
+      folding: this.convertFolding(configuration.folding),
+      surroundingPairs: this.extractValidSurroundingPairs(id, configuration),
+      indentationRules: this.convertIndentationRules(configuration.indentationRules),
+      autoCloseBefore: configuration.autoCloseBefore,
+      colorizedBracketPairs: this.extractValidColorizedBracketPairs(id, configuration),
+      onEnterRules: this.extractValidOnEnterRules(id, configuration),
+    };
+  }
+
   async registerLanguages(languages: LanguagesContribution[], extPath: URI) {
     this.dynamicLanguages.push(
       ...languages.map((language) => ({
@@ -152,7 +176,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       })),
     );
 
-    ModesRegistry.setDynamicLanguages(this.dynamicLanguages);
+    for (const language of this.dynamicLanguages) {
+      ModesRegistry.registerLanguage(language);
+    }
 
     const languageIds: string[] = [];
 
@@ -166,7 +192,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
         let configuration: LanguageConfiguration | undefined;
         if (typeof language.resolvedConfiguration === 'object') {
-          configuration = await language.resolvedConfiguration;
+          const config = await language.resolvedConfiguration;
+          configuration = this.reviveLanguageConfiguration(language.id, config);
         } else if (language.configuration) {
           // remove `./` prefix
           const langPath = language.configuration.replace(/^\.\//, '');
@@ -175,24 +202,15 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
           const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
           const content = ret.content;
           if (content) {
-            const jsonContent = this.safeParseJSON<LanguageConfiguration>(content);
+            const jsonContent = this.safeParseJSON<LanguageConfigurationDto>(content);
             if (jsonContent) {
-              configuration = jsonContent;
+              configuration = this.reviveLanguageConfiguration(language.id, jsonContent);
             }
           }
         }
 
         if (configuration) {
-          // FIXME: type for wordPattern/indentationRules
-          monaco.languages.setLanguageConfiguration(language.id, {
-            wordPattern: this.createRegex(configuration.wordPattern),
-            autoClosingPairs: this.extractValidAutoClosingPairs(language.id, configuration),
-            brackets: this.extractValidBrackets(language.id, configuration),
-            comments: this.extractValidCommentRule(language.id, configuration),
-            folding: this.convertFolding(configuration.folding),
-            surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
-            indentationRules: this.convertIndentationRules(configuration.indentationRules as any),
-          });
+          monaco.languages.setLanguageConfiguration(language.id, configuration);
         }
 
         languageIds.push(language.id);
@@ -204,7 +222,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       for (const uri of uris) {
         const model = this.editorDocumentModelService.getModelReference(URI.parse(uri.codeUri.toString()));
         if (model && model.instance) {
-          const langId = model.instance.getMonacoModel().getModeId();
+          const langId = model.instance.getMonacoModel().getLanguageId();
           if (languageIds.includes(langId)) {
             this.activateLanguage(langId);
           }
@@ -350,9 +368,25 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   // 字符串转正则
-  private createRegex(value: string | RegExp | undefined): RegExp | undefined {
+  private createRegex(value?: IRegExp): RegExp | undefined {
     if (typeof value === 'string') {
       return new RegExp(value, '');
+    }
+
+    if (isObject(value)) {
+      if (typeof value.pattern !== 'string') {
+        return undefined;
+      }
+
+      if (typeof value.flags !== 'undefined' && typeof value.flags !== 'string') {
+        return undefined;
+      }
+
+      try {
+        return new RegExp(value.pattern, value.flags);
+      } catch (err) {
+        return undefined;
+      }
     }
     return undefined;
   }
@@ -369,7 +403,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   // 将foldingRule里的字符串转为正则
-  private convertFolding(folding?: FoldingRules): FoldingRules | undefined {
+  private convertFolding(folding?: IndentationRuleDto): FoldingRules | undefined {
     if (!folding) {
       return undefined;
     }
@@ -379,8 +413,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
     if (folding.markers) {
       result.markers = {
-        end: this.createRegex(folding.markers.end)!,
-        start: this.createRegex(folding.markers.start)!,
+        end: folding.markers.end!,
+        start: folding.markers.start!,
       };
     }
 
@@ -388,7 +422,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   // 字符串定义转正则
-  private convertIndentationRules(rules?: IndentationRule): IndentationRule | undefined {
+  private convertIndentationRules(rules?: IIndentationRule): IndentationRule | undefined {
     if (!rules) {
       return undefined;
     }
@@ -452,7 +486,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
   private extractValidSurroundingPairs(
     languageId: string,
-    configuration: LanguageConfiguration,
+    configuration: LanguageConfigurationDto,
   ): IAutoClosingPair[] | undefined {
     if (!configuration) {
       return;
@@ -504,7 +538,121 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return result;
   }
 
-  private extractValidBrackets(languageId: string, configuration: LanguageConfiguration): CharacterPair[] | undefined {
+  private extractValidColorizedBracketPairs(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): CharacterPair[] | undefined {
+    const source = configuration.colorizedBracketPairs;
+    if (typeof source === 'undefined') {
+      return undefined;
+    }
+    if (!Array.isArray(source)) {
+      this.logger.warn(`[${languageId}]: language configuration: expected \`colorizedBracketPairs\` to be an array.`);
+      return undefined;
+    }
+
+    const result: CharacterPair[] = [];
+    for (let i = 0, len = source.length; i < len; i++) {
+      const pair = source[i];
+      if (!isCharacterPair(pair)) {
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`colorizedBracketPairs[${i}]\` to be an array of two strings.`,
+        );
+        continue;
+      }
+      result.push([pair[0], pair[1]]);
+    }
+    return result;
+  }
+
+  private extractValidOnEnterRules(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): OnEnterRule[] | undefined {
+    const source = configuration.onEnterRules;
+    if (typeof source === 'undefined') {
+      return undefined;
+    }
+    if (!Array.isArray(source)) {
+      this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules\` to be an array.`);
+      return undefined;
+    }
+
+    let result: OnEnterRule[] | undefined;
+    for (let i = 0, len = source.length; i < len; i++) {
+      const onEnterRule = source[i];
+      if (!isObject(onEnterRule)) {
+        this.logger.warn(`[${languageId}]: language configuration: expected \`onEnterRules[${i}]\` to be an object.`);
+        continue;
+      }
+      if (!isObject(onEnterRule.action)) {
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action\` to be an object.`,
+        );
+        continue;
+      }
+      let indentAction: IndentAction;
+      if (onEnterRule.action.indent === 'none') {
+        indentAction = IndentAction.None;
+      } else if (onEnterRule.action.indent === 'indent') {
+        indentAction = IndentAction.Indent;
+      } else if (onEnterRule.action.indent === 'indentOutdent') {
+        indentAction = IndentAction.IndentOutdent;
+      } else if (onEnterRule.action.indent === 'outdent') {
+        indentAction = IndentAction.Outdent;
+      } else {
+        this.logger.warn(
+          `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.indent\` to be 'none', 'indent', 'indentOutdent' or 'outdent'.`,
+        );
+        continue;
+      }
+      const action: EnterAction = { indentAction };
+      if (onEnterRule.action.appendText) {
+        if (typeof onEnterRule.action.appendText === 'string') {
+          action.appendText = onEnterRule.action.appendText;
+        } else {
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.appendText\` to be undefined or a string.`,
+          );
+        }
+      }
+      if (onEnterRule.action.removeText) {
+        if (typeof onEnterRule.action.removeText === 'number') {
+          action.removeText = onEnterRule.action.removeText;
+        } else {
+          this.logger.warn(
+            `[${languageId}]: language configuration: expected \`onEnterRules[${i}].action.removeText\` to be undefined or a number.`,
+          );
+        }
+      }
+      const beforeText = this.createRegex(onEnterRule.beforeText);
+      if (!beforeText) {
+        continue;
+      }
+      const resultingOnEnterRule: OnEnterRule = { beforeText, action };
+      if (onEnterRule.afterText) {
+        const afterText = this.createRegex(onEnterRule.afterText);
+        if (afterText) {
+          resultingOnEnterRule.afterText = afterText;
+        }
+      }
+      if (onEnterRule.previousLineText) {
+        const previousLineText = this.createRegex(onEnterRule.previousLineText);
+        if (previousLineText) {
+          resultingOnEnterRule.previousLineText = previousLineText;
+        }
+      }
+      result = result || [];
+      result.push(resultingOnEnterRule);
+    }
+
+    return result;
+  }
+
+  private extractValidBrackets(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): CharacterPair[] | undefined {
     const source = configuration.brackets;
     if (typeof source === 'undefined') {
       return undefined;
@@ -532,7 +680,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
   private extractValidAutoClosingPairs(
     languageId: string,
-    configuration: LanguageConfiguration,
+    configuration: LanguageConfigurationDto,
   ): IAutoClosingPairConditional[] | undefined {
     const source = configuration.autoClosingPairs;
     if (typeof source === 'undefined') {
@@ -589,7 +737,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return result;
   }
 
-  private extractValidCommentRule(languageId: string, configuration: LanguageConfiguration): CommentRule | undefined {
+  private extractValidCommentRule(
+    languageId: string,
+    configuration: LanguageConfigurationDto,
+  ): CommentRule | undefined {
     const source = configuration.comments;
     if (typeof source === 'undefined') {
       return undefined;

@@ -12,6 +12,7 @@ export enum MenuId {
   DebugToolBar = 'debug/toolbar',
   EditorContext = 'editor/context',
   EditorTitle = 'editor/title',
+  EditorTitleRun = 'editor/title/run',
   EditorTitleContext = 'editor/title/context',
   EmptyEditorGroupContext = 'empty/editor/group/context',
   ExplorerContext = 'explorer/context',
@@ -35,6 +36,7 @@ export enum MenuId {
   TerminalNewDropdownContext = 'terminal/newDropdown/context',
   TerminalTabContext = 'terminal/tab/context',
   TerminalPanelContext = 'terminal/panel/context',
+  TerminalDefaultTypeMenu = 'terminal/menu/context',
   OpenEditorsContext = 'open/editors/context',
   ProblemsPanelContext = 'problems/panel/context',
   SCMChangeTitle = 'scm/change/title',
@@ -61,6 +63,8 @@ export enum MenuId {
   CommentsCommentTitle = 'comments/comment/title',
   // The contributed comment context menu, rendered as buttons below the comment editor
   CommentsCommentContext = 'comments/comment/context',
+  CommentReactionSwitcherMenu = 'comment/reaction/switcher/menu',
+  CommentReactionSwitcherSubmenu = 'comment/reaction/switcher/submenu',
   // ToolbarLocation
   KTToolbarLocationContext = 'kt/toolbar/context',
   // 插件市场未搜索到结果
@@ -68,6 +72,10 @@ export enum MenuId {
   // Testing glyph margin
   TestingGlyphMarginContext = 'testing/glyphMargin/context',
   TestPeekTitleContext = 'testing/outputPeek/title/context',
+  // OpenType
+  OpenTypeSubmenuContext = 'editor/openType/submenu',
+  // accordion
+  AccordionContext = 'accordion',
 }
 
 export function getTabbarCommonMenuId(location: string) {

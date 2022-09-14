@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../tools/playwright/src",
+    "outDir": "../../../tools/playwright/lib"
+  },
+  "include": ["../../../tools/playwright/src"],
+  "exclude": ["../../../tools/playwright/src/tests/workspaces"]
+}

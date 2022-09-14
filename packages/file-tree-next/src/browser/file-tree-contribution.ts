@@ -28,6 +28,7 @@ import {
   Throttler,
   match,
   Schemes,
+  TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { FilesExplorerFilteredContext } from '@opensumi/ide-core-browser/lib/contextkey/explorer';
 import {
@@ -47,7 +48,6 @@ import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explor
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { IOpenDialogOptions, IWindowDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
-import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
 import { DEFAULT_WORKSPACE_SUFFIX_NAME, IWorkspaceService, UNTITLED_WORKSPACE } from '@opensumi/ide-workspace';
 
 import { IFileTreeService, PasteTypes, RESOURCE_VIEW_ID } from '../common';
@@ -721,6 +721,7 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
       execute: async (uri) => {
+        if (!uri) {return;}
         const copyUri: URI = uri;
         let pathStr: string = decodeURIComponent(copyUri.path.toString());
         // windows下移除路径前的 /
@@ -734,6 +735,7 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
       execute: async (uri) => {
+        if (!uri) {return;}
         let rootUri: URI;
         if (this.fileTreeService.isMultipleWorkspace) {
           // 多工作区额外处理

@@ -38,17 +38,11 @@ import {
   ITerminalConnection,
   ITerminalExternalLinkProvider,
   ICreateTerminalOptions,
-  ITerminalProfile,
   IShellLaunchConfig,
   ITerminalProfileInternalService,
 } from '../common';
 import { EnvironmentVariableServiceToken, IEnvironmentVariableService } from '../common/environmentVariable';
-import {
-  SupportedOptions,
-  ITerminalPreference,
-  CodeTerminalSettingId,
-  SupportedOptionsName,
-} from '../common/preference';
+import { SupportedOptions, ITerminalPreference, CodeTerminalSettingId } from '../common/preference';
 
 import { TerminalLinkManager } from './links/link-manager';
 import { AttachAddon, DEFAULT_COL, DEFAULT_ROW } from './terminal.addon';
@@ -114,7 +108,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   protected readonly view: ITerminalGroupViewService;
 
   @Autowired(ITerminalPreference)
-  protected readonly preference: ITerminalPreference;
+  protected readonly terminalPreference: ITerminalPreference;
 
   @Autowired(TerminalKeyBoardInputService)
   protected readonly keyboard: TerminalKeyBoardInputService;
@@ -173,7 +167,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
         xtermOptions: {
           theme: this.theme.terminalTheme,
           ...this.internalService.getOptions(),
-          ...this.preference.toJSON(),
+          ...this.terminalPreference.toJSON(),
         },
       },
     ]);
@@ -184,11 +178,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
       this.internalService.onError((error) => {
         this.messageService.error(error.message);
         if (error.launchConfig?.executable) {
-          this.updateOptions({
+          this.updateTerminalName({
             name: 'error: ' + error.launchConfig.executable,
           });
         } else {
-          this.updateOptions({
+          this.updateTerminalName({
             name: 'error',
           });
         }
@@ -222,7 +216,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
 
     this.addDispose(
-      this.preference.onChange(async ({ name, value }) => {
+      this.terminalPreference.onChange(async ({ name, value }) => {
         if (!widget.show && !this._show) {
           this._show = new Deferred();
         }
@@ -272,53 +266,12 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     );
   }
 
-  /**
-   * 目前 core 内不再有代码调用这个函数，只有测试用例中会调用这里。
-   * 后续移除掉该函数
-   * @deprecated Please use `init2` instead.
-   */
-  async init(widget: IWidget, options: TerminalOptions = {}) {
-    this._terminalOptions = options;
-    await this.init2(widget, {
-      config: this.controller.convertTerminalOptionsToLaunchConfig(options),
-    });
-  }
-  convertProfileToLaunchConfig(
-    shellLaunchConfigOrProfile: IShellLaunchConfig | ITerminalProfile | undefined,
-    cwd?: Uri | string,
-  ): IShellLaunchConfig {
-    if (!shellLaunchConfigOrProfile) {
-      return {};
-    }
-    // Profile was provided
-    if (shellLaunchConfigOrProfile && 'profileName' in shellLaunchConfigOrProfile) {
-      const profile = shellLaunchConfigOrProfile;
-      if (!profile.path) {
-        return shellLaunchConfigOrProfile;
-      }
-      return {
-        executable: profile.path,
-        args: profile.args,
-        env: profile.env,
-        // icon: profile.icon,
-        color: profile.color,
-        name: profile.overrideName ? profile.profileName : undefined,
-        cwd,
-      };
-    }
-
-    if (cwd) {
-      shellLaunchConfigOrProfile.cwd = cwd;
-    }
-    return shellLaunchConfigOrProfile;
-  }
-
   async init2(widget: IWidget, options?: ICreateTerminalOptions) {
     this._uid = options?.id || widget.id;
     this.setupWidget(widget);
 
     if (!options || Object.keys(options).length === 0) {
-      // 应该是必定能 resolve 到 profile 的
+      // Must be able to resolve a profile
       const defaultProfile = await this.terminalProfileInternalService.resolveDefaultProfile();
       options = {
         id: this._uid,
@@ -328,7 +281,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     await this._checkWorkspace();
 
     const cwd = options.cwd ?? (options?.config as IShellLaunchConfig)?.cwd ?? this._workspacePath;
-    const launchConfig = this.convertProfileToLaunchConfig(options.config, cwd);
+    const launchConfig = this.controller.convertProfileToLaunchConfig(options.config, cwd);
     this._launchConfig = launchConfig;
     if (this._launchConfig.__fromTerminalOptions) {
       this._terminalOptions = this._launchConfig.__fromTerminalOptions;
@@ -373,8 +326,8 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     return this.internalService.getProcessId(this.id);
   }
 
-  get options() {
-    return this._terminalOptions;
+  get launchConfig(): IShellLaunchConfig {
+    return this._launchConfig;
   }
 
   get createOptions() {
@@ -490,10 +443,10 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   }
 
   _prepare() {
-    this._attached?.reject();
-    this._firstStdout?.reject();
-    this._error?.reject();
-    this._show?.reject();
+    this._attached?.reject('TerminalClient is Re-initialization');
+    this._firstStdout?.reject('TerminalClient is Re-initialization');
+    this._error?.reject('TerminalClient is Re-initialization');
+    this._show?.reject('TerminalClient is Re-initialization');
     this._ready = false;
     this._hasOutput = false;
     this._attached = new Deferred<void>();
@@ -566,11 +519,11 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private async attach() {
     if (!this._ready) {
-      return this._doAttach2();
+      return this._doAttach();
     }
   }
 
-  private async _doAttach2() {
+  private async _doAttach() {
     const sessionId = this.id;
     const { rows = DEFAULT_ROW, cols = DEFAULT_COL } = this.xterm.raw;
 
@@ -633,9 +586,9 @@ export class TerminalClient extends Disposable implements ITerminalClient {
      * 这种情况可能会报错
      */
     try {
-      this.xterm.raw.setOption(name, value);
+      this.xterm.raw.options[name] = value;
       this._layout();
-    } catch {
+    } catch (_e) {
       /** nothing */
     }
   }
@@ -652,7 +605,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     if (this.xterm.raw.element) {
       try {
         this.xterm.fit();
-      } catch {
+      } catch (_e) {
         // noop
       }
     }
@@ -725,11 +678,14 @@ export class TerminalClient extends Disposable implements ITerminalClient {
   updateTheme() {
     return this.xterm.updateTheme(this.theme.terminalTheme);
   }
+  updateLaunchConfig(launchConfig: IShellLaunchConfig) {
+    this._launchConfig = {
+      ...this._launchConfig,
+      ...launchConfig,
+    };
+  }
 
-  updateOptions(options: TerminalOptions) {
-    this._terminalOptions = { ...this._terminalOptions, ...options };
-    this._launchConfig = this.controller.convertTerminalOptionsToLaunchConfig(this._terminalOptions);
-
+  updateTerminalName(options: { name: string }) {
     if (!this.name && !this._widget.name) {
       this._widget.name = options.name || this.name;
     }
@@ -761,25 +717,6 @@ export class TerminalClientFactory {
   /**
    * 创建 terminal 实例最终都会调用该方法
    */
-  static async createClient(injector: Injector, widget: IWidget, options?: TerminalOptions) {
-    // 每一个 widget.id 对应一个 TerminalClient
-    // 但是 TerminalClient 内部又依赖了一堆的其他要注入的，所以这里新创建一个 child injector
-    // 让 TerminalClient 依赖的所有类都重新初始化一遍
-
-    const child = injector.createChild([
-      {
-        token: TerminalClient,
-        useClass: TerminalClient,
-      },
-    ]);
-
-    const client = child.get(TerminalClient);
-    await client.init(widget, options);
-    return client;
-  }
-  /**
-   * 创建 terminal 实例最终都会调用该方法
-   */
   static async createClient2(injector: Injector, widget: IWidget, options?: ICreateTerminalOptions) {
     const child = injector.createChild([
       {
@@ -793,9 +730,6 @@ export class TerminalClientFactory {
     return client;
   }
 }
-
-export const createTerminalClientFactory = (injector: Injector) => (widget: IWidget, options?: TerminalOptions) =>
-  TerminalClientFactory.createClient(injector, widget, options);
 
 export const createTerminalClientFactory2 =
   (injector: Injector) => (widget: IWidget, options?: ICreateTerminalOptions) =>

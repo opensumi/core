@@ -1,3 +1,5 @@
+import { browserViews } from './contributes/zh-CN.lang';
+
 export const localizationBundle = {
   languageId: 'zh-CN',
   languageName: 'Chinese',
@@ -112,6 +114,8 @@ export const localizationBundle = {
     'editor.lineHeight': '行高',
     'editor.lineHeight.description':
       '控制行高。\r\n - 使用 0 根据字号自动计算行高。\r\n - 介于 0 和 8 之间的值将用作字号的乘数。\r\n - 大于 8 的值将用作有效值。',
+    'editor.copyPath': '复制路径',
+    'editor.copyRelativePath': '复制相对路径',
 
     'editor.workspaceSymbol.quickopen': '搜索工作区符号',
     'editor.workspaceSymbolClass.quickopen': '搜索工作区类',
@@ -171,7 +175,7 @@ export const localizationBundle = {
     'search.excludes.default.enable': '启用默认排除项',
     'search.replaceAll.label': '替换全部',
     'search.replace.label': '替换为',
-    'search.files.result.kt': '找到 {1} 个文件，共 {0} 个结果',
+    'search.files.result': '找到 {1} 个文件，共 {0} 个结果',
     'search.CollapseDeepestExpandedLevelAction.label': '全部折叠',
     'search.ExpandDeepestExpandedLevelAction.label': '全部展开',
     'search.ClearSearchResultsAction.label': '清空搜索结果',
@@ -264,7 +268,10 @@ export const localizationBundle = {
     'debug.console.copyAll': '复制全部',
     'debug.console.collapseAll': '折叠全部',
     'debug.console.followLink': '按住 {0} 并单击可访问链接',
+    'debug.console.errorMessage': '调试进程初始化异常，请打开控制面板查看错误日志',
     'debug.console.input.placeholder': '请发起调试会话来对表达式求值',
+    'debug.notSupported.type': '调试类型 "{0}" 不是支持的调试类型，请检查配置或安装对应调试插件',
+    'debug.notSupported.any': '当前调试配置不支持，请检查配置或安装对应调试插件',
 
     'output.tabbar.title': '输出',
     'output.channel.none': '<还没有任何输出>',
@@ -285,6 +292,8 @@ export const localizationBundle = {
     'debug.watch.title': '监视',
     'debug.callStack.title': '堆栈',
     'debug.variables.title': '变量',
+    'debug.variables.view.memory': '查看二进制视图',
+    'debug.variables.view.memory.prompt.hexEditor.notInstalled': '查看二进制视图需要安装 Hex Editor 扩展',
     'debug.breakpoints.title': '断点',
     'debug.container.title': '调试管理器',
     'debug.breakpoint.toggle': '启用/禁用断点',
@@ -322,6 +331,7 @@ export const localizationBundle = {
     'debug.menu.add.conditional': '添加条件断点',
     'debug.menu.add.breakpoint': '添加断点',
     'debug.menu.disable.logpoint': '禁用记录点',
+    'debug.menu.title.run': '运行或调试...',
     'debug.stack.frame.noSource': '未知源',
     'debug.stack.frame.because': '因',
     'debug.stack.frame.stopped': '已暂停',
@@ -488,6 +498,8 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} 不是有效选项',
 
+    'editor.saveAll': '保存全部',
+
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
     'editor.configuration.renderLineHighlight': '控制编辑器的当前行突出显示方式。',
@@ -531,6 +543,7 @@ export const localizationBundle = {
     'editor.closeEditorsInOtherGroups': '关闭其他组中的编辑器',
     'editor.resetEditorGroups': '重置编辑器组大小',
     'editor.revert': '还原文档',
+    'editor.experimental.stickyScroll.enabled.description': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
 
     'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
     'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',
@@ -660,6 +673,7 @@ export const localizationBundle = {
     'terminal.openWithPath': '在终端中打开',
     'terminal.remove': '终止终端',
     'terminal.relaunch': '重启终端',
+    'terminal.menu.clearGroups': '清除所有终端',
     'terminal.menu.search': '搜索',
     'terminal.menu.split': '拆分终端',
     'terminal.menu.rename': '重命名',
@@ -718,6 +732,7 @@ export const localizationBundle = {
     'keymaps.header.source.title': '作用域',
     'keymaps.header.keybinding.title': '快捷键',
     'keymaps.header.when.title': '条件',
+    'keymaps.commandId.title': '命令 ID：{0}',
 
     'keymaps.source.default': '默认',
     'keymaps.source.user': '用户',
@@ -739,10 +754,13 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.toggle': '切换面板',
+    'layout.tabbar.toggle': '隐藏面板',
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
+    'layout.action.openView': '打开视图 ...',
+    'layout.openView.containerTitle': '侧边栏 / 面板',
+    'layout.openView.viewTitle': '{0} / 视图',
     'status-bar.label.line': '行',
     'status-bar.label.column': '列',
     'status-bar.label.selected': '已选择',
@@ -790,6 +808,8 @@ export const localizationBundle = {
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
 
+    'output.channel.clear': '清除输出面板的内容',
+
     'app.quit': '退出',
 
     'view.zoomReset': '重置窗口缩放',
@@ -801,6 +821,7 @@ export const localizationBundle = {
     'extension.invalidExthostReload.confirm.cancel': '继续使用其他功能',
     'extension.crashedExthostReload.confirm': '插件进程异常退出，是否重启插件进程',
     'extension.exthostRestarting.content': '插件进程重启中...',
+    'extension.host.restart': '重启插件主进程',
 
     'extension.no.view.found': '找不到插件 {0} 注册的视图组件。\n 请确保插件中已经导出名为 {1} 的组件。',
     'extension.profilingExtensionHost': '分析扩展主机',
@@ -829,6 +850,7 @@ export const localizationBundle = {
     'TaskService.pickRunTask': '选择要运行的任务',
     'TerminalTaskSystem.terminalName': '任务 - {0}',
     'terminal.integrated.exitedWithCode': '终端进程已终止，退出代码: {0}',
+    // reuseTerminal: '终端将被任务重用，按 r 键重新执行该任务，按其他任意键关闭。',
     reuseTerminal: '终端将被任务重用，按任意键关闭。',
 
     'toolbar-customize.buttonDisplay.description': '按钮展示形式',
@@ -976,6 +998,7 @@ export const localizationBundle = {
     'editor.suggest.showVariables': '启用后，IntelliSense 将显示“变量”建议。',
     'editor.suggest.maxVisibleSuggestions': '控制 IntelliSense 在显示滚动条之前将显示的建议数量（最多 15 个）。',
     'editor.suggest.preview': '启用或禁用建议预览的呈现。',
+    'editor.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
     'editor.guides.indentation': '控制编辑器是否显示缩进参考线。',
     'editor.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
@@ -993,9 +1016,23 @@ export const localizationBundle = {
     'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
     'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
 
-    'connection.start.rtt': '开发人员工具：查看通信延迟',
-    'connection.stop.rtt': '开发人员工具：关闭通信延迟检查',
+    'command.category.developerTools': '开发人员工具',
+
+    'connection.start.rtt': '查看通信延迟',
+    'connection.stop.rtt': '关闭通信延迟检查',
 
     'debug.terminal.label': '创建 Javascript Debug Terminal',
+    'debug.terminal.title': '调试进程',
+    'workbench.action.tasks.runTask': '运行任务',
+    'workbench.action.tasks.reRunTask': '执行上次运行的任务',
+    'workbench.action.tasks.restartTask': '重新开始运行中的任务',
+    'workbench.action.tasks.terminate': '终止任务',
+    'workbench.action.tasks.showTasks': '展示任务',
+    'workbench.action.tasks.showLog': '展示任务日志',
+
+    'task.contribute': '贡献',
+    'task.cannotFindTask': '未找到 {0} 的任务，按回车键返回',
+    // extension contribute
+    ...browserViews,
   },
 };

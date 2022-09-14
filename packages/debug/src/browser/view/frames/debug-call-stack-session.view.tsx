@@ -189,51 +189,49 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         debugCallStackService.handleContextMenu(event, session)
       }
     >
-      <div style={{ paddingLeft: indent * 10 + 'px' }}>
-        {mutipleSession && (
-          <div
-            className={styles.debug_stack_item_label}
-            onMouseEnter={() => setHover(true)}
-            onMouseLeave={() => setHover(false)}
-          >
-            {(supportsThreadIdCorrespond || threads.length > 0) && (
-              <>
-                <div className={unfold ? getIcon('down') : getIcon('right')} onClick={() => setUnfold(!unfold)}></div>
-                <div className={cls([getIcon('debug'), styles.debug_session_icon])}></div>
-              </>
-            )}
-            <div className={styles.debug_stack_item_label_title}>{session.label}</div>
-            {hover && <DebugStackOperationView session={session} />}
-          </div>
-        )}
-        {supportsThreadIdCorrespond && unfold
-          ? multipleThreadPaused.map((t) => (
-              <DebugStackThreadView
-                key={t.id}
-                indent={mutipleSession ? 16 : 0}
-                viewState={viewState}
-                thread={t}
-                session={session}
-              />
-            ))
-          : null}
-        {!supportsThreadIdCorrespond &&
-          (!mutipleSession || unfold) &&
-          threads.map((thread) => (
+      {mutipleSession && (
+        <div
+          className={styles.debug_stack_item_label}
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
+        >
+          {(supportsThreadIdCorrespond || threads.length > 0) && (
+            <>
+              <div className={unfold ? getIcon('down') : getIcon('right')} onClick={() => setUnfold(!unfold)}></div>
+              <div className={cls([getIcon('debug'), styles.debug_session_icon])}></div>
+            </>
+          )}
+          <div className={styles.debug_stack_item_label_title}>{session.label}</div>
+          {hover && <DebugStackOperationView session={session} />}
+        </div>
+      )}
+      {supportsThreadIdCorrespond && unfold
+        ? multipleThreadPaused.map((t) => (
             <DebugStackThreadView
-              key={thread.id}
+              key={t.id}
               indent={mutipleSession ? 16 : 0}
               viewState={viewState}
-              thread={thread}
+              thread={t}
               session={session}
             />
-          ))}
-        {subSession.length > 0 &&
-          subSession.map(
-            (s) => unfold && <DebugStackSessionView key={s.id} viewState={viewState} session={s} indent={1} />,
-          )}
-        {renderLoadMoreThread()}
-      </div>
+          ))
+        : null}
+      {!supportsThreadIdCorrespond &&
+        (!mutipleSession || unfold) &&
+        threads.map((thread) => (
+          <DebugStackThreadView
+            key={thread.id}
+            indent={mutipleSession ? 16 : 0}
+            viewState={viewState}
+            thread={thread}
+            session={session}
+          />
+        ))}
+      {subSession.length > 0 &&
+        subSession.map(
+          (s) => unfold && <DebugStackSessionView key={s.id} viewState={viewState} session={s} indent={1} />,
+        )}
+      {renderLoadMoreThread()}
     </div>
   );
 };

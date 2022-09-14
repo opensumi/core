@@ -42,6 +42,17 @@
   }
 }
 
+.validate_warning {
+  color: var(--inputValidation-warningForeground);
+  background-color: var(--inputValidation-warningBackground);
+
+  .item_selected,
+  .item_selected:hover,
+  .item:hover {
+    background-color: var(--inputValidation-warningBackground);
+  }
+}
+
 .item {
   display: flex;
   align-items: center;

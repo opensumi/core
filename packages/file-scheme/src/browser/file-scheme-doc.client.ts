@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
+import { CancellationToken, IEditorDocumentModelSaveResult } from '@opensumi/ide-core-browser';
 
+import { CancellationTokenSource } from '../../../utils/lib';
 import {
   IFileSchemeDocNodeService,
   FileSchemeDocNodeServicePath,
@@ -19,8 +20,9 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
     change: IContentChange,
     encoding?: string | undefined,
     force?: boolean | undefined,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult> {
-    return this.fileDocBackendService.$saveByChange(uri, change, encoding, force);
+    return this.fileDocBackendService.$saveByChange(uri, change, encoding, force, token);
   }
 
   saveByContent(
@@ -28,8 +30,9 @@ export class FileSchemeDocClientService implements IFileSchemeDocClient {
     content: ISavingContent,
     encoding?: string | undefined,
     force?: boolean | undefined,
+    token?: CancellationToken,
   ): Promise<IEditorDocumentModelSaveResult> {
-    return this.fileDocBackendService.$saveByContent(uri, content, encoding, force);
+    return this.fileDocBackendService.$saveByContent(uri, content, encoding, force, token);
   }
 
   getMd5(uri: string, encoding?: string | undefined): Promise<string | undefined> {

@@ -187,3 +187,8 @@ export enum OperatingSystem {
   Macintosh = 2,
   Linux = 3,
 }
+
+export const userAgent = typeof navigator === 'object' ? navigator.userAgent : null;
+
+export const isChrome = userAgent?.indexOf('Chrome')! >= 0;
+export const isSafari = !isChrome && userAgent?.indexOf('Safari')! >= 0;

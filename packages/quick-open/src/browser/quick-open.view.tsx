@@ -11,7 +11,8 @@ import {
   ValidateInput,
   VALIDATE_TYPE,
 } from '@opensumi/ide-components';
-import { Key, KeyCode, useInjectable, localize } from '@opensumi/ide-core-browser';
+import { Key, KeyCode, useInjectable, localize, isUndefined } from '@opensumi/ide-core-browser';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import {
   HideReason,
   QuickInputButton,
@@ -121,7 +122,7 @@ export const QuickOpenInput = observer(() => {
   }, [widget.valueSelection]);
 
   const validateMessage = React.useMemo(() => {
-    if (widget.validateType) {
+    if (!isUndefined(widget.validateType)) {
       return {
         type: widget.validateType,
         message: '',
@@ -153,6 +154,7 @@ export const QuickOpenInput = observer(() => {
         value={widget.inputValue}
         readOnly={!widget.inputEnable}
         onChange={onChange}
+        id={VIEW_CONTAINERS.QUICKPICK_INPUT}
       />
       {widget.canSelectMany && (
         <Button className={styles.input_button} onClick={handleConfirm}>
@@ -229,13 +231,18 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
 
   return (
     <div
+      id={VIEW_CONTAINERS.QUICKPICK_ITEM}
       tabIndex={0}
-      className={clx(styles.item, {
-        [styles.item_selected]: widget.selectIndex === index,
-        [styles.item_border]: showBorder,
-      })}
+      className={clx(
+        {
+          [styles.item_selected]: widget.selectIndex === index,
+          [styles.item_border]: showBorder,
+        },
+        styles.item,
+      )}
       onMouseEnter={() => setMouseOver(true)}
       onMouseLeave={() => setMouseOver(false)}
+      aria-label={label}
     >
       {widget.canSelectMany && (
         <CheckBox
@@ -317,6 +324,7 @@ export const QuickOpenList: React.FC<{
       onScroll={onScroll}
       className={clx(styles.quickopen_list, {
         [styles.validate_error]: widget.validateType === VALIDATE_TYPE.ERROR,
+        [styles.validate_warning]: widget.validateType === VALIDATE_TYPE.WARNING,
       })}
       data={widget.items}
       template={QuickOpenItemView}
@@ -512,7 +520,7 @@ export const QuickOpenView = observer(() => {
   }, []);
 
   return widget.isShow ? (
-    <div tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
+    <div id={VIEW_CONTAINERS.QUICKPICK} tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
       {widget.renderTab?.()}

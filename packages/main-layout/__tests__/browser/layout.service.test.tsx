@@ -8,7 +8,6 @@ import {
   AppConfig,
   IContextKeyService,
   CommandRegistry,
-  ILoggerManagerClient,
   ViewContainerOptions,
   PreferenceService,
   Disposable,
@@ -17,7 +16,7 @@ import {
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
-import { CommonServerPath, Deferred, OS } from '@opensumi/ide-core-common';
+import { CommonServerPath, Deferred, ILoggerManagerClient, OS } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { MainLayoutModule } from '@opensumi/ide-main-layout/lib/browser';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
@@ -40,7 +39,7 @@ describe('main layout test', () => {
   const testContainerId = 'unique_container_id';
   const layoutNode = document.createElement('div');
   const rendered = new Deferred<void>();
-  document.getElementById('main')!.appendChild(layoutNode);
+  document.getElementById('main')?.appendChild(layoutNode);
 
   const timeoutIds: Set<NodeJS.Timer> = new Set();
 
@@ -94,7 +93,11 @@ describe('main layout test', () => {
       },
     };
 
-    injector.overrideProviders(
+    injector.addProviders(
+      {
+        token: ILoggerManagerClient,
+        useClass: MockLoggerManageClient,
+      },
       {
         token: IMainLayoutService,
         useClass: LayoutService,
@@ -119,10 +122,6 @@ describe('main layout test', () => {
           onPreferenceChanged: () => Disposable.create(() => {}),
           onSpecificPreferenceChange: (func: any) => Disposable.create(() => {}),
         },
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
       },
       {
         token: CommonServerPath,

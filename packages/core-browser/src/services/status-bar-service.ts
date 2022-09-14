@@ -7,6 +7,7 @@ export const IStatusBarService = Symbol('IStatusBarService');
 
 export interface IStatusBarService {
   getBackgroundColor(): string | undefined;
+  getColor(): string | undefined;
   setBackgroundColor(color?: string): void;
   setColor(color?: string): void;
   addElement(entryId: string, entry: StatusBarEntry): StatusBarEntryAccessor;

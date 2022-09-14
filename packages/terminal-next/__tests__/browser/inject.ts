@@ -7,17 +7,19 @@ import {
   CorePreferences,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
+import { MockLogger, MockLoggerManageClient, MockLoggerService } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   IEventBus,
   CommandService,
-  ILogger,
   IFileServiceClient,
   Disposable,
   OperatingSystem,
   CommandRegistry,
   CoreCommandRegistryImpl,
+  ILoggerManagerClient,
+  ILogServiceManager,
+  ILogger,
 } from '@opensumi/ide-core-common';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -28,7 +30,7 @@ import { IThemeService } from '@opensumi/ide-theme';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
-import { createTerminalClientFactory, createTerminalClientFactory2 } from '../../src/browser/terminal.client';
+import { createTerminalClientFactory2 } from '../../src/browser/terminal.client';
 import { TerminalController } from '../../src/browser/terminal.controller';
 import { TerminalInternalService } from '../../src/browser/terminal.internal.service';
 import { TerminalNetworkService } from '../../src/browser/terminal.network';
@@ -37,7 +39,6 @@ import { TerminalGroupViewService } from '../../src/browser/terminal.view';
 import {
   ITerminalService,
   ITerminalTheme,
-  ITerminalClientFactory,
   ITerminalClientFactory2,
   ITerminalController,
   ITerminalGroupViewService,
@@ -128,10 +129,6 @@ export const injector = new MockInjector([
     useValue: mockPreferences,
   },
   {
-    token: ITerminalClientFactory,
-    useFactory: createTerminalClientFactory,
-  },
-  {
     token: ITerminalClientFactory2,
     useFactory: createTerminalClientFactory2,
   },
@@ -142,10 +139,6 @@ export const injector = new MockInjector([
   {
     token: AppConfig,
     useValue: {},
-  },
-  {
-    token: ILogger,
-    useClass: MockLogger,
   },
   {
     token: IMessageService,
@@ -213,5 +206,17 @@ export const injector = new MockInjector([
   {
     token: IMenuRegistry,
     useClass: MenuRegistryImpl,
+  },
+  {
+    token: ILoggerManagerClient,
+    useClass: MockLoggerManageClient,
+  },
+  {
+    token: ILogServiceManager,
+    useClass: MockLoggerService,
+  },
+  {
+    token: ILogger,
+    useClass: MockLogger,
   },
 ]);

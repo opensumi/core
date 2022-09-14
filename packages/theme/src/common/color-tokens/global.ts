@@ -1,6 +1,6 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { registerColor } from '../color-registry';
+import { registerColor } from '../utils';
 
 // 全局聚焦状态边框颜色 包括 input
 export const focusBorder = registerColor(

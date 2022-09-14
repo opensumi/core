@@ -6,10 +6,19 @@ import {
   localize,
   IQuickInputService,
   IReporterService,
+  getIcon,
+  ClientAppContribution,
 } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { URI } from '@opensumi/ide-core-common';
-import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { CommandService, CUSTOM_EDITOR_SCHEME, IExtensionProps, URI } from '@opensumi/ide-core-common';
+import {
+  BrowserEditorContribution,
+  IResource,
+  ResourceService,
+  WorkbenchEditorService,
+} from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
@@ -17,17 +26,21 @@ import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { DEBUG_REPORT_NAME } from '../../../common';
 import { DEBUG_COMMANDS } from '../../debug-contribution';
+import { DebugMemoryFileSystemProvider } from '../../debug-memory';
+import { DebugViewModel } from '../debug-view-model';
 
 import {
   CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
   CONTEXT_IN_DEBUG_MODE,
   CONTEXT_SET_VARIABLE_SUPPORTED,
+  DEBUG_MEMORY_SCHEME,
+  CONTEXT_CAN_VIEW_MEMORY,
 } from './../../../common/constants';
 import { DebugWatchModelService } from './../watch/debug-watch-tree.model.service';
 import { DebugVariablesModelService } from './debug-variables-tree.model.service';
 
-@Domain(MenuContribution, CommandContribution)
-export class VariablesPanelContribution implements MenuContribution, CommandContribution {
+@Domain(ClientAppContribution, BrowserEditorContribution, MenuContribution, CommandContribution)
+export class VariablesPanelContribution implements BrowserEditorContribution, MenuContribution, CommandContribution {
   @Autowired(IQuickInputService)
   private readonly quickInputService: IQuickInputService;
 
@@ -45,6 +58,18 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
 
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
+  @Autowired(DebugViewModel)
+  private readonly viewModel: DebugViewModel;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: FileServiceClient;
+
+  @Autowired(DebugMemoryFileSystemProvider)
+  private readonly debugMemoryFileSystemProvider: DebugMemoryFileSystemProvider;
 
   registerCommands(registry: CommandRegistry) {
     registry.registerCommand(DEBUG_COMMANDS.SET_VARIABLE_VALUE, {
@@ -108,6 +133,55 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         }
       },
     });
+
+    const HEX_EDITOR_EXTENSION_ID = 'ms-vscode.hexeditor';
+    const HEX_EDITOR_EDITOR_ID = `${CUSTOM_EDITOR_SCHEME}-hexEditor.hexedit`;
+
+    registry.registerCommand(DEBUG_COMMANDS.VIEW_MEMORY_ID, {
+      execute: async (node: DebugProtocol.Variable) => {
+        const ext = await this.commandService.executeCommand<IExtensionProps>(
+          'extension.getDescription',
+          HEX_EDITOR_EXTENSION_ID,
+        );
+
+        if (ext && ext.enabled) {
+          const sessionId = this.viewModel.currentSession?.id;
+          const memoryReference = node.memoryReference;
+          this.workbenchEditorService.open(
+            URI.from({
+              scheme: DEBUG_MEMORY_SCHEME,
+              authority: sessionId,
+              path: '/' + encodeURIComponent(memoryReference || '') + '/memory.bin',
+            }),
+            {
+              disableNavigate: true,
+              preview: true,
+              forceOpenType: {
+                type: 'component',
+                componentId: HEX_EDITOR_EDITOR_ID,
+              },
+            },
+          );
+        } else {
+          this.messageService.warning(localize('debug.variables.view.memory.prompt.hexEditor.notInstalled'));
+        }
+      },
+    });
+  }
+
+  async initialize() {
+    this.fileSystem.registerProvider(DEBUG_MEMORY_SCHEME, this.debugMemoryFileSystemProvider);
+  }
+
+  registerResource(service: ResourceService) {
+    service.registerResourceProvider({
+      scheme: DEBUG_MEMORY_SCHEME,
+      provideResource: async (uri: URI): Promise<IResource<Partial<{ [prop: string]: any }>>> => ({
+        uri,
+        icon: getIcon('hex'),
+        name: uri.displayName,
+      }),
+    });
   }
 
   registerMenus(registry: IMenuRegistry) {
@@ -156,6 +230,15 @@ export class VariablesPanelContribution implements MenuContribution, CommandCont
         .reduce((p, c) => p + ' && ' + c, CONTEXT_IN_DEBUG_MODE.raw),
       group: 'debug',
       order: 1,
+    });
+    registry.registerMenuItem(MenuId.DebugVariablesContext, {
+      command: {
+        id: DEBUG_COMMANDS.VIEW_MEMORY_ID.id,
+        label: localize('debug.variables.view.memory'),
+      },
+      iconClass: '',
+      when: `${CONTEXT_CAN_VIEW_MEMORY.equalsTo(true)} && ${CONTEXT_IN_DEBUG_MODE.equalsTo(true)}`,
+      type: 'icon',
     });
   }
 }

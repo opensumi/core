@@ -1,35 +1,27 @@
 import { Injector } from '@opensumi/di';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter, CommandRegistry, CommandRegistryImpl, ILoggerManagerClient } from '@opensumi/ide-core-common';
+import { Emitter, CommandRegistry, CommandRegistryImpl } from '@opensumi/ide-core-common';
 import { MonacoCommandService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/command/command.service';
 import { ICommandServiceToken } from '@opensumi/ide-monaco/lib/browser/contrib/command';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 import { MainThreadCommands } from '../../src/browser/vscode/api/main.thread.commands';
 import { ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../src/common/vscode';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 
-
 describe('MainThreadCommandAPI Test Suites ', () => {
   let extHostCommands: ExtHostCommands;
   let mainThreadCommands: MainThreadCommands;
-  const injector = createBrowserInjector(
-    [],
-    new Injector([
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManagerClient,
-      },
-      {
-        token: ICommandServiceToken,
-        useClass: MonacoCommandService,
-      },
-      {
-        token: CommandRegistry,
-        useClass: CommandRegistryImpl,
-      },
-    ]),
+  const injector = createBrowserInjector([]);
+  injector.addProviders(
+    {
+      token: ICommandServiceToken,
+      useClass: MonacoCommandService,
+    },
+    {
+      token: CommandRegistry,
+      useClass: CommandRegistryImpl,
+    },
   );
 
   const emitterA = new Emitter<any>();

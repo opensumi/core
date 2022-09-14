@@ -1,6 +1,6 @@
 import { AppConfig, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { URI, IEventBus, Schemes, ILoggerManagerClient, Deferred } from '@opensumi/ide-core-common';
+import { URI, IEventBus, Schemes, Deferred } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-editor/lib/browser';
 import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
@@ -21,24 +21,10 @@ import { ResourceServiceImpl } from '../../src/browser/resource.service';
 describe('resource service tests', () => {
   const injector = createBrowserInjector([]);
 
-  injector.addProviders(
-    {
-      token: ResourceService,
-      useClass: ResourceServiceImpl,
-    },
-    {
-      token: ILoggerManagerClient,
-      useValue: {
-        getLogger: () => ({
-          log() {},
-          debug() {},
-          error() {},
-          verbose() {},
-          warn() {},
-        }),
-      },
-    },
-  );
+  injector.addProviders({
+    token: ResourceService,
+    useClass: ResourceServiceImpl,
+  });
 
   let data = 0;
 

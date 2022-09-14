@@ -18,7 +18,9 @@ describe('ExtensionStorage service should be work', () => {
     injector.overrideProviders(
       {
         token: IExtensionStorageServer,
-        useValue: {},
+        useValue: {
+          get: jest.fn(() => undefined),
+        },
       },
       {
         token: AppConfig,

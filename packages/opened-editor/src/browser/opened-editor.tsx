@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
-import { ViewState } from '@opensumi/ide-core-browser';
-import { localize } from '@opensumi/ide-core-browser';
+import {
+  RecycleTree,
+  IRecycleTreeHandle,
+  INodeRendererWrapProps,
+  TreeNodeType,
+  TreeModel,
+} from '@opensumi/ide-components';
+import { ViewState, CancellationToken, localize, CancellationTokenSource } from '@opensumi/ide-core-browser';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import styles from './index.module.less';
@@ -12,7 +18,9 @@ import { OpenedEditorModelService } from './services/opened-editor-model.service
 
 export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const OPEN_EDITOR_NODE_HEIGHT = 22;
-  const [isReady, setIsReady] = React.useState<boolean>(false);
+  const [isReady, setIsReady] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [model, setModel] = useState<TreeModel | null>();
 
   const { width, height } = viewState;
 
@@ -24,7 +32,6 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     openedEditorModelService.handleTreeHandler({
       ...handle,
-      getModel: () => openedEditorModelService.treeModel,
       hasDirectFocus: () => wrapperRef.current === document.activeElement,
     });
   };
@@ -57,18 +64,44 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
     enactiveFileDecoration();
   };
 
-  const ensureIsReady = async () => {
+  const ensureIsReady = async (token: CancellationToken) => {
     await openedEditorModelService.whenReady;
+    if (token.isCancellationRequested) {
+      return;
+    }
     if (openedEditorModelService.treeModel) {
+      setModel(openedEditorModelService.treeModel);
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
       // 这里需要重新取一下treeModel的值确保为最新的TreeModel
       await openedEditorModelService.treeModel.root.ensureLoaded();
+      if (token.isCancellationRequested) {
+        return;
+      }
     }
+    setIsLoading(false);
     setIsReady(true);
   };
 
+  useEffect(() => {
+    if (isReady) {
+      openedEditorModelService.onTreeModelChange(async (treeModel) => {
+        setIsLoading(true);
+        if (treeModel) {
+          // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+          await treeModel.root.ensureLoaded();
+        }
+        setModel(treeModel);
+        setIsLoading(false);
+      });
+    }
+  }, [isReady]);
+
   React.useEffect(() => {
-    ensureIsReady();
+    const tokenSource = new CancellationTokenSource();
+    ensureIsReady(tokenSource.token);
+    return () => {
+      tokenSource.cancel();
+    };
   }, []);
 
   React.useEffect(() => {
@@ -104,20 +137,26 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
     if (!isReady) {
       return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
     } else {
-      return (
-        <RecycleTree
-          height={height}
-          width={width}
-          itemHeight={OPEN_EDITOR_NODE_HEIGHT}
-          onReady={handleTreeReady}
-          model={openedEditorModelService.treeModel}
-          placeholder={() => (
-            <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>
-          )}
-        >
-          {renderTreeNode}
-        </RecycleTree>
-      );
+      if (isLoading) {
+        return <ProgressBar loading />;
+      } else if (model) {
+        return (
+          <RecycleTree
+            height={height}
+            width={width}
+            itemHeight={OPEN_EDITOR_NODE_HEIGHT}
+            onReady={handleTreeReady}
+            model={model}
+            placeholder={() => (
+              <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>
+            )}
+          >
+            {renderTreeNode}
+          </RecycleTree>
+        );
+      } else {
+        return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
+      }
     }
   };
 

@@ -1,6 +1,6 @@
 import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { MessageType, localize } from '@opensumi/ide-core-browser';
-import { IRange } from '@opensumi/ide-core-common';
+import { IRange, isDefined } from '@opensumi/ide-core-common';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -111,8 +111,11 @@ export class ExpressionTreeService {
     }
   }
 
-  // 可折叠节点展示优先级默认较低
   sortComparator(a: ITreeNodeOrCompositeTreeNode, b: ITreeNodeOrCompositeTreeNode) {
+    // 当存在 variablesReference 属性时，默认按大小进行排序
+    if (isDefined((a as any).variablesReference) && isDefined((b as any).variablesReference)) {
+      return (a as any).variablesReference - (b as any).variablesReference;
+    }
     if (a.constructor === b.constructor) {
       return a.name > b.name ? 1 : a.name < b.name ? -1 : 0;
     }
@@ -139,6 +142,7 @@ export class ExpressionNode extends TreeNode {
   public variablesReference: number;
   public namedVariables: number | undefined;
   public indexedVariables: number | undefined;
+  public memoryReference: string | undefined;
 
   constructor(options: ExpressionNode.Options, parent?: ExpressionContainer) {
     super(new ExpressionTreeService(options.session, options.source, options.line) as ITree, parent, undefined, {
@@ -147,6 +151,7 @@ export class ExpressionNode extends TreeNode {
     this.variablesReference = options.variablesReference || 0;
     this.namedVariables = options.namedVariables;
     this.indexedVariables = options.indexedVariables;
+    this.memoryReference = options.memoryReference;
     this.source = options.source;
     this.line = options.line;
   }
@@ -163,10 +168,11 @@ export class ExpressionNode extends TreeNode {
 export namespace ExpressionNode {
   export interface Options {
     session: DebugSession | undefined;
-    variablesReference?: number;
+    variablesReference: number;
     namedVariables?: number;
     indexedVariables?: number;
     startOfVariables?: number;
+    memoryReference?: string;
     source?: DebugProtocol.Source;
     line?: number | string;
   }
@@ -180,6 +186,7 @@ export class ExpressionContainer extends CompositeTreeNode {
   public namedVariables: number | undefined;
   public indexedVariables: number | undefined;
   public startOfVariables: number;
+  public memoryReference: string | undefined;
 
   public source: DebugProtocol.Source | undefined;
   public line: number | string | undefined;
@@ -198,6 +205,7 @@ export class ExpressionContainer extends CompositeTreeNode {
     this.namedVariables = options.namedVariables;
     this.indexedVariables = options.indexedVariables;
     this.startOfVariables = options.startOfVariables || 0;
+    this.memoryReference = options.memoryReference;
     this.source = options.source;
     this.line = options.line;
   }
@@ -227,6 +235,7 @@ export namespace ExpressionContainer {
     namedVariables?: number;
     indexedVariables?: number;
     startOfVariables?: number;
+    memoryReference?: string;
     source?: DebugProtocol.Source;
     line?: number | string;
   }
@@ -265,6 +274,7 @@ export class DebugVariable extends ExpressionNode {
         variablesReference: variable.variablesReference,
         namedVariables: variable.namedVariables,
         indexedVariables: variable.indexedVariables,
+        memoryReference: variable.memoryReference,
       },
       parent,
     );
@@ -280,6 +290,7 @@ export class DebugVariable extends ExpressionNode {
       variablesReference: this.variable.variablesReference || 0,
       value: this.value,
       evaluateName: this.evaluateName,
+      memoryReference: this.memoryReference,
     };
   }
 
@@ -366,6 +377,7 @@ export class DebugVariableContainer extends ExpressionContainer {
         variablesReference: variable.variablesReference,
         namedVariables: variable.namedVariables,
         indexedVariables: variable.indexedVariables,
+        memoryReference: variable.memoryReference,
         source,
         line,
       },
@@ -390,6 +402,7 @@ export class DebugVariableContainer extends ExpressionContainer {
       variablesReference: this.variable.variablesReference || 0,
       value: this.value,
       evaluateName: this.evaluateName,
+      memoryReference: this.memoryReference,
     };
   }
 
@@ -547,6 +560,7 @@ export class DebugWatchNode extends ExpressionContainer {
           this.variablesReference = body.variablesReference;
           this.namedVariables = body.namedVariables;
           this.indexedVariables = body.indexedVariables;
+          this.memoryReference = body.memoryReference;
           this.raw = body;
         }
       } catch (err) {
@@ -645,6 +659,7 @@ export class DebugConsoleNode extends ExpressionContainer {
             this.variablesReference = body.variablesReference;
             this.namedVariables = body.namedVariables;
             this.indexedVariables = body.indexedVariables;
+            this.memoryReference = body.memoryReference;
             this._available = true;
           }
         }
@@ -739,6 +754,7 @@ export class DebugHoverVariableRoot extends ExpressionContainer {
           this.variablesReference = body.variablesReference;
           this.namedVariables = body.namedVariables;
           this.indexedVariables = body.indexedVariables;
+          this.memoryReference = body.memoryReference;
         }
       } catch (err) {
         this._value = err.message;

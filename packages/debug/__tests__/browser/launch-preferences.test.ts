@@ -3,20 +3,16 @@ import path from 'path';
 
 import * as fs from 'fs-extra';
 
-import { Injectable } from '@opensumi/di';
 import {
   PreferenceService,
   FileUri,
   Disposable,
   DisposableCollection,
-  ILogger,
   PreferenceScope,
-  ILoggerManagerClient,
   URI,
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
-import { AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { DebugContribution, DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { EditorCollectionService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
@@ -34,17 +30,6 @@ import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
-
-@Injectable()
-export class MockLoggerManagerClient {
-  getLogger = () => ({
-    log() {},
-    debug() {},
-    error() {},
-    verbose() {},
-    warn() {},
-  });
-}
 
 /**
  * launch配置项需要与VSCode中的配置项对齐
@@ -429,10 +414,6 @@ describe('Launch Preferences', () => {
             useClass: UserStorageServiceImpl,
           },
           {
-            token: ILogger,
-            useClass: MockLogger,
-          },
-          {
             token: IMessageService,
             useValue: {},
           },
@@ -447,17 +428,9 @@ describe('Launch Preferences', () => {
             useClass: DiskFileSystemProvider,
           },
           {
-            token: ILoggerManagerClient,
-            useClass: MockLoggerManagerClient,
-          },
-          {
             token: EditorCollectionService,
             useValue: mockEditorCollectionService,
           },
-          UserStorageContribution,
-        );
-
-        injector.addProviders(
           {
             token: IWorkspaceService,
             useClass: WorkspaceService,
@@ -468,35 +441,35 @@ describe('Launch Preferences', () => {
               onPreferenceChanged: () => {},
             },
           },
-        );
-
-        injector.overrideProviders({
-          token: IWorkspaceService,
-          useValue: {
-            isMultiRootWorkspaceOpened: false,
-            workspace: {
-              uri: rootUri,
-              isDirectory: true,
-              lastModification: new Date().getTime(),
+          {
+            token: IWorkspaceService,
+            useValue: {
+              isMultiRootWorkspaceOpened: false,
+              workspace: {
+                uri: rootUri,
+                isDirectory: true,
+                lastModification: new Date().getTime(),
+              },
+              roots: Promise.resolve([
+                {
+                  uri: rootUri,
+                  isDirectory: true,
+                  lastModification: new Date().getTime(),
+                },
+              ]),
+              onWorkspaceChanged: () => {},
+              onWorkspaceLocationChanged: () => {},
+              tryGetRoots: () => [
+                {
+                  uri: rootUri,
+                  isDirectory: true,
+                  lastModification: new Date().getTime(),
+                },
+              ],
             },
-            roots: Promise.resolve([
-              {
-                uri: rootUri,
-                isDirectory: true,
-                lastModification: new Date().getTime(),
-              },
-            ]),
-            onWorkspaceChanged: () => {},
-            onWorkspaceLocationChanged: () => {},
-            tryGetRoots: () => [
-              {
-                uri: rootUri,
-                isDirectory: true,
-                lastModification: new Date().getTime(),
-              },
-            ],
           },
-        });
+          UserStorageContribution,
+        );
 
         // 覆盖文件系统中的getCurrentUserHome方法，便于用户设置测试
         injector.mock(IFileServiceClient, 'getCurrentUserHome', () => ({
@@ -536,6 +509,7 @@ describe('Launch Preferences', () => {
       afterEach(async () => {
         await toTearDown.dispose();
         await fs.remove(rootPath);
+        await injector.disposeAll();
       });
 
       const settingsLaunch = settings ? settings.launch : undefined;

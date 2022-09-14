@@ -1,7 +1,7 @@
 import type { IBufferRange, ILink, ILinkDecorations, IViewportRange, Terminal } from 'xterm';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { PreferenceService } from '@opensumi/ide-core-browser';
+import { addDisposableListener, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   Disposable,
   IDisposable,
@@ -74,25 +74,18 @@ export class TerminalLink extends Disposable implements ILink {
     this._activateCallback(event, text);
   }
 
-  private _addDisposableListener(node: Node, type: string, handler: EventListener) {
-    node.addEventListener(type, handler);
-    return Disposable.create(() => {
-      node.removeEventListener(type, handler);
-    });
-  }
-
   hover(event: MouseEvent, text: string): void {
     // Listen for modifier before handing it off to the hover to handle so it gets disposed correctly
     this._hoverListeners = new DisposableCollection();
     this._hoverListeners.push(
-      this._addDisposableListener(document, 'keydown', (e) => {
+      addDisposableListener(document, 'keydown', (e) => {
         if (!e.repeat && this._isModifierDown(e)) {
           this._enableDecorations();
         }
       }),
     );
     this._hoverListeners.push(
-      this._addDisposableListener(document, 'keyup', (e) => {
+      addDisposableListener(document, 'keyup', (e) => {
         if (!e.repeat && !this._isModifierDown(e)) {
           this._disableDecorations();
         }
@@ -128,7 +121,7 @@ export class TerminalLink extends Disposable implements ILink {
 
     const origin = { x: event.pageX, y: event.pageY };
     this._hoverListeners.push(
-      this._addDisposableListener(document, 'mousemove', (e) => {
+      addDisposableListener(document, 'mousemove', (e) => {
         // Update decorations
         if (this._isModifierDown(e)) {
           this._enableDecorations();

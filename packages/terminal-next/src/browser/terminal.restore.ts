@@ -29,7 +29,7 @@ export class TerminalRestore extends Disposable implements ITerminalRestore {
     if (history) {
       try {
         return this.controller.recovery(JSON.parse(history));
-      } catch {
+      } catch (_e) {
         /** nothing */
       }
     }

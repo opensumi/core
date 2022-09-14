@@ -1,7 +1,8 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { PreferenceService } from '@opensumi/ide-core-browser';
 import { SuggestEvent, DisposableCollection } from '@opensumi/ide-core-browser';
 import { IEventBus } from '@opensumi/ide-core-common';
-import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/suggestController';
+import { SuggestController } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestController';
 
 import { IEditor } from '../../common';
 import { IEditorFeatureContribution } from '../types';
@@ -10,6 +11,9 @@ import { IEditorFeatureContribution } from '../types';
 export class EditorSuggestWidgetContribution implements IEditorFeatureContribution {
   @Autowired(IEventBus)
   private readonly eventBus: IEventBus;
+
+  @Autowired(PreferenceService)
+  protected readonly preferenceService: PreferenceService;
 
   contribute(editor: IEditor) {
     const disposable = new DisposableCollection();
@@ -57,6 +61,15 @@ export class EditorSuggestWidgetContribution implements IEditorFeatureContributi
           );
         }),
       );
+
+      /**
+       * 控制 suggestController 的默认行为，如 `suggest details 默认展开`
+       */
+      // @ts-ignore
+      if (suggestWidget && suggestWidget._setDetailsVisible) {
+        // @ts-ignore
+        suggestWidget._setDetailsVisible(this.preferenceService.get('editor.suggest.details.visible', true));
+      }
     }
 
     return disposable;

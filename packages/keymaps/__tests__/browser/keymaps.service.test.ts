@@ -12,12 +12,10 @@ import {
   Disposable,
   KeybindingScope,
   localize,
-  ILogger,
   FileUri,
   BrowserModule,
   AppConfig,
 } from '@opensumi/ide-core-browser';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { MockProgressService } from '@opensumi/ide-core-browser/__mocks__/progress-service';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IDiskFileProvider, IFileServiceClient } from '@opensumi/ide-file-service';
@@ -99,10 +97,6 @@ describe('KeymapsService should be work', () => {
       {
         token: KeybindingRegistry,
         useValue: mockKeybindingRegistry,
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
       },
       {
         token: IProgressService,

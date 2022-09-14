@@ -8,6 +8,7 @@ import {
   BasicEvent,
   positionToRange,
   IContextKeyService,
+  IMarkdownString,
 } from '@opensumi/ide-core-browser';
 import { RecycleTreeProps } from '@opensumi/ide-core-browser/lib/components';
 import { IEditor } from '@opensumi/ide-editor';
@@ -222,7 +223,7 @@ export interface ICommentsCommentTitle extends ICommentsMenuContext {
 }
 
 export interface ICommentsCommentContext extends ICommentsCommentTitle {
-  body: string;
+  body: string | IMarkdownString;
 }
 
 /**
@@ -236,7 +237,7 @@ export interface IComment {
   /**
    * 评论内容
    */
-  body: string;
+  body: string | IMarkdownString;
   /**
    * 作者信息
    */
@@ -259,6 +260,10 @@ export interface IComment {
    * 评论 reaction
    */
   reactions?: CommentReaction[];
+  /**
+   * 评论时间
+   */
+  timestamp?: string;
 }
 
 /**
@@ -314,7 +319,7 @@ export interface CommentsPanelOptions {
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
 
-export type FileUploadHandler = (text: string, files: FileList) => MaybePromise<string>;
+export type FileUploadHandler = (text: string | IMarkdownString, files: FileList) => MaybePromise<string>;
 
 export type ZoneWidgerRender = (thread: ICommentsThread, widget: ICommentsZoneWidget) => React.ReactNode;
 

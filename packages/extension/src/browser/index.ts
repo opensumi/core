@@ -1,5 +1,5 @@
 import { Injectable, Provider } from '@opensumi/di';
-import { BrowserModule } from '@opensumi/ide-core-browser';
+import { BrowserModule, ExtensionsPointServiceImpl, IExtensionsPointService } from '@opensumi/ide-core-browser';
 import { IDebugServer } from '@opensumi/ide-debug';
 import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';

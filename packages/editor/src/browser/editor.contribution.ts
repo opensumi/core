@@ -32,6 +32,7 @@ import {
   QuickPickItem,
   AppConfig,
   SUPPORTED_ENCODINGS,
+  FILE_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -702,6 +703,7 @@ export class EditorContribution
               });
             }
           }
+
         }
       },
     });
@@ -1109,6 +1111,17 @@ export class EditorContribution
 
   registerMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.COPY_PATH.id,
+      group: '10_path',
+      order: 1,
+    });
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
+      command: EDITOR_COMMANDS.COPY_RELATIVE_PATH.id,
+      group: '10_path',
+      order: 2,
+    });
+
+    menus.registerMenuItem(MenuId.EditorTitleContext, {
       command: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
       group: '9_split',
     });
@@ -1323,6 +1336,18 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
           : AUTO_SAVE_MODE.AFTER_DELAY;
 
         return this.preferenceSettings.setPreference(autoSavePreferenceField, nextValue, PreferenceScope.User);
+      },
+    });
+    commands.registerCommand(EDITOR_COMMANDS.COPY_PATH, {
+      execute: (uri) => {
+        if (!uri) {return;}
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, uri);
+      },
+    });
+    commands.registerCommand(EDITOR_COMMANDS.COPY_RELATIVE_PATH, {
+      execute: (uri) => {
+        if (!uri) {return;}
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, uri);
       },
     });
   }

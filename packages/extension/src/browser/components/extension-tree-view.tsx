@@ -7,7 +7,7 @@ import { ViewState } from '@opensumi/ide-core-browser';
 import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
-import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.defination';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
 import { TreeViewDataProvider } from '../vscode/api/main.thread.treeview';
 import { ExtensionTreeViewModel } from '../vscode/api/tree-view/tree-view.model.service';

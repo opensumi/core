@@ -6,12 +6,11 @@ import { Emitter, ILoggerManagerClient, Uri, uuid } from '@opensumi/ide-core-com
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '@opensumi/ide-extension/lib/common/vscode';
 import { UIKind } from '@opensumi/ide-extension/lib/common/vscode/ext-types';
-import { ExtHostEnv, createEnvApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
+import { createEnvApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/envApiFactory';
+import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ext.host.env';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../../../__mocks__/loggermanager';
-
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -33,18 +32,12 @@ let mainThread: MainThreadEnv;
 
 describe('vscode extHostEnv Test', () => {
   const injector = createBrowserInjector([]);
-  injector.addProviders(
-    {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
-    },
-    {
-      token: WSChannelHandler,
-      useValue: mockService({
-        clientId: uuid(),
-      }),
-    },
-  );
+  injector.addProviders({
+    token: WSChannelHandler,
+    useValue: mockService({
+      clientId: uuid(),
+    }),
+  });
   const extensionService = mockService({});
   const extStorage = mockService({});
   const extHostTerminal = mockService({

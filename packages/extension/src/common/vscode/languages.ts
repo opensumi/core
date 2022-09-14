@@ -13,6 +13,7 @@ import {
   CallHierarchyProvider,
   TypeHierarchyProvider,
   InlayHintsProvider,
+  InlineCompletionItemProvider,
 } from 'vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 
@@ -28,8 +29,8 @@ import type {
   SignatureHelpContext,
   Command,
   CompletionItemLabel,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
+import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { Disposable } from './ext-types';
 import { IExtensionDescription } from './extension';
@@ -87,6 +88,11 @@ export interface IMainThreadLanguages {
     selector: SerializedDocumentFilter[],
     triggerCharacters: string[],
     supportsResolveDetails: boolean,
+  ): void;
+  $registerInlineCompletionsSupport(
+    handle: number,
+    selector: SerializedDocumentFilter[],
+    supportsHandleDidShowCompletionItem: boolean,
   ): void;
   $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
@@ -164,7 +170,9 @@ export interface IMainThreadLanguages {
   $registerInlayHintsProvider(
     handle: number,
     selector: SerializedDocumentFilter[],
+    supportsResolve: boolean,
     eventHandle: number | undefined,
+    displayName: string | undefined,
   ): void;
   $emitInlayHintsEvent(eventHandle: number, event?: any): void;
   $setLanguageStatus(handle: number, status: ILanguageStatus): void;
@@ -201,6 +209,17 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<ISuggestDataDto | undefined>;
   $releaseCompletionItems(handle: number, id: number): void;
+
+  registerInlineCompletionsProvider(selector: DocumentSelector, provider: InlineCompletionItemProvider): Disposable;
+  $provideInlineCompletions(
+    handle: number,
+    resource: UriComponents,
+    position: Position,
+    context: languages.InlineCompletionContext,
+    token: CancellationToken,
+  ): Promise<IdentifiableInlineCompletions | undefined>;
+  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void;
+  $freeInlineCompletionsList(handle: number, pid: number): void;
 
   $provideDefinition(
     handle: number,
@@ -471,6 +490,8 @@ export interface IExtHostLanguages {
     range: IRange,
     token: CancellationToken,
   ): Promise<IInlayHintsDto | undefined>;
+  $resolveInlayHint(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IInlayHintDto | undefined>;
+  $releaseInlayHints(handle: number, id: number): void;
 }
 
 export interface ILinkedEditingRangesDto {
@@ -479,15 +500,19 @@ export interface ILinkedEditingRangesDto {
 }
 
 export interface IInlayHintDto {
-  text: string;
+  label: string | languages.InlayHintLabelPart[];
+  tooltip?: string | IMarkdownString;
+  textEdits?: languages.TextEdit[];
   position: Position;
-  kind: modes.InlayHintKind;
-  whitespaceBefore?: boolean;
-  whitespaceAfter?: boolean;
+  kind?: languages.InlayHintKind;
+  paddingLeft?: boolean;
+  paddingRight?: boolean;
+  cacheId?: ChainedCacheId;
 }
 
 export interface IInlayHintsDto {
   hints: IInlayHintDto[];
+  cacheId?: CacheId;
 }
 
 export interface IInlineValueContextDto {
@@ -599,7 +624,7 @@ export namespace MonacoModelIdentifier {
   export function fromModel(model: ITextModel): MonacoModelIdentifier {
     return {
       uri: model.uri,
-      languageId: model.getModeId(),
+      languageId: model.getLanguageId(),
     };
   }
 }
@@ -624,3 +649,47 @@ export interface ICodeActionProviderMetadataDto {
   readonly providedKinds?: readonly string[];
   readonly documentation?: ReadonlyArray<{ readonly kind: string; readonly command: Command }>;
 }
+
+// inline completion begin
+export interface IdentifiableInlineCompletions extends languages.InlineCompletions<IdentifiableInlineCompletion> {
+  pid: number;
+}
+
+export interface IdentifiableInlineCompletion extends languages.InlineCompletion {
+  idx: number;
+}
+
+/**
+ * How an {@link InlineCompletionsProvider inline completion provider} was triggered.
+ */
+export enum InlineCompletionTriggerKind {
+  /**
+   * Completion was triggered automatically while editing.
+   * It is sufficient to return a single completion item in this case.
+   */
+  Automatic = 0,
+
+  /**
+   * Completion was triggered explicitly by a user gesture.
+   * Return multiple completion items to enable cycling through them.
+   */
+  Explicit = 1,
+}
+
+export interface InlineCompletionContext {
+  /**
+   * How the completion was triggered.
+   */
+  readonly triggerKind: InlineCompletionTriggerKind;
+
+  readonly selectedSuggestionInfo: SelectedSuggestionInfo | undefined;
+}
+
+export interface SelectedSuggestionInfo {
+  range: IRange;
+  text: string;
+  isSnippetText: boolean;
+  completionKind: CompletionItemKind;
+}
+
+// inline completion end

@@ -90,8 +90,11 @@ import {
   RegisterEditorComponentEvent,
   AskSaveResult,
 } from './types';
+import { UntitledDocumentIdCounter } from './untitled-resource';
 
 const MAX_CONFIRM_RESOURCES = 10;
+
+const couldRevive = (r: IResource): boolean => !!(r.supportsRevive && !r.deleted);
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -151,7 +154,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(IEditorDocumentModelService)
   protected documentModelManager: IEditorDocumentModelService;
 
-  private untitledIndex = 1;
+  @Autowired()
+  private untitledIndex: UntitledDocumentIdCounter;
 
   private untitledCloseIndex: number[] = [];
 
@@ -168,7 +172,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this.editorContextKeyService = contextKeyService;
   }
 
-  setCurrentGroup(editorGroup) {
+  setCurrentGroup(editorGroup: EditorGroup) {
     if (editorGroup) {
       if (this._currentEditorGroup === editorGroup) {
         return;
@@ -225,6 +229,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
     }
     return false;
+  }
+
+  calcDirtyCount(): number {
+    return this.editorGroups.reduce((pre, cur) => pre + cur.calcDirtyCount(), 0);
   }
 
   createEditorGroup(): EditorGroup {
@@ -549,7 +557,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private createUntitledURI() {
     // 优先从已删除的 index 中获取
-    const index = this.untitledCloseIndex.shift() || this.untitledIndex++;
+    const index = this.untitledCloseIndex.shift() || this.untitledIndex.id;
     return new URI().withScheme(Schemes.untitled).withQuery(`name=Untitled-${index}&index=${index}`);
   }
 
@@ -901,6 +909,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._onDidEditorFocusChange.fire();
       }),
       this.codeEditor.onFocus(() => {
+        if (this.codeEditor.currentUri) {
+          this.locateInFileTree(this.codeEditor.currentUri);
+        }
         this._currentOrPreviousFocusedEditor = this.codeEditor;
         this.setContextKeys();
         this._onDidEditorFocusChange.fire();
@@ -1046,7 +1057,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       dom,
       {},
       {
-        [ServiceNames.CONTEXT_KEY_SERVICE]: (this.contextKeyService as any).contextKeyService,
+        [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
     setTimeout(() => {
@@ -1120,49 +1131,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     setTimeout(() => {
       this.diffEditor.layout();
     });
-    // 这里应该还要加上 originalEditor 的相关监听，目前为了避免复杂度，先不放
-    this.toDispose.push(
-      this.diffEditor.modifiedEditor.onSelectionsChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
-          this.eventBus.fire(
-            new EditorSelectionChangeEvent({
-              group: this,
-              resource: this.currentResource!,
-              selections: e.selections,
-              source: e.source,
-              editorUri: this.diffEditor.modifiedEditor.currentUri!,
-            }),
-          );
-        }
-      }),
-    );
-    this.toDispose.push(
-      this.diffEditor.modifiedEditor.onVisibleRangesChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
-          this.eventBus.fire(
-            new EditorVisibleChangeEvent({
-              group: this,
-              resource: this.currentResource!,
-              visibleRanges: e,
-              editorUri: this.diffEditor.modifiedEditor.currentUri!,
-            }),
-          );
-        }
-      }),
-    );
-    this.toDispose.push(
-      this.diffEditor.modifiedEditor.onConfigurationChanged(() => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
-          this.eventBus.fire(
-            new EditorConfigurationChangedEvent({
-              group: this,
-              resource: this.currentResource!,
-              editorUri: this.diffEditor.modifiedEditor.currentUri!,
-            }),
-          );
-        }
-      }),
-    );
+
+    this.addDiffEditorEventListeners(this.diffEditor.originalEditor, 'original');
+    this.addDiffEditorEventListeners(this.diffEditor.modifiedEditor, 'modified');
+
     this.eventBus.fire(
       new CodeEditorDidVisibleEvent({
         groupName: this.name,
@@ -1170,7 +1142,63 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         editorId: this.diffEditor.modifiedEditor.getId(),
       }),
     );
+
+    this.eventBus.fire(
+      new CodeEditorDidVisibleEvent({
+        groupName: this.name,
+        type: 'diff',
+        editorId: this.diffEditor.originalEditor.getId(),
+      }),
+    );
     this.diffEditorReady.ready();
+  }
+
+  private addDiffEditorEventListeners(editor: IEditor, side?: 'modified' | 'original') {
+    this.toDispose.push(
+      editor.onSelectionsChanged((e) => {
+        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+          this.eventBus.fire(
+            new EditorSelectionChangeEvent({
+              group: this,
+              resource: this.currentResource!,
+              selections: e.selections,
+              source: e.source,
+              editorUri: URI.from(editor.monacoEditor.getModel()?.uri!),
+              side,
+            }),
+          );
+        }
+      }),
+    );
+
+    this.toDispose.push(
+      editor.onVisibleRangesChanged((e) => {
+        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+          this.eventBus.fire(
+            new EditorVisibleChangeEvent({
+              group: this,
+              resource: this.currentResource!,
+              visibleRanges: e,
+              editorUri: editor.currentUri!,
+            }),
+          );
+        }
+      }),
+    );
+
+    this.toDispose.push(
+      editor.onConfigurationChanged(() => {
+        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+          this.eventBus.fire(
+            new EditorConfigurationChangedEvent({
+              group: this,
+              resource: this.currentResource!,
+              editorUri: editor.currentUri!,
+            }),
+          );
+        }
+      }),
+    );
   }
 
   async split(action: EditorGroupSplitAction, uri: URI, options?: IResourceOpenOptions) {
@@ -1260,7 +1288,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
         if (options.range && this.currentEditor) {
           this.currentEditor.monacoEditor.setSelection(options.range as monaco.IRange);
-          this.currentEditor.monacoEditor.revealRangeInCenterIfOutsideViewport(options.range as monaco.IRange, 0);
+          setTimeout(() => {
+            this.currentEditor?.monacoEditor.revealRangeInCenter(options.range as monaco.IRange, 0);
+          }, 0);
         }
         if ((options && options.disableNavigate) || (options && options.backend)) {
           // no-op
@@ -1329,10 +1359,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             });
           }
         }
-        this._currentResource = resource;
-        this.notifyTabChanged();
         this._currentOpenType = null;
-        this.notifyBodyChanged();
+        this._currentResource = resource;
 
         // 只有真正打开的文件才会走到这里，backend模式的只更新了tab，文件内容并未加载
         const reportTimer = this.reporterService.time(REPORT_NAME.EDITOR_REACTIVE);
@@ -1343,10 +1371,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this.notifyTabLoading(resource!);
         }, 60);
         await this.displayResourceComponent(resource, options);
+        this._currentOrPreviousFocusedEditor = this.currentEditor;
+        this.notifyTabChanged();
+        this.notifyBodyChanged();
+
         clearTimeout(delayTimer);
         resourceReady.resolve();
         reportTimer.timeEnd(resource.uri.toString());
-        this._currentOrPreviousFocusedEditor = this.currentEditor;
         this._onDidEditorFocusChange.fire();
         this.setContextKeys();
         this.eventBus.fire(
@@ -1449,15 +1480,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
               options.range.endLineNumber!,
               options.range.endColumn!,
             );
-            this.codeEditor.monacoEditor.setSelection(range);
-            // 这里使用 queueMicrotask 在下一次事件循环时将编辑器滚动到指定位置
+            // 这里使用 setTimeout 在下一次事件循环时将编辑器滚动到指定位置
             // 原因是在打开新文件的情况下
-            // setModel 后立即调用 revealRangeInCenterIfOutsideViewport 编辑器无法获取到 viewport 宽高
+            // setModel 后立即调用 revealRangeInCenter 编辑器无法获取到 viewport 宽高
             // 导致无法正确计算滚动位置
-            // 相比 setTimeout, queueMicrotask 优先级更高
-            // ref: https://developer.mozilla.org/zh-CN/docs/Web/API/queueMicrotask
-            queueMicrotask(() => {
-              this.codeEditor.monacoEditor.revealRangeInCenterIfOutsideViewport(range, 0);
+            this.codeEditor.monacoEditor.setSelection(range);
+            setTimeout(() => {
+              this.codeEditor.monacoEditor.revealRangeInCenter(range, 1);
             });
           }
 
@@ -1944,8 +1973,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   getState(): IEditorGroupState {
-    const couldRevive = (r: IResource): boolean => !!(r.supportsRevive && !r.deleted);
-
     const uris = this.resources.filter(couldRevive).map((r) => r.uri.toString());
     return {
       uris,
@@ -1969,7 +1996,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   async restoreState(state: IEditorGroupState) {
     this._restoringState = true;
-    this.previewURI = state.uris[state.previewIndex] ? null : new URI(state.uris[state.previewIndex]);
+    this.previewURI = state.uris[state.previewIndex] ? new URI(state.uris[state.previewIndex]) : null;
     for (const uri of state.uris) {
       await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false, deletedPolicy: 'skip' });
     }
@@ -2056,6 +2083,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     return false;
+  }
+
+  /**
+   * 计算 dirty 数量
+   */
+  calcDirtyCount(): number {
+    let count = 0;
+    for (const r of this.resources) {
+      const docRef = this.documentModelManager.getModelReference(r.uri);
+      if (docRef) {
+        const isDirty = docRef.instance.dirty;
+        docRef.dispose();
+        if (isDirty) {
+          count += 1;
+        }
+      }
+    }
+    return count;
   }
 
   componentUndo() {

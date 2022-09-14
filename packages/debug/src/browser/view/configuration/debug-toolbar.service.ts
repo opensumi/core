@@ -1,9 +1,10 @@
 import { observable, action } from 'mobx';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IContextKeyService, IReporterService, memoize } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
 import { DebugState, DEBUG_REPORT_NAME } from '../../../common';
 import { DebugSession } from '../../debug-session';
@@ -22,6 +23,9 @@ export class DebugToolbarService {
 
   @Autowired(IReporterService)
   protected readonly reporterService: IReporterService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   @observable
   state: DebugState;
@@ -42,6 +46,11 @@ export class DebugToolbarService {
       this.updateToolBarMenu();
       this.updateModel();
     });
+  }
+
+  @memoize
+  get mainUIService() {
+    return this.injector.get(IElectronMainUIService);
   }
 
   @action

@@ -1,4 +1,4 @@
-import { registerColor } from '../color-registry';
+import { registerColor } from '../utils';
 
 // ref: https://github.com/Microsoft/vscode/blob/b07d19a768b42af2aa8f78f8b1b68978f14f9bd9/src%2Fvs%2Fworkbench%2Fcontrib%2Fdebug%2Fbrowser%2FdebugToolBar.ts
 export const debugToolBarBackground = registerColor(

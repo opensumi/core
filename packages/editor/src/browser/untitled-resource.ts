@@ -17,6 +17,7 @@ import {
   formatLocalize,
   MessageType,
   path,
+  isWindows,
 } from '@opensumi/ide-core-browser';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
@@ -24,6 +25,15 @@ import { IDialogService } from '@opensumi/ide-overlay';
 import { AskSaveResult, IResource, IResourceProvider, WorkbenchEditorService } from '../common';
 
 import { IEditorDocumentModelService, IEditorDocumentModelContentProvider } from './doc-model/types';
+
+@Injectable()
+export class UntitledDocumentIdCounter {
+  private _id = 1;
+
+  get id() {
+    return this._id++;
+  }
+}
 
 @Injectable()
 export class UntitledSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
@@ -113,7 +123,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
     const saveUri = await this.commandService.tryExecuteCommand<URI>('file.save', {
       showNameInput: true,
       defaultFileName: name || uri.displayName,
-      defaultUri: URI.file(defaultPath),
+      defaultUri: URI.file(isWindows ? defaultPath.replaceAll('\\', '/') : defaultPath),
     });
     if (saveUri) {
       await this.editorDocumentModelService.saveEditorDocumentModel(

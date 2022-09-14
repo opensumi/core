@@ -143,7 +143,7 @@ function getLabelWithChildrenProps<T = string>(
   value: T | undefined,
   children: React.ReactNode[] | React.ReactNode,
   equals: (v1, v2) => boolean = (v1, v2) => v1 === v2,
-) {
+): MaybeOption | undefined {
   const nodes = React.Children.toArray(children).filter((v) =>
     React.isValidElement<MaybeOption>(v),
   ) as React.ReactElement[];
@@ -156,7 +156,8 @@ function getLabelWithChildrenProps<T = string>(
     }
     return null;
   });
-  return currentOption?.props?.label || currentOption?.props?.value;
+
+  return currentOption?.props;
 }
 
 export function isDataOptions<T = any>(
@@ -305,11 +306,11 @@ export function Select<T = string>({
         value: options[0]?.options[0]?.value,
       };
     } else {
-      const text = children && getLabelWithChildrenProps<T>(value, children);
-      if (text) {
+      const nodeOption: IDataOption<T> = children && getLabelWithChildrenProps<T>(value, children);
+      if (nodeOption) {
         return {
-          label: text,
-          value: text,
+          label: nodeOption.label || (nodeOption.value as any),
+          value: nodeOption.value,
         };
       }
     }
@@ -397,8 +398,6 @@ export function Select<T = string>({
       if (!maxHeight || toBottom < parseInt(maxHeight, 10)) {
         overlayRef.current.style.maxHeight = `${toBottom}px`;
       }
-      overlayRef.current.style.top =
-        dropdownRenderType === 'fixed' ? `${boxRect.top + boxRect.height}px` : `${boxRect.height}px`;
       overlayRef.current.style.position = dropdownRenderType === 'fixed' ? 'fixed' : 'absolute';
     }
     if (open) {

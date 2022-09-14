@@ -25,15 +25,7 @@ describe('FileService', () => {
     await fse.ensureDir(testDir);
     root = FileUri.create(testDir);
 
-    injector = createNodeInjector(
-      [FileServiceModule],
-      new Injector([
-        {
-          token: AppConfig,
-          useValue: {},
-        },
-      ]),
-    );
+    injector = createNodeInjector([FileServiceModule]);
 
     fileService = injector.get(IFileService);
   });

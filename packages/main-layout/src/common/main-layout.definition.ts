@@ -77,6 +77,7 @@ export interface IMainLayoutService {
   isVisible(location: string): boolean;
   isViewVisible(viewId: string): boolean;
   getExtraMenu(): IContextMenu;
+  getAllAccordionService(): Map<string, AccordionService>;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

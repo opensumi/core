@@ -1,6 +1,16 @@
-import { FILE_COMMANDS, Command, EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
+import {
+  FILE_COMMANDS,
+  Command,
+  EDITOR_COMMANDS,
+  COMMON_COMMANDS,
+  TERMINAL_COMMANDS,
+  MARKER_COMMANDS,
+  SCM_COMMANDS,
+  SEARCH_COMMANDS,
+  LAYOUT_COMMANDS,
+} from '@opensumi/ide-core-browser';
 import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
-import { TERMINAL_COMMANDS } from '@opensumi/ide-terminal-next';
+import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 /**
  * 插件进程内置 command 的命名空间
@@ -132,10 +142,14 @@ export const REVERT_FILES: Command = {
   delegate: EDITOR_COMMANDS.REVERT_DOCUMENT.id,
 };
 
-// 打开或关闭终端
-export const TOGGLE_WORKBENCH_VIEW_TERMINAL: Command = {
-  id: 'workbench.action.terminal.toggleTerminal',
+export const TERMINAL_COMMAND_FOCUS: Command = {
+  id: 'workbench.action.terminal.focus',
   delegate: 'workbench.view.terminal',
+};
+
+export const TERMINAL_COMMAND_TOGGLE_VISIBILITY: Command = {
+  id: 'workbench.action.terminal.toggleTerminal',
+  delegate: TERMINAL_COMMANDS.TOGGLE_VISIBILITY.id,
 };
 
 export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {
@@ -147,6 +161,11 @@ export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {
 export const WORKBENCH_FOCUS_FILES_EXPLORER: Command = {
   id: 'workbench.files.action.focusFilesExplorer',
   delegate: FILE_COMMANDS.FOCUS_FILES.id,
+};
+
+export const FILE_COMMAND_RENAME_FILE: Command = {
+  id: 'renameFile',
+  delegate: FILE_COMMANDS.RENAME_FILE.id,
 };
 
 // 打开激活的编辑器组
@@ -234,6 +253,11 @@ export const SETTINGS_COMMAND_OPEN_SETTINGS: Command = {
   delegate: 'core.openpreference',
 };
 
+export const SETTINGS_COMMAND_OPEN_GLOBAL_SETTINGS: Command = {
+  id: 'workbench.action.openGlobalSettings',
+  delegate: COMMON_COMMANDS.OPEN_PREFERENCES.id,
+};
+
 export const SETTINGS_COMMAND_OPEN_SETTINGS_JSON: Command = {
   id: 'workbench.action.openSettingsJson',
   delegate: 'preference.open.source',
@@ -307,4 +331,38 @@ export const EDITOR_SHOW_ALL_SYMBOLS: Command = {
 export const REVEAL_IN_EXPLORER: Command = {
   id: 'revealInExplorer',
   delegate: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
+};
+
+export const GET_EXTENSION: Command = {
+  id: 'extension.getDescription',
+};
+
+export const MARKER_COMMAND_SHOW_ERRORS_WARNINGS: Command = {
+  id: 'workbench.action.showErrorsWarnings',
+  delegate: MARKER_COMMANDS.SHOW_ERRORS_WARNINGS.id,
+};
+
+export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
+  id: 'workbench.actions.view.problems',
+  delegate: MARKER_COMMANDS.TOGGLE_SHOW_ERRORS_WARNINGS.id,
+};
+
+export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
+  id: 'workbench.action.toggleSidebarVisibility',
+  delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
+};
+
+export const SEARCH_COMMAND_OPEN_SEARCH: Command = {
+  id: 'workbench.action.findInFiles',
+  delegate: SEARCH_COMMANDS.OPEN_SEARCH.id,
+};
+
+export const THEME_COMMAND_QUICK_SELECT: Command = {
+  id: 'workbench.action.selectTheme',
+  delegate: THEME_TOGGLE_COMMAND.id,
+};
+
+export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
+  id: 'workbench.action.maximizeEditor',
+  delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
 };

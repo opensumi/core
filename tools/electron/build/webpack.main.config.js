@@ -55,7 +55,7 @@ module.exports = {
   },
   externals: [
     (context, request, callback) => {
-      if (['node-pty', 'nsfw', 'spdlog', 'electron'].includes(request)) {
+      if (['node-pty', '@parcel/watcher', 'spdlog', 'electron'].includes(request)) {
         return callback(null, 'commonjs ' + request);
       }
       callback();

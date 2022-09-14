@@ -17,11 +17,11 @@ import {
   ExtHostAPIIdentifier,
   IMainThreadStorage,
 } from '@opensumi/ide-extension/lib/common/vscode';
-import { createEnvApiFactory, ExtHostEnv, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.env';
+import { createEnvApiFactory, envValue } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/envApiFactory';
+import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ext.host.env';
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.host';
-import { LoggerManagerClient } from '@opensumi/ide-logs/lib/browser/log-manage';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
@@ -61,7 +61,7 @@ class MockLogServiceForClient {
 }
 
 describe('MainThreadEnvAPI Test Suites ', () => {
-  const injector = createBrowserInjector([], new Injector([]));
+  const injector = createBrowserInjector([]);
   let extHostEnvAPI: ReturnType<typeof createEnvApiFactory>;
   const appConfig = {
     appName: 'sumi',
@@ -79,10 +79,6 @@ describe('MainThreadEnvAPI Test Suites ', () => {
         {
           token: LogServiceForClientPath,
           useClass: MockLogServiceForClient,
-        },
-        {
-          token: ILoggerManagerClient,
-          useClass: LoggerManagerClient,
         },
         {
           token: AppConfig,

@@ -51,7 +51,7 @@ export class WebviewPanelManager {
       if (!pending) {
         const target = this.getActiveFrame();
         if (target) {
-          target.contentWindow!.postMessage(data, '*');
+          target.contentWindow?.postMessage(data, '*');
           return;
         }
       }
@@ -90,7 +90,7 @@ export class WebviewPanelManager {
         }
       };
     } else {
-      const scrollY = frame && frame.contentDocument && frame.contentDocument.body ? frame.contentWindow!.scrollY : 0;
+      const scrollY = frame && frame.contentDocument && frame.contentDocument.body ? frame.contentWindow?.scrollY : 0;
       setInitialScrollPosition = (body, window) => {
         if (window.scrollY === 0) {
           window.scroll(0, scrollY);
@@ -111,7 +111,7 @@ export class WebviewPanelManager {
     const newFrame = document.createElement('iframe');
     newFrame.setAttribute('id', 'pending-frame');
     newFrame.setAttribute('frameborder', '0');
-    newFrame.setAttribute('allow', 'autoplay');
+    newFrame.setAttribute('allow', 'autoplay; clipboard-read; clipboard-write;');
 
     const sandboxRules = new Set(['allow-same-origin', 'allow-pointer-lock']);
     if (options.allowScripts) {
@@ -132,16 +132,16 @@ export class WebviewPanelManager {
 
     if (!this.channel.fakeLoad) {
       // write new content onto iframe
-      newFrame.contentDocument!.open();
+      newFrame.contentDocument?.open();
     }
 
-    newFrame.contentWindow!.addEventListener('keydown', this.handleInnerKeydown.bind(this));
+    newFrame.contentWindow?.addEventListener('keydown', this.handleInnerKeydown.bind(this));
 
-    newFrame.contentWindow!.addEventListener('DOMContentLoaded', (e) => {
+    newFrame.contentWindow?.addEventListener('DOMContentLoaded', (e) => {
       if (this.channel.fakeLoad) {
-        newFrame.contentDocument!.open();
-        newFrame.contentDocument!.write(newDocument);
-        newFrame.contentDocument!.close();
+        newFrame.contentDocument?.open();
+        newFrame.contentDocument?.write(newDocument);
+        newFrame.contentDocument?.close();
         hookupOnLoadHandlers(newFrame);
       }
       const contentDocument: HTMLDocument | undefined = e.target ? (e.target as HTMLDocument) : undefined;
@@ -168,7 +168,7 @@ export class WebviewPanelManager {
         newFrame.setAttribute('id', 'active-frame');
         newFrame.style.visibility = 'visible';
         if (this.channel.focusIframeOnCreate) {
-          newFrame.contentWindow!.focus();
+          newFrame.contentWindow?.focus();
         }
 
         contentWindow.addEventListener('scroll', this.handleInnerScroll.bind(this));
@@ -215,8 +215,8 @@ export class WebviewPanelManager {
     }
 
     if (!this.channel.fakeLoad) {
-      newFrame.contentDocument!.write(newDocument);
-      newFrame.contentDocument!.close();
+      newFrame.contentDocument?.write(newDocument);
+      newFrame.contentDocument?.close();
     }
 
     this.channel.postMessage('did-set-content', undefined);

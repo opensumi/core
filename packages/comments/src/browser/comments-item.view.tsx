@@ -1,9 +1,16 @@
-import { marked } from 'marked';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
 import { Button } from '@opensumi/ide-components';
-import { useInjectable, localize, IContextKeyService, isUndefined } from '@opensumi/ide-core-browser';
+import {
+  useInjectable,
+  localize,
+  IContextKeyService,
+  isUndefined,
+  IMarkdownString,
+  toLocalString,
+  toMarkdownHtml,
+} from '@opensumi/ide-core-browser';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId, IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 
@@ -23,12 +30,22 @@ import { CommentsBody } from './comments-body';
 import { CommentsTextArea } from './comments-textarea.view';
 import styles from './comments.module.less';
 
+// TODO: 更好的时间格式化组件
+const Timestamp: React.FC<{ timestamp: string }> = ({ timestamp }) => {
+  const formatTimestamp = React.useMemo(() => {
+    const date = new Date(timestamp);
+    return toLocalString(date);
+  }, [timestamp]);
+
+  return <span className={styles.comment_item_timestamp}>{formatTimestamp}</span>;
+};
+
 const useCommentContext = (
   contextKeyService: IContextKeyService,
   comment: IThreadComment,
 ): [
-  string,
-  React.Dispatch<React.SetStateAction<string>>,
+  string | IMarkdownString,
+  React.Dispatch<React.SetStateAction<string | IMarkdownString>>,
   (event: React.ChangeEvent<HTMLTextAreaElement>) => void,
   IMenu,
   IMenu,
@@ -36,7 +53,7 @@ const useCommentContext = (
 ] => {
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
   const { body, contextValue } = comment;
-  const [textValue, setTextValue] = React.useState('');
+  const [textValue, setTextValue] = React.useState<string | IMarkdownString>('');
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
   // set textValue when body changed
@@ -95,14 +112,14 @@ const ReplyItem: React.FC<{
   thread: ICommentsThread;
 }> = observer(({ reply, thread }) => {
   const { contextKeyService } = thread;
-  const { author, label, body, mode } = reply;
+  const { author, label, body, mode, timestamp } = reply;
   const iconUrl = author.iconPath?.toString();
   const [textValue, setTextValue, onChangeTextArea, commentContext, commentTitleContext, handleDragFiles] =
     useCommentContext(contextKeyService, reply);
 
   // 判断是正常 Inline Text 还是 Markdown Text
   const isInlineText = React.useMemo(() => {
-    const parsedStr = marked(body);
+    const parsedStr = toMarkdownHtml(typeof body === 'string' ? body : body.value);
     // 解析出来非纯p标签的则为Markdown Text
     const isInline = /^\<p\>[^<>]+\<\/p\>\n$/.test(parsedStr);
     return isInline;
@@ -116,6 +133,7 @@ const ReplyItem: React.FC<{
             <>
               {iconUrl && <img className={styles.reply_item_icon} src={iconUrl} alt={author.name} />}
               <span className={styles.comment_item_author_name}>{author.name}</span>
+              {timestamp && <Timestamp timestamp={timestamp} />}
               {typeof label === 'string' ? <span className={styles.comment_item_label}>{label}</span> : label}
               {' : '}
               <span className={styles.comment_item_body}>{body}</span>
@@ -142,6 +160,7 @@ const ReplyItem: React.FC<{
                 <div>
                   {iconUrl && <img className={styles.reply_item_icon} src={iconUrl} alt={author.name} />}
                   <span className={styles.comment_item_author_name}>{author.name}</span>
+                  {timestamp && <Timestamp timestamp={timestamp} />}
                   {typeof label === 'string' ? <span className={styles.comment_item_label}>{label}</span> : label}
                   {' : '}
                 </div>
@@ -166,7 +185,7 @@ const ReplyItem: React.FC<{
       ) : (
         <div>
           <CommentsTextArea
-            value={textValue}
+            value={typeof textValue === 'string' ? textValue : textValue.value}
             autoFocus={true}
             onChange={onChangeTextArea}
             dragFiles={handleDragFiles}
@@ -205,13 +224,13 @@ export const CommentItem: React.FC<{
   const [showReply, setShowReply] = React.useState(false);
   const [replyText, setReplyText] = React.useState('');
   const [comment, ...replies] = thread.comments;
-  const { author, label, body, mode } = comment;
+  const { author, label, body, mode, timestamp } = comment;
   const iconUrl = author.iconPath?.toString();
   const [textValue, setTextValue, onChangeTextArea, commentContext, commentTitleContext, handleDragFiles] =
     useCommentContext(contextKeyService, comment);
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
   const fileUploadHandler = React.useMemo(() => commentsFeatureRegistry.getFileUploadHandler(), []);
-  const replyIsEmptyContext = React.useMemo(() => contextKeyService.createKey('commentIsEmpty', true), []);
+  const replyIsEmptyContext = React.useMemo(() => contextKeyService.createKey<boolean>('commentIsEmpty', true), []);
 
   // modify reply
   function onChangeReply(event: React.ChangeEvent<HTMLTextAreaElement>) {
@@ -240,6 +259,7 @@ export const CommentItem: React.FC<{
         <div className={styles.comment_item_head}>
           <div className={styles.comment_item_name}>
             <span className={styles.comment_item_author_name}>{author.name}</span>
+            {timestamp && <Timestamp timestamp={timestamp} />}
             {typeof label === 'string' ? <span className={styles.comment_item_label}>{label}</span> : label}
           </div>
           <div className={styles.comment_item_actions}>
@@ -274,7 +294,7 @@ export const CommentItem: React.FC<{
         ) : (
           <div>
             <CommentsTextArea
-              value={textValue}
+              value={typeof textValue === 'string' ? textValue : textValue.value}
               autoFocus={true}
               onChange={onChangeTextArea}
               dragFiles={handleDragFiles}

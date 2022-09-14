@@ -1,7 +1,7 @@
-import { marked } from 'marked';
 import type vscode from 'vscode';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S } from 'vscode-languageserver-types';
 
+import { createMarkedRenderer, toMarkdownHtml } from '@opensumi/ide-components/lib/utils';
 import {
   URI,
   Uri,
@@ -49,7 +49,7 @@ import {
   TestMessageType,
 } from '@opensumi/ide-testing/lib/common/testCollection';
 import { RenderLineNumbersType } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 
@@ -230,11 +230,11 @@ export namespace MarkdownString {
       }
       return '';
     };
-    const renderer = new marked.Renderer();
+    const renderer = createMarkedRenderer();
     renderer.link = collectUri;
     renderer.image = (href) => (href ? collectUri(parseHrefAndDimensions(href).href) : '');
 
-    marked(res.value, { renderer });
+    toMarkdownHtml(res.value, { renderer });
 
     return res;
   }
@@ -738,6 +738,7 @@ export namespace DecorationRenderOptions {
       fontStyle: options.fontStyle,
       fontWeight: options.fontWeight,
       textDecoration: options.textDecoration,
+      textUnderlinePosition: options.textUnderlinePosition,
       cursor: options.cursor,
       color: options.color as string | IThemeColor,
       opacity: options.opacity,
@@ -770,6 +771,7 @@ export namespace ThemableDecorationRenderOptions {
       fontStyle: options.fontStyle,
       fontWeight: options.fontWeight,
       textDecoration: options.textDecoration,
+      textUnderlinePosition: options.textUnderlinePosition,
       cursor: options.cursor,
       color: options.color as string | IThemeColor,
       opacity: options.opacity,
@@ -814,8 +816,8 @@ export namespace WorkspaceEdit {
         // file operation
         result.edits.push({
           _type: types.WorkspaceEditType.File,
-          oldUri: entry.from,
-          newUri: entry.to,
+          oldResource: entry.from,
+          newResource: entry.to,
           options: entry.options,
           metadata: entry.metadata,
         } as model.ResourceFileEditDto);
@@ -825,8 +827,8 @@ export namespace WorkspaceEdit {
         result.edits.push({
           _type: types.WorkspaceEditType.Text,
           resource: entry.uri,
-          edit: TextEdit.from(entry.edit),
-          modelVersionId: doc?.version,
+          textEdit: TextEdit.from(entry.edit),
+          versionId: doc?.version,
           metadata: entry.metadata,
         } as model.ResourceTextEditDto);
       }
@@ -837,16 +839,16 @@ export namespace WorkspaceEdit {
   export function to(value: model.WorkspaceEditDto) {
     const result = new types.WorkspaceEdit();
     for (const edit of value.edits) {
-      if ((edit as model.ResourceTextEditDto).edit) {
+      if ((edit as model.ResourceTextEditDto).textEdit) {
         result.replace(
           URI.revive((edit as model.ResourceTextEditDto).resource),
-          Range.to((edit as model.ResourceTextEditDto).edit.range),
-          (edit as model.ResourceTextEditDto).edit.text,
+          Range.to((edit as model.ResourceTextEditDto).textEdit.range),
+          (edit as model.ResourceTextEditDto).textEdit.text,
         );
       } else {
         result.renameFile(
-          URI.revive((edit as model.ResourceFileEditDto).oldUri!),
-          URI.revive((edit as model.ResourceFileEditDto).newUri!),
+          URI.revive((edit as model.ResourceFileEditDto).oldResource!),
+          URI.revive((edit as model.ResourceFileEditDto).newResource!),
           (edit as model.ResourceFileEditDto).options,
         );
       }
@@ -1547,29 +1549,47 @@ export namespace InlineValueContext {
 }
 
 export namespace InlayHint {
-  export function from(hint: vscode.InlayHint): modes.InlayHint {
+  export function from(hint: vscode.InlayHint): languages.InlayHint {
     return {
-      text: hint.text,
+      label: hint.label as any,
       position: Position.from(hint.position),
-      kind: InlayHintKind.from(hint.kind ?? types.InlayHintKind.Other),
-      whitespaceBefore: hint.whitespaceBefore,
-      whitespaceAfter: hint.whitespaceAfter,
+      kind: hint.kind && InlayHintKind.from(hint.kind),
+      paddingLeft: hint.paddingLeft,
+      paddingRight: hint.paddingRight,
     };
   }
 
-  export function to(hint: modes.InlayHint): vscode.InlayHint {
-    const res = new types.InlayHint(hint.text, Position.to(hint.position), InlayHintKind.to(hint.kind));
-    res.whitespaceAfter = hint.whitespaceAfter;
-    res.whitespaceBefore = hint.whitespaceBefore;
+  export function to(converter: CommandsConverter, hint: languages.InlayHint): vscode.InlayHint {
+    const res = new types.InlayHint(
+      Position.to(hint.position),
+      typeof hint.label === 'string' ? hint.label : hint.label.map(InlayHintLabelPart.to.bind(undefined, converter)),
+      hint.kind && InlayHintKind.to(hint.kind),
+    );
+    res.paddingLeft = hint.paddingLeft;
+    res.paddingRight = hint.paddingRight;
     return res;
   }
 }
 
+export namespace InlayHintLabelPart {
+  export function to(converter: CommandsConverter, part: languages.InlayHintLabelPart): types.InlayHintLabelPart {
+    const result = new types.InlayHintLabelPart(part.label);
+    result.tooltip = isMarkdownString(part.tooltip) ? MarkdownString.to(part.tooltip) : part.tooltip;
+    if (languages.Command.is(part.command)) {
+      result.command = converter.fromInternal(part.command);
+    }
+    if (part.location) {
+      result.location = location.to(part.location);
+    }
+    return result;
+  }
+}
+
 export namespace InlayHintKind {
-  export function from(kind: vscode.InlayHintKind): modes.InlayHintKind {
+  export function from(kind: vscode.InlayHintKind): languages.InlayHintKind {
     return kind;
   }
-  export function to(kind: modes.InlayHintKind): vscode.InlayHintKind {
+  export function to(kind: languages.InlayHintKind): vscode.InlayHintKind {
     return kind;
   }
 }

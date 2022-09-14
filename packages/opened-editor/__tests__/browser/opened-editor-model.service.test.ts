@@ -1,5 +1,4 @@
 import { URI, Disposable, IContextKeyService, StorageProvider, ILogger } from '@opensumi/ide-core-browser';
-import { MockLogger } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -94,10 +93,6 @@ describe('OpenedEditorModelService should be work', () => {
       {
         token: ICtxMenuRenderer,
         useValue: mockCtxMenuRenderer,
-      },
-      {
-        token: ILogger,
-        useClass: MockLogger,
       },
       {
         token: OpenedEditorService,

@@ -1,11 +1,9 @@
 import path from 'path';
 
-import archiver from 'archiver';
+import compressing from 'compressing';
 import * as fs from 'fs-extra';
 
-import { toLocalISOString, getDebugLogger, Archive } from '@opensumi/ide-core-common';
-
-const debugLog = getDebugLogger('LogUtils');
+import { toLocalISOString, Archive } from '@opensumi/ide-core-common';
 
 /**
  * @param date 不传则返回当天日志文件夹名
@@ -13,7 +11,7 @@ const debugLog = getDebugLogger('LogUtils');
 export function getLogFolderName(date?: Date) {
   return toLocalISOString(date || new Date())
     .replace(/-/g, '')
-    .match(/^\d{8}/)![0];
+    .match(/^\d{8}/)?.[0];
 }
 
 /**
@@ -22,7 +20,7 @@ export function getLogFolderName(date?: Date) {
  * @param logRootPath
  */
 export function getLogFolder(logRootPath: string): string {
-  const folderName = getLogFolderName();
+  const folderName = getLogFolderName() || '';
   return path.join(logRootPath, folderName);
 }
 
@@ -32,13 +30,12 @@ export function getLogFolder(logRootPath: string): string {
 export async function cleanOldLogs(logsRoot: string) {
   try {
     const currentLog = getLogFolderName();
-    const children = fs.readdirSync(logsRoot);
+    const children = await fs.readdir(logsRoot);
     const allSessions = children.filter((name) => /^\d{8}$/.test(name));
-    const oldSessions = allSessions.sort().filter((d, i) => d !== currentLog);
+    const oldSessions = allSessions.sort().filter((d) => d !== currentLog);
     const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 4));
-
     for (const name of toDelete) {
-      fs.removeSync(path.join(logsRoot, name));
+      await fs.remove(path.join(logsRoot, name));
     }
   } catch (e) {}
 }
@@ -85,24 +82,9 @@ export async function getLogZipArchiveByFolder(foldPath: string, waitPromise?: P
     await waitPromise;
   }
   if (!fs.existsSync(foldPath)) {
-    throw new Error(`日志目录不存在 ${foldPath}`);
+    throw new Error(`The log directory does not exist: ${foldPath}`);
   }
-  const archive = archiver('zip');
-  archive.on('error', (err) => {
+  return new compressing.zip.FileStream({ source: foldPath }).on('error', (err) => {
     throw err;
   });
-
-  archive.on('entry', (entry) => {});
-
-  archive.on('warning', (warning) => {
-    debugLog.debug('archive warning', warning);
-  });
-
-  archive.on('progress', (progress) => {
-    debugLog.debug('archive progress', progress);
-  });
-
-  archive.directory(foldPath, 'log');
-  archive.finalize();
-  return archive;
 }

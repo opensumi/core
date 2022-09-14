@@ -80,6 +80,15 @@ const flushOutput = (terminal: Terminal) => {
   // TODO: Flushing output is not possible anymore without async
 };
 
+// 本地变量控制是否打开Log，因为这部分Log目前不需要落盘
+// TODO: DEBUG环境监测来自动化本变量
+const SHOW_DEBUG_LOG = false;
+const typeAheadLogger = (...message) => {
+  if (SHOW_DEBUG_LOG) {
+    console.log(message);
+  }
+};
+
 const enum CursorMoveDirection {
   Back = 'D',
   Forwards = 'C',
@@ -412,12 +421,15 @@ class CharacterPrediction implements IPrediction {
 
   apply(_: IBuffer, cursor: Cursor) {
     const cell = cursor.getCell();
+    // 检查光标位置是否有字符和相关的样式，如果有的话，就先把那个字符和相关信息存下来，用于后续可能的回滚
+    // 同时储存当前的光标，同样用于后续的RollForwards/RollBack
     this.appliedAt = cell
       ? { pos: cursor.coordinate, oldAttributes: attributesToSeq(cell), oldChar: cell.getChars() }
       : { pos: cursor.coordinate, oldAttributes: '', oldChar: '' };
 
     cursor.shift(1);
 
+    // eg. character l -> \x1B[2ml\x1B[22m
     return this._style.apply + this._char + this._style.undo;
   }
 
@@ -435,7 +447,6 @@ class CharacterPrediction implements IPrediction {
     if (!this.appliedAt) {
       return ''; // not applied
     }
-
     return cursor.clone().moveTo(this.appliedAt.pos) + input;
   }
 
@@ -805,7 +816,7 @@ export class PredictionTimeline {
       return;
     }
 
-    console.log('set predictions:', show);
+    typeAheadLogger('set predictions:', show);
     this._showPredictions = show;
 
     const buffer = this._getActiveBuffer();
@@ -978,10 +989,10 @@ export class PredictionTimeline {
    * Appends a typeahead prediction.
    */
   addPrediction(buffer: IBuffer, prediction: IPrediction) {
-    console.log('prediction type: \x1b[36m%s\x1b[0m', prediction.constructor.name);
-    if (prediction.constructor.name === 'TentativeBoundary') {
-      console.log('prediction type inner: \x1b[36m%s\x1b[0m', prediction['inner'].constructor.name);
-    }
+    typeAheadLogger('prediction type: \x1b[36m%s\x1b[0m', prediction.constructor.name);
+    // if (prediction.constructor.name === 'TentativeBoundary') {
+    //   console.log('prediction type inner: \x1b[36m%s\x1b[0m', prediction['inner'].constructor.name);
+    // }
     this._expected.push({ gen: this._currentGen, p: prediction });
     this._addedEmitter.fire(prediction);
 
@@ -997,8 +1008,8 @@ export class PredictionTimeline {
       if (prediction.affectsStyle) {
         this._style.expectIncomingStyle();
       }
-      console.log('predict:', JSON.stringify(text));
-      // console.log('prediction type: \x1b[36m%s\x1b[0m', prediction.constructor.name);
+      typeAheadLogger('predict:', JSON.stringify(text));
+      typeAheadLogger('prediction type: \x1b[36m%s\x1b[0m', prediction.constructor.name);
       this.terminal.write(text);
     }
 
@@ -1331,7 +1342,7 @@ class TypeAheadStyle implements IDisposable {
         let color: Color;
         try {
           color = Color.fromHex(style);
-        } catch {
+        } catch (_e) {
           color = new Color(new RGBA(255, 0, 0, 1));
         }
 
@@ -1426,10 +1437,9 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
   }
 
   activate(terminal: Terminal): void {
-    // @ts-ignore
-    window.xterm = terminal;
+    // window.xterm = terminal;
 
-    console.log('#DEBUG1# activate terminal type ahead addon');
+    typeAheadLogger('#DEBUG1# activate terminal type ahead addon');
     const style = (this._typeAheadStyle = this._register(new TypeAheadStyle(this._config.localEchoStyle, terminal)));
     const timeline = (this._timeline = new PredictionTimeline(terminal, this._typeAheadStyle));
     const stats = (this.stats = new PredictionStats(this._timeline)); // register disposeable;
@@ -1569,7 +1579,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
       return;
     }
 
-    console.log('user data:', JSON.stringify({ data }));
+    typeAheadLogger('user data:', JSON.stringify({ data }));
 
     const terminal = this._timeline.terminal;
     const buffer = terminal.buffer.active;
@@ -1702,9 +1712,9 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
       return;
     }
 
-    console.log('incoming data:', JSON.stringify(event.data));
+    typeAheadLogger('incoming data:', JSON.stringify(event.data));
     event.data = this._timeline.beforeServerInput(event.data);
-    console.log('emitted data:', JSON.stringify(event.data));
+    typeAheadLogger('emitted data:', JSON.stringify(event.data));
 
     this._deferClearingPredictions();
   }

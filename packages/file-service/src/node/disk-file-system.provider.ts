@@ -4,15 +4,12 @@ import paths from 'path';
 import fileType from 'file-type';
 import * as fse from 'fs-extra';
 import trash from 'trash';
-import { v4 } from 'uuid';
 import writeFileAtomic from 'write-file-atomic';
 
-import { Injectable } from '@opensumi/di';
+import { Injectable, INJECTOR_TOKEN, Autowired, Injector } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { getDebugLogger } from '@opensumi/ide-core-node';
+import { Deferred, ILogService, ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-node';
 import {
-  ParsedPattern,
-  parseGlob,
   isLinux,
   UriComponents,
   Uri,
@@ -24,7 +21,9 @@ import {
   DisposableCollection,
   isWindows,
   FileUri,
+  uuid,
 } from '@opensumi/ide-core-node';
+import { Path } from '@opensumi/ide-utils/lib/path';
 
 import {
   FileChangeEvent,
@@ -38,9 +37,11 @@ import {
   IDiskFileProvider,
   FileAccess,
   FileSystemProviderCapabilities,
+  EXT_LIST_VIDEO,
+  EXT_LIST_IMAGE,
 } from '../common/';
 
-import { NsfwFileSystemWatcherServer } from './file-service-watcher';
+import { ParcelWatcherServer } from './file-service-watcher';
 
 const UNIX_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**/*';
 const WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -49,22 +50,43 @@ export interface IRPCDiskFileSystemProvider {
   onDidFilesChanged(event: DidFilesChangedParams): void;
 }
 
+export interface IWatcher {
+  id: number;
+  options?: {
+    excludes?: string[];
+  };
+  disposable: IDisposable;
+}
+
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
-  private watcherServer: NsfwFileSystemWatcherServer;
+  private watcherServer: ParcelWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
-  protected toDispose = new DisposableCollection();
+  protected watcherServerDisposeCollection: DisposableCollection;
 
-  protected readonly watcherDisposerMap = new Map<number, IDisposable>();
+  protected readonly watcherCollection = new Map<string, IWatcher>();
   protected watchFileExcludes: string[] = [];
-  protected watchFileExcludesMatcherList: ParsedPattern[] = [];
 
-  static H5VideoExtList = ['mp4', 'ogg', 'webm'];
+  private _whenReadyDeferred: Deferred<void> = new Deferred();
+  private isInitialized = false;
+
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  @Autowired(ILogServiceManager)
+  private readonly loggerManager: ILogServiceManager;
+
+  private logger: ILogService;
 
   constructor() {
     super();
-    this.initWatcher();
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
+    this.initWatchServer();
+  }
+
+  get whenReady() {
+    return this._whenReadyDeferred.promise;
   }
 
   onDidChangeCapabilities: Event<void> = Event.None;
@@ -88,15 +110,16 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   dispose(): void {
-    this.toDispose.dispose();
+    this.watcherServerDisposeCollection?.dispose();
   }
 
   /**
    * @param {Uri} uri
-   * @param {{ recursive: boolean; excludes: string[] }} [options]  // 还不支持 recursive 参数
+   * @param {{ excludes: string[] }}
    * @memberof DiskFileSystemProvider
    */
-  async watch(uri: UriComponents, options?: { recursive: boolean; excludes: string[] }): Promise<number> {
+  async watch(uri: UriComponents, options?: { excludes?: string[] }): Promise<number> {
+    await this.whenReady;
     const _uri = Uri.revive(uri);
     const id = await this.watcherServer.watchFileChanges(_uri.toString(), {
       excludes: options?.excludes ?? [],
@@ -106,16 +129,16 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         this.watcherServer.unwatchFileChanges(id);
       },
     };
-    this.watcherDisposerMap.set(id, disposable);
+    this.watcherCollection.set(_uri.toString(), { id, options, disposable });
     return id;
   }
 
   unwatch(watcherId: number) {
-    const disposable = this.watcherDisposerMap.get(watcherId);
-    if (!disposable || !disposable.dispose) {
-      return;
+    for (const [_uri, { id, disposable }] of this.watcherCollection) {
+      if (watcherId === id) {
+        disposable.dispose();
+      }
     }
-    disposable.dispose();
   }
 
   async stat(uri: UriComponents) {
@@ -124,7 +147,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       const stat = await this.doGetStat(_uri, 1);
       return stat;
     } catch (e) {
-      getDebugLogger().error(e);
+      this.logger.error(e);
       throw e;
     }
   }
@@ -212,7 +235,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     try {
       await writeFileAtomic(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
-      getDebugLogger().warn('writeFileAtomicSync 出错，使用 fs', e);
+      this.logger.warn('writeFileAtomicSync 出错，使用 fs', e);
       await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
     }
   }
@@ -231,7 +254,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       throw FileSystemError.FileNotFound(uri.path);
     }
     if (!isUndefined(options.recursive)) {
-      getDebugLogger().warn('DiskFileSystemProvider not support options.recursive!');
+      this.logger.warn('DiskFileSystemProvider not support options.recursive!');
     }
     // Windows 10.
     // Deleting an empty directory throws `EPERM error` instead of `unlinkDir`.
@@ -242,7 +265,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       return trash([FileUri.fsPath(new URI(_uri))]);
     } else {
       const filePath = FileUri.fsPath(new URI(_uri));
-      const outputRootPath = paths.join(os.tmpdir(), v4());
+      const outputRootPath = paths.join(os.tmpdir(), uuid());
       try {
         await new Promise<void>((resolve, reject) => {
           fse.rename(filePath, outputRootPath, async (error) => {
@@ -303,55 +326,84 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   // 出于通信成本的考虑，排除文件的逻辑必须放在node层（fs provider层，不同的fs实现的exclude应该不一样）
   setWatchFileExcludes(excludes: string[]) {
-    let watcherExcludes = excludes;
+    let watchExcludes = excludes;
     // 兼容 Windows 下对 node_modules 默认排除监听的逻辑
     // 由于 files.watcherExclude 允许用户手动修改，所以只对默认值做处理
     // 在 Windows 下将 **/node_modules/**/* 替换为 **/node_modules/*/**
     if (isWindows && excludes.includes(UNIX_DEFAULT_NODE_MODULES_EXCLUDE)) {
-      const idx = watcherExcludes.findIndex((v) => v === UNIX_DEFAULT_NODE_MODULES_EXCLUDE);
-      watcherExcludes = watcherExcludes.splice(idx, 1, WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE);
+      const idx = watchExcludes.findIndex((v) => v === UNIX_DEFAULT_NODE_MODULES_EXCLUDE);
+      watchExcludes = watchExcludes.splice(idx, 1, WINDOWS_DEFAULT_NODE_MODULES_EXCLUDE);
     }
-    getDebugLogger().info('set watch file exclude:', watcherExcludes);
-    this.watchFileExcludes = watcherExcludes;
-    this.watchFileExcludesMatcherList = watcherExcludes.map((pattern) => parseGlob(pattern));
+    // 每次调用之后都需要重新初始化 WatcherServer，保证最新的规则生效
+    this.logger.log('Set watcher exclude:', watchExcludes);
+    this.watchFileExcludes = watchExcludes;
+    this.initWatchServer(this.watchFileExcludes);
   }
 
   getWatchFileExcludes() {
     return this.watchFileExcludes;
   }
 
-  protected initWatcher() {
-    this.watcherServer = new NsfwFileSystemWatcherServer({
-      verbose: true,
-    });
+  getWatchExcludes(excludes?: string[]): string[] {
+    return Array.from(new Set(this.watchFileExcludes.concat(excludes || [])));
+  }
+
+  protected initWatchServer(excludes?: string[]) {
+    if (!this.injector) {
+      return;
+    }
+    if (this.watcherServerDisposeCollection) {
+      this.watcherServerDisposeCollection.dispose();
+    }
+    this.watcherServerDisposeCollection = new DisposableCollection();
+    this.watcherServer = this.injector.get(ParcelWatcherServer, [excludes]);
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
-        const filteredChange = events.changes.filter((file) => {
-          const uri = new URI(file.uri);
-          const pathStr = uri.path.toString();
-          return !this.watchFileExcludesMatcherList.some((match) => match(pathStr));
-        });
-
-        if (filteredChange.length > 0) {
-          this.fileChangeEmitter.fire(filteredChange);
+        if (events.changes.length > 0) {
+          this.fileChangeEmitter.fire(events.changes);
           if (Array.isArray(this.rpcClient)) {
             this.rpcClient.forEach((client) => {
               client.onDidFilesChanged({
-                changes: filteredChange,
+                changes: events.changes,
               });
             });
           }
         }
       },
     });
-    this.toDispose.push({
+    this.watcherServerDisposeCollection.push({
       dispose: () => {
         this.watcherServer.dispose();
       },
     });
+    if (this.isInitialized) {
+      // 当服务已经初始化一次后，重新初始化时需要重新绑定原有的监听服务
+      this.rewatch();
+    } else {
+      this._whenReadyDeferred.resolve();
+    }
+    this.isInitialized = true;
   }
 
-  // Protected or private
+  private async rewatch() {
+    let tasks: {
+      id: number;
+      uri: string;
+      options?: { excludes?: string[] };
+    }[] = [];
+    for (const [uri, { id, options }] of this.watcherCollection) {
+      tasks.push({
+        id,
+        uri,
+        options,
+      });
+    }
+    // 需要针对缓存根据路径深度排序，防止过度监听
+    tasks = tasks.sort((a, b) => Path.pathDepth(a.uri) - Path.pathDepth(b.uri));
+    for (const { uri, options } of tasks) {
+      await this.watch(Uri.parse(uri), { excludes: this.getWatchExcludes(options?.excludes) });
+    }
+  }
 
   protected async createFile(uri: UriComponents, options: { content: Buffer }): Promise<FileStat> {
     const _uri = Uri.revive(uri);
@@ -531,12 +583,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   protected async doCreateFileStat(uri: Uri, stat: fse.Stats): Promise<FileStat> {
-    // Then stat the target and return that
-    // const isLink = !!(stat && stat.isSymbolicLink());
-    // if (isLink) {
-    //   stat = await fs.stat(FileUri.fsPath(uri));
-    // }
-
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
@@ -618,23 +664,17 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
   }
 
-  private _getFileType(ext) {
+  private _getFileType(ext: string) {
     let type = 'text';
 
-    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
+    if (EXT_LIST_IMAGE.indexOf(ext) !== -1) {
       type = 'image';
-    } else if (DiskFileSystemProvider.H5VideoExtList.indexOf(ext) !== -1) {
+    } else if (EXT_LIST_VIDEO.indexOf(ext) !== -1) {
       type = 'video';
     } else if (ext && ['xml'].indexOf(ext) === -1) {
       type = 'binary';
     }
 
     return type;
-  }
-}
-
-export class DiskFileSystemProviderWithoutWatcher extends DiskFileSystemProvider {
-  initWatcher() {
-    // Do nothing
   }
 }

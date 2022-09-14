@@ -81,13 +81,17 @@ export class FileTreeDialogService extends Tree {
       return directory;
     }
     let root = new URI(this.workspaceRoot.uri);
-    if (root.path.toString() !== '/') {
-      while (root.path.toString() !== '/') {
-        directory.push(root.path.toString());
+    if (root && root.parent) {
+      while (root.parent) {
+        const folder = root.codeUri.fsPath;
+        if (directory.indexOf(folder) >= 0) {
+          break;
+        }
+        directory.push(folder);
         root = root.parent;
       }
     } else {
-      directory.push(root.path.toString());
+      directory.push(root.codeUri.fsPath.toString());
     }
     return directory;
   }

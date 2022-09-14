@@ -21,7 +21,7 @@ describe('TerminalServiceClientImpl', () => {
   }
 
   beforeEach(() => {
-    injector = createNodeInjector([TerminalNodePtyModule], new Injector([]));
+    injector = createNodeInjector([TerminalNodePtyModule]);
     terminalServiceClient = injector.get(ITerminalServiceClient);
     terminalService = injector.get(ITerminalNodeService);
   });

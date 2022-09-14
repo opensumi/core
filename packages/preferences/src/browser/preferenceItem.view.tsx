@@ -16,6 +16,8 @@ import {
   useInjectable,
   formatLocalize,
   ILogger,
+  IOpenerService,
+  toMarkdown,
 } from '@opensumi/ide-core-browser';
 
 import { toPreferenceReadableName, getPreferenceItemLabel } from '../common';
@@ -120,7 +122,7 @@ export const NextPreferenceItem = ({
           [styles.preference_item]: true,
         })}
       >
-        {{ preferenceName }} schema not found.
+        {preferenceName} schema not found.
       </div>
     );
   }
@@ -218,6 +220,22 @@ const renderDescriptionExpression = (des: string) => {
   }
 };
 
+const renderDescription = (data: { description?: string; markdownDescription?: string }) => {
+  const description = data.description ?? data.markdownDescription;
+  if (!description) {
+    return null;
+  }
+  const openerService: IOpenerService = useInjectable(IOpenerService);
+
+  return (
+    <div className={styles.desc}>
+      {data.markdownDescription
+        ? toMarkdown(data.markdownDescription, openerService)
+        : renderDescriptionExpression(description)}
+    </div>
+  );
+};
+
 const SettingStatus = ({
   preferenceName,
   scope,
@@ -299,9 +317,7 @@ function InputPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {schema && schema.description && (
-        <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>
-      )}
+      {renderDescription(schema)}
       <div className={styles.control_wrap}>
         <div className={styles.text_control}>
           <ValidateInput
@@ -361,11 +377,7 @@ function CheckboxPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {description ? (
-        <div>
-          <div className={styles.desc}>{renderDescriptionExpression(description)}</div>
-        </div>
-      ) : undefined}
+      {renderDescription(schema)}
     </div>
   );
 }
@@ -469,9 +481,7 @@ function SelectPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {schema && schema.description && (
-        <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>
-      )}
+      {renderDescription(schema)}
       <div className={styles.control_wrap}>
         <Select
           dropdownRenderType='absolute'
@@ -515,9 +525,7 @@ function EditInSettingsJsonPreferenceItem({
           showReset={hasValueInScope}
         />
       </div>
-      {schema && schema.description && (
-        <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>
-      )}
+      {renderDescription(schema)}
       <div className={styles.control_wrap}>
         <a onClick={editSettingsJson}>{localize('preference.editSettingsJson')}</a>
       </div>
@@ -668,9 +676,7 @@ function StringArrayPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {schema && schema.description && (
-        <div className={styles.desc}>{renderDescriptionExpression(schema.description)}</div>
-      )}
+      {renderDescription(schema)}
       <div className={styles.control_wrap}>
         <ul className={styles.array_items_wrapper}>
           {items}

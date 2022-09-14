@@ -26,6 +26,8 @@ import {
   URI,
   ILogger,
   AppConfig,
+  CUSTOM_EDITOR_SCHEME,
+  IExtensionsPointService,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -46,11 +48,13 @@ import {
   ExtensionService,
   IExtensionHostProfilerService,
   ExtensionHostTypeUpperCase,
+  CONTRIBUTE_NAME_KEY,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
-import { TextDocumentShowOptions, ViewColumn, CUSTOM_EDITOR_SCHEME } from '../common/vscode';
+import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
+import { SumiContributesRunner } from './sumi/contributes';
 import {
   AbstractExtInstanceManagementService,
   ExtensionApiReadyEvent,
@@ -59,6 +63,7 @@ import {
   Serializable,
 } from './types';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
+import { VSCodeContributeRunner } from './vscode/contributes';
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;
@@ -101,6 +106,9 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(ExtensionService)
   private readonly extensionService: ExtensionService;
 
+  @Autowired(IExtensionsPointService)
+  private readonly extensionsPointService: IExtensionsPointService;
+
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -136,6 +144,24 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       title: localize('settings.group.extension'),
       iconClass: getIcon('extension'),
     });
+
+    for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
+      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
+      this.extensionsPointService.registerExtensionPoint({
+        extensionPoint: contributeName,
+        jsonSchema: contributeCls.schema || {},
+        frameworkKind: ['vscode', 'opensumi'],
+      });
+    }
+
+    for (const contributeCls of SumiContributesRunner.ContributePoints) {
+      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
+      this.extensionsPointService.registerExtensionPoint({
+        extensionPoint: contributeName,
+        jsonSchema: contributeCls.schema || {},
+        frameworkKind: ['opensumi'],
+      });
+    }
   }
 
   onDisposeSideEffects() {
@@ -207,7 +233,7 @@ export class ExtensionCommandContribution implements CommandContribution {
     registry.registerCommand(
       {
         id: 'ext.restart',
-        label: '重启进程',
+        label: '%extension.host.restart%',
       },
       {
         execute: async () => {
@@ -217,6 +243,12 @@ export class ExtensionCommandContribution implements CommandContribution {
         },
       },
     );
+    registry.registerCommand(VSCodeBuiltinCommands.GET_EXTENSION, {
+      execute: async (id: string) => {
+        const ext = this.extensionInstanceManageService.getExtensionInstanceByExtId(id);
+        return ext && ext.toJSON();
+      },
+    });
 
     this.registerVSCBuiltinCommands(registry);
   }
@@ -371,6 +403,8 @@ export class ExtensionCommandContribution implements CommandContribution {
     });
 
     [
+      // layout builtin commands
+      VSCodeBuiltinCommands.LAYOUT_COMMAND_MAXIMIZE_EDITOR,
       // editor builtin commands
       VSCodeBuiltinCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR,
       VSCodeBuiltinCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR,
@@ -415,17 +449,29 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.DEBUG_COMMAND_RESTART,
       VSCodeBuiltinCommands.DEBUG_COMMAND_STOP,
       VSCodeBuiltinCommands.EDITOR_SHOW_ALL_SYMBOLS,
+      // search builtin commands
+      VSCodeBuiltinCommands.SEARCH_COMMAND_OPEN_SEARCH,
       // explorer builtin commands
       VSCodeBuiltinCommands.REVEAL_IN_EXPLORER,
       VSCodeBuiltinCommands.OPEN_FOLDER,
+      // scm builtin commands
+      VSCodeBuiltinCommands.SCM_COMMAND_TOGGLE_VISIBILITY,
       // terminal builtin commands
       VSCodeBuiltinCommands.CLEAR_TERMINAL,
-      VSCodeBuiltinCommands.TOGGLE_WORKBENCH_VIEW_TERMINAL,
+      VSCodeBuiltinCommands.TERMINAL_COMMAND_FOCUS,
+      VSCodeBuiltinCommands.TERMINAL_COMMAND_TOGGLE_VISIBILITY,
       VSCodeBuiltinCommands.NEW_WORKBENCH_VIEW_TERMINAL,
+      // file builtin commmands
+      VSCodeBuiltinCommands.FILE_COMMAND_RENAME_FILE,
+      // marker builtin commands
+      VSCodeBuiltinCommands.MARKER_COMMAND_SHOW_ERRORS_WARNINGS,
+      VSCodeBuiltinCommands.MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS,
       // others
       VSCodeBuiltinCommands.RELOAD_WINDOW,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS,
+      VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_GLOBAL_SETTINGS,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS_JSON,
+      VSCodeBuiltinCommands.THEME_COMMAND_QUICK_SELECT,
     ].forEach((command) => {
       registry.registerCommand(command);
     });

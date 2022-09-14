@@ -10,9 +10,16 @@ import {
   IPosition,
   Mutable,
   canceled,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import { CancellationTokenSource, CancellationToken, Disposable, Schemes } from '@opensumi/ide-core-common';
+import {
+  CancellationTokenSource,
+  CancellationToken,
+  Disposable,
+  Schemes,
+  getLanguageId,
+} from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
@@ -32,11 +39,13 @@ import {
   IRuntimeBreakpoint,
   BreakpointsChangeEvent,
   IDebugBreakpoint,
+  IMemoryRegion,
+  prepareCommand,
 } from '../common';
 import { DebugConfiguration } from '../common';
 
 import { DebugEditor } from './../common/debug-editor';
-import { IDebugModel } from './../common/debug-model';
+import { IDebugModel, MemoryRegion } from './../common/debug-model';
 import { BreakpointManager, DebugBreakpoint } from './breakpoint';
 import { DebugSessionConnection } from './debug-session-connection';
 import { DebugModelManager } from './editor/debug-model-manager';
@@ -92,6 +101,9 @@ export class DebugSession implements IDebugSession {
   private readonly _onDidChangeState = new Emitter<DebugState>();
   readonly onDidChangeState: Event<DebugState> = this._onDidChangeState.event;
 
+  private readonly _onDidInvalidMemory = new Emitter<DebugProtocol.MemoryEvent>();
+  readonly onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent> = this._onDidInvalidMemory.event;
+
   protected readonly toDispose = new DisposableCollection();
 
   protected _capabilities: DebugProtocol.Capabilities = {};
@@ -126,9 +138,10 @@ export class DebugSession implements IDebugSession {
     protected readonly fileSystem: IFileServiceClient,
     protected readonly sessionManager: IDebugSessionManager,
   ) {
-    this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => {
-      this.runInTerminal(request);
-    });
+    this.connection.onRequest(
+      'runInTerminal',
+      async (request: DebugProtocol.RunInTerminalRequest) => await this.runInTerminal(request),
+    );
 
     this.toDispose.pushAll([
       this.onDidChangeEmitter,
@@ -241,6 +254,9 @@ export class DebugSession implements IDebugSession {
       this.on('progressEnd', (event: DebugProtocol.ProgressEndEvent) => {
         this._onDidProgressEnd.fire(event);
       }),
+      this.on('memory', (event: DebugProtocol.MemoryEvent) => {
+        this._onDidInvalidMemory.fire(event);
+      }),
       this.on('invalidated', async (event: DebugProtocol.InvalidatedEvent) => {
         this._onDidInvalidated.fire(event);
 
@@ -271,6 +287,10 @@ export class DebugSession implements IDebugSession {
     ]);
   }
 
+  getMemory(memoryReference: string): IMemoryRegion {
+    return new MemoryRegion(memoryReference, this);
+  }
+
   get configuration(): DebugConfiguration {
     return this.options.configuration;
   }
@@ -296,17 +316,16 @@ export class DebugSession implements IDebugSession {
   protected async runInTerminal({
     arguments: { title, cwd, args, env },
   }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
-    return this.doRunInTerminal({ name: title, cwd, env }, args.join(' '));
+    return this.doRunInTerminal({ name: title, cwd, env, args });
   }
 
-  protected async doRunInTerminal(
-    options: TerminalOptions,
-    command?: string,
-  ): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+  protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
     const activeTerminal = this.terminalService.terminals.find(
       (terminal) => terminal.name === options.name && terminal.isActive,
     );
     let processId: number | undefined;
+    const shellPath = await this.terminalService.getDefaultShellPath();
+    const command = prepareCommand(shellPath, options.args, false, options.cwd?.toString(), options.env);
     // 当存在同名终端并且处于激活状态时，复用该终端
     if (activeTerminal) {
       if (command) {
@@ -331,7 +350,7 @@ export class DebugSession implements IDebugSession {
         clientID: 'OpenSumi',
         clientName: 'OpenSumi IDE',
         adapterID: this.configuration.type,
-        locale: 'en-US',
+        locale: getLanguageId(),
         linesStartAt1: true,
         columnsStartAt1: true,
         pathFormat: 'path',
@@ -340,6 +359,8 @@ export class DebugSession implements IDebugSession {
         supportsRunInTerminalRequest: true,
         supportsProgressReporting: true,
         supportsInvalidatedEvent: true,
+        supportsMemoryEvent: true,
+        supportsMemoryReferences: true,
       },
       this.configuration,
     );
@@ -359,7 +380,7 @@ export class DebugSession implements IDebugSession {
       }
     } catch (reason) {
       this.fireExited(reason);
-      this.messages.error(reason.message || 'Debug session initialization failed. See console for details.');
+      this.messages.error(reason.message || reason.body?.error.format || localize('debug.console.errorMessage'));
       throw reason && reason.message;
     }
   }
@@ -1118,4 +1139,31 @@ export class DebugSession implements IDebugSession {
   public getModel(): IDebugModel | undefined {
     return this.modelManager.model;
   }
+
+  // memory
+
+  public async readMemory(
+    memoryReference: string,
+    offset: number,
+    count: number,
+  ): Promise<DebugProtocol.ReadMemoryResponse | undefined> {
+    if (this.capabilities.supportsReadMemoryRequest) {
+      return await this.sendRequest('readMemory', { count, memoryReference, offset });
+    }
+    return Promise.resolve(undefined);
+  }
+
+  public async writeMemory(
+    memoryReference: string,
+    offset: number,
+    data: string,
+    allowPartial?: boolean,
+  ): Promise<DebugProtocol.WriteMemoryResponse | undefined> {
+    if (this.capabilities.supportsWriteMemoryRequest) {
+      return await this.sendRequest('writeMemory', { memoryReference, offset, allowPartial, data });
+    }
+    return Promise.resolve(undefined);
+  }
+
+  // memory end
 }

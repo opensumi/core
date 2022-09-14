@@ -62,7 +62,7 @@ import {
   UriComponents,
 } from '@opensumi/ide-core-common';
 import { InlineValue } from '@opensumi/ide-debug/lib/common/inline-values';
-import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/modes';
+import type { CodeActionContext } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
 import {
   IMainThreadLanguages,
@@ -74,6 +74,10 @@ import {
   ICodeActionListDto,
   IInlineValueContextDto,
   ILinkedEditingRangesDto,
+  IInlayHintDto,
+  IInlayHintsDto,
+  InlineCompletionContext,
+  IdentifiableInlineCompletions,
 } from '../../../common/vscode';
 import * as typeConvert from '../../../common/vscode/converter';
 import { CancellationError, Disposable, LanguageStatusSeverity } from '../../../common/vscode/ext-types';
@@ -129,6 +133,7 @@ import { HoverAdapter } from './language/hover';
 import { ImplementationAdapter } from './language/implementation';
 import { InlayHintsAdapter } from './language/inlay-hints';
 import { InlineValuesAdapter } from './language/inline-values';
+import { InlineCompletionAdapter, InlineCompletionAdapterBase } from './language/inlineCompletion';
 import { CodeLensAdapter } from './language/lens';
 import { LinkProviderAdapter } from './language/link-provider';
 import { LinkedEditingRangeAdapter } from './language/linked-editing-range';
@@ -162,6 +167,12 @@ export function createLanguagesApiFactory(
       ...triggerCharacters: string[]
     ): Disposable {
       return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters);
+    },
+    registerInlineCompletionItemProvider(
+      selector: vscode.DocumentSelector,
+      provider: vscode.InlineCompletionItemProvider,
+    ): vscode.Disposable {
+      return extHostLanguages.registerInlineCompletionsProvider(selector, provider);
     },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
       return extHostLanguages.registerDefinitionProvider(selector, provider);
@@ -342,7 +353,8 @@ export type Adapter =
   | EvaluatableExpressionAdapter
   | InlineValuesAdapter
   | LinkedEditingRangeAdapter
-  | InlayHintsAdapter;
+  | InlayHintsAdapter
+  | InlineCompletionAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -401,6 +413,10 @@ export class ExtHostLanguages implements IExtHostLanguages {
     const callId = this.nextCallId();
     this.adaptersMap.set(callId, adapter);
     return callId;
+  }
+
+  private static _extLabel(ext: IExtensionDescription): string {
+    return ext.displayName || ext.name;
   }
 
   private withAdapter<A, R>(
@@ -552,6 +568,55 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
   // ### Completion end
+
+  // ### Inline Completion begin
+  registerInlineCompletionsProvider(
+    selector: vscode.DocumentSelector,
+    provider: vscode.InlineCompletionItemProvider,
+  ): Disposable {
+    const callId = this.addNewAdapter(new InlineCompletionAdapter(this.documents, provider, this.commands.converter));
+    this.proxy.$registerInlineCompletionsSupport(callId, this.transformDocumentSelector(selector), true);
+    return this.createDisposable(callId);
+  }
+  $provideInlineCompletions(
+    handle: number,
+    resource: UriComponents,
+    position: Position,
+    context: InlineCompletionContext,
+    token: CancellationToken,
+  ): Promise<IdentifiableInlineCompletions | undefined> {
+    return this.withAdapter<InlineCompletionAdapterBase, IdentifiableInlineCompletions | undefined>(
+      handle,
+      InlineCompletionAdapterBase,
+      (adapter) => adapter.provideInlineCompletions(Uri.revive(resource), position, context, token),
+      undefined,
+      undefined,
+    );
+  }
+  $handleInlineCompletionDidShow(handle: number, pid: number, idx: number): void {
+    this.withAdapter(
+      handle,
+      InlineCompletionAdapterBase,
+      async (adapter) => {
+        adapter.handleDidShowCompletionItem(pid, idx);
+      },
+      undefined,
+      undefined,
+    );
+  }
+
+  $freeInlineCompletionsList(handle: number, pid: number): void {
+    this.withAdapter(
+      handle,
+      InlineCompletionAdapterBase,
+      async (adapter) => {
+        adapter.disposeCompletions(pid);
+      },
+      undefined,
+      undefined,
+    );
+  }
+  // ### Inline Completion end
 
   // ### Definition provider begin
   $provideDefinition(
@@ -1452,9 +1517,18 @@ export class ExtHostLanguages implements IExtHostLanguages {
     provider: vscode.InlayHintsProvider,
   ): Disposable {
     const eventHandle = typeof provider.onDidChangeInlayHints === 'function' ? this.nextCallId() : undefined;
-    const handle = this.addNewAdapter(new InlayHintsAdapter(this.documents, provider), extension);
+    const handle = this.addNewAdapter(
+      new InlayHintsAdapter(this.documents, provider, this.commands.converter),
+      extension,
+    );
 
-    this.proxy.$registerInlayHintsProvider(handle, this.transformDocumentSelector(selector), eventHandle);
+    this.proxy.$registerInlayHintsProvider(
+      handle,
+      this.transformDocumentSelector(selector),
+      typeof provider.resolveInlayHint === 'function',
+      eventHandle,
+      ExtHostLanguages._extLabel(extension),
+    );
     let result = this.createDisposable(handle);
 
     if (eventHandle !== undefined) {
@@ -1464,7 +1538,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return result;
   }
 
-  $provideInlayHints(handle: number, resource: UriComponents, range: Range, token: CancellationToken) {
+  $provideInlayHints(
+    handle: number,
+    resource: UriComponents,
+    range: Range,
+    token: CancellationToken,
+  ): Promise<IInlayHintsDto | undefined> {
     return this.withAdapter(
       handle,
       InlayHintsAdapter,
@@ -1472,6 +1551,20 @@ export class ExtHostLanguages implements IExtHostLanguages {
       false,
       undefined,
     );
+  }
+
+  $resolveInlayHint(handle: number, id: ChainedCacheId, token: CancellationToken): Promise<IInlayHintDto | undefined> {
+    return this.withAdapter(
+      handle,
+      InlayHintsAdapter,
+      (adapter) => adapter.resolveInlayHint(id, token),
+      true,
+      undefined,
+    );
+  }
+
+  $releaseInlayHints(handle: number, id: number): void {
+    this.withAdapter(handle, InlayHintsAdapter, (adapter) => adapter.releaseHints(id), false, undefined);
   }
 
   private _handlePool = 0;
@@ -1501,6 +1594,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
       command: undefined,
       text: '',
       detail: '',
+      busy: false,
     };
 
     let soonHandle: IDisposable | undefined;
@@ -1526,6 +1620,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
               : Severity.Info,
           command: data.command && this.commands.converter.toInternal(data.command, commandDisposables),
           accessibilityInfo: data.accessibilityInformation,
+          busy: data.busy,
         });
       }, 0);
     };
@@ -1587,6 +1682,13 @@ export class ExtHostLanguages implements IExtHostLanguages {
       },
       set command(value) {
         data.command = value;
+        updateAsync();
+      },
+      get busy() {
+        return data.busy;
+      },
+      set busy(value: boolean) {
+        data.busy = value;
         updateAsync();
       },
     };

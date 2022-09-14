@@ -21,7 +21,7 @@ export const CheckBox: React.FC<
     // https://stackoverflow.com/questions/42764494/blur-event-relatedtarget-returns-null
     wrapTabIndex?: number;
   }
-> = ({ insertClass, className, label, size = 'default', disabled, checked = false, wrapTabIndex, ...restProps }) => {
+> = ({ insertClass, className, label, size = 'default', disabled, checked, wrapTabIndex, ...restProps }) => {
   warning(!insertClass, '`insertClass` was deprecated, please use `className` instead');
 
   const cls = classNames('kt-checkbox', insertClass, className, {
@@ -29,10 +29,14 @@ export const CheckBox: React.FC<
     'kt-checkbox-disabled': disabled,
   });
 
+  const checkboxProps = restProps;
+
+  checkboxProps['checked'] = checked ?? false;
+
   return (
     <label className={cls} tabIndex={wrapTabIndex}>
       <span className='kt-checkbox-lump'>
-        <input type='checkbox' disabled={disabled} checked={checked} {...restProps} />
+        <input type='checkbox' disabled={disabled} {...checkboxProps} />
         <span className='kt-checkbox-icon'>
           <CheckIconSvg />
         </span>
@@ -42,4 +46,4 @@ export const CheckBox: React.FC<
   );
 };
 
-CheckBox.displayName = 'KTCheckBox';
+CheckBox.displayName = 'OpenSumiCheckBox';

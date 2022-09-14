@@ -23,28 +23,28 @@ export interface IElectronMenuBarService {
 export class ElectronMenuFactory extends Disposable {
   public getTemplate(
     menuNodes: MenuNode[],
-    map: Map<string, () => void>,
+    menuMap: Map<string, () => void>,
     context?: any[],
   ): INativeMenuTemplate[] | undefined {
-    return menuNodes.map((menuNode) => {
+    return menuNodes.map((menuNode, index) => {
       if (menuNode.id === SeparatorMenuItemNode.ID) {
         return { type: 'separator' };
       }
       if (menuNode.id === SubmenuItemNode.ID) {
-        const submenuTemplate = this.getTemplate(menuNode.children, map, context);
+        const submenuTemplate = this.getTemplate(menuNode.children, menuMap, context);
         return {
           label: `${strings.mnemonicButtonLabel(menuNode.label, true)}`,
           submenu: Array.isArray(submenuTemplate) && submenuTemplate.length ? submenuTemplate : undefined,
         };
       } else {
-        this.bindAction(menuNode, map, context);
+        this.bindAction(menuNode, menuMap, index, context);
         return {
           type: menuNode.checked ? 'checkbox' : undefined,
           checked: menuNode.checked ? menuNode.checked : false,
           label: `${strings.mnemonicButtonLabel(menuNode.label, true)} ${
             menuNode.isKeyCombination ? menuNode.keybinding : ''
           }`,
-          id: menuNode.id,
+          id: `${menuNode.id}-${index}`,
           action: true,
           role: menuNode.nativeRole,
           disabled: menuNode.disabled,
@@ -57,9 +57,9 @@ export class ElectronMenuFactory extends Disposable {
     });
   }
 
-  private bindAction(menuNode: MenuNode, map: Map<string, () => void>, context?: any[]) {
+  private bindAction(menuNode: MenuNode, map: Map<string, () => void>, index: number, context?: any[]) {
     if (typeof menuNode.execute === 'function') {
-      map.set(menuNode.id, () => {
+      map.set(`${menuNode.id}-${index}`, () => {
         menuNode.execute(context);
       });
     }

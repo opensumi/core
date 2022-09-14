@@ -33,6 +33,7 @@ import {
   generateCtxMenu,
   IMenu,
   MenuId,
+  getTabbarCommonMenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
@@ -148,8 +149,27 @@ export class TabbarService extends WithEventBus {
     });
     this.activatedKey = this.contextKeyService.createKey(getTabbarCtxKey(this.location), '');
     if (this.location === 'bottom') {
+      this.registerPanelCommands();
       this.registerPanelMenus();
     }
+  }
+
+  registerPanelCommands(): void {
+    this.commandRegistry.registerCommand(EXPAND_BOTTOM_PANEL, {
+      execute: () => {
+        this.layoutService.expandBottom(true);
+      },
+    });
+    this.commandRegistry.registerCommand(RETRACT_BOTTOM_PANEL, {
+      execute: () => {
+        this.layoutService.expandBottom(false);
+      },
+    });
+    this.commandRegistry.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
+      execute: (show?: boolean, size?: number) => {
+        this.layoutService.toggleSlot(SlotLocation.bottom, show, size);
+      },
+    });
   }
 
   public getContainerState(containerId: string) {
@@ -276,7 +296,7 @@ export class TabbarService extends WithEventBus {
     // 注册激活快捷键
     disposables.push(this.registerActivateKeyBinding(componentInfo, componentInfo.options!.fromExtension));
     // 注册视图是否存在的contextKey
-    const containerExistKey = this.contextKeyService.createKey(
+    const containerExistKey = this.contextKeyService.createKey<boolean>(
       `workbench.${CONTAINER_NAME_MAP[this.location] || 'view'}.${componentInfo.options!.containerId}`,
       true,
     );
@@ -616,7 +636,7 @@ export class TabbarService extends WithEventBus {
   }
 
   protected registerPanelMenus() {
-    this.menuRegistry.registerMenuItems('tabbar/bottom/common', [
+    this.menuRegistry.registerMenuItems(getTabbarCommonMenuId('bottom'), [
       {
         command: EXPAND_BOTTOM_PANEL.id,
         group: 'navigation',

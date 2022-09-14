@@ -1,5 +1,4 @@
 import {
-  ILogger,
   GlobalBrowserStorageService,
   KeyboardNativeLayoutService,
   Key,
@@ -11,7 +10,6 @@ import {
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockLogger } from '../../__mocks__/logger';
 import { KeyboardLayoutContribution } from '../../src/keyboard/layouts/_.contribution';
 
 describe('KeyboardLayoutService should be work', () => {
@@ -33,10 +31,6 @@ describe('KeyboardLayoutService should be work', () => {
         {
           token: GlobalBrowserStorageService,
           useValue: mockGlobalBrowserStorageService,
-        },
-        {
-          token: ILogger,
-          useClass: MockLogger,
         },
       ]),
     );

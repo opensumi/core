@@ -6,6 +6,7 @@ import {
   getSlotLocation,
   AppConfig,
   getTabbarCtxKey,
+  TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import {
   MenuContribution,
@@ -21,14 +22,12 @@ import {
   ITerminalGroupViewService,
   ITerminalSearchService,
   TerminalContainerId,
-  TERMINAL_COMMANDS,
 } from '../../common';
 
 export const group = 'panel_menu';
 export const more1 = 'more_1';
 export const more1Sub = 'more_1_sub';
 export const more2 = 'more_2';
-export const DEFAULT_TERMINAL_TYPE_MENU_ID = 'DEFAULT_TERMINAL_TYPE_MENU_ID';
 
 @Domain(MenuContribution)
 export class TerminalMenuContribution implements MenuContribution {
@@ -125,14 +124,14 @@ export class TerminalMenuContribution implements MenuContribution {
 
     menuRegistry.registerMenuItem(commonMenuId, {
       label: localize('terminal.menu.selectType'),
-      submenu: DEFAULT_TERMINAL_TYPE_MENU_ID,
+      submenu: MenuId.TerminalDefaultTypeMenu,
       order: 1,
       group: more2,
       when,
     });
 
     if (isWindows) {
-      menuRegistry.registerMenuItems(DEFAULT_TERMINAL_TYPE_MENU_ID, [
+      menuRegistry.registerMenuItems(MenuId.TerminalDefaultTypeMenu, [
         {
           command: TERMINAL_COMMANDS.SELECT_CMD,
           order: 1,
@@ -149,7 +148,7 @@ export class TerminalMenuContribution implements MenuContribution {
         },
       ]);
     } else {
-      menuRegistry.registerMenuItems(DEFAULT_TERMINAL_TYPE_MENU_ID, [
+      menuRegistry.registerMenuItems(MenuId.TerminalDefaultTypeMenu, [
         {
           command: TERMINAL_COMMANDS.SELECT_ZSH,
           order: 1,

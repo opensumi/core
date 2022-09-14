@@ -1,9 +1,10 @@
+@debug-console-default-height: 18px;
+
 .debug_console {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
-  // padding-bottom: 26px;
 }
 
 .variable_repl_bar {
@@ -11,7 +12,7 @@
   border-top: 1px solid var(--sideBar-border);
   width: 100%;
   overflow: hidden;
-  min-height: 26px;
+  min-height: @debug-console-default-height;
   background-color: var(--editor-background);
 
   .variable_repl_editor {
@@ -39,8 +40,8 @@
     position: relative;
     padding: 0 6px 0 8px;
     min-width: 16px;
-    line-height: 26px;
-    height: 26px;
+    line-height: @debug-console-default-height;
+    height: @debug-console-default-height;
     display: flex;
     flex-shrink: 0;
     justify-content: center;

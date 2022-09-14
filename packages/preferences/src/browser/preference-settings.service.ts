@@ -257,10 +257,12 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
           const schema = this.schemaProvider.getPreferenceProperty(prefId);
           const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : getPreferenceItemLabel(pref);
           const description = schema && replaceLocalizePlaceholder(schema.description);
+          const markdownDescription = schema && replaceLocalizePlaceholder(schema.markdownDescription);
           return (
             this.isContainSearchValue(prefId, search) ||
             this.isContainSearchValue(prefLabel, search) ||
-            (description && this.isContainSearchValue(description, search))
+            (description && this.isContainSearchValue(description, search)) ||
+            (markdownDescription && this.isContainSearchValue(markdownDescription, search))
           );
         });
         if (sec.preferences.length > 0) {
@@ -490,6 +492,7 @@ export const defaultSettingSections: {
         { id: 'editor.suggest.showUsers' },
         { id: 'editor.suggest.showIssues' },
         { id: 'editor.suggest.preview' },
+        { id: 'editor.suggest.details.visible' },
 
         // Guides
         { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },
@@ -501,6 +504,11 @@ export const defaultSettingSections: {
 
         // 行内补全
         { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
+
+        {
+          id: 'editor.experimental.stickyScroll.enabled',
+          localized: 'preference.editor.experimental.stickyScroll.enabled',
+        },
 
         // 缩进
         { id: 'editor.detectIndentation', localized: 'preference.editor.detectIndentation' },

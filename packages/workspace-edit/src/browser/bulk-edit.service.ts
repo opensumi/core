@@ -12,18 +12,22 @@ import type {
   IBulkEditService,
   IBulkEditOptions,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/bulkEditService';
+import { WorkspaceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, IResourceFileEdit } from '../common';
 
 import { isResourceFileEdit, isResourceTextEdit } from './utils';
 
-function reviveWorkspaceEditDto2(data: ResourceEdit[] | undefined): ResourceEdit[] {
-  if (!data || data.length === 0) {
+function reviveWorkspaceEditDto2(data: ResourceEdit[] | WorkspaceEdit | undefined): ResourceEdit[] {
+  if (!data) {
     return [];
   }
+
+  const edits = Array.isArray(data) ? data : data.edits;
   const result: ResourceEdit[] = [];
-  for (const edit of revive(data)) {
+
+  for (const edit of revive(edits)) {
     if (isResourceFileEdit(edit)) {
       result.push(new ResourceFileEdit(edit.oldResource, edit.newResource, edit.options, edit.metadata));
     } else if (isResourceTextEdit(edit)) {
@@ -56,7 +60,7 @@ export class MonacoBulkEditService implements IBulkEditService {
   }
 
   async apply(
-    resourceEdits: ResourceEdit[],
+    resourceEdits: ResourceEdit[] | WorkspaceEdit,
     options?: IBulkEditOptions,
   ): Promise<IBulkEditResult & { success: boolean }> {
     let edits = reviveWorkspaceEditDto2(resourceEdits);

@@ -2,7 +2,7 @@ import path from 'path';
 
 import { Injectable, Autowired, ConstructorOf } from '@opensumi/di';
 import { Emitter } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import {
   ILogService,
@@ -90,11 +90,11 @@ export class LogServiceManager implements ILogServiceManager {
 
   getRootLogFolder = (): string => this.logRootFolderPath;
 
-  cleanOldLogs = async () => cleanOldLogs(this.getRootLogFolder());
+  cleanOldLogs = async () => await cleanOldLogs(this.getRootLogFolder());
 
-  cleanAllLogs = async () => cleanAllLogs(this.getRootLogFolder());
+  cleanAllLogs = async () => await cleanAllLogs(this.getRootLogFolder());
 
-  cleanExpiredLogs = async (day: number) => cleanExpiredLogs(day, this.getRootLogFolder());
+  cleanExpiredLogs = async (day: number) => await cleanExpiredLogs(day, this.getRootLogFolder());
 
   getLogZipArchiveByDay(day: number): Promise<Archive> {
     return this.getLogZipArchiveByFolder(path.join(this.getRootLogFolder(), String(day)));

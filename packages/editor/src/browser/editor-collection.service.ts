@@ -623,9 +623,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       // 此处 添加一个onDidUpdateDiff 监听
       const disposer = this.monacoDiffEditor.onDidUpdateDiff(() => {
         disposer.dispose();
+        currentEditor.setSelection(range);
         setTimeout(() => {
           currentEditor.revealRangeInCenter(range);
-          currentEditor.setSelection(range);
         });
       });
     } else {
@@ -650,7 +650,9 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   showFirstDiff() {
     const diffs = this.monacoDiffEditor.getLineChanges();
     if (diffs && diffs.length > 0) {
-      this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
+      setTimeout(() => {
+        this.monacoDiffEditor.revealLineInCenter(diffs[0].modifiedStartLineNumber);
+      }, 0);
     }
   }
 
@@ -673,7 +675,26 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   }
 
   getLineChanges(): ILineChange[] | null {
-    return this.monacoDiffEditor.getLineChanges();
+    const diffChanges = this.monacoDiffEditor.getLineChanges();
+    if (!diffChanges) {
+      return null;
+    }
+    return diffChanges.map((change) => [
+      change.originalStartLineNumber,
+      change.originalEndLineNumber,
+      change.modifiedStartLineNumber,
+      change.modifiedEndLineNumber,
+      change.charChanges?.map((charChange) => ([
+        charChange.originalStartLineNumber,
+        charChange.originalStartColumn,
+        charChange.originalEndLineNumber,
+        charChange.originalEndColumn,
+        charChange.modifiedStartLineNumber,
+        charChange.modifiedStartColumn,
+        charChange.modifiedEndLineNumber,
+        charChange.modifiedEndColumn,
+      ])),
+    ]);
   }
 
   private wrapEditors() {

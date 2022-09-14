@@ -5,7 +5,7 @@ import React from 'react';
 import { useInjectable, IEventBus, getExternalIcon, Disposable } from '@opensumi/ide-core-browser';
 import { Button } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
-import { AbstractMenuService, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
+import { AbstractMenuService, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import {
@@ -24,13 +24,13 @@ export const CommentReactionSwitcher: React.FC<{
   className?: string;
 }> = observer(({ thread, comment, className }) => {
   const key = `${thread.providerId}_${thread.id}_${comment.id}`;
-  const menuId = `comment_reaction_switcher_menu_${key}`;
+  const menuId = `${MenuId.CommentReactionSwitcherMenu}_${key}`;
   const menuRegistry = useInjectable<IMenuRegistry>(IMenuRegistry);
   const menuService = useInjectable<AbstractMenuService>(AbstractMenuService);
 
   React.useEffect(() => {
     const disposer = new Disposable();
-    const subMenuId = `comment_reaction_switcher_submenu_${key}`;
+    const subMenuId = `${MenuId.CommentReactionSwitcherSubmenu}_${key}`;
 
     disposer.addDispose(
       menuRegistry.registerMenuItem(menuId, {

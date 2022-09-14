@@ -55,6 +55,7 @@ export class EditorDocumentModelContentRegistryImpl implements IEditorDocumentMo
         );
       });
     }
+
     return {
       dispose: () => {
         disposer.dispose();

@@ -5,9 +5,10 @@ import {
   ComponentRegistry,
   ComponentContribution,
   TabBarToolbarContribution,
+  TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
 
-import { TERMINAL_COMMANDS, TerminalContainerId } from '../../common';
+import { TerminalContainerId } from '../../common';
 import TerminalTabs from '../component/tab.view';
 import TerminalView from '../component/terminal.view';
 
@@ -26,7 +27,7 @@ export class TerminalRenderContribution implements ComponentContribution, TabBar
       id: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
       command: TERMINAL_COMMANDS.CLEAR_CONTENT.id,
       viewId: TerminalRenderContribution.viewId,
-      tooltip: localize('terminal.menu.clearGroups'),
+      tooltip: localize('terminal.menu.clearCurrentContent'),
     });
     registry.registerItem({
       id: TERMINAL_COMMANDS.SPLIT.id,

@@ -1,3 +1,5 @@
+import { browserViews } from './contributes/en-US.lang';
+
 export const localizationBundle = {
   languageId: 'en-US',
   languageName: 'english',
@@ -92,11 +94,10 @@ export const localizationBundle = {
     'menu-bar.view.outward.localize.toggle': 'switch language',
     'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
-    selectAll: 'Select All',
-
     editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
+    'editor.saveAll': 'Save All',
     'editor.saveCurrent': 'Save Current File',
     'editor.title.context.close': 'Close',
     'editor.closeCurrent': 'Close Current Editor',
@@ -110,7 +111,6 @@ export const localizationBundle = {
     'editor.closeToRight': 'Close To Right',
     'editor.closeSaved': 'Close Saved',
     'editor.cannotSaveWithoutDirectory': 'Cannot save file without directory',
-    'editor.close': 'Close',
     'editor.action.accept': 'Accept Changes (Use version on the right)',
     'editor.action.revert': 'Revert Changes (Use version on the left)',
     'editor.format.chooseFormatter': 'Choose the Formatter',
@@ -154,6 +154,8 @@ export const localizationBundle = {
     'edit.copy': 'Copy',
     'edit.paste': 'Paste',
     'edit.selectAll': 'Select All',
+    'editor.copyPath': 'Copy Path',
+    'editor.copyRelativePath': 'Copy Relative Path',
 
     'editor.goBack': 'Back',
     'editor.goForward': 'Forward',
@@ -206,7 +208,7 @@ export const localizationBundle = {
     'search.excludes.default.enable': 'Enable default exclusions',
     'search.replaceAll.label': 'Replace all',
     'search.replace.label': 'Replace',
-    'search.files.result.kt': '{0} results found in {1} files',
+    'search.files.result': '{0} results found in {1} files',
     'search.CollapseDeepestExpandedLevelAction.label': 'Collapse All',
     'search.ExpandDeepestExpandedLevelAction.label': 'Expand All',
     'search.ClearSearchResultsAction.label': 'Clear Search Results',
@@ -311,6 +313,9 @@ export const localizationBundle = {
     'debug.console.collapseAll': 'Collapse All',
     'debug.console.followLink': '{0} + click to follow link',
     'debug.console.input.placeholder': 'Please start a debug session to evaluate expressions',
+    'debug.console.errorMessage': 'Debug session initialization failed. See console for details.',
+    'debug.notSupported.type': 'Debug type "{0}" is not supported, please check your launch config.',
+    'debug.notSupported.any': 'Debug is not supported, please check your launch config.',
 
     'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
@@ -320,6 +325,9 @@ export const localizationBundle = {
     'debug.watch.title': 'WATCH',
     'debug.callStack.title': 'CALL STACK',
     'debug.variables.title': 'VARIABLES',
+    'debug.variables.view.memory': 'View Binary Data',
+    'debug.variables.view.memory.prompt.hexEditor.notInstalled':
+      'Inspecting binary data requires the Hex Editor extension.',
     'debug.breakpoints.title': 'BREAKPOINTS',
     'debug.container.title': 'DEBUG',
     'debug.breakpoint.breakpointMessage': 'Breakpoint',
@@ -348,6 +356,7 @@ export const localizationBundle = {
     'debug.menu.add.conditional': 'Add Condition Breakpoint',
     'debug.menu.add.breakpoint': 'Add Breakpoint',
     'debug.menu.disable.logpoint': 'Disable Log Breakpoint',
+    'debug.menu.title.run': 'Run or Debug...',
     'debug.stack.frame.noSource': 'Unknown',
     'debug.stack.frame.because': 'Because Of',
     'debug.stack.frame.stopped': 'Stopped',
@@ -483,8 +492,6 @@ export const localizationBundle = {
     'settings.group.view': 'View',
     'settings.group.terminal': 'Terminal',
 
-    'settings.menu.keymaps': 'Settings',
-
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
     'preference.workbench.colorCustomizations': 'Overwrite colors of current color theme',
@@ -492,8 +499,8 @@ export const localizationBundle = {
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
       'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
-    'preference.general.language.change.refresh.now': 'now',
-    'preference.general.language.change.refresh.later': 'later',
+    'preference.general.language.change.refresh.now': 'Now',
+    'preference.general.language.change.refresh.later': 'Later',
 
     'preference.debug.internalConsoleOptions': 'Controls when the internal debug console should open.',
     'preference.debug.openDebug': 'Controls when the debug view should open.',
@@ -584,6 +591,9 @@ export const localizationBundle = {
     'editor.workspaceSymbol.notfound': 'No symbols matching',
     'editor.workspaceSymbolClass.notfound': 'No class symbols matching',
 
+    'editor.experimental.stickyScroll.enabled.description':
+      'Shows the nested current scopes during the scroll at the top of the editor.',
+
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
     'diffEditor.configuration.renderSideBySide':
@@ -620,7 +630,7 @@ export const localizationBundle = {
     'terminal.new': 'Create Terminal',
     'terminal.split': 'Split Terminal',
     'terminal.clear': 'Remove All Terminals',
-    'terminal.clear.content': 'Clear All Terminals',
+    'terminal.clear.content': 'Clear All Contents',
     'terminal.independ': 'Independent Terminal',
     'terminal.maximum': 'Maximum Terminal Panel',
     'terminal.or': 'Or',
@@ -637,16 +647,14 @@ export const localizationBundle = {
     'terminal.menu.clear': 'Clear',
     'terminal.menu.stop': 'Stop',
     'terminal.menu.stopGroup': 'Stop Group',
-    'terminal.menu.stopGroups': 'Stop All Terminals',
     'terminal.menu.clearGroups': 'Clear All Terminals',
     'terminal.menu.selectType': 'Default Terminal Type',
     'terminal.menu.moreSettings': 'More Settings',
-    'terminal.menu.clearCurrentContent': 'Clear All',
+    'terminal.menu.clearCurrentContent': 'Clear',
     'terminal.menu.selectCurrentContent': 'Select All',
     'terminal.menu.clearAllContents': 'Clear All Terminals Content',
     'terminal.menu.selectAllContent': 'Select All Terminals Content',
     'terminal.environment.changed': "Extensions have made changes to this terminal's environment",
-    'terminal.environment.relaunch': 'Relaunch Terminal',
     'terminal.environment.changes': "Extensions want to make the following changes to the terminal's environment:",
     'terminal.environment.removal': "Extensions want to remove these existing changes from the terminal's environment:",
     'terminal.launchFail.cwdNotDirectory': 'Starting directory (cwd) "{0}" is not a directory',
@@ -656,6 +664,7 @@ export const localizationBundle = {
     'terminal.openFile': 'Open file in editor',
     'terminal.focusFolder': 'Focus folder in explorer',
     'terminal.openFolder': 'Open folder in new window',
+    'terminal.relaunch': 'Relaunch Terminal',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
@@ -708,13 +717,17 @@ export const localizationBundle = {
     'keymaps.edit.placeholder': 'Press Enter to save',
     'keymaps.editorTitle.openSource': 'Open Keymap ShortCut(JSON)',
     'keymaps.editorTitle.openKeymap': 'Open Keymap ShortCut',
+    'keymaps.commandId.title': 'Command ID: {0}',
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.toggle': 'Toggle Panel',
+    'layout.tabbar.toggle': 'Hide Panel',
     'layout.tabbar.expand': 'Maximize Bottom Panel',
     'layout.tabbar.retract': 'Retract Bottom Panel',
     'layout.view.hide': 'HIDE',
+    'layout.action.openView': 'Open View ...',
+    'layout.openView.containerTitle': 'SideBar / Panel',
+    'layout.openView.viewTitle': '{0} / View',
     'marketplace.extension.update.now': 'Update now',
     'marketplace.extension.update.delay': 'Update later',
     'marketplace.extension.uninstall.failed': 'Failed to uninstall',
@@ -795,7 +808,6 @@ export const localizationBundle = {
 
     'window.toggleDevTools': 'Toggle Developer Tools',
     'window.reload': 'Reload Window',
-    about: 'About',
 
     'outline.title': 'OutLine',
     'outline.noinfo': 'There is no outline information',
@@ -822,13 +834,18 @@ export const localizationBundle = {
     'view.zoomReset': 'Zoom Reset',
     'view.zoomIn': 'Zoom In',
     'view.zoomOut': 'Zoom Out',
-
+    tabCompletion: 'Enables tab completions.',
+    'tabCompletion.off': 'Disable tab completions.',
+    'tabCompletion.on': 'Tab complete will insert the best matching suggestion when pressing tab.',
+    'tabCompletion.onlySnippets':
+      "Tab complete snippets when their prefix match. Works best when 'quickSuggestions' aren't enabled.",
     'extension.invalidExthostReload.confirm.content':
-      'Extension Host process is invalid. Click to refresh to resume this process.',
+      'Extension Host Process is invalid. Click to refresh to resume the process.',
     'extension.invalidExthostReload.confirm.ok': 'Refresh',
     'extension.invalidExthostReload.confirm.cancel': 'Ignore and continue to use',
-    'extension.crashedExthostReload.confirm': 'Extension Host process crashed, restart this process?',
-    'extension.exthostRestarting.content': 'Extension Host process is restarting',
+    'extension.crashedExthostReload.confirm': 'Extension Host Process is crashed, do you want to restart the process?',
+    'extension.exthostRestarting.content': 'Extension Host Process is restarting',
+    'extension.host.restart': 'Restart Extension Host Process',
 
     'extension.no.view.found':
       'The view component registered with the plugin {0} could not be found. \n Please make sure that the component named {1} has been exported from the plugin.',
@@ -858,6 +875,7 @@ export const localizationBundle = {
     'TaskService.pickRunTask': 'Select the task to run',
     'TerminalTaskSystem.terminalName': 'Task - {0}',
     'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
+    // reuseTerminal: "Terminal will be reused by tasks, press 'r' to rerun task. press any other key to close it.",
     reuseTerminal: 'Terminal will be reused by tasks, press any key to close it.',
 
     'toolbar-customize.buttonDisplay.description': 'Button Style',
@@ -936,6 +954,8 @@ export const localizationBundle = {
     'keyboard.autoDetect.description': "(Current: '{0} ')",
     'keyboard.autoDetect.detail': 'Try to detect the keyboard layout from browser information and pressed keys.',
 
+    'editor.suggest.details.visible': 'Controls whether editor code completion expands details by default',
+
     'view.component.renderedError': 'View Component Rendering Exception',
     'view.component.tryAgain': 'Refresh',
 
@@ -948,9 +968,26 @@ export const localizationBundle = {
     'menu.missing.altCommand': 'menuId {0} register altCommand not exist: {1}',
     'menu.dupe.command': 'menuId {0} register command({1}) is duplicated with alt({2})',
 
-    'connection.start.rtt': 'Developer Tool: Measure Connection RTT',
-    'connection.stop.rtt': 'Developer Tool: Stop Connection RTT',
+    'command.category.developerTools': 'Developer Tool',
+
+    'connection.start.rtt': 'Measure Connection RTT',
+    'connection.stop.rtt': 'Stop Connection RTT',
 
     'debug.terminal.label': 'Javascript Debug Terminal',
+    'debug.terminal.title': 'Debug Process',
+
+    'output.channel.clear': 'Clear Output Panel',
+
+    'workbench.action.tasks.runTask': 'Run Task',
+    'workbench.action.tasks.reRunTask': 'Rerun Last Task',
+    'workbench.action.tasks.restartTask': 'Restart Running Task',
+    'workbench.action.tasks.terminate': 'Terminate Task',
+    'workbench.action.tasks.showTasks': 'Show Running Tasks',
+    'workbench.action.tasks.showLog': 'Show Task Log',
+    'task.contribute': 'Contribute',
+    'task.cannotFindTask': 'Cannot find task for {0}. Press Enter key to return.',
+
+    // extension contribute
+    ...browserViews,
   },
 };

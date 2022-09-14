@@ -10,7 +10,6 @@ import {
   StorageProvider,
   DefaultStorageProvider,
   STORAGE_NAMESPACE,
-  ILoggerManagerClient,
   ScopedBrowserStorageService,
   GlobalBrowserStorageService,
 } from '@opensumi/ide-core-browser';
@@ -91,10 +90,6 @@ describe('StorageProvider should be work', () => {
       {
         token: IWorkspaceService,
         useValue: MockWorkspaceService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useValue: MockLoggerManagerClient,
       },
       {
         token: StorageProvider,

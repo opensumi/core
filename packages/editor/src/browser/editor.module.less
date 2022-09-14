@@ -1,19 +1,9 @@
 @import '~@opensumi/ide-components/lib/style/mixins.less';
 @import '~@opensumi/ide-core-browser/lib/style/variable.less';
-@TAB_HEIGHT: var(--tabBar-height);
-
-:global {
-  :root {
-    --tab-fontSize: 12px;
-    --tab-min-size: 112px;
-    --tab-max-size: 800px;
-  }
-}
 
 .kt_workbench_editor {
   height: 100%;
   background-color: var(--editor-background);
-  border-top: 1px solid var(--tab-border);
   display: flex;
 }
 .kt_editor_main_wrapper {
@@ -62,7 +52,7 @@
     display: flex;
     .editor_actions {
       flex-shrink: 0;
-      height: @TAB_HEIGHT;
+      height: 100%;
       box-sizing: border-box;
       display: flex;
       justify-content: center;
@@ -70,6 +60,7 @@
       padding: 0 5px 0 10px;
       background: var(--editorGroupHeader-tabsBackground);
       border-bottom: 1px solid var(--tab-border);
+      border-top: 1px solid var(--tab-border);
       .editor_action_wrapper {
         margin-left: 8px;
         position: relative;
@@ -98,27 +89,33 @@
 
   .kt_editor_tabs_scroll_wrapper {
     flex-grow: 1;
-    width: 10px;
-    :global(.thumb-vertical) {
-      opacity: 0 !important;
+    width: 100%;
+    position: relative;
+    &::before {
+      position: absolute;
+      content: '';
+      height: 1px;
+      width: 100%;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      background-color: var(--tab-border);
+    }
+    &::after {
+      position: absolute;
+      content: '';
+      height: 1px;
+      width: 100%;
+      bottom: 0;
+      left: 0;
+      z-index: 10;
+      background-color: var(--tab-border);
     }
   }
 
   .kt_editor_tabs_scroll {
     overflow-y: hidden;
     background: var(--editorGroupHeader-tabsBackground);
-    &::before {
-      content: '';
-      height: 1px;
-      background: var(--tab-border);
-      bottom: 0;
-      width: 100%;
-      left: 0;
-      position: absolute;
-      display: block;
-      z-index: 0;
-    }
-
     :global(.loading_indicator) {
       width: 16px;
       height: 22px;
@@ -176,10 +173,10 @@
       flex-grow: 0.5;
       padding: 0 12px;
       border-right: 1px solid var(--tab-border);
-      height: @TAB_HEIGHT;
-      line-height: @TAB_HEIGHT;
-      font-size: var(--tab-fontSize);
-      min-width: var(--tab-min-size);
+      height: 100%;
+      line-height: 100%;
+      font-size: 12px;
+      min-width: 112px;
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
@@ -214,16 +211,14 @@
         }
       }
       .kt_editor_close_icon {
+        margin-right: 0 !important;
         &::before {
           font-size: 14px;
         }
       }
       div:nth-child(2) {
-        white-space: nowrap;
         flex-grow: 1;
         text-align: left;
-        text-overflow: ellipsis;
-        overflow: hidden;
       }
       .subname {
         color: var(--descriptionForeground);
@@ -261,12 +256,21 @@
         }
       }
       &.kt_editor_tab_current {
+        position: relative;
         background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
         border-bottom: 1px solid var(--tab-activeBackground);
         border-bottom-color: var(--tab-activeBorder);
-        border-top: 1px solid var(--tab-activeBackground);
-        border-top-color: var(--tab-activeBorderTop);
+        &::before {
+          position: absolute;
+          content: '';
+          height: 2px;
+          width: 100%;
+          top: 0;
+          left: 0;
+          z-index: 999;
+          background-color: var(--tab-activeBorderTop);
+        }
         .dirty {
           &::before {
             background-color: var(--kt-dirtyDot-foreground);
@@ -296,7 +300,7 @@
   }
 
   .kt_editor_body {
-    height: calc(~'100% - @{TAB_HEIGHT}');
+    flex: 1;
     position: relative;
     background-repeat: no-repeat;
     background-position: center;

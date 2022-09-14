@@ -89,18 +89,22 @@ export class AccordionService extends WithEventBus {
   @observable.shallow views: View[] = [];
 
   @observable state: { [viewId: string]: SectionState } = {};
-  // 提供给Mobx强刷，有没有更好的办法？
-  @observable forceUpdate = 0;
 
   rendered = false;
 
   private headerSize: number;
   private minSize: number;
-  private menuId = `accordion/${this.containerId}`;
+  private menuId = `${MenuId.AccordionContext}/${this.containerId}`;
   private toDispose: Map<string, DisposableCollection> = new Map();
 
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService: IScopedContextKeyService;
+
+  private didChangeViewTitleEmitter: Emitter<{ id: string; title: string }> = new Emitter<{
+    id: string;
+    title: string;
+  }>();
+  public onDidChangeViewTiele: Event<{ id: string; title: string }> = this.didChangeViewTitleEmitter.event;
 
   private beforeAppendViewEmitter = new Emitter<string>();
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
@@ -119,7 +123,7 @@ export class AccordionService extends WithEventBus {
     this.menuRegistry.registerMenuItem(this.menuId, {
       command: {
         id: this.registerGlobalToggleCommand(),
-        label: localize('layout.view.hide', '隐藏'),
+        label: localize('layout.view.hide', 'Hide'),
       },
       group: '0_global',
       when: 'triggerWithSection == true',
@@ -139,6 +143,10 @@ export class AccordionService extends WithEventBus {
       )((e) => e && this.handleContextKeyChange(), this),
     );
     this.listenWindowResize();
+  }
+
+  updateViewTitle(viewId: string, title: string) {
+    this.didChangeViewTitleEmitter.fire({ id: viewId, title });
   }
 
   tryUpdateResize() {

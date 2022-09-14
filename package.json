@@ -36,8 +36,12 @@
     "lint:fix": "npm run lint -- --fix",
     "format": "npm run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
     "rebuild:node": "node ./scripts/rebuild-native.js",
-    "test": "./node_modules/.bin/jest --forceExit",
     "test:module": "cross-env NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
+    "test:ui": "node -r ts-node/register ./scripts/run-ui-tests",
+    "test:ui-ci": "node -r ts-node/register ./scripts/run-ui-tests --ci=true",
+    "test:ui-headful": "node -r ts-node/register ./scripts/run-ui-tests --headful=true",
+    "test:ui-report": "node -r ts-node/register ./scripts/run-ui-tests --report=true",
+    "test": "jest --forceExit",
     "prepare:test": "npm run init:deps && npm run compile && npm run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 npm run test -- --coverage",
     "ci": "npm run init && npm run lint -- --quiet && npm run check:dep && npm run test:cov",
@@ -65,11 +69,7 @@
     "lerna": "^4.0.0",
     "lint-staged": "^12.1.2",
     "lodash": "^4.17.15",
-    "tslib": "^2.4.0",
-    "node-gyp": "^9.0.0",
-    "ts-node": "^10.0.0",
-    "typescript": "4.6.4",
-    "webpack": "^4.39.3"
+    "node-gyp": "^9.0.0"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
@@ -124,8 +124,9 @@
     "jest": "^28.0.3",
     "jest-canvas-mock": "^2.4.0",
     "jest-environment-jsdom": "^28.0.2",
+    "jest-fetch-mock": "^3.0.3",
     "jest-jasmine2": "^28.0.3",
-    "jsdom": "^19.0.0",
+    "jsdom": "^20.0.0",
     "jsdom-worker": "^0.2.1",
     "node-fetch": "^2.6.7",
     "offline-iconfont": "^1.1.0",
@@ -135,7 +136,11 @@
     "simple-git": "^3.3.0",
     "temp": "^0.9.4",
     "ts-jest": "^28.0.0",
+    "ts-node": "^10.0.0",
+    "tslib": "^2.4.0",
+    "typescript": "4.6.4",
+    "webpack": "^4.39.3",
     "yargs": "^17.5.0",
-    "yauzl": "^2.10.0"
+    "compressing": "^1.6.2"
   }
 }

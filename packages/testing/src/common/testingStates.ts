@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { marked } from 'marked';
-
+import { parseMarkdown } from '@opensumi/ide-components/lib/utils';
 import { strings } from '@opensumi/ide-core-common';
 
 import { ITestErrorMessage, TestResultState } from './testCollection';
@@ -78,7 +77,7 @@ export const firstLine = (str: string) => {
 const domParser = new DOMParser();
 
 export const parseMarkdownText = (value: string) =>
-  domParser.parseFromString(marked.parse(value), 'text/html').documentElement.outerText;
+  domParser.parseFromString(parseMarkdown(value), 'text/html').documentElement.outerText;
 
 export const isDiffable = (
   message: ITestErrorMessage,

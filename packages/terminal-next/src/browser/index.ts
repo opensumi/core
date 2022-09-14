@@ -8,7 +8,6 @@ import {
   ITerminalTheme,
   ITerminalServicePath,
   ITerminalProcessPath,
-  ITerminalClientFactory,
   ITerminalApiService,
   ITerminalSearchService,
   ITerminalGroupViewService,
@@ -29,12 +28,12 @@ import {
   TerminalMenuContribution,
   TerminalLifeCycleContribution,
   TerminalRenderContribution,
-  TerminalKeybindinngContribution,
+  TerminalKeybindingContribution,
   TerminalNetworkContribution,
   TerminalPreferenceContribution,
 } from './contribution';
 import { TerminalApiService } from './terminal.api';
-import { createTerminalClientFactory, createTerminalClientFactory2 } from './terminal.client';
+import { createTerminalClientFactory2 } from './terminal.client';
 import { TerminalController } from './terminal.controller';
 import { TerminalEnvironmentService } from './terminal.environment.service';
 import { TerminalErrorService } from './terminal.error';
@@ -58,7 +57,7 @@ export class TerminalNextModule extends BrowserModule {
     TerminalRenderContribution,
     TerminalCommandContribution,
     TerminalMenuContribution,
-    TerminalKeybindinngContribution,
+    TerminalKeybindingContribution,
     TerminalNetworkContribution,
     TerminalPreferenceContribution,
     {
@@ -108,10 +107,6 @@ export class TerminalNextModule extends BrowserModule {
     {
       token: ITerminalRenderProvider,
       useClass: TerminalRenderProvider,
-    },
-    {
-      token: ITerminalClientFactory,
-      useFactory: createTerminalClientFactory,
     },
     {
       token: ITerminalClientFactory2,

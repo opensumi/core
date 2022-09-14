@@ -1,4 +1,9 @@
-.kt-scrollbar {
+@import '../style/variable.less';
+
+.@{prefix}-scrollbar {
+  will-change: transform;
+  direction: ltr;
+  transform: translate3d(0px, 0px, 0px);
   .scrollbar-thumb-vertical,
   .scrollbar-thumb-horizontal {
     opacity: 0;
@@ -14,11 +19,11 @@
   }
 
   .scrollbar-thumb-vertical {
-    width: 10px;
+    z-index: 9999;
   }
 
   .scrollbar-thumb-horizontal {
-    height: 10px;
+    z-index: 9999;
   }
 
   // 设置滚动条样式
@@ -29,7 +34,7 @@
     }
   }
 
-  .scrollbar-decoration {
+  .scrollbar-decoration-vertical {
     position: fixed;
     top: 0;
     left: 0;
@@ -37,5 +42,15 @@
     height: 6px;
     z-index: 999;
     box-shadow: var(--scrollbar-shadow) 0 6px 6px -6px inset;
+  }
+
+  .scrollbar-decoration-horizontal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 6px;
+    z-index: 999;
+    box-shadow: var(--scrollbar-shadow) 6px 0 6px -6px inset;
   }
 }

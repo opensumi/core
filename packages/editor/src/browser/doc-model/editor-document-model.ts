@@ -320,7 +320,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
   }
 
   get languageId() {
-    return this.monacoModel.getModeId();
+    return this.monacoModel.getLanguageId();
   }
 
   get id() {
@@ -350,7 +350,9 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     const versionId = this.monacoModel.getVersionId();
     const lastSavingTask = this.savingTasks[this.savingTasks.length - 1];
     if (lastSavingTask && lastSavingTask.versionId === versionId) {
-      return false;
+      lastSavingTask.cancel();
+      const task = this.savingTasks.pop();
+      task?.dispose();
     }
     const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText(), force);
     this.savingTasks.push(task);

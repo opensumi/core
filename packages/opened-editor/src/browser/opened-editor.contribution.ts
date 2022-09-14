@@ -60,8 +60,9 @@ export class OpenedEditorContribution
     });
 
     commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_ALL, {
-      execute: () => {
-        this.workbenchEditorService.closeAll();
+      execute: async () => {
+        await this.workbenchEditorService.closeAll();
+        this.openedEditorModelService.clear();
       },
     });
 
@@ -108,6 +109,7 @@ export class OpenedEditorContribution
         this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri, {
           groupIndex,
           split: 4 /** right */,
+          focus: true,
         });
       },
     });

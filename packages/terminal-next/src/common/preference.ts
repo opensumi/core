@@ -22,7 +22,7 @@ export interface SupportedOptions {
   fontSize: number;
   copyOnSelection: boolean;
   fontFamily: string;
-  cursorStyle: 'block' | 'underline' | 'bar'; // bar is line
+  cursorStyle: 'block' | 'underline' | 'bar'; // line 会在后续Xterm的初始化中传入 'bar'
 }
 
 export const SupportedOptionsName = {
@@ -34,6 +34,7 @@ export const SupportedOptionsName = {
   cursorBlink: 'cursorBlink',
   scrollback: 'scrollback',
   copyOnSelection: 'copyOnSelection',
+  cursorStyle: 'cursorStyle',
 };
 
 export const enum CodeTerminalSettingPrefix {
@@ -132,7 +133,7 @@ export const enum CodeTerminalSettingId {
 
 export const TerminalCursorStyle = {
   BLOCK: 'block',
-  LINE: 'bar', // Xterm 中的 "bar" Style，就是一条线也就是Line
+  LINE: 'line', // Xterm 中的 "bar" Style，就是一条线也就是Line
   UNDERLINE: 'underline',
 };
 
@@ -184,7 +185,7 @@ export const terminalPreferenceSchema: PreferenceSchema = {
     },
     [TerminalSettingsId.Scrollback]: {
       type: 'number',
-      default: 5000,
+      default: 1000,
     },
     [CodeTerminalSettingId.ShellArgsLinux]: {
       type: 'array',

@@ -122,7 +122,7 @@ export class DiskFsProviderClient extends CoreFileServiceProviderClient implemen
     return this.fileServiceProvider.copy(source, destination, options);
   }
 
-  access(uri: Uri, mode) {
+  access(uri: Uri, mode: number) {
     return this.fileServiceProvider.access(uri, mode);
   }
 

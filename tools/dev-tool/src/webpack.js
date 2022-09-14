@@ -18,7 +18,7 @@ const utils = require('./utils');
 const reactPath = path.resolve(path.join(__dirname, '../../../node_modules/react'));
 const reactDOMPath = path.resolve(path.join(__dirname, '../../../node_modules/react-dom'));
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
-const HOST = process.env.HOST || '0.0.0.0';
+const HOST = process.env.HOST || '127.0.0.1';
 const PORT = process.env.IDE_FRONT_PORT || 8080;
 
 const defaultWorkspace = path.join(__dirname, '../../workspace');
@@ -190,6 +190,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         new webpack.DefinePlugin({
           'process.env.IS_DEV': JSON.stringify(process.env.NODE_ENV === 'development' ? 1 : 0),
           'process.env.WORKSPACE_DIR': JSON.stringify(process.env.MY_WORKSPACE || defaultWorkspace),
+          'process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH': JSON.stringify(process.env.SUPPORT_LOAD_WORKSPACE_BY_HASH),
           'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
           'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
           'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
@@ -202,6 +203,7 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
           'process.env.WS_PATH': JSON.stringify(process.env.WS_PATH || `ws://${HOST}:8000`),
           'process.env.WEBVIEW_HOST': JSON.stringify(process.env.WEBVIEW_HOST || HOST),
           'process.env.STATIC_SERVER_PATH': JSON.stringify(process.env.STATIC_SERVER_PATH || `http://${HOST}:8000/`),
+          'process.env.HOST': JSON.stringify(process.env.HOST),
         }),
         new FriendlyErrorsWebpackPlugin({
           compilationSuccessInfo: {
@@ -227,23 +229,23 @@ exports.createWebpackConfig = function (dir, entry, extraConfig) {
         contentBase: dir + '/dist',
         port: PORT,
         disableHostCheck: true,
-        host: process.env.HOST,
+        host: HOST,
         proxy: {
           '/api': {
-            target: 'http://localhost:8000',
+            target: `http://${HOST}:8000`,
           },
           '/extension': {
-            target: 'http://localhost:8000',
+            target: `http://${HOST}:8000`,
           },
           '/assets': {
-            target: 'http://localhost:8000',
+            target: `http://${HOST}:8000`,
           },
           '/kaitian': {
-            target: 'http://localhost:8000',
+            target: `http://${HOST}:8000`,
           },
           '/socket.io': {
             ws: true,
-            target: 'ws://localhost:8000',
+            target: `ws://${HOST}:8000`,
           },
         },
         stats: 'errors-only',

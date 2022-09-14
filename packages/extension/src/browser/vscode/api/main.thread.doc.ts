@@ -28,6 +28,7 @@ import {
   EditorDocumentModelOptionChangedEvent,
   EditorDocumentModelWillSaveEvent,
 } from '@opensumi/ide-editor/lib/browser';
+import { UntitledDocumentIdCounter } from '@opensumi/ide-editor/lib/browser/untitled-resource';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
@@ -69,9 +70,10 @@ class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProv
 
 @Injectable({ multiple: true })
 export class MainThreadExtensionDocumentData extends WithEventBus implements IMainThreadDocumentsShape {
-  private tempDocIdCount = 0;
-
   private readonly proxy: IExtensionHostDocService;
+
+  @Autowired()
+  private tempDocIdCount: UntitledDocumentIdCounter;
 
   @Autowired(IEditorDocumentModelService)
   protected docManager: IEditorDocumentModelService;
@@ -218,16 +220,19 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     });
   }
 
-  async $tryCreateDocument(options: { content: string; language: string }): Promise<string> {
+  async $tryCreateDocument(options?: { content?: string; language?: string }): Promise<string> {
+    if (!options) {
+      options = {};
+    }
     const { language, content } = options;
     const docRef = await this.docManager.createModelReference(
-      new URI(`${Schemes.untitled}://temp/` + this.tempDocIdCount++),
+      new URI(`${Schemes.untitled}://temp/Untitled-` + this.tempDocIdCount.id),
       'ext-create-document',
     );
-    if (options.language) {
+    if (language) {
       docRef.instance.languageId = language;
     }
-    if (!isUndefinedOrNull(options.content)) {
+    if (!isUndefinedOrNull(content)) {
       docRef.instance.updateContent(content);
     }
     return docRef.instance.uri.toString();

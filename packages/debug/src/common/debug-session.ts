@@ -1,4 +1,4 @@
-import { CancellationToken, IDisposable } from '@opensumi/ide-core-common';
+import { CancellationToken, Event, IDisposable } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { DebugConfiguration } from './debug-configuration';
@@ -45,6 +45,19 @@ export interface IDebugSession extends IDisposable {
   state: DebugState;
   parentSession: IDebugSession | undefined;
   id: string;
+  capabilities: DebugProtocol.Capabilities;
+  onDidInvalidateMemory: Event<DebugProtocol.MemoryEvent>;
+  readMemory(
+    memoryReference: string,
+    offset: number,
+    count: number,
+  ): Promise<DebugProtocol.ReadMemoryResponse | undefined>;
+  writeMemory(
+    memoryReference: string,
+    offset: number,
+    data: string,
+    allowPartial?: boolean | undefined,
+  ): Promise<DebugProtocol.WriteMemoryResponse | undefined>;
   hasSeparateRepl: () => boolean;
   getDebugProtocolBreakpoint(breakpointId: string): DebugProtocol.Breakpoint | undefined;
   compact: boolean;
@@ -155,6 +168,8 @@ export interface DebugRequestTypes {
   threads: [DebugProtocol.ThreadsArguments | null, DebugProtocol.ThreadsResponse];
   variables: [DebugProtocol.VariablesArguments, DebugProtocol.VariablesResponse];
   cancel: [DebugProtocol.CancelArguments, DebugProtocol.CancelResponse];
+  readMemory: [DebugProtocol.ReadMemoryArguments, DebugProtocol.ReadMemoryResponse];
+  writeMemory: [DebugProtocol.WriteMemoryArguments, DebugProtocol.WriteMemoryResponse];
 }
 
 export interface DebugEventTypes {
@@ -173,5 +188,6 @@ export interface DebugEventTypes {
   progressStart: DebugProtocol.ProgressStartEvent;
   progressUpdate: DebugProtocol.ProgressUpdateEvent;
   progressEnd: DebugProtocol.ProgressEndEvent;
+  memory: DebugProtocol.MemoryEvent;
   invalidated: DebugProtocol.InvalidatedEvent;
 }

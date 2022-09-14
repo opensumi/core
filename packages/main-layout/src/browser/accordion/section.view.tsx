@@ -1,7 +1,6 @@
 import cls from 'classnames';
 import React from 'react';
 
-
 import { getIcon, ErrorBoundary, useViewState } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Layout, PanelContext } from '@opensumi/ide-core-browser/lib/components';
@@ -10,6 +9,7 @@ import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/men
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
+import { AccordionService } from './accordion.service';
 import styles from './styles.module.less';
 
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
@@ -36,6 +36,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   initialProps?: any;
   noHeader?: boolean;
   titleMenu: IMenu | IContextMenu;
+  accordionService: AccordionService;
 }
 
 const attrs = {
@@ -56,13 +57,27 @@ export const AccordionSection = ({
   initialProps,
   titleMenu,
   titleMenuContext,
+  accordionService,
   onContextMenuHandler,
 }: CollapsePanelProps) => {
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [headerFocused, setHeaderFocused] = React.useState(false);
+  const [headerLabel, setHeaderLabel] = React.useState(header);
 
   const { getSize, setSize } = React.useContext(PanelContext);
+
+  React.useEffect(() => {
+    const disposable = accordionService.onDidChangeViewTiele(({ id, title }) => {
+      if (viewId === id && title !== headerLabel) {
+        setHeaderLabel(title);
+      }
+    });
+
+    return () => {
+      disposable.dispose();
+    };
+  }, []);
 
   const clickHandler = React.useCallback(() => {
     const currentSize = getSize(false);
@@ -110,7 +125,7 @@ export const AccordionSection = ({
           <div className={styles.label_wrap}>
             <i className={cls(getIcon('arrow-down'), styles.arrow_icon, expanded ? '' : styles.kt_mod_collapsed)}></i>
             <div className={styles.section_label} style={{ lineHeight: headerSize + 'px' }}>
-              {header}
+              {headerLabel}
             </div>
           </div>
           {expanded && titleMenu && (

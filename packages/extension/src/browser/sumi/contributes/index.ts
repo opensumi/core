@@ -1,14 +1,25 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import { IJSONSchemaRegistry, localize, ILogger, WithEventBus, IEventBus } from '@opensumi/ide-core-browser';
+import {
+  IJSONSchemaRegistry,
+  ILogger,
+  WithEventBus,
+  IEventBus,
+  EXTENSION_JSON_URI,
+  OpensumiExtensionPackageSchema,
+} from '@opensumi/ide-core-browser';
 
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 
+import { BrowserMainContributionPoint } from './browser-main';
 import { BrowserViewContributionPoint, KtViewsSchema } from './browser-views';
 import { MenuExtendContributionPoint } from './menu-extend';
 import { MenubarsContributionPoint } from './menubar';
+import { NodeMainContributionPoint } from './node-main';
 import { SubmenusContributionPoint } from './submenu';
 import { ToolbarContributionPoint } from './toolbar';
+import { ViewsProxiesContributionPoint } from './views-proxies';
+import { WorkerMainContributionPoint } from './worker-main';
 
 const CONTRIBUTES_SYMBOL = Symbol();
 
@@ -16,26 +27,14 @@ export interface KaitianContributesSchema {
   views: KtViewsSchema;
 }
 
-const EXTENSION_JSON_URI = 'vscode://schemas/vscode-extensions';
-
-const schema = {
-  properties: {
-    kaitianContributes: {
-      description: localize(
-        'vscode.extension.kaitianContributes',
-        'All contributions of the KAITIAN extension represented by this package.',
-      ),
-      type: 'object',
-      properties: {} as { [key: string]: any },
-      default: {},
-    },
-  },
-};
-
 @Injectable({ multiple: true })
 export class SumiContributesRunner extends WithEventBus {
   static ContributePoints = [
     BrowserViewContributionPoint,
+    BrowserMainContributionPoint,
+    NodeMainContributionPoint,
+    WorkerMainContributionPoint,
+    ViewsProxiesContributionPoint,
     MenubarsContributionPoint,
     SubmenusContributionPoint,
     ToolbarContributionPoint,
@@ -82,8 +81,9 @@ export class SumiContributesRunner extends WithEventBus {
             this.extension.defaultPkgNlsJSON,
           ]);
 
-          if (contributePoint.schema) {
-            schema.properties.kaitianContributes.properties[contributeName] = contributePoint.schema;
+          if (contributeCls.schema) {
+            OpensumiExtensionPackageSchema.properties.kaitianContributes.properties[contributeName] =
+              contributeCls.schema;
           }
 
           this.addDispose(contributePoint);
@@ -93,6 +93,6 @@ export class SumiContributesRunner extends WithEventBus {
         }
       }
     }
-    this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, schema, ['package.json']);
+    this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, OpensumiExtensionPackageSchema, ['package.json']);
   }
 }

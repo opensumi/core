@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { MenuBar } from '@opensumi/ide-menu-bar/lib/browser/menu-bar.view';
 
 import * as styles from './menu-bar.module.less';
@@ -10,7 +12,11 @@ import * as styles from './menu-bar.module.less';
  * opensumi's original menubar.
  */
 export const MenuBarView = () => (
-  <div className={styles.menu_bar_view}>
+  <div
+    id={VIEW_CONTAINERS.MENUBAR}
+    className={styles.menu_bar_view}
+    style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}
+  >
     <span className={styles.menu_bar_logo} />
     <MenuBar />
   </div>

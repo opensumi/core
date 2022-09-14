@@ -80,6 +80,9 @@ tools/extensions
 # temp release log
 releaselog.md
 
+# temp iteration-plan
+iteration-plan.md
+
 tools/electron/app
 tools/electron/extensions
 tools/workspace

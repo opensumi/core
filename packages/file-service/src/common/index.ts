@@ -1,6 +1,7 @@
 export * from './file-service-client';
 export * from './files';
 export * from './watcher';
+export * from './file-ext';
 
 export const FileServicePath = 'FileService';
 export const DiskFileServicePath = 'DiskFileService';

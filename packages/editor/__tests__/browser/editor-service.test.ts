@@ -1,12 +1,5 @@
 import { CorePreferences, IContextKeyService, PreferenceService } from '@opensumi/ide-core-browser';
-import {
-  URI,
-  Disposable,
-  createContributionProvider,
-  ILoggerManagerClient,
-  IEventBus,
-  Deferred,
-} from '@opensumi/ide-core-common';
+import { URI, Disposable, createContributionProvider, IEventBus, Deferred } from '@opensumi/ide-core-common';
 import {
   EditorComponentRegistry,
   IEditorDecorationCollectionService,
@@ -114,10 +107,6 @@ injector.addProviders(
     {
       token: IContextKeyService,
       useClass: MockContextKeyService,
-    },
-    {
-      token: ILoggerManagerClient,
-      useValue: jest.fn(),
     },
     {
       token: IMessageService,

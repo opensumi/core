@@ -171,10 +171,9 @@
   display: flex;
   background-color: var(--kt-panelTitle-background);
   user-select: none;
-  height: var(--tabBar-height);
   align-items: center;
   border-bottom: 1px solid var(--sideBar-border);
-  box-sizing: border-box;
+  box-sizing: content-box;
   h1 {
     margin: 0;
     font-size: 12px;
@@ -245,8 +244,8 @@
     }
   }
 }
-.kt_left_tab,
-.kt_right_tab {
+.left_tab,
+.right_tab {
   margin-top: 8px;
   background-color: var(--activityBar-background);
   width: 48px;
@@ -273,7 +272,7 @@
   }
 }
 
-.kt_left_tab {
+.left_tab {
   &:global(.active) {
     .icon_tab {
       &::before {
@@ -284,7 +283,7 @@
   }
 }
 
-.kt_right_tab {
+.right_tab {
   &:global(.active) {
     .icon_tab {
       &::before {
@@ -295,7 +294,7 @@
   }
 }
 
-.kt_bottom_tab {
+.bottom_tab {
   margin: 0 4px;
   padding: 0 8px;
   position: relative;

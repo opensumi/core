@@ -1221,8 +1221,8 @@ export class FileTreeModelService {
           from = (target.parent as Directory).uri.resolve(nameFragments.slice(0, index + 1).join(Path.separator));
           to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
         }
-        // 屏蔽重命名文件事件
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
+        promptHandle.removeAddonAfter();
         if (error) {
           this.validateMessage = {
             type: PROMPT_VALIDATE_TYPE.ERROR,
@@ -1691,7 +1691,7 @@ export class FileTreeModelService {
       if (!this.fileTreeHandle) {
         return;
       }
-      const node = (await this.fileTreeHandle.ensureVisible(path, 'smart', true)) as File;
+      const node = (await this.fileTreeHandle.ensureVisible(path, 'center', true)) as File;
       if (node) {
         this.selectFileDecoration(node);
       }

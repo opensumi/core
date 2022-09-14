@@ -94,6 +94,9 @@ describe('Debug Variables Tree Model', () => {
         contextDebugProtocolVariableMenu: {
           set: jest.fn(),
         },
+        contextCanViewMemory: {
+          set: jest.fn(),
+        },
       },
     });
 

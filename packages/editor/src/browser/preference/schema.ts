@@ -71,6 +71,7 @@ export const EDITOR_SUGGEST_DEFAULTS = {
   showSnippets: true,
   showUsers: true,
   showIssues: true,
+  detailsVisible: true,
   preview: true,
   statusBar: {
     visible: false,
@@ -184,7 +185,7 @@ export const EDITOR_DEFAULTS = {
     guides: {
       indentation: true,
       highlightActiveIndentGuide: true,
-      bracketPairs: false,
+      bracketPairs: true,
     },
     fixedOverflowWidgets: true,
   },
@@ -560,10 +561,39 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_SUGGEST_DEFAULTS.preview,
     description: localize('editor.suggest.preview', 'Enable or disable the rendering of the suggestion preview.'),
   },
+  'editor.suggest.details.visible': {
+    type: 'boolean',
+    default: EDITOR_SUGGEST_DEFAULTS.detailsVisible,
+    description: localize('editor.suggest.details.visible'),
+  },
   'editor.inlineSuggest.enabled': {
     type: 'boolean',
     default: EDITOR_INLINE_SUGGEST_DEFAULTS.enabled,
     description: localize('inlineSuggest.enabled', 'Enable or disable the rendering of automatic inline completions.'),
+  },
+  'editor.experimental.stickyScroll.enabled': {
+    type: 'boolean',
+    default: true,
+    description: localize(
+      'editor.experimental.stickyScroll',
+      'Shows the nested current scopes during the scroll at the top of the editor.',
+    ),
+  },
+  'editor.customCodeActionMenu.showHeaders': {
+    type: 'boolean',
+    default: true,
+    description: localize(
+      'editor.customCodeActionMenu.showHeaders',
+      'Enabling this will show the code action menu with group headers, if the custom code action menu is enabled.',
+    ),
+  },
+  'editor.useCustomCodeActionMenu': {
+    type: 'boolean',
+    default: true,
+    description: localize(
+      'editor.useCustomCodeActionMenu',
+      'Enabling this adjusts how the code action menu is rendered.',
+    ),
   },
   'editor.letterSpacing': {
     type: 'number',
@@ -1538,6 +1568,16 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_DEFAULTS.showUnused,
     description: localize('showUnused', 'Controls fading out of unused code.'),
   },
+  'editor.comments.insertSpace': {
+    type: 'boolean',
+    default: true,
+    description: localize('insertSpace', 'Insert a space after the line comment token and inside the block comments tokens.'),
+  },
+  'editor.comments.ignoreEmptyLines': {
+    type: 'boolean',
+    default: true,
+    description: localize('insertSpace', 'Ignore empty lines when inserting line comments.'),
+  },
   'editor.links': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.links,
@@ -1789,7 +1829,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.bracketPairColorization.enabled': {
     type: 'boolean',
-    default: false,
+    default: true,
     description: '%editor.configuration.bracketPairColorization.enabled%',
   },
   'editor.largeFile': {
@@ -1823,6 +1863,11 @@ const customEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: false, // 开天修改
     description: '%diffEditor.configuration.ignoreTrimWhitespace%',
+  },
+  'editor.experimental.stickyScroll.enabled': {
+    type: 'boolean',
+    default: false,
+    description: '%editor.experimental.stickyScroll.enabled.description%',
   },
 };
 

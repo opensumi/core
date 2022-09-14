@@ -20,7 +20,6 @@ import {
   ExtHostWebviewViews,
   ExtHostWebviewService,
 } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.api.webview';
-import { ILoggerManagerClient } from '@opensumi/ide-logs';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { StaticResourceService } from '@opensumi/ide-static-resource';
 import { IIconService } from '@opensumi/ide-theme';
@@ -28,7 +27,6 @@ import { IWebviewService, IWebview } from '@opensumi/ide-webview';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockLoggerManagerClient } from '../../__mocks__/loggermanager';
 import { IExtHostWebview, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../../lib/common/vscode';
 
 async function delay(ms: number) {
@@ -51,10 +49,6 @@ describe('Webview view tests ', () => {
   const viewVisible = new Map<string, boolean>();
 
   injector.addProviders(
-    {
-      token: ILoggerManagerClient,
-      useClass: MockLoggerManagerClient,
-    },
     {
       token: IWebviewService,
       useValue: mockService<IWebviewService>({

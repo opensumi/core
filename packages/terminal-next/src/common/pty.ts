@@ -10,6 +10,23 @@ import { ITerminalEnvironment, ITerminalProcessExtHostProxy, TerminalLocation } 
 import { IDetectProfileOptions, ITerminalProfile } from './profile';
 import { WindowsShellType } from './shell';
 
+export interface IPtySpawnOptions {
+  /**
+   * 恢复终端的历史记录的特性
+   *
+   * 在 Task 启动终端的时候我们要关掉这个特性，因为我们期望每一次 Task 仅返回当次执行的结果
+   *
+   * @default true
+   */
+  preserveHistory?: boolean;
+  /**
+   * 保存的终端历史记录的行数
+   * TODO: 可以通过设置项改变
+   * @default 500
+   */
+  ptyLineCacheSize?: number;
+}
+
 export interface IPtyProcess extends INodePty {
   /**
    * @deprecated 请使用 `IPty.launchConfig` 的 shellPath 字段
@@ -44,6 +61,7 @@ export interface IPtyProxyRPCService {
     args: string[] | string,
     options: pty.IPtyForkOptions | pty.IWindowsPtyForkOptions,
     sessionId?: string,
+    spawnOptions?: IPtySpawnOptions,
   ): Promise<pty.IPty>;
 
   /**
@@ -235,6 +253,13 @@ export interface TerminalOptions {
   iconPath?: Uri | { light: Uri; dark: Uri } | vscode.ThemeIcon;
 
   /**
+   * The CLI arguments to use with executable, a string[] is in argv format and will be escaped,
+   * a string is in "CommandLine" pre-escaped format and will be used as is. The string option is
+   * only supported on Windows and will throw an exception if used on macOS or Linux.
+   */
+  args?: any;
+
+  /**
    * The icon {@link ThemeColor} for the terminal.
    * The `terminal.ansi*` theme keys are
    * recommended for the best contrast and consistency across themes.
@@ -246,12 +271,6 @@ export interface TerminalOptions {
    * pty 进程退出后是否自动关闭 terminal 控件
    */
   closeWhenExited?: boolean;
-
-  /**
-   * @deprecated Use `ICreateClientWithWidgetOptions.args` instead. Will removed in 2.17.0
-   * 自定义的参数，由上层集成方自行控制
-   */
-  args?: any;
 
   /**
    * @deprecated Use `ICreateClientWithWidgetOptions.beforeCreate` instead. Will removed in 2.17.0
@@ -292,7 +311,7 @@ export interface INodePtyInstance {
   id: string;
   name: string;
   pid: number;
-  proess: string;
+  process: string;
   shellPath?: string;
 }
 
@@ -534,6 +553,11 @@ export interface IShellLaunchConfig {
    */
   disablePersistence?: boolean;
 
+  /**
+   * 禁用保持 Shell 历史的特性
+   */
+  disablePreserveHistory?: boolean;
+
   __fromTerminalOptions?: TerminalOptions;
 }
 
@@ -561,6 +585,28 @@ export interface ICreateTerminalOptions {
    * The terminal's location (editor or panel), it's terminal parent (split to the right), or editor group
    */
   location?: ITerminalLocationOptions;
+
+  /**
+   * pty 进程退出后是否自动关闭 terminal 控件
+   */
+  closeWhenExited?: boolean;
+
+  /**
+   * 是否为 TaskExecutor
+   */
+  isTaskExecutor?: boolean;
+
+  /**
+   * 作为 TaskExecutor 时对应的 taskId
+   */
+  taskId?: string;
+
+  /**
+   * 自定义的参数，由上层集成方自行控制
+   */
+  args?: any;
+
+  beforeCreate?: (terminalId: string) => void;
 }
 
 export function asTerminalIcon(

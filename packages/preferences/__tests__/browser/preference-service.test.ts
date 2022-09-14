@@ -18,9 +18,7 @@ import {
   injectPreferenceConfigurations,
   injectPreferenceSchemaProvider,
   IEventBus,
-  ILoggerManagerClient,
 } from '@opensumi/ide-core-browser';
-import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 import { FileServiceContribution } from '@opensumi/ide-file-service/lib/browser/file-service-contribution';
@@ -143,16 +141,10 @@ describe('PreferenceService should be work', () => {
     };
 
     // Mock
-    injector.addProviders(
-      {
-        token: IWorkspaceService,
-        useValue: mockWorkspaceService,
-      },
-      {
-        token: ILoggerManagerClient,
-        useClass: MockLoggerManageClient,
-      },
-    );
+    injector.addProviders({
+      token: IWorkspaceService,
+      useValue: mockWorkspaceService,
+    });
 
     injectPreferenceConfigurations(injector);
     injectPreferenceSchemaProvider(injector);
@@ -222,12 +214,14 @@ describe('PreferenceService should be work', () => {
       });
       preferenceService.set(testPreferenceName, 28);
     });
+
     it('onPreferencesChanged event should be worked', (done) => {
       const testPreferenceName = 'editor.fontSize';
-      const dispose1 = preferenceService.onPreferencesChanged((changes) => {
+      const dispose = preferenceService.onPreferencesChanged((changes) => {
         for (const preferenceName of Object.keys(changes)) {
+          done();
           if (preferenceName === testPreferenceName && changes[preferenceName].scope === PreferenceScope.Workspace) {
-            dispose1.dispose();
+            dispose.dispose();
             done();
           }
         }

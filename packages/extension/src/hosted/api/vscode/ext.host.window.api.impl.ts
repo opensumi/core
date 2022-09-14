@@ -84,9 +84,6 @@ export function createWindowApiFactory(
         token: vscode.CancellationToken,
       ) => Thenable<R>,
     ) {
-      if (typeof options.location === 'object') {
-        throwProposedApiError(extension);
-      }
       return extHostProgress.withProgress(extension, options, task);
     },
     createStatusBarItem(
@@ -191,7 +188,7 @@ export function createWindowApiFactory(
     createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
       return extHostQuickOpen.createQuickPick();
     },
-    showInputBox(options?: QuickInputOptions, token?: CancellationToken): PromiseLike<string | undefined> {
+    showInputBox(options?: vscode.InputBoxOptions, token?: CancellationToken): PromiseLike<string | undefined> {
       return extHostQuickOpen.showInputBox(options, token);
     },
     createInputBox(): vscode.InputBox {
@@ -255,6 +252,8 @@ export function createWindowApiFactory(
     onDidCloseTerminal: extHostTerminal.onDidCloseTerminal,
 
     onDidOpenTerminal: extHostTerminal.onDidOpenTerminal,
+
+    onDidChangeTerminalState: extHostTerminal.onDidChangeTerminalState,
 
     createTerminal(
       nameOrOptions?: vscode.TerminalOptions | vscode.ExtensionTerminalOptions | string,

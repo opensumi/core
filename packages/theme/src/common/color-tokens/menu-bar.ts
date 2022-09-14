@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { Color } from '../../common/color';
-import { registerColor, transparent } from '../color-registry';
+import { transparent, registerColor } from '../utils';
 
 import { activeContrastBorder } from './base';
 import { TITLE_BAR_ACTIVE_FOREGROUND } from './title-bar';

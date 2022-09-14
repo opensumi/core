@@ -1,10 +1,10 @@
 import { observable } from 'mobx';
 import React from 'react';
 
-import { VALIDATE_TYPE } from '@opensumi/ide-components';
-import { URI, Uri, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
+import type { VALIDATE_TYPE } from '@opensumi/ide-components';
+import type { URI, MaybePromise, IDisposable, Event } from '@opensumi/ide-core-common';
 
-import { Keybinding } from '../keybinding';
+import type { Keybinding } from '../keybinding';
 
 export enum Mode {
   /**
@@ -35,6 +35,11 @@ export interface Highlight {
  * 该类型使用 monaco-editor-core/esm 中导入的版本
  */
 export { Mode as QuickOpenMode };
+
+export interface IKeyMods {
+  readonly ctrlCmd: boolean;
+  readonly alt: boolean;
+}
 
 export interface QuickTitleButton {
   iconPath: URI | { light: string | URI; dark: string | URI } | ThemeIcon;
@@ -292,7 +297,11 @@ export namespace QuickOpenOptions {
      * 在输入框修改文字时触发
      * @param value
      */
-    onChangeValue(value: string): void;
+    onChangeValue: (value: string) => void;
+    /**
+     * 在 quick pick 时监听是否有 modifer 按下
+     */
+    onKeyMods?: (mods: IKeyMods) => void;
     /**
      * 是否模糊匹配标签
      * 使用 vscode filter matchesFuzzy 方法
@@ -363,7 +372,7 @@ export namespace QuickOpenOptions {
     onConfirm: () => {
       /* no-op*/
     },
-    valueSelection: [-1, -1],
+    valueSelection: [-1, -1] as [number, number],
     fuzzyMatchLabel: false,
     fuzzyMatchDetail: false,
     fuzzyMatchDescription: false,
@@ -495,7 +504,7 @@ export interface QuickInputOptions {
    * Text for when there is a problem with the current input value
    */
   validationMessage?: string | undefined;
-
+  validationType?: VALIDATE_TYPE;
   /**
    * The prefill value.
    */
@@ -536,7 +545,7 @@ export interface QuickInputOptions {
    * @param value The current value of the input box.
    * @return Return `undefined`, or the empty string when 'value' is valid.
    */
-  validateInput?(value: string): MaybePromise<string | null | undefined>;
+  validateInput?(value: string): MaybePromise<string | { message: string; type: VALIDATE_TYPE } | null | undefined>;
 }
 
 export interface QuickOpenActionProvider {

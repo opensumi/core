@@ -1,12 +1,6 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import {
-  AppConfig,
-  Disposable,
-  getPreferenceLanguageId,
-  StorageProvider,
-  STORAGE_NAMESPACE,
-} from '@opensumi/ide-core-browser';
-import { ExtensionCandidate as ExtensionCandidate } from '@opensumi/ide-core-common';
+import { AppConfig, Disposable, StorageProvider, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
+import { ExtensionCandidate as ExtensionCandidate, getLanguageId } from '@opensumi/ide-core-common';
 
 import {
   ExtensionNodeServiceServerPath,
@@ -111,7 +105,7 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
   ): Promise<Extension | undefined> {
     const extensionMetadata: IExtensionMetaData | undefined =
       typeof extensionPathOrMetaData === 'string'
-        ? await this.extensionNodeClient.getExtension(extensionPathOrMetaData, getPreferenceLanguageId(), {})
+        ? await this.extensionNodeClient.getExtension(extensionPathOrMetaData, getLanguageId(), {})
         : extensionPathOrMetaData;
 
     if (!extensionMetadata) {

@@ -42,6 +42,7 @@ import { ClientAppStateService } from '../application/application-state-service'
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ClientAppContribution } from '../common';
+import { ExtensionsPointServiceImpl, IExtensionsPointService } from '../extensions';
 import { FsProviderContribution } from '../fs';
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
@@ -73,7 +74,8 @@ import { OpenerService } from '../opener/opener.service';
 import { PreferenceContribution } from '../preferences';
 import { IProgressService } from '../progress';
 import { ProgressService } from '../progress/progress.service';
-import { AppConfig, SlotRendererContribution } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
+import { SlotRendererContribution } from '../react-providers/slot';
 import { CredentialsService, ICredentialsService, CryptoService, ICryptoService } from '../services';
 import { IClipboardService, BrowserClipboardService } from '../services/clipboard.service';
 import { IExternalUriService, ExternalUriService } from '../services/external-uri.service';
@@ -246,6 +248,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IHashCalculateService,
       useClass: HashCalculateServiceImpl,
+    },
+    {
+      token: IExtensionsPointService,
+      useClass: ExtensionsPointServiceImpl,
     },
   ];
   injector.addProviders(...providers);

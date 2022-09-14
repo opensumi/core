@@ -12,9 +12,10 @@ import {
   IReporter,
   setLanguageId,
   ILogService,
+  isPromiseCanceledError,
+  locale,
 } from '@opensumi/ide-core-common';
-import { isPromiseCanceledError, locale } from '@opensumi/ide-core-common';
-import { AppConfig } from '@opensumi/ide-core-node';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
 import { CommandHandler } from '../common/vscode';

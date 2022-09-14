@@ -1,9 +1,8 @@
 require('./jest.setup.base');
 require('jest-canvas-mock');
+require('jest-fetch-mock').enableMocks();
 const { Buffer } = require('buffer');
 const timer = require('timers');
-
-const fetch = require('node-fetch');
 
 // vscode-jsonrpc 的 node 层需要 setImmediate 函数
 global.setImmediate = timer.setImmediate;
@@ -23,11 +22,6 @@ window.navigator = Object.assign(window.navigator, {
     },
   },
 });
-
-window.fetch = fetch.default;
-window.Response = fetch.Response;
-window.Request = fetch.Request;
-window.Headers = fetch.Headers;
 
 // https://github.com/jsdom/jsdom/issues/1742
 document.queryCommandSupported = () => {};

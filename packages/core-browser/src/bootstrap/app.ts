@@ -62,7 +62,7 @@ import {
   getPreferenceLanguageId,
   registerLocalStorageProvider,
 } from '../preferences';
-import { AppConfig } from '../react-providers';
+import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import { electronEnv } from '../utils';
 
@@ -146,6 +146,10 @@ export class ClientApp implements IClientApp, IDisposable {
   stateService: ClientAppStateService;
 
   constructor(opts: IClientAppOpts) {
+    // set a global so the opensumi devtools can identify that
+    // the current page is powered by opensumi core
+    window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
+
     const {
       modules,
       contributions,
@@ -180,7 +184,7 @@ export class ClientApp implements IClientApp, IDisposable {
       extensionDir:
         opts.extensionDir || (opts.isElectronRenderer || isDesktop ? electronEnv.metadata?.extensionDir : ''),
       injector: this.injector,
-      wsPath: opts.wsPath || 'ws://0.0.0.0:8000',
+      wsPath: opts.wsPath || `ws://${window.location.hostname}:8000`,
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,

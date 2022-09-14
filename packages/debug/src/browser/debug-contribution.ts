@@ -21,7 +21,9 @@ import {
   PreferenceService,
   IPreferenceSettingsService,
   COMMON_COMMANDS,
+  IExtensionsPointService,
 } from '@opensumi/ide-core-browser';
+import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI } from '@opensumi/ide-core-common';
@@ -139,35 +141,35 @@ export namespace DEBUG_COMMANDS {
   // menu commands
   export const DELETE_BREAKPOINT = {
     id: 'debug.delete.breakpoint',
-    label: localize('debug.menu.delete.breakpoint'),
+    label: '%debug.menu.delete.breakpoint%',
   };
   export const EDIT_BREAKPOINT = {
     id: 'debug.edit.breakpoint',
-    label: localize('debug.menu.edit.breakpoint'),
+    label: '%debug.menu.edit.breakpoint%',
   };
   export const DISABLE_BREAKPOINT = {
     id: 'debug.disable.breakpoint',
-    label: localize('debug.menu.disable.breakpoint'),
+    label: '%debug.menu.disable.breakpoint%',
   };
   export const ENABLE_BREAKPOINT = {
     id: 'debug.enable.breakpoint',
-    label: localize('debug.menu.enable.breakpoint'),
+    label: '%debug.menu.enable.breakpoint%',
   };
   export const ENABLE_LOGPOINT = {
     id: 'debug.enable.logpoint',
-    label: localize('debug.menu.enable.logpoint'),
+    label: '%debug.menu.enable.logpoint',
   };
   export const ADD_BREAKPOINT = {
     id: 'debug.add.breakpoint',
-    label: localize('debug.menu.add.breakpoint'),
+    label: '%debug.menu.add.breakpoint%',
   };
   export const ADD_LOGPOINT = {
     id: 'debug.add.logpoint',
-    label: localize('debug.menu.add.logpoint'),
+    label: '%debug.menu.add.logpoint%',
   };
   export const ADD_CONDITIONAL_BREAKPOINT = {
     id: 'debug.add.conditional',
-    label: localize('debug.menu.add.conditional'),
+    label: '%debug.menu.add.conditional%',
   };
   export const RESTART_FRAME = {
     id: 'debug.callstack.restart.frame',
@@ -188,10 +190,13 @@ export namespace DEBUG_COMMANDS {
   export const ADD_TO_WATCH_ID = {
     id: 'debug.addToWatchExpressions',
   };
+  export const VIEW_MEMORY_ID = {
+    id: 'debug.variables.view.memory',
+  };
   // console commands
   export const CLEAR_CONSOLE = {
     id: 'debug.console.clear',
-    label: localize('debug.console.clear'),
+    label: '%debug.console.clear%',
   };
   export const COPY_CONSOLE_ITEM = {
     id: 'debug.console.copy',
@@ -201,7 +206,7 @@ export namespace DEBUG_COMMANDS {
   };
   export const COLLAPSE_ALL_CONSOLE_ITEM = {
     id: 'debug.console.collapseAll',
-    label: localize('debug.console.collapseAll'),
+    label: '%debug.console.collapseAll%',
   };
   export const CONSOLE_ENTER_EVALUATE = {
     id: 'debug.console.keybing.enter.evaluate',
@@ -217,11 +222,11 @@ export namespace DEBUG_COMMANDS {
   };
   export const RUN_TO_CURSOR = {
     id: 'debug.action.runToCursor',
-    label: localize('debug.action.runToCursor'),
+    label: '%debug.action.runToCursor%',
   };
   export const FORCE_RUN_TO_CURSOR = {
     id: 'debug.action.forceRunToCursor',
-    label: localize('debug.action.forceRunToCursor'),
+    label: '%debug.action.forceRunToCursor%',
   };
 }
 
@@ -323,6 +328,9 @@ export class DebugContribution
 
   @Autowired(DebugContextKey)
   protected readonly debugContextKey: DebugContextKey;
+
+  @Autowired(IExtensionsPointService)
+  protected readonly extensionsPointService: IExtensionsPointService;
 
   private firstSessionStart = true;
 
@@ -440,7 +448,7 @@ export class DebugContribution
     this.sessionManager.onDidDestroyDebugSession((session) => {
       if (this.sessionManager.sessions.length === 0) {
         this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
-        this.commandService.tryExecuteCommand('statusbar.changeColor', 'var(--statusBar-foreground)');
+        this.commandService.tryExecuteCommand('statusbar.changeColor');
       }
     });
     this.configurations.load();
@@ -449,6 +457,15 @@ export class DebugContribution
     this.breakpointManager.onDidChangeBreakpoints(() => this.breakpointManager.save());
     this.breakpointManager.onDidChangeExceptionsBreakpoints(() => this.breakpointManager.save());
     this.breakpointManager.onDidChangeMarkers(() => this.breakpointManager.save());
+
+    this.extensionsPointService.appendExtensionPoint(['browserViews', 'properties'], {
+      extensionPoint: DEBUG_CONTAINER_ID,
+      frameworkKind: ['opensumi'],
+      jsonSchema: {
+        ...browserViews.properties,
+        description: formatLocalize('sumiContributes.browserViews.location.custom', localize('menu-bar.title.debug')),
+      },
+    });
   }
 
   // 左侧调试面板
@@ -833,6 +850,14 @@ export class DebugContribution
       when: `${CONTEXT_IN_DEBUG_MODE.raw}`,
       group: 'debug',
       order: 2,
+    });
+
+    menuRegistry.registerMenuItem(MenuId.EditorTitle, {
+      submenu: MenuId.EditorTitleRun,
+      label: localize('debug.menu.title.run'),
+      iconClass: getIcon('start'),
+      group: 'navigation',
+      order: -1,
     });
   }
 
