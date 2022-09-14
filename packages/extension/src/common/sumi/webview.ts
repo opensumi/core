@@ -8,15 +8,23 @@ export interface IPlainWebviewHandle {
   postMessage(message: any): Promise<boolean>;
 
   /**
-   *
+   * 接收到 WebView 内消息
    */
   onMessage: Event<any>;
+
+  /**
+   * A string that sets the session used by the page.
+   */
+  setPartition(value?: string): Promise<void>;
+
+  /**
+   * 加载一个 url
+   */
+  loadUrl(url: string): Promise<void>;
 }
 
 export interface IExtHostPlainWebview extends IPlainWebviewHandle {
   reveal(groupIndex: number);
-
-  loadUrl(url: string);
 }
 
 export interface ISumiExtHostWebviews {

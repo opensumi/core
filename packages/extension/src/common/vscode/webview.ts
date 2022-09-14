@@ -56,6 +56,8 @@ export interface IMainThreadWebview {
   $plainWebviewLoadUrl(id: string, uri: string): Promise<void>;
   $disposePlainWebview(id: string): Promise<void>;
   $revealPlainWebview(id: string, groupIndex: number): Promise<void>;
+
+  $setPlainWebviewPartition(id: string, value?: string): Promise<void>;
 }
 
 export interface IWebviewExtensionDescription {

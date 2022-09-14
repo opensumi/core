@@ -1,4 +1,3 @@
-import { AppConfig } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry, EditorPreferences } from '@opensumi/ide-editor/lib/browser';
@@ -8,6 +7,7 @@ import { IThemeService, ITheme } from '@opensumi/ide-theme';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { IWebviewService } from '../../src/browser';
+import { ElectronPlainWebview } from '../../src/browser/plain-webview';
 import { WebviewServiceImpl } from '../../src/browser/webview.service';
 
 let injector: MockInjector;
@@ -124,6 +124,18 @@ describe('electron platform webview service test suite', () => {
     webview.appendTo(document.createElement('div'));
     await webview.loadURL('http://example.test.com');
     expect(webview.url).toBe('http://example.test.com');
+  });
+
+  it('can set partition in electron plain webview', async () => {
+    const service: IWebviewService = injector.get(IWebviewService);
+    const webview = service.createPlainWebview();
+    webview.setPartition('persist:test');
+    webview.appendTo(document.createElement('div'));
+    await webview.loadURL('http://example.test.com');
+    expect(webview.url).toBe('http://example.test.com');
+    const domNode = (webview as ElectronPlainWebview).getWebviewElement();
+    expect(domNode).toBeDefined();
+    expect(domNode?.partition).toBe('persist:test');
   });
 
   it('should be able to create electron webview webviewComponent', async () => {

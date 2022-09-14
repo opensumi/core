@@ -542,6 +542,18 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     }
     await this.plainWebviews.get(id)!.webview.loadURL(uri);
   }
+  /**
+   * A string that sets the session used by the page.
+   *
+   * fallback to a generated id.
+   */
+  async $setPlainWebviewPartition(id: string, value?: string) {
+    if (!this.plainWebviews.has(id)) {
+      throw new Error('No Plain Webview With id ' + id);
+    }
+    const webview = this.plainWebviews.get(id)!.webview;
+    webview.setPartition(value ?? id);
+  }
 
   async $disposePlainWebview(id: string): Promise<void> {
     if (this.plainWebviews.has(id)) {
