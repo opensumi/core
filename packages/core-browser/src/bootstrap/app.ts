@@ -97,11 +97,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
    * 插件开发模式下指定的插件路径
    */
   extensionDevelopmentPath?: string | string[];
-  /**
-   * 是否开启对 OpenSumi DevTools 的支持
-   * 默认值为 false
-   */
-  devtools?: boolean;
 }
 
 export interface LayoutConfig {
@@ -191,6 +186,7 @@ export class ClientApp implements IClientApp, IDisposable {
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,
+      devtools,
     };
 
     if (devtools) {

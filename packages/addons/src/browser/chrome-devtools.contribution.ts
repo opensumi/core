@@ -1,5 +1,5 @@
 import { Autowired } from '@opensumi/di';
-import { ClientAppContribution } from '@opensumi/ide-core-browser';
+import { AppConfig, ClientAppContribution } from '@opensumi/ide-core-browser';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
 import { ConnectionRTTBrowserServiceToken, ConnectionRTTBrowserService } from './connection-rtt-service';
@@ -15,6 +15,9 @@ enum DevtoolsCommand {
 
 @Domain(ClientAppContribution)
 export class ChromeDevtoolsContribution implements ClientAppContribution {
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
+
   @Autowired(ConnectionRTTBrowserServiceToken)
   protected readonly rttService: ConnectionRTTBrowserService;
 
@@ -23,25 +26,28 @@ export class ChromeDevtoolsContribution implements ClientAppContribution {
   static INTERVAL = 1000;
 
   initialize() {
-    // receive notification from opensumi devtools by custom event
-    window.addEventListener(DevtoolsEvent.Latency, (event) => {
-      const { command } = event.detail;
-      if (command === DevtoolsCommand.Start) {
+    // only runs when devtools supoprt is enabled
+    if (this.appConfig.devtools) {
+      // receive notification from opensumi devtools by custom event
+      window.addEventListener(DevtoolsEvent.Latency, (event) => {
+        const { command } = event.detail;
+        if (command === DevtoolsCommand.Start) {
+          if (!this.interval) {
+            this.startRTTInterval();
+          }
+        } else if (command === DevtoolsCommand.Stop) {
+          if (this.interval) {
+            global.clearInterval(this.interval);
+            this.interval = undefined;
+          }
+        }
+      });
+
+      // if opensumi devtools has started capturing before this contribution point is registered
+      if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureRPC) {
         if (!this.interval) {
           this.startRTTInterval();
         }
-      } else if (command === DevtoolsCommand.Stop) {
-        if (this.interval) {
-          global.clearInterval(this.interval);
-          this.interval = undefined;
-        }
-      }
-    });
-
-    // if opensumi devtools has started capturing before this contribution point is registered
-    if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureRPC) {
-      if (!this.interval) {
-        this.startRTTInterval();
       }
     }
   }
