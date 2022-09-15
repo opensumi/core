@@ -26,6 +26,23 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
 
   constructor() {
     super();
+    /**
+     * Here we create a `outer iframe`, and later we will create an `inner iframe` and append it into outer's child.
+     *
+     * So we can capture message in the `outer iframe` instead of in the `main renderer`.
+     * +---------------------------------------------------------+
+     * | Main renderer                                           |
+     * |   +---------------------------------------------------+ |
+     * |   | Outer iframe        ^                             | |
+     * |   |                     | capture message here        | |
+     * |   |   +-----------------+---------------------------+ | |
+     * |   |   | Inner iframe    |                           | | |
+     * |   |   |             postMessage                     | | |
+     * |   |   |                                             | | |
+     * |   |   +---------------------------------------------+ | |
+     * |   +---------------------------------------------------+ |
+     * +---------------------------------------------------------+
+     */
     this.wrapper = document.createElement('iframe');
     this.wrapper.setAttribute('src', 'javascript:""');
     this.wrapper.style.width = '100%';
@@ -52,6 +69,10 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
 
   get url() {
     return this._url;
+  }
+
+  setPartition(value: string): void {
+    // noop
   }
 
   async loadURL(url: string): Promise<void> {
@@ -129,6 +150,10 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
   }
 }
 
+interface IAllowedWebviewAttributes {
+  partition?: string;
+}
+
 export class ElectronPlainWebview extends Disposable implements IPlainWebview {
   private _url: string | undefined;
 
@@ -167,6 +192,16 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
     return this.wrapper;
   }
 
+  getWebviewElement() {
+    return this.webview;
+  }
+
+  extendAttributes: IAllowedWebviewAttributes = {};
+
+  setPartition(value: string): void {
+    this.extendAttributes.partition = value;
+  }
+
   async loadURL(url: string): Promise<void> {
     if (!this.wrapper) {
       return;
@@ -180,6 +215,10 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
       this.webview.style.zIndex = '2';
       this.webview.src = url;
       this.webview.preload = electronEnv.plainWebviewPreload;
+      if (this.extendAttributes.partition) {
+        this.webview.partition = this.extendAttributes.partition;
+      }
+
       this.wrapper!.appendChild(this.webview);
       this.webview.addEventListener('ipc-message', (event) => {
         if (event.channel === 'webview-message') {
