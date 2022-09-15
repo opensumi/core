@@ -25,6 +25,7 @@ export interface IResourceFileEdit {
     showInEditor?: boolean;
     isDirectory?: boolean;
     copy?: boolean;
+    content?: string;
   };
 }
 
