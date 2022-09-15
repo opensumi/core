@@ -138,6 +138,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           workerHostEntry: this.appConfig.extensionWorkerEntry,
           extensionDevelopmentHost: this.appConfig.extensionDevelopmentHost,
           appPath: app.getAppPath(),
+          devtools: this.appConfig.devtools,
         });
       }
     };

@@ -57,9 +57,6 @@ const initForDevtools = () => {
   });
 };
 
-// initialize for OpenSumi DevTools
-initForDevtools();
-
 const electronEnv = {};
 
 const urlParams = new URLSearchParams(decodeURIComponent(window.location.search));
@@ -89,7 +86,10 @@ electronEnv.currentWebContentsId = webContentsId;
 electronEnv.onigWasmPath = require.resolve('vscode-oniguruma/release/onig.wasm');
 
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
-
+// if devtools support enabled
+if (metaData.devtools) {
+  initForDevtools();
+}
 electronEnv.metadata = metaData;
 process.env = Object.assign({}, process.env, metaData.env, { WORKSPACE_DIR: metaData.workspace });
 
