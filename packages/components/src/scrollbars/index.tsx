@@ -74,18 +74,17 @@ export const Scrollbars = ({
       onUpdate={handleUpdate}
       onScroll={onScroll}
       renderTrackHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style, left: 0, right: 0, bottom: 0, height: thumbSize }} />
+        <div {...props} style={{ ...style, left: 0, right: 0, bottom: 0 }} />
       )}
       renderTrackVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, top: 0, right: 0, bottom: 0, width: thumbSize }} />
+        <div {...props} style={{ ...style, top: 0, right: 0, bottom: 0 }} />
       )}
       renderThumbVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, width: thumbSize }} className={'scrollbar-thumb-vertical'} />
+        <div {...props} style={{ ...style }} className={'scrollbar-thumb-vertical'} />
       )}
       renderThumbHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style, height: thumbSize }} className={'scrollbar-thumb-horizontal'} />
+        <div {...props} style={{ ...style }} className={'scrollbar-thumb-horizontal'} />
       )}
-      // renderView={(props) => <div id='xxx' {...props} />}
     >
       <div
         ref={(ref) => {
