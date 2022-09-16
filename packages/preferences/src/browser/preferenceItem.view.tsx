@@ -346,7 +346,6 @@ function CheckboxPreferenceItem({
   scope,
   isModified,
 }: IPreferenceItemProps) {
-  const description = schema && schema.description && replaceLocalizePlaceholder(schema.description);
   const preferenceService: PreferenceService = useInjectable(PreferenceService);
 
   const [value, setValue] = useState<boolean>();

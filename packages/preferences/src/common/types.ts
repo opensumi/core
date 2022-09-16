@@ -13,7 +13,7 @@ export interface SettingContribution {
    * 注册 Setting
    * @param registry
    */
-  registerSetting?(registy: {
+  registerSetting?(registry: {
     registerSettingGroup: (settingGroup: ISettingGroup) => IDisposable;
     registerSettingSection: (key: string, section: ISettingSection) => IDisposable;
   }): void;

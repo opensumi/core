@@ -445,7 +445,7 @@ export const localizationBundle = {
     'preference.terminal.fontSize': 'Terminal Font Size',
     'preference.terminal.fontWeight': 'Terminal Font Weight',
     'preference.terminal.lineHeight': 'Terminal Line Height',
-    'preference.terminal.cursorBlink': 'Terminal Cursor Link',
+    'preference.terminal.cursorBlink': 'Terminal Cursor Blink',
     'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
     'preference.terminal.integrated.shellArgs.linux': 'Terminal Shell Args Linux',
     'preference.terminal.integrated.shellArgs.linuxDesc':
@@ -527,8 +527,8 @@ export const localizationBundle = {
     'preference.empty': 'Loading Settings...',
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
-    'preference.overwrittenInUser': '（Set in User Settings）',
-    'preference.overwrittenInWorkspace': '（Set in Workspace Settings）',
+    'preference.overwrittenInUser': '(Modified in User Settings)',
+    'preference.overwrittenInWorkspace': '(Modified in Workspace Settings)',
     'preference.searchPlaceholder': 'Search settings...',
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout':

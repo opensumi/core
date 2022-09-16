@@ -1,3 +1,4 @@
+import groupBy from 'lodash/groupBy';
 import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -244,8 +245,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
     res.forEach((section) => {
       if (section.preferences) {
-        const sec = { ...section };
-        sec.preferences = section.preferences.filter((pref) => {
+        const preferences = section.preferences.filter((pref) => {
           if (this.filterPreferences(pref, scope)) {
             return false;
           }
@@ -265,6 +265,15 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
             (markdownDescription && this.isContainSearchValue(markdownDescription, search))
           );
         });
+
+        groupBy(section.preferences, (v) => {
+          if (v instanceof String) {
+            return v;
+          }
+          return (v as IPreferenceViewDesc).id;
+        });
+        const sec = { ...section };
+
         if (sec.preferences.length > 0) {
           result.push(sec);
         }
@@ -397,6 +406,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     iconClass: getIcon('editor'),
   },
   {
+    id: PreferenceSettingId.View,
+    title: '%settings.group.view%',
+    iconClass: getIcon('detail'),
+  },
+  {
     id: PreferenceSettingId.Terminal,
     title: '%settings.group.terminal%',
     iconClass: getIcon('terminal'),
@@ -406,17 +420,12 @@ export const defaultSettingGroup: ISettingGroup[] = [
     title: '%settings.group.feature%',
     iconClass: getIcon('file-text'),
   },
-  {
-    id: PreferenceSettingId.View,
-    title: '%settings.group.view%',
-    iconClass: getIcon('detail'),
-  },
 ];
 
 export const defaultSettingSections: {
   [key: string]: ISettingSection[];
 } = {
-  general: [
+  [PreferenceSettingId.General]: [
     {
       preferences: [
         { id: 'general.theme', localized: 'preference.general.theme' },
@@ -429,8 +438,9 @@ export const defaultSettingSections: {
       ],
     },
   ],
-  editor: [
+  [PreferenceSettingId.Editor]: [
     {
+      title: 'Editor',
       preferences: [
         // 预览模式
         { id: 'editor.previewMode' },
@@ -453,8 +463,7 @@ export const defaultSettingSections: {
         { id: 'editor.fontFamily', localized: 'preference.editor.fontFamily' },
         { id: 'editor.lineHeight', localized: 'preference.editor.lineHeight' },
         { id: 'editor.trimAutoWhitespace' },
-        // workbench
-        { id: 'workbench.editorAssociations' },
+
         // 补全
         { id: 'editor.suggest.insertMode' },
         { id: 'editor.suggest.filterGraceful' },
@@ -504,12 +513,10 @@ export const defaultSettingSections: {
 
         // 行内补全
         { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
-
         {
           id: 'editor.experimental.stickyScroll.enabled',
           localized: 'preference.editor.experimental.stickyScroll.enabled',
         },
-
         // 缩进
         { id: 'editor.detectIndentation', localized: 'preference.editor.detectIndentation' },
         { id: 'editor.tabSize', localized: 'preference.editor.tabSize' },
@@ -537,9 +544,20 @@ export const defaultSettingSections: {
           id: 'editor.bracketPairColorization.enabled',
           localized: 'preference.editor.bracketPairColorization.enabled',
         },
+        { id: 'workbench.editorAssociations' },
+      ],
+    },
+    {
+      title: 'Diff Editor',
+      preferences: [
         // Diff 编辑器
         { id: 'diffEditor.renderSideBySide', localized: 'preference.diffEditor.renderSideBySide' },
         { id: 'diffEditor.ignoreTrimWhitespace', localized: 'preference.diffEditor.ignoreTrimWhitespace' },
+      ],
+    },
+    {
+      title: 'Files',
+      preferences: [
         { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },
         { id: 'files.encoding', localized: 'preference.files.encoding.title' },
         { id: 'files.eol' },
@@ -552,7 +570,73 @@ export const defaultSettingSections: {
       ],
     },
   ],
-  terminal: [
+  // 整体布局相关的，比如 QuickOpen 也放这
+  [PreferenceSettingId.View]: [
+    {
+      // 布局信息
+      title: 'Layout',
+      preferences: [{ id: 'view.saveLayoutWithWorkspace', localized: 'preference.view.saveLayoutWithWorkspace.title' }],
+    },
+    {
+      title: 'File Tree',
+      preferences: [],
+    },
+    {
+      // 资源管理器
+      title: 'Explorer',
+      preferences: [
+        { id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title' },
+        { id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title' },
+        { id: 'explorer.compactFolders', localized: 'preference.explorer.compactFolders.title' },
+        { id: 'explorer.autoReveal', localized: 'preference.explorer.autoReveal' },
+      ],
+    },
+    {
+      title: 'QuickOpen',
+      preferences: [{ id: 'workbench.quickOpen.preserveInput' }],
+    },
+    {
+      title: 'Search',
+      preferences: [
+        // 搜索
+        { id: SearchSettingId.Include },
+        { id: SearchSettingId.Exclude, localized: 'preference.search.exclude.title' },
+        { id: SearchSettingId.UseReplacePreview },
+        // { id: 'search.maxResults' },
+        { id: SearchSettingId.SearchOnType },
+        { id: SearchSettingId.SearchOnTypeDebouncePeriod },
+        // { id: 'search.showLineNumbers' },
+        // { id: 'search.smartCase' },
+        // { id: 'search.useGlobalIgnoreFiles' },
+        // { id: 'search.useIgnoreFiles' },
+        // { id: 'search.useParentIgnoreFiles' },
+
+        // { id: 'search.quickOpen.includeHistory' },
+        // { id: 'search.quickOpen.includeSymbols' },
+      ],
+    },
+    {
+      title: 'Output',
+      preferences: [
+        // 输出
+        { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },
+        { id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight' },
+        { id: 'output.enableSmartScroll', localized: 'output.enableSmartScroll' },
+      ],
+    },
+    {
+      title: 'Debug',
+      preferences: [
+        // 调试
+        // 由于筛选器的匹配模式搜索存在性能、匹配难度大等问题，先暂时隐藏
+        // { id: 'debug.console.filter.mode', localized: 'preference.debug.console.filter.mode' },
+        { id: 'debug.console.wordWrap', localized: 'preference.debug.console.wordWrap' },
+        { id: 'debug.inline.values', localized: 'preference.debug.inline.values' },
+        { id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title' },
+      ],
+    },
+  ],
+  [PreferenceSettingId.Terminal]: [
     {
       preferences: [
         // 终端类型
@@ -587,53 +671,15 @@ export const defaultSettingSections: {
       ],
     },
   ],
-  feature: [
+  [PreferenceSettingId.Feature]: [
     {
-      preferences: [
-        // 树/列表项
-        { id: 'workbench.list.openMode', localized: 'preference.workbench.list.openMode.title' },
-        { id: 'explorer.autoReveal', localized: 'preference.explorer.autoReveal' },
-
-        // 搜索
-        { id: SearchSettingId.Include },
-        { id: SearchSettingId.Exclude, localized: 'preference.search.exclude.title' },
-        { id: SearchSettingId.UseReplacePreview },
-        // { id: 'search.maxResults' },
-        { id: SearchSettingId.SearchOnType },
-        { id: SearchSettingId.SearchOnTypeDebouncePeriod },
-        // { id: 'search.showLineNumbers' },
-        // { id: 'search.smartCase' },
-        // { id: 'search.useGlobalIgnoreFiles' },
-        // { id: 'search.useIgnoreFiles' },
-        // { id: 'search.useParentIgnoreFiles' },
-
-        // { id: 'search.quickOpen.includeHistory' },
-        // { id: 'search.quickOpen.includeSymbols' },
-
-        // 输出
-        { id: 'output.maxChannelLine', localized: 'output.maxChannelLine' },
-        { id: 'output.enableLogHighlight', localized: 'output.enableLogHighlight' },
-        { id: 'output.enableSmartScroll', localized: 'output.enableSmartScroll' },
-        // 调试
-        // 由于筛选器的匹配模式搜索存在性能、匹配难度大等问题，先暂时隐藏
-        // { id: 'debug.console.filter.mode', localized: 'preference.debug.console.filter.mode' },
-        { id: 'debug.console.wordWrap', localized: 'preference.debug.console.wordWrap' },
-        { id: 'debug.inline.values', localized: 'preference.debug.inline.values' },
-      ],
+      title: 'Misc',
+      preferences: [],
     },
-  ],
-  view: [
     {
-      preferences: [
-        // 资源管理器
-        { id: 'explorer.fileTree.baseIndent', localized: 'preference.explorer.fileTree.baseIndent.title' },
-        { id: 'explorer.fileTree.indent', localized: 'preference.explorer.fileTree.indent.title' },
-        { id: 'explorer.compactFolders', localized: 'preference.explorer.compactFolders.title' },
-        // 运行与调试
-        { id: 'debug.toolbar.float', localized: 'preference.debug.toolbar.float.title' },
-        // 布局信息
-        { id: 'view.saveLayoutWithWorkspace', localized: 'preference.view.saveLayoutWithWorkspace.title' },
-      ],
+      // 树/列表项
+      title: 'Tree Component',
+      preferences: [{ id: 'workbench.list.openMode', localized: 'preference.workbench.list.openMode.title' }],
     },
   ],
 };
