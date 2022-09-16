@@ -622,6 +622,7 @@ export namespace EDITOR_COMMANDS {
 
   export const TOGGLE_WORD_WRAP: Command = {
     id: 'editor.toggleWordWrap',
+    label: '%editor.toggleWordWrap%',
     category: CATEGORY,
   };
 

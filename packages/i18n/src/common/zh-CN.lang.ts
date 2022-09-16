@@ -859,6 +859,8 @@ export const localizationBundle = {
     'toolbar-customize.complete': '完成',
     'toolbar.customize.menu': '自定义工具栏...',
 
+    'editor.toggleWordWrap': '切换自动换行',
+
     'workbench.uploadingFiles': '{0} 个文件上传中 {1}/s',
     'workspace.development.title': '插件开发宿主模式',
     'workbench.testViewContainer': '测试',
