@@ -328,7 +328,6 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_URI: Command = {
     id: 'editor.saveUri',
     category: CATEGORY,
-    label: '%editor.saveUri%',
   };
 
   export const SAVE_CURRENT: Command = {

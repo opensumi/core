@@ -641,6 +641,8 @@ export const localizationBundle = {
     'validate.tree.fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
     'validate.tree.invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
 
+    'editor.close.all': '关闭全部编辑器',
+
     'opened.editors.title': '打开的编辑器',
     'opened.editors.save.all': '保存全部',
     'opened.editors.close.all': '关闭全部',

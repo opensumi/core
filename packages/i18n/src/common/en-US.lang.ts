@@ -607,6 +607,8 @@ export const localizationBundle = {
     'validate.tree.fileNameExistsError': 'File or folder **{0}** already exists. Please use a different name.',
     'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
 
+    'editor.close.all': 'Close All Editors',
+
     'opened.editors.title': 'OPENED EDITORS',
     'opened.editors.save.all': 'Save All',
     'opened.editors.close.all': 'Close All',
