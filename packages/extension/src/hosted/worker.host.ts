@@ -84,7 +84,7 @@ export class ExtensionWorkerHost implements IExtensionWorkerHost {
     rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, this.storage);
 
     this.reporterService = new ReporterService(reporter, {
-      host: REPORT_HOST.EXTENSION,
+      host: REPORT_HOST.WORKER,
     });
   }
 
