@@ -125,13 +125,13 @@ export class EditorContribution
   private editorDocumentModelService: IEditorDocumentModelService;
 
   @Autowired(IDocPersistentCacheProvider)
-  cacheProvider: IDocPersistentCacheProvider;
+  private cacheProvider: IDocPersistentCacheProvider;
 
   @Autowired()
-  historyService: EditorHistoryService;
+  private historyService: EditorHistoryService;
 
   @Autowired()
-  monacoService: MonacoService;
+  private monacoService: MonacoService;
 
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
@@ -431,7 +431,7 @@ export class EditorContribution
 
   initialize() {
     this.editorStatusBarService.setListener();
-    this.historyService.start();
+    this.historyService.init();
   }
 
   registerCommands(commands: CommandRegistry): void {
@@ -1339,13 +1339,17 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
     });
     commands.registerCommand(EDITOR_COMMANDS.COPY_PATH, {
       execute: (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, uri);
       },
     });
     commands.registerCommand(EDITOR_COMMANDS.COPY_RELATIVE_PATH, {
       execute: (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, uri);
       },
     });
