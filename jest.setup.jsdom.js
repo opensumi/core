@@ -1,13 +1,6 @@
 require('./jest.setup.base');
 require('jest-canvas-mock');
 require('jest-fetch-mock').enableMocks();
-const { Buffer } = require('buffer');
-const timer = require('timers');
-
-// vscode-jsonrpc 的 node 层需要 setImmediate 函数
-global.setImmediate = timer.setImmediate;
-global.Buffer = Buffer;
-global.clearImmediate = timer.clearImmediate;
 
 // packages/extension/__tests__/browser/main.thread.env.test.ts
 // MainThreadEnvAPI Test Suites  › can read/write text via clipboard
