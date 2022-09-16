@@ -1,6 +1,9 @@
 require('./jest.setup.base');
 require('jest-canvas-mock');
 require('jest-fetch-mock').enableMocks();
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
 
 // packages/extension/__tests__/browser/main.thread.env.test.ts
 // MainThreadEnvAPI Test Suites  › can read/write text via clipboard
