@@ -147,7 +147,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         });
       }
       if (innerItems.length > 0 && section.title) {
-        innerItems.push({ title: section.title, scope: currentScope });
+        innerItems.unshift({ title: section.title, scope: currentScope });
       }
       return innerItems;
     };
