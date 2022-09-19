@@ -35,8 +35,8 @@ export const Scrollbars = ({
   const verticalShadowRef = useRef<HTMLDivElement | null>();
   const horizontalShadowRef = useRef<HTMLDivElement | null>();
 
-  const handleReachBottom = React.useCallback(
-    throttle((values) => {
+  const handleReachBottom = useCallback(
+    (values) => {
       const { scrollTop, scrollHeight, clientHeight } = values;
 
       if (scrollHeight === 0 && clientHeight === 0) {
@@ -48,23 +48,26 @@ export const Scrollbars = ({
       if (t > 1) {
         onReachBottom && onReachBottom();
       }
-    }, 100),
+    },
     [onReachBottom],
   );
 
-  const handleUpdate = (values) => {
-    const { scrollTop, scrollLeft } = values;
-    const shadowTopOpacity = (1 / 20) * Math.min(scrollTop, 20);
-    const shadowLeftOpacity = (1 / 20) * Math.min(scrollLeft, 20);
-    if (verticalShadowRef.current) {
-      verticalShadowRef.current.style.opacity = String(shadowTopOpacity);
-    }
-    if (horizontalShadowRef.current) {
-      horizontalShadowRef.current.style.opacity = String(shadowLeftOpacity);
-    }
-    handleReachBottom(values);
-    onUpdate && onUpdate(values);
-  };
+  const handleUpdate = useCallback(
+    throttle((values) => {
+      const { scrollTop, scrollLeft } = values;
+      const shadowTopOpacity = (1 / 20) * Math.min(scrollTop, 20);
+      const shadowLeftOpacity = (1 / 20) * Math.min(scrollLeft, 20);
+      if (verticalShadowRef.current) {
+        verticalShadowRef.current.style.opacity = String(shadowTopOpacity);
+      }
+      if (horizontalShadowRef.current) {
+        horizontalShadowRef.current.style.opacity = String(shadowLeftOpacity);
+      }
+      handleReachBottom(values);
+      onUpdate && onUpdate(values);
+    }, 100),
+    [onUpdate, handleReachBottom, verticalShadowRef.current, horizontalShadowRef.current],
+  );
 
   return (
     <CustomScrollbars
