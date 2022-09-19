@@ -59,8 +59,6 @@
       align-items: center;
       padding: 0 5px 0 10px;
       background: var(--editorGroupHeader-tabsBackground);
-      border-bottom: 1px solid var(--tab-border);
-      border-top: 1px solid var(--tab-border);
       .editor_action_wrapper {
         margin-left: 8px;
         position: relative;
@@ -85,12 +83,6 @@
         }
       }
     }
-  }
-
-  .kt_editor_tabs_scroll_wrapper {
-    flex-grow: 1;
-    width: 100%;
-    position: relative;
     &::before {
       position: absolute;
       content: '';
@@ -111,6 +103,12 @@
       z-index: 10;
       background-color: var(--tab-border);
     }
+  }
+
+  .kt_editor_tabs_scroll_wrapper {
+    flex-grow: 1;
+    width: 100%;
+    position: relative;
   }
 
   .kt_editor_tabs_scroll {
@@ -184,7 +182,6 @@
       border-top: 1px solid transparent;
       box-sizing: border-box;
       z-index: 1;
-
       .tab_loading {
         display: block;
         position: absolute;
@@ -259,12 +256,10 @@
         position: relative;
         background: var(--tab-activeBackground);
         color: var(--tab-activeForeground);
-        border-bottom: 1px solid var(--tab-activeBackground);
-        border-bottom-color: var(--tab-activeBorder);
         &::before {
           position: absolute;
           content: '';
-          height: 2px;
+          height: 1px;
           width: 100%;
           top: 0;
           left: 0;

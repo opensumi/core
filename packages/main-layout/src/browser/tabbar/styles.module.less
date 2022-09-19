@@ -63,7 +63,16 @@
 .tab_panel {
   position: relative;
   flex: 1;
-  border-top: 1px solid var(--sideBar-border);
+  &::before {
+    width: 100%;
+    height: 1px;
+    left: 0;
+    top: 0;
+    background-color: var(--sideBar-border);
+    position: absolute;
+    z-index: 2;
+    content: ' ';
+  }
 }
 
 .tab_panel_hidden {
@@ -172,8 +181,8 @@
   background-color: var(--kt-panelTitle-background);
   user-select: none;
   align-items: center;
-  border-bottom: 1px solid var(--sideBar-border);
   box-sizing: content-box;
+  position: relative;
   h1 {
     margin: 0;
     font-size: 12px;
@@ -183,7 +192,18 @@
     color: var(--kt-panel-secondaryForeground);
     white-space: nowrap;
   }
+  &::before {
+    width: 100%;
+    height: 1px;
+    left: 0;
+    bottom: 0;
+    background-color: var(--sideBar-border);
+    position: absolute;
+    z-index: 9;
+    content: ' ';
+  }
 }
+
 :global(.bottom-slot) {
   height: 100%;
   .tab_bar {
