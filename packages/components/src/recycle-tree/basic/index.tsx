@@ -41,7 +41,6 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   onReady,
   contextMenus,
   contextMenuActuator,
-  noReactWindow,
 }) => {
   const [showMenus, setShowMenus] = useState<{
     show: boolean;
@@ -309,7 +308,6 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
           model={model}
           onReady={handleTreeReady}
           className={containerClassname}
-          noReactWindow={noReactWindow}
         >
           {renderTreeNode}
         </RecycleTree>

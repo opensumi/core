@@ -95,10 +95,6 @@ export interface IBasicRecycleTreeProps {
    * 不使用 React Window 时无效
    */
   height: number;
-  /**
-   * 不使用 React Window，适用于不需要虚拟列表的场景
-   */
-  noReactWindow?: boolean;
   getMaxHeight?: () => number | undefined;
   autoSizer?: boolean;
   /**

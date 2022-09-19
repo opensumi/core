@@ -130,11 +130,6 @@ export interface IRecycleTreeProps<T = TreeModel> {
    *
    */
   supportDynamicHeights?: boolean;
-
-  /**
-   * 不使用 React Window 做内容区域的限制，适用于你想一次性展示所有节点时
-   */
-  noReactWindow?: boolean;
 }
 
 export interface IRecycleTreeError {
@@ -991,26 +986,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (placeholder && this.adjustedRowCount === 0) {
       const Placeholder = placeholder;
       return <Placeholder />;
-    }
-
-    if (this.props.noReactWindow) {
-      const renderChildren = () => {
-        const children = [] as JSX.Element[];
-        for (let index = 0; index < this.adjustedRowCount; index++) {
-          children.push(
-            React.createElement(this.renderItem, {
-              index,
-              style: {},
-            }),
-          );
-        }
-        return children;
-      };
-      return (
-        <div style={style} className={className}>
-          {...renderChildren()}
-        </div>
-      );
     }
 
     const addonProps: { [key in keyof ListProps]: any } = {
