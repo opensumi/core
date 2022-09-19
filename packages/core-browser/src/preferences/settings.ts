@@ -48,9 +48,11 @@ export interface ISettingSection {
    * 开启这个选项后，设置项面板可以自动将当前 Settings Section 按照 id 分组在 UI 上展示出来
    */
   automaticallyGroupById?: boolean;
-  preferences: Array<string | IPreferenceViewDesc>;
+  preferences?: Array<string | IPreferenceViewDesc>;
 
   component?: React.ComponentType<{ scope: PreferenceScope }>;
+
+  subSettingSections?: ISettingSection[];
 
   hiddenInScope?: PreferenceScope[];
 }

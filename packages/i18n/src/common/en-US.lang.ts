@@ -441,21 +441,21 @@ export const localizationBundle = {
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
     'preference.terminal.typeDesc': 'To change the default type of create a new terminal',
-    'preference.terminal.fontFamily': 'Terminal Font Family',
-    'preference.terminal.fontSize': 'Terminal Font Size',
-    'preference.terminal.fontWeight': 'Terminal Font Weight',
-    'preference.terminal.lineHeight': 'Terminal Line Height',
-    'preference.terminal.cursorBlink': 'Terminal Cursor Blink',
-    'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
-    'preference.terminal.integrated.shellArgs.linux': 'Terminal Shell Args Linux',
+    'preference.terminal.fontFamily': 'Terminal > Font Family',
+    'preference.terminal.fontSize': 'Terminal > Font Size',
+    'preference.terminal.fontWeight': 'Terminal > Font Weight',
+    'preference.terminal.lineHeight': 'Terminal > Line Height',
+    'preference.terminal.cursorBlink': 'Terminal > Cursor Blink',
+    'preference.terminal.scrollback': 'Terminal > Cursor Scrollback',
+    'preference.terminal.integrated.shellArgs.linux': 'Terminal > Shell Args Linux',
     'preference.terminal.integrated.shellArgs.linuxDesc':
       'The command line arguments to use when on the Linux terminal. ',
 
-    'preference.terminal.integrated.copyOnSelection': 'Terminal Copy On Selection',
+    'preference.terminal.integrated.copyOnSelection': 'Terminal > Copy On Selection',
     'preference.terminal.integrated.copyOnSelectionDesc':
       'Controls whether text selected in the terminal will be copied to the clipboard.',
     // Local Echo
-    'preference.terminal.integrated.localEchoEnabled': 'Terminal Local Echo',
+    'preference.terminal.integrated.localEchoEnabled': 'Terminal > Local Echo',
     'preference.terminal.integrated.localEchoDesc': 'When local echo should be enabled.',
     'preference.terminal.integrated.localEchoLatencyThreshold': 'Local Echo Latency Threshold',
     'preference.terminal.integrated.localEchoLatencyThresholdDesc':
@@ -466,7 +466,7 @@ export const localizationBundle = {
     'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
     'preference.terminal.integrated.localEchoStyleDesc':
       'Terminal style of locally echoed text; either a font style or an RGB color.',
-    'preference.terminal.integrated.cursorStyle': 'Cursor Style',
+    'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',

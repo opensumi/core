@@ -203,6 +203,25 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     return disposable;
   }
 
+  visitSection(
+    section: ISettingSection,
+    cb: (v: string | IPreferenceViewDesc) => boolean | undefined,
+  ): string | IPreferenceViewDesc | undefined {
+    if (section.preferences) {
+      for (const preference of section.preferences) {
+        const result = cb(preference);
+        if (result) {
+          return preference;
+        }
+      }
+    }
+    if (section.subSettingSections && Array.isArray(section.subSettingSections)) {
+      for (const subSec of section.subSettingSections) {
+        return this.visitSection(subSec, cb);
+      }
+    }
+  }
+
   /**
    * 通过配置项ID获取配置项展示信息
    * @param preferenceId 配置项ID
@@ -211,13 +230,13 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     const groups = this.settingsSections.values();
     for (const sections of groups) {
       for (const section of sections) {
-        for (const preference of section.preferences) {
+        return this.visitSection(section, (preference) => {
           if (!isString(preference)) {
             if (preference.id === preferenceId) {
-              return preference;
+              return true;
             }
           }
-        }
+        });
       }
     }
   }
@@ -242,43 +261,63 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     });
 
     const result: ISettingSection[] = [];
-
-    res.forEach((section) => {
-      if (section.preferences) {
-        const preferences = section.preferences.filter((pref) => {
-          if (this.filterPreferences(pref, scope)) {
-            return false;
-          }
-          if (!search) {
-            return true;
-          }
-
-          const prefId = typeof pref === 'string' ? pref : pref.id;
-          const schema = this.schemaProvider.getPreferenceProperty(prefId);
-          const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : getPreferenceItemLabel(pref);
-          const description = schema && replaceLocalizePlaceholder(schema.description);
-          const markdownDescription = schema && replaceLocalizePlaceholder(schema.markdownDescription);
-          return (
-            this.isContainSearchValue(prefId, search) ||
-            this.isContainSearchValue(prefLabel, search) ||
-            (description && this.isContainSearchValue(description, search)) ||
-            (markdownDescription && this.isContainSearchValue(markdownDescription, search))
-          );
-        });
-
-        groupBy(section.preferences, (v) => {
-          if (v instanceof String) {
-            return v;
-          }
-          return (v as IPreferenceViewDesc).id;
-        });
-        const sec = { ...section };
-
-        if (sec.preferences.length > 0) {
-          result.push(sec);
+    const processSection = (section: Required<Pick<ISettingSection, 'preferences'>>) => {
+      const preferences = section.preferences.filter((pref) => {
+        if (this.filterPreferences(pref, scope)) {
+          return false;
         }
+        if (!search) {
+          return true;
+        }
+
+        const prefId = typeof pref === 'string' ? pref : pref.id;
+        const schema = this.schemaProvider.getPreferenceProperty(prefId);
+        const prefLabel = typeof pref === 'string' ? toPreferenceReadableName(pref) : getPreferenceItemLabel(pref);
+        const description = schema && replaceLocalizePlaceholder(schema.description);
+        const markdownDescription = schema && replaceLocalizePlaceholder(schema.markdownDescription);
+        return (
+          this.isContainSearchValue(prefId, search) ||
+          this.isContainSearchValue(prefLabel, search) ||
+          (description && this.isContainSearchValue(description, search)) ||
+          (markdownDescription && this.isContainSearchValue(markdownDescription, search))
+        );
+      });
+
+      const grouped = groupBy(section.preferences, (v) => {
+        if (v instanceof String) {
+          return v;
+        }
+        return (v as IPreferenceViewDesc).id;
+      });
+
+      return {
+        preferences,
+        grouped,
+      };
+    };
+    res.forEach((section) => {
+      const sec = { ...section } as ISettingSection;
+
+      if (section.preferences) {
+        const { preferences } = processSection(section as Required<Pick<ISettingSection, 'preferences'>>);
+        sec.preferences = preferences;
+      }
+      if (section.subSettingSections) {
+        const subSettingSections = section.subSettingSections.map((v) => {
+          const { preferences } = processSection(v as Required<Pick<ISettingSection, 'preferences'>>);
+          return { ...v, preferences };
+        });
+        sec.subSettingSections = subSettingSections;
+      }
+
+      if (
+        (sec.preferences && sec.preferences.length > 0) ||
+        (sec.subSettingSections && sec.subSettingSections.length > 0)
+      ) {
+        result.push(sec);
       }
     });
+
     this.cachedGroupSection.set(key.toLocaleLowerCase(), result);
     return result;
   }

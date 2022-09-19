@@ -107,7 +107,8 @@ export interface IRecycleTreeProps<T = TreeModel> {
   /**
    * 声明Tree加载时预加载的节点内容
    * 主要用于避免快速滚动时出现空白区域的情况
-   * 默认值为：Recycle.DEFAULT_OVER_SCAN_COUNT = 50
+   * 设置的太高会影响性能，导致快速滚动时来不及计算
+   * 默认值为：Recycle.DEFAULT_OVER_SCAN_COUNT = 5
    * @type {number}
    * @memberof IRecycleTreeProps
    */
@@ -129,6 +130,11 @@ export interface IRecycleTreeProps<T = TreeModel> {
    *
    */
   supportDynamicHeights?: boolean;
+
+  /**
+   * 不使用 React Window 做内容区域的限制，适用于你想一次性展示所有节点时
+   */
+  noReactWindow?: boolean;
 }
 
 export interface IRecycleTreeError {
@@ -262,7 +268,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     post: '</match>',
     extract: (node: TreeNode) => node?.name || '',
   };
-  private static DEFAULT_OVER_SCAN_COUNT = 50;
+  private static DEFAULT_OVER_SCAN_COUNT = 5;
 
   private _promptHandle: NewPromptHandle | RenamePromptHandle;
 
@@ -863,13 +869,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     );
   };
 
-  private renderItem = ({ index, style }): JSX.Element => {
+  private renderItem = ({ index, style }): JSX.Element | null => {
     this.shouldComponentUpdate = shouldComponentUpdate.bind(this);
     const { children, overflow = 'ellipsis', supportDynamicHeights } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
     const wrapRef = React.useRef(null);
     if (!node) {
-      return <></>;
+      return null;
     }
     const { item, itemType: type, template } = node;
     if (!item) {
@@ -918,7 +924,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         : { ...style, width: 'auto', minWidth: '100%', height: `${calcDynamicHeight()}px` };
 
     return (
-      <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
+      <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeitem'} {...ariaInfo}>
         <NodeRendererWrap
           item={item}
           depth={item.depth}
@@ -975,6 +981,27 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       const Placeholder = placeholder;
       return <Placeholder />;
     }
+
+    if (this.props.noReactWindow) {
+      const renderChildren = () => {
+        const children = [] as JSX.Element[];
+        for (let index = 0; index < this.adjustedRowCount; index++) {
+          children.push(
+            React.createElement(this.renderItem, {
+              index,
+              style: {},
+            }),
+          );
+        }
+        return children;
+      };
+      return (
+        <div style={style} className={className}>
+          {...renderChildren()}
+        </div>
+      );
+    }
+
     const addonProps: { [key in keyof ListProps]: any } = {
       children,
       height,
@@ -994,7 +1021,6 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (leaveBottomBlank) {
       addonProps.innerElementType = InnerElementType;
     }
-
     return supportDynamicHeights ? (
       <VariableSizeList
         ref={this.listRef as React.RefObject<VariableSizeList>}

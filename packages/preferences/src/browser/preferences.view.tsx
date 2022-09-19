@@ -3,7 +3,15 @@ import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { Input, ComponentContextProvider, Tabs, RecycleList, IIconResourceOptions } from '@opensumi/ide-components';
+import {
+  Input,
+  ComponentContextProvider,
+  Tabs,
+  RecycleList,
+  IIconResourceOptions,
+  BasicRecycleTree,
+  IBasicTreeData,
+} from '@opensumi/ide-components';
 import {
   replaceLocalizePlaceholder,
   useInjectable,
@@ -126,15 +134,20 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const items = React.useMemo(() => {
     const sections = preferenceService.getSections(currentGroup, currentScope, currentSearchText);
     let items: ISectionItemData[] = [];
-    for (const section of sections) {
+    const addItem = (section: ISettingSection) => {
       if (section.title) {
         items.push({ title: section.title, scope: currentScope });
       }
       if (section.component) {
-        items.push({ component: section.title, scope: currentScope });
-      } else {
+        items.push({ component: section.component, scope: currentScope });
+      } else if (section.preferences) {
         items = items.concat(section.preferences.map((pre) => ({ preference: pre, scope: currentScope })));
+      } else if (section.subSettingSections) {
+        section.subSettingSections.forEach((v) => addItem(v));
       }
+    };
+    for (const section of sections) {
+      addItem(section);
     }
     return items;
   }, [currentGroup, currentScope, currentSearchText]);
@@ -194,17 +207,54 @@ export const PreferenceSections = ({
 }: {
   preferenceSections: ISettingSection[];
   navigateTo: (section: ISettingSection) => void;
-}) => (
-  <div className={styles.preference_section_link}>
-    {preferenceSections
-      .filter((s) => s.title)
-      .map((section, idx) => (
-        <div key={`${section.title}-${idx}`} onClick={() => navigateTo(section)}>
-          {section.title}
-        </div>
-      ))}
-  </div>
-);
+}) => {
+  const treeData = [] as IBasicTreeData[];
+  preferenceSections.forEach((v) => {
+    if (v.title) {
+      const result = {
+        label: v.title,
+        expandable: true,
+        section: v,
+      } as IBasicTreeData;
+      const subSections = v.subSettingSections
+        ?.map((subSec) =>
+          subSec.title
+            ? {
+                label: subSec.title,
+                section: subSec,
+              }
+            : null,
+        )
+        .filter(Boolean) as IBasicTreeData[];
+      if (subSections) {
+        result.children = subSections;
+        result.expandable = true;
+      }
+      treeData.push(result);
+    }
+  });
+  return (
+    <div className={styles.preference_section_link}>
+      {treeData.length > 0 ? (
+        <BasicRecycleTree
+          noReactWindow
+          height={0}
+          treeData={treeData}
+          itemClassname={styles.item_label}
+          containerClassname={styles.item_container}
+          indent={0}
+          indentLength={4}
+          itemHeight={22}
+          onClick={(_e, node) => {
+            if (node && ((node as any)._raw as IBasicTreeData).section) {
+              navigateTo(((node as any)._raw as IBasicTreeData).section);
+            }
+          }}
+        />
+      ) : null}
+    </div>
+  );
+};
 
 export const PreferencesIndexes = ({
   groups,
@@ -221,13 +271,26 @@ export const PreferencesIndexes = ({
 
   return (
     <div className={styles.preferences_indexes}>
-      <Scroll>
+      <Scroll
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'inherit',
+          justifyContent: 'flex-start',
+        }}
+      >
         {groups &&
           groups.map(({ id, title, iconClass }) => {
             const sections = preferenceService.getSections(id, scope, searchText);
 
             return (
-              <div key={`${id} - ${title}`} className={styles.index_item_wrapper}>
+              <div
+                key={`${id} - ${title}`}
+                className={classnames({
+                  [styles.index_item_wrapper]: true,
+                  [styles.activated]: preferenceService.currentGroup === id,
+                })}
+              >
                 <div
                   key={`${id} - ${title}`}
                   className={classnames({
@@ -242,12 +305,8 @@ export const PreferencesIndexes = ({
                   {toNormalCase(replaceLocalizePlaceholder(title) || '')}
                 </div>
                 {preferenceService.currentGroup === id ? (
-                  <div>
-                    <PreferenceSections preferenceSections={sections} navigateTo={navigateTo} />
-                  </div>
-                ) : (
-                  <div></div>
-                )}
+                  <PreferenceSections preferenceSections={sections} navigateTo={navigateTo} />
+                ) : null}
               </div>
             );
           })}
@@ -260,7 +319,7 @@ export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index:
   if (data.title) {
     return (
       <div className={styles.section_title} id={`preferenceSection-${data.title}`}>
-        {data.title!}
+        {data.title}
       </div>
     );
   } else if (data.component) {
@@ -294,19 +353,4 @@ export const PreferenceBody = ({ items, onReady }: { items: ISectionItemData[]; 
     // 防止底部选择框无法查看的临时处理方式
     paddingBottomSize={100}
   />
-);
-
-export const PreferenceSection = ({ section, scope }: { section: ISettingSection; scope: PreferenceScope }) => (
-  <div className={styles.preference_section} id={'preferenceSection-' + section.title}>
-    {section.title ? <div className={styles.section_title}>{section.title!}</div> : null}
-    {section.component ? (
-      <section.component scope={scope} />
-    ) : (
-      section.preferences.map((preference, idx) => {
-        if (typeof preference === 'string') {
-        } else {
-        }
-      }) || <div></div>
-    )}
-  </div>
 );

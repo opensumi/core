@@ -68,7 +68,7 @@ export const BasicTreeNodeRenderer: React.FC<
     [onClick, onTwistierClick],
   );
 
-  const paddingLeft = `${8 + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? 20 : 0)}px`;
+  const paddingLeft = `${indent + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? 20 : 0)}px`;
 
   const editorNodeStyle = {
     height: itemHeight,
@@ -180,7 +180,7 @@ export const BasicTreeNodeRenderer: React.FC<
     >
       <div className='content'>
         {renderTwice(item)}
-        {renderIcon(item)}
+        {item.icon ? renderIcon(item) : null}
         <div className={'overflow_wrap'}>
           {renderDisplayName(item)}
           {renderDescription(item)}

@@ -30,7 +30,7 @@
     "react-ctxmenu-trigger": "^1.0.0",
     "react-custom-scrollbars": "^4.2.1",
     "react-lifecycles-compat": "^3.0.4",
-    "react-virtualized-auto-sizer": "^1.0.2",
+    "react-virtualized-auto-sizer": "^1.0.7",
     "react-window": "^1.8.5"
   },
   "devDependencies": {

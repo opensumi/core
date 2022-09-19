@@ -6,6 +6,7 @@ import {
   PreferenceSchemaProperties,
   IPreferenceSettingsService,
   PreferenceService,
+  ISettingSection,
 } from '@opensumi/ide-core-browser';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
@@ -31,13 +32,14 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
   contribute() {
     let configurations = this.json;
-    // 当前函数里只创建声明这一次变量，然后后面给这个函数赋值
-    let tmpProperties = {};
     if (!Array.isArray(configurations)) {
       configurations = [configurations];
     }
+    const sections = [] as ISettingSection[];
+
     for (const configuration of configurations) {
       if (configuration && configuration.properties) {
+        const tmpProperties = {};
         for (const prop of Object.keys(configuration.properties)) {
           const originalConfiguration = configuration.properties[prop];
           tmpProperties[prop] = originalConfiguration;
@@ -58,15 +60,19 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
         configuration.title =
           replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
         this.updateConfigurationSchema(configuration);
-        this.addDispose(
-          this.preferenceSettingsService.registerSettingSection('extension', {
-            title: configuration.title,
-            preferences: Object.keys(configuration.properties),
-          }),
-        );
-        tmpProperties = {};
+        sections.push({
+          title: configuration.title,
+          preferences: Object.keys(configuration.properties),
+        });
       }
     }
+    this.addDispose(
+      this.preferenceSettingsService.registerSettingSection('extension', {
+        title: this.extension.packageJSON.name,
+        automaticallyGroupById: true,
+        subSettingSections: sections,
+      }),
+    );
   }
 
   private updateConfigurationSchema(schema: PreferenceSchema): void {
