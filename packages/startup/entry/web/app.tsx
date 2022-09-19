@@ -6,6 +6,7 @@ setLocale('en-US');
 
 import '@opensumi/ide-i18n';
 import '@opensumi/ide-core-browser/lib/style/index.less';
+import { CollaborationModule } from '@opensumi/ide-collaboration/lib/browser';
 import { SlotLocation } from '@opensumi/ide-core-browser';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
 import { defaultConfig } from '@opensumi/ide-main-layout/lib/browser/default-config';
@@ -19,7 +20,7 @@ import { renderApp } from './render-app';
 import '../styles.less';
 
 renderApp({
-  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule],
+  modules: [...CommonBrowserModules, ExpressFileServerModule, SampleModule, RemoteOpenerModule, CollaborationModule],
   layoutConfig: {
     ...defaultConfig,
     ...{

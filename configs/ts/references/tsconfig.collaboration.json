@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/collaboration/src",
+    "outDir": "../../../packages/collaboration/lib"
+  },
+  "include": ["../../../packages/collaboration/src"],
+  "exclude": ["../../../packages/collaboration/__mocks__"]
+}
