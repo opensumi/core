@@ -213,7 +213,6 @@ export const PreferenceSections = ({
     if (v.title) {
       const result = {
         label: v.title,
-        expandable: true,
         section: v,
       } as IBasicTreeData;
       const subSections = v.subSettingSections
@@ -242,8 +241,7 @@ export const PreferenceSections = ({
           treeData={treeData}
           itemClassname={styles.item_label}
           containerClassname={styles.item_container}
-          indent={0}
-          indentLength={4}
+          indent={6}
           itemHeight={22}
           onClick={(_e, node) => {
             if (node && ((node as any)._raw as IBasicTreeData).section) {

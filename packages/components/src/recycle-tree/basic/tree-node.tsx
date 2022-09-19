@@ -68,7 +68,9 @@ export const BasicTreeNodeRenderer: React.FC<
     [onClick, onTwistierClick],
   );
 
-  const paddingLeft = `${indent + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? 20 : 0)}px`;
+  const paddingLeft = `${
+    indent + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? indent : 0)
+  }px`;
 
   const editorNodeStyle = {
     height: itemHeight,
@@ -159,7 +161,7 @@ export const BasicTreeNodeRenderer: React.FC<
   };
 
   const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (!(item as BasicCompositeTreeNode).expandable) {
+    if (!(item as BasicCompositeTreeNode).expandable && item.depth !== 1) {
       return <div className={cls('segment', 'expansion_toggle')}></div>;
     }
 
