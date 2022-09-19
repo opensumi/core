@@ -1,5 +1,17 @@
 import classnames from 'classnames';
-import React, { useEffect, useState, useCallback, useRef, useContext, useMemo, forwardRef } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useContext,
+  useMemo,
+  forwardRef,
+  DragEvent,
+  HTMLAttributes,
+  Ref,
+  MouseEvent,
+} from 'react';
 
 import { Scrollbars } from '@opensumi/ide-components';
 import {
@@ -38,7 +50,8 @@ export interface ITabsProps {
 
 export const Tabs = ({ group }: ITabsProps) => {
   const tabContainer = useRef<HTMLDivElement | null>();
-  const contentRef = useRef<HTMLDivElement>();
+  const tabWrapperRef = useRef<HTMLDivElement | null>();
+  const contentRef = useRef<HTMLDivElement | null>();
   const editorActionUpdateTimer = useRef<any>(null);
   const editorActionRef = useRef<typeof EditorActions>(null);
   const resourceService = useInjectable(ResourceService) as ResourceService;
@@ -94,7 +107,7 @@ export const Tabs = ({ group }: ITabsProps) => {
   }, [group]);
 
   const onDrop = useCallback(
-    (e: React.DragEvent, index: number, target?: IResource) => {
+    (e: DragEvent, index: number, target?: IResource) => {
       if (e.dataTransfer.getData('uri')) {
         const uri = new URI(e.dataTransfer.getData('uri'));
         let sourceGroup: EditorGroup | undefined;
@@ -180,7 +193,7 @@ export const Tabs = ({ group }: ITabsProps) => {
     }
   }, [wrapMode]);
 
-  const layoutLastInRow = React.useCallback(() => {
+  const layoutLastInRow = useCallback(() => {
     if (contentRef.current && wrapMode) {
       const newMap: Map<number, boolean> = new Map();
 
@@ -259,37 +272,49 @@ export const Tabs = ({ group }: ITabsProps) => {
     };
   }, [group]);
 
+  const handleWrapperDragOver = useCallback(
+    (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (tabWrapperRef.current) {
+        tabWrapperRef.current.classList.add(styles.kt_on_drag_over);
+      }
+    },
+    [tabWrapperRef.current],
+  );
+
+  const handleWrapperDragLeave = useCallback(
+    (e: DragEvent) => {
+      if (tabWrapperRef.current) {
+        tabWrapperRef.current.classList.remove(styles.kt_on_drag_over);
+      }
+    },
+    [tabWrapperRef.current],
+  );
+
+  const handleWrapperDrag = useCallback(
+    (e: DragEvent) => {
+      if (tabWrapperRef.current) {
+        tabWrapperRef.current.classList.remove(styles.kt_on_drag_over);
+      }
+      if (onDrop) {
+        onDrop(e, -1);
+      }
+    },
+    [onDrop, tabWrapperRef.current],
+  );
+
+  const handleEmptyDBClick = useCallback(
+    (e: MouseEvent) => {
+      if (e.target === e.currentTarget) {
+        editorService.createUntitledResource();
+      }
+    },
+    [editorService],
+  );
+
   const renderTabContent = () => (
-    <div
-      className={styles.kt_editor_tabs_content}
-      ref={contentRef as any}
-      onDragLeave={() => {
-        if (contentRef.current) {
-          contentRef.current.classList.remove(styles.kt_on_drag_over);
-        }
-      }}
-      onDragOver={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (contentRef.current) {
-          contentRef.current.classList.add(styles.kt_on_drag_over);
-        }
-      }}
-      onDrop={(e) => {
-        if (contentRef.current) {
-          contentRef.current.classList.remove(styles.kt_on_drag_over);
-        }
-        if (onDrop) {
-          onDrop(e, -1);
-        }
-      }}
-      onDoubleClick={(e) => {
-        // 只处理 tab 组空余的地方
-        if (e.target === e.currentTarget) {
-          editorService.createUntitledResource();
-        }
-      }}
-    >
+    <div className={styles.kt_editor_tabs_content} ref={contentRef as any}>
       {group.resources.map((resource, i) => {
         let ref: HTMLDivElement | null;
         const decoration = resourceService.getResourceDecoration(resource.uri);
@@ -325,6 +350,7 @@ export const Tabs = ({ group }: ITabsProps) => {
                 group.open(resource.uri, { focus: true });
               }
             }}
+            data-uri={resource.uri.toString()}
             onDragOver={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -332,7 +358,6 @@ export const Tabs = ({ group }: ITabsProps) => {
                 ref.classList.add(styles.kt_on_drag_over);
               }
             }}
-            data-uri={resource.uri.toString()}
             onDragLeave={(e) => {
               if (ref) {
                 ref.classList.remove(styles.kt_on_drag_over);
@@ -386,7 +411,14 @@ export const Tabs = ({ group }: ITabsProps) => {
 
   return (
     <div id={VIEW_CONTAINERS.EDITOR_TABS} className={styles.kt_editor_tabs}>
-      <div className={styles.kt_editor_tabs_scroll_wrapper}>
+      <div
+        className={styles.kt_editor_tabs_scroll_wrapper}
+        ref={tabWrapperRef as any}
+        onDragOver={handleWrapperDragOver}
+        onDragLeave={handleWrapperDragLeave}
+        onDrop={handleWrapperDrag}
+        onDoubleClick={handleEmptyDBClick}
+      >
         {!wrapMode ? (
           <Scrollbars
             thumbSize={5}
@@ -409,10 +441,10 @@ export interface IEditorActionsBaseProps {
   className?: string;
 }
 
-export type IEditorActionsProps = IEditorActionsBaseProps & React.HTMLAttributes<HTMLDivElement>;
+export type IEditorActionsProps = IEditorActionsBaseProps & HTMLAttributes<HTMLDivElement>;
 
 export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
-  (props: IEditorActionsProps, ref: React.Ref<typeof EditorActions>) => {
+  (props: IEditorActionsProps, ref: Ref<typeof EditorActions>) => {
     const { group, className } = props;
 
     const acquireArgs = useCallback(

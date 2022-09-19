@@ -83,6 +83,13 @@
         }
       }
     }
+  }
+
+  .kt_editor_tabs_scroll_wrapper {
+    flex-grow: 1;
+    width: 100%;
+    position: relative;
+    background-color: var(--editorGroupHeader-tabsBackground);
     &::before {
       position: absolute;
       content: '';
@@ -103,6 +110,9 @@
       z-index: 10;
       background-color: var(--tab-border);
     }
+    &.kt_on_drag_over {
+      background-color: var(--editorGroup-dropBackground);
+    }
   }
 
   .kt_editor_tabs_scroll_wrapper {
@@ -113,7 +123,6 @@
 
   .kt_editor_tabs_scroll {
     overflow-y: hidden;
-    background: var(--editorGroupHeader-tabsBackground);
     :global(.loading_indicator) {
       width: 16px;
       height: 22px;
