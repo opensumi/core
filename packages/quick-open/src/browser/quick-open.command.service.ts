@@ -12,6 +12,7 @@ import {
   IReporterService,
   REPORT_NAME,
 } from '@opensumi/ide-core-common';
+import { uppercaseFirstLetter } from '@opensumi/ide-utils/lib/strings';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { QuickOpenHandler } from './prefix-quick-open.service';
@@ -224,7 +225,9 @@ export class CommandQuickOpenItem extends QuickOpenItem {
   }
 
   getLabel(): string {
-    return this.command.category ? `${this.command.category}: ` + this.command.label! : this.command.label!;
+    return this.command.category
+      ? `${uppercaseFirstLetter(this.command.category)}: ` + this.command.label!
+      : this.command.label!;
   }
 
   isHidden(): boolean {
@@ -239,7 +242,7 @@ export class CommandQuickOpenItem extends QuickOpenItem {
     if (this.command.alias) {
       const category = this.command.aliasCategory ?? this.command.category;
       if (category) {
-        detail = `${category}: ${this.command.alias}`;
+        detail = `${uppercaseFirstLetter(category)}: ${this.command.alias}`;
       } else {
         detail = this.command.alias;
       }
