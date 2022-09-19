@@ -237,6 +237,10 @@ export interface IRecycleTreeHandle {
    * 自适应每条 item 的布局（暂时只计算高度）
    */
   layoutItem: () => void;
+  /**
+   * 获取当前树所有打开的节点的数量
+   */
+  getAllBranchCount: () => number;
 }
 
 interface IFilterNodeRendererProps {
@@ -627,6 +631,14 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         expandNode: this.expandNode,
         collapseNode: this.collapseNode,
         ensureVisible: this.ensureVisible,
+        getAllBranchCount: () => {
+          const { root } = this.props.model;
+          const { filter } = this.props;
+          if (filter) {
+            return this.filterFlattenBranch.length;
+          }
+          return root.branchSize;
+        },
         getModel: () => this.props.model,
         layoutItem: this.layoutItem,
         getCurrentSize: () => ({
@@ -944,8 +956,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return;
     }
 
-    // eslint-disable-next-line no-unsafe-optional-chaining
-    if (this.listRef && this.listRef?.current && '_getRangeToRender' in this.listRef?.current) {
+    if (this.listRef && this.listRef.current && '_getRangeToRender' in this.listRef.current) {
       // _getRangeToRender 是 react-window 的内部方法，用于获取可视区域的下标范围
       // @ts-ignore
       const range = this.listRef?.current._getRangeToRender();

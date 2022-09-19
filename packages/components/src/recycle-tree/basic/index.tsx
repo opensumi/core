@@ -1,6 +1,7 @@
-import cls from 'classnames';
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
+
+import { IDisposable } from '@opensumi/ide-utils';
 
 import { ClickOutside } from '../../click-outside';
 import { RecycleTree, IRecycleTreeHandle } from '../RecycleTree';
@@ -21,7 +22,9 @@ export * from './types';
 
 export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   width,
-  height,
+  height: initialHeight,
+  getMaxHeight,
+  autoSizer,
   itemHeight = 22,
   itemClassname,
   indent,
@@ -49,10 +52,43 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     activeNode?: BasicCompositeTreeNode | BasicTreeNode;
   }>({ show: false });
   const [menubarItems, setMenubarItems] = useState<IBasicTreeMenu[]>([]);
+  const [height, setHeight] = useState(initialHeight);
   const [model, setModel] = useState<BasicTreeModel | undefined>();
   const treeService = useRef<BasicTreeService>(new BasicTreeService(treeData, resolveChildren, sortComparator));
   const treeHandle = useRef<IRecycleTreeHandle>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+
+  const adjustHeight = () => {
+    if (!autoSizer) {
+      return;
+    }
+    if (treeHandle.current) {
+      const rowCount = treeHandle.current?.getAllBranchCount();
+      const maxHeight = getMaxHeight?.();
+      if (rowCount) {
+        if (maxHeight) {
+          setHeight(Math.min(rowCount * (itemHeight + 1), maxHeight));
+        } else {
+          setHeight(rowCount * (itemHeight + 1));
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (!autoSizer) {
+      return;
+    }
+    let disposable: IDisposable | undefined;
+    if (treeHandle.current) {
+      disposable = treeHandle.current.onDidUpdate(() => {
+        adjustHeight();
+      });
+    }
+    return () => {
+      disposable?.dispose();
+    };
+  }, [treeHandle.current, autoSizer]);
 
   const renderTreeNode = useCallback(
     (props: INodeRendererWrapProps) => (
@@ -105,6 +141,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
       onReady(handle);
     }
     treeHandle.current = handle;
+    adjustHeight();
   }, []);
 
   const handleItemClick = useCallback(

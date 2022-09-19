@@ -99,6 +99,8 @@ export interface IBasicRecycleTreeProps {
    * 不使用 React Window，适用于不需要虚拟列表的场景
    */
   noReactWindow?: boolean;
+  getMaxHeight?: () => number | undefined;
+  autoSizer?: boolean;
   /**
    * Tree 容器宽度
    * 不传入时，默认自动撑开 100% 父节点宽度

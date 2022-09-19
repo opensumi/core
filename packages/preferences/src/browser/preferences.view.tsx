@@ -208,9 +208,11 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 });
 
 export const PreferenceSections = ({
+  getMaxHeight,
   preferenceSections,
   navigateTo,
 }: {
+  getMaxHeight: () => number | undefined;
   preferenceSections: ISettingSection[];
   navigateTo: (section: ISettingSection) => void;
 }) => {
@@ -243,6 +245,8 @@ export const PreferenceSections = ({
       {treeData.length > 0 ? (
         <BasicRecycleTree
           height={0}
+          autoSizer
+          getMaxHeight={getMaxHeight}
           treeData={treeData}
           itemClassname={styles.item_label}
           containerClassname={styles.item_container}
@@ -271,9 +275,11 @@ export const PreferencesIndexes = ({
   navigateTo: (section: ISettingSection) => void;
 }) => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const divRef = React.useRef<HTMLDivElement>(null);
+  const getHeight = React.useCallback(() => divRef.current?.getBoundingClientRect()?.height, [divRef]);
 
   return (
-    <div className={styles.preferences_indexes}>
+    <div ref={divRef} className={styles.preferences_indexes}>
       <Scroll
         style={{
           display: 'flex',
@@ -285,7 +291,6 @@ export const PreferencesIndexes = ({
         {groups &&
           groups.map(({ id, title, iconClass }) => {
             const sections = preferenceService.getSections(id, scope, searchText);
-
             return (
               <div
                 key={`${id} - ${title}`}
@@ -308,7 +313,7 @@ export const PreferencesIndexes = ({
                   {toNormalCase(replaceLocalizePlaceholder(title) || '')}
                 </div>
                 {preferenceService.currentGroup === id ? (
-                  <PreferenceSections preferenceSections={sections} navigateTo={navigateTo} />
+                  <PreferenceSections getMaxHeight={getHeight} preferenceSections={sections} navigateTo={navigateTo} />
                 ) : null}
               </div>
             );
