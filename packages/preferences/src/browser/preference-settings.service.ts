@@ -303,10 +303,14 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
         sec.preferences = preferences;
       }
       if (section.subSettingSections) {
-        const subSettingSections = section.subSettingSections.map((v) => {
-          const { preferences } = processSection(v as Required<Pick<ISettingSection, 'preferences'>>);
-          return { ...v, preferences };
-        });
+        const subSettingSections = section.subSettingSections
+          .map((v) => {
+            const { preferences } = processSection(v as Required<Pick<ISettingSection, 'preferences'>>);
+            if (preferences.length > 0) {
+              return { ...v, preferences };
+            }
+          })
+          .filter(Boolean) as ISettingSection[];
         sec.subSettingSections = subSettingSections;
       }
 

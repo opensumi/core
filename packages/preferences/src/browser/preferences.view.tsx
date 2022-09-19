@@ -134,20 +134,26 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const items = React.useMemo(() => {
     const sections = preferenceService.getSections(currentGroup, currentScope, currentSearchText);
     let items: ISectionItemData[] = [];
-    const addItem = (section: ISettingSection) => {
-      if (section.title) {
-        items.push({ title: section.title, scope: currentScope });
-      }
+    const getItem = (section: ISettingSection) => {
+      let innerItems = [] as ISectionItemData[];
+
       if (section.component) {
-        items.push({ component: section.component, scope: currentScope });
+        innerItems.push({ component: section.component, scope: currentScope });
       } else if (section.preferences) {
-        items = items.concat(section.preferences.map((pre) => ({ preference: pre, scope: currentScope })));
+        innerItems = innerItems.concat(section.preferences.map((pre) => ({ preference: pre, scope: currentScope })));
       } else if (section.subSettingSections) {
-        section.subSettingSections.forEach((v) => addItem(v));
+        section.subSettingSections.forEach((v) => {
+          innerItems = innerItems.concat(getItem(v));
+        });
       }
+      if (innerItems.length > 0 && section.title) {
+        innerItems.push({ title: section.title, scope: currentScope });
+      }
+      return innerItems;
     };
+
     for (const section of sections) {
-      addItem(section);
+      items = items.concat(getItem(section));
     }
     return items;
   }, [currentGroup, currentScope, currentSearchText]);
@@ -225,7 +231,7 @@ export const PreferenceSections = ({
             : null,
         )
         .filter(Boolean) as IBasicTreeData[];
-      if (subSections) {
+      if (subSections && subSections.length > 0) {
         result.children = subSections;
         result.expandable = true;
       }
@@ -236,7 +242,6 @@ export const PreferenceSections = ({
     <div className={styles.preference_section_link}>
       {treeData.length > 0 ? (
         <BasicRecycleTree
-          noReactWindow
           height={0}
           treeData={treeData}
           itemClassname={styles.item_label}
