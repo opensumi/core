@@ -513,6 +513,7 @@ export const localizationBundle = {
     'editor.configuration.bracketPairColorization.enabled':
       '控制是否启用括号对着色。使用 “workbench.colorCustomizations” 替代括号突出显示颜色。',
     'editor.configuration.guides.bracketPairs': '控制是否启用括号对指南。',
+    'editor.configuration.mouseBackForwardToNavigate': '允许使用鼠标按钮 4 和 5 来执行命令“Go Back”和“Go Forward”。',
     'editor.autoSave.enum.off': '不启用',
     'editor.files.eol': '文件行尾字符',
     'editor.files.eolDesc': '控制文件默认行尾字符。',

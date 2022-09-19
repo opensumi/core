@@ -116,18 +116,20 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': 'Choose the Formatter',
     'editor.formatDocument.label.multiple': 'Format Document With...',
     'editor.formatSelection.label.multiple': 'Format Selection With...',
-    'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
     'editor.guessEncodingFromContent': 'Guess from content',
     'editor.changeEol': 'Select End Of Line Sequence',
     'editor.failToOpen': 'Failed to open {0}. Error message: {1}',
     'editor.changeLanguageId': 'Select Language Mode',
+    'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.configuration.maxTokenizationLineLength':
       'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
     'editor.configuration.bracketPairColorization.enabled':
       "Controls whether bracket pair colorization is enabled or not. Use 'workbench.colorCustomizations' to override the bracket highlight colors.",
     'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
+    'editor.configuration.mouseBackForwardToNavigate':
+      "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
     'editor.lineHeight': 'Line Height',
     'editor.lineHeight.description':
       'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
