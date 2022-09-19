@@ -14,6 +14,6 @@
   "dependencies": {
     "@opensumi/ide-components": "2.20.1",
     "@types/react": "^16.9.33",
-    "vscode-uri": "^3.0.2"
+    "vscode-uri": "3.0.2"
   }
 }
