@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import classnames from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
@@ -120,19 +121,18 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       focusDispose.dispose();
     };
   }, []);
-
-  const headers = (
-    <Tabs
-      className={styles.tabs}
-      value={tabIndex}
-      onChange={(index: number) => setTabIndex(index)}
-      tabs={tabList.map((n) => localize(n.label))}
-    />
+  const indexDivRef = React.useRef<HTMLDivElement>(null);
+  const getIndexDivHeight = React.useCallback(
+    () => indexDivRef.current?.getBoundingClientRect()?.height,
+    [indexDivRef],
   );
 
   const items = React.useMemo(() => {
     const sections = preferenceService.getSections(currentGroup, currentScope, currentSearchText);
-    let items: ISectionItemData[] = [];
+    console.log('🚀 ~ file: preferences.view.tsx ~ line 135 ~ items ~ sections', sections);
+    console.log('🚀 ~ file: preferences.view.tsx ~ line 135 ~ items ~ currentScope', currentScope);
+    console.log('🚀 ~ file: preferences.view.tsx ~ line 135 ~ items ~ currentGroup', currentGroup);
+    let result: ISectionItemData[] = [];
     const getItem = (section: ISettingSection) => {
       let innerItems = [] as ISectionItemData[];
 
@@ -152,26 +152,76 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     };
 
     for (const section of sections) {
-      items = items.concat(getItem(section));
+      result = result.concat(getItem(section));
     }
-    return items;
+    console.log('🚀 ~ file: preferences.view.tsx ~ line 159 ~ items ~ result', result);
+    return result;
   }, [currentGroup, currentScope, currentSearchText]);
 
   const navigateTo = React.useCallback(
     (section: ISettingSection) => {
+      console.log(
+        '🚀 ~ file: preferences.view.tsx ~ line 163 ~ constPreferenceView:ReactEditorComponent<null>=observer ~ items',
+        items,
+      );
       const index = items.findIndex((item) => item.title === section.title);
       if (index >= 0) {
         preferenceService.listHandler?.scrollToIndex(index);
       }
     },
-    [items],
+    [items, currentGroup],
   );
+
+  const indexes = React.useMemo(() => {
+    const result = [] as JSX.Element[];
+    if (groups) {
+      for (const { id, title, iconClass } of groups) {
+        const sections = preferenceService.getSections(id, currentScope, currentSearchText);
+        result.push(
+          <div
+            key={`${id} - ${title}`}
+            className={classnames({
+              [styles.index_item_wrapper]: true,
+              [styles.activated]: currentGroup === id,
+            })}
+          >
+            <div
+              key={`${id} - ${title}`}
+              className={classnames({
+                [styles.index_item]: true,
+                [styles.activated]: currentGroup === id,
+              })}
+              onClick={() => {
+                preferenceService.setCurrentGroup(id);
+              }}
+            >
+              <span className={iconClass}></span>
+              {toNormalCase(replaceLocalizePlaceholder(title) || '')}
+            </div>
+            <PreferenceSections
+              key={`${id} - ${title}`}
+              show={currentGroup === id}
+              getMaxHeight={getIndexDivHeight}
+              sections={sections}
+              navigateTo={navigateTo}
+            />
+          </div>,
+        );
+      }
+    }
+    return result;
+  }, [navigateTo, groups, currentGroup]);
 
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
       <div className={styles.preferences}>
         <div className={styles.preferences_header}>
-          {headers}
+          <Tabs
+            className={styles.tabs}
+            value={tabIndex}
+            onChange={(index: number) => setTabIndex(index)}
+            tabs={tabList.map((n) => localize(n.label))}
+          />
           <div className={styles.search_pref}>
             <Input
               autoFocus
@@ -182,18 +232,28 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             />
           </div>
         </div>
-        {groups.length > 0 ? (
+        {indexes.length > 0 ? (
           <SplitPanel id='preference-panel' className={styles.preferences_body} direction='left-to-right' useDomSize>
-            <PreferencesIndexes
-              groups={groups}
-              scope={currentScope}
-              searchText={currentSearchText}
-              navigateTo={navigateTo}
-              // @ts-ignore
+            <div
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore [SplitPanel 需要 defaultSize 属性]
               defaultSize={155}
-            />
-
-            {/* @ts-ignore */}
+              ref={indexDivRef}
+              className={styles.preferences_indexes}
+            >
+              <Scroll
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'inherit',
+                  justifyContent: 'flex-start',
+                }}
+              >
+                {indexes}
+              </Scroll>
+            </div>
+            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+            {/* @ts-ignore [SplitPanel 需要 flex 属性] */}
             <div className={styles.preferences_items} flex={1}>
               <PreferenceBody items={items} onReady={preferenceService.handleListHandler}></PreferenceBody>
             </div>
@@ -212,41 +272,47 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
 export const PreferenceSections = ({
   getMaxHeight,
-  preferenceSections,
+  sections,
   navigateTo,
   show,
   key,
 }: {
   getMaxHeight: () => number | undefined;
-  preferenceSections: ISettingSection[];
+  sections: ISettingSection[];
   navigateTo: (section: ISettingSection) => void;
   show: boolean;
   key: string;
 }) => {
-  const treeData = [] as IBasicTreeData[];
-  preferenceSections.forEach((v) => {
-    if (v.title) {
-      const result = {
-        label: v.title,
-        section: v,
-      } as IBasicTreeData;
-      const subSections = v.subSettingSections
-        ?.map((subSec) =>
-          subSec.title
-            ? {
-                label: subSec.title,
-                section: subSec,
-              }
-            : null,
-        )
-        .filter(Boolean) as IBasicTreeData[];
-      if (subSections && subSections.length > 0) {
-        result.children = subSections;
-        result.expandable = true;
-      }
-      treeData.push(result);
-    }
-  });
+  const treeData = React.useMemo(
+    () =>
+      sections
+        .map((v) => {
+          if (v.title) {
+            const result = {
+              label: v.title,
+              section: v,
+            } as IBasicTreeData;
+            const subSections = v.subSettingSections
+              ?.map((subSec) =>
+                subSec.title
+                  ? {
+                      label: subSec.title,
+                      section: subSec,
+                    }
+                  : null,
+              )
+              .filter(Boolean) as IBasicTreeData[];
+            if (subSections && subSections.length > 0) {
+              result.children = subSections;
+              result.expandable = true;
+            }
+            return result;
+          }
+        })
+        .filter(Boolean) as IBasicTreeData[],
+    [sections],
+  );
+
   return (
     <div key={key} className={`${styles.preference_section_link} ${show ? styles.show : styles.hide}`}>
       {treeData.length > 0 ? (
@@ -260,75 +326,13 @@ export const PreferenceSections = ({
           indent={6}
           itemHeight={22}
           onClick={(_e, node) => {
+            console.log('🚀 ~ file: preferences.view.tsx ~ line 263 ~ node', node);
             if (node && ((node as any)._raw as IBasicTreeData).section) {
               navigateTo(((node as any)._raw as IBasicTreeData).section);
             }
           }}
         />
       ) : null}
-    </div>
-  );
-};
-
-export const PreferencesIndexes = ({
-  groups,
-  scope,
-  searchText,
-  navigateTo,
-}: {
-  groups: ISettingGroup[];
-  scope: PreferenceScope;
-  searchText: string;
-  navigateTo: (section: ISettingSection) => void;
-}) => {
-  const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const divRef = React.useRef<HTMLDivElement>(null);
-  const getHeight = React.useCallback(() => divRef.current?.getBoundingClientRect()?.height, [divRef]);
-  return (
-    <div ref={divRef} className={styles.preferences_indexes}>
-      <Scroll
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'inherit',
-          justifyContent: 'flex-start',
-        }}
-      >
-        {groups &&
-          groups.map(({ id, title, iconClass }) => {
-            const sections = preferenceService.getSections(id, scope, searchText);
-            return (
-              <div
-                key={`${id} - ${title}`}
-                className={classnames({
-                  [styles.index_item_wrapper]: true,
-                  [styles.activated]: preferenceService.currentGroup === id,
-                })}
-              >
-                <div
-                  key={`${id} - ${title}`}
-                  className={classnames({
-                    [styles.index_item]: true,
-                    [styles.activated]: preferenceService.currentGroup === id,
-                  })}
-                  onClick={() => {
-                    preferenceService.setCurrentGroup(id);
-                  }}
-                >
-                  <span className={iconClass}></span>
-                  {toNormalCase(replaceLocalizePlaceholder(title) || '')}
-                </div>
-                <PreferenceSections
-                  key={`${id} - ${title}`}
-                  show={preferenceService.currentGroup === id}
-                  getMaxHeight={getHeight}
-                  preferenceSections={sections}
-                  navigateTo={navigateTo}
-                />
-              </div>
-            );
-          })}
-      </Scroll>
     </div>
   );
 };
