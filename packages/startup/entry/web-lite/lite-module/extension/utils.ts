@@ -1,6 +1,6 @@
 import mergeWith from 'lodash/mergeWith';
 
-import { Uri, asArray } from '@opensumi/ide-core-common';
+import { Uri, isArray } from '@opensumi/ide-core-common';
 import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
 import { ISumiExtensionContributions } from '@opensumi/ide-extension/lib/common/sumi/extension';
 import { IExtensionContributions } from '@opensumi/ide-extension/lib/common/vscode/extension';
@@ -34,8 +34,8 @@ export function mergeContributes(
     }
 
     if (key === 'configuration') {
-      value = asArray(value);
-      srcValue = asArray(srcValue);
+      value = isArray(value);
+      srcValue = isArray(srcValue);
     }
 
     if (Array.isArray(value) && Array.isArray(srcValue)) {
