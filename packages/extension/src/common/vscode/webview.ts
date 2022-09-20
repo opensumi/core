@@ -109,7 +109,7 @@ export interface IExtHostWebview {
   ): Promise<void>;
 
   /**
-   * browser 主动创建了一个 webview，把它交给 exthost 创建 webviewPanel
+   * browser 主动创建了一个 Webview，把它交给 exthost 创建 WebviewPanel
    * @param id
    */
   $pipeBrowserHostedWebviewPanel(id: string, viewType: string): void;

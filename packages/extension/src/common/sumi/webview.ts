@@ -2,13 +2,13 @@ import { Event } from '@opensumi/ide-core-common';
 
 export interface IPlainWebviewHandle {
   /**
-   * 向webview内部发送消息
+   * Post Message to Webview
    * @param message
    */
   postMessage(message: any): Promise<boolean>;
 
   /**
-   * 接收到 WebView 内消息
+   * Receive message from Webview
    */
   onMessage: Event<any>;
 
@@ -18,7 +18,7 @@ export interface IPlainWebviewHandle {
   setPartition(value?: string): Promise<void>;
 
   /**
-   * 加载一个 url
+   * Load url
    */
   loadUrl(url: string): Promise<void>;
 }

@@ -373,7 +373,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
 
   private getWebviewPanel(id): WebviewPanel {
     if (!this.webviewPanels.has(id)) {
-      throw new Error('拥有ID ' + id + ' 的 webview 不存在在browser进程中！');
+      throw new Error(`No Webview with id: ${id} was found in the browser process.`);
     }
     return this.webviewPanels.get(id)!;
   }
