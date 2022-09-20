@@ -1,7 +1,7 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor } from '../../utils';
-import { contrastBorder } from '../base';
+import { contrastBorder, selectionBackground } from '../base';
 import { inputBorder, inputOptionActiveBorder } from '../input';
 
 export const ktInputBorder = registerColor(
@@ -21,7 +21,7 @@ export const ktInputDisableBackground = registerColor(
 );
 export const ktInputSelectionBackground = registerColor(
   'kt.input.selectionBackground',
-  { dark: '#1A66AC', light: '#1A66AC', hc: null },
+  { dark: selectionBackground, light: selectionBackground, hc: selectionBackground },
   localize('Input Selection background color.'),
 );
 

@@ -1,30 +1,30 @@
 import { localize } from '@opensumi/ide-core-common';
 
-import { actionbarForeground } from '../../color-tokens/custom/actionbar';
-import { registerColor } from '../../utils';
+import { registerColor, transparent } from '../../utils';
+import { buttonBackground, buttonForeground, buttonHoverBackground } from '../button';
 
 export const ktIconForeground = registerColor(
   'kt.icon.foreground',
-  { dark: '#D7DBDE', light: '#D7DBDE', hc: null },
+  { dark: buttonForeground, light: buttonForeground, hc: buttonForeground },
   localize('ktIconForeground', 'Icon Foreground color.'),
 );
 export const ktIconHoverForeground = registerColor(
   'kt.icon.hoverForeground',
-  { dark: '#FFFFFF', light: actionbarForeground, hc: null },
+  { dark: buttonBackground, light: buttonBackground, hc: buttonBackground },
   localize('ktIconHoverForeground', 'Icon Hover Foreground color.'),
 );
 export const ktIconHoverBackground = registerColor(
   'kt.icon.hoverBackground',
-  { dark: '#1B2F44', light: '#1B2F44', hc: null },
+  { dark: buttonHoverBackground, light: buttonHoverBackground, hc: buttonHoverBackground },
   localize('Icon Hover Background color.'),
 );
 export const ktIconClickHoverForeground = registerColor(
   'kt.icon.clickForeground',
-  { dark: '#FFFFFF', light: '#FFFFFF', hc: null },
+  { dark: buttonHoverBackground, light: buttonHoverBackground, hc: buttonHoverBackground },
   localize('Icon Click Foreground color.'),
 );
 export const ktIconDisableForeground = registerColor(
   'kt.icon.disableForeground',
-  { dark: '#5F656B', light: '#5F656B', hc: null },
+  { dark: transparent(ktIconForeground, 0.5), light: transparent(ktIconForeground, 0.5), hc: null },
   localize('ktIconDisableForeground', 'Icon Disabled Foreground color.'),
 );
