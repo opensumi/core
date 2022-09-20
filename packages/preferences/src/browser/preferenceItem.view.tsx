@@ -194,7 +194,7 @@ const renderDescriptionExpression = (des: string) => {
   if (!description) {
     return null;
   }
-  const match = DESCRIPTION_EXPRESSION_REGEXP.exec(description!);
+  const match = DESCRIPTION_EXPRESSION_REGEXP.exec(description);
   if (!match) {
     return description;
   }
@@ -202,7 +202,7 @@ const renderDescriptionExpression = (des: string) => {
   const preference = preferenceSettingService.getSectionByPreferenceId(preferenceId);
   if (preference) {
     const preferenceTitle = getPreferenceItemLabel(preference);
-    const others: any[] = description
+    const others: JSX.Element[] = description
       .split(expression)
       .map((des: string, index: number) => <span key={`${preferenceId}-${index}`}>{des}</span>);
     const search = () => {

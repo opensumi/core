@@ -205,8 +205,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   visitSection(
     section: ISettingSection,
-    cb: (v: string | IPreferenceViewDesc) => boolean | undefined,
-  ): string | IPreferenceViewDesc | undefined {
+    cb: (v: IPreferenceViewDesc) => boolean | undefined,
+  ): IPreferenceViewDesc | undefined {
     if (section.preferences) {
       for (const preference of section.preferences) {
         const result = cb(preference);
