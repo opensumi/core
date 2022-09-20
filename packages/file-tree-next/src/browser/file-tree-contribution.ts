@@ -721,7 +721,9 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
       execute: async (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         const copyUri: URI = uri;
         let pathStr: string = decodeURIComponent(copyUri.path.toString());
         // windows下移除路径前的 /
@@ -735,7 +737,9 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
       execute: async (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         let rootUri: URI;
         if (this.fileTreeService.isMultipleWorkspace) {
           // 多工作区额外处理
@@ -922,7 +926,7 @@ export class FileTreeContribution
           uri = this.workbenchEditorService.currentEditor.currentUri;
         }
         if (uri) {
-          this.fileTreeModelService.location(uri);
+          this.revealFile(URI.parse(uri.toString()));
         }
       },
     });
