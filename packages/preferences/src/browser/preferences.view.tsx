@@ -26,6 +26,7 @@ import {
   URI,
   LabelService,
 } from '@opensumi/ide-core-browser';
+import { SplitPanel } from '@opensumi/ide-core-browser/lib/components/layout/split-panel';
 import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
@@ -34,8 +35,6 @@ import { ISectionItemData, toNormalCase } from '../common';
 import { PreferenceSettingsService } from './preference-settings.service';
 import { NextPreferenceItem } from './preferenceItem.view';
 import styles from './preferences.module.less';
-
-import './index.less';
 
 const WorkspaceScope = {
   id: PreferenceScope.Workspace,
@@ -184,17 +183,21 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
           </div>
         </div>
         {groups.length > 0 ? (
-          <div className={styles.preferences_body}>
+          <SplitPanel id='preference-panel' className={styles.preferences_body} direction='left-to-right' useDomSize>
             <PreferencesIndexes
               groups={groups}
               scope={currentScope}
               searchText={currentSearchText}
               navigateTo={navigateTo}
+              // @ts-ignore
+              defaultSize={155}
             />
-            <div className={styles.preferences_items}>
+
+            {/* @ts-ignore */}
+            <div className={styles.preferences_items} flex={1}>
               <PreferenceBody items={items} onReady={preferenceService.handleListHandler}></PreferenceBody>
             </div>
-          </div>
+          </SplitPanel>
         ) : (
           <div className={styles.preference_noResults}>
             {currentSearchText
@@ -281,7 +284,6 @@ export const PreferencesIndexes = ({
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
   const divRef = React.useRef<HTMLDivElement>(null);
   const getHeight = React.useCallback(() => divRef.current?.getBoundingClientRect()?.height, [divRef]);
-
   return (
     <div ref={divRef} className={styles.preferences_indexes}>
       <Scroll

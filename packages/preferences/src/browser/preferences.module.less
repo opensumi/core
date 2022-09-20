@@ -45,14 +45,9 @@
 
   .preferences_body {
     height: calc(100% - 40px);
-    position: relative;
-    padding-left: 155px;
     .preferences_indexes {
-      position: absolute;
-      width: 155px;
       padding-top: 16px;
       height: 100%;
-      left: 0;
       .index_item_wrapper {
         margin-bottom: 2px;
       }
@@ -106,6 +101,8 @@
     }
     .preferences_items {
       height: 100%;
+      width: 100%;
+      flex: 1;
       user-select: text;
       padding: 16px 0 0 10px;
     }
@@ -194,7 +191,7 @@
         padding: 0 8px !important;
       }
       .array_items_wrapper {
-        width: 550px;
+        // width: 550px;
         padding-left: 0;
         position: relative;
         .array_edit_wrapper {
