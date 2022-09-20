@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import classnames from 'classnames';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
@@ -61,10 +60,11 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const [tabIndex, setTabIndex] = React.useState<number>(0);
 
-  const { currentSearch: _currentSearchText, currentGroup } = preferenceService;
-
   const currentScope = React.useMemo<PreferenceScope>(() => (tabList[tabIndex] || tabList[0]).id, [tabList, tabIndex]);
-  const [currentSearchText, setCurrentSearchText] = React.useState<string>(_currentSearchText);
+  const [currentSearchText, setCurrentSearchText] = React.useState<string>(preferenceService.currentSearch);
+  const [currentGroup, setCurrentGroup] = React.useState<string>(preferenceService.currentGroup);
+  const [currentSelectSection, setCurrentSelectSection] = React.useState<ISettingSection | null>(null);
+
   const [groups, setGroups] = React.useState<ISettingGroup[]>([]);
 
   const inputRef = React.useRef<HTMLInputElement | null>(null);
@@ -106,10 +106,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   React.useEffect(() => {
     doGetGroups();
   }, [currentScope, currentSearchText]);
-
   React.useEffect(() => {
-    setCurrentSearchText(_currentSearchText);
-  }, [_currentSearchText]);
+    setCurrentSearchText(preferenceService.currentSearch);
+  }, [preferenceService.currentSearch]);
+  React.useEffect(() => {
+    setCurrentGroup(preferenceService.currentGroup);
+  }, [preferenceService.currentGroup]);
+  React.useEffect(() => {
+    if (currentSelectSection) {
+      navigateTo(currentSelectSection);
+    }
+  }, [currentSelectSection]);
 
   React.useEffect(() => {
     const focusDispose = preferenceService.onFocus(() => {
@@ -129,9 +136,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const items = React.useMemo(() => {
     const sections = preferenceService.getSections(currentGroup, currentScope, currentSearchText);
-    console.log('🚀 ~ file: preferences.view.tsx ~ line 135 ~ items ~ sections', sections);
-    console.log('🚀 ~ file: preferences.view.tsx ~ line 135 ~ items ~ currentScope', currentScope);
-    console.log('🚀 ~ file: preferences.view.tsx ~ line 135 ~ items ~ currentGroup', currentGroup);
     let result: ISectionItemData[] = [];
     const getItem = (section: ISettingSection) => {
       let innerItems = [] as ISectionItemData[];
@@ -154,16 +158,11 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     for (const section of sections) {
       result = result.concat(getItem(section));
     }
-    console.log('🚀 ~ file: preferences.view.tsx ~ line 159 ~ items ~ result', result);
     return result;
   }, [currentGroup, currentScope, currentSearchText]);
 
   const navigateTo = React.useCallback(
     (section: ISettingSection) => {
-      console.log(
-        '🚀 ~ file: preferences.view.tsx ~ line 163 ~ constPreferenceView:ReactEditorComponent<null>=observer ~ items',
-        items,
-      );
       const index = items.findIndex((item) => item.title === section.title);
       if (index >= 0) {
         preferenceService.listHandler?.scrollToIndex(index);
@@ -203,14 +202,16 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               show={currentGroup === id}
               getMaxHeight={getIndexDivHeight}
               sections={sections}
-              navigateTo={navigateTo}
+              onClick={(sec) => {
+                setCurrentSelectSection(sec);
+              }}
             />
           </div>,
         );
       }
     }
     return result;
-  }, [navigateTo, groups, currentGroup]);
+  }, [items, navigateTo, groups, currentGroup, currentSearchText]);
 
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
@@ -233,6 +234,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
           </div>
         </div>
         {indexes.length > 0 ? (
+          // @ts-ignore
           <SplitPanel id='preference-panel' className={styles.preferences_body} direction='left-to-right' useDomSize>
             <div
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -273,13 +275,13 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 export const PreferenceSections = ({
   getMaxHeight,
   sections,
-  navigateTo,
+  onClick,
   show,
   key,
 }: {
   getMaxHeight: () => number | undefined;
   sections: ISettingSection[];
-  navigateTo: (section: ISettingSection) => void;
+  onClick: (section: ISettingSection) => void;
   show: boolean;
   key: string;
 }) => {
@@ -326,9 +328,8 @@ export const PreferenceSections = ({
           indent={6}
           itemHeight={22}
           onClick={(_e, node) => {
-            console.log('🚀 ~ file: preferences.view.tsx ~ line 263 ~ node', node);
             if (node && ((node as any)._raw as IBasicTreeData).section) {
-              navigateTo(((node as any)._raw as IBasicTreeData).section);
+              onClick(((node as any)._raw as IBasicTreeData).section);
             }
           }}
         />
