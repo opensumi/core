@@ -175,17 +175,18 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     const result = [] as JSX.Element[];
     if (groups) {
       for (const { id, title, iconClass } of groups) {
+        const key = `${id}-${title}`;
         const sections = preferenceService.getSections(id, currentScope, currentSearchText);
         result.push(
           <div
-            key={`${id} - ${title}`}
+            key={`${key}-wrapper`}
             className={classnames({
               [styles.index_item_wrapper]: true,
               [styles.activated]: currentGroup === id,
             })}
           >
             <div
-              key={`${id} - ${title}`}
+              key={`${key}-label`}
               className={classnames({
                 [styles.index_item]: true,
                 [styles.activated]: currentGroup === id,
@@ -198,7 +199,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               {toNormalCase(replaceLocalizePlaceholder(title) || '')}
             </div>
             <PreferenceSections
-              key={`${id} - ${title}`}
+              key={`${key}-sections`}
               show={currentGroup === id}
               getMaxHeight={getIndexDivHeight}
               sections={sections}
@@ -277,7 +278,6 @@ export const PreferenceSections = ({
   sections,
   onClick,
   show,
-  key,
 }: {
   getMaxHeight: () => number | undefined;
   sections: ISettingSection[];
@@ -316,7 +316,7 @@ export const PreferenceSections = ({
   );
 
   return (
-    <div key={key} className={`${styles.preference_section_link} ${show ? styles.show : styles.hide}`}>
+    <div className={`${styles.preference_section_link} ${show ? styles.show : styles.hide}`}>
       {treeData.length > 0 ? (
         <BasicRecycleTree
           height={0}
