@@ -26,6 +26,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   itemHeight = 22,
   itemClassname,
   indent,
+  baseIndent,
   containerClassname,
   onClick,
   onContextMenu,
@@ -39,6 +40,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   onReady,
   contextMenus,
   contextMenuActuator,
+  supportDynamicHeights,
 }) => {
   const [showMenus, setShowMenus] = useState<{
     show: boolean;
@@ -61,6 +63,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
         itemType={props.itemType}
         itemHeight={itemHeight}
         indent={indent}
+        baseIndent={baseIndent}
         className={itemClassname}
         inlineMenus={inlineMenus}
         inlineMenuActuator={inlineMenuActuator}
@@ -272,6 +275,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
           model={model}
           onReady={handleTreeReady}
           className={containerClassname}
+          supportDynamicHeights={supportDynamicHeights}
         >
           {renderTreeNode}
         </RecycleTree>

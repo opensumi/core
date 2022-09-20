@@ -97,8 +97,7 @@ export interface IBasicRecycleTreeProps {
    * 不使用 React Window 时无效
    */
   height: number;
-  getMaxHeight?: () => number | undefined;
-  autoSizer?: boolean;
+  supportDynamicHeights?: boolean;
   /**
    * Tree 容器宽度
    * 不传入时，默认自动撑开 100% 父节点宽度
@@ -112,6 +111,10 @@ export interface IBasicRecycleTreeProps {
    * 每层的节点缩进长度，默认值为 8
    */
   indent?: number;
+  /**
+   * 第一层距离左边的距离，默认为 8
+   */
+  baseIndent?: number;
   /**
    * 追加的容器样式名，用于自定义更多样式
    */
@@ -180,6 +183,10 @@ export interface IBasicNodeProps {
    * 每层的节点缩进长度
    */
   indent?: number;
+  /**
+   * 第一层距离左边的距离，默认为 8
+   */
+  baseIndent?: number;
   /**
    * 节点装饰
    */

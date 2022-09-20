@@ -252,12 +252,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   //             <span className={iconClass}></span>
   //             {toNormalCase(replaceLocalizePlaceholder(title) || '')}
   //           </div>
-  //           <div
-  //             key={`${key}-sections-${calculatedData.treeData.length}`}
-  //             className={`${styles.preference_section_link} ${currentGroup === id ? styles.show : styles.hide}`}
-  //           >
-
-  //           </div>
   //         </div>,
   //       );
   //     }
@@ -286,8 +280,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
           </div>
         </div>
         {groups.length > 0 ? (
-          // @ts-ignore
-          <SplitPanel id='preference-panel' className={styles.preferences_body} direction='left-to-right' useDomSize>
+          <SplitPanel id='preference-panel' className={styles.preferences_body} direction='left-to-right'>
             <AutoSizer
               className={styles.preferences_indexes}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -296,13 +289,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             >
               {({ width, height }) => (
                 <BasicRecycleTree
+                  supportDynamicHeights
                   height={height}
                   width={width}
+                  itemHeight={24}
+                  baseIndent={4}
                   treeData={treeData}
                   itemClassname={styles.item_label}
                   containerClassname={styles.item_container}
-                  indent={6}
-                  itemHeight={22}
                   onClick={(_e, node) => {
                     const treeData = node && ((node as any)._raw as IPreferenceTreeData);
                     if (treeData) {

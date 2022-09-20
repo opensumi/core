@@ -15,6 +15,7 @@ export const BasicTreeNodeRenderer: React.FC<
   item,
   className,
   itemHeight = 22,
+  baseIndent = 8,
   indent = 8,
   onClick,
   onDbClick,
@@ -67,11 +68,7 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-
-  // const paddingLeft = `${8 + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? 20 : 0)}px`;
-  const paddingLeft = `${
-    indent + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? indent : 0)
-  }px`;
+  const paddingLeft = `${baseIndent + (item.depth || 0) * (indent || 0)}px`;
 
   const editorNodeStyle = {
     height: itemHeight,

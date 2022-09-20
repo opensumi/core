@@ -74,27 +74,6 @@
           background: var(--list-activeSelectionBackground);
         }
       }
-      .preference_section_link {
-        &.hide {
-          visibility: hidden;
-          height: 0px;
-        }
-        &.show {
-          visibility: visible;
-        }
-        > div {
-          padding: 3px 3px 3px 10px;
-          color: var(--titleBar-inactiveForeground);
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          cursor: pointer;
-          &:hover {
-            color: var(--list-hoverForeground);
-            background-color: var(--list-hoverBackground);
-          }
-        }
-      }
     }
     .preferences_items {
       height: 100%;
@@ -309,11 +288,18 @@
 }
 
 .item_label {
-  .content {
-    .segment .display_name {
+  :global {
+    .content {
+      .display_name {
+      }
     }
   }
 }
 
 .item_container {
+  :global {
+    // div[role='treeitem'][aria-level='1'] > div.tree_node {
+
+    // }
+  }
 }
