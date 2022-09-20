@@ -56,18 +56,26 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
         this.updateConfigurationSchema(configuration);
         sections.push({
           title: configuration.title,
-          preferences: Object.keys(configuration.properties),
+          preferences: Object.keys(configuration.properties).map((v) => ({
+            id: v,
+          })),
         });
       }
     }
-    this.addDispose(
-      this.preferenceSettingsService.registerSettingSection('extension', {
-        title:
-          this.getLocalizeFromNlsJSON(this.extension.packageJSON.displayName) || this.extension.packageJSON.displayName,
-        automaticallyGroupById: true,
-        subSettingSections: sections,
-      }),
-    );
+    if (sections.length === 1) {
+      const section = sections[0];
+      this.addDispose(this.preferenceSettingsService.registerSettingSection('extension', section));
+    } else if (sections.length > 1) {
+      this.addDispose(
+        this.preferenceSettingsService.registerSettingSection('extension', {
+          title:
+            this.getLocalizeFromNlsJSON(this.extension.packageJSON.displayName) ||
+            this.extension.packageJSON.displayName,
+          automaticallyGroupById: true,
+          subSettingSections: sections,
+        }),
+      );
+    }
   }
 
   private updateConfigurationSchema(schema: PreferenceSchema): void {
