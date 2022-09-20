@@ -2,21 +2,29 @@ import { Event } from '@opensumi/ide-core-common';
 
 export interface IPlainWebviewHandle {
   /**
-   * 向webview内部发送消息
+   * Post Message to Webview
    * @param message
    */
   postMessage(message: any): Promise<boolean>;
 
   /**
-   *
+   * Receive message from Webview
    */
   onMessage: Event<any>;
+
+  /**
+   * A string that sets the session used by the page.
+   */
+  setPartition(value?: string): Promise<void>;
+
+  /**
+   * Load url
+   */
+  loadUrl(url: string): Promise<void>;
 }
 
 export interface IExtHostPlainWebview extends IPlainWebviewHandle {
   reveal(groupIndex: number);
-
-  loadUrl(url: string);
 }
 
 export interface ISumiExtHostWebviews {

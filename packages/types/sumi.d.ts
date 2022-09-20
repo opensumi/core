@@ -325,7 +325,7 @@ declare module 'sumi' {
 
   export interface ExtensionCandidate {
     path: string;
-    isBuintin: boolean;
+    isBuiltin: boolean;
   }
 
   export interface IPlainWebviewHandle {
@@ -348,9 +348,27 @@ declare module 'sumi' {
     onMessage: Event<any>;
 
     /**
-     * 加载一个url
+     * Load url
      */
     loadUrl(url: string): Promise<void>;
+
+    /**
+     * In `webview` element it will use [partition](https://www.electronjs.org/docs/latest/api/webview-tag#partition)
+     *
+     * A `String` that sets the session used by the page. If `partition` starts with
+     * `persist:`, the page will use a persistent session available to all pages in the
+     * app with the same `partition`. if there is no `persist:` prefix, the page will
+     * use an in-memory session. By assigning the same `partition`, multiple pages can
+     * share the same session. If the `partition` is unset then default session of the
+     * app will be used.
+     *
+     * This value can only be modified before the `loadUrl()` method, since the session
+     * of an active renderer process cannot change. Subsequent attempts to modify the
+     * value will fail with a DOM exception.
+     *
+     * **not work in `iframe` element.**
+     */
+    setPartition(value?: string): Promise<void>;
   }
 
   export interface IDisposable {
