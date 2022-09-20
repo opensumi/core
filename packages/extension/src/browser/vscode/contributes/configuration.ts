@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import {
-  replaceLocalizePlaceholder,
   PreferenceSchemaProvider,
   PreferenceSchema,
   PreferenceSchemaProperties,
@@ -44,21 +43,16 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
           const originalConfiguration = configuration.properties[prop];
           tmpProperties[prop] = originalConfiguration;
           if (originalConfiguration.description) {
-            tmpProperties[prop].description = replaceLocalizePlaceholder(
-              originalConfiguration.description,
-              this.extension.id,
-            );
+            tmpProperties[prop].description = this.getLocalizeFromNlsJSON(originalConfiguration.description);
           }
           if (originalConfiguration.markdownDescription) {
-            tmpProperties[prop].markdownDescription = replaceLocalizePlaceholder(
+            tmpProperties[prop].markdownDescription = this.getLocalizeFromNlsJSON(
               originalConfiguration.markdownDescription,
-              this.extension.id,
             );
           }
         }
         configuration.properties = tmpProperties;
-        configuration.title =
-          replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
+        configuration.title = this.getLocalizeFromNlsJSON(configuration.title) || configuration.title;
         this.updateConfigurationSchema(configuration);
         sections.push({
           title: configuration.title,
@@ -68,7 +62,8 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
     }
     this.addDispose(
       this.preferenceSettingsService.registerSettingSection('extension', {
-        title: this.extension.packageJSON.name,
+        title:
+          this.getLocalizeFromNlsJSON(this.extension.packageJSON.displayName) || this.extension.packageJSON.displayName,
         automaticallyGroupById: true,
         subSettingSections: sections,
       }),
@@ -77,7 +72,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
   private updateConfigurationSchema(schema: PreferenceSchema): void {
     this.validateConfigurationSchema(schema);
-
     this.addDispose(this.preferenceSchemaProvider.setSchema(schema));
   }
 

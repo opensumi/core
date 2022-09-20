@@ -238,7 +238,7 @@ export interface JSONType {
 
 export interface IExtension extends IExtensionProps {
   readonly contributes: IExtensionContributions & ISumiExtensionContributions;
-  activate(visited?: Set<string>);
+  activate(visited?: Set<string>): void;
   enable(): void;
   reset(): void;
   toJSON(): IExtensionProps;
