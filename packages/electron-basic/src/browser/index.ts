@@ -49,10 +49,6 @@ export class ElectronBasicModule extends BrowserModule {
     },
     ElectronBasicContribution,
     WelcomeContribution,
-    {
-      token: IClipboardService,
-      useClass: ElectronClipboardService,
-    },
   ];
 }
 
