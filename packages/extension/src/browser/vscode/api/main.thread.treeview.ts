@@ -29,6 +29,7 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main-layout';
 import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 
+import { ExtensionHostType } from '../../../common';
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
@@ -40,6 +41,7 @@ import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from
 @Injectable({ multiple: true })
 export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeView {
   static TREE_VIEW_COLLAPSE_ALL_COMMAND_ID = 'TREE_VIEW_COLLAPSE_ALL';
+  static TREE_VIEW_COLLAPSE_ALL_COMMAND_ID_WORKER = 'TREE_VIEW_COLLAPSE_ALL_WORKER';
 
   private readonly proxy: IExtHostTreeView;
 
@@ -83,7 +85,7 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
   private disposableCollection: Map<string, DisposableStore> = new Map();
   private disposable: DisposableStore = new DisposableStore();
 
-  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol, private extensionHostType: ExtensionHostType) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
     this.disposable.add(toDisposable(() => this.treeModels.clear()));
@@ -159,7 +161,10 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
       disposable.add(
         this.menuRegistry.registerMenuItem(MenuId.ViewTitle, {
           command: {
-            id: MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
+            id:
+              this.extensionHostType === 'worker'
+                ? MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID_WORKER
+                : MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
             label: localize('treeview.command.action.collapse'),
           },
           extraTailArgs: [treeViewId],
@@ -239,7 +244,10 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     this.disposable.add(
       this.commandRegistry.registerCommand(
         {
-          id: MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
+          id:
+            this.extensionHostType === 'worker'
+              ? MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID_WORKER
+              : MainThreadTreeView.TREE_VIEW_COLLAPSE_ALL_COMMAND_ID,
         },
         {
           execute: (treeViewId: string) => {

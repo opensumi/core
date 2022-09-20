@@ -56,6 +56,8 @@ export interface IMainThreadWebview {
   $plainWebviewLoadUrl(id: string, uri: string): Promise<void>;
   $disposePlainWebview(id: string): Promise<void>;
   $revealPlainWebview(id: string, groupIndex: number): Promise<void>;
+
+  $setPlainWebviewPartition(id: string, value?: string): Promise<void>;
 }
 
 export interface IWebviewExtensionDescription {
@@ -107,7 +109,7 @@ export interface IExtHostWebview {
   ): Promise<void>;
 
   /**
-   * browser主动创建了一个webview，把它交给 exthost 创建 webviewPanel
+   * browser 主动创建了一个 Webview，把它交给 exthost 创建 WebviewPanel
    * @param id
    */
   $pipeBrowserHostedWebviewPanel(id: string, viewType: string): void;

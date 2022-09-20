@@ -57,7 +57,7 @@ export function createAPIFactory(
     const reporter = new ReporterService(reporterEmitter, {
       extensionId: extension.extensionId,
       extensionVersion: extension.packageJSON.version,
-      host: REPORT_HOST.EXTENSION,
+      host: type === 'worker' ? REPORT_HOST.WORKER : REPORT_HOST.EXTENSION,
     });
     return {
       layout: createLayoutAPIFactory(extHostCommands, extHostLayout, extension),

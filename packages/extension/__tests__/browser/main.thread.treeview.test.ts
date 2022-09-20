@@ -81,7 +81,7 @@ describe('MainThreadTreeView API Test Suite', () => {
       ]),
     );
 
-    mainThreadTreeView = injector.get(MainThreadTreeView, [mockProxy as any]);
+    mainThreadTreeView = injector.get(MainThreadTreeView, [mockProxy as any, 'node']);
     mainThreadTreeView.$registerTreeDataProvider(testTreeViewId, {});
   });
 

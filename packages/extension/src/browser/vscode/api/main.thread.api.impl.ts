@@ -91,7 +91,7 @@ export async function createApiFactory(
   const MainThreadWebviewAPI = injector.get(MainThreadWebview, [rpcProtocol]);
   const MainThreadWebviewViewAPI = injector.get(MainThreadWebviewView, [rpcProtocol, MainThreadWebviewAPI]);
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [rpcProtocol]);
-  const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [rpcProtocol]);
+  const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [rpcProtocol, 'node']);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [rpcProtocol]);
   const MainThreadWindowStateAPI = injector.get(MainThreadWindowState, [rpcProtocol]);
   const MainThreadWindowAPI = injector.get(MainThreadWindow, [rpcProtocol]);
@@ -223,7 +223,7 @@ export async function initWorkerThreadAPIProxy(workerProtocol: IRPCProtocol, inj
   const MainThreadAuthenticationAPI = injector.get(MainThreadAuthentication, [workerProtocol]);
   const MainThreadSecretAPI = injector.get(MainThreadSecret, [workerProtocol]);
   const MainThreadSCMAPI = injector.get(MainThreadSCM, [workerProtocol]);
-  const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [workerProtocol]);
+  const MainThreadTreeViewAPI = injector.get(MainThreadTreeView, [workerProtocol, 'worker']);
   const MainThreadDecorationsAPI = injector.get(MainThreadDecorations, [workerProtocol]);
 
   workerProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);

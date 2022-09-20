@@ -642,6 +642,8 @@ export const localizationBundle = {
     'validate.tree.fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
     'validate.tree.invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
 
+    'editor.close.all': '关闭全部编辑器',
+
     'opened.editors.title': '打开的编辑器',
     'opened.editors.save.all': '保存全部',
     'opened.editors.close.all': '关闭全部',
@@ -859,6 +861,8 @@ export const localizationBundle = {
     'toolbar-customize.buttonDisplay.iconAndText': '图标和文字',
     'toolbar-customize.complete': '完成',
     'toolbar.customize.menu': '自定义工具栏...',
+
+    'editor.toggleWordWrap': '切换自动换行',
 
     'workbench.uploadingFiles': '{0} 个文件上传中 {1}/s',
     'workspace.development.title': '插件开发宿主模式',

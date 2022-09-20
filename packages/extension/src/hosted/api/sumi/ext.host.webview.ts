@@ -58,6 +58,10 @@ export class PlainWebviewHandle extends Disposable implements IPlainWebviewHandl
     return this.proxy.$postMessageToPlainWebview(this.id, message);
   }
 
+  async setPartition(value?: string | undefined): Promise<void> {
+    await this.proxy.$setPlainWebviewPartition(this.id, value);
+  }
+
   async loadUrl(url: string) {
     this.proxy.$plainWebviewLoadUrl(this.id, url);
   }

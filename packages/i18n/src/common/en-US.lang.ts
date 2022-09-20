@@ -609,6 +609,8 @@ export const localizationBundle = {
     'validate.tree.fileNameExistsError': 'File or folder **{0}** already exists. Please use a different name.',
     'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
 
+    'editor.close.all': 'Close All Editors',
+
     'opened.editors.title': 'OPENED EDITORS',
     'opened.editors.save.all': 'Save All',
     'opened.editors.close.all': 'Close All',
@@ -955,6 +957,8 @@ export const localizationBundle = {
     'keyboard.autoDetect.label': 'Auto Detect',
     'keyboard.autoDetect.description': "(Current: '{0} ')",
     'keyboard.autoDetect.detail': 'Try to detect the keyboard layout from browser information and pressed keys.',
+
+    'editor.toggleWordWrap': 'Toggle Word Wrap',
 
     'editor.suggest.details.visible': 'Controls whether editor code completion expands details by default',
 

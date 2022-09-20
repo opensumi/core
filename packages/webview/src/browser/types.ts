@@ -87,7 +87,10 @@ export interface IWebviewContentScrollPosition {
   scrollXPercentage: number;
 }
 
-// 纯粹的Webview或者Iframe元素。加载一个url
+/**
+ * 纯粹的 webview 或 iframe 元素
+ * 用以加载指定的 url
+ */
 export interface IPlainWebview extends IDisposable {
   readonly url: string | undefined;
 
@@ -100,6 +103,24 @@ export interface IPlainWebview extends IDisposable {
   onMessage: Event<any>;
 
   getDomNode(): MaybeNull<HTMLElement>;
+
+  /**
+   * In `webview` element it will use [partition](https://www.electronjs.org/docs/latest/api/webview-tag#partition)
+   *
+   * A `String` that sets the session used by the page. If `partition` starts with
+   * `persist:`, the page will use a persistent session available to all pages in the
+   * app with the same `partition`. if there is no `persist:` prefix, the page will
+   * use an in-memory session. By assigning the same `partition`, multiple pages can
+   * share the same session. If the `partition` is unset then default session of the
+   * app will be used.
+   *
+   * This value can only be modified before the first navigation, since the session
+   * of an active renderer process cannot change. Subsequent attempts to modify the
+   * value will fail with a DOM exception.
+   *
+   * **not work in `iframe` element.**
+   */
+  setPartition(value: string): void;
 
   onDispose: Event<void>;
 

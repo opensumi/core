@@ -328,7 +328,6 @@ export namespace EDITOR_COMMANDS {
   export const SAVE_URI: Command = {
     id: 'editor.saveUri',
     category: CATEGORY,
-    label: '%editor.saveUri%',
   };
 
   export const SAVE_CURRENT: Command = {
@@ -622,6 +621,7 @@ export namespace EDITOR_COMMANDS {
 
   export const TOGGLE_WORD_WRAP: Command = {
     id: 'editor.toggleWordWrap',
+    label: '%editor.toggleWordWrap%',
     category: CATEGORY,
   };
 
