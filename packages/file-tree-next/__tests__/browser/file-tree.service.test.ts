@@ -10,7 +10,6 @@ import {
   PreferenceService,
   QuickOpenService,
   OS,
-  INativeClipboardService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -159,10 +158,6 @@ describe('FileTree Service should be work alone', () => {
       {
         token: IFileTreeService,
         useClass: FileTreeService,
-      },
-      {
-        token: INativeClipboardService,
-        useValue: {},
       },
       {
         token: IViewsRegistry,

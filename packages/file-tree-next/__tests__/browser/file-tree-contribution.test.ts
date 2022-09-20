@@ -116,10 +116,6 @@ describe('FileTreeContribution', () => {
         useValue: {},
       },
       {
-        token: INativeClipboardService,
-        useValue: {},
-      },
-      {
         token: IDialogService,
         useValue: {},
       },

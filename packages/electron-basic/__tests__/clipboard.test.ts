@@ -1,13 +1,13 @@
-import { URI } from '@opensumi/ide-core-common';
+import { IClipboardService, URI } from '@opensumi/ide-core-common';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { IElectronMainUIService } from '../../../core-common/lib/electron';
-import { ElectronClipboardService, INativeClipboardService } from '../../src/services';
+import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
+import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
+import { ElectronClipboardService } from '../src/browser/clipboard';
 
 describe('clipboard service test', () => {
   let injector: MockInjector;
-  let clipboardService: INativeClipboardService;
+  let clipboardService: IClipboardService;
   const mockElectronMainUIService = {
     writeClipboardText: jest.fn(),
     readClipboardText: jest.fn(),
@@ -22,11 +22,11 @@ describe('clipboard service test', () => {
         useValue: mockElectronMainUIService,
       },
       {
-        token: INativeClipboardService,
+        token: IClipboardService,
         useClass: ElectronClipboardService,
       },
     );
-    clipboardService = injector.get<INativeClipboardService>(INativeClipboardService);
+    clipboardService = injector.get<IClipboardService>(IClipboardService);
   });
 
   it('read text', async () => {

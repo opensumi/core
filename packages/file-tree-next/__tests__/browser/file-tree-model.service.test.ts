@@ -1,5 +1,4 @@
 import { TreeNodeType } from '@opensumi/ide-components';
-import { INativeClipboardService } from '@opensumi/ide-core-browser';
 import {
   URI,
   Disposable,

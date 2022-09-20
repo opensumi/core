@@ -38,7 +38,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
-import { INativeClipboardService, LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
@@ -127,9 +127,6 @@ export class FileTreeModelService {
 
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
-
-  @Autowired(INativeClipboardService)
-  private readonly nativeClipboardService: INativeClipboardService;
 
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
@@ -1584,11 +1581,7 @@ export class FileTreeModelService {
     };
 
     // Also update pasteStore in localStorage
-    if (this.appConfig.isElectronRenderer) {
-      this.nativeClipboardService.writeResources(from);
-    } else {
-      this.clipboardService.writeResources(from);
-    }
+    this.clipboardService.writeResources(from);
   };
 
   public pasteFile = async (to: URI) => {
@@ -1599,13 +1592,7 @@ export class FileTreeModelService {
     let pasteStore = this.pasteStore;
     let shouldConfirm = false;
     if (!pasteStore) {
-      let uriList: URI[];
-
-      if (this.appConfig.isElectronRenderer) {
-        uriList = await this.nativeClipboardService.readResources();
-      } else {
-        uriList = await this.clipboardService.readResources();
-      }
+      const uriList = await this.clipboardService.readResources();
 
       if (!uriList || !uriList.length) {
         return;
