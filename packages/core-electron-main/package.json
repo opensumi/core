@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-electron-main",
-  "version": "2.20.1",
+  "version": "2.20.2",
   "files": [
     "lib",
     "browser-preload"
@@ -17,7 +17,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.20.1",
+    "@opensumi/ide-core-common": "2.20.2",
     "tree-kill": "^1.2.2"
   },
   "peerDependencies": {
