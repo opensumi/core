@@ -68,6 +68,8 @@ export interface IBasicTreeData {
   description?: string;
   /**
    * 子节点
+   *
+   * 传入一个空数组可让本节点视为文件夹，同时可以通过 expandable 属性来设置是否展示收起图标
    */
   children?: IBasicTreeData[] | null;
   /**

@@ -68,6 +68,7 @@ export const BasicTreeNodeRenderer: React.FC<
     [onClick, onTwistierClick],
   );
 
+  // const paddingLeft = `${8 + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? 20 : 0)}px`;
   const paddingLeft = `${
     indent + (item.depth || 0) * (indent || 0) + (!BasicCompositeTreeNode.is(item) ? indent : 0)
   }px`;
@@ -161,7 +162,7 @@ export const BasicTreeNodeRenderer: React.FC<
   };
 
   const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (!(item as BasicCompositeTreeNode).expandable && item.depth !== 1) {
+    if (!(item as BasicCompositeTreeNode).expandable) {
       return <div className={cls('segment', 'expansion_toggle')}></div>;
     }
 
@@ -182,7 +183,7 @@ export const BasicTreeNodeRenderer: React.FC<
     >
       <div className='content'>
         {renderTwice(item)}
-        {item.icon ? renderIcon(item) : null}
+        {renderIcon(item)}
         <div className={'overflow_wrap'}>
           {renderDisplayName(item)}
           {renderDescription(item)}
