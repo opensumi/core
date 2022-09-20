@@ -211,10 +211,14 @@ export const PreferenceSections = ({
   getMaxHeight,
   preferenceSections,
   navigateTo,
+  show,
+  key,
 }: {
   getMaxHeight: () => number | undefined;
   preferenceSections: ISettingSection[];
   navigateTo: (section: ISettingSection) => void;
+  show: boolean;
+  key: string;
 }) => {
   const treeData = [] as IBasicTreeData[];
   preferenceSections.forEach((v) => {
@@ -241,7 +245,7 @@ export const PreferenceSections = ({
     }
   });
   return (
-    <div className={styles.preference_section_link}>
+    <div key={key} className={`${styles.preference_section_link} ${show ? styles.show : styles.hide}`}>
       {treeData.length > 0 ? (
         <BasicRecycleTree
           height={0}
@@ -312,9 +316,13 @@ export const PreferencesIndexes = ({
                   <span className={iconClass}></span>
                   {toNormalCase(replaceLocalizePlaceholder(title) || '')}
                 </div>
-                {preferenceService.currentGroup === id ? (
-                  <PreferenceSections getMaxHeight={getHeight} preferenceSections={sections} navigateTo={navigateTo} />
-                ) : null}
+                <PreferenceSections
+                  key={`${id} - ${title}`}
+                  show={preferenceService.currentGroup === id}
+                  getMaxHeight={getHeight}
+                  preferenceSections={sections}
+                  navigateTo={navigateTo}
+                />
               </div>
             );
           })}

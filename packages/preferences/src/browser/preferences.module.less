@@ -80,6 +80,13 @@
         }
       }
       .preference_section_link {
+        &.hide {
+          visibility: hidden;
+          height: 0px;
+        }
+        &.show {
+          visibility: visible;
+        }
         > div {
           padding: 3px 3px 3px 10px;
           color: var(--titleBar-inactiveForeground);
