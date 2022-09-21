@@ -115,16 +115,6 @@ class MainThreadSCMProvider implements ISCMProvider {
   readonly groups = new Sequence<MainThreadSCMResourceGroup>();
   private readonly _groupsByHandle: { [handle: number]: MainThreadSCMResourceGroup } = Object.create(null);
 
-  // get groups(): ISequence<ISCMResourceGroup> {
-  // 	return {
-  // 		elements: this._groups,
-  // 		onDidSplice: this._onDidSplice.event
-  // 	};
-
-  // 	// return this._groups
-  // 	// 	.filter(g => g.resources.elements.length > 0 || !g.features.hideWhenEmpty);
-  // }
-
   private _onDidChangeResources = new Emitter<void>();
   readonly onDidChangeResources: Event<void> = this._onDidChangeResources.event;
 
@@ -133,12 +123,15 @@ class MainThreadSCMProvider implements ISCMProvider {
   get handle(): number {
     return this._handle;
   }
+
   get label(): string {
     return this._label;
   }
+
   get rootUri(): URI | undefined {
     return this._rootUri;
   }
+
   get contextValue(): string {
     return this._contextValue;
   }
@@ -146,12 +139,15 @@ class MainThreadSCMProvider implements ISCMProvider {
   get commitTemplate(): string | undefined {
     return this.features.commitTemplate;
   }
+
   get acceptInputCommand(): VSCommand | undefined {
     return this.features.acceptInputCommand;
   }
+
   get statusBarCommands(): VSCommand[] | undefined {
     return this.features.statusBarCommands;
   }
+
   get count(): number | undefined {
     return this.features.count;
   }

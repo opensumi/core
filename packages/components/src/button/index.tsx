@@ -21,6 +21,7 @@ interface IButtonBasicProps<T> {
   size?: ButtonSize;
   disabled?: boolean;
   block?: boolean;
+  labelIconClass?: string;
 }
 
 interface MoreActionProps {
@@ -97,6 +98,7 @@ export const Button = React.memo(
     menu,
     title,
     onVisibleChange,
+    labelIconClass,
     ...otherProps
   }: ButtonProps<T>): React.ReactElement<ButtonProps<T>> => {
     const classes = classNames('kt-button', className, {
@@ -156,6 +158,7 @@ export const Button = React.memo(
         onClick={loading || disabled ? noop : onClick}
       >
         {loading && type !== 'link' && <LoadingCircle />}
+        {labelIconClass && <Icon iconClass={labelIconClass} style={{ marginRight: 5 }} />}
         {iconNode && iconNode}
         {children}
       </button>

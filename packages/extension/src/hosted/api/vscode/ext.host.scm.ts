@@ -33,6 +33,7 @@ import {
   CancellationToken,
   IDisposable,
   ISplice,
+  isUndefined,
 } from '@opensumi/ide-core-common';
 
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
@@ -439,18 +440,38 @@ class ExtHostSourceControl implements vscode.SourceControl {
     this._actionButtonDisposables.value = new DisposableStore();
 
     this._actionButton = actionButton;
-
-    const internal =
-      actionButton !== undefined
-        ? {
-            command: this._commands.converter.toInternal(actionButton.command, this._actionButtonDisposables.value)!,
-            secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) => commandGroup.map(
-                (command) => this._commands.converter.toInternal(command, this._actionButtonDisposables.value!)!,
-              )),
-            description: actionButton.description,
-            enabled: actionButton.enabled,
-          }
-        : undefined;
+    /**
+     * 仅适配 Git 1.62.3 版本逻辑，该版本下 actionButton 为单个按钮，返回数据结构如下：
+     * {
+     *   arguments: [ExtHostSourceControl]
+     *   command: "git.publish"
+     *   title: "$(cloud-upload) Publish Changes"
+     *   tooltip: "Publish Changes"
+     * }
+     * 通过是判断 command 类型进行区分
+     */
+    let internal;
+    if (isUndefined(actionButton)) {
+      internal = undefined;
+    } else if (typeof actionButton?.command === 'string') {
+      internal = {
+        command: this._commands.converter.toInternal(actionButton as any, this._actionButtonDisposables.value)!,
+        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) => commandGroup.map(
+            (command) => this._commands.converter.toInternal(command, this._actionButtonDisposables.value!)!,
+          )),
+        description: (actionButton as any).title,
+        enabled: true,
+      };
+    } else {
+      internal = {
+        command: this._commands.converter.toInternal(actionButton.command, this._actionButtonDisposables.value)!,
+        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) => commandGroup.map(
+            (command) => this._commands.converter.toInternal(command, this._actionButtonDisposables.value!)!,
+          )),
+        description: actionButton.description || (actionButton as any).tooltip,
+        enabled: actionButton.enabled,
+      };
+    }
     this._proxy.$updateSourceControl(this.handle, { actionButton: internal ?? null });
   }
 

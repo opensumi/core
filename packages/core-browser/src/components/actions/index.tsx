@@ -157,8 +157,9 @@ const InlineActionWidget: React.FC<
     context?: any[];
     type?: ActionListType;
     afterClick?: () => void;
+    iconService?: IMenubarIconService;
   } & React.HTMLAttributes<HTMLElement>
-> = React.memo(({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
+> = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
   const handleClick = React.useCallback(
     (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
       if (event) {
@@ -179,12 +180,26 @@ const InlineActionWidget: React.FC<
     [data, context],
   );
 
-  const title = React.useMemo(() => {
-    const title = data.tooltip || data.label;
+  const ICON_REGX = /\$\(.+\)/;
+  const [title, label, labelIconClass] = React.useMemo(() => {
+    let title = data.tooltip || data.label;
+    let label = data.label;
+    let labelIconClass;
     if (data.keybinding) {
-      return `${title} (${data.keybinding})`;
+      title = `${title} (${data.keybinding})`;
     }
-    return title;
+    if (!iconService) {
+      return title;
+    }
+    if (ICON_REGX.test(title)) {
+      const result = ICON_REGX.exec(title);
+      if (result && result[0]) {
+        title = title.replace(result[0], '');
+        label = label.replace(result[0], '');
+        labelIconClass = iconService.fromString(result[0]);
+      }
+    }
+    return [title, label, labelIconClass];
   }, [data]);
 
   const isSubmenuNode = data.id === SubmenuItemNode.ID;
@@ -203,7 +218,7 @@ const InlineActionWidget: React.FC<
         onClick={handleClick}
         {...restProps}
       >
-        {!data.icon && data.label /* 没有 icon 时渲染 label */}
+        {!data.icon && label /* 没有 icon 时渲染 label */}
       </Button>
     );
   }
@@ -230,9 +245,10 @@ const InlineActionWidget: React.FC<
       size='small'
       type={data.type}
       title={title}
+      labelIconClass={labelIconClass}
       {...restProps}
     >
-      {data.label}
+      {label}
       {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
     </Button>
   );
@@ -304,6 +320,7 @@ export const TitleActionList: React.FC<
     more?: MenuNode[];
     moreIcon?: string;
     className?: string;
+    iconService?: IMenubarIconService;
   } & BaseActionListProps
 > = React.memo(
   ({
@@ -321,6 +338,7 @@ export const TitleActionList: React.FC<
     className,
     afterClick,
     menuId,
+    iconService,
     regroup = (...args: [MenuNode[], MenuNode[]]) => args,
   }) => {
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
@@ -375,6 +393,7 @@ export const TitleActionList: React.FC<
               data={item}
               afterClick={afterClick}
               context={context}
+              iconService={iconService}
             />
           );
         })}
@@ -412,6 +431,10 @@ interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'ex
   debounce?: { delay: number; maxWait?: number };
 }
 
+interface IMenubarIconService {
+  fromString: (iconString: string) => string | undefined;
+}
+
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineActionBarProps<T, U, K, M>,
 ): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
@@ -432,6 +455,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
   menus: IContextMenu;
   moreIcon?: string;
   separator?: IMenuSeparator;
+  iconService?: IMenubarIconService;
 }
 
 // 后续考虑使用 IContextMenu, useContextMenus 和 InlineMenuBar 来替换掉老的 IMenu
@@ -439,7 +463,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
 export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineMenuBarProps<T, U, K, M>,
 ): React.ReactElement<InlineMenuBarProps<T, U, K, M>> {
-  const { menus, context, moreIcon, separator = 'navigation', ...restProps } = props;
+  const { iconService, menus, context, moreIcon, separator = 'navigation', ...restProps } = props;
   const [navMenu, moreMenu] = useContextMenus(menus);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
@@ -450,6 +474,7 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       more={separator === 'inline' ? [] : moreMenu}
       moreIcon={moreIcon}
       context={context}
+      iconService={iconService}
       {...restProps}
     />
   );
