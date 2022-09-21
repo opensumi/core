@@ -130,7 +130,7 @@ export interface IBasicRecycleTreeProps {
   /**
    * 排序函数
    */
-  sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number;
+  sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number | undefined;
   /**
    * 单击事件
    */

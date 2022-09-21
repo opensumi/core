@@ -1,8 +1,6 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 
-import { IDisposable } from '@opensumi/ide-utils';
-
 import { ClickOutside } from '../../click-outside';
 import { RecycleTree, IRecycleTreeHandle } from '../RecycleTree';
 import { INodeRendererWrapProps } from '../TreeNodeRendererWrap';
@@ -94,6 +92,10 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
       treeService.current?.dispose();
     };
   }, []);
+
+  useEffect(() => {
+    treeService.current?.updateTreeData(treeData);
+  }, [treeData]);
 
   const ensureLoaded = async () => {
     const model = treeService.current.model;

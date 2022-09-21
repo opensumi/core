@@ -49,6 +49,7 @@ const UserScope = {
 interface IPreferenceTreeData extends IBasicTreeData {
   section?: ISettingSection;
   groupId?: string;
+  order?: number;
 }
 
 export const PreferenceView: ReactEditorComponent<null> = observer(() => {
@@ -76,9 +77,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const debouncedSearch = debounce(
     (value: string) => {
-      setCurrentSearchText(value);
+      preferenceService.search(value);
     },
-    100,
+    300,
     { maxWait: 1000 },
   );
 
@@ -133,6 +134,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     if (!groups) {
       return [];
     }
+
     const parseTreeData = (id: string, section: ISettingSection) => {
       let innerTreeData: IPreferenceTreeData | undefined;
       if (section.title) {
@@ -157,11 +159,13 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     };
 
     const basicTreeData = [] as IPreferenceTreeData[];
-    for (const { id, title, iconClass } of groups) {
+    for (let index = 0; index < groups.length; index++) {
+      const { id, title, iconClass } = groups[index];
       const data = {
         label: toNormalCase(replaceLocalizePlaceholder(title) || title),
         iconClassName: iconClass,
         groupId: id,
+        order: index,
       } as IPreferenceTreeData;
       const children = [] as IPreferenceTreeData[];
       const sections = preferenceService.getResolvedSections(id, currentScope, currentSearchText);
@@ -178,8 +182,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       }
       basicTreeData.push(data);
     }
+
     return basicTreeData;
-  }, [groups]);
+  }, [groups, preferenceService.getResolvedSections]);
 
   const items = React.useMemo(() => {
     const sections = preferenceService.getResolvedSections(currentGroup, currentScope, currentSearchText);
@@ -258,13 +263,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               {({ width, height }) => (
                 <BasicRecycleTree
                   supportDynamicHeights
+                  sortComparator={(a: IPreferenceTreeData, b: IPreferenceTreeData) => {
+                    if (a.groupId && b.groupId && a.order && b.order) {
+                      return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
+                    }
+                    return undefined;
+                  }}
                   height={height}
                   width={width}
                   itemHeight={24}
                   baseIndent={8}
                   treeData={treeData}
-                  itemClassname={styles.item_label}
-                  containerClassname={styles.item_container}
                   onClick={(_e, node) => {
                     const treeData = node && ((node as any)._raw as IPreferenceTreeData);
                     if (treeData) {
