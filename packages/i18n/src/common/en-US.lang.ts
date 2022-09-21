@@ -671,6 +671,17 @@ export const localizationBundle = {
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
 
+    'terminal.action.toggleVisibility': 'Toggle Terminal',
+    'marker.action.toggleVisibility': 'Toggle Problem',
+    'output.action.toggleVisibility': 'Toggle Output',
+    'debug-console.action.toggleVisibility': 'Toggle Debug Console',
+    'explorer.action.toggleVisibility': 'Toggle Explorer',
+    'search.action.toggleVisibility': 'Toggle Search',
+    'scm.action.toggleVisibility': 'Toggle Source Control',
+    'extension.action.toggleVisibility': 'Toggle Extension',
+    'debug.action.toggleVisibility': 'Toggle Debug',
+
+    'layout.tabbar.setting': 'Open Preference Panel',
     'debugger.menu.setValue': 'Set Value',
     'debugger.menu.setValue.param': 'Please input the value of this variable',
 
@@ -723,7 +734,7 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.toggle': 'Hide Panel',
+    'layout.tabbar.toggle': 'Toggle Bottom Panel',
     'layout.tabbar.expand': 'Maximize Bottom Panel',
     'layout.tabbar.retract': 'Retract Bottom Panel',
     'layout.view.hide': 'HIDE',

@@ -927,10 +927,6 @@ export namespace TERMINAL_COMMANDS {
   export const RE_LAUNCH = {
     id: 'terminal.relaunch',
   };
-
-  export const TOGGLE_VISIBILITY = {
-    id: 'terminal.action.toggleVisibility',
-  };
 }
 
 export namespace LAYOUT_COMMANDS {
@@ -941,7 +937,7 @@ export namespace LAYOUT_COMMANDS {
     category: CATEGORY,
   };
 
-  export const OPEN_VIEW: Command = {
+  export const OPEN_VIEW = {
     id: 'layout.action.openView',
     label: '%layout.action.openView%',
     category: CATEGORY,
@@ -949,6 +945,51 @@ export namespace LAYOUT_COMMANDS {
 
   export const MAXIMIZE_EDITOR = {
     id: 'layout.action.Maximizeeditor',
+    category: CATEGORY,
+  };
+  export const TOGGLE_TERMINAL = {
+    id: 'terminal.action.toggleVisibility',
+    label: '%terminal.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_MARKER = {
+    id: 'marker.action.toggleVisibility',
+    label: '%marker.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_OUTPUT = {
+    id: 'output.action.toggleVisibility',
+    label: '%output.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_DEBUG_CONSOLE = {
+    id: 'debug-console.action.toggleVisibility',
+    label: '%debug-console.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_DEBUG_PANEL = {
+    id: 'debug.action.toggleVisibility',
+    label: '%debug.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_EXPLORER_PANEL = {
+    id: 'explorer.action.toggleVisibility',
+    label: '%explorer.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_SEARCH_PANEL = {
+    id: 'search.action.toggleVisibility',
+    label: '%search.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_SCM_PANEL = {
+    id: 'scm.action.toggleVisibility',
+    label: '%scm.action.toggleVisibility%',
+    category: CATEGORY,
+  };
+  export const TOGGLE_EXTENSION_PANEL = {
+    id: 'extension.action.toggleVisibility',
+    label: '%extension.action.toggleVisibility%',
     category: CATEGORY,
   };
 }

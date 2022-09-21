@@ -1,6 +1,7 @@
 import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
 import { Command } from '@opensumi/ide-core-common';
 import { parseGlob, ParsedPattern, URI, strings } from '@opensumi/ide-core-common';
+import { SEARCH_CONTAINER_ID } from '@opensumi/ide-main-layout/lib/common/constants';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 
@@ -195,7 +196,7 @@ export function getRoot(rootUris?: string[], uri?: string): string {
   return result;
 }
 
-export const SEARCH_CONTAINER_ID = 'search';
+export { SEARCH_CONTAINER_ID };
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];

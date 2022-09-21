@@ -1,6 +1,6 @@
 import { Event, IBaseMarkerManager, IMarker, IMatch } from '@opensumi/ide-core-common';
 
-export const MARKER_CONTAINER_ID = 'markers';
+export { MARKER_CONTAINER_ID } from '@opensumi/ide-main-layout/lib/common/constants';
 
 export const IMarkerService = Symbol('IMarkerService');
 export interface IMarkerService {

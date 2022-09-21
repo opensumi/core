@@ -9,8 +9,9 @@ import {
 import { getIcon } from '@opensumi/ide-core-browser';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-main-layout/lib/common/constants';
 
-export const EXPLORER_CONTAINER_ID = 'explorer';
+export { EXPLORER_CONTAINER_ID };
 
 @Domain(ClientAppContribution, ComponentContribution)
 export class ExplorerContribution implements ComponentContribution {

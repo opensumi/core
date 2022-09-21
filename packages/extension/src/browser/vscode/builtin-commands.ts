@@ -149,7 +149,7 @@ export const TERMINAL_COMMAND_FOCUS: Command = {
 
 export const TERMINAL_COMMAND_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.terminal.toggleTerminal',
-  delegate: TERMINAL_COMMANDS.TOGGLE_VISIBILITY.id,
+  delegate: LAYOUT_COMMANDS.TOGGLE_TERMINAL.id,
 };
 
 export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {

@@ -38,6 +38,7 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
+import { SCM_CONTAINER_ID } from '../../common/constants';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
@@ -742,7 +743,10 @@ export class TabbarService extends WithEventBus {
     // 使用自定义视图取代手风琴的面板不需要 restore
     // scm 视图例外，因为在新版本 Gitlens 中可以将自己注册到 scm 中
     // 暂时用这种方式使 scm 面板状态可以被持久化
-    if ((!containerInfo || containerInfo.options!.component) && containerInfo?.options?.containerId !== 'scm') {
+    if (
+      (!containerInfo || containerInfo.options?.component) &&
+      containerInfo?.options?.containerId !== SCM_CONTAINER_ID
+    ) {
       return;
     }
     const accordionService = this.layoutService.getAccordionService(containerId);

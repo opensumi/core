@@ -19,7 +19,7 @@ import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
 import { PreferenceContribution } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 
-import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS, TERMINAL_COMMANDS } from './common.command';
+import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS, TERMINAL_COMMANDS, LAYOUT_COMMANDS } from './common.command';
 import { ClientAppContribution } from './common.define';
 
 export const inputFocusedContextKey = 'inputFocus';
@@ -195,6 +195,13 @@ export class ClientCommonContribution
       },
     ]);
     menus.registerMenuItems(MenuId.MenubarTerminalMenu, [
+      {
+        command: {
+          id: LAYOUT_COMMANDS.TOGGLE_TERMINAL.id,
+          label: LAYOUT_COMMANDS.TOGGLE_TERMINAL.label,
+        },
+        group: '0_view',
+      },
       {
         command: {
           id: TERMINAL_COMMANDS.ADD.id,

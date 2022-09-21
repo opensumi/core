@@ -15,6 +15,7 @@ import {
   PreferenceSchema,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-main-layout/lib/common/constants';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { OutputLinkProvider } from './output-link.provider';
@@ -27,7 +28,7 @@ const OUTPUT_CLEAR: Command = {
   iconClass: getIcon('clear'),
   label: '%output.channel.clear%',
 };
-const OUTPUT_CONTAINER_ID = 'output';
+
 @Domain(
   CommandContribution,
   ComponentContribution,

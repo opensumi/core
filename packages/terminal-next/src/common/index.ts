@@ -15,4 +15,6 @@ export * from './link-computer';
 export * from './profile';
 export * from './process';
 
-export const TerminalContainerId = 'terminal';
+import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-main-layout/lib/common/constants';
+
+export const TerminalContainerId = TERMINAL_CONTAINER_ID;

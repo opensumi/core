@@ -11,6 +11,7 @@ import {
   IQuickOpenHandlerRegistry,
   QuickOpenContribution,
   QUICK_OPEN_COMMANDS,
+  EDITOR_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import {
@@ -30,6 +31,17 @@ import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from 
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
 
 import { IMainLayoutService } from '../common';
+import {
+  DEBUG_CONSOLE_CONTAINER_ID,
+  DEBUG_CONTAINER_ID,
+  EXPLORER_CONTAINER_ID,
+  EXTENSION_CONTAINER_ID,
+  MARKER_CONTAINER_ID,
+  OUTPUT_CONTAINER_ID,
+  SCM_CONTAINER_ID,
+  SEARCH_CONTAINER_ID,
+  TERMINAL_CONTAINER_ID,
+} from '../common/constants';
 
 import { ViewQuickOpenHandler } from './quick-open-view';
 import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
@@ -107,6 +119,48 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   label: '%layout.tabbar.retract%',
   iconClass: getIcon('shrink'),
 };
+
+const leftContainerCommands = [
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_EXPLORER_PANEL,
+    containerId: EXPLORER_CONTAINER_ID,
+  },
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_SEARCH_PANEL,
+    containerId: SEARCH_CONTAINER_ID,
+  },
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_SCM_PANEL,
+    containerId: SCM_CONTAINER_ID,
+  },
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_DEBUG_PANEL,
+    containerId: DEBUG_CONTAINER_ID,
+  },
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_EXTENSION_PANEL,
+    containerId: EXTENSION_CONTAINER_ID,
+  },
+];
+
+const bottomContainerCommands = [
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_MARKER,
+    containerId: MARKER_CONTAINER_ID,
+  },
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_OUTPUT,
+    containerId: OUTPUT_CONTAINER_ID,
+  },
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_DEBUG_CONSOLE,
+    containerId: DEBUG_CONSOLE_CONTAINER_ID,
+  },
+  {
+    command: LAYOUT_COMMANDS.TOGGLE_TERMINAL,
+    containerId: TERMINAL_CONTAINER_ID,
+  },
+];
 
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution, QuickOpenContribution)
 export class MainLayoutModuleContribution
@@ -322,25 +376,87 @@ export class MainLayoutModuleContribution
         this.commandService.executeCommand(QUICK_OPEN_COMMANDS.OPEN.id, 'view ');
       },
     });
+    commands.registerCommand(LAYOUT_COMMANDS.TOGGLE_MARKER, {
+      execute: () => {
+        const tabbarHandler = this.mainLayoutService.getTabbarHandler(MARKER_CONTAINER_ID);
+        if (tabbarHandler) {
+          tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
+        }
+      },
+    });
+
+    leftContainerCommands.forEach((v) => {
+      commands.registerCommand(v.command, {
+        execute: () => {
+          const tabbarHandler = this.mainLayoutService.getTabbarHandler(v.containerId);
+          if (tabbarHandler) {
+            tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
+          }
+        },
+      });
+    });
+
+    bottomContainerCommands.forEach((v) => {
+      commands.registerCommand(v.command, {
+        execute: () => {
+          const tabbarHandler = this.mainLayoutService.getTabbarHandler(v.containerId);
+          if (tabbarHandler) {
+            tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
+          }
+        },
+      });
+    });
   }
 
   registerMenus(menus: IMenuRegistry) {
     menus.registerMenuItem(MenuId.ActivityBarExtra, {
       submenu: MenuId.SettingsIconMenu,
       iconClass: getIcon('setting'),
-      label: localize('layout.tabbar.setting', '打开偏好设置'),
+      label: localize('layout.tabbar.setting'),
       order: 1,
       group: 'navigation',
+    });
+
+    leftContainerCommands.forEach((v) => {
+      menus.registerMenuItem(MenuId.MenubarViewMenu, {
+        command: v.command,
+        group: '3_left',
+      });
+    });
+
+    bottomContainerCommands.forEach((v) => {
+      menus.registerMenuItem(MenuId.MenubarViewMenu, {
+        command: v.command,
+        group: '4_bottom',
+      });
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: TOGGLE_LEFT_PANEL_COMMAND,
       group: '5_panel',
     });
-
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: TOGGLE_RIGHT_PANEL_COMMAND,
       group: '5_panel',
+    });
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: TOGGLE_BOTTOM_PANEL_COMMAND as MenuCommandDesc,
+      group: '5_panel',
+    });
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: EXPAND_BOTTOM_PANEL as MenuCommandDesc,
+      group: '5_panel',
+      when: '!bottomFullExpanded',
+    });
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: RETRACT_BOTTOM_PANEL as MenuCommandDesc,
+      group: '5_panel',
+      when: 'bottomFullExpanded',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: EDITOR_COMMANDS.TOGGLE_WORD_WRAP as MenuCommandDesc,
+      group: '6_capability',
     });
   }
 

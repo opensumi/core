@@ -702,6 +702,18 @@ export const localizationBundle = {
     'terminal.focusFolder': '聚焦资源管理器中的文件夹',
     'terminal.openFolder': '在新窗口中打开文件夹',
 
+    'terminal.action.toggleVisibility': '切换终端面板',
+    'marker.action.toggleVisibility': '切换问题面板',
+    'output.action.toggleVisibility': '切换输出面板',
+    'debug-console.action.toggleVisibility': '切换调试 Console 面板',
+    'explorer.action.toggleVisibility': '切换资源管理面板',
+    'search.action.toggleVisibility': '切换搜索面板',
+    'scm.action.toggleVisibility': '切换版本控制面板',
+    'extension.action.toggleVisibility': '切换插件面板',
+    'debug.action.toggleVisibility': '切换调试面板',
+
+    'layout.tabbar.setting': '打开偏好设置',
+
     'terminal.focusNext.inTerminalGroup': '聚焦当前终端组中的下一个终端',
     'terminal.focusPrevious.inTerminalGroup': '聚焦当前终端组中的上一个终端',
 
@@ -756,7 +768,7 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.toggle': '隐藏面板',
+    'layout.tabbar.toggle': '切换底部面板显示',
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',
