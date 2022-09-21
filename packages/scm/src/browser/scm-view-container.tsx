@@ -49,7 +49,7 @@ export const SCMResourcesView: React.FC<{
     <div className={styles.view} ref={$containerRef}>
       <div className={styles.scm} style={{ paddingTop: extraPaddingTop }}>
         <SCMResourceInput repository={repository} />
-        <SCMResourceTree width={viewState.width} height={viewState.height - 38 - extraPaddingTop} />
+        <SCMResourceTree width={viewState.width} height={viewState.height - 38 * 2 - extraPaddingTop} />
       </div>
     </div>
   );

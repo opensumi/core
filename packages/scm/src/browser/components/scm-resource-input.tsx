@@ -20,6 +20,15 @@ function getPlaceholder(repository: ISCMRepository) {
   return strings.format(repository.input.placeholder, isMacintosh ? '⌘Enter' : 'Ctrl+Enter');
 }
 
+function hasGitChange(repository: ISCMRepository) {
+  for (const change of repository.provider.groups.elements) {
+    if (change.elements.length > 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export const SCMResourceInput: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
@@ -38,13 +47,13 @@ export const SCMResourceInput: React.FC<{
 
   React.useEffect(() => {
     const disposables = new DisposableStore();
-
     // 单向同步 input value
     disposables.add(
       repository.input.onDidChange((value) => {
         setCommitMsg(value);
       }),
     );
+
     // 单向同步 input placeholder
     disposables.add(
       repository.input.onDidChangePlaceholder(() => {
@@ -68,9 +77,7 @@ export const SCMResourceInput: React.FC<{
       return;
     }
 
-    commandService.executeCommand(commandId, ...args).then(() => {
-      setCommitMsg('');
-    });
+    commandService.executeCommand(commandId, ...args);
   }, [repository]);
 
   const { onKeyDown, onKeyUp } = useHotKey([isMacintosh ? 'command' : 'ctrl', 'enter'], handleCommit);
@@ -82,28 +89,33 @@ export const SCMResourceInput: React.FC<{
     }
   }, [repository]);
 
+  const hasInlineMenu = repository && repository.provider && inputMenu;
+
   return (
-    <div className={styles.scmHeader}>
-      <AutoFocusedInput
-        containerId={scmContainerId}
-        className={styles.scmInput}
-        placeholder={placeholder}
-        value={commitMsg}
-        onKeyDown={(e) => onKeyDown(e.keyCode)}
-        onKeyUp={onKeyUp}
-        onValueChange={handleValueChange}
-      />
-      {repository && repository.provider && inputMenu && (
+    <>
+      <div className={styles.scmHeader}>
+        <AutoFocusedInput
+          containerId={scmContainerId}
+          className={styles.scmInput}
+          placeholder={placeholder}
+          value={commitMsg}
+          onKeyDown={(e) => onKeyDown(e.keyCode)}
+          onKeyUp={onKeyUp}
+          onValueChange={handleValueChange}
+        />
+      </div>
+      {hasInlineMenu && (
         <InlineMenuBar<ISCMProvider, string>
           className={styles.scmMenu}
           context={[repository.provider, commitMsg]}
           type='button'
+          moreIcon='down'
           // limit show one nav menu only
           regroup={(nav, more) => [[nav[0]].filter(Boolean), [...nav.slice(1), ...more]]}
           menus={inputMenu}
         />
       )}
-    </div>
+    </>
   );
 };
 

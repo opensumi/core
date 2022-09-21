@@ -71,26 +71,24 @@ describe('ExtHostFileSystem', () => {
       uri: URI2UriComponents(URI.file('/workspace/test/a.ts')),
     };
 
-    expect(await service.$provideDecorations([request], new CancellationTokenSource().token)).toEqual({});
+    expect(await service.$provideFileDecorations([request], new CancellationTokenSource().token)).toEqual({});
   });
 
   it('ok for async provider', async () => {
     let callCounter = 0;
 
-    const extDecoProvider = new (class implements vscode.DecorationProvider {
+    const extDecoProvider = new (class implements vscode.FileDecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideFileDecoration(uri: Uri, token: CancellationToken) {
         callCounter += 1;
-        return new Promise<vscode.Decoration>((resolve) => {
+        return new Promise<vscode.FileDecoration>((resolve) => {
           setTimeout(() =>
             resolve({
-              letter: 'A',
-              title: 'Modified changes',
+              badge: 'A',
+              tooltip: 'Modified changes',
               color: { id: 'green' },
-              priority: 1,
-              bubble: false,
-              source: 'async',
+              propagate: false,
             }),
           );
         });
@@ -109,7 +107,7 @@ describe('ExtHostFileSystem', () => {
       uri: URI2UriComponents(URI.file('/workspace/test/a.ts')),
     };
 
-    const decoReply = service.$provideDecorations([request], new CancellationTokenSource().token);
+    const decoReply = service.$provideFileDecorations([request], new CancellationTokenSource().token);
     jest.runAllTimers();
     jest.runAllTicks();
 
@@ -123,26 +121,23 @@ describe('ExtHostFileSystem', () => {
 
     disposable.dispose();
 
-    expect(await service.$provideDecorations([request], new CancellationTokenSource().token)).toEqual({});
+    expect(await service.$provideFileDecorations([request], new CancellationTokenSource().token)).toEqual({});
     expect(service['_provider'].size).toBe(0);
   });
 
   it('ok for sync provider', async () => {
     let callCounter = 0;
 
-    const extDecoProvider = new (class implements vscode.DecorationProvider {
+    const extDecoProvider = new (class implements vscode.FileDecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
 
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideFileDecoration(uri: Uri, token: CancellationToken) {
         callCounter += 1;
         return {
-          letter: 'S',
-          title: 'Modified changes',
+          badge: 'S',
+          tooltip: 'Modified changes',
           color: { id: 'green' },
-          priority: 1,
-          bubble: false,
-          source: 'sync',
         };
       }
     })();
@@ -161,7 +156,7 @@ describe('ExtHostFileSystem', () => {
       uri: URI2UriComponents(new URI(uri)),
     };
 
-    const result = await service.$provideDecorations([request], new CancellationTokenSource().token);
+    const result = await service.$provideFileDecorations([request], new CancellationTokenSource().token);
     // trigger -> sync
     expect(result).toEqual({
       121: [false, 'Modified changes', 'S', { id: 'green' }],
@@ -170,40 +165,36 @@ describe('ExtHostFileSystem', () => {
 
     disposable.dispose();
 
-    expect(await service.$provideDecorations([request], new CancellationTokenSource().token)).toEqual({});
+    expect(await service.$provideFileDecorations([request], new CancellationTokenSource().token)).toEqual({});
     expect(service['_provider'].size).toBe(0);
   });
 
   it('multi decorations', async () => {
-    const extDecoProvider1 = new (class implements vscode.DecorationProvider {
+    const extDecoProvider1 = new (class implements vscode.FileDecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
 
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideFileDecoration(uri: Uri, token: CancellationToken) {
         return {
-          letter: 'S',
-          title: 'Modified changes',
+          badge: 'S',
+          tooltip: 'Modified changes',
           color: { id: 'green' },
-          priority: 1,
-          bubble: false,
-          source: 'sync',
+          propagate: true,
         };
       }
     })();
 
-    const extDecoProvider2 = new (class implements vscode.DecorationProvider {
+    const extDecoProvider2 = new (class implements vscode.FileDecorationProvider {
       onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
       onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
-      provideDecoration(uri: Uri, token: CancellationToken) {
-        return new Promise<vscode.Decoration>((resolve) => {
+      provideFileDecoration(uri: Uri, token: CancellationToken) {
+        return new Promise<vscode.FileDecoration>((resolve) => {
           setTimeout(() =>
             resolve({
-              letter: 'A',
-              title: 'Modified changes',
+              badge: 'A',
+              tooltip: 'Modified changes',
               color: { id: 'green' },
-              priority: 1,
-              bubble: false,
-              source: 'async',
+              propagate: true,
             }),
           );
         });
@@ -233,7 +224,10 @@ describe('ExtHostFileSystem', () => {
       uri: URI2UriComponents(uri),
     };
 
-    const decoReply = service.$provideDecorations([request1, request2, request3], new CancellationTokenSource().token);
+    const decoReply = service.$provideFileDecorations(
+      [request1, request2, request3],
+      new CancellationTokenSource().token,
+    );
     jest.runAllTimers();
     jest.runAllTicks();
 
@@ -248,21 +242,20 @@ describe('ExtHostFileSystem', () => {
     disposable2.dispose();
 
     expect(
-      await service.$provideDecorations([request1, request2, request3], new CancellationTokenSource().token),
+      await service.$provideFileDecorations([request1, request2, request3], new CancellationTokenSource().token),
     ).toEqual({});
     expect(service['_provider'].size).toBe(0);
   });
 
-  it('decoration letter length !== 1', async () => {
-    const extDecoProvider = new (class implements vscode.DecorationProvider {
+  it('decoration badge length !== 1', async () => {
+    const extDecoProvider = new (class implements vscode.FileDecorationProvider {
       onDidChangeDecorations = Event.None;
-      provideDecoration(uri: Uri, token: CancellationToken) {
+      provideFileDecoration(uri: Uri, token: CancellationToken) {
         return {
-          letter: 'TWO',
-          title: 'Modified changes',
+          badge: 'TWO',
+          tooltip: 'Modified changes',
           color: { id: 'green' },
-          priority: 1,
-          bubble: false,
+          propagate: true,
           source: 'sync',
         };
       }
@@ -277,21 +270,21 @@ describe('ExtHostFileSystem', () => {
       uri: URI2UriComponents(new URI(uri)),
     };
 
-    const result = await service.$provideDecorations([request], new CancellationTokenSource().token);
+    const result = await service.$provideFileDecorations([request], new CancellationTokenSource().token);
     // trigger -> sync
     expect(result).toEqual({
       121: [false, 'Modified changes', 'TWO', { id: 'green' }],
     });
     expect(warnSpy.mock.calls[0][1]).toBe(
-      "INVALID decoration from extension 'mock-ext-sync-id'. The 'letter' must be set and be one character, not 'TWO'.",
+      "INVALID decoration from extension 'mock-ext-sync-id'. The 'badge' must be set and be one character, not 'TWO'.",
     );
   });
 
-  it('provideDecoration rejection', async () => {
-    const extDecoProvider = new (class implements vscode.DecorationProvider {
+  it('provideFileDecoration rejection', async () => {
+    const extDecoProvider = new (class implements vscode.FileDecorationProvider {
       onDidChangeDecorations = Event.None;
-      provideDecoration(uri: Uri, token: CancellationToken) {
-        return Promise.reject('provideDecoration throws');
+      provideFileDecoration(uri: Uri, token: CancellationToken) {
+        return Promise.reject('provideFileDecoration throws');
       }
     })();
 
@@ -304,10 +297,10 @@ describe('ExtHostFileSystem', () => {
       uri: URI2UriComponents(new URI(uri)),
     };
 
-    const result = await service.$provideDecorations([request], new CancellationTokenSource().token);
+    const result = await service.$provideFileDecorations([request], new CancellationTokenSource().token);
     // trigger -> sync
     expect(result).toEqual({});
-    expect(errorSpy.mock.calls[0][1]).toBe('provideDecoration throws');
+    expect(errorSpy.mock.calls[0][1]).toBe('provideFileDecoration throws');
   });
 
   it('compatible onChange', async () => {
@@ -317,11 +310,10 @@ describe('ExtHostFileSystem', () => {
 
       provideFileDecoration(uri: Uri, token: CancellationToken) {
         return {
-          letter: 'S',
-          title: 'Modified changes',
+          badge: 'S',
+          tooltip: 'Modified changes',
           color: { id: 'green' },
-          priority: 1,
-          bubble: false,
+          propagate: true,
           source: 'sync',
         };
       }

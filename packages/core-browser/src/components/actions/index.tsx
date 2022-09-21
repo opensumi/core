@@ -135,15 +135,16 @@ export const MenuActionList: React.FC<{
 
 const EllipsisWidget: React.FC<{
   type?: ActionListType;
+  icon?: string;
   onClick?: React.MouseEventHandler<HTMLElement>;
-}> = ({ type, onClick }) => {
+}> = ({ type, icon, onClick }) => {
   if (type === 'icon') {
-    return <Icon icon='ellipsis' className={styles.iconAction} onClick={onClick} />;
+    return <Icon icon={icon || 'ellipsis'} className={styles.iconAction} onClick={onClick} />;
   }
 
   return (
     <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick}>
-      <Icon icon='ellipsis' />
+      <Icon icon={icon || 'ellipsis'} />
     </Button>
   );
 };
@@ -301,6 +302,7 @@ export const TitleActionList: React.FC<
     menuId: string | MenuId;
     nav: MenuNode[];
     more?: MenuNode[];
+    moreIcon?: string;
     className?: string;
   } & BaseActionListProps
 > = React.memo(
@@ -312,6 +314,7 @@ export const TitleActionList: React.FC<
     type = 'icon',
     nav = [],
     more = [],
+    moreIcon,
     context = [],
     extraNavActions = [],
     moreAtFirst = false,
@@ -344,7 +347,8 @@ export const TitleActionList: React.FC<
       return null;
     }
 
-    const moreAction = secondary.length > 0 ? <EllipsisWidget type={type} onClick={handleShowMore} /> : null;
+    const moreAction =
+      secondary.length > 0 ? <EllipsisWidget icon={moreIcon} type={type} onClick={handleShowMore} /> : null;
 
     return (
       <div className={clsx([styles.titleActions, className])} data-menu-id={menuId}>
@@ -426,6 +430,7 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
 interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extraNavActions'> {
   context?: TupleContext<T, U, K, M>;
   menus: IContextMenu;
+  moreIcon?: string;
   separator?: IMenuSeparator;
 }
 
@@ -434,7 +439,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
 export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineMenuBarProps<T, U, K, M>,
 ): React.ReactElement<InlineMenuBarProps<T, U, K, M>> {
-  const { menus, context, separator = 'navigation', ...restProps } = props;
+  const { menus, context, moreIcon, separator = 'navigation', ...restProps } = props;
   const [navMenu, moreMenu] = useContextMenus(menus);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
@@ -443,6 +448,7 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       menuId={menus.menuId}
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
+      moreIcon={moreIcon}
       context={context}
       {...restProps}
     />

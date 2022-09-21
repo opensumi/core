@@ -17,11 +17,8 @@ export interface DecorationReply {
 }
 
 export interface IExtHostDecorationsShape {
-  registerFileDecorationProvider(
-    provider: vscode.FileDecorationProvider | vscode.DecorationProvider,
-    extensionId: string,
-  ): vscode.Disposable;
-  $provideDecorations(requests: DecorationRequest[], token: CancellationToken): Promise<DecorationReply>;
+  registerFileDecorationProvider(provider: vscode.FileDecorationProvider, extensionId: string): vscode.Disposable;
+  $provideFileDecorations(requests: DecorationRequest[], token: CancellationToken): Promise<DecorationReply>;
 }
 
 export interface IMainThreadDecorationsShape extends IDisposable {

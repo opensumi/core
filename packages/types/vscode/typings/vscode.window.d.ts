@@ -473,6 +473,14 @@ declare module 'vscode' {
      */
     export function registerTerminalProfileProvider(id: string, provider: TerminalProfileProvider): Disposable;
     /**
+		 * Register a file decoration provider.
+		 *
+		 * @param provider A {@link FileDecorationProvider}.
+		 * @return A {@link Disposable} that unregisters the provider.
+		 */
+		export function registerFileDecorationProvider(provider: FileDecorationProvider): Disposable;
+
+    /**
      * ~~Show progress in the Source Control viewlet while running the given callback and while
      * its returned promise isn't resolve or rejected.~~
      *
