@@ -18,9 +18,10 @@ import {
   ILogger,
   IOpenerService,
   toMarkdown,
+  IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
 
-import { toPreferenceReadableName, getPreferenceItemLabel } from '../common';
+import { getPreferenceItemLabel } from '../common';
 
 import { PreferenceSettingsService } from './preference-settings.service';
 import styles from './preferences.module.less';
@@ -28,6 +29,14 @@ import styles from './preferences.module.less';
 interface IPreferenceItemProps {
   preferenceName: string;
   localizedName?: string;
+  localizedDescription?: {
+    description: string | undefined;
+    markdownDescription: string | undefined;
+  };
+  /**
+   * 自动处理了 markdown 和纯文本模式的选项
+   */
+  renderedDescription?: JSX.Element;
   currentValue: any;
   defaultValue: any;
   schema: PreferenceItem;
@@ -53,11 +62,13 @@ const NONE_SELECT_OPTION = 'none';
  *    暂不支持
  */
 export const NextPreferenceItem = ({
-  preferenceName,
+  preferenceId,
   localizedName,
+  preference,
   scope,
 }: {
-  preferenceName: string;
+  preferenceId: string;
+  preference: IResolvedPreferenceViewDesc;
   localizedName?: string;
   scope: PreferenceScope;
 }) => {
@@ -68,25 +79,25 @@ export const NextPreferenceItem = ({
   const preferenceProvider: PreferenceProvider = preferenceService.getProvider(scope)!;
 
   // 获得这个设置项的当前值
-  const { value: inherited, effectingScope } = settingsService.getPreference(preferenceName, scope);
+  const { value: inherited, effectingScope } = settingsService.getPreference(preferenceId, scope);
   const [value, setValue] = useState<boolean | string | string[] | undefined>(
-    preferenceProvider.get<boolean | string | string[]>(preferenceName),
+    preferenceProvider.get<boolean | string | string[]>(preferenceId),
   );
   const [schema, setSchema] = useState<PreferenceItem>();
 
   // 当这个设置项被外部变更时，更新局部值
   useEffect(() => {
     // 获得当前的schema
-    const schemas = schemaProvider.getPreferenceProperty(preferenceName);
+    const schemas = schemaProvider.getPreferenceProperty(preferenceId);
     setSchema(schemas);
 
     const disposableCollection = new DisposableCollection();
     // 监听配置变化
     disposableCollection.push(
       preferenceProvider.onDidPreferencesChanged((e) => {
-        if (e.default && Object.prototype.hasOwnProperty.call(e.default, preferenceName)) {
-          if (e.default[preferenceName].scope === scope) {
-            const newValue = e.default[preferenceName].newValue;
+        if (e.default && Object.prototype.hasOwnProperty.call(e.default, preferenceId)) {
+          if (e.default[preferenceId].scope === scope) {
+            const newValue = e.default[preferenceId].newValue;
             setValue(newValue);
           }
         }
@@ -95,7 +106,7 @@ export const NextPreferenceItem = ({
 
     disposableCollection.push(
       settingsService.onDidEnumLabelsChange(() => {
-        const schemas = schemaProvider.getPreferenceProperty(preferenceName);
+        const schemas = schemaProvider.getPreferenceProperty(preferenceId);
         setSchema(schemas);
       }),
     );
@@ -105,14 +116,10 @@ export const NextPreferenceItem = ({
     };
   }, []);
 
-  if (!localizedName) {
-    localizedName = toPreferenceReadableName(preferenceName);
-  }
-
   let renderSchema = schema;
   if (!renderSchema) {
     // 渲染阶段可能存在还没获取到 schema 的情况
-    renderSchema = schemaProvider.getPreferenceProperty(preferenceName);
+    renderSchema = schemaProvider.getPreferenceProperty(preferenceId);
   }
 
   if (!renderSchema) {
@@ -122,13 +129,13 @@ export const NextPreferenceItem = ({
           [styles.preference_item]: true,
         })}
       >
-        {preferenceName} schema not found.
+        {preferenceId} schema not found.
       </div>
     );
   }
 
   const defaultValue =
-    preferenceService.resolve(preferenceName, undefined, undefined, undefined, PreferenceScope.Default).value ??
+    preferenceService.resolve(preferenceId, undefined, undefined, undefined, PreferenceScope.Default).value ??
     renderSchema.default;
 
   // 目前还没法对 input 的数字值进行 === 校验，先全部转为 String
@@ -137,16 +144,24 @@ export const NextPreferenceItem = ({
   const renderPreferenceItem = () => {
     if (renderSchema) {
       const props = {
-        preferenceName,
+        preferenceName: preferenceId,
         scope,
         effectingScope,
         schema: renderSchema,
         currentValue: value === undefined ? inherited : value,
         defaultValue,
         localizedName,
+        localizedDescription: {
+          description: preference.description,
+          markdownDescription: preference.markdownDescription,
+        },
+        renderedDescription: renderDescription({
+          description: preference.description,
+          markdownDescription: preference.markdownDescription,
+        }),
         hasValueInScope: value !== undefined,
         isModified,
-      };
+      } as IPreferenceItemProps;
 
       switch (renderSchema.type) {
         case 'boolean':
@@ -188,9 +203,8 @@ export const NextPreferenceItem = ({
   );
 };
 
-const renderDescriptionExpression = (des: string) => {
+const renderDescriptionExpression = (description: string) => {
   const preferenceSettingService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const description = replaceLocalizePlaceholder(des);
   if (!description) {
     return null;
   }
@@ -272,7 +286,7 @@ function InputPreferenceItem({
   preferenceName,
   localizedName,
   currentValue,
-  schema,
+  renderedDescription,
   isNumber,
   effectingScope,
   scope,
@@ -317,7 +331,7 @@ function InputPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {renderDescription(schema)}
+      {renderedDescription}
       <div className={styles.control_wrap}>
         <div className={styles.text_control}>
           <ValidateInput
@@ -340,8 +354,8 @@ function InputPreferenceItem({
 function CheckboxPreferenceItem({
   preferenceName,
   localizedName,
+  renderedDescription,
   currentValue,
-  schema,
   effectingScope,
   scope,
   isModified,
@@ -376,7 +390,7 @@ function CheckboxPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {renderDescription(schema)}
+      {renderedDescription}
     </div>
   );
 }
@@ -384,6 +398,7 @@ function CheckboxPreferenceItem({
 function SelectPreferenceItem({
   preferenceName,
   localizedName,
+  renderedDescription,
   currentValue,
   defaultValue,
   schema,
@@ -418,6 +433,7 @@ function SelectPreferenceItem({
     const enums = schema.enum ? [...schema.enum] : [];
     if (!enums.includes(defaultValue)) {
       logger.warn(`default value(${defaultValue}) of ${preferenceName} not found in its enum field`);
+      enums.push(defaultValue);
     }
     return enums.map((item, idx) => {
       if (typeof item === 'boolean') {
@@ -432,7 +448,7 @@ function SelectPreferenceItem({
           className={styles.select_option}
         >
           {replaceLocalizePlaceholder((labels[item] || item).toString())}
-          {item === String(defaultValue) && (
+          {String(item) === String(defaultValue) && (
             <div className={styles.select_default_option_tips}>{localize('preference.enum.default')}</div>
           )}
         </Option>
@@ -480,7 +496,7 @@ function SelectPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {renderDescription(schema)}
+      {renderedDescription}
       <div className={styles.control_wrap}>
         <Select
           dropdownRenderType='absolute'
@@ -503,6 +519,7 @@ function EditInSettingsJsonPreferenceItem({
   preferenceName,
   localizedName,
   schema,
+  renderedDescription,
   effectingScope,
   scope,
   hasValueInScope,
@@ -524,7 +541,7 @@ function EditInSettingsJsonPreferenceItem({
           showReset={hasValueInScope}
         />
       </div>
-      {renderDescription(schema)}
+      {renderedDescription}
       <div className={styles.control_wrap}>
         <a onClick={editSettingsJson}>{localize('preference.editSettingsJson')}</a>
       </div>
@@ -536,7 +553,7 @@ function StringArrayPreferenceItem({
   preferenceName,
   localizedName,
   currentValue,
-  schema,
+  renderedDescription,
   effectingScope,
   scope,
   isModified,
@@ -675,7 +692,7 @@ function StringArrayPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {renderDescription(schema)}
+      {renderedDescription}
       <div className={styles.control_wrap}>
         <ul className={styles.array_items_wrapper}>
           {items}

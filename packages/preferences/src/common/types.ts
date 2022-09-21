@@ -2,8 +2,8 @@ import {
   ISettingGroup,
   ISettingSection,
   IDisposable,
-  IPreferenceViewDesc,
   PreferenceScope,
+  IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
 
 export const SettingContribution = Symbol('SettingContribution');
@@ -41,5 +41,5 @@ export interface ISectionItemData {
   scope: PreferenceScope;
   title?: string;
   component?: any;
-  preference?: string | IPreferenceViewDesc;
+  preference?: IResolvedPreferenceViewDesc;
 }

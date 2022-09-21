@@ -22,7 +22,7 @@ export class MockPreferenceSettingsService {
   registerSettingSection(groupId: string, section: ISettingSection) {
     // noop
   }
-  getSections(groupId: string, scope: PreferenceScope) {
+  getResolvedSections(groupId: string, scope: PreferenceScope) {
     // noop
   }
   getPreference(preferenceName: string, scope: PreferenceScope) {

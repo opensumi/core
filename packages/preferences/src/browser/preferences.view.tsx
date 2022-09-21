@@ -25,6 +25,7 @@ import {
   getIcon,
   URI,
   LabelService,
+  IResolvedSettingSection,
 } from '@opensumi/ide-core-browser';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components/layout/split-panel';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
@@ -154,6 +155,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       }
       return innerTreeData;
     };
+
     const basicTreeData = [] as IPreferenceTreeData[];
     for (const { id, title, iconClass } of groups) {
       const data = {
@@ -162,7 +164,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         groupId: id,
       } as IPreferenceTreeData;
       const children = [] as IPreferenceTreeData[];
-      const sections = preferenceService.getSections(id, currentScope, currentSearchText);
+      const sections = preferenceService.getResolvedSections(id, currentScope, currentSearchText);
       sections.forEach((sec) => {
         const _treeData = parseTreeData(id, sec);
         if (_treeData) {
@@ -180,9 +182,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   }, [groups]);
 
   const items = React.useMemo(() => {
-    const sections = preferenceService.getSections(currentGroup, currentScope, currentSearchText);
+    const sections = preferenceService.getResolvedSections(currentGroup, currentScope, currentSearchText);
     let result: ISectionItemData[] = [];
-    const getItem = (section: ISettingSection) => {
+    const getItem = (section: IResolvedSettingSection) => {
       let innerItems = [] as ISectionItemData[];
 
       if (section.component) {
@@ -220,6 +222,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     if (currentSelectSection) {
       navigateTo(currentSelectSection);
     } else {
+      // 切换 group 后滚到顶部
       preferenceService.listHandler?.scrollToIndex(0);
     }
   }, [items, currentSelectSection]);
@@ -306,20 +309,13 @@ export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index:
     );
   } else if (data.component) {
     return <data.component scope={data.scope} />;
-  } else if (typeof data.preference === 'string') {
-    return (
-      <NextPreferenceItem
-        key={`${index} - ${data.preference} - ${data.scope}`}
-        preferenceName={data.preference}
-        scope={data.scope}
-      />
-    );
   } else if (data.preference) {
     return (
       <NextPreferenceItem
         key={`${index} - ${data.preference.id} - ${data.scope}`}
-        preferenceName={data.preference.id}
-        localizedName={data.preference.localized ? localize(data.preference.localized) : ''}
+        preference={data.preference}
+        preferenceId={data.preference.id}
+        localizedName={data.preference.label}
         scope={data.scope}
       />
     );
@@ -330,7 +326,7 @@ export const PreferenceBody = ({ items, onReady }: { items: ISectionItemData[]; 
   <RecycleList
     onReady={onReady}
     data={items}
-    template={PreferenceItem as any}
+    template={PreferenceItem as React.FunctionComponent<{ data: ISectionItemData; index: number }>}
     className={styles.preference_section}
     // 防止底部选择框无法查看的临时处理方式
     paddingBottomSize={100}

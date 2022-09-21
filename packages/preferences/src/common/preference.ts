@@ -36,8 +36,8 @@ export function toPreferenceReadableName(name: string) {
 }
 
 export function getPreferenceItemLabel(pref: IPreferenceViewDesc) {
-  if (pref.localized) {
-    return localize(pref.localized);
+  if (pref.i18n) {
+    return localize(pref.i18n);
   }
   return toPreferenceReadableName(pref.id);
 }
