@@ -6,7 +6,7 @@ on:
 jobs:
   next-version:
     name: Next Version
-
+    environment: next
     runs-on: ubuntu-latest
     # 在 pull request 评论触发的 issue_comment 事件中执行
     # 需满足评论人为项目 OWNER 或 MEMBER，或评论人为 PR 发起人
