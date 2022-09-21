@@ -191,7 +191,28 @@ export class ClientCommonContribution
           id: EDITOR_COMMANDS.GO_TO_LINE.id,
           label: localize('editor.goToLine'),
         },
-        group: '3_go_line',
+        group: '3_go_infile',
+      },
+      {
+        command: {
+          id: 'editor.action.jumpToBracket',
+          label: localize('menu-bar.go.jumpToBracket'),
+        },
+        group: '3_go_infile',
+      },
+      {
+        command: {
+          id: 'editor.action.marker.nextInFiles',
+          label: localize('menu-bar.go.nextProblemInFiles'),
+        },
+        group: '6_go_problem',
+      },
+      {
+        command: {
+          id: 'editor.action.marker.prevInFiles',
+          label: localize('menu-bar.go.prevProblemInFiles'),
+        },
+        group: '6_go_problem',
       },
     ]);
     menus.registerMenuItems(MenuId.MenubarTerminalMenu, [

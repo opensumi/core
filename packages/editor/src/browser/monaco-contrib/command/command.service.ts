@@ -300,7 +300,7 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         handler,
       );
 
-      // 将 monaco 命令处理函数代理到有 label 的空命令上
+      // 将 monaco 命令处理函数代理到有 label 的新的命令上
       const command = MonacoActionRegistry.COMMON_ACTIONS.get(id);
       if (command) {
         this.monacoCommandRegistry.registerHandler(command, handler);

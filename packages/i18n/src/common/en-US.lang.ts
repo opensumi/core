@@ -95,6 +95,10 @@ export const localizationBundle = {
     'menu-bar.view.debug': 'Debug',
     'menu-bar.view.extension': 'Extension',
 
+    'menu-bar.go.jumpToBracket': 'Go to Bracket',
+    'menu-bar.go.nextProblemInFiles': 'Next Problem',
+    'menu-bar.go.prevProblemInFiles': 'Previous Problem',
+
     editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',

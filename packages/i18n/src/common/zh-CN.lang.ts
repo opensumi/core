@@ -94,6 +94,10 @@ export const localizationBundle = {
     'menu-bar.view.debug': '调试',
     'menu-bar.view.extension': '插件',
 
+    'menu-bar.go.jumpToBracket': '转到括号',
+    'menu-bar.go.nextProblemInFiles': '下一个问题',
+    'menu-bar.go.prevProblemInFiles': '上一个问题',
+
     editor: '编辑器',
     'editor.undo': '撤销',
     'editor.redo': '重做',
