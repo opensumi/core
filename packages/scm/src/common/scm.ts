@@ -100,7 +100,7 @@ export interface ISCMProvider extends IDisposable {
     secondaryCommands?: VSCommand[][];
     description?: string;
     enabled: boolean;
-  };
+  } | null;
   readonly statusBarCommands?: VSCommand[];
   readonly onDidChange: Event<void>;
 
