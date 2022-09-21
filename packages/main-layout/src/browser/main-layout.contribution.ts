@@ -124,22 +124,27 @@ const leftContainerCommands = [
   {
     command: LAYOUT_COMMANDS.TOGGLE_EXPLORER_PANEL,
     containerId: EXPLORER_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.explorer%',
   },
   {
     command: LAYOUT_COMMANDS.TOGGLE_SEARCH_PANEL,
     containerId: SEARCH_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.search%',
   },
   {
     command: LAYOUT_COMMANDS.TOGGLE_SCM_PANEL,
     containerId: SCM_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.scm%',
   },
   {
     command: LAYOUT_COMMANDS.TOGGLE_DEBUG_PANEL,
     containerId: DEBUG_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.debug%',
   },
   {
     command: LAYOUT_COMMANDS.TOGGLE_EXTENSION_PANEL,
     containerId: EXTENSION_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.extension%',
   },
 ];
 
@@ -147,18 +152,22 @@ const bottomContainerCommands = [
   {
     command: LAYOUT_COMMANDS.TOGGLE_MARKER,
     containerId: MARKER_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.problem%',
   },
   {
     command: LAYOUT_COMMANDS.TOGGLE_OUTPUT,
     containerId: OUTPUT_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.output%',
   },
   {
     command: LAYOUT_COMMANDS.TOGGLE_DEBUG_CONSOLE,
     containerId: DEBUG_CONSOLE_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.debug-console%',
   },
   {
     command: LAYOUT_COMMANDS.TOGGLE_TERMINAL,
     containerId: TERMINAL_CONTAINER_ID,
+    menuLabel: '%menu-bar.view.terminal%',
   },
 ];
 
@@ -419,14 +428,20 @@ export class MainLayoutModuleContribution
 
     leftContainerCommands.forEach((v) => {
       menus.registerMenuItem(MenuId.MenubarViewMenu, {
-        command: v.command,
+        command: {
+          id: v.command.id,
+          label: v.menuLabel,
+        },
         group: '3_left',
       });
     });
 
     bottomContainerCommands.forEach((v) => {
       menus.registerMenuItem(MenuId.MenubarViewMenu, {
-        command: v.command,
+        command: {
+          id: v.command.id,
+          label: v.menuLabel,
+        },
         group: '4_bottom',
       });
     });
@@ -455,8 +470,12 @@ export class MainLayoutModuleContribution
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
-      command: EDITOR_COMMANDS.TOGGLE_WORD_WRAP as MenuCommandDesc,
+      command: {
+        id: EDITOR_COMMANDS.TOGGLE_WORD_WRAP.id,
+        label: 'Word Wrap',
+      },
       group: '6_capability',
+      toggledWhen: 'config.editor.wordWrap == on',
     });
   }
 
