@@ -116,11 +116,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   React.useEffect(() => {
     setCurrentGroup(preferenceService.currentGroup);
   }, [preferenceService.currentGroup]);
-  React.useEffect(() => {
-    if (currentSelectSection) {
-      navigateTo(currentSelectSection);
-    }
-  }, [currentSelectSection]);
+
   React.useEffect(() => {
     const focusDispose = preferenceService.onFocus(() => {
       if (inputRef && inputRef.current) {
@@ -136,18 +132,19 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     if (!groups) {
       return [];
     }
-    const parseTreeData = (section: ISettingSection) => {
+    const parseTreeData = (id: string, section: ISettingSection) => {
       let innerTreeData: IPreferenceTreeData | undefined;
       if (section.title) {
         innerTreeData = {
           label: section.title,
           section,
+          groupId: id,
         } as IPreferenceTreeData;
       }
       const subTreeData = [] as IPreferenceTreeData[];
       if (section.subSettingSections) {
         section.subSettingSections.forEach((v) => {
-          const _treeData = parseTreeData(v);
+          const _treeData = parseTreeData(id, v);
           _treeData && subTreeData.push(_treeData);
         });
       }
@@ -162,11 +159,12 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       const data = {
         label: toNormalCase(replaceLocalizePlaceholder(title) || title),
         iconClassName: iconClass,
+        groupId: id,
       } as IPreferenceTreeData;
       const children = [] as IPreferenceTreeData[];
       const sections = preferenceService.getSections(id, currentScope, currentSearchText);
       sections.forEach((sec) => {
-        const _treeData = parseTreeData(sec);
+        const _treeData = parseTreeData(id, sec);
         if (_treeData) {
           children.push(_treeData);
         }
@@ -176,13 +174,12 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       if (children.length > 0) {
         data.expandable = true;
       }
-      data.groupId = id;
       basicTreeData.push(data);
     }
     return basicTreeData;
   }, [groups]);
 
-  const calculatedData = React.useMemo(() => {
+  const items = React.useMemo(() => {
     const sections = preferenceService.getSections(currentGroup, currentScope, currentSearchText);
     let result: ISectionItemData[] = [];
     const getItem = (section: ISettingSection) => {
@@ -194,7 +191,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         innerItems = innerItems.concat(section.preferences.map((pre) => ({ preference: pre, scope: currentScope })));
       } else if (section.subSettingSections) {
         section.subSettingSections.forEach((v) => {
-          const { items: _items } = getItem(v);
+          const _items = getItem(v);
           innerItems = innerItems.concat(_items);
         });
       }
@@ -202,62 +199,30 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         innerItems.unshift({ title: section.title, scope: currentScope });
       }
 
-      return {
-        items: innerItems,
-      };
+      return innerItems;
     };
 
     for (const section of sections) {
-      const { items: _items } = getItem(section);
+      const _items = getItem(section);
       result = result.concat(_items);
     }
-    return {
-      items: result,
-    };
-  }, [currentSelectSection, currentGroup, currentScope, currentSearchText]);
+    return result;
+  }, [currentGroup, currentScope, currentSearchText]);
 
-  const navigateTo = React.useCallback(
-    (section: ISettingSection) => {
-      const index = calculatedData.items.findIndex((item) => item.title === section.title);
-      if (index >= 0) {
-        preferenceService.listHandler?.scrollToIndex(index);
-      }
-    },
-    [currentSelectSection, calculatedData.items, calculatedData, currentGroup],
-  );
+  const navigateTo = (section: ISettingSection) => {
+    const index = items.findIndex((item) => item.title === section.title);
+    if (index >= 0) {
+      preferenceService.listHandler?.scrollToIndex(index);
+    }
+  };
 
-  // const indexes = React.useMemo(() => {
-  //   const result = [] as JSX.Element[];
-  //   if (groups) {
-  //     for (const { id, title, iconClass } of groups) {
-  //       const key = `${id}-${title}`;
-  //       result.push(
-  //         <div
-  //           key={`${key}-wrapper`}
-  //           className={classnames({
-  //             [styles.index_item_wrapper]: true,
-  //             [styles.activated]: currentGroup === id,
-  //           })}
-  //         >
-  //           <div
-  //             key={`${key}-label`}
-  //             className={classnames({
-  //               [styles.index_item]: true,
-  //               [styles.activated]: currentGroup === id,
-  //             })}
-  //             onClick={() => {
-  //               preferenceService.setCurrentGroup(id);
-  //             }}
-  //           >
-  //             <span className={iconClass}></span>
-  //             {toNormalCase(replaceLocalizePlaceholder(title) || '')}
-  //           </div>
-  //         </div>,
-  //       );
-  //     }
-  //   }
-  //   return result;
-  // }, [currentSelectSection, calculatedData.treeData, navigateTo, groups, currentGroup, currentSearchText]);
+  React.useEffect(() => {
+    if (currentSelectSection) {
+      navigateTo(currentSelectSection);
+    } else {
+      preferenceService.listHandler?.scrollToIndex(0);
+    }
+  }, [items, currentSelectSection]);
 
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
@@ -285,7 +250,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               className={styles.preferences_indexes}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore [SplitPanel 需要 defaultSize 属性]
-              defaultSize={155}
+              defaultSize={180}
             >
               {({ width, height }) => (
                 <BasicRecycleTree
@@ -293,7 +258,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                   height={height}
                   width={width}
                   itemHeight={24}
-                  baseIndent={4}
+                  baseIndent={8}
                   treeData={treeData}
                   itemClassname={styles.item_label}
                   containerClassname={styles.item_container}
@@ -302,7 +267,10 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                     if (treeData) {
                       if (treeData.section) {
                         setCurrentSelectSection(treeData.section);
-                      } else if (treeData.groupId) {
+                      } else {
+                        setCurrentSelectSection(null);
+                      }
+                      if (treeData.groupId) {
                         preferenceService.setCurrentGroup(treeData.groupId);
                       }
                     }
@@ -314,10 +282,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore [SplitPanel 需要 flex 属性] */}
             <div className={styles.preferences_items} flex={1}>
-              <PreferenceBody
-                items={calculatedData.items}
-                onReady={preferenceService.handleListHandler}
-              ></PreferenceBody>
+              <PreferenceBody items={items} onReady={preferenceService.handleListHandler}></PreferenceBody>
             </div>
           </SplitPanel>
         ) : (

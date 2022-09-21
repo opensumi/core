@@ -43,7 +43,6 @@ export const CommentsBody: React.FC<{
                 gfm: true,
                 breaks: false,
                 pedantic: false,
-                sanitize: true,
                 smartLists: true,
                 smartypants: false,
                 renderer,
