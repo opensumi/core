@@ -1,4 +1,5 @@
-import { SCM_CONTAINER_ID } from '@opensumi/ide-main-layout/lib/common/constants';
+import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common';
+
 export const scmContainerId = SCM_CONTAINER_ID;
 export const scmProviderViewId = 'scm_provider';
 export const scmResourceViewId = 'scm_view';

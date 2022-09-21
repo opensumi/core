@@ -1,5 +1,6 @@
 import { Autowired } from '@opensumi/di';
 import { ClientAppContribution, getIcon, PreferenceContribution } from '@opensumi/ide-core-browser';
+import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common';
 import {
   ComponentContribution,
   ComponentRegistry,
@@ -15,7 +16,6 @@ import {
   PreferenceSchema,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-main-layout/lib/common/constants';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { OutputLinkProvider } from './output-link.provider';
