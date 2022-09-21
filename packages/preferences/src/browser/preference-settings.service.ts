@@ -119,12 +119,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     return value.toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) > -1;
   }
 
-  private filterPreferences(preference: string | IPreferenceViewDesc, scope: PreferenceScope): boolean {
-    return (
-      typeof preference !== 'string' &&
-      Array.isArray(preference.hiddenInScope) &&
-      preference.hiddenInScope.includes(scope)
-    );
+  private filterPreferences(preference: IPreferenceViewDesc, scope: PreferenceScope): boolean {
+    return Array.isArray(preference.hiddenInScope) && preference.hiddenInScope.includes(scope);
   }
 
   @action
@@ -269,9 +265,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
           if (this.filterPreferences(pref, scope)) {
             return false;
           }
-          if (!search) {
-            return true;
-          }
+          return true;
         })
         .map((pref) => {
           const prefId = typeof pref === 'string' ? pref : pref.id;
@@ -286,6 +280,17 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
             markdownDescription,
             description,
           };
+        })
+        .filter((pref) => {
+          if (!search) {
+            return true;
+          }
+          return (
+            this.isContainSearchValue(pref.id, search) ||
+            this.isContainSearchValue(pref.label, search) ||
+            (pref.description && this.isContainSearchValue(pref.description, search)) ||
+            (pref.markdownDescription && this.isContainSearchValue(pref.markdownDescription, search))
+          );
         }) as IResolvedPreferenceViewDesc[];
 
       // const grouped = groupBy(section.preferences, (v) => {
