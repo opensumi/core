@@ -275,7 +275,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @OnEvent(EditorDocumentModelRemovalEvent)
   private async editorDocumentModelRemovalHandler(e: EditorDocumentModelRemovalEvent) {
-    if (e.payload.scheme !== 'file') {
+    if (e.payload.codeUri.scheme !== 'file') {
       return;
     }
 
