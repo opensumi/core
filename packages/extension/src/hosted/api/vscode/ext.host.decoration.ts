@@ -104,10 +104,10 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
               }
 
               try {
+                result[id] = [data.propagate ?? false, data.tooltip, data.badge, data.color] as DecorationData;
                 FileDecoration.validate(data);
-                result[id] = [data.propagate, data.tooltip, data.badge, data.color] as DecorationData;
               } catch (e) {
-                this.logger.warn(`INVALID decoration from extension '${extensionId}': ${e}`);
+                this.logger.warn(`INVALID decoration from extension '${extensionId}'. ${e}`);
               }
             },
             (err) => {

@@ -78,8 +78,8 @@ describe('ExtHostFileSystem', () => {
     let callCounter = 0;
 
     const extDecoProvider = new (class implements vscode.FileDecorationProvider {
-      onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
-      onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
+      onDidChangeFileDecorationsEmitter = new Emitter<Uri[]>();
+      onDidChangeFileDecorations = this.onDidChangeFileDecorationsEmitter.event;
       provideFileDecoration(uri: Uri, token: CancellationToken) {
         callCounter += 1;
         return new Promise<vscode.FileDecoration>((resolve) => {
@@ -97,14 +97,14 @@ describe('ExtHostFileSystem', () => {
 
     const disposable = service.registerFileDecorationProvider(extDecoProvider, 'mock-ext-async-id');
 
-    extDecoProvider.onDidChangeDecorationsEmitter.fire(undefined as any);
+    extDecoProvider.onDidChangeFileDecorationsEmitter.fire(undefined as any);
     expect(mock$onDidChange).toBeCalledTimes(1);
     expect(mock$onDidChange).toBeCalledWith(0, null);
 
     const request = {
       id: 121,
       handle: 0,
-      uri: URI2UriComponents(URI.file('/workspace/test/a.ts')),
+      uri: new URI('/workspace/test/a.ts').codeUri,
     };
 
     const decoReply = service.$provideFileDecorations([request], new CancellationTokenSource().token);
@@ -129,9 +129,8 @@ describe('ExtHostFileSystem', () => {
     let callCounter = 0;
 
     const extDecoProvider = new (class implements vscode.FileDecorationProvider {
-      onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
-      onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
-
+      onDidChangeFileDecorationsEmitter = new Emitter<Uri[]>();
+      onDidChangeFileDecorations = this.onDidChangeFileDecorationsEmitter.event;
       provideFileDecoration(uri: Uri, token: CancellationToken) {
         callCounter += 1;
         return {
@@ -144,16 +143,16 @@ describe('ExtHostFileSystem', () => {
 
     const disposable = service.registerFileDecorationProvider(extDecoProvider, 'mock-ext-sync-id');
 
-    const uri = Uri.file('file://workspace/test/a.ts');
+    const uri = new URI('/workspace/test/a.ts');
 
-    extDecoProvider.onDidChangeDecorationsEmitter.fire([uri]);
+    extDecoProvider.onDidChangeFileDecorationsEmitter.fire([uri.codeUri]);
     expect(mock$onDidChange).toBeCalledTimes(1);
-    expect(mock$onDidChange).toBeCalledWith(0, [uri]);
+    expect(mock$onDidChange).toBeCalledWith(0, [uri.codeUri]);
 
     const request = {
       id: 121,
       handle: 0,
-      uri: URI2UriComponents(new URI(uri)),
+      uri: uri.codeUri,
     };
 
     const result = await service.$provideFileDecorations([request], new CancellationTokenSource().token);
@@ -171,8 +170,8 @@ describe('ExtHostFileSystem', () => {
 
   it('multi decorations', async () => {
     const extDecoProvider1 = new (class implements vscode.FileDecorationProvider {
-      onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
-      onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
+      onDidChangeFileDecorationsEmitter = new Emitter<Uri[]>();
+      onDidChangeFileDecorations = this.onDidChangeFileDecorationsEmitter.event;
 
       provideFileDecoration(uri: Uri, token: CancellationToken) {
         return {
@@ -185,8 +184,8 @@ describe('ExtHostFileSystem', () => {
     })();
 
     const extDecoProvider2 = new (class implements vscode.FileDecorationProvider {
-      onDidChangeDecorationsEmitter = new Emitter<Uri[]>();
-      onDidChangeDecorations = this.onDidChangeDecorationsEmitter.event;
+      onDidChangeFileDecorationsEmitter = new Emitter<Uri[]>();
+      onDidChangeFileDecorations = this.onDidChangeFileDecorationsEmitter.event;
       provideFileDecoration(uri: Uri, token: CancellationToken) {
         return new Promise<vscode.FileDecoration>((resolve) => {
           setTimeout(() =>
@@ -234,8 +233,8 @@ describe('ExtHostFileSystem', () => {
     const result = await decoReply;
     // trigger -> async
     expect(result).toEqual({
-      121: [false, 'Modified changes', 'S', { id: 'green' }],
-      122: [false, 'Modified changes', 'A', { id: 'green' }],
+      121: [true, 'Modified changes', 'S', { id: 'green' }],
+      122: [true, 'Modified changes', 'A', { id: 'green' }],
     });
 
     disposable1.dispose();
@@ -249,7 +248,7 @@ describe('ExtHostFileSystem', () => {
 
   it('decoration badge length !== 1', async () => {
     const extDecoProvider = new (class implements vscode.FileDecorationProvider {
-      onDidChangeDecorations = Event.None;
+      onDidChangeFileDecorations = Event.None;
       provideFileDecoration(uri: Uri, token: CancellationToken) {
         return {
           badge: 'TWO',
@@ -263,26 +262,25 @@ describe('ExtHostFileSystem', () => {
 
     service.registerFileDecorationProvider(extDecoProvider, 'mock-ext-sync-id');
 
-    const uri = Uri.file('file://workspace/test/a.ts');
+    const uri = new URI('/workspace/test/a.ts');
     const request = {
       id: 121,
       handle: 0,
-      uri: URI2UriComponents(new URI(uri)),
+      uri: uri.codeUri,
     };
 
     const result = await service.$provideFileDecorations([request], new CancellationTokenSource().token);
-    // trigger -> sync
     expect(result).toEqual({
-      121: [false, 'Modified changes', 'TWO', { id: 'green' }],
+      121: [true, 'Modified changes', 'TWO', { id: 'green' }],
     });
     expect(warnSpy.mock.calls[0][1]).toBe(
-      "INVALID decoration from extension 'mock-ext-sync-id'. The 'badge' must be set and be one character, not 'TWO'.",
+      "INVALID decoration from extension 'mock-ext-sync-id'. Error: The 'badge'-property must be undefined or a short character",
     );
   });
 
   it('provideFileDecoration rejection', async () => {
     const extDecoProvider = new (class implements vscode.FileDecorationProvider {
-      onDidChangeDecorations = Event.None;
+      onDidChangeFileDecorations = Event.None;
       provideFileDecoration(uri: Uri, token: CancellationToken) {
         return Promise.reject('provideFileDecoration throws');
       }
@@ -290,41 +288,16 @@ describe('ExtHostFileSystem', () => {
 
     service.registerFileDecorationProvider(extDecoProvider, 'mock-ext-sync-id');
 
-    const uri = Uri.file('file://workspace/test/a.ts');
+    const uri = new URI('/workspace/test/a.ts');
     const request = {
       id: 121,
       handle: 0,
-      uri: URI2UriComponents(new URI(uri)),
+      uri: uri.codeUri,
     };
 
     const result = await service.$provideFileDecorations([request], new CancellationTokenSource().token);
     // trigger -> sync
     expect(result).toEqual({});
     expect(errorSpy.mock.calls[0][1]).toBe('provideFileDecoration throws');
-  });
-
-  it('compatible onChange', async () => {
-    const extDecoProvider = new (class implements vscode.FileDecorationProvider {
-      onDidChangeEmitter = new Emitter<Uri[]>();
-      onDidChange = this.onDidChangeEmitter.event;
-
-      provideFileDecoration(uri: Uri, token: CancellationToken) {
-        return {
-          badge: 'S',
-          tooltip: 'Modified changes',
-          color: { id: 'green' },
-          propagate: true,
-          source: 'sync',
-        };
-      }
-    })();
-
-    service.registerFileDecorationProvider(extDecoProvider, 'mock-ext-onChange-id');
-
-    const uri = Uri.file('file://workspace/test/a.ts');
-
-    extDecoProvider.onDidChangeEmitter.fire([uri]);
-    expect(mock$onDidChange).toBeCalledTimes(1);
-    expect(mock$onDidChange).toBeCalledWith(0, [uri]);
   });
 });
