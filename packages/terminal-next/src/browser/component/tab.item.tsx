@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { getIcon, useInjectable, URI } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, URI, localize } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IIconService } from '@opensumi/ide-theme';
@@ -105,6 +105,7 @@ export const renderAddItem = observer((props: ItemProps) => {
   return (
     <div className={styles.item_wrapper}>
       <div
+        title={localize('terminal.new')}
         className={clx({
           [getIcon('plus')]: true,
           [styles.item_add]: true,
@@ -112,6 +113,7 @@ export const renderAddItem = observer((props: ItemProps) => {
         onClick={() => handleAdd()}
       />
       <div
+        title={localize('terminal.new.type')}
         className={clx({
           [getIcon('down')]: true,
           [styles.item_more]: true,
