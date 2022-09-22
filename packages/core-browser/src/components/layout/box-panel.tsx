@@ -44,6 +44,8 @@ type ChildComponent = React.ReactElement<IChildComponentProps>;
 
 /**
  * 包裹放入其中的元素，并为每个元素创建一个 div
+ *
+ * 可以通过修改传入的 children 的 props 来定义一些属性，props 的定义可见：{ @link ChildComponent }
  */
 export const BoxPanel: React.FC<{
   children?: ChildComponent | ChildComponent[];
