@@ -30,12 +30,10 @@ export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
 }
 
 export class OpenSumiExplorerView extends OpenSumiPanel {
-  id = 'explorer';
-
   private _fileTreeView: OpenSumiView;
 
   constructor(app: OpenSumiApp) {
-    super(app);
+    super(app, 'explorer');
   }
 
   initFileTreeView(name: string) {

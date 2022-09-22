@@ -1,5 +1,8 @@
+import { OpenSumiApp } from './app';
 import { OpenSumiPanel } from './panel';
 
 export class OpenSumiSearchView extends OpenSumiPanel {
-  id = 'search';
+  constructor(app: OpenSumiApp) {
+    super(app, 'search');
+  }
 }

@@ -2,8 +2,11 @@ import path from 'path';
 
 import { expect } from '@playwright/test';
 
+import { isWindows } from '@opensumi/ide-utils';
+
 import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
+import { OpenSumiTerminal } from '../terminal';
 import { OpenSumiView } from '../view';
 import { OpenSumiWorkspace } from '../workspace';
 
@@ -80,5 +83,14 @@ test.describe('OpenSumi Explorer Panel', () => {
     const newFile = await explorer.getFileStatTreeNodeByPath(`test/${newFileName}`);
     expect(newFile).toBeDefined();
     expect(await newFile?.isFolder()).toBeTruthy();
+  });
+
+  (isWindows ? test.skip : test)('fileTree should be updated while create directory from terminal', async () => {
+    const dirname = 'dir_from_terminal';
+    const terminal = await app.open(OpenSumiTerminal);
+    await terminal.sendText(`mkdir ${dirname}`);
+    await app.page.waitForTimeout(2000);
+    const newDir = await explorer.getFileStatTreeNodeByPath(dirname);
+    expect(newDir).toBeDefined();
   });
 });
