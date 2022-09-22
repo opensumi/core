@@ -18,6 +18,8 @@ export class OpenSumiEditor extends OpenSumiView {
 
   async open(preview?: boolean) {
     await this.filestatElement.open(preview);
+    // waiting editor render
+    await this.app.page.waitForTimeout(200);
     return this;
   }
 
@@ -29,7 +31,8 @@ export class OpenSumiEditor extends OpenSumiView {
 
   async isDirty() {
     const dirtyIcon = await (await this.getCurrentTab())?.$("[class*='dirty___']");
-    const hidden = (await dirtyIcon?.getAttribute('class'))?.includes('hidden__');
+    const className = await dirtyIcon?.getAttribute('class');
+    const hidden = className?.includes('hidden__');
     return !hidden;
   }
 
@@ -38,11 +41,21 @@ export class OpenSumiEditor extends OpenSumiView {
     if (!(await this.isDirty())) {
       return;
     }
+    const dirtyIcon = await (await this.getCurrentTab())?.$("[class*='dirty___']");
     await this.app.menubar.trigger('File', 'Save File');
+    // waiting for saved
+    await dirtyIcon?.waitForElementState('hidden');
   }
 
   async close() {
-    const closeIcon = await (await this.getTabElement())?.waitForSelector("class*=['close_tab___']");
+    const currentTab = await this.getTabElement();
+    await currentTab?.hover({
+      position: {
+        x: 10,
+        y: 10,
+      },
+    });
+    const closeIcon = await currentTab?.$("[class*='close_tab___']");
     await closeIcon?.click();
   }
 
