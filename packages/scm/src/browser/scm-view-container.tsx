@@ -74,6 +74,7 @@ export const SCMResourcesView: FC<{
         extraTailArgs: repository.provider.actionButton.command.arguments,
         group: 'navigation',
         type: 'primary',
+        enabledWhen: repository.provider.actionButton.enabled ? 'true' : 'false',
       }),
     );
     if (Array.isArray(repository.provider.actionButton.secondaryCommands)) {
@@ -87,6 +88,7 @@ export const SCMResourcesView: FC<{
               },
               extraTailArgs: command.arguments,
               group: `${index}_secondary`,
+              enabledWhen: repository.provider.actionButton.enabled ? 'true' : 'false',
             }),
           );
         }
