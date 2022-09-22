@@ -32,7 +32,7 @@ export const BoxPanel: React.FC<{
       {arrayChildren.map((child, index) => (
         <div
           key={index}
-          className={clsx(styles.wrapper)}
+          className={clsx(styles.wrapper, child['props']?.className)}
           style={
             child['props']
               ? {
