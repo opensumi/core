@@ -27,6 +27,8 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
 
   private server: http.Server;
 
+  private requestingPromises: Map<string, Set<(reason: string) => void>> = new Map();
+
   initialize() {
     this.logger.debug('init y-websocket server');
 
@@ -84,13 +86,21 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
 
   removeYText(uri: string) {
     this.logger.debug('trying to remove uri', uri);
+
+    // break all still-awaiting promise
+    const promises = this.requestingPromises.get(uri);
+    if (promises) {
+      promises.forEach((reject) => reject('Remove unresolved promise of this uri'));
+      promises.clear();
+    }
+
     if (this.yMap.has(uri)) {
       this.yMap.delete(uri);
       this.logger.debug('removed', uri);
     }
   }
 
-  async requestInitContent(uri: string): Promise<void> {
+  private async doRequestInitContent(uri: string): Promise<void> {
     try {
       // load content from disk, not client
       const { content } = await this.fileService.resolveContent(uri);
@@ -102,6 +112,19 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
     } catch (e) {
       this.logger.error(e);
     }
+  }
+
+  async requestInitContent(uri: string): Promise<void> {
+    const promise = new Promise<void>((resolve, reject) => {
+      this.doRequestInitContent(uri).then(() => resolve());
+
+      if (!this.requestingPromises.has(uri)) {
+        this.requestingPromises.set(uri, new Set());
+      }
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.requestingPromises.get(uri)!.add(reject);
+    });
+    await promise;
   }
 
   destroy() {
