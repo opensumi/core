@@ -1,5 +1,5 @@
 import clsx from 'classnames';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
@@ -180,26 +180,13 @@ const InlineActionWidget: React.FC<
     [data, context],
   );
 
-  const ICON_REGX = /\$\(.+\)/;
-  const [title, label, labelIconClass] = React.useMemo(() => {
+  const [title, label] = React.useMemo(() => {
     let title = data.tooltip || data.label;
     let label = data.label;
-    let labelIconClass;
     if (data.keybinding) {
       title = `${title} (${data.keybinding})`;
     }
-    if (!iconService) {
-      return title;
-    }
-    if (ICON_REGX.test(title)) {
-      const result = ICON_REGX.exec(title);
-      if (result && result[0]) {
-        title = title.replace(result[0], '');
-        label = label.replace(result[0], '');
-        labelIconClass = iconService.fromString(result[0]);
-      }
-    }
-    return [title, label, labelIconClass];
+    return [title, label];
   }, [data]);
 
   const isSubmenuNode = data.id === SubmenuItemNode.ID;
@@ -237,6 +224,25 @@ const InlineActionWidget: React.FC<
     );
   }
 
+  const transformLabel = useCallback((label: string) => {
+    const SEPERATOR = ' ';
+    const ICON_REGX = /\$\(.*?\)/gi;
+    return label.split(SEPERATOR).map((e) => {
+      let icon;
+      if (iconService) {
+        icon = iconService.fromString(e);
+      }
+      if (icon) {
+        return <Icon className={iconService?.fromString(e)} style={{ margin: '0 5px' }} />;
+      } else if (ICON_REGX.test(e)) {
+        const newStr = e.replaceAll(/\$\(.*?\)/gi, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
+        return transformLabel(newStr);
+      } else {
+        return <span>{e}</span>;
+      }
+    });
+  }, []);
+
   return (
     <Button
       className={clsx(className, styles.btnAction)}
@@ -245,10 +251,9 @@ const InlineActionWidget: React.FC<
       size='small'
       type={data.type}
       title={title}
-      labelIconClass={labelIconClass}
       {...restProps}
     >
-      {label}
+      {transformLabel(label)}
       {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
     </Button>
   );

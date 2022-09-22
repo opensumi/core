@@ -103,7 +103,6 @@ export const SCMResourcesView: FC<{
   }, [repository, menus]);
 
   const hasActionButton = repository && repository.provider && menus;
-
   return (
     <div className={styles.view} ref={$containerRef}>
       <div className={styles.scm} style={{ paddingTop: SCM_EXTRA_PADDING_TOP }}>
