@@ -128,7 +128,6 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     expect(typeof extHostEnvAPI.clipboard.readText).toBe('function');
     expect(typeof extHostEnvAPI.clipboard.writeText).toBe('function');
     expect(typeof extHostEnvAPI.openExternal).toBe('function');
-    expect(typeof extHostEnvAPI.logLevel).toBe('number');
     expect(typeof extHostEnvAPI.isNewAppInstall).toBe('boolean');
     expect(typeof extHostEnvAPI.isTelemetryEnabled).toBe('boolean');
     expect(typeof extHostEnvAPI.onDidChangeTelemetryEnabled).toBe('function');
@@ -150,11 +149,5 @@ describe('MainThreadEnvAPI Test Suites ', () => {
     expect(navigator.clipboard.readText()).toBe(text);
     const target = await extHostEnvAPI.clipboard.readText();
     expect(target).toBe(text);
-  });
-
-  it.skip('can get loglevel', async () => {
-    const logManager = injector.get(ILoggerManagerClient);
-    logManager.onDidLogLevelChanged(LogLevel.Error);
-    expect(extHostEnvAPI.logLevel).toBe(await logManager.getGlobalLogLevel());
   });
 });
