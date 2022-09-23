@@ -32,7 +32,7 @@ test.describe('OpenSumi Explorer Panel', () => {
   test('should show file explorer', async () => {
     expect(explorer.isVisible()).toBeTruthy();
     await fileTreeView.open();
-    expect(fileTreeView.isVisible()).toBeTruthy();
+    expect(await fileTreeView.isVisible()).toBeTruthy();
   });
 
   test('can new single file by context menu', async () => {

@@ -94,6 +94,8 @@ console.log(a);`,
 
   test('Go to Symbol... should be worked', async () => {
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor2.js');
+    // waiting for extHost process done.
+    await app.page.waitForTimeout(1000);
     const editorMenu = await editor.openLineContextMenuByLineNumber(1);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     const goto = await editorMenu?.menuItemByName('Go to Symbol...');
