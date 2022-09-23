@@ -635,6 +635,7 @@ export const localizationBundle = {
     'terminal.try.reconnect': 'Try To Reconnect The Terminal',
     'terminal.try.recreate': 'Try To Recreate The Terminal',
     'terminal.new': 'Create Terminal',
+    'terminal.new.type': 'Create terminal by type',
     'terminal.split': 'Split Terminal',
     'terminal.clear': 'Remove All Terminals',
     'terminal.clear.content': 'Clear All Contents',

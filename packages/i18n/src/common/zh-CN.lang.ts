@@ -668,6 +668,7 @@ export const localizationBundle = {
     'terminal.try.reconnect': '重新连接终端',
     'terminal.try.recreate': '重新启动终端',
     'terminal.new': '新建终端',
+    'terminal.new.type': '根据终端类型新建',
     'terminal.split': '拆分终端',
     'terminal.clear': '终止所有终端',
     'terminal.clear.content': '清空当前终端内容',

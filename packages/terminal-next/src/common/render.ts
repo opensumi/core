@@ -20,6 +20,7 @@ export interface ItemProps {
   onInputEnter?: (id: string, name: string) => void;
   onDropdown?: (event: React.MouseEvent<HTMLElement>) => void;
   onContextMenu?: (event: React.MouseEvent<HTMLElement>) => void;
+  getKeybinding?: (command: string) => string;
   provider: ITerminalRenderProvider;
   theme: ThemeType;
 }
