@@ -15,10 +15,11 @@ import test, { page } from './hooks';
 let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
 let fileTreeView: OpenSumiView;
+let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Explorer Panel', () => {
   test.beforeAll(async () => {
-    const workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/default')]);
+    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/default')]);
     app = await OpenSumiApp.load(page, workspace);
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
@@ -72,7 +73,7 @@ test.describe('OpenSumi Explorer Panel', () => {
     const newFileMenu = await menu?.menuItemByName('New Folder');
     await newFileMenu?.click();
     // type `new_file` as the file name
-    const newFileName = 'new_Folder';
+    const newFileName = 'new_folder';
     const input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
     if (input != null) {
       await input.focus();
