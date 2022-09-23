@@ -255,6 +255,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @OnEvent(EditorDocumentModelCreationEvent)
   private async editorDocumentModelCreationHandler(e: EditorDocumentModelCreationEvent) {
+    if (e.payload.uri.scheme !== 'file') {
+      return;
+    }
+
     const uriString = e.payload.uri.toString();
     const { bindingReady, yMapReady } = this.getDeferred(uriString);
     await this.backService.requestInitContent(uriString);
@@ -271,6 +275,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   @OnEvent(EditorDocumentModelRemovalEvent)
   private async editorDocumentModelRemovalHandler(e: EditorDocumentModelRemovalEvent) {
+    if (e.payload.codeUri.scheme !== 'file') {
+      return;
+    }
+
     const uriString = e.payload.codeUri.toString();
     const { bindingReady } = this.getDeferred(uriString);
     await bindingReady.promise;
