@@ -77,7 +77,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
       return toMarkdown((tooltip as IMarkdownString).value, openerService);
     }
     return <div className={styles.popover_tooltip}>{tooltip}</div>;
-  }, []);
+  }, [tooltip]);
 
   const getColor = (color: string | IThemeColor | undefined): string => {
     if (!color) {
