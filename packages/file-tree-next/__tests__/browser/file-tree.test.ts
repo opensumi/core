@@ -22,6 +22,7 @@ import {
   IApplicationService,
   OS,
   Deferred,
+  IClipboardService,
 } from '@opensumi/ide-core-common';
 import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
@@ -57,6 +58,10 @@ describe('FileTree should be work while on single workspace model', () => {
   let fileTreeService: FileTreeService;
   let mockFileTreeApi;
   let mockTreeHandle;
+  const mockClipboardService = {
+    readResources: jest.fn(),
+    writeResources: jest.fn(),
+  };
   const mockGetContextValue = jest.fn();
   const mockConsole = {
     debug: () => {},
@@ -113,6 +118,7 @@ describe('FileTree should be work while on single workspace model', () => {
       }
     }
   });
+
   beforeEach(async () => {
     jest.useFakeTimers();
     injector = createBrowserInjector([FileTreeNextModule]);
@@ -192,6 +198,10 @@ describe('FileTree should be work while on single workspace model', () => {
       {
         token: WorkbenchEditorService,
         useClass: MockWorkspaceService,
+      },
+      {
+        token: IClipboardService,
+        useValue: mockClipboardService,
       },
     );
     const fileServiceClient: FileServiceClient = injector.get(IFileServiceClient);
@@ -380,6 +390,17 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(mockFileTreeApi.copyFile).toBeCalled();
     });
 
+    it('Cross windows Copy - Paste should be work', () => {
+      const { pasteFile } = fileTreeModelService;
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
+      mockClipboardService.readResources = jest.fn(() => [URI.file('test')]);
+      pasteFile(directoryNode.uri);
+      expect(mockClipboardService.readResources).toBeCalled();
+      mockClipboardService.readResources = jest.fn();
+    });
+
     it('Location file should be work', async () => {
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
@@ -542,6 +563,7 @@ describe('FileTree should be work while on single workspace model', () => {
       expect(mockEvent.stopPropagation).toBeCalled();
       expect(mockEvent.dataTransfer.setDragImage).toBeCalled();
       expect(mockEvent.dataTransfer.setData).toBeCalled();
+      expect(mockEvent.dataTransfer.setData).toBeCalledTimes(3);
     });
 
     it('Dragging Enter should be work', async () => {
@@ -612,6 +634,27 @@ describe('FileTree should be work while on single workspace model', () => {
         },
       };
       dndService.handleDrop(mockEvent as any, directoryNode);
+      expect(mockEvent.stopPropagation).toBeCalled();
+      expect(mockEvent.preventDefault).toBeCalled();
+      expect(mockEvent.dataTransfer.dropEffect).toBe('copy');
+      const directoryDecoration = decorations.getDecorations(directoryNode);
+      expect(directoryDecoration?.classlist).toEqual([]);
+    });
+
+    it('Cross window drop should be work', async () => {
+      const treeModel = fileTreeModelService.treeModel;
+      const rootNode = treeModel.root;
+      const { dndService, decorations } = fileTreeModelService;
+      const directoryNode = rootNode.getTreeNodeAtIndex(0) as File;
+      const mockEvent = {
+        preventDefault: jest.fn(),
+        stopPropagation: jest.fn(),
+        dataTransfer: {
+          dropEffect: '',
+          getData: () => JSON.stringify([directoryNode].map((node) => node.uri.toString())),
+        },
+      };
+      dndService.handleDrop(mockEvent as any);
       expect(mockEvent.stopPropagation).toBeCalled();
       expect(mockEvent.preventDefault).toBeCalled();
       expect(mockEvent.dataTransfer.dropEffect).toBe('copy');

@@ -33,12 +33,14 @@ import {
   IApplicationService,
   FILE_COMMANDS,
   path,
+  IClipboardService,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { FileStat } from '@opensumi/ide-file-service';
+import { FileStat, IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService, PasteTypes } from '../../common';
@@ -57,6 +59,7 @@ const { trim, rtrim } = strings;
 export interface IPasteStore {
   files: (File | Directory)[];
   type: PasteTypes;
+  crossFiles?: URI[];
 }
 
 /**
@@ -98,6 +101,9 @@ export class FileTreeModelService {
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
 
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
+
   @Autowired(StorageProvider)
   private readonly storageProvider: StorageProvider;
 
@@ -118,6 +124,12 @@ export class FileTreeModelService {
 
   @Autowired(CommandService)
   private readonly commandService: CommandService;
+
+  @Autowired(IClipboardService)
+  private readonly clipboardService: IClipboardService;
+
+  @Autowired(AppConfig)
+  private readonly appConfig: AppConfig;
 
   private _isDisposed = false;
 
@@ -1567,11 +1579,32 @@ export class FileTreeModelService {
       files: files as (File | Directory)[],
       type: PasteTypes.COPY,
     };
+
+    // Also update pasteStore in localStorage
+    this.clipboardService.writeResources(from);
   };
 
   public pasteFile = async (to: URI) => {
     let parent = this.fileTreeService.getNodeByPathOrUri(to.toString());
-    if (!parent || !this.pasteStore) {
+    if (!parent) {
+      return;
+    }
+    let pasteStore = this.pasteStore;
+    let shouldConfirm = false;
+    if (!pasteStore) {
+      const uriList = await this.clipboardService.readResources();
+
+      if (!uriList || !uriList.length) {
+        return;
+      }
+      pasteStore = {
+        files: [],
+        type: PasteTypes.COPY,
+        crossFiles: uriList,
+      };
+      shouldConfirm = true;
+    }
+    if (!pasteStore) {
       return;
     }
     if (!Directory.is(parent)) {
@@ -1582,17 +1615,34 @@ export class FileTreeModelService {
       // 压缩路径的粘贴操作，使用刷新操作进行更新
       useRefresh = true;
     }
-    if (this.pasteStore.type === PasteTypes.CUT) {
-      for (const file of this.pasteStore.files) {
-        if (file) {
-          this.cutDecoration.removeTarget(file);
-        }
-        if (!(parent as Directory).expanded) {
-          await (parent as Directory).setExpanded(true);
+    if (shouldConfirm) {
+      const ok = localize('file.confirm.paste.ok');
+      const cancel = localize('file.confirm.paste.cancel');
+      const confirm = await this.dialogService.warning(
+        formatLocalize(
+          'file.confirm.paste',
+          `[ ${pasteStore.crossFiles?.map((uri) => uri.displayName).join(',')} ]`,
+          parent.displayName,
+        ),
+        [cancel, ok],
+      );
+      if (confirm !== ok) {
+        return;
+      }
+    }
+    if (pasteStore.type === PasteTypes.CUT) {
+      if (!pasteStore.crossFiles) {
+        for (const file of pasteStore.files) {
+          if (file) {
+            this.cutDecoration.removeTarget(file);
+          }
+          if (!(parent as Directory).expanded) {
+            await (parent as Directory).setExpanded(true);
+          }
         }
       }
       const errors = await this.fileTreeAPI.mvFiles(
-        this.pasteStore.files.map((file) => file.uri),
+        pasteStore.crossFiles ? pasteStore.crossFiles : pasteStore.files.map((file) => file.uri),
         parent.uri,
       );
       if (errors && errors.length > 0) {
@@ -1607,23 +1657,26 @@ export class FileTreeModelService {
       this._pasteStore = {
         files: [],
         type: PasteTypes.NONE,
+        crossFiles: undefined,
       };
-    } else if (this.pasteStore.type === PasteTypes.COPY) {
-      for (const file of this.pasteStore.files) {
-        const newUri = parent.uri.resolve(file.uri.displayName);
+    } else if (pasteStore.type === PasteTypes.COPY) {
+      const uriList = pasteStore.crossFiles ? pasteStore.crossFiles : pasteStore.files.map((file) => file.uri);
+      for (const uri of uriList) {
+        const newUri = parent.uri.resolve(uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
         }
-        const res = await this.fileTreeAPI.copyFile(file.uri, newUri);
+        const res = await this.fileTreeAPI.copyFile(uri, newUri);
         if (useRefresh) {
           this.fileTreeService.refresh(parent.parent as Directory);
         } else if (res) {
           if ((res as FileStat).uri) {
             const copyUri = new URI((res as FileStat).uri);
+            const fileStat = await this.filesystem.getFileStat(uri.toString());
             this.fileTreeService.addNode(
               parent as Directory,
               copyUri.displayName,
-              Directory.is(file) ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
+              fileStat?.isDirectory ? TreeNodeType.CompositeTreeNode : TreeNodeType.TreeNode,
             );
           } else {
             this.messageService.error(res);
