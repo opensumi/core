@@ -25,7 +25,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { normalizedIpcHandlerPathAsync } from '@opensumi/ide-core-common/lib/utils/ipc';
 
-import { initForDevtools } from './devtools';
 import { ElectronAppConfig, ICodeWindow, ICodeWindowOptions } from './types';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
@@ -95,11 +94,6 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       ...this.appConfig.overrideBrowserOptions,
       ...options,
     });
-
-    if (this.appConfig.devtools) {
-      // initialize for OpenSumi DevTools
-      initForDevtools(this.browser);
-    }
 
     if (options) {
       if (options.extensionDir) {

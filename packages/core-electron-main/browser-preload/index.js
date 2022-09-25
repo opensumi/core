@@ -3,6 +3,9 @@ const os = require('os');
 
 const { ipcRenderer } = require('electron');
 
+// for generating requestId to pair request and response
+const uuid = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
+
 const initForDevtools = () => {
   const getCapturer = () => {
     if (window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__?.captureIPC) {
@@ -22,9 +25,7 @@ const initForDevtools = () => {
   const originalIpcRendererOn = ipcRenderer.on;
   ipcRenderer.on = (channel, handler) => {
     const proxyHandler = (event, ...args) => {
-      if (channel !== 'main->browser') {
-        capture({ ipcMethod: 'ipcRenderer.on', channel, args });
-      }
+      capture({ ipcMethod: 'ipcRenderer.on', channel, args });
       handler(event, ...args);
     };
     return originalIpcRendererOn.call(ipcRenderer, channel, proxyHandler);
@@ -40,21 +41,24 @@ const initForDevtools = () => {
   // ipcRenderer.sendSync
   const originalIpcRendererSendSync = ipcRenderer.sendSync;
   ipcRenderer.sendSync = (channel, ...args) => {
-    capture({ ipcMethod: 'ipcRenderer.sendSync', channel, args });
-    return originalIpcRendererSendSync.call(ipcRenderer, channel, ...args);
+    const requestId = uuid();
+    capture({ ipcMethod: 'ipcRenderer.sendSync', channel, requestId, args });
+    const result = originalIpcRendererSendSync.call(ipcRenderer, channel, ...args);
+    capture({ ipcMethod: 'ipcRenderer.sendSync', channel, requestId, result });
+    return result;
   };
 
   // ipcRenderer.invoke
   const originalIpcRendererInvoke = ipcRenderer.invoke;
   ipcRenderer.invoke = (channel, ...args) => {
-    capture({ ipcMethod: 'ipcRenderer.invoke', channel, args });
-    return originalIpcRendererInvoke.call(ipcRenderer, channel, ...args);
+    const requestId = uuid();
+    capture({ ipcMethod: 'ipcRenderer.invoke', channel, requestId, args });
+    const resultPromise = originalIpcRendererInvoke.call(ipcRenderer, channel, ...args);
+    resultPromise.then((result) => {
+      capture({ ipcMethod: 'ipcRenderer.invoke', channel, requestId, result });
+    });
+    return resultPromise;
   };
-
-  // receive messages that transfered from main process and capture them
-  ipcRenderer.on('main->browser', (event, message) => {
-    capture(message);
-  });
 };
 
 const electronEnv = {};
