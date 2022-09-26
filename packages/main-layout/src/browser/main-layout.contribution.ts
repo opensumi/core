@@ -319,7 +319,7 @@ export class MainLayoutModuleContribution
 
     commands.registerCommand(LAYOUT_COMMANDS.OPEN_VIEW, {
       execute: () => {
-        this.commandService.executeCommand(QUICK_OPEN_COMMANDS.OPEN.id, 'view ');
+        this.commandService.executeCommand(QUICK_OPEN_COMMANDS.OPEN.id, 'view');
       },
     });
   }
