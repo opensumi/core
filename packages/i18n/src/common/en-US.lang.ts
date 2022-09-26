@@ -195,12 +195,12 @@ export const localizationBundle = {
     'quickopen.tab.tip.suffix': 'to switch',
     'quickOpen.openSide': 'Open on the side',
 
-    'explorer.title': 'EXPLORER',
+    'explorer.title': 'Explorer',
     'explorer.electron.revealInFinder': 'Reveal In Explorer',
     'explorer.electron.openInSystemTerminal': 'Open In Terminal',
     'explorer.electron.openInSystemTerminal.error': 'Open {0} In Terminal Fail: {1}',
 
-    'search.title': 'SEARCH',
+    'search.title': 'Search',
     'search.input.placeholder': 'Enter search content',
     'search.input.title': 'Search',
     'search.replace.title': 'Replace',
@@ -271,7 +271,7 @@ export const localizationBundle = {
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
 
-    'scm.title': 'SOURCE CONTROL',
+    'scm.title': 'Source Control',
     'scm.action.git.refresh': 'Refresh',
     'scm.action.git.commit': 'Commit',
     'scm.action.git.more': 'More Actions',
@@ -309,7 +309,7 @@ export const localizationBundle = {
     'debug.watch.copyValue': 'Copy Value',
     'debug.watch.remove': 'Remove Expression',
     'debug.action.continue': 'Continue',
-    'debug.console.panel.title': 'DEBUG CONSOLE',
+    'debug.console.panel.title': 'Debug Console',
     'debug.console.panel.default': 'default',
     'debug.console.filter.placeholder': 'Filter (e.g. text, !exclude)',
     'debug.console.clear': 'Clear',
@@ -334,7 +334,7 @@ export const localizationBundle = {
     'debug.variables.view.memory.prompt.hexEditor.notInstalled':
       'Inspecting binary data requires the Hex Editor extension.',
     'debug.breakpoints.title': 'BREAKPOINTS',
-    'debug.container.title': 'DEBUG',
+    'debug.container.title': 'Debug',
     'debug.breakpoint.breakpointMessage': 'Breakpoint',
     'debug.breakpoint.logpointMessage': 'Logpoint',
     'debug.breakpoint.conditionalMessage': 'Conditional Breakpoint',
@@ -384,7 +384,7 @@ export const localizationBundle = {
     'debug.launch.typeNotSupported': 'The debug session type "{0}" is not supported.',
     'debug.launch.catchError': 'There was an error starting the debug session, check the logs for more details.',
 
-    'output.tabbar.title': 'OUTPUT',
+    'output.tabbar.title': 'Output',
     'output.channel.none': '<no output yet>',
     'output.configurationTitle': 'Output settings',
     'output.logWhenNoPanel': 'Whether to output to the browser when no available panel',
@@ -841,7 +841,7 @@ export const localizationBundle = {
     'welcome.quickStart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
 
-    'markers.title': 'PROBLEMS',
+    'markers.title': 'Problems',
     'markers.panel.content.empty': 'No problems have been detected in the workspace so far.',
     'markers.panel.filter.errors': 'errors',
     'markers.panel.filter.warnings': 'warnings',
