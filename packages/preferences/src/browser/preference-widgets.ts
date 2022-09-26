@@ -1,39 +1,17 @@
-import { Autowired, Injectable, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
+import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-components';
-import {
-  IContextKeyService,
-  IPreferenceSettingsService,
-  PreferenceSchemaProvider,
-  PreferenceService,
-} from '@opensumi/ide-core-browser';
+import { IPreferenceSettingsService, PreferenceSchemaProvider } from '@opensumi/ide-core-browser';
 import {
   AbstractContextMenuService,
-  AbstractMenuService,
-  generateMergedCtxMenu,
   ICtxMenuRenderer,
   IMenuItem,
   IMenuRegistry,
   ISubmenuItem,
   MenuCommandDesc,
   MenuId,
-  MenuItemNode,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import {
-  CommandRegistry,
-  Disposable,
-  Emitter,
-  Event,
-  IDisposable,
-  localize,
-  PreferenceScope,
-  URI,
-} from '@opensumi/ide-core-common';
-import {
-  ICodeEditor,
-  IEditor,
-  IEditorDocumentModelService,
-  IEditorFeatureContribution,
-} from '@opensumi/ide-editor/lib/browser';
+import { CommandRegistry, Disposable, IDisposable, localize, PreferenceScope, URI } from '@opensumi/ide-core-common';
+import { IEditor, IEditorDocumentModelService, IEditorFeatureContribution } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { MarkdownString } from '@opensumi/monaco-editor-core/esm/vs/base/common/htmlContent';
 import { MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
@@ -79,6 +57,14 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
 
   constructor(@Optional() private readonly editor: IEditor) {}
 
+  private async verifyEditor(): Promise<boolean> {
+    const settingUri = await this.preferenceSettingsService.getPreferenceUrl(PreferenceScope.User);
+    if (this.editor.currentUri?.toString() === settingUri) {
+      return true;
+    }
+    return false;
+  }
+
   /**
    * 返回 user scope 的真实 setting.json 路径
    */
@@ -106,8 +92,11 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
 
   public contribute(): IDisposable {
     this.disposer.addDispose(
-      this.editor.monacoEditor.onMouseDown((e: monaco.editor.IEditorMouseEvent) => {
-        if (e.target.range?.startLineNumber !== this._currentLine) {
+      this.editor.monacoEditor.onMouseDown(async (e: monaco.editor.IEditorMouseEvent) => {
+        if (!(await this.verifyEditor())) {
+          return;
+        }
+        if (e.target.range?.startLineNumber !== this.currentLine) {
           return;
         }
         if (
