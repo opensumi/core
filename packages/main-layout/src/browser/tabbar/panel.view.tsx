@@ -162,7 +162,7 @@ const BottomPanelView: React.FC<{
   return (
     <div className={styles.panel_container}>
       <div className={styles.panel_title_bar} style={{ height: LAYOUT_VIEW_SIZE.PANEL_TITLEBAR_HEIGHT }}>
-        <h1>{component.options?.title}</h1>
+        <h1>{component.options?.title?.toUpperCase()}</h1>
         <div className={styles.title_component_container}>
           {titleComponent && (
             <ComponentRenderer Component={titleComponent} initialProps={component.options?.titleProps} />

@@ -120,54 +120,6 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   iconClass: getIcon('shrink'),
 };
 
-const containerToggleCommands = [
-  {
-    containerId: EXPLORER_CONTAINER_ID,
-    menuLabel: '%explorer.title%',
-    group: '3_left',
-  },
-  {
-    containerId: SEARCH_CONTAINER_ID,
-    menuLabel: '%search.title%',
-    group: '3_left',
-  },
-  {
-    containerId: SCM_CONTAINER_ID,
-    menuLabel: '%scm.title%',
-    group: '3_left',
-  },
-  {
-    containerId: DEBUG_CONTAINER_ID,
-    menuLabel: '%debug.container.title%',
-    group: '3_left',
-  },
-  {
-    containerId: EXTENSION_CONTAINER_ID,
-    menuLabel: '%marketplace.extension.container%',
-    group: '3_left',
-  },
-  {
-    containerId: MARKER_CONTAINER_ID,
-    menuLabel: '%markers.title%',
-    group: '4_bottom',
-  },
-  {
-    containerId: OUTPUT_CONTAINER_ID,
-    menuLabel: '%output.tabbar.title%',
-    group: '4_bottom',
-  },
-  {
-    containerId: DEBUG_CONSOLE_CONTAINER_ID,
-    menuLabel: '%debug.console.panel.title%',
-    group: '4_bottom',
-  },
-  {
-    containerId: TERMINAL_CONTAINER_ID,
-    menuLabel: '%terminal.name%',
-    group: '4_bottom',
-  },
-];
-
 @Domain(CommandContribution, ClientAppContribution, SlotRendererContribution, MenuContribution, QuickOpenContribution)
 export class MainLayoutModuleContribution
   extends WithEventBus
@@ -393,13 +345,41 @@ export class MainLayoutModuleContribution
       group: 'navigation',
     });
 
-    containerToggleCommands.forEach((v) => {
-      menus.registerMenuItem(MenuId.MenubarViewMenu, {
-        command: {
-          id: `container.toggle.${v.containerId}`,
-          label: v.menuLabel,
-        },
-        group: v.group,
+    Object.entries({
+      [SlotLocation.left]: [
+        EXPLORER_CONTAINER_ID,
+        SEARCH_CONTAINER_ID,
+        SCM_CONTAINER_ID,
+        DEBUG_CONTAINER_ID,
+        EXTENSION_CONTAINER_ID,
+      ],
+      [SlotLocation.bottom]: [
+        MARKER_CONTAINER_ID,
+        OUTPUT_CONTAINER_ID,
+        DEBUG_CONSOLE_CONTAINER_ID,
+        TERMINAL_CONTAINER_ID,
+      ],
+    }).forEach(([slotLocation, containerIds], index) => {
+      /**
+       * 这里使用 getContainer 是因为可能我们要注册到 menu 上的 id 在集成方并没有挂载。
+       * 所以如果 getContainer 有值，说明集成方也使用了这个 container，我们就把它注册到 menu 上
+       */
+      const tabbarService = this.mainLayoutService.getTabbarService(slotLocation);
+
+      tabbarService.viewReady.promise.then(() => {
+        containerIds.forEach((id) => {
+          const info = tabbarService.getContainer(id);
+          if (info) {
+            menus.registerMenuItem(MenuId.MenubarViewMenu, {
+              command: {
+                id: `container.toggle.${id}`,
+                label: info.options?.title ?? id,
+              },
+              // 因为当前菜单已有菜单项，这里从 3 开始
+              group: `${3 + index}_${slotLocation}`,
+            });
+          }
+        });
       });
     });
 
