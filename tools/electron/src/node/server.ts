@@ -1,11 +1,14 @@
 /* eslint-disable no-console */
 import net from 'net';
 
-import yargs from 'yargs';
+import mri from 'mri';
 
 import { Deferred } from '@opensumi/ide-core-common';
 import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
+
+const _argv = process.argv.slice(2);
+const argv = mri(_argv);
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const deferred = new Deferred<net.Server>();
@@ -29,7 +32,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   }
 
   const server = net.createServer();
-  const listenPath = (await yargs.argv).listenPath;
+  const listenPath = argv.listenPath;
 
   const serverApp = new ServerApp(opts);
 

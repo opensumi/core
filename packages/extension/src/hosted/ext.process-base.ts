@@ -15,6 +15,7 @@ import {
   isPromiseCanceledError,
   locale,
 } from '@opensumi/ide-core-common';
+import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
@@ -29,7 +30,6 @@ import '@opensumi/ide-i18n';
 setPerformance(performance);
 
 Error.stackTraceLimit = 100;
-const argv = require('yargs').argv;
 let logger: any = console;
 let preload: IExtensionHostService;
 export interface IBuiltInCommand {
@@ -78,7 +78,7 @@ async function initRPCProtocol(extInjector): Promise<any> {
     onMessage(msg: string): void;
   }>(extCenter);
 
-  const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
+  const extConnection = net.createConnection(JSON.parse((argv[KT_PROCESS_SOCK_OPTION_KEY] as any) || '{}'));
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
@@ -116,7 +116,7 @@ function patchProcess() {
 }
 
 export async function extProcessInit(config: ExtProcessConfig = {}) {
-  const extAppConfig = JSON.parse(argv[KT_APP_CONFIG_KEY] || '{}');
+  const extAppConfig = JSON.parse((argv[KT_APP_CONFIG_KEY] as any) || '{}');
   const { injector, ...extConfig } = config;
   const extInjector = injector || new Injector();
   const reporterEmitter = new Emitter<ReporterProcessMessage>();

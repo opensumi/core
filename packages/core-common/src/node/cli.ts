@@ -1,5 +1,7 @@
-import { argv as _argv } from 'yargs';
+import mri from 'mri';
 
-const argv = _argv as { [x: string]: unknown; _: (string | number)[]; $0: string };
+const _argv = process.argv.slice(2);
+
+const argv = mri(_argv) as { [x: string]: unknown; _: (string | number)[] };
 
 export { argv };
