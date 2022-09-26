@@ -1,12 +1,12 @@
 /* eslint-disable no-console */
 import mri, { Argv, Options } from 'mri';
 
-export function parseArgv(argv: string[]) {
-  return mri(argv);
+export function parseArgv(argv: string[], options?: Options) {
+  return mri(argv, options);
 }
 
-export function parseString(str: string) {
-  return mri(str.split(''));
+export function parseString(str: string, options?: Options) {
+  return mri(str.split(' '), options);
 }
 
 export class ArgvFactory {
@@ -21,10 +21,11 @@ export class ArgvFactory {
       this._argv = mri(this.factoryArgv, options);
     }
 
-    if (this._argv?.help) {
+    if (this._argv?.help && this.showHelp) {
       this.showUsage();
       process.exit(0);
     }
+
     return this._argv;
   }
   private _usage: string | undefined;
@@ -32,23 +33,25 @@ export class ArgvFactory {
     this._usage = message;
     return this;
   }
+
   private showUsage() {
     if (this._usage) {
       console.log(this._usage.trimLeft());
-      if (this.afterUsage) {
+      if (this.showHelp) {
         console.log('Usage:');
-        console.log('    ' + this.afterUsage);
+        console.log('    ' + this.showHelp);
       }
     }
   }
+
   private _string = [] as string[];
   string(k: string) {
     this._string.push(k);
     return this;
   }
-  private afterUsage: string | undefined;
+  private showHelp: string | undefined;
   help() {
-    this.afterUsage = '--help Show help';
+    this.showHelp = '--help Show help';
     return this;
   }
 }
