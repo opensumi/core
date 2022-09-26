@@ -4,8 +4,7 @@ const { join } = require('path');
 const os = require('os');
 const mri = require('mri');
 
-const _argv = process.argv.slice(2);
-const argv = mri(_argv);
+const argv = mri(process.argv.slice(2));
 
 const nativeModules = [
   join(__dirname, '../node_modules/node-pty'),
