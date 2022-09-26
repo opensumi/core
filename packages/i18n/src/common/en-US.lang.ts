@@ -85,14 +85,6 @@ export const localizationBundle = {
     'menu-bar.file.open': 'Open File',
     'menu-bar.view.quick.command': 'Command Palette...',
 
-    'menu-bar.view.problem': 'Problem',
-    'menu-bar.view.output': 'Output',
-    'menu-bar.view.debug-console': 'Debug Console',
-    'menu-bar.view.terminal': 'Terminal',
-    'menu-bar.view.explorer': 'Explorer',
-    'menu-bar.view.search': 'Search',
-    'menu-bar.view.scm': 'Source Control',
-    'menu-bar.view.debug': 'Debug',
     'menu-bar.view.extension': 'Extension',
 
     'menu-bar.go.jumpToBracket': 'Go to Bracket',
@@ -627,7 +619,7 @@ export const localizationBundle = {
     'opened.editors.copyRelativePath': 'Copy Relative Path',
     'opened.editors.copyPath': 'Copy Path',
 
-    'terminal.name': 'TERMINAL',
+    'terminal.name': 'Terminal',
     'terminal.disconnected': 'Terminal Already Disconnected',
     'terminal.can.not.create': 'Create Terminal Failed',
     'terminal.can.not.reconnect': 'Terminal Unavailable, Please',
@@ -675,16 +667,6 @@ export const localizationBundle = {
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
-
-    'terminal.action.toggleVisibility': 'Toggle Terminal',
-    'marker.action.toggleVisibility': 'Toggle Problem',
-    'output.action.toggleVisibility': 'Toggle Output',
-    'debug-console.action.toggleVisibility': 'Toggle Debug Console',
-    'explorer.action.toggleVisibility': 'Toggle Explorer',
-    'search.action.toggleVisibility': 'Toggle Search',
-    'scm.action.toggleVisibility': 'Toggle Source Control',
-    'extension.action.toggleVisibility': 'Toggle Extension',
-    'debug.action.toggleVisibility': 'Toggle Debug',
 
     'view.command.show': 'Show {0}',
 

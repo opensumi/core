@@ -123,22 +123,22 @@ export const RETRACT_BOTTOM_PANEL: Command = {
 const containerToggleCommands = [
   {
     containerId: EXPLORER_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.explorer%',
+    menuLabel: '%explorer.title%',
     group: '3_left',
   },
   {
     containerId: SEARCH_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.search%',
+    menuLabel: '%search.title%',
     group: '3_left',
   },
   {
     containerId: SCM_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.scm%',
+    menuLabel: '%scm.title%',
     group: '3_left',
   },
   {
     containerId: DEBUG_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.debug%',
+    menuLabel: '%debug.container.title%',
     group: '3_left',
   },
   {
@@ -148,22 +148,22 @@ const containerToggleCommands = [
   },
   {
     containerId: MARKER_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.problem%',
+    menuLabel: '%markers.title%',
     group: '4_bottom',
   },
   {
     containerId: OUTPUT_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.output%',
+    menuLabel: '%output.tabbar.title%',
     group: '4_bottom',
   },
   {
     containerId: DEBUG_CONSOLE_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.debug-console%',
+    menuLabel: '%debug.console.panel.title%',
     group: '4_bottom',
   },
   {
     containerId: TERMINAL_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.terminal%',
+    menuLabel: '%terminal.name%',
     group: '4_bottom',
   },
 ];

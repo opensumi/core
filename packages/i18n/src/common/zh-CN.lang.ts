@@ -84,17 +84,9 @@ export const localizationBundle = {
     'menu-bar.file.save-all': '全部保存',
     'menu-bar.view.quick.command': '命令面板',
 
-    'menu-bar.view.problem': '问题',
-    'menu-bar.view.output': '输出',
-    'menu-bar.view.debug-console': '调试 Console',
-    'menu-bar.view.terminal': '终端',
-    'menu-bar.view.explorer': '资源管理',
-    'menu-bar.view.search': '搜索',
-    'menu-bar.view.scm': '版本控制',
-    'menu-bar.view.debug': '调试',
     'menu-bar.view.extension': '插件',
 
-    'menu-bar.go.jumpToBracket': '转到括号',
+    'menu-bar.go.jumpToBracket': '跳转到括号',
     'menu-bar.go.nextProblemInFiles': '下一个问题',
     'menu-bar.go.prevProblemInFiles': '上一个问题',
 
@@ -706,16 +698,6 @@ export const localizationBundle = {
     'terminal.openFile': '打开文件',
     'terminal.focusFolder': '聚焦资源管理器中的文件夹',
     'terminal.openFolder': '在新窗口中打开文件夹',
-
-    'terminal.action.toggleVisibility': '切换终端面板',
-    'marker.action.toggleVisibility': '切换问题面板',
-    'output.action.toggleVisibility': '切换输出面板',
-    'debug-console.action.toggleVisibility': '切换调试 Console 面板',
-    'explorer.action.toggleVisibility': '切换资源管理面板',
-    'search.action.toggleVisibility': '切换搜索面板',
-    'scm.action.toggleVisibility': '切换版本控制面板',
-    'extension.action.toggleVisibility': '切换插件面板',
-    'debug.action.toggleVisibility': '切换调试面板',
 
     'view.command.show': '打开 {0}',
 
