@@ -90,7 +90,7 @@ export const ToolbarCustomizeComponent = () => {
                 }}
                 defaultChecked={visible}
                 id={id}
-                label={action.description}
+                label={action.description ?? action.id}
               />
             </div>,
           );
