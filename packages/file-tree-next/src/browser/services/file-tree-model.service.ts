@@ -1385,12 +1385,12 @@ export class FileTreeModelService {
     };
 
     const blurCommit = async (newName) => {
-      if (isCommit) {
-        return false;
-      }
       if (!!this.validateMessage && this.validateMessage.type === PROMPT_VALIDATE_TYPE.ERROR) {
         this.validateMessage = undefined;
         return true;
+      }
+      if (isCommit) {
+        return false;
       }
       if (!newName) {
         // 清空节点路径焦点态
