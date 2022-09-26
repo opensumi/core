@@ -257,15 +257,16 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
           <HighlightLabel
             className={styles.item_label_name}
-            hightLightClassName={styles.item_label_highlight}
+            labelClassName={styles.label_icon_container}
+            hightLightClassName={clx(styles.item_label_highlight)}
             text={label}
             highlights={labelHighlights}
           />
           {description && (
             <HighlightLabel
               className={styles.item_label_description}
-              labelClassName={styles.item_label_description_label}
-              hightLightClassName={styles.item_label_description_highlight}
+              labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
+              hightLightClassName={clx(styles.item_label_description_highlight)}
               text={description}
               highlights={descriptionHighlights}
             />
@@ -275,8 +276,8 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           <HighlightLabel
             OutElementType='div'
             className={styles.item_label_detail}
-            labelClassName={styles.item_label_description_label}
-            hightLightClassName={styles.item_label_description_highlight}
+            labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
+            hightLightClassName={clx(styles.item_label_description_highlight)}
             text={detail}
             highlights={detailHighlights}
           />
