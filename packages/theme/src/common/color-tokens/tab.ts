@@ -6,6 +6,7 @@ import { transparent, registerColor } from '../utils';
 import { contrastBorder } from './base';
 import { hcActiveBorderColor, hcBorderColor } from './basic-color';
 import { editorBackground } from './editor';
+import { treeIndentGuidesStroke } from './list-tree';
 
 // < --- Tabs --- >
 
@@ -14,11 +15,12 @@ export const TAB_ACTIVE_BACKGROUND = registerColor(
   {
     dark: editorBackground,
     light: editorBackground,
-    hc: editorBackground,
+    hcDark: editorBackground,
+    hcLight: editorBackground,
   },
   localize(
     'tabActiveBackground',
-    'Active tab background color. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+    'Active tab background color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
   ),
 );
 
@@ -27,7 +29,8 @@ export const TAB_UNFOCUSED_ACTIVE_BACKGROUND = registerColor(
   {
     dark: TAB_ACTIVE_BACKGROUND,
     light: TAB_ACTIVE_BACKGROUND,
-    hc: TAB_ACTIVE_BACKGROUND,
+    hcDark: TAB_ACTIVE_BACKGROUND,
+    hcLight: TAB_ACTIVE_BACKGROUND,
   },
   localize(
     'tabUnfocusedActiveBackground',
@@ -40,11 +43,26 @@ export const TAB_INACTIVE_BACKGROUND = registerColor(
   {
     dark: '#2D2D2D',
     light: '#ECECEC',
-    hc: null,
+    hcDark: TAB_UNFOCUSED_ACTIVE_BACKGROUND,
+    hcLight: TAB_UNFOCUSED_ACTIVE_BACKGROUND,
   },
   localize(
     'tabInactiveBackground',
-    'Inactive tab background color. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+    'Inactive tab background color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+  ),
+);
+
+export const TAB_UNFOCUSED_INACTIVE_BACKGROUND = registerColor(
+  'tab.unfocusedInactiveBackground',
+  {
+    dark: TAB_INACTIVE_BACKGROUND,
+    light: TAB_INACTIVE_BACKGROUND,
+    hcDark: TAB_INACTIVE_BACKGROUND,
+    hcLight: TAB_INACTIVE_BACKGROUND,
+  },
+  localize(
+    'tabUnfocusedInactiveBackground',
+    'Inactive tab background color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
   ),
 );
 
@@ -53,7 +71,8 @@ export const TAB_HOVER_BACKGROUND = registerColor(
   {
     dark: null,
     light: null,
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'tabHoverBackground',
@@ -66,11 +85,40 @@ export const TAB_UNFOCUSED_HOVER_BACKGROUND = registerColor(
   {
     dark: transparent(TAB_HOVER_BACKGROUND, 0.5),
     light: transparent(TAB_HOVER_BACKGROUND, 0.7),
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'tabUnfocusedHoverBackground',
     'Tab background color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+  ),
+);
+
+export const TAB_HOVER_FOREGROUND = registerColor(
+  'tab.hoverForeground',
+  {
+    dark: null,
+    light: null,
+    hcDark: null,
+    hcLight: null,
+  },
+  localize(
+    'tabHoverForeground',
+    'Tab foreground color when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+  ),
+);
+
+export const TAB_UNFOCUSED_HOVER_FOREGROUND = registerColor(
+  'tab.unfocusedHoverForeground',
+  {
+    dark: transparent(TAB_HOVER_FOREGROUND, 0.5),
+    light: transparent(TAB_HOVER_FOREGROUND, 0.5),
+    hcDark: null,
+    hcLight: null,
+  },
+  localize(
+    'tabUnfocusedHoverForeground',
+    'Tab foreground color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
   ),
 );
 
@@ -79,7 +127,8 @@ export const TAB_BORDER = registerColor(
   {
     dark: '#252526',
     light: '#F3F3F3',
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'tabBorder',
@@ -87,12 +136,27 @@ export const TAB_BORDER = registerColor(
   ),
 );
 
+export const TAB_LAST_PINNED_BORDER = registerColor(
+  'tab.lastPinnedBorder',
+  {
+    dark: treeIndentGuidesStroke,
+    light: treeIndentGuidesStroke,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
+  },
+  localize(
+    'lastPinnedTabBorder',
+    'Border to separate pinned tabs from other tabs. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+  ),
+);
+
 export const TAB_ACTIVE_BORDER = registerColor(
   'tab.activeBorder',
   {
-    dark: editorBackground,
-    light: editorBackground,
-    hc: contrastBorder,
+    dark: null,
+    light: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'tabActiveBorder',
@@ -105,7 +169,8 @@ export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor(
   {
     dark: transparent(TAB_ACTIVE_BORDER, 0.5),
     light: transparent(TAB_ACTIVE_BORDER, 0.7),
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'tabActiveUnfocusedBorder',
@@ -116,9 +181,10 @@ export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor(
 export const TAB_ACTIVE_BORDER_TOP = registerColor(
   'tab.activeBorderTop',
   {
-    dark: 'transparent',
-    light: 'transparent',
-    hc: '#000000',
+    dark: null,
+    light: null,
+    hcDark: null,
+    hcLight: '#B5200D',
   },
   localize(
     'tabActiveBorderTop',
@@ -129,9 +195,10 @@ export const TAB_ACTIVE_BORDER_TOP = registerColor(
 export const TAB_UNFOCUSED_ACTIVE_BORDER_TOP = registerColor(
   'tab.unfocusedActiveBorderTop',
   {
-    dark: 'transparent',
-    light: 'transparent',
-    hc: null,
+    dark: transparent(TAB_ACTIVE_BORDER_TOP, 0.5),
+    light: transparent(TAB_ACTIVE_BORDER_TOP, 0.7),
+    hcDark: null,
+    hcLight: '#B5200D',
   },
   localize(
     'tabActiveUnfocusedBorderTop',
@@ -144,11 +211,12 @@ export const TAB_ACTIVE_MODIFIED_BORDER = registerColor(
   {
     dark: '#3399CC',
     light: '#33AAEE',
-    hc: null,
+    hcDark: null,
+    hcLight: contrastBorder,
   },
   localize(
     'tabActiveModifiedBorder',
-    'Border on the top of modified (dirty) active tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+    'Border on the top of modified active tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
   ),
 );
 
@@ -157,11 +225,12 @@ export const TAB_INACTIVE_MODIFIED_BORDER = registerColor(
   {
     dark: transparent(TAB_ACTIVE_MODIFIED_BORDER, 0.5),
     light: transparent(TAB_ACTIVE_MODIFIED_BORDER, 0.5),
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: contrastBorder,
   },
   localize(
     'tabInactiveModifiedBorder',
-    'Border on the top of modified (dirty) inactive tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+    'Border on the top of modified inactive tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
   ),
 );
 
@@ -170,11 +239,12 @@ export const TAB_UNFOCUSED_ACTIVE_MODIFIED_BORDER = registerColor(
   {
     dark: transparent(TAB_ACTIVE_MODIFIED_BORDER, 0.5),
     light: transparent(TAB_ACTIVE_MODIFIED_BORDER, 0.7),
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: contrastBorder,
   },
   localize(
     'unfocusedActiveModifiedBorder',
-    'Border on the top of modified (dirty) active tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+    'Border on the top of modified active tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
   ),
 );
 
@@ -183,20 +253,21 @@ export const TAB_UNFOCUSED_INACTIVE_MODIFIED_BORDER = registerColor(
   {
     dark: transparent(TAB_INACTIVE_MODIFIED_BORDER, 0.5),
     light: transparent(TAB_INACTIVE_MODIFIED_BORDER, 0.5),
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: contrastBorder,
   },
   localize(
     'unfocusedINactiveModifiedBorder',
-    'Border on the top of modified (dirty) inactive tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
+    'Border on the top of modified inactive tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
   ),
 );
-
 export const TAB_HOVER_BORDER = registerColor(
   'tab.hoverBorder',
   {
-    dark: '#00000000',
-    light: '#00000000',
-    hc: hcBorderColor,
+    dark: null,
+    light: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'tabHoverBorder',
@@ -209,7 +280,8 @@ export const TAB_UNFOCUSED_HOVER_BORDER = registerColor(
   {
     dark: transparent(TAB_HOVER_BORDER, 0.5),
     light: transparent(TAB_HOVER_BORDER, 0.7),
-    hc: null,
+    hcDark: null,
+    hcLight: contrastBorder,
   },
   localize(
     'tabUnfocusedHoverBorder',
@@ -222,7 +294,8 @@ export const TAB_ACTIVE_FOREGROUND = registerColor(
   {
     dark: Color.white,
     light: '#333333',
-    hc: hcActiveBorderColor,
+    hcDark: hcActiveBorderColor,
+    hcLight: hcActiveBorderColor,
   },
   localize(
     'tabActiveForeground',
@@ -235,7 +308,8 @@ export const TAB_INACTIVE_FOREGROUND = registerColor(
   {
     dark: transparent(TAB_ACTIVE_FOREGROUND, 0.5),
     light: transparent(TAB_ACTIVE_FOREGROUND, 0.7),
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: '#292929',
   },
   localize(
     'tabInactiveForeground',
@@ -248,7 +322,8 @@ export const TAB_UNFOCUSED_ACTIVE_FOREGROUND = registerColor(
   {
     dark: transparent(TAB_ACTIVE_FOREGROUND, 0.5),
     light: transparent(TAB_ACTIVE_FOREGROUND, 0.7),
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: '#292929',
   },
   localize(
     'tabUnfocusedActiveForeground',
@@ -261,23 +336,11 @@ export const TAB_UNFOCUSED_INACTIVE_FOREGROUND = registerColor(
   {
     dark: transparent(TAB_INACTIVE_FOREGROUND, 0.5),
     light: transparent(TAB_INACTIVE_FOREGROUND, 0.5),
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: '#292929',
   },
   localize(
     'tabUnfocusedInactiveForeground',
     'Inactive tab foreground color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.',
-  ),
-);
-
-export const EDITOR_GROUP_HEADER_TABS_BORDER = registerColor(
-  'editorGroupHeader.tabsBorder',
-  {
-    dark: TAB_INACTIVE_BACKGROUND,
-    light: TAB_INACTIVE_BACKGROUND,
-    hc: TAB_INACTIVE_BACKGROUND,
-  },
-  localize(
-    'tabsContainerBorder',
-    'Border color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.',
   ),
 );

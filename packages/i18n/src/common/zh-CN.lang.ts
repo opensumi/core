@@ -726,7 +726,7 @@ export const localizationBundle = {
 
     'theme.base.vs': '浅色主题',
     'theme.base.vs-dark': '深色主题',
-    'theme.base.hc-black': '高对比度主题',
+    'theme.base.hc': '高对比度主题',
     'theme.quickopen.plh': '选择主题（上下移动光标预览）',
     'icon.quickopen.plh': '选择图标主题（上下移动光标预览）',
 

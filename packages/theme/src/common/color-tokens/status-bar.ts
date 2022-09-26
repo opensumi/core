@@ -4,8 +4,8 @@ import { Color } from '../../common/color';
 import { darken, registerColor } from '../utils';
 
 import { ACTIVITY_BAR_BADGE_BACKGROUND, ACTIVITY_BAR_BADGE_FOREGROUND } from './activity-bar';
-import { contrastBorder, errorForeground } from './base';
-import { editorWarningForeground } from './editor';
+import { activeContrastBorder, contrastBorder, errorForeground } from './base';
+import { editorForeground, editorWarningForeground } from './editor';
 
 // < --- Status --- >
 
@@ -14,11 +14,12 @@ export const STATUS_BAR_FOREGROUND = registerColor(
   {
     dark: '#FFFFFF',
     light: '#FFFFFF',
-    hc: '#FFFFFF',
+    hcDark: '#FFFFFF',
+    hcLight: editorForeground,
   },
   localize(
     'statusBarForeground',
-    'Status bar foreground color when a workspace is opened. The status bar is shown in the bottom of the window.',
+    'Status bar foreground color when a workspace or folder is opened. The status bar is shown in the bottom of the window.',
   ),
 );
 
@@ -27,7 +28,8 @@ export const STATUS_BAR_NO_FOLDER_FOREGROUND = registerColor(
   {
     dark: STATUS_BAR_FOREGROUND,
     light: STATUS_BAR_FOREGROUND,
-    hc: STATUS_BAR_FOREGROUND,
+    hcDark: STATUS_BAR_FOREGROUND,
+    hcLight: STATUS_BAR_FOREGROUND,
   },
   localize(
     'statusBarNoFolderForeground',
@@ -40,11 +42,12 @@ export const STATUS_BAR_BACKGROUND = registerColor(
   {
     dark: '#007ACC',
     light: '#007ACC',
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'statusBarBackground',
-    'Status bar background color when a workspace is opened. The status bar is shown in the bottom of the window.',
+    'Status bar background color when a workspace or folder is opened. The status bar is shown in the bottom of the window.',
   ),
 );
 
@@ -53,7 +56,8 @@ export const STATUS_BAR_NO_FOLDER_BACKGROUND = registerColor(
   {
     dark: '#68217A',
     light: '#68217A',
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'statusBarNoFolderBackground',
@@ -66,11 +70,26 @@ export const STATUS_BAR_BORDER = registerColor(
   {
     dark: null,
     light: null,
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'statusBarBorder',
     'Status bar border color separating to the sidebar and editor. The status bar is shown in the bottom of the window.',
+  ),
+);
+
+export const STATUS_BAR_FOCUS_BORDER = registerColor(
+  'statusBar.focusBorder',
+  {
+    dark: STATUS_BAR_FOREGROUND,
+    light: STATUS_BAR_FOREGROUND,
+    hcDark: null,
+    hcLight: STATUS_BAR_FOREGROUND,
+  },
+  localize(
+    'statusBarFocusBorder',
+    'Status bar border color when focused on keyboard navigation. The status bar is shown in the bottom of the window.',
   ),
 );
 
@@ -79,7 +98,8 @@ export const STATUS_BAR_NO_FOLDER_BORDER = registerColor(
   {
     dark: STATUS_BAR_BORDER,
     light: STATUS_BAR_BORDER,
-    hc: STATUS_BAR_BORDER,
+    hcDark: STATUS_BAR_BORDER,
+    hcLight: STATUS_BAR_BORDER,
   },
   localize(
     'statusBarNoFolderBorder',
@@ -92,11 +112,26 @@ export const STATUS_BAR_ITEM_ACTIVE_BACKGROUND = registerColor(
   {
     dark: Color.white.transparent(0.18),
     light: Color.white.transparent(0.18),
-    hc: Color.white.transparent(0.18),
+    hcDark: Color.white.transparent(0.18),
+    hcLight: Color.black.transparent(0.18),
   },
   localize(
     'statusBarItemActiveBackground',
     'Status bar item background color when clicking. The status bar is shown in the bottom of the window.',
+  ),
+);
+
+export const STATUS_BAR_ITEM_FOCUS_BORDER = registerColor(
+  'statusBarItem.focusBorder',
+  {
+    dark: STATUS_BAR_FOREGROUND,
+    light: STATUS_BAR_FOREGROUND,
+    hcDark: null,
+    hcLight: activeContrastBorder,
+  },
+  localize(
+    'statusBarItemFocusBorder',
+    'Status bar item border color when focused on keyboard navigation. The status bar is shown in the bottom of the window.',
   ),
 );
 
@@ -105,11 +140,26 @@ export const STATUS_BAR_ITEM_HOVER_BACKGROUND = registerColor(
   {
     dark: Color.white.transparent(0.12),
     light: Color.white.transparent(0.12),
-    hc: Color.white.transparent(0.12),
+    hcDark: Color.white.transparent(0.12),
+    hcLight: Color.black.transparent(0.12),
   },
   localize(
     'statusBarItemHoverBackground',
     'Status bar item background color when hovering. The status bar is shown in the bottom of the window.',
+  ),
+);
+
+export const STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND = registerColor(
+  'statusBarItem.compactHoverBackground',
+  {
+    dark: Color.white.transparent(0.2),
+    light: Color.white.transparent(0.2),
+    hcDark: Color.white.transparent(0.2),
+    hcLight: Color.black.transparent(0.2),
+  },
+  localize(
+    'statusBarItemCompactHoverBackground',
+    'Status bar item background color when hovering an item that contains two hovers. The status bar is shown in the bottom of the window.',
   ),
 );
 
@@ -118,7 +168,8 @@ export const STATUS_BAR_PROMINENT_ITEM_FOREGROUND = registerColor(
   {
     dark: STATUS_BAR_FOREGROUND,
     light: STATUS_BAR_FOREGROUND,
-    hc: STATUS_BAR_FOREGROUND,
+    hcDark: STATUS_BAR_FOREGROUND,
+    hcLight: STATUS_BAR_FOREGROUND,
   },
   localize(
     'statusBarProminentItemForeground',
@@ -131,7 +182,8 @@ export const STATUS_BAR_PROMINENT_ITEM_BACKGROUND = registerColor(
   {
     dark: Color.black.transparent(0.5),
     light: Color.black.transparent(0.5),
-    hc: Color.black.transparent(0.5),
+    hcDark: Color.black.transparent(0.5),
+    hcLight: Color.black.transparent(0.5),
   },
   localize(
     'statusBarProminentItemBackground',
@@ -144,7 +196,8 @@ export const STATUS_BAR_PROMINENT_ITEM_HOVER_BACKGROUND = registerColor(
   {
     dark: Color.black.transparent(0.3),
     light: Color.black.transparent(0.3),
-    hc: Color.black.transparent(0.3),
+    hcDark: Color.black.transparent(0.3),
+    hcLight: null,
   },
   localize(
     'statusBarProminentItemHoverBackground',
@@ -157,7 +210,8 @@ export const STATUS_BAR_ERROR_ITEM_BACKGROUND = registerColor(
   {
     dark: darken(errorForeground, 0.4),
     light: darken(errorForeground, 0.4),
-    hc: null,
+    hcDark: null,
+    hcLight: '#B5200D',
   },
   localize(
     'statusBarErrorItemBackground',
@@ -170,7 +224,8 @@ export const STATUS_BAR_ERROR_ITEM_FOREGROUND = registerColor(
   {
     dark: Color.white,
     light: Color.white,
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: Color.white,
   },
   localize(
     'statusBarErrorItemForeground',
@@ -183,7 +238,8 @@ export const STATUS_BAR_WARNING_ITEM_BACKGROUND = registerColor(
   {
     dark: darken(editorWarningForeground, 0.4),
     light: darken(editorWarningForeground, 0.4),
-    hc: null,
+    hcDark: null,
+    hcLight: '#895503',
   },
   localize(
     'statusBarWarningItemBackground',
@@ -196,7 +252,8 @@ export const STATUS_BAR_WARNING_ITEM_FOREGROUND = registerColor(
   {
     dark: Color.white,
     light: Color.white,
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: Color.white,
   },
   localize(
     'statusBarWarningItemForeground',
@@ -211,7 +268,8 @@ export const STATUS_BAR_HOST_NAME_BACKGROUND = registerColor(
   {
     dark: ACTIVITY_BAR_BADGE_BACKGROUND,
     light: ACTIVITY_BAR_BADGE_BACKGROUND,
-    hc: ACTIVITY_BAR_BADGE_BACKGROUND,
+    hcDark: ACTIVITY_BAR_BADGE_BACKGROUND,
+    hcLight: ACTIVITY_BAR_BADGE_BACKGROUND,
   },
   localize('statusBarItemHostBackground', 'Background color for the remote indicator on the status bar.'),
 );
@@ -221,7 +279,8 @@ export const STATUS_BAR_HOST_NAME_FOREGROUND = registerColor(
   {
     dark: ACTIVITY_BAR_BADGE_FOREGROUND,
     light: ACTIVITY_BAR_BADGE_FOREGROUND,
-    hc: ACTIVITY_BAR_BADGE_FOREGROUND,
+    hcDark: ACTIVITY_BAR_BADGE_FOREGROUND,
+    hcLight: ACTIVITY_BAR_BADGE_FOREGROUND,
   },
   localize('statusBarItemHostForeground', 'Foreground color for the remote indicator on the status bar.'),
 );
@@ -231,9 +290,10 @@ export const EXTENSION_BADGE_REMOTE_BACKGROUND = registerColor(
   {
     dark: ACTIVITY_BAR_BADGE_BACKGROUND,
     light: ACTIVITY_BAR_BADGE_BACKGROUND,
-    hc: ACTIVITY_BAR_BADGE_BACKGROUND,
+    hcDark: ACTIVITY_BAR_BADGE_BACKGROUND,
+    hcLight: ACTIVITY_BAR_BADGE_BACKGROUND,
   },
-  localize('extensionBadge.remoteBackground', 'Background color for the remote badge in the extensions view'),
+  localize('extensionBadge.remoteBackground', 'Background color for the remote badge in the extensions view.'),
 );
 
 export const EXTENSION_BADGE_REMOTE_FOREGROUND = registerColor(
@@ -241,9 +301,10 @@ export const EXTENSION_BADGE_REMOTE_FOREGROUND = registerColor(
   {
     dark: ACTIVITY_BAR_BADGE_FOREGROUND,
     light: ACTIVITY_BAR_BADGE_FOREGROUND,
-    hc: ACTIVITY_BAR_BADGE_FOREGROUND,
+    hcDark: ACTIVITY_BAR_BADGE_FOREGROUND,
+    hcLight: ACTIVITY_BAR_BADGE_FOREGROUND,
   },
-  localize('extensionBadge.remoteForeground', 'Foreground color for the remote badge in the extensions view'),
+  localize('extensionBadge.remoteForeground', 'Foreground color for the remote badge in the extensions view.'),
 );
 
 export const STATUS_BAR_DEBUGGING_BACKGROUND = registerColor(
@@ -251,7 +312,8 @@ export const STATUS_BAR_DEBUGGING_BACKGROUND = registerColor(
   {
     dark: '#CC6633',
     light: '#CC6633',
-    hc: '#CC6633',
+    hcDark: '#BA592C',
+    hcLight: '#B5200D',
   },
   localize(
     'statusBarDebuggingBackground',
@@ -264,7 +326,8 @@ export const STATUS_BAR_DEBUGGING_FOREGROUND = registerColor(
   {
     dark: STATUS_BAR_FOREGROUND,
     light: STATUS_BAR_FOREGROUND,
-    hc: STATUS_BAR_FOREGROUND,
+    hcDark: STATUS_BAR_FOREGROUND,
+    hcLight: '#FFFFFF',
   },
   localize(
     'statusBarDebuggingForeground',
@@ -277,7 +340,8 @@ export const STATUS_BAR_DEBUGGING_BORDER = registerColor(
   {
     dark: STATUS_BAR_BORDER,
     light: STATUS_BAR_BORDER,
-    hc: STATUS_BAR_BORDER,
+    hcDark: STATUS_BAR_BORDER,
+    hcLight: STATUS_BAR_BORDER,
   },
   localize(
     'statusBarDebuggingBorder',

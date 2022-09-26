@@ -45,6 +45,9 @@ import {
   IThemeData,
   ColorScheme,
   ISemanticTokenColorizationSetting,
+  VS_LIGHT_THEME_NAME,
+  HC_BLACK_THEME_NAME,
+  HC_LIGHT_THEME_NAME,
 } from '../common/theme.service';
 import { convertSettings } from '../common/themeCompatibility';
 
@@ -133,10 +136,12 @@ export class ThemeData implements IThemeData {
 
   get type(): ColorScheme {
     switch (this.base) {
-      case 'vs':
+      case VS_LIGHT_THEME_NAME:
         return ColorScheme.LIGHT;
-      case 'hc-black':
-        return ColorScheme.HIGH_CONTRAST;
+      case HC_BLACK_THEME_NAME:
+        return ColorScheme.HIGH_CONTRAST_DARK;
+      case HC_LIGHT_THEME_NAME:
+        return ColorScheme.HIGH_CONTRAST_LIGHT;
       default:
         return ColorScheme.DARK;
     }
@@ -699,7 +704,13 @@ const defaultThemeColors: { [baseTheme: string]: ITokenColorizationRule[] } = {
     { scope: 'token.error-token', settings: { foreground: '#f44747' } },
     { scope: 'token.debug-token', settings: { foreground: '#b267e6' } },
   ],
-  hc: [
+  hcLight: [
+    { scope: 'token.info-token', settings: { foreground: '#316bcd' } },
+    { scope: 'token.warn-token', settings: { foreground: '#cd9731' } },
+    { scope: 'token.error-token', settings: { foreground: '#cd3131' } },
+    { scope: 'token.debug-token', settings: { foreground: '#800080' } },
+  ],
+  hcDark: [
     { scope: 'token.info-token', settings: { foreground: '#6796e6' } },
     { scope: 'token.warn-token', settings: { foreground: '#008000' } },
     { scope: 'token.error-token', settings: { foreground: '#FF0000' } },

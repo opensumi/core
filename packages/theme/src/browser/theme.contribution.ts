@@ -232,7 +232,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
         themeInfos.sort((a, b) => BuiltinThemeComparator[a.base] - BuiltinThemeComparator[b.base]);
         let prevBase: BuiltinTheme;
         const items = themeInfos.map((themeInfo) => {
-          if (prevBase !== themeInfo.base) {
+          if (prevBase !== themeInfo.base && !prevBase?.startsWith('hc')) {
             prevBase = themeInfo.base;
             return {
               label: replaceLocalizePlaceholder(themeInfo.name)!,

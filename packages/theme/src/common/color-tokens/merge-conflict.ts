@@ -16,7 +16,7 @@ const rulerTransparency = 1;
 
 export const mergeCurrentHeaderBackground = registerColor(
   'merge.currentHeaderBackground',
-  { dark: currentBaseColor, light: currentBaseColor, hc: null },
+  { dark: currentBaseColor, light: currentBaseColor, hcDark: null, hcLight: null },
   localize(
     'mergeCurrentHeaderBackground',
     'Current header background in inline merge-conflicts. The color must not be opaque so as not to hide underlying decorations.',
@@ -28,7 +28,8 @@ export const mergeCurrentContentBackground = registerColor(
   {
     dark: transparent(mergeCurrentHeaderBackground, contentTransparency),
     light: transparent(mergeCurrentHeaderBackground, contentTransparency),
-    hc: transparent(mergeCurrentHeaderBackground, contentTransparency),
+    hcDark: transparent(mergeCurrentHeaderBackground, contentTransparency),
+    hcLight: transparent(mergeCurrentHeaderBackground, contentTransparency),
   },
   localize(
     'mergeCurrentContentBackground',
@@ -38,7 +39,7 @@ export const mergeCurrentContentBackground = registerColor(
 );
 export const mergeIncomingHeaderBackground = registerColor(
   'merge.incomingHeaderBackground',
-  { dark: incomingBaseColor, light: incomingBaseColor, hc: null },
+  { dark: incomingBaseColor, light: incomingBaseColor, hcDark: null, hcLight: null },
   localize(
     'mergeIncomingHeaderBackground',
     'Incoming header background in inline merge-conflicts. The color must not be opaque so as not to hide underlying decorations.',
@@ -50,7 +51,8 @@ export const mergeIncomingContentBackground = registerColor(
   {
     dark: transparent(mergeIncomingHeaderBackground, contentTransparency),
     light: transparent(mergeIncomingHeaderBackground, contentTransparency),
-    hc: transparent(mergeIncomingHeaderBackground, contentTransparency),
+    hcDark: transparent(mergeIncomingHeaderBackground, contentTransparency),
+    hcLight: transparent(mergeIncomingHeaderBackground, contentTransparency),
   },
   localize(
     'mergeIncomingContentBackground',
@@ -60,7 +62,7 @@ export const mergeIncomingContentBackground = registerColor(
 );
 export const mergeCommonHeaderBackground = registerColor(
   'merge.commonHeaderBackground',
-  { dark: commonBaseColor, light: commonBaseColor, hc: null },
+  { dark: commonBaseColor, light: commonBaseColor, hcDark: null, hcLight: null },
   localize(
     'mergeCommonHeaderBackground',
     'Common ancestor header background in inline merge-conflicts. The color must not be opaque so as not to hide underlying decorations.',
@@ -72,7 +74,8 @@ export const mergeCommonContentBackground = registerColor(
   {
     dark: transparent(mergeCommonHeaderBackground, contentTransparency),
     light: transparent(mergeCommonHeaderBackground, contentTransparency),
-    hc: transparent(mergeCommonHeaderBackground, contentTransparency),
+    hcDark: transparent(mergeCommonHeaderBackground, contentTransparency),
+    hcLight: transparent(mergeCommonHeaderBackground, contentTransparency),
   },
   localize(
     'mergeCommonContentBackground',
@@ -83,7 +86,7 @@ export const mergeCommonContentBackground = registerColor(
 
 export const mergeBorder = registerColor(
   'merge.border',
-  { dark: null, light: null, hc: '#C3DF6F' },
+  { dark: null, light: null, hcDark: '#C3DF6F', hcLight: '#007ACC' },
   localize('mergeBorder', 'Border color on headers and the splitter in inline merge-conflicts.'),
 );
 
@@ -92,7 +95,8 @@ export const overviewRulerCurrentContentForeground = registerColor(
   {
     dark: transparent(mergeCurrentHeaderBackground, rulerTransparency),
     light: transparent(mergeCurrentHeaderBackground, rulerTransparency),
-    hc: mergeBorder,
+    hcDark: mergeBorder,
+    hcLight: mergeBorder,
   },
   localize('overviewRulerCurrentContentForeground', 'Current overview ruler foreground for inline merge-conflicts.'),
 );
@@ -101,7 +105,8 @@ export const overviewRulerIncomingContentForeground = registerColor(
   {
     dark: transparent(mergeIncomingHeaderBackground, rulerTransparency),
     light: transparent(mergeIncomingHeaderBackground, rulerTransparency),
-    hc: mergeBorder,
+    hcDark: mergeBorder,
+    hcLight: mergeBorder,
   },
   localize('overviewRulerIncomingContentForeground', 'Incoming overview ruler foreground for inline merge-conflicts.'),
 );
@@ -110,7 +115,8 @@ export const overviewRulerCommonContentForeground = registerColor(
   {
     dark: transparent(mergeCommonHeaderBackground, rulerTransparency),
     light: transparent(mergeCommonHeaderBackground, rulerTransparency),
-    hc: mergeBorder,
+    hcDark: mergeBorder,
+    hcLight: mergeBorder,
   },
   localize(
     'overviewRulerCommonContentForeground',
@@ -120,7 +126,7 @@ export const overviewRulerCommonContentForeground = registerColor(
 
 export const overviewRulerFindMatchForeground = registerColor(
   'editorOverviewRuler.findMatchForeground',
-  { dark: '#d186167e', light: '#d186167e', hc: '#AB5A00' },
+  { dark: '#d186167e', light: '#d186167e', hcDark: '#AB5A00', hcLight: null },
   localize(
     'overviewRulerFindMatchForeground',
     'Overview ruler marker color for find matches. The color must not be opaque so as not to hide underlying decorations.',
@@ -130,7 +136,7 @@ export const overviewRulerFindMatchForeground = registerColor(
 
 export const overviewRulerSelectionHighlightForeground = registerColor(
   'editorOverviewRuler.selectionHighlightForeground',
-  { dark: '#A0A0A0CC', light: '#A0A0A0CC', hc: '#A0A0A0CC' },
+  { dark: '#A0A0A0CC', light: '#A0A0A0CC', hcDark: '#A0A0A0CC', hcLight: '#A0A0A0CC' },
   localize(
     'overviewRulerSelectionHighlightForeground',
     'Overview ruler marker color for selection highlights. The color must not be opaque so as not to hide underlying decorations.',

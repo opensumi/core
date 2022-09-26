@@ -9,7 +9,8 @@ export const ktActivityBarDropUpBackground = registerColor(
   {
     dark: ACTIVITY_BAR_BACKGROUND,
     light: ACTIVITY_BAR_BACKGROUND,
-    hc: ACTIVITY_BAR_BACKGROUND,
+    hcDark: ACTIVITY_BAR_BACKGROUND,
+    hcLight: ACTIVITY_BAR_BACKGROUND,
   },
   localize('activityBar.dropUpBackground', 'dragging item background color'),
 );

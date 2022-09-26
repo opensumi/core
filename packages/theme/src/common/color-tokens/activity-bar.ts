@@ -3,7 +3,8 @@ import { localize } from '@opensumi/ide-core-common';
 import { Color } from '../../common/color';
 import { transparent, registerColor } from '../utils';
 
-import { hcActiveBorderColor } from './basic-color';
+import { contrastBorder } from './base';
+import { editorForeground } from './editor';
 import { SIDE_BAR_BORDER } from './sidebar';
 
 // < --- Activity Bar --- >
@@ -13,7 +14,8 @@ export const ACTIVITY_BAR_BACKGROUND = registerColor(
   {
     dark: '#333333',
     light: '#2C2C2C',
-    hc: '#000000',
+    hcDark: '#000000',
+    hcLight: '#FFFFFF',
   },
   localize(
     'activityBarBackground',
@@ -26,7 +28,8 @@ export const ACTIVITY_BAR_FOREGROUND = registerColor(
   {
     dark: Color.white,
     light: Color.white,
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: editorForeground,
   },
   localize(
     'activityBarForeground',
@@ -39,7 +42,8 @@ export const ACTIVITY_BAR_INACTIVE_FOREGROUND = registerColor(
   {
     dark: transparent(ACTIVITY_BAR_FOREGROUND, 0.6),
     light: transparent(ACTIVITY_BAR_FOREGROUND, 0.6),
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: editorForeground,
   },
   localize(
     'activityBarInActiveForeground',
@@ -52,7 +56,8 @@ export const ACTIVITY_BAR_BORDER = registerColor(
   {
     dark: SIDE_BAR_BORDER,
     light: SIDE_BAR_BORDER,
-    hc: SIDE_BAR_BORDER,
+    hcDark: SIDE_BAR_BORDER,
+    hcLight: SIDE_BAR_BORDER,
   },
   localize(
     'activityBarBorder',
@@ -65,7 +70,8 @@ export const ACTIVITY_BAR_DRAG_AND_DROP_BACKGROUND = registerColor(
   {
     dark: Color.white.transparent(0.12),
     light: Color.white.transparent(0.12),
-    hc: Color.white.transparent(0.12),
+    hcDark: Color.white.transparent(0.12),
+    hcLight: Color.white.transparent(0.12),
   },
   localize(
     'activityBarDragAndDropBackground',
@@ -78,7 +84,8 @@ export const ACTIVITY_BAR_BADGE_BACKGROUND = registerColor(
   {
     dark: '#007ACC',
     light: '#007ACC',
-    hc: '#000000',
+    hcDark: '#000000',
+    hcLight: '#0F4A85',
   },
   localize(
     'activityBarBadgeBackground',
@@ -91,7 +98,8 @@ export const ACTIVITY_BAR_BADGE_FOREGROUND = registerColor(
   {
     dark: Color.white,
     light: Color.white,
-    hc: Color.white,
+    hcDark: Color.white,
+    hcLight: Color.white,
   },
   localize(
     'activityBarBadgeForeground',
@@ -104,7 +112,8 @@ export const ACTIVITY_BAR_ACTIVE_BORDER = registerColor(
   {
     dark: ACTIVITY_BAR_FOREGROUND,
     light: ACTIVITY_BAR_FOREGROUND,
-    hc: hcActiveBorderColor,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'activityBarActiveBorder',

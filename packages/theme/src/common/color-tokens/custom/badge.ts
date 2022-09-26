@@ -9,7 +9,8 @@ export const ActivityBarBadgeBorder = registerColor(
   {
     dark: null,
     light: null,
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'activityBarBadgeBorder',
@@ -22,7 +23,8 @@ export const BadgeBorder = registerColor(
   {
     dark: badgeBackground,
     light: badgeBackground,
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize('badgeBorder', 'Badge border color. Badges are small information labels, e.g. for search results count.'),
 );

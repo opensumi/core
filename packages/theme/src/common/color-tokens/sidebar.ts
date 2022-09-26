@@ -4,6 +4,7 @@ import { Color } from '../../common/color';
 import { registerColor } from '../utils';
 
 import { contrastBorder } from './base';
+import { EDITOR_DRAG_AND_DROP_BACKGROUND } from './editor';
 
 // < --- Side Bar --- >
 
@@ -12,7 +13,8 @@ export const SIDE_BAR_BACKGROUND = registerColor(
   {
     dark: '#252526',
     light: '#F3F3F3',
-    hc: '#000000',
+    hcDark: '#000000',
+    hcLight: '#FFFFFF',
   },
   localize(
     'sideBarBackground',
@@ -25,7 +27,8 @@ export const SIDE_BAR_FOREGROUND = registerColor(
   {
     dark: null,
     light: null,
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'sideBarForeground',
@@ -38,7 +41,8 @@ export const SIDE_BAR_BORDER = registerColor(
   {
     dark: null,
     light: null,
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'sideBarBorder',
@@ -51,7 +55,8 @@ export const SIDE_BAR_TITLE_FOREGROUND = registerColor(
   {
     dark: SIDE_BAR_FOREGROUND,
     light: SIDE_BAR_FOREGROUND,
-    hc: SIDE_BAR_FOREGROUND,
+    hcDark: SIDE_BAR_FOREGROUND,
+    hcLight: SIDE_BAR_FOREGROUND,
   },
   localize(
     'sideBarTitleForeground',
@@ -62,13 +67,14 @@ export const SIDE_BAR_TITLE_FOREGROUND = registerColor(
 export const SIDE_BAR_DRAG_AND_DROP_BACKGROUND = registerColor(
   'sideBar.dropBackground',
   {
-    dark: Color.white.transparent(0.12),
-    light: Color.black.transparent(0.1),
-    hc: Color.white.transparent(0.3),
+    dark: EDITOR_DRAG_AND_DROP_BACKGROUND,
+    light: EDITOR_DRAG_AND_DROP_BACKGROUND,
+    hcDark: EDITOR_DRAG_AND_DROP_BACKGROUND,
+    hcLight: EDITOR_DRAG_AND_DROP_BACKGROUND,
   },
   localize(
     'sideBarDragAndDropBackground',
-    'Drag and drop feedback color for the side bar sections. The color should have transparency so that the side bar sections can still shine through. The side bar is the container for views like explorer and search.',
+    'Drag and drop feedback color for the side bar sections. The color should have transparency so that the side bar sections can still shine through. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.',
   ),
 );
 
@@ -77,11 +83,12 @@ export const SIDE_BAR_SECTION_HEADER_BACKGROUND = registerColor(
   {
     dark: Color.fromHex('#808080').transparent(0.2),
     light: Color.fromHex('#808080').transparent(0.2),
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'sideBarSectionHeaderBackground',
-    'Side bar section header background color. The side bar is the container for views like explorer and search.',
+    'Side bar section header background color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.',
   ),
 );
 
@@ -90,11 +97,12 @@ export const SIDE_BAR_SECTION_HEADER_FOREGROUND = registerColor(
   {
     dark: SIDE_BAR_FOREGROUND,
     light: SIDE_BAR_FOREGROUND,
-    hc: SIDE_BAR_FOREGROUND,
+    hcDark: SIDE_BAR_FOREGROUND,
+    hcLight: SIDE_BAR_FOREGROUND,
   },
   localize(
     'sideBarSectionHeaderForeground',
-    'Side bar section header foreground color. The side bar is the container for views like explorer and search.',
+    'Side bar section header foreground color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.',
   ),
 );
 
@@ -103,10 +111,11 @@ export const SIDE_BAR_SECTION_HEADER_BORDER = registerColor(
   {
     dark: contrastBorder,
     light: contrastBorder,
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'sideBarSectionHeaderBorder',
-    'Side bar section header border color. The side bar is the container for views like explorer and search.',
+    'Side bar section header border color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.',
   ),
 );

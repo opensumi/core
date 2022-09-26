@@ -20,8 +20,23 @@ export class ExtHostTheming implements IExtHostTheming {
   }
 
   $onColorThemeChange(type: string): void {
-    const kind =
-      type === 'light' ? ColorThemeKind.Light : type === 'dark' ? ColorThemeKind.Dark : ColorThemeKind.HighContrast;
+    let kind: ColorThemeKind;
+    switch (type) {
+      case 'light':
+        kind = ColorThemeKind.Light;
+        break;
+      case 'dark':
+        kind = ColorThemeKind.Dark;
+        break;
+      case 'hcDark':
+        kind = ColorThemeKind.HighContrast;
+        break;
+      case 'hcLight':
+        kind = ColorThemeKind.HighContrastLight;
+        break;
+      default:
+        kind = ColorThemeKind.Dark;
+    }
     this._actual = new ColorTheme(kind);
     this._onDidChangeActiveColorTheme.fire(this._actual);
   }

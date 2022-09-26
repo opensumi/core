@@ -9,7 +9,8 @@ export const ktEditorBreadcrumbBorderDown = registerColor(
   {
     dark: '#2C3033',
     light: '#F2F2F2',
-    hc: TAB_BORDER,
+    hcDark: TAB_BORDER,
+    hcLight: TAB_BORDER,
   },
   localize('kt.editorBreadcrumb.borderDown', "editor Breadcrumb's bottom border color."),
 );
@@ -19,7 +20,8 @@ export const ktDirtyDotForeground = registerColor(
   {
     dark: '#868C91',
     light: '#999999',
-    hc: foreground,
+    hcDark: foreground,
+    hcLight: foreground,
   },
   localize('kt.dirtyDot.foreground', 'color for dirty mark.'),
 );
