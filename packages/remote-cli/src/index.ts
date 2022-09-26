@@ -66,8 +66,7 @@ Examples:
     3. ${green('open /path/to/file')} Will open the file use ${PRODUCTION_NAME}.
   `,
   )
-  .help()
-  .string('_').argv;
+  .help().argv;
 
 if (argv._[0] !== undefined) {
   openPathOrUrl(argv._[0].toString());
