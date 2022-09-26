@@ -219,7 +219,7 @@ export function createApiFactory(
     ),
     env: createEnvApiFactory(rpcProtocol, extension, extHostEnv, extHostTerminal),
     debug: createDebugApiFactory(extHostDebug),
-    version: appConfig.customVSCodeEngineVersion || '1.60.2',
+    version: appConfig.customVSCodeEngineVersion || '1.63.2',
     comments: createCommentsApiFactory(extension, extHostComments),
     extensions: createExtensionsApiFactory(extensionService),
     tasks: createTaskApiFactory(extHostTasks, extension),
