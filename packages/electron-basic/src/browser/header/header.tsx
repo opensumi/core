@@ -201,12 +201,14 @@ export interface TitleBarProps {
 
 const defaultTitleTransformer = (titleInfo: TitleInfo) => {
   const developmentTitle = titleInfo.extensionDevelopmentHost ? `[${localize('workspace.development.title')}]` : '';
-  const currentResourceName = titleInfo.currentResourceName ? titleInfo.currentResourceName + ' — ' : '';
-  const workspaceName = titleInfo.workspaceName ? titleInfo.workspaceName + ' — ' : '';
   const remoteMode = titleInfo.remoteMode ? ` [${localize('common.remoteMode')}]` : '';
-  return (
-    developmentTitle + currentResourceName + workspaceName + replaceLocalizePlaceholder(titleInfo.appName) + remoteMode
-  );
+
+  const workspaceName = titleInfo.workspaceName ?? '';
+  let currentResourceName = titleInfo.currentResourceName ?? '';
+  if (workspaceName !== '') {
+    currentResourceName += ' — ';
+  }
+  return developmentTitle + currentResourceName + workspaceName + remoteMode;
 };
 
 export const HeaderBarTitleComponent = observer(({ hidden, transformer }: TitleBarProps) => {
