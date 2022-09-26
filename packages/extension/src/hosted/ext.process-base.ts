@@ -78,7 +78,7 @@ async function initRPCProtocol(extInjector): Promise<any> {
     onMessage(msg: string): void;
   }>(extCenter);
 
-  const extConnection = net.createConnection(JSON.parse((argv[KT_PROCESS_SOCK_OPTION_KEY] as any) || '{}'));
+  const extConnection = net.createConnection(JSON.parse(argv[KT_PROCESS_SOCK_OPTION_KEY] || '{}'));
 
   extCenter.setConnection(createSocketConnection(extConnection));
 
@@ -116,7 +116,7 @@ function patchProcess() {
 }
 
 export async function extProcessInit(config: ExtProcessConfig = {}) {
-  const extAppConfig = JSON.parse((argv[KT_APP_CONFIG_KEY] as any) || '{}');
+  const extAppConfig = JSON.parse(argv[KT_APP_CONFIG_KEY] || '{}');
   const { injector, ...extConfig } = config;
   const extInjector = injector || new Injector();
   const reporterEmitter = new Emitter<ReporterProcessMessage>();
