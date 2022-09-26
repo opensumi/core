@@ -11,6 +11,7 @@ export const localizationBundle = {
     'common.yes': '是',
     'common.no': '否',
     extension: '插件',
+    editTtile: '编辑',
 
     'tree.filter.placeholder': '输入关键字或路径筛选',
 
