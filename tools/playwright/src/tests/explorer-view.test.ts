@@ -89,6 +89,7 @@ test.describe('OpenSumi Explorer Panel', () => {
   (isWindows ? test.skip : test)('fileTree should be updated while create directory from terminal', async () => {
     const dirname = 'dir_from_terminal';
     const terminal = await app.open(OpenSumiTerminal);
+    await terminal.sendText(`cd ${workspace.workspace.codeUri.fsPath}`);
     await terminal.sendText(`mkdir ${dirname}`);
     await app.page.waitForTimeout(2000);
     const newDir = await explorer.getFileStatTreeNodeByPath(dirname);
