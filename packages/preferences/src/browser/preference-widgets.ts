@@ -21,6 +21,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { SettingJSONGlyphMarginEdit } from '../common/commands';
 
 import { PreferenceSettingsService } from './preference-settings.service';
+import { USER_PREFERENCE_URI } from './user-preference-provider';
 
 @Injectable({ multiple: true })
 export class EditPreferenceDecorationsContribution implements IEditorFeatureContribution {
@@ -57,9 +58,8 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
 
   constructor(@Optional() private readonly editor: IEditor) {}
 
-  private async verifyEditor(): Promise<boolean> {
-    const settingUri = await this.preferenceSettingsService.getPreferenceUrl(PreferenceScope.User);
-    if (this.editor.currentUri?.toString() === settingUri) {
+  private verifyEditor(): boolean {
+    if (this.editor.currentUri?.toString() === USER_PREFERENCE_URI.toString()) {
       return true;
     }
     return false;
@@ -93,10 +93,7 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
   public contribute(): IDisposable {
     this.disposer.addDispose(
       this.editor.monacoEditor.onMouseDown(async (e: monaco.editor.IEditorMouseEvent) => {
-        if (!(await this.verifyEditor())) {
-          return;
-        }
-        if (e.target.range?.startLineNumber !== this.currentLine) {
+        if (e.target.range?.startLineNumber !== this.currentLine && !this.verifyEditor()) {
           return;
         }
         if (
@@ -113,6 +110,9 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
 
     this.disposer.addDispose(
       this.editor.monacoEditor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
+        if (!this.verifyEditor()) {
+          return;
+        }
         this.onPositionChanged(e);
       }),
     );
