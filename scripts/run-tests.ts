@@ -2,14 +2,13 @@
 // 该模块会一个个的跑每个 package 下的测试
 
 import { join } from 'path';
-import mri from 'mri';
 
 import { command } from 'execa';
 import { readdirSync, writeJSONSync, mkdirSync, readJSONSync, pathExistsSync, removeSync } from 'fs-extra';
 import { pSeries } from '../packages/utils/src/promises';
+import { parseArgv } from '../packages/utils/src/argv';
 
-const _argv = process.argv.slice(2);
-const argv = mri(_argv);
+const argv = parseArgv(process.argv.slice(2));
 
 const packagesDir = join(__dirname, '../packages');
 const cacheDir = join(__dirname, '../.tests-cache');

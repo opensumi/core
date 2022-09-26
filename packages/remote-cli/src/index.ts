@@ -4,51 +4,8 @@ import { join } from 'path';
 
 import { green, red } from 'chalk';
 import got from 'got';
-import mri, { Options, Argv } from 'mri';
 
-class Factory {
-  constructor(private factoryArgv: string[]) {}
-
-  private _argv: Argv | undefined;
-  get argv() {
-    if (!this._argv) {
-      const options = {
-        string: this._string,
-      } as Options;
-      this._argv = mri(this.factoryArgv, options);
-    }
-
-    if (this._argv?.help) {
-      this.showUsage();
-      process.exit(0);
-    }
-    return this._argv;
-  }
-  private _usage: string | undefined;
-  usage(message: string) {
-    this._usage = message;
-    return this;
-  }
-  private showUsage() {
-    if (this._usage) {
-      console.log(this._usage.trimLeft());
-      if (this.afterUsage) {
-        console.log('Usage:');
-        console.log('    ' + this.afterUsage);
-      }
-    }
-  }
-  private _string = [] as string[];
-  string(k: string) {
-    this._string.push(k);
-    return this;
-  }
-  private afterUsage: string | undefined;
-  help() {
-    this.afterUsage = '--help Show help';
-    return this;
-  }
-}
+import { ArgvFactory } from '@opensumi/ide-utils/lib/argv';
 
 const PRODUCTION_NAME = process.env.PRODUCTION_NAME || 'OpenSumi';
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -96,7 +53,7 @@ function openPathOrUrl(pathOrUrl: string): void {
   });
 }
 
-const argv = new Factory(process.argv)
+const argv = new ArgvFactory(process.argv)
   .usage(
     `
   Help: Open files or website from a shell.
