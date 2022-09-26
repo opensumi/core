@@ -15,6 +15,17 @@ import {
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import {
+  DEBUG_CONSOLE_CONTAINER_ID,
+  DEBUG_CONTAINER_ID,
+  EXPLORER_CONTAINER_ID,
+  EXTENSION_CONTAINER_ID,
+  MARKER_CONTAINER_ID,
+  OUTPUT_CONTAINER_ID,
+  SCM_CONTAINER_ID,
+  SEARCH_CONTAINER_ID,
+  TERMINAL_CONTAINER_ID,
+} from '@opensumi/ide-core-browser/lib/common/container-id';
+import {
   ComponentContribution,
   ComponentRegistry,
   TabBarToolbarContribution,
@@ -31,17 +42,6 @@ import { Domain, IEventBus, ContributionProvider, localize, WithEventBus } from 
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@opensumi/ide-core-common/lib/command';
 
 import { IMainLayoutService } from '../common';
-import {
-  DEBUG_CONSOLE_CONTAINER_ID,
-  DEBUG_CONTAINER_ID,
-  EXPLORER_CONTAINER_ID,
-  EXTENSION_CONTAINER_ID,
-  MARKER_CONTAINER_ID,
-  OUTPUT_CONTAINER_ID,
-  SCM_CONTAINER_ID,
-  SEARCH_CONTAINER_ID,
-  TERMINAL_CONTAINER_ID,
-} from '../common/constants';
 
 import { ViewQuickOpenHandler } from './quick-open-view';
 import { RightTabRenderer, LeftTabRenderer, BottomTabRenderer } from './tabbar/renderer.view';
