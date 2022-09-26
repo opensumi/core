@@ -103,4 +103,5 @@ renderApp({
   },
   modules: [...CommonBrowserModules, ElectronBasicModule],
   layoutConfig: customLayoutConfig,
+  devtools: true, // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
 });

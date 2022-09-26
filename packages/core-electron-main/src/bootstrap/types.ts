@@ -80,6 +80,12 @@ export interface ElectronAppConfig {
    * 如有外部 injector，优先使用外部
    */
   injector?: Injector;
+
+  /**
+   * 是否开启对 OpenSumi DevTools 的支持
+   * 默认值为 false
+   */
+  devtools?: boolean;
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');
