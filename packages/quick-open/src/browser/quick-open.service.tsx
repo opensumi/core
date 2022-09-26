@@ -358,7 +358,11 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     const { fuzzyMatchLabel, fuzzyMatchDescription, fuzzyMatchDetail } = this.options;
     // 自动匹配若为空，取自定义的匹配
     const labelHighlights = fuzzyMatchLabel
-      ? matchesFuzzyIconAware(lookFor, parseLabelWithIcons(item.getLabel() || ''))
+      ? matchesFuzzyIconAware(
+          lookFor,
+          parseLabelWithIcons(item.getLabel() || ''),
+          typeof fuzzyMatchLabel === 'object' && fuzzyMatchLabel.enableSeparateSubstringMatching,
+        )
       : item.getLabelHighlights();
 
     const descriptionHighlights = this.options.fuzzyMatchDescription
