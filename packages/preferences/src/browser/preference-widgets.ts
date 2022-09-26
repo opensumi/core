@@ -44,7 +44,6 @@ import { SettingJSONGlyphMarginEdit } from '../common/commands';
 
 import { PreferenceSettingsService } from './preference-settings.service';
 
-
 @Injectable({ multiple: true })
 export class EditPreferenceDecorationsContribution implements IEditorFeatureContribution {
   @Autowired(IPreferenceSettingsService)
@@ -72,7 +71,9 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
   private commandRegistry: CommandRegistry;
 
   private readonly disposer: Disposable = new Disposable();
+
   private _preferences: string[] = [];
+  private _currentLine = 0;
 
   private readonly _editPreferenceDecoration = this.editor.monacoEditor.createDecorationsCollection();
 
@@ -106,6 +107,9 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
   public contribute(): IDisposable {
     this.disposer.addDispose(
       this.editor.monacoEditor.onMouseDown((e: monaco.editor.IEditorMouseEvent) => {
+        if (e.target.range?.startLineNumber !== this._currentLine) {
+          return;
+        }
         if (
           e.target.type !== MouseTargetType.GUTTER_GLYPH_MARGIN ||
           e.target.detail.isAfterLines ||
@@ -124,7 +128,13 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
       }),
     );
 
-    this.disposer.addDispose(this.editor.monacoEditor.onMouseMove((e: monaco.editor.IEditorMouseEvent) => {}));
+    this.disposer.addDispose(
+      this.editor.monacoEditor.onContextMenu((e: monaco.editor.IEditorMouseEvent) => {
+        e.event.preventDefault();
+        e.event.stopPropagation();
+        return false;
+      }),
+    );
 
     this.disposer.addDispose(
       this.editor.monacoEditor.onDidChangeConfiguration(() => {
@@ -145,8 +155,12 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
       this.commandRegistry.registerCommand(SettingJSONGlyphMarginEdit, {
         execute: (key: string, value: string | boolean) => {
           if (key && value) {
-            if (value === 'true') {value = true;}
-            if (value === 'false') {value = false;}
+            if (value === 'true') {
+              value = true;
+            }
+            if (value === 'false') {
+              value = false;
+            }
             this.preferenceSettingsService.setPreference(key, value, PreferenceScope.User);
           }
         },
@@ -156,17 +170,21 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
     return this.disposer;
   }
 
-  public get preferences(): string[] {
+  private get preferences(): string[] {
     return this._preferences;
   }
 
-  public show(line: number, hoverMessage: string, preferences: string[]): void {
+  private get currentLine(): number {
+    return this._currentLine;
+  }
+
+  private show(line: number, hoverMessage: string, preferences: string[]): void {
     this._preferences = preferences;
     const newDecoration: IModelDeltaDecoration[] = [];
     newDecoration.push({
       options: {
         description: 'edit-preference-widget-decoration',
-        glyphMarginClassName: getIcon('edit'),
+        glyphMarginClassName: getIcon('edit') + ' setting-edit-glyph',
         glyphMarginHoverMessage: new MarkdownString().appendText(hoverMessage),
         stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
       },
@@ -180,11 +198,11 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
     this._editPreferenceDecoration.set(newDecoration);
   }
 
-  public hide(): void {
+  private hide(): void {
     this._editPreferenceDecoration.clear();
   }
 
-  public isVisible(): boolean {
+  private isVisible(): boolean {
     return this._editPreferenceDecoration.length > 0;
   }
 
@@ -225,6 +243,7 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
     const {
       position: { lineNumber },
     } = positionChangeEvent;
+    this._currentLine = lineNumber;
     const preferenceKeys = await this.getPreferencesKeyAtLineNumber(lineNumber);
 
     if (preferenceKeys.length > 0) {
@@ -306,7 +325,7 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
       return ['true', 'false'];
     }
     if (schema.enum) {
-      return schema.enum.map((value) => JSON.stringify(value));
+      return schema.enum.map((value) => value.toString());
     }
     return [];
   }
@@ -329,7 +348,8 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
         anchor: e.event.browserEvent,
         menuNodes,
         onHide: () => {
-          const preMenus = (context: MenuId | string, type: 'menu' | 'sub' = 'menu') => this.menuRegistry
+          const preMenus = (context: MenuId | string, type: 'menu' | 'sub' = 'menu') =>
+            this.menuRegistry
               .getMenuItems(context)
               .map((e) =>
                 type === 'sub' ? (e as ISubmenuItem).submenu : ((e as IMenuItem).command as MenuCommandDesc),
@@ -354,6 +374,6 @@ export class EditPreferenceDecorationsContribution implements IEditorFeatureCont
           );
         },
       });
-    });
+    }, 10);
   }
 }
