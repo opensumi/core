@@ -1,6 +1,6 @@
 import { Autowired } from '@opensumi/di';
 import { ClientAppContribution, getIcon, PreferenceContribution } from '@opensumi/ide-core-browser';
-import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common';
+import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import {
   ComponentContribution,
   ComponentRegistry,

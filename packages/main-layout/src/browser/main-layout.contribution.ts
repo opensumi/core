@@ -120,54 +120,51 @@ export const RETRACT_BOTTOM_PANEL: Command = {
   iconClass: getIcon('shrink'),
 };
 
-const leftContainerCommands = [
+const containerToggleCommands = [
   {
-    command: LAYOUT_COMMANDS.TOGGLE_EXPLORER_PANEL,
     containerId: EXPLORER_CONTAINER_ID,
     menuLabel: '%menu-bar.view.explorer%',
+    group: '3_left',
   },
   {
-    command: LAYOUT_COMMANDS.TOGGLE_SEARCH_PANEL,
     containerId: SEARCH_CONTAINER_ID,
     menuLabel: '%menu-bar.view.search%',
+    group: '3_left',
   },
   {
-    command: LAYOUT_COMMANDS.TOGGLE_SCM_PANEL,
     containerId: SCM_CONTAINER_ID,
     menuLabel: '%menu-bar.view.scm%',
+    group: '3_left',
   },
   {
-    command: LAYOUT_COMMANDS.TOGGLE_DEBUG_PANEL,
     containerId: DEBUG_CONTAINER_ID,
     menuLabel: '%menu-bar.view.debug%',
+    group: '3_left',
   },
   {
-    command: LAYOUT_COMMANDS.TOGGLE_EXTENSION_PANEL,
     containerId: EXTENSION_CONTAINER_ID,
     menuLabel: '%menu-bar.view.extension%',
+    group: '3_left',
   },
-];
-
-const bottomContainerCommands = [
   {
-    command: LAYOUT_COMMANDS.TOGGLE_MARKER,
     containerId: MARKER_CONTAINER_ID,
     menuLabel: '%menu-bar.view.problem%',
+    group: '4_bottom',
   },
   {
-    command: LAYOUT_COMMANDS.TOGGLE_OUTPUT,
     containerId: OUTPUT_CONTAINER_ID,
     menuLabel: '%menu-bar.view.output%',
+    group: '4_bottom',
   },
   {
-    command: LAYOUT_COMMANDS.TOGGLE_DEBUG_CONSOLE,
     containerId: DEBUG_CONSOLE_CONTAINER_ID,
     menuLabel: '%menu-bar.view.debug-console%',
+    group: '4_bottom',
   },
   {
-    command: LAYOUT_COMMANDS.TOGGLE_TERMINAL,
     containerId: TERMINAL_CONTAINER_ID,
     menuLabel: '%menu-bar.view.terminal%',
+    group: '4_bottom',
   },
 ];
 
@@ -385,36 +382,6 @@ export class MainLayoutModuleContribution
         this.commandService.executeCommand(QUICK_OPEN_COMMANDS.OPEN.id, 'view ');
       },
     });
-    commands.registerCommand(LAYOUT_COMMANDS.TOGGLE_MARKER, {
-      execute: () => {
-        const tabbarHandler = this.mainLayoutService.getTabbarHandler(MARKER_CONTAINER_ID);
-        if (tabbarHandler) {
-          tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
-        }
-      },
-    });
-
-    leftContainerCommands.forEach((v) => {
-      commands.registerCommand(v.command, {
-        execute: () => {
-          const tabbarHandler = this.mainLayoutService.getTabbarHandler(v.containerId);
-          if (tabbarHandler) {
-            tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
-          }
-        },
-      });
-    });
-
-    bottomContainerCommands.forEach((v) => {
-      commands.registerCommand(v.command, {
-        execute: () => {
-          const tabbarHandler = this.mainLayoutService.getTabbarHandler(v.containerId);
-          if (tabbarHandler) {
-            tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
-          }
-        },
-      });
-    });
   }
 
   registerMenus(menus: IMenuRegistry) {
@@ -426,23 +393,13 @@ export class MainLayoutModuleContribution
       group: 'navigation',
     });
 
-    leftContainerCommands.forEach((v) => {
+    containerToggleCommands.forEach((v) => {
       menus.registerMenuItem(MenuId.MenubarViewMenu, {
         command: {
-          id: v.command.id,
+          id: `container.toggle.${v.containerId}`,
           label: v.menuLabel,
         },
-        group: '3_left',
-      });
-    });
-
-    bottomContainerCommands.forEach((v) => {
-      menus.registerMenuItem(MenuId.MenubarViewMenu, {
-        command: {
-          id: v.command.id,
-          label: v.menuLabel,
-        },
-        group: '4_bottom',
+        group: v.group,
       });
     });
 

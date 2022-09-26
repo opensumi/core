@@ -717,6 +717,8 @@ export const localizationBundle = {
     'extension.action.toggleVisibility': '切换插件面板',
     'debug.action.toggleVisibility': '切换调试面板',
 
+    'view.command.show': '打开 {0}',
+
     'layout.tabbar.setting': '打开偏好设置',
 
     'terminal.focusNext.inTerminalGroup': '聚焦当前终端组中的下一个终端',

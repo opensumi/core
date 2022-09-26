@@ -7,7 +7,7 @@ import {
   ClientAppContribution,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common';
+import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 

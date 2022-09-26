@@ -111,6 +111,7 @@ export interface ComponentRegistryInfo {
   views: View[];
   options?: ViewContainerOptions;
 }
+
 @Injectable()
 export class ComponentRegistryImpl implements ComponentRegistry {
   componentsMap: Map<string, ComponentRegistryInfo> = new Map();

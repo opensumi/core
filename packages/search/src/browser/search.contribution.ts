@@ -14,7 +14,7 @@ import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-brow
 import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@opensumi/ide-main-layout';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
 import { SEARCH_CONTAINER_ID } from '../common/content-search';

@@ -686,6 +686,8 @@ export const localizationBundle = {
     'extension.action.toggleVisibility': 'Toggle Extension',
     'debug.action.toggleVisibility': 'Toggle Debug',
 
+    'view.command.show': 'Show {0}',
+
     'layout.tabbar.setting': 'Open Preference Panel',
     'debugger.menu.setValue': 'Set Value',
     'debugger.menu.setValue.param': 'Please input the value of this variable',

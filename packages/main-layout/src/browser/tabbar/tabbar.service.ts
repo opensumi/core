@@ -21,6 +21,7 @@ import {
   DisposableCollection,
   IScopedContextKeyService,
   Deferred,
+  formatLocalize,
 } from '@opensumi/ide-core-browser';
 import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
@@ -308,6 +309,61 @@ export class TabbarService extends WithEventBus {
     });
     // 注册progressIndicator
     disposables.push(this.progressService.registerProgressIndicator(componentInfo.options!.containerId));
+    disposables.push(this.registerContainerPanelRelatedCommand(componentInfo));
+    return disposables;
+  }
+  /**
+   * 这里注册的是某个 Container Panel 对应的显示/隐藏等命令
+   */
+  protected registerContainerPanelRelatedCommand(componentInfo: ComponentRegistryInfo) {
+    const disposables = new DisposableCollection();
+    const containerId = componentInfo.options?.containerId!;
+    disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: 'container.show.' + containerId,
+          label: formatLocalize('view.command.show', componentInfo.options?.title ?? containerId),
+          alias: `Show ${componentInfo.options?.title ?? componentInfo.options?.containerId}`,
+          category: 'View',
+        },
+        {
+          execute: () => {
+            this.currentContainerId = containerId;
+          },
+        },
+      ),
+    );
+    disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: 'container.hide.' + containerId,
+          label: formatLocalize('view.command.hide', componentInfo.options?.title ?? containerId),
+          alias: `Hide ${componentInfo.options?.title ?? componentInfo.options?.containerId}`,
+          category: 'View',
+        },
+        {
+          execute: () => {
+            this.currentContainerId = '';
+          },
+        },
+      ),
+    );
+    disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: 'container.toggle.' + containerId,
+        },
+        {
+          execute: () => {
+            if (this.currentContainerId === containerId) {
+              this.currentContainerId = '';
+            } else {
+              this.currentContainerId = containerId;
+            }
+          },
+        },
+      ),
+    );
     return disposables;
   }
 
@@ -577,7 +633,7 @@ export class TabbarService extends WithEventBus {
     return commandId;
   }
 
-  // 注册tab的隐藏显示功能
+  // 注册当前 container 在 tabBar 上的隐藏显示功能
   private registerVisibleToggleCommand(containerId: string, disposables: DisposableCollection): string {
     const commandId = `activity.bar.toggle.${containerId}`;
     disposables.push(

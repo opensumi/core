@@ -1,4 +1,4 @@
-import { DEBUG_CONSOLE_CONTAINER_ID, DEBUG_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common';
+import { DEBUG_CONSOLE_CONTAINER_ID, DEBUG_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 
 import { DebugState } from './debug-session';

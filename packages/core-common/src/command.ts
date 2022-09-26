@@ -156,6 +156,7 @@ export interface CommandService {
    */
   tryExecuteCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined>;
 }
+
 /**
  * 命令注册和管理模块
  */
@@ -167,6 +168,7 @@ interface CoreCommandRegistry {
    * @returns 销毁命令的方法
    */
   registerCommand<T = any>(command: Command, handler?: CommandHandler<T>): IDisposable;
+  updateCommandDetailById(id: string, command: Partial<Command>): void;
   /**
    * 解绑命令
    * @param commandOrId 要解绑命令或命令 id
@@ -354,6 +356,26 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
     this.unregisterCommands.set(command.id, toDispose);
     toDispose.addDispose(Disposable.create(() => this.unregisterCommands.delete(command.id)));
     return toDispose;
+  }
+
+  /**
+   * 有时候我们需要在命令注册后才更新其描述。
+   *
+   * 比如说我们会为所有的 ContainerId 注册 Toggle Panel 的命令，但我们不想在 QuickOpen 中展示所有 ContainerId 对应的命令
+   * 这个时候我们可以先注册所有命令，然后再更新所有 Command 的描述
+   * @param id 命令 ID
+   * @param command
+   */
+  updateCommandDetailById(id: string, command: Partial<Command>): void {
+    if (!this._commands[id]) {
+      this.logger.warn(`Command ${id} not found.`);
+      return;
+    }
+
+    this._commands[id] = {
+      ...this._commands[id],
+      ...command,
+    };
   }
 
   /**

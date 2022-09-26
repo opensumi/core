@@ -149,7 +149,8 @@ export const TERMINAL_COMMAND_FOCUS: Command = {
 
 export const TERMINAL_COMMAND_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.terminal.toggleTerminal',
-  delegate: LAYOUT_COMMANDS.TOGGLE_TERMINAL.id,
+  // 每一个 Container 在注册后都会注册自己的 toggle 命令
+  delegate: 'container.toggle.terminal',
 };
 
 export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {

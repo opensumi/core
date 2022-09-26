@@ -75,7 +75,7 @@ export function renderClientApp(app: IClientApp, container: HTMLElement | IAppRe
     .filter((module) => module.isOverlay)
     .map((module) => {
       if (!module.component) {
-        getDebugLogger().warn('检测到空的overlay模块', module);
+        getDebugLogger().warn('检测到空的 overlay 模块', module);
         return () => <></>;
       }
       return module.component;

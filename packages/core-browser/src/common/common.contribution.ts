@@ -218,13 +218,6 @@ export class ClientCommonContribution
     menus.registerMenuItems(MenuId.MenubarTerminalMenu, [
       {
         command: {
-          id: LAYOUT_COMMANDS.TOGGLE_TERMINAL.id,
-          label: LAYOUT_COMMANDS.TOGGLE_TERMINAL.label,
-        },
-        group: '0_view',
-      },
-      {
-        command: {
           id: TERMINAL_COMMANDS.ADD.id,
           label: TERMINAL_COMMANDS.ADD.label,
         },

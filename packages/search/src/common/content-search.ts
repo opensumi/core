@@ -1,4 +1,4 @@
-import { SEARCH_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common';
+import { SEARCH_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
 import { Command } from '@opensumi/ide-core-common';
 import { parseGlob, ParsedPattern, URI, strings } from '@opensumi/ide-core-common';
