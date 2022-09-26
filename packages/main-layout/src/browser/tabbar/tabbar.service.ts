@@ -22,6 +22,7 @@ import {
   IScopedContextKeyService,
   Deferred,
 } from '@opensumi/ide-core-browser';
+import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
@@ -38,7 +39,6 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 
 import { TabBarRegistrationEvent, IMainLayoutService, SUPPORT_ACCORDION_LOCATION } from '../../common';
-import { SCM_CONTAINER_ID } from '../../common/constants';
 import { TOGGLE_BOTTOM_PANEL_COMMAND, EXPAND_BOTTOM_PANEL, RETRACT_BOTTOM_PANEL } from '../main-layout.contribution';
 
 export const TabbarServiceFactory = Symbol('TabbarServiceFactory');
