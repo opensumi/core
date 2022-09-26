@@ -76,6 +76,9 @@ export enum MenuId {
   OpenTypeSubmenuContext = 'editor/openType/submenu',
   // accordion
   AccordionContext = 'accordion',
+  // setting.json
+  SettingJSONGlyphMarginContext = 'settingJson/glyphMargin/context',
+  SubSettingJSONGlyphMarginContext = 'sub/settingJson/glyphMargin/context',
 }
 
 export function getTabbarCommonMenuId(location: string) {

@@ -82,7 +82,7 @@ export const MenuActionList: React.FC<{
   );
 
   const recursiveRender = React.useCallback(
-    (dataSource: MenuNode[]) =>
+    (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
         if (menuNode.id === SeparatorMenuItemNode.ID) {
           return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
@@ -96,12 +96,12 @@ export const MenuActionList: React.FC<{
 
           return (
             <Menu.SubMenu
-              key={`${menuNode.id}-${index}`}
+              key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
               className={styles.submenuItem}
               popupClassName='kt-menu'
               title={<MenuAction hasSubmenu data={menuNode} />}
             >
-              {recursiveRender(menuNode.children)}
+              {recursiveRender(menuNode.children, menuNode.label)}
             </Menu.SubMenu>
           );
         }
@@ -109,7 +109,7 @@ export const MenuActionList: React.FC<{
         return (
           <Menu.Item
             id={`${menuNode.id}-${index}`}
-            key={`${menuNode.id}-${index}`}
+            key={`${menuNode.id}-${key}-${index}`}
             className={styles.menuItem}
             disabled={menuNode.disabled}
           >
