@@ -143,7 +143,7 @@ const containerToggleCommands = [
   },
   {
     containerId: EXTENSION_CONTAINER_ID,
-    menuLabel: '%menu-bar.view.extension%',
+    menuLabel: '%marketplace.extension.container%',
     group: '3_left',
   },
   {

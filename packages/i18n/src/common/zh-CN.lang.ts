@@ -84,8 +84,6 @@ export const localizationBundle = {
     'menu-bar.file.save-all': '全部保存',
     'menu-bar.view.quick.command': '命令面板',
 
-    'menu-bar.view.extension': '插件',
-
     'menu-bar.go.jumpToBracket': '跳转到括号',
     'menu-bar.go.nextProblemInFiles': '下一个问题',
     'menu-bar.go.prevProblemInFiles': '上一个问题',

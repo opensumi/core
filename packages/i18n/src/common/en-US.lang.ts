@@ -85,8 +85,6 @@ export const localizationBundle = {
     'menu-bar.file.open': 'Open File',
     'menu-bar.view.quick.command': 'Command Palette...',
 
-    'menu-bar.view.extension': 'Extension',
-
     'menu-bar.go.jumpToBracket': 'Go to Bracket',
     'menu-bar.go.nextProblemInFiles': 'Next Problem',
     'menu-bar.go.prevProblemInFiles': 'Previous Problem',
@@ -748,7 +746,7 @@ export const localizationBundle = {
     'marketplace.extension.enable.all': 'Enable All Extensions',
     'marketplace.extension.disable.all': 'Disable All Extensions',
     'marketplace.extension.install': 'Install',
-    'marketplace.extension.container': 'EXTENSIONS MARKET',
+    'marketplace.extension.container': 'Extensions',
     'marketplace.extension.empty.disabled': 'No disabled extensions yet',
     'marketplace.extension.notfound': 'No Extension',
     'marketplace.panel.hot': 'Hot Extensions',
