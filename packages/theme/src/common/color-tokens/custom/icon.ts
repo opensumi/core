@@ -1,26 +1,26 @@
 import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor, transparent } from '../../utils';
-import { buttonBackground, buttonForeground, buttonHoverBackground } from '../button';
+import { foreground } from '../base';
 
 export const ktIconForeground = registerColor(
   'kt.icon.foreground',
-  { dark: buttonForeground, light: buttonForeground, hc: buttonForeground },
+  { dark: foreground, light: foreground, hc: foreground },
   localize('ktIconForeground', 'Icon Foreground color.'),
 );
 export const ktIconHoverForeground = registerColor(
   'kt.icon.hoverForeground',
-  { dark: buttonBackground, light: buttonBackground, hc: buttonBackground },
+  { dark: foreground, light: foreground, hc: foreground },
   localize('ktIconHoverForeground', 'Icon Hover Foreground color.'),
 );
 export const ktIconHoverBackground = registerColor(
   'kt.icon.hoverBackground',
-  { dark: buttonHoverBackground, light: buttonHoverBackground, hc: buttonHoverBackground },
+  { dark: '#5a5d5e4f', light: '#b8b8b84f', hc: null },
   localize('Icon Hover Background color.'),
 );
 export const ktIconClickHoverForeground = registerColor(
   'kt.icon.clickForeground',
-  { dark: buttonHoverBackground, light: buttonHoverBackground, hc: buttonHoverBackground },
+  { dark: foreground, light: foreground, hc: foreground },
   localize('Icon Click Foreground color.'),
 );
 export const ktIconDisableForeground = registerColor(
