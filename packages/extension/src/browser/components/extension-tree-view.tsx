@@ -6,6 +6,8 @@ import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } fro
 import { ViewState } from '@opensumi/ide-core-browser';
 import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { IFileDecoration } from '@opensumi/ide-core-browser/lib/tree/tree';
+import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
@@ -29,6 +31,7 @@ export const ExtensionTabBarTreeView = observer(
     const [isReady, setIsReady] = React.useState<boolean>(false);
     const [isEmpty, setIsEmpty] = React.useState(dataProvider.isTreeEmpty);
     const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
+    const decorationService = useInjectable<IDecorationsService>(IDecorationsService);
     const accordionService = React.useMemo(() => layoutService.getViewAccordionService(treeViewId), []);
 
     const isVisible = React.useMemo(() => {
@@ -175,6 +178,7 @@ export const ExtensionTabBarTreeView = observer(
           handlerContextMenu={handlerContextMenu}
           treeViewId={treeViewId}
           model={model}
+          decorationService={decorationService}
         />
       </div>
     );
@@ -195,6 +199,7 @@ interface TreeViewProps {
   ): void;
   handleTwistierClick(ev: React.MouseEvent, item: ExtensionCompositeTreeNode): void;
   handlerContextMenu(ev: React.MouseEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode): void;
+  decorationService: IDecorationsService;
 }
 
 function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps) {
@@ -218,6 +223,7 @@ const TreeView = React.memo(
     handleItemClicked,
     handleTwistierClick,
     handlerContextMenu,
+    decorationService,
   }: TreeViewProps) => {
     const renderTreeNode = React.useCallback(
       (props: INodeRendererProps) => (
@@ -231,6 +237,7 @@ const TreeView = React.memo(
           defaultLeftPadding={8}
           leftPadding={8}
           treeViewId={treeViewId}
+          decorationService={decorationService}
         />
       ),
       [model.treeModel],

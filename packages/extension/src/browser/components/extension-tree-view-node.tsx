@@ -6,6 +6,9 @@ import { Loading } from '@opensumi/ide-components';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { TitleActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
+import { IDecorationsService } from '@opensumi/ide-decoration/lib/common/decorations';
+import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import styles from '../vscode/api/tree-view/tree-view-node.module.less';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
@@ -27,6 +30,7 @@ export interface ITreeViewNodeProps {
     item: ExtensionTreeNode | ExtensionCompositeTreeNode,
     type: TreeNodeType,
   ) => void;
+  decorationService: IDecorationsService;
 }
 
 export type TreeViewNodeRenderedProps = ITreeViewNodeProps & INodeRendererProps;
@@ -41,7 +45,11 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   decorations,
   defaultLeftPadding = 8,
   treeViewId,
+  decorationService,
 }: TreeViewNodeRenderedProps) => {
+  const decoration = item.uri && decorationService.getDecoration(item.uri, false);
+  const themeService = useInjectable<IThemeService>(IThemeService);
+
   const handleClick = (ev: React.MouseEvent) => {
     if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
       onClick(ev, item, itemType);
@@ -173,6 +181,21 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     </div>
   );
 
+  const renderDecos = () => {
+    if (!decoration) {
+      return null;
+    }
+
+    const badge = decoration.badge || '';
+    const kolor = decoration.color;
+    const color = kolor && themeService.getColor({ id: kolor });
+    return (
+      <div className={styles.tree_view_node_tail} style={{ color }}>
+        {badge.slice()}
+      </div>
+    );
+  };
+
   return (
     <div
       key={item.id}
@@ -192,6 +215,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
           {renderDescription(item)}
         </div>
         {renderStatusTail()}
+        {renderDecos()}
       </div>
     </div>
   );
