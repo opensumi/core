@@ -49,8 +49,8 @@ import { ClientAppContribution } from '../common';
 import { CorePreferences } from '../core-preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
-import { RenderedEvent } from '../layout';
-import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
+import { RenderedEvent } from '../layout/layout.interface';
+import { MenuRegistryImpl, IMenuRegistry } from '../menu/next/base';
 import {
   PreferenceProviderProvider,
   injectPreferenceSchemaProvider,

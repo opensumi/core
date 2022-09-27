@@ -33,12 +33,12 @@ import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import {
   DEFAULT_WORKSPACE_SUFFIX_NAME,
   IWorkspaceService,
-  WorkspaceData,
   WorkspaceInput,
   WORKSPACE_USER_STORAGE_FOLDER_NAME,
   UNTITLED_WORKSPACE,
 } from '../common';
 
+import { WorkspaceData } from './workspace-data';
 import { WorkspacePreferences } from './workspace-preferences';
 
 const { Path } = path;
