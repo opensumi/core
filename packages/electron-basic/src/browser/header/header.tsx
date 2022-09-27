@@ -123,6 +123,7 @@ export const HeaderBarRightComponent = () => {
 interface ElectronHeaderBarPorps {
   LeftComponent?: React.FunctionComponent;
   RightComponent?: React.FunctionComponent;
+  TitleComponent?: React.FunctionComponent<TitleBarProps>;
   Icon?: React.FunctionComponent;
   autoHide?: boolean;
 }
@@ -131,7 +132,13 @@ interface ElectronHeaderBarPorps {
  * autoHide: Hide the HeaderBar when the macOS full screen
  */
 export const ElectronHeaderBar = observer(
-  ({ LeftComponent, RightComponent, Icon, autoHide = true }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
+  ({
+    LeftComponent,
+    RightComponent,
+    TitleComponent,
+    Icon,
+    autoHide = true,
+  }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
 
     const { isFullScreen } = useFullScreen();
@@ -142,12 +149,15 @@ export const ElectronHeaderBar = observer(
     if (!RightComponent) {
       RightComponent = HeaderBarRightComponent;
     }
+    if (!TitleComponent) {
+      TitleComponent = HeaderBarTitleComponent;
+    }
 
     // in Mac, hide the header bar if it is in full screen mode
     if (isMacintosh && isFullScreen && autoHide) {
       return (
         <div>
-          <TitleInfo hidden={true} />
+          <TitleComponent hidden={true} transformer={defaultTitleTransformer} />
         </div>
       );
     }
@@ -167,7 +177,7 @@ export const ElectronHeaderBar = observer(
         }}
       >
         <LeftComponent />
-        <TitleInfo />
+        <TitleComponent transformer={defaultTitleTransformer} />
         <RightComponent />
       </div>
     );
@@ -176,7 +186,32 @@ export const ElectronHeaderBar = observer(
 
 declare const ResizeObserver: any;
 
-export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
+export interface TitleInfo {
+  currentResourceName?: string;
+  workspaceName?: string;
+  appName?: string;
+  remoteMode?: boolean;
+  extensionDevelopmentHost?: boolean;
+}
+
+export interface TitleBarProps {
+  hidden?: boolean;
+  transformer?: (titleInfo: TitleInfo) => string;
+}
+
+const defaultTitleTransformer = (titleInfo: TitleInfo) => {
+  const developmentTitle = titleInfo.extensionDevelopmentHost ? `[${localize('workspace.development.title')}]` : '';
+  const remoteMode = titleInfo.remoteMode ? ` [${localize('common.remoteMode')}]` : '';
+
+  const workspaceName = titleInfo.workspaceName ?? '';
+  let currentResourceName = titleInfo.currentResourceName ?? '';
+  if (workspaceName !== '') {
+    currentResourceName += ' — ';
+  }
+  return developmentTitle + currentResourceName + workspaceName + remoteMode;
+};
+
+export const HeaderBarTitleComponent = observer(({ hidden, transformer }: TitleBarProps) => {
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
   const [currentResource, setCurrentResource] = useState<MaybeNull<IResource>>(editorService.currentResource);
   const ref = useRef<HTMLDivElement>(null);
@@ -228,21 +263,20 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
 
-  const title =
-    (currentResource ? currentResource.name + ' — ' : '') +
-    (dirname ? dirname + ' — ' : '') +
-    replaceLocalizePlaceholder(appConfig.appName) +
-    (appConfig.isRemote ? ` [${localize('common.remoteMode')}]` : '');
-
   // 同时更新 Html Title
   useEffect(() => {
-    let documentTitle = title;
-    if (appConfig.extensionDevelopmentHost) {
-      documentTitle = `[${localize('workspace.development.title')}] ${title}`;
-    }
+    const titleInfo: TitleInfo = {
+      currentResourceName: currentResource?.name,
+      workspaceName: dirname,
+      appName: replaceLocalizePlaceholder(appConfig.appName),
+      remoteMode: appConfig.isRemote,
+      extensionDevelopmentHost: appConfig.extensionDevelopmentHost,
+    };
+    const documentTitle = (transformer && transformer(titleInfo)) || defaultTitleTransformer(titleInfo);
+
     document.title = documentTitle;
     setAppTitle(documentTitle);
-  }, [title]);
+  }, [currentResource?.name]);
 
   if (hidden) {
     return null;
