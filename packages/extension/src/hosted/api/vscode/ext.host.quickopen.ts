@@ -26,6 +26,7 @@ import {
   IExtHostWorkspace,
   Severity,
 } from '../../../common/vscode';
+import { QuickPickItemKind } from '../../../common/vscode/ext-types';
 
 type Item = string | vscode.QuickPickItem;
 
@@ -77,24 +78,32 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       };
     }
 
-    const pickItems = items.map((item, index) => {
+    const pickItems: QuickPickItem<number>[] = [];
+    const pendingGroupItem: vscode.QuickPickItem[] = [];
+    for (const [index, item] of items.entries()) {
       if (typeof item === 'string') {
-        return {
+        pickItems.push({
           label: item,
           value: index,
-        };
+        });
       } else {
-        const quickPickItem: QuickPickItem<number> = {
-          label: item.label,
-          description: item.description,
-          detail: item.detail,
-          value: index, // handle
-          buttons: item.buttons as QuickInputButton[],
-        };
-
-        return quickPickItem;
+        if (item.kind === QuickPickItemKind.Separator) {
+          pendingGroupItem.push(item);
+        } else {
+          // group label 取上一个 kind 为 Separator 的 item label
+          const groupLabel = pendingGroupItem.pop()?.label;
+          pickItems.push({
+            label: item.label,
+            groupLabel,
+            description: item.description,
+            detail: item.detail,
+            value: index, // handle
+            buttons: item.buttons as QuickInputButton[],
+            showBorder: typeof groupLabel !== 'undefined',
+          });
+        }
       }
-    });
+    }
 
     const quickPickPromise = this.proxy.$showQuickPick(
       sessionId,

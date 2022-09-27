@@ -15,6 +15,11 @@ Object.keys(UriUtils).forEach((funcName) => {
   Uri[funcName] = UriUtils[funcName];
 });
 
+export enum QuickPickItemKind {
+  Separator = -1,
+  Default = 0,
+}
+
 export { Uri };
 export enum ProgressLocation {
   /**
