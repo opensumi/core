@@ -6,7 +6,6 @@ import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } fro
 import { ViewState } from '@opensumi/ide-core-browser';
 import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
-import { IFileDecoration } from '@opensumi/ide-core-browser/lib/tree/tree';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';

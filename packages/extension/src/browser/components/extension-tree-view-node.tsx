@@ -47,7 +47,19 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   treeViewId,
   decorationService,
 }: TreeViewNodeRenderedProps) => {
-  const decoration = item.uri && decorationService.getDecoration(item.uri, false);
+  const [decoration, setDecoration] = React.useState(item.uri && decorationService.getDecoration(item.uri, false));
+
+  React.useEffect(() => {
+    const disposable = decorationService.onDidChangeDecorations((e) => {
+      if (item.uri && e.affectsResource(item.uri)) {
+        setDecoration(decorationService.getDecoration(item.uri, false));
+      }
+    });
+    return () => {
+      disposable.dispose();
+    };
+  }, []);
+
   const themeService = useInjectable<IThemeService>(IThemeService);
 
   const handleClick = (ev: React.MouseEvent) => {
