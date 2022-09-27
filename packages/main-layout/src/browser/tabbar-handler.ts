@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { Event, Emitter, ILogger, CommandRegistry, formatLocalize } from '@opensumi/ide-core-common';
+import { Event, Emitter, ILogger } from '@opensumi/ide-core-common';
 
 import { IMainLayoutService } from '../common';
 
@@ -12,9 +12,6 @@ export class TabBarHandler {
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
-
-  @Autowired(CommandRegistry)
-  protected readonly commandRegistry: CommandRegistry;
 
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;

@@ -409,7 +409,7 @@ export class MainLayoutModuleContribution
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: {
         id: EDITOR_COMMANDS.TOGGLE_WORD_WRAP.id,
-        label: 'Word Wrap',
+        label: '%preference.editor.wordWrap%',
       },
       group: '6_capability',
       toggledWhen: 'config.editor.wordWrap == on',

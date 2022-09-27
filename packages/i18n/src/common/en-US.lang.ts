@@ -551,6 +551,9 @@ export const localizationBundle = {
     'preference.editor.bracketPairColorization.enabled': 'Bracket Pair Colorization',
     'preference.editor.fontWeight': 'Font Weight',
 
+    'preference.editor.wordWrap': 'Word Wrap',
+    'preference.editor.wordWrapColumn': 'Word Wrap Length',
+
     'preference.item.notValid': '{0} is not a valid option',
 
     'editor.configuration.formatOnSaveTimeout':

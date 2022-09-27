@@ -947,6 +947,10 @@ export namespace LAYOUT_COMMANDS {
     id: 'layout.action.Maximizeeditor',
     category: CATEGORY,
   };
+  export const TOGGLE_SIDEBAR_VISIBILITY = {
+    id: 'main-layout.left-panel.toggle',
+    category: CATEGORY,
+  };
 }
 
 export namespace MARKER_COMMANDS {
@@ -959,15 +963,6 @@ export namespace MARKER_COMMANDS {
 
   export const TOGGLE_SHOW_ERRORS_WARNINGS = {
     id: 'marker.action.toggleShowErrorsWarnings',
-    category: CATEGORY,
-  };
-}
-
-export namespace SCM_COMMANDS {
-  const CATEGORY = 'scm';
-
-  export const TOGGLE_VISIBILITY = {
-    id: 'scm.action.toggleVisibility',
     category: CATEGORY,
   };
 }

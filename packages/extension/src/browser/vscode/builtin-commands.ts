@@ -5,7 +5,6 @@ import {
   COMMON_COMMANDS,
   TERMINAL_COMMANDS,
   MARKER_COMMANDS,
-  SCM_COMMANDS,
   SEARCH_COMMANDS,
   LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
@@ -348,9 +347,9 @@ export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
   delegate: MARKER_COMMANDS.TOGGLE_SHOW_ERRORS_WARNINGS.id,
 };
 
-export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
+export const SIDEBAR_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.toggleSidebarVisibility',
-  delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
+  delegate: LAYOUT_COMMANDS.TOGGLE_SIDEBAR_VISIBILITY.id,
 };
 
 export const SEARCH_COMMAND_OPEN_SEARCH: Command = {

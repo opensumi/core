@@ -337,9 +337,6 @@ export class TabbarService extends WithEventBus {
       this.commandRegistry.registerCommand(
         {
           id: 'container.hide.' + containerId,
-          label: formatLocalize('view.command.hide', componentInfo.options?.title ?? containerId),
-          alias: `Hide ${componentInfo.options?.title ?? componentInfo.options?.containerId}`,
-          category: 'View',
         },
         {
           execute: () => {
