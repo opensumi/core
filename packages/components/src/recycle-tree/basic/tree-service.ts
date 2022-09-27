@@ -6,6 +6,10 @@ import { TreeNodeEvent } from '../types';
 import { BasicCompositeTreeNode, BasicTreeNode, BasicTreeRoot } from './tree-node.define';
 import { IBasicTreeData, DECORATIONS } from './types';
 
+export interface IBasicTreeServiceOptions {
+  treeName?: string;
+}
+
 export class BasicTreeService extends Tree {
   private selectedDecoration: Decoration = new Decoration(DECORATIONS.SELECTED); // 选中态
   private focusedDecoration: Decoration = new Decoration(DECORATIONS.FOCUSED); // 焦点态
@@ -30,6 +34,7 @@ export class BasicTreeService extends Tree {
     private _treeData?: IBasicTreeData[],
     private _resolveChildren?: (parent?: IBasicTreeData) => IBasicTreeData[] | null,
     private _sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number | undefined,
+    private treeOptions = {} as IBasicTreeServiceOptions,
   ) {
     super();
     this.setUpTreeModel();
@@ -37,7 +42,14 @@ export class BasicTreeService extends Tree {
   }
 
   private setUpTreeModel() {
-    this._root = new BasicTreeRoot(this, undefined, { children: this._treeData, label: '', command: '', icon: '' });
+    this._root = new BasicTreeRoot(
+      this,
+      undefined,
+      { children: this._treeData, label: '', command: '', icon: '' },
+      {
+        treeName: this.treeOptions.treeName,
+      },
+    );
     this._model = new BasicTreeModel();
     this._model.init(this._root);
     this.initDecorations(this._root as BasicTreeRoot);

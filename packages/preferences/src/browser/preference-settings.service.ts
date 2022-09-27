@@ -1,8 +1,7 @@
-import groupBy from 'lodash/groupBy';
 import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { IRecycleListHandler } from '@opensumi/ide-components';
+import { IBasicRecycleTreeHandle, IRecycleListHandler, IRecycleTreeHandle } from '@opensumi/ide-components';
 import {
   IPreferenceViewDesc,
   IPreferenceSettingsService,
@@ -80,7 +79,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private cachedGroupSection: Map<string, IResolvedSettingSection[]> = new Map();
 
   private _listHandler: IRecycleListHandler;
-
+  private _treeHandler: IRecycleTreeHandle;
+  private _basicTreeHandler: IBasicRecycleTreeHandle;
   private onDidEnumLabelsChangeEmitter: Emitter<void> = new Emitter();
   private enumLabelsChangeDelayer = new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY);
 
@@ -155,6 +155,20 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     this._listHandler = handler;
   };
 
+  get treeHandler() {
+    return this._treeHandler;
+  }
+  handleTreeHandler = (handler: any) => {
+    this._treeHandler = handler;
+  };
+
+  get basicTreeHandler() {
+    return this._basicTreeHandler;
+  }
+  handleBasicTreeHandler = (handler: any) => {
+    this._basicTreeHandler = handler;
+  };
+
   /**
    * 获取搜索条件下展示的设置面板配置组
    * @param scope 作用域
@@ -181,7 +195,10 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    * @param group 配置组
    */
   registerSettingGroup(group: ISettingGroup): IDisposable {
-    const disposable = addElement(this.settingsGroups, group);
+    const disposable = addElement(this.settingsGroups, {
+      ...group,
+      title: replaceLocalizePlaceholder(group.title) || group.title,
+    });
     this.fireDidSettingsChange();
     return disposable;
   }

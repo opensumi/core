@@ -42,4 +42,11 @@ export interface ISectionItemData {
   title?: string;
   component?: any;
   preference?: IResolvedPreferenceViewDesc;
+
+  /**
+   * 用来标注该 Item 是属于哪个 Section 的
+   *
+   * 一般为 section 的 title
+   */
+  _path?: string;
 }

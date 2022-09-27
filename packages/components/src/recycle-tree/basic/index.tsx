@@ -39,6 +39,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   contextMenus,
   contextMenuActuator,
   supportDynamicHeights,
+  treeName,
 }) => {
   const [showMenus, setShowMenus] = useState<{
     show: boolean;
@@ -50,7 +51,11 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   }>({ show: false });
   const [menubarItems, setMenubarItems] = useState<IBasicTreeMenu[]>([]);
   const [model, setModel] = useState<BasicTreeModel | undefined>();
-  const treeService = useRef<BasicTreeService>(new BasicTreeService(treeData, resolveChildren, sortComparator));
+  const treeService = useRef<BasicTreeService>(
+    new BasicTreeService(treeData, resolveChildren, sortComparator, {
+      treeName,
+    }),
+  );
   const treeHandle = useRef<IRecycleTreeHandle>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
@@ -105,21 +110,39 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     setModel(model);
   };
 
-  const handleTreeReady = useCallback((handle: IRecycleTreeHandle) => {
-    if (onReady) {
-      onReady(handle);
+  const selectItem = async (item: BasicCompositeTreeNode | BasicTreeNode) => {
+    treeService.current?.activeFocusedDecoration(item);
+    if (BasicCompositeTreeNode.is(item)) {
+      toggleDirectory(item);
     }
-    treeHandle.current = handle;
-  }, []);
+  };
+
+  const handleTreeReady = useCallback(
+    (handle: IRecycleTreeHandle) => {
+      if (onReady) {
+        onReady(handle, {
+          selectItemByPath: async (path: string) => {
+            const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as
+              | BasicCompositeTreeNode
+              | BasicTreeNode;
+            if (node) {
+              if (node && node.path !== treeService.current.focusedNode?.path) {
+                selectItem(node);
+              }
+            }
+          },
+        });
+      }
+      treeHandle.current = handle;
+    },
+    [treeService.current.root],
+  );
 
   const handleItemClick = useCallback(
     (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
-      treeService.current?.activeFocusedDecoration(item);
+      selectItem(item);
       if (onClick) {
         onClick(event, item);
-      }
-      if (BasicCompositeTreeNode.is(item)) {
-        toggleDirectory(item);
       }
     },
     [onClick],

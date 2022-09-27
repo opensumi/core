@@ -197,6 +197,7 @@ export const NextPreferenceItem = ({
         [styles.preference_item]: true,
         [styles.modified]: isModified,
       })}
+      data-id={preferenceId}
     >
       {renderPreferenceItem()}
     </div>
@@ -396,7 +397,7 @@ function CheckboxPreferenceItem({
 }
 
 function SelectPreferenceItem({
-  preferenceName,
+  preferenceName: preferenceId,
   localizedName,
   renderedDescription,
   currentValue,
@@ -422,17 +423,17 @@ function SelectPreferenceItem({
 
   const handleValueChange = useCallback(
     (val) => {
-      preferenceService.set(preferenceName, val, scope);
+      preferenceService.set(preferenceId, val, scope);
     },
     [preferenceService],
   );
 
   // enum 本身为 string[] | number[]
-  const labels = settingsService.getEnumLabels(preferenceName);
+  const labels = settingsService.getEnumLabels(preferenceId);
   const renderEnumOptions = useCallback(() => {
     const enums = schema.enum ? [...schema.enum] : [];
     if (!enums.includes(defaultValue)) {
-      logger.warn(`default value(${defaultValue}) of ${preferenceName} not found in its enum field`);
+      logger.warn(`default value(${defaultValue}) of ${preferenceId} not found in its enum field`);
       enums.push(defaultValue);
     }
     return enums.map((item, idx) => {
@@ -490,7 +491,7 @@ function SelectPreferenceItem({
       <div className={styles.key}>
         {localizedName}{' '}
         <SettingStatus
-          preferenceName={preferenceName}
+          preferenceName={preferenceId}
           scope={scope}
           effectingScope={effectingScope}
           showReset={isModified}

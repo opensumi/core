@@ -36,10 +36,14 @@ export function toPreferenceReadableName(name: string) {
 }
 
 export function getPreferenceItemLabel(pref: IPreferenceViewDesc) {
+  let localized: string | undefined;
   if (pref.i18n) {
-    return localize(pref.i18n);
+    localized = localize(pref.i18n);
   }
-  return toPreferenceReadableName(pref.id);
+  if (!localized) {
+    localized = toPreferenceReadableName(pref.id);
+  }
+  return localized;
 }
 
 export function toNormalCase(str: string) {

@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
+import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps, ListOnItemsRenderedProps } from 'react-window';
 
 import { ScrollbarsVirtualList } from '../scrollbars';
 
@@ -104,10 +104,15 @@ export interface IRecycleListProps {
    * https://react-window.vercel.app/#/examples/list/variable-size
    */
   getSize?: (index: number) => number;
+  /**
+   * Called when the items rendered by the list change.
+   */
+  onItemsRendered?: ((props: ListOnItemsRenderedProps) => any) | undefined;
 }
 
 export interface IRecycleListHandler {
   scrollTo: (offset: number) => void;
+  getIndexAtOffset: (offset: number) => number | undefined;
   scrollToIndex: (index: number, position?: Align) => void;
 }
 
@@ -124,6 +129,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   data,
   onReady,
   onScroll: handleScroll,
+  onItemsRendered,
   itemHeight,
   header: Header,
   footer: Footer,
@@ -140,6 +146,20 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
   useEffect(() => {
     if (typeof onReady === 'function') {
       const api = {
+        getIndexAtOffset(offset) {
+          if (typeof itemHeight === 'number') {
+            return Math.floor(offset / itemHeight);
+          } else {
+            const keys = sizeMap.current ? Object.keys(sizeMap.current) : [];
+            let initialOffset = 0;
+            let i = 0;
+            while (initialOffset < offset && i < keys.length) {
+              initialOffset = initialOffset + getSize(i);
+              i++;
+            }
+            return i;
+          }
+        },
         scrollTo: (offset: number) => {
           listRef.current?.scrollTo(offset);
         },
@@ -169,7 +189,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
             }, RECYCLE_LIST_STABILIZATION_TIME);
           }
         },
-      };
+      } as IRecycleListHandler;
       onReady(api);
     }
   }, []);
@@ -359,7 +379,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     );
   });
 
-  const onScroll = (props) => {
+  const onScroll = (props: ListOnScrollProps) => {
     // 当 width/height 改变时，FixedSizeList 会重置 scrollTop
     // 这里存储一下上次的滚动条高度后用于下次渲染时进行同步
     prevScrollOffset.current = props.scrollOffset;
@@ -404,6 +424,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
               innerElementType={InnerElementType}
               outerElementType={ScrollbarsVirtualList}
               estimatedItemSize={calcEstimatedSize}
+              onItemsRendered={onItemsRendered}
             >
               {renderDynamicItem}
             </VariableSizeList>
@@ -428,6 +449,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
               className={cls(className, 'recycle-list')}
               innerElementType={InnerElementType}
               outerElementType={ScrollbarsVirtualList}
+              onItemsRendered={onItemsRendered}
             >
               {renderItem}
             </FixedSizeList>

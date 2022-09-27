@@ -71,7 +71,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
           title:
             this.getLocalizeFromNlsJSON(this.extension.packageJSON.displayName) ||
             this.extension.packageJSON.displayName,
-          automaticallyGroupById: true,
           subSettingSections: sections,
         }),
       );

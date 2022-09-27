@@ -86,6 +86,10 @@ export interface IBasicTreeData {
   [key: string]: any;
 }
 
+export interface IBasicRecycleTreeHandle {
+  selectItemByPath(path: string): Promise<void>;
+}
+
 export interface IBasicRecycleTreeProps {
   /**
    * 节点数据，用于渲染 Tree 的数据
@@ -167,7 +171,12 @@ export interface IBasicRecycleTreeProps {
    * 用于挂载 Tree 上的一些操作方法
    * 如：ensureVisible 等
    */
-  onReady?: (api: IRecycleTreeHandle) => void;
+  onReady?: (api: IRecycleTreeHandle, service: IBasicRecycleTreeHandle) => void;
+
+  /**
+   * 指定 RecycleTree 的名字
+   */
+  treeName?: string;
 }
 
 export interface IBasicNodeProps {
