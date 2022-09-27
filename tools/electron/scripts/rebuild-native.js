@@ -1,8 +1,10 @@
 const { execSync } = require('child_process');
 const { pathExistsSync, copySync, removeSync } = require('fs-extra');
 const { join } = require('path');
-const argv = require('yargs').argv;
 const os = require('os');
+const mri = require('mri');
+
+const argv = mri(process.argv.slice(2));
 
 const nativeModules = [
   join(__dirname, '../node_modules/node-pty'),

@@ -3,10 +3,9 @@ import net from 'net';
 import { RPCServiceCenter, initRPCService } from '@opensumi/ide-connection';
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { createSocketConnection } from '@opensumi/ide-connection/lib/node';
+import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 
 import { KT_PROCESS_SOCK_OPTION_KEY } from '../src/common';
-
-const argv = require('yargs').argv;
 
 export async function initMockRPCProtocol(client): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();

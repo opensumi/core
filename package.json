@@ -69,6 +69,7 @@
     "lerna": "^4.0.0",
     "lint-staged": "^12.1.2",
     "lodash": "^4.17.15",
+    "mri": "^1.2.0",
     "node-gyp": "^9.0.0"
   },
   "lint-staged": {
@@ -104,12 +105,12 @@
     "@types/socket.io-client": "^1.4.32",
     "@types/temp": "^0.9.1",
     "@types/ws": "^6.0.1",
-    "@types/yargs": "^17.0.10",
     "@typescript-eslint/eslint-plugin": "^5.12.1",
     "@typescript-eslint/parser": "^5.12.1",
     "async-retry": "^1.3.1",
     "await-event": "^2.1.0",
     "chalk": "^4.1.2",
+    "compressing": "^1.6.2",
     "cross-env": "^7.0.3",
     "debug": "^4.3.2",
     "depcheck": "^1.4.2",
@@ -139,8 +140,6 @@
     "ts-node": "^10.0.0",
     "tslib": "^2.4.0",
     "typescript": "4.6.4",
-    "webpack": "^4.39.3",
-    "yargs": "^17.5.0",
-    "compressing": "^1.6.2"
+    "webpack": "^4.39.3"
   }
 }

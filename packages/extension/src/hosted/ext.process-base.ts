@@ -15,6 +15,7 @@ import {
   isPromiseCanceledError,
   locale,
 } from '@opensumi/ide-core-common';
+import { argv } from '@opensumi/ide-core-common/lib/node/cli';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { ProcessMessageType, IExtensionHostService, KT_PROCESS_SOCK_OPTION_KEY, KT_APP_CONFIG_KEY } from '../common';
@@ -29,7 +30,6 @@ import '@opensumi/ide-i18n';
 setPerformance(performance);
 
 Error.stackTraceLimit = 100;
-const argv = require('yargs').argv;
 let logger: any = console;
 let preload: IExtensionHostService;
 export interface IBuiltInCommand {

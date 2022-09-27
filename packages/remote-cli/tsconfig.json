@@ -18,7 +18,8 @@
     "noEmitOnError": false,
     "noImplicitAny": false,
     "skipLibCheck": true,
-    "strictFunctionTypes": false
+    "strictFunctionTypes": false,
+    "esModuleInterop": true
   },
   "include": ["./src"]
 }
