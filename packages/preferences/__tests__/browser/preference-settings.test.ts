@@ -30,7 +30,11 @@ describe('PreferenceSettingService should be work', () => {
   beforeAll(async () => {
     injector = createBrowserInjector([]);
 
-    mockPreferenceSchemaProvider = {};
+    mockPreferenceSchemaProvider = {
+      getPreferenceProperty() {
+        return {};
+      },
+    };
 
     mockPreferenceService = {
       set: jest.fn(),
