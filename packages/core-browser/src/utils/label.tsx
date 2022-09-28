@@ -3,13 +3,13 @@ import React, { CSSProperties } from 'react';
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
 
 const SEPERATOR = ' ';
-const ICON_REGX = /\$\(.*?\)/gi;
 
 export function transformLabelWithCodicon(
   label: string,
   iconStyles: CSSProperties = {},
   transformer?: (str: string) => string | undefined,
 ) {
+  const ICON_REGX = /\$\(.*?\)/gi;
   return label.split(SEPERATOR).map((e) => {
     let icon: string | undefined;
     if (transformer) {
