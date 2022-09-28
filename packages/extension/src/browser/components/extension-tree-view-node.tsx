@@ -7,8 +7,9 @@ import { getIcon } from '@opensumi/ide-core-browser';
 import { TitleActionList } from '@opensumi/ide-core-browser/lib/components/actions';
 import { MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
+import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
 import { IDecorationsService } from '@opensumi/ide-decoration/lib/common/decorations';
-import { IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
+import { IIconService, IThemeService } from '@opensumi/ide-theme/lib/common/theme.service';
 
 import styles from '../vscode/api/tree-view/tree-view-node.module.less';
 import { ExtensionTreeNode, ExtensionCompositeTreeNode } from '../vscode/api/tree-view/tree-view.node.defined';
@@ -47,6 +48,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   treeViewId,
   decorationService,
 }: TreeViewNodeRenderedProps) => {
+  const iconService = useInjectable<IIconService>(IIconService);
   const [decoration, setDecoration] = React.useState(item.uri && decorationService.getDecoration(item.uri, false));
 
   React.useEffect(() => {
@@ -203,7 +205,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     const color = kolor && themeService.getColor({ id: kolor });
     return (
       <div className={styles.tree_view_node_tail} style={{ color }}>
-        {badge.slice()}
+        {transformLabelWithCodicon(badge.slice(), {}, iconService.fromString.bind(iconService))}
       </div>
     );
   };

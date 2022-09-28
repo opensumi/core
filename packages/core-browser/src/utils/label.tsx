@@ -1,0 +1,27 @@
+import React, { CSSProperties } from 'react';
+
+import { Icon } from '@opensumi/ide-components/lib/icon/icon';
+
+const SEPERATOR = ' ';
+const ICON_REGX = /\$\(.*?\)/gi;
+
+export function transformLabelWithCodicon(
+  label: string,
+  iconStyles: CSSProperties = {},
+  transformer?: (str: string) => string | undefined,
+) {
+  return label.split(SEPERATOR).map((e) => {
+    let icon: string | undefined;
+    if (transformer) {
+      icon = transformer(e);
+    }
+    if (icon && transformer) {
+      return <Icon className={icon} style={iconStyles} />;
+    } else if (ICON_REGX.test(e)) {
+      const newStr = e.replaceAll(/\$\(.*?\)/gi, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
+      return transformLabelWithCodicon(newStr, iconStyles, transformer);
+    } else {
+      return <span>{e}</span>;
+    }
+  });
+}

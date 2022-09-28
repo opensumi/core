@@ -8,9 +8,12 @@ import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/c
 import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
+import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
+import { IIconService } from '@opensumi/ide-theme';
 
 import { AccordionService } from './accordion.service';
 import styles from './styles.module.less';
+
 
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // panel 头部标题
@@ -66,6 +69,7 @@ export const AccordionSection = ({
   accordionService,
   onContextMenuHandler,
 }: CollapsePanelProps) => {
+  const iconService = useInjectable<IIconService>(IIconService);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [headerFocused, setHeaderFocused] = React.useState(false);
@@ -145,7 +149,7 @@ export const AccordionSection = ({
             </div>
             {headerDescription && (
               <div className={styles.section_description} style={{ lineHeight: headerSize + 'px' }}>
-                {headerDescription}
+                {transformLabelWithCodicon(headerDescription, {}, iconService.fromString.bind(iconService))}
               </div>
             )}
           </div>
