@@ -1,6 +1,6 @@
 import { TreeNode, CompositeTreeNode, ITree } from '@opensumi/ide-components';
 import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IAccessibilityInformation, isObject, isString } from '@opensumi/ide-core-common';
+import { IAccessibilityInformation, isObject, isString, Uri, UriComponents } from '@opensumi/ide-core-common';
 
 import { ITreeItemLabel } from '../../../../common/vscode';
 import { ICommand } from '../../../../common/vscode/models';
@@ -45,6 +45,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
   private _command?: ICommand;
   private _tooltip?: string;
   private _resolved = false;
+  private sourceUri?: UriComponents;
 
   constructor(
     tree: TreeViewDataProvider,
@@ -59,9 +60,11 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     public actions: MenuNode[],
     private _accessibilityInformation?: IAccessibilityInformation,
     expanded?: boolean,
+    sourceUri?: UriComponents,
   ) {
     super(tree, parent, undefined, { name: treeItemId });
     this.isExpanded = expanded || false;
+    this.sourceUri = sourceUri;
     this._command = command;
     this._tooltip = tooltip;
     if (isString(label)) {
@@ -98,6 +101,10 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
 
   get strikethrough() {
     return this._strikethrough;
+  }
+
+  get uri(): Uri | undefined {
+    return this.sourceUri && Uri.from(this.sourceUri);
   }
 
   get highlights() {
@@ -140,6 +147,7 @@ export class ExtensionTreeNode extends TreeNode {
     public treeItemId: string = '',
     public actions: MenuNode[],
     private _accessibilityInformation?: IAccessibilityInformation,
+    private sourceUri?: UriComponents,
   ) {
     super(tree as ITree, parent, undefined, { name: treeItemId });
     if (isString(label)) {
@@ -157,6 +165,10 @@ export class ExtensionTreeNode extends TreeNode {
 
   get command() {
     return this._command;
+  }
+
+  get uri(): Uri | undefined {
+    return this.sourceUri && Uri.from(this.sourceUri);
   }
 
   get tooltip() {

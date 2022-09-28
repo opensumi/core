@@ -364,6 +364,7 @@ export class TreeViewDataProvider extends Tree {
       actions,
       item.accessibilityInformation,
       expanded,
+      item.resourceUri,
     );
     return node;
   }
@@ -384,6 +385,7 @@ export class TreeViewDataProvider extends Tree {
       item.id,
       actions,
       item.accessibilityInformation,
+      item.resourceUri,
     );
     return node;
   }
