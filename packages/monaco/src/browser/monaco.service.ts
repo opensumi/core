@@ -64,7 +64,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
     // revert because https://github.com/opensumi/core/issues/124
     // const overflowWidgetsContainer = document.createElement('div');
-    // 让该容器的子元素都能被应用到 manaco-editor 中的样式
+    // 让该容器的子元素都能被应用到 monaco-editor 中的样式
     // overflowWidgetsContainer.className = 'monaco-editor';
     // overflowWidgetsContainer.id = SUMI_OVERFLOW_WIDGETS_CONTAINER_ID;
     // document.body.appendChild(overflowWidgetsContainer);

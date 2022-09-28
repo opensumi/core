@@ -42,6 +42,7 @@ export class TabBarHandler {
       }
     });
   }
+
   /**
    * dispose 整个视图面板
    */

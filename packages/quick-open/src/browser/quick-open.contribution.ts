@@ -8,6 +8,7 @@ import {
   KeybindingRegistry,
   localize,
   QUICK_OPEN_COMMANDS,
+  LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { ClientAppContribution } from '@opensumi/ide-core-browser';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -73,6 +74,13 @@ export class QuickOpenFeatureContribution
       command: {
         id: QUICK_OPEN_COMMANDS.OPEN.id,
         label: localize('menu-bar.view.quick.command'),
+      },
+      group: '0_primary',
+    });
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: LAYOUT_COMMANDS.OPEN_VIEW.id,
+        label: LAYOUT_COMMANDS.OPEN_VIEW.label,
       },
       group: '0_primary',
     });

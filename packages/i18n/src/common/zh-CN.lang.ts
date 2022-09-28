@@ -83,15 +83,10 @@ export const localizationBundle = {
     'menu-bar.file.save-as': '另存为',
     'menu-bar.file.save-all': '全部保存',
     'menu-bar.view.quick.command': '命令面板',
-    'menu-bar.view.outward': '外观',
-    'menu-bar.view.outward.right-panel.toggle': '切换右侧面板',
-    'menu-bar.view.outward.right-panel.hide': '隐藏右侧面板',
-    'menu-bar.view.outward.right-panel.show': '显示右侧面板',
-    'menu-bar.view.outward.left-panel.hide': '隐藏左侧面板',
-    'menu-bar.view.outward.left-panel.show': '显示左侧面板',
-    'menu-bar.view.outward.theme.toggle': '切换皮肤',
-    'menu-bar.view.outward.localize.toggle': '切换语言',
-    'menu-bar.view.outward.localize.toogle.message': '已经切换到语言: %s',
+
+    'menu-bar.go.jumpToBracket': '跳转到括号',
+    'menu-bar.go.nextProblemInFiles': '下一个问题',
+    'menu-bar.go.prevProblemInFiles': '上一个问题',
 
     editor: '编辑器',
     'editor.undo': '撤销',
@@ -702,6 +697,10 @@ export const localizationBundle = {
     'terminal.focusFolder': '聚焦资源管理器中的文件夹',
     'terminal.openFolder': '在新窗口中打开文件夹',
 
+    'view.command.show': '打开 {0}',
+
+    'layout.tabbar.setting': '打开偏好设置',
+
     'terminal.focusNext.inTerminalGroup': '聚焦当前终端组中的下一个终端',
     'terminal.focusPrevious.inTerminalGroup': '聚焦当前终端组中的上一个终端',
 
@@ -756,7 +755,7 @@ export const localizationBundle = {
     'keymaps.editorTitle.openKeymap': '打开键盘快捷方式(可视化)',
 
     'keybinding.combination.tip': '已按下({0}), 等待同时按下第二个键',
-    'layout.tabbar.toggle': '隐藏面板',
+    'layout.tabbar.toggle': '切换底部面板显示',
     'layout.tabbar.expand': '最大化底部面板',
     'layout.tabbar.retract': '缩回底部面板',
     'layout.view.hide': '隐藏',

@@ -196,7 +196,7 @@ export const IconTabView: React.FC<{ component: ComponentRegistryInfo }> = obser
 
 export const TextTabView: React.FC<{ component: ComponentRegistryInfo }> = observer(({ component }) => (
   <div className={styles.text_tab}>
-    <div className={styles.bottom_tab_title}>{component.options?.title}</div>
+    <div className={styles.bottom_tab_title}>{component.options?.title?.toUpperCase()}</div>
     {component.options?.badge && <Badge className={styles.tab_badge}>{component.options?.badge}</Badge>}
   </div>
 ));

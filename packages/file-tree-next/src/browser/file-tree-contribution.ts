@@ -172,9 +172,13 @@ export class FileTreeContribution
     this.isRendered = true;
     const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
     if (handler) {
+      // 初始化时根据状态来设置 contextKey
+      this.fileTreeModelService.whenReady.then(() => {
+        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(handler.isActivated());
+      });
       handler.onActivate(() => {
-        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(true);
         this.fileTreeModelService.performLocationOnHandleShow();
+        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(true);
       });
       handler.onInActivate(() => {
         this.fileTreeModelService.handleTreeBlur();
@@ -721,7 +725,9 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_PATH, {
       execute: async (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         const copyUri: URI = uri;
         let pathStr: string = decodeURIComponent(copyUri.path.toString());
         // windows下移除路径前的 /
@@ -735,7 +741,9 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.COPY_RELATIVE_PATH, {
       execute: async (uri) => {
-        if (!uri) {return;}
+        if (!uri) {
+          return;
+        }
         let rootUri: URI;
         if (this.fileTreeService.isMultipleWorkspace) {
           // 多工作区额外处理

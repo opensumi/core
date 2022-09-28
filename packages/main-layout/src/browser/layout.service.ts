@@ -294,8 +294,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
       if (!containerId) {
         this.debug.warn(`${viewOrContainerId} view tabbar not found.`);
+      } else {
+        handler = this.doGetTabbarHandler(containerId || '');
       }
-      handler = this.doGetTabbarHandler(containerId || '');
     }
     return handler;
   }

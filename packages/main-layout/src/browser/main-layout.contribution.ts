@@ -11,8 +11,20 @@ import {
   IQuickOpenHandlerRegistry,
   QuickOpenContribution,
   QUICK_OPEN_COMMANDS,
+  EDITOR_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
+import {
+  DEBUG_CONSOLE_CONTAINER_ID,
+  DEBUG_CONTAINER_ID,
+  EXPLORER_CONTAINER_ID,
+  EXTENSION_CONTAINER_ID,
+  MARKER_CONTAINER_ID,
+  OUTPUT_CONTAINER_ID,
+  SCM_CONTAINER_ID,
+  SEARCH_CONTAINER_ID,
+  TERMINAL_CONTAINER_ID,
+} from '@opensumi/ide-core-browser/lib/common/container-id';
 import {
   ComponentContribution,
   ComponentRegistry,
@@ -328,19 +340,79 @@ export class MainLayoutModuleContribution
     menus.registerMenuItem(MenuId.ActivityBarExtra, {
       submenu: MenuId.SettingsIconMenu,
       iconClass: getIcon('setting'),
-      label: localize('layout.tabbar.setting', '打开偏好设置'),
+      label: localize('layout.tabbar.setting'),
       order: 1,
       group: 'navigation',
+    });
+
+    Object.entries({
+      [SlotLocation.left]: [
+        EXPLORER_CONTAINER_ID,
+        SEARCH_CONTAINER_ID,
+        SCM_CONTAINER_ID,
+        DEBUG_CONTAINER_ID,
+        EXTENSION_CONTAINER_ID,
+      ],
+      [SlotLocation.bottom]: [
+        MARKER_CONTAINER_ID,
+        OUTPUT_CONTAINER_ID,
+        DEBUG_CONSOLE_CONTAINER_ID,
+        TERMINAL_CONTAINER_ID,
+      ],
+    }).forEach(([slotLocation, containerIds], index) => {
+      /**
+       * 这里使用 getContainer 是因为可能我们要注册到 menu 上的 id 在集成方并没有挂载。
+       * 所以如果 getContainer 有值，说明集成方也使用了这个 container，我们就把它注册到 menu 上
+       */
+      const tabbarService = this.mainLayoutService.getTabbarService(slotLocation);
+
+      tabbarService.viewReady.promise.then(() => {
+        containerIds.forEach((id) => {
+          const info = tabbarService.getContainer(id);
+          if (info) {
+            menus.registerMenuItem(MenuId.MenubarViewMenu, {
+              command: {
+                id: `container.toggle.${id}`,
+                label: info.options?.title ?? id,
+              },
+              // 因为当前菜单已有菜单项，这里从 3 开始
+              group: `${3 + index}_${slotLocation}`,
+            });
+          }
+        });
+      });
     });
 
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: TOGGLE_LEFT_PANEL_COMMAND,
       group: '5_panel',
     });
-
     menus.registerMenuItem(MenuId.MenubarViewMenu, {
       command: TOGGLE_RIGHT_PANEL_COMMAND,
       group: '5_panel',
+    });
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: TOGGLE_BOTTOM_PANEL_COMMAND as MenuCommandDesc,
+      group: '5_panel',
+    });
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: EXPAND_BOTTOM_PANEL as MenuCommandDesc,
+      group: '5_panel',
+      when: '!bottomFullExpanded',
+    });
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: RETRACT_BOTTOM_PANEL as MenuCommandDesc,
+      group: '5_panel',
+      when: 'bottomFullExpanded',
+    });
+
+    menus.registerMenuItem(MenuId.MenubarViewMenu, {
+      command: {
+        id: EDITOR_COMMANDS.TOGGLE_WORD_WRAP.id,
+        label: '%preference.editor.wordWrap%',
+      },
+      group: '6_capability',
+      toggledWhen: 'config.editor.wordWrap == on',
     });
   }
 
