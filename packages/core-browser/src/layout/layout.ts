@@ -55,6 +55,8 @@ export interface SideStateManager {
 export interface View {
   id: string;
   name?: string;
+  description?: string;
+  message?: string;
   weight?: number;
   priority?: number;
   collapsed?: boolean;
