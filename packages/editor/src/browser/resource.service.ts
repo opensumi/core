@@ -234,7 +234,6 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   getResourceSubname(resource: IResource<any>, groupResources: IResource<any>[]): string | null {
     const provider = this.getProvider(resource.uri);
     if (!provider) {
-      this.logger.error('URI has no resource provider: ' + resource.uri);
       return null; // no provider
     } else if (!provider.provideResourceSubname) {
       return null;
