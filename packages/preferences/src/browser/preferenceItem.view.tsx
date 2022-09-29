@@ -322,7 +322,7 @@ function InputPreferenceItem({
   }
 
   return (
-    <div className={styles.preference_line}>
+    <>
       <div className={styles.key}>
         {localizedName}{' '}
         <SettingStatus
@@ -348,7 +348,7 @@ function InputPreferenceItem({
           />
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -375,7 +375,7 @@ function CheckboxPreferenceItem({
   };
 
   return (
-    <div className={styles.preference_line}>
+    <>
       <div className={classnames(styles.check, styles.key)}>
         <CheckBox
           label={localizedName}
@@ -392,7 +392,7 @@ function CheckboxPreferenceItem({
         />
       </div>
       {renderedDescription}
-    </div>
+    </>
   );
 }
 
@@ -487,7 +487,7 @@ function SelectPreferenceItem({
   );
 
   return (
-    <div className={styles.preference_line}>
+    <>
       <div className={styles.key}>
         {localizedName}{' '}
         <SettingStatus
@@ -512,7 +512,7 @@ function SelectPreferenceItem({
           {options}
         </Select>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -532,7 +532,7 @@ function EditInSettingsJsonPreferenceItem({
   };
 
   return (
-    <div className={styles.preference_line}>
+    <>
       <div className={styles.key}>
         {localizedName}{' '}
         <SettingStatus
@@ -546,7 +546,7 @@ function EditInSettingsJsonPreferenceItem({
       <div className={styles.control_wrap}>
         <a onClick={editSettingsJson}>{localize('preference.editSettingsJson')}</a>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -683,7 +683,7 @@ function StringArrayPreferenceItem({
   };
 
   return (
-    <div className={styles.preference_line}>
+    <>
       <div className={styles.key}>
         {localizedName}{' '}
         <SettingStatus
@@ -711,6 +711,6 @@ function StringArrayPreferenceItem({
           </Button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

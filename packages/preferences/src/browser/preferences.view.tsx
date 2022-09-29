@@ -2,20 +2,19 @@ import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
-import type { ListOnScrollProps } from 'react-window';
 
 import {
   Input,
   ComponentContextProvider,
   Tabs,
-  RecycleList,
   IIconResourceOptions,
   BasicRecycleTree,
   IBasicTreeData,
   IRecycleTreeHandle,
   IBasicRecycleTreeHandle,
 } from '@opensumi/ide-components';
-import { IVirtualListRange, VirtualList } from '@opensumi/ide-components/lib/virtual-list';
+import { VirtualList } from '@opensumi/ide-components/lib/virtual-list';
+import { IVirtualListRange } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
   useInjectable,
   localize,
@@ -203,10 +202,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         let innerItems = [] as ISectionItemData[];
 
         if (section.component) {
-          innerItems.push({ component: section.component, scope: currentScope });
+          innerItems.push({
+            component: section.component,
+            scope: currentScope,
+          });
         } else if (section.preferences) {
           innerItems = innerItems.concat(
-            section.preferences.map((pre) => ({ preference: pre, scope: currentScope, _path: currentItemPath })),
+            section.preferences.map((pre) => ({
+              preference: pre,
+              scope: currentScope,
+              _path: currentItemPath,
+            })),
           );
         } else if (section.subSettingSections) {
           section.subSettingSections.forEach((v) => {
