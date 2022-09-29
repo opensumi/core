@@ -70,7 +70,7 @@ export class MarkdownServiceImpl implements IMarkdownService {
     return disposer;
   }
 
-  async getBody(content): Promise<string> {
+  async getBody(content: string): Promise<string> {
     return new Promise((resolve, reject) => {
       parseMarkdown(content, undefined, (err, result) => {
         if (err) {
