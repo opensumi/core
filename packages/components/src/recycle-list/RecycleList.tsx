@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps, ListOnItemsRenderedProps } from 'react-window';
 
@@ -116,7 +116,7 @@ export interface IRecycleListHandler {
   scrollToIndex: (index: number, position?: Align) => void;
 }
 
-export const RECYCLE_LIST_STABILIZATION_TIME = 500;
+export const RECYCLE_LIST_STABILIZATION_TIME = 300;
 export const RECYCLE_LIST_OVER_SCAN_COUNT = 50;
 
 export const RecycleList: React.FC<IRecycleListProps> = ({

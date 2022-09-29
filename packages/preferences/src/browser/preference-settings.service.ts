@@ -2,6 +2,7 @@ import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { IBasicRecycleTreeHandle, IRecycleListHandler, IRecycleTreeHandle } from '@opensumi/ide-components';
+import { IVirtualListHandle } from '@opensumi/ide-components/lib/virtual-list';
 import {
   IPreferenceViewDesc,
   IPreferenceSettingsService,
@@ -78,7 +79,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   private cachedGroupSection: Map<string, IResolvedSettingSection[]> = new Map();
 
-  private _listHandler: IRecycleListHandler;
+  private _listHandler: IVirtualListHandle;
   private _treeHandler: IRecycleTreeHandle;
   private _basicTreeHandler: IBasicRecycleTreeHandle;
   private onDidEnumLabelsChangeEmitter: Emitter<void> = new Emitter();
@@ -151,7 +152,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     return this._listHandler;
   }
 
-  handleListHandler = (handler: any) => {
+  handleListHandler = (handler: IVirtualListHandle) => {
     this._listHandler = handler;
   };
 

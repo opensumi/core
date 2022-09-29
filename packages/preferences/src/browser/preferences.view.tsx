@@ -15,6 +15,7 @@ import {
   IRecycleTreeHandle,
   IBasicRecycleTreeHandle,
 } from '@opensumi/ide-components';
+import { IVirtualListRange, VirtualList } from '@opensumi/ide-components/lib/virtual-list';
 import {
   useInjectable,
   localize,
@@ -30,6 +31,7 @@ import {
   IResolvedSettingSection,
 } from '@opensumi/ide-core-browser';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components/layout/split-panel';
+import useThrottleFn from '@opensumi/ide-core-browser/lib/react-hooks/useThrottle';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
 import { ISectionItemData, toNormalCase } from '../common';
@@ -228,28 +230,43 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   }, [currentGroup, currentScope, currentSearchText]);
 
   const navigateTo = (title: string) => {
-    const index = items.findIndex((item) => item.title === title);
-    if (index >= 0) {
-      preferenceService.listHandler?.scrollToIndex(index);
-    }
-  };
-
-  const onScroll = (props: ListOnScrollProps) => {
-    const index = preferenceService.listHandler?.getIndexAtOffset(props.scrollOffset);
-    if (index) {
-      const item = items[index];
-      if (item && item._path) {
-        preferenceService.basicTreeHandler?.selectItemByPath(`/${TreeName}/${item._path}`);
+    if (title) {
+      const index = items.findIndex((item) => item.title === title);
+      if (index >= 0) {
+        preferenceService.listHandler?.scrollToIndex({
+          index,
+          behavior: 'auto',
+          align: 'start',
+        });
       }
     }
   };
+
+  const onRangeChanged = useThrottleFn(
+    (range: IVirtualListRange) => {
+      // 当我们点击左侧的 section 的时候，我们的设计是让每一个 section 的 title 滚到顶部
+      // 此时仍然会触发该事件，但有时可能因为计算取整等原因，它上报的 startIndex 是 title 的上一个 index。
+      // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
+      const item = items[range.startIndex + 1];
+      if (item && item._path) {
+        preferenceService.basicTreeHandler?.selectItemByPath(`/${TreeName}/${item._path}`);
+      }
+    },
+    {
+      wait: 100,
+      trailing: true,
+    },
+  );
 
   React.useEffect(() => {
     if (currentSelectSection) {
       navigateTo(currentSelectSection);
     } else {
       // 切换 group 后滚到顶部
-      preferenceService.listHandler?.scrollToIndex(0);
+      preferenceService.listHandler?.scrollToIndex({
+        index: 0,
+        behavior: 'auto',
+      });
     }
   }, [items, currentSelectSection]);
 
@@ -321,7 +338,11 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
             {/* @ts-ignore [SplitPanel 需要 flex 属性] */}
             <div className={styles.preferences_items} flex={1}>
-              <PreferenceBody items={items} onReady={preferenceService.handleListHandler} onScroll={onScroll} />
+              <PreferenceBody
+                items={items}
+                onReady={preferenceService.handleListHandler}
+                onRangeChanged={onRangeChanged.run}
+              />
             </div>
           </SplitPanel>
         ) : (
@@ -361,19 +382,20 @@ export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index:
 export const PreferenceBody = ({
   items,
   onReady,
-  onScroll,
+  onRangeChanged,
 }: {
   items: ISectionItemData[];
   onReady: (handler: any) => void;
-  onScroll: (props: ListOnScrollProps) => any;
+  onRangeChanged: (props: IVirtualListRange) => any;
 }) => (
-  <RecycleList
-    onReady={onReady}
+  <VirtualList
+    // onReady={onReady}
     data={items}
     template={PreferenceItem as React.FunctionComponent<{ data: ISectionItemData; index: number }>}
     className={styles.preference_section}
     // 防止底部选择框无法查看的临时处理方式
-    paddingBottomSize={100}
-    onScroll={onScroll}
+    refSetter={onReady}
+    // paddingBottomSize={100}
+    onRangeChanged={onRangeChanged}
   />
 );
