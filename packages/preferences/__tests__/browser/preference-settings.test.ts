@@ -147,8 +147,8 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('handleListHandler', () => {
-      const handler = { open: () => {} };
-      preferenceSettingsService.handleListHandler(handler);
+      const handler = { scrollToIndex: () => {}, autoscrollToBottom: () => {} };
+      preferenceSettingsService.handleListHandler(handler as any);
       expect(preferenceSettingsService.listHandler).toEqual(handler);
     });
 
