@@ -62,7 +62,15 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     }
     const description = from && typeof from === 'string' ? `${localize('component.message.origin')}: ${from}` : '';
     const key = uuid();
-    const promise = open<T>(toMarkdown(message, this.openerService), type, closable, key, buttons, description);
+    const promise = open<T>(
+      toMarkdown(message, this.openerService),
+      type,
+      closable,
+      key,
+      buttons,
+      description,
+      MessageService.DURATION[type],
+    );
     return promise || Promise.resolve(undefined);
   }
 

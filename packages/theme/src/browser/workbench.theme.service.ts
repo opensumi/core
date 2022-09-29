@@ -24,7 +24,13 @@ import {
 
 import { ICSSStyleService } from '../common';
 import { Color } from '../common/color';
-import { getColorRegistry } from '../common/color-registry';
+import {
+  editorSelectionBackground,
+  getColorRegistry,
+  ktInputSelectionBackground,
+  menuDisableForeground,
+  selectionBackground,
+} from '../common/color-registry';
 import { ThemeChangedEvent } from '../common/event';
 import {
   ITheme,
@@ -183,7 +189,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       return;
     }
     const themeType = getThemeType(theme.base);
-
     this.currentTheme = new Theme(themeType, theme);
     this.currentTheme.setCustomColors(this.colorCustomizations);
     this.currentTheme.setCustomTokenColors(this.tokenColorCustomizations);
@@ -434,13 +439,20 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       const color = theme.getColor(colorId);
       colors[colorId] = color ? color.toString() : '';
     });
-    // 添加一些额外计算出的颜色
+    /** @deprecated Needs to be removed start */
     const foreground = theme.getColor('foreground');
     if (foreground) {
       colors['foreground.secondary'] = foreground.darken(0.2).toString();
     }
     if (theme.getColor('menu.foreground')) {
-      colors['menu.foreground.disabled'] = theme.getColor('menu.foreground')!.darken(0.4).toString();
+      colors[menuDisableForeground] = theme.getColor('menu.foreground')!.darken(0.4).toString();
+    }
+    /** Needs to be removed end */
+
+    // fallback to editorSelectionBackground when global selectionBackgroun is null.
+    if (!theme.getColor(selectionBackground)) {
+      colors[selectionBackground] = theme.getColor(editorSelectionBackground)?.toString();
+      colors[ktInputSelectionBackground] = colors[selectionBackground];
     }
 
     let cssVariables = ':root{';
