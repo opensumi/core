@@ -48,10 +48,7 @@
     .preferences_indexes {
       padding-top: 16px;
       height: 100%;
-      .index_item_wrapper {
-        margin-bottom: 2px;
-      }
-      .index_item {
+      .group_item {
         height: 26px;
         font-size: @base-font-size;
         line-height: 26px;
@@ -59,22 +56,23 @@
         cursor: pointer;
         white-space: nowrap;
         user-select: none;
+        margin-bottom: 2px;
 
-        > span {
-          margin-right: 5px;
-          display: inline-block;
-          font-size: 1em;
-        }
         &:hover {
           color: var(--list-hoverForeground);
           background-color: var(--list-hoverBackground);
         }
-        &.activated {
-          color: var(--list-activeSelectionForeground);
-          background: var(--list-activeSelectionBackground);
-        }
+      }
+
+      .index_item {
+        color: var(--titleBar-inactiveForeground);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        cursor: pointer;
       }
     }
+
     .preferences_items {
       height: 100%;
       width: 100%;

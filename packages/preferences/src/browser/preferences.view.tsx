@@ -320,7 +320,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                   }}
                   height={height}
                   width={width}
-                  itemHeight={24}
+                  itemHeight={26}
+                  getItemClassName={(item) => {
+                    if (item?.depth === 1) {
+                      return styles.group_item;
+                    }
+                    return styles.index_item;
+                  }}
+                  // itemHeight={24}
                   baseIndent={8}
                   treeData={treeData}
                   onClick={(_e, node) => {

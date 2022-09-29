@@ -15,7 +15,6 @@ export const BasicTreeNodeRenderer: React.FC<
   item,
   className,
   itemHeight = 22,
-  baseIndent = 8,
   indent = 8,
   onClick,
   onDbClick,
@@ -68,7 +67,7 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-  const paddingLeft = `${baseIndent + (item.depth || 0) * (indent || 0)}px`;
+  const paddingLeft = `${(item.depth || 0) * (indent || 0)}px`;
 
   const editorNodeStyle = {
     height: itemHeight,
@@ -78,7 +77,7 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderIcon = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight }} />
+      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
     ),
     [],
   );

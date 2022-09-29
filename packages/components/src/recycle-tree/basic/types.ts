@@ -177,6 +177,8 @@ export interface IBasicRecycleTreeProps {
    * 指定 RecycleTree 的名字
    */
   treeName?: string;
+
+  getItemClassName?: (item?: ITreeNodeOrCompositeTreeNode) => string | undefined;
 }
 
 export interface IBasicNodeProps {
@@ -192,10 +194,6 @@ export interface IBasicNodeProps {
    * 每层的节点缩进长度
    */
   indent?: number;
-  /**
-   * 第一层距离左边的距离，默认为 8
-   */
-  baseIndent?: number;
   /**
    * 节点装饰
    */
