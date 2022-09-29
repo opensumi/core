@@ -25,6 +25,8 @@ const { Path } = path;
 
 @Injectable()
 export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {
+  private static SUBNAME_LIMIT = 20;
+
   @Autowired()
   protected labelService: LabelService;
 
@@ -132,7 +134,17 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       }
     }
     if (shouldDiff.length > 0) {
-      return '...' + Path.separator + getMinimalDiffPath(resource.uri, shouldDiff);
+      const tail = getMinimalDiffPath(resource.uri, shouldDiff);
+      if (tail.startsWith(Path.separator)) {
+        // 说明当前为全路径
+        if (tail.length > FileSystemResourceProvider.SUBNAME_LIMIT) {
+          return '...' + tail.slice(tail.length - FileSystemResourceProvider.SUBNAME_LIMIT);
+        } else {
+          return tail;
+        }
+      } else {
+        return '...' + Path.separator + getMinimalDiffPath(resource.uri, shouldDiff);
+      }
     } else {
       return null;
     }
@@ -194,9 +206,9 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
     // 询问用户是否保存
     const buttons = {
-      [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
-      [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
-      [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
+      [localize('file.prompt.dontSave', "Don't Save")]: AskSaveResult.REVERT,
+      [localize('file.prompt.save', 'Save')]: AskSaveResult.SAVE,
+      [localize('file.prompt.cancel', 'Cancel')]: AskSaveResult.CANCEL,
     };
     const selection = await this.dialogService.open(
       formatLocalize('saveChangesMessage', resource.name),
@@ -209,7 +221,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 }
 
 /**
- * 找到source文件url和中从末尾开始和target不一样的path
+ * 找到 source 文件 url 和中从末尾开始和 target 不一样的 path
  * @param source
  * @param targets
  */
