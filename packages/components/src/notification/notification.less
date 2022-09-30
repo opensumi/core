@@ -49,6 +49,7 @@
       color: @heading-color;
       font-size: @font-size-lg;
       line-height: 24px;
+      word-break: break-word;
 
       // https://github.com/ant-design/ant-design/issues/5846#issuecomment-296244140
       &-single-line-auto-margin {
@@ -206,7 +207,6 @@
 .@{notification-prefix-cls}-wrapper {
   background: var(--notifications-background) !important;
   border-color: var(--notifications-border) !important;
-  word-break: keep-all;
   padding: 12px !important;
   position: relative;
 
@@ -237,6 +237,7 @@
     &-btn button {
       flex: 0 0 auto;
       margin: 0 0 5px 10px;
+      word-break: keep-all;
     }
   }
 }
