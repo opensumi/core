@@ -20,6 +20,7 @@ import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser
 
 import {
   ThemeType,
+  IconThemeType,
   IIconService,
   ThemeContribution,
   getThemeId,
@@ -212,7 +213,7 @@ export class IconService extends WithEventBus implements IIconService {
 
   fromIcon(
     basePath = '',
-    icon?: { [index in ThemeType]: string } | string,
+    icon?: { [index in IconThemeType]: string } | string,
     type: IconType = IconType.Mask,
     shape: IconShape = IconShape.Square,
     fromExtension = false,

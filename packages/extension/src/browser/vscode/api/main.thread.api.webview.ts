@@ -405,7 +405,7 @@ export class MainThreadWebview extends Disposable implements IMainThreadWebview 
     this._persistWebviewPanelMeta(id);
   }
 
-  $setIconPath(id: string, value: { light: string; dark: string; hc: string } | undefined): void {
+  $setIconPath(id: string, value: { light: string; dark: string } | undefined): void {
     const webviewPanel = this.getWebviewPanel(id);
     if (!webviewPanel.editorWebview) {
       return;

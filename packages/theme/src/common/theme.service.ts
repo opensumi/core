@@ -57,7 +57,7 @@ export interface IIconService {
    */
   fromIcon(
     basePath: string,
-    icon?: { [index in ThemeType]: string } | string,
+    icon?: { [index in IconThemeType]: string } | string,
     type?: IconType,
     shape?: IconShape,
     fromExtension?: boolean,
@@ -207,6 +207,8 @@ export const LIGHT: ThemeType = 'light';
 export const HIGH_CONTRAST_DARK: ThemeType = 'hcDark';
 export const HIGH_CONTRAST_LIGHT: ThemeType = 'hcLight';
 export type ThemeType = 'light' | 'dark' | 'hcDark' | 'hcLight';
+
+export type IconThemeType = 'light' | 'dark';
 
 export function getBuiltinRules(builtinTheme: BuiltinTheme): IStandaloneThemeData {
   switch (builtinTheme) {
