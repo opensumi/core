@@ -46,8 +46,7 @@
   .preferences_body {
     height: calc(100% - 40px);
     .preferences_indexes {
-      padding-top: 16px;
-      height: 100%;
+      padding-top: 8px;
       .group_item {
         height: 26px;
         font-size: @base-font-size;
@@ -283,4 +282,19 @@
       transform: scale(1.1);
     }
   }
+}
+
+.devider {
+  box-sizing: border-box;
+  color: #000000d9;
+  font-size: 14px;
+  font-variant: tabular-nums;
+  list-style: none;
+  font-feature-settings: 'tnum';
+  position: relative;
+  margin: 0 3px;
+  display: inline-block;
+  vertical-align: middle;
+  border-top: 0;
+  border-left: 1px solid var(--editorGroup-border);
 }

@@ -302,7 +302,12 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
           </div>
         </div>
         {groups.length > 0 ? (
-          <SplitPanel id='preference-panel' className={styles.preferences_body} direction='left-to-right'>
+          <SplitPanel
+            id='preference-panel'
+            resizeHandleClassName={styles.devider}
+            className={styles.preferences_body}
+            direction='left-to-right'
+          >
             <AutoSizer
               className={styles.preferences_indexes}
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
