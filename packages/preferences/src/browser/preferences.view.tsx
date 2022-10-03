@@ -55,7 +55,8 @@ interface IPreferenceTreeData extends IBasicTreeData {
   order?: number;
 }
 
-const TreeName = 'preferenceViewIndexTree';
+const TREE_NAME = 'preferenceViewIndexTree';
+const TREE_MARGIN_TOP = 5;
 
 export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
@@ -255,7 +256,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
       const item = items[range.startIndex + 1];
       if (item && item._path) {
-        preferenceService.basicTreeHandler?.selectItemByPath(`/${TreeName}/${item._path}`);
+        preferenceService.basicTreeHandler?.selectItemByPath(`/${TREE_NAME}/${item._path}`);
       }
     },
     {
@@ -280,7 +281,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     preferenceService.handleTreeHandler(handle);
     preferenceService.handleBasicTreeHandler(basicTreeHandle);
   };
-
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
       <div className={styles.preferences}>
@@ -313,17 +313,20 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore [SplitPanel 需要 defaultSize 属性]
               defaultSize={180}
+              style={{
+                marginTop: `${TREE_MARGIN_TOP}px`,
+              }}
             >
               {({ width, height }) => (
                 <BasicRecycleTree
-                  treeName={TreeName}
+                  treeName={TREE_NAME}
                   sortComparator={(a: IPreferenceTreeData, b: IPreferenceTreeData) => {
                     if (typeof a.order !== 'undefined' && typeof b.order !== 'undefined') {
                       return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
                     }
                     return undefined;
                   }}
-                  height={height}
+                  height={height - TREE_MARGIN_TOP}
                   width={width}
                   itemHeight={26}
                   getItemClassName={(item) => {
