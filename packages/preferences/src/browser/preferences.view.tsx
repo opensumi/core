@@ -30,7 +30,7 @@ import {
   IResolvedSettingSection,
 } from '@opensumi/ide-core-browser';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components/layout/split-panel';
-import useThrottleFn from '@opensumi/ide-core-browser/lib/react-hooks/useThrottle';
+import useThrottleFn from '@opensumi/ide-core-browser/lib/react-hooks/useThrottleFn';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
 import { ISectionItemData, toNormalCase } from '../common';
