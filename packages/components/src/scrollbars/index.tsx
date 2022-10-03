@@ -25,18 +25,33 @@ export const Scrollbars = ({
   onReachBottom,
   thumbSize = 10,
 }: ICustomScrollbarProps) => {
-  const refSetter = useCallback((scrollbarsRef) => {
-    if (scrollbarsRef) {
-      forwardedRef && forwardedRef(scrollbarsRef.view);
-    } else {
-      forwardedRef && forwardedRef(null);
-    }
-  }, []);
+  const refSetter = useCallback(
+    (scrollbarsRef) => {
+      if (!scrollbarsRef) {
+        return;
+      }
+
+      if (!forwardedRef) {
+        return;
+      }
+
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(scrollbarsRef.view);
+      } else {
+        forwardedRef.current = scrollbarsRef.view;
+      }
+    },
+    [forwardedRef],
+  );
+
   const verticalShadowRef = useRef<HTMLDivElement | null>();
   const horizontalShadowRef = useRef<HTMLDivElement | null>();
 
   const handleReachBottom = useCallback(
     (values) => {
+      if (!values) {
+        return;
+      }
       const { scrollTop, scrollHeight, clientHeight } = values;
 
       if (scrollHeight === 0 && clientHeight === 0) {
@@ -54,6 +69,9 @@ export const Scrollbars = ({
 
   const handleUpdate = useCallback(
     throttle((values) => {
+      if (!values) {
+        return;
+      }
       const { scrollTop, scrollLeft } = values;
       const shadowTopOpacity = (1 / 20) * Math.min(scrollTop, 20);
       const shadowLeftOpacity = (1 / 20) * Math.min(scrollLeft, 20);
@@ -77,10 +95,10 @@ export const Scrollbars = ({
       onUpdate={handleUpdate}
       onScroll={onScroll}
       renderTrackHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style, left: 0, right: 0, bottom: 0 }} />
+        <div {...props} style={{ ...style, left: 0, right: 0, bottom: 0 }} className={'scrollbar-track'} />
       )}
       renderTrackVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, top: 0, right: 0, bottom: 0 }} />
+        <div {...props} style={{ ...style, top: 0, right: 0, bottom: 0 }} className={'scrollbar-track'} />
       )}
       renderThumbVertical={({ style, ...props }) => (
         <div {...props} style={{ ...style }} className={'scrollbar-thumb-vertical'} />
@@ -105,5 +123,7 @@ export const Scrollbars = ({
     </CustomScrollbars>
   );
 };
+Scrollbars.displayName = 'CustomScrollbars';
 
 export const ScrollbarsVirtualList = React.forwardRef((props, ref) => <Scrollbars {...props} forwardedRef={ref} />);
+ScrollbarsVirtualList.displayName = 'ScrollbarsVirtualList';
