@@ -1,8 +1,8 @@
 import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { IBasicRecycleTreeHandle, IRecycleListHandler, IRecycleTreeHandle } from '@opensumi/ide-components';
-import { IVirtualListHandle } from '@opensumi/ide-components/lib/virtual-list';
+import { IBasicRecycleTreeHandle, IRecycleTreeHandle } from '@opensumi/ide-components';
+import { IVirtualListHandle } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
   IPreferenceViewDesc,
   IPreferenceSettingsService,
@@ -93,7 +93,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
       new Proxy(
         {},
         {
-          get: (target, key) => getAvailableLanguages().find((l) => l.languageId === key)!.localizedLanguageName,
+          get: (target, key) => getAvailableLanguages().find((l) => l.languageId === key)?.localizedLanguageName,
         },
       ),
     );
@@ -432,7 +432,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    */
   async getCurrentPreferenceUrl(scope?: PreferenceScope) {
     // 默认获取全局设置的URI
-    const url = await this.getPreferenceUrl(scope || this.currentScope || PreferenceScope.User)!;
+    const url = await this.getPreferenceUrl(scope || this.currentScope || PreferenceScope.User);
     if (!url) {
       return;
     }

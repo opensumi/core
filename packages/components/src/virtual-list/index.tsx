@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 
-import { Scrollbars, ScrollbarsVirtualList } from '../scrollbars';
+import { Scrollbars } from '../scrollbars';
 
 import { IVirtualListProps } from './types';
 
