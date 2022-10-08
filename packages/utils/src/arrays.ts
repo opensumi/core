@@ -7,6 +7,16 @@
 import { IDisposable } from './disposable';
 import { ISplice } from './sequence';
 
+export function asStringArray(array: unknown, defaultValue: string[]): string[] {
+  if (!Array.isArray(array)) {
+    return defaultValue;
+  }
+  if (!array.every((e) => typeof e === 'string')) {
+    return defaultValue;
+  }
+  return array;
+}
+
 export function isNonEmptyArray<T>(obj: ReadonlyArray<T> | undefined | null): obj is Array<T> {
   return Array.isArray(obj) && obj.length > 0;
 }
