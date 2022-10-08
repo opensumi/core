@@ -22,6 +22,9 @@ export interface IVirtualListProps {
    * @type {string}
    */
   className?: string;
-  refSetter?: (virtuoso: IVirtualListHandle | null) => void;
+  /**
+   * 将 VirtualList 的 handler 传递给上层父组件
+   */
+  refSetter?: (handler: IVirtualListHandle | null) => void;
   onRangeChanged?: (range: IVirtualListRange) => void;
 }

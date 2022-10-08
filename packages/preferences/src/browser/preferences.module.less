@@ -47,6 +47,7 @@
 
   .preferences_body {
     height: calc(100% - 40px);
+    margin-top: 8px;
     .preferences_indexes {
       .group_item {
         height: 26px;
@@ -78,7 +79,6 @@
       width: 100%;
       flex: 1;
       user-select: text;
-      padding: 16px 0 0 10px;
     }
     .preference_section {
       :global(.kt-checkbox-icon) {
@@ -287,7 +287,6 @@
 
 .devider {
   box-sizing: border-box;
-  color: #000000d9;
   font-size: 14px;
   font-variant: tabular-nums;
   list-style: none;
@@ -296,6 +295,22 @@
   margin: 0 3px;
   display: inline-block;
   vertical-align: middle;
+}
+
+.devider:after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
   border-top: 0;
   border-left: 1px solid var(--editorGroup-border);
+  pointer-events: none;
+  transform: translateX(1.5px);
+}
+
+.devider:hover:after {
+  border-color: transparent;
 }

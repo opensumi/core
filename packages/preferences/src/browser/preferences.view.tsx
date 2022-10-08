@@ -56,7 +56,6 @@ interface IPreferenceTreeData extends IBasicTreeData {
 }
 
 const TREE_NAME = 'preferenceViewIndexTree';
-const TREE_MARGIN_TOP = 5;
 
 export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
@@ -313,9 +312,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore [SplitPanel 需要 defaultSize 属性]
               defaultSize={180}
-              style={{
-                marginTop: `${TREE_MARGIN_TOP}px`,
-              }}
             >
               {({ width, height }) => (
                 <BasicRecycleTree
@@ -326,7 +322,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                     }
                     return undefined;
                   }}
-                  height={height - TREE_MARGIN_TOP}
+                  height={height}
                   width={width}
                   itemHeight={26}
                   getItemClassName={(item) => {
@@ -335,7 +331,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                     }
                     return styles.index_item;
                   }}
-                  // itemHeight={24}
                   baseIndent={8}
                   treeData={treeData}
                   onClick={(_e, node) => {
@@ -410,13 +405,10 @@ export const PreferenceBody = ({
   onRangeChanged: (props: IVirtualListRange) => any;
 }) => (
   <VirtualList
-    // onReady={onReady}
     data={items}
     template={PreferenceItem as React.FunctionComponent<{ data: ISectionItemData; index: number }>}
     className={styles.preference_section}
-    // 防止底部选择框无法查看的临时处理方式
     refSetter={onReady}
-    // paddingBottomSize={100}
     onRangeChanged={onRangeChanged}
   />
 );
