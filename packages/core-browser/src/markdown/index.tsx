@@ -48,7 +48,7 @@ export const toMarkdownHtml = (message: string): string => {
   const renderer = createMarkedRenderer();
 
   renderer.link = (href, title, text) =>
-    `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" href="javascript:void(0)" title="${title}">${text}</a>`;
+    `<a rel="noopener" ${DATA_SET_COMMAND}="${href}" title="${title ?? href}">${text}</a>`;
 
   return toHtml(message, {
     gfm: true,

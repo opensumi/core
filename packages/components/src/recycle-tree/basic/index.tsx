@@ -129,13 +129,9 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
       if (onReady) {
         onReady(handle, {
           selectItemByPath: async (path: string) => {
-            const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as
-              | BasicCompositeTreeNode
-              | BasicTreeNode;
-            if (node) {
-              if (node && node.path !== treeService.current.focusedNode?.path) {
-                selectItem(node);
-              }
+            const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as BasicCompositeTreeNode;
+            if (node && node.path !== treeService.current.focusedNode?.path) {
+              selectItem(node);
             }
           },
         });

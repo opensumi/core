@@ -193,6 +193,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   }, [groups, preferenceService.getResolvedSections]);
 
   const items = React.useMemo(() => {
+    // 如果是搜索模式，是只展示用户左侧选择的组的内容
     const sections = preferenceService.getResolvedSections(currentGroup, currentScope, currentSearchText);
     const group = groups.find((v) => v.id === currentGroup);
     let result: ISectionItemData[] = [];
@@ -226,14 +227,22 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
         return innerItems;
       };
-
-      for (const section of sections) {
-        const _items = getItem(section, `${group.title}`);
-        result = result.concat(_items);
+      if (currentSearchText) {
+        const targetSection = sections.find((v) => v.title === currentSelectSection) ?? sections[0];
+        if (targetSection) {
+          const _items = getItem(targetSection, `${group.title}`);
+          result = result.concat(_items);
+        }
+      }
+      if (result.length === 0) {
+        for (const section of sections) {
+          const _items = getItem(section, `${group.title}`);
+          result = result.concat(_items);
+        }
       }
     }
     return result;
-  }, [currentGroup, currentScope, currentSearchText]);
+  }, [currentGroup, currentScope, currentSearchText, currentSelectSection]);
 
   const navigateTo = (title: string) => {
     if (title) {
@@ -249,17 +258,19 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   };
 
   const onRangeChanged = useThrottleFn(
-    (range: IVirtualListRange) => {
+    async (range: IVirtualListRange) => {
+      // 我们通过第一个 item 来变更左侧文件树的选择状态
       // 当我们点击左侧的 section 的时候，我们的设计是让每一个 section 的 title 滚到顶部
       // 此时仍然会触发该事件，但有时可能因为计算取整等原因，它上报的 startIndex 是 title 的上一个 index。
       // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
-      const item = items[range.startIndex + 1];
-      if (item && item._path) {
-        preferenceService.basicTreeHandler?.selectItemByPath(`/${TREE_NAME}/${item._path}`);
+      const item1 = items[range.startIndex + 1];
+      if (item1 && item1._path) {
+        await preferenceService.basicTreeHandler?.selectItemByPath(`/${TREE_NAME}/${item1._path}`);
       }
     },
+    300,
     {
-      wait: 100,
+      leading: true,
       trailing: true,
     },
   );
@@ -271,15 +282,18 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       // 切换 group 后滚到顶部
       preferenceService.listHandler?.scrollToIndex({
         index: 0,
+        align: 'start',
         behavior: 'auto',
       });
     }
+    onRangeChanged.cancel();
   }, [items, currentSelectSection]);
 
   const onTreeReady = (handle: IRecycleTreeHandle, basicTreeHandle: IBasicRecycleTreeHandle) => {
     preferenceService.handleTreeHandler(handle);
     preferenceService.handleBasicTreeHandler(basicTreeHandle);
   };
+
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
       <div className={styles.preferences}>

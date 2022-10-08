@@ -248,7 +248,7 @@ const InnerElementType = React.forwardRef((props, ref) => {
   const { style, ...rest } = props as any;
   return (
     <div
-      ref={ref!}
+      ref={ref}
       style={{
         ...style,
         height: `${parseFloat(style.height) + RecycleTree.PADDING_BOTTOM_SIZE}px`,
