@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import React, { CSSProperties } from 'react';
+import React from 'react';
 import { MouseEvent, UIEvent } from 'react';
 
 import styles from './scroll.module.less';
@@ -8,7 +8,7 @@ export interface ScrollAreaProps {
   className?: string;
   onScroll?: (position: ScrollPosition) => any;
   atTopClassName?: string;
-  style?: CSSProperties;
+  style?: any;
   containerStyle?: any;
   delegate?: (delegate: IScrollDelegate) => void;
 }

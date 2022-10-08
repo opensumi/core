@@ -1,7 +1,5 @@
 @import '~@opensumi/ide-core-browser/lib/style/variable.less';
 
-@preference-indexes-margin-top: 5;
-
 .preferences {
   height: 100%;
   font-size: @base-font-size;
@@ -47,8 +45,18 @@
 
   .preferences_body {
     height: calc(100% - 40px);
+    position: relative;
+    padding-left: 155px;
     .preferences_indexes {
-      .group_item {
+      position: absolute;
+      width: 155px;
+      padding-top: 16px;
+      height: 100%;
+      left: 0;
+      .index_item_wrapper {
+        margin-bottom: 2px;
+      }
+      .index_item {
         height: 26px;
         font-size: @base-font-size;
         line-height: 26px;
@@ -56,27 +64,39 @@
         cursor: pointer;
         white-space: nowrap;
         user-select: none;
-        margin-bottom: 2px;
 
+        > span {
+          margin-right: 5px;
+          display: inline-block;
+          font-size: 1em;
+        }
         &:hover {
           color: var(--list-hoverForeground);
           background-color: var(--list-hoverBackground);
         }
+        &.activated {
+          color: var(--list-activeSelectionForeground);
+          background: var(--list-activeSelectionBackground);
+        }
       }
-
-      .index_item {
-        color: var(--titleBar-inactiveForeground);
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        cursor: pointer;
+      .preference_section_link {
+        > div {
+          padding: 5px 5px 5px 20px;
+          padding-left: 25px;
+          color: var(--titleBar-inactiveForeground);
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+          cursor: pointer;
+          &:hover {
+            color: var(--list-hoverForeground);
+            background-color: var(--list-hoverBackground);
+          }
+        }
       }
     }
-
     .preferences_items {
       height: 100%;
-      width: 100%;
-      flex: 1;
       user-select: text;
       padding: 16px 0 0 10px;
     }
@@ -119,7 +139,6 @@
         }
       }
       .key {
-        font-weight: 600;
         margin-bottom: 5px;
         font-size: @base-font-size;
       }
@@ -166,7 +185,7 @@
         padding: 0 8px !important;
       }
       .array_items_wrapper {
-        // width: 550px;
+        width: 550px;
         padding-left: 0;
         position: relative;
         .array_edit_wrapper {
@@ -283,19 +302,4 @@
       transform: scale(1.1);
     }
   }
-}
-
-.devider {
-  box-sizing: border-box;
-  color: #000000d9;
-  font-size: 14px;
-  font-variant: tabular-nums;
-  list-style: none;
-  font-feature-settings: 'tnum';
-  position: relative;
-  margin: 0 3px;
-  display: inline-block;
-  vertical-align: middle;
-  border-top: 0;
-  border-left: 1px solid var(--editorGroup-border);
 }

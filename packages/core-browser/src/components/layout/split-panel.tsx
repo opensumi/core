@@ -58,10 +58,6 @@ export interface SplitPanelProps extends SplitChildProps {
   dynamicTarget?: boolean;
   // 控制使用传入尺寸之和作为总尺寸或使用dom尺寸
   useDomSize?: boolean;
-  /**
-   * ResizeHandle 的 className，用以展示分割线等
-   */
-  resizeHandleClassName?: string;
 }
 
 const getProp = (child: React.ReactNode, prop: string) => child && child['props'] && child['props'][prop];
@@ -69,7 +65,6 @@ const getProp = (child: React.ReactNode, prop: string) => child && child['props'
 export const SplitPanel: React.FC<SplitPanelProps> = ({
   id,
   className,
-  resizeHandleClassName,
   style,
   children = [],
   direction = 'left-to-right',
@@ -188,7 +183,6 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       if (!noResize) {
         elements.push(
           <ResizeHandle
-            className={resizeHandleClassName}
             onResize={(prev, next) => {
               const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
               const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
