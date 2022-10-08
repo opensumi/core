@@ -1,11 +1,5 @@
 import { Injector } from '@opensumi/di';
-import {
-  localize,
-  getAvailableLanguages,
-  isElectronRenderer,
-  SUPPORTED_ENCODINGS,
-  GeneralSettingsId,
-} from '@opensumi/ide-core-common';
+import { localize, getAvailableLanguages, SUPPORTED_ENCODINGS, GeneralSettingsId } from '@opensumi/ide-core-common';
 
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 
@@ -310,8 +304,8 @@ export function injectCorePreferences(inject: Injector) {
   inject.addProviders({
     token: CorePreferences,
     useFactory: (inject: Injector) => {
-      const preferences: PreferenceService = inject.get(PreferenceService);
-      return createPreferenceProxy(preferences, corePreferenceSchema);
+      const preferenceService: PreferenceService = inject.get(PreferenceService);
+      return createPreferenceProxy(preferenceService, corePreferenceSchema);
     },
   });
 }

@@ -54,7 +54,6 @@ export const toMarkdownHtml = (message: string): string => {
     gfm: true,
     breaks: false,
     pedantic: false,
-    sanitize: true,
     smartLists: true,
     smartypants: false,
     renderer,
