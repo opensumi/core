@@ -6,11 +6,11 @@ export class OpenSumiMenuItem {
   constructor(protected element: ElementHandle<SVGElement | HTMLElement>) {}
 
   protected labelElementHandle() {
-    return this.element.waitForSelector("[class*='label__']");
+    return this.element.$("[class*='label__']");
   }
 
   protected shortCutElementHandle() {
-    return this.element.waitForSelector("[class*='shortcut__']");
+    return this.element.$("[class*='shortcut__']");
   }
 
   async label() {

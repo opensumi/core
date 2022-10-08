@@ -11,7 +11,7 @@ const config: PlaywrightTestConfig = {
     baseURL: 'http://localhost:8080',
     browserName: 'chromium',
     screenshot: 'only-on-failure',
-    viewport: { width: 1920, height: 1080 },
+    viewport: { width: 1280, height: 720 },
   },
   snapshotDir: path.join(__dirname, '../src/tests/snapshots'),
   expect: {

@@ -18,7 +18,15 @@ test.describe('OpenSumi Search Panel', () => {
     search = await app.open(OpenSumiSearchView);
   });
 
-  test('Can search files by simple text', () => {
-    expect(search.isVisible()).toBeTruthy();
+  test('Can search files by simple text', async () => {
+    const searchText = 'hello';
+    expect(await search.isVisible()).toBeTruthy();
+    await search.focusOnSearch();
+    await page.keyboard.type(searchText);
+    // search panel should searched after typing
+    await app.page.keyboard.press('Enter');
+    const { results, files } = await search.getSearchResult();
+    expect(results).toBe(1);
+    expect(files).toBe(1);
   });
 });
