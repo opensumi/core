@@ -151,8 +151,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         } as IPreferenceTreeData;
       }
       const subTreeData = [] as IPreferenceTreeData[];
-      if (section.subSettingSections) {
-        section.subSettingSections.forEach((v, _i) => {
+      if (section.subSections) {
+        section.subSections.forEach((v, _i) => {
           const _treeData = parseTreeData(id, v, _i);
           _treeData && subTreeData.push(_treeData);
         });
@@ -215,8 +215,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               _path: currentItemPath,
             })),
           );
-        } else if (section.subSettingSections) {
-          section.subSettingSections.forEach((v) => {
+        } else if (section.subSections) {
+          section.subSections.forEach((v) => {
             const _items = getItem(v, currentItemPath);
             innerItems = innerItems.concat(_items);
           });

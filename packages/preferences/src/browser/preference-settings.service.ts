@@ -231,8 +231,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
         }
       }
     }
-    if (section.subSettingSections && Array.isArray(section.subSettingSections)) {
-      for (const subSec of section.subSettingSections) {
+    if (section.subSections && Array.isArray(section.subSections)) {
+      for (const subSec of section.subSections) {
         return this.visitSection(subSec, cb);
       }
     }
@@ -311,16 +311,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
           );
         }) as IResolvedPreferenceViewDesc[];
 
-      // const grouped = groupBy(section.preferences, (v) => {
-      //   if (v instanceof String) {
-      //     return v;
-      //   }
-      //   return (v as IPreferenceViewDesc).id;
-      // });
-
       return {
         preferences,
-        // grouped,
       };
     };
     res.forEach((section) => {
@@ -330,8 +322,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
         const { preferences } = processSection(section as Required<Pick<ISettingSection, 'preferences'>>);
         sec.preferences = preferences;
       }
-      if (section.subSettingSections) {
-        const subSettingSections = section.subSettingSections
+      if (section.subSections) {
+        const subSections = section.subSections
           .map((v) => {
             const { preferences } = processSection(v as Required<Pick<ISettingSection, 'preferences'>>);
             if (preferences.length > 0) {
@@ -339,13 +331,10 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
             }
           })
           .filter(Boolean) as IResolvedSettingSection[];
-        sec.subSettingSections = subSettingSections;
+        sec.subSections = subSections;
       }
 
-      if (
-        (sec.preferences && sec.preferences.length > 0) ||
-        (sec.subSettingSections && sec.subSettingSections.length > 0)
-      ) {
+      if ((sec.preferences && sec.preferences.length > 0) || (sec.subSections && sec.subSections.length > 0)) {
         result.push(sec);
       }
     });

@@ -97,8 +97,6 @@ export interface IBasicRecycleTreeProps {
   treeData: IBasicTreeData[];
   /**
    * Tree 容器高度
-   *
-   * 不使用 React Window 时无效
    */
   height: number;
   supportDynamicHeights?: boolean;
@@ -171,7 +169,7 @@ export interface IBasicRecycleTreeProps {
    * 用于挂载 Tree 上的一些操作方法
    * 如：ensureVisible 等
    */
-  onReady?: (api: IRecycleTreeHandle, service: IBasicRecycleTreeHandle) => void;
+  onReady?: (treeHandler: IRecycleTreeHandle, basicTreeHandler: IBasicRecycleTreeHandle) => void;
 
   /**
    * 指定 RecycleTree 的名字

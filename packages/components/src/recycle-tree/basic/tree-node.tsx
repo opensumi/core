@@ -77,6 +77,7 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderIcon = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) => (
+      // 这里的 -8 是为了造成视觉上看起来是 padding 的效果
       <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
     ),
     [],

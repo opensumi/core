@@ -45,24 +45,31 @@ export interface IPreferenceViewDesc {
 }
 
 export interface ISettingSection {
+  /**
+   * 该 Section 的名字
+   */
   title?: string;
   /**
-   * 开启这个选项后，设置项面板可以自动将当前 Settings Section 按照 id 分组在 UI 上展示出来
+   * 该 Section 的设置项
    */
-  // automaticallyGroupById?: boolean;
-
   preferences?: IPreferenceViewDesc[];
-
+  /**
+   * 该 Section 对应的 Component
+   */
   component?: React.ComponentType<{ scope: PreferenceScope }>;
-
-  subSettingSections?: ISettingSection[];
-
+  /**
+   * 该 Section 的子项，可用于树形展示嵌套
+   */
+  subSections?: ISettingSection[];
+  /**
+   * 要在哪些 Scope 中隐藏
+   */
   hiddenInScope?: PreferenceScope[];
 }
 
 export interface IResolvedSettingSection extends ISettingSection {
   preferences?: IResolvedPreferenceViewDesc[];
-  subSettingSections?: IResolvedSettingSection[];
+  subSections?: IResolvedSettingSection[];
 }
 
 export interface IResolvedPreferenceViewDesc {
@@ -76,11 +83,4 @@ export interface IResolvedPreferenceViewDesc {
    */
   description?: string;
   markdownDescription?: string;
-
-  /**
-   * 用户可能会传两种 description 进来，该属性是最终要使用的 description
-   *
-   * 优先级：markdownDescription > description
-   */
-  _description?: string;
 }
