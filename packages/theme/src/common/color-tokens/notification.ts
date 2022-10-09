@@ -19,7 +19,8 @@ export const NOTIFICATIONS_CENTER_BORDER = registerColor(
   {
     dark: null,
     light: null,
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'notificationCenterBorder',
@@ -32,7 +33,8 @@ export const NOTIFICATIONS_TOAST_BORDER = registerColor(
   {
     dark: null,
     light: null,
-    hc: contrastBorder,
+    hcDark: contrastBorder,
+    hcLight: contrastBorder,
   },
   localize(
     'notificationToastBorder',
@@ -45,7 +47,8 @@ export const NOTIFICATIONS_FOREGROUND = registerColor(
   {
     dark: editorWidgetForeground,
     light: editorWidgetForeground,
-    hc: editorWidgetForeground,
+    hcDark: editorWidgetForeground,
+    hcLight: editorWidgetForeground,
   },
   localize(
     'notificationsForeground',
@@ -58,7 +61,8 @@ export const NOTIFICATIONS_BACKGROUND = registerColor(
   {
     dark: editorWidgetBackground,
     light: editorWidgetBackground,
-    hc: editorWidgetBackground,
+    hcDark: editorWidgetBackground,
+    hcLight: editorWidgetBackground,
   },
   localize(
     'notificationsBackground',
@@ -71,7 +75,8 @@ export const NOTIFICATIONS_LINKS = registerColor(
   {
     dark: textLinkForeground,
     light: textLinkForeground,
-    hc: textLinkForeground,
+    hcDark: textLinkForeground,
+    hcLight: textLinkForeground,
   },
   localize(
     'notificationsLink',
@@ -84,7 +89,8 @@ export const NOTIFICATIONS_CENTER_HEADER_FOREGROUND = registerColor(
   {
     dark: null,
     light: null,
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   localize(
     'notificationCenterHeaderForeground',
@@ -97,7 +103,8 @@ export const NOTIFICATIONS_CENTER_HEADER_BACKGROUND = registerColor(
   {
     dark: lighten(NOTIFICATIONS_BACKGROUND, 0.3),
     light: darken(NOTIFICATIONS_BACKGROUND, 0.05),
-    hc: NOTIFICATIONS_BACKGROUND,
+    hcDark: NOTIFICATIONS_BACKGROUND,
+    hcLight: NOTIFICATIONS_BACKGROUND,
   },
   localize(
     'notificationCenterHeaderBackground',
@@ -110,7 +117,8 @@ export const NOTIFICATIONS_BORDER = registerColor(
   {
     dark: NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
     light: NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
-    hc: NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
+    hcDark: NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
+    hcLight: NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
   },
   localize(
     'notificationsBorder',
@@ -123,9 +131,13 @@ export const NOTIFICATIONS_ERROR_ICON_FOREGROUND = registerColor(
   {
     dark: editorErrorForeground,
     light: editorErrorForeground,
-    hc: editorErrorForeground,
+    hcDark: editorErrorForeground,
+    hcLight: editorErrorForeground,
   },
-  localize('notificationsErrorIconForeground', 'The color used for the notification error icon.'),
+  localize(
+    'notificationsErrorIconForeground',
+    'The color used for the icon of error notifications. Notifications slide in from the bottom right of the window.',
+  ),
 );
 
 export const NOTIFICATIONS_WARNING_ICON_FOREGROUND = registerColor(
@@ -133,9 +145,13 @@ export const NOTIFICATIONS_WARNING_ICON_FOREGROUND = registerColor(
   {
     dark: editorWarningForeground,
     light: editorWarningForeground,
-    hc: editorWarningForeground,
+    hcDark: editorWarningForeground,
+    hcLight: editorWarningForeground,
   },
-  localize('notificationsWarningIconForeground', 'The color used for the notification warning icon.'),
+  localize(
+    'notificationsWarningIconForeground',
+    'The color used for the icon of warning notifications. Notifications slide in from the bottom right of the window.',
+  ),
 );
 
 export const NOTIFICATIONS_INFO_ICON_FOREGROUND = registerColor(
@@ -143,7 +159,11 @@ export const NOTIFICATIONS_INFO_ICON_FOREGROUND = registerColor(
   {
     dark: editorInfoForeground,
     light: editorInfoForeground,
-    hc: editorInfoForeground,
+    hcDark: editorInfoForeground,
+    hcLight: editorInfoForeground,
   },
-  localize('notificationsInfoIconForeground', 'The color used for the notification info icon.'),
+  localize(
+    'notificationsInfoIconForeground',
+    'The color used for the icon of info notifications. Notifications slide in from the bottom right of the window.',
+  ),
 );

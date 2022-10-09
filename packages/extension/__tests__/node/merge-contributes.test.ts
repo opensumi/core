@@ -108,6 +108,7 @@ describe('mergeContributes', () => {
       dark: '#FFFFFF13',
       light: '#0000000C',
       highContrast: '#FFFFFF13',
+      highContrastLight: '#FFFFFF13',
     },
   };
 
@@ -118,6 +119,7 @@ describe('mergeContributes', () => {
       dark: '#BEBEBE',
       light: '#747474',
       highContrast: '#BEBEBE',
+      highContrastLight: '#BEBEBE',
     },
   };
 

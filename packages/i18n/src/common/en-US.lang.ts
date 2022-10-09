@@ -693,7 +693,7 @@ export const localizationBundle = {
 
     'theme.base.vs': 'Light Theme',
     'theme.base.vs-dark': 'Dark Theme',
-    'theme.base.hc-black': 'High Contrast Theme',
+    'theme.base.hc': 'High Contrast Themes',
     'theme.quickopen.plh': 'Select Color Theme（Up/Down Keys to Preview）',
     'icon.quickopen.plh': 'Select Icon Theme（Up/Down Keys to Preview）',
 

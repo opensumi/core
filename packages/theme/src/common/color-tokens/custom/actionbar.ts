@@ -2,12 +2,12 @@ import { localize } from '@opensumi/ide-core-common';
 
 import { transparent, registerColor } from '../../utils';
 import { foreground } from '../base';
-import { inputOptionActiveBorder, inputOptionActiveBackground } from '../input';
+import { inputActiveOptionBorder, inputActiveOptionBackground } from '../input';
 
 // action bar
 export const actionbarForeground = registerColor(
   'kt.actionbar.foreground',
-  { dark: foreground, light: foreground, hc: foreground },
+  { dark: foreground, light: foreground, hcDark: foreground, hcLight: foreground },
   localize('actionbarForeground', 'Foreground color of icon in actionbar'),
 );
 
@@ -16,25 +16,36 @@ export const actionbarDisableForeground = registerColor(
   {
     dark: transparent(foreground, 0.3),
     light: transparent(foreground, 0.3),
-    hc: transparent(foreground, 0.3),
+    hcDark: transparent(foreground, 0.3),
+    hcLight: transparent(foreground, 0.3),
   },
   localize('actionbarDisableForeground', 'Foreground color of disabled icon in actionbar'),
 );
 
 export const actionBarSeparatorBg = registerColor(
   'kt.actionbar.separatorBackground',
-  { dark: null, light: null, hc: null },
+  { dark: null, light: null, hcDark: null, hcLight: null },
   localize('actionbarSeparatorBackground', 'Separator background color of actionbar'),
 );
 
 export const actionbarSelectionBackground = registerColor(
   'kt.actionbar.selectionBackground',
-  { dark: inputOptionActiveBackground, light: inputOptionActiveBackground, hc: inputOptionActiveBackground },
+  {
+    dark: inputActiveOptionBackground,
+    light: inputActiveOptionBackground,
+    hcDark: inputActiveOptionBackground,
+    hcLight: inputActiveOptionBackground,
+  },
   localize('actionbarSelectionBackground', 'Bacjground color of selected icon in actionbar'),
 );
 
 export const actionbarSelectionBorder = registerColor(
   'kt.actionbar.selectionBorder',
-  { dark: inputOptionActiveBorder, light: inputOptionActiveBorder, hc: inputOptionActiveBorder },
+  {
+    dark: inputActiveOptionBorder,
+    light: inputActiveOptionBorder,
+    hcDark: inputActiveOptionBorder,
+    hcLight: inputActiveOptionBorder,
+  },
   localize('actionbarSelectionBorder', 'Border color of selected icon in actionbar'),
 );

@@ -872,6 +872,7 @@ declare module 'vscode' {
     Light = 1,
     Dark = 2,
     HighContrast = 3,
+    HighContrastLight = 4
   }
 
   /**

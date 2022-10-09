@@ -14,7 +14,8 @@ export const ktPanelTitleBackground = registerColor(
   {
     dark: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
     light: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
-    hc: null,
+    hcDark: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
+    hcLight: EDITOR_GROUP_HEADER_TABS_BACKGROUND,
   },
   localize(
     'panelTitle.background',
@@ -27,7 +28,8 @@ export const ktPanelTabInactiveForeground = registerColor(
   {
     dark: transparent(foreground, 0.8),
     light: transparent(foreground, 0.8),
-    hc: transparent(foreground, 0.8),
+    hcDark: transparent(foreground, 0.8),
+    hcLight: transparent(foreground, 0.8),
   },
   localize('panelTab.inactiveForeground', 'Panel tab inactive forground color.'),
 );
@@ -37,7 +39,8 @@ export const ktPanelTabActiveForeground = registerColor(
   {
     dark: textLinkActiveForeground,
     light: textLinkActiveForeground,
-    hc: textLinkActiveForeground,
+    hcDark: textLinkActiveForeground,
+    hcLight: textLinkActiveForeground,
   },
   localize('panelTab.activeForeground', 'Panel tab active forground color.'),
 );
@@ -47,7 +50,8 @@ export const ktPanelTabInactiveBackground = registerColor(
   {
     dark: TAB_INACTIVE_BACKGROUND,
     light: TAB_INACTIVE_BACKGROUND,
-    hc: TAB_INACTIVE_BACKGROUND,
+    hcDark: TAB_INACTIVE_BACKGROUND,
+    hcLight: TAB_INACTIVE_BACKGROUND,
   },
   localize('panelTab.inactiveBackground', 'Panel tab background color.'),
 );
@@ -57,7 +61,8 @@ export const ktPanelTabActiveBackground = registerColor(
   {
     dark: PANEL_BACKGROUND,
     light: PANEL_BACKGROUND,
-    hc: PANEL_BACKGROUND,
+    hcDark: PANEL_BACKGROUND,
+    hcLight: PANEL_BACKGROUND,
   },
   localize('panelTab.activeBackground', 'Panel tab active background color.'),
 );
@@ -67,7 +72,8 @@ export const ktPanelTabActionIconForeground = registerColor(
   {
     dark: foreground,
     light: foreground,
-    hc: foreground,
+    hcDark: foreground,
+    hcLight: foreground,
   },
   localize('panelTabActionIcon.foreground', 'Panel tab close icon color.'),
 );
@@ -77,7 +83,8 @@ export const ktPanelTabActiveBorder = registerColor(
   {
     dark: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
     light: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
-    hc: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
+    hcDark: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
+    hcLight: lighten(ACTIVITY_BAR_BACKGROUND, 0.2),
   },
   localize('panelTab.border', 'Panel tab border color.'),
 );
@@ -87,7 +94,8 @@ export const ktPanelTabBorder = registerColor(
   {
     dark: darken(ACTIVITY_BAR_BORDER, 0.1),
     light: darken(ACTIVITY_BAR_BORDER, 0.1),
-    hc: darken(ACTIVITY_BAR_BORDER, 0.1),
+    hcDark: darken(ACTIVITY_BAR_BORDER, 0.1),
+    hcLight: darken(ACTIVITY_BAR_BORDER, 0.1),
   },
   localize('panelTab.border', 'Panel tab border color.'),
 );
@@ -97,7 +105,8 @@ export const ktPanelSecondaryForeground = registerColor(
   {
     dark: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
     light: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
-    hc: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
+    hcDark: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
+    hcLight: lighten(PANEL_INACTIVE_TITLE_FOREGROUND, 0.2),
   },
   localize('panel.secondaryForeground', 'Panel secondary foreground color.'),
 );

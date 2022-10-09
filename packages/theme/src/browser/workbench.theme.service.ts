@@ -209,7 +209,14 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       {
         light: this.parseColorValue(defaults.light, 'configuration.colors.defaults.light'),
         dark: this.parseColorValue(defaults.dark, 'configuration.colors.defaults.dark'),
-        hc: this.parseColorValue(defaults.highContrast, 'configuration.colors.defaults.highContrast'),
+        hcDark: this.parseColorValue(
+          defaults.highContrast ?? defaults.dark,
+          'configuration.colors.defaults.highContrast',
+        ),
+        hcLight: this.parseColorValue(
+          defaults.highContrastLight ?? defaults.light,
+          'configuration.colors.defaults.highContrastLight',
+        ),
       },
       contribution.description,
     );

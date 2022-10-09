@@ -6,7 +6,8 @@ export const debugToolBarBackground = registerColor(
   {
     dark: '#333333',
     light: '#F3F3F3',
-    hc: '#000000',
+    hcDark: '#000000',
+    hcLight: '#FFFFFF',
   },
   'Debug toolbar background color.',
 );
@@ -16,7 +17,8 @@ export const debugToolBarBorder = registerColor(
   {
     dark: null,
     light: null,
-    hc: null,
+    hcDark: null,
+    hcLight: null,
   },
   'Debug toolbar border color.',
 );
@@ -26,7 +28,8 @@ export const debugIconStartForeground = registerColor(
   {
     dark: '#89D185',
     light: '#388A34',
-    hc: '#89D185',
+    hcDark: '#89D185',
+    hcLight: '#388A34',
   },
   'Debug toolbar icon for start debugging.',
 );
@@ -36,7 +39,8 @@ export const debugIconPauseForeground = registerColor(
   {
     dark: '#75BEFF',
     light: '#007ACC',
-    hc: '#75BEFF',
+    hcDark: '#75BEFF',
+    hcLight: '#007ACC',
   },
   'Debug toolbar icon for pause.',
 );
@@ -46,7 +50,8 @@ export const debugIconStopForeground = registerColor(
   {
     dark: '#F48771',
     light: '#A1260D',
-    hc: '#F48771',
+    hcDark: '#F48771',
+    hcLight: '#A1260D',
   },
   'Debug toolbar icon for stop.',
 );
@@ -56,7 +61,8 @@ export const debugIconDisconnectForeground = registerColor(
   {
     dark: '#F48771',
     light: '#A1260D',
-    hc: '#F48771',
+    hcDark: '#F48771',
+    hcLight: '#A1260D',
   },
   'Debug toolbar icon for disconnect.',
 );
@@ -66,7 +72,8 @@ export const debugIconRestartForeground = registerColor(
   {
     dark: '#89D185',
     light: '#388A34',
-    hc: '#89D185',
+    hcDark: '#89D185',
+    hcLight: '#388A34',
   },
   'Debug toolbar icon for restart.',
 );
@@ -76,7 +83,8 @@ export const debugIconStepOverForeground = registerColor(
   {
     dark: '#75BEFF',
     light: '#007ACC',
-    hc: '#75BEFF',
+    hcDark: '#75BEFF',
+    hcLight: '#007ACC',
   },
   'Debug toolbar icon for step over.',
 );
@@ -86,7 +94,8 @@ export const debugIconStepIntoForeground = registerColor(
   {
     dark: '#75BEFF',
     light: '#007ACC',
-    hc: '#75BEFF',
+    hcDark: '#75BEFF',
+    hcLight: '#007ACC',
   },
   'Debug toolbar icon for step into.',
 );
@@ -96,7 +105,8 @@ export const debugIconStepOutForeground = registerColor(
   {
     dark: '#75BEFF',
     light: '#007ACC',
-    hc: '#75BEFF',
+    hcDark: '#75BEFF',
+    hcLight: '#007ACC',
   },
   'Debug toolbar icon for step over.',
 );
@@ -106,7 +116,8 @@ export const debugIconContinueForeground = registerColor(
   {
     dark: '#75BEFF',
     light: '#007ACC',
-    hc: '#75BEFF',
+    hcDark: '#75BEFF',
+    hcLight: '#007ACC',
   },
   'Debug toolbar icon for continue.',
 );
@@ -116,7 +127,8 @@ export const debugIconStepBackForeground = registerColor(
   {
     dark: '#75BEFF',
     light: '#007ACC',
-    hc: '#75BEFF',
+    hcDark: '#75BEFF',
+    hcLight: '#007ACC',
   },
   'Debug toolbar icon for step back.',
 );

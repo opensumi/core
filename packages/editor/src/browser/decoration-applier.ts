@@ -173,7 +173,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
 function assignModelDecorationOptions(
   target: monaco.editor.IModelDecorationOptions,
   property: IDynamicModelDecorationProperty,
-  currentTheme: undefined | 'dark' | 'light' | 'hc',
+  currentTheme: undefined | 'dark' | 'light' | 'hcDark' | 'hcLight',
 ) {
   if (property.overviewRulerLane) {
     if (!target.overviewRuler) {

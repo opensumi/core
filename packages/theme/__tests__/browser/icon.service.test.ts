@@ -240,7 +240,6 @@ describe('icon theme test', () => {
     const multiIconClass = service.fromIcon('file:///mock/base/path2', {
       dark: './testIcon.svg',
       light: './testIcon2.svg',
-      hc: './testIcon3.svg',
     });
 
     const randomIconClass1 = multiIconClass!.replace(/(kaitian-icon|mask-mode|background-mode)/g, '').trim();
