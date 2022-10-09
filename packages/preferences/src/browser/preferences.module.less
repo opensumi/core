@@ -45,18 +45,9 @@
 
   .preferences_body {
     height: calc(100% - 40px);
-    position: relative;
-    padding-left: 155px;
+    margin-top: 8px;
     .preferences_indexes {
-      position: absolute;
-      width: 155px;
-      padding-top: 16px;
-      height: 100%;
-      left: 0;
-      .index_item_wrapper {
-        margin-bottom: 2px;
-      }
-      .index_item {
+      .group_item {
         height: 26px;
         font-size: @base-font-size;
         line-height: 26px;
@@ -64,41 +55,28 @@
         cursor: pointer;
         white-space: nowrap;
         user-select: none;
+        margin-bottom: 2px;
 
-        > span {
-          margin-right: 5px;
-          display: inline-block;
-          font-size: 1em;
-        }
         &:hover {
           color: var(--list-hoverForeground);
           background-color: var(--list-hoverBackground);
         }
-        &.activated {
-          color: var(--list-activeSelectionForeground);
-          background: var(--list-activeSelectionBackground);
-        }
       }
-      .preference_section_link {
-        > div {
-          padding: 5px 5px 5px 20px;
-          padding-left: 25px;
-          color: var(--titleBar-inactiveForeground);
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          cursor: pointer;
-          &:hover {
-            color: var(--list-hoverForeground);
-            background-color: var(--list-hoverBackground);
-          }
-        }
+
+      .index_item {
+        color: var(--titleBar-inactiveForeground);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        cursor: pointer;
       }
     }
+
     .preferences_items {
       height: 100%;
+      width: 100%;
+      flex: 1;
       user-select: text;
-      padding: 16px 0 0 10px;
     }
     .preference_section {
       :global(.kt-checkbox-icon) {
@@ -139,6 +117,7 @@
         }
       }
       .key {
+        font-weight: 600;
         margin-bottom: 5px;
         font-size: @base-font-size;
       }
@@ -185,7 +164,6 @@
         padding: 0 8px !important;
       }
       .array_items_wrapper {
-        width: 550px;
         padding-left: 0;
         position: relative;
         .array_edit_wrapper {
@@ -301,5 +279,33 @@
     &:hover {
       transform: scale(1.1);
     }
+  }
+}
+
+.devider {
+  box-sizing: border-box;
+  font-size: 14px;
+  font-variant: tabular-nums;
+  list-style: none;
+  font-feature-settings: 'tnum';
+  position: relative;
+  margin: 0 3px;
+  display: inline-block;
+  vertical-align: middle;
+  &:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    border-top: 0;
+    border-left: 1px solid var(--editorGroup-border);
+    pointer-events: none;
+    transform: translateX(1.5px);
+  }
+  &:hover:after {
+    border-color: transparent;
   }
 }

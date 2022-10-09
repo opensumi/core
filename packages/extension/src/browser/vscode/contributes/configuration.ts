@@ -1,11 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import {
-  replaceLocalizePlaceholder,
   PreferenceSchemaProvider,
   PreferenceSchema,
   PreferenceSchemaProperties,
   IPreferenceSettingsService,
   PreferenceService,
+  ISettingSection,
 } from '@opensumi/ide-core-browser';
 
 import { VSCodeContributePoint, Contributes } from '../../../common';
@@ -31,47 +31,54 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
   contribute() {
     let configurations = this.json;
-    // 当前函数里只创建声明这一次变量，然后后面给这个函数赋值
-    let tmpProperties = {};
     if (!Array.isArray(configurations)) {
       configurations = [configurations];
     }
+    const sections = [] as ISettingSection[];
+
     for (const configuration of configurations) {
       if (configuration && configuration.properties) {
+        const tmpProperties = {};
         for (const prop of Object.keys(configuration.properties)) {
           const originalConfiguration = configuration.properties[prop];
           tmpProperties[prop] = originalConfiguration;
           if (originalConfiguration.description) {
-            tmpProperties[prop].description = replaceLocalizePlaceholder(
-              originalConfiguration.description,
-              this.extension.id,
-            );
+            tmpProperties[prop].description = this.getLocalizeFromNlsJSON(originalConfiguration.description);
           }
           if (originalConfiguration.markdownDescription) {
-            tmpProperties[prop].markdownDescription = replaceLocalizePlaceholder(
+            tmpProperties[prop].markdownDescription = this.getLocalizeFromNlsJSON(
               originalConfiguration.markdownDescription,
-              this.extension.id,
             );
           }
         }
         configuration.properties = tmpProperties;
-        configuration.title =
-          replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
+        configuration.title = this.getLocalizeFromNlsJSON(configuration.title) || configuration.title;
         this.updateConfigurationSchema(configuration);
-        this.addDispose(
-          this.preferenceSettingsService.registerSettingSection('extension', {
-            title: configuration.title,
-            preferences: Object.keys(configuration.properties),
-          }),
-        );
-        tmpProperties = {};
+        sections.push({
+          title: configuration.title,
+          preferences: Object.keys(configuration.properties).map((v) => ({
+            id: v,
+          })),
+        });
       }
+    }
+    if (sections.length === 1) {
+      const section = sections[0];
+      this.addDispose(this.preferenceSettingsService.registerSettingSection('extension', section));
+    } else if (sections.length > 1) {
+      this.addDispose(
+        this.preferenceSettingsService.registerSettingSection('extension', {
+          title:
+            this.getLocalizeFromNlsJSON(this.extension.packageJSON.displayName) ||
+            this.extension.packageJSON.displayName,
+          subSections: sections,
+        }),
+      );
     }
   }
 
   private updateConfigurationSchema(schema: PreferenceSchema): void {
     this.validateConfigurationSchema(schema);
-
     this.addDispose(this.preferenceSchemaProvider.setSchema(schema));
   }
 
