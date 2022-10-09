@@ -34,10 +34,11 @@ import {
   StatusBarAlignment,
   StatusBarEntryAccessor,
 } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
-import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
 import { IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
+import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import {
   ExtensionNodeServiceServerPath,
