@@ -22,6 +22,14 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     return OpenSumiContextMenu.open(this.app, async () => view);
   }
 
+  async openTabContextMenu() {
+    const view = await this.getCurrentTab();
+    if (!view) {
+      return;
+    }
+    return OpenSumiContextMenu.open(this.app, async () => view);
+  }
+
   async numberOfLines(): Promise<number | undefined> {
     await this.activate();
     const viewElement = await this.getViewElement();
