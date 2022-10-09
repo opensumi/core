@@ -162,3 +162,5 @@ export const Button = React.memo(
     );
   },
 );
+
+export default Button;

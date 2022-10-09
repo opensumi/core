@@ -19,6 +19,10 @@ const mockMainThreadToolbarProxy = {
     actionMaps.set(contribution.id, contribution);
   }),
 
+  $registerDropdownButtonAction: jest.fn((extensionId: string, extensionPath: string, contribution: any) => {
+    actionMaps.set(contribution.id, contribution);
+  }),
+
   $registerToolbarSelectAction: jest.fn((extensionId: string, extensionPath: string, contribution: any) => {
     actionMaps.set(contribution.id, contribution);
   }),
@@ -117,6 +121,29 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     });
 
     const hostAction = await toolbarAPI.getToolbarActionButtonHandle(id);
+    expect(hostAction).toBeDefined();
+  });
+
+  it('toolbarAPI#registerToolbarAction dropdownButton should be work', async () => {
+    const id = `${extension.id}-toolbar`;
+    await toolbarAPI.registerToolbarAction({
+      id,
+      type: 'dropdownButton',
+      description: 'test',
+      command: 'common-start.select',
+      options: [
+        {
+          label: '运行',
+          value: 'run',
+        },
+        {
+          label: '调试',
+          value: 'debug',
+        },
+      ],
+    });
+
+    const hostAction = await toolbarAPI.getToolbarActionDropdownButtonHandle(id);
     expect(hostAction).toBeDefined();
   });
 

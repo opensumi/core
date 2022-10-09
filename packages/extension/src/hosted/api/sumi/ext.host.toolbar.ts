@@ -2,27 +2,32 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { IToolbarPopoverStyle } from '@opensumi/ide-core-browser/lib/toolbar';
 import { Emitter, Disposable } from '@opensumi/ide-core-common';
 
-import { IToolbarButtonContribution, IToolbarSelectContribution } from '../../../browser/sumi/types';
+import {
+  IToolbarButtonContribution,
+  IToolbarDropdownButtonContribution,
+  IToolbarSelectContribution,
+} from '../../../browser/sumi/types';
 import { MainThreadSumiAPIIdentifier } from '../../../common/sumi';
 import {
   IToolbarButtonActionHandle,
   IToolbarSelectActionHandle,
   IMainThreadToolbar,
   IExtHostToolbar,
+  IToolbarDropdownButtonActionHandle,
 } from '../../../common/sumi/toolbar';
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 
 import { ExtHostCommon } from './ext.host.common';
 
-
 export function createToolbarAPIFactory(extension: IExtensionDescription, service: ExtHostToolbarActionService) {
   return {
     registerToolbarAction: async <T>(
-      contribution: IToolbarButtonContribution | IToolbarSelectContribution<T>,
-    ): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T>> =>
+      contribution: IToolbarButtonContribution | IToolbarSelectContribution<T> | IToolbarDropdownButtonContribution<T>,
+    ): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T> | IToolbarDropdownButtonActionHandle<T>> =>
       service.registerToolbarAction<T>(extension.id, extension.path, contribution),
     getToolbarActionButtonHandle: async (id) => service.getToolbarButtonActionHandle(id, extension.id),
     getToolbarActionSelectHandle: async (id) => service.getToolbarSelectActionHandle(id, extension.id),
+    getToolbarActionDropdownButtonHandle: async (id) => service.getToolbarDropdownButtonActionHandle(id, extension.id),
   };
 }
 
@@ -30,6 +35,8 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
   private btnHandles = new Map<string, Promise<ToolbarBtnActionHandleController>>();
 
   private selectHandles = new Map<string, Promise<ToolbarSelectActionHandleController<any>>>();
+
+  private dropdownButtonHandles = new Map<string, Promise<ToolbarDropdownButtonActionHandleController<any>>>();
 
   private readonly proxy: IMainThreadToolbar;
 
@@ -44,14 +51,19 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
   async registerToolbarAction<T>(
     extensionId: string,
     extensionPath: string,
-    contribution: IToolbarButtonContribution | IToolbarSelectContribution,
-  ): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T>> {
-    if (contribution.type === 'button') {
-      await this.proxy.$registerToolbarButtonAction(extensionId, extensionPath, contribution);
-      return this.getToolbarButtonActionHandle(contribution.id, extensionId);
+    contribution: IToolbarButtonContribution | IToolbarSelectContribution | IToolbarDropdownButtonContribution,
+  ): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T> | IToolbarDropdownButtonActionHandle<T>> {
+    switch (contribution.type) {
+      case 'button':
+        await this.proxy.$registerToolbarButtonAction(extensionId, extensionPath, contribution);
+        return this.getToolbarButtonActionHandle(contribution.id, extensionId);
+      case 'dropdownButton':
+        await this.proxy.$registerDropdownButtonAction(extensionId, extensionPath, contribution);
+        return this.getToolbarDropdownButtonActionHandle(contribution.id, extensionId);
+      default:
+        await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution);
+        return this.getToolbarSelectActionHandle(contribution.id, extensionId);
     }
-    await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution);
-    return this.getToolbarSelectActionHandle(contribution.id, extensionId);
   }
 
   getToolbarButtonActionHandle(id: string, extensionId: string): Promise<IToolbarButtonActionHandle> {
@@ -86,6 +98,30 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
       this.selectHandles.set(compositeKey, promise);
     }
     return this.selectHandles.get(compositeKey)!.then((h) => h.handle);
+  }
+
+  getToolbarDropdownButtonActionHandle<T = any>(
+    id: string,
+    extensionId: string,
+  ): Promise<IToolbarDropdownButtonActionHandle<T>> {
+    const compositeKey = extensionId + '.' + id;
+    if (!this.dropdownButtonHandles.has(compositeKey)) {
+      const promise = new Promise<ToolbarDropdownButtonActionHandleController<T>>(async (resolve, reject) => {
+        const h = new ToolbarDropdownButtonActionHandleController<T>(
+          compositeKey,
+          this.extHostCommands,
+          this.kaitianCommon,
+        );
+        try {
+          await h.init();
+          resolve(h);
+        } catch (e) {
+          reject(e);
+        }
+      });
+      this.dropdownButtonHandles.set(compositeKey, promise);
+    }
+    return this.dropdownButtonHandles.get(compositeKey)!.then((h) => h.handle);
   }
 }
 
@@ -204,5 +240,38 @@ export class ToolbarSelectActionHandleController<T> extends Disposable {
       'sumi-extension.toolbar.select.connectHandle',
       this.id,
     )) as T;
+  }
+}
+
+export class ToolbarDropdownButtonActionHandleController<T> extends Disposable {
+  private _handle: IToolbarDropdownButtonActionHandle<T>;
+
+  private _onSelect = new Emitter<T>();
+
+  constructor(
+    public readonly id: string,
+    private _extHostCommands: IExtHostCommands,
+    private kaitianCommon: ExtHostCommon,
+  ) {
+    super();
+  }
+
+  get handle(): IToolbarDropdownButtonActionHandle<T> {
+    if (!this._handle) {
+      this._handle = {
+        onSelect: this._onSelect.event,
+      };
+    }
+    return this._handle;
+  }
+
+  async init() {
+    this.addDispose(
+      this.kaitianCommon.onEvent('sumi-extension.toolbar.dropdownButton.onSelect', (id, value) => {
+        if (id === this.id) {
+          this._onSelect.fire(value);
+        }
+      }),
+    );
   }
 }

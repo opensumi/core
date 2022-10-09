@@ -1,7 +1,11 @@
 import { Event } from '@opensumi/ide-core-common';
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/sumi/types';
+import type {
+  IToolbarButtonContribution,
+  IToolbarDropdownButtonContribution,
+  IToolbarSelectContribution,
+  // eslint-disable-next-line import/no-restricted-paths
+} from '../../browser/sumi/types';
 
 export interface IToolbarButtonActionHandle {
   onClick: Event<void>;
@@ -38,6 +42,10 @@ export interface IToolbarSelectActionHandle<T> {
   getValue(): T;
 }
 
+export interface IToolbarDropdownButtonActionHandle<T> {
+  onSelect: Event<T>;
+}
+
 export interface IMainThreadToolbar {
   $registerToolbarButtonAction(
     extensionId: string,
@@ -50,14 +58,20 @@ export interface IMainThreadToolbar {
     extensionPath: string,
     contribution: IToolbarSelectContribution<T>,
   ): Promise<void>;
+
+  $registerDropdownButtonAction<T = any>(
+    extensionId: string,
+    extensionPath: string,
+    contribution: IToolbarDropdownButtonContribution<T>,
+  ): Promise<void>;
 }
 
 export interface IExtHostToolbar {
   registerToolbarAction<T>(
     extensionId: string,
     extensionPath: string,
-    contribution: IToolbarButtonContribution | IToolbarSelectContribution,
-  ): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T>>;
+    contribution: IToolbarButtonContribution | IToolbarSelectContribution | IToolbarDropdownButtonContribution,
+  ): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T> | IToolbarDropdownButtonActionHandle<T>>;
 
   getToolbarButtonActionHandle(id: string, extensionId: string): Promise<IToolbarButtonActionHandle>;
 

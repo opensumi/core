@@ -12,6 +12,8 @@ import {
   IEventBus,
   ExtensionActivateEvent,
   IToolbarPopoverRegistry,
+  createToolbarActionDropdownButton,
+  IToolbarActionDropdownButtonDelegate,
 } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-browser';
 import { IIconService, IconType } from '@opensumi/ide-theme';
@@ -20,13 +22,15 @@ import { EMIT_EXT_HOST_EVENT } from '../../common';
 import { IMainThreadToolbar } from '../../common/sumi/toolbar';
 import { ExtensionLoadingView } from '../components';
 
-import { IToolbarButtonContribution, IToolbarSelectContribution } from './types';
+import { IToolbarButtonContribution, IToolbarDropdownButtonContribution, IToolbarSelectContribution } from './types';
 
 @Injectable()
 export class KaitianExtensionToolbarService {
   private btnDelegates = new Map<string, IToolbarActionBtnDelegate>();
 
   private selectDelegates = new Map<string, IToolbarActionSelectDelegate<any>>();
+
+  private dropdownButtonDelegates = new Map<string, IToolbarActionDropdownButtonDelegate<any>>();
 
   private connected = new Set<string>();
 
@@ -346,6 +350,52 @@ export class KaitianExtensionToolbarService {
       );
     }
   }
+
+  registerToolbarDropdownButton<T = any>(
+    extensionId: string,
+    extensionBasePath: string,
+    contribution: IToolbarDropdownButtonContribution<T>,
+  ) {
+    const id = extensionId + '.' + contribution.id;
+    const options = contribution.options || [];
+    return this.toolbarRegistry.registerToolbarAction({
+      id,
+      preferredPosition: contribution.preferredPosition,
+      strictPosition: contribution.strictPosition,
+      description: contribution.description,
+      component: createToolbarActionDropdownButton<T>({
+        options,
+        trigger: contribution.trigger,
+        delegate: (delegate) => {
+          if (delegate) {
+            this.dropdownButtonDelegates.set(id, delegate);
+            if (contribution.command) {
+              delegate.onSelect((v) => {
+                this.commandService.executeCommand(contribution.command!, v);
+              });
+            }
+            if (this.connected.has(id)) {
+              this.doConnectToolbarDropdownButtonHandle(id);
+            }
+          }
+        },
+      }),
+    });
+  }
+
+  doConnectToolbarDropdownButtonHandle(id: string) {
+    const delegate = this.selectDelegates.get(id);
+    if (delegate) {
+      delegate.onSelect((value) =>
+        this.commandService.executeCommand(
+          EMIT_EXT_HOST_EVENT.id,
+          'sumi-extension.toolbar.dropdownButton.onSelect',
+          id,
+          value,
+        ),
+      );
+    }
+  }
 }
 
 // 与 KaitianExtensionToolbarService 区分一下，只是为了给插件进程调用注册 actions
@@ -369,6 +419,15 @@ export class MainThreadToolbar extends Disposable implements IMainThreadToolbar 
     contribution: IToolbarSelectContribution<T>,
   ): Promise<void> {
     this.addDispose(this.toolbarService.registerToolbarSelect(extensionId, extensionPath, contribution));
+    return Promise.resolve();
+  }
+
+  $registerDropdownButtonAction<T = any>(
+    extensionId: string,
+    extensionPath: string,
+    contribution: IToolbarDropdownButtonContribution<T>,
+  ): Promise<void> {
+    this.addDispose(this.toolbarService.registerToolbarDropdownButton(extensionId, extensionPath, contribution));
     return Promise.resolve();
   }
 }
