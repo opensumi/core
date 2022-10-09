@@ -252,3 +252,21 @@
     .iconfont-size-under-12px(10px);
   }
 }
+
+@dropdown-button-prefix-cls: ~'@{prefix}-dropdown-button';
+
+.@{dropdown-button-prefix-cls} {
+  .reset-component;
+  display: flex;
+  border-radius: 2px;
+  overflow: hidden;
+  .@{prefix}-button {
+    border-radius: 0;
+    &:first-child {
+      border-right: 1px solid var(--kt-hintBackground);
+    }
+    &:last-child {
+      padding: 0 6px;
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { IDataOption, IDataOptionGroup } from '@opensumi/ide-components';
+import { DropDownProps, IDataOption, IDataOptionGroup } from '@opensumi/ide-components';
 import { IDisposable, BasicEvent, Event } from '@opensumi/ide-core-common';
 
 export const IToolbarRegistry = Symbol('IToolbarRegistry');
@@ -306,6 +306,18 @@ export interface IToolbarActionSelectProps<T> {
   equals?: (v1: T | undefined, v2: T | undefined) => boolean;
   onSelect?: (value: T) => void;
   delegate?: (delegate: IToolbarActionSelectDelegate<T> | undefined) => void;
+}
+
+export interface IToolbarActionDropdownButtonDelegate<T> {
+  onSelect: Event<T>;
+}
+
+// DropdownButton
+export interface IToolbarActionDropdownButtonProps<T> {
+  options: IDataOption<T>[];
+  trigger?: DropDownProps['trigger'];
+  onSelect?: (value: T) => void;
+  delegate?: (delegate: IToolbarActionDropdownButtonDelegate<T> | undefined) => void;
 }
 
 export interface IToolbarActionSelectDelegate<T> {

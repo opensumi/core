@@ -21,3 +21,4 @@ export * from './loading';
 export * from './click-outside';
 
 export * from './locale-context-provider';
+export * from './dropdown';
