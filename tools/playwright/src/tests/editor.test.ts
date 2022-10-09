@@ -60,12 +60,12 @@ console.log(a);`,
   test('Close All Editors should be worked', async () => {
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor.js', false);
     const editor2 = await app.openEditor(OpenSumiTextEditor, explorer, 'editor2.js', false);
-    await app.page.waitForTimeout(200);
+    await app.page.waitForTimeout(1000);
     const contextMenu = await editor.openTabContextMenu();
     expect(await contextMenu?.isOpen()).toBeTruthy();
     const closeAll = await contextMenu?.menuItemByName('Close All');
     await closeAll?.click();
-    await app.page.waitForTimeout(200);
+    await app.page.waitForTimeout(1000);
     expect(await editor.isTabVisible()).toBeFalsy();
     expect(await editor.isVisible()).toBeFalsy();
     expect(await editor2.isVisible()).toBeFalsy();
