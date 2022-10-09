@@ -52,7 +52,7 @@ export class MockInjector extends Injector {
     return creator && creator.status === CreatorStatus.done;
   }
 
-  public mockCommand(commandId, fn?) {
+  public mockCommand(commandId: string, fn?) {
     const registry = this.get(CommandRegistry) as CommandRegistry;
     if (registry.getCommand(commandId)) {
       registry.unregisterCommand(commandId);
