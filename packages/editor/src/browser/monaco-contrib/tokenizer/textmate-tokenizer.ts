@@ -2,6 +2,7 @@ import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
 
 import { MetadataConsts } from '@opensumi/monaco-editor-core/esm/vs/editor/common/encodedTokenAttributes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
+
 /** ******************************************************************************
  * Copyright (C) 2018 Ericsson and others.
  *
@@ -59,19 +60,19 @@ export function createTextmateTokenizer(
         const tokens = new Uint32Array(2);
         tokens[0] = 0;
         tokens[1] =
-          ((1 << MetadataConsts.LANGUAGEID_OFFSET) |
-            (0 << MetadataConsts.TOKEN_TYPE_OFFSET) |
-            (0 << MetadataConsts.FONT_STYLE_OFFSET) |
-            (1 << MetadataConsts.FOREGROUND_OFFSET) |
-            (2 << MetadataConsts.BACKGROUND_OFFSET)) >>>
-          0;
+          (1 << MetadataConsts.LANGUAGEID_OFFSET) |
+          (0 << MetadataConsts.TOKEN_TYPE_OFFSET) |
+          (0 << MetadataConsts.FONT_STYLE_OFFSET) |
+          (1 << MetadataConsts.FOREGROUND_OFFSET) |
+          (2 << MetadataConsts.BACKGROUND_OFFSET) |
+          (MetadataConsts.BALANCED_BRACKETS_MASK >>> 0);
         // Line is too long to be tokenized
         return {
           endState: new TokenizerState(INITIAL),
           tokens,
         };
       }
-      const result = grammar.tokenizeLine2(line, state.ruleStack);
+      const result = grammar.tokenizeLine2(line, state.ruleStack, 500);
       return {
         endState: new TokenizerState(result.ruleStack),
         tokens: result.tokens,

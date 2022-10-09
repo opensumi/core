@@ -117,6 +117,8 @@ export interface GrammarsContribution {
   embeddedLanguages?: ScopeMap;
   tokenTypes?: ScopeMap;
   injectTo?: string[];
+  balancedBracketScopes?: string[];
+  unbalancedBracketScopes?: string[];
 
   /**
    * 定义统一的 resolvedConfiguration 数据

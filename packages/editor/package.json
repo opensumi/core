@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@opensumi/ide-core-common": "2.20.2",
+    "@opensumi/ide-utils": "2.20.2",
     "@opensumi/ide-core-node": "2.20.2",
     "@opensumi/ide-file-service": "2.20.2",
     "@opensumi/ide-monaco": "2.20.2",

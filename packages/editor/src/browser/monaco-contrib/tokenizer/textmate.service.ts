@@ -49,6 +49,7 @@ import {
 } from '@opensumi/ide-monaco/lib/common';
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
+import { asStringArray } from '@opensumi/ide-utils/lib/arrays';
 import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/modesRegistry';
 
@@ -298,12 +299,13 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       toDispose.addDispose(
         Disposable.create(this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName)),
       );
-
       toDispose.addDispose(
         Disposable.create(
           this.textmateRegistry.registerGrammarConfiguration(grammar.language, () => ({
             embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
             tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
+            balancedBracketSelectors: asStringArray(grammar.balancedBracketScopes, ['*']),
+            unbalancedBracketSelectors: asStringArray(grammar.unbalancedBracketScopes, []),
           })),
         ),
       );
