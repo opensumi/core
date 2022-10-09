@@ -172,9 +172,13 @@ export class FileTreeContribution
     this.isRendered = true;
     const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
     if (handler) {
+      // 初始化时根据状态来设置 contextKey
+      this.fileTreeModelService.whenReady.then(() => {
+        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(handler.isActivated());
+      });
       handler.onActivate(() => {
-        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(true);
         this.fileTreeModelService.performLocationOnHandleShow();
+        this.fileTreeModelService.contextKey.explorerViewletVisibleContext.set(true);
       });
       handler.onInActivate(() => {
         this.fileTreeModelService.handleTreeBlur();

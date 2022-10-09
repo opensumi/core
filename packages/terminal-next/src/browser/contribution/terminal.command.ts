@@ -319,15 +319,6 @@ export class TerminalCommandContribution implements CommandContribution {
         client?.focus();
       },
     });
-
-    registry.registerCommand(TERMINAL_COMMANDS.TOGGLE_VISIBILITY, {
-      execute: () => {
-        const tabbarHandler = this.mainlayoutService.getTabbarHandler(TerminalContainerId);
-        if (tabbarHandler) {
-          tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
-        }
-      },
-    });
   }
 
   private getNextOrPrevTerminalClient(kind: 'next' | 'prev'): ITerminalClient | undefined {

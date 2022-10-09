@@ -231,7 +231,7 @@ export class ThemeData implements IThemeData {
       json = parseWithComments(content);
       return json;
     } catch (error) {
-      return this.logger.error('主题文件解析出错！', content);
+      return this.logger.error('Theme data parse error.', content);
     }
   }
 

@@ -1,5 +1,6 @@
 import { Optional, Injectable, Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
+import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { Disposable, uuid, URI, localize, Deferred, IEventBus, strings, Schemes } from '@opensumi/ide-core-common';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -107,7 +108,7 @@ export class OutputChannel extends Disposable {
   }
 
   private setShouldLogToBrowser() {
-    const noVisiblePanel = !this.layoutService.getTabbarHandler('ide-output');
+    const noVisiblePanel = !this.layoutService.getTabbarHandler(OUTPUT_CONTAINER_ID);
     const logWhenNoPanel = this.outputPreferences['output.logWhenNoPanel'];
     this.shouldLogToBrowser = Boolean(noVisiblePanel && logWhenNoPanel);
   }
@@ -204,10 +205,11 @@ export class OutputChannel extends Disposable {
     this.visible = visible;
 
     if (visible) {
-      const handler = this.layoutService.getTabbarHandler('ide-output');
+      const handler = this.layoutService.getTabbarHandler(OUTPUT_CONTAINER_ID);
       if (!handler) {
         return;
       }
+      // TODO 这里的逻辑是不是写错了
       if (!handler.isVisible) {
         handler.activate();
       }

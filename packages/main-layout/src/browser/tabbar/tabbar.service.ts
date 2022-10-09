@@ -21,7 +21,9 @@ import {
   DisposableCollection,
   IScopedContextKeyService,
   Deferred,
+  formatLocalize,
 } from '@opensumi/ide-core-browser';
+import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
 import { LayoutState, LAYOUT_STATE } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import {
@@ -307,6 +309,58 @@ export class TabbarService extends WithEventBus {
     });
     // 注册progressIndicator
     disposables.push(this.progressService.registerProgressIndicator(componentInfo.options!.containerId));
+    disposables.push(this.registerContainerPanelRelatedCommand(componentInfo));
+    return disposables;
+  }
+  /**
+   * 这里注册的是某个 Container Panel 对应的显示/隐藏等命令
+   */
+  protected registerContainerPanelRelatedCommand(componentInfo: ComponentRegistryInfo) {
+    const disposables = new DisposableCollection();
+    const containerId = componentInfo.options?.containerId!;
+    disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: 'container.show.' + containerId,
+          label: formatLocalize('view.command.show', componentInfo.options?.title ?? containerId),
+          alias: `Show ${componentInfo.options?.title ?? componentInfo.options?.containerId}`,
+          category: 'View',
+        },
+        {
+          execute: () => {
+            this.currentContainerId = containerId;
+          },
+        },
+      ),
+    );
+    disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: 'container.hide.' + containerId,
+        },
+        {
+          execute: () => {
+            this.currentContainerId = '';
+          },
+        },
+      ),
+    );
+    disposables.push(
+      this.commandRegistry.registerCommand(
+        {
+          id: 'container.toggle.' + containerId,
+        },
+        {
+          execute: () => {
+            if (this.currentContainerId === containerId) {
+              this.currentContainerId = '';
+            } else {
+              this.currentContainerId = containerId;
+            }
+          },
+        },
+      ),
+    );
     return disposables;
   }
 
@@ -576,7 +630,7 @@ export class TabbarService extends WithEventBus {
     return commandId;
   }
 
-  // 注册tab的隐藏显示功能
+  // 注册当前 container 在 tabBar 上的隐藏显示功能
   private registerVisibleToggleCommand(containerId: string, disposables: DisposableCollection): string {
     const commandId = `activity.bar.toggle.${containerId}`;
     disposables.push(
@@ -742,7 +796,10 @@ export class TabbarService extends WithEventBus {
     // 使用自定义视图取代手风琴的面板不需要 restore
     // scm 视图例外，因为在新版本 Gitlens 中可以将自己注册到 scm 中
     // 暂时用这种方式使 scm 面板状态可以被持久化
-    if ((!containerInfo || containerInfo.options!.component) && containerInfo?.options?.containerId !== 'scm') {
+    if (
+      (!containerInfo || containerInfo.options?.component) &&
+      containerInfo?.options?.containerId !== SCM_CONTAINER_ID
+    ) {
       return;
     }
     const accordionService = this.layoutService.getAccordionService(containerId);

@@ -19,13 +19,14 @@ export class MessageService extends AbstractMessageService implements IMessageSe
   private showTime = 0;
 
   // 相同文案返回的间隔时间
-  protected static SAME_MESSAGE_DURATION = 3000;
+  // https://github.com/react-component/notification#notificationnoticeprops
+  protected static SAME_MESSAGE_DURATION = 30;
 
   // 参考 vscode message 组件消失的时间
   protected static DURATION: { [type: number]: number } = {
-    [MessageType.Info]: 15000,
-    [MessageType.Warning]: 18000,
-    [MessageType.Error]: 20000,
+    [MessageType.Info]: 15,
+    [MessageType.Warning]: 18,
+    [MessageType.Error]: 20,
   };
 
   /**
@@ -62,7 +63,15 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     }
     const description = from && typeof from === 'string' ? `${localize('component.message.origin')}: ${from}` : '';
     const key = uuid();
-    const promise = open<T>(toMarkdown(message, this.openerService), type, closable, key, buttons, description);
+    const promise = open<T>(
+      toMarkdown(message, this.openerService),
+      type,
+      closable,
+      key,
+      buttons,
+      description,
+      MessageService.DURATION[type],
+    );
     return promise || Promise.resolve(undefined);
   }
 

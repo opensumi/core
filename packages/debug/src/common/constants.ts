@@ -1,11 +1,12 @@
+import { DEBUG_CONSOLE_CONTAINER_ID, DEBUG_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 
 import { DebugState } from './debug-session';
 
+export { DEBUG_CONSOLE_CONTAINER_ID, DEBUG_CONTAINER_ID };
+
 export const DEBUG_MEMORY_SCHEME = 'vscode-debug-memory';
 
-export const DEBUG_CONSOLE_CONTAINER_ID = 'debug-console-container';
-export const DEBUG_CONTAINER_ID = 'debug';
 export const DEBUG_WATCH_ID = 'debug-watch';
 export const DEBUG_THREAD_ID = 'debug-thread';
 export const DEBUG_VARIABLES_ID = 'debug-variable';

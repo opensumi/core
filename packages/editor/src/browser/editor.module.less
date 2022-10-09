@@ -71,7 +71,7 @@
         }
         &:hover {
           > .editor-action {
-            transform: scale(1.2);
+            transform: scale(1.1);
           }
         }
         &:global {
@@ -209,6 +209,9 @@
       }
       .kt_editor_close_icon {
         margin-right: 0 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         &::before {
           font-size: 14px;
         }
@@ -236,8 +239,8 @@
         border-radius: 4px;
         padding: 1px;
         &:hover {
-          transform: scale(1.2);
-          background-color: var(--kt-defaultButton-hoverBackground);
+          transform: scale(1.1);
+          background-color: var(--kt-icon-hoverBackground);
         }
       }
       .dirty {

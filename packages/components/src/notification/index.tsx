@@ -1,6 +1,8 @@
 import clx from 'classnames';
 import React from 'react';
 
+import { isUndefined } from '@opensumi/ide-utils';
+
 import { Button } from '../button';
 import { MessageType } from '../common';
 
@@ -8,9 +10,9 @@ import antdNotification, { ArgsProps } from './notification';
 import './notification.less';
 
 const DURATION: { [type: number]: number } = {
-  [MessageType.Info]: 15000,
-  [MessageType.Warning]: 18000,
-  [MessageType.Error]: 20000,
+  [MessageType.Info]: 15,
+  [MessageType.Warning]: 18,
+  [MessageType.Error]: 20,
 };
 
 antdNotification.config({
@@ -39,7 +41,7 @@ export function open<T = string>(
         ['kt-notification-error']: type === MessageType.Error,
         ['kt-notification-warn']: type === MessageType.Warning,
       }),
-      duration: duration !== undefined ? null : DURATION[type] / 1000,
+      duration: isUndefined(duration) ? DURATION[type] : duration,
       onClose: () => {
         onClose && onClose();
         cachedArgs.delete(key);

@@ -60,7 +60,7 @@ export interface IBasicTreeData {
   /**
    * 图标
    */
-  icon: string;
+  icon?: string;
   iconClassName?: string;
   /**
    * 描述
@@ -68,6 +68,8 @@ export interface IBasicTreeData {
   description?: string;
   /**
    * 子节点
+   *
+   * 传入一个空数组可让本节点视为文件夹，同时可以通过 expandable 属性来设置是否展示收起图标
    */
   children?: IBasicTreeData[] | null;
   /**
@@ -84,6 +86,10 @@ export interface IBasicTreeData {
   [key: string]: any;
 }
 
+export interface IBasicRecycleTreeHandle {
+  selectItemByPath(path: string): Promise<void>;
+}
+
 export interface IBasicRecycleTreeProps {
   /**
    * 节点数据，用于渲染 Tree 的数据
@@ -93,6 +99,7 @@ export interface IBasicRecycleTreeProps {
    * Tree 容器高度
    */
   height: number;
+  supportDynamicHeights?: boolean;
   /**
    * Tree 容器宽度
    * 不传入时，默认自动撑开 100% 父节点宽度
@@ -103,9 +110,13 @@ export interface IBasicRecycleTreeProps {
    */
   itemHeight?: number;
   /**
-   * 节点缩进，默认值为 8
+   * 每层的节点缩进长度，默认值为 8
    */
   indent?: number;
+  /**
+   * 第一层距离左边的距离，默认为 8
+   */
+  baseIndent?: number;
   /**
    * 追加的容器样式名，用于自定义更多样式
    */
@@ -121,7 +132,7 @@ export interface IBasicRecycleTreeProps {
   /**
    * 排序函数
    */
-  sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number;
+  sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number | undefined;
   /**
    * 单击事件
    */
@@ -158,7 +169,14 @@ export interface IBasicRecycleTreeProps {
    * 用于挂载 Tree 上的一些操作方法
    * 如：ensureVisible 等
    */
-  onReady?: (api: IRecycleTreeHandle) => void;
+  onReady?: (treeHandler: IRecycleTreeHandle, basicTreeHandler: IBasicRecycleTreeHandle) => void;
+
+  /**
+   * 指定 RecycleTree 的名字
+   */
+  treeName?: string;
+
+  getItemClassName?: (item?: ITreeNodeOrCompositeTreeNode) => string | undefined;
 }
 
 export interface IBasicNodeProps {
@@ -171,7 +189,7 @@ export interface IBasicNodeProps {
    */
   className?: string;
   /**
-   * 节点缩进
+   * 每层的节点缩进长度
    */
   indent?: number;
   /**

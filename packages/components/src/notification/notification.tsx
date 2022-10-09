@@ -6,6 +6,8 @@ import InfoCircleOutlined from '@ant-design/icons/InfoCircleOutlined';
 import Notification from 'rc-notification';
 import React from 'react';
 
+import { isUndefined } from '@opensumi/ide-utils';
+
 export type NotificationPlacement = 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
 
 export type IconType = 'success' | 'info' | 'error' | 'warning';
@@ -161,8 +163,7 @@ export interface ArgsProps {
 function notice(args: ArgsProps) {
   const outerPrefixCls = args.prefixCls || 'kt-notification';
   const prefixCls = `${outerPrefixCls}-notice`;
-  const duration = args.duration === undefined ? defaultDuration : args.duration;
-
+  const duration = isUndefined(args.duration) ? defaultDuration : args.duration;
   let iconNode: React.ReactNode = null;
   if (args.icon) {
     iconNode = <span className={`${prefixCls}-icon`}>{args.icon}</span>;

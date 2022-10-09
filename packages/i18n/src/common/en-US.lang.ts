@@ -88,15 +88,10 @@ export const localizationBundle = {
     'menu-bar.file.save-all': 'Save All',
     'menu-bar.file.open': 'Open File',
     'menu-bar.view.quick.command': 'Command Palette...',
-    'menu-bar.view.outward': 'Outward',
-    'menu-bar.view.outward.right-panel.toggle': 'Toggle Right Panel',
-    'menu-bar.view.outward.right-panel.hide': 'Hide Right Panel',
-    'menu-bar.view.outward.right-panel.show': 'Show Right Panel',
-    'menu-bar.view.outward.left-panel.hide': 'Hide Left Panel',
-    'menu-bar.view.outward.left-panel.show': 'Show Left Panel',
-    'menu-bar.view.outward.theme.toggle': 'switch skin',
-    'menu-bar.view.outward.localize.toggle': 'switch language',
-    'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
+
+    'menu-bar.go.jumpToBracket': 'Go to Bracket',
+    'menu-bar.go.nextProblemInFiles': 'Next Problem',
+    'menu-bar.go.prevProblemInFiles': 'Previous Problem',
 
     editor: 'Editor',
     'editor.undo': 'Undo',
@@ -196,12 +191,12 @@ export const localizationBundle = {
     'quickopen.tab.tip.suffix': 'to switch',
     'quickOpen.openSide': 'Open on the side',
 
-    'explorer.title': 'EXPLORER',
+    'explorer.title': 'Explorer',
     'explorer.electron.revealInFinder': 'Reveal In Explorer',
     'explorer.electron.openInSystemTerminal': 'Open In Terminal',
     'explorer.electron.openInSystemTerminal.error': 'Open {0} In Terminal Fail: {1}',
 
-    'search.title': 'SEARCH',
+    'search.title': 'Search',
     'search.input.placeholder': 'Enter search content',
     'search.input.title': 'Search',
     'search.replace.title': 'Replace',
@@ -272,7 +267,7 @@ export const localizationBundle = {
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
 
-    'scm.title': 'SOURCE CONTROL',
+    'scm.title': 'Source Control',
     'scm.action.git.refresh': 'Refresh',
     'scm.action.git.commit': 'Commit',
     'scm.action.git.more': 'More Actions',
@@ -310,7 +305,7 @@ export const localizationBundle = {
     'debug.watch.copyValue': 'Copy Value',
     'debug.watch.remove': 'Remove Expression',
     'debug.action.continue': 'Continue',
-    'debug.console.panel.title': 'DEBUG CONSOLE',
+    'debug.console.panel.title': 'Debug Console',
     'debug.console.panel.default': 'default',
     'debug.console.filter.placeholder': 'Filter (e.g. text, !exclude)',
     'debug.console.clear': 'Clear',
@@ -335,7 +330,7 @@ export const localizationBundle = {
     'debug.variables.view.memory.prompt.hexEditor.notInstalled':
       'Inspecting binary data requires the Hex Editor extension.',
     'debug.breakpoints.title': 'BREAKPOINTS',
-    'debug.container.title': 'DEBUG',
+    'debug.container.title': 'Debug',
     'debug.breakpoint.breakpointMessage': 'Breakpoint',
     'debug.breakpoint.logpointMessage': 'Logpoint',
     'debug.breakpoint.conditionalMessage': 'Conditional Breakpoint',
@@ -385,7 +380,7 @@ export const localizationBundle = {
     'debug.launch.typeNotSupported': 'The debug session type "{0}" is not supported.',
     'debug.launch.catchError': 'There was an error starting the debug session, check the logs for more details.',
 
-    'output.tabbar.title': 'OUTPUT',
+    'output.tabbar.title': 'Output',
     'output.channel.none': '<no output yet>',
     'output.configurationTitle': 'Output settings',
     'output.logWhenNoPanel': 'Whether to output to the browser when no available panel',
@@ -447,21 +442,21 @@ export const localizationBundle = {
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
     'preference.terminal.typeDesc': 'To change the default type of create a new terminal',
-    'preference.terminal.fontFamily': 'Terminal Font Family',
-    'preference.terminal.fontSize': 'Terminal Font Size',
-    'preference.terminal.fontWeight': 'Terminal Font Weight',
-    'preference.terminal.lineHeight': 'Terminal Line Height',
-    'preference.terminal.cursorBlink': 'Terminal Cursor Link',
-    'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
-    'preference.terminal.integrated.shellArgs.linux': 'Terminal Shell Args Linux',
+    'preference.terminal.fontFamily': 'Terminal > Font Family',
+    'preference.terminal.fontSize': 'Terminal > Font Size',
+    'preference.terminal.fontWeight': 'Terminal > Font Weight',
+    'preference.terminal.lineHeight': 'Terminal > Line Height',
+    'preference.terminal.cursorBlink': 'Terminal > Cursor Blink',
+    'preference.terminal.scrollback': 'Terminal > Cursor Scrollback',
+    'preference.terminal.integrated.shellArgs.linux': 'Terminal > Shell Args Linux',
     'preference.terminal.integrated.shellArgs.linuxDesc':
       'The command line arguments to use when on the Linux terminal. ',
 
-    'preference.terminal.integrated.copyOnSelection': 'Terminal Copy On Selection',
+    'preference.terminal.integrated.copyOnSelection': 'Terminal > Copy On Selection',
     'preference.terminal.integrated.copyOnSelectionDesc':
       'Controls whether text selected in the terminal will be copied to the clipboard.',
     // Local Echo
-    'preference.terminal.integrated.localEchoEnabled': 'Terminal Local Echo',
+    'preference.terminal.integrated.localEchoEnabled': 'Terminal > Local Echo',
     'preference.terminal.integrated.localEchoDesc': 'When local echo should be enabled.',
     'preference.terminal.integrated.localEchoLatencyThreshold': 'Local Echo Latency Threshold',
     'preference.terminal.integrated.localEchoLatencyThresholdDesc':
@@ -472,7 +467,7 @@ export const localizationBundle = {
     'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
     'preference.terminal.integrated.localEchoStyleDesc':
       'Terminal style of locally echoed text; either a font style or an RGB color.',
-    'preference.terminal.integrated.cursorStyle': 'Cursor Style',
+    'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
@@ -533,8 +528,8 @@ export const localizationBundle = {
     'preference.empty': 'Loading Settings...',
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
-    'preference.overwrittenInUser': '（Set in User Settings）',
-    'preference.overwrittenInWorkspace': '（Set in Workspace Settings）',
+    'preference.overwrittenInUser': '(Modified in User Settings)',
+    'preference.overwrittenInWorkspace': '(Modified in Workspace Settings)',
     'preference.searchPlaceholder': 'Search settings...',
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout':
@@ -561,6 +556,9 @@ export const localizationBundle = {
     'preference.editor.detectIndentation': 'Auto Detect Indentation',
     'preference.editor.bracketPairColorization.enabled': 'Bracket Pair Colorization',
     'preference.editor.fontWeight': 'Font Weight',
+
+    'preference.editor.wordWrap': 'Word Wrap',
+    'preference.editor.wordWrapColumn': 'Word Wrap Length',
 
     'preference.item.notValid': '{0} is not a valid option',
 
@@ -628,7 +626,7 @@ export const localizationBundle = {
     'opened.editors.copyRelativePath': 'Copy Relative Path',
     'opened.editors.copyPath': 'Copy Path',
 
-    'terminal.name': 'TERMINAL',
+    'terminal.name': 'Terminal',
     'terminal.disconnected': 'Terminal Already Disconnected',
     'terminal.can.not.create': 'Create Terminal Failed',
     'terminal.can.not.reconnect': 'Terminal Unavailable, Please',
@@ -678,6 +676,9 @@ export const localizationBundle = {
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
 
+    'view.command.show': 'Show {0}',
+
+    'layout.tabbar.setting': 'Open Preference Panel',
     'debugger.menu.setValue': 'Set Value',
     'debugger.menu.setValue.param': 'Please input the value of this variable',
 
@@ -730,7 +731,7 @@ export const localizationBundle = {
 
     'keybinding.combination.tip': '({0}) was pressed, waiting for more keys',
 
-    'layout.tabbar.toggle': 'Hide Panel',
+    'layout.tabbar.toggle': 'Toggle Bottom Panel',
     'layout.tabbar.expand': 'Maximize Bottom Panel',
     'layout.tabbar.retract': 'Retract Bottom Panel',
     'layout.view.hide': 'HIDE',
@@ -755,7 +756,7 @@ export const localizationBundle = {
     'marketplace.extension.enable.all': 'Enable All Extensions',
     'marketplace.extension.disable.all': 'Disable All Extensions',
     'marketplace.extension.install': 'Install',
-    'marketplace.extension.container': 'EXTENSIONS MARKET',
+    'marketplace.extension.container': 'Extensions',
     'marketplace.extension.empty.disabled': 'No disabled extensions yet',
     'marketplace.extension.notfound': 'No Extension',
     'marketplace.panel.hot': 'Hot Extensions',
@@ -830,7 +831,7 @@ export const localizationBundle = {
     'welcome.quickStart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
 
-    'markers.title': 'PROBLEMS',
+    'markers.title': 'Problems',
     'markers.panel.content.empty': 'No problems have been detected in the workspace so far.',
     'markers.panel.filter.errors': 'errors',
     'markers.panel.filter.warnings': 'warnings',

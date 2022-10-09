@@ -5,7 +5,6 @@ import {
   PreferenceService,
   getExternalIcon,
   IExtensionsPointService,
-  SCM_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { Disposable, URI } from '@opensumi/ide-core-browser';
@@ -185,15 +184,6 @@ export class SCMContribution
     commands.registerCommand(SET_SCM_LIST_VIEW_MODE, {
       execute: () => {
         this.scmTreeService.changeTreeMode(false);
-      },
-    });
-
-    commands.registerCommand(SCM_COMMANDS.TOGGLE_VISIBILITY, {
-      execute: () => {
-        const tabbarHandler = this.mainlayoutService.getTabbarHandler(scmContainerId);
-        if (tabbarHandler) {
-          tabbarHandler.isActivated() ? tabbarHandler.deactivate() : tabbarHandler.activate();
-        }
       },
     });
   }

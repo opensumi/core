@@ -33,13 +33,13 @@ export const SlotLocation = {
   // <- @deprecated
 };
 
-export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
+export function getSlotLocation(moduleName: string, layoutConfig: LayoutConfig) {
   for (const location of Object.keys(layoutConfig)) {
-    if (layoutConfig[location].modules && layoutConfig[location].modules.indexOf(module) > -1) {
+    if (layoutConfig[location].modules && layoutConfig[location].modules.indexOf(moduleName) > -1) {
       return location;
     }
   }
-  getDebugLogger().warn(`没有找到${module}所对应的位置！`);
+  getDebugLogger().warn(`没有找到${moduleName}所对应的位置！`);
   return '';
 }
 

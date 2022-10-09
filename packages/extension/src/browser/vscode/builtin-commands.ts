@@ -5,7 +5,6 @@ import {
   COMMON_COMMANDS,
   TERMINAL_COMMANDS,
   MARKER_COMMANDS,
-  SCM_COMMANDS,
   SEARCH_COMMANDS,
   LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
@@ -149,7 +148,8 @@ export const TERMINAL_COMMAND_FOCUS: Command = {
 
 export const TERMINAL_COMMAND_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.terminal.toggleTerminal',
-  delegate: TERMINAL_COMMANDS.TOGGLE_VISIBILITY.id,
+  // 每一个 Container 在注册后都会注册自己的 toggle 命令
+  delegate: 'container.toggle.terminal',
 };
 
 export const NEW_WORKBENCH_VIEW_TERMINAL: Command = {
@@ -347,9 +347,9 @@ export const MARKER_COMMAND_TOGGLE_SHOW_ERRORS_WARNINGS: Command = {
   delegate: MARKER_COMMANDS.TOGGLE_SHOW_ERRORS_WARNINGS.id,
 };
 
-export const SCM_COMMAND_TOGGLE_VISIBILITY: Command = {
+export const SIDEBAR_TOGGLE_VISIBILITY: Command = {
   id: 'workbench.action.toggleSidebarVisibility',
-  delegate: SCM_COMMANDS.TOGGLE_VISIBILITY.id,
+  delegate: LAYOUT_COMMANDS.TOGGLE_SIDEBAR_VISIBILITY.id,
 };
 
 export const SEARCH_COMMAND_OPEN_SEARCH: Command = {

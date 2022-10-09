@@ -1,5 +1,5 @@
-import { argv as _argv } from 'yargs';
+import { parseArgv } from '@opensumi/ide-utils/lib/argv';
 
-const argv = _argv as { [x: string]: unknown; _: (string | number)[]; $0: string };
+const argv = parseArgv(process.argv);
 
 export { argv };

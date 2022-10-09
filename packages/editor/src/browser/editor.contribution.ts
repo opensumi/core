@@ -703,7 +703,6 @@ export class EditorContribution
               });
             }
           }
-
         }
       },
     });
@@ -1339,19 +1338,19 @@ export class EditorAutoSaveEditorContribution implements BrowserEditorContributi
       },
     });
     commands.registerCommand(EDITOR_COMMANDS.COPY_PATH, {
-      execute: (uri) => {
-        if (!uri) {
+      execute: (resource: ResourceArgs) => {
+        if (!resource) {
           return;
         }
-        this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, uri);
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_PATH.id, resource.uri);
       },
     });
     commands.registerCommand(EDITOR_COMMANDS.COPY_RELATIVE_PATH, {
-      execute: (uri) => {
-        if (!uri) {
+      execute: (resource: ResourceArgs) => {
+        if (!resource) {
           return;
         }
-        this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, uri);
+        this.commandService.executeCommand(FILE_COMMANDS.COPY_RELATIVE_PATH.id, resource.uri);
       },
     });
   }

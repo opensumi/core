@@ -1,9 +1,11 @@
+/* eslint-disable no-console */
 import { statSync, existsSync } from 'fs';
 import { join } from 'path';
 
 import { green, red } from 'chalk';
 import got from 'got';
-import yargs from 'yargs';
+
+import { ArgvFactory } from '@opensumi/ide-utils/lib/argv';
 
 const PRODUCTION_NAME = process.env.PRODUCTION_NAME || 'OpenSumi';
 const CLIENT_ID = process.env.CLIENT_ID;
@@ -38,7 +40,6 @@ function openPathOrUrl(pathOrUrl: string): void {
     }
 
     if (statSync(fullPathOrUrl).isDirectory()) {
-      // eslint-disable-next-line no-console
       console.error(red('Directory is unsupported'));
       process.exit(0);
     }
@@ -52,7 +53,7 @@ function openPathOrUrl(pathOrUrl: string): void {
   });
 }
 
-const argv = yargs(process.argv)
+const argv = new ArgvFactory(process.argv)
   .usage(
     `
   Help: Open files or website from a shell.
@@ -65,8 +66,7 @@ Examples:
     3. ${green('open /path/to/file')} Will open the file use ${PRODUCTION_NAME}.
   `,
   )
-  .help()
-  .string('_').argv as { [x: string]: unknown; _: (string | number)[]; $0: string };
+  .help().argv;
 
 if (argv._[0] !== undefined) {
   openPathOrUrl(argv._[0].toString());

@@ -77,7 +77,7 @@ export const firstLine = (str: string) => {
 const domParser = new DOMParser();
 
 export const parseMarkdownText = (value: string) =>
-  domParser.parseFromString(parseMarkdown(value), 'text/html').documentElement.outerText;
+  domParser.parseFromString(parseMarkdown(value) || '', 'text/html').documentElement.outerText;
 
 export const isDiffable = (
   message: ITestErrorMessage,
