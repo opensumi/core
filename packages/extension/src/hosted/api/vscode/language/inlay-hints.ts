@@ -65,7 +65,7 @@ export class InlayHintsAdapter {
     return this._convertInlayHint(hint, id);
   }
 
-  releaseHints(id: number): any {
+  async releaseHints(id: number): Promise<void> {
     this._disposables.get(id)?.dispose();
     this._disposables.delete(id);
     this._cache.delete(id);
