@@ -107,13 +107,13 @@ describe('file scheme tests', () => {
     expect(subname).toBe('.../');
     expect(await resourceProvider.provideResourceSubname(resource, [resource])).toBeNull();
 
-    dialogResult = localize('file.prompt.dontSave', '不保存');
+    dialogResult = localize('file.prompt.dontSave', "Don't Save");
     expect(await resourceProvider.shouldCloseResource(resource, [[resource]])).toBeTruthy();
 
-    dialogResult = localize('file.prompt.save', '保存');
+    dialogResult = localize('file.prompt.save', 'Save');
     expect(await resourceProvider.shouldCloseResource(resource, [[resource]])).toBeTruthy();
 
-    dialogResult = localize('file.prompt.cancel', '取消');
+    dialogResult = localize('file.prompt.cancel', 'Cancel');
     expect(await resourceProvider.shouldCloseResource(resource, [[resource]])).toBeFalsy();
   });
 
