@@ -36,7 +36,6 @@
   border-radius: 2px;
   color: var(--button-foreground);
   background-color: var(--button-background);
-  transition: all 0.15s;
   white-space: nowrap;
 
   &.block-button {
@@ -46,16 +45,6 @@
   & > .@{prefix}-button-secondary-more {
     color: inherit;
     margin-left: 5px;
-  }
-}
-
-.ghost-button {
-  border-style: solid;
-  border-width: 1px;
-
-  &:disabled {
-    border-color: transparent;
-    border: none;
   }
 }
 
@@ -114,6 +103,16 @@
     color: var(--kt-secondaryButton-clickForeground);
     background-color: var(--kt-secondaryButton-clickBackground);
     border-color: var(--kt-secondaryButton-clickBorder);
+  }
+}
+
+.ghost-button {
+  border-style: solid;
+  border-width: 1px;
+
+  &:disabled {
+    border-color: transparent;
+    border: none;
   }
 }
 
