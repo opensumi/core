@@ -698,7 +698,7 @@ export class ExtensionTreeViewModel {
     if (event.dataTransfer) {
       const label = this.getDragLabel(draggedNodes) || '';
       const dragImage = document.createElement('div');
-      dragImage.className = styles.file_tree_drag_image;
+      dragImage.className = styles.tree_view_drag_image;
       dragImage.textContent = label;
       document.body.appendChild(dragImage);
       event.dataTransfer.setDragImage(dragImage, -10, -10);
@@ -714,6 +714,24 @@ export class ExtensionTreeViewModel {
   handleDrop = async (event: DragEvent, node: ExtensionTreeNode | ExtensionCompositeTreeNode) => {
     event.preventDefault();
     event.stopPropagation();
+    event.dataTransfer.dropEffect = 'copy';
+    if (node) {
+      this.draggingDecoration.removeTarget(node);
+    }
+    if (this.potentialParent) {
+      this.draggedOverDecoration.removeTarget(this.potentialParent);
+    }
+    // Remove all dragging decoration
+    this.beingDraggedNodes.forEach((node) => {
+      this.draggingDecoration.removeTarget(node);
+    });
+    this.beingDraggedNodes = [];
+    this.potentialParent = null;
+    this.treeModel.dispatchChange();
+    if (!this.toCancelNodeExpansion.disposed) {
+      this.toCancelNodeExpansion.dispose();
+    }
+
     const dndController = this.treeViewDragAndDropController;
     if (!event.dataTransfer || !dndController) {
       return;

@@ -115,6 +115,8 @@ export const ExtensionTabBarTreeView = observer(
             handleItemRangeClick(item, type);
           } else if (ctrlCmdMask) {
             handleItemToggleClick(item, type);
+          } else {
+            handleItemClick(item, type);
           }
         } else {
           handleItemClick(item, type);

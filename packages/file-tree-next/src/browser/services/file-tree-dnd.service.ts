@@ -384,7 +384,6 @@ export class DragAndDropService extends WithEventBus {
         this.draggedOverDec.removeTarget(this.potentialParent);
       }
       this.beingDraggedNodes.forEach((node) => {
-        // 添加拖拽样式
         this.beingDraggedDec.removeTarget(node);
       });
       this.beingDraggedNodes = [];
