@@ -205,7 +205,7 @@ const defaultTitleTransformer = (titleInfo: TitleInfo) => {
 
   const workspaceName = titleInfo.workspaceName ?? '';
   let currentResourceName = titleInfo.currentResourceName ?? '';
-  if (workspaceName !== '') {
+  if (workspaceName !== '' && currentResourceName) {
     currentResourceName += ' — ';
   }
   return developmentTitle + currentResourceName + workspaceName + remoteMode;
