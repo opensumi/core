@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { forwardRef, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import { FixedSizeList, VariableSizeList, Align, ListOnScrollProps } from 'react-window';
 
@@ -282,7 +282,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     };
     useEffect(() => {
       if (rowRoot.current && listRef.current) {
-        observer.current = new MutationObserver(() => {
+        observer.current = new MutationObserver((mutations, observer) => {
           setItemSize();
         });
         const observerOption = {
@@ -349,7 +349,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
     const { style, ...rest } = props as any;
     return (
       <div
-        ref={ref}
+        ref={ref!}
         style={{
           ...style,
           height: `${parseFloat(style.height) + (paddingBottomSize ? paddingBottomSize : 0)}px`,
