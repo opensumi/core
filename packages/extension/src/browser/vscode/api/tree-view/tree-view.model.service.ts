@@ -674,7 +674,16 @@ export class ExtensionTreeViewModel {
     };
     event.currentTarget.addEventListener('dragend', handleDragEnd, false);
 
-    const draggedNodes = this.selectedNodes.length === 0 ? [node] : this.selectedNodes;
+    let draggedNodes = this.selectedNodes;
+    let isDragWithSelectedNode = false;
+    for (const selected of draggedNodes) {
+      if (selected && selected.id === node.id) {
+        isDragWithSelectedNode = true;
+      }
+    }
+    if (!isDragWithSelectedNode) {
+      draggedNodes = [node];
+    }
     const resources: Uri[] = [];
     const sourceInfo: TreeDragSourceInfo = {
       id: this.treeViewId,
