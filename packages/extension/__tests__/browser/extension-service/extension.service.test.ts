@@ -172,7 +172,7 @@ describe('Extension service', () => {
 
     it('should register extension configuration', () => {
       const preferenceSettingsService: PreferenceSettingsService = injector.get(IPreferenceSettingsService);
-      const preferences = preferenceSettingsService.getResolvedSections('extension', PreferenceScope.Default);
+      const preferences = preferenceSettingsService.getSections('extension', PreferenceScope.Default);
       expect(preferences.length).toBe(1);
       expect(preferences[0].title).toBe('Mock Extension Config');
     });

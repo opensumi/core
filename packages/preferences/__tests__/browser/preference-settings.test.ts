@@ -30,11 +30,7 @@ describe('PreferenceSettingService should be work', () => {
   beforeAll(async () => {
     injector = createBrowserInjector([]);
 
-    mockPreferenceSchemaProvider = {
-      getPreferenceProperty() {
-        return {};
-      },
-    };
+    mockPreferenceSchemaProvider = {};
 
     mockPreferenceService = {
       set: jest.fn(),
@@ -106,7 +102,7 @@ describe('PreferenceSettingService should be work', () => {
       expect(typeof preferenceSettingsService.registerSettingGroup).toBe('function');
       expect(typeof preferenceSettingsService.registerSettingSection).toBe('function');
       expect(typeof preferenceSettingsService.getSectionByPreferenceId).toBe('function');
-      expect(typeof preferenceSettingsService.getResolvedSections).toBe('function');
+      expect(typeof preferenceSettingsService.getSections).toBe('function');
       expect(typeof preferenceSettingsService.getPreference).toBe('function');
       expect(typeof preferenceSettingsService.getEnumLabels).toBe('function');
       expect(typeof preferenceSettingsService.setEnumLabels).toBe('function');
@@ -147,8 +143,8 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('handleListHandler', () => {
-      const handler = { scrollToIndex: () => {}, autoscrollToBottom: () => {} };
-      preferenceSettingsService.handleListHandler(handler as any);
+      const handler = { open: () => {} };
+      preferenceSettingsService.handleListHandler(handler);
       expect(preferenceSettingsService.listHandler).toEqual(handler);
     });
 
@@ -163,7 +159,7 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('getSections', () => {
-      const sections = preferenceSettingsService.getResolvedSections(PreferenceSettingId.General, PreferenceScope.User);
+      const sections = preferenceSettingsService.getSections(PreferenceSettingId.General, PreferenceScope.User);
       expect(sections.length).toBe(1);
     });
 

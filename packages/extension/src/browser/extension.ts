@@ -84,7 +84,7 @@ export class Extension extends WithEventBus implements IExtension {
     this.extensionLocation = this.staticResourceService.resolveStaticResource(URI.from(this.uri!)).codeUri;
   }
 
-  localize(key: string): string {
+  localize(key: string) {
     // 因为可能在没加载语言包之前就会获取 packageJson 的内容
     // 所以这里缓存的值可以会为 undefined 或者空字符串，这两者都属于无效内容
     // 对于无效内容要重新获取
@@ -93,7 +93,7 @@ export class Extension extends WithEventBus implements IExtension {
       this.pkgLocalizedField.set(key, nlsValue!);
       return nlsValue || this.packageJSON[key];
     }
-    return this.pkgLocalizedField.get(key)!;
+    return this.pkgLocalizedField.get(key);
   }
 
   get activated() {
@@ -215,16 +215,12 @@ export class Extension extends WithEventBus implements IExtension {
     this._activating = undefined;
   }
 
-  get displayName() {
-    return this.localize('displayName');
-  }
-
   toJSON(): IExtensionProps {
     return {
       id: this.id,
       extensionId: this.extensionId,
       name: this.name,
-      displayName: this.displayName,
+      displayName: this.localize('displayName'),
       activated: this.activated,
       enabled: this.enabled,
       packageJSON: this.packageJSON,

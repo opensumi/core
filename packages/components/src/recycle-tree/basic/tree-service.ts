@@ -6,10 +6,6 @@ import { TreeNodeEvent } from '../types';
 import { BasicCompositeTreeNode, BasicTreeNode, BasicTreeRoot } from './tree-node.define';
 import { IBasicTreeData, DECORATIONS } from './types';
 
-export interface IBasicTreeServiceOptions {
-  treeName?: string;
-}
-
 export class BasicTreeService extends Tree {
   private selectedDecoration: Decoration = new Decoration(DECORATIONS.SELECTED); // 选中态
   private focusedDecoration: Decoration = new Decoration(DECORATIONS.FOCUSED); // 焦点态
@@ -26,40 +22,21 @@ export class BasicTreeService extends Tree {
   private _decorations: DecorationsManager;
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
-  private decorationDisposableCollection: DisposableCollection = new DisposableCollection();
 
   private onDidUpdateTreeModelEmitter: Emitter<BasicTreeModel> = new Emitter();
 
   constructor(
     private _treeData?: IBasicTreeData[],
     private _resolveChildren?: (parent?: IBasicTreeData) => IBasicTreeData[] | null,
-    private _sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number | undefined,
-    private treeOptions = {} as IBasicTreeServiceOptions,
+    private _sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number,
   ) {
     super();
-    this.setUpTreeModel();
-    this.disposableCollection.push(this.onDidUpdateTreeModelEmitter);
-  }
-
-  private setUpTreeModel() {
-    this._root = new BasicTreeRoot(
-      this,
-      undefined,
-      { children: this._treeData, label: '', command: '', icon: '' },
-      {
-        treeName: this.treeOptions.treeName,
-      },
-    );
+    this._root = new BasicTreeRoot(this, undefined, { children: this._treeData, label: '', command: '', icon: '' });
     this._model = new BasicTreeModel();
     this._model.init(this._root);
     this.initDecorations(this._root as BasicTreeRoot);
     this.onDidUpdateTreeModelEmitter.fire(this._model);
-  }
-
-  private resetState() {
-    this._selectedNodes = [];
-    this._contextMenuNode = undefined;
-    this._focusedNode = undefined;
+    this.disposableCollection.push(this.onDidUpdateTreeModelEmitter);
   }
 
   get onDidUpdateTreeModel() {
@@ -79,30 +56,22 @@ export class BasicTreeService extends Tree {
   }
 
   private initDecorations(root: BasicTreeRoot) {
-    this.decorationDisposableCollection.dispose();
-
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.contextMenuDecoration);
     this._decorations.addDecoration(this.loadingDecoration);
-    this.decorationDisposableCollection.push(
+    this.disposableCollection.push(
       root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
         this.loadingDecoration.addTarget(target);
       }),
     );
-    this.decorationDisposableCollection.push(
+    this.disposableCollection.push(
       root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
         this.loadingDecoration.removeTarget(target);
       }),
     );
-    this.decorationDisposableCollection.push(this._decorations);
-  }
-
-  updateTreeData(treeData: IBasicTreeData[]) {
-    this._treeData = treeData;
-    this.resetState();
-    this.setUpTreeModel();
+    this.disposableCollection.push(this._decorations);
   }
 
   async resolveChildren(parent?: BasicCompositeTreeNode) {
@@ -115,10 +84,7 @@ export class BasicTreeService extends Tree {
 
   sortComparator = (a: BasicCompositeTreeNode, b: BasicCompositeTreeNode) => {
     if (this._sortComparator) {
-      const result = this._sortComparator(a.raw, b.raw);
-      if (typeof result !== 'undefined') {
-        return result;
-      }
+      return this._sortComparator(a.raw, b.raw);
     }
     return super.sortComparator(a, b);
   };
@@ -204,7 +170,6 @@ export class BasicTreeService extends Tree {
 
   dispose() {
     this.disposableCollection.dispose();
-    this.decorationDisposableCollection.dispose();
   }
 }
 
