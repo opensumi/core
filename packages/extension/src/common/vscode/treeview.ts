@@ -1,10 +1,10 @@
 import type vscode from 'vscode';
 
-import { Event, IDisposable, IAccessibilityInformation } from '@opensumi/ide-core-common';
+import { Event, IDisposable, IAccessibilityInformation, BinaryBuffer } from '@opensumi/ide-core-common';
 import type { CancellationToken } from '@opensumi/ide-core-common';
 import { ThemeType } from '@opensumi/ide-theme';
 
-import { TreeItemCollapsibleState, ThemeIcon } from './ext-types';
+import { TreeItemCollapsibleState, ThemeIcon, MarkdownString } from './ext-types';
 import { UriComponents, ICommand } from './models';
 
 export interface ITreeViewRevealOptions {
@@ -12,6 +12,7 @@ export interface ITreeViewRevealOptions {
   focus?: boolean;
   expand?: boolean | number;
 }
+
 export interface IMainThreadTreeView {
   $unregisterTreeDataProvider(treeViewId: string): Promise<void>;
   $registerTreeDataProvider<T>(treeViewId: string, options: TreeViewBaseOptions): Promise<void>;
@@ -21,6 +22,7 @@ export interface IMainThreadTreeView {
   $setTitle(treeViewId: string, message: string): Promise<void>;
   $setDescription(treeViewId: string, message: string): Promise<void>;
   $setMessage(treeViewId: string, message: string): Promise<void>;
+  $resolveDropFileData(treeViewId: string, requestId: number, dataItemId: string): Promise<BinaryBuffer>;
 }
 
 export interface IExtHostTreeView {
@@ -31,6 +33,22 @@ export interface IExtHostTreeView {
   $setSelection(treeViewId: string, treeItemHandles: string[]): void;
   $setVisible(treeViewId: string, visible: boolean): void;
   $resolveTreeItem(treeViewId: string, treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined>;
+  $handleDrop(
+    destinationViewId: string,
+    requestId: number,
+    treeDataTransfer: DataTransferDTO,
+    targetHandle: string | undefined,
+    token: CancellationToken,
+    operationUuid?: string,
+    sourceViewId?: string,
+    sourceTreeItemHandles?: string[],
+  ): Promise<void>;
+  $handleDrag(
+    sourceViewId: string,
+    sourceTreeItemHandles: string[],
+    operationUuid: string,
+    token: CancellationToken,
+  ): Promise<DataTransferDTO | undefined>;
 }
 
 // TreeView API Interface dependencies
@@ -67,7 +85,7 @@ export class TreeViewItem {
 
   resourceUri?: UriComponents;
 
-  tooltip?: string;
+  tooltip?: MarkdownString | string;
 
   collapsibleState?: TreeItemCollapsibleState;
 
@@ -138,10 +156,23 @@ export interface TreeViewBaseOptions {
 
    */
   canSelectMany?: boolean;
-}
-
-export interface TreeViewOptions<T> extends TreeViewBaseOptions {
-  treeDataProvider: vscode.TreeDataProvider<T>;
+  /**
+   * 支持的 Drop Mime Type 类型
+   * ref：
+   */
+  dropMimeTypes?: readonly string[];
+  /**
+   * 支持的 Drag Mime Type 类型
+   */
+  dragMimeTypes?: readonly string[];
+  /**
+   * 是否存在 Drag 处理函数
+   */
+  hasHandleDrag: boolean;
+  /**
+   * 是否存在 Drop 处理函数
+   */
+  hasHandleDrop: boolean;
 }
 
 export interface TreeViewSelection {
@@ -151,5 +182,69 @@ export interface TreeViewSelection {
 export namespace TreeViewSelection {
   export function is(arg: any): arg is TreeViewSelection {
     return !!arg && typeof arg === 'object' && 'treeViewId' in arg && 'treeItemId' in arg;
+  }
+}
+
+export interface IDataTransferFileDTO {
+  readonly name: string;
+  readonly uri?: UriComponents;
+}
+
+export interface DataTransferItemDTO {
+  readonly id: string;
+  readonly asString: string;
+  readonly fileData: IDataTransferFileDTO | undefined;
+}
+
+export interface DataTransferDTO {
+  readonly items: Array<[/* type */ string, DataTransferItemDTO]>;
+}
+
+export const ITreeViewsService = Symbol('ITreeViewsService');
+
+export interface ITreeViewsService<T, U, V> {
+  readonly _serviceBrand: undefined;
+
+  removeDragOperationTransfer(uuid: string | undefined): Promise<T | undefined> | undefined;
+  addDragOperationTransfer(uuid: string, transferPromise: Promise<T | undefined>): void;
+
+  getRenderedTreeElement(node: U): V | undefined;
+  addRenderedTreeItemElement(node: U, element: V): void;
+  removeRenderedTreeItemElement(node: U): void;
+}
+
+export class TreeviewsService<T, U, V> implements ITreeViewsService<T, U, V> {
+  _serviceBrand: undefined;
+  private _dragOperations: Map<string, Promise<T | undefined>> = new Map();
+  private _renderedElements: Map<U, V> = new Map();
+
+  removeDragOperationTransfer(uuid: string | undefined): Promise<T | undefined> | undefined {
+    if (uuid && this._dragOperations.has(uuid)) {
+      const operation = this._dragOperations.get(uuid);
+      this._dragOperations.delete(uuid);
+      return operation;
+    }
+    return undefined;
+  }
+
+  addDragOperationTransfer(uuid: string, transferPromise: Promise<T | undefined>): void {
+    this._dragOperations.set(uuid, transferPromise);
+  }
+
+  getRenderedTreeElement(node: U): V | undefined {
+    if (this._renderedElements.has(node)) {
+      return this._renderedElements.get(node);
+    }
+    return undefined;
+  }
+
+  addRenderedTreeItemElement(node: U, element: V): void {
+    this._renderedElements.set(node, element);
+  }
+
+  removeRenderedTreeItemElement(node: U): void {
+    if (this._renderedElements.has(node)) {
+      this._renderedElements.delete(node);
+    }
   }
 }

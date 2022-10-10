@@ -34,3 +34,4 @@ export * from './markdown';
 export * from './settings';
 export * from './utils';
 export * from './clipboard';
+export * from './mime';
