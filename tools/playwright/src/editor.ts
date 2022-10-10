@@ -12,6 +12,22 @@ export class OpenSumiEditor extends OpenSumiView {
     });
   }
 
+  async getTab() {
+    const path = (await this.filestatElement.getFsPath()) || '';
+    const tabsItems = await (await this.getTabElement())?.$$("[class*='kt_editor_tab___']");
+
+    if (!tabsItems) {
+      return;
+    }
+
+    for (const item of tabsItems) {
+      const uri = await item.getAttribute('data-uri');
+      if (uri?.includes(path)) {
+        return item;
+      }
+    }
+  }
+
   async getCurrentTab() {
     return await (await this.getTabElement())?.waitForSelector("[class*='kt_editor_tab_current___']");
   }
@@ -24,13 +40,13 @@ export class OpenSumiEditor extends OpenSumiView {
   }
 
   async isPreview() {
-    const currentTab = await this.getCurrentTab();
+    const currentTab = await this.getTab();
     const isPreview = (await currentTab?.getAttribute('class'))?.includes('kt_editor_tab_preview___');
     return !!isPreview;
   }
 
   async isDirty() {
-    const dirtyIcon = await (await this.getCurrentTab())?.$("[class*='dirty___']");
+    const dirtyIcon = await (await this.getTab())?.$("[class*='dirty___']");
     const className = await dirtyIcon?.getAttribute('class');
     const hidden = className?.includes('hidden__');
     return !hidden;
@@ -41,7 +57,7 @@ export class OpenSumiEditor extends OpenSumiView {
     if (!(await this.isDirty())) {
       return;
     }
-    const dirtyIcon = await (await this.getCurrentTab())?.$("[class*='dirty___']");
+    const dirtyIcon = await (await this.getTab())?.$("[class*='dirty___']");
     await this.app.menubar.trigger('File', 'Save File');
     // waiting for saved
     await dirtyIcon?.waitForElementState('hidden');
