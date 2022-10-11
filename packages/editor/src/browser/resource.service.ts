@@ -48,6 +48,9 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   private onUnregisterResourceProviderEmitter = new Emitter<IResourceProvider>();
   public readonly onUnregisterResourceProvider = this.onUnregisterResourceProviderEmitter.event;
 
+  private onAllResourceDirtyStateChangedEmitter = new Emitter<boolean>();
+  public readonly onAllResourceDirtyStateChanged = this.onAllResourceDirtyStateChangedEmitter.event;
+
   @Autowired(ILogger)
   logger: ILogger;
 
@@ -81,9 +84,21 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       }
     });
     if (changed) {
-      Object.assign(this.resourceDecoration.get(e.payload.uri.toString()), e.payload.decoration);
+      Object.assign(this.resourceDecoration.get(e.payload.uri.toString())!, e.payload.decoration);
       this.eventBus.fire(new ResourceDecorationChangeEvent(e.payload));
     }
+
+    let dirtyState = false;
+    const it = this.resourceDecoration.values();
+    let result = it.next();
+    while (!result.done) {
+      dirtyState = result.value.dirty;
+      if (dirtyState) {
+        break;
+      }
+      result = it.next();
+    }
+    this.onAllResourceDirtyStateChangedEmitter.fire(dirtyState);
   }
 
   async getResource(uri: URI): Promise<IResource<any> | null> {

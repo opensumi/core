@@ -33,12 +33,14 @@ import {
   AppConfig,
   SUPPORTED_ENCODINGS,
   FILE_COMMANDS,
+  electronEnv,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
+import { isWindows, isOSX, PreferenceScope, ILogger, MaybePromise } from '@opensumi/ide-core-common';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -127,6 +129,9 @@ export class EditorContribution
   @Autowired(IDocPersistentCacheProvider)
   private cacheProvider: IDocPersistentCacheProvider;
 
+  @Autowired(ResourceService)
+  private resourceService: ResourceService;
+
   @Autowired()
   private historyService: EditorHistoryService;
 
@@ -206,6 +211,9 @@ export class EditorContribution
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired(IElectronMainUIService)
+  private readonly electronMainUIService: IElectronMainUIService;
+
   registerMonacoDefaultFormattingSelector(register): void {
     const formatSelector = this.injector.get(FormattingSelector);
     register(formatSelector.select.bind(formatSelector));
@@ -236,6 +244,14 @@ export class EditorContribution
     } catch (e) {
       this.logger.error(e);
       return false;
+    }
+  }
+
+  onStart(app: IClientApp): MaybePromise<void> {
+    if (this.appConfig.isElectronRenderer) {
+      this.resourceService.onAllResourceDirtyStateChanged((e) => {
+        this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, e);
+      });
     }
   }
 
