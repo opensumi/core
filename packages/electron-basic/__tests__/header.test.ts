@@ -3,7 +3,7 @@ import { Emitter } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { createElectronBasicInjector } from '../__mocks__';
-import { ElectronHeaderService, SEPARATOR, TITLE_DIRTY } from '../src/browser/header/header.service';
+import { DEFAULT_TEMPLATE, ElectronHeaderService, SEPARATOR, TITLE_DIRTY } from '../src/browser/header/header.service';
 
 describe('header service should work', () => {
   const injector = createElectronBasicInjector();
@@ -55,5 +55,10 @@ describe('header service should work', () => {
     headerService.setTemplateVariables('userName', 'Elon Musk');
     headerService.titleTemplate = '${projectName}${separator}${userName}';
     expect(headerService.appTitle).toEqual(`proposed-acquisition-of-twitter${SEPARATOR}Elon Musk`);
+  });
+  it('can process empty between separator', () => {
+    appConfig.workspaceDir = '';
+    headerService.titleTemplate = DEFAULT_TEMPLATE;
+    expect(headerService.appTitle).toBeDefined();
   });
 });
