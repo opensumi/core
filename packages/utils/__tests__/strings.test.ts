@@ -12,6 +12,7 @@ describe('strings utils', () => {
           separator: ' - ',
         },
       );
+      expect(result).toBe('233');
     });
     it('can process a more complicated template case', () => {
       const result = template(
@@ -23,7 +24,7 @@ describe('strings utils', () => {
           separator: ' - ',
         },
       );
-      expect(result).toEqual('${233$$$ - ');
+      expect(result).toEqual('${233$$$');
     });
     it('can reduce separator', () => {
       const result = template(
