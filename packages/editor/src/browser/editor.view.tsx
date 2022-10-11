@@ -13,7 +13,6 @@ import {
   IEventBus,
   MaybeNull,
   PreferenceService,
-  runWhenIdle,
   URI,
   useDisposable,
   View,
@@ -336,12 +335,10 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         cachedEditor[group.name].remove();
         codeEditorRef.current.appendChild(cachedEditor[group.name]);
       } else {
-        runWhenIdle(() => {
-          const container = document.createElement('div');
-          codeEditorRef.current!.appendChild(container);
-          cachedEditor[group.name] = container;
-          group.createEditor(container);
-        }, 1);
+        const container = document.createElement('div');
+        codeEditorRef.current.appendChild(container);
+        cachedEditor[group.name] = container;
+        group.createEditor(container);
       }
     }
     if (diffEditorRef.current) {
@@ -349,15 +346,13 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         cachedDiffEditor[group.name].remove();
         diffEditorRef.current.appendChild(cachedDiffEditor[group.name]);
       } else {
-        runWhenIdle(() => {
-          const container = document.createElement('div');
-          diffEditorRef.current!.appendChild(container);
-          cachedDiffEditor[group.name] = container;
-          group.createDiffEditor(container);
-        }, 1);
+        const container = document.createElement('div');
+        diffEditorRef.current.appendChild(container);
+        cachedDiffEditor[group.name] = container;
+        group.createDiffEditor(container);
       }
     }
-  }, [codeEditorRef, diffEditorRef]);
+  }, [codeEditorRef.current]);
 
   useDisposable(
     () =>

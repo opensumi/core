@@ -2,7 +2,7 @@ import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, PreferenceService } from '@opensumi/ide-core-browser';
-import { Deferred, WithEventBus } from '@opensumi/ide-core-common';
+import { WithEventBus } from '@opensumi/ide-core-common';
 import {
   IEditorDocumentModelService,
   EditorCollectionService,
@@ -38,8 +38,6 @@ export class OutputService extends WithEventBus {
   @observable
   public keys: string = '' + Math.random();
 
-  private editorReady: Deferred<void> = new Deferred();
-
   private monacoDispose: monaco.IDisposable;
 
   private autoReveal = true;
@@ -65,14 +63,14 @@ export class OutputService extends WithEventBus {
       this.monacoDispose.dispose();
     }
     this.selectedChannel = channel;
-    Promise.all([this.editorReady.promise, this.selectedChannel.modelReady.promise]).then(() => {
+    this.selectedChannel.modelReady.promise.then(() => {
       const model = this.selectedChannel.outputModel.instance.getMonacoModel();
       this.outputEditor?.open(this.selectedChannel.outputModel);
       if (this.enableSmartScroll) {
         this.outputEditor?.monacoEditor.revealLine(model.getLineCount());
         this.autoReveal = true;
       }
-      this.outputEditor?.layout();
+
       this.monacoDispose = model.onDidChangeContent(() => {
         if (this.autoReveal && this.enableSmartScroll) {
           this.outputEditor?.monacoEditor.revealLine(model.getLineCount(), 0);
@@ -124,8 +122,6 @@ export class OutputService extends WithEventBus {
         useShadows: false,
       },
     });
-
-    this.editorReady.resolve();
 
     this.addDispose(
       this.outputEditor.monacoEditor.onMouseUp((e) => {

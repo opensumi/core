@@ -28,7 +28,6 @@ import {
   Deferred,
   Throttler,
   Schemes,
-  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -292,11 +291,9 @@ export class KeymapService implements IKeymapService {
     if (this.currentSearchValue) {
       this.doSearchKeybindings(this.currentSearchValue);
     } else {
-      runWhenIdle(() => {
-        this.keybindings = this.getKeybindingItems();
-        this.keymapChangeEmitter.fire(this.keybindings);
-      });
+      this.keybindings = this.getKeybindingItems();
     }
+    this.keymapChangeEmitter.fire(this.keybindings);
   }
 
   /**
