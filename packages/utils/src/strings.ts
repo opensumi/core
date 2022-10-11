@@ -917,3 +917,86 @@ export function decodeUTF8(buffer: Uint8Array): string {
 
   return result.join('');
 }
+
+interface ITemplateOptions {
+  /**
+   * 分割符，函数会确保多个分隔符不会连在一起
+   */
+  separator: string;
+  /**
+   * 如果该占位符不存在则使用 defaultValue 进行替换，默认为 undefined，即为空字符串
+   */
+  defaultValue?: string;
+}
+
+/**
+ * 插值表达式的标记使用的是 ${}
+ * 该函数会对 options 中的 separator 会有特殊处理，
+ */
+export function template(tpl: string, variables: Record<string, any>, options: ITemplateOptions) {
+  const result = [] as string[];
+  let placeHolderStack = [] as string[];
+
+  for (let idx = 0; idx < tpl.length; idx++) {
+    const char = tpl[idx];
+    const nextChar = tpl[idx + 1];
+
+    // 往后多看一位
+    if (char === '$' && nextChar === '{') {
+      // 往后的可能是占位符了，注入进栈标志位（即 $）
+      // 如果 placeHolder 栈已经有值了，现在不支持嵌套 ${}，直接吐出所有值放到 result 中即可
+      if (placeHolderStack.length > 0) {
+        result.push(...placeHolderStack);
+        placeHolderStack = [];
+      }
+      placeHolderStack.push(char);
+      placeHolderStack.push(nextChar);
+      idx++;
+      continue;
+    }
+
+    // 如果当前 placeHolder 栈有字符，一直将字符入栈，直到匹配到 }
+    if (placeHolderStack.length > 0) {
+      if (char === '}') {
+        // 占位符匹配结束
+        // 拿出占位符进行值替换
+        const placeholder = placeHolderStack.slice(2).join('');
+        let v: string | undefined;
+
+        if (placeholder === 'separator') {
+          if (result[result.length - 1] === options.separator) {
+            // 不需要重复 separator
+            placeHolderStack = [];
+            continue;
+          }
+          // 分隔符有单独的优化
+          v = options.separator;
+        } else {
+          v = variables[placeholder];
+        }
+        const toPush = v ?? options.defaultValue;
+        if (toPush) {
+          result.push(toPush);
+        }
+        placeHolderStack = [];
+      } else {
+        placeHolderStack.push(char);
+      }
+      continue;
+    }
+
+    result.push(tpl[idx]);
+  }
+
+  // 去除前面和后面的 sep
+  // 这些 sep 也是不需要的
+  while (result[result.length - 1] === options.separator) {
+    result.pop();
+  }
+
+  while (result[0] === options.separator) {
+    result.shift();
+  }
+
+  return result.join('');
+}

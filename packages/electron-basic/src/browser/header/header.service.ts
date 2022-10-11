@@ -1,5 +1,3 @@
-import template from 'lodash/template';
-
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   AppConfig,
@@ -10,12 +8,15 @@ import {
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { basename } from '@opensumi/ide-utils/lib/path';
+import { template } from '@opensumi/ide-utils/lib/strings';
 
 import { IElectronHeaderService } from '../../common/header';
 
 // "● "
 export const TITLE_DIRTY = '\u25cf ';
 export const SEPARATOR = ' - ';
+
+export const DEFAULT_TEMPLATE = '${dirty}${activeEditorShort}${separator}${rootName}${separator}${appName}';
 
 @Injectable()
 export class ElectronHeaderService implements IElectronHeaderService {
@@ -35,7 +36,7 @@ export class ElectronHeaderService implements IElectronHeaderService {
 
   private _appTitle: string;
 
-  private _titleTemplate = '${dirty}${activeEditorShort}${separator}${rootName}${separator}${appName}';
+  private _titleTemplate = DEFAULT_TEMPLATE;
   get titleTemplate() {
     return this._titleTemplate;
   }
@@ -123,31 +124,33 @@ export class ElectronHeaderService implements IElectronHeaderService {
     const rootName = workspaceDirname;
     const rootPath = workspaceDirname;
     const appName = replaceLocalizePlaceholder(appConfig.appName) ?? '';
+    // TODO: 当前 OpenSumi 还不支持 Remote 名字
     const remoteName = '';
     const dirty = currentEditor?.currentDocumentModel?.dirty ? TITLE_DIRTY : '';
     const separator = SEPARATOR;
 
-    const compile = template(this.titleTemplate, {
-      imports: {},
-    });
-
-    const result = compile({
-      activeEditorShort,
-      activeEditorMedium,
-      activeEditorLong,
-      activeFolderShort,
-      activeFolderMedium,
-      activeFolderLong,
-      folderName,
-      folderPath,
-      rootName,
-      rootPath,
-      appName,
-      remoteName,
-      dirty,
-      separator,
-      ...this._templateVariables,
-    }).trim();
+    const result = template(
+      this.titleTemplate,
+      {
+        activeEditorShort,
+        activeEditorMedium,
+        activeEditorLong,
+        activeFolderShort,
+        activeFolderMedium,
+        activeFolderLong,
+        folderName,
+        folderPath,
+        rootName,
+        rootPath,
+        appName,
+        remoteName,
+        dirty,
+        ...this._templateVariables,
+      },
+      {
+        separator,
+      },
+    );
 
     return result;
   }
