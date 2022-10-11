@@ -9,7 +9,7 @@ on:
         description: "The version you want to release, eg: 1.0.0"
         required: true
       release_branch:
-        description: "The release branch, eg: v2.14, if run on main, please make sure the release_branch is set"
+        description: "The release branch, eg: v2.xx, main"
         required: false
 
 jobs:
