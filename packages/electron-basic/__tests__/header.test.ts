@@ -4,6 +4,7 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 
 import { createElectronBasicInjector } from '../__mocks__';
 import { DEFAULT_TEMPLATE, ElectronHeaderService, SEPARATOR, TITLE_DIRTY } from '../src/browser/header/header.service';
+import { IElectronHeaderService } from '../src/common/header';
 
 describe('header service should work', () => {
   const injector = createElectronBasicInjector();
@@ -33,9 +34,13 @@ describe('header service should work', () => {
       useValue: appConfig,
       override: true,
     },
+    {
+      token: IElectronHeaderService,
+      useClass: ElectronHeaderService,
+    },
   );
 
-  const headerService = injector.get(ElectronHeaderService);
+  const headerService = injector.get(IElectronHeaderService) as IElectronHeaderService;
   it('can generate app title', () => {
     const appTitle = headerService.appTitle;
     expect(appTitle).toBeDefined();
@@ -59,6 +64,6 @@ describe('header service should work', () => {
   it('can process empty between separator', () => {
     appConfig.workspaceDir = '';
     headerService.titleTemplate = DEFAULT_TEMPLATE;
-    expect(headerService.appTitle).toBeDefined();
+    expect(headerService.appTitle).toEqual('● /Users/Development/myFolder/myFileFolder/myFile.txt - OpenSumi');
   });
 });
