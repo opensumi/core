@@ -71,3 +71,10 @@ export function useUpdateOnEventBusEvent<T = any>(
     };
   }, dependencies);
 }
+
+export function useEventEffect<T = any>(event: Event<T>, listener: (args: T) => void, dependencies: any[] = []) {
+  React.useEffect(() => {
+    const disposable = event(listener);
+    return disposable.dispose.bind(disposable);
+  }, dependencies);
+}

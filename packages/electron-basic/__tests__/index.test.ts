@@ -1,7 +1,6 @@
 import {
   AppConfig,
   SlotLocation,
-  IElectronMainMenuService,
   ComponentRegistry,
   CommandRegistry,
   KeybindingRegistry,
@@ -9,70 +8,22 @@ import {
   electronEnv,
 } from '@opensumi/ide-core-browser';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
-import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { WorkbenchEditorService, ResourceService } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
-import { IMessageService } from '@opensumi/ide-overlay/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
+import { createElectronBasicInjector } from '../__mocks__';
+import { mockService } from '../__mocks__/utils';
 import { ElectronBasicContribution } from '../src/browser';
 import { ElectronNativeDialogService } from '../src/browser/dialog';
 import { WelcomeContribution } from '../src/browser/welcome/contribution';
 
 const { addElement } = arrays;
 
-function mockService(target) {
-  return new Proxy(target, {
-    get: (t, p) => {
-      if (p === 'hasOwnProperty') {
-        return t[p];
-      }
-      if (!t.hasOwnProperty(p)) {
-        t[p] = jest.fn();
-      }
-      return t[p];
-    },
-  });
-}
-
 describe('electron basic contribution test', () => {
-  const injector = createBrowserInjector([]);
-  injector.addProviders(
-    {
-      token: AppConfig,
-      useValue: {
-        layoutConfig: {
-          [SlotLocation.top]: {
-            modules: ['@opensumi/ide-menu-bar'],
-          },
-        },
-      },
-      override: true,
-    },
-    {
-      token: IElectronMenuBarService,
-      useValue: mockService({}),
-    },
-    {
-      token: IElectronMainMenuService,
-      useValue: mockService({}),
-    },
-    {
-      token: IElectronMainUIService,
-      useValue: mockService({}),
-    },
-    {
-      token: IElectronMainLifeCycleService,
-      useValue: mockService({}),
-    },
-    {
-      token: IMessageService,
-      useValue: mockService({}),
-    },
-  );
-
+  const injector = createElectronBasicInjector();
   beforeAll(() => {
     (global as any).electronEnv = (global as any).electronEnv || {};
   });
