@@ -28,7 +28,7 @@ import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
-import { IResource, WorkbenchEditorService } from '../common';
+import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
 
 import { EditorComponentRegistryImpl } from './component';
 import styles from './editor.module.less';
@@ -336,10 +336,12 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         cachedEditor[group.name].remove();
         codeEditorRef.current.appendChild(cachedEditor[group.name]);
       } else {
-        const container = document.createElement('div');
-        codeEditorRef.current!.appendChild(container);
-        cachedEditor[group.name] = container;
-        group.createEditor(container);
+        runWhenIdle(() => {
+          const container = document.createElement('div');
+          codeEditorRef.current!.appendChild(container);
+          cachedEditor[group.name] = container;
+          group.createEditor(container);
+        }, 1);
       }
     }
     if (diffEditorRef.current) {
