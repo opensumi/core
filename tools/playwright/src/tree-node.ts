@@ -26,6 +26,11 @@ export class OpenSumiTreeNode {
     },
   ) {}
 
+  async parentElementHandle() {
+    const parent = await this.elementHandle.getProperty('parentNode');
+    return parent.asElement();
+  }
+
   async label() {
     const labelElement = await this.elementHandle.$(this.selector.labelClass);
     if (!labelElement) {
@@ -40,6 +45,12 @@ export class OpenSumiTreeNode {
       throw new Error(`Cannot read description from ${this.selector.descriptionClass} of ${this.elementHandle}`);
     }
     return descriptionElement.textContent();
+  }
+
+  async isSelected() {
+    const id = await this.elementHandle.getAttribute('data-id');
+    const parent = await this.parentElementHandle();
+    return !!(await parent?.$(`[data-id='${id}']${this.selector.selectedClass}`));
   }
 
   async isCollapsed() {
