@@ -28,6 +28,7 @@ import {
   AppConfig,
   CUSTOM_EDITOR_SCHEME,
   IExtensionsPointService,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -113,32 +114,24 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   private readonly logger: ILogger;
 
   initialize() {
-    /**
-     * 这里不需要阻塞 initialize 流程
-     * 因为其他 contribution 唯一依赖
-     * 的是主题信息，目前主题注册成功以
-     * 后会发送对应事件
-     */
-    this.extensionService
-      .activate()
-      .catch((err) => {
-        this.logger.error(err);
-      })
-      .finally(() => {
-        const disposer = this.webviewService.registerWebviewReviver({
-          handles: () => 0,
-          revive: async (id: string) =>
-            new Promise<void>((resolve) => {
-              this.eventBus.on(ExtensionApiReadyEvent, () => {
-                disposer.dispose();
-                resolve(this.webviewService.tryReviveWebviewComponent(id));
-              });
-            }),
-        });
+    this.extensionService.activate().then(() => {
+      const disposer = this.webviewService.registerWebviewReviver({
+        handles: () => 0,
+        revive: async (id: string) =>
+          new Promise<void>((resolve) => {
+            this.eventBus.on(ExtensionApiReadyEvent, () => {
+              disposer.dispose();
+              resolve(this.webviewService.tryReviveWebviewComponent(id));
+            });
+          }),
       });
+    });
   }
 
   async onStart() {
+    runWhenIdle(() => {
+      this.extensionService.runExtensionContributes();
+    });
     this.preferenceSettingsService.registerSettingGroup({
       id: 'extension',
       title: localize('settings.group.extension'),

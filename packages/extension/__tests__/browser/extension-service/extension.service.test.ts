@@ -39,7 +39,7 @@ describe('Extension service', () => {
   let extensionManagementService: AbstractExtensionManagementService;
   let injector: MockInjector;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     injector = setupExtensionServiceInjector();
     injector.get(IMainLayoutService).viewReady.resolve();
     extensionService = injector.get(ExtensionService);
@@ -51,12 +51,14 @@ describe('Extension service', () => {
   describe('activate', () => {
     it('should activate extension service.', async () => {
       await extensionService.activate();
+      await extensionService.runExtensionContributes();
     });
 
     it('emit event before activate', (done) => {
       // @ts-ignore
-      extensionService.eventBus.on(ExtensionBeforeActivateEvent, () => {
+      const disposable = extensionService.eventBus.on(ExtensionBeforeActivateEvent, () => {
         done();
+        disposable.dispose();
       });
 
       // @ts-ignore
@@ -113,10 +115,10 @@ describe('Extension service', () => {
       const layoutService: IMainLayoutService = injector.get(IMainLayoutService);
       const tabbarService: TabbarService = layoutService.getTabbarService('left');
       const containerInfo = tabbarService.getContainer('test.sumi-extension:Leftview');
-      expect(containerInfo?.options?.titleComponent).toBeDefined();
-      expect(containerInfo?.options?.titleProps).toBeDefined();
-      // setTimeout(() => {
-      // }, 1000);
+      setTimeout(() => {
+        expect(containerInfo?.options?.titleComponent).toBeDefined();
+        expect(containerInfo?.options?.titleProps).toBeDefined();
+      }, 100);
     });
 
     it('extension should not repeated activation', async () => {

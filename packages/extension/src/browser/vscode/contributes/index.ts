@@ -9,6 +9,7 @@ import {
   IEventBus,
   EXTENSION_JSON_URI,
   VSCodeExtensionPackageSchema,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 
 import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
@@ -126,30 +127,32 @@ export class VSCodeContributeRunner extends WithEventBus {
     if (skipContribute.length > 0 && skipContribute[0].result) {
       return;
     }
+    await Promise.all([
+      VSCodeContributeRunner.ContributePoints.map(async (ContributePointConstructor) => {
+        const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, ContributePointConstructor);
+        if (contributes[contributeName] !== undefined) {
+          try {
+            const contributePoint = this.injector.get(ContributePointConstructor, [
+              contributes[contributeName],
+              contributes,
+              this.extension,
+              this.extension.packageNlsJSON,
+              this.extension.defaultPkgNlsJSON,
+            ]);
 
-    for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
-      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
-      if (contributes[contributeName] !== undefined) {
-        try {
-          const contributePoint = this.injector.get(contributeCls, [
-            contributes[contributeName],
-            contributes,
-            this.extension,
-            this.extension.packageNlsJSON,
-            this.extension.defaultPkgNlsJSON,
-          ]);
+            if (ContributePointConstructor.schema) {
+              VSCodeExtensionPackageSchema.properties.contributes.properties[contributeName] =
+                ContributePointConstructor.schema;
+            }
 
-          if (contributeCls.schema) {
-            VSCodeExtensionPackageSchema.properties.contributes.properties[contributeName] = contributeCls.schema;
+            this.addDispose(contributePoint);
+            await contributePoint.contribute();
+          } catch (e) {
+            this.logger.error(e);
           }
-
-          this.addDispose(contributePoint);
-          await contributePoint.contribute();
-        } catch (e) {
-          this.logger.error(e);
         }
-      }
-    }
+      }),
+    ]);
     this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, VSCodeExtensionPackageSchema, ['package.json']);
   }
 }

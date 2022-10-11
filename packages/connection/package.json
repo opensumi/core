@@ -19,7 +19,7 @@
     "@opensumi/ide-core-common": "2.20.8",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
     "path-match": "^1.2.4",
-    "ws": "^7.2.0"
+    "ws": "^8.9.0"
   },
   "devDependencies": {
     "@opensumi/ide-components": "2.20.8",

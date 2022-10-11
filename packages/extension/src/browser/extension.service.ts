@@ -38,7 +38,12 @@ import {
   AbstractViewExtProcessService,
   AbstractWorkerExtProcessService,
 } from '../common/extension.service';
-import { isLanguagePackExtension, MainThreadAPIIdentifier } from '../common/vscode';
+import {
+  isIconThemeExtension,
+  isLanguagePackExtension,
+  isThemeExtension,
+  MainThreadAPIIdentifier,
+} from '../common/vscode';
 
 import { Extension } from './extension';
 import {
@@ -181,7 +186,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   public async activate(): Promise<void> {
     await this.initExtensionMetaData();
     await this.initExtensionInstanceData();
-    await this.runExtensionContributes();
+    await this.runEagerExtensionsContributes();
     this.doActivate();
 
     // 监听页面展示状态，当页面状态变为可见且插件进程待重启的时候执行
@@ -224,7 +229,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       Array.from(this.extensionScanDir),
       Array.from(this.extensionCandidatePath),
     );
-    this.logger.verbose('ExtensionMetaDataArr', this.extensionMetaDataArr);
+    // this.logger.verbose('ExtensionMetaDataArr', this.extensionMetaDataArr);
   }
 
   /**
@@ -509,36 +514,45 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return this.extensionMetaDataArr;
   }
 
-  /**
-   * 激活插件的 Contributes
-   */
-  private async runExtensionContributes() {
+  private normalExtensions: Extension[] = [];
+
+  private async runEagerExtensionsContributes() {
     const extensions = Array.from(this.extensionInstanceManageService.getExtensionInstances() as Extension[]);
-    const languagePackExtensions: Extension[] = [];
-    const normalExtensions: Extension[] = [];
+    const eagerExtensions: Extension[] = [];
 
     for (const extension of extensions) {
-      if (isLanguagePackExtension(extension.packageJSON)) {
-        languagePackExtensions.push(extension);
+      if (
+        isThemeExtension(extension.packageJSON) ||
+        isLanguagePackExtension(extension.packageJSON) ||
+        isIconThemeExtension(extension.packageJSON)
+      ) {
+        eagerExtensions.push(extension);
       } else {
-        normalExtensions.push(extension);
+        this.normalExtensions.push(extension);
       }
     }
 
-    // 优先执行 languagePack 的 contribute
-    await Promise.all(languagePackExtensions.map((languagePack) => languagePack.contributeIfEnabled()));
-    await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
-
-    // try fire workspaceContains activateEvent ，这里不要 await
-    Promise.all(
-      extensions.map((extension) => this.activateByWorkspaceContains(extension.packageJSON.activationEvents)),
-    ).catch((error) => this.logger.error(error));
+    await Promise.all(eagerExtensions.map(async (extension) => await extension.contributeIfEnabled()));
 
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
     });
     this.eventBus.fire(new ExtensionDidContributes());
+  }
+
+  /**
+   * 激活插件的 Contributes
+   */
+  public async runExtensionContributes() {
+    await Promise.all(this.normalExtensions.map(async (extension) => await extension.contributeIfEnabled()));
+
+    // try fire workspaceContains activateEvent ，这里不要 await
+    Promise.all(
+      this.normalExtensions.map((extension) =>
+        this.activateByWorkspaceContains(extension.packageJSON.activationEvents),
+      ),
+    ).catch((error) => this.logger.error(error));
   }
 
   /**

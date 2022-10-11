@@ -396,8 +396,6 @@ export class ClientApp implements IClientApp, IDisposable {
    * run contribution#initialize
    */
   private async initializeContributions() {
-    this.logger.verbose('startContributions clientAppContributions', this.contributions);
-
     await this.runContributionsPhase(this.contributions, 'initialize');
     this.appInitialized.resolve();
 

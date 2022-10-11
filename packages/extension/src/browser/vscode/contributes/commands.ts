@@ -51,7 +51,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   @Autowired(AppConfig)
   private readonly config: AppConfig;
 
-  async contribute() {
+  contribute() {
     this.json.forEach((command) => {
       this.addDispose(
         this.commandRegistry.registerCommand(
