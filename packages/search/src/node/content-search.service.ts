@@ -292,4 +292,10 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     }
     return args;
   }
+
+  dispose(): void {
+    this.processMap.forEach((v) => {
+      v.dispose();
+    });
+  }
 }

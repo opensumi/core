@@ -9,7 +9,8 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "npm run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.search.json"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.search.json",
+    "watch": "npm run build -- -w"
   },
   "repository": {
     "type": "git",

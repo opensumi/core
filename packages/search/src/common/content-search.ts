@@ -56,7 +56,7 @@ export interface IContentSearchServer {
    */
   cancel(searchId: number): Promise<void>;
 
-  // dispose(): void;
+  dispose(): void;
 }
 
 export const IContentSearchClientService = Symbol('IContentSearchClientService');
@@ -80,7 +80,8 @@ export interface IContentSearchClientService {
 
   validateMessage: ValidateMessage | undefined;
 
-  updateUIState(obj, e?: React.KeyboardEvent);
+  updateUIState(obj: Record<string, any>, e?: React.KeyboardEvent): void;
+  searchDebounce(): void;
 }
 
 export interface IUIState {
