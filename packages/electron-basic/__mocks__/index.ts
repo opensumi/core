@@ -1,19 +1,11 @@
-import {
-  AppConfig,
-  SlotLocation,
-  IElectronMainMenuService,
-  ComponentRegistry,
-  CommandRegistry,
-  KeybindingRegistry,
-  arrays,
-  electronEnv,
-} from '@opensumi/ide-core-browser';
+import { AppConfig, SlotLocation, IElectronMainMenuService } from '@opensumi/ide-core-browser';
 import { IElectronMenuBarService } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/electron';
 import { IElectronMainLifeCycleService, IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { IMessageService } from '@opensumi/ide-overlay/lib/common';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
+import { IElectronHeaderService } from '../src/common/header';
 
 import { mockService } from './utils';
 
