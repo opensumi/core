@@ -2,6 +2,9 @@ import { SearchHistory, SEARCH_WORD_SCOPE } from '../../src/browser/search-histo
 
 class MockSearchServiceClient {
   searchValue: string;
+  searchDebounce() {
+    // noop
+  }
 }
 
 class MockRecentStorage {
