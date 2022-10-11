@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'The version you want to release, eg: 1.0.0'
+        description: "The version you want to release, eg: 1.0.0"
         required: true
       release_branch:
-        description: 'The release branch, eg: v2.14, if run on main, please make sure the release_branch is set'
+        description: "The release branch, eg: v2.14, if run on main, please make sure the release_branch is set"
         required: false
 
 jobs:
@@ -23,21 +23,21 @@ jobs:
 
     steps:
       # 判断用户是否有管理员权限
-      - name: 'Check if user has admin access'
-        uses: 'lannonbr/repo-permission-check-action@2.0.0'
+      - name: "Check if user has admin access"
+        uses: "lannonbr/repo-permission-check-action@2.0.0"
         with:
-          permission: 'admin'
+          permission: "admin"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       - uses: mukunku/tag-exists-action@v1.0.0
         id: checkTag
@@ -90,7 +90,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           github_repo: ${{ github.repository }}
           git_commit_sha: ${{ github.sha }}
-          git_tag_prefix: 'v'
+          git_tag_prefix: "v"
 
       # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
       - name: Create Changelog

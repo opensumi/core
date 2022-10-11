@@ -6,7 +6,7 @@ on:
       ref:
         description: "A valid ref, eg: v2.14, main"
         required: true
-        default: 'main'
+        default: "main"
 
 jobs:
   rc-version:
@@ -28,16 +28,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Checkout to specific branch
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: success()
         with:
           ref: ${{ github.event.inputs.ref }}
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
 
       # 安装依赖并构建
       - name: Install dependencies & Build

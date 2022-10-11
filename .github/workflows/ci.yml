@@ -11,7 +11,7 @@ on:
       - main
       - v*.*
     paths:
-      - 'packages/**'
+      - "packages/**"
 
 jobs:
   browser:
@@ -22,25 +22,25 @@ jobs:
         node-version: [14.x]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Build & Test
-      run: |
-        npm i
-        npm run ci -- -- --selectProjects jsdom
+      - name: Build & Test
+        run: |
+          npm i
+          npm run ci -- -- --selectProjects jsdom
 
-    - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
-      name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        token: ${{ secrets.CORE_CODECOV_TOKEN }}
-        flags: jsdom
-        directory: ./coverage
+      - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
+        name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CORE_CODECOV_TOKEN }}
+          flags: jsdom
+          directory: ./coverage
   node:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -49,22 +49,22 @@ jobs:
         node-version: [14.x]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Build & Test
-      run: |
-        npm i
-        npm run ci -- -- --selectProjects node
+      - name: Build & Test
+        run: |
+          npm i
+          npm run ci -- -- --selectProjects node
 
-    - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
-      name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v2
-      with:
-        token: ${{ secrets.CORE_CODECOV_TOKEN }}
-        flags: node
-        directory: ./coverage
+      - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
+        name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          token: ${{ secrets.CORE_CODECOV_TOKEN }}
+          flags: node
+          directory: ./coverage
