@@ -11,7 +11,7 @@ on:
       - main
       - v*.*
     paths:
-      - "packages/**"
+      - 'packages/**'
 
 jobs:
   browser:

@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: "A valid ref, eg: v2.xx, main"
+        description: 'A valid ref, eg: v2.xx, main'
         required: true
-        default: "main"
+        default: 'main'
 
 jobs:
   rc-version:
@@ -20,10 +20,10 @@ jobs:
 
     steps:
       # 判断用户是否有写权限
-      - name: "Check if user has write access"
-        uses: "lannonbr/repo-permission-check-action@2.0.0"
+      - name: 'Check if user has write access'
+        uses: 'lannonbr/repo-permission-check-action@2.0.0'
         with:
-          permission: "write"
+          permission: 'write'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -37,7 +37,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: "https://registry.npmjs.org"
+          registry-url: 'https://registry.npmjs.org'
 
       # 安装依赖并构建
       - name: Install dependencies & Build
