@@ -1,5 +1,6 @@
 const createVersionText = (type = 'Pre-Release', version, context) => {
   return (
+    `<!-- data: ${type}| ${version} -->\n` +
     `🎉 ${type} version ` +
     version +
     ' publish successful! You can install prerelease version via `npm install package@' +
