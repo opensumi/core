@@ -65,3 +65,12 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
         env:
           INPUT_REF: ${{ github.event.inputs.ref }}
+      - uses: actions/github-script@v6
+        if: success()
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const script = require('./scripts/github/notifyRCResult.js')
+            return await script({github, context, core})
+        env:
+          INPUT_REF: ${{ github.event.inputs.ref }}
