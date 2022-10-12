@@ -27,7 +27,7 @@ jobs:
     if: |
       github.event_name == 'issue_comment' &&
       contains(github.event.issue.body, 'Pre-Release Summary') &&
-      contains(github.event.issue.labels.*.name, 'pre-release') &&
+      contains(github.event.issue.labels.*.name, '⛵️ pre-release') &&
       contains(github.event.issue.title, 'OpenSumi Pre-Release') &&
       contains(github.event.comment.body, '/pre-release')
 

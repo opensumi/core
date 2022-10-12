@@ -4,17 +4,17 @@ daysUntilStale: 60
 daysUntilClose: 7
 # Issues with these labels will never be considered stale
 exemptLabels:
-  - pinned
-  - security
-  - bug
-  - feature
-  - help wanted
-  - good first issue
-  - extension api
+  - 🐞 bug
+  - 🎨 feature
+  - 🤔 help wanted
+  - 👨🏻‍💻 good first issue
+  - ⚡️ extension api
 # Label to use when marking an issue as stale
-staleLabel: wontfix
+staleLabel: 👾 wontfix
 # Comment to post when marking an issue as stale. Set to `false` to disable
 markComment: >
+  此问题已被自动标记为已过时，如果没有进一步的活动，它将被关闭。谢谢您的贡献。
+
   This issue has been automatically marked as stale because it has not had
   recent activity. It will be closed if no further activity occurs. Thank you
   for your contributions.
