@@ -37,9 +37,6 @@ test.describe('OpenSumi Explorer Panel', () => {
   });
 
   test('can new single file by context menu', async () => {
-    expect(explorer.isVisible()).toBeTruthy();
-    await fileTreeView.open();
-    expect(fileTreeView.isVisible()).toBeTruthy();
     const node = await explorer.getFileStatTreeNodeByPath('test');
     await node?.expand();
     expect(await node?.isCollapsed()).toBeFalsy();
@@ -62,9 +59,6 @@ test.describe('OpenSumi Explorer Panel', () => {
   });
 
   test('can new folder by context menu', async () => {
-    expect(explorer.isVisible()).toBeTruthy();
-    await fileTreeView.open();
-    expect(fileTreeView.isVisible()).toBeTruthy();
     const node = await explorer.getFileStatTreeNodeByPath('test');
     await node?.expand();
     expect(await node?.isCollapsed()).toBeFalsy();
@@ -87,9 +81,8 @@ test.describe('OpenSumi Explorer Panel', () => {
   });
 
   test('can new file from toolbar', async () => {
-    expect(explorer.isVisible()).toBeTruthy();
-    await fileTreeView.open();
-    expect(fileTreeView.isVisible()).toBeTruthy();
+    const node = await explorer.getFileStatTreeNodeByPath('editor.js');
+    await node?.open();
     const action = await fileTreeView.getTitleActionByName('New File');
     await action?.click();
     // type `new_file` as the file name
@@ -103,9 +96,8 @@ test.describe('OpenSumi Explorer Panel', () => {
   });
 
   test('can new folder from toolbar', async () => {
-    expect(explorer.isVisible()).toBeTruthy();
-    await fileTreeView.open();
-    expect(fileTreeView.isVisible()).toBeTruthy();
+    const node = await explorer.getFileStatTreeNodeByPath('editor.js');
+    await node?.open();
     const action = await fileTreeView.getTitleActionByName('New Folder');
     await action?.click();
     // type `new_folder2` as the file name
@@ -117,7 +109,7 @@ test.describe('OpenSumi Explorer Panel', () => {
       await app.page.keyboard.press('Enter');
     }
     await app.page.waitForTimeout(200);
-    const newFile = await explorer.getFileStatTreeNodeByPath(`test/${newFileName}`);
+    const newFile = await explorer.getFileStatTreeNodeByPath(`${newFileName}`);
     expect(newFile).toBeDefined();
     expect(await newFile?.isFolder()).toBeTruthy();
   });
