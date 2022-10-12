@@ -37,10 +37,6 @@ export abstract class ResourceService {
    */
   readonly onUnregisterResourceProvider: Event<IResourceProvider>;
   /**
-   * 状态变化：当前 BrowserWindow 中是否有 dirty 的 resource
-   */
-  readonly onAllResourceDirtyStateChanged: Event<boolean>;
-  /**
    * 根据uri获得一个资源信息
    * 如果uri没有对应的resource提供者，则会返回null
    * @param uri

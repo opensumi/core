@@ -39,7 +39,7 @@ import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-bro
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { isWindows, isOSX, PreferenceScope, ILogger, MaybePromise } from '@opensumi/ide-core-common';
+import { isWindows, isOSX, PreferenceScope, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
@@ -53,7 +53,7 @@ import {
   EditorGroupSplitAction,
   ILanguageService,
   Direction,
-  ResourceService,
+  ResourceDecorationChangeEvent,
   IDocPersistentCacheProvider,
   IEditor,
   SaveReason,
@@ -95,6 +95,7 @@ interface ResourceArgs {
   QuickOpenContribution,
 )
 export class EditorContribution
+  extends WithEventBus
   implements
     CommandContribution,
     ClientAppContribution,
@@ -128,9 +129,6 @@ export class EditorContribution
 
   @Autowired(IDocPersistentCacheProvider)
   private cacheProvider: IDocPersistentCacheProvider;
-
-  @Autowired(ResourceService)
-  private resourceService: ResourceService;
 
   @Autowired()
   private historyService: EditorHistoryService;
@@ -247,12 +245,11 @@ export class EditorContribution
     }
   }
 
-  onStart(app: IClientApp): MaybePromise<void> {
-    if (this.appConfig.isElectronRenderer) {
-      this.resourceService.onAllResourceDirtyStateChanged((e) => {
-        this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, e);
-      });
-    }
+  @OnEvent(ResourceDecorationChangeEvent)
+  onResourceDecorationChangeEvent() {
+    const dirtyCount = this.workbenchEditorService.calcDirtyCount();
+    // setup macos native dirty indicator
+    this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, dirtyCount > 0 ? true : false);
   }
 
   onWillStop(app: IClientApp) {
