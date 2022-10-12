@@ -1570,18 +1570,16 @@ export class FileTreeModelService {
   };
 
   public pasteFile = async (to: URI) => {
+    let pasteToFile = false;
     let parent = this.fileTreeService.getNodeByPathOrUri(to.toString());
     if (!parent || !this.pasteStore) {
       return;
     }
     if (!Directory.is(parent)) {
+      pasteToFile = true;
       parent = parent.parent as Directory;
     }
-    let useRefresh = false;
-    if (this.fileTreeService.isCompactMode && !parent.uri.isEqual(to)) {
-      // 压缩路径的粘贴操作，使用刷新操作进行更新
-      useRefresh = true;
-    }
+
     if (this.pasteStore.type === PasteTypes.CUT) {
       for (const file of this.pasteStore.files) {
         if (file) {
@@ -1610,14 +1608,18 @@ export class FileTreeModelService {
       };
     } else if (this.pasteStore.type === PasteTypes.COPY) {
       for (const file of this.pasteStore.files) {
+        if (parent.uri.isEqual(file.uri) && !pasteToFile) {
+          // when copy a directory to it self, such as `A` directory, the result should be:
+          // | - A
+          // | - A copy 1
+          parent = parent.parent as Directory;
+        }
         const newUri = parent.uri.resolve(file.uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
         }
         const res = await this.fileTreeAPI.copyFile(file.uri, newUri);
-        if (useRefresh) {
-          this.fileTreeService.refresh(parent.parent as Directory);
-        } else if (res) {
+        if (res) {
           if ((res as FileStat).uri) {
             const copyUri = new URI((res as FileStat).uri);
             this.fileTreeService.addNode(
