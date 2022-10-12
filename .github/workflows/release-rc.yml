@@ -66,7 +66,9 @@ jobs:
           echo '```log' >> $GITHUB_STEP_SUMMARY
           git log --oneline -1 >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "SUMMARY=$(cat $GITHUB_STEP_SUMMARY)" >> $GITHUB_ENV
+          echo 'SUMMARY<<EOF' >> $GITHUB_ENV
+          cat $GITHUB_STEP_SUMMARY >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
         env:
           INPUT_REF: ${{ github.event.inputs.ref }}
       - uses: opensumi/actions/.github/actions/run-script@main
