@@ -247,9 +247,9 @@ export class EditorContribution
 
   @OnEvent(ResourceDecorationChangeEvent)
   onResourceDecorationChangeEvent() {
-    const dirtyCount = this.workbenchEditorService.calcDirtyCount();
+    const hasDirty = this.workbenchEditorService.hasDirty();
     // setup macos native dirty indicator
-    this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, dirtyCount > 0 ? true : false);
+    this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
   }
 
   onWillStop(app: IClientApp) {
