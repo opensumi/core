@@ -52,6 +52,7 @@ console.log(a);`,
     let isDirty = await editor.isDirty();
     expect(isDirty).toBeTruthy();
     await editor.save();
+    await app.page.waitForTimeout(1000);
     isDirty = await editor.isDirty();
     expect(isDirty).toBeFalsy();
     await editor.close();

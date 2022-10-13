@@ -1,7 +1,7 @@
 import { OpenSumiApp } from './app';
+import { OpenSumiFileTreeView } from './filetree-view';
 import { OpenSumiPanel } from './panel';
 import { OpenSumiTreeNode } from './tree-node';
-import { OpenSumiView } from './view';
 
 export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
   async getFsPath() {
@@ -30,18 +30,14 @@ export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
 }
 
 export class OpenSumiExplorerView extends OpenSumiPanel {
-  private _fileTreeView: OpenSumiView;
+  private _fileTreeView: OpenSumiFileTreeView;
 
   constructor(app: OpenSumiApp) {
     super(app, 'explorer');
   }
 
   initFileTreeView(name: string) {
-    this._fileTreeView = new OpenSumiView(this.app, {
-      viewSelector: '[class ^="file_tree__"]',
-      tabSelector: '[tabindex="0"]',
-      name,
-    });
+    this._fileTreeView = new OpenSumiFileTreeView(this.app, name);
   }
 
   get fileTreeView() {
