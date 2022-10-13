@@ -122,42 +122,42 @@ declare module 'vscode' {
      * An optional event to signal that the timeline for a source has changed.
      * To signal that the timeline for all resources (uris) has changed, do not pass any argument or pass `undefined`.
      */
-		onDidChange?: Event<TimelineChangeEvent | undefined>;
+    onDidChange?: Event<TimelineChangeEvent | undefined>;
 
-		/**
-		 * An identifier of the source of the timeline items. This can be used to filter sources.
-		 */
-		readonly id: string;
+    /**
+     * An identifier of the source of the timeline items. This can be used to filter sources.
+     */
+    readonly id: string;
 
-		/**
-		 * A human-readable string describing the source of the timeline items. This can be used as the display label when filtering sources.
-		 */
-		readonly label: string;
+    /**
+     * A human-readable string describing the source of the timeline items. This can be used as the display label when filtering sources.
+     */
+    readonly label: string;
 
-		/**
-		 * Provide {@link TimelineItem timeline items} for a {@link Uri}.
-		 *
-		 * @param uri The {@link Uri} of the file to provide the timeline for.
-		 * @param options A set of options to determine how results should be returned.
-		 * @param token A cancellation token.
-		 * @return The {@link TimelineResult timeline result} or a thenable that resolves to such. The lack of a result
-		 * can be signaled by returning `undefined`, `null`, or an empty array.
-		 */
-		provideTimeline(uri: Uri, options: TimelineOptions, token: CancellationToken): ProviderResult<Timeline>;
-	}
+    /**
+     * Provide {@link TimelineItem timeline items} for a {@link Uri}.
+     *
+     * @param uri The {@link Uri} of the file to provide the timeline for.
+     * @param options A set of options to determine how results should be returned.
+     * @param token A cancellation token.
+     * @return The {@link TimelineResult timeline result} or a thenable that resolves to such. The lack of a result
+     * can be signaled by returning `undefined`, `null`, or an empty array.
+     */
+    provideTimeline(uri: Uri, options: TimelineOptions, token: CancellationToken): ProviderResult<Timeline>;
+  }
 
-	export namespace workspace {
-		/**
-		 * Register a timeline provider.
-		 *
-		 * Multiple providers can be registered. In that case, providers are asked in
-		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
-		 * not cause a failure of the whole operation.
-		 *
-		 * @param scheme A scheme or schemes that defines which documents this provider is applicable to. Can be `*` to target all documents.
-		 * @param provider A timeline provider.
-		 * @return A {@link Disposable} that unregisters this provider when being disposed.
-		*/
-		export function registerTimelineProvider(scheme: string | string[], provider: TimelineProvider): Disposable;
-	}
+  export namespace workspace {
+    /**
+     * Register a timeline provider.
+     *
+     * Multiple providers can be registered. In that case, providers are asked in
+     * parallel and the results are merged. A failing provider (rejected promise or exception) will
+     * not cause a failure of the whole operation.
+     *
+     * @param scheme A scheme or schemes that defines which documents this provider is applicable to. Can be `*` to target all documents.
+     * @param provider A timeline provider.
+     * @return A {@link Disposable} that unregisters this provider when being disposed.
+    */
+    export function registerTimelineProvider(scheme: string | string[], provider: TimelineProvider): Disposable;
+  }
 }
