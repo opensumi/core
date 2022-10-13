@@ -3,8 +3,51 @@ import { ElementHandle } from '@playwright/test';
 import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiEditor } from './editor';
 import { keypressWithCmdCtrl } from './utils';
+import { isMacintosh, isWindows } from '@opensumi/ide-utils';
+
+import { OpenSumiApp } from './app';
+import { OpenSumiExplorerFileStatNode } from './explorer-view';
+
+class GlyphMarginModel {
+  private viewElement: ElementHandle<SVGElement | HTMLElement> | null;
+
+  async mount(v: ElementHandle<SVGElement | HTMLElement> | null): Promise<void> {
+    if (!this.viewElement) {
+      this.viewElement = v;
+    }
+  }
+
+  async getGlyphMarginElement() {
+    const glyphMargin = await this.viewElement?.$('.glyph-margin');
+    const parent = await glyphMargin?.getProperty('parentNode');
+    return parent?.asElement();
+  }
+
+  async getOverlay(lineNumber: number) {
+    const margin = await this.getGlyphMarginElement();
+    const overlay = await margin?.$(`.margin-view-overlays > div:nth-child(${lineNumber})`);
+    return overlay;
+  }
+
+  async hasBreakpoint(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
+    return !!(await node.$('.sumi-debug-breakpoint'));
+  }
+}
 
 export class OpenSumiTextEditor extends OpenSumiEditor {
+  private glyphMarginModel: GlyphMarginModel;
+
+  constructor(app: OpenSumiApp, filestatElement: OpenSumiExplorerFileStatNode) {
+    super(app, filestatElement);
+    this.glyphMarginModel = new GlyphMarginModel();
+  }
+
+  async getGlyphMarginModel() {
+    const viewElement = await this.getViewElement();
+    this.glyphMarginModel.mount(viewElement);
+    return this.glyphMarginModel;
+  }
+
   async openLineContextMenuByLineNumber(lineNumber: number) {
     const existingLine = await this.lineByLineNumber(lineNumber);
     if (!existingLine) {
@@ -14,7 +57,8 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   }
 
   async openGlyphMarginContextMenu() {
-    const view = await this.getGlyphMarginElement();
+    const glyphMargin = await this.getGlyphMarginModel();
+    const view = await glyphMargin.getGlyphMarginElement();
     if (!view) {
       return;
     }
@@ -84,12 +128,6 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   async deleteLineByLineNumber(lineNumber: number): Promise<void> {
     await this.selectLineWithLineNumber(lineNumber);
     await this.page.keyboard.press('Backspace');
-  }
-
-  async getGlyphMarginElement() {
-    await this.activate();
-    const viewElement = await this.getViewElement();
-    return await viewElement?.$('.glyph-margin');
   }
 
   async lineByLineNumber(lineNumber: number): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
