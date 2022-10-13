@@ -30,7 +30,6 @@ import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { EditorContribution, EditorAutoSaveEditorContribution } from './editor.contribution';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
-import { EditorView } from './editor.view';
 import { EditorFeatureRegistryImpl } from './feature';
 import { FileSystemResourceContribution } from './fs-resource';
 import { LanguageStatusContribution } from './language/language-status.contribution';
@@ -176,8 +175,6 @@ export class EditorModule extends BrowserModule {
     OpenTypeMenuContribution,
   ];
   contributionProvider = BrowserEditorContribution;
-
-  component = EditorView;
 }
 
 @Domain(ClientAppContribution)

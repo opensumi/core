@@ -20,12 +20,9 @@ import { useMockStorage } from '../../../packages/core-browser/__mocks__/storage
 import { MockContextKeyService } from '../../../packages/monaco/__mocks__/monaco.context-key.service';
 
 import { MockInjector } from './mock-injector';
-import { MainLayout } from './mock-main';
 
 @Injectable()
-class MockMainLayout extends BrowserModule {
-  component = MainLayout;
-}
+class MockMainLayout extends BrowserModule {}
 
 export interface MockClientApp extends ClientApp {
   injector: MockInjector;
