@@ -182,7 +182,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     } else if (model.treeModel) {
       return (
         <RecycleTree
-          width={408}
+          width={398}
           height={300}
           itemHeight={FILE_TREE_DIALOG_HEIGHT}
           onReady={handleTreeReady}
