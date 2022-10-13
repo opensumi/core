@@ -70,15 +70,12 @@ export class DragAndDropService extends WithEventBus {
 
   handleDragStart = (ev: React.DragEvent, node: File | Directory, activeUri?: URI) => {
     ev.stopPropagation();
-    // React中的DragEnd事件可能不会触发，需要手动用Dom监听
-    // issue https://stackoverflow.com/a/24543568
-    ev.currentTarget.addEventListener(
-      'dragend',
-      (ev) => {
-        this.handleDragEnd(ev, node);
-      },
-      false,
-    );
+    // React DragEnd Event maybe not fired for the last renderred element.
+    // ref: https://stackoverflow.com/a/24543568
+    const handleDragEnd = (event) => {
+      this.handleDragEnd(event, node);
+    };
+    ev.currentTarget.addEventListener('dragend', handleDragEnd, false);
     let draggedNodes = this.model.selectedFiles;
     let isDragWithSelectedNode = false;
     for (const selected of draggedNodes) {
@@ -207,7 +204,9 @@ export class DragAndDropService extends WithEventBus {
       });
       this.toCancelNodeExpansion.push(
         Disposable.create(() => {
-          this.dragOverTrigger.cancel();
+          if (!this.dragOverTrigger.isTriggered()) {
+            this.dragOverTrigger.cancel();
+          }
         }),
       );
     }
@@ -385,7 +384,6 @@ export class DragAndDropService extends WithEventBus {
         this.draggedOverDec.removeTarget(this.potentialParent);
       }
       this.beingDraggedNodes.forEach((node) => {
-        // 添加拖拽样式
         this.beingDraggedDec.removeTarget(node);
       });
       this.beingDraggedNodes = [];

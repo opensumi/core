@@ -19,6 +19,7 @@ import {
   arrays,
   IMarkdownString,
   IRelativePattern,
+  once,
 } from '@opensumi/ide-core-common';
 import * as debugModel from '@opensumi/ide-debug';
 import { IEvaluatableExpression } from '@opensumi/ide-debug/lib/common/evaluatable-expression';
@@ -53,6 +54,7 @@ import * as languages from '@opensumi/monaco-editor-core/esm/vs/editor/common/la
 
 import { CommandsConverter } from '../../hosted/api/vscode/ext.host.command';
 
+import { IDataTransferItem, VSDataTransfer } from './data-transfer';
 import { ExtensionDocumentDataManager } from './doc';
 import { ViewColumn as ViewColumnEnums } from './enums';
 import * as types from './ext-types';
@@ -60,6 +62,7 @@ import { IInlineValueContextDto } from './languages';
 import * as model from './model.api';
 import { isMarkdownString, parseHrefAndDimensions } from './models';
 import { getPrivateApiFor, TestItemImpl } from './testing/testApi';
+import { DataTransferDTO } from './treeview';
 
 const { parse } = path;
 const { cloneAndChange } = objects;
@@ -1852,5 +1855,77 @@ export namespace DocumentSelector {
       return uriTransformer.transformOutgoingScheme(scheme);
     }
     return scheme;
+  }
+}
+
+export interface IDataTransferFileDTO {
+  readonly name: string;
+  readonly uri?: UriComponents;
+}
+
+export interface DataTransferItemDTO {
+  readonly id: string;
+  readonly asString: string;
+  readonly fileData: IDataTransferFileDTO | undefined;
+}
+
+export namespace DataTransferItem {
+  export function toDataTransferItem(
+    item: DataTransferItemDTO,
+    resolveFileData: () => Promise<Uint8Array>,
+  ): types.DataTransferItem {
+    const file = item.fileData;
+    if (file) {
+      return new (class extends types.DataTransferItem {
+        override asFile(): vscode.DataTransferFile {
+          return {
+            name: file.name,
+            uri: URI.revive(file.uri),
+            data: once(() => resolveFileData()),
+          };
+        }
+      })('', item.id);
+    } else {
+      return new types.DataTransferItem(item.asString);
+    }
+  }
+}
+
+export namespace DataTransfer {
+  export function toDataTransfer(
+    value: DataTransferDTO,
+    resolveFileData: (itemId: string) => Promise<Uint8Array>,
+  ): types.DataTransfer {
+    const init = value.items.map(
+      ([type, item]) => [type, DataTransferItem.toDataTransferItem(item, () => resolveFileData(item.id))] as const,
+    );
+    return new types.DataTransfer(init);
+  }
+
+  export async function toDataTransferDTO(value: vscode.DataTransfer | VSDataTransfer): Promise<DataTransferDTO> {
+    const newDTO: DataTransferDTO = { items: [] };
+
+    const promises: Promise<any>[] = [];
+
+    value.forEach((value, key) => {
+      promises.push(
+        (async () => {
+          const stringValue = await value.asString();
+          const fileValue = value.asFile();
+          newDTO.items.push([
+            key,
+            {
+              id: (value as IDataTransferItem | types.DataTransferItem).id,
+              asString: stringValue,
+              fileData: fileValue ? { name: fileValue.name, uri: fileValue.uri } : undefined,
+            },
+          ]);
+        })(),
+      );
+    });
+
+    await Promise.all(promises);
+
+    return newDTO;
   }
 }

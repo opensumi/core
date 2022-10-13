@@ -7,7 +7,6 @@ import { QuickInputOptions } from '@opensumi/ide-quick-open';
 import {
   IExtHostMessage,
   IExtHostTreeView,
-  TreeViewOptions,
   ViewColumn,
   IWebviewPanelOptions,
   IWebviewOptions,
@@ -154,7 +153,7 @@ export function createWindowApiFactory(
     registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
       return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
     },
-    createTreeView<T>(viewId: string, options: TreeViewOptions<T>) {
+    createTreeView<T>(viewId: string, options: vscode.TreeViewOptions<T>) {
       return extHostTreeView.createTreeView(viewId, options);
     },
     get activeTextEditor() {

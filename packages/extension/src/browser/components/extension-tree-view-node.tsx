@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { CSSProperties, FC, MouseEvent, ReactNode, useCallback, useEffect, useState, DragEvent } from 'react';
 
 import { INodeRendererProps, ClasslistComposite, PromptHandle, TreeNodeType } from '@opensumi/ide-components';
 import { Loading } from '@opensumi/ide-components';
@@ -19,23 +19,21 @@ export interface ITreeViewNodeProps {
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
-  onTwistierClick?: (
-    ev: React.MouseEvent,
-    item: ExtensionTreeNode | ExtensionCompositeTreeNode,
-    type: TreeNodeType,
-  ) => void;
-  onClick: (ev: React.MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
-  onContextMenu?: (
-    ev: React.MouseEvent,
-    item: ExtensionTreeNode | ExtensionCompositeTreeNode,
-    type: TreeNodeType,
-  ) => void;
+  onTwistierClick?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onClick: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onContextMenu?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode, type: TreeNodeType) => void;
+  onDragStart?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
+  onDragEnter?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
+  onDrop?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
+  onDragOver?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
+  onDragLeave?: (ev: MouseEvent, item: ExtensionTreeNode | ExtensionCompositeTreeNode) => void;
   decorationService: IDecorationsService;
+  draggable: boolean;
 }
 
 export type TreeViewNodeRenderedProps = ITreeViewNodeProps & INodeRendererProps;
 
-export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
+export const TreeViewNode: FC<TreeViewNodeRenderedProps> = ({
   item,
   onClick,
   onContextMenu,
@@ -46,10 +44,16 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   defaultLeftPadding = 8,
   treeViewId,
   decorationService,
+  draggable,
+  onDragStart,
+  onDragEnter,
+  onDragLeave,
+  onDragOver,
+  onDrop,
 }: TreeViewNodeRenderedProps) => {
-  const [decoration, setDecoration] = React.useState(item.uri && decorationService.getDecoration(item.uri, false));
+  const [decoration, setDecoration] = useState(item.uri && decorationService.getDecoration(item.uri, false));
 
-  React.useEffect(() => {
+  useEffect(() => {
     const disposable = decorationService.onDidChangeDecorations((e) => {
       if (item.uri && e.affectsResource(item.uri)) {
         setDecoration(decorationService.getDecoration(item.uri, false));
@@ -62,30 +66,74 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
 
   const themeService = useInjectable<IThemeService>(IThemeService);
 
-  const handleClick = (ev: React.MouseEvent) => {
-    if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onClick(ev, item, itemType);
-    }
-  };
-
-  const handlerTwistierClick = (ev: React.MouseEvent) => {
-    if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      if (onTwistierClick) {
-        onTwistierClick(ev, item, itemType);
-      } else {
+  const handleClick = useCallback(
+    (ev: MouseEvent) => {
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
         onClick(ev, item, itemType);
       }
-    }
-  };
+    },
+    [item, itemType, onClick],
+  );
 
-  const handleContextMenu = (ev: React.MouseEvent) => {
-    if (ev.nativeEvent.which === 0 || !onContextMenu) {
-      return;
-    }
-    if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-      onContextMenu(ev, item, itemType);
-    }
-  };
+  const handlerTwistierClick = useCallback(
+    (ev: MouseEvent) => {
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        if (onTwistierClick) {
+          onTwistierClick(ev, item, itemType);
+        } else {
+          onClick(ev, item, itemType);
+        }
+      }
+    },
+    [itemType, onTwistierClick, onClick],
+  );
+
+  const handleContextMenu = useCallback(
+    (ev: MouseEvent) => {
+      if (ev.nativeEvent.which === 0 || !onContextMenu) {
+        return;
+      }
+      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
+        onContextMenu(ev, item, itemType);
+      }
+    },
+    [item, itemType, onContextMenu],
+  );
+
+  const handleDragStart = useCallback(
+    (event: DragEvent) => {
+      onDragStart && onDragStart(event, item);
+    },
+    [item, onDragStart],
+  );
+
+  const handleDragEnter = useCallback(
+    (event: DragEvent) => {
+      onDragEnter && onDragEnter(event, item);
+    },
+    [item, onDragEnter],
+  );
+
+  const handleDragLeave = useCallback(
+    (event: DragEvent) => {
+      onDragLeave && onDragLeave(event, item);
+    },
+    [item, onDragLeave],
+  );
+
+  const handleDragOver = useCallback(
+    (event: DragEvent) => {
+      onDragOver && onDragOver(event, item);
+    },
+    [item, onDragOver],
+  );
+
+  const handleDrop = useCallback(
+    (event: DragEvent) => {
+      onDrop && onDrop(event, item);
+    },
+    [item, onDrop],
+  );
 
   const isDirectory = itemType === TreeNodeType.CompositeTreeNode;
   const paddingLeft = isDirectory
@@ -96,7 +144,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
     height: TREE_VIEW_NODE_HEIGHT,
     lineHeight: `${TREE_VIEW_NODE_HEIGHT}px`,
     paddingLeft,
-  } as React.CSSProperties;
+  } as CSSProperties;
 
   const renderFolderToggle = (node: ExtensionCompositeTreeNode | PromptHandle, clickHandler: any) => {
     if (decorations && decorations?.classlist.indexOf(styles.mod_loading) > -1) {
@@ -119,7 +167,7 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
   const renderDisplayName = (node: ExtensionCompositeTreeNode | ExtensionTreeNode) => {
     const displayName = () => {
       if (node.highlights) {
-        let hightlightSnaps: React.ReactNode[] = [];
+        let hightlightSnaps: ReactNode[] = [];
         let endIndex = 0;
         const hightlights = node.highlights.sort((a, b) => a[0] - b[0]);
         hightlightSnaps = hightlights.map((highlight, index: number) => {
@@ -213,11 +261,16 @@ export const TreeViewNode: React.FC<TreeViewNodeRenderedProps> = ({
       key={item.id}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       title={getItemTooltip()}
       className={cls(styles.tree_view_node, decorations ? decorations.classlist : null)}
       data-id={item.id}
       style={fileTreeNodeStyle}
-      draggable={itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode}
+      draggable={draggable}
     >
       <div className={cls(styles.tree_view_node_content)}>
         {renderTwice(item)}
