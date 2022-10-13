@@ -4,7 +4,7 @@ import { Uri, UriUtils } from '@opensumi/ide-core-common';
 import { strings, uuid, es5ClassCompat, isStringArray } from '@opensumi/ide-core-common';
 
 import { FileOperationOptions } from './model.api';
-import { escapeCodicons } from './models/html-content';
+import { MarkdownString } from './models/html-content';
 import { illegalArgument } from './utils';
 
 export { UriComponents } from './models/uri';
@@ -15,12 +15,8 @@ Object.keys(UriUtils).forEach((funcName) => {
   Uri[funcName] = UriUtils[funcName];
 });
 
-export enum QuickPickItemKind {
-  Separator = -1,
-  Default = 0,
-}
-
 export { Uri };
+export { MarkdownString };
 export enum ProgressLocation {
   /**
    * Show progress for the source control viewlet, as overlay for the icon and as progress bar
@@ -202,12 +198,6 @@ export enum LanguageStatusSeverity {
   Information = 0,
   Warning = 1,
   Error = 2,
-}
-
-export enum InputBoxValidationSeverity {
-  Info = 1,
-  Warning = 2,
-  Error = 3,
 }
 
 @es5ClassCompat
@@ -794,51 +784,6 @@ export enum CompletionItemTag {
    * Render a completion as obsolete, usually using a strike-out.
    */
   Deprecated = 1,
-}
-
-@es5ClassCompat
-export class MarkdownString {
-  value: string;
-  isTrusted?: boolean;
-  supportHtml?: boolean;
-  baseUri?: vscode.Uri;
-  readonly supportThemeIcons?: boolean;
-
-  constructor(value?: string, supportThemeIcons = false) {
-    this.value = value ?? '';
-    this.supportThemeIcons = supportThemeIcons;
-  }
-
-  appendText(value: string): MarkdownString {
-    // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
-    this.value += (this.supportThemeIcons ? escapeCodicons(value) : value)
-      .replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&')
-      .replace(/\n/, '\n\n');
-
-    return this;
-  }
-
-  appendMarkdown(value: string): MarkdownString {
-    this.value += value;
-
-    return this;
-  }
-
-  appendCodeblock(code: string, language = ''): MarkdownString {
-    this.value += '\n```';
-    this.value += language;
-    this.value += '\n';
-    this.value += code;
-    this.value += '\n```\n';
-    return this;
-  }
-
-  static isMarkdownString(thing: any): thing is MarkdownString {
-    if (thing instanceof MarkdownString) {
-      return true;
-    }
-    return thing && thing.appendCodeblock && thing.appendMarkdown && thing.appendText && thing.value !== undefined;
-  }
 }
 
 export interface CompletionItemLabel {
@@ -3091,36 +3036,15 @@ export enum InlayHintKind {
 @es5ClassCompat
 export class InlayHint {
   text: string;
-  label: string | InlayHintLabelPart[];
   position: Position;
   kind?: vscode.InlayHintKind;
   whitespaceBefore?: boolean;
   whitespaceAfter?: boolean;
-  paddingLeft?: boolean;
-  paddingRight?: boolean;
 
-  constructor(position: Position, label: string | InlayHintLabelPart[], kind?: vscode.InlayHintKind) {
-    // InlayHint 新版本的 text 属性更新为 label
-    // 为兼容老版本插件，保留 string 类型的 text 属性
-    // monaco 升级过渡期后可安全移除
-    if (typeof label === 'string') {
-      this.text = label;
-    }
-    this.label = label;
+  constructor(text: string, position: Position, kind?: vscode.InlayHintKind) {
+    this.text = text;
     this.position = position;
     this.kind = kind;
-  }
-}
-
-@es5ClassCompat
-export class InlayHintLabelPart {
-  value: string;
-  tooltip?: string | vscode.MarkdownString;
-  location?: Location;
-  command?: vscode.Command;
-
-  constructor(value: string) {
-    this.value = value;
   }
 }
 
@@ -3172,10 +3096,3 @@ export class TestTag implements vscode.TestTag {
   constructor(public readonly id: string) {}
 }
 // #endregion
-
-// inline completion begin
-export enum InlineCompletionTriggerKind {
-  Invoke = 0,
-  Automatic = 1,
-}
-// inline completion end

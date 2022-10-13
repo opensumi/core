@@ -5,17 +5,12 @@ import { Button } from '@opensumi/ide-components/lib/button';
 import { getExternalIcon, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { parseLinkedText } from '@opensumi/ide-core-common';
+import { CSSIcon } from '@opensumi/monaco-editor-core/esm/vs/base/common/codicons';
 
 import { IViewContentDescriptor } from '../common';
 
 import styles from './accordion/styles.module.less';
 import { ViewsController } from './views-registry';
-
-export namespace CSSIcon {
-  export const iconNameSegment = '[A-Za-z0-9]+';
-  export const iconNameExpression = '[A-Za-z0-9\\-]+';
-  export const iconModifierExpression = '~[A-Za-z]+';
-}
 
 const labelWithIconsRegex = new RegExp(
   `(\\\\)?\\$\\((${CSSIcon.iconNameExpression}(?:${CSSIcon.iconModifierExpression})?)\\)`,

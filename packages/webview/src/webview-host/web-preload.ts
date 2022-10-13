@@ -8,7 +8,7 @@ export class WebIframeChannel implements IWebviewChannel {
   ready?: Promise<void> | undefined;
   fakeLoad = false;
   private isInDevelopmentMode = false;
-  private id = document!.location!.search!.match(/\bid=([\w-]+)/)![1];
+  private id = document.location.search.match(/\bid=([\w-]+)/)?.[1];
 
   constructor() {
     window.addEventListener('message', (e) => {
@@ -28,7 +28,7 @@ export class WebIframeChannel implements IWebviewChannel {
       }
     });
 
-    this.ready = new Promise<void>(async (resolve) => {
+    this.ready = new Promise<void>((resolve) => {
       // TODO 等待service worker完成  未来资源使用service worker时需要加入
       resolve();
     });

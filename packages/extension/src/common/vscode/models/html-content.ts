@@ -1,10 +1,17 @@
-import { IMarkdownString, UriComponents } from '@opensumi/ide-core-common';
+import { es5ClassCompat, IMarkdownString, UriComponents } from '@opensumi/ide-core-common';
+import { CSSIcon } from '@opensumi/monaco-editor-core/esm/vs/base/common/codicons';
 
 import { illegalArgument } from '../utils';
+const iconsRegex = new RegExp(`\\$\\(${CSSIcon.iconNameExpression}(?:${CSSIcon.iconModifierExpression})?\\)`, 'g'); // no capturing groups
 
 const escapeCodiconsRegex = /(\\)?\$\([a-z0-9-]+?(?:~[a-z0-9-]*?)?\)/gi;
 export function escapeCodicons(text: string): string {
   return text.replace(escapeCodiconsRegex, (match, escaped) => (escaped ? match : `\\${match}`));
+}
+
+const escapeIconsRegex = new RegExp(`(\\\\)?${iconsRegex.source}`, 'g');
+export function escapeIcons(text: string): string {
+  return text.replace(escapeIconsRegex, (match, escaped) => (escaped ? match : `\\${match}`));
 }
 
 export const enum MarkdownStringTextNewlineStyle {
@@ -16,11 +23,13 @@ export function escapeMarkdownSyntaxTokens(text: string): string {
   // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
   return text.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
 }
+
 export class MarkdownString implements IMarkdownString {
   public value: string;
   public isTrusted?: boolean;
   public supportThemeIcons?: boolean;
   public baseUri?: UriComponents;
+  supportHtml?: boolean;
 
   constructor(value = '', isTrustedOrOptions: boolean | { isTrusted?: boolean; supportThemeIcons?: boolean } = false) {
     this.value = value;
@@ -41,7 +50,7 @@ export class MarkdownString implements IMarkdownString {
     value: string,
     newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph,
   ): MarkdownString {
-    this.value += escapeMarkdownSyntaxTokens(this.supportThemeIcons ? escapeCodicons(value) : value)
+    this.value += escapeMarkdownSyntaxTokens(this.supportThemeIcons ? escapeIcons(value) : value)
       .replace(/([ \t]+)/g, (_match, g1) => '&nbsp;'.repeat(g1.length))
       .replace(/^>/gm, '\\>')
       .replace(/\n/g, newlineStyle === MarkdownStringTextNewlineStyle.Break ? '\\\n' : '\n\n');
@@ -61,6 +70,9 @@ export class MarkdownString implements IMarkdownString {
     this.value += code;
     this.value += '\n```\n';
     return this;
+  }
+  static isMarkdownString(thing: any): thing is MarkdownString {
+    return isMarkdownString(thing);
   }
 }
 

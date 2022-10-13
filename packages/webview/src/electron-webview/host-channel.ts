@@ -8,7 +8,6 @@ export class ElectronWebviewChannel implements IWebviewChannel {
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
   fakeLoad = false;
-  // tslint:disable-next-line: no-unused-variable
   private isInDevelopmentMode = false;
 
   constructor() {
@@ -59,6 +58,4 @@ export class ElectronWebviewChannel implements IWebviewChannel {
   }
 }
 
-/* tslint:disable */
 new WebviewPanelManager(new ElectronWebviewChannel());
-/* tslint:enable */
