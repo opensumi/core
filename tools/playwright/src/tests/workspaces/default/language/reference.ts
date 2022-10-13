@@ -7,4 +7,3 @@ export class Reference {
     this.def.setVariable1('6');
   }
 }
-('');
