@@ -73,7 +73,7 @@
     "node-gyp": "^9.0.0"
   },
   "lint-staged": {
-    "*.{js,jsx,ts,tsx,md,html,css,less,json}": "prettier --write",
+    "*.{js,jsx,ts,tsx,md,html,css,less,json,yml}": "prettier --write",
     "*.{js,jsx,ts,tsx}": "eslint --fix --quiet"
   },
   "config": {
