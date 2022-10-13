@@ -182,6 +182,21 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     }
   }
 
+  async getCursorLineNumber(node: ElementHandle<SVGElement | HTMLElement> | undefined) {
+    const style = await node!.getAttribute('style');
+    const tops = style?.match(/top: [0-9]*px;/g) || ['0'];
+    const topNums = tops[0].match(/\d+/g);
+    if (topNums && topNums.length > 0) {
+      let topNum: number | string = topNums[0];
+      topNum = Number(topNum);
+
+      // 每个 view-lines 默认高度都是 18
+      const line = topNum / 18 + 1;
+      return line;
+    }
+    return undefined;
+  }
+
   async lineByLineNumber(lineNumber: number): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
     await this.activate();
     const viewElement = await this.getViewElement();
