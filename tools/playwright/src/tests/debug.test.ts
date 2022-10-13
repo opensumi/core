@@ -38,4 +38,6 @@ test.describe('OpenSumi Debug', () => {
     overlay = await glyphMarginModel.getOverlay(16);
     expect(await glyphMarginModel.hasBreakpoint(overlay!)).toBeTruthy();
   });
+
+  test('Debug breakpoint editor glyph margin should be worked', async () => {});
 });
