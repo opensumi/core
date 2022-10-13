@@ -5,7 +5,7 @@
 
 declare module 'vscode' {
 
-	 // https://github.com/microsoft/vscode/issues/88309
+   // https://github.com/microsoft/vscode/issues/88309
 
   /**
    * An {@link Event} which fires when an {@link AuthenticationProvider} is added or removed.

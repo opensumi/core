@@ -528,7 +528,7 @@ declare module 'vscode' {
    */
   export enum DebugConfigurationProviderTriggerKind {
     /**
-     *	`DebugConfigurationProvider.provideDebugConfigurations` is called to provide the initial debug configurations for a newly created launch.json.
+     *  `DebugConfigurationProvider.provideDebugConfigurations` is called to provide the initial debug configurations for a newly created launch.json.
      */
     Initial = 1,
     /**

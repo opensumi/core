@@ -149,11 +149,11 @@ declare module 'vscode' {
     hide(): void;
 
     /**
-		 * Replaces all output from the channel with the given value.
-		 *
-		 * @param value A string, falsy values will not be printed.
-		 */
-		replace(value: string): void;
+     * Replaces all output from the channel with the given value.
+     *
+     * @param value A string, falsy values will not be printed.
+     */
+    replace(value: string): void;
 
     /**
      * Dispose and free associated resources.
@@ -340,9 +340,9 @@ declare module 'vscode' {
     export const onDidCloseTerminal: Event<Terminal>;
 
     /**
-		 * An {@link Event} which fires when a {@link Terminal.state terminal's state} has changed.
-		 */
-		export const onDidChangeTerminalState: Event<Terminal>;
+     * An {@link Event} which fires when a {@link Terminal.state terminal's state} has changed.
+     */
+    export const onDidChangeTerminalState: Event<Terminal>;
 
     /**
      * Represents the current window's state.
@@ -473,12 +473,12 @@ declare module 'vscode' {
      */
     export function registerTerminalProfileProvider(id: string, provider: TerminalProfileProvider): Disposable;
     /**
-		 * Register a file decoration provider.
-		 *
-		 * @param provider A {@link FileDecorationProvider}.
-		 * @return A {@link Disposable} that unregisters the provider.
-		 */
-		export function registerFileDecorationProvider(provider: FileDecorationProvider): Disposable;
+     * Register a file decoration provider.
+     *
+     * @param provider A {@link FileDecorationProvider}.
+     * @return A {@link Disposable} that unregisters the provider.
+     */
+    export function registerFileDecorationProvider(provider: FileDecorationProvider): Disposable;
 
     /**
      * ~~Show progress in the Source Control viewlet while running the given callback and while

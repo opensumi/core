@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 declare module 'vscode' {
-	/**
+  /**
    * A task to execute
    */
   export class Task2 extends Task {

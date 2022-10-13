@@ -412,70 +412,70 @@ declare module 'vscode' {
   }
 
 
-	/**
-	 * A file decoration represents metadata that can be rendered with a file.
-	 */
-	export class FileDecoration {
+  /**
+   * A file decoration represents metadata that can be rendered with a file.
+   */
+  export class FileDecoration {
 
-		/**
-		 * A very short string that represents this decoration.
-		 */
-		badge?: string;
+    /**
+     * A very short string that represents this decoration.
+     */
+    badge?: string;
 
-		/**
-		 * A human-readable tooltip for this decoration.
-		 */
-		tooltip?: string;
+    /**
+     * A human-readable tooltip for this decoration.
+     */
+    tooltip?: string;
 
-		/**
-		 * The color of this decoration.
-		 */
-		color?: ThemeColor;
+    /**
+     * The color of this decoration.
+     */
+    color?: ThemeColor;
 
-		/**
-		 * A flag expressing that this decoration should be
-		 * propagated to its parents.
-		 */
-		propagate?: boolean;
+    /**
+     * A flag expressing that this decoration should be
+     * propagated to its parents.
+     */
+    propagate?: boolean;
 
-		/**
-		 * Creates a new decoration.
-		 *
-		 * @param badge A letter that represents the decoration.
-		 * @param tooltip The tooltip of the decoration.
-		 * @param color The color of the decoration.
-		 */
-		constructor(badge?: string, tooltip?: string, color?: ThemeColor);
-	}
+    /**
+     * Creates a new decoration.
+     *
+     * @param badge A letter that represents the decoration.
+     * @param tooltip The tooltip of the decoration.
+     * @param color The color of the decoration.
+     */
+    constructor(badge?: string, tooltip?: string, color?: ThemeColor);
+  }
 
-	/**
-	 * The decoration provider interfaces defines the contract between extensions and
-	 * file decorations.
-	 */
-	export interface FileDecorationProvider {
+  /**
+   * The decoration provider interfaces defines the contract between extensions and
+   * file decorations.
+   */
+  export interface FileDecorationProvider {
 
-		/**
-		 * An optional event to signal that decorations for one or many files have changed.
-		 *
-		 * *Note* that this event should be used to propagate information about children.
-		 *
-		 * @see {@link EventEmitter}
-		 */
-		onDidChangeFileDecorations?: Event<undefined | Uri | Uri[]>;
+    /**
+     * An optional event to signal that decorations for one or many files have changed.
+     *
+     * *Note* that this event should be used to propagate information about children.
+     *
+     * @see {@link EventEmitter}
+     */
+    onDidChangeFileDecorations?: Event<undefined | Uri | Uri[]>;
 
-		/**
-		 * Provide decorations for a given uri.
-		 *
-		 * *Note* that this function is only called when a file gets rendered in the UI.
-		 * This means a decoration from a descendent that propagates upwards must be signaled
-		 * to the editor via the {@link FileDecorationProvider.onDidChangeFileDecorations onDidChangeFileDecorations}-event.
-		 *
-		 * @param uri The uri of the file to provide a decoration for.
-		 * @param token A cancellation token.
-		 * @returns A decoration or a thenable that resolves to such.
-		 */
-		provideFileDecoration(uri: Uri, token: CancellationToken): ProviderResult<FileDecoration>;
-	}
+    /**
+     * Provide decorations for a given uri.
+     *
+     * *Note* that this function is only called when a file gets rendered in the UI.
+     * This means a decoration from a descendent that propagates upwards must be signaled
+     * to the editor via the {@link FileDecorationProvider.onDidChangeFileDecorations onDidChangeFileDecorations}-event.
+     *
+     * @param uri The uri of the file to provide a decoration for.
+     * @param token A cancellation token.
+     * @returns A decoration or a thenable that resolves to such.
+     */
+    provideFileDecoration(uri: Uri, token: CancellationToken): ProviderResult<FileDecoration>;
+  }
 
   /**
    * Class used to execute an extension callback as a task.
@@ -2871,9 +2871,9 @@ declare module 'vscode' {
     readonly processId: Thenable<number>;
 
     /**
-		 * The current state of the {@link Terminal}.
-		 */
-		readonly state: TerminalState;
+     * The current state of the {@link Terminal}.
+     */
+    readonly state: TerminalState;
 
     /**
      * The object used to initialize the terminal, this is useful for example to detecting the
