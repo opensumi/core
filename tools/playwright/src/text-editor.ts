@@ -8,23 +8,24 @@ import { isMacintosh, isWindows } from '@opensumi/ide-utils';
 import { OpenSumiApp } from './app';
 import { OpenSumiExplorerFileStatNode } from './explorer-view';
 
-class GlyphMarginModel {
-  private viewElement: ElementHandle<SVGElement | HTMLElement> | null;
-
+abstract class ViewsModel {
+  protected viewElement: ElementHandle<SVGElement | HTMLElement> | null;
   async mount(v: ElementHandle<SVGElement | HTMLElement> | null): Promise<void> {
     if (!this.viewElement) {
       this.viewElement = v;
     }
   }
+}
 
-  async getGlyphMarginElement() {
+class GlyphMarginModel extends ViewsModel {
+  async getElement() {
     const glyphMargin = await this.viewElement?.$('.glyph-margin');
     const parent = await glyphMargin?.getProperty('parentNode');
     return parent?.asElement();
   }
 
   async getOverlay(lineNumber: number) {
-    const margin = await this.getGlyphMarginElement();
+    const margin = await this.getElement();
     const overlay = await margin?.$(`.margin-view-overlays > div:nth-child(${lineNumber})`);
     return overlay;
   }
@@ -32,20 +33,48 @@ class GlyphMarginModel {
   async hasBreakpoint(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
     return !!(await node.$('.sumi-debug-breakpoint'));
   }
+
+  async hasTopStackFrame(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
+    return !!(await node.$('.sumi-debug-top-stack-frame'));
+  }
+
+  async hasTopStackFrameLine(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
+    return !!(await node.$('.sumi-debug-top-stack-frame-line'));
+  }
+}
+
+class OverlaysModel extends ViewsModel {
+  async getElement() {
+    return await this.viewElement?.$('.view-overlays');
+  }
+
+  async getOverlay(lineNumber: number) {
+    const element = await this.getElement();
+    const overlay = await element?.$(`div:nth-child(${lineNumber})`);
+    return overlay;
+  }
 }
 
 export class OpenSumiTextEditor extends OpenSumiEditor {
   private glyphMarginModel: GlyphMarginModel;
+  private overlaysModel: OverlaysModel;
 
   constructor(app: OpenSumiApp, filestatElement: OpenSumiExplorerFileStatNode) {
     super(app, filestatElement);
     this.glyphMarginModel = new GlyphMarginModel();
+    this.overlaysModel = new OverlaysModel();
   }
 
   async getGlyphMarginModel() {
     const viewElement = await this.getViewElement();
     this.glyphMarginModel.mount(viewElement);
     return this.glyphMarginModel;
+  }
+
+  async getOverlaysModel() {
+    const viewElement = await this.getViewElement();
+    this.overlaysModel.mount(viewElement);
+    return this.overlaysModel;
   }
 
   async openLineContextMenuByLineNumber(lineNumber: number) {
@@ -58,7 +87,7 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
 
   async openGlyphMarginContextMenu() {
     const glyphMargin = await this.getGlyphMarginModel();
-    const view = await glyphMargin.getGlyphMarginElement();
+    const view = await glyphMargin.getElement();
     if (!view) {
       return;
     }
