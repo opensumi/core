@@ -1,7 +1,3 @@
-/**
- * API OWENR: 木农
- */
-
 declare module 'vscode' {
   /**
 	 * Represents a text document, such as a source file. Text documents have

@@ -411,6 +411,72 @@ declare module 'vscode' {
     constructor(options: TerminalOptions | ExtensionTerminalOptions);
   }
 
+
+  /**
+   * A file decoration represents metadata that can be rendered with a file.
+   */
+  export class FileDecoration {
+
+    /**
+     * A very short string that represents this decoration.
+     */
+    badge?: string;
+
+    /**
+     * A human-readable tooltip for this decoration.
+     */
+    tooltip?: string;
+
+    /**
+     * The color of this decoration.
+     */
+    color?: ThemeColor;
+
+    /**
+     * A flag expressing that this decoration should be
+     * propagated to its parents.
+     */
+    propagate?: boolean;
+
+    /**
+     * Creates a new decoration.
+     *
+     * @param badge A letter that represents the decoration.
+     * @param tooltip The tooltip of the decoration.
+     * @param color The color of the decoration.
+     */
+    constructor(badge?: string, tooltip?: string, color?: ThemeColor);
+  }
+
+  /**
+   * The decoration provider interfaces defines the contract between extensions and
+   * file decorations.
+   */
+  export interface FileDecorationProvider {
+
+    /**
+     * An optional event to signal that decorations for one or many files have changed.
+     *
+     * *Note* that this event should be used to propagate information about children.
+     *
+     * @see {@link EventEmitter}
+     */
+    onDidChangeFileDecorations?: Event<undefined | Uri | Uri[]>;
+
+    /**
+     * Provide decorations for a given uri.
+     *
+     * *Note* that this function is only called when a file gets rendered in the UI.
+     * This means a decoration from a descendent that propagates upwards must be signaled
+     * to the editor via the {@link FileDecorationProvider.onDidChangeFileDecorations onDidChangeFileDecorations}-event.
+     *
+     * @param uri The uri of the file to provide a decoration for.
+     * @param token A cancellation token.
+     * @returns A decoration or a thenable that resolves to such.
+     */
+    provideFileDecoration(uri: Uri, token: CancellationToken): ProviderResult<FileDecoration>;
+  }
+
   /**
    * Class used to execute an extension callback as a task.
    */
@@ -1734,6 +1800,24 @@ declare module 'vscode' {
   }
 
   /**
+   * Label describing the [Tree item](#TreeItem)
+   */
+  export interface TreeItemLabel {
+
+    /**
+     * A human-readable string describing the [Tree item](#TreeItem).
+     */
+    label: string;
+
+    /**
+     * Ranges in the label to highlight. A range is defined as a tuple of two number where the
+     * first is the inclusive start index and the second the exclusive end index
+     */
+    highlights?: [number, number][];
+
+  }
+
+  /**
  * Collapsible state of the tree item
  */
   export enum TreeItemCollapsibleState {
@@ -2746,6 +2830,21 @@ declare module 'vscode' {
   }
 
   /**
+   * Represents the dimensions of a terminal.
+   */
+  export interface TerminalDimensions {
+    /**
+     * The number of columns in the terminal.
+     */
+    readonly columns: number;
+
+    /**
+     * The number of rows in the terminal.
+     */
+    readonly rows: number;
+  }
+
+  /**
    * Represents how a terminal exited.
    */
   export interface TerminalExitStatus {
@@ -2772,9 +2871,9 @@ declare module 'vscode' {
     readonly processId: Thenable<number>;
 
     /**
-		 * The current state of the {@link Terminal}.
-		 */
-		readonly state: TerminalState;
+     * The current state of the {@link Terminal}.
+     */
+    readonly state: TerminalState;
 
     /**
      * The object used to initialize the terminal, this is useful for example to detecting the

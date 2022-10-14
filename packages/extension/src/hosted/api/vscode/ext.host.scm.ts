@@ -33,6 +33,7 @@ import {
   CancellationToken,
   IDisposable,
   ISplice,
+  isUndefined,
 } from '@opensumi/ide-core-common';
 
 import { MainThreadAPIIdentifier, IExtensionDescription } from '../../../common/vscode';
@@ -378,10 +379,6 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
         const faded = r.decorations && !!r.decorations.faded;
         const contextValue = r.contextValue || '';
 
-        const source = (r.decorations && r.decorations.source) || undefined;
-        const letter = (r.decorations && r.decorations.letter) || undefined;
-        const color = (r.decorations && r.decorations.color) || undefined;
-
         const rawResource = [
           handle,
           sourceUri as UriComponents,
@@ -391,9 +388,6 @@ class ExtHostSourceControlResourceGroup implements vscode.SourceControlResourceG
           faded,
           contextValue,
           command,
-          source,
-          letter,
-          color /* 这三个属性后续要通过 File Decoration 实现 */,
         ] as SCMRawResource;
 
         return { rawResource, handle };
@@ -435,6 +429,51 @@ class ExtHostSourceControl implements vscode.SourceControl {
     GroupHandle,
     ExtHostSourceControlResourceGroup
   >();
+  private _actionButton: vscode.SourceControlActionButton | undefined;
+  private _actionButtonDisposables = new MutableDisposable<DisposableStore>();
+
+  get actionButton(): vscode.SourceControlActionButton | undefined {
+    return this._actionButton;
+  }
+
+  set actionButton(actionButton: vscode.SourceControlActionButton | undefined) {
+    this._actionButtonDisposables.value = new DisposableStore();
+
+    this._actionButton = actionButton;
+    /**
+     * 仅适配 Git 1.62.3 版本逻辑，该版本下 actionButton 为单个按钮，返回数据结构如下：
+     * {
+     *   arguments: [ExtHostSourceControl]
+     *   command: "git.publish"
+     *   title: "$(cloud-upload) Publish Changes"
+     *   tooltip: "Publish Changes"
+     * }
+     * 通过是判断 command 类型进行区分
+     */
+    let internal;
+    if (isUndefined(actionButton)) {
+      internal = undefined;
+    } else if (typeof actionButton?.command === 'string') {
+      internal = {
+        command: this._commands.converter.toInternal(actionButton as any, this._actionButtonDisposables.value)!,
+        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) => commandGroup.map(
+            (command) => this._commands.converter.toInternal(command, this._actionButtonDisposables.value!)!,
+          )),
+        description: (actionButton as any).title,
+        enabled: true,
+      };
+    } else {
+      internal = {
+        command: this._commands.converter.toInternal(actionButton.command, this._actionButtonDisposables.value)!,
+        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) => commandGroup.map(
+            (command) => this._commands.converter.toInternal(command, this._actionButtonDisposables.value!)!,
+          )),
+        description: actionButton.description || (actionButton as any).tooltip,
+        enabled: actionButton.enabled,
+      };
+    }
+    this._proxy.$updateSourceControl(this.handle, { actionButton: internal ?? null });
+  }
 
   get id(): string {
     return this._id;
@@ -777,7 +816,7 @@ export class ExtHostSCM implements IExtHostSCMShape {
         return Promise.resolve(undefined);
       }
 
-      return Promise.resolve<[string, number]>([result.message, result.type]);
+      return Promise.resolve<[string, number]>([result.message.toString(), result.type]);
     });
   }
 

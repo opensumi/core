@@ -312,3 +312,17 @@ export function mapFind<T, R>(array: Iterable<T>, mapFn: (value: T) => R | undef
 
   return undefined;
 }
+
+export function groupBy<T>(data: ReadonlyArray<T>, compare: (a: T, b: T) => number): T[][] {
+  const result: T[][] = [];
+  let currentGroup: T[] | undefined;
+  for (const element of data.slice(0).sort(compare)) {
+    if (!currentGroup || compare(currentGroup[0], element) !== 0) {
+      currentGroup = [element];
+      result.push(currentGroup);
+    } else {
+      currentGroup.push(element);
+    }
+  }
+  return result;
+}

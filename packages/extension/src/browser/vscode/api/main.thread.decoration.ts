@@ -46,7 +46,7 @@ class DecorationRequestsQueue {
       // make request
       const requests = this._requests;
       const resolver = this._resolver;
-      this._proxy.$provideDecorations(Object.values(requests), CancellationToken.None).then((data) => {
+      this._proxy.$provideFileDecorations(Object.values(requests), CancellationToken.None).then((data) => {
         // eslint-disable-next-line guard-for-in
         for (const id in resolver) {
           resolver[id](data[id]);

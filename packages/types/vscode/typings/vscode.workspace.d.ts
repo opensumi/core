@@ -38,16 +38,16 @@ declare module 'vscode' {
 
 
     /**
-		 * When true, the user has explicitly trusted the contents of the workspace.
+     * When true, the user has explicitly trusted the contents of the workspace.
      * TODO: 内部无此类需求，先空实现，等有需求再做
-		 */
-		export const isTrusted: boolean;
+     */
+    export const isTrusted: boolean;
 
     /**
-		 * Event that fires when the current workspace has been trusted.
+     * Event that fires when the current workspace has been trusted.
      * TODO: 内部无此类需求，先空实现，等有需求再做
-		 */
-		export const onDidGrantWorkspaceTrust: Event<void>;
+     */
+    export const onDidGrantWorkspaceTrust: Event<void>;
 
     /**
      * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
@@ -516,11 +516,11 @@ declare module 'vscode' {
      *
      * ```ts
      * workspace.onWillCreateFiles(event => {
-     * 	// async, will *throw* an error
-     * 	setTimeout(() => event.waitUntil(promise));
+     *   // async, will *throw* an error
+     *   setTimeout(() => event.waitUntil(promise));
      *
-     * 	// sync, OK
-     * 	event.waitUntil(promise);
+     *   // sync, OK
+     *   event.waitUntil(promise);
      * })
      * ```
      *
@@ -575,11 +575,11 @@ declare module 'vscode' {
      *
      * ```ts
      * workspace.onWillCreateFiles(event => {
-     * 	// async, will *throw* an error
-     * 	setTimeout(() => event.waitUntil(promise));
+     *   // async, will *throw* an error
+     *   setTimeout(() => event.waitUntil(promise));
      *
-     * 	// sync, OK
-     * 	event.waitUntil(promise);
+     *   // sync, OK
+     *   event.waitUntil(promise);
      * })
      * ```
      *
@@ -634,11 +634,11 @@ declare module 'vscode' {
      *
      * ```ts
      * workspace.onWillCreateFiles(event => {
-     * 	// async, will *throw* an error
-     * 	setTimeout(() => event.waitUntil(promise));
+     *   // async, will *throw* an error
+     *   setTimeout(() => event.waitUntil(promise));
      *
-     * 	// sync, OK
-     * 	event.waitUntil(promise);
+     *   // sync, OK
+     *   event.waitUntil(promise);
      * })
      * ```
      *
