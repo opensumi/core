@@ -398,9 +398,9 @@ interface FileTreeViewProps {
     hasFileIcons: boolean;
     hidesExplorerArrows: boolean;
   };
-  onTreeReady: (handle: IRecycleTreeFilterHandle) => void;
-  beforeFilterValueChange?: () => Promise<void>;
-  locationToCurrentFile: (location: string) => void;
+  onTreeReady(handle: IRecycleTreeFilterHandle): void;
+  beforeFilterValueChange?(): Promise<void>;
+  locationToCurrentFile(location: string): void;
   onItemClick(event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
   onItemDoubleClick(event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI): void;
   onContextMenu(ev: MouseEvent, node: File | Directory, type: TreeNodeType, activeUri?: URI): void;
