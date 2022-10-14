@@ -3,23 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import {
   useInjectable,
-  MaybeNull,
   ComponentRenderer,
   ComponentRegistry,
   DomListener,
-  AppConfig,
-  replaceLocalizePlaceholder,
   electronEnv,
   IWindowService,
+  useEventEffect,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { path, isMacintosh, Disposable } from '@opensumi/ide-core-browser';
+import { isMacintosh, Disposable } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { localize } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
 
-const { basename } = path;
+import { IElectronHeaderService } from '../../common/header';
+
 import styles from './header.module.less';
 
 const useFullScreen = () => {
@@ -136,7 +133,6 @@ export const ElectronHeaderBar = observer(
     LeftComponent,
     RightComponent,
     TitleComponent,
-    Icon,
     autoHide = true,
   }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
@@ -157,7 +153,7 @@ export const ElectronHeaderBar = observer(
     if (isMacintosh && isFullScreen && autoHide) {
       return (
         <div>
-          <TitleComponent hidden={true} transformer={defaultTitleTransformer} />
+          <TitleComponent hidden={true} />
         </div>
       );
     }
@@ -177,7 +173,7 @@ export const ElectronHeaderBar = observer(
         }}
       >
         <LeftComponent />
-        <TitleComponent transformer={defaultTitleTransformer} />
+        <TitleComponent />
         <RightComponent />
       </div>
     );
@@ -196,37 +192,26 @@ export interface TitleInfo {
 
 export interface TitleBarProps {
   hidden?: boolean;
-  transformer?: (titleInfo: TitleInfo) => string;
 }
 
-const defaultTitleTransformer = (titleInfo: TitleInfo) => {
-  const developmentTitle = titleInfo.extensionDevelopmentHost ? `[${localize('workspace.development.title')}]` : '';
-  const remoteMode = titleInfo.remoteMode ? ` [${localize('common.remoteMode')}]` : '';
-
-  const workspaceName = titleInfo.workspaceName ?? '';
-  let currentResourceName = titleInfo.currentResourceName ?? '';
-  if (workspaceName !== '') {
-    currentResourceName += ' — ';
-  }
-  return developmentTitle + currentResourceName + workspaceName + remoteMode;
-};
-
-export const HeaderBarTitleComponent = observer(({ hidden, transformer }: TitleBarProps) => {
-  const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
-  const [currentResource, setCurrentResource] = useState<MaybeNull<IResource>>(editorService.currentResource);
+export const HeaderBarTitleComponent = observer(({ hidden }: TitleBarProps) => {
+  const headerService = useInjectable(IElectronHeaderService) as IElectronHeaderService;
   const ref = useRef<HTMLDivElement>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
-  const appConfig: AppConfig = useInjectable(AppConfig);
-  const [appTitle, setAppTitle] = useState<string>();
+  const [appTitle, setAppTitle] = useState(headerService.appTitle);
+
+  useEventEffect(
+    headerService.onTitleChanged,
+    (v) => {
+      setAppTitle(v);
+    },
+    [],
+  );
 
   useEffect(() => {
     setPosition();
     const disposer = new Disposable();
-    disposer.addDispose(
-      editorService.onActiveResourceChange((resource) => {
-        setCurrentResource(resource);
-      }),
-    );
+
     disposer.addDispose(
       new DomListener(window, 'resize', () => {
         setPosition();
@@ -242,12 +227,12 @@ export const HeaderBarTitleComponent = observer(({ hidden, transformer }: TitleB
       });
     }
     return disposer.dispose.bind(disposer);
-  }, [currentResource]);
+  }, []);
 
   function setPosition() {
     // 在下一个 animationFrame 执行，此时 spanRef.current!.offsetWidth 的宽度才是正确的
     window.requestAnimationFrame(() => {
-      if (ref.current) {
+      if (ref.current && spanRef.current) {
         const windowWidth = window.innerWidth;
         let prevWidth = 0;
         let node = ref.current.previousElementSibling;
@@ -255,28 +240,16 @@ export const HeaderBarTitleComponent = observer(({ hidden, transformer }: TitleB
           prevWidth += (node as HTMLElement).offsetWidth;
           node = node.previousElementSibling;
         }
-        const left = Math.max(0, windowWidth * 0.5 - prevWidth - spanRef.current!.offsetWidth * 0.5);
+        const left = Math.max(0, windowWidth * 0.5 - prevWidth - spanRef.current.offsetWidth * 0.5);
         ref.current.style.paddingLeft = left + 'px';
       }
     });
   }
 
-  const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
-
-  // 同时更新 Html Title
+  // 同时更新 document Title
   useEffect(() => {
-    const titleInfo: TitleInfo = {
-      currentResourceName: currentResource?.name,
-      workspaceName: dirname,
-      appName: replaceLocalizePlaceholder(appConfig.appName),
-      remoteMode: appConfig.isRemote,
-      extensionDevelopmentHost: appConfig.extensionDevelopmentHost,
-    };
-    const documentTitle = (transformer && transformer(titleInfo)) || defaultTitleTransformer(titleInfo);
-
-    document.title = documentTitle;
-    setAppTitle(documentTitle);
-  }, [currentResource?.name]);
+    document.title = appTitle;
+  }, [appTitle]);
 
   if (hidden) {
     return null;
