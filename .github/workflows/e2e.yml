@@ -51,15 +51,23 @@ jobs:
         run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
 
       - uses: microsoft/playwright-github-action@v1
-      - name: Init & Test
+      - name: Playwright Test
         continue-on-error: false
         run: |
           npm i
           npm run init
           npm run test:ui-ci
-      - name: Upload test results
+      - name: Upload HTML report as artifact. To troubleshoot failures, extract .zip and double-click index.html.
+        uses: actions/upload-artifact@v2
         if: always()
-        uses: actions/upload-artifact@v3
         with:
-          name: playwright-report
-          path: tools/playwright/test-results
+          name: ${{ env.TESTGROUP }}
+          path: tools/playwright/playwright-report
+
+      - name: Publish Playwright Report
+        if: always()
+        uses: peaceiris/actions-gh-pages
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./tools/playwright/test-results
+          publish_branch: playwright-report-page
