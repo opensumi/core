@@ -2,6 +2,9 @@ import { SearchHistory, SEARCH_WORD_SCOPE } from '../../src/browser/search-histo
 
 class MockSearchServiceClient {
   searchValue: string;
+  searchDebounce() {
+    // noop
+  }
 }
 
 class MockRecentStorage {
@@ -38,8 +41,10 @@ describe('测试 SearchHistory', () => {
   });
 
   test('method: setRecentSearchWord', () => {
+    const spy = jest.spyOn(searchServiceClient, 'searchDebounce');
     searchHistory.setRecentSearchWord();
     expect(searchServiceClient.searchValue).toEqual('d');
+    expect(spy).toHaveBeenCalled();
   });
 
   test('method: setRecentSearchWord 前进到底', () => {
@@ -55,8 +60,10 @@ describe('测试 SearchHistory', () => {
   });
 
   test('method: setBackRecentSearchWord', () => {
+    const spy = jest.spyOn(searchServiceClient, 'searchDebounce');
     searchHistory.setBackRecentSearchWord();
     expect(searchServiceClient.searchValue).toEqual('b');
+    expect(spy).toHaveBeenCalled();
   });
 
   test('method: setBackRecentSearchWord 后退到底', () => {
