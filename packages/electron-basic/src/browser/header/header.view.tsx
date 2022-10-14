@@ -174,6 +174,7 @@ export const ElectronHeaderBar = observer(
 declare const ResizeObserver: any;
 
 export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
+  const headerService = useInjectable(IElectronHeaderService) as IElectronHeaderService;
   const ref = useRef<HTMLDivElement>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
   const [appTitle, setAppTitle] = useState(headerService.appTitle);
