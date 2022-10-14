@@ -5,9 +5,10 @@ import {
   replaceLocalizePlaceholder,
   Emitter,
   DisposableCollection,
+  isMacintosh,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
-import { basename } from '@opensumi/ide-utils/lib/path';
+import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';
 import { template } from '@opensumi/ide-utils/lib/strings';
 
 import { IElectronHeaderService } from '../../common/header';
@@ -16,7 +17,11 @@ import { IElectronHeaderService } from '../../common/header';
 export const TITLE_DIRTY = '\u25cf ';
 export const SEPARATOR = ' - ';
 
-export const DEFAULT_TEMPLATE = '${dirty}${activeEditorShort}${separator}${rootName}${separator}${appName}';
+export let DEFAULT_TEMPLATE = '${dirty}${activeEditorShort}${separator}${rootName}';
+
+if (isMacintosh) {
+  DEFAULT_TEMPLATE = '${activeEditorShort}${separator}${rootName}';
+}
 
 @Injectable()
 export class ElectronHeaderService implements IElectronHeaderService {
@@ -35,6 +40,8 @@ export class ElectronHeaderService implements IElectronHeaderService {
   onTitleChanged = this._onTitleChanged.event;
 
   private _appTitle: string;
+
+  separator = SEPARATOR;
 
   private _titleTemplate = DEFAULT_TEMPLATE;
   get titleTemplate() {
@@ -84,25 +91,27 @@ export class ElectronHeaderService implements IElectronHeaderService {
     const currentResource = this.editorService.currentResource;
     const currentEditor = this.editorService.currentEditor;
 
-    const workspaceDirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : '';
+    const workspaceDir = appConfig.workspaceDir ? appConfig.workspaceDir : '';
+    const workspaceBasename = basename(workspaceDir);
     const activeEditorFull = currentResource?.name ?? '';
-    const activeFolderFull = activeEditorFull ? basename(activeEditorFull) : '';
+    const activeEditorRelative = activeEditorFull && workspaceDir ? relative(workspaceDir, activeEditorFull) : '';
+    const activeFolderFull = activeEditorFull ? dirname(activeEditorFull) : '';
+    const activeFolderRelative = activeFolderFull && workspaceDir ? relative(workspaceDir, activeFolderFull) : '';
 
-    const activeEditorShort = activeEditorFull;
-    const activeEditorMedium = activeEditorFull;
+    const activeEditorShort = basename(activeEditorFull);
+    const activeEditorMedium = activeEditorRelative;
     const activeEditorLong = activeEditorFull;
-    const activeFolderShort = activeFolderFull;
-    const activeFolderMedium = activeFolderFull;
+    const activeFolderShort = basename(activeFolderFull);
+    const activeFolderMedium = activeFolderRelative;
     const activeFolderLong = activeFolderFull;
-    const folderName = workspaceDirname;
-    const folderPath = workspaceDirname;
-    const rootName = workspaceDirname;
-    const rootPath = workspaceDirname;
+    const folderName = workspaceBasename;
+    const folderPath = workspaceDir;
+    const rootName = workspaceBasename;
+    const rootPath = workspaceDir;
     const appName = replaceLocalizePlaceholder(appConfig.appName) ?? '';
     // TODO: 当前 OpenSumi 还不支持 Remote 名字
     const remoteName = '';
     const dirty = currentEditor?.currentDocumentModel?.dirty ? TITLE_DIRTY : '';
-    const separator = SEPARATOR;
 
     const result = template(
       this.titleTemplate,
@@ -123,7 +132,7 @@ export class ElectronHeaderService implements IElectronHeaderService {
         ...this._templateVariables,
       },
       {
-        separator,
+        separator: this.separator,
       },
     );
 
