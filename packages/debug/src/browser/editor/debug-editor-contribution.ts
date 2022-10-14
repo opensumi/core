@@ -35,7 +35,7 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
 
-import { IDebugSessionManager } from './../../common';
+import { DebugState, IDebugSessionManager } from './../../common';
 import { InlineValueContext } from './../../common/inline-values';
 import { DEFAULT_WORD_REGEXP } from './../debugUtils';
 import { DebugModelManager } from './debug-model-manager';
@@ -214,7 +214,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
         if (currentSession) {
           this.editorDisposer.addDispose(
             currentSession.onDidChange(() => {
-              this.setHoverEnabled(editor);
+              this.setHoverEnabled(editor, currentSession.state === DebugState.Running);
             }),
           );
 

@@ -23,7 +23,7 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   }
 
   async openTabContextMenu() {
-    const view = await this.getCurrentTab();
+    const view = await this.getTab();
     if (!view) {
       return;
     }

@@ -52,9 +52,25 @@ console.log(a);`,
     let isDirty = await editor.isDirty();
     expect(isDirty).toBeTruthy();
     await editor.save();
+    await app.page.waitForTimeout(1000);
     isDirty = await editor.isDirty();
     expect(isDirty).toBeFalsy();
     await editor.close();
+  });
+
+  test('File tree automatic location', async () => {
+    editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor.js', false);
+    const editor2 = await app.openEditor(OpenSumiTextEditor, explorer, 'editor2.js', false);
+    await app.page.waitForTimeout(1000);
+    const firstFileTab = await editor.getTab();
+    await firstFileTab?.click();
+    await app.page.waitForTimeout(1000);
+    const node = await explorer.getFileStatTreeNodeByPath('editor.js');
+    expect(await node?.isSelected()).toBeTruthy();
+    const node2 = await explorer.getFileStatTreeNodeByPath('editor2.js');
+    expect(await node2?.isSelected()).toBeFalsy();
+    await editor.close();
+    await editor2.close();
   });
 
   test('Close All Editors should be worked', async () => {

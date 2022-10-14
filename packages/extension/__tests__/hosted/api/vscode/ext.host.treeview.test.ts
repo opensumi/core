@@ -1,5 +1,12 @@
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
-import { Emitter, Disposable, CancellationTokenSource } from '@opensumi/ide-core-common';
+import {
+  Emitter,
+  Disposable,
+  CancellationTokenSource,
+  CancellationToken,
+  uuid,
+  BinaryBuffer,
+} from '@opensumi/ide-core-common';
 import { ExtHostTreeViews } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.treeview';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
@@ -9,6 +16,7 @@ import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.comm
 const moackManThreadTreeView = {
   $registerTreeDataProvider: jest.fn(),
   $unregisterTreeDataProvider: jest.fn(() => Disposable.create(() => {})),
+  $resolveDropFileData: jest.fn(() => BinaryBuffer.alloc(10)),
 };
 
 const mockMainThreadCommandProxy = {
@@ -64,13 +72,13 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () =
 
   it('registerTreeDataProvider should be work', () => {
     const treeViewId = 'registerTreeDataProvider-TreeViewId';
-    extHostTreeViews.registerTreeDataProvider(treeViewId, mockTreeDataProvider as any);
+    extHostTreeViews.registerTreeDataProvider(treeViewId, mockTreeDataProvider);
     expect(moackManThreadTreeView.$registerTreeDataProvider).toBeCalledTimes(1);
   });
 
   it('resolveTreeItem should be work', async () => {
     const treeViewId = 'registerTreeDataProvider-TreeViewId';
-    extHostTreeViews.registerTreeDataProvider(treeViewId, mockTreeDataProvider as any);
+    extHostTreeViews.registerTreeDataProvider(treeViewId, mockTreeDataProvider);
     await extHostTreeViews.$getChildren(treeViewId);
     extHostTreeViews.$resolveTreeItem(treeViewId, mockTreeViewItem.id, new CancellationTokenSource().token);
     expect(mockTreeDataProvider.resolveTreeItem).toBeCalledTimes(1);
@@ -115,6 +123,59 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.treeview.test.ts', () =
         done();
       });
       extHostTreeViews.$setVisible(treeViewId, true);
+    });
+  });
+
+  describe('Create TreeView with dragAndDropController', () => {
+    const treeViewId = 'dragAndDropTreeView-TreeViewId';
+    let treeView: TreeView<any>;
+    const mockDragAndDropController = {
+      dropMimeTypes: [],
+      dragMimeTypes: [],
+      handleDrag: jest.fn(),
+      handleDrop: jest.fn(),
+    } as any;
+    beforeAll(async () => {
+      treeView = extHostTreeViews.createTreeView<any>(treeViewId, {
+        treeDataProvider: mockTreeDataProvider,
+        dragAndDropController: mockDragAndDropController,
+      });
+      await extHostTreeViews.$getChildren(treeViewId);
+    });
+
+    it('$handleDrag method should be work', async () => {
+      // Unknown TreeView
+      await expect(
+        extHostTreeViews.$handleDrag('unknown', [mockTreeViewItem.id], uuid(), new CancellationTokenSource().token),
+      ).rejects.toThrowError();
+      await extHostTreeViews.$handleDrag(
+        treeViewId,
+        [mockTreeViewItem.id],
+        uuid(),
+        new CancellationTokenSource().token,
+      );
+      expect(mockDragAndDropController.handleDrag).toBeCalledTimes(1);
+    });
+
+    it('$handleDrop method should be work', async () => {
+      // Unknown TreeView
+      await expect(
+        extHostTreeViews.$handleDrop(
+          'unknown',
+          1,
+          { items: [] },
+          mockTreeViewItem.id,
+          new CancellationTokenSource().token,
+        ),
+      ).rejects.toThrowError();
+      await extHostTreeViews.$handleDrop(
+        treeViewId,
+        1,
+        { items: [] },
+        mockTreeViewItem.id,
+        new CancellationTokenSource().token,
+      );
+      expect(mockDragAndDropController.handleDrop).toBeCalledTimes(1);
     });
   });
 });

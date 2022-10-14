@@ -198,16 +198,16 @@ declare module 'vscode' {
      * For example, if a resource is given a context value as `diffable`. When contributing actions to `scm/resourceState/context`
      * using `menus` extension point, you can specify context value for key `scmResourceState` in `when` expressions, like `scmResourceState == diffable`.
      * ```
-     *	"contributes": {
-     *		"menus": {
-     *			"scm/resourceState/context": [
-     *				{
-     *					"command": "extension.diff",
-     *					"when": "scmResourceState == diffable"
-     *				}
-     *			]
-     *		}
-     *	}
+     *  "contributes": {
+     *    "menus": {
+     *      "scm/resourceState/context": [
+     *        {
+     *          "command": "extension.diff",
+     *          "when": "scmResourceState == diffable"
+     *        }
+     *      ]
+     *    }
+     *  }
      * ```
      * This will show action `extension.diff` only for resources with `contextValue` is `diffable`.
     */

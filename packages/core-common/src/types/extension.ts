@@ -1,4 +1,3 @@
-import { ConstructorOf } from '@opensumi/di';
 import { Uri } from '@opensumi/ide-utils';
 
 import { BasicEvent } from '../event-bus';

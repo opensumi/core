@@ -117,7 +117,8 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
       this.treeItemId,
     );
     if (resolved) {
-      this._tooltip = resolved.tooltip;
+      // TODO: resolved markdown string tooltip
+      this._tooltip = typeof resolved.tooltip === 'string' ? resolved.tooltip : resolved.tooltip?.value;
       this._command = resolved.command;
     }
     this._resolved = true;
@@ -200,7 +201,8 @@ export class ExtensionTreeNode extends TreeNode {
       this.treeItemId,
     );
     if (resolved) {
-      this._tooltip = resolved.tooltip;
+      // TODO: resolved markdown string tooltip
+      this._tooltip = typeof resolved.tooltip === 'string' ? resolved.tooltip : resolved.tooltip?.value;
       this._command = resolved.command;
     }
     this._resolved = true;

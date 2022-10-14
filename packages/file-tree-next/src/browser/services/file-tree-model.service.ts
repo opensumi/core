@@ -1585,6 +1585,7 @@ export class FileTreeModelService {
   };
 
   public pasteFile = async (to: URI) => {
+    let pasteToFile = false;
     let parent = this.fileTreeService.getNodeByPathOrUri(to.toString());
     if (!parent) {
       return;
@@ -1608,13 +1609,10 @@ export class FileTreeModelService {
       return;
     }
     if (!Directory.is(parent)) {
+      pasteToFile = true;
       parent = parent.parent as Directory;
     }
-    let useRefresh = false;
-    if (this.fileTreeService.isCompactMode && !parent.uri.isEqual(to)) {
-      // 压缩路径的粘贴操作，使用刷新操作进行更新
-      useRefresh = true;
-    }
+
     if (shouldConfirm) {
       const ok = localize('file.confirm.paste.ok');
       const cancel = localize('file.confirm.paste.cancel');
@@ -1630,15 +1628,14 @@ export class FileTreeModelService {
         return;
       }
     }
-    if (pasteStore.type === PasteTypes.CUT) {
-      if (!pasteStore.crossFiles) {
-        for (const file of pasteStore.files) {
-          if (file) {
-            this.cutDecoration.removeTarget(file);
-          }
-          if (!(parent as Directory).expanded) {
-            await (parent as Directory).setExpanded(true);
-          }
+
+    if (this.pasteStore.type === PasteTypes.CUT) {
+      for (const file of this.pasteStore.files) {
+        if (file) {
+          this.cutDecoration.removeTarget(file);
+        }
+        if (!(parent as Directory).expanded) {
+          await (parent as Directory).setExpanded(true);
         }
       }
       const errors = await this.fileTreeAPI.mvFiles(
@@ -1659,17 +1656,21 @@ export class FileTreeModelService {
         type: PasteTypes.NONE,
         crossFiles: undefined,
       };
-    } else if (pasteStore.type === PasteTypes.COPY) {
+    } else if (this.pasteStore.type === PasteTypes.COPY) {
       const uriList = pasteStore.crossFiles ? pasteStore.crossFiles : pasteStore.files.map((file) => file.uri);
       for (const uri of uriList) {
+        if (parent.uri.isEqual(uri) && !pasteToFile) {
+          // when copy a directory to it self, such as `A` directory, the result should be:
+          // | - A
+          // | - A copy 1
+          parent = parent.parent as Directory;
+        }
         const newUri = parent.uri.resolve(uri.displayName);
         if (!(parent as Directory).expanded) {
           await (parent as Directory).setExpanded(true);
         }
         const res = await this.fileTreeAPI.copyFile(uri, newUri);
-        if (useRefresh) {
-          this.fileTreeService.refresh(parent.parent as Directory);
-        } else if (res) {
+        if (res) {
           if ((res as FileStat).uri) {
             const copyUri = new URI((res as FileStat).uri);
             const fileStat = await this.filesystem.getFileStat(uri.toString());

@@ -7,7 +7,6 @@ import { QuickInputOptions } from '@opensumi/ide-quick-open';
 import {
   IExtHostMessage,
   IExtHostTreeView,
-  TreeViewOptions,
   ViewColumn,
   IWebviewPanelOptions,
   IWebviewOptions,
@@ -154,7 +153,7 @@ export function createWindowApiFactory(
     registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
       return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
     },
-    createTreeView<T>(viewId: string, options: TreeViewOptions<T>) {
+    createTreeView<T>(viewId: string, options: vscode.TreeViewOptions<T>) {
       return extHostTreeView.createTreeView(viewId, options);
     },
     get activeTextEditor() {
@@ -212,14 +211,6 @@ export function createWindowApiFactory(
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
     },
-    /**
-     * @deprecated
-     * proposed api registerDecorationProvider
-     * please use registerFileDecorationProvider
-     */
-    registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) =>
-      extHostDecorations.registerFileDecorationProvider(provider, extension.id),
-    ),
     registerFileDecorationProvider: (provider: vscode.FileDecorationProvider) =>
       extHostDecorations.registerFileDecorationProvider(provider, extension.id),
     registerUriHandler(handler: vscode.UriHandler) {

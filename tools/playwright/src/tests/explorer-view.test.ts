@@ -6,15 +6,15 @@ import { isWindows } from '@opensumi/ide-utils';
 
 import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
+import { OpenSumiFileTreeView } from '../filetree-view';
 import { OpenSumiTerminal } from '../terminal';
-import { OpenSumiView } from '../view';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
 
 let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
-let fileTreeView: OpenSumiView;
+let fileTreeView: OpenSumiFileTreeView;
 let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Explorer Panel', () => {
@@ -37,9 +37,6 @@ test.describe('OpenSumi Explorer Panel', () => {
   });
 
   test('can new single file by context menu', async () => {
-    expect(explorer.isVisible()).toBeTruthy();
-    await fileTreeView.open();
-    expect(fileTreeView.isVisible()).toBeTruthy();
     const node = await explorer.getFileStatTreeNodeByPath('test');
     await node?.expand();
     expect(await node?.isCollapsed()).toBeFalsy();
@@ -62,9 +59,6 @@ test.describe('OpenSumi Explorer Panel', () => {
   });
 
   test('can new folder by context menu', async () => {
-    expect(explorer.isVisible()).toBeTruthy();
-    await fileTreeView.open();
-    expect(fileTreeView.isVisible()).toBeTruthy();
     const node = await explorer.getFileStatTreeNodeByPath('test');
     await node?.expand();
     expect(await node?.isCollapsed()).toBeFalsy();
@@ -82,6 +76,40 @@ test.describe('OpenSumi Explorer Panel', () => {
     }
     await app.page.waitForTimeout(200);
     const newFile = await explorer.getFileStatTreeNodeByPath(`test/${newFileName}`);
+    expect(newFile).toBeDefined();
+    expect(await newFile?.isFolder()).toBeTruthy();
+  });
+
+  test('can new file from toolbar', async () => {
+    const node = await explorer.getFileStatTreeNodeByPath('editor.js');
+    await node?.open();
+    const action = await fileTreeView.getTitleActionByName('New File');
+    await action?.click();
+    // type `new_file` as the file name
+    const newFileName = 'new_file2';
+    const input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+  });
+
+  test('can new folder from toolbar', async () => {
+    const node = await explorer.getFileStatTreeNodeByPath('editor.js');
+    await node?.open();
+    const action = await fileTreeView.getTitleActionByName('New Folder');
+    await action?.click();
+    // type `new_folder2` as the file name
+    const newFileName = 'new_folder2';
+    const input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(200);
+    const newFile = await explorer.getFileStatTreeNodeByPath(`${newFileName}`);
     expect(newFile).toBeDefined();
     expect(await newFile?.isFolder()).toBeTruthy();
   });
