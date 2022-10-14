@@ -292,11 +292,11 @@ export class KTNodeProcess {
               EXTENSION_HOST_ENTRY: this.extensionEntry,
               EXTENSION_DIR: this.extensionDir,
               CODE_WINDOW_CLIENT_ID: this.windowClientId,
+              WORKSPACE_DIR: workspace,
             },
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
           };
           const forkArgs: string[] = [];
-          forkOptions.env!.WORKSPACE_DIR = workspace;
           forkArgs.push('--listenPath', rpcListenPath);
           this._process = fork(this.forkPath, forkArgs, forkOptions);
           this._process.on('message', (message) => {

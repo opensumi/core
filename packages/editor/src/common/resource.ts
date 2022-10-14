@@ -36,7 +36,6 @@ export abstract class ResourceService {
    * 写在一个 ResourceProvider 会触发该事件
    */
   readonly onUnregisterResourceProvider: Event<IResourceProvider>;
-
   /**
    * 根据uri获得一个资源信息
    * 如果uri没有对应的resource提供者，则会返回null

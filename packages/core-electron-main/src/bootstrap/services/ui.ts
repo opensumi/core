@@ -306,6 +306,13 @@ export class ElectronMainUIService
   async readClipboardBuffer(field: string): Promise<Uint8Array> {
     return clipboard.readBuffer(field);
   }
+
+  setDocumentEdited(windowId: number, edited: boolean) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.setDocumentEdited(edited);
+    }
+  }
 }
 
 @Domain(ElectronMainContribution)

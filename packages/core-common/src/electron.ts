@@ -113,6 +113,13 @@ export interface IElectronMainUIServiceShape {
   writeClipboardText(text: string): Promise<void>;
   readClipboardBuffer(field: string): Promise<Uint8Array>;
   writeClipboardBuffer(field: string, buffer: Uint8Array): Promise<void>;
+  /**
+   * Specifies whether the window’s document has been edited, and the icon in title
+   * bar will become gray when set to `true`.
+   *
+   * @platform darwin
+   */
+  setDocumentEdited(windowId: number, edited: boolean): void;
 }
 
 export interface IElectronMainUIService
