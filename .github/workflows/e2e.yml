@@ -57,17 +57,3 @@ jobs:
           npm i
           npm run init
           npm run test:ui-ci
-      - name: Upload HTML report as artifact. To troubleshoot failures, extract .zip and double-click index.html.
-        uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: ${{ env.TESTGROUP }}
-          path: tools/playwright/playwright-report
-
-      - name: Publish Playwright Report
-        if: always()
-        uses: peaceiris/actions-gh-pages
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./tools/playwright/test-results
-          publish_branch: playwright-report-page
