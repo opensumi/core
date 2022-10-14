@@ -50,9 +50,8 @@ jobs:
         working-directory: ./opensumi
         run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
 
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-
       - name: Playwright Test
         run: |
+          npm i
+          npm run init
           npm run test:ui-ci
