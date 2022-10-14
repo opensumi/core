@@ -7,6 +7,7 @@ const ciConfig: PlaywrightTestConfig = {
   workers: 1,
   retries: 1,
   maxFailures: process.env.CI ? 10 : undefined,
+  reporter: 'html',
 };
 
 export default ciConfig;
