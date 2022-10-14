@@ -54,6 +54,4 @@ jobs:
       - name: Playwright Test
         continue-on-error: false
         run: |
-          npm i
-          npm run init
           npm run test:ui-ci
