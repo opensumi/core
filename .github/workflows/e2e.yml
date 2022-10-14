@@ -15,8 +15,6 @@ jobs:
 
     runs-on: ubuntu-20.04
     timeout-minutes: 60
-    container:
-      image: mcr.microsoft.com/playwright:v1.27.0-focal
 
     steps:
       - name: Checkout
@@ -53,6 +51,7 @@ jobs:
         run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
 
       - name: Playwright Test
+        continue-on-error: false
         run: |
           npm i
           npm run init
