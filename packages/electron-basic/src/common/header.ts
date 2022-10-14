@@ -6,6 +6,10 @@ export interface IElectronHeaderService {
    * 如果你的 template 中包含自定义变量，请先通过 setTemplateVariables 注入变量后，再调用该函数。
    */
   titleTemplate: string;
+  /**
+   * 占位符 ${separator} 的值
+   */
+  separator: string;
   appTitle: string;
   onTitleChanged: Event<string>;
   /**
@@ -15,7 +19,7 @@ export interface IElectronHeaderService {
   setTemplateVariables(key: string, value: string | undefined): void;
 
   /**
-   * 默认支持的变量有下面这些，用户可以自己注入
+   * 默认支持的变量有下面这些，也支持集成方通过 setTemplateVariables 自己注入
    * Controls the window title based on the active editor. Variables are substituted based on the context:
    * - `${activeEditorShort}`: the file name (e.g. myFile.txt).
    * - `${activeEditorMedium}`: the path of the file relative to the workspace folder (e.g. myFolder/myFileFolder/myFile.txt).
