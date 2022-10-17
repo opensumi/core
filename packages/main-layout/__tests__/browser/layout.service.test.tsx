@@ -21,6 +21,8 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { MainLayoutModule } from '@opensumi/ide-main-layout/lib/browser';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { MainLayoutModuleContribution } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
+import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
+import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
@@ -94,6 +96,10 @@ describe('main layout test', () => {
     };
 
     injector.addProviders(
+      {
+        token: IIconService,
+        useClass: IconService,
+      },
       {
         token: ILoggerManagerClient,
         useClass: MockLoggerManageClient,
