@@ -1,4 +1,4 @@
-import { IContextKeyService } from '@opensumi/ide-core-browser';
+import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import { Event, Disposable, Deferred, IDisposable, Uri } from '@opensumi/ide-core-common';
 
 // eslint-disable-next-line import/no-restricted-paths

@@ -1,5 +1,5 @@
 import { IBasicTreeData, IRecycleTreeHandle } from '@opensumi/ide-components';
-import { Event } from '@opensumi/ide-core-browser';
+import { Event } from '@opensumi/ide-core-common';
 
 import { InternalTestItem, TestResultState, IncrementalTestCollectionItem } from './testCollection';
 

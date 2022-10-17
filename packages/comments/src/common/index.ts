@@ -1,17 +1,16 @@
 import type { ITree } from '@opensumi/ide-components';
+import { RecycleTreeProps, TreeNode } from '@opensumi/ide-core-browser/lib/components';
+import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import {
-  IRange,
-  URI,
-  IDisposable,
-  MaybePromise,
-  TreeNode,
-  Event,
   BasicEvent,
-  positionToRange,
-  IContextKeyService,
+  IDisposable,
   IMarkdownString,
-} from '@opensumi/ide-core-browser';
-import { RecycleTreeProps } from '@opensumi/ide-core-browser/lib/components';
+  IRange,
+  MaybePromise,
+  positionToRange,
+  URI,
+  Event,
+} from '@opensumi/ide-core-common';
 import { IEditor } from '@opensumi/ide-editor';
 // eslint-disable-next-line import/no-restricted-paths
 import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';

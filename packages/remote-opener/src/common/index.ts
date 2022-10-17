@@ -1,4 +1,4 @@
-import { IDisposable, Uri } from '@opensumi/ide-core-browser';
+import { IDisposable, Uri } from '@opensumi/ide-core-common';
 
 export const RemoteOpenerServicePath = 'RemoteOpenerService';
 

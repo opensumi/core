@@ -1,4 +1,5 @@
-import { Command, getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
+import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser/lib/style/icon/icon';
+import { Command } from '@opensumi/ide-core-common';
 
 export const RuntTestCommand: Command = {
   id: 'testing.run.test',

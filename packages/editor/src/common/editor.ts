@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { IScopedContextKeyService } from '@opensumi/ide-core-browser';
+import { IScopedContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import {
   URI,
   Event,
