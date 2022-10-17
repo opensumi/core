@@ -1,5 +1,5 @@
 import { ViewContainerOptions, View, SideStateManager } from '@opensumi/ide-core-browser/lib/layout';
-import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import type { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { SlotLocation } from '@opensumi/ide-core-browser/lib/react-providers';
 import { BasicEvent, Deferred, Event, IDisposable } from '@opensumi/ide-core-common';
 import { IContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';

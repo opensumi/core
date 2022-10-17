@@ -1,4 +1,4 @@
-import { StorageService } from '@opensumi/ide-core-browser/lib/services';
+import { StorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
 import { URI, Event } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
