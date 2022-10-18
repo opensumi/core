@@ -241,7 +241,9 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
 
   return (
     <div className={styles.title_info} ref={ref}>
-      <span ref={spanRef}>{appTitle}</span>
+      <span className={styles.title_info_inner} ref={spanRef}>
+        {appTitle}
+      </span>
     </div>
   );
 });
