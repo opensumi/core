@@ -128,7 +128,7 @@ export const EDITOR_DEFAULTS = {
   useTabStops: true,
   multiCursorModifier: 'altKey',
   multiCursorMergeOverlapping: true,
-  accessibilitySupport: 'auto',
+  accessibilitySupport: 'off',
   showUnused: true,
   wrappingStrategy: 'simple',
 
@@ -1571,7 +1571,10 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.comments.insertSpace': {
     type: 'boolean',
     default: true,
-    description: localize('insertSpace', 'Insert a space after the line comment token and inside the block comments tokens.'),
+    description: localize(
+      'insertSpace',
+      'Insert a space after the line comment token and inside the block comments tokens.',
+    ),
   },
   'editor.comments.ignoreEmptyLines': {
     type: 'boolean',
