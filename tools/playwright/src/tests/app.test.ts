@@ -11,6 +11,6 @@ test.describe('Application', () => {
   test('should show main layout', async () => {
     const workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/default')]);
     const app = await OpenSumiApp.load(page, workspace);
-    expect(await app.isMainLayoutVisible()).toBe(false);
+    expect(await app.isMainLayoutVisible()).toBe(true);
   });
 });
