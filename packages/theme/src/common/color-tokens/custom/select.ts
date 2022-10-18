@@ -108,6 +108,6 @@ export const ktSelectDropdownSelectionForeground = registerColor(
 );
 export const ktSelectDropdownTeamForeground = registerColor(
   'kt.selectDropdown.teamForeground',
-  { dark: darken(ktSelectDropdownBackground, 0.2), light: lighten(ktSelectDropdownBackground, 0.2), hc: null },
+  { dark: darken(ktSelectDropdownForeground, 0.2), light: lighten(ktSelectDropdownForeground, 0.2), hc: null },
   localize('ktSelectDropdownSelectionBackground', 'Select Dropdown Selection Background color.'),
 );
