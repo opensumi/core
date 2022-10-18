@@ -1230,10 +1230,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
 
-    return editorGroup.open(uri, { ...options, preview: false });
+    return editorGroup.open(uri, { ...options, preview: false, revealRangeInCenter: false });
   }
 
-  async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
+  async open(
+    uri: URI,
+    options: IResourceOpenOptions = {
+      revealRangeInCenter: true,
+    },
+  ): Promise<IOpenResourceResult> {
     if (uri.scheme === Schemes.file) {
       // 只记录 file 类型的
       this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
@@ -1485,9 +1490,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             // setModel 后立即调用 revealRangeInCenter 编辑器无法获取到 viewport 宽高
             // 导致无法正确计算滚动位置
             this.codeEditor.monacoEditor.setSelection(range);
-            setTimeout(() => {
-              this.codeEditor.monacoEditor.revealRangeInCenter(range, 1);
-            });
+            if (options.revealRangeInCenter) {
+              setTimeout(() => {
+                this.codeEditor.monacoEditor.revealRangeInCenter(range, 1);
+              });
+            }
           }
 
           // 同上
