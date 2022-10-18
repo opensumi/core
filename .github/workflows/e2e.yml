@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Use Node.js "14.x"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v1
         with:
           node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
@@ -52,7 +52,8 @@ jobs:
 
       - uses: microsoft/playwright-github-action@v1
       - name: Init & Test
-        run: npm i && npm run init && npm run test:ui-ci
+        run: npm i && npm run init && cd tools/playwright && npm run ui-tests-ci
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3
