@@ -18,10 +18,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Use Node.js "14.x"
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v1
         with:
           node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
@@ -45,9 +45,18 @@ jobs:
           npm run download-extension
           npm run init
 
-      - name: Playwright Test
-        continue-on-error: false
-        run: |
-          npm i
-          npm run init
-          npm run test:ui-ci
+      - name: Run
+        shell: bash
+        working-directory: ./opensumi
+        run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
+
+      - uses: microsoft/playwright-github-action@v1
+      - name: Init & Test
+        run: npm i && npm run init && cd tools/playwright && npm run ui-tests-ci
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: tools/playwright/test-results
