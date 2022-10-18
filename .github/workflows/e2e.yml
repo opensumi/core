@@ -45,11 +45,6 @@ jobs:
           npm run download-extension
           npm run init
 
-      - name: Run
-        shell: bash
-        working-directory: ./opensumi
-        run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
-
       - name: Playwright Test
         continue-on-error: false
         run: |
