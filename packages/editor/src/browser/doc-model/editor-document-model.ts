@@ -15,6 +15,8 @@ import {
   localize,
   PreferenceService,
   REPORT_NAME,
+  SaveTaskErrorCause,
+  SaveTaskResponseState,
   URI,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
@@ -360,13 +362,15 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       this.initSave();
     }
     const res = await task.finished;
-    if (res.state === 'success') {
+    if (res.state === SaveTaskResponseState.SUCCESS) {
       return true;
-    } else if (res.state === 'error') {
-      this.logger.error(res.errorMessage);
-      this.messageService.error(localize('doc.saveError.failed') + '\n' + res.errorMessage);
+    } else if (res.state === SaveTaskResponseState.ERROR) {
+      if (res.errorMessage !== SaveTaskErrorCause.CANCEL) {
+        this.logger.error(res.errorMessage);
+        this.messageService.error(localize('doc.saveError.failed') + '\n' + res.errorMessage);
+      }
       return false;
-    } else if (res.state === 'diff') {
+    } else if (res.state === SaveTaskResponseState.DIFF) {
       this.messageService
         .error(formatLocalize('doc.saveError.diff', this.uri.toString()), [localize('doc.saveError.diffAndSave')])
         .then((res) => {
