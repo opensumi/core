@@ -14,6 +14,7 @@ import {
   UTF8_with_bom,
   UTF8,
   detectEncodingFromBuffer,
+  SaveTaskResponseState,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -167,11 +168,11 @@ export class BaseFileSystemEditorDocumentProvider implements IEditorDocumentMode
         await this.fileServiceClient.setContent(fileStat, content, { encoding });
       }
       return {
-        state: 'success',
+        state: SaveTaskResponseState.SUCCESS,
       };
     } catch (e) {
       return {
-        state: 'error',
+        state: SaveTaskResponseState.ERROR,
         errorMessage: e.message,
       };
     }

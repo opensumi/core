@@ -220,7 +220,18 @@ export function isEditChange(change: IEditorDocumentChange): change is IEditorDo
   return !!(change as IEditorDocumentEditChange).changes;
 }
 
-export type EditorDocumentModelSaveResultState = 'success' | 'error' | 'diff';
+export const enum SaveTaskErrorCause {
+  CANCEL = 'cancel',
+  USE_BY_CONTENT = 'useByContent',
+}
+
+export enum SaveTaskResponseState {
+  ERROR = 'error',
+  SUCCESS = 'success',
+  DIFF = 'diff',
+}
+
+export type EditorDocumentModelSaveResultState = SaveTaskResponseState;
 
 export interface IEditorDocumentModelSaveResult {
   state: EditorDocumentModelSaveResultState;
