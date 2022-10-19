@@ -375,7 +375,7 @@ export class TerminalClient extends Disposable implements ITerminalClient {
     const onBeforeProcessEvent = this._attachAddon.onBeforeProcessData;
 
     if (this.preferenceService.get(CodeTerminalSettingId.LocalEchoEnabled)) {
-      // 某些奇怪的情况下 用户会把这个字段设置成字符串 导致终端crash
+      // 某些奇怪的情况下，用户会把这个字段设置成字符串，导致终端crash
       const exclueProgramConfig = this.preferenceService.get(
         CodeTerminalSettingId.LocalEchoExcludePrograms,
         DEFAULT_LOCAL_ECHO_EXCLUDE,
