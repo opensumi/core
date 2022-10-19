@@ -28,6 +28,12 @@
       margin-left: 0;
       flex: 0 0 30px;
       position: relative;
+      color: var(--kt-primaryButton-foreground);
+      background-color: var(--kt-primaryButton-background);
+      &:hover {
+        background-color: var(--kt-primaryButton-hoverBackground);
+        color: var(--kt-primaryButton-foreground);
+      }
       &::before {
         content: '';
         position: absolute;
