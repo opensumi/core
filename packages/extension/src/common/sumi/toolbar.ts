@@ -77,3 +77,18 @@ export interface IExtHostToolbar {
 
   getToolbarSelectActionHandle<T = any>(id: string, extensionId: string): Promise<IToolbarSelectActionHandle<T>>;
 }
+
+export const BUTTON_SET_STATE_ID = 'sumi-extension.toolbar.btn.setState';
+export const BUTTON_STATE_CHANGE_ID = 'sumi-extension.toolbar.btn.stateChange';
+export const BUTTON_SET_CONTEXT_ID = 'sumi-extension.toolbar.btn.setContext';
+export const BUTTON_CONNECT_HANDLE_ID = 'sumi-extension.toolbar.btn.connectHandle';
+export const BUTTON_CLICK_ID = 'sumi-extension.toolbar.btn.click';
+export const SHOW_POPOVER_ID = 'sumi-extension.toolbar.showPopover';
+export const HIDE_POPOVER_ID = 'sumi-extension.toolbar.hidePopover';
+export const SELECT_SET_STATE_ID = 'sumi-extension.toolbar.select.setState';
+export const SELECT_SET_OPTIONS = 'sumi-extension.toolbar.select.setOptions';
+export const SELECT_SET_SELECT_ID = 'sumi-extension.toolbar.select.setSelect';
+export const SELECT_CONNECT_HANDLE_ID = 'sumi-extension.toolbar.select.connectHandle';
+export const SELECT_ON_SELECT_ID = 'sumi-extension.toolbar.select.onSelect';
+export const SELECT_STATE_CHANGE_ID = 'sumi-extension.toolbar.select.stateChange';
+export const DROPDOWN_BUTTON_ON_SELECT_ID = 'sumi-extension.toolbar.dropdownButton.onSelect';

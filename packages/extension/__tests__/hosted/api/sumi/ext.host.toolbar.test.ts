@@ -9,6 +9,12 @@ import {
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 import { mockExtensions } from '../../../../__mocks__/extensions';
 import { ExtHostSumiAPIIdentifier, MainThreadSumiAPIIdentifier } from '../../../../src/common/sumi';
+import {
+  BUTTON_SET_STATE_ID,
+  BUTTON_STATE_CHANGE_ID,
+  SELECT_SET_STATE_ID,
+  SELECT_STATE_CHANGE_ID,
+} from '../../../../src/common/sumi/toolbar';
 import { MainThreadAPIIdentifier } from '../../../../src/common/vscode';
 import { ExtHostCommands } from '../../../../src/hosted/api/vscode/ext.host.command';
 
@@ -38,8 +44,8 @@ const emitter = new Emitter();
 const mockMainthreadCommand = {
   $executeCommand(id, ...args) {
     switch (id) {
-      case 'sumi-extension.toolbar.btn.setState':
-      case 'sumi-extension.toolbar.select.setState': {
+      case BUTTON_SET_STATE_ID:
+      case SELECT_SET_STATE_ID: {
         const [actionId, state] = args;
         emitter.fire({
           id,
@@ -78,12 +84,12 @@ describe('packages/extension/__tests__/hosted/api/sumi/ext.host.toolbar.test.ts'
     let eventName;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    if (e.id === 'sumi-extension.toolbar.select.setState') {
-      eventName = 'sumi-extension.toolbar.select.stateChange';
+    if (e.id === SELECT_SET_STATE_ID) {
+      eventName = SELECT_STATE_CHANGE_ID;
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-    } else if (e.id === 'sumi-extension.toolbar.btn.setState') {
-      eventName = 'sumi-extension.toolbar.btn.stateChange';
+    } else if (e.id === BUTTON_SET_STATE_ID) {
+      eventName = BUTTON_STATE_CHANGE_ID;
     }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
