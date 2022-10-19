@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import {
   ClientAppContribution,
   Domain,
+  getIcon,
   IStatusBarService,
   StatusBarAlignment,
   StatusBarEntryAccessor,
@@ -53,11 +54,7 @@ export class StatusBarContribution extends WithEventBus implements ClientAppCont
         color: '#FFFFFF',
         tooltip: 'OpenSumi',
         alignment: StatusBarAlignment.LEFT,
-        iconClass: this.iconService.fromIcon(
-          '',
-          'https://img.alicdn.com/imgextra/i1/O1CN01I0fKZ51PTgHByjznG_!!6000000001842-2-tps-40-40.png',
-          IconType.Mask,
-        ),
+        iconClass: getIcon('code'),
         priority: Infinity,
       });
     }
