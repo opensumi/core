@@ -394,7 +394,7 @@ export class ClientApp implements IClientApp, IDisposable {
     // 核心模块初始化完毕
     this.stateService.state = 'core_module_initialized';
 
-    // this.lifeCycleService.phase = LifeCyclePhase.Starting;
+    this.lifeCycleService.phase = LifeCyclePhase.Starting;
     await this.measure('Contributions.onStart', () => this.onStartContributions());
 
     await this.runContributionsPhase(this.contributions, 'onDidStart');
