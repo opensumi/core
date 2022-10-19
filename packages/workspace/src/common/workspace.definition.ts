@@ -106,7 +106,7 @@ export namespace WorkspaceData {
     const folderUris: string[] = [];
     const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme(Schemes.file);
     for (const { path } of data.folders) {
-      const folderUri = new URI(path).withScheme(Schemes.file);
+      const folderUri = new URI(path);
       if (workspaceFileUri.parent.isEqualOrParent(folderUri)) {
         if (workspaceFileUri.parent.isEqual(folderUri)) {
           folderUris.push('.');
