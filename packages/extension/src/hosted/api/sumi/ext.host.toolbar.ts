@@ -14,6 +14,20 @@ import {
   IMainThreadToolbar,
   IExtHostToolbar,
   IToolbarDropdownButtonActionHandle,
+  DROPDOWN_BUTTON_ON_SELECT_ID,
+  BUTTON_SET_STATE_ID,
+  SHOW_POPOVER_ID,
+  HIDE_POPOVER_ID,
+  BUTTON_SET_CONTEXT_ID,
+  BUTTON_CLICK_ID,
+  BUTTON_STATE_CHANGE_ID,
+  BUTTON_CONNECT_HANDLE_ID,
+  SELECT_SET_STATE_ID,
+  SELECT_SET_OPTIONS,
+  SELECT_SET_SELECT_ID,
+  SELECT_CONNECT_HANDLE_ID,
+  SELECT_ON_SELECT_ID,
+  SELECT_STATE_CHANGE_ID,
 } from '../../../common/sumi/toolbar';
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 
@@ -146,18 +160,17 @@ export class ToolbarBtnActionHandleController extends Disposable {
         onClick: this._onClick.event,
         onStateChanged: this._onStateChange.event,
         setState: (state, title?: string) =>
-          this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.btn.setState', this.id, state, title),
+          this.extHostCommands.executeCommand<void>(BUTTON_SET_STATE_ID, this.id, state, title),
         showPopover: async (style?: IToolbarPopoverStyle) =>
-          this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.showPopover', this.id, style),
-        hidePopover: async () =>
-          this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.hidePopover', this.id),
+          this.extHostCommands.executeCommand<void>(SHOW_POPOVER_ID, this.id, style),
+        hidePopover: async () => this.extHostCommands.executeCommand<void>(HIDE_POPOVER_ID, this.id),
         /**
          * 由插件 API 负责更新的 context 对象
          * 在自定义 popover 场景下，该 context 对象会被序列化后从 popover 组件 props 传入
          * @param context {T}
          */
         setContext: <T>(context: T) =>
-          this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.btn.setContext', this.id, context),
+          this.extHostCommands.executeCommand<void>(BUTTON_SET_CONTEXT_ID, this.id, context),
       };
     }
     return this._handle;
@@ -165,20 +178,20 @@ export class ToolbarBtnActionHandleController extends Disposable {
 
   async init() {
     this.addDispose(
-      this.kaitianCommon.onEvent('sumi-extension.toolbar.btn.click', (id) => {
+      this.kaitianCommon.onEvent(BUTTON_CLICK_ID, (id) => {
         if (id === this.id) {
           this._onClick.fire();
         }
       }),
     );
     this.addDispose(
-      this.kaitianCommon.onEvent('sumi-extension.toolbar.btn.stateChange', (id, from, to) => {
+      this.kaitianCommon.onEvent(BUTTON_STATE_CHANGE_ID, (id, from, to) => {
         if (id === this.id) {
           this._onStateChange.fire({ from, to });
         }
       }),
     );
-    return this.extHostCommands.executeCommand('sumi-extension.toolbar.btn.connectHandle', this.id);
+    return this.extHostCommands.executeCommand(BUTTON_CONNECT_HANDLE_ID, this.id);
   }
 }
 
@@ -205,16 +218,10 @@ export class ToolbarSelectActionHandleController<T> extends Disposable {
         onSelect: this._onSelect.event,
         onStateChanged: this._onStateChange.event,
         setState: (state, title?: string) =>
-          this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.select.setState', this.id, state, title),
+          this.extHostCommands.executeCommand<void>(SELECT_SET_STATE_ID, this.id, state, title),
         setOptions: (options: any, iconBasePath?: string) =>
-          this.extHostCommands.executeCommand<void>(
-            'sumi-extension.toolbar.select.setOptions',
-            this.id,
-            iconBasePath,
-            options,
-          ),
-        setSelect: (value: T) =>
-          this.extHostCommands.executeCommand<void>('sumi-extension.toolbar.select.setSelect', this.id, value),
+          this.extHostCommands.executeCommand<void>(SELECT_SET_OPTIONS, this.id, iconBasePath, options),
+        setSelect: (value: T) => this.extHostCommands.executeCommand<void>(SELECT_SET_SELECT_ID, this.id, value),
         getValue: () => this._value,
       };
     }
@@ -223,23 +230,20 @@ export class ToolbarSelectActionHandleController<T> extends Disposable {
 
   async init() {
     this.addDispose(
-      this.kaitianCommon.onEvent('sumi-extension.toolbar.select.onSelect', (id, value) => {
+      this.kaitianCommon.onEvent(SELECT_ON_SELECT_ID, (id, value) => {
         if (id === this.id) {
           this._onSelect.fire(value);
         }
       }),
     );
     this.addDispose(
-      this.kaitianCommon.onEvent('sumi-extension.toolbar.select.stateChange', (id, from, to) => {
+      this.kaitianCommon.onEvent(SELECT_STATE_CHANGE_ID, (id, from, to) => {
         if (id === this.id) {
           this._onStateChange.fire({ from, to });
         }
       }),
     );
-    this._value = (await this.extHostCommands.executeCommand(
-      'sumi-extension.toolbar.select.connectHandle',
-      this.id,
-    )) as T;
+    this._value = (await this.extHostCommands.executeCommand(SELECT_CONNECT_HANDLE_ID, this.id)) as T;
   }
 }
 
@@ -251,7 +255,7 @@ export class ToolbarDropdownButtonActionHandleController<T> extends Disposable {
   constructor(
     public readonly id: string,
     private _extHostCommands: IExtHostCommands,
-    private kaitianCommon: ExtHostCommon,
+    private sumiCommon: ExtHostCommon,
   ) {
     super();
   }
@@ -267,7 +271,7 @@ export class ToolbarDropdownButtonActionHandleController<T> extends Disposable {
 
   async init() {
     this.addDispose(
-      this.kaitianCommon.onEvent('sumi-extension.toolbar.dropdownButton.onSelect', (id, value) => {
+      this.sumiCommon.onEvent(DROPDOWN_BUTTON_ON_SELECT_ID, (id, value) => {
         if (id === this.id) {
           this._onSelect.fire(value);
         }

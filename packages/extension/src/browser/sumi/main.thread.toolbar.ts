@@ -19,7 +19,22 @@ import { Disposable } from '@opensumi/ide-core-browser';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import { EMIT_EXT_HOST_EVENT } from '../../common';
-import { IMainThreadToolbar } from '../../common/sumi/toolbar';
+import {
+  BUTTON_CLICK_ID,
+  BUTTON_CONNECT_HANDLE_ID,
+  BUTTON_SET_CONTEXT_ID,
+  BUTTON_SET_STATE_ID,
+  BUTTON_STATE_CHANGE_ID,
+  DROPDOWN_BUTTON_ON_SELECT_ID,
+  HIDE_POPOVER_ID,
+  IMainThreadToolbar,
+  SELECT_CONNECT_HANDLE_ID,
+  SELECT_ON_SELECT_ID,
+  SELECT_SET_OPTIONS,
+  SELECT_SET_SELECT_ID,
+  SELECT_SET_STATE_ID,
+  SHOW_POPOVER_ID,
+} from '../../common/sumi/toolbar';
 import { ExtensionLoadingView } from '../components';
 
 import { IToolbarButtonContribution, IToolbarDropdownButtonContribution, IToolbarSelectContribution } from './types';
@@ -55,7 +70,7 @@ export class KaitianExtensionToolbarService {
   constructor() {
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.btn.setState',
+        id: BUTTON_SET_STATE_ID,
       },
       {
         execute: (id: string, state: string, title?: string) => {
@@ -68,7 +83,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.btn.setContext',
+        id: BUTTON_SET_CONTEXT_ID,
       },
       {
         execute: (id: string, context: string) => {
@@ -84,7 +99,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.btn.connectHandle',
+        id: BUTTON_CONNECT_HANDLE_ID,
       },
       {
         execute: (id: string) => {
@@ -98,7 +113,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.select.setState',
+        id: SELECT_SET_STATE_ID,
       },
       {
         execute: (id: string, state: string) => {
@@ -111,7 +126,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.select.setOptions',
+        id: SELECT_SET_OPTIONS,
       },
       {
         execute: (id: string, extensionBasePath: string, options: any) => {
@@ -133,7 +148,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.select.setSelect',
+        id: SELECT_SET_SELECT_ID,
       },
       {
         execute: (id: string, value: any) => {
@@ -146,7 +161,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.select.connectHandle',
+        id: SELECT_CONNECT_HANDLE_ID,
       },
       {
         execute: (id: string) => {
@@ -163,7 +178,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.showPopover',
+        id: SHOW_POPOVER_ID,
       },
       {
         execute: (id: string, style) => {
@@ -176,7 +191,7 @@ export class KaitianExtensionToolbarService {
 
     this.commandRegistry.registerCommand(
       {
-        id: 'sumi-extension.toolbar.hidePopover',
+        id: HIDE_POPOVER_ID,
       },
       {
         execute: (id: string) => {
@@ -271,11 +286,9 @@ export class KaitianExtensionToolbarService {
   doConnectToolbarButtonHandle(id: string) {
     const delegate = this.btnDelegates.get(id);
     if (delegate) {
-      delegate.onClick(() =>
-        this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'sumi-extension.toolbar.btn.click', id),
-      );
+      delegate.onClick(() => this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, BUTTON_CLICK_ID, id));
       delegate.onChangeState((args) =>
-        this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'sumi-extension.toolbar.btn.stateChange', id, args),
+        this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, BUTTON_STATE_CHANGE_ID, id, args),
       );
     }
   }
@@ -338,15 +351,10 @@ export class KaitianExtensionToolbarService {
     const delegate = this.selectDelegates.get(id);
     if (delegate) {
       delegate.onSelect((value) =>
-        this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, 'sumi-extension.toolbar.select.onSelect', id, value),
+        this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, SELECT_ON_SELECT_ID, id, value),
       );
       delegate.onChangeState((args) =>
-        this.commandService.executeCommand(
-          EMIT_EXT_HOST_EVENT.id,
-          'sumi-extension.toolbar.select.stateChange',
-          id,
-          args,
-        ),
+        this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, SELECT_STATE_CHANGE_ID, id, args),
       );
     }
   }
@@ -387,12 +395,7 @@ export class KaitianExtensionToolbarService {
     const delegate = this.selectDelegates.get(id);
     if (delegate) {
       delegate.onSelect((value) =>
-        this.commandService.executeCommand(
-          EMIT_EXT_HOST_EVENT.id,
-          'sumi-extension.toolbar.dropdownButton.onSelect',
-          id,
-          value,
-        ),
+        this.commandService.executeCommand(EMIT_EXT_HOST_EVENT.id, DROPDOWN_BUTTON_ON_SELECT_ID, id, value),
       );
     }
   }
