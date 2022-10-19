@@ -255,7 +255,7 @@ export class ToolbarDropdownButtonActionHandleController<T> extends Disposable {
   constructor(
     public readonly id: string,
     private _extHostCommands: IExtHostCommands,
-    private sumiCommon: ExtHostCommon,
+    private extHostCommon: ExtHostCommon,
   ) {
     super();
   }
@@ -271,7 +271,7 @@ export class ToolbarDropdownButtonActionHandleController<T> extends Disposable {
 
   async init() {
     this.addDispose(
-      this.sumiCommon.onEvent(DROPDOWN_BUTTON_ON_SELECT_ID, (id, value) => {
+      this.extHostCommon.onEvent(DROPDOWN_BUTTON_ON_SELECT_ID, (id, value) => {
         if (id === this.id) {
           this._onSelect.fire(value);
         }
