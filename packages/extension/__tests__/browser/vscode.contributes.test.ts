@@ -149,17 +149,17 @@ describe('VSCodeContributeRunner', () => {
       expect(target.payload.packageJSON.name).toBe(mockExtensionProps.packageJSON.name);
       done();
     });
-    runner.run();
+    runner.initialize();
   });
 
   it('register localization contribution', async () => {
-    await runner.run();
+    await runner.initialize();
     expect(process.env['TEST_KAITIAN_LANGUAGE_ID']?.toLowerCase()).toBe('zh-cn');
   });
 
   it('register command contribution', async () => {
     const commandRegistry = injector.get(CommandRegistry);
-    await runner.run();
+    await runner.initialize();
     const command = commandRegistry.getCommand('test-command');
     expect(command).toBeDefined();
     expect(command?.label).toBe('测试命令');
@@ -167,14 +167,14 @@ describe('VSCodeContributeRunner', () => {
   });
 
   it('register theme contribution', async () => {
-    await runner.run();
+    await runner.initialize();
     const themeService = injector.get(IThemeService);
     const availableThemes = themeService.getAvailableThemeInfos();
     expect(availableThemes.length).toBe(1);
   });
 
   it('register language contribution', async () => {
-    await runner.run();
+    await runner.initialize();
     const languages = monaco.languages.getLanguages();
     expect(languages.map((l) => l.id)).toContain('javascript');
   });

@@ -1,11 +1,12 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { ExtensionLoadingView } from '../../components';
 
 export type KtViewLocation = 'left' | 'right' | 'bottom' | 'editor' | 'toolBar';
@@ -37,6 +38,7 @@ const SUPPORT_LOCATION = ['left', 'right', 'bottom', 'editor', 'toolBar', 'edito
 
 @Injectable()
 @Contributes('browserViews')
+@LifeCycle(LifeCyclePhase.Starting)
 export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsContribution> {
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;

@@ -517,35 +517,34 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private normalExtensions: Extension[] = [];
 
   private async runEagerExtensionsContributes() {
-    const extensions = Array.from(this.extensionInstanceManageService.getExtensionInstances() as Extension[]);
-    const eagerExtensions: Extension[] = [];
+    // const extensions = Array.from(this.extensionInstanceManageService.getExtensionInstances() as Extension[]);
+    // const eagerExtensions: Extension[] = [];
 
-    for (const extension of extensions) {
-      if (
-        isThemeExtension(extension.packageJSON) ||
-        isLanguagePackExtension(extension.packageJSON) ||
-        isIconThemeExtension(extension.packageJSON)
-      ) {
-        eagerExtensions.push(extension);
-      } else {
-        this.normalExtensions.push(extension);
-      }
-    }
+    // for (const extension of extensions) {
+    //   if (
+    //     isThemeExtension(extension.packageJSON) ||
+    //     isLanguagePackExtension(extension.packageJSON) ||
+    //     isIconThemeExtension(extension.packageJSON)
+    //   ) {
+    //     eagerExtensions.push(extension);
+    //   } else {
+    //     this.normalExtensions.push(extension);
+    //   }
+    // }
 
-    await Promise.all(eagerExtensions.map(async (extension) => await extension.contributeIfEnabled()));
+    // await Promise.all(eagerExtensions.map(async (extension) => await extension.initialize()));
 
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
     });
-    this.eventBus.fire(new ExtensionDidContributes());
   }
 
   /**
    * 激活插件的 Contributes
    */
   public async runExtensionContributes() {
-    await Promise.all(this.normalExtensions.map(async (extension) => await extension.contributeIfEnabled()));
+    // await Promise.all(this.normalExtensions.map(async (extension) => await extension.initialize()));
 
     // try fire workspaceContains activateEvent ，这里不要 await
     Promise.all(
@@ -638,9 +637,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     const extensionPaths = Array.from(activatedViewExtensionMap.keys());
 
     await Promise.all(
-      extensionPaths.map((path) =>
-        this.extensionInstanceManageService.getExtensionInstanceByPath(path)?.contributeIfEnabled(),
-      ),
+      extensionPaths.map((path) => this.extensionInstanceManageService.getExtensionInstanceByPath(path)?.initialize()),
     );
 
     activatedViewExtensionMap.clear();

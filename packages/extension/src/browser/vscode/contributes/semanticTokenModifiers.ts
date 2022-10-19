@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { ILogger } from '@opensumi/ide-core-common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 
@@ -7,10 +8,12 @@ import {
   Contributes,
   SemanticTokenModifierSchema,
   validateTypeOrModifier,
+  LifeCycle,
 } from '../../../common';
 
 @Injectable()
 @Contributes('semanticTokenModifiers')
+@LifeCycle(LifeCyclePhase.Ready)
 export class SemanticTokenModifiersContributionPoint extends VSCodeContributePoint<SemanticTokenModifierSchema> {
   @Autowired(ILogger)
   protected readonly logger: ILogger;

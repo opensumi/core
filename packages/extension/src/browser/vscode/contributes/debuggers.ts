@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IJSONSchema, IJSONSchemaSnippet, objects, localize, IJSONSchemaMap } from '@opensumi/ide-core-common';
 import { IDebugService, IDebuggerContribution } from '@opensumi/ide-debug';
 import { DebugConfigurationManager, DebugSchemaUpdater } from '@opensumi/ide-debug/lib/browser';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 const { deepClone } = objects;
 
@@ -47,6 +48,7 @@ export interface DebuggersContributionScheme extends VSCodePlatformSpecificAdapt
 
 @Injectable()
 @Contributes('debuggers')
+@LifeCycle(LifeCyclePhase.Ready)
 export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersContributionScheme[]> {
   static schema = {
     description: localize('vscode.extension.contributes.debuggers', 'Contributes debug adapters.'),

@@ -74,7 +74,7 @@ describe('extension browser test', () => {
     expect(extension.localize('displayName')).toEqual('%displayName%');
 
     extension.enable();
-    extension.contributeIfEnabled();
+    extension.initialize();
 
     // 注入语言包后
     expect(extension.toJSON().displayName).toEqual('ahhahahahahahah');
@@ -85,7 +85,7 @@ describe('extension browser test', () => {
     const extension = injector.get(Extension, [mockExtension, true, true, false]);
     setLanguageId('zh-CN');
     extension.enable();
-    extension.contributeIfEnabled();
+    extension.initialize();
 
     // 注入语言包后
     expect(extension.toJSON().displayName).toEqual('哈哈哈哈啊哈哈');

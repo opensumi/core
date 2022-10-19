@@ -9,6 +9,7 @@ import {
   path,
   GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -17,6 +18,7 @@ import {
   Contributes,
   IExtensionNodeClientService,
   ExtensionNodeServiceServerPath,
+  LifeCycle,
 } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
@@ -41,6 +43,7 @@ export type LocalizationsSchema = Array<LocalizationFormat>;
 
 @Injectable()
 @Contributes('localizations')
+@LifeCycle(LifeCyclePhase.Initialize)
 export class LocalizationsContributionPoint extends VSCodeContributePoint<LocalizationsSchema> {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;

@@ -1,11 +1,12 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { DisposableCollection, localize } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
 import { FILE_EXPLORER_WELCOME_ID } from '@opensumi/ide-file-tree-next';
 import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export enum ViewsWelcomeExtensionPointFields {
   view = 'view',
@@ -33,6 +34,7 @@ export const ViewIdentifierMap: { [key: string]: string } = {
 
 @Injectable()
 @Contributes('viewsWelcome')
+@LifeCycle(LifeCyclePhase.Starting)
 export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWelcomeSchema> {
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;

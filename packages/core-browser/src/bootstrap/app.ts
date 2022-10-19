@@ -69,6 +69,7 @@ import { electronEnv } from '../utils';
 import { renderClientApp, IAppRenderer } from './app.view';
 import { createClientConnection2, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
+import { AppLifeCycleService, AppLifeCycleServiceToken, LifeCyclePhase } from './lifecycle.service';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -240,6 +241,17 @@ export class ClientApp implements IClientApp, IDisposable {
     }
   }
 
+  get lifeCycleService(): AppLifeCycleService {
+    return this.injector.get(AppLifeCycleServiceToken);
+  }
+
+  /**
+   * Lifecircle
+   * 1. Prepare
+   * 2. Starting
+   * 3. onDidStart
+   * 4. Ready
+   */
   public async start(
     container: HTMLElement | IAppRenderer,
     type?: 'electron' | 'web',
@@ -247,6 +259,8 @@ export class ClientApp implements IClientApp, IDisposable {
   ): Promise<void> {
     const reporterService: IReporterService = this.injector.get(IReporterService);
     const measureReporter = reporterService.time(REPORT_NAME.MEASURE);
+
+    this.lifeCycleService.phase = LifeCyclePhase.Prepare;
 
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
@@ -283,6 +297,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.stateService.state = 'started_contributions';
     this.stateService.state = 'ready';
 
+    this.lifeCycleService.phase = LifeCyclePhase.Ready;
     measureReporter.timeEnd('Framework.ready');
   }
 
@@ -370,6 +385,7 @@ export class ClientApp implements IClientApp, IDisposable {
     // 先渲染 layout，模块视图的时序由layout控制
     await this.measure('RenderApp.render', () => this.renderApp(container));
 
+    this.lifeCycleService.phase = LifeCyclePhase.Initialize;
     await this.measure('Contributions.initialize', () => this.initializeContributions());
 
     // 初始化命令、快捷键与菜单
@@ -378,6 +394,7 @@ export class ClientApp implements IClientApp, IDisposable {
     // 核心模块初始化完毕
     this.stateService.state = 'core_module_initialized';
 
+    // this.lifeCycleService.phase = LifeCyclePhase.Starting;
     await this.measure('Contributions.onStart', () => this.onStartContributions());
 
     await this.runContributionsPhase(this.contributions, 'onDidStart');

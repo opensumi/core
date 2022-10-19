@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { IMenuRegistry, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { localize, formatLocalize, isUndefined } from '@opensumi/ide-core-common';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { IContributedSubmenu } from '../../../common/sumi/extension';
 import { parseMenuId, parseMenuGroup } from '../../vscode/contributes/menu';
 
@@ -42,6 +43,7 @@ export function isValidSubmenu(submenu: IContributedSubmenu[], collector: Consol
 
 @Injectable()
 @Contributes('submenus')
+@LifeCycle(LifeCyclePhase.Starting)
 export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusSchema> {
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;

@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { DisposableCollection } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { ExtensionWebviewView } from '../../components/extension-webview-view';
 
 export interface ViewsContribution {
@@ -23,6 +24,7 @@ export type ViewsSchema = ViewsContribution;
 
 @Injectable()
 @Contributes('views')
+@LifeCycle(LifeCyclePhase.Starting)
 export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;

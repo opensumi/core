@@ -1,8 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { ThemeType, IIconService, IconType } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes, ExtensionService, IExtCommandManagement } from '../../../common';
+import {
+  VSCodeContributePoint,
+  Contributes,
+  ExtensionService,
+  IExtCommandManagement,
+  LifeCycle,
+} from '../../../common';
 
 export interface CommandFormat {
   /**
@@ -35,6 +42,7 @@ export type CommandsSchema = Array<CommandFormat>;
 
 @Injectable()
 @Contributes('commands')
+@LifeCycle(LifeCyclePhase.Ready)
 export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSchema> {
   @Autowired(CommandRegistry)
   private readonly commandRegistry: CommandRegistry;

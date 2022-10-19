@@ -1,7 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export interface BreakpointsContributionScheme {
   language: string;
@@ -9,6 +10,7 @@ export interface BreakpointsContributionScheme {
 
 @Injectable()
 @Contributes('breakpoints')
+@LifeCycle(LifeCyclePhase.Starting)
 export class BreakpointsContributionPoint extends VSCodeContributePoint<BreakpointsContributionScheme[]> {
   @Autowired(DebugConfigurationManager)
   private debugConfigurationManager: DebugConfigurationManager;

@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { DisposableCollection } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;
@@ -19,6 +20,7 @@ export type ViewContainersSchema = Array<ViewContainersContribution>;
 
 @Injectable()
 @Contributes('viewsContainers')
+@LifeCycle(LifeCyclePhase.Initialize)
 export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewContainersSchema> {
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;

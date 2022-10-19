@@ -5,8 +5,9 @@ import {
   PreferenceProvider,
   PreferenceScope,
 } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export interface ConfigurationSnippets {
   body: {
@@ -17,6 +18,7 @@ export interface ConfigurationSnippets {
 
 @Injectable()
 @Contributes('configurationDefaults')
+@LifeCycle(LifeCyclePhase.Ready)
 export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoint<PreferenceSchemaProperties> {
   @Autowired(PreferenceProvider, { tag: PreferenceScope.Default })
   protected readonly defaultPreferenceProvider: PreferenceProvider;

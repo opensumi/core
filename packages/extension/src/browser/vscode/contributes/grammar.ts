@@ -1,15 +1,19 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { localize, URI, Disposable } from '@opensumi/ide-core-common';
 import { GrammarsContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export type GrammarSchema = Array<GrammarsContribution>;
 
 @Injectable()
 @Contributes('grammars')
+@LifeCycle(LifeCyclePhase.Initialize)
 export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSchema> {
+  phase: LifeCyclePhase = LifeCyclePhase.Initialize;
+
   @Autowired(ITextmateTokenizer)
   textMateService: ITextmateTokenizerService;
 

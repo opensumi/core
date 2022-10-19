@@ -155,7 +155,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
   private async enableExtension(extension: Extension): Promise<void> {
     this.extInstanceManagementService.addExtensionInstance(extension);
     extension.enable();
-    await extension.contributeIfEnabled();
+    await extension.initialize();
     this.eventBus.fire(new ExtensionDidEnabledEvent(extension.toJSON()));
   }
 

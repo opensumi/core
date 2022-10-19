@@ -1,13 +1,15 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { URI } from '@opensumi/ide-core-common';
 import { ThemeContribution, IIconService } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export type ThemesSchema = Array<ThemeContribution>;
 
 @Injectable()
 @Contributes('iconThemes')
+@LifeCycle(LifeCyclePhase.Initialize)
 export class IconThemesContributionPoint extends VSCodeContributePoint<ThemesSchema> {
   @Autowired(IIconService)
   protected readonly iconService: IIconService;

@@ -1,12 +1,13 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { getIcon, CommandService } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
   IToolbarActionService,
   IToolbarActionGroup,
 } from '@opensumi/ide-core-browser/lib/menu/next/toolbar-action.service';
 import { IToolBarViewService } from '@opensumi/ide-toolbar/lib/browser';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export interface ActionContribution {
   type: 'action';
@@ -29,6 +30,7 @@ export type ActionContributionSchema = Array<ActionContribution | EnumContributi
 
 @Injectable()
 @Contributes('actions')
+@LifeCycle(LifeCyclePhase.Starting)
 export class ActionsContributionPoint extends VSCodeContributePoint<ActionContributionSchema> {
   @Autowired(IToolBarViewService)
   toolbarViewService: IToolBarViewService;

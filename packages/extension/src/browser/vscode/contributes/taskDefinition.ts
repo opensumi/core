@@ -1,8 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IJSONSchema, IJSONSchemaMap, localize, ILogger } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { ITaskDefinitionRegistry } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export const taskDefinitionSchema: IJSONSchema = {
   type: 'object',
@@ -41,7 +42,10 @@ export type ITaskDefinitionSchema = Array<TaskDefinition>;
 
 @Injectable()
 @Contributes('taskDefinitions')
+@LifeCycle(LifeCyclePhase.Ready)
 export class TaskDefinitionContributionPoint extends VSCodeContributePoint<ITaskDefinitionSchema> {
+  phase: LifeCyclePhase = LifeCyclePhase.Starting;
+
   @Autowired(ITaskDefinitionRegistry)
   taskDefinitionRegistry: ITaskDefinitionRegistry;
 

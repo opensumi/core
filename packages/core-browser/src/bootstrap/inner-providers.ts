@@ -88,6 +88,8 @@ import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '..
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
 
+import { AppLifeCycleService, AppLifeCycleServiceToken } from './lifecycle.service';
+
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
   createContributionProvider(injector, ClientAppContribution);
@@ -252,6 +254,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IExtensionsPointService,
       useClass: ExtensionsPointServiceImpl,
+    },
+    {
+      token: AppLifeCycleServiceToken,
+      useClass: AppLifeCycleService,
     },
   ];
   injector.addProviders(...providers);

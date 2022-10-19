@@ -1,14 +1,16 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { replaceLocalizePlaceholder, localize } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { ExtColorContribution, IThemeService } from '@opensumi/ide-theme';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export type ColorsSchema = Array<ExtColorContribution>;
 const colorIdPattern = '^\\w+[.\\w+]*$';
 @Injectable()
 @Contributes('colors')
+@LifeCycle(LifeCyclePhase.Starting)
 export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema> {
   @Autowired(IThemeService)
   themeService: IThemeService;

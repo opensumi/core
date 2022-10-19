@@ -1,4 +1,5 @@
 import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
   Disposable,
   IJSONSchema,
@@ -285,6 +286,13 @@ export const CONTRIBUTE_NAME_KEY = 'contribute_name';
 export function Contributes(name) {
   return (target) => {
     Reflect.defineMetadata(CONTRIBUTE_NAME_KEY, name, target);
+  };
+}
+
+export const LIFE_CYCLE_PHASE_KEY = 'phase';
+export function LifeCycle(name: LifeCyclePhase) {
+  return (target) => {
+    Reflect.defineMetadata(LIFE_CYCLE_PHASE_KEY, name, target);
   };
 }
 

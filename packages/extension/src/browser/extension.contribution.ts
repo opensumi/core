@@ -39,7 +39,6 @@ import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from 
 import { IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
-import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import {
   ExtensionNodeServiceServerPath,
@@ -49,6 +48,7 @@ import {
   ExtensionService,
   IExtensionHostProfilerService,
   ExtensionHostTypeUpperCase,
+  LIFE_CYCLE_PHASE_KEY,
   CONTRIBUTE_NAME_KEY,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
@@ -109,9 +109,6 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
 
   @Autowired(IExtensionsPointService)
   private readonly extensionsPointService: IExtensionsPointService;
-
-  @Autowired(ILogger)
-  private readonly logger: ILogger;
 
   initialize() {
     this.extensionService.activate().then(() => {

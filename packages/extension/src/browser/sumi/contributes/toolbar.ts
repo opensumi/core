@@ -1,8 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IJSONSchema, IToolbarRegistry } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { toolbar } from '@opensumi/ide-core-browser/lib/extensions/schema/toolbar';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { KaitianExtensionToolbarService } from '../main.thread.toolbar';
 import { IToolbarButtonContribution, IToolbarSelectContribution, IToolbarActionBasicContribution } from '../types';
 
@@ -17,6 +18,7 @@ export interface KtToolbarSchema {
 
 @Injectable()
 @Contributes('toolbar')
+@LifeCycle(LifeCyclePhase.Starting)
 export class ToolbarContributionPoint extends VSCodeContributePoint<KtToolbarSchema> {
   @Autowired()
   private readonly kaitianExtToolbarService: KaitianExtensionToolbarService;

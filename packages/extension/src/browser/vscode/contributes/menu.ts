@@ -9,6 +9,7 @@ import {
   URI,
   localize,
 } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -17,7 +18,7 @@ import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType, IconType } from '@opensumi/ide-theme';
 import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 // 对插件侧 contributes 的 menu interface
 export interface MenuActionFormat extends IMenuItem {
@@ -140,6 +141,7 @@ const _submenuDescRegistry = new Map<string /* submenu id */, SubmenusSchema>();
 
 @Injectable()
 @Contributes('submenus')
+@LifeCycle(LifeCyclePhase.Ready)
 export class SubmenusContributionPoint extends VSCodeContributePoint<SubmenusSchema> {
   static schema = {};
 
@@ -151,6 +153,8 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<SubmenusSch
 @Injectable()
 @Contributes('menus')
 export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
+  phase: LifeCyclePhase = LifeCyclePhase.Initialize;
+
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
 

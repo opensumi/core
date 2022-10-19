@@ -21,6 +21,18 @@ export class ExtensionMetadataService extends Disposable {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
+  public initialize(extension: IExtension) {
+    const runner = this.injector.get(VSCodeContributeRunner, [extension]);
+    const ktRunner = this.injector.get(SumiContributesRunner, [extension]);
+    this.addDispose(runner);
+    this.addDispose(ktRunner);
+    this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
+    runner.initialize();
+    ktRunner.initialize();
+
+    this.addDispose(this.registerActivationEvent(extension));
+  }
+
   /**
    * 执行 contributes
    * 监听 activationEvent 和 workspaceContains
@@ -32,7 +44,7 @@ export class ExtensionMetadataService extends Disposable {
       this.addDispose(runner);
       this.addDispose(ktRunner);
       this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
-      await Promise.all([runner.run(), ktRunner.run()]);
+      await Promise.all([runner.initialize(), ktRunner.initialize()]);
 
       this.addDispose(this.registerActivationEvent(extension));
     } catch (e) {

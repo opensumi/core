@@ -1,7 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { KeybindingRegistry, OS, Keybinding, KeybindingWeight, OperatingSystem } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export interface ContributedKeyBinding {
   command: string;
@@ -17,6 +18,7 @@ export type KeybindingSchema = Array<ContributedKeyBinding>;
 
 @Injectable()
 @Contributes('keybindings')
+@LifeCycle(LifeCyclePhase.Ready)
 export class KeybindingContributionPoint extends VSCodeContributePoint<KeybindingSchema> {
   @Autowired(KeybindingRegistry)
   protected readonly keybindingRegistry: KeybindingRegistry;

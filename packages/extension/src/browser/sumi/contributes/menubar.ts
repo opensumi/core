@@ -1,14 +1,16 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IJSONSchema, localize } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { IContributeMenubarItem } from '../../../common/sumi/extension';
 
 export type KtMenubarsSchema = IContributeMenubarItem[];
 
 @Injectable()
 @Contributes('menubars')
+@LifeCycle(LifeCyclePhase.Starting)
 export class MenubarsContributionPoint extends VSCodeContributePoint<KtMenubarsSchema> {
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;

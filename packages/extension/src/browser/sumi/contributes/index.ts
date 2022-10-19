@@ -8,7 +8,7 @@ import {
   OpensumiExtensionPackageSchema,
 } from '@opensumi/ide-core-browser';
 
-import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
+import { IExtensionMetaData, LIFE_CYCLE_PHASE_KEY } from '../../../common';
 import { ExtensionWillContributeEvent } from '../../types';
 
 import { BrowserMainContributionPoint } from './browser-main';
@@ -57,7 +57,7 @@ export class SumiContributesRunner extends WithEventBus {
     super();
   }
 
-  public async run() {
+  public async initialize() {
     const contributes: KaitianContributesSchema = this.extension.packageJSON.kaitianContributes;
     if (!contributes) {
       return;
@@ -70,7 +70,7 @@ export class SumiContributesRunner extends WithEventBus {
     }
 
     for (const contributeCls of SumiContributesRunner.ContributePoints) {
-      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
+      const contributeName = Reflect.getMetadata(LIFE_CYCLE_PHASE_KEY, contributeCls);
       if (contributes[contributeName] !== undefined) {
         try {
           const contributePoint = this.injector.get(contributeCls, [

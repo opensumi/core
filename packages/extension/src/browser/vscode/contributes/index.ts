@@ -3,7 +3,6 @@ import {
   PreferenceSchema,
   PreferenceSchemaProperties,
   IJSONSchemaRegistry,
-  localize,
   ILogger,
   WithEventBus,
   IEventBus,
@@ -11,8 +10,13 @@ import {
   VSCodeExtensionPackageSchema,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
+import {
+  AppLifeCycleService,
+  AppLifeCycleServiceToken,
+  LifeCyclePhase,
+} from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 
-import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
+import { IExtensionMetaData, LIFE_CYCLE_PHASE_KEY, CONTRIBUTE_NAME_KEY } from '../../../common';
 import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
 import { ExtensionWillContributeEvent } from '../../types';
 
@@ -111,12 +115,50 @@ export class VSCodeContributeRunner extends WithEventBus {
   @Autowired(ILogger)
   private logger: ILogger;
 
+  @Autowired(AppLifeCycleServiceToken)
+  private lifecycleService: AppLifeCycleService;
+
   constructor(@Optional(CONTRIBUTES_SYMBOL) private extension: IExtensionMetaData) {
     super();
   }
 
-  public async run() {
-    // superSet merge here
+  private runContributesByPhase(lifeCyclePhase: LifeCyclePhase) {
+    const Contributes = VSCodeContributeRunner.ContributePoints.filter((Constructor) => {
+      const phase = Reflect.getMetadata(LIFE_CYCLE_PHASE_KEY, Constructor);
+      if (lifeCyclePhase === phase) {
+        return true;
+      }
+      return false;
+    });
+
+    const contributes: ContributesSchema = this.extension.packageJSON.contributes;
+
+    Contributes.map(async (ContributePointConstructor) => {
+      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, ContributePointConstructor);
+      if (contributes[contributeName] !== undefined) {
+        try {
+          const contributePoint = this.injector.get(ContributePointConstructor, [
+            contributes[contributeName],
+            contributes,
+            this.extension,
+            this.extension.packageNlsJSON,
+            this.extension.defaultPkgNlsJSON,
+          ]);
+
+          if (ContributePointConstructor.schema) {
+            VSCodeExtensionPackageSchema.properties.contributes.properties[contributeName] =
+              ContributePointConstructor.schema;
+          }
+          this.addDispose(contributePoint);
+          await contributePoint.contribute();
+        } catch (e) {
+          this.logger.error(e);
+        }
+      }
+    });
+  }
+
+  public async initialize() {
     const contributes: ContributesSchema = this.extension.packageJSON.contributes;
     if (!contributes) {
       return;
@@ -127,32 +169,41 @@ export class VSCodeContributeRunner extends WithEventBus {
     if (skipContribute.length > 0 && skipContribute[0].result) {
       return;
     }
-    await Promise.all([
-      VSCodeContributeRunner.ContributePoints.map(async (ContributePointConstructor) => {
-        const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, ContributePointConstructor);
-        if (contributes[contributeName] !== undefined) {
-          try {
-            const contributePoint = this.injector.get(ContributePointConstructor, [
-              contributes[contributeName],
-              contributes,
-              this.extension,
-              this.extension.packageNlsJSON,
-              this.extension.defaultPkgNlsJSON,
-            ]);
 
-            if (ContributePointConstructor.schema) {
-              VSCodeExtensionPackageSchema.properties.contributes.properties[contributeName] =
-                ContributePointConstructor.schema;
-            }
+    this.runContributesByPhase(this.lifecycleService.phase);
 
-            this.addDispose(contributePoint);
-            await contributePoint.contribute();
-          } catch (e) {
-            this.logger.error(e);
-          }
-        }
-      }),
-    ]);
+    this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
+      runWhenIdle(() => {
+        this.runContributesByPhase(newPhase);
+      });
+    });
+
+    // await Promise.all([
+    //   VSCodeContributeRunner.ContributePoints.map(async (ContributePointConstructor) => {
+    //     const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, ContributePointConstructor);
+    //     if (contributes[contributeName] !== undefined) {
+    //       try {
+    //         const contributePoint = this.injector.get(ContributePointConstructor, [
+    //           contributes[contributeName],
+    //           contributes,
+    //           this.extension,
+    //           this.extension.packageNlsJSON,
+    //           this.extension.defaultPkgNlsJSON,
+    //         ]);
+
+    //         if (ContributePointConstructor.schema) {
+    //           VSCodeExtensionPackageSchema.properties.contributes.properties[contributeName] =
+    //             ContributePointConstructor.schema;
+    //         }
+
+    //         this.addDispose(contributePoint);
+    //         await contributePoint.contribute();
+    //       } catch (e) {
+    //         this.logger.error(e);
+    //       }
+    //     }
+    //   }),
+    // ]);
     this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, VSCodeExtensionPackageSchema, ['package.json']);
   }
 }
