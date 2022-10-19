@@ -225,11 +225,17 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
   }
 
   async $setDescription(treeViewId: string, description: string) {
-    // TODO: 框架的 Panel 暂无存储 descrition 信息，暂时为空实现
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      handler.updateViewDescription(treeViewId, description);
+    }
   }
 
-  async $setMessage(treeViewId: string, description: string) {
-    // TODO: 框架的 Panel 暂无存储 message 信息，暂时为空实现
+  async $setMessage(treeViewId: string, message: string) {
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      handler.updateViewMessage(treeViewId, message);
+    }
   }
 
   async $reveal(treeViewId: string, treeItemId: string, options?: ITreeViewRevealOptions) {

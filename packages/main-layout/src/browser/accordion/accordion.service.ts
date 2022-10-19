@@ -43,6 +43,13 @@ export interface SectionState {
   nextSize?: number;
 }
 
+interface AccordionViewChangeEvent {
+  id: string;
+  title?: string;
+  description?: string;
+  message?: string;
+}
+
 @Injectable({ multiple: true })
 export class AccordionService extends WithEventBus {
   @Autowired()
@@ -100,11 +107,8 @@ export class AccordionService extends WithEventBus {
   private topViewKey: IContextKey<string>;
   private scopedCtxKeyService: IScopedContextKeyService;
 
-  private didChangeViewTitleEmitter: Emitter<{ id: string; title: string }> = new Emitter<{
-    id: string;
-    title: string;
-  }>();
-  public onDidChangeViewTiele: Event<{ id: string; title: string }> = this.didChangeViewTitleEmitter.event;
+  private didChangeViewTitleEmitter: Emitter<AccordionViewChangeEvent> = new Emitter<AccordionViewChangeEvent>();
+  public onDidChangeViewTiele: Event<AccordionViewChangeEvent> = this.didChangeViewTitleEmitter.event;
 
   private beforeAppendViewEmitter = new Emitter<string>();
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
@@ -147,6 +151,14 @@ export class AccordionService extends WithEventBus {
 
   updateViewTitle(viewId: string, title: string) {
     this.didChangeViewTitleEmitter.fire({ id: viewId, title });
+  }
+
+  updateViewDesciption(viewId: string, desc: string) {
+    this.didChangeViewTitleEmitter.fire({ id: viewId, description: desc });
+  }
+
+  updateViewMessage(viewId: string, msg: string) {
+    this.didChangeViewTitleEmitter.fire({ id: viewId, message: msg });
   }
 
   tryUpdateResize() {
