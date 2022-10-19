@@ -36,6 +36,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
     if (!Array.isArray(configurations)) {
       configurations = [configurations];
     }
+
     for (const configuration of configurations) {
       if (configuration && configuration.properties) {
         for (const prop of Object.keys(configuration.properties)) {
@@ -47,6 +48,13 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
               this.extension.id,
             );
           }
+
+          if (originalConfiguration.enumDescriptions) {
+            tmpProperties[prop].enumDescriptions = originalConfiguration.enumDescriptions.map((v) =>
+              replaceLocalizePlaceholder(v, this.extension.id),
+            );
+          }
+
           if (originalConfiguration.markdownDescription) {
             tmpProperties[prop].markdownDescription = replaceLocalizePlaceholder(
               originalConfiguration.markdownDescription,
