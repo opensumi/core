@@ -15,6 +15,11 @@ Object.keys(UriUtils).forEach((funcName) => {
   Uri[funcName] = UriUtils[funcName];
 });
 
+export enum QuickPickItemKind {
+  Separator = -1,
+  Default = 0,
+}
+
 export { Uri };
 export enum ProgressLocation {
   /**
@@ -197,6 +202,12 @@ export enum LanguageStatusSeverity {
   Information = 0,
   Warning = 1,
   Error = 2,
+}
+
+export enum InputBoxValidationSeverity {
+  Info = 1,
+  Warning = 2,
+  Error = 3,
 }
 
 @es5ClassCompat
@@ -2645,6 +2656,7 @@ export enum ColorThemeKind {
   Light = 1,
   Dark = 2,
   HighContrast = 3,
+  HighContrastLight = 4,
 }
 
 export enum SymbolTag {
@@ -3168,3 +3180,65 @@ export enum InlineCompletionTriggerKind {
   Automatic = 1,
 }
 // inline completion end
+
+@es5ClassCompat
+export class DataTransferItem {
+  async asString(): Promise<string> {
+    return typeof this.value === 'string' ? this.value : JSON.stringify(this.value);
+  }
+
+  asFile(): undefined | vscode.DataTransferFile {
+    return undefined;
+  }
+
+  public readonly id: string;
+
+  constructor(public readonly value: any, id?: string) {
+    this.id = id ?? uuid();
+  }
+}
+
+@es5ClassCompat
+export class DataTransfer implements vscode.DataTransfer {
+  #items = new Map<string, DataTransferItem[]>();
+
+  constructor(init?: Iterable<readonly [string, DataTransferItem]>) {
+    for (const [mime, item] of init ?? []) {
+      const existing = this.#items.get(mime);
+      if (existing) {
+        existing.push(item);
+      } else {
+        this.#items.set(mime, [item]);
+      }
+    }
+  }
+
+  get(mimeType: string): DataTransferItem | undefined {
+    return this.#items.get(mimeType)?.[0];
+  }
+
+  set(mimeType: string, value: DataTransferItem): void {
+    // This intentionally overwrites all entries for a given mimetype.
+    // This is similar to how the DOM DataTransfer type works
+    this.#items.set(mimeType, [value]);
+  }
+
+  forEach(
+    callbackfn: (value: DataTransferItem, key: string, dataTransfer: DataTransfer) => void,
+    thisArg?: unknown,
+  ): void {
+    for (const [mime, items] of this.#items) {
+      for (const item of items) {
+        callbackfn.call(thisArg, item, mime, this);
+      }
+    }
+  }
+
+  *[Symbol.iterator](): IterableIterator<[mimeType: string, item: vscode.DataTransferItem]> {
+    for (const [mime, items] of this.#items) {
+      for (const item of items) {
+        yield [mime, item];
+      }
+    }
+  }
+}

@@ -11,6 +11,7 @@ export const localizationBundle = {
     extension: 'Extension',
     'common.yes': 'Yes',
     'common.no': 'No',
+    editTtile: 'Edit',
 
     'tree.filter.placeholder': 'Enter a keyword or path to filter',
 
@@ -51,6 +52,9 @@ export const localizationBundle = {
     'file.confirm.move': 'Are you sure you want to move file {0} to {1}?',
     'file.confirm.move.ok': 'Move',
     'file.confirm.move.cancel': 'Cancel',
+    'file.confirm.paste': 'Are you sure you want to paste the file {0} to {1} ?',
+    'file.confirm.paste.ok': 'Paste',
+    'file.confirm.paste.cancel': 'Cancel',
     'file.confirm.replace': 'Are you sure you want to replace file {0}?',
     'file.confirm.replace.ok': 'Replace',
     'file.confirm.replace.cancel': 'Cancel',
@@ -111,18 +115,20 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': 'Choose the Formatter',
     'editor.formatDocument.label.multiple': 'Format Document With...',
     'editor.formatSelection.label.multiple': 'Format Selection With...',
-    'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.chooseEncoding': 'Reopen with encoding (Unsaved Changes will be lost)',
     'editor.guessEncodingFromContent': 'Guess from content',
     'editor.changeEol': 'Select End Of Line Sequence',
     'editor.failToOpen': 'Failed to open {0}. Error message: {1}',
     'editor.changeLanguageId': 'Select Language Mode',
+    'editor.configuration.preferredFormatter': 'Preferred formatter for files',
     'editor.configuration.maxTokenizationLineLength':
       'Lines above this length will not be tokenized for performance reasons',
     'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
     'editor.configuration.bracketPairColorization.enabled':
       "Controls whether bracket pair colorization is enabled or not. Use 'workbench.colorCustomizations' to override the bracket highlight colors.",
     'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
+    'editor.configuration.mouseBackForwardToNavigate':
+      "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
     'editor.lineHeight': 'Line Height',
     'editor.lineHeight.description':
       'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
@@ -628,6 +634,7 @@ export const localizationBundle = {
     'terminal.try.reconnect': 'Try To Reconnect The Terminal',
     'terminal.try.recreate': 'Try To Recreate The Terminal',
     'terminal.new': 'Create Terminal',
+    'terminal.new.type': 'Create terminal by type',
     'terminal.split': 'Split Terminal',
     'terminal.clear': 'Remove All Terminals',
     'terminal.clear.content': 'Clear All Contents',
@@ -687,7 +694,7 @@ export const localizationBundle = {
 
     'theme.base.vs': 'Light Theme',
     'theme.base.vs-dark': 'Dark Theme',
-    'theme.base.hc-black': 'High Contrast Theme',
+    'theme.base.hc': 'High Contrast Themes',
     'theme.quickopen.plh': 'Select Color Theme（Up/Down Keys to Preview）',
     'icon.quickopen.plh': 'Select Icon Theme（Up/Down Keys to Preview）',
 

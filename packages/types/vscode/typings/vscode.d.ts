@@ -411,6 +411,72 @@ declare module 'vscode' {
     constructor(options: TerminalOptions | ExtensionTerminalOptions);
   }
 
+
+  /**
+   * A file decoration represents metadata that can be rendered with a file.
+   */
+  export class FileDecoration {
+
+    /**
+     * A very short string that represents this decoration.
+     */
+    badge?: string;
+
+    /**
+     * A human-readable tooltip for this decoration.
+     */
+    tooltip?: string;
+
+    /**
+     * The color of this decoration.
+     */
+    color?: ThemeColor;
+
+    /**
+     * A flag expressing that this decoration should be
+     * propagated to its parents.
+     */
+    propagate?: boolean;
+
+    /**
+     * Creates a new decoration.
+     *
+     * @param badge A letter that represents the decoration.
+     * @param tooltip The tooltip of the decoration.
+     * @param color The color of the decoration.
+     */
+    constructor(badge?: string, tooltip?: string, color?: ThemeColor);
+  }
+
+  /**
+   * The decoration provider interfaces defines the contract between extensions and
+   * file decorations.
+   */
+  export interface FileDecorationProvider {
+
+    /**
+     * An optional event to signal that decorations for one or many files have changed.
+     *
+     * *Note* that this event should be used to propagate information about children.
+     *
+     * @see {@link EventEmitter}
+     */
+    onDidChangeFileDecorations?: Event<undefined | Uri | Uri[]>;
+
+    /**
+     * Provide decorations for a given uri.
+     *
+     * *Note* that this function is only called when a file gets rendered in the UI.
+     * This means a decoration from a descendent that propagates upwards must be signaled
+     * to the editor via the {@link FileDecorationProvider.onDidChangeFileDecorations onDidChangeFileDecorations}-event.
+     *
+     * @param uri The uri of the file to provide a decoration for.
+     * @param token A cancellation token.
+     * @returns A decoration or a thenable that resolves to such.
+     */
+    provideFileDecoration(uri: Uri, token: CancellationToken): ProviderResult<FileDecoration>;
+  }
+
   /**
    * Class used to execute an extension callback as a task.
    */
@@ -1462,6 +1528,11 @@ declare module 'vscode' {
      * array containing all selected tree items.
      */
     canSelectMany?: boolean;
+
+    /**
+		* An optional interface to implement drag and drop in the tree view.
+		*/
+		dragAndDropController?: TreeDragAndDropController<T>;
   }
 
   /**
@@ -1499,6 +1570,166 @@ declare module 'vscode' {
     readonly visible: boolean;
 
   }
+
+
+	/**
+	 * A file associated with a {@linkcode DataTransferItem}.
+	 */
+	export interface DataTransferFile {
+		/**
+		 * The name of the file.
+		 */
+		readonly name: string;
+
+		/**
+		 * The full file path of the file.
+		 *
+		 * May be `undefined` on web.
+		 */
+		readonly uri?: Uri;
+
+		/**
+		 * The full file contents of the file.
+		 */
+		data(): Thenable<Uint8Array>;
+	}
+
+	/**
+	 * Encapsulates data transferred during drag and drop operations.
+	 */
+	export class DataTransferItem {
+		/**
+		 * Get a string representation of this item.
+		 *
+		 * If {@linkcode DataTransferItem.value} is an object, this returns the result of json stringifying {@linkcode DataTransferItem.value} value.
+		 */
+		asString(): Thenable<string>;
+
+		/**
+		 * Try getting the {@link DataTransferFile file} associated with this data transfer item.
+		 *
+		 * Note that the file object is only valid for the scope of the drag and drop operation.
+		 *
+		 * @returns The file for the data transfer or `undefined` if the item is either not a file or the
+		 * file data cannot be accessed.
+		 */
+		asFile(): DataTransferFile | undefined;
+
+		/**
+		 * Custom data stored on this item.
+		 *
+		 * You can use `value` to share data across operations. The original object can be retrieved so long as the extension that
+		 * created the `DataTransferItem` runs in the same extension host.
+		 */
+		readonly value: any;
+
+		/**
+		 * @param value Custom data stored on this item. Can be retrieved using {@linkcode DataTransferItem.value}.
+		 */
+		constructor(value: any);
+	}
+
+	/**
+	 * A map containing a mapping of the mime type of the corresponding transferred data.
+	 *
+	 * Drag and drop controllers that implement {@link TreeDragAndDropController.handleDrag `handleDrag`} can add additional mime types to the
+	 * data transfer. These additional mime types will only be included in the `handleDrop` when the the drag was initiated from
+	 * an element in the same drag and drop controller.
+	 */
+	export class DataTransfer implements Iterable<[mimeType: string, item: DataTransferItem]> {
+		/**
+		 * Retrieves the data transfer item for a given mime type.
+		 *
+		 * @param mimeType The mime type to get the data transfer item for, such as `text/plain` or `image/png`.
+		 *
+		 * Special mime types:
+		 * - `text/uri-list` — A string with `toString()`ed Uris separated by `\r\n`. To specify a cursor position in the file,
+		 * set the Uri's fragment to `L3,5`, where 3 is the line number and 5 is the column number.
+		 */
+		get(mimeType: string): DataTransferItem | undefined;
+
+		/**
+		 * Sets a mime type to data transfer item mapping.
+		 * @param mimeType The mime type to set the data for.
+		 * @param value The data transfer item for the given mime type.
+		 */
+		set(mimeType: string, value: DataTransferItem): void;
+
+		/**
+		 * Allows iteration through the data transfer items.
+		 *
+		 * @param callbackfn Callback for iteration through the data transfer items.
+		 * @param thisArg The `this` context used when invoking the handler function.
+		 */
+		forEach(callbackfn: (item: DataTransferItem, mimeType: string, dataTransfer: DataTransfer) => void, thisArg?: any): void;
+
+		/**
+		 * Get a new iterator with the `[mime, item]` pairs for each element in this data transfer.
+		 */
+		[Symbol.iterator](): IterableIterator<[mimeType: string, item: DataTransferItem]>;
+	}
+
+	/**
+	 * Provides support for drag and drop in `TreeView`.
+	 */
+	export interface TreeDragAndDropController<T> {
+
+		/**
+		 * The mime types that the {@link TreeDragAndDropController.handleDrop `handleDrop`} method of this `DragAndDropController` supports.
+		 * This could be well-defined, existing, mime types, and also mime types defined by the extension.
+		 *
+		 * To support drops from trees, you will need to add the mime type of that tree.
+		 * This includes drops from within the same tree.
+		 * The mime type of a tree is recommended to be of the format `application/vnd.code.tree.<treeidlowercase>`.
+		 *
+		 * Use the special `files` mime type to support all types of dropped files {@link DataTransferFile files}, regardless of the file's actual mime type.
+		 *
+		 * To learn the mime type of a dragged item:
+		 * 1. Set up your `DragAndDropController`
+		 * 2. Use the Developer: Set Log Level... command to set the level to "Debug"
+		 * 3. Open the developer tools and drag the item with unknown mime type over your tree. The mime types will be logged to the developer console
+		 *
+		 * Note that mime types that cannot be sent to the extension will be omitted.
+		 */
+		readonly dropMimeTypes: readonly string[];
+
+		/**
+		 * The mime types that the {@link TreeDragAndDropController.handleDrag `handleDrag`} method of this `TreeDragAndDropController` may add to the tree data transfer.
+		 * This could be well-defined, existing, mime types, and also mime types defined by the extension.
+		 *
+		 * The recommended mime type of the tree (`application/vnd.code.tree.<treeidlowercase>`) will be automatically added.
+		 */
+		readonly dragMimeTypes: readonly string[];
+
+		/**
+		 * When the user starts dragging items from this `DragAndDropController`, `handleDrag` will be called.
+		 * Extensions can use `handleDrag` to add their {@link DataTransferItem `DataTransferItem`} items to the drag and drop.
+		 *
+		 * When the items are dropped on **another tree item** in **the same tree**, your `DataTransferItem` objects
+		 * will be preserved. Use the recommended mime type for the tree (`application/vnd.code.tree.<treeidlowercase>`) to add
+		 * tree objects in a data transfer. See the documentation for `DataTransferItem` for how best to take advantage of this.
+		 *
+		 * To add a data transfer item that can be dragged into the editor, use the application specific mime type "text/uri-list".
+		 * The data for "text/uri-list" should be a string with `toString()`ed Uris separated by newlines. To specify a cursor position in the file,
+		 * set the Uri's fragment to `L3,5`, where 3 is the line number and 5 is the column number.
+		 *
+		 * @param source The source items for the drag and drop operation.
+		 * @param dataTransfer The data transfer associated with this drag.
+		 * @param token A cancellation token indicating that drag has been cancelled.
+		 */
+		handleDrag?(source: readonly T[], dataTransfer: DataTransfer, token: CancellationToken): Thenable<void> | void;
+
+		/**
+		 * Called when a drag and drop action results in a drop on the tree that this `DragAndDropController` belongs to.
+		 *
+		 * Extensions should fire {@link TreeDataProvider.onDidChangeTreeData onDidChangeTreeData} for any elements that need to be refreshed.
+		 *
+		 * @param dataTransfer The data transfer items of the source of the drag.
+		 * @param target The target tree element that the drop is occurring on. When undefined, the target is the root.
+		 * @param token A cancellation token indicating that the drop has been cancelled.
+		 */
+		handleDrop?(target: T | undefined, dataTransfer: DataTransfer, token: CancellationToken): Thenable<void> | void;
+	}
 
   /**
    * Represents a Tree view
@@ -1566,6 +1797,24 @@ declare module 'vscode' {
      * **NOTE:** The [TreeDataProvider](#TreeDataProvider) that the `TreeView` [is registered with](#window.createTreeView) with must implement [getParent](#TreeDataProvider.getParent) method to access this API.
      */
     reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): Thenable<void>;
+  }
+
+  /**
+   * Label describing the [Tree item](#TreeItem)
+   */
+  export interface TreeItemLabel {
+
+    /**
+     * A human-readable string describing the [Tree item](#TreeItem).
+     */
+    label: string;
+
+    /**
+     * Ranges in the label to highlight. A range is defined as a tuple of two number where the
+     * first is the inclusive start index and the second the exclusive end index
+     */
+    highlights?: [number, number][];
+
   }
 
   /**
@@ -2581,6 +2830,21 @@ declare module 'vscode' {
   }
 
   /**
+   * Represents the dimensions of a terminal.
+   */
+  export interface TerminalDimensions {
+    /**
+     * The number of columns in the terminal.
+     */
+    readonly columns: number;
+
+    /**
+     * The number of rows in the terminal.
+     */
+    readonly rows: number;
+  }
+
+  /**
    * Represents how a terminal exited.
    */
   export interface TerminalExitStatus {
@@ -2607,9 +2871,9 @@ declare module 'vscode' {
     readonly processId: Thenable<number>;
 
     /**
-		 * The current state of the {@link Terminal}.
-		 */
-		readonly state: TerminalState;
+     * The current state of the {@link Terminal}.
+     */
+    readonly state: TerminalState;
 
     /**
      * The object used to initialize the terminal, this is useful for example to detecting the

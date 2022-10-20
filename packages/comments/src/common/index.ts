@@ -260,6 +260,10 @@ export interface IComment {
    * 评论 reaction
    */
   reactions?: CommentReaction[];
+  /**
+   * 评论时间
+   */
+  timestamp?: string;
 }
 
 /**

@@ -9,7 +9,8 @@ export const addedResourceDecorationForeground = registerColor(
   {
     light: '#587c0c',
     dark: '#81b88b',
-    hc: '#1b5225',
+    hcDark: '#1b5225',
+    hcLight: null,
   },
   localize('addedResourceDecorationForeground', 'Color for added resources.'),
 );
@@ -19,7 +20,8 @@ export const modifiedResourceForeground = registerColor(
   {
     light: '#895503',
     dark: '#E2C08D',
-    hc: '#E2C08D',
+    hcDark: '#E2C08D',
+    hcLight: null,
   },
   localize('modifiedResourceForeground', 'Color for modified resources.'),
 );
@@ -29,7 +31,8 @@ export const deletedResourceForeground = registerColor(
   {
     light: '#ad0707',
     dark: '#c74e39',
-    hc: '#c74e39',
+    hcDark: '#c74e39',
+    hcLight: null,
   },
   localize('deletedResourceForeground', 'Color for deleted resources.'),
 );
@@ -39,7 +42,8 @@ export const untrackedResourceForeground = registerColor(
   {
     light: '#007100',
     dark: '#73C991',
-    hc: '#73C991',
+    hcDark: '#73C991',
+    hcLight: null,
   },
   localize('untrackedResourceForeground', 'Color for untracked resources.'),
 );
@@ -49,7 +53,8 @@ export const ignoredResourceForeground = registerColor(
   {
     light: '#8E8E90',
     dark: '#8C8C8C',
-    hc: '#A7A8A9',
+    hcDark: '#A7A8A9',
+    hcLight: null,
   },
   localize('ignoredResourceForeground', 'Color for ignored resources.'),
 );
@@ -59,7 +64,8 @@ export const conflictingResourceForeground = registerColor(
   {
     light: '#6c6cc4',
     dark: '#6c6cc4',
-    hc: '#6c6cc4',
+    hcDark: '#6c6cc4',
+    hcLight: null,
   },
   localize('conflictingResourceForeground', 'Color for resources with conflicts.'),
 );

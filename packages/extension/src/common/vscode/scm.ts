@@ -27,7 +27,15 @@ export interface SCMProviderFeatures {
   count?: number;
   commitTemplate?: string;
   acceptInputCommand?: VSCommand;
+  actionButton?: SCMActionButtonDto | null;
   statusBarCommands?: CommandDto[];
+}
+
+export interface SCMActionButtonDto {
+  command: CommandDto;
+  secondaryCommands?: CommandDto[][];
+  description?: string;
+  enabled: boolean;
 }
 
 export interface SCMGroupFeatures {
@@ -44,11 +52,6 @@ export type SCMRawResource = [
 
   string /* context value*/,
   CommandDto | undefined /* command*/,
-
-  // @deprecated use FileDecoration
-  string | undefined /* source*/,
-  string | undefined /* letter*/,
-  IThemeColor | null /* color*/,
 ];
 
 export type SCMRawResourceSplice = [number /* start */, number /* delete count */, SCMRawResource[]];

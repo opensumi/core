@@ -34,7 +34,8 @@ export class InputBoxImpl {
       oldOptions.step !== newOptions.step ||
       oldOptions.totalSteps !== newOptions.totalSteps ||
       oldOptions.buttons !== newOptions.buttons ||
-      oldOptions.validationMessage !== newOptions.validationMessage
+      oldOptions.validationMessage !== newOptions.validationMessage ||
+      oldOptions.validationType !== newOptions.validationType
     );
   }
 
@@ -119,7 +120,7 @@ export class InputBoxImpl {
 
           const error = this.options.validationMessage;
           if (error) {
-            this.quickOpenService.showDecoration(VALIDATE_TYPE.ERROR);
+            this.quickOpenService.showDecoration(this.options.validationType ?? VALIDATE_TYPE.ERROR);
           } else {
             this.quickOpenService.hideDecoration();
           }

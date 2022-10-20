@@ -7,6 +7,8 @@
       "@opensumi/ide-utils/lib/*": ["../packages/utils/src/*"],
       "@opensumi/ide-addons": ["../packages/addons/src/index.ts"],
       "@opensumi/ide-addons/lib/*": ["../packages/addons/src/*"],
+      "@opensumi/ide-collaboration": ["../packages/collaboration/src/index.ts"],
+      "@opensumi/ide-collaboration/lib/*": ["../packages/collaboration/src/*"],
       "@opensumi/ide-comments": ["../packages/comments/src/index.ts"],
       "@opensumi/ide-comments/lib/*": ["../packages/comments/src/*"],
       "@opensumi/ide-components": ["../packages/components/src/index.ts"],

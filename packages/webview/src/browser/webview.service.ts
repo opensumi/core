@@ -21,7 +21,7 @@ import {
   EditorPreferences,
   EditorGroupChangeEvent,
 } from '@opensumi/ide-editor/lib/browser';
-import { ITheme } from '@opensumi/ide-theme';
+import { LIGHT, DARK, HIGH_CONTRAST_DARK, HIGH_CONTRAST_LIGHT, ITheme } from '@opensumi/ide-theme';
 import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
 
 import { EditorWebviewComponentView } from './editor-webview';
@@ -288,16 +288,20 @@ enum ApiThemeClassName {
   light = 'vscode-light',
   dark = 'vscode-dark',
   highContrast = 'vscode-high-contrast',
+  highContrastLight = 'vscode-high-contrast-light',
 }
 
 namespace ApiThemeClassName {
   export function fromTheme(theme: ITheme): ApiThemeClassName {
-    if (theme.type === 'light') {
-      return ApiThemeClassName.light;
-    } else if (theme.type === 'dark') {
-      return ApiThemeClassName.dark;
-    } else {
-      return ApiThemeClassName.highContrast;
+    switch (theme.type) {
+      case 'light':
+        return ApiThemeClassName.light;
+      case 'dark':
+        return ApiThemeClassName.dark;
+      case 'hcDark':
+        return ApiThemeClassName.highContrast;
+      case 'hcLight':
+        return ApiThemeClassName.highContrastLight;
     }
   }
 }

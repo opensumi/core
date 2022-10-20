@@ -6,7 +6,7 @@ import { OPENSUMI_VIEW_CONTAINERS } from './constans';
 import { OpenSumiViewBase } from './view-base';
 
 export class OpenSumiQuickOpenPalette extends OpenSumiViewBase {
-  static USER_KEY_TYPING_DELAY = 100;
+  static USER_KEY_TYPING_DELAY = 200;
 
   async open() {
     await this.page.keyboard.press(isMacintosh ? 'Meta+p' : 'Control+p');

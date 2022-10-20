@@ -104,6 +104,7 @@ export class SearchHistory {
 
   private setSearchValue(value: string) {
     this.searchServiceClient.searchValue = value;
+    this.searchServiceClient.searchDebounce();
   }
 
   reset() {

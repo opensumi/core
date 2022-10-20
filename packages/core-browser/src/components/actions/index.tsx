@@ -1,5 +1,5 @@
 import clsx from 'classnames';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
@@ -82,7 +82,7 @@ export const MenuActionList: React.FC<{
   );
 
   const recursiveRender = React.useCallback(
-    (dataSource: MenuNode[]) =>
+    (dataSource: MenuNode[], key?: string) =>
       dataSource.map((menuNode, index) => {
         if (menuNode.id === SeparatorMenuItemNode.ID) {
           return <Menu.Divider key={`divider-${index}`} className={styles.menuItemDivider} />;
@@ -96,12 +96,12 @@ export const MenuActionList: React.FC<{
 
           return (
             <Menu.SubMenu
-              key={`${menuNode.id}-${index}`}
+              key={`${(menuNode as SubmenuItemNode).submenuId}-${index}`}
               className={styles.submenuItem}
               popupClassName='kt-menu'
               title={<MenuAction hasSubmenu data={menuNode} />}
             >
-              {recursiveRender(menuNode.children)}
+              {recursiveRender(menuNode.children, menuNode.label)}
             </Menu.SubMenu>
           );
         }
@@ -109,7 +109,7 @@ export const MenuActionList: React.FC<{
         return (
           <Menu.Item
             id={`${menuNode.id}-${index}`}
-            key={`${menuNode.id}-${index}`}
+            key={`${menuNode.id}-${key}-${index}`}
             className={styles.menuItem}
             disabled={menuNode.disabled}
           >
@@ -135,15 +135,16 @@ export const MenuActionList: React.FC<{
 
 const EllipsisWidget: React.FC<{
   type?: ActionListType;
+  icon?: string;
   onClick?: React.MouseEventHandler<HTMLElement>;
-}> = ({ type, onClick }) => {
+}> = ({ type, icon, onClick }) => {
   if (type === 'icon') {
-    return <Icon icon='ellipsis' className={styles.iconAction} onClick={onClick} />;
+    return <Icon icon={icon || 'ellipsis'} className={styles.iconAction} onClick={onClick} />;
   }
 
   return (
     <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick}>
-      <Icon icon='ellipsis' />
+      <Icon icon={icon || 'ellipsis'} />
     </Button>
   );
 };
@@ -156,8 +157,9 @@ const InlineActionWidget: React.FC<
     context?: any[];
     type?: ActionListType;
     afterClick?: () => void;
+    iconService?: IMenubarIconService;
   } & React.HTMLAttributes<HTMLElement>
-> = React.memo(({ type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
+> = React.memo(({ iconService, type = 'icon', data, context = [], className, afterClick, ...restProps }) => {
   const handleClick = React.useCallback(
     (event?: React.MouseEvent<HTMLElement>, ...extraArgs: any[]) => {
       if (event) {
@@ -178,12 +180,13 @@ const InlineActionWidget: React.FC<
     [data, context],
   );
 
-  const title = React.useMemo(() => {
-    const title = data.tooltip || data.label;
+  const [title, label] = React.useMemo(() => {
+    let title = data.tooltip || data.label;
+    let label = data.label;
     if (data.keybinding) {
-      return `${title} (${data.keybinding})`;
+      title = `${title} (${data.keybinding})`;
     }
-    return title;
+    return [title, label];
   }, [data]);
 
   const isSubmenuNode = data.id === SubmenuItemNode.ID;
@@ -202,7 +205,7 @@ const InlineActionWidget: React.FC<
         onClick={handleClick}
         {...restProps}
       >
-        {!data.icon && data.label /* 没有 icon 时渲染 label */}
+        {!data.icon && label /* 没有 icon 时渲染 label */}
       </Button>
     );
   }
@@ -221,6 +224,25 @@ const InlineActionWidget: React.FC<
     );
   }
 
+  const transformLabel = useCallback((label: string) => {
+    const SEPERATOR = ' ';
+    const ICON_REGX = /\$\(.*?\)/gi;
+    return label.split(SEPERATOR).map((e) => {
+      let icon;
+      if (iconService) {
+        icon = iconService.fromString(e);
+      }
+      if (icon) {
+        return <Icon className={iconService?.fromString(e)} style={{ margin: '0 5px' }} />;
+      } else if (ICON_REGX.test(e)) {
+        const newStr = e.replaceAll(/\$\(.*?\)/gi, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
+        return transformLabel(newStr);
+      } else {
+        return <span>{e}</span>;
+      }
+    });
+  }, []);
+
   return (
     <Button
       className={clsx(className, styles.btnAction)}
@@ -231,7 +253,7 @@ const InlineActionWidget: React.FC<
       title={title}
       {...restProps}
     >
-      {data.label}
+      {transformLabel(label)}
       {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
     </Button>
   );
@@ -301,7 +323,9 @@ export const TitleActionList: React.FC<
     menuId: string | MenuId;
     nav: MenuNode[];
     more?: MenuNode[];
+    moreIcon?: string;
     className?: string;
+    iconService?: IMenubarIconService;
   } & BaseActionListProps
 > = React.memo(
   ({
@@ -312,12 +336,14 @@ export const TitleActionList: React.FC<
     type = 'icon',
     nav = [],
     more = [],
+    moreIcon,
     context = [],
     extraNavActions = [],
     moreAtFirst = false,
     className,
     afterClick,
     menuId,
+    iconService,
     regroup = (...args: [MenuNode[], MenuNode[]]) => args,
   }) => {
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
@@ -344,7 +370,8 @@ export const TitleActionList: React.FC<
       return null;
     }
 
-    const moreAction = secondary.length > 0 ? <EllipsisWidget type={type} onClick={handleShowMore} /> : null;
+    const moreAction =
+      secondary.length > 0 ? <EllipsisWidget icon={moreIcon} type={type} onClick={handleShowMore} /> : null;
 
     return (
       <div className={clsx([styles.titleActions, className])} data-menu-id={menuId}>
@@ -371,6 +398,7 @@ export const TitleActionList: React.FC<
               data={item}
               afterClick={afterClick}
               context={context}
+              iconService={iconService}
             />
           );
         })}
@@ -408,6 +436,10 @@ interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'ex
   debounce?: { delay: number; maxWait?: number };
 }
 
+interface IMenubarIconService {
+  fromString: (iconString: string) => string | undefined;
+}
+
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineActionBarProps<T, U, K, M>,
 ): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
@@ -426,7 +458,9 @@ export function InlineActionBar<T = undefined, U = undefined, K = undefined, M =
 interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extraNavActions'> {
   context?: TupleContext<T, U, K, M>;
   menus: IContextMenu;
+  moreIcon?: string;
   separator?: IMenuSeparator;
+  iconService?: IMenubarIconService;
 }
 
 // 后续考虑使用 IContextMenu, useContextMenus 和 InlineMenuBar 来替换掉老的 IMenu
@@ -434,7 +468,7 @@ interface InlineMenuBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'extr
 export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineMenuBarProps<T, U, K, M>,
 ): React.ReactElement<InlineMenuBarProps<T, U, K, M>> {
-  const { menus, context, separator = 'navigation', ...restProps } = props;
+  const { iconService, menus, context, moreIcon, separator = 'navigation', ...restProps } = props;
   const [navMenu, moreMenu] = useContextMenus(menus);
 
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
@@ -443,7 +477,9 @@ export function InlineMenuBar<T = undefined, U = undefined, K = undefined, M = u
       menuId={menus.menuId}
       nav={navMenu}
       more={separator === 'inline' ? [] : moreMenu}
+      moreIcon={moreIcon}
       context={context}
+      iconService={iconService}
       {...restProps}
     />
   );

@@ -1,7 +1,12 @@
 import React from 'react';
 
 import type { Injector } from '@opensumi/di';
-import type { ExtensionCandidate, ExtensionConnectOption, UrlProvider } from '@opensumi/ide-core-common';
+import type {
+  ExtensionBrowserStyleSheet,
+  ExtensionCandidate,
+  ExtensionConnectOption,
+  UrlProvider,
+} from '@opensumi/ide-core-common';
 
 import type { IPreferences, LayoutConfig } from '../bootstrap';
 
@@ -218,6 +223,15 @@ export interface AppConfig {
    * 这将影响 Terminal 与 Extension 模块与子进程的连接方式
    */
   isRemote?: boolean;
+  /**
+   * 是否开启对 OpenSumi DevTools 的支持
+   * 默认值为 false
+   */
+  devtools?: boolean;
+  /**
+   * 配置插件 browser 层的 component 样式文件和 iconfont 样式文件
+   */
+  extensionBrowserStyleSheet?: ExtensionBrowserStyleSheet;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

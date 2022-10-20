@@ -15,7 +15,6 @@ import {
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
 import {
   HideReason,
-  Highlight,
   IKeyMods,
   QuickOpenItem,
   QuickOpenModel as IKaitianQuickOpenModel,
@@ -23,7 +22,7 @@ import {
   QuickOpenService,
 } from '@opensumi/ide-core-browser/lib/quick-open';
 import { MonacoContextKeyService } from '@opensumi/ide-monaco/lib/browser/monaco.context-key.service';
-import { matchesFuzzy } from '@opensumi/monaco-editor-core/esm/vs/base/common/filters';
+import { matchesFuzzyIconAware, parseLabelWithIcons } from '@opensumi/ide-utils/lib/iconLabels';
 
 import { IAutoFocus, IQuickOpenModel, QuickOpenContext } from './quick-open.type';
 import { QuickOpenView } from './quick-open.view';
@@ -359,15 +358,27 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     const { fuzzyMatchLabel, fuzzyMatchDescription, fuzzyMatchDetail } = this.options;
     // 自动匹配若为空，取自定义的匹配
     const labelHighlights = fuzzyMatchLabel
-      ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel, item.getLabelHighlights.bind(item))
+      ? matchesFuzzyIconAware(
+          lookFor,
+          parseLabelWithIcons(item.getLabel() || ''),
+          typeof fuzzyMatchLabel === 'object' && fuzzyMatchLabel.enableSeparateSubstringMatching,
+        )
       : item.getLabelHighlights();
 
     const descriptionHighlights = this.options.fuzzyMatchDescription
-      ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription)
+      ? matchesFuzzyIconAware(
+          lookFor,
+          parseLabelWithIcons(item.getDescription() || ''),
+          typeof fuzzyMatchDescription === 'object' && fuzzyMatchDescription.enableSeparateSubstringMatching,
+        )
       : item.getDescriptionHighlights();
 
     const detailHighlights = this.options.fuzzyMatchDetail
-      ? this.matchesFuzzy(lookFor, item.getDetail(), fuzzyMatchDetail)
+      ? matchesFuzzyIconAware(
+          lookFor,
+          parseLabelWithIcons(item.getDetail() || ''),
+          typeof fuzzyMatchDetail === 'object' && fuzzyMatchDetail.enableSeparateSubstringMatching,
+        )
       : item.getDetailHighlights();
 
     if (
@@ -379,29 +390,8 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     ) {
       return undefined;
     }
-    item.setHighlights(labelHighlights || [], descriptionHighlights, detailHighlights);
+    item.setHighlights(labelHighlights || [], descriptionHighlights || [], detailHighlights || []);
     return item;
-  }
-
-  protected matchesFuzzy(
-    lookFor: string,
-    value: string | undefined,
-    options?: QuickOpenOptions.FuzzyMatchOptions | boolean,
-    fallback?: () => Highlight[] | undefined,
-  ): Highlight[] | undefined {
-    if (!lookFor || !value) {
-      return [];
-    }
-    const enableSeparateSubstringMatching = typeof options === 'object' && options.enableSeparateSubstringMatching;
-    const res = matchesFuzzy(lookFor, value, enableSeparateSubstringMatching) || undefined;
-    if (res && res.length) {
-      return res;
-    }
-    const fallbackRes = fallback && fallback();
-    if (fallbackRes && fallbackRes.length) {
-      return fallbackRes;
-    }
-    return undefined;
   }
 
   getAutoFocus(lookFor: string): IAutoFocus {

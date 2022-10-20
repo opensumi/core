@@ -763,7 +763,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     const idSets: Set<number> = new Set();
     const idToRenderTemplate: Map<number, any> = new Map();
     const nodes: TreeNode[] = [];
-    for (let idx = 0; idx < root.branchSize; idx++) {
+    for (let idx = 0, len = root.branchSize; idx < len; idx++) {
       const node = root.getTreeNodeAtIndex(idx)!;
       nodes.push(node as TreeNode);
     }
@@ -811,7 +811,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     }
 
     this.filterFlattenBranch = new Array(idSets.size);
-    for (let flatTreeIdx = 0, idx = 0; idx < root.branchSize; idx++) {
+    for (let flatTreeIdx = 0, idx = 0, len = root.branchSize; idx < len; idx++) {
       const node = root.getTreeNodeAtIndex(idx);
       if (node && idSets.has(node.id)) {
         this.filterFlattenBranch[flatTreeIdx] = node.id;

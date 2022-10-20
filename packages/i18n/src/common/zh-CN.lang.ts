@@ -11,6 +11,7 @@ export const localizationBundle = {
     'common.yes': '是',
     'common.no': '否',
     extension: '插件',
+    editTtile: '编辑',
 
     'tree.filter.placeholder': '输入关键字或路径筛选',
 
@@ -52,6 +53,9 @@ export const localizationBundle = {
     'file.confirm.move': '确定移动文件 {0} 到 {1} ?',
     'file.confirm.move.ok': '移动',
     'file.confirm.move.cancel': '取消',
+    'file.confirm.paste': '确定拷贝文件 {0} 到 {1} ?',
+    'file.confirm.paste.ok': '拷贝',
+    'file.confirm.paste.cancel': '取消',
     'file.confirm.replace': '确定替换{0}文件?',
     'file.confirm.replace.ok': '替换',
     'file.confirm.replace.cancel': '取消',
@@ -508,6 +512,7 @@ export const localizationBundle = {
     'editor.configuration.bracketPairColorization.enabled':
       '控制是否启用括号对着色。使用 “workbench.colorCustomizations” 替代括号突出显示颜色。',
     'editor.configuration.guides.bracketPairs': '控制是否启用括号对指南。',
+    'editor.configuration.mouseBackForwardToNavigate': '允许使用鼠标按钮 4 和 5 来执行命令“Go Back”和“Go Forward”。',
     'editor.autoSave.enum.off': '不启用',
     'editor.files.eol': '文件行尾字符',
     'editor.files.eolDesc': '控制文件默认行尾字符。',
@@ -659,6 +664,7 @@ export const localizationBundle = {
     'terminal.try.reconnect': '重新连接终端',
     'terminal.try.recreate': '重新启动终端',
     'terminal.new': '新建终端',
+    'terminal.new.type': '根据终端类型新建',
     'terminal.split': '拆分终端',
     'terminal.clear': '终止所有终端',
     'terminal.clear.content': '清空当前终端内容',
@@ -719,7 +725,7 @@ export const localizationBundle = {
 
     'theme.base.vs': '浅色主题',
     'theme.base.vs-dark': '深色主题',
-    'theme.base.hc-black': '高对比度主题',
+    'theme.base.hc': '高对比度主题',
     'theme.quickopen.plh': '选择主题（上下移动光标预览）',
     'icon.quickopen.plh': '选择图标主题（上下移动光标预览）',
 

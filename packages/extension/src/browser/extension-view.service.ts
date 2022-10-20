@@ -249,6 +249,7 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
                 action.popoverComponent,
                 proxiedHead,
                 this.appConfig.componentCDNType,
+                this.appConfig.extensionBrowserStyleSheet,
               );
             this.toolbarPopoverRegistry.registerComponent(
               `${extension.id}:${action.popoverComponent}`,
@@ -437,7 +438,15 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
     }
     if (this.appConfig.useExperimentalShadowDom) {
       return (props) =>
-        getShadowRoot(moduleExports[id], extension, props, id, proxiedHead, this.appConfig.componentCDNType);
+        getShadowRoot(
+          moduleExports[id],
+          extension,
+          props,
+          id,
+          proxiedHead,
+          this.appConfig.componentCDNType,
+          this.appConfig.extensionBrowserStyleSheet,
+        );
     }
     return moduleExports[id];
   }
@@ -525,7 +534,15 @@ export class ViewExtProcessService implements AbstractViewExtProcessService {
               ...other,
               id,
               component: (props) =>
-                getShadowRoot(panel, extension, props, id, proxiedHead, this.appConfig.componentCDNType),
+                getShadowRoot(
+                  panel,
+                  extension,
+                  props,
+                  id,
+                  proxiedHead,
+                  this.appConfig.componentCDNType,
+                  this.appConfig.extensionBrowserStyleSheet,
+                ),
             })),
           };
           return pre;

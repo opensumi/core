@@ -3,7 +3,7 @@ import { IRawThemeSetting } from 'vscode-textmate';
 import { Event, URI, IDisposable, IThemeColor, Deferred } from '@opensumi/ide-core-common';
 
 import { Color } from './color';
-import { vs, vs_dark, hc_black } from './default-themes';
+import { vs, vs_dark, hc_black, hc_light } from './default-themes';
 
 export const ThemeServicePath = 'themeServicePath';
 
@@ -57,7 +57,7 @@ export interface IIconService {
    */
   fromIcon(
     basePath: string,
-    icon?: { [index in ThemeType]: string } | string,
+    icon?: { [index in IconThemeType]: string } | string,
     type?: IconType,
     shape?: IconShape,
     fromExtension?: boolean,
@@ -130,16 +130,18 @@ export interface IColorMap {
 export enum ColorScheme {
   DARK = 'dark',
   LIGHT = 'light',
-  HIGH_CONTRAST = 'hc',
+  HIGH_CONTRAST_DARK = 'hcDark',
+  HIGH_CONTRAST_LIGHT = 'hcLight',
 }
 
-export type BuiltinTheme = 'vs' | 'vs-dark' | 'hc-black';
+export type BuiltinTheme = 'vs' | 'vs-dark' | 'hc-black' | 'hc-light';
 
 export function getThemeTypeName(base: BuiltinTheme) {
   const map = {
     vs: 'theme.base.vs',
     'vs-dark': 'theme.base.vs-dark',
-    'hc-black': 'theme.base.hc-black',
+    'hc-black': 'theme.base.hc',
+    'hc-light': 'theme.base.hc',
   };
   return map[base];
 }
@@ -148,6 +150,7 @@ export enum BuiltinThemeComparator {
   'vs',
   'vs-dark',
   'hc-black',
+  'hc-light',
 }
 
 export interface IStandaloneThemeData {
@@ -186,10 +189,10 @@ export interface ITokenColorCustomizations {
   textMateRules?: ITokenColorizationRule[];
 }
 
-const VS_THEME_NAME = 'vs';
-const VS_DARK_THEME_NAME = 'vs-dark';
-const HC_BLACK_THEME_NAME = 'hc-black';
-
+export const VS_LIGHT_THEME_NAME = 'vs';
+export const VS_DARK_THEME_NAME = 'vs-dark';
+export const HC_BLACK_THEME_NAME = 'hc-black';
+export const HC_LIGHT_THEME_NAME = 'hc-light';
 export interface ThemeContribution {
   id?: string;
   label: string;
@@ -201,17 +204,22 @@ export interface ThemeContribution {
 // base themes
 export const DARK: ThemeType = 'dark';
 export const LIGHT: ThemeType = 'light';
-export const HIGH_CONTRAST: ThemeType = 'hc';
-export type ThemeType = 'light' | 'dark' | 'hc';
+export const HIGH_CONTRAST_DARK: ThemeType = 'hcDark';
+export const HIGH_CONTRAST_LIGHT: ThemeType = 'hcLight';
+export type ThemeType = 'light' | 'dark' | 'hcDark' | 'hcLight';
+
+export type IconThemeType = 'light' | 'dark';
 
 export function getBuiltinRules(builtinTheme: BuiltinTheme): IStandaloneThemeData {
   switch (builtinTheme) {
-    case VS_THEME_NAME:
+    case VS_LIGHT_THEME_NAME:
       return vs;
     case VS_DARK_THEME_NAME:
       return vs_dark;
     case HC_BLACK_THEME_NAME:
       return hc_black;
+    case HC_LIGHT_THEME_NAME:
+      return hc_light;
   }
 }
 
@@ -219,21 +227,25 @@ export function getThemeTypeSelector(type: ThemeType): string {
   switch (type) {
     case DARK:
       return 'vs-dark';
-    case HIGH_CONTRAST:
+    case HIGH_CONTRAST_DARK:
       return 'hc-black';
+    case HIGH_CONTRAST_LIGHT:
+      return 'hc-light';
     default:
       return 'vs';
   }
 }
 
-export function getThemeType(base: BuiltinTheme) {
+export function getThemeType(base: BuiltinTheme): ThemeType {
   switch (base) {
-    case VS_THEME_NAME:
-      return 'light';
+    case VS_LIGHT_THEME_NAME:
+      return LIGHT;
     case VS_DARK_THEME_NAME:
-      return 'dark';
+      return DARK;
     case HC_BLACK_THEME_NAME:
-      return 'hc';
+      return HIGH_CONTRAST_DARK;
+    case HC_LIGHT_THEME_NAME:
+      return HIGH_CONTRAST_LIGHT;
   }
 }
 
@@ -273,7 +285,7 @@ export interface ColorContribution {
 export interface ExtColorContribution {
   id: string;
   description: string;
-  defaults: { light: string; dark: string; highContrast: string };
+  defaults: { light: string; dark: string; highContrast: string; highContrastLight?: string };
 }
 
 export type ColorFunction = (theme: ITheme) => Color | undefined;
@@ -281,7 +293,8 @@ export type ColorFunction = (theme: ITheme) => Color | undefined;
 export interface ColorDefaults {
   light: ColorValue | null;
   dark: ColorValue | null;
-  hc: ColorValue | null;
+  hcDark: ColorValue | null;
+  hcLight: ColorValue | null;
 }
 
 /**

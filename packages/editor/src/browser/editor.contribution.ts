@@ -33,12 +33,14 @@ import {
   AppConfig,
   SUPPORTED_ENCODINGS,
   FILE_COMMANDS,
+  electronEnv,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
-import { isWindows, isOSX, PreferenceScope, ILogger } from '@opensumi/ide-core-common';
+import { isWindows, isOSX, PreferenceScope, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
+import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -51,7 +53,7 @@ import {
   EditorGroupSplitAction,
   ILanguageService,
   Direction,
-  ResourceService,
+  ResourceDecorationChangeEvent,
   IDocPersistentCacheProvider,
   IEditor,
   SaveReason,
@@ -93,6 +95,7 @@ interface ResourceArgs {
   QuickOpenContribution,
 )
 export class EditorContribution
+  extends WithEventBus
   implements
     CommandContribution,
     ClientAppContribution,
@@ -125,13 +128,13 @@ export class EditorContribution
   private editorDocumentModelService: IEditorDocumentModelService;
 
   @Autowired(IDocPersistentCacheProvider)
-  cacheProvider: IDocPersistentCacheProvider;
+  private cacheProvider: IDocPersistentCacheProvider;
 
   @Autowired()
-  historyService: EditorHistoryService;
+  private historyService: EditorHistoryService;
 
   @Autowired()
-  monacoService: MonacoService;
+  private monacoService: MonacoService;
 
   @Autowired(IOpenerService)
   private readonly openerService: IOpenerService;
@@ -206,6 +209,9 @@ export class EditorContribution
   @Autowired(ICtxMenuRenderer)
   private readonly contextMenuRenderer: ICtxMenuRenderer;
 
+  @Autowired(IElectronMainUIService)
+  private readonly electronMainUIService: IElectronMainUIService;
+
   registerMonacoDefaultFormattingSelector(register): void {
     const formatSelector = this.injector.get(FormattingSelector);
     register(formatSelector.select.bind(formatSelector));
@@ -236,6 +242,15 @@ export class EditorContribution
     } catch (e) {
       this.logger.error(e);
       return false;
+    }
+  }
+
+  @OnEvent(ResourceDecorationChangeEvent)
+  onResourceDecorationChangeEvent() {
+    if (this.appConfig.isElectronRenderer) {
+      const hasDirty = this.workbenchEditorService.hasDirty();
+      // setup macos native dirty indicator
+      this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
     }
   }
 
@@ -431,7 +446,7 @@ export class EditorContribution
 
   initialize() {
     this.editorStatusBarService.setListener();
-    this.historyService.start();
+    this.historyService.init();
   }
 
   registerCommands(commands: CommandRegistry): void {

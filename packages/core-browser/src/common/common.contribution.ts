@@ -15,7 +15,8 @@ import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
 import { KeybindingContribution, KeybindingRegistry } from '../keybinding';
 import { LAYOUT_VIEW_SIZE } from '../layout/constants';
-import { MenuContribution, IMenuRegistry, MenuId } from '../menu/next';
+import { MenuContribution, IMenuRegistry } from '../menu/next/base';
+import { MenuId } from '../menu/next/menu-id';
 import { PreferenceContribution } from '../preferences';
 import { AppConfig } from '../react-providers/config-provider';
 

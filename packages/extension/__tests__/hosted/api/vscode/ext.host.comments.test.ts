@@ -294,6 +294,47 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.comments.test.ts', () =
     );
   });
 
+  it('comment timestamp', async () => {
+    const id = 'test_id';
+    const label = 'test_label';
+    const body = 'test_body';
+    const author = 'hacke2';
+    const $updateCommentThread = jest.spyOn(mainThreadComments, '$updateCommentThread');
+    const controller = vscodeComments.createCommentController(id, label);
+    const date = new Date();
+    const thread = controller.createCommentThread(Uri.file('test'), new types.Range(1, 1, 1, 1), []);
+    thread.comments = [
+      {
+        body,
+        author: {
+          name: author,
+        },
+        mode: types.CommentMode.Preview,
+        timestamp: date,
+      },
+    ];
+    // 修改属性会加 100ms 的 debounce
+    await sleep(100);
+    expect($updateCommentThread).toBeCalledTimes(1);
+    expect($updateCommentThread).toBeCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      expect.anything(),
+      {
+        comments: [
+          {
+            uniqueIdInThread: 1,
+            body,
+            userName: author,
+            mode: types.CommentMode.Preview,
+            timestamp: date.toJSON(),
+          },
+        ],
+      },
+    );
+  });
+
   it('dispose', async () => {
     const id = 'test_id';
     const label = 'test_label';

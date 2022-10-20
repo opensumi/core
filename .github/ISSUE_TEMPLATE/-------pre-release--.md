@@ -2,7 +2,7 @@
 name: 预览版本发布 [ Pre-Release ]
 about: 用于发布 pre-release 版本（Used to release the preview version）
 title: OpenSumi Pre-Release
-labels: pre-release
+labels: ⛵️ pre-release
 assignees: ''
 ---
 

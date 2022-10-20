@@ -23,7 +23,7 @@ import {
   match,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeEvent, TextDocumentContentChangeEvent } from '../common';
+import { FileChangeEvent, EXT_LIST_IMAGE, TextDocumentContentChangeEvent } from '../common';
 import {
   FileSystemError,
   FileStat,
@@ -589,10 +589,10 @@ export class FileService implements IFileService {
     return true;
   }
 
-  private _getFileType(ext) {
+  private _getFileType(ext: string) {
     let type = 'text';
 
-    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
+    if (EXT_LIST_IMAGE.indexOf(ext) !== -1) {
       type = 'image';
     } else if (ext && ['xml'].indexOf(ext) === -1) {
       type = 'binary';

@@ -126,6 +126,11 @@ export function createWorkspaceApiFactory(
         null,
         token,
       ),
+    // Notebook API
+    onDidOpenNotebookDocument: Event.None,
+    onDidChangeNotebookDocument: Event.None,
+    onDidCloseNotebookDocument: Event.None,
+    notebookDocuments: [],
   };
 
   return workspace;

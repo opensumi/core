@@ -2,7 +2,7 @@
 name: 问题反馈 [ Bug report ]
 about: 提交问题帮助我们优化框架 （Create a report to help us improve）
 title: '[BUG] '
-labels: bug
+labels: 🐞 bug
 assignees: ''
 ---
 

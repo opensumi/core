@@ -1,4 +1,3 @@
-import { ConstructorOf } from '@opensumi/di';
 import { Uri } from '@opensumi/ide-utils';
 
 import { BasicEvent } from '../event-bus';
@@ -22,6 +21,14 @@ export interface ExtensionConnectOption {
   mode: ExtensionConnectModeOption;
   // 如果 mode 为 TCP，字段表示套接字应连接到的主机地址，不传默认为'localhost'
   host?: string;
+}
+
+/**
+ * 插件 browser 层的样式表配置项
+ */
+export interface ExtensionBrowserStyleSheet {
+  componentUri: string;
+  iconfontUri: string;
 }
 
 /**

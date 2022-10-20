@@ -1,5 +1,5 @@
 import throttle from 'lodash/throttle';
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { Icon } from '../../../icon';
 import { IInputBaseProps, Input } from '../../../input';
@@ -50,6 +50,7 @@ export const RecycleTreeFilterDecorator: FilterHoc<
   IRecycleTreeProps,
   {
     filterEnabled?: boolean;
+    onFilterBlur?: () => void;
     // 用于在filter变化前进行额外处理，例如展开所有目录
     beforeFilterValueChange?: (value: string) => Promise<void>;
     filterAfterClear?: IInputBaseProps['afterClear'];
@@ -68,6 +69,7 @@ export const RecycleTreeFilterDecorator: FilterHoc<
     filterPlaceholder,
     filterAfterClear,
     onReady,
+    onFilterBlur,
     filterAutoFocus,
     ...recycleTreeProps
   } = props;
@@ -79,21 +81,27 @@ export const RecycleTreeFilterDecorator: FilterHoc<
     setFilter(value);
   }, TREE_FILTER_DELAY);
 
-  const handleFilterInputChange = (value: string) => {
-    setValue(value);
-    handleFilterChange(value);
-  };
+  const handleFilterInputChange = useCallback(
+    (value: string) => {
+      setValue(value);
+      handleFilterChange(value);
+    },
+    [value],
+  );
 
-  const filterTreeReadyHandle = (api: IRecycleTreeHandle) => {
-    onReady &&
-      onReady({
-        ...api,
-        clearFilter: () => {
-          setFilter('');
-          setValue('');
-        },
-      } as IRecycleTreeFilterHandle);
-  };
+  const filterTreeReadyHandle = useCallback(
+    (api: IRecycleTreeHandle) => {
+      onReady &&
+        onReady({
+          ...api,
+          clearFilter: () => {
+            setFilter('');
+            setValue('');
+          },
+        } as IRecycleTreeFilterHandle);
+    },
+    [onReady],
+  );
 
   return (
     <>
@@ -103,6 +111,7 @@ export const RecycleTreeFilterDecorator: FilterHoc<
           placeholder={filterPlaceholder}
           value={value}
           autoFocus={filterAutoFocus}
+          onBlur={onFilterBlur}
           onValueChange={handleFilterInputChange}
         />
       )}

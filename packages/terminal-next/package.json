@@ -23,9 +23,11 @@
     "event-kit": "^2.5.3",
     "node-pty": "0.11.0-beta19",
     "os-locale": "^4.0.0",
-    "xterm": "5.0.0-beta.36",
+    "xterm": "5.0.0-beta.48",
     "xterm-addon-fit": "^0.6.0-beta.17",
-    "xterm-addon-search": "0.10.0-beta.5"
+    "xterm-addon-search": "0.10.0-beta.5",
+    "xterm-addon-webgl": "0.13.0-beta.46",
+    "xterm-addon-canvas": "0.2.0-beta.17"
   },
   "devDependencies": {
     "@opensumi/ide-components": "2.20.6",

@@ -23,13 +23,13 @@ jobs:
       - name: Use Node.js "14.x"
         uses: actions/setup-node@v1
         with:
-          node-version: "14.x"
-          registry-url: "https://registry.npmjs.org"
+          node-version: '14.x'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Use Python 3.x
         uses: actions/setup-python@v2
         with:
-          python-version: "3.x"
+          python-version: '3.x'
 
       - name: Checkout opensumi/core
         uses: actions/checkout@master
@@ -49,10 +49,11 @@ jobs:
         shell: bash
         working-directory: ./opensumi
         run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
-      
+
       - uses: microsoft/playwright-github-action@v1
       - name: Init & Test
-        run: npm i && npm run init && npm run test:ui-ci
+        run: npm i && npm run init && cd tools/playwright && npm run ui-tests-ci
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v3

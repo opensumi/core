@@ -8,7 +8,6 @@ import { IThemeService, ThemeType } from '@opensumi/ide-theme';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
 
-
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
 
@@ -62,6 +61,6 @@ describe('vscode extHostTheming Test', () => {
       expect(e.kind).toEqual(ColorThemeKind.HighContrast);
       done();
     });
-    themeChangeEmitter.fire({ type: 'hc' });
+    themeChangeEmitter.fire({ type: 'hcDark' });
   });
 });

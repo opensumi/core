@@ -5,7 +5,7 @@ import { getDebugLogger, localize } from '@opensumi/ide-core-common';
 
 import { LayoutConfig } from '../bootstrap';
 import { IClientApp } from '../browser-module';
-import { ComponentRegistry, ComponentRegistryInfo } from '../layout';
+import { ComponentRegistry, ComponentRegistryInfo } from '../layout/layout.interface';
 import { useInjectable } from '../react-hooks';
 
 import { ConfigContext } from './config-provider';

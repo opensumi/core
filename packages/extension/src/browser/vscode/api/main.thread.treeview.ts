@@ -16,6 +16,9 @@ import {
   IContextKeyService,
   CancellationTokenSource,
   WithEventBus,
+  Disposable,
+  CancellationToken,
+  BinaryBuffer,
 } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
@@ -32,10 +35,13 @@ import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 import { ExtensionHostType } from '../../../common';
 import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
+import { DataTransfer } from '../../../common/vscode/converter';
+import { createStringDataTransferItem, VSDataTransfer } from '../../../common/vscode/data-transfer';
+import { DataTransferCache } from '../../../common/vscode/data-transfer-cache';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { ExtensionTabBarTreeView } from '../../components';
 
-import { ExtensionTreeViewModel } from './tree-view/tree-view.model.service';
+import { ExtensionTreeViewModel, ITreeViewDragAndDropController } from './tree-view/tree-view.model.service';
 import { ExtensionCompositeTreeNode, ExtensionTreeRoot, ExtensionTreeNode } from './tree-view/tree-view.node.defined';
 
 @Injectable({ multiple: true })
@@ -81,6 +87,10 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
   private userhome?: URI;
 
   readonly treeModels: Map<string, ExtensionTreeViewModel> = new Map<string, ExtensionTreeViewModel>();
+  readonly dndControllers: Map<string, TreeViewDragAndDropController> = new Map<
+    string,
+    TreeViewDragAndDropController
+  >();
 
   private disposableCollection: Map<string, DisposableStore> = new Map();
   private disposable: DisposableStore = new DisposableStore();
@@ -89,6 +99,7 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
     this.disposable.add(toDisposable(() => this.treeModels.clear()));
+    this.disposable.add(toDisposable(() => this.dndControllers.clear()));
     this._registerInternalCommands();
     this.fileServiceClient.getCurrentUserHome().then((home) => {
       if (home) {
@@ -121,9 +132,10 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
   createTreeModel(
     treeViewId: string,
     dataProvider: TreeViewDataProvider,
+    dndController: TreeViewDragAndDropController,
     options: TreeViewBaseOptions,
   ): ExtensionTreeViewModel {
-    return ExtensionTreeViewModel.createModel(this.injector, dataProvider, treeViewId, options || {});
+    return ExtensionTreeViewModel.createModel(this.injector, dataProvider, dndController, treeViewId, options || {});
   }
 
   async $registerTreeDataProvider(treeViewId: string, options: TreeViewBaseOptions) {
@@ -141,8 +153,16 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
       this.menuService,
       this.userhome,
     );
-    const model = this.createTreeModel(treeViewId, dataProvider, options);
+    const dndController = new TreeViewDragAndDropController(
+      treeViewId,
+      options.dropMimeTypes as string[],
+      options.dragMimeTypes as string[],
+      options.hasHandleDrag,
+      this.proxy,
+    );
+    const model = this.createTreeModel(treeViewId, dataProvider, dndController, options);
     this.treeModels.set(treeViewId, model);
+    this.dndControllers.set(treeViewId, dndController);
     disposable.add(toDisposable(() => this.treeModels.delete(treeViewId)));
     this.mainLayoutService.replaceViewComponent(
       {
@@ -208,6 +228,14 @@ export class MainThreadTreeView extends WithEventBus implements IMainThreadTreeV
     if (disposable) {
       disposable.dispose();
     }
+  }
+
+  async $resolveDropFileData(treeViewId: string, requestId: number, dataItemId: string) {
+    const controller = this.dndControllers.get(treeViewId);
+    if (!controller) {
+      throw new Error('Unknown tree');
+    }
+    return controller.resolveDropFileData(requestId, dataItemId);
   }
 
   async $refresh(treeViewId: string, itemsToRefresh?: TreeViewItem) {
@@ -357,7 +385,8 @@ export class TreeViewDataProvider extends Tree {
       label,
       description,
       icon,
-      item.tooltip,
+      // TODO: Support ThemeIcon on tooltip
+      typeof item.tooltip === 'string' ? item.tooltip : item.tooltip?.value,
       item.command,
       item.contextValue || '',
       item.id,
@@ -379,7 +408,8 @@ export class TreeViewDataProvider extends Tree {
       label,
       description,
       icon,
-      item.tooltip,
+      // TODO: Support ThemeIcon on tooltip
+      typeof item.tooltip === 'string' ? item.tooltip : item.tooltip?.value,
       item.command,
       item.contextValue || '',
       item.id,
@@ -514,5 +544,73 @@ export class TreeViewDataProvider extends Tree {
   dispose() {
     super.dispose();
     this.treeItemId2TreeNode.clear();
+  }
+}
+
+export class TreeViewDragAndDropController extends Disposable implements ITreeViewDragAndDropController {
+  private readonly dataTransfersCache = new DataTransferCache();
+
+  constructor(
+    public readonly treeViewId: string,
+    readonly dropMimeTypes: string[] = [],
+    readonly dragMimeTypes: string[] = [],
+    public readonly hasHandleDrag: boolean,
+    private readonly _proxy: IExtHostTreeView,
+  ) {
+    super();
+  }
+
+  async handleDrop(
+    dataTransfer: VSDataTransfer,
+    targetTreeItem: ExtensionTreeNode | ExtensionCompositeTreeNode | undefined,
+    token: CancellationToken,
+    operationUuid?: string,
+    sourceTreeId?: string,
+    sourceTreeItemHandles?: string[],
+  ): Promise<void> {
+    const request = this.dataTransfersCache.add(dataTransfer);
+    try {
+      return await this._proxy.$handleDrop(
+        this.treeViewId,
+        request.id,
+        await DataTransfer.toDataTransferDTO(dataTransfer),
+        targetTreeItem?.treeItemId,
+        token,
+        operationUuid,
+        sourceTreeId,
+        sourceTreeItemHandles,
+      );
+    } finally {
+      request.dispose();
+    }
+  }
+
+  async handleDrag(
+    sourceTreeItemHandles: string[],
+    operationUuid: string,
+    token: CancellationToken,
+  ): Promise<VSDataTransfer | undefined> {
+    if (!this.hasHandleDrag) {
+      return;
+    }
+    const additionalDataTransferDTO = await this._proxy.$handleDrag(
+      this.treeViewId,
+      sourceTreeItemHandles,
+      operationUuid,
+      token,
+    );
+    if (!additionalDataTransferDTO) {
+      return;
+    }
+
+    const additionalDataTransfer = new VSDataTransfer();
+    additionalDataTransferDTO.items.forEach(([type, item]) => {
+      additionalDataTransfer.replace(type, createStringDataTransferItem(item.asString));
+    });
+    return additionalDataTransfer;
+  }
+
+  public resolveDropFileData(requestId: number, dataItemId: string): Promise<BinaryBuffer> {
+    return this.dataTransfersCache.resolveDropFileData(requestId, dataItemId);
   }
 }

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';
 import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { IThemeService, ThemeType } from '@opensumi/ide-theme';
 
@@ -16,6 +16,7 @@ export default observer(() => {
   const provider = useInjectable<ITerminalRenderProvider>(ITerminalRenderProvider);
   const menuService = useInjectable<TerminalContextMenuService>(TerminalContextMenuService);
   const themeService = useInjectable<IThemeService>(IThemeService);
+  const keybindingService = useInjectable<KeybindingRegistry>(KeybindingRegistry);
   const tabContainer = useRef<HTMLDivElement | null>();
   const [theme, setTheme] = useState<ThemeType>('dark');
 
@@ -69,6 +70,13 @@ export default observer(() => {
                   const group = view.getGroup(index);
                   view.createWidget(group);
                   view.selectGroup(index);
+                }}
+                getKeybinding={(id) => {
+                  const bindings = keybindingService.getKeybindingsForCommand(id);
+                  if (Array.isArray(bindings) && bindings[0]) {
+                    return keybindingService.acceleratorFor(bindings[0], '')[0] || '';
+                  }
+                  return '';
                 }}
                 onDropdown={(event) => menuService.onDropDownContextMenu(event)}
                 provider={provider}

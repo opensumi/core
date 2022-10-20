@@ -21,6 +21,7 @@ import {
   formatLocalize,
   IEventBus,
   Schemes,
+  IClipboardService,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -34,8 +35,12 @@ import {
 } from '@opensumi/ide-editor/lib/browser';
 import { IMessageService } from '@opensumi/ide-overlay/lib/common';
 
+import { IElectronHeaderService } from '../common/header';
+
+import { ElectronClipboardService } from './clipboard';
 import { ElectronNativeDialogService } from './dialog';
-import { ElectronHeaderBar } from './header/header';
+import { ElectronHeaderService } from './header/header.service';
+import { ElectronHeaderBar } from './header/header.view';
 import { WelcomeContribution } from './welcome/contribution';
 
 @Injectable()
@@ -44,6 +49,10 @@ export class ElectronBasicModule extends BrowserModule {
     {
       token: IElectronNativeDialogService,
       useClass: ElectronNativeDialogService,
+    },
+    {
+      token: IElectronHeaderService,
+      useClass: ElectronHeaderService,
     },
     ElectronBasicContribution,
     WelcomeContribution,
@@ -371,6 +380,12 @@ export class ElectronBasicContribution
           }
         }
       }
+    });
+
+    // override broswer modules
+    this.injector.overrideProviders({
+      token: IClipboardService,
+      useClass: ElectronClipboardService,
     });
   }
 }

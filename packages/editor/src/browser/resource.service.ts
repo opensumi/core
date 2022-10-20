@@ -81,7 +81,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       }
     });
     if (changed) {
-      Object.assign(this.resourceDecoration.get(e.payload.uri.toString()), e.payload.decoration);
+      Object.assign(this.resourceDecoration.get(e.payload.uri.toString())!, e.payload.decoration);
       this.eventBus.fire(new ResourceDecorationChangeEvent(e.payload));
     }
   }

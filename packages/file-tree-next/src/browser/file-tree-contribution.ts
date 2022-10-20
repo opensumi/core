@@ -294,7 +294,6 @@ export class FileTreeContribution
       },
       order: 1,
       group: '2_operator',
-      when: FilesExplorerFilteredContext.not,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -304,7 +303,6 @@ export class FileTreeContribution
       },
       order: 3,
       group: '2_operator',
-      when: FilesExplorerFilteredContext.not,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -341,7 +339,6 @@ export class FileTreeContribution
       },
       order: 3,
       group: '3_copy',
-      when: FilesExplorerFilteredContext.not,
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -362,6 +359,11 @@ export class FileTreeContribution
   }
 
   registerCommands(commands: CommandRegistry) {
+    const exitFilterMode = () => {
+      if (this.fileTreeService.filterMode) {
+        this.fileTreeService.toggleFilterMode();
+      }
+    };
     commands.registerCommand(FILE_COMMANDS.OPEN_TERMINAL_WITH_PATH, {
       execute: (uri?: URI) => {
         let directory = uri;
@@ -454,6 +456,7 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.DELETE_FILE, {
       execute: (_, uris) => {
+        exitFilterMode();
         if (!uris) {
           if (this.fileTreeModelService.focusedFile) {
             this.willDeleteUris.push(this.fileTreeModelService.focusedFile.uri);
@@ -478,6 +481,7 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.RENAME_FILE, {
       execute: (uri) => {
+        exitFilterMode();
         if (!uri) {
           if (this.fileTreeModelService.contextMenuFile) {
             uri = this.fileTreeModelService.contextMenuFile.uri;
@@ -498,9 +502,7 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FILE, {
       execute: async (uri) => {
-        if (this.fileTreeService.filterMode) {
-          this.fileTreeService.toggleFilterMode();
-        }
+        exitFilterMode();
         if (uri) {
           this.fileTreeModelService.newFilePrompt(uri);
         } else {
@@ -523,9 +525,7 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (uri) => {
-        if (this.fileTreeService.filterMode) {
-          this.fileTreeService.toggleFilterMode();
-        }
+        exitFilterMode();
         if (uri) {
           this.fileTreeModelService.newDirectoryPrompt(uri);
         } else {
@@ -837,6 +837,7 @@ export class FileTreeContribution
 
     commands.registerCommand<ExplorerContextCallback>(FILE_COMMANDS.PASTE_FILE, {
       execute: (uri) => {
+        exitFilterMode();
         if (uri) {
           this.fileTreeModelService.pasteFile(uri);
         } else if (this.fileTreeModelService.focusedFile) {
@@ -850,7 +851,8 @@ export class FileTreeContribution
         }
       },
       isEnabled: () =>
-        this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE,
+        (this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE) ||
+        !!this.clipboardService.hasResources(),
     });
 
     if (this.appConfig.isElectronRenderer) {
@@ -930,7 +932,7 @@ export class FileTreeContribution
           uri = this.workbenchEditorService.currentEditor.currentUri;
         }
         if (uri) {
-          this.fileTreeModelService.location(uri);
+          this.revealFile(URI.parse(uri.toString()));
         }
       },
     });
@@ -1001,6 +1003,7 @@ export class FileTreeContribution
 
     commands.registerCommand(WORKSPACE_COMMANDS.REMOVE_WORKSPACE_FOLDER, {
       execute: async (_: URI, uris: URI[]) => {
+        exitFilterMode();
         if (!uris.length || !this.workspaceService.isMultiRootWorkspaceOpened) {
           return;
         }
@@ -1046,13 +1049,13 @@ export class FileTreeContribution
     bindings.registerKeybinding({
       command: FILE_COMMANDS.RENAME_FILE.id,
       keybinding: 'enter',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({
       command: FILE_COMMANDS.DELETE_FILE.id,
       keybinding: 'ctrlcmd+backspace',
-      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw} && !${FilesExplorerFilteredContext.raw}`,
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
     bindings.registerKeybinding({

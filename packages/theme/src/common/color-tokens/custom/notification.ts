@@ -6,6 +6,11 @@ import { NOTIFICATIONS_FOREGROUND } from '../notification';
 /* --- notification --- */
 export const ktNotificationsCloseIconForeground = registerColor(
   'kt.notificationsCloseIcon.foreground',
-  { dark: NOTIFICATIONS_FOREGROUND, light: NOTIFICATIONS_FOREGROUND, hc: NOTIFICATIONS_FOREGROUND },
+  {
+    dark: NOTIFICATIONS_FOREGROUND,
+    light: NOTIFICATIONS_FOREGROUND,
+    hcDark: NOTIFICATIONS_FOREGROUND,
+    hcLight: NOTIFICATIONS_FOREGROUND,
+  },
   localize('notificationsCloseIconForeground', 'Notifications close icon foreground.'),
 );

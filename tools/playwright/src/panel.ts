@@ -4,18 +4,16 @@ import { OpenSumiApp } from './app';
 import { OpenSumiViewBase } from './view-base';
 
 export abstract class OpenSumiPanel extends OpenSumiViewBase {
-  private view: ElementHandle<HTMLElement | SVGElement> | null;
+  public view: ElementHandle<HTMLElement | SVGElement> | null;
   private whenReady: Promise<void>;
 
-  abstract id: string;
-
-  constructor(app: OpenSumiApp) {
+  constructor(app: OpenSumiApp, private viewId: string) {
     super(app);
     this.whenReady = this.init();
   }
 
   get viewSelector() {
-    return `.${this.id}`;
+    return `.${this.viewId}`;
   }
 
   async init() {
@@ -28,13 +26,22 @@ export abstract class OpenSumiPanel extends OpenSumiViewBase {
   }
 
   async open() {
-    if (!this.id) {
+    if (!this.viewId) {
       return;
     }
     await this.app.quickOpenPalette.type('view ');
-    await this.app.quickOpenPalette.trigger(this.id.toLocaleUpperCase());
+    await this.app.quickOpenPalette.trigger(this.viewId.toLocaleUpperCase());
     await this.waitForVisible();
+    this.view = await this.page.$(this.viewSelector);
     return this;
+  }
+
+  async focus() {
+    const visible = await this.isVisible();
+    if (!visible) {
+      await this.open();
+    }
+    await this.view?.focus();
   }
 
   async waitForVisible() {

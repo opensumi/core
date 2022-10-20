@@ -10,18 +10,23 @@ import {
   toDisposable,
   Event,
   CancellationTokenSource,
+  asPromise,
 } from '@opensumi/ide-core-common';
 import type { CancellationToken } from '@opensumi/ide-core-common';
 
 import {
+  DataTransferDTO,
   IExtHostTreeView,
   IMainThreadTreeView,
   ITreeItemLabel,
   ITreeViewRevealOptions,
+  ITreeViewsService,
   MainThreadAPIIdentifier,
+  TreeviewsService,
 } from '../../../common/vscode';
-import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
-import { ThemeIcon } from '../../../common/vscode/ext-types';
+import { TreeView, TreeViewItem, TreeViewSelection } from '../../../common/vscode';
+import { DataTransfer } from '../../../common/vscode/converter';
+import * as types from '../../../common/vscode/ext-types';
 
 import { ExtHostCommands } from './ext.host.command';
 
@@ -35,6 +40,11 @@ export class ExtHostTreeViews implements IExtHostTreeView {
   private proxy: IMainThreadTreeView;
 
   private treeViews: Map<string, ExtHostTreeView<any>> = new Map<string, ExtHostTreeView<any>>();
+  private treeDragAndDropService: ITreeViewsService<vscode.DataTransfer, any, any> = new TreeviewsService<
+    vscode.DataTransfer,
+    any,
+    any
+  >();
 
   constructor(rpc: IRPCProtocol, private readonly extHostCommand: ExtHostCommands) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadTreeView);
@@ -60,7 +70,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     });
   }
 
-  createTreeView<T>(treeViewId: string, options: TreeViewOptions<T>): TreeView<T> {
+  createTreeView<T>(treeViewId: string, options: vscode.TreeViewOptions<T>): TreeView<T> {
     if (!options || !options.treeDataProvider) {
       throw new Error('Options with treeDataProvider is mandatory');
     }
@@ -189,6 +199,79 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     }
     treeView.setVisible(isVisible);
   }
+
+  async $handleDrop(
+    destinationViewId: string,
+    requestId: number,
+    treeDataTransferDTO: DataTransferDTO,
+    targetItemHandle: string | undefined,
+    token: CancellationToken,
+    operationUuid?: string,
+    sourceViewId?: string,
+    sourceTreeItemHandles?: string[],
+  ): Promise<void> {
+    const treeView = this.treeViews.get(destinationViewId);
+    if (!treeView) {
+      return Promise.reject(new Error(`No tree view with id '${destinationViewId}' registered.`));
+    }
+
+    const treeDataTransfer = DataTransfer.toDataTransfer(
+      treeDataTransferDTO,
+      async (dataItemIndex) =>
+        (await this.proxy.$resolveDropFileData(destinationViewId, requestId, dataItemIndex)).buffer,
+    );
+    if (sourceViewId === destinationViewId && sourceTreeItemHandles) {
+      await this.addAdditionalTransferItems(treeDataTransfer, treeView, sourceTreeItemHandles, token, operationUuid);
+    }
+    return treeView.onDrop(treeDataTransfer, targetItemHandle, token);
+  }
+
+  private async addAdditionalTransferItems(
+    treeDataTransfer: vscode.DataTransfer,
+    treeView: ExtHostTreeView<any>,
+    sourceTreeItemHandles: string[],
+    token: CancellationToken,
+    operationUuid?: string,
+  ): Promise<vscode.DataTransfer | undefined> {
+    const existingTransferOperation = this.treeDragAndDropService.removeDragOperationTransfer(operationUuid);
+    if (existingTransferOperation) {
+      (await existingTransferOperation)?.forEach((value, key) => {
+        if (value) {
+          treeDataTransfer.set(key, value);
+        }
+      });
+    } else if (operationUuid && treeView.handleDrag) {
+      const willDropPromise = treeView.handleDrag(sourceTreeItemHandles, treeDataTransfer, token);
+      this.treeDragAndDropService.addDragOperationTransfer(operationUuid, willDropPromise);
+      await willDropPromise;
+    }
+    return treeDataTransfer;
+  }
+
+  async $handleDrag(
+    sourceViewId: string,
+    sourceTreeItemHandles: string[],
+    operationUuid: string,
+    token: CancellationToken,
+  ): Promise<DataTransferDTO | undefined> {
+    const treeView = this.treeViews.get(sourceViewId);
+    if (!treeView) {
+      return Promise.reject(new Error(`No tree view with id '${sourceViewId}' registered.`));
+    }
+
+    const treeDataTransfer = await this.addAdditionalTransferItems(
+      new types.DataTransfer(),
+      treeView,
+      sourceTreeItemHandles,
+      token,
+      operationUuid,
+    );
+    if (!treeDataTransfer) {
+      return;
+    }
+
+    return DataTransfer.toDataTransferDTO(treeDataTransfer);
+  }
 }
 
 class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
@@ -218,7 +301,9 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
 
   private disposable: DisposableStore = new DisposableStore();
 
-  private treeDataProvider: vscode.TreeDataProvider<T>;
+  private readonly dataProvider: vscode.TreeDataProvider<T>;
+  private readonly dndController: vscode.TreeDragAndDropController<T> | undefined;
+
   private _onDidChangeData: Emitter<TreeData<T>> = new Emitter<TreeData<T>>();
 
   private _title: string;
@@ -234,21 +319,30 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private isFetchingChildren = false;
   constructor(
     private treeViewId: string,
-    private options: TreeViewOptions<T>,
+    private options: vscode.TreeViewOptions<T>,
     private proxy: IMainThreadTreeView,
     private commands: ExtHostCommands,
   ) {
-    this.treeDataProvider = this.options.treeDataProvider;
+    this.dataProvider = this.options.treeDataProvider;
+    this.dndController = this.options.dragAndDropController;
+    const dropMimeTypes = this.dndController?.dropMimeTypes ?? [];
+    const dragMimeTypes = this.dndController?.dragMimeTypes ?? [];
+    const hasHandleDrag = !!this.dndController?.handleDrag;
+    const hasHandleDrop = !!this.dndController?.handleDrop;
 
     this.disposable.add(this._onDidChangeData);
     // 将 options 直接取值，避免循环引用导致序列化异常
     proxy.$registerTreeDataProvider(treeViewId, {
       showCollapseAll: !!options.showCollapseAll,
       canSelectMany: !!options.canSelectMany,
+      dropMimeTypes,
+      dragMimeTypes,
+      hasHandleDrag,
+      hasHandleDrop,
     });
 
-    if (this.treeDataProvider.onDidChangeTreeData) {
-      const dispose = this.treeDataProvider.onDidChangeTreeData((itemToRefresh) => {
+    if (this.dataProvider.onDidChangeTreeData) {
+      const dispose = this.dataProvider.onDidChangeTreeData((itemToRefresh) => {
         if (this.isFetchingChildren) {
           // cause of https://github.com/opensumi/core/issues/723.
           return;
@@ -432,12 +526,50 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     }
   }
 
+  async handleDrag(
+    sourceTreeItemHandles: string[],
+    treeDataTransfer: vscode.DataTransfer,
+    token: CancellationToken,
+  ): Promise<vscode.DataTransfer | undefined> {
+    const extensionTreeItems: T[] = [];
+    for (const sourceHandle of sourceTreeItemHandles) {
+      const extensionItem = this.getTreeItem(sourceHandle);
+      if (extensionItem) {
+        extensionTreeItems.push(extensionItem);
+      }
+    }
+
+    if (!this.dndController?.handleDrag || extensionTreeItems.length === 0) {
+      return;
+    }
+    await this.dndController.handleDrag(extensionTreeItems, treeDataTransfer, token);
+    return treeDataTransfer;
+  }
+
+  get hasHandleDrag(): boolean {
+    return !!this.dndController?.handleDrag;
+  }
+
+  async onDrop(
+    treeDataTransfer: vscode.DataTransfer,
+    targetHandleOrNode: string | undefined,
+    token: CancellationToken,
+  ): Promise<void> {
+    const target = targetHandleOrNode ? this.getTreeItem(targetHandleOrNode) : undefined;
+    if ((!target && targetHandleOrNode) || !this.dndController?.handleDrop) {
+      return;
+    }
+    return asPromise(() =>
+      this.dndController?.handleDrop ? this.dndController.handleDrop(target, treeDataTransfer, token) : undefined,
+    );
+  }
+
   /**
    * 在节点被点击或者打开时，获取原有的 command 为 undefined 时被调用
    * 在节点被 Hover 时，获取原有的 tooltip 为 undefined 时被调用
    */
   async resolveTreeItem(treeItemId: string, token: CancellationToken): Promise<TreeViewItem | undefined> {
-    if (!this.treeDataProvider.resolveTreeItem) {
+    if (!this.dataProvider.resolveTreeItem) {
       return;
     }
     if (token.isCancellationRequested) {
@@ -449,7 +581,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
       if (!node) {
         return undefined;
       }
-      const resolve = (await this.treeDataProvider.resolveTreeItem(node, cache, token)) ?? node;
+      const resolve = (await this.dataProvider.resolveTreeItem(node, cache, token)) ?? node;
       node.tooltip = resolve.tooltip;
       node.command = resolve.command;
       return this.toTreeViewItem(node);
@@ -466,7 +598,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     }
     let children: TreeViewItem[] | undefined;
     this.isFetchingChildren = true;
-    const results = await this.treeDataProvider.getChildren(cachedElement);
+    const results = await this.dataProvider.getChildren(cachedElement);
     this.isFetchingChildren = false;
     if (this._refreshCancellationSource.token.isCancellationRequested) {
       children = undefined;
@@ -475,7 +607,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
         const treeItems: TreeViewItem[] = [];
         for (const [index, value] of results.entries()) {
           // 遍历treeDataProvider获取的值生成节点
-          const treeItem = await this.treeDataProvider.getTreeItem(value);
+          const treeItem = await this.dataProvider.getTreeItem(value);
           if (this._refreshCancellationSource.token.isCancellationRequested) {
             return;
           }
@@ -537,7 +669,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
 
     if (typeof iconPath === 'string' && iconPath.indexOf('fa-') !== -1) {
       icon = iconPath;
-    } else if (iconPath instanceof ThemeIcon) {
+    } else if (iconPath instanceof types.ThemeIcon) {
       themeIcon = iconPath;
     } else {
       const light = this.getLightIconPath(treeItem);
@@ -593,7 +725,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private getDarkIconPath(extensionTreeItem: vscode.TreeItem): string | undefined {
     if (
       extensionTreeItem.iconPath &&
-      !(extensionTreeItem.iconPath instanceof ThemeIcon) &&
+      !(extensionTreeItem.iconPath instanceof types.ThemeIcon) &&
       (extensionTreeItem.iconPath as { light: string | Uri; dark: string | Uri }).dark
     ) {
       return this.getIconPath((extensionTreeItem.iconPath as { light: string | Uri; dark: string | Uri }).dark);
@@ -602,7 +734,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   }
 
   private getLightIconPath(extensionTreeItem: vscode.TreeItem): string | undefined {
-    if (extensionTreeItem.iconPath && !(extensionTreeItem.iconPath instanceof ThemeIcon)) {
+    if (extensionTreeItem.iconPath && !(extensionTreeItem.iconPath instanceof types.ThemeIcon)) {
       if (typeof extensionTreeItem.iconPath === 'string' || Uri.isUri(extensionTreeItem.iconPath)) {
         return this.getIconPath(extensionTreeItem.iconPath);
       }

@@ -8,8 +8,11 @@ import {
   URI,
   ThrottledDelayer,
   FileStat,
+  encodeBase64,
+  BinaryBuffer,
 } from '@opensumi/ide-core-browser';
 import { FileTreeDropEvent } from '@opensumi/ide-core-common/lib/types/dnd';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IMessageService } from '@opensumi/ide-overlay';
 
 import { IFileTreeAPI, IFileTreeService } from '../../common';
@@ -35,6 +38,9 @@ export class DragAndDropService extends WithEventBus {
 
   @Autowired(IFileTreeService)
   private readonly fileTreeService: FileTreeService;
+
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
 
   private toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
 
@@ -64,15 +70,12 @@ export class DragAndDropService extends WithEventBus {
 
   handleDragStart = (ev: React.DragEvent, node: File | Directory, activeUri?: URI) => {
     ev.stopPropagation();
-    // React中的DragEnd事件可能不会触发，需要手动用Dom监听
-    // issue https://stackoverflow.com/a/24543568
-    ev.currentTarget.addEventListener(
-      'dragend',
-      (ev) => {
-        this.handleDragEnd(ev, node);
-      },
-      false,
-    );
+    // React DragEnd Event maybe not fired for the last renderred element.
+    // ref: https://stackoverflow.com/a/24543568
+    const handleDragEnd = (event) => {
+      this.handleDragEnd(event, node);
+    };
+    ev.currentTarget.addEventListener('dragend', handleDragEnd, false);
     let draggedNodes = this.model.selectedFiles;
     let isDragWithSelectedNode = false;
     for (const selected of draggedNodes) {
@@ -92,6 +95,26 @@ export class DragAndDropService extends WithEventBus {
     // 保证多选情况下找到首个文件
     if (draggedFile) {
       ev.dataTransfer.setData('uri', draggedFile.uri.toString());
+    }
+
+    ev.dataTransfer.setData(
+      'beingDraggedNodes',
+      JSON.stringify(this.beingDraggedNodes.map((node) => node.uri.toString())),
+    );
+
+    // 拖拽文件到桌面
+    // 仅支持单个文件 Chrome/Edge
+    if (draggedFile) {
+      const file = draggedFile as File;
+
+      if (file.uri.scheme === 'file') {
+        ev.dataTransfer.setData(
+          'DownloadURL',
+          `application/octet-stream:${file.displayName}:data:application/octet-stream;base64,${encodeBase64(
+            BinaryBuffer.fromString(file.filestat.uri),
+          )}`,
+        );
+      }
     }
 
     draggedNodes.forEach((node) => {
@@ -181,7 +204,9 @@ export class DragAndDropService extends WithEventBus {
       });
       this.toCancelNodeExpansion.push(
         Disposable.create(() => {
-          this.dragOverTrigger.cancel();
+          if (!this.dragOverTrigger.isTriggered()) {
+            this.dragOverTrigger.cancel();
+          }
         }),
       );
     }
@@ -232,12 +257,61 @@ export class DragAndDropService extends WithEventBus {
         ];
       } else {
         resources = this.beingDraggedNodes;
+        if (!resources || resources.length === 0) {
+          try {
+            const transUriList = JSON.parse(ev.dataTransfer.getData('beingDraggedNodes'));
+            if (transUriList && transUriList.length !== 0) {
+              resources = transUriList
+                .map((uri: string) => this.fileTreeService.getNodeByPathOrUri(new URI(uri)))
+                .filter(Boolean);
+              if (!resources.length) {
+                resources = await Promise.all(
+                  transUriList.map(async (str: string) => {
+                    const uri = new URI(str);
+                    let resource: File | Directory;
+                    const fileStat = await this.filesystem.getFileStat(uri.toString());
+                    if (fileStat?.isDirectory) {
+                      resource = new Directory(
+                        this.fileTreeService,
+                        this.root,
+                        uri,
+                        uri.displayName,
+                        {
+                          uri: uri.toString(),
+                          isDirectory: true,
+                          lastModification: new Date().getTime(),
+                        } as FileStat,
+                        uri.displayName,
+                      );
+                    } else {
+                      resource = new File(
+                        this.fileTreeService,
+                        this.root,
+                        uri,
+                        uri.displayName,
+                        {
+                          uri: uri.toString(),
+                          isDirectory: true,
+                          lastModification: new Date().getTime(),
+                        } as FileStat,
+                        uri.displayName,
+                      );
+                    }
+                    return resource;
+                  }),
+                );
+              }
+            }
+          } catch {}
+        }
       }
       if (resources.length > 0) {
         const targetContainerUri = activeUri ? activeUri : (containing && containing.uri)!;
         const resourcesCanBeMoved = resources.filter(
           (resource: File | Directory) =>
-            resource && resource.parent && !(resource.parent as Directory).uri.isEqual(targetContainerUri),
+            resource &&
+            resource.parent &&
+            (this.beingDraggedActiveUri ? !(resource.parent as Directory).uri.isEqual(targetContainerUri) : true),
         );
         if (resourcesCanBeMoved.length > 0) {
           // 最小化移动文件
@@ -310,7 +384,6 @@ export class DragAndDropService extends WithEventBus {
         this.draggedOverDec.removeTarget(this.potentialParent);
       }
       this.beingDraggedNodes.forEach((node) => {
-        // 添加拖拽样式
         this.beingDraggedDec.removeTarget(node);
       });
       this.beingDraggedNodes = [];

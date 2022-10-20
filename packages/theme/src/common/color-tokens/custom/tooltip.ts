@@ -9,7 +9,8 @@ export const ktTooltipForeground = registerColor(
   {
     dark: '#D7DBDE',
     light: '#4D4D4D',
-    hc: NOTIFICATIONS_FOREGROUND,
+    hcDark: NOTIFICATIONS_FOREGROUND,
+    hcLight: NOTIFICATIONS_FOREGROUND,
   },
   localize(
     'tooltipForeground',
@@ -22,7 +23,8 @@ export const ktTooltipBackground = registerColor(
   {
     dark: '#35393D',
     light: '#FFFFFF',
-    hc: NOTIFICATIONS_BACKGROUND,
+    hcDark: NOTIFICATIONS_BACKGROUND,
+    hcLight: NOTIFICATIONS_BACKGROUND,
   },
   localize(
     'tooltipBackground',
@@ -35,7 +37,8 @@ export const ktEditorActionToolTipBackground = registerColor(
   {
     dark: ktTooltipBackground,
     light: ktTooltipBackground,
-    hc: ktTooltipBackground,
+    hcDark: ktTooltipBackground,
+    hcLight: ktTooltipBackground,
   },
   localize('editorActionTooltipBackground', 'Tooltip background color for Editor Actions Tip'),
 );
@@ -45,7 +48,8 @@ export const ktEditorActionToolTipForeground = registerColor(
   {
     dark: ktTooltipForeground,
     light: ktTooltipForeground,
-    hc: ktTooltipForeground,
+    hcDark: ktTooltipForeground,
+    hcLight: ktTooltipForeground,
   },
   localize('editorActionTooltipForeground', 'Tooltip Foreground color for Editor Actions Tip'),
 );

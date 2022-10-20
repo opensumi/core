@@ -9,6 +9,7 @@ import {
   IEventBus,
   EventBusImpl,
   asExtensionCandidate,
+  isUndefined,
 } from '@opensumi/ide-core-common';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
 import { argv } from '@opensumi/ide-core-common/lib/node/cli';
@@ -100,6 +101,11 @@ export class ElectronMainApp {
     this.onBeforeReadyContribution();
     this.registerMainApis();
     this.registerURLHandlers();
+
+    // if not set, disable devtools support as default
+    if (isUndefined(this.config.devtools)) {
+      this.config.devtools = false;
+    }
   }
 
   async init() {

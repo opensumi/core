@@ -2,7 +2,7 @@ import { spawn } from 'child_process';
 import { dirname } from 'path';
 import qs from 'querystring';
 
-import { BrowserWindow, dialog, shell, webContents } from 'electron';
+import { BrowserWindow, dialog, shell, webContents, clipboard } from 'electron';
 import { stat } from 'fs-extra';
 import semver from 'semver';
 
@@ -289,6 +289,29 @@ export class ElectronMainUIService
       throw new Error('window with windowId ' + windowId + ' does not exist!');
     }
     window.setAlwaysOnTop(flag);
+  }
+
+  async readClipboardText(): Promise<string> {
+    return clipboard.readText();
+  }
+
+  async writeClipboardText(text: string): Promise<void> {
+    return clipboard.writeText(text);
+  }
+
+  async writeClipboardBuffer(field: string, buffer: Uint8Array): Promise<void> {
+    return clipboard.writeBuffer(field, Buffer.from(buffer));
+  }
+
+  async readClipboardBuffer(field: string): Promise<Uint8Array> {
+    return clipboard.readBuffer(field);
+  }
+
+  setDocumentEdited(windowId: number, edited: boolean) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.setDocumentEdited(edited);
+    }
   }
 }
 

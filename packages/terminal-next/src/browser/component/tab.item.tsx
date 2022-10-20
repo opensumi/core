@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef, KeyboardEvent, createElement } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
-import { getIcon, useInjectable, URI } from '@opensumi/ide-core-browser';
+import { getIcon, useInjectable, URI, localize, TERMINAL_COMMANDS } from '@opensumi/ide-core-browser';
 import { Loading } from '@opensumi/ide-core-browser/lib/components/loading';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { IIconService } from '@opensumi/ide-theme';
@@ -101,10 +101,14 @@ export const renderInfoItem = observer((props: ItemProps) => {
 
 export const renderAddItem = observer((props: ItemProps) => {
   const handleAdd = debounce(() => props.onClick && props.onClick(), 20);
+  const keybinding = props.getKeybinding && props.getKeybinding(TERMINAL_COMMANDS.ADD.id);
+
+  const createTitle = keybinding ? `${localize('terminal.new')}(${keybinding})` : localize('terminal.new');
 
   return (
     <div className={styles.item_wrapper}>
       <div
+        title={createTitle}
         className={clx({
           [getIcon('plus')]: true,
           [styles.item_add]: true,
@@ -112,6 +116,7 @@ export const renderAddItem = observer((props: ItemProps) => {
         onClick={() => handleAdd()}
       />
       <div
+        title={localize('terminal.new.type')}
         className={clx({
           [getIcon('down')]: true,
           [styles.item_more]: true,

@@ -49,8 +49,8 @@ import { ClientAppContribution } from '../common';
 import { CorePreferences } from '../core-preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { KeybindingRegistry, KeybindingService, NO_KEYBINDING_NAME } from '../keybinding';
-import { RenderedEvent } from '../layout';
-import { MenuRegistryImpl, IMenuRegistry } from '../menu/next';
+import { RenderedEvent } from '../layout/layout.interface';
+import { MenuRegistryImpl, IMenuRegistry } from '../menu/next/base';
 import {
   PreferenceProviderProvider,
   injectPreferenceSchemaProvider,
@@ -146,10 +146,6 @@ export class ClientApp implements IClientApp, IDisposable {
   stateService: ClientAppStateService;
 
   constructor(opts: IClientAppOpts) {
-    // set a global so the opensumi devtools can identify that
-    // the current page is powered by opensumi core
-    window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
-
     const {
       modules,
       contributions,
@@ -161,8 +157,10 @@ export class ClientApp implements IClientApp, IDisposable {
       editorBackgroundImage,
       defaultPreferences,
       allowSetDocumentTitleFollowWorkspaceDir = true,
+      devtools = false, // if not set, disable devtools support as default
       ...restOpts // rest part 为 AppConfig
     } = opts;
+
     this.initEarlyPreference(opts.workspaceDir || '');
     setLanguageId(getPreferenceLanguageId(defaultPreferences));
     this.injector = opts.injector || new Injector();
@@ -188,7 +186,14 @@ export class ClientApp implements IClientApp, IDisposable {
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,
+      devtools,
     };
+
+    if (devtools) {
+      // set a global so the opensumi devtools can identify that
+      // the current page is powered by opensumi core
+      window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
+    }
 
     if (this.config.isElectronRenderer && electronEnv.metadata?.extensionDevelopmentHost) {
       this.config.extensionDevelopmentHost = electronEnv.metadata.extensionDevelopmentHost;

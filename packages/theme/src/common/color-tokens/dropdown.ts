@@ -3,25 +3,25 @@ import { localize } from '@opensumi/ide-core-common';
 import { Color } from '../../common/color';
 import { registerColor } from '../utils';
 
-import { contrastBorder } from './base';
+import { contrastBorder, foreground } from './base';
 
-export const dropdownBackground = registerColor(
+export const selectBackground = registerColor(
   'dropdown.background',
-  { dark: '#3C3C3C', light: Color.white, hc: Color.black },
+  { dark: '#3C3C3C', light: Color.white, hcDark: Color.black, hcLight: Color.white },
   localize('dropdownBackground', 'Dropdown background.'),
 );
-export const dropdownListBackground = registerColor(
+export const selectListBackground = registerColor(
   'dropdown.listBackground',
-  { dark: null, light: null, hc: Color.black },
+  { dark: null, light: null, hcDark: Color.black, hcLight: Color.white },
   localize('dropdownListBackground', 'Dropdown list background.'),
 );
-export const dropdownForeground = registerColor(
+export const selectForeground = registerColor(
   'dropdown.foreground',
-  { dark: '#F0F0F0', light: null, hc: Color.white },
+  { dark: '#F0F0F0', light: null, hcDark: Color.white, hcLight: foreground },
   localize('dropdownForeground', 'Dropdown foreground.'),
 );
-export const dropdownBorder = registerColor(
+export const selectBorder = registerColor(
   'dropdown.border',
-  { dark: dropdownBackground, light: '#CECECE', hc: contrastBorder },
+  { dark: selectBackground, light: '#CECECE', hcDark: contrastBorder, hcLight: contrastBorder },
   localize('dropdownBorder', 'Dropdown border.'),
 );

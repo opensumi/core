@@ -42,6 +42,17 @@
   }
 }
 
+.validate_warning {
+  color: var(--inputValidation-warningForeground);
+  background-color: var(--inputValidation-warningBackground);
+
+  .item_selected,
+  .item_selected:hover,
+  .item:hover {
+    background-color: var(--inputValidation-warningBackground);
+  }
+}
+
 .item {
   display: flex;
   align-items: center;
@@ -96,6 +107,12 @@
   }
 }
 
+.item_label_name,
+.item_label_description,
+.item_label_detail {
+  display: flex;
+}
+
 .item_label_description_label {
   color: var(--descriptionForeground);
 }
@@ -131,7 +148,12 @@
 
 .item_label {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+}
+
+.label_icon_container {
+  display: flex;
+  align-items: center;
 }
 
 .input {

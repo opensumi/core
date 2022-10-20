@@ -124,7 +124,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private _currentEditorGroup: IEditorGroup;
 
-  _onDidCurrentEditorGroupChanged = new EventEmitter<IEditorGroup>();
+  private _onDidCurrentEditorGroupChanged = new EventEmitter<IEditorGroup>();
   onDidCurrentEditorGroupChanged: Event<IEditorGroup> = this._onDidCurrentEditorGroupChanged.event;
 
   @Autowired(StorageProvider)

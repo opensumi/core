@@ -88,7 +88,7 @@ export interface IView {
 export interface IColor {
   id: string;
   description: string;
-  defaults: { light: string; dark: string; highContrast: string };
+  defaults: { light: string; dark: string; highContrast: string; highContrastLight: string };
 }
 
 export interface IExtensionContributions {

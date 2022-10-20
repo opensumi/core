@@ -16,7 +16,7 @@ export class OpenSumiWorkspace extends Disposable {
         track.cleanupSync();
       },
     });
-    this.workspacePath = path.join(temp.mkdirSync('workspace'));
+    this.workspacePath = fse.realpathSync(path.join(temp.mkdirSync('workspace')));
   }
 
   get workspace() {

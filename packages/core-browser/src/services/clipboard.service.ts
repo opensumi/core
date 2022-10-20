@@ -1,19 +1,10 @@
 import { Autowired, Injectable } from '@opensumi/di';
+import { IClipboardService, CLIPBOARD_FILE_TOKEN } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 
 import { ILogger } from '../logger';
 
-export const IClipboardService = Symbol('IClipboardService');
-export interface IClipboardService {
-  /**
-   * 写到粘贴板
-   */
-  writeText(text: string): Promise<void>;
-
-  /**
-   * 读取粘贴板
-   */
-  readText(): Promise<string>;
-}
+export { CLIPBOARD_FILE_TOKEN, IClipboardService };
 
 @Injectable()
 export class BrowserClipboardService implements IClipboardService {
@@ -62,6 +53,45 @@ export class BrowserClipboardService implements IClipboardService {
     } catch (error) {
       this.logger.error(error);
       return '';
+    }
+  }
+  async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
+    try {
+      localStorage.setItem(field, JSON.stringify(resources.map((uri) => uri.toString())));
+    } catch (e) {
+      this.logger.error(e);
+    }
+  }
+  async readResources(field = CLIPBOARD_FILE_TOKEN): Promise<URI[]> {
+    try {
+      const localStorgeUriList = JSON.parse(localStorage.getItem(field) ?? '');
+      if (
+        !Array.isArray(localStorgeUriList) ||
+        !localStorgeUriList.length ||
+        !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
+      ) {
+        return [];
+      }
+      return localStorgeUriList.map((str) => URI.parse(str));
+    } catch (e) {
+      this.logger.error(e);
+      return [];
+    }
+  }
+  async hasResources(field?: string | undefined): Promise<boolean> {
+    try {
+      const localStorgeUriList = JSON.parse(localStorage.getItem(field ?? CLIPBOARD_FILE_TOKEN) ?? '');
+      if (
+        !Array.isArray(localStorgeUriList) ||
+        !localStorgeUriList.length ||
+        !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
+      ) {
+        return false;
+      }
+      return true;
+    } catch (e) {
+      this.logger.error(e);
+      return false;
     }
   }
 }

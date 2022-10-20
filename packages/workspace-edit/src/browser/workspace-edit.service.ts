@@ -198,6 +198,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     isDirectory?: boolean;
     copy?: boolean;
     ignoreIfExists?: boolean | undefined;
+    content?: string;
   } = {};
 
   constructor(edit: IResourceFileEdit) {
@@ -316,7 +317,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
         if (options.isDirectory) {
           await workspaceFS.createFolder(this.newResource);
         } else {
-          await workspaceFS.create(this.newResource, '', { overwrite: options.overwrite });
+          await workspaceFS.create(this.newResource, options.content || '', { overwrite: options.overwrite });
         }
       } catch (err) {
         if (FileSystemError.FileExists.is(err) && options.ignoreIfExists) {

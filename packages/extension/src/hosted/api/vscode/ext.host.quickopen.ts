@@ -24,7 +24,9 @@ import {
   IExtHostQuickOpen,
   IMainThreadQuickOpen,
   IExtHostWorkspace,
+  Severity,
 } from '../../../common/vscode';
+import { QuickPickItemKind } from '../../../common/vscode/ext-types';
 
 type Item = string | vscode.QuickPickItem;
 
@@ -32,7 +34,9 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   private _onDidSelectItem?: (handle: number) => void;
 
   private proxy: IMainThreadQuickOpen;
-  private validateInputHandler: undefined | ((input: string) => MaybePromise<string | null | undefined>);
+  private validateInputHandler:
+    | undefined
+    | ((input: string) => MaybePromise<string | vscode.InputBoxValidationMessage | null | undefined>);
 
   private createdQuicks = new Map<number, ExtQuickPick<vscode.QuickPickItem>>(); // Each quick will have a number so that we know where to fire events
   private createdInputBoxs = new Map<number, ExtQuickInput>();
@@ -74,24 +78,32 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       };
     }
 
-    const pickItems = items.map((item, index) => {
+    const pickItems: QuickPickItem<number>[] = [];
+    const pendingGroupItem: vscode.QuickPickItem[] = [];
+    for (const [index, item] of items.entries()) {
       if (typeof item === 'string') {
-        return {
+        pickItems.push({
           label: item,
           value: index,
-        };
+        });
       } else {
-        const quickPickItem: QuickPickItem<number> = {
-          label: item.label,
-          description: item.description,
-          detail: item.detail,
-          value: index, // handle
-          buttons: item.buttons as QuickInputButton[],
-        };
-
-        return quickPickItem;
+        if (item.kind === QuickPickItemKind.Separator) {
+          pendingGroupItem.push(item);
+        } else {
+          // group label 取上一个 kind 为 Separator 的 item label
+          const groupLabel = pendingGroupItem.pop()?.label;
+          pickItems.push({
+            label: item.label,
+            groupLabel,
+            description: item.description,
+            detail: item.detail,
+            value: index, // handle
+            buttons: item.buttons as QuickInputButton[],
+            showBorder: typeof groupLabel !== 'undefined',
+          });
+        }
       }
-    });
+    }
 
     const quickPickPromise = this.proxy.$showQuickPick(
       sessionId,
@@ -228,9 +240,11 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
     return hookCancellationToken(token, promise);
   }
 
-  $validateInput(input: string): MaybePromise<string | null | undefined> {
+  $validateInput(input: string): MaybePromise<string | { message: string; severity: Severity } | null | undefined> {
     if (this.validateInputHandler) {
-      return this.validateInputHandler(input);
+      return this.validateInputHandler(input) as MaybePromise<
+        string | { message: string; severity: Severity } | null | undefined
+      >;
     }
     return undefined;
   }
@@ -433,7 +447,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
   private _password: boolean;
   private _buttons: vscode.QuickInputButton[];
   private _prompt: string | undefined;
-  private _validationMessage: string | undefined;
+  private _validationMessage: string | vscode.InputBoxValidationMessage | undefined;
   private _title: string | undefined;
   private _step: number | undefined;
   private _totalSteps: number | undefined;
@@ -581,13 +595,22 @@ abstract class ExtQuickInput implements vscode.InputBox {
     this.update({ placeHolder });
   }
 
-  get validationMessage(): string | undefined {
+  get validationMessage(): string | vscode.InputBoxValidationMessage | undefined {
     return this._validationMessage;
   }
 
-  set validationMessage(validationMessage: string | undefined) {
+  set validationMessage(validationMessage: string | vscode.InputBoxValidationMessage | undefined) {
     this._validationMessage = validationMessage;
-    this.update({ validationMessage });
+    if (!validationMessage) {
+      this.update({ validationMessage: undefined, severity: Severity.Ignore });
+    } else if (typeof validationMessage === 'string') {
+      this.update({ validationMessage, severity: Severity.Error });
+    } else {
+      this.update({
+        validationMessage: validationMessage.message,
+        severity: (validationMessage.severity as unknown as Severity) ?? Severity.Error,
+      });
+    }
   }
 
   getOptions(): QuickInputOptions {
@@ -600,7 +623,8 @@ abstract class ExtQuickInput implements vscode.InputBox {
       title: this._title,
       totalSteps: this.totalSteps,
       step: this.step,
-      validationMessage: this.validationMessage,
+      validationMessage:
+        typeof this.validationMessage === 'string' ? this.validationMessage : this.validationMessage?.message,
       buttons: this.buttons as unknown as QuickTitleButton[],
       busy: this.busy,
       enabled: this.enabled,
@@ -614,7 +638,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
     this._pendingUpdate = {};
   }
 
-  private update(data: Partial<QuickInputOptions>) {
+  private update(data: Partial<QuickInputOptions> & { severity?: Severity }) {
     if (this._disposed) {
       return;
     }

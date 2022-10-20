@@ -1,6 +1,6 @@
 import * as jsoncParser from 'jsonc-parser';
 
-import { Autowired, Injectable } from '@opensumi/di';
+import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import {
   ClientAppContribution,
   PreferenceSchemaProvider,
@@ -35,14 +35,18 @@ import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-edi
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
+  IEditor,
+  IEditorFeatureRegistry,
   IResourceOpenResult,
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { PREF_SCHEME, SettingContribution } from '../common';
+import { SettingJSONGlyphMarginEdit } from '../common/commands';
 
 import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference-settings.service';
+import { EditPreferenceDecorationsContribution } from './preference-widgets';
 import { PreferenceView } from './preferences.view';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -126,6 +130,9 @@ export class PreferenceContribution
     MenuContribution,
     JsonSchemaContribution
 {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
   @Autowired(PreferenceSchemaProvider)
   private readonly schemaProvider: PreferenceSchemaProvider;
 
@@ -413,6 +420,12 @@ export class PreferenceContribution
           componentId: PREF_PREVIEW_COMPONENT_ID,
         },
       ]);
+    });
+  }
+
+  registerEditorFeature(registry: IEditorFeatureRegistry) {
+    registry.registerEditorFeatureContribution({
+      contribute: (editor: IEditor) => this.injector.get(EditPreferenceDecorationsContribution, [editor]).contribute(),
     });
   }
 }

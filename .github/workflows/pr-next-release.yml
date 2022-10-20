@@ -6,7 +6,7 @@ on:
 jobs:
   next-version:
     name: Next Version
-
+    environment: next
     runs-on: ubuntu-latest
     # 在 pull request 评论触发的 issue_comment 事件中执行
     # 需满足评论人为项目 OWNER 或 MEMBER，或评论人为 PR 发起人
@@ -20,10 +20,10 @@ jobs:
 
     steps:
       # 判断用户是否有写权限
-      - name: "Check if user has write access"
-        uses: "lannonbr/repo-permission-check-action@2.0.0"
+      - name: 'Check if user has write access'
+        uses: 'lannonbr/repo-permission-check-action@2.0.0'
         with:
-          permission: "write"
+          permission: 'write'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -34,7 +34,7 @@ jobs:
           echo "HEAD_SHA=${{steps.comment-branch.outputs.head_sha}}" >> $GITHUB_ENV
 
       # Checkout 到 PR 对应分支
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: success()
         with:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
@@ -51,7 +51,7 @@ jobs:
           echo "CHECK_RUN_ID=${{steps.run-check-suite.outputs.result}}" >> $GITHUB_ENV
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'

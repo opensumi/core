@@ -3,23 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import {
   useInjectable,
-  MaybeNull,
   ComponentRenderer,
   ComponentRegistry,
   DomListener,
-  AppConfig,
-  replaceLocalizePlaceholder,
   electronEnv,
   IWindowService,
+  useEventEffect,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { path, isMacintosh, Disposable } from '@opensumi/ide-core-browser';
+import { isMacintosh, Disposable } from '@opensumi/ide-core-browser';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { localize } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
-import { WorkbenchEditorService, IResource } from '@opensumi/ide-editor';
 
-const { basename } = path;
+import { IElectronHeaderService } from '../../common/header';
+
 import styles from './header.module.less';
 
 const useFullScreen = () => {
@@ -123,6 +120,7 @@ export const HeaderBarRightComponent = () => {
 interface ElectronHeaderBarPorps {
   LeftComponent?: React.FunctionComponent;
   RightComponent?: React.FunctionComponent;
+  TitleComponent?: React.FunctionComponent<TitleBarProps>;
   Icon?: React.FunctionComponent;
   autoHide?: boolean;
 }
@@ -131,7 +129,12 @@ interface ElectronHeaderBarPorps {
  * autoHide: Hide the HeaderBar when the macOS full screen
  */
 export const ElectronHeaderBar = observer(
-  ({ LeftComponent, RightComponent, Icon, autoHide = true }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
+  ({
+    LeftComponent,
+    RightComponent,
+    TitleComponent,
+    autoHide = true,
+  }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
 
     const { isFullScreen } = useFullScreen();
@@ -142,12 +145,15 @@ export const ElectronHeaderBar = observer(
     if (!RightComponent) {
       RightComponent = HeaderBarRightComponent;
     }
+    if (!TitleComponent) {
+      TitleComponent = HeaderBarTitleComponent;
+    }
 
     // in Mac, hide the header bar if it is in full screen mode
     if (isMacintosh && isFullScreen && autoHide) {
       return (
         <div>
-          <TitleInfo hidden={true} />
+          <TitleComponent hidden={true} />
         </div>
       );
     }
@@ -167,7 +173,7 @@ export const ElectronHeaderBar = observer(
         }}
       >
         <LeftComponent />
-        <TitleInfo />
+        <TitleComponent />
         <RightComponent />
       </div>
     );
@@ -176,22 +182,36 @@ export const ElectronHeaderBar = observer(
 
 declare const ResizeObserver: any;
 
-export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
-  const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
-  const [currentResource, setCurrentResource] = useState<MaybeNull<IResource>>(editorService.currentResource);
+export interface TitleInfo {
+  currentResourceName?: string;
+  workspaceName?: string;
+  appName?: string;
+  remoteMode?: boolean;
+  extensionDevelopmentHost?: boolean;
+}
+
+export interface TitleBarProps {
+  hidden?: boolean;
+}
+
+export const HeaderBarTitleComponent = observer(({ hidden }: TitleBarProps) => {
+  const headerService = useInjectable(IElectronHeaderService) as IElectronHeaderService;
   const ref = useRef<HTMLDivElement>(null);
   const spanRef = useRef<HTMLSpanElement>(null);
-  const appConfig: AppConfig = useInjectable(AppConfig);
-  const [appTitle, setAppTitle] = useState<string>();
+  const [appTitle, setAppTitle] = useState(headerService.appTitle);
+
+  useEventEffect(
+    headerService.onTitleChanged,
+    (v) => {
+      setAppTitle(v);
+    },
+    [],
+  );
 
   useEffect(() => {
     setPosition();
     const disposer = new Disposable();
-    disposer.addDispose(
-      editorService.onActiveResourceChange((resource) => {
-        setCurrentResource(resource);
-      }),
-    );
+
     disposer.addDispose(
       new DomListener(window, 'resize', () => {
         setPosition();
@@ -207,12 +227,12 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
       });
     }
     return disposer.dispose.bind(disposer);
-  }, [currentResource]);
+  }, []);
 
   function setPosition() {
     // 在下一个 animationFrame 执行，此时 spanRef.current!.offsetWidth 的宽度才是正确的
     window.requestAnimationFrame(() => {
-      if (ref.current) {
+      if (ref.current && spanRef.current) {
         const windowWidth = window.innerWidth;
         let prevWidth = 0;
         let node = ref.current.previousElementSibling;
@@ -220,29 +240,16 @@ export const TitleInfo = observer(({ hidden }: { hidden?: boolean }) => {
           prevWidth += (node as HTMLElement).offsetWidth;
           node = node.previousElementSibling;
         }
-        const left = Math.max(0, windowWidth * 0.5 - prevWidth - spanRef.current!.offsetWidth * 0.5);
+        const left = Math.max(0, windowWidth * 0.5 - prevWidth - spanRef.current.offsetWidth * 0.5);
         ref.current.style.paddingLeft = left + 'px';
       }
     });
   }
 
-  const dirname = appConfig.workspaceDir ? basename(appConfig.workspaceDir) : undefined;
-
-  const title =
-    (currentResource ? currentResource.name + ' — ' : '') +
-    (dirname ? dirname + ' — ' : '') +
-    replaceLocalizePlaceholder(appConfig.appName) +
-    (appConfig.isRemote ? ` [${localize('common.remoteMode')}]` : '');
-
-  // 同时更新 Html Title
+  // 同时更新 document Title
   useEffect(() => {
-    let documentTitle = title;
-    if (appConfig.extensionDevelopmentHost) {
-      documentTitle = `[${localize('workspace.development.title')}] ${title}`;
-    }
-    document.title = documentTitle;
-    setAppTitle(documentTitle);
-  }, [title]);
+    document.title = appTitle;
+  }, [appTitle]);
 
   if (hidden) {
     return null;

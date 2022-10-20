@@ -51,7 +51,15 @@ export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema>
             highContrast: {
               description: localize(
                 'contributes.defaults.highContrast',
-                'The default color for high contrast themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.',
+                'The default color for high contrast dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `dark` color is used as default for high contrast dark themes.',
+              ),
+              type: 'string',
+              anyOf: [{ type: 'string', format: 'color-hex' }],
+            },
+            highContrastLight: {
+              description: localize(
+                'contributes.defaults.highContrastLight',
+                'The default color for high contrast light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `light` color is used as default for high contrast light themes.',
               ),
               type: 'string',
               anyOf: [{ type: 'string', format: 'color-hex' }],

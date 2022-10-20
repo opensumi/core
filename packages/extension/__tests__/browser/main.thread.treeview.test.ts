@@ -41,7 +41,7 @@ const mockMenuRegistry = {
 describe('MainThreadTreeView API Test Suite', () => {
   let injector: MockInjector;
   let mainThreadTreeView: MainThreadTreeView;
-  const testTreeViewId = 'testView';
+  const treeViewId = 'testView';
   beforeEach(() => {
     jest.clearAllMocks();
 
@@ -82,43 +82,60 @@ describe('MainThreadTreeView API Test Suite', () => {
     );
 
     mainThreadTreeView = injector.get(MainThreadTreeView, [mockProxy as any, 'node']);
-    mainThreadTreeView.$registerTreeDataProvider(testTreeViewId, {});
+    mainThreadTreeView.$registerTreeDataProvider(treeViewId, {
+      hasHandleDrop: false,
+      hasHandleDrag: false,
+    });
   });
 
   afterEach(() => {
-    mainThreadTreeView.$unregisterTreeDataProvider(testTreeViewId);
+    mainThreadTreeView.$unregisterTreeDataProvider(treeViewId);
   });
 
-  it('should able to $registerTreeDataProvider', async () => {
+  it('$registerTreeDataProvider api should be worked', async () => {
     expect(mockMainLayoutService.replaceViewComponent).toBeCalledTimes(1);
     expect(mockMenuRegistry.registerMenuItem).toBeCalledTimes(0);
 
     mainThreadTreeView.$registerTreeDataProvider('testView1', {
       showCollapseAll: true,
+      hasHandleDrag: false,
+      hasHandleDrop: false,
     });
     expect(mockMainLayoutService.replaceViewComponent).toBeCalledTimes(2);
     expect(mockMenuRegistry.registerMenuItem).toBeCalledTimes(1);
     mainThreadTreeView.$unregisterTreeDataProvider('testView1');
   });
 
-  it('should able to $refresh', async () => {
-    await mainThreadTreeView.$refresh(testTreeViewId);
+  it('$resolveDropFileData api should be worked', async () => {});
+
+  it('$refresh api should be worked', async () => {
+    await mainThreadTreeView.$refresh(treeViewId);
   });
 
-  it('should able to $reveal', async () => {
-    await mainThreadTreeView.$reveal(testTreeViewId, 'treeItemId', {});
+  it('$reveal api should be worked', async () => {
+    await mainThreadTreeView.$reveal(treeViewId, 'treeItemId', {});
     expect(mockMainLayoutService.revealView).toBeCalledTimes(1);
   });
 
-  it('status listener should be work', () => {
+  it('$unregisterTreeDataProvider api should be worked', () => {
+    mainThreadTreeView.$unregisterTreeDataProvider(treeViewId);
+    expect(mockTabbarHandler.disposeView).toBeCalledTimes(1);
+  });
+
+  it('$resolveDropFileData api should be worked', async () => {
+    const unknownTreeViewId = 'unknown';
+    await expect(mainThreadTreeView.$resolveDropFileData(unknownTreeViewId, 0, '')).rejects.toThrowError(
+      'Unknown tree',
+    );
+    await expect(mainThreadTreeView.$resolveDropFileData(treeViewId, 0, '')).rejects.toThrowError(
+      'No data transfer found',
+    );
+  });
+
+  it('Active event should be effected', () => {
     mockActiveEmitter.fire();
     expect(mockExtThreadTreeViewProxy.$setVisible).toBeCalledTimes(1);
     mockInActiveEmitter.fire();
     expect(mockExtThreadTreeViewProxy.$setVisible).toBeCalledTimes(2);
-  });
-
-  it('should able to $unregisterTreeDataProvider', () => {
-    mainThreadTreeView.$unregisterTreeDataProvider(testTreeViewId);
-    expect(mockTabbarHandler.disposeView).toBeCalledTimes(1);
   });
 });

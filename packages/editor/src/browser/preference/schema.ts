@@ -1864,13 +1864,18 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'diffEditor.ignoreTrimWhitespace': {
     type: 'boolean',
-    default: false, // 开天修改
+    default: false,
     description: '%diffEditor.configuration.ignoreTrimWhitespace%',
   },
   'editor.experimental.stickyScroll.enabled': {
     type: 'boolean',
     default: false,
     description: '%editor.experimental.stickyScroll.enabled.description%',
+  },
+  'editor.mouseBackForwardToNavigate': {
+    type: 'boolean',
+    default: true,
+    description: '%editor.configuration.mouseBackForwardToNavigate%',
   },
 };
 

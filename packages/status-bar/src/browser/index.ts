@@ -16,5 +16,4 @@ export class StatusBarModule extends BrowserModule {
     },
     StatusBarContribution,
   ];
-  component = StatusBarView;
 }
