@@ -53,7 +53,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
   private cachedBreadCrumb = new LRUMap<string, IBreadCrumbPart>(200, 100);
 
   handlesUri(uri: URI): boolean {
-    return uri.scheme === Schemes.file || uri.scheme === Schemes.userStorage;
+    return this.fileServiceClient.handlesScheme(uri.scheme);
   }
 
   provideBreadCrumbForUri(uri: URI, editor: MaybeNull<IEditor>): IBreadCrumbPart[] {

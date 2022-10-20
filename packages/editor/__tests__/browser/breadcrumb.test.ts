@@ -51,6 +51,7 @@ describe('breadcrumb test', () => {
           }
         }
       },
+      handlesScheme: () => true,
     });
 
     injector.mockService(IEditorDocumentModelService, {
