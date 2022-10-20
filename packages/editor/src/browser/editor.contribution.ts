@@ -247,9 +247,11 @@ export class EditorContribution
 
   @OnEvent(ResourceDecorationChangeEvent)
   onResourceDecorationChangeEvent() {
-    const hasDirty = this.workbenchEditorService.hasDirty();
-    // setup macos native dirty indicator
-    this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
+    if (this.appConfig.isElectronRenderer) {
+      const hasDirty = this.workbenchEditorService.hasDirty();
+      // setup macos native dirty indicator
+      this.electronMainUIService.setDocumentEdited(electronEnv.currentWindowId, hasDirty ? true : false);
+    }
   }
 
   onWillStop(app: IClientApp) {
