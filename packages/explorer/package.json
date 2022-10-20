@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-explorer",
-  "version": "2.20.6",
+  "version": "2.20.7",
   "files": [
     "lib"
   ],
@@ -16,10 +16,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-node": "2.20.6"
+    "@opensumi/ide-core-node": "2.20.7"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.20.6",
+    "@opensumi/ide-core-browser": "2.20.7",
     "@opensumi/ide-dev-tool": "^1.3.1"
   }
 }
