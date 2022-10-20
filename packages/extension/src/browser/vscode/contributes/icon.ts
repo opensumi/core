@@ -4,6 +4,7 @@ import { URI } from '@opensumi/ide-core-common';
 import { ThemeContribution, IIconService } from '@opensumi/ide-theme';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 export type ThemesSchema = Array<ThemeContribution>;
 
@@ -14,11 +15,20 @@ export class IconThemesContributionPoint extends VSCodeContributePoint<ThemesSch
   @Autowired(IIconService)
   protected readonly iconService: IIconService;
 
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+
   contribute() {
-    const themes = this.json.map((t) => ({
-      ...t,
-      label: this.getLocalizeFromNlsJSON(t.label),
-    }));
-    this.iconService.registerIconThemes(themes, URI.from(this.extension.uri!));
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const themes = contributes.map((t) => ({
+        ...t,
+        label: this.getLocalizeFromNlsJSON(t.label, extensionId),
+      }));
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (extension) {
+        this.iconService.registerIconThemes(themes, URI.from(extension.uri!));
+      }
+    }
   }
 }

@@ -53,15 +53,18 @@ export class TaskDefinitionContributionPoint extends VSCodeContributePoint<ITask
   logger: ILogger;
 
   contribute() {
-    for (const definition of this.json) {
-      this.logger.verbose(`${this.extension.id} register taskDefinition ${JSON.stringify(definition)}`);
-      this.addDispose(
-        this.taskDefinitionRegistry.register(definition.type, {
-          ...definition,
-          taskType: definition.type,
-          extensionId: this.extension.id,
-        }),
-      );
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      for (const definition of contributes) {
+        this.logger.verbose(`${extensionId} register taskDefinition ${JSON.stringify(definition)}`);
+        this.addDispose(
+          this.taskDefinitionRegistry.register(definition.type, {
+            ...definition,
+            taskType: definition.type,
+            extensionId,
+          }),
+        );
+      }
     }
   }
 }

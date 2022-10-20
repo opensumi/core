@@ -5,6 +5,7 @@ import { LanguagesContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 export type LanguagesSchema = Array<LanguagesContribution>;
 
@@ -15,8 +16,18 @@ export class LanguagesContributionPoint extends VSCodeContributePoint<LanguagesS
   @Autowired(ITextmateTokenizer)
   private readonly textMateService: ITextmateTokenizerService;
 
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+
   async contribute() {
-    await this.textMateService.registerLanguages(this.json, URI.from(this.extension.uri!));
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
+      }
+      await this.textMateService.registerLanguages(contributes, URI.from(extension.uri!));
+    }
   }
 
   // copied from vscode

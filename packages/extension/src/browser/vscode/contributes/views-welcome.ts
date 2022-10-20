@@ -105,24 +105,27 @@ export class ViewsWelcomeContributionPoint extends VSCodeContributePoint<ViewsWe
 
   contribute() {
     const welcomesByViewId = new Map<string, Map<ViewWelcome, IViewContentDescriptor>>();
-    for (const welcome of this.json) {
-      const { group, order } = parseGroupAndOrder(welcome);
-      const precondition = ContextKeyExpr.deserialize(welcome.enablement);
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      for (const welcome of contributes) {
+        const { group, order } = parseGroupAndOrder(welcome);
+        const precondition = ContextKeyExpr.deserialize(welcome.enablement);
 
-      const id = ViewIdentifierMap[welcome.view] ?? welcome.view;
-      let viewContentMap = welcomesByViewId.get(id);
-      if (!viewContentMap) {
-        viewContentMap = new Map();
-        welcomesByViewId.set(id, viewContentMap);
+        const id = ViewIdentifierMap[welcome.view] ?? welcome.view;
+        let viewContentMap = welcomesByViewId.get(id);
+        if (!viewContentMap) {
+          viewContentMap = new Map();
+          welcomesByViewId.set(id, viewContentMap);
+        }
+
+        viewContentMap.set(welcome, {
+          content: this.getLocalizeFromNlsJSON(welcome.contents, extensionId),
+          when: ContextKeyExpr.deserialize(welcome.when),
+          precondition,
+          group,
+          order,
+        });
       }
-
-      viewContentMap.set(welcome, {
-        content: this.getLocalizeFromNlsJSON(welcome.contents),
-        when: ContextKeyExpr.deserialize(welcome.when),
-        precondition,
-        group,
-        order,
-      });
     }
     for (const [id, viewContentMap] of welcomesByViewId) {
       const disposables = this.viewsRegistry.registerViewWelcomeContent2(id, viewContentMap);

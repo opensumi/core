@@ -1,4 +1,4 @@
-import React = require('react');
+import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
@@ -23,7 +23,7 @@ import { IActivationEventService } from '../../types';
 
 @Injectable()
 @Contributes('customEditors')
-@LifeCycle(LifeCyclePhase.Starting)
+@LifeCycle(LifeCyclePhase.Ready)
 export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomEditorScheme[]> {
   @Autowired(EditorComponentRegistry)
   private editorComponentRegistry: EditorComponentRegistry;
@@ -37,24 +37,26 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
   private options = new Map<string, ICustomEditorOptions>();
 
   contribute() {
-    const customEditors = this.json || [];
-    customEditors.forEach((c) => {
-      this.registerSingleCustomEditor(c);
-    });
-    this.addDispose(
-      this.eventBus.on(CustomEditorOptionChangeEvent, (e) => {
-        if (this.options.has(e.payload.viewType)) {
-          this.options.set(e.payload.viewType, e.payload.options);
-        }
-      }),
-    );
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      contributes.forEach((c) => {
+        this.registerSingleCustomEditor(c, extensionId);
+      });
+      this.addDispose(
+        this.eventBus.on(CustomEditorOptionChangeEvent, (e) => {
+          if (this.options.has(e.payload.viewType)) {
+            this.options.set(e.payload.viewType, e.payload.options);
+          }
+        }),
+      );
+    }
   }
 
   getOptions(viewType: string) {
     return this.options.get(viewType) || {};
   }
 
-  private registerSingleCustomEditor(customEditor: CustomEditorScheme) {
+  private registerSingleCustomEditor(customEditor: CustomEditorScheme, extensionId: string) {
     try {
       const viewType = customEditor.viewType;
       this.options.set(customEditor.viewType, {});
@@ -88,7 +90,7 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
                   componentId,
                   type: 'component',
                   title: customEditor.displayName
-                    ? this.getLocalizeFromNlsJSON(customEditor.displayName)
+                    ? this.getLocalizeFromNlsJSON(customEditor.displayName, extensionId)
                     : customEditor.viewType,
                   weight: priority === IEditorPriority.default ? Number.MAX_SAFE_INTEGER : Number.MIN_SAFE_INTEGER,
                   priority,

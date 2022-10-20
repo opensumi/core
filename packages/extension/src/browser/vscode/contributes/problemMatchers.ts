@@ -247,8 +247,11 @@ export class ProblemMatchersContributionPoint extends VSCodeContributePoint<Prob
   problemMatcher: IProblemMatcherRegistry;
 
   contribute() {
-    for (const matcher of this.json) {
-      this.addDispose(this.problemMatcher.register(matcher));
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      for (const matcher of contributes) {
+        this.addDispose(this.problemMatcher.register(matcher));
+      }
     }
   }
 }

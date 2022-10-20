@@ -10,6 +10,7 @@ import {
   IExtCommandManagement,
   LifeCycle,
 } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 export interface CommandFormat {
   /**
@@ -42,7 +43,7 @@ export type CommandsSchema = Array<CommandFormat>;
 
 @Injectable()
 @Contributes('commands')
-@LifeCycle(LifeCyclePhase.Ready)
+@LifeCycle(LifeCyclePhase.Initialize)
 export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSchema> {
   @Autowired(CommandRegistry)
   private readonly commandRegistry: CommandRegistry;
@@ -59,32 +60,43 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   @Autowired(AppConfig)
   private readonly config: AppConfig;
 
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+
   contribute() {
-    this.json.forEach((command) => {
-      this.addDispose(
-        this.commandRegistry.registerCommand(
-          {
-            category: this.getLocalizeFromNlsJSON(command.category),
-            label: this.getLocalizeFromNlsJSON(command.title),
-            shortLabel: command.shortTitle ? this.getLocalizeFromNlsJSON(command.shortTitle) : undefined,
-            id: command.command,
-            iconClass:
-              (typeof command.icon === 'string' && this.iconService.fromString(command.icon)) ||
-              this.iconService.fromIcon(this.extension.path, command.icon, IconType.Background),
-            enablement: command.enablement,
-            alias: this.getLocalizeFromNlsJSON(command.title, this.extension.id, 'default'),
-            aliasCategory: this.getLocalizeFromNlsJSON(command.category, this.extension.id, 'default'),
-          },
-          {
-            execute: (...args: any[]) => this.extensionService.executeExtensionCommand(command.command, args),
-          },
-        ),
-      );
-      if (this.config.noExtHost) {
-        this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'worker'));
-      } else {
-        this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'node'));
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
       }
-    });
+
+      contributes.forEach((command) => {
+        this.addDispose(
+          this.commandRegistry.registerCommand(
+            {
+              category: this.getLocalizeFromNlsJSON(command.category, extensionId),
+              label: this.getLocalizeFromNlsJSON(command.title, extensionId),
+              shortLabel: command.shortTitle ? this.getLocalizeFromNlsJSON(command.shortTitle, extensionId) : undefined,
+              id: command.command,
+              iconClass:
+                (typeof command.icon === 'string' && this.iconService.fromString(command.icon)) ||
+                this.iconService.fromIcon(extension.path, command.icon, IconType.Background),
+              enablement: command.enablement,
+              alias: this.getLocalizeFromNlsJSON(command.title, extensionId, 'default'),
+              aliasCategory: this.getLocalizeFromNlsJSON(command.category, extensionId, 'default'),
+            },
+            {
+              execute: (...args: any[]) => this.extensionService.executeExtensionCommand(command.command, args),
+            },
+          ),
+        );
+        if (this.config.noExtHost) {
+          this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'worker'));
+        } else {
+          this.addDispose(this.extensionCommandManager.registerExtensionCommandEnv(command.command, 'node'));
+        }
+      });
+    }
   }
 }

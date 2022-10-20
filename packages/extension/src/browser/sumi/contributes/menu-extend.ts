@@ -16,19 +16,21 @@ export class MenuExtendContributionPoint extends VSCodeContributePoint<KtMenubar
   private readonly menuRegistry: IMenuRegistry;
 
   contribute() {
-    for (const menuPosition of Object.keys(this.json)) {
-      const menuActions = this.json[menuPosition] as Array<ISumiMenuExtendInfo>;
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      for (const menuPosition of Object.keys(contributes)) {
+        const menuActions = contributes[menuPosition] as Array<ISumiMenuExtendInfo>;
 
-      this.addDispose(
-        this.menuRegistry.registerMenuExtendInfo(menuPosition, menuActions.map(this.handleExtendInfo.bind(this))),
-      );
+        this.addDispose(
+          this.menuRegistry.registerMenuExtendInfo(
+            menuPosition,
+            menuActions.map((extendInfo: ISumiMenuExtendInfo) => ({
+              ...extendInfo,
+              extraDesc: this.getLocalizeFromNlsJSON(extendInfo?.extraDesc ?? '', extensionId),
+            })),
+          ),
+        );
+      }
     }
-  }
-
-  handleExtendInfo(extendInfo: ISumiMenuExtendInfo): ISumiMenuExtendInfo {
-    return {
-      ...extendInfo,
-      extraDesc: this.getLocalizeFromNlsJSON(extendInfo?.extraDesc ?? ''),
-    };
   }
 }

@@ -22,14 +22,17 @@ export class SemanticTokenModifiersContributionPoint extends VSCodeContributePoi
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
   contribute() {
-    if (!Array.isArray(this.json)) {
-      this.logger.warn("'configuration.semanticTokenTypes' must be an array");
-      return;
-    }
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      if (!Array.isArray(contributes)) {
+        this.logger.warn("'configuration.semanticTokenTypes' must be an array");
+        return;
+      }
 
-    for (const contrib of this.json) {
-      if (validateTypeOrModifier(contrib, 'semanticTokenModifier', this.logger)) {
-        this.semanticTokenRegistry.registerTokenModifier(contrib.id, contrib.description);
+      for (const contrib of contributes) {
+        if (validateTypeOrModifier(contrib, 'semanticTokenModifier', this.logger)) {
+          this.semanticTokenRegistry.registerTokenModifier(contrib.id, contrib.description);
+        }
       }
     }
   }

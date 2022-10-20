@@ -159,8 +159,11 @@ export class ProblemPatternsContributionPoint extends VSCodeContributePoint<Prob
   problemPattern: IProblemPatternRegistry;
 
   contribute() {
-    for (const pattern of this.json) {
-      this.addDispose(this.problemPattern.register(pattern));
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      for (const pattern of contributes) {
+        this.addDispose(this.problemPattern.register(pattern));
+      }
     }
   }
 }

@@ -3,6 +3,7 @@ import { KeybindingRegistry, OS, Keybinding, KeybindingWeight, OperatingSystem }
 import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 export interface ContributedKeyBinding {
   command: string;
@@ -23,12 +24,21 @@ export class KeybindingContributionPoint extends VSCodeContributePoint<Keybindin
   @Autowired(KeybindingRegistry)
   protected readonly keybindingRegistry: KeybindingRegistry;
 
-  contribute() {
-    const keybindings: Keybinding[] = this.json.map((contributedKeyBinding: ContributedKeyBinding) =>
-      this.toKeybinding(contributedKeyBinding, this.extension.isBuiltin),
-    );
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
 
-    this.addDispose(this.keybindingRegistry.registerKeybindings(keybindings));
+  contribute() {
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
+      }
+      const keybindings: Keybinding[] = contributes.map((contributedKeyBinding: ContributedKeyBinding) =>
+        this.toKeybinding(contributedKeyBinding, extension.isBuiltin),
+      );
+      this.addDispose(this.keybindingRegistry.registerKeybindings(keybindings));
+    }
   }
 
   protected toKeybinding(contributedKeyBinding: ContributedKeyBinding, isBuiltin: boolean): Keybinding {

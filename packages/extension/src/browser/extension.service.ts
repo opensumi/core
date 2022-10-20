@@ -46,6 +46,7 @@ import {
 } from '../common/vscode';
 
 import { Extension } from './extension';
+import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import {
   ExtensionApiReadyEvent,
   ExtensionDidEnabledEvent,
@@ -55,6 +56,7 @@ import {
   AbstractExtInstanceManagementService,
   ExtensionsInitializedEvent,
 } from './types';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from './vscode/contributes';
 
 @Injectable()
 export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
@@ -115,6 +117,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(FileSearchServicePath)
   private readonly fileSearchService: IFileSearchService;
+
+  @Autowired(VSCodeContributesServiceToken)
+  private readonly contributesService: VSCodeContributesService;
+
+  @Autowired(SumiContributionsServiceToken)
+  private readonly sumiContributesService: SumiContributionsService;
 
   /**
    * 这里的 ready 是区分环境，将 node/worker 区分开使用
@@ -229,7 +237,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       Array.from(this.extensionScanDir),
       Array.from(this.extensionCandidatePath),
     );
-    // this.logger.verbose('ExtensionMetaDataArr', this.extensionMetaDataArr);
+    this.logger.log('extensions count:', this.extensionMetaDataArr.length);
   }
 
   /**
@@ -246,6 +254,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       );
       if (extension) {
         this.extensionInstanceManageService.addExtensionInstance(extension);
+      }
+
+      if (extension?.contributes) {
+        this.contributesService.register(extension.id, extension.contributes);
+        this.sumiContributesService.register(extension.id, extension.contributes);
       }
     }
 
@@ -517,6 +530,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private normalExtensions: Extension[] = [];
 
   private async runEagerExtensionsContributes() {
+    this.contributesService.initialize();
+    this.sumiContributesService.initialize();
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;

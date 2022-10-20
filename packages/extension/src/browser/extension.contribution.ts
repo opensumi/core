@@ -27,7 +27,6 @@ import {
   ILogger,
   AppConfig,
   CUSTOM_EDITOR_SCHEME,
-  IExtensionsPointService,
   runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import {
@@ -35,7 +34,7 @@ import {
   StatusBarAlignment,
   StatusBarEntryAccessor,
 } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
-import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
+import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
@@ -48,14 +47,11 @@ import {
   ExtensionService,
   IExtensionHostProfilerService,
   ExtensionHostTypeUpperCase,
-  LIFE_CYCLE_PHASE_KEY,
-  CONTRIBUTE_NAME_KEY,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
-import { SumiContributesRunner } from './sumi/contributes';
 import {
   AbstractExtInstanceManagementService,
   ExtensionApiReadyEvent,
@@ -64,7 +60,6 @@ import {
   Serializable,
 } from './types';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
-import { VSCodeContributeRunner } from './vscode/contributes';
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;
@@ -107,9 +102,6 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(ExtensionService)
   private readonly extensionService: ExtensionService;
 
-  @Autowired(IExtensionsPointService)
-  private readonly extensionsPointService: IExtensionsPointService;
-
   initialize() {
     this.extensionService.activate().then(() => {
       const disposer = this.webviewService.registerWebviewReviver({
@@ -134,24 +126,6 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
       title: localize('settings.group.extension'),
       iconClass: getIcon('extension'),
     });
-
-    for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
-      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
-      this.extensionsPointService.registerExtensionPoint({
-        extensionPoint: contributeName,
-        jsonSchema: contributeCls.schema || {},
-        frameworkKind: ['vscode', 'opensumi'],
-      });
-    }
-
-    for (const contributeCls of SumiContributesRunner.ContributePoints) {
-      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
-      this.extensionsPointService.registerExtensionPoint({
-        extensionPoint: contributeName,
-        jsonSchema: contributeCls.schema || {},
-        frameworkKind: ['opensumi'],
-      });
-    }
   }
 
   onDisposeSideEffects() {

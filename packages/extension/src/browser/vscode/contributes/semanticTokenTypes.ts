@@ -22,14 +22,17 @@ export class SemanticTokenTypesContributionPoint extends VSCodeContributePoint<S
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
   contribute() {
-    if (!Array.isArray(this.json)) {
-      this.logger.warn("'configuration.semanticTokenTypes' must be an array");
-      return;
-    }
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      if (!Array.isArray(contributes)) {
+        this.logger.warn("'configuration.semanticTokenTypes' must be an array");
+        return;
+      }
 
-    for (const contrib of this.json) {
-      if (validateTypeOrModifier(contrib, 'semanticTokenType', this.logger)) {
-        this.semanticTokenRegistry.registerTokenType(contrib.id, contrib.description, contrib.superType);
+      for (const contrib of contributes) {
+        if (validateTypeOrModifier(contrib, 'semanticTokenType', this.logger)) {
+          this.semanticTokenRegistry.registerTokenType(contrib.id, contrib.description, contrib.superType);
+        }
       }
     }
   }

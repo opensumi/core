@@ -22,15 +22,15 @@ export interface IExtensionPointDescriptor {
   frameworkKind?: FrameworkKind[];
 }
 
-export const IExtensionsPointService = Symbol('IExtensionsPointService');
+export const IExtensionsSchemaService = Symbol('IExtensionsSchemaService');
 
-export interface IExtensionsPointService {
+export interface IExtensionsSchemaService {
   registerExtensionPoint(desc: IExtensionPointDescriptor): void;
   appendExtensionPoint(points: string[], desc: IExtensionPointDescriptor): void;
 }
 
 @Injectable()
-export class ExtensionsPointServiceImpl implements IExtensionsPointService {
+export class ExtensionsPointServiceImpl implements IExtensionsSchemaService {
   @Autowired(IJSONSchemaRegistry)
   private schemaRegistry: IJSONSchemaRegistry;
 

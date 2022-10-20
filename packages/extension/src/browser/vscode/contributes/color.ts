@@ -10,7 +10,7 @@ export type ColorsSchema = Array<ExtColorContribution>;
 const colorIdPattern = '^\\w+[.\\w+]*$';
 @Injectable()
 @Contributes('colors')
-@LifeCycle(LifeCyclePhase.Starting)
+@LifeCycle(LifeCyclePhase.Ready)
 export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema> {
   @Autowired(IThemeService)
   themeService: IThemeService;
@@ -73,12 +73,14 @@ export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema>
   };
 
   contribute() {
-    const colors = this.json;
-    for (const color of colors) {
-      if (color && color.description) {
-        color.description = replaceLocalizePlaceholder(color.description) as string;
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      for (const color of contributes) {
+        if (color && color.description) {
+          color.description = replaceLocalizePlaceholder(color.description) as string;
+        }
+        this.themeService.registerColor(color);
       }
-      this.themeService.registerColor(color);
     }
   }
 }

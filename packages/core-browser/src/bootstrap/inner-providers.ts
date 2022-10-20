@@ -42,7 +42,7 @@ import { ClientAppStateService } from '../application/application-state-service'
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ClientAppContribution } from '../common';
-import { ExtensionsPointServiceImpl, IExtensionsPointService } from '../extensions';
+import { ExtensionsPointServiceImpl, IExtensionsSchemaService } from '../extensions';
 import { FsProviderContribution } from '../fs';
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
@@ -252,7 +252,7 @@ export function injectInnerProviders(injector: Injector) {
       useClass: HashCalculateServiceImpl,
     },
     {
-      token: IExtensionsPointService,
+      token: IExtensionsSchemaService,
       useClass: ExtensionsPointServiceImpl,
     },
     {

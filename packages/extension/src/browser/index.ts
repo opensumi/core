@@ -1,5 +1,5 @@
 import { Injectable, Provider } from '@opensumi/di';
-import { BrowserModule, ExtensionsPointServiceImpl, IExtensionsPointService } from '@opensumi/ide-core-browser';
+import { BrowserModule } from '@opensumi/ide-core-browser';
 import { IDebugServer } from '@opensumi/ide-debug';
 import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
@@ -30,8 +30,10 @@ import { WorkerExtProcessService } from './extension-worker.service';
 import { ExtensionClientAppContribution, ExtensionCommandContribution } from './extension.contribution';
 import { ExtensionServiceImpl } from './extension.service';
 import { BrowserRequireInterceptorContribution } from './require-interceptor.contribution';
+import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import { AbstractExtInstanceManagementService, IActivationEventService } from './types';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
+import { VSCodeContributesServiceToken, VSCodeContributesService } from './vscode/contributes';
 
 @Injectable()
 export class ExtensionModule extends BrowserModule {
@@ -82,6 +84,14 @@ export class ExtensionModule extends BrowserModule {
     {
       token: IRequireInterceptorService,
       useClass: RequireInterceptorService,
+    },
+    {
+      token: VSCodeContributesServiceToken,
+      useClass: VSCodeContributesService,
+    },
+    {
+      token: SumiContributionsServiceToken,
+      useClass: SumiContributionsService,
     },
     ExtensionCommandContribution,
     ExtensionClientAppContribution,

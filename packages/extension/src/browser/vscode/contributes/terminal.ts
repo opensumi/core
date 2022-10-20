@@ -141,10 +141,16 @@ export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalCo
   @Autowired(ITerminalProfileService)
   profileService: ITerminalProfileService;
   contribute() {
-    this.profileService.addContributedProfile(this.extension.id, this.json);
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      this.profileService.addContributedProfile(extensionId, contributes);
+    }
   }
 
   dispose(): void {
-    this.profileService.removeContributedProfile(this.extension.id);
+    for (const contrib of this.contributesMap) {
+      const { extensionId } = contrib;
+      this.profileService.removeContributedProfile(extensionId);
+    }
   }
 }

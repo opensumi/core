@@ -2,11 +2,12 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { IMenuRegistry, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
-import { localize, formatLocalize, isUndefined } from '@opensumi/ide-core-common';
+import { formatLocalize, isUndefined } from '@opensumi/ide-core-common';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { IContributedSubmenu } from '../../../common/sumi/extension';
+import { AbstractExtInstanceManagementService } from '../../types';
 import { parseMenuId, parseMenuGroup } from '../../vscode/contributes/menu';
 
 export interface KtSubmenusSchema {
@@ -51,39 +52,51 @@ export class SubmenusContributionPoint extends VSCodeContributePoint<KtSubmenusS
   @Autowired(IIconService)
   protected readonly iconService: IIconService;
 
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+
   static schema = menus.subMenusSchema;
 
   contribute() {
     const collector = console;
 
-    // menu registration
-    for (const menuPosition of Object.keys(this.json)) {
-      const menuActions = this.json[menuPosition];
-      if (!isValidSubmenu(menuActions, console)) {
-        return;
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
       }
 
-      const menuId = parseMenuId(menuPosition);
-      if (isUndefined(menuId)) {
-        collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid submenu identifier', menuPosition));
-        return;
-      }
+      for (const menuPosition of Object.keys(contributes)) {
+        const menuActions = contributes[menuPosition];
+        if (!isValidSubmenu(menuActions, console)) {
+          return;
+        }
 
-      for (const item of menuActions) {
-        const [group, order] = parseMenuGroup(item.group);
+        const menuId = parseMenuId(menuPosition);
+        if (isUndefined(menuId)) {
+          collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid submenu identifier', menuPosition));
+          return;
+        }
 
-        this.addDispose(
-          this.menuRegistry.registerMenuItem(menuId, {
-            submenu: item.id,
-            label: item.title && this.getLocalizeFromNlsJSON(item.title),
-            iconClass: this.iconService.fromIcon(this.extension.path, item.icon, IconType.Background),
-            when: item.when,
-            group,
-            order,
-            nativeRole: item.nativeRole,
-          } as ISubmenuItem),
-        );
+        for (const item of menuActions) {
+          const [group, order] = parseMenuGroup(item.group);
+
+          this.addDispose(
+            this.menuRegistry.registerMenuItem(menuId, {
+              submenu: item.id,
+              label: item.title && this.getLocalizeFromNlsJSON(item.title, extensionId),
+              iconClass: this.iconService.fromIcon(extension.path, item.icon, IconType.Background),
+              when: item.when,
+              group,
+              order,
+              nativeRole: item.nativeRole,
+            } as ISubmenuItem),
+          );
+        }
       }
     }
+
+    // menu registration
   }
 }

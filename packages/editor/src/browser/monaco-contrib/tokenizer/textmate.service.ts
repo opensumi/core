@@ -50,7 +50,7 @@ import {
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { asStringArray } from '@opensumi/ide-utils/lib/arrays';
-import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/modesRegistry';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
@@ -177,8 +177,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       })),
     );
 
-    for (const language of this.dynamicLanguages) {
-      ModesRegistry.registerLanguage(language);
+    for (const lang of this.dynamicLanguages) {
+      ModesRegistry.registerLanguage(lang);
     }
 
     const languageIds: string[] = [];

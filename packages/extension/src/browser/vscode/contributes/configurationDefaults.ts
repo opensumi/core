@@ -18,16 +18,17 @@ export interface ConfigurationSnippets {
 
 @Injectable()
 @Contributes('configurationDefaults')
-@LifeCycle(LifeCyclePhase.Ready)
+@LifeCycle(LifeCyclePhase.Starting)
 export class ConfigurationDefaultsContributionPoint extends VSCodeContributePoint<PreferenceSchemaProperties> {
   @Autowired(PreferenceProvider, { tag: PreferenceScope.Default })
   protected readonly defaultPreferenceProvider: PreferenceProvider;
 
   contribute() {
-    const contributionDefaults = this.json;
-
-    if (contributionDefaults) {
-      this.updateDefaultOverridesSchema(contributionDefaults);
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      if (contributes) {
+        this.updateDefaultOverridesSchema(contributes);
+      }
     }
   }
 

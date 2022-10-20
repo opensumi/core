@@ -7,7 +7,7 @@ import {
   ContributionProvider,
   ToolBarActionContribution,
   IToolbarRegistry,
-  IExtensionsPointService,
+  IExtensionsSchemaService,
   FrameworkKind,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
@@ -42,8 +42,8 @@ export class ToolBarModuleContribution
   @Autowired(ToolBarContribution)
   contributions: ContributionProvider<ToolBarContribution>;
 
-  @Autowired(IExtensionsPointService)
-  protected readonly extensionsPointService: IExtensionsPointService;
+  @Autowired(IExtensionsSchemaService)
+  protected readonly extensionsPointService: IExtensionsSchemaService;
 
   registerComponent(registry: ComponentRegistry): void {
     registry.register('toolbar', {

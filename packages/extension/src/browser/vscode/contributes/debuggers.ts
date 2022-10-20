@@ -6,6 +6,8 @@ import { IDebugService, IDebuggerContribution } from '@opensumi/ide-debug';
 import { DebugConfigurationManager, DebugSchemaUpdater } from '@opensumi/ide-debug/lib/browser';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { Extension } from '../../extension';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 const { deepClone } = objects;
 
@@ -184,27 +186,43 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
   @Autowired(DebugSchemaUpdater)
   protected readonly debugSchemaUpdater: DebugSchemaUpdater;
 
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+
   contribute() {
-    this.debugService.registerDebugContributionPoints(
-      this.extension.path,
-      this.resolveDebuggers(this.json) as IJSONSchema[],
-    );
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
+      }
+      this.debugService.registerDebugContributionPoints(
+        extension.path,
+        this.resolveDebuggers(contributes, extension) as IJSONSchema[],
+      );
+    }
     this.debugSchemaUpdater.update();
   }
 
-  private resolveDebuggers(debuggersContributionPoints: DebuggersContributionScheme[]): IDebuggerContribution[] {
+  private resolveDebuggers(
+    debuggersContributionPoints: DebuggersContributionScheme[],
+    extension: Extension,
+  ): IDebuggerContribution[] {
     return debuggersContributionPoints.map((debuggersContributionPoint) => {
-      const debuggers = this.doResolveDebuggers(debuggersContributionPoint);
+      const debuggers = this.doResolveDebuggers(debuggersContributionPoint, extension);
       this.debugConfigurationManager.registerDebugger(debuggers);
       return debuggers;
     });
   }
 
-  private doResolveDebuggers(debuggersContributionPoint: DebuggersContributionScheme): IDebuggerContribution {
+  private doResolveDebuggers(
+    debuggersContributionPoint: DebuggersContributionScheme,
+    extension: Extension,
+  ): IDebuggerContribution {
     const result: IDebuggerContribution = {
       type: debuggersContributionPoint.type,
       label: debuggersContributionPoint.label
-        ? replaceLocalizePlaceholder(debuggersContributionPoint.label, this.extension.id)
+        ? replaceLocalizePlaceholder(debuggersContributionPoint.label, extension.id)
         : '',
       languages: debuggersContributionPoint.languages,
       enableBreakpointsFor: debuggersContributionPoint.enableBreakpointsFor,
@@ -213,10 +231,10 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
       configurationSnippets: (debuggersContributionPoint.configurationSnippets || []).map(
         (config: IJSONSchemaSnippet) => {
           if (config.label) {
-            config.label = replaceLocalizePlaceholder(config.label, this.extension.id);
+            config.label = replaceLocalizePlaceholder(config.label, extension.id);
           }
           if (config.description) {
-            config.description = replaceLocalizePlaceholder(config.description, this.extension.id);
+            config.description = replaceLocalizePlaceholder(config.description, extension.id);
           }
           return config;
         },
@@ -234,7 +252,11 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
 
     result.configurationAttributes =
       debuggersContributionPoint.configurationAttributes &&
-      this.resolveSchemaAttributes(debuggersContributionPoint.type, debuggersContributionPoint.configurationAttributes);
+      this.resolveSchemaAttributes(
+        debuggersContributionPoint.type,
+        debuggersContributionPoint.configurationAttributes,
+        extension,
+      );
 
     return result;
   }
@@ -242,6 +264,7 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
   protected resolveSchemaAttributes(
     type: string,
     configurationAttributes: { [request: string]: IJSONSchema },
+    extension: Extension,
   ): IJSONSchema[] {
     const taskSchema = {};
     const recursionPropertiesDescription = (prop: IJSONSchemaMap) => {
@@ -249,7 +272,7 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
         if (prop[name].properties) {
           recursionPropertiesDescription(prop[name].properties!);
         }
-        prop[name].description = replaceLocalizePlaceholder(prop[name].description, this.extension.id);
+        prop[name].description = replaceLocalizePlaceholder(prop[name].description, extension.id);
       });
     };
 
@@ -344,6 +367,13 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
   }
 
   dispose() {
-    this.debugService.unregisterDebugContributionPoints(this.extension.path);
+    for (const contrib of this.contributesMap) {
+      const { extensionId } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
+      }
+      this.debugService.unregisterDebugContributionPoints(extension.path);
+    }
   }
 }

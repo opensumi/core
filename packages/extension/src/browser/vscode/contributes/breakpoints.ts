@@ -16,13 +16,12 @@ export class BreakpointsContributionPoint extends VSCodeContributePoint<Breakpoi
   private debugConfigurationManager: DebugConfigurationManager;
 
   contribute() {
-    this.register(this.json);
-  }
-
-  register(items: BreakpointsContributionScheme[]) {
-    items.forEach((item) => {
-      this.debugConfigurationManager.addSupportBreakpoints(item.language);
-    });
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      contributes.forEach((item) => {
+        this.debugConfigurationManager.addSupportBreakpoints(item.language);
+      });
+    }
   }
 
   unregister(items: BreakpointsContributionScheme[]) {
@@ -32,6 +31,9 @@ export class BreakpointsContributionPoint extends VSCodeContributePoint<Breakpoi
   }
 
   dispose() {
-    this.unregister(this.json);
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      this.unregister(contributes);
+    }
   }
 }

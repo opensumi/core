@@ -3,9 +3,9 @@ import { Disposable, ILogger, IEventBus, ExtensionEnabledEvent } from '@opensumi
 
 import { IExtension } from '../common';
 
-import { SumiContributesRunner } from './sumi/contributes';
+// import { SumiContributesRunner } from './sumi/contributes';
 import { IActivationEventService } from './types';
-import { VSCodeContributeRunner } from './vscode/contributes';
+// import { VSCodeContributeRunner } from './vscode/contributes';
 
 @Injectable({ multiple: true })
 export class ExtensionMetadataService extends Disposable {
@@ -22,35 +22,8 @@ export class ExtensionMetadataService extends Disposable {
   private eventBus: IEventBus;
 
   public initialize(extension: IExtension) {
-    const runner = this.injector.get(VSCodeContributeRunner, [extension]);
-    const ktRunner = this.injector.get(SumiContributesRunner, [extension]);
-    this.addDispose(runner);
-    this.addDispose(ktRunner);
     this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
-    runner.initialize();
-    ktRunner.initialize();
-
     this.addDispose(this.registerActivationEvent(extension));
-  }
-
-  /**
-   * 执行 contributes
-   * 监听 activationEvent 和 workspaceContains
-   */
-  public async run(extension: IExtension) {
-    try {
-      const runner = this.injector.get(VSCodeContributeRunner, [extension]);
-      const ktRunner = this.injector.get(SumiContributesRunner, [extension]);
-      this.addDispose(runner);
-      this.addDispose(ktRunner);
-      this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
-      await Promise.all([runner.initialize(), ktRunner.initialize()]);
-
-      this.addDispose(this.registerActivationEvent(extension));
-    } catch (e) {
-      this.logger.error('启用插件时解析元数据出错' + extension.name);
-      this.logger.error(e);
-    }
   }
 
   private registerActivationEvent(extension: IExtension) {
