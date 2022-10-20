@@ -24,6 +24,14 @@ export interface ExtensionConnectOption {
 }
 
 /**
+ * 插件 browser 层的样式表配置项
+ */
+export interface ExtensionBrowserStyleSheet {
+  componentUri: string;
+  iconfontUri: string;
+}
+
+/**
  * 将插件路径转换为 ExtensionCandidate 对象
  * @param extensionPath 插件路径
  * @param isDevelopment 是否为开发模式下加载的插件
