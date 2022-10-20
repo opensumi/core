@@ -88,6 +88,7 @@ console.log(a);`,
   });
 
   test('copy path from file explorer to the editor content', async () => {
+    await explorer.fileTreeView.open();
     const node = await explorer.getFileStatTreeNodeByPath('editor.js');
     let fileMenu = await node?.openContextMenu();
     expect(await fileMenu?.isOpen()).toBeTruthy();
