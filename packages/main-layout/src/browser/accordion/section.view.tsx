@@ -108,7 +108,6 @@ export const AccordionSection = ({
   const viewState = useViewState(viewId, contentRef, true);
   const progressService: IProgressService = useInjectable(IProgressService);
   const indicator = progressService.getIndicator(viewId)!;
-
   const Component: any = children;
   return (
     <div className={styles.kt_split_panel} data-view-id={viewId}>
@@ -133,7 +132,7 @@ export const AccordionSection = ({
               {isIMenu(titleMenu) ? (
                 <InlineActionBar menus={titleMenu} context={titleMenuContext} />
               ) : (
-                <InlineMenuBar menus={titleMenu} />
+                <InlineMenuBar menus={titleMenu} context={titleMenuContext} />
               )}
             </div>
           )}
