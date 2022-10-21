@@ -22,6 +22,7 @@ test.describe('OpenSumi Debug', () => {
     app = await OpenSumiApp.load(page, workspace);
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
+    await explorer.fileTreeView.open();
   });
 
   test.afterAll(() => {
