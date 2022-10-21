@@ -3,6 +3,11 @@ import os from 'os';
 import { Injector } from '@opensumi/di';
 import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
 import {
+  AppLifeCycleService,
+  AppLifeCycleServiceToken,
+  LifeCyclePhase,
+} from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import {
   CommandRegistry,
   CommandService,
   CommandServiceImpl,
@@ -26,7 +31,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
 import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
 import { mockExtensionProps } from '../../__mocks__/extensions';
-import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../lib/browser/vscode/contributes';
 
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
 
@@ -78,7 +83,6 @@ const extension = {
 
 describe('VSCodeContributeRunner', () => {
   let injector: Injector;
-  let runner: VSCodeContributeRunner;
   let eventBus: IEventBus;
 
   beforeAll((done) => {
@@ -126,6 +130,10 @@ describe('VSCodeContributeRunner', () => {
           useValue: new MockPreferenceService(),
         },
         {
+          token: AppLifeCycleServiceToken,
+          useClass: AppLifeCycleService,
+        },
+        {
           token: IExtensionStoragePathServer,
           useValue: {
             getLastStoragePath() {
@@ -139,8 +147,14 @@ describe('VSCodeContributeRunner', () => {
       token: ExtensionNodeServiceServerPath,
       useClass: MockExtNodeClientService,
     });
-    runner = injector.get(VSCodeContributeRunner, [extension]);
     eventBus = injector.get(IEventBus);
+    const contributes: VSCodeContributesService = injector.get(VSCodeContributesServiceToken);
+    contributes.initialize();
+    const lifecycleService: AppLifeCycleService = injector.get(AppLifeCycleServiceToken);
+    lifecycleService.phase = LifeCyclePhase.Prepare;
+    lifecycleService.phase = LifeCyclePhase.Initialize;
+    lifecycleService.phase = LifeCyclePhase.Starting;
+    lifecycleService.phase = LifeCyclePhase.Ready;
     done();
   });
 
@@ -149,17 +163,14 @@ describe('VSCodeContributeRunner', () => {
       expect(target.payload.packageJSON.name).toBe(mockExtensionProps.packageJSON.name);
       done();
     });
-    runner.initialize();
   });
 
   it('register localization contribution', async () => {
-    await runner.initialize();
     expect(process.env['TEST_KAITIAN_LANGUAGE_ID']?.toLowerCase()).toBe('zh-cn');
   });
 
   it('register command contribution', async () => {
     const commandRegistry = injector.get(CommandRegistry);
-    await runner.initialize();
     const command = commandRegistry.getCommand('test-command');
     expect(command).toBeDefined();
     expect(command?.label).toBe('测试命令');
@@ -167,14 +178,12 @@ describe('VSCodeContributeRunner', () => {
   });
 
   it('register theme contribution', async () => {
-    await runner.initialize();
     const themeService = injector.get(IThemeService);
     const availableThemes = themeService.getAvailableThemeInfos();
     expect(availableThemes.length).toBe(1);
   });
 
   it('register language contribution', async () => {
-    await runner.initialize();
     const languages = monaco.languages.getLanguages();
     expect(languages.map((l) => l.id)).toContain('javascript');
   });

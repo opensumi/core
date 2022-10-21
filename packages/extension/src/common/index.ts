@@ -359,7 +359,7 @@ export abstract class ExtensionContributesService extends WithEventBus {
     });
   }
 
-  public async initialize() {
+  public initialize() {
     this.runContributesByPhase(this.lifecycleService.phase);
 
     this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {

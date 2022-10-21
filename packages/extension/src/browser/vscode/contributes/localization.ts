@@ -19,7 +19,6 @@ import {
   IExtensionNodeClientService,
   ExtensionNodeServiceServerPath,
   LifeCycle,
-  ContributesMap,
 } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
