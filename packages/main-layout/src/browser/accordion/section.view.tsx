@@ -8,6 +8,8 @@ import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/c
 import { isIMenu, IMenu, IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
+import { transformLabelWithCodicon } from '@opensumi/ide-core-browser/lib/utils/label';
+import { IIconService } from '@opensumi/ide-theme';
 
 import { AccordionService } from './accordion.service';
 import styles from './styles.module.less';
@@ -15,6 +17,10 @@ import styles from './styles.module.less';
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // panel 头部标题
   header: string;
+  // panel 头部描述
+  description?: string;
+  // panel 信息
+  message?: string;
   // 头部样式名
   headerClass?: string;
   // panel 点击事件监听
@@ -45,6 +51,8 @@ const attrs = {
 
 export const AccordionSection = ({
   header,
+  description,
+  message,
   headerClass,
   onItemClick,
   noHeader,
@@ -60,17 +68,28 @@ export const AccordionSection = ({
   accordionService,
   onContextMenuHandler,
 }: CollapsePanelProps) => {
+  const iconService = useInjectable<IIconService>(IIconService);
   const contentRef = React.useRef<HTMLDivElement | null>(null);
 
   const [headerFocused, setHeaderFocused] = React.useState(false);
   const [headerLabel, setHeaderLabel] = React.useState(header);
+  const [headerDescription, setheaderDescription] = React.useState(description);
+  const [panelMessage, setPanelMessage] = React.useState(message);
 
   const { getSize, setSize } = React.useContext(PanelContext);
 
   React.useEffect(() => {
-    const disposable = accordionService.onDidChangeViewTiele(({ id, title }) => {
-      if (viewId === id && title !== headerLabel) {
+    const disposable = accordionService.onDidChangeViewTiele(({ id, title, description, message: msg }) => {
+      if (viewId === id && title && title !== headerLabel) {
         setHeaderLabel(title);
+      }
+
+      if (viewId === id && description && description !== headerDescription) {
+        setheaderDescription(description);
+      }
+
+      if (viewId === id && msg && msg !== panelMessage) {
+        setPanelMessage(msg);
       }
     });
 
@@ -126,6 +145,11 @@ export const AccordionSection = ({
             <div className={styles.section_label} style={{ lineHeight: headerSize + 'px' }}>
               {headerLabel}
             </div>
+            {headerDescription && (
+              <div className={styles.section_description} style={{ lineHeight: headerSize + 'px' }}>
+                {transformLabelWithCodicon(headerDescription, {}, iconService.fromString.bind(iconService))}
+              </div>
+            )}
           </div>
           {expanded && titleMenu && (
             <div className={styles.actions_wrap}>
@@ -145,6 +169,7 @@ export const AccordionSection = ({
       >
         <ProgressBar className={styles.progressBar} progressModel={indicator.progressModel} />
         <ErrorBoundary>
+          {panelMessage && <span className={styles.kt_split_panel_message}>{panelMessage}</span>}
           <Component {...initialProps} viewState={viewState} />
         </ErrorBoundary>
       </div>

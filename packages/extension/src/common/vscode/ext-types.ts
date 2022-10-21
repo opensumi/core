@@ -942,8 +942,9 @@ export class ThemeColor {
 @es5ClassCompat
 export class FileDecoration {
   static validate(d: FileDecoration): void {
-    if (d.badge && d.badge.length !== 1 && d.badge.length !== 2) {
-      throw new Error("The 'badge'-property must be undefined or a short character");
+    const ICON_REGX = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
+    if (d.badge && d.badge.length !== 1 && d.badge.length !== 2 && !ICON_REGX.test(d.badge)) {
+      throw new Error("The 'badge'-property must be undefined or a short character or codeicon id");
     }
     if (!d.color && !d.badge && !d.tooltip) {
       throw new Error('The decoration is empty');

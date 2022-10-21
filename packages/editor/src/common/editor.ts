@@ -402,6 +402,12 @@ export interface IResourceOpenOptions {
    */
   range?: Partial<IRange>;
 
+  /**
+   * 打开编辑器后是否滚动到屏幕中间
+   * 默认为 true
+   */
+  revealRangeInCenter?: boolean;
+
   scrollTop?: number;
   scrollLeft?: number;
 

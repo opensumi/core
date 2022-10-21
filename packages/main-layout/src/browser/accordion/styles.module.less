@@ -58,6 +58,12 @@
   .progressBar {
     top: -1px;
   }
+
+  .kt_split_panel_message {
+    display: flex;
+    padding: 4px 12px 4px 18px;
+    user-select: text;
+  }
 }
 
 .kt_split_overlay {
@@ -101,15 +107,31 @@
 }
 
 .section_label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
   font-weight: 400;
   color: var(--sideBarSectionHeader-foreground);
   // font-size: 80%;
   text-transform: uppercase;
   cursor: pointer;
   user-select: none;
+}
+
+.section_description {
+  font-weight: 400;
+  margin-left: 10px;
+  opacity: 0.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+  flex-shrink: 100000;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+
+  :global(.kt-icon),
+  :global(.codicon) {
+    font-size: 14px !important;
+  }
 }
 
 i.arrow_icon {

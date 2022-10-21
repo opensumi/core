@@ -620,7 +620,6 @@ export class EditorContribution
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
       execute: async (resource: ResourceArgs | URI, editorGroup?: EditorGroup) => {
         const { group, uri } = this.extractGroupAndUriFromArgs(resource, editorGroup);
-
         if (group && uri) {
           await group.split(EditorGroupSplitAction.Right, uri, { focus: true });
         }

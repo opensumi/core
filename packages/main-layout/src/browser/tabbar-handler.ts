@@ -159,6 +159,32 @@ export class TabBarHandler {
       this.logger.error('没有找到目标视图，无法更新手风琴标题!');
     }
   }
+
+  /**
+   * 更新子视图的描述
+   */
+  updateViewDescription(viewId: string, desciption: string) {
+    const targetView = this.accordionService.views.find((view) => view.id === viewId);
+    if (targetView) {
+      targetView.description = desciption;
+      this.accordionService.updateViewDesciption(viewId, desciption);
+    } else {
+      this.logger.error('没有找到目标视图，无法更新手风琴描述!');
+    }
+  }
+
+  /**
+   * 更新子视图的 message
+   */
+  updateViewMessage(viewId: string, message: string) {
+    const targetView = this.accordionService.views.find((view) => view.id === viewId);
+    if (targetView) {
+      targetView.message = message;
+      this.accordionService.updateViewMessage(viewId, message);
+    } else {
+      this.logger.error('没有找到目标视图，无法更新手风琴 message!');
+    }
+  }
   /**
    * 更新视图的标题
    */

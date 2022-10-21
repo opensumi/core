@@ -6,7 +6,8 @@ import {
   CancellationTokenSource,
   Disposable,
   CancellationToken,
-  EditorDocumentModelSaveResultState,
+  SaveTaskResponseState,
+  SaveTaskErrorCause,
 } from '@opensumi/ide-core-browser';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
@@ -67,9 +68,9 @@ export class SaveTask extends Disposable {
       this.deferred.resolve(res);
       return res;
     } catch (e) {
-      const res = {
-        errorMessage: e.message as string,
-        state: 'error' as EditorDocumentModelSaveResultState,
+      const res: IEditorDocumentModelSaveResult = {
+        errorMessage: e.message,
+        state: SaveTaskResponseState.ERROR,
       };
       this.deferred.resolve(res);
       return res;
@@ -78,9 +79,9 @@ export class SaveTask extends Disposable {
 
   cancel() {
     this.cancelToken.cancel();
-    const res = {
-      errorMessage: 'cancel',
-      state: 'error' as EditorDocumentModelSaveResultState,
+    const res: IEditorDocumentModelSaveResult = {
+      errorMessage: SaveTaskErrorCause.CANCEL,
+      state: SaveTaskResponseState.ERROR,
     };
     this.deferred.resolve(res);
   }

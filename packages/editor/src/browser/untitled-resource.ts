@@ -18,6 +18,7 @@ import {
   MessageType,
   path,
   isWindows,
+  SaveTaskResponseState,
 } from '@opensumi/ide-core-browser';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
@@ -143,7 +144,7 @@ export class UntitledSchemeDocumentProvider implements IEditorDocumentModelConte
       });
     }
     return {
-      state: 'success',
+      state: SaveTaskResponseState.SUCCESS,
     };
   }
   onDidDisposeModel() {}
