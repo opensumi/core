@@ -261,7 +261,6 @@ export class ExtHostCommands implements IExtHostCommands {
 
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T> {
     this.logger.log('ExtHostCommands#$executeContributedCommand', id);
-
     if (!this.commands.has(id)) {
       return Promise.reject(new Error(`Contributed command '${id}' does not exist.`));
     } else {
@@ -341,7 +340,7 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       }
     }
-    // todo: 这里做拦截
+    // TODO: 这里做拦截
     try {
       const result = handler.apply(thisArg, this.processArguments(args));
       return Promise.resolve(result);
@@ -455,7 +454,8 @@ export class CommandsConverter {
   }
 
   private _executeConvertedCommand<T>(...args: any[]): Promise<T> {
-    const actualCmd = this._cache.get(args[0]);
+    // 默认取 args 末尾的参数，不影响本身 Command 执行逻辑
+    const actualCmd = this._cache.get(args[args.length - 1]);
     if (!actualCmd) {
       return Promise.reject('actual command NOT FOUND');
     }
