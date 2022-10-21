@@ -38,12 +38,7 @@ import {
   AbstractViewExtProcessService,
   AbstractWorkerExtProcessService,
 } from '../common/extension.service';
-import {
-  isIconThemeExtension,
-  isLanguagePackExtension,
-  isThemeExtension,
-  MainThreadAPIIdentifier,
-} from '../common/vscode';
+import { MainThreadAPIIdentifier } from '../common/vscode';
 
 import { Extension } from './extension';
 import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';

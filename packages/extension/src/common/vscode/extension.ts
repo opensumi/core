@@ -210,20 +210,6 @@ export interface IExtensionDescription extends IExtensionManifest, IExtensionPro
   enableProposedApi: boolean;
 }
 
-export function isLanguagePackExtension(manifest: { [key: string]: any }): boolean {
-  return manifest.contributes && manifest.contributes.localizations
-    ? manifest.contributes.localizations.length > 0
-    : false;
-}
-
-export function isThemeExtension(manifest: { [key: string]: any }): boolean {
-  return manifest.contributes && manifest.contributes.themes ? manifest.contributes.themes.length > 0 : false;
-}
-
-export function isIconThemeExtension(manifest: { [key: string]: any }): boolean {
-  return manifest.contributes && manifest.contributes.iconThemes ? manifest.contributes.iconThemes.length > 0 : false;
-}
-
 export function throwProposedApiError(extension: IExtensionDescription): void {
   // eslint-disable-next-line no-console
   throw new Error(
