@@ -274,7 +274,7 @@ describe('ExtHostFileSystem', () => {
       121: [true, 'Modified changes', 'TWO', { id: 'green' }],
     });
     expect(warnSpy.mock.calls[0][1]).toBe(
-      "INVALID decoration from extension 'mock-ext-sync-id'. Error: The 'badge'-property must be undefined or a short character",
+      "INVALID decoration from extension 'mock-ext-sync-id'. Error: The 'badge'-property must be undefined or a short character or codeicon id",
     );
   });
 
