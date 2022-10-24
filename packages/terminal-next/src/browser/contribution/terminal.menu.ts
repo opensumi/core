@@ -8,6 +8,7 @@ import {
   getTabbarCtxKey,
   TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
+import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import {
   MenuContribution,
   IMenuRegistry,
@@ -17,12 +18,7 @@ import {
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain, CommandService, isWindows } from '@opensumi/ide-core-common';
 
-import {
-  ITerminalController,
-  ITerminalGroupViewService,
-  ITerminalSearchService,
-  TerminalContainerId,
-} from '../../common';
+import { ITerminalController, ITerminalGroupViewService, ITerminalSearchService } from '../../common';
 
 export const group = 'panel_menu';
 export const more1 = 'more_1';
@@ -106,7 +102,7 @@ export class TerminalMenuContribution implements MenuContribution {
     const location = getSlotLocation('@opensumi/ide-terminal-next', this.config.layoutConfig);
     const tabbarCtxKey = getTabbarCtxKey(location);
     const commonMenuId = getTabbarCommonMenuId(location);
-    const when = `${tabbarCtxKey} == ${TerminalContainerId}`;
+    const when = `${tabbarCtxKey} == ${TERMINAL_CONTAINER_ID}`;
     /** 更多菜单 */
     menuRegistry.registerMenuItem(commonMenuId, {
       command: TERMINAL_COMMANDS.CLEAR,
