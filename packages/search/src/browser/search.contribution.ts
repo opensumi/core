@@ -9,6 +9,7 @@ import {
   PreferenceContribution,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
+import { SEARCH_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
@@ -17,7 +18,6 @@ import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
 import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
-import { SEARCH_CONTAINER_ID } from '../common/content-search';
 
 import { SearchContextKey, SearchInputFocused } from './search-contextkey';
 import { searchPreferenceSchema } from './search-preferences';
