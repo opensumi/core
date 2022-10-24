@@ -13,6 +13,7 @@ import {
   PreferenceService,
   Schemes,
   CancellationToken,
+  MaybePromise,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
@@ -146,5 +147,33 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
       this.listeners[uri.toString()].dispose();
       delete this.listeners[uri.toString()];
     }
+  }
+}
+
+@Injectable()
+export class WalkThroughSnippetSchemeDocumentProvider implements IEditorDocumentModelContentProvider {
+  private documentContentMaps = new Map<string, string>();
+
+  handlesScheme(scheme: string) {
+    return scheme === Schemes.walkThroughSnippet;
+  }
+
+  provideEditorDocumentModelContent(uri: URI): MaybePromise<string> {
+    if (!this.documentContentMaps.has(uri.toString())) {
+      this.documentContentMaps.set(uri.toString(), '');
+    }
+
+    return this.documentContentMaps.get(uri.toString())!;
+  }
+
+  isReadonly(): MaybePromise<boolean> {
+    return false;
+  }
+
+  private _onDidChangeContent: Emitter<URI> = new Emitter();
+  onDidChangeContent: Event<URI> = this._onDidChangeContent.event;
+
+  preferLanguageForUri() {
+    return 'plaintext';
   }
 }

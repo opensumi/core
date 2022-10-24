@@ -8,12 +8,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { Schemes, URI, CommandRegistry, Emitter, Event, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
 import { EditorCollectionService, IDecorationApplyOptions } from '@opensumi/ide-editor';
-import {
-  IEditorDocumentModelService,
-  IEditorDocumentModelContentProvider,
-  ICodeEditor,
-  getSimpleEditorOptions,
-} from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelService, ICodeEditor, getSimpleEditorOptions } from '@opensumi/ide-editor/lib/browser';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { transparent, editorForeground, IThemeService } from '@opensumi/ide-theme';
@@ -434,32 +429,5 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     }
     this.inputEditor?.monacoEditor.setValue('');
     this.inputEditor?.monacoEditor.setModel(null);
-  }
-}
-
-// 不可保存，因此不需要设置 saveDocumentModel
-@Injectable()
-export class DebugConsoleInputDocumentProvider implements IEditorDocumentModelContentProvider {
-  @Autowired(DebugConsoleService)
-  private readonly debugConsole: DebugConsoleService;
-
-  handlesScheme(scheme: string) {
-    return scheme === Schemes.walkThroughSnippet;
-  }
-
-  async provideEditorDocumentModelContent() {
-    return this.debugConsole.consoleInputValue;
-  }
-
-  isReadonly(): boolean {
-    return false;
-  }
-
-  get onDidChangeContent() {
-    return this.debugConsole.onConsoleInputValueChange;
-  }
-
-  preferLanguageForUri() {
-    return 'plaintext';
   }
 }

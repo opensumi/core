@@ -2,10 +2,7 @@ import path from 'path';
 
 import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { Emitter, FileUri, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common';
-import { DebugConsoleInputDocumentProvider } from '@opensumi/ide-debug/lib/browser/view/console/debug-console.service';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
-import { IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/src/browser';
-import { EditorDocumentModelContentRegistryImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { ExtensionService } from '@opensumi/ide-extension';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
@@ -133,10 +130,6 @@ describe('MainThreadTask Test Suite', () => {
         token: ExtensionService,
         useClass: ExtensionServiceImpl,
       },
-      {
-        token: DebugConsoleInputDocumentProvider,
-        useValue: MockDebugConsoleInputDocumentProvider,
-      },
     ],
   );
 
@@ -188,9 +181,6 @@ describe('MainThreadTask Test Suite', () => {
       injector.get(MainThreadWorkspace, [rpcProtocolMain]),
     );
     extHostTaskApi = createTaskApiFactory(extHostTask, mockExtensions[0]);
-    (
-      injector.get(IEditorDocumentModelContentRegistry) as EditorDocumentModelContentRegistryImpl
-    ).registerEditorDocumentModelContentProvider(injector.get(DebugConsoleInputDocumentProvider));
   });
 
   describe('ExtHostTask API should be work', () => {
