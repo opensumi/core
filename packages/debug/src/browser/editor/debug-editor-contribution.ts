@@ -35,7 +35,7 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
 
-import { DebugState, IDebugSessionManager } from './../../common';
+import { DebugState, IDebugExceptionInfo, IDebugSession, IDebugSessionManager } from './../../common';
 import { InlineValueContext } from './../../common/inline-values';
 import { DEFAULT_WORD_REGEXP } from './../debugUtils';
 import { DebugModelManager } from './debug-model-manager';
@@ -247,6 +247,14 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
               this.editorDisposer.dispose();
             }),
           ]);
+
+          this.disposer.addDispose(
+            currentSession.onDidChangeState((state: DebugState) => {
+              if (state !== DebugState.Stopped) {
+                this.toggleExceptionWidget();
+              }
+            }),
+          );
 
           this.disposer.addDispose(currentSession);
 
@@ -488,4 +496,34 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       allDecorations as any[],
     );
   }
+
+  // debug exception widget
+  private async toggleExceptionWidget(): Promise<void> {
+    const currentSession = this.debugSessionManager.currentSession;
+    if (!currentSession) {
+      return;
+    }
+
+    const { currentThread } = currentSession;
+    if (!currentThread) {
+      return;
+    }
+
+    if (
+      currentThread.stoppedDetails?.reason === 'exception' &&
+      currentSession.capabilities.supportsExceptionInfoRequest
+    ) {
+      const threadId = currentSession.currentThread?.threadId!;
+      const exceptionInfo = await currentSession.exceptionInfo({ threadId });
+
+      // console.log('exceptionInfo: >>> ', exceptionInfo)
+    }
+    // this.showExceptionWidget(exceptionInfo, this.debugService.getViewModel().focusedSession, exceptionSf.range.startLineNumber, exceptionSf.range.startColumn);
+  }
+
+  // private showExceptionWidget(exceptionInfo: IDebugExceptionInfo, debugSession: IDebugSession | undefined, lineNumber: number, column: number): void {
+
+  // }
+
+  closeExceptionWidget(): void {}
 }

@@ -6,7 +6,6 @@ import { DebugSession } from '../debug-session';
 
 import { DebugStackFrame } from './debug-stack-frame';
 
-
 export type StoppedDetails = DebugProtocol.StoppedEvent['body'] & {
   framesErrorMessage?: string;
   totalFrames?: number;
@@ -27,6 +26,10 @@ export class DebugThread extends DebugThreadData {
 
   get id(): string {
     return this.session.id + ':' + this.raw.id;
+  }
+
+  get threadId(): number {
+    return this.raw.id;
   }
 
   protected _currentFrame: DebugStackFrame | undefined;

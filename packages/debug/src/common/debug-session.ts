@@ -4,6 +4,13 @@ import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 import { DebugConfiguration } from './debug-configuration';
 import { DebugSessionOptions, IDebugSessionDTO } from './debug-session-options';
 
+export interface IDebugExceptionInfo {
+  readonly id?: string;
+  readonly description?: string;
+  readonly breakMode: string | null;
+  readonly details?: DebugProtocol.ExceptionDetails;
+}
+
 export enum DebugState {
   Inactive,
   Initializing,
