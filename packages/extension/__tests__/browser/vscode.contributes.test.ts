@@ -21,7 +21,7 @@ import { ExtensionWillContributeEvent } from '@opensumi/ide-extension/lib/browse
 import { ExtensionNodeServiceServerPath } from '@opensumi/ide-extension/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
-import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
@@ -84,6 +84,7 @@ const extension = {
 describe('VSCodeContributeRunner', () => {
   let injector: Injector;
   let eventBus: IEventBus;
+  let textmateService: ITextmateTokenizerService;
 
   beforeAll((done) => {
     injector = setupExtensionServiceInjector();
@@ -155,6 +156,7 @@ describe('VSCodeContributeRunner', () => {
     lifecycleService.phase = LifeCyclePhase.Initialize;
     lifecycleService.phase = LifeCyclePhase.Starting;
     lifecycleService.phase = LifeCyclePhase.Ready;
+    textmateService = injector.get(ITextmateTokenizer);
     done();
   });
 
@@ -184,7 +186,7 @@ describe('VSCodeContributeRunner', () => {
   });
 
   it('register language contribution', async () => {
-    const languages = monaco.languages.getLanguages();
+    const languages = textmateService.getLanguages();
     expect(languages.map((l) => l.id)).toContain('javascript');
   });
 });

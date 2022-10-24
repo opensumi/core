@@ -1,26 +1,7 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import {
-  PreferenceSchema,
-  PreferenceSchemaProperties,
-  ILogger,
-  WithEventBus,
-  runWhenIdle,
-  JSONType,
-  ConstructorOf,
-  IExtensionsSchemaService,
-} from '@opensumi/ide-core-browser';
-import {
-  AppLifeCycleService,
-  AppLifeCycleServiceToken,
-  LifeCyclePhase,
-} from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import { Injectable } from '@opensumi/di';
+import { PreferenceSchema, PreferenceSchemaProperties } from '@opensumi/ide-core-browser';
 
-import {
-  LIFE_CYCLE_PHASE_KEY,
-  CONTRIBUTE_NAME_KEY,
-  VSCodeContributePoint,
-  ExtensionContributesService,
-} from '../../../common';
+import { VSCodeContributePoint, ExtensionContributesService } from '../../../common';
 import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
 
 import { ActionContributionSchema, ActionsContributionPoint } from './actions';

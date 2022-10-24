@@ -34,6 +34,7 @@ import {
   SUPPORTED_ENCODINGS,
   FILE_COMMANDS,
   electronEnv,
+  CorePreferences,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -41,6 +42,7 @@ import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { isWindows, isOSX, PreferenceScope, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { EOL } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -53,7 +55,6 @@ import {
   EditorGroupSplitAction,
   ILanguageService,
   Direction,
-  ResourceDecorationChangeEvent,
   IDocPersistentCacheProvider,
   IEditor,
   SaveReason,
@@ -74,7 +75,7 @@ import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry } from './types';
+import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry, ResourceDecorationChangeEvent } from './types';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
@@ -160,6 +161,12 @@ export class EditorContribution
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(ITextmateTokenizer)
+  private readonly textmateService: ITextmateTokenizerService;
+
+  @Autowired(CorePreferences)
+  private readonly corePreferences: CorePreferences;
+
   @Autowired(IEditorDocumentModelContentRegistry)
   contentRegistry: IEditorDocumentModelContentRegistry;
 
@@ -233,6 +240,29 @@ export class EditorContribution
         this.contextMenuRenderer,
       ]),
     );
+  }
+
+  protected getMimeForMode(langId: string): string | undefined {
+    for (const language of this.textmateService.getLanguages()) {
+      if (language.id === langId && language.mimetypes) {
+        return language.mimetypes[0];
+      }
+    }
+    return undefined;
+  }
+
+  registerPlatformLanguageAssociations(register) {
+    const association = this.corePreferences['files.associations'];
+    if (!association) {
+      return;
+    }
+
+    const mimeAssociation = Object.keys(association).map((filepattern) => ({
+      id: association[filepattern],
+      filepattern,
+      mime: this.getMimeForMode(association[filepattern]) || `text/x-${association.id}`,
+    }));
+    register(mimeAssociation);
   }
 
   protected async interceptOpen(uri: URI) {

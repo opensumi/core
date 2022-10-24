@@ -7,7 +7,6 @@ import {
   IJSONSchemaRegistry,
   Disposable,
   CommandRegistry,
-  IMimeService,
   CorePreferences,
   ClientAppContribution,
   CommandContribution,
@@ -42,6 +41,7 @@ import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/e
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
+import { registerPlatformLanguageAssociation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/languagesAssociations';
 import {
   FormattingConflicts,
   IFormattingEditProviderSelector,
@@ -117,9 +117,6 @@ export class MonacoClientContribution
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
 
-  @Autowired(IMimeService)
-  mimeService: IMimeService;
-
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
 
@@ -169,6 +166,15 @@ export class MonacoClientContribution
           },
         );
       }
+
+      // 注册 mime
+      if (contrib.registerPlatformLanguageAssociations) {
+        contrib.registerPlatformLanguageAssociations((associations) => {
+          for (const association of associations) {
+            registerPlatformLanguageAssociation(association, true);
+          }
+        });
+      }
     }
 
     // 执行所有 SchemaContribution
@@ -187,9 +193,6 @@ export class MonacoClientContribution
 
     // 注册/拦截 Monaco 内置的菜单
     this.patchMonacoInternalMenus();
-
-    // 更新 Mime
-    this.mimeService.updateMime();
 
     // 在编辑器全部恢复前初始化 textmateService
     this.initTextmateService();
@@ -283,7 +286,15 @@ export class MonacoClientContribution
   protected setPreferencesChangeListener() {
     this.corePreferences.onPreferenceChanged((e) => {
       if (e.preferenceName === 'files.associations') {
-        this.mimeService.updateMime();
+        for (const contrib of this.monacoContributionProvider.getContributions()) {
+          if (contrib.registerPlatformLanguageAssociations) {
+            contrib?.registerPlatformLanguageAssociations((associations) => {
+              for (const association of associations) {
+                registerPlatformLanguageAssociation(association, true);
+              }
+            });
+          }
+        }
       }
     });
   }

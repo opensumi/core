@@ -352,7 +352,7 @@ export abstract class ExtensionContributesService extends WithEventBus {
         });
 
         const end = Date.now() - now;
-        this.logger.log(`Run extension contributes ${contributeName}: ${end} ms`);
+        this.logger.log(`run extension contribute ${contributeName}: ${end} ms`);
       } catch (e) {
         this.logger.error(e);
       }

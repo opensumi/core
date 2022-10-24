@@ -8,6 +8,7 @@ import {
   IRelatedInformation,
   MarkerSeverity,
 } from '@opensumi/ide-core-common';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
@@ -83,6 +84,9 @@ export class LanguageService implements ILanguageService {
   @Autowired()
   private markerManager: MarkerManager;
 
+  @Autowired(ITextmateTokenizer)
+  private textmateService: ITextmateTokenizerService;
+
   protected readonly markers = new Map<string, MonacoDiagnosticCollection>();
 
   readonly workspaceSymbolProviders: WorkspaceSymbolProvider[] = [];
@@ -99,13 +103,13 @@ export class LanguageService implements ILanguageService {
   }
 
   get languages(): Language[] {
-    return [...this.mergeLanguages(monaco.languages.getLanguages()).values()];
+    return [...this.mergeLanguages(this.textmateService.getLanguages()).values()];
   }
 
   getLanguage(languageId: string): Language | undefined {
-    return this.mergeLanguages(monaco.languages.getLanguages().filter((language) => language.id === languageId)).get(
-      languageId,
-    );
+    return this.mergeLanguages(
+      this.textmateService.getLanguages().filter((language) => language.id === languageId),
+    ).get(languageId);
   }
 
   protected mergeLanguages(registered: monaco.languages.ILanguageExtensionPoint[]): Map<string, Mutable<Language>> {
