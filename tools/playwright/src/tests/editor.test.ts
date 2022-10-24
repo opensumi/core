@@ -52,7 +52,7 @@ console.log(a);`,
     let isDirty = await editor.isDirty();
     expect(isDirty).toBeTruthy();
     await editor.save();
-    await app.page.waitForTimeout(1000);
+    await app.page.waitForTimeout(2000);
     isDirty = await editor.isDirty();
     expect(isDirty).toBeFalsy();
     await editor.close();
@@ -88,39 +88,38 @@ console.log(a);`,
   });
 
   test('copy path from file explorer to the editor content', async () => {
-    await explorer.fileTreeView.open();
-    const node = await explorer.getFileStatTreeNodeByPath('editor.js');
+    const node = await explorer.getFileStatTreeNodeByPath('editor3.js');
     let fileMenu = await node?.openContextMenu();
     expect(await fileMenu?.isOpen()).toBeTruthy();
     const copyPath = await fileMenu?.menuItemByName('Copy Path');
     await copyPath?.click();
-    editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor.js');
-    await editor.addTextToNewLineAfterLineByLineNumber(3, 'File Path: ');
+    editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor3.js');
+    await editor.addTextToNewLineAfterLineByLineNumber(1, 'File Path: ');
     // cause of https://github.com/microsoft/playwright/issues/8114
     // we can just using keypress to fake the paste feature
-    let editorMenu = await editor.openLineContextMenuByLineNumber(4);
+    let editorMenu = await editor.openLineContextMenuByLineNumber(2);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     let paste = await editorMenu?.menuItemByName('Paste');
     await paste?.click();
     await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(4);
+    expect(await editor.numberOfLines()).toBe(2);
     expect(
       await editor.textContentOfLineContainingText(
-        `File Path: ${workspace.workspace.resolve('editor.js').codeUri.fsPath.toString()}`,
+        `File Path: ${workspace.workspace.resolve('editor3.js').codeUri.fsPath.toString()}`,
       ),
     ).toBeTruthy();
     fileMenu = await node?.openContextMenu();
     const copyRelativePath = await fileMenu?.menuItemByName('Copy Relative Path');
     await copyRelativePath?.click();
     await app.page.waitForTimeout(200);
-    await editor.addTextToNewLineAfterLineByLineNumber(4, 'File Relative Path: ');
-    editorMenu = await editor.openLineContextMenuByLineNumber(5);
+    await editor.addTextToNewLineAfterLineByLineNumber(2, 'File Relative Path: ');
+    editorMenu = await editor.openLineContextMenuByLineNumber(3);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     paste = await editorMenu?.menuItemByName('Paste');
     await paste?.click();
     await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(5);
-    expect(await editor.textContentOfLineContainingText('File Relative Path: editor.js')).toBeTruthy();
+    expect(await editor.numberOfLines()).toBe(3);
+    expect(await editor.textContentOfLineContainingText('File Relative Path: editor3.js')).toBeTruthy();
   });
 
   test('Go to Symbol... should be worked', async () => {

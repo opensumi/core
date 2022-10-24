@@ -34,8 +34,8 @@ export class OpenSumiEditor extends OpenSumiView {
 
   async open(preview?: boolean) {
     await this.filestatElement.open(preview);
-    // waiting editor render
-    await this.app.page.waitForTimeout(200);
+    // waiting editor render, it maybe fail while opening a large file.
+    await this.app.page.waitForTimeout(1000);
     return this;
   }
 

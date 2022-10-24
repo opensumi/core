@@ -120,7 +120,13 @@ test.describe('OpenSumi Explorer Panel', () => {
     await terminal.sendText(`cd ${workspace.workspace.codeUri.fsPath}`);
     await terminal.sendText(`mkdir ${dirname}`);
     await app.page.waitForTimeout(2000);
-    const newDir = await explorer.getFileStatTreeNodeByPath(dirname);
+    let newDir = await explorer.getFileStatTreeNodeByPath(dirname);
+    if (!newDir) {
+      const action = await fileTreeView.getTitleActionByName('Refresh');
+      await action?.click();
+      await app.page.waitForTimeout(200);
+      newDir = await explorer.getFileStatTreeNodeByPath(dirname);
+    }
     expect(newDir).toBeDefined();
   });
 });

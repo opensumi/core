@@ -8,18 +8,16 @@ import { OpenSumiViewBase } from './view-base';
 export class OpenSumiMenubar extends OpenSumiViewBase {
   static USER_KEY_TYPING_DELAY = 100;
 
-  private elementHandle: ElementHandle;
   private _menuItems: ElementHandle[];
 
   selector = `#${OPENSUMI_VIEW_CONTAINERS.MENUBAR}`;
 
   constructor(app: OpenSumiApp) {
     super(app);
-    this.initMenubar();
   }
 
-  async initMenubar() {
-    this.elementHandle = await this.page.waitForSelector(this.selector);
+  async getMenubar() {
+    return await this.page.waitForSelector(this.selector);
   }
 
   async trigger(group: string, command: string) {
@@ -48,7 +46,7 @@ export class OpenSumiMenubar extends OpenSumiViewBase {
 
   async getMenuItems() {
     if (!this._menuItems) {
-      return await this.elementHandle.$$("[class*='menubar___']");
+      return await (await this.getMenubar())?.$$("[class^='menubar___']");
     }
     return this._menuItems;
   }
