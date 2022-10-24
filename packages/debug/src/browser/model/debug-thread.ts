@@ -110,14 +110,16 @@ export class DebugThread extends DebugThreadData {
 
   async fetchExceptionInfo(): Promise<IDebugExceptionInfo | undefined> {
     try {
-      const response = await this.session.exceptionInfo(this.toArgs());
-      if (response) {
-        return {
-          id: response.body.exceptionId,
-          description: response.body.description,
-          breakMode: response.body.breakMode,
-          details: response.body.details,
-        };
+      if (this.stoppedDetails?.reason === 'exception' && this.session.capabilities.supportsExceptionInfoRequest) {
+        const response = await this.session.exceptionInfo(this.toArgs());
+        if (response) {
+          return {
+            id: response.body.exceptionId,
+            description: response.body.description,
+            breakMode: response.body.breakMode,
+            details: response.body.details,
+          };
+        }
       }
     } catch (e) {
       return undefined;

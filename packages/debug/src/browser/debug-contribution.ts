@@ -876,14 +876,17 @@ export class DebugContribution
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
-    const debugEditorContribution = this.injector.get(DebugEditorContribution);
+    let debugEditorContribution: DebugEditorContribution;
 
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => debugEditorContribution.contribute(editor),
+      contribute: (editor: IEditor) => {
+        debugEditorContribution = this.injector.get(DebugEditorContribution, [editor]);
+        return debugEditorContribution.contribute(editor);
+      },
     });
     // 这里是为了通过 MonacoOverrideServiceRegistry 来获取 codeEditorService ，但由于存在时序问题，所以加个 setTimeout 0
     setTimeout(() => {
-      debugEditorContribution.registerDecorationType();
+      debugEditorContribution?.registerDecorationType();
     }, 0);
     this.preferenceSettings.setEnumLabels(
       'debug.console.filter.mode' as keyof CoreConfiguration,

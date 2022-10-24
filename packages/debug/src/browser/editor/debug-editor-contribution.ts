@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import {
   IContextKeyService,
   PreferenceService,
@@ -213,7 +213,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
 
   private debugExceptionWidget: DebugExceptionWidget | undefined;
 
-  constructor() {}
+  constructor(@Optional() private readonly editor: IEditor) {}
 
   public contribute(editor: IEditor): IDisposable {
     this.disposer.addDispose(
@@ -229,10 +229,8 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
                 return;
               }
 
-              if (currentFrame.source?.uri.isEqual(editor.currentUri!)) {
+              if (editor.currentUri && currentFrame.source?.uri.isEqual(editor.currentUri)) {
                 await this.toggleExceptionWidget();
-              } else {
-                this.closeExceptionWidget();
               }
             }),
           );
@@ -541,10 +539,11 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       return;
     }
 
-    if (
-      currentThread.stoppedDetails?.reason === 'exception' &&
-      currentSession.capabilities.supportsExceptionInfoRequest
-    ) {
+    const samUri = this.editor.currentUri?.isEqual(exceptionStack.source?.uri!);
+
+    if (this.debugExceptionWidget && !samUri) {
+      this.closeExceptionWidget();
+    } else if (samUri) {
       const exceptionInfo = await currentThread?.fetchExceptionInfo();
       if (exceptionInfo) {
         this.showExceptionWidget(
