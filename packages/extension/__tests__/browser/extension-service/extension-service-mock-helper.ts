@@ -71,8 +71,6 @@ import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injecto
 import { mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { MockWorker, MessagePort } from '../../../__mocks__/worker';
-import { SumiContributionsService, SumiContributionsServiceToken } from '../../../lib/browser/sumi/contributes';
-import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../../lib/browser/vscode/contributes';
 import { ExtCommandManagementImpl } from '../../../src/browser/extension-command-management';
 import { ExtInstanceManagementService } from '../../../src/browser/extension-instance-management';
 import { ExtensionManagementService } from '../../../src/browser/extension-management.service';
@@ -80,6 +78,8 @@ import { NodeExtProcessService } from '../../../src/browser/extension-node.servi
 import { ViewExtProcessService } from '../../../src/browser/extension-view.service';
 import { WorkerExtProcessService } from '../../../src/browser/extension-worker.service';
 import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
+import { SumiContributionsService, SumiContributionsServiceToken } from '../../../src/browser/sumi/contributes';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../../src/browser/vscode/contributes';
 import {
   ExtensionService,
   IExtensionNodeClientService,
@@ -555,14 +555,6 @@ export function setupExtensionServiceInjector() {
       token: IWorkspaceFileService,
       useClass: WorkspaceFileService,
     },
-    {
-      token: VSCodeContributesServiceToken,
-      useClass: VSCodeContributesService,
-    },
-    {
-      token: SumiContributionsServiceToken,
-      useClass: SumiContributionsService,
-    },
     BrowserRequireInterceptorContribution,
   );
 
@@ -576,6 +568,14 @@ export function setupExtensionServiceInjector() {
       useValue: mockService({
         onDidChangePassword: new Emitter().event,
       }),
+    },
+    {
+      token: VSCodeContributesServiceToken,
+      useClass: VSCodeContributesService,
+    },
+    {
+      token: SumiContributionsServiceToken,
+      useClass: SumiContributionsService,
     },
   );
 

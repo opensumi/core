@@ -26,7 +26,6 @@ import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/sc
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
 import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';

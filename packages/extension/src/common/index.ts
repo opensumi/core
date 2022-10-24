@@ -18,7 +18,6 @@ import {
   replaceNlsField,
   ILogger,
   WithEventBus,
-  runWhenIdle,
 } from '@opensumi/ide-core-common';
 import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
@@ -306,6 +305,8 @@ export abstract class ExtensionContributesService extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
+  private contributedSet = new Set();
+
   private getContributionCls(contributesName: string): typeof VSCodeContributePoint | undefined {
     const Constructor = this.ContributionPoints.find((Constructor) => {
       const k = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
@@ -327,45 +328,49 @@ export abstract class ExtensionContributesService extends WithEventBus {
     }
   }
 
-  private runContributesByPhase(lifeCyclePhase: LifeCyclePhase) {
+  private async runContributesByPhase(lifeCyclePhase: LifeCyclePhase) {
     const Contributes = this.ContributionPoints.filter((Constructor) => {
       const phase = Reflect.getMetadata(LIFE_CYCLE_PHASE_KEY, Constructor);
-      if (lifeCyclePhase === phase) {
+      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
+      if (phase <= lifeCyclePhase && !this.contributedSet.has(contributeName)) {
+        this.contributedSet.add(contributeName);
         return true;
       }
       return false;
     });
 
-    Contributes.map(async (Constructor: typeof VSCodeContributePoint) => {
-      try {
-        const contributePoint = this.injector.get(Constructor);
-        const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
-        this.addDispose(contributePoint);
+    await Promise.all(
+      Contributes.map(async (Constructor: typeof VSCodeContributePoint) => {
+        try {
+          const contributePoint = this.injector.get(Constructor);
+          const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
+          this.addDispose(contributePoint);
 
-        const now = Date.now();
-        await contributePoint.contribute();
+          const now = Date.now();
+          await contributePoint.contribute();
 
-        this.extensionsSchemaService.registerExtensionPoint({
-          extensionPoint: contributeName,
-          jsonSchema: Constructor.schema || {},
-          frameworkKind: ['vscode', 'opensumi'],
-        });
+          this.extensionsSchemaService.registerExtensionPoint({
+            extensionPoint: contributeName,
+            jsonSchema: Constructor.schema || {},
+            frameworkKind: ['vscode', 'opensumi'],
+          });
 
-        const end = Date.now() - now;
-        this.logger.log(`run extension contribute ${contributeName}: ${end} ms`);
-      } catch (e) {
-        this.logger.error(e);
-      }
-    });
+          const end = Date.now() - now;
+          this.logger.log(`run extension contribute ${contributeName}: ${end} ms`);
+        } catch (e) {
+          this.logger.error(e);
+        }
+      }),
+    );
   }
 
   public initialize() {
-    this.runContributesByPhase(this.lifecycleService.phase);
+    if (this.lifecycleService.phase) {
+      this.runContributesByPhase(this.lifecycleService.phase);
+    }
 
     this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
-      runWhenIdle(() => {
-        this.runContributesByPhase(newPhase);
-      });
+      this.runContributesByPhase(newPhase);
     });
   }
 }
