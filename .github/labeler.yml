@@ -1,0 +1,11 @@
+labels:
+  '🐞 bug':
+    - '\bbug:'
+  '🎨 feature':
+    - '\bfeat:'
+  '⚙️ refactor':
+    - '\brefactor:'
+  '💄 style change':
+    - '\bstyle:'
+  '📌 patch':
+    - '\bpatch:'
