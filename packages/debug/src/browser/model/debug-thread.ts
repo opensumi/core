@@ -1,7 +1,7 @@
 import { Event, Emitter } from '@opensumi/ide-core-browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
-import { DEBUG_REPORT_NAME } from '../../common';
+import { DEBUG_REPORT_NAME, IDebugExceptionInfo } from '../../common';
 import { DebugSession } from '../debug-session';
 
 import { DebugStackFrame } from './debug-stack-frame';
@@ -106,6 +106,22 @@ export class DebugThread extends DebugThreadData {
         return [];
       }
     }));
+  }
+
+  async fetchExceptionInfo(): Promise<IDebugExceptionInfo | undefined> {
+    try {
+      const response = await this.session.exceptionInfo(this.toArgs());
+      if (response) {
+        return {
+          id: response.body.exceptionId,
+          description: response.body.description,
+          breakMode: response.body.breakMode,
+          details: response.body.details,
+        };
+      }
+    } catch (e) {
+      return undefined;
+    }
   }
 
   async fetchFrames(levels = 20): Promise<DebugStackFrame[]> {

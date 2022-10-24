@@ -26,7 +26,6 @@ import { DebugModelManager } from '../editor';
 
 import { DebugStackFrame } from './debug-stack-frame';
 
-
 export class DebugSourceData {
   readonly raw: DebugProtocol.Source;
 }
@@ -44,6 +43,14 @@ export class DebugSource extends DebugSourceData {
 
   get uri(): URI {
     return DebugSource.toUri(this.raw);
+  }
+
+  get available(): boolean {
+    return !!this.raw;
+  }
+
+  get presentationHint() {
+    return this.raw.presentationHint;
   }
 
   update(data: Partial<DebugSourceData>): void {

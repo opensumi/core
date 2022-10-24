@@ -1,4 +1,4 @@
-import { Autowired } from '@opensumi/di';
+import { Injector, Autowired, INJECTOR_TOKEN } from '@opensumi/di';
 import {
   Domain,
   ClientAppContribution,
@@ -58,6 +58,7 @@ import {
   CONTEXT_DEBUGGERS_AVAILABLE,
   CONTEXT_IN_DEBUG_MODE,
   CONTEXT_BREAKPOINT_INPUT_FOCUSED,
+  CONTEXT_EXCEPTION_WIDGET_VISIBLE,
 } from './../common/constants';
 import { BreakpointManager, SelectedBreakpoint } from './breakpoint';
 import { FloatingClickWidget } from './components/floating-click-widget';
@@ -228,6 +229,10 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.action.forceRunToCursor',
     label: '%debug.action.forceRunToCursor%',
   };
+  // exception widget
+  export const EXCEPTION_WIDGET_CLOSE = {
+    id: 'debug.action.closeExceptionWidget',
+  };
 }
 
 export namespace DebugBreakpointWidgetCommands {
@@ -299,8 +304,8 @@ export class DebugContribution
   @Autowired(DebugToolbarService)
   protected readonly debugToolbarService: DebugToolbarService;
 
-  @Autowired(DebugEditorContribution)
-  private debugEditorContribution: DebugEditorContribution;
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
 
   @Autowired(PreferenceService)
   protected readonly preferences: PreferenceService;
@@ -795,6 +800,11 @@ export class DebugContribution
       keybinding: 'esc',
       when: CONTEXT_BREAKPOINT_INPUT_FOCUSED.raw,
     });
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.EXCEPTION_WIDGET_CLOSE.id,
+      keybinding: 'esc',
+      when: CONTEXT_EXCEPTION_WIDGET_VISIBLE.raw,
+    });
   }
 
   registerMenus(menuRegistry: IMenuRegistry) {
@@ -866,12 +876,14 @@ export class DebugContribution
   }
 
   registerEditorFeature(registry: IEditorFeatureRegistry) {
+    const debugEditorContribution = this.injector.get(DebugEditorContribution);
+
     registry.registerEditorFeatureContribution({
-      contribute: (editor: IEditor) => this.debugEditorContribution.contribute(editor),
+      contribute: (editor: IEditor) => debugEditorContribution.contribute(editor),
     });
     // 这里是为了通过 MonacoOverrideServiceRegistry 来获取 codeEditorService ，但由于存在时序问题，所以加个 setTimeout 0
     setTimeout(() => {
-      this.debugEditorContribution.registerDecorationType();
+      debugEditorContribution.registerDecorationType();
     }, 0);
     this.preferenceSettings.setEnumLabels(
       'debug.console.filter.mode' as keyof CoreConfiguration,
