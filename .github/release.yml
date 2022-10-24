@@ -1,0 +1,27 @@
+changelog:
+  exclude:
+    labels:
+      - ignore for release
+  categories:
+    - title: What's New Features
+      labels:
+        - 🎨 feature
+        - 💪 enhancement
+    - title: New Extension API Supported
+      labels:
+        - ⚡️ extension api
+    - title: Refactor
+      labels:
+        - ⚙️ refactor
+    - title: Breaking Changes
+      labels:
+        - 🛠 breaking change
+    - title: Style Changes
+      labels:
+        - 💄 style change
+    - title: Patch Changes
+      labels:
+        - 📌 patch
+    - title: Other Changes
+      labels:
+        - '*'

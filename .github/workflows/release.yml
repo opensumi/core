@@ -105,16 +105,14 @@ jobs:
       - name: Create Release
         id: create_release
         if: steps.checkTag.outputs.exists == 'false'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ github.event.inputs.version }}
-          release_name: v${{ github.event.inputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           body_path: ./releaselog.md
+          target_commitish: ${{ github.event.inputs.release_branch }}
+          generate_release_notes: true
           # 发布 Release 后请手动到该 Release 页面查看是否内容正确，然后点击编辑 -> 点击转为 Release
           draft: true
-          prerelease: false
 
       # 在 main 分支运行时，自动切下一个 Release 分支
       - name: Create And Push Release Branch
@@ -122,19 +120,3 @@ jobs:
         run: |
           git checkout -b ${{ github.event.inputs.release_branch }}
           git push origin ${{ github.event.inputs.release_branch }}
-
-      # 在 main 分支运行时，自动基于 Release 分支创建 PR
-      - name: Create Pull Request
-        if: github.event.ref == 'refs/heads/main' && github.event.inputs.release_branch != ''
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            await github.rest.pulls.create({
-              owner: github.repository.owner.login,
-              repo: github.repository.name,
-              title: 'chore: v${{ github.event.inputs.version }}',
-              head: '{{ github.event.inputs.release_branch }}',
-              base: 'main',
-              body: ''
-            })
