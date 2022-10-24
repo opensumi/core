@@ -14,7 +14,6 @@ import {
 } from '@opensumi/ide-core-browser';
 import { InlineActionBar, InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
-import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
@@ -184,14 +183,8 @@ const BottomPanelView: React.FC<{
   );
 };
 
-export const RightTabPanelRenderer: React.FC = () => (
-  <BaseTabPanelView PanelView={ContainerView} id={VIEW_CONTAINERS.RIGHT_TABBAR_PANEL} />
-);
+export const RightTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
-export const LeftTabPanelRenderer: React.FC = () => (
-  <BaseTabPanelView PanelView={ContainerView} id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL} />
-);
+export const LeftTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={ContainerView} />;
 
-export const BottomTabPanelRenderer: React.FC = () => (
-  <BaseTabPanelView PanelView={BottomPanelView} panelSize={280} id={VIEW_CONTAINERS.BOTTOM_TABBAR_PANEL} />
-);
+export const BottomTabPanelRenderer: React.FC = () => <BaseTabPanelView PanelView={BottomPanelView} panelSize={280} />;
