@@ -20,7 +20,7 @@ import { LinkDetector } from './debug-link-detector';
 
 import './components/debug-exception-widget.less';
 
-function ExceptionInfoContainer({ info }: { info: IDebugExceptionInfo }) {
+function ExceptionInfoContainer({ info, layout }: { info: IDebugExceptionInfo; layout: () => void }) {
   const linkDetector = useInjectable<LinkDetector>(LinkDetector);
   const stackTraceRef = useRef<HTMLDivElement | null>(null);
 
@@ -28,6 +28,7 @@ function ExceptionInfoContainer({ info }: { info: IDebugExceptionInfo }) {
     if (stackTraceRef.current) {
       stackTraceRef.current.appendChild(linkDetector.linkify(info.details?.stackTrace || '', true));
     }
+    layout();
   }, [info.details, info.details?.stackTrace, stackTraceRef]);
 
   return (
@@ -69,7 +70,10 @@ export class DebugExceptionWidget extends ZoneWidget {
 
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
-        <ExceptionInfoContainer info={this.exceptionInfo}></ExceptionInfoContainer>
+        <ExceptionInfoContainer
+          info={this.exceptionInfo}
+          layout={() => this.layout(undefined)}
+        ></ExceptionInfoContainer>
       </ConfigProvider>,
       container,
     );
