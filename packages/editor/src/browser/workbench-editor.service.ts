@@ -232,7 +232,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   calcDirtyCount(): number {
-    return this.editorGroups.reduce((pre, cur) => pre + cur.calcDirtyCount(), 0);
+    const countedUris = new Set<string>();
+    return this.editorGroups.reduce((pre, cur) => pre + cur.calcDirtyCount(countedUris), 0);
   }
 
   createEditorGroup(): EditorGroup {
@@ -2095,10 +2096,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 计算 dirty 数量
    */
-  calcDirtyCount(): number {
+  calcDirtyCount(countedUris: Set<string> = new Set<string>()): number {
     let count = 0;
     for (const r of this.resources) {
       const docRef = this.documentModelManager.getModelReference(r.uri);
+      if (countedUris.has(r.uri.toString())) {
+        continue;
+      }
+      countedUris.add(r.uri.toString());
       if (docRef) {
         const isDirty = docRef.instance.dirty;
         docRef.dispose();
