@@ -74,14 +74,15 @@ export class DefaultStorageProvider {
       return this.storageCacheMap.get(storageId.toString());
     }
     const resolvers = this.resolversProvider.getContributions();
-    for (const resolver of resolvers) {
-      const storageResolver = await resolver.resolve(storageId);
-      if (storageResolver) {
-        this.storageCacheMap.set(storageId.toString(), storageResolver);
-        return storageResolver;
-      }
-    }
-    return;
+    return Promise.race(
+      resolvers.map(async (resolver) => {
+        const storageResolver = await resolver.resolve(storageId);
+        if (storageResolver) {
+          this.storageCacheMap.set(storageId.toString(), storageResolver);
+          return storageResolver;
+        }
+      }),
+    );
   }
 }
 

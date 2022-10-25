@@ -43,7 +43,7 @@ export type CommandsSchema = Array<CommandFormat>;
 
 @Injectable()
 @Contributes('commands')
-@LifeCycle(LifeCyclePhase.Initialize)
+@LifeCycle(LifeCyclePhase.Starting)
 export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSchema> {
   @Autowired(CommandRegistry)
   private readonly commandRegistry: CommandRegistry;

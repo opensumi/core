@@ -146,7 +146,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
       if (this.preferenceThemeId === themeId) {
         await this.applyTheme(this.preferenceThemeId);
-        this.colorThemeLoaded.resolve();
       }
 
       disposables.push({
@@ -200,9 +199,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.toggleBaseThemeClass(prevThemeType, currentThemeType);
     this.doApplyTheme(this.currentTheme);
 
-    if (!this.preferenceThemeId) {
-      this.colorThemeLoaded.resolve();
-    }
+    this.colorThemeLoaded.resolve();
   }
 
   public registerColor(contribution: ExtColorContribution) {

@@ -13,8 +13,6 @@ export type GrammarSchema = Array<GrammarsContribution>;
 @Contributes('grammars')
 @LifeCycle(LifeCyclePhase.Initialize)
 export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSchema> {
-  phase: LifeCyclePhase = LifeCyclePhase.Initialize;
-
   @Autowired(ITextmateTokenizer)
   textMateService: ITextmateTokenizerService;
 
