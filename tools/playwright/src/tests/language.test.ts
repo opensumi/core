@@ -32,7 +32,7 @@ test.describe('OpenSumi Language', () => {
   test('Go to Defination by cmd + click', async () => {
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'reference.ts', false);
 
-    const eleHandle = await editor.placeCursorInLineWithPosition(4, 20);
+    await editor.placeCursorInLineWithPosition(4, 20);
     let cursorHandle = await editor.getCursorElement();
 
     await cursorHandle?.click({ modifiers: [isMacintosh ? 'Meta' : 'Control'] });

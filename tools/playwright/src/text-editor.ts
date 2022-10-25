@@ -177,7 +177,7 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     const viewElement = await this.getViewElement();
 
     const cursorNode = await viewElement?.$('.cursor.monaco-mouse-cursor-text');
-    if (cursorNode && (await cursorNode.isVisible())) {
+    if (cursorNode) {
       return cursorNode;
     }
   }
