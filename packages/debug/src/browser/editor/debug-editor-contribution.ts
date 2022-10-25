@@ -180,7 +180,7 @@ function getWordToLineNumbersMap(model: ITextModel | null): Map<string, number[]
   return result;
 }
 
-@Injectable({ multiple: true })
+@Injectable()
 export class DebugEditorContribution implements IEditorFeatureContribution {
   private static readonly MEMOIZER = createMemoizer();
 
