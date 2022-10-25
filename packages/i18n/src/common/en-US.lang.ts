@@ -379,6 +379,8 @@ export const localizationBundle = {
     'debug.launch.configurations.debugLinuxConfiguration': 'Linux specific launch configuration attributes.',
     'debug.launch.typeNotSupported': 'The debug session type "{0}" is not supported.',
     'debug.launch.catchError': 'There was an error starting the debug session, check the logs for more details.',
+    'debug.widget.exception.thrownWithId': 'Exception has occurred: {0}',
+    'debug.widget.exception.thrown': 'Exception has occurred.',
 
     'output.tabbar.title': 'Output',
     'output.channel.none': '<no output yet>',

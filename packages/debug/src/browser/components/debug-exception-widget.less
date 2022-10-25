@@ -1,0 +1,42 @@
+.exception_widget_container {
+  overflow: hidden;
+  width: 100%;
+  background-color: var(--debugExceptionWidget-background);
+  border-top: 1px solid var(--debugExceptionWidget-border);
+  border-bottom: 1px solid var(--debugExceptionWidget-border);
+  &:focus {
+    outline: 1px solid var(--focusBorder);
+    outline-offset: -1px;
+  }
+
+  .exception_widget {
+    padding: 6px 10px;
+    white-space: pre-wrap;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  .exception_widget .title {
+    display: flex;
+  }
+
+  .exception_widget .title .label {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+  }
+
+  .exception_widget .title .actions {
+    flex: 1;
+  }
+
+  .exception_widget .stack_trace {
+    margin-top: 0.5em;
+  }
+
+  .exception_widget .stack_trace a {
+    text-decoration: underline;
+    cursor: pointer;
+    color: currentColor;
+  }
+}

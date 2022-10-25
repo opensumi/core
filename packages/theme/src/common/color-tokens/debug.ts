@@ -44,6 +44,17 @@ export const debugViewExceptionLabelBackground = registerColor(
   { dark: '#6C2022', light: '#A31515', hcDark: '#6C2022', hcLight: '#A31515' },
   'Background color for a label shown in the CALL STACK view when the debugger breaks on an exception.',
 );
+export const debugExceptionWidgetBorder = registerColor(
+  'debugExceptionWidget.border',
+  { dark: '#a31515', light: '#a31515', hcDark: '#a31515', hcLight: '#a31515' },
+  'Exception widget border color.',
+);
+export const debugExceptionWidgetBackground = registerColor(
+  'debugExceptionWidget.background',
+  { dark: '#420b0d', light: '#f1dfde', hcDark: '#420b0d', hcLight: '#f1dfde' },
+  'Exception widget background color.',
+);
+
 export const debugViewStateLabelForeground = registerColor(
   'debugView.stateLabelForeground',
   { dark: foreground, light: foreground, hcDark: foreground, hcLight: foreground },
