@@ -233,12 +233,16 @@ const InlineActionWidget: React.FC<
         icon = iconService.fromString(e);
       }
       if (icon) {
-        return <Icon className={iconService?.fromString(e)} style={{ marginRight: 5 }} />;
+        return <Icon className={iconService?.fromString(e)} style={{ marginRight: 5 }} key={e} />;
       } else if (ICON_REGX.test(e)) {
         const newStr = e.replaceAll(/\$\(.*?\)/gi, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
         return transformLabel(newStr);
       } else {
-        return <span style={{ marginRight: 5 }}>{e}</span>;
+        return (
+          <span key={e} style={{ marginRight: 5 }}>
+            {e}
+          </span>
+        );
       }
     });
   }, []);

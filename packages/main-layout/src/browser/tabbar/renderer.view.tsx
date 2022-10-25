@@ -4,6 +4,7 @@ import React from 'react';
 import { ComponentRegistryInfo, useInjectable, IEventBus, ResizeEvent } from '@opensumi/ide-core-browser';
 import { PanelContext } from '@opensumi/ide-core-browser/lib/components';
 import { Layout } from '@opensumi/ide-core-browser/lib/components/layout/layout';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 
 import { RightTabbarRenderer, LeftTabbarRenderer, BottomTabbarRenderer } from './bar.view';
 import { RightTabPanelRenderer, LeftTabPanelRenderer, BottomTabPanelRenderer } from './panel.view';
@@ -22,6 +23,7 @@ export const TabbarConfig = React.createContext<{
 
 export const TabRendererBase: React.FC<{
   side: string;
+  id?: string;
   className?: string;
   components: ComponentRegistryInfo[];
   direction?: Layout.direction;
@@ -29,7 +31,7 @@ export const TabRendererBase: React.FC<{
   TabpanelView: React.FC;
   // @deprecated
   noAccordion?: boolean;
-}> = ({ className, components, direction = 'left-to-right', TabbarView, side, TabpanelView }) => {
+}> = ({ id, className, components, direction = 'left-to-right', TabbarView, side, TabpanelView }) => {
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
   const eventBus = useInjectable<IEventBus>(IEventBus);
   const resizeHandle = React.useContext(PanelContext);
@@ -63,6 +65,7 @@ export const TabRendererBase: React.FC<{
   return (
     <div
       ref={rootRef}
+      id={id}
       className={clsx(styles.tab_container, className)}
       style={{ flexDirection: Layout.getFlexDirection(direction) }}
     >
@@ -84,6 +87,7 @@ export const RightTabRenderer = ({
   <TabRendererBase
     side='right'
     direction='right-to-left'
+    id={VIEW_CONTAINERS.RIGHT_TABBAR}
     className={clsx(className, 'right-slot')}
     components={components}
     TabbarView={RightTabbarRenderer}
@@ -101,6 +105,7 @@ export const LeftTabRenderer = ({
   <TabRendererBase
     side='left'
     direction='left-to-right'
+    id={VIEW_CONTAINERS.LEFT_TABBAR_PANEL}
     className={clsx(className, 'left-slot')}
     components={components}
     TabbarView={LeftTabbarRenderer}
@@ -117,6 +122,7 @@ export const BottomTabRenderer = ({
 }) => (
   <TabRendererBase
     side='bottom'
+    id={VIEW_CONTAINERS.BOTTOM_TABBAR_PANEL}
     direction='bottom-to-top'
     className={clsx(className, 'bottom-slot')}
     components={components}
