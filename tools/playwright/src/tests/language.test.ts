@@ -38,6 +38,7 @@ test.describe('OpenSumi Language', () => {
     await cursorHandle?.click({ modifiers: [isMacintosh ? 'Meta' : 'Control'] });
 
     const definitionTree = await explorer.getFileStatTreeNodeByPath('definition.ts');
+    await app.page.waitForTimeout(200);
     expect(await definitionTree?.isSelected()).toBeTruthy();
     const currentTab = await editor.getCurrentTab();
     expect(await currentTab?.textContent()).toStrictEqual(' definition.ts');
