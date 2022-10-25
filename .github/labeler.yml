@@ -1,6 +1,6 @@
 labels:
   '🐞 bug':
-    - '\bbug:'
+    - '\bfix:'
   '🎨 feature':
     - '\bfeat:'
   '⚙️ refactor':
