@@ -7,14 +7,14 @@ import {
   TabBarToolbarContribution,
   TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
+import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 
-import { TerminalContainerId } from '../../common';
 import TerminalTabs from '../component/tab.view';
 import TerminalView from '../component/terminal.view';
 
 @Domain(ComponentContribution, TabBarToolbarContribution)
 export class TerminalRenderContribution implements ComponentContribution, TabBarToolbarContribution {
-  static viewId = TerminalContainerId;
+  static viewId = TERMINAL_CONTAINER_ID;
 
   registerToolbarItems(registry: ToolbarRegistry) {
     registry.registerItem({
