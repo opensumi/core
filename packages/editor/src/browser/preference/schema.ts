@@ -1692,7 +1692,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.autoSaveDelay': {
     type: 'number',
     default: 1000,
-    description: '%editor.configuration.autoSaveDelay%',
+    markdownDescription: localize('editor.configuration.autoSaveDelay'),
   },
   'editor.preferredFormatter': {
     type: 'object',
@@ -1712,7 +1712,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.enablePreviewFromCodeNavigation': {
     type: 'boolean',
     default: false,
-    description: '%editor.configuration.enablePreviewFromCodeNavigation%',
+    markdownDescription: localize('editor.configuration.enablePreviewFromCodeNavigation'),
   },
   'editor.minimap': {
     type: 'boolean',
@@ -1802,7 +1802,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.formatOnSaveTimeout': {
     type: 'number',
     default: 750,
-    description: '%editor.configuration.formatOnSaveTimeout%',
+    markdownDescription: localize('editor.configuration.formatOnSaveTimeout'),
   },
   'editor.lineHeight': {
     type: 'number',
@@ -1851,7 +1851,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'workbench.editorAssociations': {
     type: 'object',
-    description: '%preference.workbench.editorAssociations%',
+    markdownDescription: localize('preference.workbench.editorAssociations'),
     default: {},
     additionalProperties: {
       type: 'string',

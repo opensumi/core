@@ -552,7 +552,7 @@ export const localizationBundle = {
     'preference.editor.minimap': 'minimap',
     'preference.editor.forceReadOnly': 'readOnly',
     'preference.editor.renderLineHighlight': 'Render Line Highlight',
-    'preference.editor.askIfDiff': 'Error If File On Disk is ewer',
+    'preference.editor.askIfDiff': 'Error If File On Disk is newer',
     'preference.editor.autoSave': 'Editor Auto Save',
     'preference.editor.autoSaveDelay': 'Auto Save Delay',
     'preference.editor.detectIndentation': 'Auto Detect Indentation',

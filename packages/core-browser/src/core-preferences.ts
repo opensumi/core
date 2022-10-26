@@ -189,7 +189,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
     'files.associations': {
       type: 'object',
-      description: '%preference.files.associations%',
+      markdownDescription: localize('preference.files.associations'),
     },
     'files.encoding': {
       type: 'string',
