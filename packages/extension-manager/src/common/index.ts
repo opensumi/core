@@ -46,6 +46,8 @@ export class VSXExtension {
   readonly preview?: boolean;
   readonly namespaceAccess?: VSXExtensionNamespaceAccess;
   readonly publishedBy?: VSXUser;
+  readonly path?: string;
+  readonly realpath?: string;
   static KEYS: Set<keyof VSXExtension> = new Set([
     'version',
     'iconUrl',
@@ -72,8 +74,9 @@ export const VSXExtensionServiceToken = Symbol('VSXExtensionSerivceToken');
 export interface IVSXExtensionService {
   search(keyword: string): Promise<void>;
   install(extension: VSXExtension): Promise<void>;
-  getLocalExtension(extensionId: string): Promise<VSXExtension | undefined>;
-  getRemoteRawExtension(extensionId: string): Promise<VSXExtensionRaw | undefined>;
+  uninstall(extension: VSXExtension): Promise<void>;
+  getLocalExtension(extensionId?: string): Promise<VSXExtension | undefined>;
+  getRemoteRawExtension(extensionId?: string): Promise<VSXExtensionRaw | undefined>;
   getOpenVSXRegistry(): Promise<void>;
   openExtensionEditor(extensionId: string, state: InstallState): Promise<void>;
 

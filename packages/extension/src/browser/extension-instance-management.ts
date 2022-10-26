@@ -1,6 +1,6 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { AppConfig, Disposable, StorageProvider, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
-import { ExtensionCandidate as ExtensionCandidate, getLanguageId } from '@opensumi/ide-core-common';
+import { Emitter, ExtensionCandidate as ExtensionCandidate, getLanguageId } from '@opensumi/ide-core-common';
 
 import {
   ExtensionNodeServiceServerPath,
@@ -30,6 +30,12 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
 
   @Autowired(ExtensionNodeServiceServerPath)
   private readonly extensionNodeClient: IExtensionNodeClientService;
+
+  private onDidChangeEmitter: Emitter<void> = new Emitter();
+
+  get onDidChange() {
+    return this.onDidChangeEmitter.event;
+  }
 
   private extensionMap = new Map<string, Extension>();
 
@@ -77,11 +83,13 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
 
   public deleteExtensionInstanceByPath(extensionPath: string) {
     this.extensionMap.delete(extensionPath);
+    this.onDidChangeEmitter.fire();
   }
 
   public addExtensionInstance(extension: Extension) {
     // extension.path 就是 extensionPath
     this.extensionMap.set(extension.path, extension);
+    this.onDidChangeEmitter.fire();
   }
 
   /**
