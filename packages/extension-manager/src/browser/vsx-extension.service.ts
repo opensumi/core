@@ -3,6 +3,7 @@ import { observable, action } from 'mobx';
 import { Injectable, Autowired } from '@opensumi/di';
 import {
   Disposable,
+  fuzzyScore,
   IStatusBarService,
   localize,
   StatusBarAlignment,
@@ -183,6 +184,21 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
           readme: ext.files.readme,
         }));
     }
+  }
+
+  @action
+  async searchInstalledExtensions(keyword: string) {
+    this.installedExtensions = this.installedExtensions.sort((a, b) => {
+      const scoreA = fuzzyScore(keyword, keyword.toLowerCase(), 0, a.name, a.name.toLowerCase(), 0, true);
+      const scoreB = fuzzyScore(keyword, keyword.toLowerCase(), 0, b.name, b.name.toLowerCase(), 0, true);
+      if (!scoreA) {
+        return 1;
+      }
+      if (!scoreB) {
+        return -1;
+      }
+      return scoreB[0] - scoreA[0];
+    });
   }
 
   @action

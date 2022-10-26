@@ -27,10 +27,10 @@ export interface VSXUser {
 }
 
 export class VSXExtension {
+  readonly name: string;
   readonly version?: string;
   readonly iconUrl?: string;
   readonly publisher?: string;
-  readonly name?: string;
   readonly displayName?: string;
   readonly description?: string;
   readonly namespace?: string;
@@ -73,6 +73,7 @@ export const VSXExtensionServiceToken = Symbol('VSXExtensionSerivceToken');
 
 export interface IVSXExtensionService {
   search(keyword: string): Promise<void>;
+  searchInstalledExtensions(keyword: string): Promise<void>;
   install(extension: VSXExtension): Promise<void>;
   uninstall(extension: VSXExtension): Promise<void>;
   getLocalExtension(extensionId?: string): Promise<VSXExtension | undefined>;
