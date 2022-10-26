@@ -246,10 +246,10 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   /**
-   * Lifecircle
+   * LifeCycle
    * 1. Prepare
-   * 2. Starting
-   * 3. onDidStart
+   * 2. Initialize
+   * 3. Starting
    * 4. Ready
    */
   public async start(
