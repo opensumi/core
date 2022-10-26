@@ -2,10 +2,9 @@ import path from 'path';
 
 import { expect } from '@playwright/test';
 
-import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
-
 import { OpenSumiApp } from '../app';
 import { OpenSumiComponentEditor } from '../component-editor';
+import { OPENSUMI_VIEW_CONTAINERS } from '../constans';
 import { OpenSumiContextMenu } from '../context-menu';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiTextEditor } from '../text-editor';
@@ -31,7 +30,7 @@ test.describe('OpenSumi Keyboard Shortcuts', () => {
   });
 
   const openKeymapsView = async () => {
-    const leftTabbar = await app.page.waitForSelector(`#${VIEW_CONTAINERS.LEFT_TABBAR}`);
+    const leftTabbar = await app.page.waitForSelector(`#${OPENSUMI_VIEW_CONTAINERS.LEFT_TABBAR}`);
     const settingsButton = await leftTabbar.$('[class*="titleActions___"] span');
     await settingsButton?.click();
     const menu = new OpenSumiContextMenu(app);
