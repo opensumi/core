@@ -42,6 +42,13 @@ test.describe('OpenSumi Language', () => {
     await app.page.waitForTimeout(1000);
 
     const definitionTree = await explorer.getFileStatTreeNodeByPath('language/definition.ts');
+    // eslint-disable-next-line no-console
+    console.log('definitionTree: >>. ', definitionTree);
+    // eslint-disable-next-line no-console
+    console.log('definitionTree: >>. ', await definitionTree?.label());
+    // eslint-disable-next-line no-console
+    console.log('definitionTree: >>. ', await definitionTree?.isSelected());
+    await app.page.waitForTimeout(600);
     expect(await definitionTree?.isSelected()).toBeTruthy();
     const currentTab = await editor.getCurrentTab();
     expect(await currentTab?.textContent()).toStrictEqual(' definition.ts');
