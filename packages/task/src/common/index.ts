@@ -1,5 +1,4 @@
-import { IJSONSchemaMap } from '@opensumi/ide-core-browser';
-import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred } from '@opensumi/ide-core-common';
+import { IDisposable, Event, URI, TaskIdentifier, Uri, Deferred, IJSONSchemaMap } from '@opensumi/ide-core-common';
 import { UriComponents } from '@opensumi/ide-editor';
 import { IShellLaunchConfig, ITerminalClient } from '@opensumi/ide-terminal-next/lib/common';
 

@@ -18,7 +18,7 @@ export const searchPreferenceSchema: PreferenceSchema = {
   properties: {
     [SearchSettingId.Exclude]: {
       type: 'object',
-      markdownDescription: localize('preference.search.exclude'),
+      markdownDescription: '%preference.search.exclude%',
       default: {
         '**/node_modules': true,
         '**/bower_components': true,
