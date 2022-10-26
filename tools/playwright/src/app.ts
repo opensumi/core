@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 
 import { Disposable } from '@opensumi/ide-utils';
 
+import { IComponentEditorInfo } from './component-editor';
 import { OpenSumiEditor } from './editor';
 import { OpenSumiExplorerView } from './explorer-view';
 import { OpenSumiMenubar } from './menubar';
@@ -101,7 +102,7 @@ export class OpenSumiApp extends Disposable {
   }
 
   async openEditor<T extends OpenSumiEditor>(
-    EditorConstruction: new (app: OpenSumiApp, element: OpenSumiTreeNode) => T,
+    EditorConstruction: new (app: OpenSumiApp, element?: OpenSumiTreeNode) => T,
     explorer: OpenSumiExplorerView,
     filePath: string,
     preview = true,
@@ -112,6 +113,18 @@ export class OpenSumiApp extends Disposable {
     }
     const editor = new EditorConstruction(this, node);
     await editor.open(preview);
+    return editor;
+  }
+
+  // use for component editors
+  async openComponentEditor<T extends OpenSumiEditor>(
+    EditorConstruction: new (app: OpenSumiApp, info: IComponentEditorInfo) => T,
+    path: string,
+    name: string,
+    containerSelector: string,
+  ) {
+    const editor = new EditorConstruction(this, { path, name, containerSelector });
+    await editor.open();
     return editor;
   }
 

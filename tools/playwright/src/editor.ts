@@ -4,7 +4,7 @@ import { OpenSumiExplorerFileStatNode } from './explorer-view';
 import { OpenSumiView } from './view';
 
 export class OpenSumiEditor extends OpenSumiView {
-  constructor(app: OpenSumiApp, private readonly filestatElement: OpenSumiExplorerFileStatNode) {
+  constructor(app: OpenSumiApp, private readonly filestatElement?: OpenSumiExplorerFileStatNode) {
     super(app, {
       tabSelector: `#${OPENSUMI_VIEW_CONTAINERS.EDITOR_TABS}`,
       viewSelector: `#${OPENSUMI_VIEW_CONTAINERS.EDITOR}`,
@@ -13,7 +13,7 @@ export class OpenSumiEditor extends OpenSumiView {
   }
 
   async getTab() {
-    const path = (await this.filestatElement.getFsPath()) || '';
+    const path = (await this.filestatElement?.getFsPath()) || '';
     const tabsItems = await (await this.getTabElement())?.$$("[class*='kt_editor_tab___']");
 
     if (!tabsItems) {
@@ -28,12 +28,20 @@ export class OpenSumiEditor extends OpenSumiView {
     }
   }
 
+  async getContainer(selector?: string) {
+    if (!selector) {
+      return;
+    }
+    const container = await (await this.getViewElement())?.$(selector);
+    return container;
+  }
+
   async getCurrentTab() {
     return await (await this.getTabElement())?.waitForSelector("[class*='kt_editor_tab_current___']");
   }
 
   async open(preview?: boolean) {
-    await this.filestatElement.open(preview);
+    await this.filestatElement?.open(preview);
     // waiting editor render, it maybe fail while opening a large file.
     await this.app.page.waitForTimeout(1000);
     return this;
