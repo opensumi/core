@@ -7,7 +7,9 @@ import { isWindows } from '@opensumi/ide-utils';
 import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiFileTreeView } from '../filetree-view';
+import { OpenSumiOpenedEditorView } from '../opened-editor-view';
 import { OpenSumiTerminal } from '../terminal';
+import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
@@ -15,6 +17,7 @@ import test, { page } from './hooks';
 let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
 let fileTreeView: OpenSumiFileTreeView;
+let openedEditorView: OpenSumiOpenedEditorView;
 let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Explorer Panel', () => {
@@ -24,6 +27,7 @@ test.describe('OpenSumi Explorer Panel', () => {
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
     fileTreeView = explorer.fileTreeView;
+    openedEditorView = explorer.openedEditorView;
   });
 
   test.afterAll(() => {
@@ -93,6 +97,10 @@ test.describe('OpenSumi Explorer Panel', () => {
       await input.type(newFileName, { delay: 200 });
       await app.page.keyboard.press('Enter');
     }
+    await app.page.waitForTimeout(200);
+    const newFile = await explorer.getFileStatTreeNodeByPath(`${newFileName}`);
+    expect(newFile).toBeDefined();
+    expect(await newFile?.isFolder()).toBeFalsy();
   });
 
   test('can new folder from toolbar', async () => {
@@ -143,7 +151,52 @@ test.describe('OpenSumi Explorer Panel', () => {
     await app.page.waitForTimeout(200);
     const file_1 = await explorer.getFileStatTreeNodeByPath(`${filterString}.js`);
     expect(file_1).toBeDefined();
-    const file_2 = await explorer.getFileStatTreeNodeByPath('editor.js');
+    let file_2 = await explorer.getFileStatTreeNodeByPath('editor.js');
     expect(file_2).toBeUndefined();
+    await app.page.keyboard.press('Escape');
+    file_2 = await explorer.getFileStatTreeNodeByPath('editor.js');
+    expect(file_2).toBeDefined();
+  });
+
+  test('should show opened files on the opened editor panel', async () => {
+    await openedEditorView.open();
+    expect(await openedEditorView.isVisible()).toBeTruthy();
+    const testFilePath = 'editor.js';
+    await app.openEditor(OpenSumiTextEditor, explorer, testFilePath);
+    await app.page.waitForTimeout(500);
+    const node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath);
+    expect(node).toBeDefined();
+  });
+
+  test('should show dirty icon on the opened editor panel', async () => {
+    await openedEditorView.open();
+    expect(await openedEditorView.isVisible()).toBeTruthy();
+    const testFilePath = 'editor3.js';
+    const editor = await app.openEditor(OpenSumiTextEditor, explorer, testFilePath);
+    await editor.addTextToNewLineAfterLineByLineNumber(
+      1,
+      `const a = 'a';
+console.log(a);`,
+    );
+    await app.page.waitForTimeout(1000);
+    let node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath);
+    expect(await node?.isDirty()).toBeTruthy();
+    await editor.save();
+    await app.page.waitForTimeout(1000);
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath);
+    expect(await node?.isDirty()).toBeFalsy();
+  });
+
+  test('split file on the editor should showing on two group', async () => {
+    await openedEditorView.open();
+    expect(await openedEditorView.isVisible()).toBeTruthy();
+    const testFilePath = 'editor3.js';
+    const editor = await app.openEditor(OpenSumiTextEditor, explorer, testFilePath);
+    await editor.triggerTitleMenu('Split To Right (⌘\\)');
+    await app.page.waitForTimeout(1000);
+    const group1 = await explorer.getOpenedEditorTreeNodeByPath('Group 1');
+    const group2 = await explorer.getOpenedEditorTreeNodeByPath('Group 2');
+    expect(group1).toBeDefined();
+    expect(group2).toBeDefined();
   });
 });
