@@ -25,6 +25,7 @@ export const testingStatesToIcons = new Map<TestResultState, string>([
 
 export const testingRunIcon = getExternalIcon('run');
 export const testingRunAllIcon = getExternalIcon('run-all');
+export const testingRefreshTests = getExternalIcon('refresh');
 
 export const getIconWithColor = (state: TestResultState) =>
   `${testingStatesToIcons.get(state)} ${testStatesToIconColors[state]}` || '';

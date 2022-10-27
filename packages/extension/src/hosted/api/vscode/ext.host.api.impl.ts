@@ -232,8 +232,8 @@ export function createApiFactory(
       },
     },
     tests: {
-      createTestController(controllerId: string, label: string) {
-        return extHostTests.createTestController(controllerId, label);
+      createTestController(controllerId: string, label: string, refreshHandler?: () => Thenable<void> | void) {
+        return extHostTests.createTestController(controllerId, label, refreshHandler);
       },
     },
     // 类型定义

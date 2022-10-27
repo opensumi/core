@@ -6,3 +6,4 @@ export const TestingHasAnyResults = new RawContextKey('testing.hasAnyResults', f
 export const TestingIsRunning = new RawContextKey('testing.isRunning', false);
 export const TestingIsInPeek = new RawContextKey('testing.isInPeek', true);
 export const TestingIsPeekVisible = new RawContextKey('testing.isPeekVisible', false);
+export const TestingCanRefreshTests = new RawContextKey('testing.canRefresh', false);
