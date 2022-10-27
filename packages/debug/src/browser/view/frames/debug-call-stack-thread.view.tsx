@@ -28,7 +28,7 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
   const mutipleS = manager.sessions.length > 1;
   const mutiple = manager.currentSession?.supportsThreadIdCorrespond
     ? true
-    : manager.sessions.length > 1 || manager.sessions[0].threadCount > 1;
+    : manager.sessions.length > 1 || (manager.sessions[0] && manager.sessions[0].threadCount > 1);
 
   React.useEffect(() => {
     const disposable = new DisposableCollection();

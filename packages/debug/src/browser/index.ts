@@ -22,7 +22,6 @@ import {
   DebugSessionContribution,
   DebugSessionContributionRegistry,
   DebugSessionContributionRegistryImpl,
-  DebugSessionFactory,
 } from './debug-session-contribution';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugExpressionProvider, DebugModel, DebugModelManager } from './editor';
