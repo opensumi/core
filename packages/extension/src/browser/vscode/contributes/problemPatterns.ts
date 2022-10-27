@@ -1,4 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
   IProblemPatternRegistry,
   ProblemPatternContribution,
@@ -7,7 +8,7 @@ import {
   localize,
 } from '@opensumi/ide-core-common';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 const { deepClone } = objects;
 export namespace PatternSchemas {
@@ -152,13 +153,17 @@ export type ProblemPatterns = Array<ProblemPatternContribution>;
 
 @Injectable()
 @Contributes('problemPatterns')
+@LifeCycle(LifeCyclePhase.Ready)
 export class ProblemPatternsContributionPoint extends VSCodeContributePoint<ProblemPatterns> {
   @Autowired(IProblemPatternRegistry)
   problemPattern: IProblemPatternRegistry;
 
   contribute() {
-    for (const pattern of this.json) {
-      this.addDispose(this.problemPattern.register(pattern));
+    for (const contrib of this.contributesMap) {
+      const { contributes } = contrib;
+      for (const pattern of contributes) {
+        this.addDispose(this.problemPattern.register(pattern));
+      }
     }
   }
 }

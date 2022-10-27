@@ -170,6 +170,17 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     this.readCacheToApply();
 
     this.addDispose(this._onDidChangeEncoding);
+
+    this.addDispose(
+      this.monacoModel.onDidChangeLanguage((e) => {
+        this.eventBus.fire(
+          new EditorDocumentModelOptionChangedEvent({
+            uri: this.uri,
+            languageId: e.newLanguage,
+          }),
+        );
+      }),
+    );
   }
 
   updateOptions(options) {

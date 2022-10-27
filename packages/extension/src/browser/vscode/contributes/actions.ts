@@ -1,12 +1,13 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { getIcon, CommandService } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
   IToolbarActionService,
   IToolbarActionGroup,
 } from '@opensumi/ide-core-browser/lib/menu/next/toolbar-action.service';
 import { IToolBarViewService } from '@opensumi/ide-toolbar/lib/browser';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 
 export interface ActionContribution {
   type: 'action';
@@ -29,6 +30,7 @@ export type ActionContributionSchema = Array<ActionContribution | EnumContributi
 
 @Injectable()
 @Contributes('actions')
+@LifeCycle(LifeCyclePhase.Starting)
 export class ActionsContributionPoint extends VSCodeContributePoint<ActionContributionSchema> {
   @Autowired(IToolBarViewService)
   toolbarViewService: IToolBarViewService;
@@ -40,54 +42,48 @@ export class ActionsContributionPoint extends VSCodeContributePoint<ActionContri
   private readonly toolbarActionService: IToolbarActionService;
 
   contribute() {
-    this.register(this.json);
-  }
-
-  register(items: ActionContributionSchema) {
     const _this = this;
-    const actions: IToolbarActionGroup = [];
-    for (const item of items) {
-      const { title, description } = item;
-      switch (item.type) {
-        case 'action':
-          actions.push({
-            title,
-            description,
-            iconClass: getIcon(item.icon),
-            click: () => {
-              if (item.command) {
-                _this.commandService.executeCommand(item.command);
-              }
-            },
-            type: item.type,
-          });
-          break;
-        case 'enum':
-          actions.push({
-            type: item.type,
-            title,
-            description,
-            select: (value) => {
-              if (item.command) {
-                _this.commandService.executeCommand(item.command, value);
-              }
-            },
-            enum: item.enum,
-            defaultValue: item.defaultValue,
-          });
-          break;
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const actions: IToolbarActionGroup = [];
+      for (const item of contributes) {
+        const { title, description } = item;
+        switch (item.type) {
+          case 'action':
+            actions.push({
+              title,
+              description,
+              iconClass: getIcon(item.icon),
+              click: () => {
+                if (item.command) {
+                  _this.commandService.executeCommand(item.command);
+                }
+              },
+              type: item.type,
+            });
+            break;
+          case 'enum':
+            actions.push({
+              type: item.type,
+              title,
+              description,
+              select: (value) => {
+                if (item.command) {
+                  _this.commandService.executeCommand(item.command, value);
+                }
+              },
+              enum: item.enum,
+              defaultValue: item.defaultValue,
+            });
+            break;
+        }
       }
+      this.addDispose(this.toolbarActionService.registryActionGroup(extensionId, actions));
     }
-    this.addDispose(this.toolbarActionService.registryActionGroup(this.extension.id, actions));
   }
 
-  unregister() {
-    this.toolbarActionService.unRegistryActionGroup(this.extension.id);
-  }
-
+  // TODO: dispose
   dispose() {
     super.dispose();
-
-    this.unregister();
   }
 }

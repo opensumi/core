@@ -82,6 +82,7 @@ export class Extension extends WithEventBus implements IExtension {
     // 对于 node 层 extension.scanner 标准下 uri 为 file，纯前端下为自定义实现的 kt-ext，因此可直接使用
     // 不太确定为啥这里的 uri 类型为可选
     this.extensionLocation = this.staticResourceService.resolveStaticResource(URI.from(this.uri!)).codeUri;
+    this.initialize();
   }
 
   localize(key: string) {
@@ -129,10 +130,9 @@ export class Extension extends WithEventBus implements IExtension {
    * 激活插件的 nls 语言包
    * 激活插件的 contributes 贡献点
    */
-  async contributeIfEnabled() {
+  initialize() {
     if (this._enabled) {
       this.addDispose(this.extMetadataService);
-      this.logger.log(`${this.name} extensionMetadataService.run`);
       if (this.packageNlsJSON) {
         registerLocalizationBundle(
           {
@@ -155,7 +155,7 @@ export class Extension extends WithEventBus implements IExtension {
         );
       }
 
-      await this.extMetadataService.run(this);
+      this.extMetadataService.initialize(this);
     }
   }
 

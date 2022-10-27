@@ -264,8 +264,8 @@ export class ThemeData implements IThemeData {
     resultColors: IColorMap,
   ): Promise<any> {
     const timer = this.reporter.time(REPORT_NAME.THEME_LOAD);
-    const ret = await this.fileServiceClient.resolveContent(themeLocation.toString());
-    const themeContent = ret.content;
+    const ret = await this.fileServiceClient.readFile(themeLocation.toString());
+    const themeContent = ret.content.toString();
     timer.timeEnd(themeLocation.toString());
     const themeLocationPath = themeLocation.path.toString();
     if (/\.json$/.test(themeLocationPath)) {
@@ -358,9 +358,9 @@ export class ThemeData implements IThemeData {
   }
 
   private async loadSyntaxTokens(themeLocation: URI): Promise<ITokenColorizationRule[]> {
-    const ret = await this.fileServiceClient.resolveContent(themeLocation.toString());
+    const ret = await this.fileServiceClient.readFile(themeLocation.toString());
     try {
-      const theme = parsePList(ret.content);
+      const theme = parsePList(ret.content.toString());
       const settings = theme.settings;
       if (!Array.isArray(settings)) {
         return Promise.reject(

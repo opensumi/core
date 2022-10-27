@@ -1,4 +1,11 @@
+import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
+import {
+  AppLifeCycleService,
+  AppLifeCycleServiceToken,
+  LifeCyclePhase,
+} from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import { IExtensionsSchemaService } from '@opensumi/ide-core-browser/lib/extensions/extensions-point.service';
 import {
   Disposable,
   IJSONSchema,
@@ -10,6 +17,7 @@ import {
   ExtensionConnectOption,
   replaceNlsField,
   ILogger,
+  WithEventBus,
 } from '@opensumi/ide-core-common';
 import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
@@ -223,6 +231,8 @@ export abstract class ExtensionService {
    */
   abstract getActivatedExtensions(): Promise<{ [key in ExtensionHostType]?: ActivatedExtension[] }>;
 
+  abstract runExtensionContributes(): Promise<void>;
+
   eagerExtensionsActivated: Deferred<void>;
 }
 
@@ -246,36 +256,122 @@ export interface IExtension extends IExtensionProps {
 
 const VAR_REGEXP = /^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i;
 
-//  VSCode Types
+export interface ContributesMap<T> {
+  extensionId: string;
+  contributes: T;
+}
+
 export abstract class VSCodeContributePoint<T extends JSONType = JSONType> extends Disposable {
-  constructor(
-    protected json: T,
-    protected contributes: any,
-    protected extension: IExtensionMetaData,
-    protected packageNlsJSON: JSONType | undefined,
-    protected defaultPkgNlsJSON: JSONType | undefined,
-  ) {
-    super();
-  }
+  protected contributesMap: Array<ContributesMap<T>> = [];
 
   static schema: IJSONSchema;
 
   protected readonly iconService?: IIconService;
 
-  abstract contribute(): void;
+  abstract contribute(): void | Promise<void>;
+
+  register(extensionId: string, contributes: T) {
+    this.contributesMap.push({ extensionId, contributes });
+  }
 
   protected toIconClass(
     iconContrib: { [index in ThemeType]: string } | string,
     type: IconType = IconType.Mask,
+    basePath: string,
   ): string | undefined {
     if (typeof iconContrib === 'string' && VAR_REGEXP.test(iconContrib)) {
       return this.iconService?.fromString(iconContrib);
     }
-    return this.iconService?.fromIcon(this.extension.path, iconContrib, type);
+    return this.iconService?.fromIcon(basePath, iconContrib, type);
   }
 
-  protected getLocalizeFromNlsJSON(title: string, scope: string = this.extension.id, languageId?: string): string {
+  protected getLocalizeFromNlsJSON(title: string, scope: string, languageId?: string): string {
     return replaceNlsField(title, scope, title, languageId);
+  }
+}
+
+export abstract class ExtensionContributesService extends WithEventBus {
+  abstract ContributionPoints: typeof VSCodeContributePoint[];
+
+  @Autowired(ILogger)
+  private logger: ILogger;
+
+  @Autowired(AppLifeCycleServiceToken)
+  private lifecycleService: AppLifeCycleService;
+
+  @Autowired(IExtensionsSchemaService)
+  private readonly extensionsSchemaService: IExtensionsSchemaService;
+
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
+  private contributedSet = new Set();
+
+  private getContributionCls(contributesName: string): typeof VSCodeContributePoint | undefined {
+    const Constructor = this.ContributionPoints.find((Constructor) => {
+      const k = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
+      if (k === contributesName) {
+        return true;
+      }
+      return false;
+    });
+    return Constructor;
+  }
+
+  register(extensionId: string, contrib: JSONType) {
+    for (const k of Object.keys(contrib)) {
+      const Constructor = this.getContributionCls(k);
+      if (Constructor) {
+        const instance = this.injector.get(Constructor);
+        instance?.register(extensionId, contrib[k]);
+      }
+    }
+  }
+
+  private async runContributesByPhase(lifeCyclePhase: LifeCyclePhase) {
+    const Contributes = this.ContributionPoints.filter((Constructor) => {
+      const phase = Reflect.getMetadata(LIFE_CYCLE_PHASE_KEY, Constructor);
+      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
+      if (phase <= lifeCyclePhase && !this.contributedSet.has(contributeName)) {
+        this.contributedSet.add(contributeName);
+        return true;
+      }
+      return false;
+    });
+
+    await Promise.all(
+      Contributes.map(async (Constructor: typeof VSCodeContributePoint) => {
+        try {
+          const contributePoint = this.injector.get(Constructor);
+          const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
+          this.addDispose(contributePoint);
+
+          const now = Date.now();
+          await contributePoint.contribute();
+
+          this.extensionsSchemaService.registerExtensionPoint({
+            extensionPoint: contributeName,
+            jsonSchema: Constructor.schema || {},
+            frameworkKind: ['vscode', 'opensumi'],
+          });
+
+          const end = Date.now() - now;
+          this.logger.log(`run extension contribute ${contributeName}: ${end} ms`);
+        } catch (e) {
+          this.logger.error(e);
+        }
+      }),
+    );
+  }
+
+  public initialize() {
+    if (this.lifecycleService.phase) {
+      this.runContributesByPhase(this.lifecycleService.phase);
+    }
+
+    this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
+      this.runContributesByPhase(newPhase);
+    });
   }
 }
 
@@ -283,6 +379,13 @@ export const CONTRIBUTE_NAME_KEY = 'contribute_name';
 export function Contributes(name) {
   return (target) => {
     Reflect.defineMetadata(CONTRIBUTE_NAME_KEY, name, target);
+  };
+}
+
+export const LIFE_CYCLE_PHASE_KEY = 'phase';
+export function LifeCycle(name: LifeCyclePhase) {
+  return (target) => {
+    Reflect.defineMetadata(LIFE_CYCLE_PHASE_KEY, name, target);
   };
 }
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, URI } from '@opensumi/ide-core-browser';
+import { PreferenceSchemaProvider, IPreferenceSettingsService, URI, BinaryBuffer } from '@opensumi/ide-core-browser';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
@@ -16,10 +16,10 @@ import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service
 
 @Injectable()
 class MockFileServiceClient {
-  resolveContent(uri: string) {
+  readFile(uri: string) {
     if (uri.indexOf('json') > -1) {
       return {
-        content: `{
+        content: BinaryBuffer.fromString(`{
           "$schema": "vscode://schemas/color-theme",
           "name": "Dark Default Colors",
           "colors": {
@@ -44,11 +44,12 @@ class MockFileServiceClient {
             "comment:java": "#ff004f"
           },
           "semanticHighlighting": true
-        }`,
+        }`),
       };
     }
     return {
-      content: `<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      content:
+        BinaryBuffer.fromString(`<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
         <plist version="1.0">
         <dict>
           <key>name</key>
@@ -92,7 +93,7 @@ class MockFileServiceClient {
             </dict>
           </array>
         </dict>
-        </plist>`,
+        </plist>`),
     };
   }
 }

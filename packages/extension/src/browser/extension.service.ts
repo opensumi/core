@@ -38,9 +38,10 @@ import {
   AbstractViewExtProcessService,
   AbstractWorkerExtProcessService,
 } from '../common/extension.service';
-import { isLanguagePackExtension, MainThreadAPIIdentifier } from '../common/vscode';
+import { MainThreadAPIIdentifier } from '../common/vscode';
 
 import { Extension } from './extension';
+import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import {
   ExtensionApiReadyEvent,
   ExtensionDidEnabledEvent,
@@ -50,6 +51,7 @@ import {
   AbstractExtInstanceManagementService,
   ExtensionsInitializedEvent,
 } from './types';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from './vscode/contributes';
 
 @Injectable()
 export class ExtensionServiceImpl extends WithEventBus implements ExtensionService {
@@ -110,6 +112,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   @Autowired(FileSearchServicePath)
   private readonly fileSearchService: IFileSearchService;
+
+  @Autowired(VSCodeContributesServiceToken)
+  private readonly contributesService: VSCodeContributesService;
+
+  @Autowired(SumiContributionsServiceToken)
+  private readonly sumiContributesService: SumiContributionsService;
 
   /**
    * 这里的 ready 是区分环境，将 node/worker 区分开使用
@@ -181,7 +189,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   public async activate(): Promise<void> {
     await this.initExtensionMetaData();
     await this.initExtensionInstanceData();
-    await this.runExtensionContributes();
+    await this.runEagerExtensionsContributes();
     this.doActivate();
 
     // 监听页面展示状态，当页面状态变为可见且插件进程待重启的时候执行
@@ -224,7 +232,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       Array.from(this.extensionScanDir),
       Array.from(this.extensionCandidatePath),
     );
-    this.logger.verbose('ExtensionMetaDataArr', this.extensionMetaDataArr);
+    this.logger.log('extensions count:', this.extensionMetaDataArr.length);
   }
 
   /**
@@ -241,6 +249,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
       );
       if (extension) {
         this.extensionInstanceManageService.addExtensionInstance(extension);
+      }
+
+      if (extension?.contributes) {
+        this.contributesService.register(extension.id, extension.contributes);
+        this.sumiContributesService.register(extension.id, extension.contributes);
       }
     }
 
@@ -509,36 +522,30 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     return this.extensionMetaDataArr;
   }
 
-  /**
-   * 激活插件的 Contributes
-   */
-  private async runExtensionContributes() {
-    const extensions = Array.from(this.extensionInstanceManageService.getExtensionInstances() as Extension[]);
-    const languagePackExtensions: Extension[] = [];
-    const normalExtensions: Extension[] = [];
+  private normalExtensions: Extension[] = [];
 
-    for (const extension of extensions) {
-      if (isLanguagePackExtension(extension.packageJSON)) {
-        languagePackExtensions.push(extension);
-      } else {
-        normalExtensions.push(extension);
-      }
-    }
-
-    // 优先执行 languagePack 的 contribute
-    await Promise.all(languagePackExtensions.map((languagePack) => languagePack.contributeIfEnabled()));
-    await Promise.all(normalExtensions.map((extension) => extension.contributeIfEnabled()));
-
-    // try fire workspaceContains activateEvent ，这里不要 await
-    Promise.all(
-      extensions.map((extension) => this.activateByWorkspaceContains(extension.packageJSON.activationEvents)),
-    ).catch((error) => this.logger.error(error));
-
+  private async runEagerExtensionsContributes() {
+    this.contributesService.initialize();
+    this.sumiContributesService.initialize();
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
     });
     this.eventBus.fire(new ExtensionDidContributes());
+  }
+
+  /**
+   * 激活插件的 Contributes
+   */
+  public async runExtensionContributes() {
+    // await Promise.all(this.normalExtensions.map(async (extension) => await extension.initialize()));
+
+    // try fire workspaceContains activateEvent ，这里不要 await
+    Promise.all(
+      this.normalExtensions.map((extension) =>
+        this.activateByWorkspaceContains(extension.packageJSON.activationEvents),
+      ),
+    ).catch((error) => this.logger.error(error));
   }
 
   /**
@@ -624,9 +631,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     const extensionPaths = Array.from(activatedViewExtensionMap.keys());
 
     await Promise.all(
-      extensionPaths.map((path) =>
-        this.extensionInstanceManageService.getExtensionInstanceByPath(path)?.contributeIfEnabled(),
-      ),
+      extensionPaths.map((path) => this.extensionInstanceManageService.getExtensionInstanceByPath(path)?.initialize()),
     );
 
     activatedViewExtensionMap.clear();

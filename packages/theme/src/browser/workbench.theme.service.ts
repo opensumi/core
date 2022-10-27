@@ -123,7 +123,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }, new Map());
 
     this.preferenceSettings.setEnumLabels(COLOR_THEME_SETTING, Object.fromEntries(themeMap.entries()));
-    this.colorThemeLoaded.resolve();
+    if (!this.currentThemeId && !this.currentTheme) {
+      this.colorThemeLoaded.resolve();
+    }
   }
 
   get preferenceThemeId(): string | undefined {
@@ -144,7 +146,6 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
       if (this.preferenceThemeId === themeId) {
         await this.applyTheme(this.preferenceThemeId);
-        this.colorThemeLoaded.resolve();
       }
 
       disposables.push({
@@ -196,12 +197,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     const currentThemeType = this.currentTheme.type;
 
     this.toggleBaseThemeClass(prevThemeType, currentThemeType);
-
     this.doApplyTheme(this.currentTheme);
 
-    if (!this.preferenceThemeId) {
-      this.colorThemeLoaded.resolve();
-    }
+    this.colorThemeLoaded.resolve();
   }
 
   public registerColor(contribution: ExtColorContribution) {

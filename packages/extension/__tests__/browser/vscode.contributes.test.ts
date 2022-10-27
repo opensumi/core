@@ -3,6 +3,11 @@ import os from 'os';
 import { Injector } from '@opensumi/di';
 import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
 import {
+  AppLifeCycleService,
+  AppLifeCycleServiceToken,
+  LifeCyclePhase,
+} from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import {
   CommandRegistry,
   CommandService,
   CommandServiceImpl,
@@ -12,21 +17,22 @@ import {
 } from '@opensumi/ide-core-common';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
-import { ExtensionWillContributeEvent } from '@opensumi/ide-extension/lib/browser/types';
-import { ExtensionNodeServiceServerPath } from '@opensumi/ide-extension/lib/common';
+import {
+  AbstractExtInstanceManagementService,
+  ExtensionWillContributeEvent,
+} from '@opensumi/ide-extension/lib/browser/types';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
-import { ITextmateTokenizer } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { SchemaRegistry, SchemaStore } from '@opensumi/ide-monaco/lib/browser/schema-registry';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 import { WorkbenchThemeService } from '@opensumi/ide-theme/lib/browser/workbench.theme.service';
-import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { MockPreferenceService } from '../../../terminal-next/__tests__/browser/mock.service';
-import { MockExtNodeClientService } from '../../__mocks__/extension.service.client';
 import { mockExtensionProps } from '../../__mocks__/extensions';
-import { VSCodeContributeRunner } from '../../src/browser/vscode/contributes';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../src/browser/vscode/contributes';
+import { ExtensionNodeServiceServerPath } from '../../src/common';
 
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
 
@@ -78,10 +84,11 @@ const extension = {
 
 describe('VSCodeContributeRunner', () => {
   let injector: Injector;
-  let runner: VSCodeContributeRunner;
   let eventBus: IEventBus;
+  let textmateService: ITextmateTokenizerService;
+  let spyOnUpdateLanguagePack: jest.MockedFunction<any>;
 
-  beforeAll((done) => {
+  beforeAll(async () => {
     injector = setupExtensionServiceInjector();
     injector.addProviders(
       ...[
@@ -126,6 +133,10 @@ describe('VSCodeContributeRunner', () => {
           useValue: new MockPreferenceService(),
         },
         {
+          token: AppLifeCycleServiceToken,
+          useClass: AppLifeCycleService,
+        },
+        {
           token: IExtensionStoragePathServer,
           useValue: {
             getLastStoragePath() {
@@ -135,31 +146,32 @@ describe('VSCodeContributeRunner', () => {
         },
       ],
     );
-    injector.overrideProviders({
-      token: ExtensionNodeServiceServerPath,
-      useClass: MockExtNodeClientService,
-    });
-    runner = injector.get(VSCodeContributeRunner, [extension]);
     eventBus = injector.get(IEventBus);
-    done();
+    const contributes: VSCodeContributesService = injector.get(VSCodeContributesServiceToken);
+    const extInstanceManagementService = injector.get(AbstractExtInstanceManagementService);
+    extInstanceManagementService.getExtensionInstanceByExtId = () => extension;
+    const extensionNodeService = injector.get(ExtensionNodeServiceServerPath);
+    spyOnUpdateLanguagePack = jest.spyOn(extensionNodeService, 'updateLanguagePack');
+    contributes.register(extension.id, extension.packageJSON.contributes);
+
+    await contributes['runContributesByPhase'](LifeCyclePhase.Ready);
+    textmateService = injector.get(ITextmateTokenizer);
   });
 
-  it('ExtensionWillContributeEvent', (done) => {
+  it.skip('ExtensionWillContributeEvent', (done) => {
     eventBus.on(ExtensionWillContributeEvent, (target) => {
       expect(target.payload.packageJSON.name).toBe(mockExtensionProps.packageJSON.name);
       done();
     });
-    runner.run();
   });
 
   it('register localization contribution', async () => {
-    await runner.run();
     expect(process.env['TEST_KAITIAN_LANGUAGE_ID']?.toLowerCase()).toBe('zh-cn');
+    expect(spyOnUpdateLanguagePack).toBeCalledWith('zh-CN', extension.path, os.tmpdir());
   });
 
   it('register command contribution', async () => {
     const commandRegistry = injector.get(CommandRegistry);
-    await runner.run();
     const command = commandRegistry.getCommand('test-command');
     expect(command).toBeDefined();
     expect(command?.label).toBe('测试命令');
@@ -167,15 +179,13 @@ describe('VSCodeContributeRunner', () => {
   });
 
   it('register theme contribution', async () => {
-    await runner.run();
     const themeService = injector.get(IThemeService);
     const availableThemes = themeService.getAvailableThemeInfos();
     expect(availableThemes.length).toBe(1);
   });
 
   it('register language contribution', async () => {
-    await runner.run();
-    const languages = monaco.languages.getLanguages();
+    const languages = textmateService.getLanguages();
     expect(languages.map((l) => l.id)).toContain('javascript');
   });
 });

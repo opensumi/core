@@ -210,12 +210,6 @@ export interface IExtensionDescription extends IExtensionManifest, IExtensionPro
   enableProposedApi: boolean;
 }
 
-export function isLanguagePackExtension(manifest: { [key: string]: any }): boolean {
-  return manifest.contributes && manifest.contributes.localizations
-    ? manifest.contributes.localizations.length > 0
-    : false;
-}
-
 export function throwProposedApiError(extension: IExtensionDescription): void {
   // eslint-disable-next-line no-console
   throw new Error(

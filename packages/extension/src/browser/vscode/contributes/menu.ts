@@ -9,6 +9,7 @@ import {
   URI,
   localize,
 } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -17,7 +18,8 @@ import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType, IconType } from '@opensumi/ide-theme';
 import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 // 对插件侧 contributes 的 menu interface
 export interface MenuActionFormat extends IMenuItem {
@@ -140,17 +142,24 @@ const _submenuDescRegistry = new Map<string /* submenu id */, SubmenusSchema>();
 
 @Injectable()
 @Contributes('submenus')
+@LifeCycle(LifeCyclePhase.Starting)
 export class SubmenusContributionPoint extends VSCodeContributePoint<SubmenusSchema> {
   static schema = {};
 
   contribute() {
-    _submenuDescRegistry.set(this.extension.id, this.json);
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      _submenuDescRegistry.set(extensionId, contributes);
+    }
   }
 }
 
 @Injectable()
 @Contributes('menus')
+@LifeCycle(LifeCyclePhase.Starting)
 export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
+  phase: LifeCyclePhase = LifeCyclePhase.Initialize;
+
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
 
@@ -175,6 +184,9 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   @Autowired(IIconService)
   iconService: IIconService;
 
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+
   static schema = menus.schema;
 
   protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string): string {
@@ -191,88 +203,95 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   contribute() {
     const collector = console;
 
-    // menu registration
-    for (const menuPosition of Object.keys(this.json)) {
-      const menuActions = this.json[menuPosition];
-      if (!isValidItems(menuActions, console)) {
-        return;
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
       }
-      const menuId = parseMenuId(menuPosition);
-      if (isUndefined(menuId)) {
-        collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid menu identifier', menuPosition));
-        return;
-      }
+      // menu registration
+      for (const menuPosition of Object.keys(contributes)) {
+        const menuActions = contributes[menuPosition];
+        if (!isValidItems(menuActions, console)) {
+          return;
+        }
+        const menuId = parseMenuId(menuPosition);
+        if (isUndefined(menuId)) {
+          collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid menu identifier', menuPosition));
+          return;
+        }
 
-      for (const item of menuActions) {
-        if (isMenuActionFormat(item)) {
-          const command = this.commandRegistry.getRawCommand(item.command);
-          // alt 逻辑先不处理
-          const alt = item.alt && this.commandRegistry.getRawCommand(item.alt);
+        for (const item of menuActions) {
+          if (isMenuActionFormat(item)) {
+            const command = this.commandRegistry.getRawCommand(item.command);
+            // alt 逻辑先不处理
+            const alt = item.alt && this.commandRegistry.getRawCommand(item.alt);
 
-          if (!command) {
-            collector.error(formatLocalize('menu.missing.command', menuId, item.command));
-            continue;
-          }
-          if (item.alt && !alt) {
-            collector.warn(formatLocalize('menu.missing.altCommand', menuId, item.alt));
-          }
-          if (item.command === item.alt) {
-            collector.info(formatLocalize('menu.dupe.command', menuId, item.command, item.alt));
-          }
+            if (!command) {
+              collector.error(formatLocalize('menu.missing.command', menuId, item.command));
+              continue;
+            }
+            if (item.alt && !alt) {
+              collector.warn(formatLocalize('menu.missing.altCommand', menuId, item.alt));
+            }
+            if (item.command === item.alt) {
+              collector.info(formatLocalize('menu.dupe.command', menuId, item.command, item.alt));
+            }
 
-          const [group, order] = parseMenuGroup(item.group);
-          let argsTransformer: ((...args: any[]) => any[]) | undefined;
-          if ((menuId as MenuId) === MenuId.EditorTitleContext) {
-            argsTransformer = ({ uri, group }: { uri: URI; group: IEditorGroup }) => [uri.codeUri];
-          } else if ((menuId as MenuId) === MenuId.EditorTitle) {
-            argsTransformer = (uri: URI, group: IEditorGroup, editorUri?: URI) => [editorUri?.codeUri || uri.codeUri];
-          }
+            const [group, order] = parseMenuGroup(item.group);
+            let argsTransformer: ((...args: any[]) => any[]) | undefined;
+            if ((menuId as MenuId) === MenuId.EditorTitleContext) {
+              argsTransformer = ({ uri, group }: { uri: URI; group: IEditorGroup }) => [uri.codeUri];
+            } else if ((menuId as MenuId) === MenuId.EditorTitle) {
+              argsTransformer = (uri: URI, group: IEditorGroup, editorUri?: URI) => [editorUri?.codeUri || uri.codeUri];
+            }
 
-          this.addDispose(
-            this.menuRegistry.registerMenuItem(menuId, {
-              command: item.command,
-              alt,
-              group,
-              order,
-              when: item.when,
-              // 以下为 kaitian 扩展部分
-              argsTransformer,
-              type: item.type,
-              toggledWhen: item.toggledWhen,
-              enabledWhen: item.enabledWhen,
-            } as IMenuItem),
-          );
-        } else {
-          const submenuRegistry = _submenuDescRegistry.get(this.extension.id);
-          if (!submenuRegistry) {
-            collector.error(localize('missing.submenu.section', 'Need a submenu contributes firstly', item.submenu));
-            continue;
-          }
-          const submenuDesc = submenuRegistry.find((n) => n.id === item.submenu);
-
-          if (!submenuDesc) {
-            collector.error(
-              localize(
-                'missing.submenu',
-                "Menu item references a submenu `{0}` which is not defined in the 'submenus' section.",
-                item.submenu,
-              ),
+            this.addDispose(
+              this.menuRegistry.registerMenuItem(menuId, {
+                command: item.command,
+                alt,
+                group,
+                order,
+                when: item.when,
+                // 以下为 kaitian 扩展部分
+                argsTransformer,
+                type: item.type,
+                toggledWhen: item.toggledWhen,
+                enabledWhen: item.enabledWhen,
+              } as IMenuItem),
             );
-            continue;
+          } else {
+            const submenuRegistry = _submenuDescRegistry.get(extensionId);
+            if (!submenuRegistry) {
+              collector.error(localize('missing.submenu.section', 'Need a submenu contributes firstly', item.submenu));
+              continue;
+            }
+            const submenuDesc = submenuRegistry.find((n) => n.id === item.submenu);
+
+            if (!submenuDesc) {
+              collector.error(
+                localize(
+                  'missing.submenu',
+                  "Menu item references a submenu `{0}` which is not defined in the 'submenus' section.",
+                  item.submenu,
+                ),
+              );
+              continue;
+            }
+
+            const [group, order] = parseMenuGroup(item.group);
+
+            this.addDispose(
+              this.menuRegistry.registerMenuItem(menuId, {
+                submenu: item.submenu,
+                label: this.getLocalizeFromNlsJSON(submenuDesc.label, extensionId),
+                when: item.when,
+                group,
+                order,
+                iconClass: submenuDesc.icon && this.toIconClass(submenuDesc.icon, IconType.Background, extension.path),
+              } as ISubmenuItem),
+            );
           }
-
-          const [group, order] = parseMenuGroup(item.group);
-
-          this.addDispose(
-            this.menuRegistry.registerMenuItem(menuId, {
-              submenu: item.submenu,
-              label: this.getLocalizeFromNlsJSON(submenuDesc.label),
-              when: item.when,
-              group,
-              order,
-              iconClass: submenuDesc.icon && this.toIconClass(submenuDesc.icon, IconType.Background),
-            } as ISubmenuItem),
-          );
         }
       }
     }

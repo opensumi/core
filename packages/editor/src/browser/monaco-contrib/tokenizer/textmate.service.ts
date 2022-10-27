@@ -50,8 +50,9 @@ import {
 import { IThemeData } from '@opensumi/ide-theme';
 import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { asStringArray } from '@opensumi/ide-utils/lib/arrays';
-import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
-import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/modesRegistry';
+import { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
 
@@ -164,22 +165,26 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     };
   }
 
-  async registerLanguages(languages: LanguagesContribution[], extPath: URI) {
-    this.dynamicLanguages.push(
-      ...languages.map((language) => ({
-        id: language.id,
-        aliases: language.aliases,
-        extensions: language.extensions,
-        filenamePatterns: language.filenamePatterns,
-        filenames: language.filenames,
-        firstLine: language.firstLine,
-        mimetypes: language.mimetypes,
-      })),
-    );
+  get monacoLanguageService() {
+    return StandaloneServices.get(ILanguageService);
+  }
 
-    for (const language of this.dynamicLanguages) {
-      ModesRegistry.registerLanguage(language);
-    }
+  async registerLanguages(languages: LanguagesContribution[], extPath: URI) {
+    const newLanguages = languages.map((language) => ({
+      id: language.id,
+      aliases: language.aliases,
+      extensions: language.extensions,
+      filenamePatterns: language.filenamePatterns,
+      filenames: language.filenames,
+      firstLine: language.firstLine,
+      mimetypes: language.mimetypes,
+    }));
+    this.dynamicLanguages.push(...newLanguages);
+
+    /**
+     * ModesRegistry.registerLanguage 性能很差
+     */
+    this.monacoLanguageService['_registry']['_registerLanguages'](newLanguages);
 
     const languageIds: string[] = [];
 
@@ -812,8 +817,12 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     this.activateLanguages();
   }
 
+  getLanguages(): ILanguageExtensionPoint[] {
+    return [...monaco.languages.getLanguages(), ...this.dynamicLanguages];
+  }
+
   private activateLanguages() {
-    for (const { id: languageId } of monaco.languages.getLanguages()) {
+    for (const { id: languageId } of this.getLanguages()) {
       if (this.editorDocumentModelService.hasLanguage(languageId)) {
         this.activateLanguage(languageId);
       }

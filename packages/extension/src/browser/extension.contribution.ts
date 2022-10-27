@@ -27,18 +27,17 @@ import {
   ILogger,
   AppConfig,
   CUSTOM_EDITOR_SCHEME,
-  IExtensionsPointService,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
   StatusBarAlignment,
   StatusBarEntryAccessor,
 } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
-import { IResourceOpenOptions, WorkbenchEditorService, EditorGroupColumn } from '@opensumi/ide-editor';
+import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
-import type { ITextEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import {
   ExtensionNodeServiceServerPath,
@@ -48,13 +47,11 @@ import {
   ExtensionService,
   IExtensionHostProfilerService,
   ExtensionHostTypeUpperCase,
-  CONTRIBUTE_NAME_KEY,
 } from '../common';
 import { ActivatedExtension } from '../common/activator';
 import { TextDocumentShowOptions, ViewColumn } from '../common/vscode';
 import { fromRange, isLikelyVscodeRange, viewColumnToResourceOpenOptions } from '../common/vscode/converter';
 
-import { SumiContributesRunner } from './sumi/contributes';
 import {
   AbstractExtInstanceManagementService,
   ExtensionApiReadyEvent,
@@ -63,7 +60,6 @@ import {
   Serializable,
 } from './types';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
-import { VSCodeContributeRunner } from './vscode/contributes';
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;
@@ -106,62 +102,30 @@ export class ExtensionClientAppContribution implements ClientAppContribution {
   @Autowired(ExtensionService)
   private readonly extensionService: ExtensionService;
 
-  @Autowired(IExtensionsPointService)
-  private readonly extensionsPointService: IExtensionsPointService;
-
-  @Autowired(ILogger)
-  private readonly logger: ILogger;
-
   initialize() {
-    /**
-     * 这里不需要阻塞 initialize 流程
-     * 因为其他 contribution 唯一依赖
-     * 的是主题信息，目前主题注册成功以
-     * 后会发送对应事件
-     */
-    this.extensionService
-      .activate()
-      .catch((err) => {
-        this.logger.error(err);
-      })
-      .finally(() => {
-        const disposer = this.webviewService.registerWebviewReviver({
-          handles: () => 0,
-          revive: async (id: string) =>
-            new Promise<void>((resolve) => {
-              this.eventBus.on(ExtensionApiReadyEvent, () => {
-                disposer.dispose();
-                resolve(this.webviewService.tryReviveWebviewComponent(id));
-              });
-            }),
-        });
+    this.extensionService.activate().then(() => {
+      const disposer = this.webviewService.registerWebviewReviver({
+        handles: () => 0,
+        revive: async (id: string) =>
+          new Promise<void>((resolve) => {
+            this.eventBus.on(ExtensionApiReadyEvent, () => {
+              disposer.dispose();
+              resolve(this.webviewService.tryReviveWebviewComponent(id));
+            });
+          }),
       });
+    });
   }
 
   async onStart() {
+    runWhenIdle(() => {
+      this.extensionService.runExtensionContributes();
+    });
     this.preferenceSettingsService.registerSettingGroup({
       id: 'extension',
       title: localize('settings.group.extension'),
       iconClass: getIcon('extension'),
     });
-
-    for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
-      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
-      this.extensionsPointService.registerExtensionPoint({
-        extensionPoint: contributeName,
-        jsonSchema: contributeCls.schema || {},
-        frameworkKind: ['vscode', 'opensumi'],
-      });
-    }
-
-    for (const contributeCls of SumiContributesRunner.ContributePoints) {
-      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
-      this.extensionsPointService.registerExtensionPoint({
-        extensionPoint: contributeName,
-        jsonSchema: contributeCls.schema || {},
-        frameworkKind: ['opensumi'],
-      });
-    }
   }
 
   onDisposeSideEffects() {

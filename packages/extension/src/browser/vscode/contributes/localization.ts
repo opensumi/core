@@ -9,6 +9,7 @@ import {
   path,
   GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -17,6 +18,7 @@ import {
   Contributes,
   IExtensionNodeClientService,
   ExtensionNodeServiceServerPath,
+  LifeCycle,
 } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 
@@ -41,6 +43,7 @@ export type LocalizationsSchema = Array<LocalizationFormat>;
 
 @Injectable()
 @Contributes('localizations')
+@LifeCycle(LifeCyclePhase.Initialize)
 export class LocalizationsContributionPoint extends VSCodeContributePoint<LocalizationsSchema> {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
@@ -58,7 +61,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   private readonly extensionNodeService: IExtensionNodeClientService;
 
   @Autowired(AbstractExtInstanceManagementService)
-  private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
+  private readonly extensionManageService: AbstractExtInstanceManagementService;
 
   private safeParseJSON(content) {
     let json;
@@ -71,44 +74,48 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   }
 
   async contribute() {
-    const currentExtensions = this.extensionInstanceManageService.getExtensionInstances();
     const promises: Promise<void>[] = [];
-    this.json.forEach((localization) => {
-      if (localization.translations) {
-        const languageId = normalizeLanguageId(localization.languageId);
-        if (languageId !== getLanguageId()) {
-          return;
-        }
-        localization.translations.map((translate) => {
-          if (currentExtensions.findIndex((e) => e.id === translate.id) === -1) {
+    const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
+    const currentExtensions = this.extensionManageService.getExtensionInstances();
+
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
+      contributes.forEach((localization) => {
+        if (localization.translations) {
+          const languageId = normalizeLanguageId(localization.languageId);
+          if (languageId !== getLanguageId()) {
             return;
           }
-          promises.push(
-            (async () => {
-              const contents = await this.registerLanguage(translate);
-              registerLocalizationBundle(
-                {
-                  languageId,
-                  languageName: localization.languageName,
-                  localizedLanguageName: localization.localizedLanguageName,
-                  contents,
-                },
-                translate.id,
-              );
-            })(),
-          );
-        });
-      }
-    });
-
-    const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
-    const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
-    promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, this.extension.path, storagePath));
+          localization.translations.map((translate) => {
+            if (currentExtensions.findIndex((e) => e.id === translate.id) === -1) {
+              return;
+            }
+            promises.push(
+              (async () => {
+                const contents = await this.registerLanguage(translate, extension!.path);
+                registerLocalizationBundle(
+                  {
+                    languageId,
+                    languageName: localization.languageName,
+                    localizedLanguageName: localization.localizedLanguageName,
+                    contents,
+                  },
+                  translate.id,
+                );
+              })(),
+            );
+          });
+          promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, storagePath));
+        }
+      });
+    }
     await Promise.all(promises);
   }
 
-  async registerLanguage(translate: TranslationFormat) {
-    const bundlePath = new Path(this.extension.path).join(translate.path.replace(/^\.\//, '')).toString();
+  async registerLanguage(translate: TranslationFormat, extensionPath: string) {
+    const bundlePath = new Path(extensionPath).join(translate.path.replace(/^\.\//, '')).toString();
     const { content } = await this.fileServiceClient.resolveContent(URI.file(bundlePath).toString());
     const json = this.safeParseJSON(content);
 

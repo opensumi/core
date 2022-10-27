@@ -169,7 +169,6 @@ export class MainLayoutModuleContribution
   async initialize() {
     // 全局只要初始化一次
     await this.layoutState.initStorage();
-
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
       if (contribution.registerComponent) {

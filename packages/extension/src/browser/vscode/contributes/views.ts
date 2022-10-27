@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { DisposableCollection } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { ExtensionWebviewView } from '../../components/extension-webview-view';
 
 export interface ViewsContribution {
@@ -23,6 +24,7 @@ export type ViewsSchema = ViewsContribution;
 
 @Injectable()
 @Contributes('views')
+@LifeCycle(LifeCyclePhase.Initialize)
 export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -30,27 +32,30 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   contribute() {
-    for (const location of Object.keys(this.json)) {
-      const views = this.json[location].map((view: ViewItem) => ({
-        ...view,
-        name: this.getLocalizeFromNlsJSON(view.name),
-        component: view.type === 'webview' ? ExtensionWebviewView : WelcomeView,
-      }));
-      for (const view of views) {
-        const handlerId = this.mainLayoutService.collectViewComponent(
-          view,
-          location,
-          { viewId: view.id },
-          {
-            fromExtension: true,
-          },
-        );
-        this.disposableCollection.push({
-          dispose: () => {
-            const handler = this.mainLayoutService.getTabbarHandler(handlerId);
-            handler?.disposeView(view.id);
-          },
-        });
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      for (const location of Object.keys(contributes)) {
+        const views = contributes[location].map((view: ViewItem) => ({
+          ...view,
+          name: this.getLocalizeFromNlsJSON(view.name, extensionId),
+          component: view.type === 'webview' ? ExtensionWebviewView : WelcomeView,
+        }));
+        for (const view of views) {
+          const handlerId = this.mainLayoutService.collectViewComponent(
+            view,
+            location,
+            { viewId: view.id },
+            {
+              fromExtension: true,
+            },
+          );
+          this.disposableCollection.push({
+            dispose: () => {
+              const handler = this.mainLayoutService.getTabbarHandler(handlerId);
+              handler?.disposeView(view.id);
+            },
+          });
+        }
       }
     }
   }

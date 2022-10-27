@@ -4,7 +4,7 @@ import {
   PreferenceContribution,
   PreferenceService,
   getExternalIcon,
-  IExtensionsPointService,
+  IExtensionsSchemaService,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { Disposable, URI } from '@opensumi/ide-core-browser';
@@ -97,8 +97,8 @@ export class SCMContribution
   @Autowired(IViewsRegistry)
   private readonly viewsRegistry: IViewsRegistry;
 
-  @Autowired(IExtensionsPointService)
-  protected readonly extensionsPointService: IExtensionsPointService;
+  @Autowired(IExtensionsSchemaService)
+  protected readonly extensionsPointService: IExtensionsSchemaService;
 
   onStart() {
     this.viewsRegistry.registerViewWelcomeContent(scmResourceViewId, {
