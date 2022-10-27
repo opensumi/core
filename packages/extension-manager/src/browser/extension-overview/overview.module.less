@@ -9,7 +9,8 @@
   padding: 20px 20px 14px;
   overflow: hidden;
   font-size: 14px;
-
+  align-items: center;
+  justify-content: center;
   img {
     height: 128px;
     width: 128px;
@@ -19,11 +20,9 @@
   .extension_detail {
     flex: 1;
     padding-left: 20px;
-    white-space: nowrap;
 
     .extension_name {
       display: flex;
-      height: 30px;
       align-items: center;
 
       a {
@@ -88,8 +87,11 @@
       color: var(--descriptionForeground);
     }
 
-    .button {
+    .buttons {
       margin-top: 8px;
+      :global(.kt-button) {
+        margin-right: 10px;
+      }
     }
   }
 }

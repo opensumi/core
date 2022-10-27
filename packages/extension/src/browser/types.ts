@@ -1,5 +1,5 @@
 import { Injectable } from '@opensumi/di';
-import { BasicEvent, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
+import { BasicEvent, Event, IDisposable, IExtensionProps } from '@opensumi/ide-core-browser';
 
 import { IExtension, IExtensionMetaData } from '../common';
 
@@ -30,6 +30,8 @@ export abstract class IActivationEventService {
  */
 export abstract class AbstractExtInstanceManagementService {
   abstract dispose(): void;
+
+  abstract onDidChange: Event<void>;
 
   /**
    * 通过路径销毁插件实例 dispose

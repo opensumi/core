@@ -1,7 +1,9 @@
-import { observable, computed } from 'mobx';
+import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
+  Disposable,
+  fuzzyScore,
   IStatusBarService,
   localize,
   StatusBarAlignment,
@@ -22,7 +24,7 @@ import {
 import { VSXExtensionRaw, VSXSearchParam, QueryParam } from '../common/vsx-registry-types';
 
 @Injectable()
-export class VSXExtensionService implements IVSXExtensionService {
+export class VSXExtensionService extends Disposable implements IVSXExtensionService {
   @Autowired(VSXExtensionServicePath)
   private readonly backService: IVSXExtensionBackService;
 
@@ -39,15 +41,30 @@ export class VSXExtensionService implements IVSXExtensionService {
   public extensions: VSXExtension[] = [];
 
   @observable
+  public installedExtensions: VSXExtension[] = [];
+
+  @observable
   public openVSXRegistry: string;
 
   @Autowired(IStatusBarService)
   protected readonly statusBarService: IStatusBarService;
 
   private installStatus?: StatusBarEntryAccessor;
+  private searchValue: string;
 
   @observable
   private tasks: Map<string, Promise<string>> = new Map();
+
+  constructor() {
+    super();
+    this.getInstalledExtensions();
+    this.disposables.push(
+      this.extensionInstanceService.onDidChange(() => {
+        this.getInstalledExtensions();
+        this.search(this.searchValue);
+      }),
+    );
+  }
 
   private updateStatusBar() {
     if (this.tasks.size === 0) {
@@ -92,17 +109,41 @@ export class VSXExtensionService implements IVSXExtensionService {
     });
   }
 
+  async uninstall(extension: VSXExtension) {
+    if (extension && extension.path) {
+      await this.extensionManagementService.postUninstallExtension(extension.path);
+    }
+  }
+
+  async disable(extension: VSXExtension) {
+    if (extension && extension.path) {
+      this.extensionManagementService.postDisableExtension(extension.path);
+    }
+  }
+
+  async enable(extension: VSXExtension) {
+    if (extension && extension.path) {
+      this.extensionManagementService.postEnableExtension(extension.path);
+    }
+  }
+
   private asExtensionId(extension: VSXExtension) {
     return extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
   }
 
   async getLocalExtension(extensionId: string): Promise<VSXExtension | undefined> {
+    if (!extensionId) {
+      return;
+    }
     const extension = this.extensions.find((e) => this.asExtensionId(e) === extensionId);
 
     return extension || this.installedExtensions.find((e) => this.asExtensionId(e) === extensionId);
   }
 
   async getRemoteRawExtension(extensionId: string): Promise<VSXExtensionRaw | undefined> {
+    if (!extensionId) {
+      return;
+    }
     const param: QueryParam = {
       extensionId,
     };
@@ -122,28 +163,47 @@ export class VSXExtensionService implements IVSXExtensionService {
     });
   }
 
-  async search(keyword: string): Promise<void> {
+  @action
+  async search(keyword: string) {
     const param: VSXSearchParam = {
       query: keyword,
       size: 50,
       sortBy: 'downloadCount',
     };
+    this.searchValue = keyword;
 
     const res = await this.backService.search(param);
     if (res.extensions) {
-      this.extensions = res.extensions.map((ext) => ({
-        ...ext,
-        publisher: ext.namespace,
-        iconUrl: ext.files.icon,
-        downloadUrl: ext.files.download,
-        readme: ext.files.readme,
-      }));
+      this.extensions = res.extensions
+        .filter((ext) => !this.installedExtensions.find((e) => this.asExtensionId(e) === this.asExtensionId(ext)))
+        .map((ext) => ({
+          ...ext,
+          publisher: ext.namespace,
+          iconUrl: ext.files.icon,
+          downloadUrl: ext.files.download,
+          readme: ext.files.readme,
+        }));
     }
   }
 
-  @computed
-  get installedExtensions(): VSXExtension[] {
-    return this.extensionInstanceService.getExtensionInstances().map((e) => ({
+  @action
+  async searchInstalledExtensions(keyword: string) {
+    this.installedExtensions = this.installedExtensions.sort((a, b) => {
+      const scoreA = fuzzyScore(keyword, keyword.toLowerCase(), 0, a.name, a.name.toLowerCase(), 0, true);
+      const scoreB = fuzzyScore(keyword, keyword.toLowerCase(), 0, b.name, b.name.toLowerCase(), 0, true);
+      if (!scoreA) {
+        return 1;
+      }
+      if (!scoreB) {
+        return -1;
+      }
+      return scoreB[0] - scoreA[0];
+    });
+  }
+
+  @action
+  getInstalledExtensions() {
+    this.installedExtensions = this.extensionInstanceService.getExtensionInstances().map((e) => ({
       namespace: e.packageJSON.publisher,
       name: e.packageJSON.name,
       id: e.extensionId,
@@ -152,6 +212,8 @@ export class VSXExtensionService implements IVSXExtensionService {
       description: e.packageJSON.description,
       publisher: e.packageJSON.publisher,
       iconUrl: e.packageJSON.icon && e.extensionLocation.toString() + `/${e.packageJSON.icon}`,
+      path: e.path,
+      realpath: e.realPath,
     }));
   }
 }

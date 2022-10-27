@@ -24,7 +24,12 @@ export const VSXExtensionView = observer(() => {
 
   const onChange = debounce((keyword: string) => {
     setLoading(true);
-    const asPromise = vsxExtensionService.search(keyword);
+    let asPromise;
+    if (activeKey === TabActiveKey.MARKETPLACE) {
+      asPromise = vsxExtensionService.search(keyword);
+    } else {
+      asPromise = vsxExtensionService.searchInstalledExtensions(keyword);
+    }
     if (typeof asPromise === 'object' && asPromise.then) {
       asPromise.then(() => {
         setLoading(false);
