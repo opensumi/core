@@ -2,20 +2,19 @@ import { Autowired } from '@opensumi/di';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntryAccessor } from '@opensumi/ide-core-browser/lib/services';
 import { Command, CommandContribution, CommandRegistry } from '@opensumi/ide-core-common/lib/command';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { localize } from '@opensumi/ide-core-common/lib/localize';
 
 import { ConnectionRTTBrowserServiceToken, ConnectionRTTBrowserService } from './connection-rtt-service';
 
 const START_CONNECTION_RTT_COMMAND: Command = {
   id: 'connection.start.rtt',
-  label: localize('connection.start.rtt', 'Measure Connection RTT'),
-  category: localize('command.category.developerTools', 'Developer Tool'),
+  label: '%connection.start.rtt%',
+  category: '%command.category.developerTools%',
 };
 
 const STOP_CONNECTION_RTT_COMMAND = {
   id: 'connection.stop.rtt',
-  label: localize('connection.stop.rtt', 'Stop Connection RTT'),
-  category: localize('command.category.developerTools', 'Developer Tool'),
+  label: '%connection.stop.rtt%',
+  category: '%command.category.developerTools%',
 };
 
 const statusBarOption = {

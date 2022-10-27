@@ -8,14 +8,13 @@ import {
   Domain,
   VariableRegistry,
   VariableContribution,
-  localize,
 } from '@opensumi/ide-core-browser';
 
 import { VariableQuickOpenService } from './variable-quick-open.service';
 
 export const LIST_VARIABLES: Command = {
   id: 'variable.list',
-  label: localize('variable.list.all'),
+  label: '%variable.list.all%',
 };
 
 @Domain(ClientAppContribution, CommandContribution)
