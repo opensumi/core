@@ -18,7 +18,7 @@ let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Language', () => {
   test.beforeAll(async () => {
-    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/default')]);
+    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/language')]);
     app = await OpenSumiApp.load(page, workspace);
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
@@ -33,7 +33,7 @@ test.describe('OpenSumi Language', () => {
     const folder = await explorer.getFileStatTreeNodeByPath('language');
     await folder?.open();
 
-    editor = await app.openEditor(OpenSumiTextEditor, explorer, 'language/reference.ts', false);
+    editor = await app.openEditor(OpenSumiTextEditor, explorer, 'reference.ts', false);
     await app.page.waitForTimeout(400);
     await editor.placeCursorInLineWithPosition(4, 20);
     let cursorHandle = await editor.getCursorElement();
@@ -45,7 +45,7 @@ test.describe('OpenSumi Language', () => {
     await app.page.keyboard.up(isMacintosh ? 'Meta' : 'Control');
     await app.page.waitForTimeout(200);
 
-    const definitionTree = await explorer.getFileStatTreeNodeByPath('language/definition.ts');
+    const definitionTree = await explorer.getFileStatTreeNodeByPath('definition.ts');
     expect(await definitionTree?.isSelected()).toBeTruthy();
     const currentTab = await editor.getCurrentTab();
     expect(await currentTab?.textContent()).toStrictEqual(' definition.ts');
