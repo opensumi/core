@@ -38,13 +38,8 @@ test.describe('OpenSumi Language', () => {
     await editor.placeCursorInLineWithPosition(4, 20);
     let cursorHandle = await editor.getCursorElement();
 
-    await app.page.keyboard.down(isMacintosh ? 'Meta' : 'Control');
-    await app.page.waitForTimeout(200);
-    await cursorHandle?.click();
-    await app.page.waitForTimeout(200);
-    await app.page.keyboard.up(isMacintosh ? 'Meta' : 'Control');
-    await app.page.waitForTimeout(200);
-
+    await cursorHandle?.click({ modifiers: [isMacintosh ? 'Meta' : 'Control'] });
+    await app.page.waitForTimeout(1000);
     const definitionTree = await explorer.getFileStatTreeNodeByPath('definition.ts');
     expect(await definitionTree?.isSelected()).toBeTruthy();
     const currentTab = await editor.getCurrentTab();
