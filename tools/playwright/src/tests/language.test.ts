@@ -40,6 +40,8 @@ test.describe('OpenSumi Language', () => {
 
     await cursorHandle?.click({ modifiers: [isMacintosh ? 'Meta' : 'Control'] });
     await app.page.waitForTimeout(1000);
+    // eslint-disable-next-line no-console
+    console.log('definitionTree: editor.getViewElement>>. ', await (await editor.getViewElement())?.innerHTML());
 
     const definitionTree = await explorer.getFileStatTreeNodeByPath('language/definition.ts');
     // eslint-disable-next-line no-console
