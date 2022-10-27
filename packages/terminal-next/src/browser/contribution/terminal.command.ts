@@ -24,7 +24,6 @@ import {
   ITerminalSearchService,
   ITerminalApiService,
   ITerminalClient,
-  TerminalContainerId,
 } from '../../common';
 import { TerminalEnvironmentService } from '../terminal.environment.service';
 import { TerminalKeyBoardInputService } from '../terminal.input';

@@ -1234,12 +1234,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return editorGroup.open(uri, { ...options, preview: false, revealRangeInCenter: false });
   }
 
-  async open(
-    uri: URI,
-    options: IResourceOpenOptions = {
-      revealRangeInCenter: true,
-    },
-  ): Promise<IOpenResourceResult> {
+  async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
     if (uri.scheme === Schemes.file) {
       // 只记录 file 类型的
       this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
@@ -1461,7 +1456,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions = {}) {
+  private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions) {
+    if (options.revealRangeInCenter === undefined) {
+      options.revealRangeInCenter = true;
+    }
+
     const _resource = resource;
     const result = await this.resolveOpenType(resource, options);
     if (result) {

@@ -43,7 +43,6 @@ import {
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
 import { PREF_SCHEME, SettingContribution } from '../common';
-import { SettingJSONGlyphMarginEdit } from '../common/commands';
 
 import { PreferenceSettingsService, defaultSettingGroup, defaultSettingSections } from './preference-settings.service';
 import { EditPreferenceDecorationsContribution } from './preference-widgets';

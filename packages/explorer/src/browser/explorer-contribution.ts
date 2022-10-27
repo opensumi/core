@@ -14,9 +14,9 @@ import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-bro
 export { EXPLORER_CONTAINER_ID };
 
 @Domain(ClientAppContribution, ComponentContribution)
-export class ExplorerContribution implements ComponentContribution {
-  @Autowired(IExtensionsSchemaService)
-  protected readonly extensionsPointService: IExtensionsSchemaService;
+export class ExplorerContribution implements ClientAppContribution, ComponentContribution {
+  @Autowired(IExtensionsPointService)
+  protected readonly extensionsPointService: IExtensionsPointService;
 
   // Explorer 只注册容器
   registerComponent(registry: ComponentRegistry) {
