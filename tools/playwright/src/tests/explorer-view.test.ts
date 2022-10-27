@@ -129,4 +129,21 @@ test.describe('OpenSumi Explorer Panel', () => {
     }
     expect(newDir).toBeDefined();
   });
+
+  test('can filter files on the filetree', async () => {
+    const action = await fileTreeView.getTitleActionByName('Filter on opened files');
+    await action?.click();
+    // type `editor2` to filter existed files
+    const filterString = 'editor2';
+    const input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(filterString, { delay: 200 });
+    }
+    await app.page.waitForTimeout(200);
+    const file_1 = await explorer.getFileStatTreeNodeByPath(`${filterString}.js`);
+    expect(file_1).toBeDefined();
+    const file_2 = await explorer.getFileStatTreeNodeByPath('editor.js');
+    expect(file_2).toBeUndefined();
+  });
 });
