@@ -159,7 +159,7 @@ describe('textmate service test', () => {
       },
       new URI('file:///mock/base'),
     );
-    const languageIds = monaco.languages.getLanguages().map((l) => l.id);
+    const languageIds = textmateService.getLanguages().map((l) => l.id);
     expect(languageIds).toContain('html');
   });
 

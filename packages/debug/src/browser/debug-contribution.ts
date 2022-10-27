@@ -21,7 +21,7 @@ import {
   PreferenceService,
   IPreferenceSettingsService,
   COMMON_COMMANDS,
-  IExtensionsPointService,
+  IExtensionsSchemaService,
 } from '@opensumi/ide-core-browser';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
@@ -334,8 +334,8 @@ export class DebugContribution
   @Autowired(DebugContextKey)
   protected readonly debugContextKey: DebugContextKey;
 
-  @Autowired(IExtensionsPointService)
-  protected readonly extensionsPointService: IExtensionsPointService;
+  @Autowired(IExtensionsSchemaService)
+  protected readonly extensionsPointService: IExtensionsSchemaService;
 
   private firstSessionStart = true;
 

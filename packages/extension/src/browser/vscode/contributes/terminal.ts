@@ -1,11 +1,13 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { localize } from '@opensumi/ide-core-common';
 import { ITerminalContributions, ITerminalProfileService } from '@opensumi/ide-terminal-next/lib/common';
 
-import { VSCodeContributePoint, Contributes, ExtensionContributePoint } from '../../../common';
+import { VSCodeContributePoint, Contributes, ExtensionContributePoint, LifeCycle } from '../../../common';
 
 @Injectable()
 @Contributes(ExtensionContributePoint.Terminal)
+@LifeCycle(LifeCyclePhase.Ready)
 export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalContributions> {
   static schema = {
     description: localize('vscode.extension.contributes.terminal', 'Contributes terminal functionality.'),
@@ -139,10 +141,16 @@ export class TerminalContributionPoint extends VSCodeContributePoint<ITerminalCo
   @Autowired(ITerminalProfileService)
   profileService: ITerminalProfileService;
   contribute() {
-    this.profileService.addContributedProfile(this.extension.id, this.json);
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      this.profileService.addContributedProfile(extensionId, contributes);
+    }
   }
 
   dispose(): void {
-    this.profileService.removeContributedProfile(this.extension.id);
+    for (const contrib of this.contributesMap) {
+      const { extensionId } = contrib;
+      this.profileService.removeContributedProfile(extensionId);
+    }
   }
 }

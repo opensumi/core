@@ -70,6 +70,7 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
+import { MockExtNodeClientService } from '../../../__mocks__/extension.service.client';
 import { MockWorker, MessagePort } from '../../../__mocks__/worker';
 import { ExtCommandManagementImpl } from '../../../src/browser/extension-command-management';
 import { ExtInstanceManagementService } from '../../../src/browser/extension-instance-management';
@@ -78,11 +79,10 @@ import { NodeExtProcessService } from '../../../src/browser/extension-node.servi
 import { ViewExtProcessService } from '../../../src/browser/extension-view.service';
 import { WorkerExtProcessService } from '../../../src/browser/extension-worker.service';
 import { ExtensionServiceImpl } from '../../../src/browser/extension.service';
+import { SumiContributionsService, SumiContributionsServiceToken } from '../../../src/browser/sumi/contributes';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from '../../../src/browser/vscode/contributes';
 import {
   ExtensionService,
-  IExtensionNodeClientService,
-  IExtraMetaData,
-  IExtensionMetaData,
   IExtension,
   IExtensionProps,
   ExtensionNodeServiceServerPath,
@@ -98,19 +98,6 @@ import {
   AbstractWorkerExtProcessService,
 } from '../../../src/common/extension.service';
 import { MockExtensionStorageService } from '../../hosted/__mocks__/extensionStorageService';
-
-@Injectable()
-class MockLoggerManagerClient {
-  getLogger = () => ({
-    log() {},
-    debug() {},
-    error() {},
-    verbose() {},
-    warn() {},
-  });
-  onDidChangeLogLevel: () => {};
-  getGlobalLogLevel: () => 0;
-}
 
 const mockExtensionProps: IExtensionProps = {
   name: 'sumi-extension',
@@ -285,46 +272,6 @@ const mockExtension = {
 };
 
 export const MOCK_EXTENSIONS: IExtension[] = [mockExtension];
-
-@Injectable()
-class MockExtNodeClientService implements IExtensionNodeClientService {
-  getElectronMainThreadListenPath(clientId: string): Promise<string> {
-    throw new Error('Method not implemented.');
-  }
-  getAllExtensions(
-    scan: string[],
-    extensionCandidate: string[],
-    localization: string,
-    extraMetaData: IExtraMetaData,
-  ): Promise<IExtensionMetaData[]> {
-    return Promise.resolve(MOCK_EXTENSIONS);
-  }
-  createProcess(clientId: string): Promise<void> {
-    return Promise.resolve();
-  }
-  getExtension(
-    extensionPath: string,
-    localization: string,
-    extraMetaData?: IExtraMetaData | undefined,
-  ): Promise<IExtensionMetaData | undefined> {
-    return Promise.resolve({ ...mockExtensionProps, extraMetadata: { ...extraMetaData } });
-  }
-  restartExtProcessByClient(): void {
-    throw new Error('Method not implemented.');
-  }
-  infoProcessNotExist(): void {
-    throw new Error('Method not implemented.');
-  }
-  infoProcessCrash(): void {
-    throw new Error('Method not implemented.');
-  }
-  disposeClientExtProcess(clientId: string, info: boolean): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  updateLanguagePack(languageId: string, languagePackPath: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-}
 
 function mockGlobals() {
   (global as any).fetch = jest.fn().mockResolvedValueOnce({
@@ -566,6 +513,14 @@ export function setupExtensionServiceInjector() {
       useValue: mockService({
         onDidChangePassword: new Emitter().event,
       }),
+    },
+    {
+      token: VSCodeContributesServiceToken,
+      useClass: VSCodeContributesService,
+    },
+    {
+      token: SumiContributionsServiceToken,
+      useClass: SumiContributionsService,
     },
   );
 

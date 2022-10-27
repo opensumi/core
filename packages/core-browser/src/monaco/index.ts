@@ -71,6 +71,12 @@ export interface MonacoContribution {
       contribCtor: new (editor: ICodeEditor, ...services: Services) => IEditorContribution,
     ) => void,
   ): void;
+
+  /**
+   * [{ id: association.id, mime: mimetype, filepattern: association.filePattern }]
+   * @param register
+   */
+  registerPlatformLanguageAssociations?(register: (mime: MimeAssociation[]) => void): void;
 }
 
 export const Extensions = {
@@ -111,15 +117,8 @@ export const ISchemaStore = Symbol('ISchemaStore');
 
 export interface MimeAssociation {
   readonly id: string;
-  readonly filePattern: string;
-}
-
-export const IMimeService = Symbol('IMimeService');
-export interface IMimeService {
-  /**
-   * 更新 mime
-   */
-  updateMime(): void;
+  readonly filepattern: string;
+  readonly mime: string;
 }
 
 export interface SuggestEventPayload {

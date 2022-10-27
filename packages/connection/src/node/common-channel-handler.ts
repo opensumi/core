@@ -108,7 +108,10 @@ export class CommonChannelHandler extends WebSocketHandler {
 
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
-    this.wsServer = new ws.Server({ noServer: true, ...this.options.wsServerOptions });
+    this.wsServer = new ws.Server({
+      noServer: true,
+      ...this.options.wsServerOptions,
+    });
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
       connection.on('message', (msg: string) => {
@@ -194,6 +197,7 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
     });
   }
+
   private channelConnectionSend = (connection: ws) => (content: string) => {
     if (connection.readyState === connection.OPEN) {
       connection.send(content, (err: any) => {

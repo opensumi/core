@@ -13,7 +13,6 @@ import {
   OnEvent,
   WithEventBus,
   ExtensionDidContributes,
-  Schemes,
   GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';

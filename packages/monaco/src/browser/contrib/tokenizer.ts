@@ -1,4 +1,5 @@
 import { URI } from '@opensumi/ide-core-common';
+import type { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 
 import { LanguagesContribution } from '../../common';
 
@@ -12,6 +13,7 @@ export interface ITextmateTokenizerService {
   registerGrammar(grammar: GrammarsContribution, extPath: URI): Promise<void>;
   registerLanguage(language: LanguagesContribution, extPath: URI): Promise<void>;
   registerLanguages(language: LanguagesContribution[], extPath: URI): Promise<void>;
+  getLanguages(): ILanguageExtensionPoint[];
   testTokenize(line: string, languageId: string): void;
 }
 

@@ -7,4 +7,7 @@ export const MockExtensionStorageService = {
     return Promise.resolve({});
   },
   reConnectInit() {},
+  getLastStoragePath() {
+    return Promise.resolve('~/.sumi');
+  },
 };

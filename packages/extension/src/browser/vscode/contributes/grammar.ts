@@ -1,27 +1,41 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { localize, URI, Disposable } from '@opensumi/ide-core-common';
 import { GrammarsContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 export type GrammarSchema = Array<GrammarsContribution>;
 
 @Injectable()
 @Contributes('grammars')
+@LifeCycle(LifeCyclePhase.Initialize)
 export class GrammarsContributionPoint extends VSCodeContributePoint<GrammarSchema> {
   @Autowired(ITextmateTokenizer)
   textMateService: ITextmateTokenizerService;
 
-  contribute() {
-    for (const grammar of this.json) {
-      this.textMateService.registerGrammar(grammar, URI.from(this.extension.uri!));
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
 
-      this.addDispose(
-        Disposable.create(() => {
-          this.textMateService.unregisterGrammar(grammar);
-        }),
-      );
+  contribute() {
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
+      }
+
+      for (const grammar of contributes) {
+        this.textMateService.registerGrammar(grammar, URI.from(extension.uri!));
+
+        this.addDispose(
+          Disposable.create(() => {
+            this.textMateService.unregisterGrammar(grammar);
+          }),
+        );
+      }
     }
   }
 

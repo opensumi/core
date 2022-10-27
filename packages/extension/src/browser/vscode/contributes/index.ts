@@ -1,19 +1,8 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
-import {
-  PreferenceSchema,
-  PreferenceSchemaProperties,
-  IJSONSchemaRegistry,
-  localize,
-  ILogger,
-  WithEventBus,
-  IEventBus,
-  EXTENSION_JSON_URI,
-  VSCodeExtensionPackageSchema,
-} from '@opensumi/ide-core-browser';
+import { Injectable } from '@opensumi/di';
+import { PreferenceSchema, PreferenceSchemaProperties } from '@opensumi/ide-core-browser';
 
-import { IExtensionMetaData, CONTRIBUTE_NAME_KEY } from '../../../common';
+import { VSCodeContributePoint, ExtensionContributesService } from '../../../common';
 import { CustomEditorScheme } from '../../../common/vscode/custom-editor';
-import { ExtensionWillContributeEvent } from '../../types';
 
 import { ActionContributionSchema, ActionsContributionPoint } from './actions';
 import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
@@ -64,15 +53,15 @@ export interface ContributesSchema {
   customEditors?: CustomEditorScheme[];
 }
 
-const CONTRIBUTES_SYMBOL = Symbol();
+export const VSCodeContributesServiceToken = Symbol('VSCodeContributesService');
 
-@Injectable({ multiple: true })
-export class VSCodeContributeRunner extends WithEventBus {
-  static ContributePoints = [
-    LocalizationsContributionPoint,
-    CommandsContributionPoint,
+@Injectable()
+export class VSCodeContributesService extends ExtensionContributesService {
+  ContributionPoints = [
     ThemesContributionPoint,
     IconThemesContributionPoint,
+    LocalizationsContributionPoint,
+    CommandsContributionPoint,
     GrammarsContributionPoint,
     LanguagesContributionPoint,
     ConfigurationContributionPoint,
@@ -96,60 +85,5 @@ export class VSCodeContributeRunner extends WithEventBus {
     SemanticTokenModifiersContributionPoint,
     SemanticTokenScopesContributionPoint,
     TerminalContributionPoint,
-  ];
-
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
-
-  @Autowired(IJSONSchemaRegistry)
-  schemaRegistry: IJSONSchemaRegistry;
-
-  @Autowired(IEventBus)
-  protected eventBus: IEventBus;
-
-  @Autowired(ILogger)
-  private logger: ILogger;
-
-  constructor(@Optional(CONTRIBUTES_SYMBOL) private extension: IExtensionMetaData) {
-    super();
-  }
-
-  public async run() {
-    // superSet merge here
-    const contributes: ContributesSchema = this.extension.packageJSON.contributes;
-    if (!contributes) {
-      return;
-    }
-
-    const skipContribute = await this.eventBus.fireAndAwait(new ExtensionWillContributeEvent(this.extension));
-
-    if (skipContribute.length > 0 && skipContribute[0].result) {
-      return;
-    }
-
-    for (const contributeCls of VSCodeContributeRunner.ContributePoints) {
-      const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributeCls);
-      if (contributes[contributeName] !== undefined) {
-        try {
-          const contributePoint = this.injector.get(contributeCls, [
-            contributes[contributeName],
-            contributes,
-            this.extension,
-            this.extension.packageNlsJSON,
-            this.extension.defaultPkgNlsJSON,
-          ]);
-
-          if (contributeCls.schema) {
-            VSCodeExtensionPackageSchema.properties.contributes.properties[contributeName] = contributeCls.schema;
-          }
-
-          this.addDispose(contributePoint);
-          await contributePoint.contribute();
-        } catch (e) {
-          this.logger.error(e);
-        }
-      }
-    }
-    this.schemaRegistry.registerSchema(EXTENSION_JSON_URI, VSCodeExtensionPackageSchema, ['package.json']);
-  }
+  ] as typeof VSCodeContributePoint[];
 }

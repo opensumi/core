@@ -7,12 +7,10 @@ import {
   ISchemaStore,
   JsonSchemaContribution,
   IJSONSchemaRegistry,
-  IMimeService,
   MonacoOverrideServiceRegistry,
 } from '@opensumi/ide-core-browser';
 import { IConfigurationService } from '@opensumi/monaco-editor-core/esm/vs/platform/configuration/common/configuration';
 
-import { MonacoMimeService } from './monaco-mime';
 import { MonacoContextKeyService } from './monaco.context-key.service';
 import { ConfigurationService } from './monaco.context-key.service';
 import { MonacoClientContribution } from './monaco.contribution';
@@ -41,10 +39,6 @@ export class MonacoModule extends BrowserModule {
     {
       token: IJSONSchemaRegistry,
       useClass: SchemaRegistry,
-    },
-    {
-      token: IMimeService,
-      useClass: MonacoMimeService,
     },
     {
       token: IContextKeyService,

@@ -7,8 +7,10 @@ import {
   IPreferenceSettingsService,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
+import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 
-import { VSCodeContributePoint, Contributes } from '../../../common';
+import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
+import { AbstractExtInstanceManagementService } from '../../types';
 
 export interface ConfigurationSnippets {
   body: {
@@ -19,6 +21,7 @@ export interface ConfigurationSnippets {
 
 @Injectable()
 @Contributes('configuration')
+@LifeCycle(LifeCyclePhase.Starting)
 export class ConfigurationContributionPoint extends VSCodeContributePoint<PreferenceSchema[] | PreferenceSchema> {
   @Autowired(PreferenceSchemaProvider)
   protected preferenceSchemaProvider: PreferenceSchemaProvider;
@@ -29,50 +32,59 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
   @Autowired(PreferenceService)
   protected preferenceService: PreferenceService;
 
+  @Autowired(AbstractExtInstanceManagementService)
+  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+
   contribute() {
-    let configurations = this.json;
-    // 当前函数里只创建声明这一次变量，然后后面给这个函数赋值
-    let tmpProperties = {};
-    if (!Array.isArray(configurations)) {
-      configurations = [configurations];
-    }
+    for (const contrib of this.contributesMap) {
+      const { extensionId, contributes } = contrib;
+      const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+      if (!extension) {
+        continue;
+      }
+      let configurations = contributes;
+      // 当前函数里只创建声明这一次变量，然后后面给这个函数赋值
+      let tmpProperties = {};
+      if (!Array.isArray(configurations)) {
+        configurations = [configurations];
+      }
+      for (const configuration of configurations) {
+        if (configuration && configuration.properties) {
+          for (const prop of Object.keys(configuration.properties)) {
+            const originalConfiguration = configuration.properties[prop];
+            tmpProperties[prop] = originalConfiguration;
+            if (originalConfiguration.description) {
+              tmpProperties[prop].description = replaceLocalizePlaceholder(
+                originalConfiguration.description,
+                extensionId,
+              );
+            }
 
-    for (const configuration of configurations) {
-      if (configuration && configuration.properties) {
-        for (const prop of Object.keys(configuration.properties)) {
-          const originalConfiguration = configuration.properties[prop];
-          tmpProperties[prop] = originalConfiguration;
-          if (originalConfiguration.description) {
-            tmpProperties[prop].description = replaceLocalizePlaceholder(
-              originalConfiguration.description,
-              this.extension.id,
-            );
-          }
+            if (originalConfiguration.enumDescriptions) {
+              tmpProperties[prop].enumDescriptions = originalConfiguration.enumDescriptions.map((v) =>
+                replaceLocalizePlaceholder(v, extensionId),
+              );
+            }
 
-          if (originalConfiguration.enumDescriptions) {
-            tmpProperties[prop].enumDescriptions = originalConfiguration.enumDescriptions.map((v) =>
-              replaceLocalizePlaceholder(v, this.extension.id),
-            );
+            if (originalConfiguration.markdownDescription) {
+              tmpProperties[prop].markdownDescription = replaceLocalizePlaceholder(
+                originalConfiguration.markdownDescription,
+                extensionId,
+              );
+            }
           }
-
-          if (originalConfiguration.markdownDescription) {
-            tmpProperties[prop].markdownDescription = replaceLocalizePlaceholder(
-              originalConfiguration.markdownDescription,
-              this.extension.id,
-            );
-          }
+          configuration.properties = tmpProperties;
+          configuration.title =
+            replaceLocalizePlaceholder(configuration.title, extensionId) || extension.packageJSON.name;
+          this.updateConfigurationSchema(configuration);
+          this.addDispose(
+            this.preferenceSettingsService.registerSettingSection('extension', {
+              title: configuration.title,
+              preferences: Object.keys(configuration.properties),
+            }),
+          );
+          tmpProperties = {};
         }
-        configuration.properties = tmpProperties;
-        configuration.title =
-          replaceLocalizePlaceholder(configuration.title, this.extension.id) || this.extension.packageJSON.name;
-        this.updateConfigurationSchema(configuration);
-        this.addDispose(
-          this.preferenceSettingsService.registerSettingSection('extension', {
-            title: configuration.title,
-            preferences: Object.keys(configuration.properties),
-          }),
-        );
-        tmpProperties = {};
       }
     }
   }

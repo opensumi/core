@@ -2,7 +2,7 @@ import { Autowired } from '@opensumi/di';
 import {
   localize,
   Domain,
-  IExtensionsPointService,
+  IExtensionsSchemaService,
   formatLocalize,
   ClientAppContribution,
 } from '@opensumi/ide-core-browser';
@@ -15,8 +15,8 @@ export { EXPLORER_CONTAINER_ID };
 
 @Domain(ClientAppContribution, ComponentContribution)
 export class ExplorerContribution implements ClientAppContribution, ComponentContribution {
-  @Autowired(IExtensionsPointService)
-  protected readonly extensionsPointService: IExtensionsPointService;
+  @Autowired(IExtensionsSchemaService)
+  protected readonly extensionsSchemaService: IExtensionsSchemaService;
 
   // Explorer 只注册容器
   registerComponent(registry: ComponentRegistry) {
@@ -29,7 +29,7 @@ export class ExplorerContribution implements ClientAppContribution, ComponentCon
   }
 
   onStart() {
-    this.extensionsPointService.appendExtensionPoint(['browserViews', 'properties'], {
+    this.extensionsSchemaService.appendExtensionPoint(['browserViews', 'properties'], {
       extensionPoint: EXPLORER_CONTAINER_ID,
       frameworkKind: ['opensumi'],
       jsonSchema: {

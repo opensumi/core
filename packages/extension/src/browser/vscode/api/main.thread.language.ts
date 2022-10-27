@@ -27,6 +27,7 @@ import {
   LanguageSelector,
 } from '@opensumi/ide-editor/lib/browser';
 import { ICallHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/callHierarchy';
+import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 import { ITypeHierarchyService } from '@opensumi/ide-monaco/lib/browser/contrib/typeHierarchy';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import * as modes from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
@@ -113,6 +114,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   @Autowired(ILanguageStatusService)
   private readonly languageStatusService: ILanguageStatusService;
 
+  @Autowired(ITextmateTokenizer)
+  private textmateService: ITextmateTokenizerService;
+
   private languageFeatureEnabled = new LRUMap<string, boolean>(200, 100);
 
   private _reviveCodeActionDto(data: ReadonlyArray<ICodeActionDto>): modes.CodeAction[] {
@@ -142,7 +146,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $getLanguages(): string[] {
-    return monaco.languages.getLanguages().map((l) => l.id);
+    return this.textmateService.getLanguages().map((l) => l.id);
   }
 
   async $changeLanguage(resource: UriComponents, languageId: string): Promise<void> {
@@ -176,7 +180,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   protected getUniqueLanguages(): string[] {
     const languages: string[] = [];
     // 会有重复
-    const allLanguages = monaco.languages.getLanguages().map((l) => l.id);
+    const allLanguages = this.textmateService.getLanguages().map((l) => l.id);
     for (const language of allLanguages) {
       if (languages.indexOf(language) === -1) {
         languages.push(language);

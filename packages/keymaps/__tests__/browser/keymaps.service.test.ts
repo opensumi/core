@@ -15,6 +15,7 @@ import {
   FileUri,
   BrowserModule,
   AppConfig,
+  runWhenIdle,
 } from '@opensumi/ide-core-browser';
 import { MockProgressService } from '@opensumi/ide-core-browser/__mocks__/progress-service';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
@@ -191,6 +192,9 @@ describe('KeymapsService should be work', () => {
     });
 
     it('reconcile method should be work', async () => {
+      mockKeybindingRegistry.registerKeybinding.mockClear();
+      mockKeybindingRegistry.unregisterKeybinding.mockClear();
+      mockKeybindingRegistry.getKeybindingsForCommand.mockClear();
       const keybindings = [
         {
           command: 'test.command',
@@ -198,12 +202,15 @@ describe('KeymapsService should be work', () => {
         },
       ];
       await keymapsService.reconcile(keybindings);
-      expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(3);
-      expect(mockKeybindingRegistry.unregisterKeybinding).toBeCalledTimes(2);
-      expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(3);
+      runWhenIdle(() => {
+        expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(3);
+        expect(mockKeybindingRegistry.unregisterKeybinding).toBeCalledTimes(1);
+        expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(1);
+      });
     });
 
     it('setKeybinding method should be work', async () => {
+      mockKeybindingRegistry.registerKeybinding.mockClear();
       const rawkeybinding = {
         command: 'test.command',
         keybinding: 'cmd+shift+c',
@@ -213,7 +220,7 @@ describe('KeymapsService should be work', () => {
         keybinding: 'cmd+c',
       };
       await keymapsService.setKeybinding(rawkeybinding, keybinding);
-      expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(4);
+      expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(1);
     });
 
     it('getKeybindings method should be work', async () => {
@@ -222,12 +229,13 @@ describe('KeymapsService should be work', () => {
     });
 
     it('resetKeybinding method should be work', async () => {
+      mockKeybindingRegistry.registerKeybinding.mockClear();
       const keybinding = {
         command: 'test.command',
         keybinding: 'cmd+c',
       };
       await keymapsService.resetKeybinding(keybinding);
-      expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(5);
+      expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(1);
     });
 
     it('getWhen method should be work', () => {
