@@ -1,12 +1,11 @@
 import { ElementHandle, Page } from '@playwright/test';
 
+import { OpenSumiApp } from './app';
 import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiEditor } from './editor';
-import { keypressWithCmdCtrl } from './utils';
-import { isMacintosh, isWindows } from '@opensumi/ide-utils';
-
-import { OpenSumiApp } from './app';
 import { OpenSumiExplorerFileStatNode } from './explorer-view';
+import { keypressWithCmdCtrl } from './utils';
+
 
 abstract class ViewsModel {
   constructor(readonly page: Page) {}
