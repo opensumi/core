@@ -125,13 +125,20 @@ interface ElectronHeaderBarPorps {
   RightComponent?: React.FunctionComponent;
   Icon?: React.FunctionComponent;
   autoHide?: boolean;
+  height?: number;
 }
 
 /**
  * autoHide: Hide the HeaderBar when the macOS full screen
  */
 export const ElectronHeaderBar = observer(
-  ({ LeftComponent, RightComponent, Icon, autoHide = true }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
+  ({
+    LeftComponent,
+    RightComponent,
+    Icon,
+    autoHide = true,
+    height = isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
+  }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
 
     const { isFullScreen } = useFullScreen();
@@ -155,9 +162,7 @@ export const ElectronHeaderBar = observer(
     return (
       <div
         className={styles.header}
-        style={{
-          height: isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
-        }}
+        style={{ height }}
         onDoubleClick={async () => {
           if (await getMaximized()) {
             windowService.unmaximize();
