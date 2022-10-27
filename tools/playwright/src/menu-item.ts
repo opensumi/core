@@ -31,7 +31,7 @@ export class OpenSumiMenuItem {
 
   async click() {
     const action = await this.element.waitForSelector("[class*='menuAction__']");
-    action.click({ position: { x: 10, y: 10 } });
+    await action?.click({ position: { x: 10, y: 10 } });
   }
 
   async hover(): Promise<void> {
