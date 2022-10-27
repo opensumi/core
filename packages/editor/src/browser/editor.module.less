@@ -5,6 +5,7 @@
   height: 100%;
   background-color: var(--editor-background);
   display: flex;
+  border-top: 1px solid var(--tab-border);
 }
 .kt_editor_main_wrapper {
   flex-grow: 1;
@@ -58,7 +59,30 @@
       justify-content: center;
       align-items: center;
       padding: 0 5px 0 10px;
+      position: relative;
       background: var(--editorGroupHeader-tabsBackground);
+      &::before {
+        content: '';
+        height: 1px;
+        background: var(--tab-border);
+        top: -1px;
+        width: 100%;
+        left: 0;
+        position: absolute;
+        display: block;
+        z-index: 0;
+      }
+      &::after {
+        content: '';
+        height: 1px;
+        background: var(--tab-border);
+        bottom: 0;
+        width: 100%;
+        left: 0;
+        position: absolute;
+        display: block;
+        z-index: 0;
+      }
       .editor_action_wrapper {
         margin-left: 8px;
         position: relative;
@@ -90,16 +114,6 @@
     width: 100%;
     position: relative;
     background-color: var(--editorGroupHeader-tabsBackground);
-    &::before {
-      position: absolute;
-      content: '';
-      height: 1px;
-      width: 100%;
-      top: 0;
-      left: 0;
-      z-index: 10;
-      background-color: var(--tab-border);
-    }
     &::after {
       position: absolute;
       content: '';
@@ -187,10 +201,19 @@
       cursor: pointer;
       color: var(--tab-inactiveForeground);
       background: var(--tab-inactiveBackground);
-      border-bottom: 1px solid var(--tab-border);
       border-top: 1px solid transparent;
       box-sizing: border-box;
       z-index: 1;
+      &::after {
+        position: absolute;
+        content: '';
+        height: 1px;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        z-index: 10;
+        background-color: var(--tab-border);
+      }
       .tab_loading {
         display: block;
         position: absolute;
@@ -273,7 +296,7 @@
           content: '';
           height: 1px;
           width: 100%;
-          top: 0;
+          top: -1px;
           left: 0;
           z-index: 999;
           background-color: var(--tab-activeBorderTop);
