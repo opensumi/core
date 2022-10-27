@@ -28,11 +28,11 @@ export class OpenSumiView extends OpenSumiViewBase {
   }
 
   getViewElement(): Promise<ElementHandle<SVGElement | HTMLElement> | null> {
-    return this.page.$(this.viewSelector);
+    return this.page.locator(this.viewSelector).elementHandle();
   }
 
   getTabElement(): Promise<ElementHandle<SVGElement | HTMLElement> | null> {
-    return this.page.$(this.tabSelector);
+    return this.page.locator(this.tabSelector).elementHandle();
   }
 
   async open(): Promise<OpenSumiView | undefined> {

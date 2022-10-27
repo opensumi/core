@@ -1,4 +1,4 @@
-import { ElementHandle } from '@playwright/test';
+import { ElementHandle, Page } from '@playwright/test';
 
 import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiEditor } from './editor';
@@ -9,11 +9,10 @@ import { OpenSumiApp } from './app';
 import { OpenSumiExplorerFileStatNode } from './explorer-view';
 
 abstract class ViewsModel {
+  constructor(readonly page: Page) {}
   protected viewElement: ElementHandle<SVGElement | HTMLElement> | null;
   async mount(v: ElementHandle<SVGElement | HTMLElement> | null): Promise<void> {
-    if (!this.viewElement) {
-      this.viewElement = v;
-    }
+    this.viewElement = v;
   }
 }
 
@@ -26,8 +25,18 @@ class GlyphMarginModel extends ViewsModel {
 
   async getOverlay(lineNumber: number) {
     const margin = await this.getElement();
-    const overlay = await margin?.$(`.margin-view-overlays > div:nth-child(${lineNumber})`);
-    return overlay;
+    const overlays = await margin?.$$('.margin-view-overlays > div');
+    if (!overlays) {
+      return;
+    }
+
+    for (const node of overlays) {
+      const lineNode = await node.$('.line-numbers');
+      const content = await lineNode?.textContent();
+      if (content === lineNumber.toString()) {
+        return node;
+      }
+    }
   }
 
   async hasBreakpoint(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
@@ -61,8 +70,8 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
 
   constructor(app: OpenSumiApp, filestatElement: OpenSumiExplorerFileStatNode) {
     super(app, filestatElement);
-    this.glyphMarginModel = new GlyphMarginModel();
-    this.overlaysModel = new OverlaysModel();
+    this.glyphMarginModel = new GlyphMarginModel(this.page);
+    this.overlaysModel = new OverlaysModel(this.page);
   }
 
   async getGlyphMarginModel() {
