@@ -18,7 +18,7 @@ let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Debug', () => {
   test.beforeAll(async () => {
-    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/default')]);
+    workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/debug')]);
     app = await OpenSumiApp.load(page, workspace);
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
@@ -44,7 +44,7 @@ test.describe('OpenSumi Debug', () => {
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'index.js', false);
     debugView = await app.open(OpenSumiDebugView);
     await debugView.start();
-    await app.page.waitForTimeout(1000);
+    await app.page.waitForTimeout(2000);
     const glyphMarginModel = await editor.getGlyphMarginModel();
     const glyphOverlay = await glyphMarginModel.getOverlay(6);
     expect(await glyphMarginModel.hasTopStackFrame(glyphOverlay!)).toBeTruthy();
