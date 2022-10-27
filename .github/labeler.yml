@@ -1,16 +1,11 @@
 labels:
   '🐞 bug':
-    - '\bfix:'
-    - '\bfix('
+    - '\bfix'
   '🎨 feature':
-    - '\bfeat:'
-    - '\bfeat('
+    - '\bfeat'
   '⚙️ refactor':
-    - '\brefactor:'
-    - '\brefactor('
+    - '\brefactor'
   '💄 style change':
-    - '\bstyle:'
-    - '\bstyle('
+    - '\bstyle'
   '📌 patch':
-    - '\bpatch:'
-    - '\bpatch('
+    - '\bpatch'
