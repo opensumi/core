@@ -983,6 +983,15 @@ export class DebugSession implements IDebugSession {
     }
   }
 
+  async exceptionInfo(
+    args: DebugProtocol.ExceptionInfoArguments,
+  ): Promise<DebugProtocol.ExceptionInfoResponse | undefined> {
+    if (this.capabilities.supportsExceptionInfoRequest) {
+      return this.sendRequest('exceptionInfo', args);
+    }
+    return Promise.reject(new Error('exceptionInfo not supported'));
+  }
+
   async cancel(progressId: string): Promise<DebugProtocol.CancelResponse | undefined> {
     return this.sendRequest('cancel', { progressId });
   }

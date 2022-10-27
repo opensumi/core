@@ -188,9 +188,8 @@ export const NextPreferenceItem = ({
   );
 };
 
-const renderDescriptionExpression = (des: string) => {
+const renderDescriptionExpression = (description: string) => {
   const preferenceSettingService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
-  const description = replaceLocalizePlaceholder(des);
   if (!description) {
     return null;
   }
@@ -221,7 +220,7 @@ const renderDescriptionExpression = (des: string) => {
 };
 
 const renderDescription = (data: { description?: string; markdownDescription?: string }) => {
-  const description = data.description ?? data.markdownDescription;
+  const description = replaceLocalizePlaceholder(data.description ?? data.markdownDescription);
   if (!description) {
     return null;
   }
@@ -229,9 +228,7 @@ const renderDescription = (data: { description?: string; markdownDescription?: s
 
   return (
     <div className={styles.desc}>
-      {data.markdownDescription
-        ? toMarkdown(data.markdownDescription, openerService)
-        : renderDescriptionExpression(description)}
+      {data.markdownDescription ? toMarkdown(description, openerService) : renderDescriptionExpression(description)}
     </div>
   );
 };

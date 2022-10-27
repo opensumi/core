@@ -3,6 +3,7 @@ import { observable } from 'mobx';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
 import { ResizeEvent, getSlotLocation, AppConfig } from '@opensumi/ide-core-browser';
+import { TERMINAL_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ICtxMenuRenderer, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { generateCtxMenu } from '@opensumi/ide-core-browser/lib/menu/next/menu-util';
 import { AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
@@ -37,7 +38,6 @@ import {
   IShellLaunchConfig,
   ITerminalErrorService,
   ITerminalInternalService,
-  TerminalContainerId,
   ITerminalLaunchError,
   ITerminalProcessExtHostProxy,
   IStartExtensionTerminalRequest,
@@ -411,7 +411,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       }),
     ]);
 
-    this._tabBarHandler = this.layoutService.getTabbarHandler(TerminalContainerId);
+    this._tabBarHandler = this.layoutService.getTabbarHandler(TERMINAL_CONTAINER_ID);
     this.themeBackground = this.terminalTheme.terminalTheme.background || '';
 
     this.addDispose(
@@ -450,7 +450,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     );
 
     this.addDispose(
-      this.themeService.onThemeChange((_) => {
+      this.themeService.onThemeChange(() => {
         this._clients.forEach((client) => {
           client.updateTheme();
         });

@@ -1,10 +1,11 @@
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
 import {
   IContextKeyService,
   PreferenceService,
   MonacoOverrideServiceRegistry,
   ServiceNames,
   Position,
+  positionToRange,
 } from '@opensumi/ide-core-browser';
 import {
   IDisposable,
@@ -31,11 +32,13 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { DebugContextKey } from '../contextkeys/debug-contextkey.service';
+import { DebugExceptionWidget } from '../debug-exception-widget';
+import { DebugSession } from '../debug-session';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
 
-import { DebugState, IDebugSessionManager } from './../../common';
+import { DebugState, IDebugExceptionInfo, IDebugSession, IDebugSessionManager } from './../../common';
 import { InlineValueContext } from './../../common/inline-values';
 import { DEFAULT_WORD_REGEXP } from './../debugUtils';
 import { DebugModelManager } from './debug-model-manager';
@@ -181,6 +184,9 @@ function getWordToLineNumbersMap(model: ITextModel | null): Map<string, number[]
 export class DebugEditorContribution implements IEditorFeatureContribution {
   private static readonly MEMOIZER = createMemoizer();
 
+  @Autowired(INJECTOR_TOKEN)
+  protected readonly injector: Injector;
+
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
 
@@ -205,7 +211,9 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   private readonly disposer: Disposable = new Disposable();
   private readonly editorDisposer: Disposable = new Disposable();
 
-  constructor() {}
+  private debugExceptionWidget: DebugExceptionWidget | undefined;
+
+  constructor(@Optional() private readonly editor: IEditor) {}
 
   public contribute(editor: IEditor): IDisposable {
     this.disposer.addDispose(
@@ -213,8 +221,17 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
         const currentSession = this.debugSessionManager.currentSession;
         if (currentSession) {
           this.editorDisposer.addDispose(
-            currentSession.onDidChange(() => {
+            currentSession.onDidChange(async () => {
               this.setHoverEnabled(editor, currentSession.state === DebugState.Running);
+
+              const currentFrame = currentSession.currentThread?.currentFrame;
+              if (!currentFrame) {
+                return;
+              }
+
+              if (editor.currentUri && currentFrame.source?.uri.isEqual(editor.currentUri)) {
+                await this.toggleExceptionWidget();
+              }
             }),
           );
 
@@ -248,6 +265,14 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
             }),
           ]);
 
+          this.disposer.addDispose(
+            currentSession.onDidChangeState((state: DebugState) => {
+              if (state !== DebugState.Stopped) {
+                this.toggleExceptionWidget();
+              }
+            }),
+          );
+
           this.disposer.addDispose(currentSession);
 
           this.registerEditorListener(editor);
@@ -257,6 +282,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
 
     this.disposer.addDispose(this.editorDisposer);
 
+    this.toggleExceptionWidget();
     return this.disposer;
   }
 
@@ -294,6 +320,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
 
     this.editorDisposer.addDispose(
       editor.monacoEditor.onDidChangeModel(async () => {
+        this.toggleExceptionWidget();
         await this.directRunUpdateInlineValueDecorations(editor);
       }),
     );
@@ -487,5 +514,77 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
       INLINE_VALUE_DECORATION_KEY,
       allDecorations as any[],
     );
+  }
+
+  // debug exception widget
+  private async toggleExceptionWidget(): Promise<void> {
+    const currentSession = this.debugSessionManager.currentSession;
+    if (!currentSession) {
+      this.closeExceptionWidget();
+      return;
+    }
+
+    const { currentThread } = currentSession;
+    if (!currentThread) {
+      this.closeExceptionWidget();
+      return;
+    }
+
+    // 找出第一个调用堆栈帧是引发异常的帧，且 source.presentationHint 为非 deemphasize 的
+    const exceptionStack = currentThread.frames.find(
+      (s) => !!(s && s.source && s.source.available && s.source.presentationHint !== 'deemphasize'),
+    );
+    if (!exceptionStack) {
+      this.closeExceptionWidget();
+      return;
+    }
+
+    const samUri = this.editor.currentUri?.isEqual(exceptionStack.source?.uri!);
+
+    if (this.debugExceptionWidget && !samUri) {
+      this.closeExceptionWidget();
+    } else if (samUri) {
+      const exceptionInfo = await currentThread?.fetchExceptionInfo();
+      if (exceptionInfo) {
+        this.showExceptionWidget(
+          exceptionInfo,
+          currentSession,
+          exceptionStack.range().startLineNumber,
+          exceptionStack.range().startColumn,
+        );
+      }
+    }
+  }
+
+  private showExceptionWidget(
+    exceptionInfo: IDebugExceptionInfo,
+    debugSession: DebugSession,
+    lineNumber: number,
+    column: number,
+  ): void {
+    if (this.debugExceptionWidget) {
+      this.debugExceptionWidget.dispose();
+    }
+
+    const editor = debugSession?.currentEditor();
+
+    this.debugExceptionWidget = this.injector.get(DebugExceptionWidget, [editor, exceptionInfo]);
+    this.debugExceptionWidget.show(positionToRange({ lineNumber, column }), 10);
+    this.debugExceptionWidget.focus();
+    editor?.revealRangeInCenter({
+      startLineNumber: lineNumber,
+      startColumn: column,
+      endLineNumber: lineNumber,
+      endColumn: column,
+    });
+    this.debugContextKey.contextExceptionWidgetVisible.set(true);
+  }
+
+  private closeExceptionWidget(): void {
+    if (this.debugExceptionWidget) {
+      this.debugContextKey.contextExceptionWidgetVisible.set(false);
+      this.debugExceptionWidget.dispose();
+      this.debugExceptionWidget = undefined;
+    }
   }
 }

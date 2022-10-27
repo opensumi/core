@@ -1,9 +1,8 @@
 import { ElementHandle } from '@playwright/test';
 
-import { isMacintosh, isWindows } from '@opensumi/ide-utils';
-
 import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiEditor } from './editor';
+import { keypressWithCmdCtrl } from './utils';
 
 export class OpenSumiTextEditor extends OpenSumiEditor {
   async openLineContextMenuByLineNumber(lineNumber: number) {
@@ -161,11 +160,10 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   }
 
   async pasteContentAfterLineByLineNumber(lineNumber: number): Promise<void> {
-    const modifier = isMacintosh ? 'Meta' : isWindows ? 'Ctrl' : 'Control';
     const existingLine = await this.lineByLineNumber(lineNumber);
     await this.placeCursorInLine(existingLine);
     await this.page.keyboard.press('End');
-    await this.page.keyboard.press(`${modifier}+KeyV`);
+    await this.page.keyboard.press(keypressWithCmdCtrl('KeyV'));
   }
 
   protected async lineContainingText(text: string): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
@@ -203,9 +201,8 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   async clearContent() {
     const line = await this.lineByLineNumber(1);
     await line?.click();
-    const modifier = isMacintosh ? 'Meta' : isWindows ? 'Ctrl' : 'Control';
     await this.placeCursorInLine(line);
-    await this.page.keyboard.press(`${modifier}+KeyA`);
+    await this.page.keyboard.press(keypressWithCmdCtrl('KeyA'));
     await this.page.keyboard.press('Delete');
   }
 }

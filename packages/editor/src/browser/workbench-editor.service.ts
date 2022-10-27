@@ -232,7 +232,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   calcDirtyCount(): number {
-    return this.editorGroups.reduce((pre, cur) => pre + cur.calcDirtyCount(), 0);
+    const countedUris = new Set<string>();
+    return this.editorGroups.reduce((pre, cur) => pre + cur.calcDirtyCount(countedUris), 0);
   }
 
   createEditorGroup(): EditorGroup {
@@ -1233,12 +1234,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return editorGroup.open(uri, { ...options, preview: false, revealRangeInCenter: false });
   }
 
-  async open(
-    uri: URI,
-    options: IResourceOpenOptions = {
-      revealRangeInCenter: true,
-    },
-  ): Promise<IOpenResourceResult> {
+  async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
     if (uri.scheme === Schemes.file) {
       // 只记录 file 类型的
       this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
@@ -1460,7 +1456,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions = {}) {
+  private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions) {
+    if (options.revealRangeInCenter === undefined) {
+      options.revealRangeInCenter = true;
+    }
+
     const _resource = resource;
     const result = await this.resolveOpenType(resource, options);
     if (result) {
@@ -2095,10 +2095,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 计算 dirty 数量
    */
-  calcDirtyCount(): number {
+  calcDirtyCount(countedUris: Set<string> = new Set<string>()): number {
     let count = 0;
     for (const r of this.resources) {
       const docRef = this.documentModelManager.getModelReference(r.uri);
+      if (countedUris.has(r.uri.toString())) {
+        continue;
+      }
+      countedUris.add(r.uri.toString());
       if (docRef) {
         const isDirty = docRef.instance.dirty;
         docRef.dispose();

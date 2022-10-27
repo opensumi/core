@@ -6,6 +6,7 @@ import { OpenSumiContextMenu } from './context-menu';
 export interface IOpenSumiTreeNodeSelector {
   labelClass: string;
   descriptionClass: string;
+  badgeClass: string;
   toggleClass: string;
   selectedClass: string;
   focusedClass: string;
@@ -19,6 +20,7 @@ export class OpenSumiTreeNode {
     private selector: IOpenSumiTreeNodeSelector = {
       labelClass: "[class*='tree_node_displayname__']",
       descriptionClass: "[class*='tree_node_description__']",
+      badgeClass: "[class*='tree_node_status___']",
       toggleClass: "[class*='expansion_toggle__']",
       selectedClass: "[class*='mod_selected__']",
       focusedClass: "[class*='mod_focused__']",
@@ -45,6 +47,14 @@ export class OpenSumiTreeNode {
       throw new Error(`Cannot read description from ${this.selector.descriptionClass} of ${this.elementHandle}`);
     }
     return descriptionElement.textContent();
+  }
+
+  async badge() {
+    const badgeElement = await this.elementHandle.$(this.selector.badgeClass);
+    if (!badgeElement) {
+      throw new Error(`Cannot read description from ${this.selector.badgeClass} of ${this.elementHandle}`);
+    }
+    return badgeElement.textContent();
   }
 
   async isSelected() {

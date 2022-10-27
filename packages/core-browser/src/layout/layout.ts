@@ -59,7 +59,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
         this.config.layoutConfig[location] = targetLocation;
       }
       if (targetLocation.modules.indexOf(key) > -1) {
-        getDebugLogger().warn(`${location}位置已存在${key}模块`);
+        getDebugLogger().warn(`A ${key} module already exists on the ${location}`);
         return;
       }
       targetLocation.modules.push(key);
