@@ -60,8 +60,6 @@ export class OpenSumiTreeNode {
   async isSelected() {
     const id = await this.elementHandle.getAttribute('data-id');
     const parent = await this.parentElementHandle();
-    // eslint-disable-next-line no-console
-    console.log('parentElementHandle: >>>>', await parent?.innerHTML());
     return !!(await parent?.$(`[data-id='${id}']${this.selector.selectedClass}`));
   }
 

@@ -34,22 +34,13 @@ test.describe('OpenSumi Language', () => {
     await folder?.open();
 
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'language/reference.ts', false);
-
+    await app.page.waitForTimeout(400);
     await editor.placeCursorInLineWithPosition(4, 20);
     let cursorHandle = await editor.getCursorElement();
 
     await cursorHandle?.click({ modifiers: [isMacintosh ? 'Meta' : 'Control'] });
     await app.page.waitForTimeout(1000);
-    // eslint-disable-next-line no-console
-    console.log('definitionTree: editor.getViewElement>>. ', await (await editor.getViewElement())?.innerHTML());
 
-    const definitionTree = await explorer.getFileStatTreeNodeByPath('language/definition.ts');
-    // eslint-disable-next-line no-console
-    console.log('definitionTree: label>>. ', await definitionTree?.label());
-    // eslint-disable-next-line no-console
-    console.log('definitionTree: isSelected>>. ', await definitionTree?.isSelected());
-    await app.page.waitForTimeout(600);
-    expect(await definitionTree?.isSelected()).toBeTruthy();
     const currentTab = await editor.getCurrentTab();
     expect(await currentTab?.textContent()).toStrictEqual(' definition.ts');
 
