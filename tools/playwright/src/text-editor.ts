@@ -1,10 +1,90 @@
-import { ElementHandle } from '@playwright/test';
+import { ElementHandle, Page } from '@playwright/test';
 
+import { OpenSumiApp } from './app';
 import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiEditor } from './editor';
+import { OpenSumiExplorerFileStatNode } from './explorer-view';
 import { keypressWithCmdCtrl } from './utils';
 
+
+abstract class ViewsModel {
+  constructor(readonly page: Page) {}
+  protected viewElement: ElementHandle<SVGElement | HTMLElement> | null;
+  async mount(v: ElementHandle<SVGElement | HTMLElement> | null): Promise<void> {
+    this.viewElement = v;
+  }
+}
+
+class GlyphMarginModel extends ViewsModel {
+  async getElement() {
+    const glyphMargin = await this.viewElement?.$('.glyph-margin');
+    const parent = await glyphMargin?.getProperty('parentNode');
+    return parent?.asElement();
+  }
+
+  async getOverlay(lineNumber: number) {
+    const margin = await this.getElement();
+    const overlays = await margin?.$$('.margin-view-overlays > div');
+    if (!overlays) {
+      return;
+    }
+
+    for (const node of overlays) {
+      const lineNode = await node.$('.line-numbers');
+      const content = await lineNode?.textContent();
+      if (content === lineNumber.toString()) {
+        return node;
+      }
+    }
+  }
+
+  async hasBreakpoint(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
+    return !!(await node.$('.sumi-debug-breakpoint'));
+  }
+
+  async hasTopStackFrame(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
+    return !!(await node.$('.sumi-debug-top-stack-frame'));
+  }
+
+  async hasTopStackFrameLine(node: ElementHandle<SVGElement | HTMLElement>): Promise<boolean> {
+    return !!(await node.$('.sumi-debug-top-stack-frame-line'));
+  }
+}
+
+class OverlaysModel extends ViewsModel {
+  async getElement() {
+    return await this.viewElement?.$('.view-overlays');
+  }
+
+  async getOverlay(lineNumber: number) {
+    const element = await this.getElement();
+    const overlay = await element?.$(`div:nth-child(${lineNumber})`);
+    return overlay;
+  }
+}
+
 export class OpenSumiTextEditor extends OpenSumiEditor {
+  private glyphMarginModel: GlyphMarginModel;
+  private overlaysModel: OverlaysModel;
+
+  constructor(app: OpenSumiApp, filestatElement: OpenSumiExplorerFileStatNode) {
+    super(app, filestatElement);
+    this.glyphMarginModel = new GlyphMarginModel(this.page);
+    this.overlaysModel = new OverlaysModel(this.page);
+  }
+
+  async getGlyphMarginModel() {
+    const viewElement = await this.getViewElement();
+    this.glyphMarginModel.mount(viewElement);
+    return this.glyphMarginModel;
+  }
+
+  async getOverlaysModel() {
+    const viewElement = await this.getViewElement();
+    this.overlaysModel.mount(viewElement);
+    return this.overlaysModel;
+  }
+
   async openLineContextMenuByLineNumber(lineNumber: number) {
     const existingLine = await this.lineByLineNumber(lineNumber);
     if (!existingLine) {
@@ -14,7 +94,8 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   }
 
   async openGlyphMarginContextMenu() {
-    const view = await this.getGlyphMarginElement();
+    const glyphMargin = await this.getGlyphMarginModel();
+    const view = await glyphMargin.getElement();
     if (!view) {
       return;
     }
@@ -84,12 +165,6 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   async deleteLineByLineNumber(lineNumber: number): Promise<void> {
     await this.selectLineWithLineNumber(lineNumber);
     await this.page.keyboard.press('Backspace');
-  }
-
-  async getGlyphMarginElement() {
-    await this.activate();
-    const viewElement = await this.getViewElement();
-    return await viewElement?.$('.glyph-margin');
   }
 
   async lineByLineNumber(lineNumber: number): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
