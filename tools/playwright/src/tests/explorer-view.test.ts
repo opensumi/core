@@ -192,8 +192,8 @@ console.log(a);`,
     expect(await openedEditorView.isVisible()).toBeTruthy();
     const testFilePath = 'editor3.js';
     const editor = await app.openEditor(OpenSumiTextEditor, explorer, testFilePath);
-    await editor.triggerTitleMenu('Split To Right (⌘\\)');
-    await app.page.waitForTimeout(5000);
+    await editor.triggerTitleMenuById('editor.splitToRight');
+    await app.page.waitForTimeout(2000);
     const group1 = await explorer.getOpenedEditorTreeNodeByPath('Group 1');
     const group2 = await explorer.getOpenedEditorTreeNodeByPath('Group 2');
     expect(group1).toBeDefined();

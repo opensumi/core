@@ -115,4 +115,16 @@ export class OpenSumiEditor extends OpenSumiView {
       }
     }
   }
+
+  async triggerTitleMenuById(id: string) {
+    const tab = await this.getTabElement();
+    const actions = (await tab?.$$('[class*="iconAction___"]')) || [];
+    for (const action of actions) {
+      const title = await action.getAttribute('id');
+      if (title === id) {
+        await action.click();
+        break;
+      }
+    }
+  }
 }
