@@ -12,7 +12,7 @@ import { IMainLayoutService } from '../common';
 
 @Injectable()
 export class ViewQuickOpenHandler implements QuickOpenHandler {
-  readonly prefix: string = 'view';
+  readonly prefix: string = 'view ';
   readonly description: string = localize('layout.action.openView');
   protected items: QuickOpenItem[];
 
