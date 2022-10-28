@@ -28,9 +28,6 @@ export abstract class Tree implements ITree {
 
   set root(root: CompositeTreeNode | undefined) {
     this._root = root;
-    if (this.root) {
-      this.root.ensureLoaded();
-    }
   }
 
   protected fireChanged(): void {

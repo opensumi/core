@@ -177,7 +177,7 @@ export class OutlineModelService {
         return;
       }
       const treeModel = this.injector.get<any>(OutlineTreeModel, [root]);
-      await treeModel.root.ensureLoaded();
+      await treeModel.ensureReady;
       this._activeTreeModel = treeModel;
       // 初始化节点装饰器
       const decoration = this.initDecorations(root);

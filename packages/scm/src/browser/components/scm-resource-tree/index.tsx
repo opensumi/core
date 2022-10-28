@@ -37,7 +37,7 @@ export const SCMResourceTree: React.FC<{
       if (scmTreeModelService.treeModel) {
         // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
         // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-        await scmTreeModelService.treeModel.root.ensureLoaded();
+        await scmTreeModelService.treeModel.ensureReady;
       }
       setIsReady(true);
     })();
@@ -50,7 +50,7 @@ export const SCMResourceTree: React.FC<{
         await scmTreeModelService.whenReady;
         if (model) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-          await scmTreeModelService.treeModel.root.ensureLoaded();
+          await scmTreeModelService.treeModel.ensureReady;
         }
         setModel(model);
       });

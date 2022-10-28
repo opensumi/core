@@ -147,7 +147,7 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
         setIsLoading(true);
         if (treeModel) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-          await treeModel.root.ensureLoaded();
+          await treeModel.ensureReady;
         }
         setModel(treeModel);
         setIsLoading(false);
@@ -271,6 +271,8 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
         return;
       }
       if (fileTreeModelService.treeModel) {
+        // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+        await fileTreeModelService.treeModel.ensureReady;
         setModel(fileTreeModelService.treeModel);
         if (token.isCancellationRequested) {
           return;

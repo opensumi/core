@@ -52,7 +52,7 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
     disposer.addDispose(
       consoleModel.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
         if (model) {
-          await model.treeModel!.root.ensureLoaded();
+          await model.treeModel.ensureReady;
           disposer.addDispose(
             model.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, () => {
               consoleModel.treeHandle.layoutItem();

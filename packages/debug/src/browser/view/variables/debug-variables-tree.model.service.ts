@@ -195,7 +195,7 @@ export class DebugVariablesModelService {
         if (this.viewModel && this.viewModel.currentSession && !this.viewModel.currentSession.terminated) {
           const currentTreeModel = await this.initTreeModel(this.viewModel.currentSession);
           this._activeTreeModel = currentTreeModel;
-          await this._activeTreeModel?.root.ensureLoaded();
+          await this._activeTreeModel?.ensureReady;
           /**
            * 如果变量面板全部都是折叠状态
            * 则需要找到当前 scope 作用域的 expensive 为 false 的变量列表，并默认展开它们

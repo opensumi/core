@@ -241,7 +241,7 @@ describe('FileTree should be work while on single workspace model', () => {
     // wait for init fileTree model
     await fileTreeModelService.whenReady;
     // make sure the root has been loaded
-    await fileTreeModelService.treeModel.root.ensureLoaded();
+    await fileTreeModelService.treeModel.ensureReady;
     contextKey.initScopedContext(document.createElement('div'));
     fileTreeService = injector.get<FileTreeService>(IFileTreeService);
   });

@@ -76,7 +76,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   useEffect(() => {
     ensureLoaded();
     const disposable = treeService.current.onDidUpdateTreeModel(async (model?: BasicTreeModel) => {
-      await model?.root.ensureLoaded();
+      await model?.ensureReady;
       setModel(model);
     });
     const handleBlur = () => {
@@ -94,7 +94,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   const ensureLoaded = async () => {
     const model = treeService.current.model;
     if (model) {
-      await model.root.ensureLoaded();
+      await model.ensureReady;
     }
     setModel(model);
   };

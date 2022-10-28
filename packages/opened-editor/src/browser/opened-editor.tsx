@@ -73,7 +73,7 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
       setModel(openedEditorModelService.treeModel);
       // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
       // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-      await openedEditorModelService.treeModel.root.ensureLoaded();
+      await openedEditorModelService.treeModel.ensureReady;
       if (token.isCancellationRequested) {
         return;
       }
@@ -88,7 +88,7 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
         setIsLoading(true);
         if (treeModel) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-          await treeModel.root.ensureLoaded();
+          await treeModel.ensureReady;
         }
         setModel(treeModel);
         setIsLoading(false);

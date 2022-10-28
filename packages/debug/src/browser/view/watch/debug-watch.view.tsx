@@ -27,7 +27,6 @@ import {
 import { DebugWatchModelService, IWatchNode } from './debug-watch-tree.model.service';
 import styles from './debug-watch.module.less';
 
-
 export const DEBUG_WATCH_TREE_FIELD_NAME = 'DEBUG_WATCH_TREE_FIELD';
 
 export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
@@ -52,7 +51,7 @@ export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{
       }),
     );
     if (treeModel) {
-      treeModel.root.ensureLoaded().then(() => {
+      treeModel.ensureReady.then(() => {
         if (shouldUpdate) {
           setModel(treeModel);
         }
@@ -61,7 +60,7 @@ export const DebugWatchView = observer(({ viewState }: React.PropsWithChildren<{
     disposableCollection.push(
       debugWatchModelService.onDidUpdateTreeModel(async (model: TreeModel) => {
         if (model) {
-          await model.root.ensureLoaded();
+          await model.ensureReady;
         }
         if (shouldUpdate) {
           setModel(model);

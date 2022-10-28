@@ -138,7 +138,7 @@ describe('OutlineTreeModelService', () => {
 
     await outlineTreeModelService.whenReady;
 
-    await outlineTreeModelService.treeModel.root.ensureLoaded();
+    await outlineTreeModelService.treeModel.ensureReady;
   });
 
   afterAll(() => {
