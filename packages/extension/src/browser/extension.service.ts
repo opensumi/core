@@ -253,7 +253,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
       if (extension?.contributes) {
         this.contributesService.register(extension.id, extension.contributes);
-        this.sumiContributesService.register(extension.id, extension.contributes);
+        this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
       }
     }
 
