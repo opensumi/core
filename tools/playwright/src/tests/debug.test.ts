@@ -47,8 +47,11 @@ test.describe('OpenSumi Debug', () => {
     debugView = await app.open(OpenSumiDebugView);
     const glyphMarginModel = await editor.getGlyphMarginModel();
     let glyphOverlay = await glyphMarginModel.getOverlay(6);
-    await glyphOverlay?.click({ position: { x: 9, y: 9 }, force: true });
-    await app.page.waitForTimeout(1000);
+    const isClicked = await glyphMarginModel.hasBreakpoint(glyphOverlay!);
+    if (!isClicked) {
+      await glyphOverlay?.click({ position: { x: 9, y: 9 }, force: true });
+      await app.page.waitForTimeout(1000);
+    }
 
     await debugView.start();
     await app.page.waitForTimeout(2000);
