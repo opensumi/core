@@ -42,11 +42,19 @@ test.describe('OpenSumi Debug', () => {
 
   test('Run Debug should be worked', async () => {
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'index.js', false);
+    await app.page.waitForTimeout(1000);
+
     debugView = await app.open(OpenSumiDebugView);
+    const glyphMarginModel = await editor.getGlyphMarginModel();
+    let glyphOverlay = await glyphMarginModel.getOverlay(6);
+    await glyphOverlay?.click({ position: { x: 9, y: 9 }, force: true });
+    await app.page.waitForTimeout(1000);
+
     await debugView.start();
     await app.page.waitForTimeout(2000);
-    const glyphMarginModel = await editor.getGlyphMarginModel();
-    const glyphOverlay = await glyphMarginModel.getOverlay(6);
+
+    glyphOverlay = await glyphMarginModel.getOverlay(6);
+
     expect(await glyphMarginModel.hasTopStackFrame(glyphOverlay!)).toBeTruthy();
 
     const overlaysModel = await editor.getOverlaysModel();
