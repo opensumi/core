@@ -10,7 +10,10 @@ export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
   }
 
   async isFolder() {
-    const icon = await this.elementHandle.waitForSelector("[class*='file_icon___']");
+    const icon = await this.elementHandle.$("[class*='file_icon___']");
+    if (!icon) {
+      return false;
+    }
     const className = await icon.getAttribute('class');
     return className?.includes('folder-icon');
   }
