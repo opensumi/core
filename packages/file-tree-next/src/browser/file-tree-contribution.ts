@@ -293,7 +293,7 @@ export class FileTreeContribution
         label: localize('file.delete'),
       },
       order: 1,
-      group: '2_operator',
+      group: '7_modification',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -302,7 +302,7 @@ export class FileTreeContribution
         label: localize('file.rename'),
       },
       order: 3,
-      group: '2_operator',
+      group: '7_modification',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -311,7 +311,7 @@ export class FileTreeContribution
         label: localize('file.compare'),
       },
       order: 2,
-      group: '2_operator',
+      group: '3_compare',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -320,7 +320,7 @@ export class FileTreeContribution
         label: localize('file.copy.file'),
       },
       order: 1,
-      group: '3_copy',
+      group: '5_cutcopypaste',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -329,7 +329,7 @@ export class FileTreeContribution
         label: localize('file.cut.file'),
       },
       order: 2,
-      group: '3_copy',
+      group: '5_cutcopypaste',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -338,7 +338,7 @@ export class FileTreeContribution
         label: localize('file.paste.file'),
       },
       order: 3,
-      group: '3_copy',
+      group: '5_cutcopypaste',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -346,7 +346,7 @@ export class FileTreeContribution
         id: FILE_COMMANDS.COPY_PATH.id,
         label: localize('file.copy.path'),
       },
-      group: '4_path',
+      group: '6_copypath',
     });
 
     menuRegistry.registerMenuItem(MenuId.ExplorerContext, {
@@ -354,7 +354,7 @@ export class FileTreeContribution
         id: FILE_COMMANDS.COPY_RELATIVE_PATH.id,
         label: localize('file.copy.relativepath'),
       },
-      group: '4_path',
+      group: '6_copypath',
     });
   }
 
