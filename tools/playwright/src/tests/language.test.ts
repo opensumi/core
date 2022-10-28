@@ -34,6 +34,7 @@ test.describe('OpenSumi Language', () => {
     await folder?.open();
 
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'reference.ts', false);
+    await editor.activate();
     await app.page.waitForTimeout(400);
     await editor.placeCursorInLineWithPosition(4, 20);
     let cursorHandle = await editor.getCursorElement();
