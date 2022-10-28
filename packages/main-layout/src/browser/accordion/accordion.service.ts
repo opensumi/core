@@ -235,6 +235,8 @@ export class AccordionService extends WithEventBus {
     if (view.priority) {
       const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
       this.views.splice(index === -1 ? this.views.length : index, 0, view);
+    } else {
+      this.views.push(view);
     }
   }
 
