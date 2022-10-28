@@ -551,16 +551,19 @@ export class DebugSessionManager implements IDebugSessionManager {
     this._currentSession = current;
     this.onDidChangeActiveDebugSessionEmitter.fire({ previous, current });
     if (current) {
-      current.onDidChange(() => {
-        if (this.currentFrame === this.topFrame) {
-          this.open();
-        }
-        this.fireDidChange(current);
-      });
-      current.onCurrentThreadChange(() => {
-        this.fireDidChange(current);
-      });
-      this.toDisposeOnCurrentSession.push(current);
+      this.toDisposeOnCurrentSession.push(
+        current.onDidChange(() => {
+          if (this.currentFrame === this.topFrame) {
+            this.open();
+          }
+          this.fireDidChange(current);
+        }),
+      );
+      this.toDisposeOnCurrentSession.push(
+        current.onCurrentThreadChange(() => {
+          this.fireDidChange(current);
+        }),
+      );
     }
     this.open();
     this.fireDidChange(current);
