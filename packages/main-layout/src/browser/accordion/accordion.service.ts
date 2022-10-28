@@ -231,6 +231,15 @@ export class AccordionService extends WithEventBus {
     return menu;
   }
 
+  private updateView(view: View) {
+    if (view.priority) {
+      const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
+      this.views.splice(index === -1 ? this.views.length : index, 0, view);
+    } else {
+      this.views.push(view);
+    }
+  }
+
   appendView(view: View, replace?: boolean) {
     if (this.appendedViewSet.has(view.id) && !replace) {
       return;
@@ -256,8 +265,7 @@ export class AccordionService extends WithEventBus {
       this.appendedViewSet.add(view.id);
     }
     this.beforeAppendViewEmitter.fire(view.id);
-    const index = this.views.findIndex((value) => (value.priority || 0) < (view.priority || 0));
-    this.views.splice(index === -1 ? this.views.length : index, 0, view);
+    this.updateView(view);
 
     // 创建 scopedContextKeyService
     this.registerContextService(view.id);
