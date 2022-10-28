@@ -146,20 +146,6 @@ export class DebugSession implements IDebugSession {
 
     this.toDispose.pushAll([
       this.onDidChangeEmitter,
-      this._onDidChangeCallStack,
-      this._onVariableChange,
-      this._onCurrentThreadChange,
-      this._onDidStop,
-      this._onDidContinued,
-      this._onDidThread,
-      this._onRequest,
-      this._onDidExitAdapter,
-      this._onDidProgressStart,
-      this._onDidProgressUpdate,
-      this._onDidProgressEnd,
-      this._onDidInvalidated,
-      this._onDidChangeState,
-      this._onDidInvalidMemory,
       this.connection,
       // 返回调试配置
       this.on('initialized', () => {
