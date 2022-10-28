@@ -170,7 +170,10 @@ export const AccordionSection = ({
         <ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />
         <ErrorBoundary>
           {panelMessage && <span className={styles.kt_split_panel_message}>{panelMessage}</span>}
-          <Component {...initialProps} viewState={viewState} />
+          <Component
+            {...initialProps}
+            viewState={{ height: viewState.height - (panelMessage ? 22 : 0), width: viewState.width }}
+          />
         </ErrorBoundary>
       </div>
     </div>
