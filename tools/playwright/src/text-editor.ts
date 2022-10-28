@@ -157,7 +157,7 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     const lineElement = await this.lineByLineNumber(lineNumber);
     await this.placeCursorInLine(lineElement, 'start');
     for (let i = 0; i < columnNumber; i++) {
-      await this.page.keyboard.press('ArrowRight');
+      await this.page.keyboard.press('ArrowRight', { delay: 200 });
     }
     return lineElement;
   }
