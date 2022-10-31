@@ -92,24 +92,13 @@ jobs:
           git_commit_sha: ${{ github.sha }}
           git_tag_prefix: 'v'
 
-      # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
-      - name: Create Changelog
-        if: steps.checkTag.outputs.exists == 'false'
-        id: release-log
-        run: |
-          npm run changelog -- --remote --release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_SHA: ${{ github.sha }}
-
       - name: Create Release
         id: create_release
         if: steps.checkTag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          body_path: ./releaselog.md
-          target_commitish: ${{ github.event.inputs.release_branch }}
+          target_commitish: v${{ github.event.inputs.version }}
           generate_release_notes: true
           # 发布 Release 后请手动到该 Release 页面查看是否内容正确，然后点击编辑 -> 点击转为 Release
           draft: true
