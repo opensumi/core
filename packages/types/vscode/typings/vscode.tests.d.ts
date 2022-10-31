@@ -471,6 +471,12 @@ declare module "vscode" {
      */
     description?: string;
     /**
+     * A string that should be used when comparing this item
+     * with other items. When `falsy` the {@link TestItem.label label}
+     * is used.
+     */
+    sortText?: string | undefined;
+    /**
      * Location of the test item in its {@link uri}.
      *
      * This is only meaningful if the `uri` points to a file.
@@ -571,24 +577,6 @@ declare module "vscode" {
      */
     readonly removed: ReadonlyArray<TestItem>;
   }
-
-  /**
-   * A test item is an item shown in the "test explorer" view. It encompasses
-   * both a suite and a test, since they have almost or identical capabilities.
-   */
-  export interface TestItem {
-    /**
-     * Marks the test as outdated. This can happen as a result of file changes,
-     * for example. In "auto run" mode, tests that are outdated will be
-     * automatically rerun after a short delay. Invoking this on a
-     * test with children will mark the entire subtree as outdated.
-     *
-     * Extensions should generally not override this method.
-     */
-    // todo@api still unsure about this
-    invalidateResults(): void;
-  }
-
 
   /**
    * TestResults can be provided to the editor in {@link tests.publishTestResult},
