@@ -155,9 +155,9 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   ): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
     await this.activate();
     const lineElement = await this.lineByLineNumber(lineNumber);
-    await this.placeCursorInLine(lineElement);
+    await this.placeCursorInLine(lineElement, 'start');
     for (let i = 0; i < columnNumber; i++) {
-      await this.page.keyboard.press('ArrowRight');
+      await this.page.keyboard.press('ArrowRight', { delay: 200 });
     }
     return lineElement;
   }
@@ -167,24 +167,46 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     await this.page.keyboard.press('Backspace');
   }
 
+  async getGlyphMarginElement() {
+    await this.activate();
+    const viewElement = await this.getViewElement();
+    return await viewElement?.$('.glyph-margin');
+  }
+
+  async getCursorElement(): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
+    const viewElement = await this.getViewElement();
+
+    const cursorNode = await viewElement?.$('.cursor.monaco-mouse-cursor-text');
+    if (cursorNode) {
+      return cursorNode;
+    }
+  }
+
+  async getCursorLineNumber(node: ElementHandle<SVGElement | HTMLElement> | undefined) {
+    const style = await node!.getAttribute('style');
+    const tops = style?.match(/top: [0-9]*px;/g) || ['0'];
+    const topNums = tops[0].match(/\d+/g);
+    if (topNums && topNums.length > 0) {
+      let topNum: number | string = topNums[0];
+      topNum = Number(topNum);
+
+      // 每个 view-lines 默认高度都是 18
+      const line = topNum / 18 + 1;
+      return line;
+    }
+    return undefined;
+  }
   async lineByLineNumber(lineNumber: number): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
     await this.activate();
     const viewElement = await this.getViewElement();
-    const lines = await viewElement?.$$('.view-lines .view-line');
-    if (!lines) {
+
+    const lineNode = await viewElement!.$(`.view-lines > div:nth-child(${lineNumber})`);
+
+    if (!lineNode) {
       throw new Error(`Couldn't retrieve lines of text editor ${this.tabSelector}`);
     }
 
-    const linesWithXCoordinates: {
-      x: number;
-      lineElement: ElementHandle<SVGElement | HTMLElement>;
-    }[] = [];
-    for (const lineElement of lines) {
-      const box = await lineElement.boundingBox();
-      linesWithXCoordinates.push({ x: box ? box.x : Number.MAX_VALUE, lineElement });
-    }
-    linesWithXCoordinates.sort((a, b) => a.x.toString().localeCompare(String(b.x)));
-    return linesWithXCoordinates[lineNumber - 1].lineElement;
+    return lineNode.asElement();
   }
 
   async textContentOfLineContainingText(text: string): Promise<string | undefined> {
@@ -250,8 +272,22 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     await lineElement?.click({ clickCount: 3 });
   }
 
-  protected async placeCursorInLine(lineElement: ElementHandle<SVGElement | HTMLElement> | undefined): Promise<void> {
-    await lineElement?.click();
+  protected async placeCursorInLine(
+    lineElement: ElementHandle<SVGElement | HTMLElement> | undefined,
+    point: 'start' | 'end' = 'end',
+  ): Promise<void> {
+    if (!lineElement) {
+      return;
+    }
+
+    if (point === 'start') {
+      await lineElement.click({
+        position: { x: 0, y: 0 },
+      });
+      return;
+    }
+
+    await lineElement.click();
   }
 
   protected replaceEditorSymbolsWithSpace(content: string): string | Promise<string | undefined> {

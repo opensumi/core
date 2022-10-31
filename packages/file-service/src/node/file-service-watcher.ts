@@ -289,6 +289,10 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     return undefined;
   }
 
+  private getDefaultWatchExclude() {
+    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**/*'];
+  }
+
   protected async start(
     watcherId: number,
     basePath: string,
@@ -300,7 +304,10 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
       return disposables;
     }
     const realPath = await fs.realpath(basePath);
-    const ignore = this.toExcludePaths(realPath, this.excludes.concat(rawOptions?.excludes || []));
+    const ignore = this.toExcludePaths(
+      realPath,
+      this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
+    );
     hanlder = await ParcelWatcher.subscribe(
       realPath,
       (err, events: ParcelWatcher.Event[]) => {

@@ -1,5 +1,5 @@
 import clsx from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
@@ -16,6 +16,8 @@ import {
   SubmenuItemNode,
   IMenuAction,
   ComponentMenuItemNode,
+  AbstractMenuService,
+  generateMergedCtxMenu,
 } from '../../menu/next';
 import { useInjectable } from '../../react-hooks';
 import { useMenus, useContextMenus } from '../../utils';
@@ -351,8 +353,8 @@ export const TitleActionList: React.FC<
     regroup = (...args: [MenuNode[], MenuNode[]]) => args,
   }) => {
     const ctxMenuRenderer = useInjectable<ICtxMenuRenderer>(ICtxMenuRenderer);
+    const abstractMenuService = useInjectable<AbstractMenuService>(AbstractMenuService);
     const [primary, secondary] = regroup(nav, more);
-
     const handleShowMore = React.useCallback(
       (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
@@ -389,6 +391,14 @@ export const TitleActionList: React.FC<
                 key={(item as ComponentMenuItemNode).nodeId}
               />
             );
+          }
+
+          if (item.id === SubmenuItemNode.ID) {
+            const menus = abstractMenuService.createMenu((item as SubmenuItemNode).submenuId);
+            const hasSubMenu = generateMergedCtxMenu({ menus }).length > 0;
+            if (!hasSubMenu) {
+              return;
+            }
           }
 
           // submenu 使用 submenu-id 作为 id 唯一值
