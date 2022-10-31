@@ -91,6 +91,7 @@ console.log(a);`,
     let fileMenu = await node?.openContextMenu();
     expect(await fileMenu?.isOpen()).toBeTruthy();
     const copyPath = await fileMenu?.menuItemByName('Copy Path');
+    await app.page.waitForTimeout(400);
     await copyPath?.click();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor3.js');
     await editor.addTextToNewLineAfterLineByLineNumber(1, 'File Path: ');
