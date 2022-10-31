@@ -30,6 +30,7 @@ describe('Debug Hover Model', () => {
       get: jest.fn(() => mockWatcher),
     },
     path: 'testRoot',
+    ensureLoaded: jest.fn(),
   } as any;
 
   beforeAll(() => {

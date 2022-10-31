@@ -33,6 +33,7 @@ describe('FileDialogModel should be work', () => {
     },
     path: 'testRoot',
     uri: rootUri,
+    ensureLoaded: jest.fn(),
   } as any;
   const newDirectoryByName = (name) => {
     const directory = {

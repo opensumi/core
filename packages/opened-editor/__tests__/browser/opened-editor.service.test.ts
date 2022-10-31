@@ -147,7 +147,7 @@ describe('OpenedEditorModelService should be work', () => {
     openedEditorModelService = injector.get(OpenedEditorModelService);
     openedEditorService = injector.get(OpenedEditorService);
     await openedEditorModelService.whenReady;
-    await openedEditorModelService.treeModel?.root.ensureLoaded();
+    await openedEditorModelService.treeModel?.ensureReady;
   });
 
   afterEach(() => {

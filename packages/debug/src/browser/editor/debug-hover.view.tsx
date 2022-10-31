@@ -18,7 +18,6 @@ import { DebugHoverModel } from './debug-hover-model';
 import { DebugHoverTreeModelService, IDebugHoverUpdateData } from './debug-hover-tree.model.service';
 import styles from './debug-hover.module.less';
 
-
 export const DebugHoverView = observer(() => {
   const debugHoverTreeModelService: DebugHoverTreeModelService = useInjectable(DebugHoverTreeModelService);
   const DEFAULT_LAYOUT_HEIGHT = 250;
@@ -31,7 +30,7 @@ export const DebugHoverView = observer(() => {
     debugHoverTreeModelService.onDidUpdateTreeModelOrVariable(async (data: IDebugHoverUpdateData) => {
       const { treeModel, variable } = data;
       if (treeModel) {
-        await treeModel.root.ensureLoaded();
+        await treeModel.ensureReady;
       }
       setModel({ treeModel, variable });
     });
@@ -58,7 +57,7 @@ export const DebugHoverView = observer(() => {
 
   const ensureLoaded = async () => {
     if (debugHoverTreeModelService.treeModel) {
-      await debugHoverTreeModelService.treeModel!.root.ensureLoaded();
+      await debugHoverTreeModelService.treeModel.ensureReady;
       setModel({ treeModel: debugHoverTreeModelService.treeModel });
     }
   };
