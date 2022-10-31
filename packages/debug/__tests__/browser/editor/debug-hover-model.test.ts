@@ -9,6 +9,7 @@ describe('Debug Hover Model', () => {
     watcher: {
       on: jest.fn(() => Disposable.create(() => {})),
     },
+    ensureLoaded: jest.fn(),
   } as any;
 
   beforeAll(() => {

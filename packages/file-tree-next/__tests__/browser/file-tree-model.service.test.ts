@@ -65,6 +65,7 @@ describe('FileTreeModelService should be work', () => {
     path: 'testRoot',
     name: 'testRoot',
     uri: rootUri,
+    ensureLoaded: jest.fn(),
   } as any;
   const mockCtxMenuRenderer = {
     show: jest.fn(),

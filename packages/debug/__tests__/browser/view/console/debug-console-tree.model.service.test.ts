@@ -59,6 +59,7 @@ describe('Debug Console Tree Model', () => {
       get: jest.fn(() => mockWatcher),
     },
     path: 'testRoot',
+    ensureLoaded: jest.fn(),
   } as any;
 
   const mockDebugSessionManager = {

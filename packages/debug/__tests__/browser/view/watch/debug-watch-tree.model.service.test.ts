@@ -32,6 +32,7 @@ describe('Debug Watch Tree Model', () => {
       get: jest.fn(() => mockWatcher),
     },
     path: 'testRoot',
+    ensureLoaded: jest.fn(),
   } as any;
 
   const mockDebugSessionManager = {
