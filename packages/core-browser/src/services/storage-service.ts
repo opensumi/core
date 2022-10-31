@@ -1,5 +1,5 @@
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { isObject, isUndefinedOrNull } from '@opensumi/ide-core-common';
+import { isObject, isUndefinedOrNull, runWhenIdle } from '@opensumi/ide-core-common';
 
 import { Logger } from '../logger';
 
@@ -63,8 +63,10 @@ abstract class BaseBrowserStorageService implements StorageService {
 
   private init() {
     if (typeof window !== 'undefined' && window.localStorage) {
-      this.clearLocalStorage();
-      this.testLocalStorage();
+      runWhenIdle(() => {
+        this.clearLocalStorage();
+        this.testLocalStorage();
+      });
     } else {
       this.logger.warn("The browser doesn't support localStorage. state will not be persisted across sessions.");
     }
