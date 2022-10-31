@@ -196,7 +196,6 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     }
     return undefined;
   }
-
   async lineByLineNumber(lineNumber: number): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
     await this.activate();
     const viewElement = await this.getViewElement();
