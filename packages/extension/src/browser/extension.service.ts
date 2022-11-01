@@ -538,13 +538,11 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
    * 激活插件的 Contributes
    */
   public async runExtensionContributes() {
-    // await Promise.all(this.normalExtensions.map(async (extension) => await extension.initialize()));
+    const extensions = Array.from(this.extensionInstanceManageService.getExtensionInstances() as Extension[]);
 
     // try fire workspaceContains activateEvent ，这里不要 await
     Promise.all(
-      this.normalExtensions.map((extension) =>
-        this.activateByWorkspaceContains(extension.packageJSON.activationEvents),
-      ),
+      extensions.map((extension) => this.activateByWorkspaceContains(extension.packageJSON.activationEvents)),
     ).catch((error) => this.logger.error(error));
   }
 
