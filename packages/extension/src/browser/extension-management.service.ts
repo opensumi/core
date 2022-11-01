@@ -11,7 +11,9 @@ import {
 } from '../common';
 
 import { Extension } from './extension';
+import { SumiContributionsService, SumiContributionsServiceToken } from './sumi/contributes';
 import { AbstractExtInstanceManagementService, ExtensionDidEnabledEvent, ExtensionDidUninstalledEvent } from './types';
+import { VSCodeContributesService, VSCodeContributesServiceToken } from './vscode/contributes';
 
 /**
  * 为插件市场面板提供数据/交互
@@ -23,6 +25,12 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
 
   @Autowired(ExtensionNodeServiceServerPath)
   private readonly extensionNodeClient: IExtensionNodeClientService;
+
+  @Autowired(VSCodeContributesServiceToken)
+  private readonly contributesService: VSCodeContributesService;
+
+  @Autowired(SumiContributionsServiceToken)
+  private readonly sumiContributesService: SumiContributionsService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -157,6 +165,11 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
     extension.enable();
     await extension.initialize();
     this.eventBus.fire(new ExtensionDidEnabledEvent(extension.toJSON()));
+
+    this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
+    this.contributesService.register(extension.id, extension.contributes);
+    this.sumiContributesService.initialize();
+    this.contributesService.initialize();
   }
 
   /**
