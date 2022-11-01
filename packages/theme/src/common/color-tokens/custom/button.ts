@@ -169,12 +169,7 @@ export const ktSecondaryButtonClickForeground = registerColor(
 );
 export const ktSecondaryButtonClickBackground = registerColor(
   'kt.secondaryButton.clickBackground',
-  {
-    dark: buttonSecondaryHoverBackground,
-    light: buttonSecondaryHoverBackground,
-    hcDark: buttonSecondaryHoverBackground,
-    hcLight: buttonSecondaryHoverBackground,
-  },
+  { dark: null, light: null, hcDark: null, hcLight: null },
   localize('ktSecondaryButtonClickBackground', 'Secondary Button Click Background color'),
 );
 export const ktSecondaryButtonClickBorder = registerColor(
