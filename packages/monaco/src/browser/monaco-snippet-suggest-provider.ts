@@ -236,16 +236,16 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
         }
       }
       if (Array.isArray(prefix)) {
-        for (const prefixKey of prefix) {
+        for (const key of prefix) {
           toDispose.push(
             this.push({
               scopes,
               name,
-              prefix: prefixKey,
+              prefix: key,
               description,
               body,
               source,
-            })
+            }),
           );
         }
       } else {
@@ -257,7 +257,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
             description,
             body,
             source,
-          })
+          }),
         );
       }
     });
