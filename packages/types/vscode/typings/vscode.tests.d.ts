@@ -180,6 +180,20 @@ declare module "vscode" {
      * requested, or `undefined` to resolve the controller's initial {@link items}.
      */
     resolveHandler?: (item: TestItem | undefined) => Thenable<void> | void;
+
+    /**
+     * If this method is present, a refresh button will be present in the
+     * UI, and this method will be invoked when it's clicked. When called,
+     * the extension should scan the workspace for any new, changed, or
+     * removed tests.
+     *
+     * It's recommended that extensions try to update tests in realtime, using
+     * a {@link FileSystemWatcher} for example, and use this method as a fallback.
+     *
+     * @returns A thenable that resolves when tests have been refreshed.
+     */
+    refreshHandler: ((token: CancellationToken) => Thenable<void> | void) | undefined;
+
     /**
      * Creates a {@link TestRun}. This should be called by the
      * {@link TestRunProfile} when a request is made to execute tests, and may

@@ -1,5 +1,6 @@
 import { Event, IDisposable, CancellationToken } from '@opensumi/ide-core-browser';
 
+import { ObservableValue } from './observableValue';
 import { ITestResult } from './test-result';
 import {
   InternalTestItem,
@@ -15,9 +16,10 @@ export * from './testId';
 export interface ITestController {
   readonly id: string;
   readonly label: string;
-
+  readonly canRefresh: ObservableValue<boolean>;
   configureRunProfile(profileId: number): void;
   expandTest(testId: string, levels: number): Promise<void>;
+  refreshTests(token: CancellationToken): Promise<void>;
   runTests(request: RunTestForControllerRequest, token: CancellationToken): Promise<void>;
 }
 
@@ -36,8 +38,9 @@ export interface ITestService {
   runTests(req: AmbiguousRunTestsRequest, token?: CancellationToken): Promise<ITestResult>;
   publishDiff(controllerId: string, diff: TestsDiff): void;
   runResolvedTests(req: ResolvedTestRunRequest, token?: CancellationToken): Promise<ITestResult>;
-
   onDidProcessDiff: Event<TestsDiff>;
+  getTestController(controllerId: string): ITestController | undefined;
+  refreshTests(controllerId?: string): Promise<void>;
 }
 
 export interface AmbiguousRunTestsRequest {

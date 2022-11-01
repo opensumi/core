@@ -70,3 +70,9 @@ export const DebugAllTestCommand: Command = {
   label: 'Debug All Test',
   iconClass: getIcon('debug-alt-small'),
 };
+
+export const RefreshTestsCommand: Command = {
+  id: 'testing.refresshTests',
+  label: 'Refresh Tests',
+  iconClass: getIcon('refresh'),
+};
