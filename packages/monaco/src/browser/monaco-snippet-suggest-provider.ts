@@ -244,9 +244,9 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
               prefix: prefixKey,
               description,
               body,
-              source
+              source,
             })
-          )
+          );
         }
       } else {
         toDispose.push(
@@ -256,9 +256,9 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
             prefix,
             description,
             body,
-            source
+            source,
           })
-        )
+        );
       }
     });
 
@@ -318,7 +318,7 @@ export interface JsonSerializedSnippets {
 export interface JsonSerializedSnippet {
   body: string | string[];
   scope: string;
-  prefix: string;
+  prefix: string | string[];
   description: string;
 }
 export namespace JsonSerializedSnippet {
