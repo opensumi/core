@@ -31,7 +31,7 @@
 
 <h1 align="center">OpenSumi</h1>
 
-一款帮助你快速搭建 CloudIDE 及 桌面端 IDE 产品的底层框架。
+<p align="center">一款帮助你快速搭建 CloudIDE 及 桌面端 IDE 产品的底层框架。</p>
 
 ![perview](https://img.alicdn.com/imgextra/i3/O1CN01bDhxUy1RtuCfQ1fcI_!!6000000002170-2-tps-2844-1796.png)
 
@@ -60,9 +60,22 @@ $ MY_WORKSPACE={local_path} npm run start
 
 通常情况下，你可能还会遇到一些系统级别的环境依赖问题，你可以访问 [开发环境准备](./CONTRIBUTING-zh_CN.md#开发环境准备) 查看如何安装对应环境依赖。
 
+## 🌟 起步项目
+
+我们提供了一些示例项目帮助你快速搭建你的 IDE 项目产品
+
+- [Cloud IDE](https://github.com/opensumi/ide-startup)
+- [Desktop IDE - based on the Electron](https://github.com/opensumi/ide-electron)
+- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-electron)
+- [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
+
 ## 📕 文档
 
 请访问 [opensumi.com](https://opensumi.com/zh)
+
+## 📍 更新日志及不兼容的变更
+
+请访问 [CHANGELOG.md](./CHANGELOG.md).
 
 ## 🔥 如何贡献
 
@@ -78,9 +91,11 @@ $ MY_WORKSPACE={local_path} npm run start
 
 ## 🧑‍💻 开发者交流群
 
-打开钉钉客户端进行扫码，群号：34355491
+我们建议你通过 [issues](https://github.com/opensumi/core/issues) 或 [discussions](https://github.com/opensumi/core/discussions) 与我们进行交流。
 
-![dingtalk](https://img.alicdn.com/imgextra/i4/O1CN01OgyT0Y1Sp9i7gMojz_!!6000000002295-0-tps-400-467.jpg)
+如果你希望通过即时通讯工具交流，也可以通过钉钉客户端进行扫码，群号：34355491
+
+<img width="200" src="https://img.alicdn.com/imgextra/i1/O1CN01k3gCmL1HWPjLchVv7_!!6000000000765-0-tps-200-199.jpg"/>
 
 ## 📃 协议
 
@@ -93,5 +108,5 @@ Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.
 ❤️ 感谢你们对项目的贡献!
 
 <a href="https://github.com/opensumi/core/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=opensumi/core" />
+  <img width="800" src="https://contrib.rocks/image?repo=opensumi/core" />
 </a>
