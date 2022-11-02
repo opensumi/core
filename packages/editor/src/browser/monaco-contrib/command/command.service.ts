@@ -29,6 +29,7 @@ import { URI } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { StandaloneServices } from '@opensumi/ide-monaco/lib/browser/monaco-api/services';
 import { Event, ICodeEditor, IEvent } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
+import { MonacoCodeService } from '../../editor.override';
 import { EditorCollectionService, WorkbenchEditorService } from '../../types';
 
 /**
@@ -138,6 +139,9 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
   @Autowired(EditorCollectionService)
   private editorCollectionService: EditorCollectionService;
 
+  @Autowired(MonacoOverrideServiceRegistry)
+  private readonly overrideServiceRegistry: MonacoOverrideServiceRegistry;
+
   /**
    * 校验 command id 是否是 monaco id
    * @param command 要校验的 id
@@ -192,12 +196,22 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
     return Promise.resolve();
   }
 
+  get codeEditorService(): MonacoCodeService | undefined {
+    return this.overrideServiceRegistry.getRegisteredService(ServiceNames.CODE_EDITOR_SERVICE);
+  }
+
   /**
    * 获取当前活动的编辑器
    * 此处的活动编辑器和 workbenchEditorService.currentEditor 的概念不同，对于diffEditor，需要获取确实的那个editor而不是modifiedEditor
    */
   protected getActiveCodeEditor(): ICodeEditor | undefined {
-    // 先从editor-collection的焦点追踪，contextMenu追踪中取
+    // 先从 monaco 内部获取到当前 focus 的 editor
+    const editor = this.codeEditorService?.getFocusedCodeEditor();
+    if (editor) {
+      return editor;
+    }
+
+    // 如果获取不到再从 editor-collection 的焦点追踪，contextMenu追踪中取
     if (this.editorCollectionService.currentEditor) {
       return this.editorCollectionService.currentEditor.monacoEditor;
     }
