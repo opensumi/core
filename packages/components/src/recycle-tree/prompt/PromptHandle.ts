@@ -58,6 +58,7 @@ export abstract class PromptHandle {
     this.$.setAttribute('autoComplete', 'off');
     this.ProxiedInput = bindInputElement(this.$);
     this.$.addEventListener('click', this.handleClick);
+    this.$.addEventListener('dblclick', this.handleDBClick);
     this.$.addEventListener('keyup', this.handleKeyup);
     this.$.addEventListener('keydown', this.handleKeydown);
     this.$.addEventListener('focus', this.handleFocus);
@@ -203,6 +204,10 @@ export abstract class PromptHandle {
   }
 
   private handleClick = (ev) => {
+    ev.stopPropagation();
+  };
+
+  private handleDBClick = (ev) => {
     ev.stopPropagation();
   };
 
