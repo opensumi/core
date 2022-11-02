@@ -264,6 +264,8 @@ export interface ContributesMap<T> {
 export abstract class VSCodeContributePoint<T extends JSONType = JSONType> extends Disposable {
   protected contributesMap: Array<ContributesMap<T>> = [];
 
+  protected contributedMap: Array<ContributesMap<T>> = [];
+
   static schema: IJSONSchema;
 
   protected readonly iconService?: IIconService;
@@ -272,6 +274,15 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 
   register(extensionId: string, contributes: T) {
     this.contributesMap.push({ extensionId, contributes });
+  }
+
+  hasUncontributedPoint() {
+    return this.contributesMap.length > 0;
+  }
+
+  afterContribute() {
+    this.contributedMap = this.contributedMap.concat(this.contributesMap);
+    this.contributesMap = [];
   }
 
   protected toIconClass(
@@ -342,21 +353,24 @@ export abstract class ExtensionContributesService extends WithEventBus {
     await Promise.all(
       Contributes.map(async (Constructor: typeof VSCodeContributePoint) => {
         try {
-          const contributePoint = this.injector.get(Constructor);
+          const contributePoint: VSCodeContributePoint = this.injector.get(Constructor);
           const contributeName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, Constructor);
           this.addDispose(contributePoint);
 
-          const now = Date.now();
-          await contributePoint.contribute();
+          if (contributePoint.hasUncontributedPoint()) {
+            const now = Date.now();
+            await contributePoint.contribute();
+            contributePoint.afterContribute();
 
-          this.extensionsSchemaService.registerExtensionPoint({
-            extensionPoint: contributeName,
-            jsonSchema: Constructor.schema || {},
-            frameworkKind: ['vscode', 'opensumi'],
-          });
+            this.extensionsSchemaService.registerExtensionPoint({
+              extensionPoint: contributeName,
+              jsonSchema: Constructor.schema || {},
+              frameworkKind: ['vscode', 'opensumi'],
+            });
 
-          const end = Date.now() - now;
-          this.logger.log(`run extension contribute ${contributeName}: ${end} ms`);
+            const end = Date.now() - now;
+            this.logger.log(`run extension contribute ${contributeName}: ${end} ms`);
+          }
         } catch (e) {
           this.logger.error(e);
         }
@@ -371,6 +385,11 @@ export abstract class ExtensionContributesService extends WithEventBus {
 
     this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
       this.runContributesByPhase(newPhase);
+      // 所有 contributionPoint 运行完后清空
+      // 确保后续安装/启用插件后可以正常激活
+      if (newPhase === LifeCyclePhase.Ready) {
+        this.contributedSet.clear();
+      }
     });
   }
 }
