@@ -217,7 +217,7 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
       if (Array.isArray(body)) {
         body = body.join('\n');
       }
-      if (typeof prefix !== 'string' || typeof body !== 'string') {
+      if (typeof body !== 'string') {
         return;
       }
       const scopes: string[] = [];
@@ -235,16 +235,31 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
           }
         }
       }
-      toDispose.push(
-        this.push({
-          scopes,
-          name,
-          prefix,
-          description,
-          body,
-          source,
-        }),
-      );
+      if (Array.isArray(prefix)) {
+        for (const key of prefix) {
+          toDispose.push(
+            this.push({
+              scopes,
+              name,
+              prefix: key,
+              description,
+              body,
+              source,
+            }),
+          );
+        }
+      } else {
+        toDispose.push(
+          this.push({
+            scopes,
+            name,
+            prefix,
+            description,
+            body,
+            source,
+          }),
+        );
+      }
     });
 
     return toDispose;
@@ -303,7 +318,7 @@ export interface JsonSerializedSnippets {
 export interface JsonSerializedSnippet {
   body: string | string[];
   scope: string;
-  prefix: string;
+  prefix: string | string[];
   description: string;
 }
 export namespace JsonSerializedSnippet {
