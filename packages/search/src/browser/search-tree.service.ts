@@ -25,7 +25,8 @@ import {
   WorkbenchEditorService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import type { IModelDeltaDecoration } from '@opensumi/ide-monaco/lib/browser/monaco-api/editor';
+import type { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
@@ -87,7 +88,7 @@ export class RangeHighlightDecorations implements IDisposable {
   }
 
   private createEditorDecorations(range: IRange) {
-    return [{ range, options: RangeHighlightDecorations.RANGE_HIGHLIGHT_DECORATION }];
+    return [{ range, options: RangeHighlightDecorations.RANGE_HIGHLIGHT_DECORATION }] as IModelDeltaDecoration[];
   }
 
   private setModel(model: ITextModel) {
