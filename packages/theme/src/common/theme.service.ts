@@ -63,6 +63,11 @@ export interface IIconService {
     fromExtension?: boolean,
   ): string | undefined;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: URI): void;
+
+  /**
+   * 注册来自插件的字体图标
+   */
+  registerFontIcons(definitions: FontIconDefinition[], iconFontFamilies: IconFontFamily[]): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
@@ -74,6 +79,19 @@ export interface IThemeData extends IStandaloneThemeData {
   settings: IRawThemeSetting[];
   initializeFromData(data): void;
   initializeThemeData(id, name, base, themeLocation: URI): Promise<void>;
+}
+
+export interface FontIconDefinition {
+  id: string;
+  content: string;
+  fontFamily: string;
+}
+
+export interface IconFontFamily {
+  source: string;
+  fontFamily: string;
+  format: string;
+  display: string;
 }
 
 export interface IThemeService {

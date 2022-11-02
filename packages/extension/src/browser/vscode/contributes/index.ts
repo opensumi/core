@@ -13,7 +13,7 @@ import { ConfigurationDefaultsContributionPoint } from './configurationDefaults'
 import { CustomEditorContributionPoint } from './customEditors';
 import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
 import { GrammarsContributionPoint, GrammarSchema } from './grammar';
-import { IconThemesContributionPoint } from './icon';
+import { IconsContributionPoint, IconThemesContributionPoint } from './icon';
 import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
 import { LanguagesSchema, LanguagesContributionPoint } from './language';
 import { LocalizationsContributionPoint } from './localization';
@@ -60,6 +60,7 @@ export class VSCodeContributesService extends ExtensionContributesService {
   ContributionPoints = [
     ThemesContributionPoint,
     IconThemesContributionPoint,
+    IconsContributionPoint,
     LocalizationsContributionPoint,
     CommandsContributionPoint,
     GrammarsContributionPoint,
