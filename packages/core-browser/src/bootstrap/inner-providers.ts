@@ -23,6 +23,7 @@ import {
   TaskDefinitionRegistryImpl,
   IApplicationService,
   IAuthenticationService,
+  AppLifeCycleServiceToken,
 } from '@opensumi/ide-core-common';
 import {
   IElectronMainUIService,
@@ -88,7 +89,7 @@ import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '..
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
 
-import { AppLifeCycleService, AppLifeCycleServiceToken } from './lifecycle.service';
+import { AppLifeCycleService } from './lifecycle.service';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider

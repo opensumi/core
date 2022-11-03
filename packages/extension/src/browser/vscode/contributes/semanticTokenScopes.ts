@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { ILogger } from '@opensumi/ide-core-common/lib/log';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 

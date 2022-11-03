@@ -2,12 +2,10 @@ import os from 'os';
 
 import { Injector } from '@opensumi/di';
 import { ISchemaStore, PreferenceService } from '@opensumi/ide-core-browser';
+import { AppLifeCycleService } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
-  AppLifeCycleService,
   AppLifeCycleServiceToken,
   LifeCyclePhase,
-} from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
-import {
   CommandRegistry,
   CommandService,
   CommandServiceImpl,

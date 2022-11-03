@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
+  LifeCyclePhase,
   ProblemMatcherContribution,
   IProblemMatcherRegistry,
   IJSONSchema,

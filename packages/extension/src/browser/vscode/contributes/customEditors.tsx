@@ -2,8 +2,14 @@ import React from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { useInjectable, IEventBus } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
-import { CancellationTokenSource, CUSTOM_EDITOR_SCHEME, Disposable, ILogger, match } from '@opensumi/ide-core-common';
+import {
+  LifeCyclePhase,
+  CancellationTokenSource,
+  CUSTOM_EDITOR_SCHEME,
+  Disposable,
+  ILogger,
+  match,
+} from '@opensumi/ide-core-common';
 import { EditorComponentRegistry, IEditorPriority, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';

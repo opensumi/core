@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
+import { LifeCyclePhase, ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { IContributeMenubarItem } from '../../../common/sumi/extension';

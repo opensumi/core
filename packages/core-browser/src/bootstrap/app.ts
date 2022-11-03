@@ -33,6 +33,9 @@ import {
   isUndefined,
   GeneralSettingsId,
   UrlProvider,
+  LifeCyclePhase,
+  AppLifeCycleServiceToken,
+  IAppLifeCycleService,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -69,7 +72,7 @@ import { electronEnv } from '../utils';
 import { renderClientApp, IAppRenderer } from './app.view';
 import { createClientConnection2, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
-import { AppLifeCycleService, AppLifeCycleServiceToken, LifeCyclePhase } from './lifecycle.service';
+import { AppLifeCycleService } from './lifecycle.service';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -241,7 +244,7 @@ export class ClientApp implements IClientApp, IDisposable {
     }
   }
 
-  get lifeCycleService(): AppLifeCycleService {
+  get lifeCycleService(): IAppLifeCycleService {
     return this.injector.get(AppLifeCycleServiceToken);
   }
 

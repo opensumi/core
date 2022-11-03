@@ -35,3 +35,4 @@ export * from './settings';
 export * from './utils';
 export * from './clipboard';
 export * from './mime';
+export * from './application.lifecycle';

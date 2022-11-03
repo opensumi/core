@@ -1,7 +1,6 @@
-// import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@opensumi/di';
 import { replaceLocalizePlaceholder, localize } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { ExtColorContribution, IThemeService } from '@opensumi/ide-theme';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';

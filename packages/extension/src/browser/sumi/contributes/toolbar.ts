@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IJSONSchema, IToolbarRegistry } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { toolbar } from '@opensumi/ide-core-browser/lib/extensions/schema/toolbar';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';

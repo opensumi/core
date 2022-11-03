@@ -8,10 +8,10 @@ import {
   KeybindingRegistryImpl,
   KeybindingRegistry,
 } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { IToolbarRegistry } from '@opensumi/ide-core-browser/lib/toolbar';
 import { IMenuRegistry, MenuRegistryImpl, IMenuItem } from '@opensumi/ide-core-browser/src/menu/next';
 import { NextToolbarRegistryImpl } from '@opensumi/ide-core-browser/src/toolbar/toolbar.registry';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IActivationEventService, ExtensionBeforeActivateEvent } from '@opensumi/ide-extension/lib/browser/types';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';

@@ -9,10 +9,10 @@ import {
   URI,
   localize,
 } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IEditorGroup } from '@opensumi/ide-editor';
 import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType, IconType } from '@opensumi/ide-theme';
