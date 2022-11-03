@@ -21,8 +21,8 @@ jobs:
 
             Hello, @${{ github.event.issue.user.login }}, the information you provided is not enough for us to troubleshoot the problem. Please complete the issue description (refer #1165 #1141), provide gifs, screenshots, config, version. And explain the reproduction steps in detail. Thanks so much for your cooperation! The issue will be closed without any replay within 15 days.
 
-    if: github.actor != github.event.issue.user.login
     runs-on: ubuntu-latest
+    if: github.actor != github.event.issue.user.login
     steps:
       - name: Need reproduce
         uses: actions-cool/issues-helper@v3
