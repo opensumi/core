@@ -23,6 +23,8 @@ import {
   TaskDefinitionRegistryImpl,
   IApplicationService,
   IAuthenticationService,
+  AppLifeCycleServiceToken,
+  IExtensionsSchemaService,
 } from '@opensumi/ide-core-common';
 import {
   IElectronMainUIService,
@@ -42,7 +44,7 @@ import { ClientAppStateService } from '../application/application-state-service'
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ClientAppContribution } from '../common';
-import { ExtensionsPointServiceImpl, IExtensionsSchemaService } from '../extensions';
+import { ExtensionsPointServiceImpl } from '../extensions';
 import { FsProviderContribution } from '../fs';
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
@@ -88,7 +90,7 @@ import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '..
 import { IWindowService } from '../window';
 import { WindowService } from '../window/window.service';
 
-import { AppLifeCycleService, AppLifeCycleServiceToken } from './lifecycle.service';
+import { AppLifeCycleService } from './lifecycle.service';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider

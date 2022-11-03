@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { IMenuRegistry, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
-import { formatLocalize, isUndefined } from '@opensumi/ide-core-common';
+import { LifeCyclePhase, formatLocalize, isUndefined } from '@opensumi/ide-core-common';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';

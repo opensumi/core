@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { DisposableCollection, localize } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
 import { FILE_EXPLORER_WELCOME_ID } from '@opensumi/ide-file-tree-next';
 import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@opensumi/ide-main-layout';

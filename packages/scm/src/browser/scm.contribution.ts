@@ -4,7 +4,6 @@ import {
   PreferenceContribution,
   PreferenceService,
   getExternalIcon,
-  IExtensionsSchemaService,
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { Disposable, URI } from '@opensumi/ide-core-browser';
@@ -19,6 +18,7 @@ import {
   localize,
   PreferenceScope,
   formatLocalize,
+  IExtensionsSchemaService,
 } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { WorkbenchEditorService, EditorCollectionService, IEditor } from '@opensumi/ide-editor/lib/common';

@@ -7,10 +7,9 @@ import {
   ContributionProvider,
   ToolBarActionContribution,
   IToolbarRegistry,
-  IExtensionsSchemaService,
-  FrameworkKind,
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
+import { FrameworkKind, IExtensionsSchemaService } from '@opensumi/ide-core-common';
 
 import { ToolBar } from './toolbar.view';
 import { ToolBarViewService } from './toolbar.view.service';

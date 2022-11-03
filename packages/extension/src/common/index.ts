@@ -1,12 +1,7 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { createExtHostContextProxyIdentifier } from '@opensumi/ide-connection';
 import {
-  AppLifeCycleService,
-  AppLifeCycleServiceToken,
   LifeCyclePhase,
-} from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
-import { IExtensionsSchemaService } from '@opensumi/ide-core-browser/lib/extensions/extensions-point.service';
-import {
   Disposable,
   IJSONSchema,
   IDisposable,
@@ -18,8 +13,12 @@ import {
   replaceNlsField,
   ILogger,
   WithEventBus,
+  IAppLifeCycleService,
+  AppLifeCycleServiceToken,
+  Emitter,
+  IExtensionProps,
+  IExtensionsSchemaService,
 } from '@opensumi/ide-core-common';
-import { Emitter, IExtensionProps } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IconType, IIconService, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
 
@@ -308,7 +307,7 @@ export abstract class ExtensionContributesService extends WithEventBus {
   private logger: ILogger;
 
   @Autowired(AppLifeCycleServiceToken)
-  private lifecycleService: AppLifeCycleService;
+  private lifecycleService: IAppLifeCycleService;
 
   @Autowired(IExtensionsSchemaService)
   private readonly extensionsSchemaService: IExtensionsSchemaService;

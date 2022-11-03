@@ -1,10 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { getIcon, CommandService } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import {
   IToolbarActionService,
   IToolbarActionGroup,
 } from '@opensumi/ide-core-browser/lib/menu/next/toolbar-action.service';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IToolBarViewService } from '@opensumi/ide-toolbar/lib/browser';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
