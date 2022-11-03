@@ -56,6 +56,7 @@ export class WalkthroughsContributionPoint extends VSCodeContributePoint<IExtens
           URI.from({
             scheme: Schemes.walkThrough,
             authority: walkthrough.source,
+            query: walkthrough.id,
             path: '/' + walkthrough.id,
           }),
           {
