@@ -28,6 +28,7 @@ import {
   ISubmenuItem,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI, ILogger } from '@opensumi/ide-core-common';
+import { ExtensionService } from '@opensumi/ide-extension';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import {
@@ -132,6 +133,9 @@ export class MonacoClientContribution
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
+  @Autowired(ExtensionService)
+  private readonly extensionService: ExtensionService;
+
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;
   }
@@ -199,10 +203,12 @@ export class MonacoClientContribution
   }
 
   onDidStart() {
-    languageFeaturesService.completionProvider.register(
-      this.snippetSuggestProvider.registeredLanguageIds,
-      this.snippetSuggestProvider,
-    );
+    this.extensionService.eagerExtensionsActivated.promise.then(()=>{
+      languageFeaturesService.completionProvider.register(
+        this.snippetSuggestProvider.registeredLanguageIds,
+        this.snippetSuggestProvider,
+      );
+    });
   }
 
   private registerOverrideServices() {
