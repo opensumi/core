@@ -4,7 +4,7 @@ import lodashHas from 'lodash/has';
 import lodashSet from 'lodash/set';
 
 import { Autowired, Injectable } from '@opensumi/di';
-import { IJSONSchema, localize } from '@opensumi/ide-core-common';
+import { FrameworkKind, IExtensionPointDescriptor, IExtensionsSchemaService } from '@opensumi/ide-core-common';
 
 import { IJSONSchemaRegistry } from '../monaco';
 
@@ -13,21 +13,6 @@ import { VSCodeExtensionPackageSchema } from './schema/vscodeExtensionPackageSch
 
 export const EXTENSION_JSON_URI = 'vscode://schemas/vscode-extensions';
 export const OPENSUMI_EXTENSION_JSON_URI = 'vscode://schemas/opensumi-extensions';
-
-export type FrameworkKind = 'vscode' | 'opensumi';
-
-export interface IExtensionPointDescriptor {
-  extensionPoint: string;
-  jsonSchema: IJSONSchema;
-  frameworkKind?: FrameworkKind[];
-}
-
-export const IExtensionsSchemaService = Symbol('IExtensionsSchemaService');
-
-export interface IExtensionsSchemaService {
-  registerExtensionPoint(desc: IExtensionPointDescriptor): void;
-  appendExtensionPoint(points: string[], desc: IExtensionPointDescriptor): void;
-}
 
 @Injectable()
 export class ExtensionsPointServiceImpl implements IExtensionsSchemaService {

@@ -24,6 +24,7 @@ import {
   IApplicationService,
   IAuthenticationService,
   AppLifeCycleServiceToken,
+  IExtensionsSchemaService,
 } from '@opensumi/ide-core-common';
 import {
   IElectronMainUIService,
@@ -43,7 +44,7 @@ import { ClientAppStateService } from '../application/application-state-service'
 import { ApplicationService } from '../application/application.service';
 import { AuthenticationService } from '../authentication/authentication.service';
 import { ClientAppContribution } from '../common';
-import { ExtensionsPointServiceImpl, IExtensionsSchemaService } from '../extensions';
+import { ExtensionsPointServiceImpl } from '../extensions';
 import { FsProviderContribution } from '../fs';
 import { KeybindingContribution, KeybindingService, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl, KeyValidator } from '../keyboard';
