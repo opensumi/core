@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
-import { URI, path } from '@opensumi/ide-core-common';
+import { URI, path, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser/static.definition';
 import { ThemeContribution, IIconService, FontIconDefinition, IconFontFamily } from '@opensumi/ide-theme';
 

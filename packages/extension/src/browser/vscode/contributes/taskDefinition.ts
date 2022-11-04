@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IJSONSchema, IJSONSchemaMap, localize, ILogger } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
-import { ITaskDefinitionRegistry } from '@opensumi/ide-core-common';
+import { LifeCyclePhase, ITaskDefinitionRegistry } from '@opensumi/ide-core-common';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 

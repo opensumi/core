@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
-import { localize, URI, Disposable } from '@opensumi/ide-core-common';
+import { LifeCyclePhase, localize, URI, Disposable } from '@opensumi/ide-core-common';
 import { GrammarsContribution } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
 

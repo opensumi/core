@@ -1,17 +1,8 @@
 import { Injectable } from '@opensumi/di';
-import { Emitter } from '@opensumi/ide-core-common';
-
-export const AppLifeCycleServiceToken = Symbol('AppLifeCycleService');
-
-export const enum LifeCyclePhase {
-  Prepare = 1,
-  Initialize = 2,
-  Starting = 3,
-  Ready = 4,
-}
+import { Emitter, IAppLifeCycleService, LifeCyclePhase } from '@opensumi/ide-core-common';
 
 @Injectable()
-export class AppLifeCycleService {
+export class AppLifeCycleService implements IAppLifeCycleService {
   private onDidChangeLifecyclePhaseEmitter: Emitter<LifeCyclePhase> = new Emitter();
   public onDidLifeCyclePhaseChange = this.onDidChangeLifecyclePhaseEmitter.event;
 

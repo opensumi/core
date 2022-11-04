@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { CommandRegistry, AppConfig } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { ThemeType, IIconService, IconType } from '@opensumi/ide-theme';
 
 import {

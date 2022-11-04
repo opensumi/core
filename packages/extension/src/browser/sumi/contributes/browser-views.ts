@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
-import { DisposableCollection, getDebugLogger } from '@opensumi/ide-core-common';
+import { LifeCyclePhase, DisposableCollection, getDebugLogger } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService } from '@opensumi/ide-theme';
 

@@ -9,7 +9,7 @@ import {
   path,
   GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
+import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 

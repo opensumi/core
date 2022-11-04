@@ -11,6 +11,8 @@ export const defaultIconfont = {
   'arrow-down': 'arrow-down',
   'arrow-right': 'arrow-right',
   'arrowdown': 'arrowdown',
+  'arrowleft': 'arrowleft',
+  'arrowright': 'arrowright',
   'arrowup': 'arrowup',
   'basement': 'basement',
   'basement-fileicon': 'basement-fileicon',
@@ -96,6 +98,7 @@ export const defaultIconfont = {
   'gitlab': 'gitlab',
   'global-search': 'global-search',
   'go': 'go',
+  'hex': 'hex',
   'huoban': 'huoban',
   'huoban-blue': 'huoban-blue',
   'info-circle': 'info-circle',
@@ -173,5 +176,5 @@ export const defaultIconfont = {
   'warning-circle': 'warning-circle',
   'warning-circle-fill': 'warning-circle-fill',
   'window-maximize': 'window-maximize',
-  'hex': 'hex'
+  'zsh': 'zsh',
 };

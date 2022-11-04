@@ -21,12 +21,11 @@ import {
   PreferenceService,
   IPreferenceSettingsService,
   COMMON_COMMANDS,
-  IExtensionsSchemaService,
 } from '@opensumi/ide-core-browser';
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { URI } from '@opensumi/ide-core-common';
+import { IExtensionsSchemaService, URI } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
   IEditorFeatureRegistry,

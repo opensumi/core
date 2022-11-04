@@ -37,6 +37,7 @@ export abstract class PromptHandle {
   private _hasValidateElement = false;
   private _hasAddonAfter = false;
   private _validateClassName: string;
+  private _inComposition = false;
 
   // event
   private onChangeEmitter: Emitter<string> = new Emitter();
@@ -58,10 +59,13 @@ export abstract class PromptHandle {
     this.$.setAttribute('autoComplete', 'off');
     this.ProxiedInput = bindInputElement(this.$);
     this.$.addEventListener('click', this.handleClick);
+    this.$.addEventListener('dblclick', this.handleDBClick);
     this.$.addEventListener('keyup', this.handleKeyup);
     this.$.addEventListener('keydown', this.handleKeydown);
     this.$.addEventListener('focus', this.handleFocus);
     this.$.addEventListener('blur', this.handleBlur);
+    this.$.addEventListener('compositionstart', this.handleCompositionstart);
+    this.$.addEventListener('compositionend', this.handleCompositionend);
     this.$validate = document.createElement('div');
     this.$validate.setAttribute('style', 'top: 100%;');
     this.$addonAfter = document.createElement('div');
@@ -206,11 +210,29 @@ export abstract class PromptHandle {
     ev.stopPropagation();
   };
 
-  private handleKeyup = (ev) => {
+  private handleDBClick = (ev) => {
+    ev.stopPropagation();
+  };
+
+  private handleCompositionstart = () => {
+    this._inComposition = true;
+  };
+
+  private handleCompositionend = () => {
+    this._inComposition = false;
+  };
+
+  private handleKeyup = () => {
+    if (this._inComposition) {
+      return;
+    }
     this.onChangeEmitter.fire(this.$.value);
   };
 
   private handleKeydown = async (ev) => {
+    if (this._inComposition) {
+      return;
+    }
     if (ev.key === 'Escape') {
       const res: IAsyncResult<boolean>[] = await this.onCancelEmitter.fireAndAwait(this.$.value);
       // 当有回调函数报错或返回结果为false时，终止后续操作

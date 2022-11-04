@@ -126,7 +126,7 @@ export const AccordionSection = ({
 
   const viewState = useViewState(viewId, contentRef, true);
   const progressService: IProgressService = useInjectable(IProgressService);
-  const indicator = progressService.getIndicator(viewId)!;
+  const indicator = progressService.getIndicator(viewId);
   const Component: any = children;
   return (
     <div className={styles.kt_split_panel} data-view-id={viewId}>
@@ -167,7 +167,7 @@ export const AccordionSection = ({
         style={bodyStyle}
         ref={contentRef}
       >
-        <ProgressBar className={styles.progressBar} progressModel={indicator.progressModel} />
+        <ProgressBar className={styles.progressBar} progressModel={indicator!.progressModel} />
         <ErrorBoundary>
           {panelMessage && <span className={styles.kt_split_panel_message}>{panelMessage}</span>}
           <Component {...initialProps} viewState={viewState} />

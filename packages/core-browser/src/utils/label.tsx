@@ -16,12 +16,12 @@ export function transformLabelWithCodicon(
       icon = transformer(e);
     }
     if (icon && transformer) {
-      return <Icon className={icon} style={iconStyles} />;
+      return <Icon className={icon} style={iconStyles} key={icon} />;
     } else if (ICON_REGX.test(e)) {
       const newStr = e.replaceAll(/^\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)$/i, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
       return transformLabelWithCodicon(newStr, iconStyles, transformer);
     } else {
-      return <span>{e}</span>;
+      return <span key={e}>{e}</span>;
     }
   });
 }

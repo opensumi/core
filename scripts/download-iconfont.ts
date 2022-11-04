@@ -11,7 +11,7 @@ import chalk from 'chalk';
 
 import { IDE_ICONFONT_CN_CSS } from '../packages/core-browser/src/style/icon/ide-iconfont';
 import { defaultIconfont } from '../packages/components/src/icon/iconfont/iconMap';
-import pkg from '../package.json';
+import pkg from '../packages/core-common/package.json';
 
 const targetDir = path.resolve(__dirname, '../packages/components/src/icon/iconfont');
 

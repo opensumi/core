@@ -88,7 +88,7 @@ export const Dialog: React.FC<IDialogProps> = ({
           )}
           <div className={'kt-dialog-content_area'}>
             {type !== 'basic' && title && <p className={'kt-dialog-content_title'}>{title}</p>}
-            {typeof message === 'string' ? <span className={'kt-dialog-message'}>{message}</span> : message}
+            <span className={'kt-dialog-message'}>{message}</span>
           </div>
           {closable && type !== 'basic' && (
             <button className={clx('kt-dialog-closex', getIcon('close'))} onClick={onClose}></button>
