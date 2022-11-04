@@ -1,12 +1,32 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { Disposable, Emitter, Event, LinkedText, parseLinkedText, URI } from '@opensumi/ide-core-browser';
-import { BinaryBuffer, FileType, ILogger } from '@opensumi/ide-core-common';
+import {
+  Disposable,
+  Emitter,
+  Event,
+  IContextKeyService,
+  LinkedText,
+  parseLinkedText,
+  PreferenceService,
+  URI,
+} from '@opensumi/ide-core-browser';
+import {
+  BinaryBuffer,
+  CommandService,
+  ExtensionActivateEvent,
+  FileType,
+  IEventBus,
+  IExtensionActivateEventPayload,
+  ILogger,
+} from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { dirname } from '@opensumi/ide-utils/lib/path';
-import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyExpr,
+  ContextKeyExpression,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-import { IWalkthrough, IWalkthroughStep } from '../common';
+import { IWalkthrough, IWalkthroughStep, IResolvedWalkthroughStep } from '../common';
 import { IExtensionContributions, IExtensionWalkthroughStep } from '../common/vscode';
 
 import { AbstractExtInstanceManagementService } from './types';
@@ -19,14 +39,23 @@ const parseDescription = (desc: string): LinkedText[] =>
 
 @Injectable({ multiple: false })
 export class WalkthroughsService extends Disposable {
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
-
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionManageService: AbstractExtInstanceManagementService;
 
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
+
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   @Autowired(IFileServiceClient)
-  private fileSystem: FileServiceClient;
+  private readonly fileSystem: FileServiceClient;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  @Autowired(IEventBus)
+  private readonly eventBus: IEventBus;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -35,19 +64,135 @@ export class WalkthroughsService extends Disposable {
   readonly onDidOpenWalkthrough: Event<string> = this._onDidOpenWalkthrough.event;
   private readonly _onDidAddWalkthrough = new Emitter<IWalkthrough>();
   readonly onDidAddWalkthrough: Event<IWalkthrough> = this._onDidAddWalkthrough.event;
+  private readonly _onDidProgressStep = new Emitter<IResolvedWalkthroughStep>();
+  readonly onDidProgressStep: Event<IResolvedWalkthroughStep> = this._onDidProgressStep.event;
 
-  private categoryVisibilityContextKeys = new Set<string>();
+  private readonly sessionEvents = new Set<string>();
+  private readonly categoryVisibilityContextKeys = new Set<string>();
+  private readonly stepCompletionContextKeyExpressions = new Set<ContextKeyExpression>();
+  private readonly stepCompletionContextKeys = new Set<string>();
 
-  private contributions = new Map<string, IWalkthrough>();
-  private steps = new Map<string, IWalkthroughStep>();
-  private extensionSteps = new Map<string, IExtensionWalkthroughStep>();
+  private readonly completionListeners = new Map<string, Set<string>>();
+  private readonly contributions = new Map<string, IWalkthrough>();
+  private readonly steps = new Map<string, IWalkthroughStep>();
+  private readonly extensionSteps = new Map<string, IExtensionWalkthroughStep>();
+
+  constructor() {
+    super();
+
+    this.initCompletionEventListeners();
+  }
 
   /**
-   * completionEvents 还未实现
+   * 注册各种 completionEvents 的监听
+   * 可能来自 command 命令调用完成后发出、onView 视图切换后发出等
+   */
+  private initCompletionEventListeners() {
+    this.addDispose(
+      this.commandService.onDidExecuteCommand(({ commandId }) => {
+        this.progressByEvent(`onCommand:${commandId}`);
+      }),
+    );
+
+    this.addDispose(
+      this.contextKeyService.onDidChangeContext(({ payload }) => {
+        if (payload.affectsSome(this.stepCompletionContextKeys)) {
+          this.stepCompletionContextKeyExpressions.forEach((expression) => {
+            if (payload.affectsSome(new Set(expression.keys())) && this.contextKeyService.match(expression)) {
+              this.progressByEvent('onContext:' + expression.serialize());
+            }
+          });
+        }
+      }),
+    );
+
+    this.addDispose(
+      this.eventBus.on(ExtensionActivateEvent, ({ payload: { topic, data } }) => {
+        if (topic === 'onView') {
+          this.progressByEvent('onView:' + data);
+        }
+      }),
+    );
+
+    this.addDispose(
+      this.preferenceService.onPreferenceChanged(({ preferenceName }) => {
+        if (preferenceName) {
+          this.progressByEvent('onSettingChanged:' + preferenceName);
+        }
+      }),
+    );
+  }
+
+  /**
+   * 处理 completionEvents
    * 该事件主要用于处理当用户做了某些操作之后给当前 step 设置成 completion 的状态（也就是左边的 checkbox 打勾勾）
    */
   private registerDoneListeners(step: IWalkthroughStep) {
-    // not implement
+    if (!step.completionEvents.length) {
+      step.completionEvents.push('stepSelected');
+    }
+
+    for (let event of step.completionEvents) {
+      const [_, eventType, argument] = /^([^:]*):?(.*)$/.exec(event) ?? [];
+
+      if (!eventType) {
+        this.logger.error(`无法处理 step 为 ${step.id} 的 completionEvent 事件: ${event}`);
+        continue;
+      }
+
+      switch (eventType) {
+        case 'onLink':
+        case 'onEvent':
+        case 'onView':
+        case 'onSettingChanged':
+          break;
+        case 'onContext': {
+          const expression = ContextKeyExpr.deserialize(argument);
+          if (expression) {
+            this.stepCompletionContextKeyExpressions.add(expression);
+            expression.keys().forEach((key) => this.stepCompletionContextKeys.add(key));
+            event = eventType + ':' + expression.serialize();
+            if (this.contextKeyService.match(expression)) {
+              this.sessionEvents.add(event);
+            }
+          } else {
+            this.logger.error(`无法解析 step 为 ${step.id} 的 context: ${expression}`);
+          }
+          break;
+        }
+        case 'onStepSelected':
+        case 'stepSelected':
+          event = 'stepSelected:' + step.id;
+          break;
+        case 'onCommand':
+          event = eventType + ':' + argument.replace(/^toSide:/, '');
+          break;
+        case 'onExtensionInstalled':
+        case 'extensionInstalled':
+          event = 'extensionInstalled:' + argument.toLowerCase();
+          break;
+        default:
+          this.logger.error(`${event} 事件未知`);
+          continue;
+      }
+
+      this.registerCompletionListener(event, step);
+      if (this.sessionEvents.has(event)) {
+        this.progressStep(step.id);
+      }
+    }
+  }
+
+  private getStep(id: string): IWalkthroughStep | undefined {
+    const step = this.steps.get(id);
+    return step;
+  }
+
+  private registerCompletionListener(event: string, step: IWalkthroughStep) {
+    if (!this.completionListeners.has(event)) {
+      this.completionListeners.set(event, new Set());
+    }
+    this.completionListeners.get(event)?.add(step.id);
   }
 
   private registerWalkthrough(descriptor: IWalkthrough): void {
@@ -60,7 +205,8 @@ export class WalkthroughsService extends Disposable {
 
     descriptor.steps.forEach((step) => {
       if (this.steps.has(step.id)) {
-        throw Error('Attempting to register step with id ' + step.id + ' twice. Second is dropped.');
+        this.logger.error(`${step.id} 重复注册`);
+        return;
       }
       this.steps.set(step.id, step);
       step.when.keys().forEach((key) => this.categoryVisibilityContextKeys.add(key));
@@ -68,6 +214,27 @@ export class WalkthroughsService extends Disposable {
     });
 
     descriptor.when.keys().forEach((key) => this.categoryVisibilityContextKeys.add(key));
+  }
+
+  public progressByEvent(event: string): void {
+    if (this.sessionEvents.has(event)) {
+      return;
+    }
+
+    this.sessionEvents.add(event);
+    this.completionListeners.get(event)?.forEach((id) => this.progressStep(id));
+  }
+
+  public progressStep(id: string) {
+    const step = this.getStep(id);
+    if (!step) {
+      return;
+    }
+
+    this._onDidProgressStep.fire({
+      ...step,
+      done: false,
+    });
   }
 
   public openWalkthroughEditor(id: string): void {

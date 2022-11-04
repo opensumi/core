@@ -2,7 +2,7 @@ import clx from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button, CheckBox } from '@opensumi/ide-components';
-import { IContextKeyService, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
+import { IContextKeyService, ILink, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { renderLabelWithIcons } from '@opensumi/ide-core-browser/lib/utils/iconLabels';
 import { IResource } from '@opensumi/ide-editor';
 import { Markdown } from '@opensumi/ide-markdown';
@@ -20,6 +20,14 @@ export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ reso
 
   const [walkthrough, setWalkthrough] = useState<IWalkthrough | undefined>();
   const [currentStepId, setCurrentStepId] = useState<string>();
+
+  useEffect(() => {
+    const disposable = walkthroughsService.onDidProgressStep((event) => {
+      // not implement
+    });
+
+    return () => disposable.dispose();
+  }, []);
 
   useEffect(() => {
     if (walkthrough && walkthrough.steps.length > 0) {
@@ -90,7 +98,17 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
   onCheck,
 }) => {
   const openerService: IOpenerService = useInjectable(IOpenerService);
+  const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);
   const { description } = step;
+
+  const handleOpen = (node: ILink) => {
+    const { href } = node;
+    openerService.open(href);
+
+    if (href.startsWith('https://') || href.startsWith('http://')) {
+      walkthroughsService.progressByEvent('onLink:' + href);
+    }
+  };
 
   const getDescriptionComplexElements = useCallback(() => {
     if (description.length === 0) {
@@ -102,7 +120,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
         const node = desc.nodes[0];
         lineElements.push(
           <div key={lineElements.length} title={node.title}>
-            <Button onClick={() => openerService.open(node.href)}>{renderLabelWithIcons(node.label)}</Button>
+            <Button onClick={() => handleOpen(node)}>{renderLabelWithIcons(node.label)}</Button>
           </div>,
         );
       } else {
@@ -111,7 +129,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
             return node;
           } else {
             return (
-              <a key={node.label + '#' + idx} title={node.title} onClick={() => openerService.open(node.href)}>
+              <a key={node.label + '#' + idx} title={node.title} onClick={() => handleOpen(node)}>
                 {node.label}
               </a>
             );
@@ -128,13 +146,17 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
     );
   }, [description]);
 
+  const handleCheckboxChange = () => {
+    walkthroughsService.progressByEvent('stepSelected:' + step.id);
+  };
+
   const renderLabel = useCallback(() => renderLabelWithIcons(step.title), [step.title]);
 
   return (
     <div className={clx(styles.getting_started_step, isExpanded && styles.expanded)} onClick={() => onCheck(step.id)}>
-      {/* <div className={styles.checkbox}>
+      <div className={styles.checkbox}>
         <CheckBox id={step.id} onChange={handleCheckboxChange} checked={false}></CheckBox>
-      </div> */}
+      </div>
       <div className={styles.step_container}>
         <h3 className={styles.step_title}>{renderLabel()}</h3>
         {isExpanded && getDescriptionComplexElements()}
