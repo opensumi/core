@@ -198,13 +198,6 @@ export class MonacoClientContribution
     this.initTextmateService();
   }
 
-  onDidStart() {
-    languageFeaturesService.completionProvider.register(
-      this.snippetSuggestProvider.registeredLanguageIds,
-      this.snippetSuggestProvider,
-    );
-  }
-
   private registerOverrideServices() {
     const codeEditorService = this.overrideServicesRegistry.getRegisteredService<AbstractCodeEditorService>(
       ServiceNames.CODE_EDITOR_SERVICE,

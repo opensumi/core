@@ -16,6 +16,7 @@ import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { SnippetParser } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/snippet/browser/snippetParser';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+import { languageFeaturesService } from './monaco-api/languages';
 import { ITextModel } from './monaco-api/types';
 
 const { Path } = path;
@@ -288,6 +289,10 @@ export class MonacoSnippetSuggestProvider implements monaco.languages.Completion
     }
 
     return toDispose;
+  }
+
+  registerSnippetsProvider() {
+    return languageFeaturesService.completionProvider.register(this.registeredLanguageIds, this);
   }
 }
 
