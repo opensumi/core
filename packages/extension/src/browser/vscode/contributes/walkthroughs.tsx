@@ -5,10 +5,9 @@ import { CommandService, CUSTOM_EDITOR_SCHEME, LifeCyclePhase, Schemes, URI } fr
 import { ResourceService } from '@opensumi/ide-editor';
 import { IResource } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
-import { Contributes, LifeCycle, VSCodeContributePoint } from '@opensumi/ide-extension';
-import { IExtensionWalkthrough } from '@opensumi/ide-extension/lib/common/vscode';
 
-import { IWalkthrough } from '../../../common';
+import { Contributes, IWalkthrough, LifeCycle, VSCodeContributePoint } from '../../../common';
+import { IExtensionWalkthrough } from '../../../common/vscode';
 import { WalkthroughsEditorView } from '../../components/walkthroughs-view';
 import { WalkthroughsService } from '../../walkthroughs.service';
 
