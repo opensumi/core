@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-components';
 import { EDITOR_COMMANDS } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-browser/lib/bootstrap/lifecycle.service';
-import { CommandService, CUSTOM_EDITOR_SCHEME, Schemes, URI } from '@opensumi/ide-core-common';
+import { CommandService, CUSTOM_EDITOR_SCHEME, LifeCyclePhase, Schemes, URI } from '@opensumi/ide-core-common';
 import { ResourceService } from '@opensumi/ide-editor';
 import { IResource } from '@opensumi/ide-editor';
 import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';

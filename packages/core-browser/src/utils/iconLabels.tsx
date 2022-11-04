@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { getExternalIcon } from '@opensumi/ide-core-browser';
+import { getExternalIcon } from '../style/icon/icon';
 
 export namespace CSSIcon {
   export const iconNameSegment = '[A-Za-z0-9]+';

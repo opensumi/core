@@ -42,6 +42,10 @@ export class WalkthroughsService extends Disposable {
   private steps = new Map<string, IWalkthroughStep>();
   private extensionSteps = new Map<string, IExtensionWalkthroughStep>();
 
+  /**
+   * completionEvents 还未实现
+   * 该事件主要用于处理当用户做了某些操作之后给当前 step 设置成 completion 的状态（也就是左边的 checkbox 打勾勾）
+   */
   private registerDoneListeners(step: IWalkthroughStep) {
     // not implement
   }

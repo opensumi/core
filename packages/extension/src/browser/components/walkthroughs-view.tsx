@@ -2,7 +2,7 @@ import clx from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button, CheckBox } from '@opensumi/ide-components';
-import { IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
+import { IContextKeyService, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { renderLabelWithIcons } from '@opensumi/ide-core-browser/lib/utils/iconLabels';
 import { IResource } from '@opensumi/ide-editor';
 import { Markdown } from '@opensumi/ide-markdown';
@@ -15,6 +15,7 @@ import * as styles from './walkthroughs-view.module.less';
 
 export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ resource: { uri } }) => {
   const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);
+  const contextKeyService: IContextKeyService = useInjectable(IContextKeyService);
   const { query: id, authority: extensionId } = uri;
 
   const [walkthrough, setWalkthrough] = useState<IWalkthrough | undefined>();
@@ -58,21 +59,25 @@ export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ reso
           <div className={styles.getting_started_detail_container}>
             <div className={styles.step_list_container}>
               {walkthrough
-                ? walkthrough.steps.map((s) => (
-                    <StepItem
-                      key={s.id}
-                      step={s}
-                      isExpanded={s.id === currentStepId}
-                      onCheck={setCurrentStepId}
-                    ></StepItem>
-                  ))
+                ? walkthrough.steps
+                    .filter((s) => contextKeyService.match(s.when))
+                    .map((s) => (
+                      <StepItem
+                        key={s.id}
+                        step={s}
+                        isExpanded={s.id === currentStepId}
+                        onCheck={setCurrentStepId}
+                      ></StepItem>
+                    ))
                 : null}
             </div>
           </div>
         </div>
         {/* 右侧资源视图 */}
         <div className={styles.getting_started_media}>
-          {currentStepId && <Media media={getCurrentStep()} extensionId={extensionId} stepId={currentStepId}></Media>}
+          {currentStepId && (
+            <MediaContainer media={getCurrentStep()} extensionId={extensionId} stepId={currentStepId}></MediaContainer>
+          )}
         </div>
       </div>
     </div>
@@ -127,9 +132,9 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
 
   return (
     <div className={clx(styles.getting_started_step, isExpanded && styles.expanded)} onClick={() => onCheck(step.id)}>
-      <div className={styles.checkbox}>
-        <CheckBox id={step.id} onChange={() => {}} checked={false}></CheckBox>
-      </div>
+      {/* <div className={styles.checkbox}>
+        <CheckBox id={step.id} onChange={handleCheckboxChange} checked={false}></CheckBox>
+      </div> */}
       <div className={styles.step_container}>
         <h3 className={styles.step_title}>{renderLabel()}</h3>
         {isExpanded && getDescriptionComplexElements()}
@@ -141,14 +146,13 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
 /**
  * media 有 img、svg、markdown 三种格式
  */
-const Media: React.FC<{ media: IWalkthroughStep['media'] | undefined; extensionId: string; stepId: string }> = ({
-  media,
-  extensionId,
-  stepId,
-}) => {
+const MediaContainer: React.FC<{
+  media: IWalkthroughStep['media'] | undefined;
+  extensionId: string;
+  stepId: string;
+}> = ({ media, extensionId, stepId }) => {
   const themeService: IThemeService = useInjectable(IThemeService);
   const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);
-  const openerService: IOpenerService = useInjectable(IOpenerService);
   const [svgContent, setSvgContent] = useState<string>('');
   const [markdownContent, setMarkdownContent] = useState<string>('');
 
@@ -206,10 +210,27 @@ const Media: React.FC<{ media: IWalkthroughStep['media'] | undefined; extensionI
   if (media.type === 'markdown') {
     return (
       <React.Fragment>
-        <Markdown content={markdownContent} onLinkClick={(uri) => openerService.open(uri)}></Markdown>
+        <MarkdownMedia content={markdownContent} media={media}></MarkdownMedia>
       </React.Fragment>
     );
   }
 
   return null;
+};
+
+const MarkdownMedia: React.FC<{ content: string; media: IWalkthroughStep['media'] }> = ({ content, media }) => {
+  const openerService: IOpenerService = useInjectable(IOpenerService);
+  if (media.type !== 'markdown') {
+    return null;
+  }
+
+  const relativePath = useCallback(() => media.base.resolve('/').toString(), [media, content]);
+
+  return (
+    <Markdown
+      content={content}
+      options={{ baseUrl: relativePath() }}
+      onLinkClick={(uri) => openerService.open(uri)}
+    ></Markdown>
+  );
 };
