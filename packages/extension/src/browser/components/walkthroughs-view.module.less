@@ -10,65 +10,143 @@
   font-size: 13px;
 
   .getting_started_detailsContent {
-    display: flex;
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr 8fr;
+    grid-template-rows: calc(25% - 100px) auto auto 1fr auto;
+    grid-template-areas:
+      '. back . media .'
+      '. title . media .'
+      '. steps . media .'
+      '. . . media .';
 
-    .getting_started_left {
+    // 左侧顶部标题和简介
+    .category_container {
+      grid-area: title;
+      align-self: flex-end;
       display: flex;
-      flex: 1;
-      flex-direction: column;
-      align-items: center;
+      padding: 10px 0 20px 12px;
+      margin: 0;
+      min-height: auto;
+      width: calc(100% - 16px);
+      font-size: 13px;
+      left: -3px;
+      text-align: left;
 
-      // 左侧顶部标题和简介
-      .category_container {
-        .category_icon {
-        }
-
-        .category_description_container {
-        }
-
-        .category_title {
-        }
-
-        .category_description {
-        }
-
-        .steps_container {
-        }
-
-        .getting_started_detail_container {
+      .category_icon {
+        img {
+          margin-right: 10px;
+          margin-left: 10px;
+          max-width: 32px;
+          max-height: 32px;
         }
       }
 
-      // step 列表
-      .step_list_container {
+      .category_description_container {
+        .category_title {
+          display: -webkit-box;
+          font-weight: 400;
+          line-height: 26px;
+          margin: 0 0 4px;
+          overflow: hidden;
+        }
+
+        .category_description {
+          color: var(--descriptionForeground);
+        }
+      }
+    }
+
+    .steps_container {
+      height: 100%;
+      grid-area: steps;
+      overflow: hidden;
+      position: relative;
+
+      .getting_started_detail_container {
         overflow: hidden;
-        position: relative;
-        height: 100%;
+        height: inherit;
+        color: var(--foreground);
 
-        .getting_started_step {
-          display: flex;
-        }
+        // step 列表
+        .step_list_container {
+          overflow-y: auto;
+          height: 100%;
 
-        .expanded {
-        }
+          .getting_started_step {
+            display: flex;
+            width: 100%;
+            margin: 4px 0;
+            overflow: hidden;
+            cursor: pointer;
+            border: none;
+            color: inherit;
+            text-align: left;
+            padding: 16px;
+            font-size: 13px;
+            font-family: inherit;
 
-        .checkbox {
-        }
+            &:not(.expanded) {
+              background: none;
+              opacity: 0.8;
+              height: 54px;
+            }
 
-        .step_container {
-        }
+            &.expanded {
+              cursor: default !important;
+              background-color: var(--editorWidget-background);
+            }
 
-        .step_title {
-        }
+            .checkbox {
+            }
 
-        .step_description_container {
+            .step_container {
+              width: 100%;
+
+              .step_title {
+                font-size: 13px;
+                font-weight: 700;
+                margin: 0;
+                overflow: hidden;
+                color: inherit;
+              }
+            }
+
+            .step_description_container {
+              button {
+                width: 100%;
+
+                &:not(:last-of-type) {
+                  margin-bottom: 6px;
+                }
+              }
+            }
+          }
         }
       }
     }
 
     // media
     .getting_started_media {
-      flex: 1;
+      grid-area: title-start / media-start / steps-end / media-end;
+      align-self: unset;
+
+      .media_svg_container {
+        position: relative;
+        height: 100%;
+        width: 100%;
+
+        svg {
+          position: absolute;
+          height: 100%;
+          width: 80%;
+          left: 50%;
+          top: 50%;
+          max-width: 530px;
+          min-width: 350px;
+          transform: translate(-50%, -50%);
+        }
+      }
     }
   }
 }

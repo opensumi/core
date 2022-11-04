@@ -123,6 +123,7 @@ export interface IExtensionNodeClientService {
   restartExtProcessByClient(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
+  getOpenVSXRegistry(): Promise<string>;
 }
 
 export type ExtensionHostType = 'node' | 'worker';
@@ -618,7 +619,9 @@ export interface IWalkthroughStep {
     | { type: 'markdown'; path: URI; base: URI; root: URI };
 }
 
-interface StepProgress { done: boolean }
+interface StepProgress {
+  done: boolean;
+}
 
 export interface IResolvedWalkthroughStep extends IWalkthroughStep, StepProgress {}
 

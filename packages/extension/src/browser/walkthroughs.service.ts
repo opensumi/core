@@ -1,11 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { Disposable, Emitter, Event, LinkedText, parseLinkedText, URI } from '@opensumi/ide-core-browser';
-import { ILogger } from '@opensumi/ide-core-common';
+import { BinaryBuffer, FileType, ILogger } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { dirname } from '@opensumi/ide-utils/lib/path';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { IWalkthrough, IWalkthroughStep } from '../common';
-import { IExtensionContributions } from '../common/vscode';
+import { IExtensionContributions, IExtensionWalkthroughStep } from '../common/vscode';
 
 import { AbstractExtInstanceManagementService } from './types';
 
@@ -21,7 +23,10 @@ export class WalkthroughsService extends Disposable {
   private injector: Injector;
 
   @Autowired(AbstractExtInstanceManagementService)
-  protected readonly extensionManageService: AbstractExtInstanceManagementService;
+  private readonly extensionManageService: AbstractExtInstanceManagementService;
+
+  @Autowired(IFileServiceClient)
+  private fileSystem: FileServiceClient;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -35,6 +40,7 @@ export class WalkthroughsService extends Disposable {
 
   private contributions = new Map<string, IWalkthrough>();
   private steps = new Map<string, IWalkthroughStep>();
+  private extensionSteps = new Map<string, IExtensionWalkthroughStep>();
 
   private registerDoneListeners(step: IWalkthroughStep) {
     // not implement
@@ -68,21 +74,43 @@ export class WalkthroughsService extends Disposable {
     return this.contributions.get(id);
   }
 
+  public getStepsByExtension(id: string): IExtensionWalkthroughStep | undefined {
+    return this.extensionSteps.get(id);
+  }
+
   public getWalkthroughs(): IWalkthrough[] {
     return Array.from(this.contributions.values());
   }
 
-  public registerExtensionWalkthroughContributions(
+  // 直接读取插件本身的本地资源
+  public async getFileContent(extensionId: string, uri: string): Promise<BinaryBuffer> {
+    const empty = BinaryBuffer.alloc(0);
+    const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
+    if (!extension || !extension.uri) {
+      return empty;
+    }
+
+    const path = URI.from(extension.uri!).resolve(uri).toString();
+    const stat = await this.fileSystem.getFileStat(path);
+    if (stat && stat.type === FileType.File) {
+      const { content } = await this.fileSystem.readFile(path);
+      return content;
+    }
+
+    return empty;
+  }
+
+  public async registerExtensionWalkthroughContributions(
     extensionId: string,
     walkthrough: Exclude<IExtensionContributions['walkthroughs'], undefined>[number],
-  ): void {
+  ): Promise<void> {
     const extensionDescriptor = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
     if (!extensionDescriptor) {
       return;
     }
 
     const convertFileURI = (path: string) =>
-      path.startsWith('https://') ? URI.parse(path) : URI.from(extensionDescriptor.uri!).resolve(path);
+      path.startsWith('https://') ? URI.parse(path) : URI.from(extensionDescriptor.extensionLocation).resolve(path);
 
     const convertFileURIWithTheme = (
       path: string | { hc: string; hcLight?: string; dark: string; light: string },
@@ -130,7 +158,7 @@ export class WalkthroughsService extends Disposable {
             type: 'markdown',
             path: convertFileURI(step.media.markdown),
             base: convertFileURI(dirname(step.media.markdown)),
-            root: URI.from(extensionDescriptor.uri!),
+            root: URI.from(extensionDescriptor.extensionLocation),
           };
         } else if (step.media.svg) {
           media = {
@@ -139,6 +167,8 @@ export class WalkthroughsService extends Disposable {
             altText: step.media.svg,
           };
         }
+
+        this.extensionSteps.set(fullyQualifiedID, step);
 
         return {
           description,
@@ -152,6 +182,12 @@ export class WalkthroughsService extends Disposable {
         };
       });
 
+    let icon = walkthrough.icon
+      ? URI.from(extensionDescriptor.extensionLocation).resolve(walkthrough.icon)
+      : extensionDescriptor.icon;
+    if (!icon) {
+      icon = await extensionDescriptor.getDefaultIcon();
+    }
     const walkthoughDescriptor: IWalkthrough = {
       description: walkthrough.description,
       title: walkthrough.title,
@@ -162,7 +198,7 @@ export class WalkthroughsService extends Disposable {
       steps,
       icon: {
         type: 'image',
-        path: walkthrough.icon || '',
+        path: icon,
       },
       when: ContextKeyExpr.deserialize(walkthrough.when) ?? ContextKeyExpr.true(),
     } as const;

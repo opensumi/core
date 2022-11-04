@@ -4,22 +4,18 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, CheckBox } from '@opensumi/ide-components';
 import { IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
 import { renderLabelWithIcons } from '@opensumi/ide-core-browser/lib/utils/iconLabels';
-import { FileType } from '@opensumi/ide-core-common';
 import { IResource } from '@opensumi/ide-editor';
-import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { FileServiceClient } from '@opensumi/ide-file-service/lib/browser/file-service-client';
 import { Markdown } from '@opensumi/ide-markdown';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import { IWalkthrough, IWalkthroughStep } from '../../common';
 import { WalkthroughsService } from '../walkthroughs.service';
 
-
 import * as styles from './walkthroughs-view.module.less';
 
 export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ resource: { uri } }) => {
   const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);
-  const { query: id } = uri;
+  const { query: id, authority: extensionId } = uri;
 
   const [walkthrough, setWalkthrough] = useState<IWalkthrough | undefined>();
   const [currentStepId, setCurrentStepId] = useState<string>();
@@ -39,41 +35,44 @@ export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ reso
     }
   }, [id]);
 
-  const getCurrentStep = useCallback(() => walkthrough && walkthrough.steps.find((s) => s.id === currentStepId)?.media, [currentStepId, walkthrough]);
+  const getCurrentStep = useCallback(
+    () => walkthrough && walkthrough.steps.find((s) => s.id === currentStepId)?.media,
+    [currentStepId, walkthrough],
+  );
 
   return (
     <div className={styles.getting_started_container}>
       <div className={styles.getting_started_detailsContent}>
-        <div className={styles.getting_started_left}>
-          {/* 左侧顶部标题和简介 */}
-          <div className={styles.category_container}>
-            <div className={styles.category_icon}></div>
-            <div className={styles.category_description_container}>
-              <div className={styles.category_title}>{walkthrough?.title}</div>
-              <div className={styles.category_description}>{walkthrough?.description}</div>
-            </div>
+        {/* 左侧顶部标题和简介 */}
+        <div className={styles.category_container}>
+          <div className={styles.category_icon}>
+            {walkthrough && walkthrough.icon.type === 'image' && <img src={walkthrough.icon.path} />}
           </div>
-          {/* 左侧中间 step 流程 */}
-          <div className={styles.steps_container}>
-            <div className={styles.getting_started_detail_container}>
-              <div className={styles.step_list_container}>
-                {walkthrough
-                  ? walkthrough.steps.map((s) => (
-                      <StepItem
-                        key={s.id}
-                        step={s}
-                        isExpanded={s.id === currentStepId}
-                        onCheck={setCurrentStepId}
-                      ></StepItem>
-                    ))
-                  : null}
-              </div>
+          <div className={styles.category_description_container}>
+            <h2 className={styles.category_title}>{walkthrough?.title}</h2>
+            <div className={styles.category_description}>{walkthrough?.description}</div>
+          </div>
+        </div>
+        {/* 左侧中间 step 流程 */}
+        <div className={styles.steps_container}>
+          <div className={styles.getting_started_detail_container}>
+            <div className={styles.step_list_container}>
+              {walkthrough
+                ? walkthrough.steps.map((s) => (
+                    <StepItem
+                      key={s.id}
+                      step={s}
+                      isExpanded={s.id === currentStepId}
+                      onCheck={setCurrentStepId}
+                    ></StepItem>
+                  ))
+                : null}
             </div>
           </div>
         </div>
         {/* 右侧资源视图 */}
         <div className={styles.getting_started_media}>
-          <Media media={getCurrentStep()}></Media>
+          {currentStepId && <Media media={getCurrentStep()} extensionId={extensionId} stepId={currentStepId}></Media>}
         </div>
       </div>
     </div>
@@ -142,9 +141,13 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
 /**
  * media 有 img、svg、markdown 三种格式
  */
-const Media: React.FC<{ media: IWalkthroughStep['media'] | undefined }> = ({ media }) => {
+const Media: React.FC<{ media: IWalkthroughStep['media'] | undefined; extensionId: string; stepId: string }> = ({
+  media,
+  extensionId,
+  stepId,
+}) => {
   const themeService: IThemeService = useInjectable(IThemeService);
-  const fileSystem: FileServiceClient = useInjectable(IFileServiceClient);
+  const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);
   const openerService: IOpenerService = useInjectable(IOpenerService);
   const [svgContent, setSvgContent] = useState<string>('');
   const [markdownContent, setMarkdownContent] = useState<string>('');
@@ -154,9 +157,8 @@ const Media: React.FC<{ media: IWalkthroughStep['media'] | undefined }> = ({ med
       if (media?.type === 'image') {
         return '';
       }
-      const stat = await fileSystem.getFileStat(path);
-      if (stat && stat.type === FileType.File) {
-        const { content } = await fileSystem.readFile(path);
+      if (path) {
+        const content = await walkthroughsService.getFileContent(extensionId, path);
         return content.toString();
       }
       return '';
@@ -165,13 +167,18 @@ const Media: React.FC<{ media: IWalkthroughStep['media'] | undefined }> = ({ med
   );
 
   useEffect(() => {
-    if (media && media.type === 'svg') {
-      readFileContent(media.path.toString()).then(setSvgContent);
+    const rawStep = walkthroughsService.getStepsByExtension(stepId);
+    if (!rawStep) {
+      return;
     }
-    if (media && media.type === 'markdown') {
-      readFileContent(media.path.toString()).then(setMarkdownContent);
+
+    if (media && media.type === 'svg' && rawStep.media.svg) {
+      readFileContent(rawStep.media.svg).then(setSvgContent);
     }
-  }, [media]);
+    if (media && media.type === 'markdown' && rawStep.media.markdown) {
+      readFileContent(rawStep.media.markdown).then(setMarkdownContent);
+    }
+  }, [media, stepId]);
 
   if (!media) {
     return null;
@@ -191,7 +198,7 @@ const Media: React.FC<{ media: IWalkthroughStep['media'] | undefined }> = ({ med
   if (media.type === 'svg') {
     return (
       <React.Fragment>
-        <div dangerouslySetInnerHTML={{ __html: svgContent }}></div>
+        <div className={styles.media_svg_container} dangerouslySetInnerHTML={{ __html: svgContent }}></div>
       </React.Fragment>
     );
   }

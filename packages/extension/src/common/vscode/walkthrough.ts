@@ -1,4 +1,4 @@
-export interface IWalkthroughStep {
+export interface IExtensionWalkthroughStep {
   readonly id: string;
   readonly title: string;
   readonly description: string | undefined;
@@ -15,7 +15,7 @@ export interface IExtensionWalkthrough {
   readonly title: string;
   readonly icon?: string;
   readonly description: string;
-  readonly steps: IWalkthroughStep[];
+  readonly steps: IExtensionWalkthroughStep[];
   readonly featuredFor: string[] | undefined;
   readonly when?: string;
 }
