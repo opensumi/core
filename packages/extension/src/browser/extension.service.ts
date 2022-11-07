@@ -251,7 +251,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         this.extensionInstanceManageService.addExtensionInstance(extension);
       }
 
-      if (extension?.contributes) {
+      if (extension?.contributes && extension.enabled) {
         this.contributesService.register(extension.id, extension.contributes);
         this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
       }
