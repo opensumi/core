@@ -248,7 +248,9 @@ export class WorkspaceService implements IWorkspaceService {
     this._workspace = workspaceStat;
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
-      this.toDisposeOnWorkspace.push(await this.fileServiceClient.watchFileChanges(uri));
+      this.fileServiceClient.watchFileChanges(uri).then((watcher) => {
+        this.toDisposeOnWorkspace.push(watcher);
+      });
     }
     this.updateTitle();
     await this.updateWorkspace();
