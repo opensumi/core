@@ -92,6 +92,10 @@ export class RangeHighlightDecorations implements IDisposable {
   }
 
   private setModel(model: ITextModel) {
+    if (this._modelRef) {
+      this._modelRef.dispose();
+      this._modelRef = null;
+    }
     if (this._model !== model) {
       this.clearModelListeners();
       this._model = model;
@@ -107,8 +111,6 @@ export class RangeHighlightDecorations implements IDisposable {
   }
 
   private clearModelListeners() {
-    this._modelRef?.dispose();
-    this._modelRef = null;
     this._modelDisposables.clear();
   }
 
