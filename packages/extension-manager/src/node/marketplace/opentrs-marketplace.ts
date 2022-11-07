@@ -56,13 +56,16 @@ export class OpentrsMarketplaceImpl extends AbstractMarketplace {
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
     const { endpoint } = this.config;
-    const res = await nodeFetch(`${endpoint}/openapi/ide/search`, {
-      headers: {
-        ...commonHeaders,
-        ...this.getAKHeaders(),
+    const res = await nodeFetch(
+      `${endpoint}/openapi/ide/search?${param && new URLSearchParams(param as any).toString()}`,
+      {
+        headers: {
+          ...commonHeaders,
+          ...this.getAKHeaders(),
+        },
+        timeout: 30000,
       },
-      timeout: 30000,
-    });
+    );
 
     const { count: totalSize, data: extensions } = await res.json();
 
