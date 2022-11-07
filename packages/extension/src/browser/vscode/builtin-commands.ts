@@ -369,5 +369,4 @@ export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
 
 export const WALKTHROUGHS_COMMAND_GET_STARTED: Command = {
   id: 'walkthroughs.get.started',
-  label: 'walkthroughs.get.started',
 };

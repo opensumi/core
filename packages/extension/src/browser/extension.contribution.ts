@@ -374,28 +374,35 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
     });
 
-    registry.registerCommand(VSCodeBuiltinCommands.WALKTHROUGHS_COMMAND_GET_STARTED, {
-      execute: async (extensionId?: string) => {
-        const allWalkthrough = this.walkthroughsService.getWalkthroughs();
-
-        if (extensionId) {
-          this.walkthroughsService.openWalkthroughEditor(extensionId);
-        } else {
-          const result = await this.quickPickService.show(
-            allWalkthrough.map((w) => ({
-              label: w.title,
-              value: w.id,
-              description: w.source,
-              detail: w.description,
-            })),
-          );
-
-          if (result) {
-            this.walkthroughsService.openWalkthroughEditor(result);
-          }
-        }
+    registry.registerCommand(
+      {
+        id: VSCodeBuiltinCommands.WALKTHROUGHS_COMMAND_GET_STARTED.id,
+        category: localize('walkthroughs.welcome'),
+        label: localize('walkthroughs.get.started'),
       },
-    });
+      {
+        execute: async (extensionId?: string) => {
+          const allWalkthrough = this.walkthroughsService.getWalkthroughs();
+
+          if (extensionId) {
+            this.walkthroughsService.openWalkthroughEditor(extensionId);
+          } else {
+            const result = await this.quickPickService.show(
+              allWalkthrough.map((w) => ({
+                label: w.title,
+                value: w.id,
+                description: w.source,
+                detail: w.description,
+              })),
+            );
+
+            if (result) {
+              this.walkthroughsService.openWalkthroughEditor(result);
+            }
+          }
+        },
+      },
+    );
 
     [
       // layout builtin commands
