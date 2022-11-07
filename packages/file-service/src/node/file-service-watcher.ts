@@ -314,7 +314,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
           return await ParcelWatcher.subscribe(
             realPath,
             (err, events: ParcelWatcher.Event[]) => {
-              // 对于巨型events做屏蔽优化，避免潜在的卡死问题
+              // 对于超过500数量的 events 做屏蔽优化，避免潜在的卡死问题
               if (events.length > 5000) {
                 // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
                 return;
