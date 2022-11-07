@@ -37,8 +37,7 @@ export class FileSystemWatcher implements IFileServiceWatcher {
     return this.changeEmitter.event;
   }
 
-  dispose() {
-    this.toDispose.dispose();
-    return this.fileServiceClient.unwatchFileChanges(this.watchId);
+  async dispose() {
+    return this.toDispose.dispose();
   }
 }
