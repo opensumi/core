@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   Disposable,
   Emitter,
@@ -15,7 +15,6 @@ import {
   ExtensionActivateEvent,
   FileType,
   IEventBus,
-  IExtensionActivateEventPayload,
   ILogger,
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -26,7 +25,7 @@ import {
   ContextKeyExpression,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-import { IWalkthrough, IWalkthroughStep, IResolvedWalkthroughStep } from '../common';
+import { IWalkthrough, IWalkthroughStep, IResolvedWalkthroughStep, StepProgress } from '../common';
 import { IExtensionContributions, IExtensionWalkthroughStep } from '../common/vscode';
 
 import { AbstractExtInstanceManagementService } from './types';
@@ -67,6 +66,8 @@ export class WalkthroughsService extends Disposable {
   private readonly _onDidProgressStep = new Emitter<IResolvedWalkthroughStep>();
   readonly onDidProgressStep: Event<IResolvedWalkthroughStep> = this._onDidProgressStep.event;
 
+  private stepProgress: Record<string, StepProgress | undefined>;
+
   private readonly sessionEvents = new Set<string>();
   private readonly categoryVisibilityContextKeys = new Set<string>();
   private readonly stepCompletionContextKeyExpressions = new Set<ContextKeyExpression>();
@@ -80,6 +81,7 @@ export class WalkthroughsService extends Disposable {
   constructor() {
     super();
 
+    this.stepProgress = {};
     this.initCompletionEventListeners();
   }
 
@@ -216,6 +218,14 @@ export class WalkthroughsService extends Disposable {
     descriptor.when.keys().forEach((key) => this.categoryVisibilityContextKeys.add(key));
   }
 
+  private getStepProgress(step: IWalkthroughStep): IResolvedWalkthroughStep {
+    return {
+      ...step,
+      done: false,
+      ...this.stepProgress[step.id],
+    };
+  }
+
   public progressByEvent(event: string): void {
     if (this.sessionEvents.has(event)) {
       return;
@@ -226,18 +236,20 @@ export class WalkthroughsService extends Disposable {
   }
 
   public progressStep(id: string) {
-    const step = this.getStep(id);
-    if (!step) {
-      return;
-    }
+    const preProgress = this.stepProgress[id];
+    if (!preProgress || preProgress.done !== true) {
+      this.stepProgress[id] = { done: true };
+      const step = this.getStep(id);
+      if (!step) {
+        return;
+      }
 
-    this._onDidProgressStep.fire({
-      ...step,
-      done: false,
-    });
+      this._onDidProgressStep.fire(this.getStepProgress(step));
+    }
   }
 
   public openWalkthroughEditor(id: string): void {
+    this.stepProgress = {};
     this._onDidOpenWalkthrough.fire(id);
   }
 

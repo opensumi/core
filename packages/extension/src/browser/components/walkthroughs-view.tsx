@@ -22,14 +22,6 @@ export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ reso
   const [currentStepId, setCurrentStepId] = useState<string>();
 
   useEffect(() => {
-    const disposable = walkthroughsService.onDidProgressStep((event) => {
-      // not implement
-    });
-
-    return () => disposable.dispose();
-  }, []);
-
-  useEffect(() => {
     if (walkthrough && walkthrough.steps.length > 0) {
       // 默认选第一个 step
       if (!currentStepId) {
@@ -74,7 +66,7 @@ export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ reso
                         key={s.id}
                         step={s}
                         isExpanded={s.id === currentStepId}
-                        onCheck={setCurrentStepId}
+                        onSelected={setCurrentStepId}
                       ></StepItem>
                     ))
                 : null}
@@ -92,14 +84,33 @@ export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ reso
   );
 };
 
-const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck: (id: string) => void }> = ({
+const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelected: (id: string) => void }> = ({
   step,
   isExpanded,
-  onCheck,
+  onSelected,
 }) => {
   const openerService: IOpenerService = useInjectable(IOpenerService);
   const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);
+  const [isCheck, setIsCheck] = useState<boolean>(false);
   const { description } = step;
+
+  useEffect(() => {
+    const disposable = walkthroughsService.onDidProgressStep((event) => {
+      const { id, done } = event;
+      if (id === step.id) {
+        if (done) {
+          setIsCheck(done);
+        }
+      }
+    });
+
+    return () => disposable.dispose();
+  }, []);
+
+  const handleCheckboxChange = () => {
+    setIsCheck(!isCheck);
+    walkthroughsService.progressByEvent('stepSelected:' + step.id);
+  };
 
   const handleOpen = (node: ILink) => {
     const { href } = node;
@@ -146,16 +157,15 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onCheck:
     );
   }, [description]);
 
-  const handleCheckboxChange = () => {
-    walkthroughsService.progressByEvent('stepSelected:' + step.id);
-  };
-
   const renderLabel = useCallback(() => renderLabelWithIcons(step.title), [step.title]);
 
   return (
-    <div className={clx(styles.getting_started_step, isExpanded && styles.expanded)} onClick={() => onCheck(step.id)}>
+    <div
+      className={clx(styles.getting_started_step, isExpanded && styles.expanded)}
+      onClick={() => onSelected(step.id)}
+    >
       <div className={styles.checkbox}>
-        <CheckBox id={step.id} onChange={handleCheckboxChange} checked={false}></CheckBox>
+        <CheckBox id={step.id} onChange={handleCheckboxChange} checked={isCheck}></CheckBox>
       </div>
       <div className={styles.step_container}>
         <h3 className={styles.step_title}>{renderLabel()}</h3>

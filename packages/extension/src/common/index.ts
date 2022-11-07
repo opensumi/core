@@ -619,7 +619,7 @@ export interface IWalkthroughStep {
     | { type: 'markdown'; path: URI; base: URI; root: URI };
 }
 
-interface StepProgress {
+export interface StepProgress {
   done: boolean;
 }
 
