@@ -1,7 +1,9 @@
 import cls from 'classnames';
 import throttle from 'lodash/throttle';
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars';
+
+import { Disposable, DisposableCollection } from '@opensumi/ide-utils';
 import './styles.less';
 
 export interface ICustomScrollbarProps {
@@ -12,7 +14,6 @@ export interface ICustomScrollbarProps {
   className?: string;
   children?: React.ReactNode;
   onReachBottom?: any;
-  thumbSize?: number;
 }
 
 export const Scrollbars = ({
@@ -23,10 +24,12 @@ export const Scrollbars = ({
   children,
   className,
   onReachBottom,
-  thumbSize = 10,
 }: ICustomScrollbarProps) => {
+  const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
+  const scrollerRef = useRef<HTMLDivElement>();
   const refSetter = useCallback((scrollbarsRef) => {
     if (scrollbarsRef) {
+      scrollerRef.current = scrollbarsRef.view;
       forwardedRef && forwardedRef(scrollbarsRef.view);
     } else {
       forwardedRef && forwardedRef(null);
@@ -68,7 +71,31 @@ export const Scrollbars = ({
     }, 100),
     [onUpdate, handleReachBottom, verticalShadowRef.current, horizontalShadowRef.current],
   );
+  const onMouseWheel = useCallback(
+    (e) => {
+      if (!scrollerRef.current) {
+        return;
+      }
+      if (scrollerRef.current.clientHeight >= scrollerRef.current.scrollHeight && e.deltaY !== 0) {
+        scrollerRef.current.scrollLeft += e.deltaY;
+      }
+    },
+    [scrollerRef.current],
+  );
 
+  useEffect(() => {
+    if (scrollerRef.current) {
+      scrollerRef.current.addEventListener('wheel', onMouseWheel);
+      disposableCollection.current.push(
+        Disposable.create(() => {
+          scrollerRef.current?.removeEventListener('wheel', onMouseWheel);
+        }),
+      );
+    }
+  }, [scrollerRef.current]);
+
+  // clear listeners
+  useEffect(() => () => disposableCollection.current.dispose(), []);
   return (
     <CustomScrollbars
       ref={refSetter}
