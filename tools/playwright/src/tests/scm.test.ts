@@ -5,6 +5,7 @@ import { expect } from '@playwright/test';
 import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiFileTreeView } from '../filetree-view';
+import { OpenSumiSCMView } from '../scm-view';
 import { OpenSumiTerminal } from '../terminal';
 import { OpenSumiWorkspace } from '../workspace';
 
@@ -12,6 +13,7 @@ import test, { page } from './hooks';
 
 let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
+let scm: OpenSumiSCMView;
 let fileTreeView: OpenSumiFileTreeView;
 let workspace: OpenSumiWorkspace;
 
@@ -38,6 +40,15 @@ test.describe('OpenSumi SCM Panel', () => {
     await app.page.waitForTimeout(2000);
     const node = await explorer.getFileStatTreeNodeByPath('a.js');
     const badge = await node?.badge();
+    expect(badge).toBe('U');
+  });
+
+  test('The "U" charset should on the files tail on SCM view', async () => {
+    scm = await app.open(OpenSumiSCMView);
+    await scm.open();
+    await app.page.waitForTimeout(2000);
+    const node = await scm.getFileStatTreeNodeByPath('a.js');
+    const badge = await node?.getBadge();
     expect(badge).toBe('U');
   });
 });

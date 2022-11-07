@@ -68,7 +68,7 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
   private _openedEditorView: OpenSumiOpenedEditorView;
 
   constructor(app: OpenSumiApp) {
-    super(app, 'explorer');
+    super(app, 'EXPLORER');
     this._openedEditorView = new OpenSumiOpenedEditorView(this.app, 'OPENED EDITORS');
   }
 
@@ -92,7 +92,8 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
     let node;
     for (const item of treeItems) {
       const title = await item.getAttribute('title');
-      if (title?.includes(path)) {
+      // The title maybe `~/a.js • Untracked`
+      if (title?.split(' ')[0]?.endsWith(path)) {
         node = item;
         break;
       }
@@ -110,7 +111,8 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
     let node;
     for (const item of treeItems) {
       const title = await item.getAttribute('title');
-      if (title?.includes(path)) {
+      // The title maybe `a.js • Untracked`
+      if (title?.split(' ')[0]?.endsWith(path)) {
         node = item;
         break;
       }

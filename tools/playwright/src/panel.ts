@@ -30,7 +30,7 @@ export abstract class OpenSumiPanel extends OpenSumiViewBase {
       return;
     }
     await this.app.quickOpenPalette.type('view ');
-    await this.app.quickOpenPalette.trigger(this.viewId.toLocaleUpperCase());
+    await this.app.quickOpenPalette.trigger(this.viewId);
     await this.waitForVisible();
     this.view = await this.page.$(this.viewSelector);
     return this;

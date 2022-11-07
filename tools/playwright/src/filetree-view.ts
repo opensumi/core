@@ -4,8 +4,8 @@ import { OpenSumiView } from './view';
 export class OpenSumiFileTreeView extends OpenSumiView {
   constructor(app: OpenSumiApp, workspaceName: string) {
     super(app, {
-      viewSelector: '#file-explorer',
-      tabSelector: '#file-explorer [tabindex="0"]',
+      viewSelector: '[data-view-id="file-explorer"]',
+      tabSelector: '[data-view-id="file-explorer"] [tabindex="0"]',
       name: workspaceName,
     });
   }
