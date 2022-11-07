@@ -57,7 +57,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
   static unsupportLocation = ['bottom', 'editor', 'toolBar'];
 
   contribute() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       this.mainLayoutService.viewReady.promise.then(() => {
         for (const contrib of this.contributesMap) {
           const { extensionId, contributes } = contrib;
