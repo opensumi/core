@@ -48,6 +48,7 @@ export class VSXExtension {
   readonly publishedBy?: VSXUser;
   readonly path?: string;
   readonly realpath?: string;
+  readonly extensionId?: string;
   static KEYS: Set<keyof VSXExtension> = new Set([
     'version',
     'iconUrl',
@@ -79,6 +80,7 @@ export interface IVSXExtensionService {
   getLocalExtension(extensionId?: string): Promise<VSXExtension | undefined>;
   getRemoteRawExtension(extensionId?: string): Promise<VSXExtensionRaw | undefined>;
   getOpenVSXRegistry(): Promise<void>;
+  getExtensionId(extension: VSXExtension): string;
   openExtensionEditor(extensionId: string, state: InstallState): Promise<void>;
 
   extensions: VSXExtension[];
@@ -101,4 +103,23 @@ export interface IVSXExtensionBackService {
   install(param: IExtensionInstallParam): Promise<string>;
   getExtension(param: QueryParam): Promise<QueryResult | undefined>;
   getOpenVSXRegistry(): Promise<string>;
+}
+
+interface IMarketplaceConfig {
+  endpoint?: string;
+  masterKey?: string;
+  accountId?: string;
+}
+
+export abstract class AbstractMarketplace {
+  protected config: IMarketplaceConfig;
+
+  public downloadHeaders: { [key: string]: string } = {};
+
+  constructor(config: IMarketplaceConfig) {
+    this.config = config;
+  }
+
+  abstract getExtensionDetail(param: QueryParam): Promise<QueryResult | undefined>;
+  abstract search(param?: VSXSearchParam): Promise<VSXSearchResult>;
 }

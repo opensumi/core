@@ -55,19 +55,16 @@ export const ExtensionOverview: ReactEditorComponent<
     }
   }, []);
 
-  const getExtensionMetadata = useCallback(
-    ({ readme, changelog }: { [prop: string]: string | undefined }) =>
-      [
-        readme && fetch(readme).then((res) => res.text()),
-        changelog && fetch(changelog).then((res) => res.text()),
-      ].filter(Boolean),
-    [],
-  );
-
   const initExtensionMetadata = useCallback(async () => {
     const extension = await vsxExtensionService.getRemoteRawExtension(resource.metadata?.extensionId);
+
     if (extension) {
-      const tasks = getExtensionMetadata({ readme: extension.files.readme, changelog: extension.files.changelog });
+      const tasks = ['readme', 'changelog'].map((key) => {
+        const file = extension.files?.[key];
+
+        return file ? fetch(file).then((res) => res.text()) : extension[key] ?? '';
+      });
+
       const [readme, changelog] = await Promise.all(tasks);
       setMetadata({ readme, changelog, downloadCount: extension.downloadCount });
     }

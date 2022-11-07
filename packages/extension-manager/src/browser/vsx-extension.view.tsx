@@ -40,7 +40,7 @@ export const VSXExtensionView = observer(() => {
   const onInstall = useCallback((extension: VSXExtension) => vsxExtensionService.install(extension), []);
 
   const onClick = useCallback((extension: VSXExtension, state: InstallState) => {
-    const id = extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
+    const id = vsxExtensionService.getExtensionId(extension);
     vsxExtensionService.openExtensionEditor(id, state);
   }, []);
 
