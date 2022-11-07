@@ -78,7 +78,7 @@ export class OpentrsMarketplaceImpl extends AbstractMarketplace {
           extensionId,
           namespace: publisher,
           files: {
-            icon: icon ?? 'https://marketplace.opentrscdn.com/static/A_TKtCQIToMwgAAAAAAAAAAABkARQnAQ.png',
+            icon,
             download: `${endpoint}/openapi/ide/download/${extensionId}`,
           },
         };

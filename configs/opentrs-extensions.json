@@ -1,0 +1,115 @@
+{
+  "version": "3.0.0",
+  "extensions": {
+    "vscode-extensions": [
+      {
+        "name": "opensumi-default-themes"
+      },
+      {
+        "name": "vscode-icons"
+      },
+      {
+        "name": "js-debug"
+      },
+      {
+        "name": "typescript-language-features"
+      },
+      {
+        "name": "configuration-editing"
+      },
+      {
+        "name": "css"
+      },
+      {
+        "name": "css-language-features"
+      },
+      {
+        "name": "emmet"
+      },
+      {
+        "name": "git"
+      },
+      {
+        "name": "git-ui"
+      },
+      {
+        "name": "html"
+      },
+      {
+        "name": "html-language-features"
+      },
+      {
+        "name": "java"
+      },
+      {
+        "name": "javascript"
+      },
+      {
+        "name": "json"
+      },
+      {
+        "name": "json-language-features"
+      },
+      {
+        "name": "less"
+      },
+      {
+        "name": "log"
+      },
+      {
+        "name": "merge-conflict"
+      },
+      {
+        "name": "python"
+      },
+      {
+        "name": "rust"
+      },
+      {
+        "name": "scss"
+      },
+      {
+        "name": "search-result"
+      },
+      {
+        "name": "typescript"
+      },
+      {
+        "name": "xml"
+      },
+      {
+        "name": "yaml"
+      },
+      {
+        "name": "theme-abyss"
+      },
+      {
+        "name": "theme-defaults"
+      },
+      {
+        "name": "theme-kimbie-dark"
+      },
+      {
+        "name": "theme-monokai"
+      },
+      {
+        "name": "theme-monokai-dimmed"
+      },
+      {
+        "name": "theme-quietlight"
+      },
+      {
+        "name": "theme-red"
+      },
+      {
+        "name": "theme-solarized-dark"
+      },
+      {
+        "name": "theme-solarized-light"
+      },
+      {
+        "name": "theme-tomorrow-night-blue"
+      }
+    ]
+  }
+}

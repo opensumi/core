@@ -8,11 +8,19 @@ const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
 const { v4 } = require('uuid');
+const marketplaceType = process.env.MARKETPLACE ?? 'openvsx';
 
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
 
-const { extensions } = require(path.resolve(__dirname, '../configs/vscode-extensions.json'));
+const extensionFileName = marketplaceType === 'openvsx' ? 'vscode-extensions.json' : 'opentrs-extensions.json';
+const { extensions } = require(path.resolve(__dirname, `../configs/${extensionFileName}`));
+const headers = {};
+
+if (marketplaceType === 'opentrs') {
+  headers['x-master-key'] = '';
+  headers['x-account-id'] = '';
+}
 
 // 限制并发数，运行promise
 const parallelRunPromise = (lazyPromises, n) => {
@@ -47,15 +55,13 @@ const parallelRunPromise = (lazyPromises, n) => {
   return new Promise(addWorking);
 };
 
-const api = 'https://open-vsx.org/api/';
-
 async function downloadExtension(url, namespace, extensionName) {
   const tmpPath = path.join(os.tmpdir(), 'extension', v4());
   const tmpZipFile = path.join(tmpPath, path.basename(url));
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
-  const res = await nodeFetch(url, { timeout: 100000 });
+  const res = await nodeFetch(url, { timeout: 100000, headers });
 
   res.body.pipe(tmpStream);
   await Promise.race([awaitEvent(res.body, 'end'), awaitEvent(res.body, 'error')]);
@@ -119,12 +125,26 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 
 const installExtension = async (namespace, name, version) => {
   const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
-  const res = await nodeFetch(`${api}${path}`, {
-    timeout: 100000,
-  });
+  const getDetailApi =
+    marketplaceType === 'openvsx'
+      ? `https://open-vsx.org/api/${path}`
+      : `https://marketplace.opentrs.com/api/extension/${path}`;
+
+  const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
   const data = await res.json();
-  if (data.files && data.files.download) {
-    const { targetDirName, tmpZipFile } = await downloadExtension(data.files.download, namespace, name);
+
+  let downloadUrl = '';
+
+  if (marketplaceType === 'openvsx') {
+    downloadUrl = data.files?.download;
+  } else {
+    const extensionId = data.data?.extensionId;
+
+    downloadUrl = `https://marketplace.opentrs.com/openapi/ide/download/${extensionId}`;
+  }
+
+  if (downloadUrl) {
+    const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
     // 解压插件
     await unzipFile(targetDir, targetDirName, tmpZipFile);
     rimraf.sync(tmpZipFile);
