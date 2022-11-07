@@ -391,6 +391,7 @@ export class FileServiceClient implements IFileServiceClient {
     if (!disposable || !disposable.dispose) {
       return;
     }
+    this.watcherDisposerMap.delete(watcherId);
     return disposable.dispose();
   }
 
