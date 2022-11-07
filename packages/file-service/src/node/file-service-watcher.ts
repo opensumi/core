@@ -335,7 +335,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
         } catch (e) {
           // Parcel Watcher 启动失败，尝试重试
           this.logger.error('watcher subscribe failed ', e, ' try times ', times);
-          await new Promise(function (resolve) {
+          await new Promise((resolve) => {
             setTimeout(resolve, retryDelay);
           });
         }
