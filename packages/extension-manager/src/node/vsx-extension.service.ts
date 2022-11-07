@@ -29,17 +29,17 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   private marketplace: AbstractMarketplace;
 
   constructor() {
-    const { marketplace } = this.appConfig;
-    const { endpoint } = marketplace;
+    const { marketplace: marketplaceConfig } = this.appConfig;
+    const { endpoint } = marketplaceConfig;
 
     this.marketplace =
       endpoint === DEFAULT_OPENVSX_REGISTRY
-        ? new OpenvsxMarketplaceImpl(marketplace)
-        : new OpentrsMarketplaceImpl(marketplace);
+        ? new OpenvsxMarketplaceImpl(marketplaceConfig)
+        : new OpentrsMarketplaceImpl(marketplaceConfig);
   }
 
   async getExtension(param: QueryParam): Promise<QueryResult | undefined> {
-    return this.marketplace.getExtensionDetail(param);
+    return await this.marketplace.getExtensionDetail(param);
   }
 
   async install(param: IExtensionInstallParam): Promise<string> {
@@ -153,6 +153,6 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    return this.marketplace.search(param);
+    return await this.marketplace.search(param);
   }
 }
