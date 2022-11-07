@@ -412,7 +412,7 @@ export class CommentsService extends Disposable implements ICommentsService {
       return await cache.promise;
     }
 
-    const model = this.documentService.getModelReference(uri);
+    const model = this.documentService.getModelReference(uri, 'get-contribution-rages');
     const rangePromise: Promise<IRange[] | undefined>[] = [];
     for (const rangeProvider of this.rangeProviderMap) {
       const [id, provider] = rangeProvider;
