@@ -8,7 +8,7 @@ import requestretry from 'requestretry';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { DEFAULT_OPENVSX_REGISTRY, DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
 import { IVSXExtensionBackService, IExtensionInstallParam, AbstractMarketplace } from '../common';
