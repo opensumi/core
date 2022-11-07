@@ -308,7 +308,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
       this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
     );
 
-    const tryWatchDir = async (maxRetries = 3) => {
+    const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
       for (let times = 0; times < maxRetries; times++) {
         try {
           return await ParcelWatcher.subscribe(
@@ -335,6 +335,9 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
         } catch (e) {
           // Parcel Watcher 启动失败，尝试重试
           this.logger.error('watcher subscribe failed ', e, ' try times ', times);
+          await new Promise(function (resolve) {
+            setTimeout(resolve, retryDelay);
+          });
         }
       }
 
