@@ -5,7 +5,7 @@ on:
     types: [labeled]
 
 jobs:
-  issue-labeled:
+  issue-need-more-detail:
     runs-on: ubuntu-latest
     if: github.actor != github.event.issue.user.login
     steps:
@@ -17,10 +17,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           body: |
-            你好 @${{ github.event.issue.user.login }}，你所提供的信息不足于我们排查问题, 请按照 issue 模板填写相关信息 (参考 #1165 #1141), 提供 gif, 截图, 代码片段, 配置信息, 版本号, 可复现链接等方式, 详细说明复现步骤, 感谢配合, 谢谢! 15 天内未回复 issue 自动关闭。
-
             Hello, @${{ github.event.issue.user.login }}, the information you provided is not enough for us to troubleshoot the problem. Please complete the issue description (refer #1165 #1141), provide gifs, screenshots, config, version. And explain the reproduction steps in detail. Thanks so much for your cooperation! The issue will be closed without any replay within 15 days.
 
+            你好 @${{ github.event.issue.user.login }}，你所提供的信息不足于我们排查问题, 请按照 issue 模板填写相关信息 (参考 #1165 #1141), 提供 gif, 截图, 代码片段, 配置信息, 版本号, 可复现链接等方式, 详细说明复现步骤, 感谢配合, 谢谢! 15 天内未回复 issue 自动关闭。
+
+  issue-need-reproduce:
     runs-on: ubuntu-latest
     if: github.actor != github.event.issue.user.login
     steps:
@@ -32,7 +33,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           body: |
-            你好 @${{ github.event.issue.user.login }}，你所提供的信息不足于我们排查问题, 请提供一个可以复现的案例，可以通过我们的起步项目 [ide-startup](https://github.com/opensumi/ide-startup) 进行尝试复现你的问题, 谢谢! 15 天内未回复 issue 自动关闭。
-
             Hello, @${{ github.event.issue.user.login }}, the information you provided is not enough for us to troubleshoot the problem. Please explain the reproduction steps in detail. Thanks so much for your cooperation! The issue will be closed without any replay within 15 days.
+
+            你好 @${{ github.event.issue.user.login }}，你所提供的信息不足于我们排查问题, 请提供一个可以复现的案例，可以通过我们的起步项目 [ide-startup](https://github.com/opensumi/ide-startup) 进行尝试复现你的问题, 谢谢! 15 天内未回复 issue 自动关闭。
               
