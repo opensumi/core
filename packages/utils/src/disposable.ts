@@ -227,7 +227,7 @@ export class DisposableCollection implements IDisposable {
   }
 
   private disposingElements = false;
-  dispose(): void {
+  dispose(): MaybePromise<void> {
     if (this.disposed || this.disposingElements) {
       return;
     }

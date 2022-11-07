@@ -143,7 +143,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   public dispose() {
-    this.toDisposable.dispose();
+    return this.toDisposable.dispose();
   }
 
   /**
@@ -345,8 +345,9 @@ export class FileServiceClient implements IFileServiceClient {
     });
 
     this.watcherDisposerMap.set(id, {
-      dispose: () => {
-        provider.unwatch && provider.unwatch(watcherId);
+      dispose: async () => {
+        const watcher = this.uriWatcherMap.get(_uri.toString());
+        await Promise.all([provider.unwatch && provider.unwatch(watcherId), watcher && watcher.dispose()]);
         this.uriWatcherMap.delete(_uri.toString());
       },
     });
@@ -390,7 +391,7 @@ export class FileServiceClient implements IFileServiceClient {
     if (!disposable || !disposable.dispose) {
       return;
     }
-    disposable.dispose();
+    return disposable.dispose();
   }
 
   async delete(uriString: string, options?: FileDeleteOptions) {
@@ -449,8 +450,10 @@ export class FileServiceClient implements IFileServiceClient {
       ),
     );
     disposables.push({
-      dispose: () => {
-        (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
+      dispose: async () => {
+        const promises = [] as any[];
+        (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => promises.push(this.unwatchFileChanges(id)));
+        await Promise.all(promises);
       },
     });
 
