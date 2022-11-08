@@ -290,7 +290,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
   }
 
   private getDefaultWatchExclude() {
-    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**/*'];
+    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**', '**/.hg/store/**'];
   }
 
   protected async start(
