@@ -26,11 +26,6 @@ jobs:
           node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Use Python 3.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
       - name: Checkout opensumi/core
         uses: actions/checkout@master
         with:
