@@ -92,13 +92,16 @@ export class RangeHighlightDecorations implements IDisposable {
   }
 
   private setModel(model: ITextModel) {
+    if (this._modelRef) {
+      this._modelRef.dispose();
+      this._modelRef = null;
+    }
     if (this._model !== model) {
       this.clearModelListeners();
       this._model = model;
+
       this._modelDisposables.add(
         this._model.onWillDispose(() => {
-          this._modelRef?.dispose();
-          this._modelRef = null;
           this.clearModelListeners();
           this.removeHighlightRange();
           this._model = null;
@@ -382,7 +385,7 @@ export class SearchTreeService {
       this.replaceDocumentModelContentProvider.delete(replaceURI);
     } else {
       const uri = new URI(result.fileUri);
-      await this.workbenchEditorService.open(new URI(result.fileUri), {
+      const openResourceResult = await this.workbenchEditorService.open(new URI(result.fileUri), {
         preview: isPreview,
         focus: !isPreview,
         range: {
@@ -393,10 +396,12 @@ export class SearchTreeService {
         },
       });
 
-      this.rangeHighlightDecorations.highlightRange(
-        uri,
-        new monaco.Range(result.line, result.matchStart, result.line, result.matchStart + result.matchLength),
-      );
+      if (openResourceResult && !openResourceResult.resource.deleted) {
+        this.rangeHighlightDecorations.highlightRange(
+          uri,
+          new monaco.Range(result.line, result.matchStart, result.line, result.matchStart + result.matchLength),
+        );
+      }
     }
   }
 
