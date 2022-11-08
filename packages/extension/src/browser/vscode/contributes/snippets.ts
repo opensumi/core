@@ -39,5 +39,6 @@ export class SnippetsContributionPoint extends VSCodeContributePoint<SnippetSche
         );
       }
     }
+    this.addDispose(this.snippetSuggestProvider.registerSnippetsProvider());
   }
 }

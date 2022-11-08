@@ -2106,7 +2106,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   calcDirtyCount(countedUris: Set<string> = new Set<string>()): number {
     let count = 0;
     for (const r of this.resources) {
-      const docRef = this.documentModelManager.getModelReference(r.uri);
+      const docRef = this.documentModelManager.getModelReference(r.uri, 'calc-dirty-count');
       if (countedUris.has(r.uri.toString())) {
         continue;
       }
