@@ -8,7 +8,7 @@ export class OpenSumiDebugView extends OpenSumiPanel {
   };
 
   constructor(app: OpenSumiApp) {
-    super(app, 'debug');
+    super(app, 'DEBUG');
   }
 
   async start(): Promise<void> {
