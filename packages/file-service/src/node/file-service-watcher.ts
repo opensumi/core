@@ -290,7 +290,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
   }
 
   private getDefaultWatchExclude() {
-    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/*/**', '**/.hg/store/**'];
+    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**', '**/.hg/store/**'];
   }
 
   protected async start(
@@ -299,7 +299,6 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     rawOptions: WatchOptions | undefined,
   ): Promise<DisposableCollection> {
     const disposables = new DisposableCollection();
-    let hanlder: ParcelWatcher.AsyncSubscription;
     if (!(await fs.pathExists(basePath))) {
       return disposables;
     }
@@ -308,29 +307,58 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
       realPath,
       this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
     );
-    hanlder = await ParcelWatcher.subscribe(
-      realPath,
-      (err, events: ParcelWatcher.Event[]) => {
-        const handlers = ParcelWatcherServer.WATCHER_HANDLERS.get(watcherId)?.handlers;
-        if (!handlers) {
-          return;
+
+    const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
+      for (let times = 0; times < maxRetries; times++) {
+        try {
+          return await ParcelWatcher.subscribe(
+            realPath,
+            (err, events: ParcelWatcher.Event[]) => {
+              // 对于超过5000数量的 events 做屏蔽优化，避免潜在的卡死问题
+              if (events.length > 5000) {
+                // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
+                return;
+              }
+              const handlers = ParcelWatcherServer.WATCHER_HANDLERS.get(watcherId)?.handlers;
+              if (!handlers) {
+                return;
+              }
+              for (const handler of handlers) {
+                handler(err, events);
+              }
+            },
+            {
+              backend: ParcelWatcherServer.PARCEL_WATCHER_BACKEND,
+              ignore,
+            },
+          );
+        } catch (e) {
+          // Parcel Watcher 启动失败，尝试重试
+          this.logger.error('watcher subscribe failed ', e, ' try times ', times);
+          await new Promise((resolve) => {
+            setTimeout(resolve, retryDelay);
+          });
         }
-        for (const handler of handlers) {
-          handler(err, events);
-        }
-      },
-      {
-        backend: ParcelWatcherServer.PARCEL_WATCHER_BACKEND,
-        ignore,
-      },
-    );
-    disposables.push(
-      Disposable.create(async () => {
-        if (hanlder) {
-          await hanlder.unsubscribe();
-        }
-      }),
-    );
+      }
+
+      // 经过若干次的尝试后，Parcel Watcher 依然启动失败，此时就不再尝试重试
+      this.logger.error(`watcher subscribe finally failed after ${maxRetries} times`);
+      return undefined; // watch 失败则返回 undefined
+    };
+
+    const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
+
+    if (hanlder) {
+      // watch 成功才加入 disposables，否则也就无需 dispose
+      disposables.push(
+        Disposable.create(async () => {
+          if (hanlder) {
+            await hanlder.unsubscribe();
+          }
+        }),
+      );
+    }
+
     return disposables;
   }
 
