@@ -2,6 +2,7 @@ import { OpenSumiApp } from './app';
 import { OpenSumiFileTreeView } from './filetree-view';
 import { OpenSumiOpenedEditorView } from './opened-editor-view';
 import { OpenSumiPanel } from './panel';
+import { OpenSumiSourceControlView } from './source-control-view';
 import { OpenSumiTreeNode } from './tree-node';
 
 export class OpenSumiSCMFileStatNode extends OpenSumiTreeNode {
@@ -35,15 +36,16 @@ export class OpenSumiSCMFileStatNode extends OpenSumiTreeNode {
 }
 
 export class OpenSumiSCMView extends OpenSumiPanel {
-  private _fileTreeView: OpenSumiFileTreeView;
+  private _scmView: OpenSumiSourceControlView;
   private _openedEditorView: OpenSumiOpenedEditorView;
 
   constructor(app: OpenSumiApp) {
-    super(app, 'Source Control');
+    super(app, 'SCM');
+    this._scmView = new OpenSumiSourceControlView(app, 'SOURCE CONTROL');
   }
 
-  get fileTreeView() {
-    return this._fileTreeView;
+  get scmView() {
+    return this._scmView;
   }
 
   get openedEditorView() {
@@ -51,15 +53,15 @@ export class OpenSumiSCMView extends OpenSumiPanel {
   }
 
   async getFileStatTreeNodeByPath(path: string) {
-    const treeItems = await (await this.fileTreeView.getViewElement())?.$$('[class*="scm_tree_node___"]');
+    const treeItems = await (await this.scmView.getViewElement())?.$$('[class*="scm_tree_node___"]');
     if (!treeItems) {
       return;
     }
     let node;
     for (const item of treeItems) {
-      const desc = await item.$('[class*="scm_tree_node_description__"]');
-      const title = await desc?.textContent();
-      if (title?.endsWith(path)) {
+      const title = await item.getAttribute('title');
+      // title maybe `a.js • Untracked`
+      if (title?.split(' ')[0]?.endsWith(path)) {
         node = item;
         break;
       }

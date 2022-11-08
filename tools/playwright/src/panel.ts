@@ -13,7 +13,7 @@ export abstract class OpenSumiPanel extends OpenSumiViewBase {
   }
 
   get viewSelector() {
-    return `.${this.viewId}`;
+    return `[data-viewlet-id="${this.viewId.toLocaleLowerCase()}"]`;
   }
 
   async init() {

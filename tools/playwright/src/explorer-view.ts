@@ -46,6 +46,10 @@ export class OpenSumiExplorerOpenedEditorNode extends OpenSumiTreeNode {
     return await (await this.elementHandle.$('[class*="opened_editor_node_description__"]'))?.textContent();
   }
 
+  async getFsPath() {
+    return await this.elementHandle.getAttribute('title');
+  }
+
   async isGroup() {
     const icon = await this.elementHandle.waitForSelector("[class*='file_icon___']");
     const className = await icon.getAttribute('class');

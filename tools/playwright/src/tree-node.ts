@@ -13,14 +13,14 @@ export interface IOpenSumiTreeNodeSelector {
   collapsedClass: string;
 }
 
-export class OpenSumiTreeNode {
+export abstract class OpenSumiTreeNode {
   constructor(
     protected elementHandle: ElementHandle<SVGElement | HTMLElement>,
     protected app: OpenSumiApp,
     private selector: IOpenSumiTreeNodeSelector = {
-      labelClass: "[class*='tree_node_displayname__']",
-      descriptionClass: "[class*='tree_node_description__']",
-      badgeClass: "[class*='tree_node_status___']",
+      labelClass: "[class*='node_displayname__']",
+      descriptionClass: "[class*='node_description__']",
+      badgeClass: "[class*='node_status___']",
       toggleClass: "[class*='expansion_toggle__']",
       selectedClass: "[class*='mod_selected__']",
       focusedClass: "[class*='mod_focused__']",
@@ -92,4 +92,7 @@ export class OpenSumiTreeNode {
   async openContextMenu() {
     return OpenSumiContextMenu.open(this.app, () => this.elementHandle.waitForSelector(this.selector.labelClass));
   }
+
+  abstract getFsPath(): Promise<string | null>;
+  abstract open(preview?: boolean): Promise<void>;
 }

@@ -374,7 +374,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
       <div
         className={cls(
           styles.debug_console_node_segment,
-          !DebugConsoleNode.is(node) && styles.debug_console_node_display_name,
+          !DebugConsoleNode.is(node) && styles.debug_console_node_displayname,
           styles.debug_console_variable,
           (item as DebugConsoleNode).description ? styles.name : styles.info,
         )}
@@ -391,7 +391,7 @@ export const DebugConsoleRenderedNode: React.FC<IDebugConsoleNodeRenderedProps> 
     const addonClass = [styles.debug_console_variable];
     if (AnsiConsoleNode.is(node)) {
       return (
-        <div className={cls(styles.debug_console_node_segment, styles.debug_console_node_display_name)}>
+        <div className={cls(styles.debug_console_node_segment, styles.debug_console_node_displayname)}>
           {(node as AnsiConsoleNode).template()}
         </div>
       );

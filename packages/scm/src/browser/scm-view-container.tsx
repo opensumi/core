@@ -11,7 +11,7 @@ import { AccordionContainer } from '@opensumi/ide-main-layout/lib/browser/accord
 import { TitleBar } from '@opensumi/ide-main-layout/lib/browser/accordion/titlebar.view';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
-import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId } from '../common';
+import { ISCMRepository, scmProviderViewId, scmResourceViewId, scmContainerId, SCM_WELCOME_ID } from '../common';
 
 import { SCMProviderList } from './components/scm-provider-list';
 import { SCMResourceInput } from './components/scm-resource-input';
@@ -129,7 +129,7 @@ export const SCMResourcesViewWrapper: FC<{ viewState: ViewState }> = observer((p
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
 
   if (!viewModel.selectedRepos.length) {
-    return <WelcomeView viewId='scm_view' />;
+    return <WelcomeView viewId={SCM_WELCOME_ID} />;
   }
 
   const hasMultiRepos = viewModel.repoList.length > 1;
