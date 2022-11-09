@@ -85,7 +85,7 @@ jobs:
 
       # 发布失败后，更新 checkRun 状态
       - uses: opensumi/actions/.github/actions/run-script@main
-        if: success()
+        if: failure()
         with:
           script: 'createPrNextCheckSuite'
           STATUS: end
