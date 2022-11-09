@@ -4,19 +4,18 @@ import { EditorCollectionService, ICodeEditor, WorkbenchEditorService } from '@o
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { DebugModelFactory, IDebugModel, BreakpointsChangeEvent } from '../../common';
+import {
+  DebugModelFactory,
+  IDebugModel,
+  BreakpointsChangeEvent,
+  DebugModelSupportedEventType,
+  IDebugModelManager,
+} from '../../common';
 import { BreakpointManager } from '../breakpoint';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 
-enum DebugModelSupportedEventType {
-  down = 'Down',
-  move = 'Move',
-  leave = 'Leave',
-  contextMenu = 'contextMenu',
-}
-
 @Injectable()
-export class DebugModelManager extends Disposable {
+export class DebugModelManager extends Disposable implements IDebugModelManager {
   private models: Map<string, IDebugModel[]>;
   protected readonly toDispose = new DisposableCollection();
 

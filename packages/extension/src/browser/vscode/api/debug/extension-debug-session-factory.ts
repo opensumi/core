@@ -2,13 +2,12 @@ import { Injector } from '@opensumi/di';
 import { IWebSocket } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { localize } from '@opensumi/ide-core-common';
-import { IDebugSessionManager, DebugSessionOptions } from '@opensumi/ide-debug';
+import { IDebugSessionManager, DebugSessionOptions, IDebugModelManager } from '@opensumi/ide-debug';
 import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
 import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser/debug-session-connection';
 import { DebugSessionFactory } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
-import { DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
@@ -27,7 +26,7 @@ export class ExtensionDebugSession extends DebugSession {
     protected readonly terminalService: ITerminalApiService,
     protected readonly editorService: WorkbenchEditorService,
     protected readonly breakpointManager: BreakpointManager,
-    protected readonly modelManager: DebugModelManager,
+    protected readonly modelManager: IDebugModelManager,
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,
     protected readonly fileSystem: IFileServiceClient,
@@ -71,7 +70,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
   constructor(
     protected readonly editorManager: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
-    protected readonly modelManager: DebugModelManager,
+    protected readonly modelManager: IDebugModelManager,
     protected readonly terminalService: ITerminalApiService,
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,

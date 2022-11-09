@@ -16,13 +16,13 @@ import {
   IDebugServiceContributionPoint,
   IDebugBreakpoint,
   IDebugConsoleModelService,
+  IDebugModelManager,
 } from '@opensumi/ide-debug';
 import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { DebugSessionManager } from '@opensumi/ide-debug/lib/browser/debug-session-manager';
-import { DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import { IDebugService, IDebugServer } from '@opensumi/ide-debug/lib/common/debug-service';
 import { IDebugSessionManager, IDebugSessionOptions } from '@opensumi/ide-debug/lib/common/debug-session';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -63,8 +63,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(BreakpointManager)
   protected readonly breakpointManager: BreakpointManager;
 
-  @Autowired(DebugModelManager)
-  protected readonly modelManager: DebugModelManager;
+  @Autowired(IDebugModelManager)
+  protected readonly modelManager: IDebugModelManager;
 
   @Autowired(DebugConfigurationManager)
   protected readonly debugConfigurationManager: DebugConfigurationManager;

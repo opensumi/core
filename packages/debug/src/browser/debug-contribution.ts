@@ -52,6 +52,7 @@ import {
   DEBUG_SCHEME,
   TSourceBrekpointProperties,
   DEBUG_COMMANDS,
+  IDebugModelManager,
 } from '../common';
 
 import {
@@ -70,7 +71,6 @@ import { launchSchema } from './debug-schema-updater';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
-import { DebugModelManager } from './editor/debug-model-manager';
 import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
 import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
@@ -127,8 +127,8 @@ export class DebugContribution
   @Autowired(DebugConfigurationManager)
   protected readonly configurations: DebugConfigurationManager;
 
-  @Autowired(DebugModelManager)
-  protected debugEditorController: DebugModelManager;
+  @Autowired(IDebugModelManager)
+  protected debugEditorController: IDebugModelManager;
 
   @Autowired(DebugBreakpointsService)
   protected debugBreakpointsService: DebugBreakpointsService;

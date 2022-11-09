@@ -6,6 +6,7 @@ import {
   DebugEditor,
   DebugModelFactory,
   IDebugConsoleModelService,
+  IDebugModelManager,
   IDebugProgress,
   IDebugServer,
   IDebugService,
@@ -51,7 +52,7 @@ export class DebugModule extends BrowserModule {
       useClass: DebugExpressionProvider,
     },
     {
-      token: DebugModelManager,
+      token: IDebugModelManager,
       useClass: DebugModelManager,
     },
     {

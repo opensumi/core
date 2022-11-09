@@ -21,8 +21,8 @@ import { WorkbenchEditorService, IResourceOpenOptions } from '@opensumi/ide-edit
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
+import { IDebugModelManager } from '../../common';
 import { DebugSession } from '../debug-session';
-import { DebugModelManager } from '../editor';
 
 import { DebugStackFrame } from './debug-stack-frame';
 
@@ -34,7 +34,7 @@ export class DebugSource extends DebugSourceData {
   constructor(
     protected readonly session: DebugSession,
     protected readonly labelProvider: LabelService,
-    protected readonly modelManager: DebugModelManager,
+    protected readonly modelManager: IDebugModelManager,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly fileSystem: IFileServiceClient,
   ) {
