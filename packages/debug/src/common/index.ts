@@ -4,6 +4,7 @@ export * from './debug-hover';
 export * from './debug-breakpoint';
 export * from './debug-model';
 export * from './debug-session';
+export * from './debug-console';
 export * from './debug-session-options';
 export * from './debug-editor';
 export * from './debug-progress';

@@ -15,14 +15,13 @@ import {
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
-import { DEBUG_COMMANDS, DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
+import { DEBUG_COMMANDS, DEBUG_CONSOLE_CONTAINER_ID, IDebugConsoleModelService } from '../../../common';
 import { DebugContextKey } from '../../contextkeys/debug-contextkey.service';
 import { DebugConsoleNode } from '../../tree';
 
 import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';
 import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { DebugConsoleFilterView } from './debug-console-filter.view';
-import { DebugConsoleModelService } from './debug-console-tree.model.service';
 import { DebugConsoleService } from './debug-console.service';
 import { DebugConsoleView } from './debug-console.view';
 
@@ -37,8 +36,8 @@ export class DebugConsoleContribution
     MenuContribution,
     KeybindingContribution
 {
-  @Autowired()
-  private readonly debugConsoleModelService: DebugConsoleModelService;
+  @Autowired(IDebugConsoleModelService)
+  private readonly debugConsoleModelService: IDebugConsoleModelService;
 
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;

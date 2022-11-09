@@ -5,6 +5,7 @@ import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/
 import {
   DebugEditor,
   DebugModelFactory,
+  IDebugConsoleModelService,
   IDebugProgress,
   IDebugServer,
   IDebugService,
@@ -30,6 +31,7 @@ import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from 
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
 import { DebugToolbarOverlayWidget } from './view/configuration/debug-toolbar.view';
+import { DebugConsoleModelService } from './view/console/debug-console-tree.model.service';
 import { DebugConsoleContribution } from './view/console/debug-console.contribution';
 import { DebugCallStackContribution } from './view/frames/debug-call-stack.contribution';
 import { VariablesPanelContribution } from './view/variables/debug-variables.contribution';
@@ -96,6 +98,10 @@ export class DebugModule extends BrowserModule {
     {
       token: IDebugProgress,
       useClass: DebugProgressService,
+    },
+    {
+      token: IDebugConsoleModelService,
+      useClass: DebugConsoleModelService,
     },
     // contributions
     LaunchPreferencesContribution,
