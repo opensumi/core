@@ -228,7 +228,7 @@ export const DebugWatchRenderedNode: React.FC<IDebugWatchNodeRenderedProps> = ({
       <div
         className={cls(
           styles.debug_watch_node_segment,
-          styles.debug_watch_node_display_name,
+          styles.debug_watch_node_displayname,
           styles.debug_watch_variable,
           (node as DebugVariable).description ? styles.name : '',
         )}

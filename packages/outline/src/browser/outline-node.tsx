@@ -84,7 +84,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
 
   const renderDisplayName = (node: OutlineCompositeTreeNode | OutlineTreeNode) => (
     <div
-      className={cls(styles.outline_node_segment, styles.outline_node_display_name, {
+      className={cls(styles.outline_node_segment, styles.outline_node_displayname, {
         [styles.deprecated]: node.raw.tags && node.raw.tags.indexOf(SymbolTag.Deprecated) >= 0,
       })}
     >

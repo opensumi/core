@@ -102,7 +102,7 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   };
 
   const renderDisplayName = (node: EditorFileGroup | EditorFile) => (
-    <div className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_display_name)}>
+    <div className={cls(styles.opened_editor_node_segment, styles.opened_editor_node_displayname)}>
       {getNodeName(node)}
     </div>
   );

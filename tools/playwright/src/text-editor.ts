@@ -3,9 +3,8 @@ import { ElementHandle, Page } from '@playwright/test';
 import { OpenSumiApp } from './app';
 import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiEditor } from './editor';
-import { OpenSumiExplorerFileStatNode } from './explorer-view';
+import { OpenSumiTreeNode } from './tree-node';
 import { keypressWithCmdCtrl } from './utils';
-
 
 abstract class ViewsModel {
   constructor(readonly page: Page) {}
@@ -67,7 +66,7 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   private glyphMarginModel: GlyphMarginModel;
   private overlaysModel: OverlaysModel;
 
-  constructor(app: OpenSumiApp, filestatElement: OpenSumiExplorerFileStatNode) {
+  constructor(app: OpenSumiApp, filestatElement: OpenSumiTreeNode) {
     super(app, filestatElement);
     this.glyphMarginModel = new GlyphMarginModel(this.page);
     this.overlaysModel = new OverlaysModel(this.page);

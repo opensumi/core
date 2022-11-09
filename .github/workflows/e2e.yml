@@ -11,9 +11,9 @@ on:
 
 jobs:
   build:
-    name: ubuntu-20.04,  Node.js 14.x
+    name: ubuntu-latest,  Node.js 14.x
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
 
     steps:
@@ -25,11 +25,6 @@ jobs:
         with:
           node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Use Python 3.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
 
       - name: Checkout opensumi/core
         uses: actions/checkout@master
