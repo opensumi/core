@@ -9,25 +9,21 @@ import {
   URI,
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
-import {
+import type {
   DebuggerDescription,
-  IDebugService,
   DebugConfiguration,
-  IDebugServer,
   IDebuggerContribution,
   IDebugServiceContributionPoint,
   IDebugBreakpoint,
 } from '@opensumi/ide-debug';
-import {
-  DebugSessionManager,
-  BreakpointManager,
-  DebugConfigurationManager,
-  DebugPreferences,
-  DebugSessionContributionRegistry,
-  DebugModelManager,
-  DebugBreakpoint,
-} from '@opensumi/ide-debug/lib/browser';
+import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
+import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
+import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
+import { DebugSessionManager } from '@opensumi/ide-debug/lib/browser/debug-session-manager';
+import { DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
+import { IDebugService, IDebugServer } from '@opensumi/ide-debug/lib/common/debug-service';
 import { IDebugSessionManager, IDebugSessionOptions } from '@opensumi/ide-debug/lib/common/debug-session';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -50,7 +46,6 @@ import { IActivationEventService } from '../../types';
 import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
 import { ExtensionDebugService } from './debug/extension-debug-service';
-
 
 @Injectable({ multiple: true })
 export class MainThreadDebug implements IMainThreadDebug {

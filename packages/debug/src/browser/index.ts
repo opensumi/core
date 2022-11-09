@@ -118,18 +118,3 @@ export class DebugModule extends BrowserModule {
   isOverlay = true;
   component = DebugToolbarOverlayWidget;
 }
-
-export * from './breakpoint';
-export * from './contextkeys';
-export * from './debug-configuration-manager';
-export * from './debug-configuration-model';
-export * from './debug-contribution';
-export * from './debug-preferences';
-export * from './debug-schema-updater';
-export * from './debug-session';
-export * from './debug-session-connection';
-export * from './debug-session-contribution';
-export * from './debug-session-manager';
-export * from './editor/debug-model-manager';
-export * from './markers';
-export * from './model';
