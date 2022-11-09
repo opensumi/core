@@ -15,9 +15,8 @@ import {
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 
-import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
+import { DEBUG_COMMANDS, DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { DebugContextKey } from '../../contextkeys/debug-contextkey.service';
-import { DEBUG_COMMANDS } from '../../debug-contribution';
 import { DebugConsoleNode } from '../../tree';
 
 import { CONTEXT_IN_DEBUG_REPL, CONTEXT_IN_DEBUG_MODE } from './../../../common/constants';

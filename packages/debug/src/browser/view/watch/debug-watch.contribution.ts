@@ -9,12 +9,12 @@ import {
   ClientAppContribution,
   KeybindingContribution,
   KeybindingRegistry,
+  getIcon,
 } from '@opensumi/ide-core-browser';
 import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 import { MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { DEBUG_WATCH_ID } from '../../../common';
-import { DEBUG_COMMANDS } from '../../debug-contribution';
+import { DEBUG_WATCH_ID, DEBUG_COMMANDS } from '../../../common';
 import { DebugWatchNode } from '../../tree/debug-tree-node.define';
 
 import {
@@ -83,12 +83,14 @@ export class WatchPanelContribution
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
+      iconClass: getIcon('close-all'),
       viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.removeAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
+      iconClass: getIcon('collapse-all'),
       command: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
       viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.collapseAll'),
@@ -97,6 +99,7 @@ export class WatchPanelContribution
 
     registry.registerItem({
       id: DEBUG_COMMANDS.ADD_WATCHER.id,
+      iconClass: getIcon('plus'),
       command: DEBUG_COMMANDS.ADD_WATCHER.id,
       viewId: DEBUG_WATCH_ID,
       tooltip: localize('debug.watch.add'),

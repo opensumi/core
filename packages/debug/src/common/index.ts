@@ -12,3 +12,4 @@ export * from './inline-values';
 export * from './types';
 export * from './constants';
 export * from './terminal';
+export * from './commands';
