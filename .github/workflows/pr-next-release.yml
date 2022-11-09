@@ -44,7 +44,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const script = require('./scripts/github/createPrNextCheckSuite.js')
+            const script = require('../../scripts/github/createPrNextCheckSuite.js')
             return await script({github, context, core, status: 'start'})
 
       - run: |
@@ -90,7 +90,7 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const script = require('./scripts/github/createPrNextCheckSuite.js')
+            const script = require('../../scripts/github/createPrNextCheckSuite.js')
             return await script({github, context, core, status: 'end'})
 
       # 发布完成后，在 issue 中评论，并更新 checkRun 状态
@@ -99,5 +99,5 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const script = require('./scripts/github/notifyPrNextResult.js')
+            const script = require('../../scripts/github/notifyPrNextResult.js')
             return await script({github, context, core})

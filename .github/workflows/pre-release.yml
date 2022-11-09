@@ -115,5 +115,5 @@ jobs:
         with:
           github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const script = require('./scripts/github/notifyPreReleaseResult.js')
+            const script = require('../../scripts/github/notifyPreReleaseResult.js')
             await script({github, context, core})
