@@ -1,9 +1,11 @@
 import mergeWith from 'lodash/mergeWith';
 
-import { Uri, asArray } from '@opensumi/ide-core-common';
+import { Uri, arrays } from '@opensumi/ide-core-common';
 import { IExtensionMetaData } from '@opensumi/ide-extension/lib/common';
 import { ISumiExtensionContributions } from '@opensumi/ide-extension/lib/common/sumi/extension';
 import { IExtensionContributions } from '@opensumi/ide-extension/lib/common/vscode/extension';
+
+const { asArray } = arrays;
 
 export function mergeContributes(
   contributes: IExtensionContributions | undefined,
