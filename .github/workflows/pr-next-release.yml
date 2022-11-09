@@ -46,9 +46,6 @@ jobs:
         env:
           STATUS: start
 
-      - run: |
-          echo "CHECK_RUN_ID=${{steps.run-check-suite.outputs.result}}" >> $GITHUB_ENV
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
