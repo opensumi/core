@@ -47,7 +47,7 @@ import {
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { MonacoSnippetSuggestProvider } from '@opensumi/ide-monaco/lib/browser/monaco-snippet-suggest-provider';

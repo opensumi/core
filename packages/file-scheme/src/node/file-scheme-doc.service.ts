@@ -11,9 +11,10 @@ import {
   CancellationToken,
   SaveTaskResponseState,
   SaveTaskErrorCause,
+  iconvEncode,
+  iconvDecode,
 } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
-import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
 
 import { IFileSchemeDocNodeService, ISavingContent, IContentChange } from '../common';
 
@@ -45,7 +46,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
             errorMessage: SaveTaskErrorCause.CANCEL,
           };
         }
-        const content = decode(contentBuffer, encoding ? encoding : 'utf8');
+        const content = iconvDecode(contentBuffer, encoding ? encoding : 'utf8');
         if (!force) {
           const currentMd5 = this.hashCalculateService.calculate(content);
           if (change.baseMd5 !== currentMd5) {
@@ -58,7 +59,7 @@ export class FileSchemeDocNodeServiceImpl implements IFileSchemeDocNodeService {
         if (statSync(fsPath).mtime.getTime() !== mtime) {
           throw new Error('File has been modified during saving, please retry');
         }
-        await writeFile(fsPath, encode(contentRes, encoding ? encoding : 'utf8'));
+        await writeFile(fsPath, iconvEncode(contentRes, encoding ? encoding : 'utf8'));
         return {
           state: SaveTaskResponseState.SUCCESS,
         };

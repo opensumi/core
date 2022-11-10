@@ -1,8 +1,7 @@
 import { Injectable } from '@opensumi/di';
 import { URI, Emitter, Event, FileUri, IDisposable, BinaryBuffer } from '@opensumi/ide-core-common';
 
-import { IFileServiceClient } from '../file-service-client';
-import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../files';
+import { IFileServiceClient } from '../src/common/file-service-client';
 import {
   FileSetContentOptions,
   FileStat,
@@ -12,8 +11,11 @@ import {
   FileDeleteOptions,
   FileSystemProvider,
   TextDocumentContentChangeEvent,
-} from '../files';
-import { IFileServiceWatcher } from '../watcher';
+  FileChangeEvent,
+  DidFilesChangedParams,
+  FileChange,
+} from '../src/common/files';
+import { IFileServiceWatcher } from '../src/common/watcher';
 
 @Injectable()
 export class MockFileServiceClient implements IFileServiceClient {
