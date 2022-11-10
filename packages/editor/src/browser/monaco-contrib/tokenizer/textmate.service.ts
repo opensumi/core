@@ -169,7 +169,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return StandaloneServices.get(ILanguageService);
   }
 
-  async registerLanguages(languages: LanguagesContribution[], extPath: URI) {
+  async registerLanguages(languages: LanguagesContribution[], baseUri: URI) {
     const newLanguages = languages.map((language) => ({
       id: language.id,
       aliases: language.aliases,
@@ -186,42 +186,18 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
      */
     this.monacoLanguageService['_registry']['_registerLanguages'](newLanguages);
 
-    const languageIds: string[] = [];
+    const languageMap: Map<string, LanguagesContribution> = new Map();
 
-    await Promise.all(
-      languages.map(async (language) => {
-        this.addDispose(
-          monaco.languages.onLanguage(language.id, () => {
-            this.activateLanguage(language.id);
-          }),
-        );
+    languages.forEach(async (language) => {
+      this.addDispose(
+        monaco.languages.onLanguage(language.id, async () => {
+          this.activateLanguage(language.id);
+          await this.loadLanguageConfiguration(language, baseUri);
+        }),
+      );
 
-        let configuration: LanguageConfiguration | undefined;
-        if (typeof language.resolvedConfiguration === 'object') {
-          const config = await language.resolvedConfiguration;
-          configuration = this.reviveLanguageConfiguration(language.id, config);
-        } else if (language.configuration) {
-          // remove `./` prefix
-          const langPath = language.configuration.replace(/^\.\//, '');
-          // http 的不作支持
-          const configurationPath = extPath.resolve(langPath);
-          const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
-          const content = ret.content;
-          if (content) {
-            const jsonContent = this.safeParseJSON<LanguageConfigurationDto>(content);
-            if (jsonContent) {
-              configuration = this.reviveLanguageConfiguration(language.id, jsonContent);
-            }
-          }
-        }
-
-        if (configuration) {
-          monaco.languages.setLanguageConfiguration(language.id, configuration);
-        }
-
-        languageIds.push(language.id);
-      }),
-    );
+      languageMap.set(language.id, language);
+    });
 
     if (this.initialized) {
       const uris = this.editorDocumentModelService.getAllModels().map((m) => m.uri);
@@ -229,7 +205,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         const model = this.editorDocumentModelService.getModelReference(URI.parse(uri.codeUri.toString()));
         if (model && model.instance) {
           const langId = model.instance.getMonacoModel().getLanguageId();
-          if (languageIds.includes(langId)) {
+          if (languageMap.has(langId)) {
+            await this.loadLanguageConfiguration(languageMap.get(langId)!, baseUri);
             this.activateLanguage(langId);
           }
         }
@@ -317,6 +294,31 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     }
 
     this.registeredGrammarDisposableCollection.set(grammar.scopeName, toDispose);
+  }
+
+  private async loadLanguageConfiguration(language: LanguagesContribution, baseUri: URI) {
+    let configuration: LanguageConfiguration | undefined;
+    if (typeof language.resolvedConfiguration === 'object') {
+      const config = await language.resolvedConfiguration;
+      configuration = this.reviveLanguageConfiguration(language.id, config);
+    } else if (language.configuration) {
+      // remove `./` prefix
+      const langPath = language.configuration.replace(/^\.\//, '');
+      // http 的不作支持
+      const configurationPath = baseUri.resolve(langPath);
+      const ret = await this.fileServiceClient.resolveContent(configurationPath.toString());
+      const content = ret.content;
+      if (content) {
+        const jsonContent = this.safeParseJSON<LanguageConfigurationDto>(content);
+        if (jsonContent) {
+          configuration = this.reviveLanguageConfiguration(language.id, jsonContent);
+        }
+      }
+    }
+
+    if (configuration) {
+      monaco.languages.setLanguageConfiguration(language.id, configuration);
+    }
   }
 
   async activateLanguage(languageId: string) {

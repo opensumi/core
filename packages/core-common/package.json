@@ -1,9 +1,10 @@
 {
   "name": "@opensumi/ide-core-common",
-  "version": "2.21.2",
+  "version": "2.21.3",
   "description": "@opensumi/ide-core-common",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
@@ -18,7 +19,7 @@
   },
   "dependencies": {
     "@opensumi/di": "^1.4.0",
-    "@opensumi/ide-utils": "2.21.2"
+    "@opensumi/ide-utils": "2.21.3"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "^1.3.1"

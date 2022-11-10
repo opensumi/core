@@ -1,9 +1,10 @@
 {
   "name": "@opensumi/ide-core-node",
-  "version": "2.21.2",
+  "version": "2.21.3",
   "description": "@opensumi/ide-core-node",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
@@ -17,8 +18,8 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.21.2",
-    "@opensumi/ide-core-common": "2.21.2",
+    "@opensumi/ide-connection": "2.21.3",
+    "@opensumi/ide-core-common": "2.21.3",
     "keytar": "^7.7.0"
   },
   "devDependencies": {

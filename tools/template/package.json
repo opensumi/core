@@ -2,7 +2,8 @@
   "name": "template-name",
   "version": "2.18.0",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "private": true,
   "main": "lib/index.js",

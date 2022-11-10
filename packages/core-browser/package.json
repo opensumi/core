@@ -1,9 +1,10 @@
 {
   "name": "@opensumi/ide-core-browser",
-  "version": "2.21.2",
+  "version": "2.21.3",
   "description": "@opensumi/ide-core-browser",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
@@ -17,9 +18,9 @@
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-browser.json"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.21.2",
-    "@opensumi/ide-connection": "2.21.2",
-    "@opensumi/ide-core-common": "2.21.2",
+    "@opensumi/ide-components": "2.21.3",
+    "@opensumi/ide-connection": "2.21.3",
+    "@opensumi/ide-core-common": "2.21.3",
     "@opensumi/vscode-debugprotocol": "1.49.0-beta.1",
     "@vscode/codicons": "0.0.27",
     "ajv": "^6.10.0",
