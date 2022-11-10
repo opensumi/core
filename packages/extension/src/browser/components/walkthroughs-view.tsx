@@ -2,11 +2,17 @@ import clx from 'classnames';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { Button, CheckBox } from '@opensumi/ide-components';
-import { IContextKeyService, ILink, IOpenerService, useInjectable } from '@opensumi/ide-core-browser';
+import {
+  IContextKeyService,
+  ILink,
+  IOpenerService,
+  transformLabelWithCodicon,
+  useInjectable,
+} from '@opensumi/ide-core-browser';
 import { renderLabelWithIcons } from '@opensumi/ide-core-browser/lib/utils/iconLabels';
 import { IResource } from '@opensumi/ide-editor';
 import { Markdown } from '@opensumi/ide-markdown';
-import { IThemeService } from '@opensumi/ide-theme';
+import { IIconService, IThemeService } from '@opensumi/ide-theme';
 
 import { IWalkthrough, IWalkthroughStep } from '../../common';
 import { WalkthroughsService } from '../walkthroughs.service';
@@ -91,6 +97,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
 }) => {
   const openerService: IOpenerService = useInjectable(IOpenerService);
   const walkthroughsService: WalkthroughsService = useInjectable(WalkthroughsService);
+  const iconService = useInjectable<IIconService>(IIconService);
   const [isCheck, setIsCheck] = useState<boolean>(false);
   const { description } = step;
 
@@ -126,7 +133,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
       return null;
     }
     const lineElements: React.ReactElement[] = [];
-    description.map((desc) => {
+    description.map((desc, i) => {
       if (desc.nodes.length === 1 && typeof desc.nodes[0] !== 'string') {
         const node = desc.nodes[0];
         lineElements.push(
@@ -137,7 +144,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
       } else {
         const textNodes = desc.nodes.map((node, idx) => {
           if (typeof node === 'string') {
-            return node;
+            return renderLabelWithIcons(node, {}, iconService.fromString.bind(iconService));
           } else {
             return (
               <a key={node.label + '#' + idx} title={node.title} onClick={() => handleOpen(node)}>
@@ -146,7 +153,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
             );
           }
         });
-        lineElements.push(<p key={lineElements.length}>{textNodes}</p>);
+        lineElements.push(<p key={i + lineElements.length}>{textNodes}</p>);
       }
     });
 
@@ -157,7 +164,10 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
     );
   }, [description]);
 
-  const renderLabel = useCallback(() => renderLabelWithIcons(step.title), [step.title]);
+  const renderLabel = useCallback(
+    () => renderLabelWithIcons(step.title, {}, iconService.fromString.bind(iconService)),
+    [step.title],
+  );
 
   return (
     <div

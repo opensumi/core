@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 
 import { getExternalIcon } from '../style/icon/icon';
+
+import { transformLabelWithCodicon } from './label';
 
 export namespace CSSIcon {
   export const iconNameSegment = '[A-Za-z0-9]+';
@@ -13,7 +15,11 @@ const labelWithIconsRegex = new RegExp(
   'g',
 );
 
-export function renderLabelWithIcons(text: string): Array<React.ReactElement | string> {
+export function renderLabelWithIcons(
+  text: string,
+  iconStyles: CSSProperties = {},
+  transformer?: (str: string) => string | undefined,
+): Array<React.ReactElement | string> {
   const elements = new Array<React.ReactElement | string>();
   let match: RegExpMatchArray | null;
 
@@ -25,7 +31,13 @@ export function renderLabelWithIcons(text: string): Array<React.ReactElement | s
     textStart = (match.index || 0) + match[0].length;
 
     const [, escaped, codicon] = match;
-    elements.push(escaped ? `$(${codicon})` : <span className={getExternalIcon(codicon)}></span>);
+    elements.push(
+      escaped ? (
+        transformLabelWithCodicon(`$(${codicon})`, iconStyles, transformer)
+      ) : (
+        <span className={getExternalIcon(codicon)}></span>
+      ),
+    );
   }
 
   if (textStart < text.length) {
