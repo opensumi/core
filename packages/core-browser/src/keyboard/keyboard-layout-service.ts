@@ -75,7 +75,7 @@ export class KeyboardLayoutService {
 
   /**
    * 使用当前的键盘布局信息解析快捷键 KeyCode
-   * 如果当前没有监测到布局信息或当前布局信息不包含当前 KeyCode，直接返回入参的 KeycCode
+   * 如果当前没有监测到布局信息或当前布局信息不包含当前 KeyCode，直接返回入参的 KeyCode
    * @param inCode
    */
   public resolveKeyCode(inCode: KeyCode): KeyCode {

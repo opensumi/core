@@ -20,6 +20,7 @@ import {
   KeybindingRegistry,
   IOpenerService,
   MonacoOverrideServiceRegistry,
+  Keybinding,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuRegistry,
@@ -422,7 +423,7 @@ export class MonacoClientContribution
           keybinding: keybindingStr,
           when,
           priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
-        };
+        } as Keybinding;
 
         keybindings.registerKeybinding(keybinding);
       }
