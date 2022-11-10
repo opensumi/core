@@ -156,7 +156,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
 
 async function guessEncodingByBuffer(buffer: BinaryBuffer): Promise<string | null> {
   // lazy load
-  const jschardet = require('jschardet');
+  const jschardet = await import('jschardet');
 
   // ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
   const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
