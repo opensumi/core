@@ -130,7 +130,7 @@
     "jsdom": "^20.0.0",
     "jsdom-worker": "^0.2.1",
     "node-fetch": "^2.6.7",
-    "offline-iconfont": "^1.1.0",
+    "offline-iconfont": "^1.2.0",
     "prettier": "^2.5.1",
     "rimraf": "^3.0.2",
     "semver": "^6.3.0",
