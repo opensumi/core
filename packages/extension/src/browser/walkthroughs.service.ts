@@ -144,7 +144,7 @@ export class WalkthroughsService extends Disposable {
       const [_, eventType, argument] = /^([^:]*):?(.*)$/.exec(event) ?? [];
 
       if (!eventType) {
-        this.logger.error(`无法处理 step 为 ${step.id} 的 completionEvent 事件: ${event}`);
+        this.logger.error(`Unknown completionEvent ${event} when registering step ${step.id}`);
         continue;
       }
 
@@ -164,7 +164,7 @@ export class WalkthroughsService extends Disposable {
               this.sessionEvents.add(event);
             }
           } else {
-            this.logger.error(`无法解析 step 为 ${step.id} 的 context: ${expression}`);
+            this.logger.error(`Unable to parse context key expression: ${expression} in walkthrough step ${step.id}`);
           }
           break;
         }
@@ -180,7 +180,7 @@ export class WalkthroughsService extends Disposable {
           event = CompletionEventsType.extensionInstalled + ':' + argument.toLowerCase();
           break;
         default:
-          this.logger.error(`${event} 事件未知`);
+          this.logger.error(`${event} Unknown`);
           continue;
       }
 
@@ -213,7 +213,7 @@ export class WalkthroughsService extends Disposable {
 
     descriptor.steps.forEach((step) => {
       if (this.steps.has(step.id)) {
-        this.logger.error(`${step.id} 重复注册`);
+        this.logger.error(`${step.id} Repeat`);
         return;
       }
       this.steps.set(step.id, step);
@@ -322,12 +322,14 @@ export class WalkthroughsService extends Disposable {
     const steps = (walkthrough.steps ?? [])
       .filter((step) => {
         if (!step.media) {
-          this.logger.error('media 字段必填: ' + walkthrough.id + '@' + step.id);
+          this.logger.error('missing media in walkthrough step: ' + walkthrough.id + '@' + step.id);
           return;
         }
 
         if (!(step.media.markdown || step.media.svg || step.media.image)) {
-          this.logger.error('未知的格式: ' + extensionId + '#' + walkthrough.id + '#' + step.id);
+          this.logger.error(
+            'Unknown walkthrough format detected for: ' + extensionId + '#' + walkthrough.id + '#' + step.id,
+          );
           return;
         }
 
