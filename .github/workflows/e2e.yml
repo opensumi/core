@@ -36,7 +36,7 @@ jobs:
         shell: bash
         working-directory: ./opensumi
         run: |
-          npm i
+          yarn
           npm run download-extension
           npm run init
 
@@ -47,7 +47,7 @@ jobs:
 
       - uses: microsoft/playwright-github-action@v1
       - name: Init & Test
-        run: npm i && npm run init && cd tools/playwright && npm run ui-tests-ci
+        run: yarn && npm run init && cd tools/playwright && npm run ui-tests-ci
 
       - name: Upload test results
         if: always()

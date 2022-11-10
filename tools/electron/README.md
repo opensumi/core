@@ -6,11 +6,11 @@
 
 ```shell
 cd ../../
-npm i
+yarn
 npm run init
 
 cd tools/electron
-npm i
+yarn
 npm run link-local
 npm run build
 npm run rebuild-native -- --force-rebuild=true

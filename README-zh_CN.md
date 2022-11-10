@@ -46,7 +46,7 @@ $ npm config set registry https://registry.npmmirror.com
 ```
 
 ```bash
-$ npm install
+$ yarn
 $ npm run init
 $ npm run download-extension  # 可选
 $ npm run start

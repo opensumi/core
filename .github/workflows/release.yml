@@ -58,7 +58,7 @@ jobs:
       - name: Install dependencies & Build
         if: steps.checkTag.outputs.exists == 'false'
         run: |
-          npm i
+          yarn
           npm run init
           npm run manifest -- -v=${{github.event.inputs.version}}
 
