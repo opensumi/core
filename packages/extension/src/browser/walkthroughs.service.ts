@@ -25,7 +25,13 @@ import {
   ContextKeyExpression,
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-import { IWalkthrough, IWalkthroughStep, IResolvedWalkthroughStep, StepProgress } from '../common';
+import {
+  IWalkthrough,
+  IWalkthroughStep,
+  IResolvedWalkthroughStep,
+  StepProgress,
+  CompletionEventsType,
+} from '../common';
 import { IExtensionContributions, IExtensionWalkthroughStep } from '../common/vscode';
 
 import { AbstractExtInstanceManagementService } from './types';
@@ -92,7 +98,7 @@ export class WalkthroughsService extends Disposable {
   private initCompletionEventListeners() {
     this.addDispose(
       this.commandService.onDidExecuteCommand(({ commandId }) => {
-        this.progressByEvent(`onCommand:${commandId}`);
+        this.progressByEvent(`${CompletionEventsType.onCommand}:${commandId}`);
       }),
     );
 
@@ -101,7 +107,7 @@ export class WalkthroughsService extends Disposable {
         if (payload.affectsSome(this.stepCompletionContextKeys)) {
           this.stepCompletionContextKeyExpressions.forEach((expression) => {
             if (payload.affectsSome(new Set(expression.keys())) && this.contextKeyService.match(expression)) {
-              this.progressByEvent('onContext:' + expression.serialize());
+              this.progressByEvent(CompletionEventsType.onContext + ':' + expression.serialize());
             }
           });
         }
@@ -110,8 +116,8 @@ export class WalkthroughsService extends Disposable {
 
     this.addDispose(
       this.eventBus.on(ExtensionActivateEvent, ({ payload: { topic, data } }) => {
-        if (topic === 'onView') {
-          this.progressByEvent('onView:' + data);
+        if (topic === CompletionEventsType.onView) {
+          this.progressByEvent(CompletionEventsType.onView + ':' + data);
         }
       }),
     );
@@ -119,7 +125,7 @@ export class WalkthroughsService extends Disposable {
     this.addDispose(
       this.preferenceService.onPreferenceChanged(({ preferenceName }) => {
         if (preferenceName) {
-          this.progressByEvent('onSettingChanged:' + preferenceName);
+          this.progressByEvent(CompletionEventsType.onSettingChanged + ':' + preferenceName);
         }
       }),
     );
@@ -131,7 +137,7 @@ export class WalkthroughsService extends Disposable {
    */
   private registerDoneListeners(step: IWalkthroughStep) {
     if (!step.completionEvents.length) {
-      step.completionEvents.push('stepSelected');
+      step.completionEvents.push(CompletionEventsType.stepSelected);
     }
 
     for (let event of step.completionEvents) {
@@ -143,12 +149,12 @@ export class WalkthroughsService extends Disposable {
       }
 
       switch (eventType) {
-        case 'onLink':
-        case 'onEvent':
-        case 'onView':
-        case 'onSettingChanged':
+        case CompletionEventsType.onLink:
+        case CompletionEventsType.onEvent:
+        case CompletionEventsType.onView:
+        case CompletionEventsType.onSettingChanged:
           break;
-        case 'onContext': {
+        case CompletionEventsType.onContext: {
           const expression = ContextKeyExpr.deserialize(argument);
           if (expression) {
             this.stepCompletionContextKeyExpressions.add(expression);
@@ -162,16 +168,16 @@ export class WalkthroughsService extends Disposable {
           }
           break;
         }
-        case 'onStepSelected':
-        case 'stepSelected':
-          event = 'stepSelected:' + step.id;
+        case CompletionEventsType.onStepSelected:
+        case CompletionEventsType.stepSelected:
+          event = CompletionEventsType.stepSelected + ':' + step.id;
           break;
-        case 'onCommand':
+        case CompletionEventsType.onCommand:
           event = eventType + ':' + argument.replace(/^toSide:/, '');
           break;
-        case 'onExtensionInstalled':
-        case 'extensionInstalled':
-          event = 'extensionInstalled:' + argument.toLowerCase();
+        case CompletionEventsType.onExtensionInstalled:
+        case CompletionEventsType.extensionInstalled:
+          event = CompletionEventsType.extensionInstalled + ':' + argument.toLowerCase();
           break;
         default:
           this.logger.error(`${event} 事件未知`);

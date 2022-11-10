@@ -625,4 +625,16 @@ export interface StepProgress {
 
 export interface IResolvedWalkthroughStep extends IWalkthroughStep, StepProgress {}
 
+export namespace CompletionEventsType {
+  export const onLink = 'onLink';
+  export const onEvent = 'onEvent';
+  export const onView = 'onView';
+  export const onSettingChanged = 'onSettingChanged';
+  export const onContext = 'onContext';
+  export const onStepSelected = 'onStepSelected';
+  export const stepSelected = 'stepSelected';
+  export const onCommand = 'onCommand';
+  export const onExtensionInstalled = 'onExtensionInstalled';
+  export const extensionInstalled = 'extensionInstalled';
+}
 // #endregion Walkthroughs

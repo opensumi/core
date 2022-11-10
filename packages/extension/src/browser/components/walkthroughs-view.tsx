@@ -14,7 +14,7 @@ import { IResource } from '@opensumi/ide-editor';
 import { Markdown } from '@opensumi/ide-markdown';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 
-import { IWalkthrough, IWalkthroughStep } from '../../common';
+import { CompletionEventsType, IWalkthrough, IWalkthroughStep } from '../../common';
 import { WalkthroughsService } from '../walkthroughs.service';
 
 import * as styles from './walkthroughs-view.module.less';
@@ -34,13 +34,13 @@ export const WalkthroughsEditorView: React.FC<{ resource: IResource }> = ({ reso
         setCurrentStepId(walkthrough.steps[0].id);
       }
     }
-  }, [walkthrough]);
+  }, [walkthrough, currentStepId]);
 
   useEffect(() => {
     if (id) {
       setWalkthrough(walkthroughsService.getWalkthrough(id));
     }
-  }, [id]);
+  }, [id, walkthrough]);
 
   const getCurrentStep = useCallback(
     () => walkthrough && walkthrough.steps.find((s) => s.id === currentStepId)?.media,
@@ -114,19 +114,19 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
     return () => disposable.dispose();
   }, []);
 
-  const handleCheckboxChange = () => {
+  const handleCheckboxChange = useCallback(() => {
     setIsCheck(!isCheck);
-    walkthroughsService.progressByEvent('stepSelected:' + step.id);
-  };
+    walkthroughsService.progressByEvent(CompletionEventsType.stepSelected + ':' + step.id);
+  }, [isCheck, step.id]);
 
-  const handleOpen = (node: ILink) => {
+  const handleOpen = useCallback((node: ILink) => {
     const { href } = node;
     openerService.open(href);
 
-    if (href.startsWith('https://') || href.startsWith('http://')) {
-      walkthroughsService.progressByEvent('onLink:' + href);
+    if (/^http(s)?:\/\//.test(href)) {
+      walkthroughsService.progressByEvent(CompletionEventsType.onLink + ':' + href);
     }
-  };
+  }, []);
 
   const getDescriptionComplexElements = useCallback(() => {
     if (description.length === 0) {
@@ -137,7 +137,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
       if (desc.nodes.length === 1 && typeof desc.nodes[0] !== 'string') {
         const node = desc.nodes[0];
         lineElements.push(
-          <div key={lineElements.length} title={node.title}>
+          <div key={i.toString() + lineElements.length} title={node.title}>
             <Button onClick={() => handleOpen(node)}>{renderLabelWithIcons(node.label)}</Button>
           </div>,
         );
@@ -153,7 +153,9 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
             );
           }
         });
-        lineElements.push(<p key={i + lineElements.length}>{textNodes}</p>);
+        lineElements.push(
+          <p key={i.toString() + lineElements.length.toString() + textNodes.length.toString()}>{textNodes}</p>,
+        );
       }
     });
 
