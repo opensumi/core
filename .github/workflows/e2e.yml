@@ -9,6 +9,11 @@ on:
     branches:
       - main
 
+# Cancel prev CI if new commit come
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: ubuntu-latest,  Node.js 14.x
