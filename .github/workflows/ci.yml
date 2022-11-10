@@ -21,7 +21,7 @@ on:
 jobs:
   # Prepare node modules. Reuse cache if available
   setup:
-    name: prepare preview
+    name: setup
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -30,19 +30,15 @@ jobs:
       - name: cache yarn.lock
         uses: actions/cache@v3
         with:
-          path: package-temp-dir
+          path: .package-temp-dir
           key: lock-${{ github.sha }}
 
       - name: create yarn.lock
-        run: yarn install
+        run: yarn install --mode update-lockfile
 
       - name: hack for single file
         run: |
-          if [ ! -d "package-temp-dir" ]; then
-            mkdir package-temp-dir
-          fi
-          cp yarn.lock package-temp-dir
-
+          node ./scripts/actions/cache.js
   browser:
     needs: setup
     runs-on: ${{ matrix.os }}
@@ -53,6 +49,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
       - name: restore cache from yarn.lock
         uses: actions/cache@v3
         with:
@@ -60,14 +61,7 @@ jobs:
           key: lock-${{ github.sha }}
       - name: restore yarn.lock
         run: |
-          if [ ! -d "package-temp-dir" ]; then
-            mkdir package-temp-dir
-          fi
-          mv ./package-temp-dir/yarn.lock .
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
+          node ./scripts/actions/restore-cache.js
 
       - name: Build & Test
         run: |

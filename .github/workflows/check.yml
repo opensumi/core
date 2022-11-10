@@ -13,6 +13,43 @@ on:
     branches: [main, v*.*]
 
 jobs:
+  # Prepare node modules. Reuse cache if available
+  setup:
+    name: setup
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: cache yarn.lock
+        uses: actions/cache@v3
+        with:
+          path: yarn.lock
+          key: lock-${{ github.sha }}
+
+      - name: create yarn.lock
+        run: yarn install --mode update-lockfile
+
+      - name: hack for single file
+        run: |
+          if [ ! -d "package-temp-dir" ]; then
+            mkdir package-temp-dir
+          fi
+          cp yarn.lock package-temp-dir
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+
+      - name: cache node_modules
+        id: node_modules_cache_id
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: node_modules-${{ hashFiles('**/package-temp-dir/package-lock.json') }}
+
+      - name: install
+        if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
+        run: npm ci
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -22,11 +59,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: restore cache from yarn.lock
+        uses: actions/cache@v3
+        with:
+          path: package-temp-dir
+          key: lock-${{ github.sha }}
+      - name: restore yarn.lock
+        run: |
+          node ./scripts/actions/restore-cache.js
+      - uses: actions/cache@v3
+        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Build
         run: |
