@@ -24,7 +24,7 @@ jobs:
       - name: cache yarn.lock
         uses: actions/cache@v3
         with:
-          path: yarn.lock
+          path: .package-temp-dir
           key: lock-${{ github.sha }}
 
       - name: create yarn.lock
@@ -32,24 +32,8 @@ jobs:
 
       - name: hack for single file
         run: |
-          if [ ! -d "package-temp-dir" ]; then
-            mkdir package-temp-dir
-          fi
-          cp yarn.lock package-temp-dir
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+          node ./scripts/actions/cache.js
 
-      - name: cache node_modules
-        id: node_modules_cache_id
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: node_modules-${{ hashFiles('**/package-temp-dir/package-lock.json') }}
-
-      - name: install
-        if: steps.node_modules_cache_id.outputs.cache-hit != 'true'
-        run: npm ci
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -64,25 +48,32 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      # region yarn cache start
       - name: restore cache from yarn.lock
         uses: actions/cache@v3
         with:
-          path: package-temp-dir
+          path: .package-temp-dir
           key: lock-${{ github.sha }}
       - name: restore yarn.lock
         run: |
           node ./scripts/actions/restore-cache.js
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+        id: yarn_cache
         with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
+      - name: install
+        if: steps.yarn_cache.outputs.cache-hit != 'true'
+        run: yarn
+      #endregion
 
       - name: Build
         run: |
-          yarn
           npm run init
           npm run bundle:lite
 

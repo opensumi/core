@@ -54,18 +54,32 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      # region yarn cache start
       - name: restore cache from yarn.lock
         uses: actions/cache@v3
         with:
-          path: package-temp-dir
+          path: .package-temp-dir
           key: lock-${{ github.sha }}
       - name: restore yarn.lock
         run: |
           node ./scripts/actions/restore-cache.js
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: install
+        if: steps.yarn_cache.outputs.cache-hit != 'true'
+        run: yarn
+      #endregion
 
-      - name: Build & Test
+      - name: CI
         run: |
-          yarn
           npm run ci -- -- --selectProjects jsdom
 
       - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
@@ -90,9 +104,32 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Build & Test
+      # region yarn cache start
+      - name: restore cache from yarn.lock
+        uses: actions/cache@v3
+        with:
+          path: .package-temp-dir
+          key: lock-${{ github.sha }}
+      - name: restore yarn.lock
         run: |
-          yarn
+          node ./scripts/actions/restore-cache.js
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: install
+        if: steps.yarn_cache.outputs.cache-hit != 'true'
+        run: yarn
+      #endregion
+
+      - name: CI
+        run: |
           npm run ci -- -- --selectProjects node
 
       - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
