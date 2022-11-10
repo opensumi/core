@@ -35,6 +35,7 @@ jobs:
           node ./scripts/actions/cache.js
 
   build:
+    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
