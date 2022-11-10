@@ -8,18 +8,18 @@ const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
 const { v4 } = require('uuid');
-const marketplaceType = process.env.MARKETPLACE ?? 'openvsx';
+const marketplaceType = process.env.MARKETPLACE ?? 'opentrs';
 
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
 
-const extensionFileName = marketplaceType === 'openvsx' ? 'vscode-extensions.json' : 'opentrs-extensions.json';
+const extensionFileName = marketplaceType === 'opentrs' ? 'opentrs-extensions.json' : 'vscode-extensions.json';
 const { extensions } = require(path.resolve(__dirname, `../configs/${extensionFileName}`));
 const headers = {};
 
 if (marketplaceType === 'opentrs') {
-  headers['x-master-key'] = '';
-  headers['x-account-id'] = '';
+  headers['x-master-key'] = '_V_LPJ6Ar-1nrSVa05xDGBYp';
+  headers['x-account-id'] = 'clcJKq_Gea47whxAJGrgoYqf';
 }
 
 // 限制并发数，运行promise
@@ -126,21 +126,21 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 const installExtension = async (namespace, name, version) => {
   const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
   const getDetailApi =
-    marketplaceType === 'openvsx'
-      ? `https://open-vsx.org/api/${path}`
-      : `https://marketplace.opentrs.com/api/extension/${path}`;
+    marketplaceType === 'opentrs'
+      ? `https://marketplace.opentrs.com/api/extension/${path}`
+      : `https://open-vsx.org/api/${path}`;
 
   const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
   const data = await res.json();
 
   let downloadUrl = '';
 
-  if (marketplaceType === 'openvsx') {
-    downloadUrl = data.files?.download;
-  } else {
+  if (marketplaceType === 'opentrs') {
     const extensionId = data.data?.extensionId;
 
     downloadUrl = `https://marketplace.opentrs.com/openapi/ide/download/${extensionId}`;
+  } else {
+    downloadUrl = data.files?.download;
   }
 
   if (downloadUrl) {
@@ -164,7 +164,7 @@ const downloadVscodeExtensions = async () => {
     for (const item of items) {
       const { name, version } = item;
       promises.push(async () => {
-        log('开始安装：%s', name, version);
+        log('开始安装：%s', name);
         try {
           await installExtension(publisher, name, version);
         } catch (e) {

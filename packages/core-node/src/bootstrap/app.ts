@@ -10,7 +10,7 @@ import { Injector } from '@opensumi/di';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
 import { ContributionProvider, createContributionProvider, isWindows } from '@opensumi/ide-core-common';
 import { ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@opensumi/ide-core-common';
-import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
 import { createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
@@ -53,7 +53,7 @@ export class ServerApp implements IServerApp {
       LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign(
         {
-          endpoint: DEFAULT_OPENVSX_REGISTRY,
+          endpoint: DEFAULT_TRS_REGISTRY,
           extensionDir: path.join(
             os.homedir(),
             ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),
@@ -61,8 +61,8 @@ export class ServerApp implements IServerApp {
             StoragePaths.MARKETPLACE_DIR,
           ),
           showBuiltinExtensions: false,
-          accountId: '',
-          masterKey: '',
+          accountId: 'clcJKq_Gea47whxAJGrgoYqf',
+          masterKey: '_V_LPJ6Ar-1nrSVa05xDGBYp',
           ignoreId: [],
         },
         opts.marketplace,

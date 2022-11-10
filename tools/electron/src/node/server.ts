@@ -2,7 +2,7 @@
 import net from 'net';
 
 import { Deferred } from '@opensumi/ide-core-common';
-import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
 import { parseArgv } from '@opensumi/ide-utils/lib/argv';
 
@@ -13,8 +13,10 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   let opts: IServerAppOpts = {
     webSocketHandler: [],
     marketplace: {
-      endpoint: DEFAULT_OPENVSX_REGISTRY,
+      endpoint: DEFAULT_TRS_REGISTRY,
       showBuiltinExtensions: true,
+      accountId: 'clcJKq_Gea47whxAJGrgoYqf',
+      masterKey: '_V_LPJ6Ar-1nrSVa05xDGBYp',
     },
   };
   if (Array.isArray(arg1)) {
