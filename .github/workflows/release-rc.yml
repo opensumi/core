@@ -42,7 +42,7 @@ jobs:
       # 安装依赖并构建
       - name: Install dependencies & Build
         run: |
-          yarn
+          yarn install
           npm run init
 
       - name: Publish prepatch version

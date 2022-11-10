@@ -75,7 +75,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         if: steps.yarn_cache.outputs.cache-hit != 'true'
-        run: yarn
+        run: yarn install
       #endregion
 
       - name: CI
@@ -126,7 +126,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         if: steps.yarn_cache.outputs.cache-hit != 'true'
-        run: yarn
+        run: yarn install
       #endregion
 
       - name: CI

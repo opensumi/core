@@ -70,7 +70,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         if: steps.yarn_cache.outputs.cache-hit != 'true'
-        run: yarn
+        run: yarn install
       #endregion
 
       - name: Build
@@ -91,7 +91,7 @@ jobs:
           node-version: 14.x
       - name: Build
         run: |
-          yarn
+          yarn install
           npm run init
           npm run bundle:lite
 

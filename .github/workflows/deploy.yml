@@ -20,7 +20,7 @@ jobs:
 
       - name: Build
         run: |
-          yarn
+          yarn install
           npm run update:iconfont
 
       - name: Deploy

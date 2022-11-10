@@ -41,7 +41,7 @@ jobs:
         shell: bash
         working-directory: ./opensumi
         run: |
-          yarn
+          yarn install
           npm run download-extension
           npm run init
 
