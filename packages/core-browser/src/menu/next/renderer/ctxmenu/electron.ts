@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { INativeMenuTemplate, CommandService, IElectronMainMenuService } from '@opensumi/ide-core-common';
 import { strings, Disposable } from '@opensumi/ide-core-common';
 
+import { SpecialCases } from '../../../../keyboard';
 import { electronEnv } from '../../../../utils';
 import { MenuNode } from '../../base';
 import { SeparatorMenuItemNode, SubmenuItemNode, AbstractContextMenuService } from '../../menu.interface';
@@ -139,7 +140,12 @@ export class ElectronCtxMenuRenderer implements IElectronCtxMenuRenderer {
 }
 
 function toElectronAccelerator(keybinding: string) {
-  return keybinding.replace('ctrlcmd', 'CmdOrCtrl');
+  return keybinding
+    .replace('ctrlcmd', 'CmdOrCtrl')
+    .replace(SpecialCases.MACMETA, 'CmdOrCtrl')
+    .replace(SpecialCases.CTRL, 'Ctrl')
+    .replace(SpecialCases.SHIFT, 'Shift')
+    .replace(SpecialCases.ALT, 'Alt');
 }
 
 @Injectable()
