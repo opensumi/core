@@ -3,7 +3,8 @@
   "version": "2.21.2",
   "description": "E2E test module for OpenSumi",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",

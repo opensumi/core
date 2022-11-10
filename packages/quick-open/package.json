@@ -2,7 +2,8 @@
   "name": "@opensumi/ide-quick-open",
   "version": "2.21.2",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",

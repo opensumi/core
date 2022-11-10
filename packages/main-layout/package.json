@@ -3,7 +3,8 @@
   "version": "2.21.2",
   "description": "@opensumi/ide-main-layout",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
