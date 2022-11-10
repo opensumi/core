@@ -39,7 +39,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-2019]
+        os: [macos-latest, ubuntu-latest]
         node-version: [14.x]
 
     steps:
@@ -75,6 +75,23 @@ jobs:
 
       - name: Build
         run: |
+          npm run init
+          npm run bundle:lite
+
+      - name: Lint
+        run: |
+          npm run lint -- --quiet
+  build-windows:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 14.x
+      - name: Build
+        run: |
+          yarn
           npm run init
           npm run bundle:lite
 
