@@ -11,6 +11,7 @@ import {
   BinaryBuffer,
   decodeBase64,
   encodeBase64,
+  Event,
 } from '@opensumi/ide-core-common';
 // eslint-disable-next-line import/no-restricted-paths
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -258,7 +259,7 @@ export enum DebugModelSupportedEventType {
 export const IDebugModelManager = Symbol('DebugModelManager');
 
 export interface IDebugModelManager {
-  init(session: IDebugSession): void;
+  init(session?: IDebugSession): void;
   model: IDebugModel | undefined;
   resolve(uri: URI): IDebugModel[] | undefined;
   handleMouseEvent(
@@ -267,4 +268,5 @@ export interface IDebugModelManager {
     event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent,
     monacoEditor: IMonacoCodeEditor,
   ): void;
+  onModelChanged: Event<monaco.editor.IModelChangedEvent>;
 }
