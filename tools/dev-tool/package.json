@@ -13,8 +13,9 @@
   },
   "dependencies": {
     "@types/koa": "^2.13.4",
-    "@types/koa-router": "^7.4.2",
     "@types/koa-bodyparser": "^4.3.7",
+    "@types/koa-router": "^7.4.2",
+    "acorn": "^8.7.1",
     "cache-loader": "^4.1.0",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",
@@ -43,7 +44,6 @@
     "tsconfig-paths-webpack-plugin": "^3.2.0",
     "typescript": "4.6.4",
     "webpack": "^4.39.3",
-    "acorn": "^8.7.1",
     "webpack-cli": "^3.3.1",
     "webpack-merge": "^4.2.2"
   }
