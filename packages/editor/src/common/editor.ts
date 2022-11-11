@@ -15,6 +15,7 @@ import {
 } from '@opensumi/ide-core-common';
 // eslint-disable-next-line import/no-restricted-paths
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
 import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import type { ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
@@ -154,6 +155,8 @@ export interface IDiffEditor extends IDisposable {
   getLineChanges(): ILineChange[] | null;
 }
 
+export type IMergeEditorEditor = IDisposable;
+
 @Injectable()
 export abstract class EditorCollectionService {
   /**
@@ -176,6 +179,12 @@ export abstract class EditorCollectionService {
    * @param overrides
    */
   public abstract createDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): IDiffEditor;
+
+  public abstract createMergeEditor(
+    dom: HTMLElement,
+    options?: any,
+    overrides?: { [key: string]: any },
+  ): IMergeEditorEditor;
 
   public abstract listEditors(): IEditor[];
   public abstract listDiffEditors(): IDiffEditor[];
@@ -658,7 +667,7 @@ export enum IEditorPriority {
 
 // 定义一个resource如何被打开
 export interface IEditorOpenType {
-  type: 'code' | 'diff' | 'component';
+  type: 'code' | 'diff' | 'mergeEditor' | 'component';
 
   componentId?: string;
 

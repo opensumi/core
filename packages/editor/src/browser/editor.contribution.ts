@@ -75,7 +75,12 @@ import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry, ResourceDecorationChangeEvent } from './types';
+import {
+  EditorGroupsResetSizeEvent,
+  BrowserEditorContribution,
+  IEditorFeatureRegistry,
+  ResourceDecorationChangeEvent,
+} from './types';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
@@ -527,6 +532,16 @@ export class EditorContribution
           options,
         );
       },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR, {
+      execute: () =>
+        this.workbenchEditorService.open(
+          URI.from({
+            scheme: 'mergeEditor',
+            path: '/',
+          }),
+        ),
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SAVE_CURRENT, {

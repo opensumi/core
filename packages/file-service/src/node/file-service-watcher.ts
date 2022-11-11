@@ -95,7 +95,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
    */
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
-    let exist = await fs.pathExists(basePath);
+    const exist = await fs.pathExists(basePath);
 
     let watcherId = this.checkIsAlreadyWatched(basePath);
     if (watcherId) {
