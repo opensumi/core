@@ -40,6 +40,7 @@ import {
   Disposable,
   makeRandomHexString,
 } from '@opensumi/ide-core-common';
+import { IMergeEditorEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor-widget';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -630,6 +631,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   diffEditor!: IDiffEditor;
 
+  mergeEditor!: IMergeEditorEditor;
+
   private openingPromise: Map<string, Promise<IOpenResourceResult>> = new Map();
 
   _onDidEditorFocusChange = this.registerDispose(new EventEmitter<void>());
@@ -710,6 +713,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private _codeEditorPendingLayout = false;
   private _diffEditorPendingLayout = false;
+  private _mergeEditorPendingLayout = false;
 
   // 当前为EditorComponent，且monaco光标变化时触发
   private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
@@ -796,6 +800,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._diffEditorPendingLayout = false;
       } else {
         this._diffEditorPendingLayout = true;
+      }
+    }
+    if (this.mergeEditor) {
+      if (this.currentOpenType && this.currentOpenType.type === 'mergeEditor') {
+        this.mergeEditor.layout();
+        this._mergeEditorPendingLayout = false;
+      } else {
+        this._mergeEditorPendingLayout = true;
       }
     }
   }
@@ -1119,6 +1131,20 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }),
     );
     this.codeEditorReady.ready();
+  }
+
+  createMergeEditor(dom: HTMLElement) {
+    this.mergeEditor = this.collectionService.createMergeEditor(
+      dom,
+      {},
+      {
+        [ServiceNames.CONTEXT_KEY_SERVICE]: (this.contextKeyService as any).contextKeyService,
+      },
+    );
+
+    setTimeout(() => {
+      this.mergeEditor.layout();
+    });
   }
 
   createDiffEditor(dom: HTMLElement) {
@@ -1605,6 +1631,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           position: null,
           selectionLength: 0,
         });
+      } else if (activeOpenType.type === 'mergeEditor') {
+        // 这里处理 mergeEditor resource
       } else {
         return; // other type not handled
       }
@@ -1615,7 +1643,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       if (
         (this._codeEditorPendingLayout && activeOpenType.type === 'code') ||
-        (this._diffEditorPendingLayout && activeOpenType.type === 'diff')
+        (this._diffEditorPendingLayout && activeOpenType.type === 'diff') ||
+        (this._mergeEditorPendingLayout && activeOpenType.type === 'mergeEditor')
       ) {
         this.doLayoutEditors();
       }

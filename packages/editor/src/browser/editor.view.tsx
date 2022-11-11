@@ -214,6 +214,7 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 
 const cachedEditor: { [key: string]: HTMLDivElement } = {};
 const cachedDiffEditor: { [key: string]: HTMLDivElement } = {};
+const cachedMergeEditor: { [key: string]: HTMLDivElement } = {};
 
 /**
  * 默认的 editor empty component
@@ -326,6 +327,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   const components: React.ReactNode[] = [];
   const codeEditorRef = React.useRef<HTMLDivElement>(null);
   const diffEditorRef = React.useRef<HTMLDivElement>(null);
+  const mergeEditorRef = React.useRef<HTMLDivElement>(null);
   const [, updateState] = React.useState<any>();
   const forceUpdate = React.useCallback(() => updateState({}), []);
 
@@ -352,7 +354,18 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         group.createDiffEditor(container);
       }
     }
-  }, [codeEditorRef.current]);
+    if (mergeEditorRef.current) {
+      if (cachedMergeEditor[group.name]) {
+        cachedMergeEditor[group.name].remove();
+        mergeEditorRef.current.appendChild(cachedMergeEditor[group.name]);
+      } else {
+        const container = document.createElement('div');
+        mergeEditorRef.current.appendChild(container);
+        cachedMergeEditor[group.name] = container;
+        group.createMergeEditor(container);
+      }
+    }
+  }, [codeEditorRef.current, diffEditorRef.current, mergeEditorRef.current]);
 
   useDisposable(
     () =>
@@ -470,6 +483,12 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
             [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
           })}
           ref={diffEditorRef}
+        />
+        <div
+          className={classnames(styles.kt_editor_diff_3_editor, styles.kt_editor_component, {
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'mergeEditor',
+          })}
+          ref={mergeEditorRef}
         />
       </div>
       {group.currentResource && <EditorSideView side={'bottom'} resource={group.currentResource}></EditorSideView>}
