@@ -366,3 +366,9 @@ export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
   id: 'workbench.action.maximizeEditor',
   delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
 };
+
+export const OPEN_MERGEEDITOR: Command = {
+  id: '_open.mergeEditor',
+  label: '_open.mergeEditor(DEV)',
+  delegate: EDITOR_COMMANDS.OPEN_MERGEEDITOR.id,
+};

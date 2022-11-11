@@ -37,6 +37,7 @@ import { LanguageStatusService } from './language/language-status.service';
 import { LanguageService } from './language/language.service';
 import { EditorActionRegistryImpl } from './menu/editor.menu';
 import { OpenTypeMenuContribution } from './menu/open-type-menu.contribution';
+import { MergeEditorContribution } from './merge-editor/merge-editor.contribution';
 import {
   CallHierarchyContribution,
   CallHierarchyService,
@@ -163,6 +164,7 @@ export class EditorModule extends BrowserModule {
     },
     EditorPreferenceContribution,
     DefaultDiffEditorContribution,
+    MergeEditorContribution,
     EditorClientAppContribution,
     EditorContribution,
     CompareEditorContribution,

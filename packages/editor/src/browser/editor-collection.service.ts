@@ -142,6 +142,14 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
+  public createMergeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
+    const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
+    const mergedOptions = { ...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options };
+    const editor = this.monacoService.createMergeEditor(dom, mergedOptions, overrides);
+    // this._onDiffEditorCreate.fire(editor);
+    return editor;
+  }
+
   public listDiffEditors(): IDiffEditor[] {
     return Array.from(this._diffEditors.values());
   }
@@ -684,7 +692,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       change.originalEndLineNumber,
       change.modifiedStartLineNumber,
       change.modifiedEndLineNumber,
-      change.charChanges?.map((charChange) => ([
+      change.charChanges?.map((charChange) => [
         charChange.originalStartLineNumber,
         charChange.originalStartColumn,
         charChange.originalEndLineNumber,
@@ -693,7 +701,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         charChange.modifiedStartColumn,
         charChange.modifiedEndLineNumber,
         charChange.modifiedEndColumn,
-      ])),
+      ]),
     ]);
   }
 

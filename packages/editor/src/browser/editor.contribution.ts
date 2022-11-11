@@ -549,6 +549,16 @@ export class EditorContribution
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR, {
+      execute: () =>
+        this.workbenchEditorService.open(
+          URI.from({
+            scheme: 'mergeEditor',
+            path: '/',
+          }),
+        ),
+    });
+
     commands.registerCommand(EDITOR_COMMANDS.SAVE_CURRENT, {
       execute: async () => {
         const group = this.workbenchEditorService.currentEditorGroup;

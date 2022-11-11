@@ -366,6 +366,12 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
     });
 
+    registry.registerCommand(VSCodeBuiltinCommands.OPEN_MERGEEDITOR, {
+      execute: (args: unknown[]) => {
+        // 这里拦截 vscode 内置的 _open.mergeEditor 命令
+      },
+    });
+
     [
       // layout builtin commands
       VSCodeBuiltinCommands.LAYOUT_COMMAND_MAXIMIZE_EDITOR,
@@ -435,6 +441,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_GLOBAL_SETTINGS,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS_JSON,
       VSCodeBuiltinCommands.THEME_COMMAND_QUICK_SELECT,
+      // merge editor
+      VSCodeBuiltinCommands.OPEN_MERGEEDITOR,
     ].forEach((command) => {
       registry.registerCommand(command);
     });
