@@ -347,6 +347,11 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
+  export const OPEN_MERGEEDITOR: Command = {
+    id: 'editor.open.mergeEditor',
+    category: CATEGORY,
+  };
+
   export const CLOSE: Command = {
     id: 'editor.close',
     category: CATEGORY,
