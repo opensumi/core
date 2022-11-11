@@ -203,17 +203,22 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
 
   @action
   getInstalledExtensions() {
-    this.installedExtensions = this.extensionInstanceService.getExtensionInstances().map((e) => ({
-      namespace: e.packageJSON.publisher,
-      name: e.packageJSON.name,
-      id: e.extensionId,
-      version: e.packageJSON.version,
-      displayName: e.packageJSON.displayName,
-      description: e.packageJSON.description,
-      publisher: e.packageJSON.publisher,
-      iconUrl: e.packageJSON.icon && e.extensionLocation.toString() + `/${e.packageJSON.icon}`,
-      path: e.path,
-      realpath: e.realPath,
-    }));
+    this.installedExtensions = this.extensionInstanceService.getExtensionInstances().map((e) => {
+      const extensionId = e.extensionId;
+      const namespace = extensionId && extensionId.includes('.') ? extensionId.split('.')[0] : e.packageJSON.publisher;
+
+      return {
+        namespace,
+        name: e.packageJSON.name,
+        id: e.extensionId,
+        version: e.packageJSON.version,
+        displayName: e.packageJSON.displayName,
+        description: e.packageJSON.description,
+        publisher: e.packageJSON.publisher,
+        iconUrl: e.packageJSON.icon && e.extensionLocation.toString() + `/${e.packageJSON.icon}`,
+        path: e.path,
+        realpath: e.realPath,
+      };
+    });
   }
 }

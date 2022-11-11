@@ -20,6 +20,7 @@ const headers = {};
 if (marketplaceType === 'opentrs') {
   headers['x-master-key'] = '_V_LPJ6Ar-1nrSVa05xDGBYp';
   headers['x-account-id'] = 'clcJKq_Gea47whxAJGrgoYqf';
+  headers['x-download-mode'] = 'redirect';
 }
 
 // 限制并发数，运行promise

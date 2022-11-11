@@ -1,18 +1,24 @@
 import nodeFetch from 'node-fetch';
 
+import pkg from '@opensumi/ide-core-node/package.json';
+
 import { AbstractMarketplace } from '../../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../../common/vsx-registry-types';
 
 const commonHeaders = {
   'Content-Type': 'application/json',
   Accept: 'application/json',
+  'x-framework-version': pkg.version,
 };
 
 export class OpentrsMarketplaceImpl extends AbstractMarketplace {
   constructor(config) {
     super(config);
 
-    this.downloadHeaders = this.getAKHeaders();
+    this.downloadHeaders = {
+      ...this.getAKHeaders(),
+      'x-download-model': 'redirect',
+    };
   }
 
   private getAKHeaders() {
@@ -32,7 +38,6 @@ export class OpentrsMarketplaceImpl extends AbstractMarketplace {
 
   async getExtensionDetail(param: QueryParam): Promise<QueryResult | undefined> {
     const { endpoint } = this.config;
-
     const uri = `${endpoint}/openapi/ide/extension/${param.extensionId}`;
     const res = await nodeFetch(uri, {
       headers: {
@@ -75,7 +80,6 @@ export class OpentrsMarketplaceImpl extends AbstractMarketplace {
 
         return {
           ...restItem,
-          extensionId,
           namespace: publisher,
           files: {
             icon,
