@@ -13,7 +13,6 @@ import {
   IContextKeyService,
 } from '@opensumi/ide-core-browser';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
-import { DebugContribution, DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { EditorCollectionService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
@@ -30,6 +29,8 @@ import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { DebugModule } from '../../src/browser';
+import { DebugContribution } from '../../src/browser/debug-contribution';
 
 /**
  * launch配置项需要与VSCode中的配置项对齐
