@@ -67,56 +67,7 @@ jobs:
           node-version: '14.x'
           registry-url: 'https://registry.npmjs.org'
 
-      # region start opensumi
-      - name: Checkout opensumi/core
-        uses: actions/checkout@master
-        with:
-          repository: opensumi/core
-          ref: ${{ github.ref }}
-          path: ../opensumi-tmp
-
-      # region yarn cache start
-      - name: restore cache from yarn.lock
-        uses: actions/cache@v3
-        with:
-          path: ../opensumi-tmp/.package-temp-dir
-          key: lock-${{ github.sha }}
-      - name: restore yarn.lock
-        working-directory: ../opensumi-tmp
-        run: |
-          node ./scripts/actions/restore-cache.js
-      - name: Get yarn cache directory path
-        working-directory: ../opensumi-tmp
-        id: yarn_cache_dir_path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-      - uses: actions/cache@v3
-        id: yarn_cache
-        with:
-          path: ../opensumi-tmp/${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: install
-        working-directory: ../opensumi-tmp
-        if: steps.yarn_cache.outputs.cache-hit != 'true'
-        run: yarn install
-      #endregion
-
-      - name: Build
-        shell: bash
-        working-directory: ../opensumi-tmp
-        run: |
-          yarn install
-          yarn run download-extension
-          yarn run init
-          # bypass berry workspace detection
-          echo '' > yarn.lock
-
-      - name: Run
-        shell: bash
-        working-directory: ../opensumi-tmp
-        run: SUPPORT_LOAD_WORKSPACE_BY_HASH=true npm start &
-      # endregion start opensumi
+      - uses: microsoft/playwright-github-action@v1
 
       # region yarn cache start
       - name: restore cache from yarn.lock
@@ -128,23 +79,30 @@ jobs:
         run: |
           node ./scripts/actions/restore-cache.js
       - name: Get yarn cache directory path
-        id: yarn_cache_dir_path_1
+        id: yarn_cache_dir_path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
       - uses: actions/cache@v3
-        id: yarn_cache_1
+        id: yarn_cache
         with:
-          path: ${{ steps.yarn_cache_dir_path_1.outputs.dir }}
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: install
-        if: steps.yarn_cache_1.outputs.cache-hit != 'true'
+        if: steps.yarn_cache.outputs.cache-hit != 'true'
         run: yarn install
       #endregion
 
-      - uses: microsoft/playwright-github-action@v1
-      - name: Init & Test
-        run: yarn && yarn run init && cd tools/playwright && yarn run ui-tests-ci
+      - name: Init
+        run: yarn run init
+
+      - name: Run
+        run: |
+          yarn run download-extension
+          SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start &
+
+      - name: Test
+        run: cd tools/playwright && yarn run ui-tests-ci
 
       - name: Upload test results
         if: always()
