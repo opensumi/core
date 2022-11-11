@@ -20,13 +20,21 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v3
-
       - name: cache yarn.lock
         uses: actions/cache@v3
         with:
           path: .package-temp-dir
           key: lock-${{ github.sha }}
-
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - name: create yarn.lock
         run: yarn install --mode update-lockfile
 
