@@ -66,7 +66,7 @@ jobs:
       - name: Create Changelog
         id: release-log
         run: |
-          yarn run changelog -- --remote
+          yarn run changelog --remote
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

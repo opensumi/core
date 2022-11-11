@@ -11,7 +11,7 @@
   "scripts": {
     "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.search.json",
-    "watch": "yarn run build -- -w"
+    "watch": "yarn run build -w"
   },
   "repository": {
     "type": "git",

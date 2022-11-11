@@ -13,7 +13,7 @@ cd tools/electron
 yarn
 yarn run link-local
 yarn run build
-yarn run rebuild-native -- --force-rebuild=true
+yarn run rebuild-native --force-rebuild=true
 yarn run start
 ```
 

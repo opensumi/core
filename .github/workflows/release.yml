@@ -60,7 +60,7 @@ jobs:
         run: |
           yarn install
           yarn run init
-          yarn run manifest -- -v=${{github.event.inputs.version}}
+          yarn run manifest -v=${{github.event.inputs.version}}
 
       # 发布正式版本
       # 当 main 分支进行首次版本发布时不推送 Lerna 更改到 Git

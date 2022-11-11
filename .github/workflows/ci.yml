@@ -89,7 +89,7 @@ jobs:
 
       - name: CI
         run: |
-          yarn run ci -- -- --selectProjects jsdom
+          yarn run ci -- --selectProjects jsdom
 
       - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
@@ -140,7 +140,7 @@ jobs:
 
       - name: CI
         run: |
-          yarn run ci -- -- --selectProjects node
+          yarn run ci -- --selectProjects node
 
       - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
