@@ -91,7 +91,7 @@ jobs:
           node-version: 14.x
       - name: Build
         run: |
-          yarn install
+          yarn install --no-immutable
           yarn run init
           yarn run bundle:lite
 
