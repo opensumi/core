@@ -12,7 +12,7 @@ if (!process.env.GITHUB_TOKEN) {
   console.log(chalk.yellow('Please keep your github access token carefully'));
   process.exit();
 } else if (!argv.time || !argv.branch) {
-  console.log(chalk.yellow('Please process a time argv, like `npm run iteration -- --time=2022-2-2 --branch=2.18`'));
+  console.log(chalk.yellow('Please process a time argv, like `yarn run iteration -- --time=2022-2-2 --branch=2.18`'));
   process.exit();
 }
 

@@ -9,7 +9,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.storage.json"
   },
   "repository": {

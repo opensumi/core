@@ -55,7 +55,7 @@ jobs:
       - name: Install dependencies & Build
         run: |
           yarn install
-          npm run init
+          yarn run init
 
       # 发布 next 版本，并在 issue 中回复
       # 使用 lerna publish 命令

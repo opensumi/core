@@ -60,13 +60,13 @@ jobs:
       - name: Install dependencies & Build
         run: |
           yarn install
-          npm run init
+          yarn run init
 
       # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
       - name: Create Changelog
         id: release-log
         run: |
-          npm run changelog -- --remote
+          yarn run changelog -- --remote
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

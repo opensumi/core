@@ -9,7 +9,7 @@ async function main() {
   const semaphore = path.resolve(folderName, 'node_modules/.init-done');
   if (!fs.existsSync(semaphore)) {
     await run(
-      'cd tools/electron && rimraf ./node_modules && yarn && npm run link-local && npm run rebuild-native && npm run build',
+      'cd tools/electron && rimraf ./node_modules && yarn && yarn run link-local && yarn run rebuild-native && yarn run build',
     );
     fs.closeSync(fs.openSync(semaphore, 'a'));
   }

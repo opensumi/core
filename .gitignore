@@ -9,6 +9,8 @@
 .DS_Store
 yarn.lock
 
+.package-temp-dir
+
 # Logs
 logs
 *.log

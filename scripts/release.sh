@@ -4,5 +4,5 @@ rm -rf node_modules
 rm -rf packages/**/node_modules
 
 yarn
-npm run init
-npm run publish
+yarn run init
+yarn run publish

@@ -9,7 +9,7 @@
   "license": "MIT",
   "main": "lib/index.js",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-node.json"
   },
   "typings": "lib/index.d.ts",

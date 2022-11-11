@@ -6,8 +6,8 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - init: yarn && npm run init
-    command: npm run start
+  - init: yarn && yarn run init
+    command: yarn run start
 
 ports:
   - port: 8080

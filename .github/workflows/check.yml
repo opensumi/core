@@ -75,12 +75,12 @@ jobs:
 
       - name: Build
         run: |
-          npm run init
-          npm run bundle:lite
+          yarn run init
+          yarn run bundle:lite
 
       - name: Lint
         run: |
-          npm run lint -- --quiet
+          yarn run lint -- --quiet
   build-windows:
     runs-on: windows-2019
     steps:
@@ -92,9 +92,9 @@ jobs:
       - name: Build
         run: |
           yarn install
-          npm run init
-          npm run bundle:lite
+          yarn run init
+          yarn run bundle:lite
 
       - name: Lint
         run: |
-          npm run lint -- --quiet
+          yarn run lint -- --quiet
