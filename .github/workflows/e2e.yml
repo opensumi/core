@@ -109,6 +109,8 @@ jobs:
           yarn install
           yarn run download-extension
           yarn run init
+          # bypass berry workspace detection
+          echo '' > yarn.lock
 
       - name: Run
         shell: bash
