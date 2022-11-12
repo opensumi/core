@@ -16,6 +16,5 @@ export interface IExtensionWalkthrough {
   readonly icon?: string;
   readonly description: string;
   readonly steps: IExtensionWalkthroughStep[];
-  readonly featuredFor: string[] | undefined;
   readonly when?: string;
 }
