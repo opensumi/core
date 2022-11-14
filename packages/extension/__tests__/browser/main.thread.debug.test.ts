@@ -4,11 +4,11 @@ import { Disposable, IFileServiceClient, URI, Uri } from '@opensumi/ide-core-com
 import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
+  DebugConfigurationManager,
+  DebugModelManager,
   DebugPreferences,
   DebugSessionContributionRegistry,
-  DebugModelManager,
 } from '@opensumi/ide-debug/lib/browser';
-import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';

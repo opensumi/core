@@ -10,7 +10,7 @@ import {
   IDebugSession,
   DebugSessionOptions,
 } from '@opensumi/ide-debug';
-import { DebugPreferences, DebugSessionContributionRegistry, DebugSession } from '@opensumi/ide-debug/lib/browser';
+import { DebugPreferences, DebugSession, DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';

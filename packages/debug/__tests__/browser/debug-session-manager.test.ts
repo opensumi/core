@@ -1,5 +1,4 @@
 import { Emitter, IContextKeyService, IReporterService, LabelService } from '@opensumi/ide-core-browser';
-import { Disposable } from '@opensumi/ide-core-common';
 import { IDebugServer, IDebugSessionManager, IDebugProgress } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
