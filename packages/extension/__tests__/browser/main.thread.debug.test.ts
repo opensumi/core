@@ -2,13 +2,11 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { LabelService } from '@opensumi/ide-core-browser/src';
 import { Disposable, IFileServiceClient, URI, Uri } from '@opensumi/ide-core-common';
 import { IDebugSessionManager, IDebugService, IDebugServer } from '@opensumi/ide-debug';
-import {
-  BreakpointManager,
-  DebugConfigurationManager,
-  DebugModelManager,
-  DebugPreferences,
-  DebugSessionContributionRegistry,
-} from '@opensumi/ide-debug/lib/browser';
+import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
+import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
+import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
+import { DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
