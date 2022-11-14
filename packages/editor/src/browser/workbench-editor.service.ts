@@ -1134,17 +1134,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   createMergeEditor(dom: HTMLElement) {
+    // @ts-ignore
     this.mergeEditor = this.collectionService.createMergeEditor(
       dom,
       {},
       {
-        [ServiceNames.CONTEXT_KEY_SERVICE]: (this.contextKeyService as any).contextKeyService,
+        [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
-
-    setTimeout(() => {
-      this.mergeEditor.layout();
-    });
   }
 
   createDiffEditor(dom: HTMLElement) {

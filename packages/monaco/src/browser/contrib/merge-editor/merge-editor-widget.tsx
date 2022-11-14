@@ -40,11 +40,6 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   @Autowired(AppConfig)
   private readonly configContext: AppConfig;
 
-  private baseView: ICodeEditor | undefined;
-  private incomingView: ICodeEditor | undefined;
-  private currentView: ICodeEditor | undefined;
-  private resultView: ICodeEditor | undefined;
-
   constructor(private readonly rootHtmlElement: HTMLElement, options: IMergeEditorEditorConstructionOptions) {
     super();
   }
