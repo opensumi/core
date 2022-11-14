@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react';
 
-import { useInjectable, MonacoService, ServiceNames, IContextKeyService } from '@opensumi/ide-core-browser';
+import { useInjectable } from '@opensumi/ide-core-browser';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 
-import { monaco } from '../../../monaco-api';
 import { ICodeEditor } from '../../../monaco-api/editor';
+import { MergeEditorService } from '../merge-editor.service';
 
 export const Grid = () => {
-  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
+  const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
 
   const incomingEditorContainer = React.useRef<HTMLDivElement | null>(null);
   const currentEditorContainer = React.useRef<HTMLDivElement | null>(null);
@@ -19,34 +19,18 @@ export const Grid = () => {
 
   useEffect(() => {
     if (incomingEditorContainer.current) {
-      incomingView = monaco.editor.create(
-        incomingEditorContainer.current,
-        {},
-        {
-          [ServiceNames.CONTEXT_KEY_SERVICE]: contextKeyService.createScoped(incomingEditorContainer.current),
-        },
-      );
+      incomingView = mergeEditorService.createIncomingEditor(incomingEditorContainer.current);
     }
     if (currentEditorContainer.current) {
-      currentView = monaco.editor.create(
-        currentEditorContainer.current,
-        {},
-        {
-          [ServiceNames.CONTEXT_KEY_SERVICE]: contextKeyService.createScoped(currentEditorContainer.current),
-        },
-      );
+      currentView = mergeEditorService.createCurrentEditor(currentEditorContainer.current);
     }
     if (resultEditorContainer.current) {
-      resultView = monaco.editor.create(
-        resultEditorContainer.current,
-        {},
-        {
-          [ServiceNames.CONTEXT_KEY_SERVICE]: contextKeyService.createScoped(resultEditorContainer.current),
-        },
-      );
+      resultView = mergeEditorService.createResultEditor(resultEditorContainer.current);
     }
+
     return () => {
       if (incomingView) {
+        incomingView;
         return incomingView.dispose();
       }
       if (currentView) {
@@ -61,9 +45,9 @@ export const Grid = () => {
   return (
     <div style={{ height: '100%' }}>
       <SplitPanel overflow='hidden' id='merge-editor-diff3-container' flex={2}>
-        <div style={{ height: '100%' }} className={'incomingEditorContainer'} ref={incomingEditorContainer}></div>
         <div style={{ height: '100%' }} className={'currentEditorContainer'} ref={currentEditorContainer}></div>
         <div style={{ height: '100%' }} className={'resultEditorContainer'} ref={resultEditorContainer}></div>
+        <div style={{ height: '100%' }} className={'incomingEditorContainer'} ref={incomingEditorContainer}></div>
       </SplitPanel>
     </div>
   );

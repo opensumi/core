@@ -155,7 +155,7 @@ export interface IDiffEditor extends IDisposable {
   getLineChanges(): ILineChange[] | null;
 }
 
-export type IMergeEditorEditor = IDisposable;
+export type IMergeEditorEditor = ICodeEditor;
 
 @Injectable()
 export abstract class EditorCollectionService {
