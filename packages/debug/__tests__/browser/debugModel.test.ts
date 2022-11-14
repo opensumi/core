@@ -8,17 +8,14 @@ import {
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { DebugSessionOptions, IDebugSessionManager } from '@opensumi/ide-debug';
-import {
-  DebugModule,
-  DebugStackFrame,
-  DebugThread,
-  DebugSession,
-  DebugSessionConnection,
-  BreakpointManager,
-} from '@opensumi/ide-debug/lib/browser';
+import { DebugModule } from '@opensumi/ide-debug/lib/browser';
+import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
+import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
+import { DebugSessionConnection } from '@opensumi/ide-debug/lib/browser/debug-session-connection';
 import { DebugModel, DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
+import { DebugStackFrame, DebugThread } from '@opensumi/ide-debug/lib/browser/model';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITerminalApiService } from '@opensumi/ide-terminal-next';
 

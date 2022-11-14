@@ -15,7 +15,7 @@ import {
   VscodeSchemeDocumentProvider,
 } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks/file-service-client';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IDialogService } from '@opensumi/ide-overlay';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';

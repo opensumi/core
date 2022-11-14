@@ -1,7 +1,7 @@
 import { URI, StorageProvider, IFileServiceClient } from '@opensumi/ide-core-browser';
-import { DebugBreakpoint, BreakpointManager, BREAKPOINT_KIND } from '@opensumi/ide-debug/lib/browser';
+import { BreakpointManager, BREAKPOINT_KIND, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IWorkspaceStorageService } from '@opensumi/ide-workspace';
 
 describe('Breakpoints Manager', () => {
