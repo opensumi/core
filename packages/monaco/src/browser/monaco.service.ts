@@ -55,7 +55,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         enabled: true,
       },
       automaticLayout: true,
-      model: null,
+      model: undefined,
       wordBasedSuggestions: false,
       renderLineHighlight: 'none',
     } as IStandaloneEditorConstructionOptions;

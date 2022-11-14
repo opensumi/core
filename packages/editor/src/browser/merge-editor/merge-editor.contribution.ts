@@ -1,8 +1,8 @@
 import { Autowired } from '@opensumi/di';
-import { Domain } from '@opensumi/ide-core-browser';
+import { Disposable, Domain } from '@opensumi/ide-core-browser';
 
 import { ResourceService } from '../../common';
-import { BrowserEditorContribution, EditorComponentRegistry } from '../types';
+import { BrowserEditorContribution, EditorComponentRegistry, IEditor, IEditorFeatureRegistry } from '../types';
 
 import { MergeEditorResourceProvider } from './merge-editor.provider';
 
