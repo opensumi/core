@@ -2,7 +2,6 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-
 import { Select, Option } from '@opensumi/ide-components';
 import { useInjectable, localize, isElectronRenderer, URI } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
@@ -175,7 +174,7 @@ interface DebugActionBarProps {
 }
 
 export const DebugActionBar = React.memo(({ runDebug, openConfiguration, openDebugConsole }: DebugActionBarProps) => (
-  <div className={styles.kt_debug_actions}>
+  <div className={styles.debug_actions}>
     <DebugAction
       id='debug.action.start'
       icon={'start'}
