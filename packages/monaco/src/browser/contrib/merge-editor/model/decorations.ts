@@ -1,13 +1,15 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional } from '@opensumi/di';
+import { Injectable, Autowired, Optional } from '@opensumi/di';
 import { MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
 import { uuid } from '@opensumi/ide-core-common';
 import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
+import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
 import { monaco } from '../../../monaco-api';
-import { ICodeEditor, IModelDecorationOptions, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { IDisposable } from '../../../monaco-api/types';
+import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
+
+import { GuidelineWidget } from './line';
 
 interface IDiffDecoration {
   id: string;
@@ -23,6 +25,7 @@ export class MergeEditorDecorations {
   private codeEditorService: MonacoCodeService;
 
   private deltaDecoration: IDiffDecoration[] = [];
+  private underLineWidgetSet: Set<GuidelineWidget> = new Set();
 
   constructor(@Optional() private readonly editor: ICodeEditor) {
     this.codeEditorService = this.overrideServicesRegistry.getRegisteredService(
@@ -37,28 +40,36 @@ export class MergeEditorDecorations {
     }
 
     this.editor.changeDecorations((accessor) => {
-      const newDecorations: IDiffDecoration[] = [];
+      const newDecorations: IDiffDecoration[] = this.deltaDecoration;
 
       for (const range of ranges) {
-        newDecorations.push({
-          id: '',
-          editorDecoration: {
-            range: {
-              startLineNumber: range.startLineNumber,
-              startColumn: 0,
-              endLineNumber: Math.max(range.startLineNumber, range.endLineNumberExclusive - 1),
-              endColumn: Number.MAX_SAFE_INTEGER,
+        if (range.isEmpty) {
+          const guidelineWidget = new GuidelineWidget(this.editor);
+          guidelineWidget.create();
+          guidelineWidget.showByLine(Math.max(0, range.startLineNumber - 1));
+
+          this.underLineWidgetSet.add(guidelineWidget);
+        } else {
+          newDecorations.push({
+            id: '',
+            editorDecoration: {
+              range: {
+                startLineNumber: range.startLineNumber,
+                startColumn: 0,
+                endLineNumber: range.endLineNumberExclusive - 1,
+                endColumn: Number.MAX_SAFE_INTEGER,
+              },
+              options: {
+                description: '',
+                className: 'sumi-debug-top-stack-frame-line',
+                zIndex: 10,
+                isWholeLine: true,
+                stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+                collapseOnReplaceEdit: true,
+              },
             },
-            options: {
-              description: '',
-              className: 'sumi-debug-top-stack-frame-line',
-              zIndex: 10,
-              isWholeLine: true,
-              stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-              collapseOnReplaceEdit: true,
-            },
-          },
-        });
+          });
+        }
       }
 
       accessor
