@@ -136,3 +136,7 @@ export enum AskSaveResult {
   SAVE = 2,
   CANCEL = 3,
 }
+
+// #region merge editor
+export type IMergeEditorResource = IResource<{ current: URI; result: URI; incoming: URI }>;
+// #endregion merge editor

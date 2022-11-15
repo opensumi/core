@@ -51,6 +51,16 @@ export class MergeEditorService extends Disposable {
     return editor;
   }
 
+  public getCurrentEditor(): ICodeEditor | undefined {
+    return this.currentView;
+  }
+  public getResultEditor(): ICodeEditor | undefined {
+    return this.resultView;
+  }
+  public getIncomingEditor(): ICodeEditor | undefined {
+    return this.incomingView;
+  }
+
   public createIncomingEditor(container: HTMLDivElement): ICodeEditor {
     if (this.incomingView) {
       return this.incomingView;
@@ -67,7 +77,63 @@ export class MergeEditorService extends Disposable {
     }
 
     this.currentView = this.createEditorFactory(container);
-    const dom = this.currentView.getDomNode();
+    this.currentDecorations = this.injector.get(MergeEditorDecorations, [this.currentView]);
+    return this.currentView;
+  }
+
+  public createResultEditor(container: HTMLDivElement): ICodeEditor {
+    if (this.resultView) {
+      return this.resultView;
+    }
+
+    this.resultView = this.createEditorFactory(container);
+    this.resultDecorations = this.injector.get(MergeEditorDecorations, [this.resultView]);
+    return this.resultView;
+  }
+
+  public async diffComputer(model1: ITextModel, model2: ITextModel): Promise<IDocumentDiff> {
+    const result = await this.computerDiffModel.computeDiff(model1, model2);
+    return result;
+  }
+
+  public async compare(): Promise<void> {
+    const result = await this.diffComputer(this.currentView?.getModel()!, this.resultView?.getModel()!);
+    const { changes } = result;
+
+    this.currentDecorations.render(
+      changes.map((r) => r.originalRange),
+      changes
+        .map((c) => c.innerChanges)
+        .filter(Boolean)
+        .flatMap((m) => m!.map((m) => m.originalRange)),
+    );
+    this.resultDecorations.render(
+      changes.map((r) => r.modifiedRange),
+      changes
+        .map((c) => c.innerChanges)
+        .filter(Boolean)
+        .flatMap((m) => m!.map((m) => m.modifiedRange)),
+    );
+
+    this.diffComputer(this.resultView?.getModel()!, this.incomingView?.getModel()!).then((result) => {
+      const { changes } = result;
+      this.resultDecorations.render(
+        changes.map((r) => r.originalRange),
+        changes
+          .map((c) => c.innerChanges)
+          .filter(Boolean)
+          .flatMap((m) => m!.map((m) => m.originalRange)),
+      );
+      this.incomingDecorations.render(
+        changes.map((r) => r.modifiedRange),
+        changes
+          .map((c) => c.innerChanges)
+          .filter(Boolean)
+          .flatMap((m) => m!.map((m) => m.modifiedRange)),
+      );
+    });
+
+    const dom = this.currentView!.getDomNode();
     if (dom) {
       const marginDom = dom.querySelector('.margin');
       const elementDom = dom.querySelector('.monaco-scrollable-element');
@@ -80,64 +146,5 @@ export class MergeEditorService extends Disposable {
         elementDom.setAttribute('style', `${elementDom.getAttribute('style')} left: 0px;`);
       }
     }
-
-    this.currentDecorations = this.injector.get(MergeEditorDecorations, [this.currentView]);
-    return this.currentView;
-  }
-
-  public createResultEditor(container: HTMLDivElement): ICodeEditor {
-    if (this.resultView) {
-      return this.resultView;
-    }
-
-    this.resultView = this.createEditorFactory(container);
-    this.resultDecorations = this.injector.get(MergeEditorDecorations, [this.resultView]);
-
-    this.addDispose(
-      this.resultView.onDidChangeModelContent(async () => {
-        const result = await this.diffComputer(this.currentView?.getModel()!, this.resultView?.getModel()!);
-        const { changes } = result;
-
-        this.currentDecorations.render(
-          changes.map((r) => r.originalRange),
-          changes
-            .map((c) => c.innerChanges)
-            .filter(Boolean)
-            .flatMap((m) => m!.map((m) => m.originalRange)),
-        );
-        this.resultDecorations.render(
-          changes.map((r) => r.modifiedRange),
-          changes
-            .map((c) => c.innerChanges)
-            .filter(Boolean)
-            .flatMap((m) => m!.map((m) => m.modifiedRange)),
-        );
-
-        this.diffComputer(this.resultView?.getModel()!, this.incomingView?.getModel()!).then((result) => {
-          const { changes } = result;
-          this.resultDecorations.render(
-            changes.map((r) => r.originalRange),
-            changes
-              .map((c) => c.innerChanges)
-              .filter(Boolean)
-              .flatMap((m) => m!.map((m) => m.originalRange)),
-          );
-          this.incomingDecorations.render(
-            changes.map((r) => r.modifiedRange),
-            changes
-              .map((c) => c.innerChanges)
-              .filter(Boolean)
-              .flatMap((m) => m!.map((m) => m.modifiedRange)),
-          );
-        });
-      }),
-    );
-
-    return this.resultView;
-  }
-
-  public async diffComputer(model1: ITextModel, model2: ITextModel): Promise<IDocumentDiff> {
-    const result = await this.computerDiffModel.computeDiff(model1, model2);
-    return result;
   }
 }

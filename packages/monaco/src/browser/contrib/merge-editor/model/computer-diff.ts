@@ -40,7 +40,7 @@ export class ComputerDiffModel {
 
   public async computeDiff(model1: ITextModel, model2: ITextModel): Promise<IDocumentDiff> {
     const result = await this.editorWorkerService.computeDiff(model1.uri, model2.uri, {
-      ignoreTrimWhitespace: false,
+      ignoreTrimWhitespace: true,
       maxComputationTime: 0,
       diffAlgorithm: 'experimental',
     });
