@@ -10,15 +10,15 @@ import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common/file-s
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
-  FolderPreferenceProvider,
-  FolderPreferenceProviderFactory,
-  FolderPreferenceProviderOptions,
-} from './folder-preference-provider';
+  FolderFilePreferenceProvider,
+  FolderFilePreferenceProviderFactory,
+  FolderFilePreferenceProviderOptions,
+} from './folder-file-preference-provider';
 
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
-  @Autowired(FolderPreferenceProviderFactory)
-  protected readonly folderPreferenceProviderFactory: FolderPreferenceProviderFactory;
+  @Autowired(FolderFilePreferenceProviderFactory)
+  protected readonly FolderFilePreferenceProviderFactory: FolderFilePreferenceProviderFactory;
 
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;
@@ -32,7 +32,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 
-  protected readonly providers = new Map<string, FolderPreferenceProvider>();
+  protected readonly providers = new Map<string, FolderFilePreferenceProvider>();
 
   constructor() {
     super();
@@ -66,7 +66,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     const roots = this.workspaceService.tryGetRoots();
     const toDelete = new Set(this.providers.keys());
     for (const folder of roots) {
-      // 这里根据当前工作区的根目录分别创建setting.json文件的Provider
+      // 这里根据当前工作区的根目录分别创建 `setting.json`, `launch.json`, `task.json` 等文件的 FolderPreferenceProvider
       const folderUri = new URI(folder.uri);
       for (const configPath of this.configurations.getPaths()) {
         for (const configName of [...this.configurations.getSectionNames(), this.configurations.getConfigName()]) {
@@ -80,6 +80,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
         }
       }
     }
+
     // 去重，移除旧的配置文件Provider
     for (const key of toDelete) {
       const provider = this.providers.get(key);
@@ -165,8 +166,8 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
   }
 
   /**
-   * 根据传入的preferenceName对配置项进行值的更新
-   * 这里一个配置项，如launch.json可能对应多个Provider，故需要遍历进行配置设置
+   * 根据传入的 preferenceName 对配置项进行值的更新
+   * 这里一个配置项，如 launch.json 可能对应多个 Provider，故需要遍历进行配置设置
    *
    * @param {string} preferenceName 配置项
    * @param {*} value 值
@@ -213,8 +214,8 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return false;
   }
 
-  protected groupProvidersByConfigName(resourceUri?: string): Map<string, FolderPreferenceProvider[]> {
-    const groups = new Map<string, FolderPreferenceProvider[]>();
+  protected groupProvidersByConfigName(resourceUri?: string): Map<string, FolderFilePreferenceProvider[]> {
+    const groups = new Map<string, FolderFilePreferenceProvider[]>();
     const providers = this.getFolderProviders(resourceUri);
     for (const configName of [this.configurations.getConfigName(), ...this.configurations.getSectionNames()]) {
       const group: any[] = [];
@@ -228,13 +229,13 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return groups;
   }
 
-  protected getFolderProviders(resourceUri?: string): FolderPreferenceProvider[] {
+  protected getFolderProviders(resourceUri?: string): FolderFilePreferenceProvider[] {
     if (!resourceUri) {
       return [];
     }
     const resourcePath = new URI(resourceUri).path;
     let folder: Readonly<{ relativity: number; uri?: string }> = { relativity: Number.MAX_SAFE_INTEGER };
-    const providers = new Map<string, FolderPreferenceProvider[]>();
+    const providers = new Map<string, FolderFilePreferenceProvider[]>();
     for (const provider of this.providers.values()) {
       const uri = provider.folderUri.toString();
       const folderProviders = providers.get(uri) || [];
@@ -248,8 +249,8 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     return (folder.uri && providers.get(folder.uri)) || [];
   }
 
-  protected createProvider(options: FolderPreferenceProviderOptions): FolderPreferenceProvider {
-    const provider = this.folderPreferenceProviderFactory(options);
+  protected createProvider(options: FolderFilePreferenceProviderOptions): FolderFilePreferenceProvider {
+    const provider = this.FolderFilePreferenceProviderFactory(options);
     this.toDispose.push(provider);
     this.toDispose.push(
       provider.onDidPreferencesChanged((change) => {

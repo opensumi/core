@@ -12,6 +12,8 @@ import {
   Throttler,
   FileChange,
   Schemes,
+  AppConfig,
+  VSCODE_WORKSPACE_CONFIGURATION_DIR_NAME,
 } from '@opensumi/ide-core-browser';
 import {
   PreferenceProvider,
@@ -45,6 +47,9 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
 
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: IFileServiceClient;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   @Autowired(ILogger)
   private logger: ILogger;
@@ -201,11 +206,25 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   protected async readContents(): Promise<string | undefined> {
+    const uri = this.getUri();
     try {
-      const uri = this.getUri();
       const { content } = await this.fileSystem.readFile(uri.toString());
       return content.toString();
     } catch (e) {
+      if (this.appConfig.useVSCodeWorkspaceConfiguration) {
+        // 当获取不到工作区配置时，在 `useVSCodeWorkspaceConfiguration` 开启的情况下，尝试获取 `.vscode` 下配置作为默认值
+        if (uri.scheme === Schemes.file) {
+          const vscodeConfigurationUri = uri.parent.parent
+            .resolve(VSCODE_WORKSPACE_CONFIGURATION_DIR_NAME)
+            .resolve(uri.displayName);
+          try {
+            const { content } = await this.fileSystem.readFile(vscodeConfigurationUri.toString());
+            return content.toString();
+          } catch (e) {
+            return undefined;
+          }
+        }
+      }
       return undefined;
     }
   }

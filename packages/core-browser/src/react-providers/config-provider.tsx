@@ -232,6 +232,10 @@ export interface AppConfig {
    * 配置插件 browser 层的 component 样式文件和 iconfont 样式文件
    */
   extensionBrowserStyleSheet?: ExtensionBrowserStyleSheet;
+  /**
+   * 是否采用工作区内的 .vscode 配置作为项目启动的配置默认值
+   */
+  useVSCodeWorkspaceConfiguration?: boolean;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
