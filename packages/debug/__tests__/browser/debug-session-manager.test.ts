@@ -118,10 +118,6 @@ describe('DebugSessionManager', () => {
           useValue: mockBreakpointManager,
         },
         {
-          token: DebugModelManager,
-          useValue: {},
-        },
-        {
           token: ITaskService,
           useValue: mockTaskService,
         },
