@@ -13,24 +13,23 @@ export const Grid = () => {
   const currentEditorContainer = React.useRef<HTMLDivElement | null>(null);
   const resultEditorContainer = React.useRef<HTMLDivElement | null>(null);
 
-  let incomingView: ICodeEditor;
-  let currentView: ICodeEditor;
-  let resultView: ICodeEditor;
-
   useEffect(() => {
-    if (incomingEditorContainer.current) {
-      incomingView = mergeEditorService.createIncomingEditor(incomingEditorContainer.current);
-    }
+    let incomingView: ICodeEditor;
+    let currentView: ICodeEditor;
+    let resultView: ICodeEditor;
+
     if (currentEditorContainer.current) {
       currentView = mergeEditorService.createCurrentEditor(currentEditorContainer.current);
     }
     if (resultEditorContainer.current) {
       resultView = mergeEditorService.createResultEditor(resultEditorContainer.current);
     }
+    if (incomingEditorContainer.current) {
+      incomingView = mergeEditorService.createIncomingEditor(incomingEditorContainer.current);
+    }
 
     return () => {
       if (incomingView) {
-        incomingView;
         return incomingView.dispose();
       }
       if (currentView) {
