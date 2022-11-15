@@ -1,4 +1,4 @@
-import { DebugThread, DebugStackFrame } from '@opensumi/ide-debug/lib/browser';
+import { DebugStackFrame, DebugThread } from '@opensumi/ide-debug/lib/browser/model';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 describe('DebugStackFrame Model', () => {
