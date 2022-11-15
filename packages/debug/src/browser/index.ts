@@ -1,15 +1,8 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule, IContextKeyService } from '@opensumi/ide-core-browser';
-import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
+import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
-import {
-  DebugEditor,
-  DebugModelFactory,
-  IDebugProgress,
-  IDebugServer,
-  IDebugService,
-  IDebugSessionManager,
-} from '../common';
+import { DebugEditor, DebugModelFactory, IDebugProgress, IDebugService, IDebugSessionManager } from '../common';
 
 import { BreakpointManager } from './breakpoint';
 import { DebugCallStackItemTypeKey } from './contextkeys';
@@ -69,7 +62,7 @@ export class DebugModule extends BrowserModule {
       useClass: EvaluatableExpressionServiceImpl,
     },
     {
-      token: FolderPreferenceProvider,
+      token: FolderFilePreferenceProvider,
       useClass: LaunchFolderPreferenceProvider,
       dropdownForTag: true,
       tag: 'launch',
@@ -85,13 +78,6 @@ export class DebugModule extends BrowserModule {
     {
       token: IDebugService,
       useClass: DebugService,
-    },
-    // 这里原本的实现意图就是Debug作为单独模块执行时使用Node作为调试进程的启动及连接逻辑
-    // 在当前调试依赖插件进程的前提下，没必要引入这块冗余代码带来混淆
-    // packages/extension/src/browser/index.ts#L30
-    {
-      token: IDebugServer,
-      useValue: {},
     },
     {
       token: IDebugProgress,
