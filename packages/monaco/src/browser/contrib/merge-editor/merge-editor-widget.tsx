@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { AppConfig, ConfigProvider, MonacoService } from '@opensumi/ide-core-browser';
 import { Disposable, IRange, ISelection } from '@opensumi/ide-core-common';
+import { EditorType } from '@opensumi/ide-editor';
+import { IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
 import { Selection } from '@opensumi/monaco-editor-core';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IDimension } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/dimension';
@@ -15,54 +17,116 @@ import {
   IEditorViewState,
   ScrollType,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { IModelDecorationsChangeAccessor } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { IModelDecorationsChangeAccessor, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
 import { ICodeEditor, IEditorOptions, IModelDeltaDecoration } from '../../monaco-api/editor';
 import { IPosition, Position } from '../../monaco-api/types';
-import MonacoServiceImpl from '../../monaco.service';
 
+import { MergeEditorService } from './merge-editor.service';
 import { Grid } from './view/grid';
+
+export interface IMergeEditorModel {
+  current: ITextModel;
+  result: ITextModel;
+  incoming: ITextModel;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IMergeEditorEditorConstructionOptions {}
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IMergeEditorEditor extends IEditor {}
+export interface IMergeEditorEditor extends IEditor {
+  getCurrentEditor(): ICodeEditor;
+  getResultEditor(): ICodeEditor;
+  getIncomingEditor(): ICodeEditor;
+  open(
+    currentModelRef: IEditorDocumentModelRef,
+    resultModelRef: IEditorDocumentModelRef,
+    incomingModelRef: IEditorDocumentModelRef,
+  ): Promise<void>;
+  compare(): Promise<void>;
+}
+
+let MERGE_EDITOR_ID = 0;
 
 @Injectable({ multiple: true })
 export class MergeEditorWidget extends Disposable implements IMergeEditorEditor {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  @Autowired(MonacoService)
-  private readonly monacoService: MonacoServiceImpl;
-
   @Autowired(AppConfig)
   private readonly configContext: AppConfig;
 
-  constructor(private readonly rootHtmlElement: HTMLElement, options: IMergeEditorEditorConstructionOptions) {
+  @Autowired(MergeEditorService)
+  private readonly mergeEditorService: MergeEditorService;
+
+  private readonly _id: number;
+
+  constructor(
+    private readonly rootHtmlElement: HTMLElement,
+    options: IMergeEditorEditorConstructionOptions,
+    overrides: { [key in string]: any },
+  ) {
     super();
+
+    this._id = ++MERGE_EDITOR_ID;
+
+    this.layout();
   }
+
+  open(
+    currentModelRef: IEditorDocumentModelRef,
+    resultModelRef: IEditorDocumentModelRef,
+    incomingModelRef: IEditorDocumentModelRef,
+  ): Promise<void> {
+    this.setModel({
+      current: currentModelRef.instance.getMonacoModel(),
+      result: resultModelRef.instance.getMonacoModel(),
+      incoming: incomingModelRef.instance.getMonacoModel(),
+    });
+
+    this.compare();
+
+    return Promise.resolve();
+  }
+
+  compare(): Promise<void> {
+    return this.mergeEditorService.compare();
+  }
+
+  getCurrentEditor(): ICodeEditor {
+    return this.mergeEditorService.getCurrentEditor()!;
+  }
+
+  getResultEditor(): ICodeEditor {
+    return this.mergeEditorService.getResultEditor()!;
+  }
+
+  getIncomingEditor(): ICodeEditor {
+    return this.mergeEditorService.getIncomingEditor()!;
+  }
+
+  getCodeEditorCollect(): ICodeEditor[] {
+    return [];
+  }
+
   onDidDispose(listener: () => void): IDisposable {
-    // Method not implemented
     return this;
   }
+
   getId(): string {
-    return 'mergeEditor';
+    return this.getEditorType() + ':' + this._id;
   }
+
   getEditorType(): string {
-    // Method not implemented
-    return '';
+    return EditorType.MERGE_EDITOR_DIFF;
   }
-  updateOptions(newOptions: IEditorOptions): void {
-    // Method not implemented
-  }
-  onVisible(): void {
-    // Method not implemented
-  }
-  onHide(): void {
-    // Method not implemented
-  }
+
+  updateOptions(newOptions: IEditorOptions): void {}
+
+  onVisible(): void {}
+
+  onHide(): void {}
+
   layout(dimension?: IDimension): void {
     ReactDOM.render(
       <ConfigProvider value={this.configContext}>
@@ -71,122 +135,102 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
       this.rootHtmlElement,
     );
   }
-  focus(): void {
-    // Method not implemented
-  }
+
+  focus(): void {}
+
   hasTextFocus(): boolean {
-    // Method not implemented
     return false;
   }
+
   getSupportedActions(): IEditorAction[] {
-    // Method not implemented
     return [];
   }
+
   saveViewState(): IEditorViewState | null {
-    // Method not implemented
     return null;
   }
-  restoreViewState(state: IEditorViewState | null): void {
-    // Method not implemented
-  }
+
+  restoreViewState(state: IEditorViewState | null): void {}
+
   getVisibleColumnFromPosition(position: IPosition): number {
-    // Method not implemented
     return 1;
   }
+
   getStatusbarColumn(position: IPosition): number {
-    // Method not implemented
     return 1;
   }
+
   getPosition(): Position | null {
-    // Method not implemented
     return null;
   }
-  setPosition(position: IPosition, source?: string): void {
-    // Method not implemented
-  }
-  revealLine(lineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealLineInCenter(lineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealLineInCenterIfOutsideViewport(lineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealLineNearTop(lineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealPosition(position: IPosition, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealPositionInCenter(position: IPosition, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealPositionInCenterIfOutsideViewport(position: IPosition, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealPositionNearTop(position: IPosition, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
+
+  setPosition(position: IPosition, source?: string): void {}
+
+  revealLine(lineNumber: number, scrollType?: ScrollType): void {}
+
+  revealLineInCenter(lineNumber: number, scrollType?: ScrollType): void {}
+
+  revealLineInCenterIfOutsideViewport(lineNumber: number, scrollType?: ScrollType): void {}
+
+  revealLineNearTop(lineNumber: number, scrollType?: ScrollType): void {}
+
+  revealPosition(position: IPosition, scrollType?: ScrollType): void {}
+
+  revealPositionInCenter(position: IPosition, scrollType?: ScrollType): void {}
+
+  revealPositionInCenterIfOutsideViewport(position: IPosition, scrollType?: ScrollType): void {}
+
+  revealPositionNearTop(position: IPosition, scrollType?: ScrollType): void {}
+
   getSelection(): Selection | null {
-    // Method not implemented
     return null;
   }
+
   getSelections(): Selection[] | null {
-    // Method not implemented
     return null;
   }
+
   setSelection(selection: IRange | Range | ISelection | Selection, source?: string): void;
-  setSelection(selection: any, source?: any): void {
-    // Method not implemented
-  }
-  setSelections(selections: readonly ISelection[], source?: string): void {
-    // Method not implemented
-  }
-  revealLines(startLineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealLinesInCenter(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealLinesInCenterIfOutsideViewport(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealLinesNearTop(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealRange(range: IRange, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealRangeInCenter(range: IRange, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealRangeAtTop(range: IRange, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealRangeInCenterIfOutsideViewport(range: IRange, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealRangeNearTop(range: IRange, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  revealRangeNearTopIfOutsideViewport(range: IRange, scrollType?: ScrollType): void {
-    // Method not implemented
-  }
-  trigger(source: string | null | undefined, handlerId: string, payload: any): void {
-    // Method not implemented
-  }
+  setSelection(selection: any, source?: any): void {}
+
+  setSelections(selections: readonly ISelection[], source?: string): void {}
+
+  revealLines(startLineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {}
+
+  revealLinesInCenter(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {}
+
+  revealLinesInCenterIfOutsideViewport(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {}
+
+  revealLinesNearTop(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void {}
+
+  revealRange(range: IRange, scrollType?: ScrollType): void {}
+
+  revealRangeInCenter(range: IRange, scrollType?: ScrollType): void {}
+
+  revealRangeAtTop(range: IRange, scrollType?: ScrollType): void {}
+
+  revealRangeInCenterIfOutsideViewport(range: IRange, scrollType?: ScrollType): void {}
+
+  revealRangeNearTop(range: IRange, scrollType?: ScrollType): void {}
+
+  revealRangeNearTopIfOutsideViewport(range: IRange, scrollType?: ScrollType): void {}
+
+  trigger(source: string | null | undefined, handlerId: string, payload: any): void {}
+
   getModel(): IEditorModel | null {
-    // Method not implemented
     return null;
   }
-  setModel(model: IEditorModel | null): void {
-    // Method not implemented
+
+  setModel(model: IEditorModel | IMergeEditorModel | null): void {
+    const _model = model as IMergeEditorModel;
+    this.getCurrentEditor().setModel(_model.current);
+    this.getResultEditor().setModel(_model.result);
+    this.getIncomingEditor().setModel(_model.incoming);
   }
+
   createDecorationsCollection(decorations?: IModelDeltaDecoration[]): IEditorDecorationsCollection {
     throw Error('Method not implemented.');
   }
-  changeDecorations(callback: (changeAccessor: IModelDecorationsChangeAccessor) => any) {
-    // Method not implemented
-  }
+
+  changeDecorations(callback: (changeAccessor: IModelDecorationsChangeAccessor) => any) {}
 }
