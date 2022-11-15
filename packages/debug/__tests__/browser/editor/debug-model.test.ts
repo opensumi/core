@@ -2,7 +2,7 @@ import { Injector } from '@opensumi/di';
 import { URI, IContextKeyService, Disposable } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IDebugModel, IDebugSessionManager } from '@opensumi/ide-debug';
-import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser';
+import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
