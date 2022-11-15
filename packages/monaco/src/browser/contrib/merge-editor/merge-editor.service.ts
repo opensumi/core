@@ -11,7 +11,6 @@ import { MonacoContextKeyService } from '../../monaco.context-key.service';
 import { ComputerDiffModel } from './model/computer-diff';
 import { MergeEditorDecorations } from './model/decorations';
 
-
 @Injectable()
 export class MergeEditorService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
@@ -119,6 +118,7 @@ export class MergeEditorService extends Disposable {
 
   public async diffComputer(model1: ITextModel, model2: ITextModel): Promise<IDocumentDiff> {
     const result = await this.computerDiffModel.computeDiff(model1, model2);
+    // console.log('diffComputer: >>> ', result);
     return result;
   }
 }
