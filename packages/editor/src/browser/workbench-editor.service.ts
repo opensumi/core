@@ -90,6 +90,7 @@ import {
   CodeEditorDidVisibleEvent,
   RegisterEditorComponentEvent,
   AskSaveResult,
+  IMergeEditorResource,
 } from './types';
 import { UntitledDocumentIdCounter } from './untitled-resource';
 
@@ -727,6 +728,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private diffEditorReady = new ReadyEvent();
 
+  private mergeEditorReady = new ReadyEvent();
+
   private _restoringState = false;
 
   private updateContextKeyWhenEditorChangesFocusDisposer: IDisposable;
@@ -804,7 +807,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     if (this.mergeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === 'mergeEditor') {
-        this.mergeEditor.layout();
+        // this.mergeEditor.layout();
         this._mergeEditorPendingLayout = false;
       } else {
         this._mergeEditorPendingLayout = true;
@@ -1142,6 +1145,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
+    this.mergeEditorReady.ready();
   }
 
   createDiffEditor(dom: HTMLElement) {
@@ -1629,7 +1633,19 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           selectionLength: 0,
         });
       } else if (activeOpenType.type === 'mergeEditor') {
-        // 这里处理 mergeEditor resource
+        const { metadata } = resource as IMergeEditorResource;
+        if (!metadata) {
+          return;
+        }
+        const [current, result, incoming] = await Promise.all([
+          this.getDocumentModelRef(metadata.current),
+          this.getDocumentModelRef(metadata.result),
+          this.getDocumentModelRef(metadata.incoming),
+        ]);
+
+        await this.mergeEditorReady.onceReady(async () => {
+          await this.mergeEditor.open(current, result, incoming);
+        });
       } else {
         return; // other type not handled
       }
