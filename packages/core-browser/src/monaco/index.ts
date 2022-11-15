@@ -1,5 +1,5 @@
 import { IJSONSchema, Event, IDisposable, BasicEvent } from '@opensumi/ide-core-common';
-import { IMergeEditorEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor-widget';
+import type { IMergeEditorEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor-widget';
 import type { ICodeEditor, IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';

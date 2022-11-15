@@ -42,6 +42,10 @@ export enum EditorType {
    * 修改对比编辑器(右侧)
    */
   MODIFIED_DIFF,
+  /**
+   * 3-way 编辑器
+   */
+  MERGE_EDITOR_DIFF = 'MERGE_EDITOR_DIFF',
 }
 
 /**
