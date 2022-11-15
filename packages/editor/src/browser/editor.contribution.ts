@@ -535,13 +535,26 @@ export class EditorContribution
     });
 
     commands.registerCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR, {
-      execute: () =>
+      execute: () => {
+        /**
+         * （DEV）
+         */
+        const current = URI.parse(`${this.appConfig.workspaceDir}/merge-editor/c.json`);
+        const incoming = URI.parse(`${this.appConfig.workspaceDir}/merge-editor/b.json`);
+        const result = URI.parse(`${this.appConfig.workspaceDir}/merge-editor/a.json`);
+        const name = `${current.displayName} <=> ${result.displayName} <=> ${incoming.displayName}`;
         this.workbenchEditorService.open(
           URI.from({
             scheme: 'mergeEditor',
-            path: '/',
+            query: URI.stringifyQuery({
+              name,
+              current,
+              incoming,
+              result,
+            }),
           }),
-        ),
+        );
+      },
     });
 
     commands.registerCommand(EDITOR_COMMANDS.SAVE_CURRENT, {

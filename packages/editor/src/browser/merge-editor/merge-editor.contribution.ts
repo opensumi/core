@@ -16,7 +16,7 @@ export class MergeEditorContribution implements BrowserEditorContribution {
   }
 
   registerEditorComponent(registry: EditorComponentRegistry) {
-    registry.registerEditorComponentResolver('mergeEditor', (resource: any, results) => {
+    registry.registerEditorComponentResolver('mergeEditor', (_, results) => {
       results.push({
         type: 'mergeEditor',
       });

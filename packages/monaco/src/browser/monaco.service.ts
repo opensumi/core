@@ -16,6 +16,7 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 
 import { MonacoService } from '../common';
 
+import { isMergeEditor } from './contrib/merge-editor/common/utils';
 import { IMergeEditorEditor, MergeEditorWidget } from './contrib/merge-editor/merge-editor-widget';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { monaco } from './monaco-api';
@@ -149,10 +150,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     options?: IDiffEditorConstructionOptions,
     overrides: { [key: string]: any } = {},
   ): IMergeEditorEditor {
-    const editor = this.injector.get(MergeEditorWidget, [monacoContainer, options]);
-    // this.overrideMonacoKeybindingService(editor);
-    // this.addClickEventListener(editor);
-    return editor;
+    return this.injector.get(MergeEditorWidget, [
+      monacoContainer,
+      options,
+      { ...this.overrideServiceRegistry.all(), ...overrides },
+    ]);
   }
 
   private overrideMonacoKeybindingService(editor: IEditorType) {

@@ -142,11 +142,11 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
+  // @ts-ignore
   public createMergeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
     const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
     const mergedOptions = { ...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options };
     const editor = this.monacoService.createMergeEditor(dom, mergedOptions, overrides);
-    // this._onDiffEditorCreate.fire(editor);
     return editor;
   }
 
