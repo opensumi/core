@@ -1,12 +1,11 @@
 import { Emitter, IContextKeyService, IReporterService, LabelService } from '@opensumi/ide-core-browser';
-import { IDebugServer, IDebugSessionManager, IDebugProgress } from '@opensumi/ide-debug';
+import { IDebugServer, IDebugSessionManager, IDebugProgress, IDebugModelManager } from '@opensumi/ide-debug';
 import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import {
   DebugSessionContributionRegistry,
   DebugSessionFactory,
 } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { DebugSessionManager } from '@opensumi/ide-debug/lib/browser/debug-session-manager';
-import { DebugModelManager } from '@opensumi/ide-debug/lib/browser/editor';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITaskService } from '@opensumi/ide-task';
@@ -79,7 +78,7 @@ describe('DebugSessionManager', () => {
           useClass: MockContextKeyService,
         },
         {
-          token: DebugModelManager,
+          token: IDebugModelManager,
           useValue: mockDebugModelManager,
         },
         {
