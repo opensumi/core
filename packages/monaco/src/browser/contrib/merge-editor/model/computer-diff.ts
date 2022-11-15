@@ -13,7 +13,6 @@ import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/s
 
 import { ITextModel } from '../../../monaco-api/types';
 
-
 export class ComputerDiffModel {
   private editorWorkerService: IEditorWorkerService;
 
@@ -53,7 +52,35 @@ export class ComputerDiffModel {
     }
 
     if (result) {
-      return this.convertDiffResult(result);
+      const convert = this.convertDiffResult(result);
+      return {
+        identical: convert.identical,
+        quitEarly: convert.quitEarly,
+        changes: convert.changes.map((m) =>
+          // let originalStartLineNumber: number;
+          // let originalEndLineNumber: number;
+          // let modifiedStartLineNumber: number;
+          // let modifiedEndLineNumber: number;
+
+          // if (m.originalRange.isEmpty) {
+          //   originalStartLineNumber = m.originalRange.startLineNumber - 1;
+          //   originalEndLineNumber = 0;
+          // } else {
+          //   originalStartLineNumber = m.originalRange.startLineNumber;
+          //   originalEndLineNumber = m.originalRange.endLineNumberExclusive - 1;
+          // }
+
+          // if (m.modifiedRange.isEmpty) {
+          //   modifiedStartLineNumber = m.modifiedRange.startLineNumber - 1;
+          //   modifiedEndLineNumber = 0;
+          // } else {
+          //   modifiedStartLineNumber = m.modifiedRange.startLineNumber;
+          //   modifiedEndLineNumber = m.modifiedRange.endLineNumberExclusive - 1;
+          // }
+
+           m
+        ),
+      };
     }
 
     return empty;
