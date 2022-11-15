@@ -196,6 +196,7 @@ export class DebugBreakpointsService extends WithEventBus {
   public async createBreakpointInput(container: HTMLElement): Promise<ICodeEditor> {
     this._inputEditor = await this.editorService.createCodeEditor(container!, {
       ...getSimpleEditorOptions(),
+      lineHeight: 21,
       scrollbar: {
         horizontal: 'hidden',
         vertical: 'hidden',

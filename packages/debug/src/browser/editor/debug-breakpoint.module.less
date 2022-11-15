@@ -11,7 +11,7 @@
   border-bottom-width: 1px;
   overflow: hidden;
   align-items: center;
-  background: var(--input-background);
+  background: var(--editor-background);
 }
 
 .debug_breakpoint_selected {
@@ -22,7 +22,9 @@
 
 .debug_breakpoint_input {
   width: 100%;
-  height: inherit;
+  height: 28px;
+  // (36 - 21) / 2 = 7.5
+  margin-top: 7.5px;
   .input_placeholder {
     position: relative;
   }
