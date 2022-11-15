@@ -38,38 +38,58 @@ export class MergeEditorService extends Disposable {
   }
 
   private createEditorFactory(container: HTMLDivElement): ICodeEditor {
-    const scoped = this.monacoContextKeyService.createScoped(container);
-    scoped.attachToDomNode(container);
-    const editor = this.monacoService.createCodeEditor(
-      container,
-      {
-        automaticLayout: true,
-        wordBasedSuggestions: true,
-        renderLineHighlight: 'all',
-        minimap: {
-          enabled: false,
-        },
+    const editor = this.monacoService.createCodeEditor(container, {
+      automaticLayout: true,
+      wordBasedSuggestions: true,
+      renderLineHighlight: 'all',
+      folding: false,
+      lineNumbersMinChars: 2,
+      minimap: {
+        enabled: false,
       },
-      {
-        [ServiceNames.CONTEXT_KEY_SERVICE]: scoped.contextKeyService,
-      },
-    );
+    });
     return editor;
   }
 
   public createIncomingEditor(container: HTMLDivElement): ICodeEditor {
+    if (this.incomingView) {
+      return this.incomingView;
+    }
+
     this.incomingView = this.createEditorFactory(container);
     this.incomingDecorations = this.injector.get(MergeEditorDecorations, [this.incomingView]);
     return this.incomingView;
   }
 
   public createCurrentEditor(container: HTMLDivElement): ICodeEditor {
+    if (this.currentView) {
+      return this.currentView;
+    }
+
     this.currentView = this.createEditorFactory(container);
+    const dom = this.currentView.getDomNode();
+    if (dom) {
+      const marginDom = dom.querySelector('.margin');
+      const elementDom = dom.querySelector('.monaco-scrollable-element');
+
+      if (marginDom) {
+        marginDom.setAttribute('style', `${marginDom.getAttribute('style')} right: 0px;`);
+      }
+
+      if (elementDom) {
+        elementDom.setAttribute('style', `${elementDom.getAttribute('style')} left: 0px;`);
+      }
+    }
+
     this.currentDecorations = this.injector.get(MergeEditorDecorations, [this.currentView]);
     return this.currentView;
   }
 
   public createResultEditor(container: HTMLDivElement): ICodeEditor {
+    if (this.resultView) {
+      return this.resultView;
+    }
+
     this.resultView = this.createEditorFactory(container);
     this.resultDecorations = this.injector.get(MergeEditorDecorations, [this.resultView]);
 
@@ -118,7 +138,6 @@ export class MergeEditorService extends Disposable {
 
   public async diffComputer(model1: ITextModel, model2: ITextModel): Promise<IDocumentDiff> {
     const result = await this.computerDiffModel.computeDiff(model1, model2);
-    // console.log('diffComputer: >>> ', result);
     return result;
   }
 }
