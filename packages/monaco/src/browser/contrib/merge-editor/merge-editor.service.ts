@@ -10,6 +10,9 @@ import { MonacoContextKeyService } from '../../monaco.context-key.service';
 
 import { ComputerDiffModel } from './model/computer-diff';
 import { MergeEditorDecorations } from './model/decorations';
+import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
+import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
+import { ResultCodeEditor } from './view/editors/resultCodeEditor';
 
 @Injectable()
 export class MergeEditorService extends Disposable {
@@ -19,16 +22,9 @@ export class MergeEditorService extends Disposable {
   @Autowired(MonacoService)
   private readonly monacoService: MonacoService;
 
-  @Autowired(MonacoContextKeyService)
-  private readonly monacoContextKeyService: MonacoContextKeyService;
-
-  private incomingView: ICodeEditor | undefined;
-  private currentView: ICodeEditor | undefined;
-  private resultView: ICodeEditor | undefined;
-
-  private incomingDecorations: MergeEditorDecorations;
-  private currentDecorations: MergeEditorDecorations;
-  private resultDecorations: MergeEditorDecorations;
+  private currentView: CurrentCodeEditor;
+  private resultView: ResultCodeEditor;
+  private incomingView: IncomingCodeEditor;
 
   private computerDiffModel: ComputerDiffModel;
 
@@ -37,114 +33,47 @@ export class MergeEditorService extends Disposable {
     this.computerDiffModel = new ComputerDiffModel();
   }
 
-  private createEditorFactory(container: HTMLDivElement): ICodeEditor {
-    const editor = this.monacoService.createCodeEditor(container, {
-      automaticLayout: true,
-      wordBasedSuggestions: true,
-      renderLineHighlight: 'all',
-      folding: false,
-      lineNumbersMinChars: 2,
-      minimap: {
-        enabled: false,
-      },
-    });
-    return editor;
-  }
-
-  public getCurrentEditor(): ICodeEditor | undefined {
-    return this.currentView;
-  }
-  public getResultEditor(): ICodeEditor | undefined {
-    return this.resultView;
-  }
-  public getIncomingEditor(): ICodeEditor | undefined {
-    return this.incomingView;
-  }
-
-  public createIncomingEditor(container: HTMLDivElement): ICodeEditor {
-    if (this.incomingView) {
-      return this.incomingView;
+  public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
+    if (this.currentView && this.resultView && this.incomingView) {
+      return;
     }
 
-    this.incomingView = this.createEditorFactory(container);
-    this.incomingDecorations = this.injector.get(MergeEditorDecorations, [this.incomingView]);
-    return this.incomingView;
+    this.currentView = this.injector.get(CurrentCodeEditor, [current, this.monacoService, this.injector]);
+    this.resultView = this.injector.get(ResultCodeEditor, [result, this.monacoService, this.injector]);
+    this.incomingView = this.injector.get(IncomingCodeEditor, [incoming, this.monacoService, this.injector]);
   }
 
-  public createCurrentEditor(container: HTMLDivElement): ICodeEditor {
-    if (this.currentView) {
-      return this.currentView;
-    }
-
-    this.currentView = this.createEditorFactory(container);
-    this.currentDecorations = this.injector.get(MergeEditorDecorations, [this.currentView]);
-    return this.currentView;
+  public override dispose(): void {
+    super.dispose();
+    this.currentView.dispose();
+    this.resultView.dispose();
+    this.incomingView.dispose();
   }
 
-  public createResultEditor(container: HTMLDivElement): ICodeEditor {
-    if (this.resultView) {
-      return this.resultView;
-    }
-
-    this.resultView = this.createEditorFactory(container);
-    this.resultDecorations = this.injector.get(MergeEditorDecorations, [this.resultView]);
-    return this.resultView;
+  public getCurrentEditor(): ICodeEditor {
+    return this.currentView.getEditor();
   }
-
-  public async diffComputer(model1: ITextModel, model2: ITextModel): Promise<IDocumentDiff> {
-    const result = await this.computerDiffModel.computeDiff(model1, model2);
-    return result;
+  public getResultEditor(): ICodeEditor {
+    return this.resultView.getEditor();
+  }
+  public getIncomingEditor(): ICodeEditor {
+    return this.incomingView.getEditor();
   }
 
   public async compare(): Promise<void> {
-    const result = await this.diffComputer(this.currentView?.getModel()!, this.resultView?.getModel()!);
+    const result = await this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!);
     const { changes } = result;
+    this.currentView.inputDiffComputingResult(changes);
+    this.resultView.inputDiffComputingResult(changes, 1);
 
-    this.currentDecorations.render(
-      changes.map((r) => r.originalRange),
-      changes
-        .map((c) => c.innerChanges)
-        .filter(Boolean)
-        .flatMap((m) => m!.map((m) => m.originalRange)),
+    const result2 = await this.computerDiffModel.computeDiff(
+      this.resultView.getModel()!,
+      this.incomingView.getModel()!,
     );
-    this.resultDecorations.render(
-      changes.map((r) => r.modifiedRange),
-      changes
-        .map((c) => c.innerChanges)
-        .filter(Boolean)
-        .flatMap((m) => m!.map((m) => m.modifiedRange)),
-    );
+    const { changes: changes2 } = result2;
+    this.resultView.inputDiffComputingResult(changes2, 0);
+    this.incomingView.inputDiffComputingResult(changes2);
 
-    this.diffComputer(this.resultView?.getModel()!, this.incomingView?.getModel()!).then((result) => {
-      const { changes } = result;
-      this.resultDecorations.render(
-        changes.map((r) => r.originalRange),
-        changes
-          .map((c) => c.innerChanges)
-          .filter(Boolean)
-          .flatMap((m) => m!.map((m) => m.originalRange)),
-      );
-      this.incomingDecorations.render(
-        changes.map((r) => r.modifiedRange),
-        changes
-          .map((c) => c.innerChanges)
-          .filter(Boolean)
-          .flatMap((m) => m!.map((m) => m.modifiedRange)),
-      );
-    });
-
-    const dom = this.currentView!.getDomNode();
-    if (dom) {
-      const marginDom = dom.querySelector('.margin');
-      const elementDom = dom.querySelector('.monaco-scrollable-element');
-
-      if (marginDom) {
-        marginDom.setAttribute('style', `${marginDom.getAttribute('style')} right: 0px;`);
-      }
-
-      if (elementDom) {
-        elementDom.setAttribute('style', `${elementDom.getAttribute('style')} left: 0px;`);
-      }
-    }
+    this.currentView.layout();
   }
 }

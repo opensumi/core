@@ -8,10 +8,21 @@ import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/dif
 
 import { monaco } from '../../../monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
+import { LineRangeType } from '../types';
 
 import { GuidelineWidget } from './line';
 
-interface IDiffDecoration {
+export interface IRenderChangesInput {
+  ranges: LineRange;
+  type: LineRangeType;
+}
+
+export interface IRenderInnerChangesInput {
+  ranges: Range;
+  type: LineRangeType;
+}
+
+export interface IDiffDecoration {
   id: string;
   readonly editorDecoration: IModelDeltaDecoration;
 }
@@ -33,7 +44,7 @@ export class MergeEditorDecorations {
     ) as MonacoCodeService;
   }
 
-  private setDecorations(ranges: LineRange[], innerChanges: Range[]): void {
+  private setDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
     if (ranges.length === 0 && innerChanges.length === 0) {
       this.clearDecorations();
       return;
@@ -43,10 +54,10 @@ export class MergeEditorDecorations {
       const newDecorations: IDiffDecoration[] = this.deltaDecoration;
 
       for (const range of ranges) {
-        if (range.isEmpty) {
+        if (range.ranges.isEmpty) {
           const guidelineWidget = new GuidelineWidget(this.editor);
           guidelineWidget.create();
-          guidelineWidget.showByLine(Math.max(0, range.startLineNumber - 1));
+          guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, range.ranges.startLineNumber - 1));
 
           this.underLineWidgetSet.add(guidelineWidget);
         } else {
@@ -54,14 +65,14 @@ export class MergeEditorDecorations {
             id: '',
             editorDecoration: {
               range: {
-                startLineNumber: range.startLineNumber,
+                startLineNumber: range.ranges.startLineNumber,
                 startColumn: 0,
-                endLineNumber: range.endLineNumberExclusive - 1,
+                endLineNumber: range.ranges.endLineNumberExclusive - 1,
                 endColumn: Number.MAX_SAFE_INTEGER,
               },
               options: {
                 description: '',
-                className: 'sumi-debug-top-stack-frame-line',
+                className: `diff-stack-frame-line-background ${range.type}`,
                 zIndex: 10,
                 isWholeLine: true,
                 stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
@@ -96,7 +107,7 @@ export class MergeEditorDecorations {
     });
   }
 
-  public render(ranges: LineRange[], innerChanges: Range[]): void {
+  public render(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
     this.setDecorations(ranges, innerChanges);
   }
 }
