@@ -149,23 +149,15 @@ export class ServerApp implements IServerApp {
   ) {
     await this.initializeContribution();
 
-    let serviceCenter;
-
     if (serviceHandler) {
-      serviceCenter = new RPCServiceCenter();
+      const serviceCenter = new RPCServiceCenter();
       serviceHandler(serviceCenter);
     } else {
       if (server instanceof http.Server || server instanceof https.Server) {
         // 创建 websocket 通道
-        serviceCenter = createServerConnection2(
-          server,
-          this.injector,
-          this.modulesInstances,
-          this.webSocketHandler,
-          this.opts,
-        );
+        createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler, this.opts);
       } else if (server instanceof net.Server) {
-        serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);
+        createNetServerConnection(server, this.injector, this.modulesInstances);
       }
     }
 

@@ -113,7 +113,7 @@ export class CommonChannelHandler extends WebSocketHandler {
       ...this.options.wsServerOptions,
     });
     this.wsServer.on('connection', (connection: ws) => {
-      let connectionId;
+      let connectionId: string;
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {

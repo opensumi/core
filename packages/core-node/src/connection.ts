@@ -22,8 +22,8 @@ export { RPCServiceCenter };
 
 export function createServerConnection2(
   server: http.Server,
-  injector,
-  modulesInstances,
+  injector: Injector,
+  modulesInstances: NodeModule[],
   handlerArr: WebSocketHandler[],
   serverAppOpts: IServerAppOpts,
 ) {
@@ -65,7 +65,7 @@ export function createServerConnection2(
   socketRoute.init();
 }
 
-export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
+export function createNetServerConnection(server: net.Server, injector: Injector, modulesInstances: NodeModule[]) {
   const logger = injector.get(INodeLogger);
   const serviceCenter = new RPCServiceCenter(undefined, logger);
   const serviceChildInjector = bindModuleBackService(
