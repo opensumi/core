@@ -11,7 +11,7 @@ import { TestItemExpandState, TestRunProfileBitset } from '../../common/testColl
 import { TestingExplorerInlineMenus } from '../../common/testing-view';
 import { ITestTreeData, ITestTreeItem, TestTreeViewModelToken } from '../../common/tree-view.model';
 import { getIconWithColor } from '../icons/icons';
-import { TestTreeViewModelImpl } from '../test-tree-view.model';
+import { TestTreeItem, TestTreeViewModelImpl } from '../test-tree-view.model';
 
 import styles from './testing.module.less';
 
@@ -25,7 +25,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
   const getItemIcon = React.useCallback((item: ITestTreeItem) => getIconWithColor(item.state), []);
 
   const asTreeData = React.useCallback(
-    (item: ITestTreeItem): ITestTreeData => ({
+    (item: TestTreeItem): ITestTreeData => ({
       label: item.label,
       icon: '',
       get iconClassName() {
@@ -33,6 +33,7 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
       },
       expandable: item.test.expand !== TestItemExpandState.NotExpandable,
       rawItem: item,
+      sortText: item.sortText,
       get children() {
         if (item.test.expand === TestItemExpandState.Expandable || item.children) {
           const testTree = testViewModel.getTestTreeItem(item.test.item.extId);
@@ -52,10 +53,12 @@ export const TestingExplorerTree: React.FC<{}> = observer(() => {
     )(() => {
       for (const root of testViewModel.roots) {
         if (root.depth === 0 && root.children.size > 0) {
-          const result: ITestTreeData[] = [];
+          let result: ITestTreeData[] = [];
           for (const child of root.children) {
             result.push(asTreeData(child));
           }
+
+          result = result.sort((a, b) => (a.sortText || a.label).localeCompare(b.sortText || b.label));
           setTreeData(result);
         }
       }

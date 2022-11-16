@@ -3,7 +3,8 @@
   "version": "2.21.4",
   "description": "@opensumi/ide-menu-bar",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",

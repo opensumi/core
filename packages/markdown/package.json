@@ -2,7 +2,8 @@
   "name": "@opensumi/ide-markdown",
   "version": "2.21.4",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",

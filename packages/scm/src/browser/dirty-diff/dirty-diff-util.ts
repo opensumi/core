@@ -29,3 +29,23 @@ export function getModifiedEndLineNumber(change: ILineChange): number {
     return change[3];
   }
 }
+
+export enum ChangeType {
+  Modify = 'Modify',
+  Add = 'Add',
+  Delete = 'Delete',
+}
+
+export function getChangeType(change: ILineChange): ChangeType {
+  // originalStartLine === originalEndLineNumber
+  if (change[1] - change[0] === 0) {
+    return ChangeType.Add;
+  }
+  // modifiedStartLine === modifiedEndLine &&
+  // originalEndLineNumber > originalStartLine
+  else if (change[1] > change[0] && change[2] === change[3]) {
+    return ChangeType.Delete;
+  } else {
+    return ChangeType.Modify;
+  }
+}

@@ -44,6 +44,10 @@ export class TestTreeItem implements ITestTreeItem {
     return this.test.item.label;
   }
 
+  public get sortText() {
+    return this.test.item.sortText;
+  }
+
   public state = TestResultState.Unset;
 
   public ownState = TestResultState.Unset;

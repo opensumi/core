@@ -4,6 +4,8 @@ export const scmContainerId = SCM_CONTAINER_ID;
 export const scmProviderViewId = 'scm_provider';
 export const scmResourceViewId = 'scm_view';
 
+export const SCM_WELCOME_ID = 'scm-welcome';
+
 export const scmItemLineHeight = 22; // copied from vscode
 
 export const TOGGLE_DIFF_SIDE_BY_SIDE = {

@@ -181,7 +181,12 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
       }),
     );
 
-    await replace(this.workspaceEditService, searchResults, this.searchBrowserService.replaceValue);
+    await replace(
+      this.documentModelManager,
+      this.workspaceEditService,
+      searchResults,
+      this.searchBrowserService.replaceValue,
+    );
 
     this.contentMap.set(uri.toString(), replaceViewDocModel.getText());
   }
@@ -429,6 +434,7 @@ export class SearchTreeService {
   @action.bound
   commandActuator(commandId: string, id: string) {
     const workspaceEditService = this.workspaceEditService;
+    const documentModelManager = this.documentModelManager;
     const { resultTotal, searchResults, replaceValue } = this.searchBrowserService;
     const items = this._nodes;
 
@@ -457,7 +463,7 @@ export class SearchTreeService {
         }
         const resultMap: Map<string, ContentSearchResult[]> = new Map();
         resultMap.set(select.parent!.uri!.toString(), [select!.searchResult!]);
-        replaceAll(workspaceEditService, resultMap, replaceValue).then(() => {
+        replaceAll(documentModelManager, workspaceEditService, resultMap, replaceValue).then(() => {
           // 结果树更新由 search.service.watchDocModelContentChange 负责
         });
       },
@@ -491,7 +497,7 @@ export class SearchTreeService {
           return buttons[selection!];
         }
         resultMap.set(select!.fileUri, contentSearchResult);
-        replaceAll(workspaceEditService, resultMap, replaceValue).then(() => {
+        replaceAll(documentModelManager, workspaceEditService, resultMap, replaceValue).then(() => {
           // 结果树更新由 search.service.watchDocModelContentChange 负责
         });
       },

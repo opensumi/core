@@ -18,7 +18,7 @@ import {
   ToolbarRegistry,
   URI,
 } from '@opensumi/ide-core-browser';
-import { TestingIsPeekVisible } from '@opensumi/ide-core-browser/lib/contextkey/testing';
+import { TestingCanRefreshTests, TestingIsPeekVisible } from '@opensumi/ide-core-browser/lib/contextkey/testing';
 import { IMenuRegistry, MenuContribution, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { Emitter, IMarkdownString } from '@opensumi/ide-core-common';
 import {
@@ -47,6 +47,7 @@ import {
   GoToTestCommand,
   OpenMessageInEditor,
   PeekTestError,
+  RefreshTestsCommand,
   RuntAllTestCommand,
   RuntTestCommand,
   TestingDebugCurrentFile,
@@ -334,6 +335,12 @@ export class TestingContribution
       await this.testService.runTests({ tests: roots, group });
     };
 
+    commands.registerCommand(RefreshTestsCommand, {
+      execute: async () => {
+        await this.testService.refreshTests();
+      },
+    });
+
     commands.registerCommand(RuntAllTestCommand, {
       execute: async () => {
         await runOrDebugAllTestsAction(TestRunProfileBitset.Run);
@@ -398,6 +405,12 @@ export class TestingContribution
   }
 
   registerToolbarItems(registry: ToolbarRegistry): void {
+    registry.registerItem({
+      id: RefreshTestsCommand.id,
+      command: RefreshTestsCommand.id,
+      viewId: Testing.ExplorerViewId,
+      when: TestingCanRefreshTests.equalsTo(true),
+    });
     registry.registerItem({
       id: RuntAllTestCommand.id,
       command: RuntAllTestCommand.id,
