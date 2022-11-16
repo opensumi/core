@@ -102,8 +102,6 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     if (isNaN(width) || width <= 0 || width > 5) {
       width = 3;
     }
-    // @todo
-    // this.stylesheet.innerHTML = `.monaco-editor .dirty-diff-modified,.monaco-editor .dirty-diff-added{border-left-width:${width}px;}`;
   }
 
   private enable(): void {

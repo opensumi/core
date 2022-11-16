@@ -1,10 +1,11 @@
-import { getIcon } from '@opensumi/ide-core-browser';
 import { URI, path, CommandService } from '@opensumi/ide-core-browser';
 import { ScmChangeTitleCallback } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
+
+import { ChangeType, getChangeType } from './dirty-diff-util';
 
 export enum DirtyDiffWidgetActionType {
   close,
@@ -66,10 +67,36 @@ export class DirtyDiffWidget extends ZoneWidget {
     this._title.appendChild(detail);
   }
 
+  private getBorderColor(changeType: ChangeType) {
+    switch (changeType) {
+      case ChangeType.Add:
+        return 'var(--editorGutter-addedBackground)';
+      case ChangeType.Modify:
+        return 'var(--editorGutter-modifiedBackground)';
+      case ChangeType.Delete:
+        return 'var(--editorGutter-deletedBackground)';
+    }
+  }
+
   protected applyClass() {
     this._wrapper.className = 'dirty-diff-widget-wrapper';
     this._head.className = 'dirty-diff-widget-header';
     this._content.className = 'dirty-diff-widget-content';
+
+    // 实际外部传入的是数量而非 index，这里获取 change 需要 - 1
+    const change = this._model.changes[this._currentChangeIndex - 1];
+    const changeType = getChangeType(change);
+    // 根据当前 changType 渲染不同的边框颜色
+    const borderColor = this.getBorderColor(changeType);
+    this._head.style.borderTopColor = borderColor;
+    this._head.style.borderBottomColor = borderColor;
+
+    this._content.style.borderBottomColor = borderColor;
+
+    // 根据编辑器字号行高设置 header 高度
+    const options = this.editor.getOptions();
+    const lineHeight = options.get(60);
+    this._head.style.height = `${lineHeight}px`;
 
     this._renderTitle();
 
@@ -101,7 +128,7 @@ export class DirtyDiffWidget extends ZoneWidget {
 
   private _addAction(icon: string, type: DirtyDiffWidgetActionType) {
     const action = document.createElement('div');
-    action.className = getIcon(icon);
+    action.className = `kt-icon codicon codicon-${icon}`;
     this._actions.appendChild(action);
     action.onclick = () => this.handleAction(type);
     return action;
@@ -109,10 +136,10 @@ export class DirtyDiffWidget extends ZoneWidget {
 
   private _renderActions() {
     if (this._actions.children.length === 0) {
-      this._addAction('plus', DirtyDiffWidgetActionType.save);
-      this._addAction('rollback', DirtyDiffWidgetActionType.reset);
-      this._addAction('up', DirtyDiffWidgetActionType.next);
-      this._addAction('down', DirtyDiffWidgetActionType.previous);
+      this._addAction('add', DirtyDiffWidgetActionType.save);
+      this._addAction('discard', DirtyDiffWidgetActionType.reset);
+      this._addAction('arrow-up', DirtyDiffWidgetActionType.next);
+      this._addAction('arrow-down', DirtyDiffWidgetActionType.previous);
       this._addAction('close', DirtyDiffWidgetActionType.close);
     }
   }
