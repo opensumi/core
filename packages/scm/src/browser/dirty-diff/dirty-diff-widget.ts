@@ -1,4 +1,4 @@
-import { URI, path, CommandService } from '@opensumi/ide-core-browser';
+import { URI, path, CommandService, formatLocalize } from '@opensumi/ide-core-browser';
 import { ScmChangeTitleCallback } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -63,7 +63,7 @@ export class DirtyDiffWidget extends ZoneWidget {
 
     const detail = document.createElement('span');
     detail.className = 'dirty-diff-widget-title-detail';
-    detail.innerText = `第 ${this._currentChangeIndex} 个更改（共 ${this._model.changes.length} 个）`;
+    detail.innerText = formatLocalize('scm.dirtyDiff.changes', this._currentChangeIndex, this._model.changes.length);
     this._title.appendChild(detail);
   }
 
