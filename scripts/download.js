@@ -8,7 +8,7 @@ const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
 const { v4 } = require('uuid');
-const marketplaceType = process.env.MARKETPLACE ?? 'opentrs';
+const marketplaceType = process.env.MARKETPLACE ?? 'openvsx';
 
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
