@@ -93,10 +93,11 @@ export class DirtyDiffWidget extends ZoneWidget {
 
     this._content.style.borderBottomColor = borderColor;
 
-    // 根据编辑器字号行高设置 header 高度
-    const options = this.editor.getOptions();
-    const lineHeight = options.get(60);
-    this._head.style.height = `${lineHeight}px`;
+    // 根据编辑器字号行高设置 header 和 content 高度
+    const editorLineHeight = this.editor.getOption(60 /** EditorOption.lineHeight */);
+    const headHeight = Math.ceil(editorLineHeight * 1.2);
+
+    this._head.style.height = `${headHeight}px`;
 
     this._renderTitle();
 
