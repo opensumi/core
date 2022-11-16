@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-utils",
-  "version": "2.21.3",
+  "version": "2.21.4",
   "files": [
     "lib",
     "src"

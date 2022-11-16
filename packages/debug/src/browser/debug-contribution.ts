@@ -188,6 +188,7 @@ export class DebugContribution
   protected readonly extensionsPointService: IExtensionsSchemaService;
 
   private firstSessionStart = true;
+  private openedViewSessions = new Set();
 
   get selectedBreakpoint(): SelectedBreakpoint | undefined {
     const { selectedBreakpoint } = this.breakpointManager;
@@ -281,7 +282,12 @@ export class DebugContribution
           this.openDebugView();
         }
       } else if (openDebug !== 'neverOpen') {
-        this.openDebugView();
+        const parentSession = session.parentSession;
+        const sessionId = parentSession?.id || session.id;
+        if (!this.openedViewSessions.has(sessionId)) {
+          this.openedViewSessions.add(sessionId);
+          this.openDebugView();
+        }
       }
 
       if (

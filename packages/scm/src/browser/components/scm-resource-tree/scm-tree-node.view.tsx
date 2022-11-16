@@ -314,7 +314,12 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
       <div className={clx(styles.scm_tree_node_content)}>
         {renderFolderToggle(item, handleTwistierClick)}
         {renderIcon(item)}
-        <div className={styles.scm_tree_node_overflow_wrap}>
+        <div
+          className={styles.scm_tree_node_overflow_wrap}
+          style={{
+            textDecoration: decoration && decoration.badge === 'D' ? 'line-through' : 'none',
+          }}
+        >
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>
