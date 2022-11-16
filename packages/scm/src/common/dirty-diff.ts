@@ -17,6 +17,10 @@ export const OPEN_DIRTY_DIFF_WIDGET: Command = {
   id: 'OPEN_DIRTY_DIFF_WIDGET',
 };
 
+export const CLOSE_DIRTY_DIFF_WIDGET: Command = {
+  id: 'CLOSE_DIRTY_DIFF_WIDGET',
+};
+
 export const GOTO_NEXT_CHANGE: Command = {
   id: 'workbench.action.compareEditor.nextChange',
 };
