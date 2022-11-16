@@ -77,11 +77,11 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
       .catch(() => this._ready.resolve());
 
     const uri = this.getUri();
-    const watcher = await this.fileSystem.watchFileChanges(uri);
+    const watcher = await this.fileSystem.watchFileChanges(uri.parent);
     // 配置文件改变时，重新读取配置
     this.toDispose.push(watcher);
     watcher.onFilesChanged((e: FileChange[]) => {
-      const effected = e.find((file) => file.uri === uri.toString());
+      const effected = e.find((file) => file.uri.startsWith(uri.parent.toString()));
       if (effected) {
         return this.readPreferences();
       }
