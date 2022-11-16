@@ -16,7 +16,6 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 
 import { MonacoService } from '../common';
 
-import { isMergeEditor } from './contrib/merge-editor/common/utils';
 import { IMergeEditorEditor, MergeEditorWidget } from './contrib/merge-editor/merge-editor-widget';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { monaco } from './monaco-api';
