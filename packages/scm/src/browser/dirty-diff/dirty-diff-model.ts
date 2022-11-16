@@ -15,7 +15,10 @@ import {
   first,
   positionToRange,
   ILineChange,
+  IContextKeyService,
+  IContextKey,
 } from '@opensumi/ide-core-browser';
+import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
 import { EditorCollectionService } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService, IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import type { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -29,8 +32,16 @@ import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
 import { DirtyDiffWidget } from './dirty-diff-widget';
 
 const { sortedDiff } = arrays;
+
+export const isDirtyDiffVisible = new RawContextKey<boolean>('dirtyDiffVisible', false);
+
 @Injectable({ multiple: true })
 export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
+  private isDirtyDiffVisible: IContextKey<boolean>;
+
   private _originalModel: IEditorDocumentModel | null;
   get original(): IEditorDocumentModel | null {
     return this._originalModel;
@@ -65,8 +76,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
   @Autowired(EditorCollectionService)
   private readonly editorService: EditorCollectionService;
 
-  // TODO: dynamic
-  static heightInLines = 18;
+  static heightInLines = 10;
 
   // TODO: dynamic
   static maxFileSize = 50;
@@ -107,6 +117,8 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
     this.originalModelDisposables = new DisposableStore();
     this.addDispose(this.originalModelDisposables);
+
+    this.isDirtyDiffVisible = isDirtyDiffVisible.bind(this.contextKeyService);
   }
 
   private onDidAddRepository(repository: ISCMRepository): void {
@@ -342,6 +354,9 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
         }),
       );
 
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      const that = this;
+
       widget.addDispose(
         this.onDidChange(() => {
           const { change, count } = this.getChangeFromRange(range) || {};
@@ -356,14 +371,13 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
       function refreshWidget(current: number, currentChange: ILineChange) {
         widget.updateCurrent(current);
-        widget.show(
-          positionToRange(currentChange[3] || currentChange[2]),
-          DirtyDiffModel.heightInLines,
-        );
+        widget.show(positionToRange(currentChange[3] || currentChange[2]), DirtyDiffModel.heightInLines);
+        that.isDirtyDiffVisible.set(true);
       }
 
       widget.onDispose(() => {
         this._widget = null;
+        that.isDirtyDiffVisible.set(false);
       });
     }
   }
