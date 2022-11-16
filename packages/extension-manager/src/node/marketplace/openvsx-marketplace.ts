@@ -1,5 +1,8 @@
 import nodeFetch from 'node-fetch';
 
+import { Injectable, Autowired } from '@opensumi/di';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
+
 import { AbstractMarketplace } from '../../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../../common/vsx-registry-types';
 
@@ -8,9 +11,13 @@ const commonHeaders = {
   Accept: 'application/json',
 };
 
+@Injectable()
 export class OpenvsxMarketplaceImpl extends AbstractMarketplace {
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   async getExtensionDetail(param: QueryParam): Promise<QueryResult | undefined> {
-    const uri = `${this.config.endpoint}/api/-/query`;
+    const uri = `${this.appConfig.marketplace.endpoint}/api/-/query`;
     const res = await nodeFetch(uri, {
       headers: {
         ...commonHeaders,
@@ -23,7 +30,9 @@ export class OpenvsxMarketplaceImpl extends AbstractMarketplace {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    const uri = `${this.config.endpoint}/api/-/search?${param && new URLSearchParams(param as any).toString()}`;
+    const uri = `${this.appConfig.marketplace.endpoint}/api/-/search?${
+      param && new URLSearchParams(param as any).toString()
+    }`;
     const res = await nodeFetch(uri, {
       headers: {
         ...commonHeaders,

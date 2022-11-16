@@ -1,8 +1,14 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { NodeModule } from '@opensumi/ide-core-node';
 
-import { VSXExtensionBackSerivceToken, VSXExtensionServicePath } from '../common';
+import {
+  VSXExtensionBackSerivceToken,
+  VSXExtensionServicePath,
+  OpentrsMarketplaceToken,
+  OpenvsxMarketplaceToken,
+} from '../common';
 
+import { OpentrsMarketplaceImpl, OpenvsxMarketplaceImpl } from './marketplace';
 import { VSXExtensionService } from './vsx-extension.service';
 
 @Injectable()
@@ -11,6 +17,14 @@ export class OpenVsxExtensionManagerModule extends NodeModule {
     {
       token: VSXExtensionBackSerivceToken,
       useClass: VSXExtensionService,
+    },
+    {
+      token: OpentrsMarketplaceToken,
+      useClass: OpentrsMarketplaceImpl,
+    },
+    {
+      token: OpenvsxMarketplaceToken,
+      useClass: OpenvsxMarketplaceImpl,
     },
   ];
 

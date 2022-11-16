@@ -7,15 +7,18 @@ import fs from 'fs-extra';
 import requestretry from 'requestretry';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Injectable, Autowired } from '@opensumi/di';
-import { DEFAULT_OPENVSX_REGISTRY } from '@opensumi/ide-core-common/lib/const';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
-import { IVSXExtensionBackService, IExtensionInstallParam, AbstractMarketplace } from '../common';
+import {
+  IVSXExtensionBackService,
+  IExtensionInstallParam,
+  AbstractMarketplace,
+  OpentrsMarketplaceToken,
+  OpenvsxMarketplaceToken,
+} from '../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../common/vsx-registry-types';
-
-import { OpentrsMarketplaceImpl } from './marketplace/opentrs-marketplace';
-import { OpenvsxMarketplaceImpl } from './marketplace/openvsx-marketplace';
 
 function cleanup(paths: string[]) {
   return Promise.all(paths.map((path) => fs.remove(path)));
@@ -26,6 +29,9 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
   private marketplace: AbstractMarketplace;
 
   constructor() {
@@ -33,9 +39,9 @@ export class VSXExtensionService implements IVSXExtensionBackService {
     const { endpoint } = marketplaceConfig;
 
     this.marketplace =
-      endpoint === DEFAULT_OPENVSX_REGISTRY
-        ? new OpenvsxMarketplaceImpl(marketplaceConfig)
-        : new OpentrsMarketplaceImpl(marketplaceConfig);
+      endpoint === DEFAULT_TRS_REGISTRY
+        ? this.injector.get(OpentrsMarketplaceToken)
+        : this.injector.get(OpenvsxMarketplaceToken);
   }
 
   async getExtension(param: QueryParam): Promise<QueryResult | undefined> {

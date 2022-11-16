@@ -1,5 +1,7 @@
 import nodeFetch from 'node-fetch';
 
+import { Injectable, Autowired } from '@opensumi/di';
+import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import pkg from '@opensumi/ide-core-node/package.json';
 
 import { AbstractMarketplace } from '../../common';
@@ -11,18 +13,18 @@ const commonHeaders = {
   'x-framework-version': pkg.version,
 };
 
+@Injectable()
 export class OpentrsMarketplaceImpl extends AbstractMarketplace {
-  constructor(config) {
-    super(config);
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
-    this.downloadHeaders = {
-      ...this.getAKHeaders(),
-      'x-download-model': 'redirect',
-    };
-  }
+  public downloadHeaders = {
+    ...this.getAKHeaders(),
+    'x-download-model': 'redirect',
+  };
 
   private getAKHeaders() {
-    const { masterKey, accountId } = this.config;
+    const { masterKey, accountId } = this.appConfig.marketplace;
     const headers = {};
 
     if (masterKey) {
@@ -37,7 +39,7 @@ export class OpentrsMarketplaceImpl extends AbstractMarketplace {
   }
 
   async getExtensionDetail(param: QueryParam): Promise<QueryResult | undefined> {
-    const { endpoint } = this.config;
+    const { endpoint } = this.appConfig.marketplace;
     const uri = `${endpoint}/openapi/ide/extension/${param.extensionId}`;
     const res = await nodeFetch(uri, {
       headers: {
@@ -60,7 +62,7 @@ export class OpentrsMarketplaceImpl extends AbstractMarketplace {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    const { endpoint } = this.config;
+    const { endpoint } = this.appConfig.marketplace;
     const res = await nodeFetch(
       `${endpoint}/openapi/ide/search?${param && new URLSearchParams(param as any).toString()}`,
       {
