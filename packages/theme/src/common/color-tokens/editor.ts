@@ -413,6 +413,30 @@ export const diffDiagonalFill = registerColor(
 );
 
 /**
+ * Merge Editor Colors
+ */
+export const defaultModifyColor = new Color(new RGBA(27, 129, 168, 0.6));
+export const defaultHCModifyColor = new Color(new RGBA(32, 144, 211, 0.6));
+export const mergeEditorInserted = registerColor(
+  'mergeEditor.insertedBackground',
+  { dark: defaultInsertColor, light: defaultInsertColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+export const mergeEditorRemoved = registerColor(
+  'mergeEditor.removedBackground',
+  { dark: defaultRemoveColor, light: defaultRemoveColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+export const mergeEditorModify = registerColor(
+  'mergeEditor.modifyBackground',
+  { dark: defaultModifyColor, light: defaultModifyColor, hcDark: defaultHCModifyColor, hcLight: defaultHCModifyColor },
+  '',
+  true,
+);
+
+/**
  * Editor View Colors from editorColorRegistry
  */
 export const editorLineHighlight = registerColor(
