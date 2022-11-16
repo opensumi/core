@@ -219,7 +219,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
   }
 
-  search = (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
+  search = async (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
     if (e && e.keyCode !== Key.ENTER.keyCode) {
       return;
     }
@@ -231,7 +231,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     const state = insertUIState || this.UIState;
 
-    this.doSearch(value, state);
+    await this.doSearch(value, state);
   };
 
   async doSearch(value: string, state: IUIState) {
