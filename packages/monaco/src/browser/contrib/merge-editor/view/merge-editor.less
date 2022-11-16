@@ -1,0 +1,33 @@
+.merge-editor-container {
+  height: 100%;
+
+  .currentEditorContainer,
+  .resultEditorContainer,
+  .incomingEditorContainer {
+    height: 100%;
+  }
+
+  .merge-editor-guide-underline-widget {
+    &.insert {
+      border-top: 1px solid var(--mergeEditor-insertedBackground);
+    }
+    &.modify {
+      border-top: 1px solid var(--mergeEditor-modifyBackground);
+    }
+    &.remove {
+      border-top: 1px solid var(--mergeEditor-removedBackground);
+    }
+  }
+
+  .diff-stack-frame-line-background {
+    &.insert {
+      background-color: var(--mergeEditor-insertedBackground);
+    }
+    &.modify {
+      background-color: var(--mergeEditor-modifyBackground);
+    }
+    &.remove {
+      background-color: var(--mergeEditor-removedBackground);
+    }
+  }
+}

@@ -66,7 +66,6 @@ import {
 } from './contrib/command';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { ICodeEditor } from './monaco-api/editor';
-import { languageFeaturesService } from './monaco-api/languages';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
