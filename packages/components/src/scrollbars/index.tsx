@@ -3,7 +3,7 @@ import throttle from 'lodash/throttle';
 import React, { useCallback, useEffect, useRef } from 'react';
 import { Scrollbars as CustomScrollbars } from 'react-custom-scrollbars';
 
-import { Disposable, DisposableCollection } from '@opensumi/ide-utils';
+import { DisposableCollection } from '@opensumi/ide-utils';
 import './styles.less';
 
 export interface ICustomScrollbarProps {
@@ -14,6 +14,10 @@ export interface ICustomScrollbarProps {
   className?: string;
   children?: React.ReactNode;
   onReachBottom?: any;
+  /**
+   * 这种模式下，左右滚动和上下滚动都会被视为左右滚动
+   */
+  tabBarMode?: boolean;
 }
 
 export const Scrollbars = ({
@@ -24,6 +28,7 @@ export const Scrollbars = ({
   children,
   className,
   onReachBottom,
+  tabBarMode,
 }: ICustomScrollbarProps) => {
   const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
   const scrollerRef = useRef<HTMLDivElement>();
@@ -71,28 +76,32 @@ export const Scrollbars = ({
     }, 100),
     [onUpdate, handleReachBottom, verticalShadowRef.current, horizontalShadowRef.current],
   );
-  const onMouseWheel = useCallback(
-    (e) => {
+
+  useEffect(() => {
+    const onMouseWheel = (e: WheelEvent) => {
       if (!scrollerRef.current) {
         return;
       }
-      if (scrollerRef.current.clientHeight >= scrollerRef.current.scrollHeight && e.deltaY !== 0) {
-        scrollerRef.current.scrollLeft += e.deltaY;
-      }
-    },
-    [scrollerRef.current],
-  );
+      e.preventDefault();
+      e.stopPropagation();
 
-  useEffect(() => {
-    if (scrollerRef.current) {
+      if (scrollerRef.current.clientHeight >= scrollerRef.current.scrollHeight) {
+        if (e.deltaY !== 0) {
+          scrollerRef.current.scrollLeft += e.deltaY;
+        }
+        if (e.deltaX !== 0) {
+          scrollerRef.current.scrollLeft += e.deltaX;
+        }
+      }
+    };
+
+    if (tabBarMode && scrollerRef.current) {
       scrollerRef.current.addEventListener('wheel', onMouseWheel);
-      disposableCollection.current.push(
-        Disposable.create(() => {
-          scrollerRef.current?.removeEventListener('wheel', onMouseWheel);
-        }),
-      );
     }
-  }, [scrollerRef.current]);
+    return () => {
+      scrollerRef.current?.removeEventListener('wheel', onMouseWheel);
+    };
+  }, [scrollerRef.current, tabBarMode]);
 
   // clear listeners
   useEffect(() => () => disposableCollection.current.dispose(), []);
