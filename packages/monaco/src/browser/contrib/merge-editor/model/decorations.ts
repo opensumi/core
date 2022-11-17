@@ -100,7 +100,7 @@ export class MergeEditorDecorations extends Disposable {
     });
   }
 
-  private clearDecorations(): void {
+  public clearDecorations(): void {
     this.editor.changeDecorations((accessor) => {
       for (const decoration of this.deltaDecoration) {
         accessor.removeDecoration(decoration.id);
