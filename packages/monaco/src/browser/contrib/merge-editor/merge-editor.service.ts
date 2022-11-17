@@ -1,15 +1,9 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Disposable, IContextKeyService, MonacoService, ServiceNames } from '@opensumi/ide-core-browser';
-import { EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
-import { IDocumentDiff } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/documentDiffProvider';
+import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
 
-import { monaco } from '../../monaco-api';
 import { ICodeEditor } from '../../monaco-api/editor';
-import { ITextModel } from '../../monaco-api/types';
-import { MonacoContextKeyService } from '../../monaco.context-key.service';
 
 import { ComputerDiffModel } from './model/computer-diff';
-import { MergeEditorDecorations } from './model/decorations';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
 import { ResultCodeEditor } from './view/editors/resultCodeEditor';

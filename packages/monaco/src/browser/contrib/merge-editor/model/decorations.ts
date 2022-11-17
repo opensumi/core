@@ -1,10 +1,8 @@
-import { Injectable, Autowired, Optional } from '@opensumi/di';
-import { MonacoOverrideServiceRegistry, ServiceNames } from '@opensumi/ide-core-browser';
-import { uuid } from '@opensumi/ide-core-common';
-import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
-import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
+import { Injectable, Optional } from '@opensumi/di';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { monaco } from '../../../monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
@@ -28,30 +26,37 @@ export interface IDiffDecoration {
 }
 
 @Injectable({ multiple: true })
-export class MergeEditorDecorations {
-  @Autowired(MonacoOverrideServiceRegistry)
-  private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
-
-  private readonly decorationId = `merge-editor-${uuid()}`;
-  private codeEditorService: MonacoCodeService;
-
+export class MergeEditorDecorations extends Disposable {
   private deltaDecoration: IDiffDecoration[] = [];
+  private retainDecoration: IDiffDecoration[] = [];
+
   private underLineWidgetSet: Set<GuidelineWidget> = new Set();
 
+  private readonly _onDidChangeLineWidget = new Emitter<void>();
+  private readonly onDidChangeLineWidget: Event<void> = this._onDidChangeLineWidget.event;
+
+  private readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
+  public readonly onDidChangeDecorations: Event<MergeEditorDecorations> = this._onDidChangeDecorations.event;
+
   constructor(@Optional() private readonly editor: ICodeEditor) {
-    this.codeEditorService = this.overrideServicesRegistry.getRegisteredService(
-      ServiceNames.CODE_EDITOR_SERVICE,
-    ) as MonacoCodeService;
+    super();
+    this.initListenEvent();
+  }
+
+  private initListenEvent(): void {
+    this.addDispose(
+      Event.any<IModelDecorationsChangedEvent | void>(
+        this.editor.onDidChangeModelDecorations,
+        this.onDidChangeLineWidget,
+      )(() => {
+        this._onDidChangeDecorations.fire(this);
+      }),
+    );
   }
 
   private setDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
-    if (ranges.length === 0 && innerChanges.length === 0) {
-      this.clearDecorations();
-      return;
-    }
-
     this.editor.changeDecorations((accessor) => {
-      const newDecorations: IDiffDecoration[] = this.deltaDecoration;
+      const newDecorations: IDiffDecoration[] = this.retainDecoration;
 
       for (const range of ranges) {
         if (range.ranges.isEmpty) {
@@ -60,6 +65,7 @@ export class MergeEditorDecorations {
           guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, range.ranges.startLineNumber - 1));
 
           this.underLineWidgetSet.add(guidelineWidget);
+          this._onDidChangeLineWidget.fire();
         } else {
           newDecorations.push({
             id: '',
@@ -77,6 +83,7 @@ export class MergeEditorDecorations {
                 isWholeLine: true,
                 stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
                 collapseOnReplaceEdit: true,
+                // marginClassName: `merge-editor-marginClassName ${range.type}`
               },
             },
           });
@@ -94,10 +101,6 @@ export class MergeEditorDecorations {
   }
 
   private clearDecorations(): void {
-    if (!this.deltaDecoration.length) {
-      return;
-    }
-
     this.editor.changeDecorations((accessor) => {
       for (const decoration of this.deltaDecoration) {
         accessor.removeDecoration(decoration.id);
@@ -105,6 +108,37 @@ export class MergeEditorDecorations {
 
       this.deltaDecoration = [];
     });
+
+    this.underLineWidgetSet.forEach((widget) => {
+      widget.dispose();
+    });
+
+    this.underLineWidgetSet.clear();
+  }
+
+  public updateDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
+    this.clearDecorations();
+    this.setDecorations(ranges, innerChanges);
+  }
+
+  public getDecorations(): IDiffDecoration[] {
+    return this.deltaDecoration;
+  }
+
+  public getLineWidgets(): GuidelineWidget[] {
+    return Array.from(this.underLineWidgetSet.keys());
+  }
+
+  public setRetainDecoration(retain: IDiffDecoration[] = []): this {
+    this.retainDecoration = retain;
+    return this;
+  }
+
+  public setRetainLineWidget(retain: GuidelineWidget[] = []): this {
+    retain.forEach((r) => {
+      this.underLineWidgetSet.add(r);
+    });
+    return this;
   }
 
   public render(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
