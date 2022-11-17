@@ -464,7 +464,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         // originalEditor.monacoEditor.onDidChangeModelContent
         originalMonacoEditor['_onDidChangeModelContent'].fire();
         expect(relayoutSpy).toBeCalledTimes(1);
-        expect(relayoutSpy).toBeCalledWith(18);
+        expect(relayoutSpy).toBeCalledWith(10);
 
         // widget.onDispose
         dirtyDiffWidget.dispose();
