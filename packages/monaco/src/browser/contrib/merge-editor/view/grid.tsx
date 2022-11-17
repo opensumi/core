@@ -31,10 +31,20 @@ export const Grid = () => {
 
   return (
     <div className={'merge-editor-container'}>
-      <SplitPanel overflow='hidden' id='merge-editor-container' flex={2}>
-        <div className={'currentEditorContainer'} ref={currentEditorContainer}></div>
-        <div className={'resultEditorContainer'} ref={resultEditorContainer}></div>
-        <div className={'incomingEditorContainer'} ref={incomingEditorContainer}></div>
+      <SplitPanel overflow='hidden' id='merge-editor-container' flex={1}>
+        <div className={'container-side'}>
+          <div className={'currentEditorContainer'} ref={currentEditorContainer}></div>
+          <div className={'svg-render'}></div>
+        </div>
+        <div className={'container-side'}>
+          <div className={'svg-render'}></div>
+          <div className={'resultEditorContainer'} ref={resultEditorContainer}></div>
+          <div className={'svg-render'}></div>
+        </div>
+        <div className={'container-side'}>
+          <div className={'svg-render'}></div>
+          <div className={'incomingEditorContainer'} ref={incomingEditorContainer}></div>
+        </div>
       </SplitPanel>
     </div>
   );

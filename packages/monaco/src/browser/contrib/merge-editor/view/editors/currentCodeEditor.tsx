@@ -1,17 +1,9 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Event, MonacoService } from '@opensumi/ide-core-browser';
-import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { EditorLayoutInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { Injectable } from '@opensumi/di';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import {
-  IDiffDecoration,
-  IRenderChangesInput,
-  IRenderInnerChangesInput,
-  MergeEditorDecorations,
-} from '../../model/decorations';
+import { IDiffDecoration, IRenderChangesInput, IRenderInnerChangesInput } from '../../model/decorations';
 import { GuidelineWidget } from '../../model/line';
 import { flatInnerModified, flatInnerOriginal, flatModified, flatOriginal } from '../../utils';
 

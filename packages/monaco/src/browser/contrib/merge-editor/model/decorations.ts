@@ -30,7 +30,8 @@ export class MergeEditorDecorations extends Disposable {
   private deltaDecoration: IDiffDecoration[] = [];
   private retainDecoration: IDiffDecoration[] = [];
 
-  private underLineWidgetSet: Set<GuidelineWidget> = new Set();
+  private lineWidgetSet: Set<GuidelineWidget> = new Set();
+  private retainLineWidgetSet: Set<GuidelineWidget> = new Set();
 
   private readonly _onDidChangeLineWidget = new Emitter<void>();
   private readonly onDidChangeLineWidget: Event<void> = this._onDidChangeLineWidget.event;
@@ -57,6 +58,10 @@ export class MergeEditorDecorations extends Disposable {
   private setDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
     this.editor.changeDecorations((accessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
+      this.retainLineWidgetSet.forEach((widget) => {
+        widget.showByLine(widget.currentRange.startLineNumber);
+        this.lineWidgetSet.add(widget);
+      });
 
       for (const range of ranges) {
         if (range.ranges.isEmpty) {
@@ -64,7 +69,7 @@ export class MergeEditorDecorations extends Disposable {
           guidelineWidget.create();
           guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, range.ranges.startLineNumber - 1));
 
-          this.underLineWidgetSet.add(guidelineWidget);
+          this.lineWidgetSet.add(guidelineWidget);
           this._onDidChangeLineWidget.fire();
         } else {
           newDecorations.push({
@@ -83,7 +88,6 @@ export class MergeEditorDecorations extends Disposable {
                 isWholeLine: true,
                 stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
                 collapseOnReplaceEdit: true,
-                // marginClassName: `merge-editor-marginClassName ${range.type}`
               },
             },
           });
@@ -100,6 +104,13 @@ export class MergeEditorDecorations extends Disposable {
     });
   }
 
+  private cleanUpLineWidget(widgets: Set<GuidelineWidget>): void {
+    widgets.forEach((w) => {
+      w.dispose();
+    });
+    widgets.clear();
+  }
+
   public clearDecorations(): void {
     this.editor.changeDecorations((accessor) => {
       for (const decoration of this.deltaDecoration) {
@@ -109,11 +120,7 @@ export class MergeEditorDecorations extends Disposable {
       this.deltaDecoration = [];
     });
 
-    this.underLineWidgetSet.forEach((widget) => {
-      widget.dispose();
-    });
-
-    this.underLineWidgetSet.clear();
+    this.cleanUpLineWidget(this.lineWidgetSet);
   }
 
   public updateDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
@@ -126,7 +133,7 @@ export class MergeEditorDecorations extends Disposable {
   }
 
   public getLineWidgets(): GuidelineWidget[] {
-    return Array.from(this.underLineWidgetSet.keys());
+    return Array.from(this.lineWidgetSet.keys());
   }
 
   public setRetainDecoration(retain: IDiffDecoration[] = []): this {
@@ -135,8 +142,10 @@ export class MergeEditorDecorations extends Disposable {
   }
 
   public setRetainLineWidget(retain: GuidelineWidget[] = []): this {
+    this.cleanUpLineWidget(this.retainLineWidgetSet);
+
     retain.forEach((r) => {
-      this.underLineWidgetSet.add(r);
+      this.retainLineWidgetSet.add(r);
     });
     return this;
   }

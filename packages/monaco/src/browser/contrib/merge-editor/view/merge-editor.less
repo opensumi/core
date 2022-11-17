@@ -1,19 +1,40 @@
+@stickyConnectedWith: 12px;
+@doubleStickyConnectedWith: 24px;
+
 .merge-editor-container {
   height: 100%;
 
-  .currentEditorContainer,
-  .resultEditorContainer,
-  .incomingEditorContainer {
+  .container-side {
     height: 100%;
+    display: flex;
+
+    .currentEditorContainer,
+    .resultEditorContainer,
+    .incomingEditorContainer {
+      height: inherit;
+      width: calc(100% - @stickyConnectedWith);
+    }
+
+    .resultEditorContainer {
+      width: calc(100% - @doubleStickyConnectedWith);
+    }
+
+    .svg-render {
+      height: 100%;
+      width: @stickyConnectedWith;
+      flex: 1;
+    }
   }
 
   .merge-editor-guide-underline-widget {
     &.insert {
       border-top: 2px solid var(--mergeEditor-insertedBackground);
     }
+
     &.modify {
       border-top: 2px solid var(--mergeEditor-modifyBackground);
     }
+
     &.remove {
       border-top: 2px solid var(--mergeEditor-removedBackground);
     }
@@ -24,9 +45,11 @@
     &.insert {
       background-color: var(--mergeEditor-insertedBackground);
     }
+
     &.modify {
       background-color: var(--mergeEditor-modifyBackground);
     }
+
     &.remove {
       background-color: var(--mergeEditor-removedBackground);
     }
