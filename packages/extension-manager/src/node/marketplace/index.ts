@@ -1,2 +1,2 @@
-export { OpentrsMarketplaceImpl } from './opentrs-marketplace';
-export { OpenvsxMarketplaceImpl } from './openvsx-marketplace';
+export { OpentrsMarketplaceService } from './opentrs-marketplace.service';
+export { OpenvsxMarketplaceService } from './openvsx-marketplace.service';

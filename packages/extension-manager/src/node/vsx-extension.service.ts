@@ -14,9 +14,9 @@ import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import {
   IVSXExtensionBackService,
   IExtensionInstallParam,
-  AbstractMarketplace,
-  OpentrsMarketplaceToken,
-  OpenvsxMarketplaceToken,
+  IMarketplaceService,
+  IOpentrsMarketplaceService,
+  IOpenvsxMarketplaceService,
 } from '../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../common/vsx-registry-types';
 
@@ -32,20 +32,26 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  private marketplace: AbstractMarketplace;
+  private marketplace: IMarketplaceService;
 
-  constructor() {
+  private getMarketplace() {
+    if (this.marketplace) {
+      return this.marketplace;
+    }
+
     const { marketplace: marketplaceConfig } = this.appConfig;
     const { endpoint } = marketplaceConfig;
 
     this.marketplace =
       endpoint === DEFAULT_TRS_REGISTRY.ENDPOINT
-        ? this.injector.get(OpentrsMarketplaceToken)
-        : this.injector.get(OpenvsxMarketplaceToken);
+        ? this.injector.get(IOpentrsMarketplaceService)
+        : this.injector.get(IOpenvsxMarketplaceService);
+
+    return this.marketplace;
   }
 
   async getExtension(param: QueryParam): Promise<QueryResult | undefined> {
-    return await this.marketplace.getExtensionDetail(param);
+    return await this.getMarketplace().getExtensionDetail(param);
   }
 
   async install(param: IExtensionInstallParam): Promise<string> {
@@ -139,7 +145,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
           method: 'GET',
           maxAttempts: 5,
           retryDelay: 2000,
-          headers: this.marketplace.downloadHeaders,
+          headers: this.getMarketplace().downloadHeaders,
           retryStrategy: requestretry.RetryStrategies.HTTPOrNetworkError,
         },
         (err, response) => {
@@ -159,6 +165,6 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    return await this.marketplace.search(param);
+    return await this.getMarketplace().search(param);
   }
 }

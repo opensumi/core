@@ -3,7 +3,7 @@ import nodeFetch from 'node-fetch';
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
-import { AbstractMarketplace } from '../../common';
+import { IMarketplaceService } from '../../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../../common/vsx-registry-types';
 
 const commonHeaders = {
@@ -12,7 +12,7 @@ const commonHeaders = {
 };
 
 @Injectable()
-export class OpenvsxMarketplaceImpl extends AbstractMarketplace {
+export class OpenvsxMarketplaceService implements IMarketplaceService {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 

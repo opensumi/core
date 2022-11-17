@@ -105,13 +105,11 @@ export interface IVSXExtensionBackService {
   getOpenVSXRegistry(): Promise<string>;
 }
 
-export const OpentrsMarketplaceToken = Symbol('OpentrsMarketplaceToken');
+export const IOpentrsMarketplaceService = Symbol('IOpentrsMarketplaceService');
+export const IOpenvsxMarketplaceService = Symbol('IOpenvsxMarketplaceService');
 
-export const OpenvsxMarketplaceToken = Symbol('OpenvsxMarketplaceToken');
-
-export abstract class AbstractMarketplace {
-  public downloadHeaders: { [key: string]: string } = {};
-
-  abstract getExtensionDetail(param: QueryParam): Promise<QueryResult | undefined>;
-  abstract search(param?: VSXSearchParam): Promise<VSXSearchResult>;
+export interface IMarketplaceService {
+  downloadHeaders?: { [key: string]: string };
+  getExtensionDetail(param: QueryParam): Promise<QueryResult | undefined>;
+  search(param?: VSXSearchParam): Promise<VSXSearchResult>;
 }

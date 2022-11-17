@@ -4,7 +4,7 @@ import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import pkg from '@opensumi/ide-core-node/package.json';
 
-import { AbstractMarketplace } from '../../common';
+import { IMarketplaceService } from '../../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../../common/vsx-registry-types';
 
 const commonHeaders = {
@@ -14,7 +14,7 @@ const commonHeaders = {
 };
 
 @Injectable()
-export class OpentrsMarketplaceImpl extends AbstractMarketplace {
+export class OpentrsMarketplaceService implements IMarketplaceService {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
