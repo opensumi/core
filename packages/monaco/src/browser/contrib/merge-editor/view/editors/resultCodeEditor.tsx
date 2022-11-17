@@ -71,27 +71,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.decorations.getLineWidgets();
   }
 
-  public override mount(): void {
-    super.mount();
-
-    const marginWith = this.editor.getLayoutInfo().contentLeft;
-
-    this.addDispose(
-      this.decorations.onDidChangeDecorations((decorations: MergeEditorDecorations) => {
-        const widgets = decorations.getLineWidgets();
-        if (widgets.length > 0) {
-          widgets.forEach((w) => {
-            if (w) {
-              w.setContainerStyle({
-                left: marginWith + 'px',
-              });
-            }
-          });
-        }
-      }),
-    );
-  }
-
   public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {
     this.rangeMapping = changes;
     this.currentBaseRange = baseRange;
