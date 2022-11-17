@@ -1,13 +1,23 @@
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
 
+import { ICodeEditor } from '../../../monaco-api/types';
 import { LineRangeType } from '../types';
 
 export class GuidelineWidget extends ZoneWidget {
   protected applyClass(): void {}
   protected applyStyle(): void {}
 
-  protected _fillContainer(container: HTMLElement): void {
+  protected _fillContainer(): void {
     this.setCssClass('merge-editor-guide-underline-widget');
+  }
+
+  public setContainerStyle(style: { [key in string]: string }): void {
+    const keys = Object.keys(style);
+    for (const key of keys) {
+      if (Object.prototype.hasOwnProperty.call(this._container.style, key)) {
+        this._container.style[key] = style[key];
+      }
+    }
   }
 
   public setLineRangeType(type: LineRangeType): this {

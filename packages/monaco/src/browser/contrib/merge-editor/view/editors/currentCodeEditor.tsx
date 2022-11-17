@@ -1,7 +1,9 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { MonacoService } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import {
   IDiffDecoration,
@@ -9,12 +11,17 @@ import {
   IRenderInnerChangesInput,
   MergeEditorDecorations,
 } from '../../model/decorations';
+import { GuidelineWidget } from '../../model/line';
 import { flatInnerModified, flatInnerOriginal, flatModified, flatOriginal } from '../../utils';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
 @Injectable({ multiple: false })
 export class CurrentCodeEditor extends BaseCodeEditor {
+  protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
+    return { lineNumbersMinChars: 2 };
+  }
+
   private rangeMapping: LineRangeMapping[] = [];
 
   protected prepareRenderDecorations(
@@ -52,14 +59,41 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return [changesResult, innerChangesResult];
   }
 
-  protected getDeltaDecorations(): IDiffDecoration[] {
+  protected getRetainDecoration(): IDiffDecoration[] {
     return [];
+  }
+
+  protected getRetainLineWidget(): GuidelineWidget[] {
+    return [];
+  }
+
+  public override mount(): void {
+    super.mount();
+
+    const marginWith = this.editor.getLayoutInfo().contentLeft;
+
+    this.addDispose(
+      this.decorations.onDidChangeDecorations((decorations: MergeEditorDecorations) => {
+        const widgets = decorations.getLineWidgets();
+        if (widgets.length > 0) {
+          widgets.forEach((w) => {
+            if (w) {
+              w.setContainerStyle({
+                width: `calc(100% - ${marginWith}px)`,
+              });
+            }
+          });
+        }
+        this.layout();
+      }),
+    );
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
     this.rangeMapping = changes;
 
     const [c, i] = [flatOriginal(changes), flatInnerOriginal(changes)];
+
     this.renderDecorations(c, i);
     this.rangeMapping = [];
   }
