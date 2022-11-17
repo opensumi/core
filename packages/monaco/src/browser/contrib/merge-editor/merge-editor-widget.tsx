@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { AppConfig, ConfigProvider, MonacoService } from '@opensumi/ide-core-browser';
-import { Disposable, IRange, ISelection } from '@opensumi/ide-core-common';
+import { Disposable, Event, IRange, ISelection } from '@opensumi/ide-core-common';
 import { EditorType } from '@opensumi/ide-editor';
 import { IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
 import { Selection } from '@opensumi/monaco-editor-core';
