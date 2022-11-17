@@ -8,7 +8,8 @@ const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
 const { v4 } = require('uuid');
-const marketplaceType = process.env.MARKETPLACE ?? 'openvsx';
+const retry = require('async-retry');
+const marketplaceType = process.env.MARKETPLACE ?? 'opentrs';
 
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
@@ -80,7 +81,9 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
       const extensionDir = path.join(dist, targetDirName);
       const stream = new compressing.zip.UncompressStream({ source: tmpZipFile });
       stream
-        .on('error', reject)
+        .on('error', (err) => {
+          reject(err);
+        })
         .on('finish', () => {
           if (!fs.pathExistsSync(path.join(extensionDir, 'package.json'))) {
             reject(`Download Error: ${extensionDir}/package.json`);
@@ -125,29 +128,25 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 }
 
 const installExtension = async (namespace, name, version) => {
-  const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
-  const getDetailApi =
-    marketplaceType === 'opentrs'
-      ? `https://marketplace.opentrs.com/api/extension/${path}`
-      : `https://open-vsx.org/api/${path}`;
-
-  const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
-  const data = await res.json();
-
   let downloadUrl = '';
 
   if (marketplaceType === 'opentrs') {
-    const extensionId = data.data?.extensionId;
-
-    downloadUrl = `https://marketplace.opentrs.com/openapi/ide/download/${extensionId}`;
+    downloadUrl = `https://marketplace.opentrs.com/openapi/ide/download/${namespace}.${name}`;
   } else {
+    const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
+    const getDetailApi = `https://open-vsx.org/api/${path}`;
+    const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
+    const data = await res.json();
+
     downloadUrl = data.files?.download;
   }
 
   if (downloadUrl) {
     const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
-    // 解压插件
-    await unzipFile(targetDir, targetDirName, tmpZipFile);
+
+    // 解压插件，使用 opentrs 插件时解压缩容易出错，因此这里加一个重试逻辑
+    await retry(() => unzipFile(targetDir, targetDirName, tmpZipFile), { retries: 5 });
+
     rimraf.sync(tmpZipFile);
   }
 };
