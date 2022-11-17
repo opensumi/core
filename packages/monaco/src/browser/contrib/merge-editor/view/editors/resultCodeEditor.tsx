@@ -1,6 +1,7 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import {
   IDiffDecoration,
@@ -8,12 +9,17 @@ import {
   IRenderInnerChangesInput,
   MergeEditorDecorations,
 } from '../../model/decorations';
+import { GuidelineWidget } from '../../model/line';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
+  protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
+    return {};
+  }
+
   private rangeMapping: LineRangeMapping[] = [];
   private currentBaseRange: 0 | 1;
 
@@ -57,8 +63,33 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return [changesResult, innerChangesResult];
   }
 
-  protected getDeltaDecorations(): IDiffDecoration[] {
-    return [];
+  protected getRetainDecoration(): IDiffDecoration[] {
+    return this.decorations.getDecorations();
+  }
+
+  protected getRetainLineWidget(): GuidelineWidget[] {
+    return this.decorations.getLineWidgets();
+  }
+
+  public override mount(): void {
+    super.mount();
+
+    const marginWith = this.editor.getLayoutInfo().contentLeft;
+
+    this.addDispose(
+      this.decorations.onDidChangeDecorations((decorations: MergeEditorDecorations) => {
+        const widgets = decorations.getLineWidgets();
+        if (widgets.length > 0) {
+          widgets.forEach((w) => {
+            if (w) {
+              w.setContainerStyle({
+                left: marginWith + 'px',
+              });
+            }
+          });
+        }
+      }),
+    );
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {
