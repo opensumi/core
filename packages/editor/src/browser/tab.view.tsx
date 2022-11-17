@@ -421,6 +421,7 @@ export const Tabs = ({ group }: ITabsProps) => {
       >
         {!wrapMode ? (
           <Scrollbars
+            tabBarMode
             forwardedRef={(el) => (el ? (tabContainer.current = el) : null)}
             className={styles.kt_editor_tabs_scroll}
           >
