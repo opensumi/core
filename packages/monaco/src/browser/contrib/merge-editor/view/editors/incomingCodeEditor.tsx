@@ -17,7 +17,7 @@ import { BaseCodeEditor } from './baseCodeEditor';
 @Injectable({ multiple: false })
 export class IncomingCodeEditor extends BaseCodeEditor {
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
-    return {};
+    return { readOnly: true };
   }
 
   private rangeMapping: LineRangeMapping[] = [];
@@ -63,27 +63,6 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
   protected getRetainLineWidget(): GuidelineWidget[] {
     return [];
-  }
-
-  public override mount(): void {
-    super.mount();
-
-    const marginWith = this.editor.getLayoutInfo().contentLeft;
-
-    this.addDispose(
-      this.decorations.onDidChangeDecorations((decorations: MergeEditorDecorations) => {
-        const widgets = decorations.getLineWidgets();
-        if (widgets.length > 0) {
-          widgets.forEach((w) => {
-            if (w) {
-              w.setContainerStyle({
-                left: marginWith + 'px',
-              });
-            }
-          });
-        }
-      }),
-    );
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
