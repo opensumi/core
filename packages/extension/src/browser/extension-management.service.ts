@@ -1,5 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { getLanguageId, ILogger, WithEventBus } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {
   AbstractExtensionManagementService,
@@ -31,6 +32,9 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
 
   @Autowired(SumiContributionsServiceToken)
   private readonly sumiContributesService: SumiContributionsService;
+
+  @Autowired(IFileServiceClient)
+  private fileService: IFileServiceClient;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -173,6 +177,19 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
   }
 
   /**
+   * 删除插件文件
+   */
+  private async removeExtension(extensionPath: string) {
+    try {
+      await this.fileService.delete(extensionPath);
+      return true;
+    } catch (err) {
+      this.logger.error(err);
+      return false;
+    }
+  }
+
+  /**
    * 通过 extensionPath 来卸载插件
    */
   private async uninstallExtension(extensionPath: string) {
@@ -181,7 +198,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
       oldExtension.dispose();
       this.extInstanceManagementService.deleteExtensionInstanceByPath(extensionPath);
     }
-
+    await this.removeExtension(extensionPath);
     this.eventBus.fire(new ExtensionDidUninstalledEvent());
   }
 }
