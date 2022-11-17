@@ -43,6 +43,8 @@ export interface IconBaseProps<T> extends IIconShapeOptions {
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
   // 是否是文件资源类型的 icon
   resourceOptions?: IIconResourceOptions;
+  // 动画类型，当前仅支持 `spin`
+  animate?: string;
 }
 
 export type IconProps<T = any> = IconBaseProps<T> & React.HTMLAttributes<HTMLSpanElement>;
@@ -76,6 +78,8 @@ const IconBase = function <T>(props: IconProps<T>, ref: React.Ref<HTMLSpanElemen
     onClick,
     children,
     resourceOptions,
+    animate,
+    style = {},
     ...restProps
   } = props;
   const iconShapeOptions = { rotate, anim, fill };
@@ -102,6 +106,10 @@ const IconBase = function <T>(props: IconProps<T>, ref: React.Ref<HTMLSpanElemen
     iconClx = iconClass;
   }
 
+  if (animate && animate === 'spin') {
+    style['animation'] = 'kt-icon-spin 1.5s steps(30) infinite';
+  }
+
   return (
     <span
       {...restProps}
@@ -116,6 +124,7 @@ const IconBase = function <T>(props: IconProps<T>, ref: React.Ref<HTMLSpanElemen
         'kt-icon-resource': !!resourceOptions,
         expanded: !!resourceOptions && resourceOptions.isOpenedDirectory,
       })}
+      style={style}
     >
       {children}
     </span>

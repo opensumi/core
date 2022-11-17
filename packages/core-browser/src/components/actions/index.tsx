@@ -20,7 +20,7 @@ import {
   generateMergedCtxMenu,
 } from '../../menu/next';
 import { useInjectable } from '../../react-hooks';
-import { useMenus, useContextMenus } from '../../utils';
+import { useMenus, useContextMenus, transformLabelWithCodicon } from '../../utils';
 
 import placements from './placements';
 import styles from './styles.module.less';
@@ -184,7 +184,7 @@ const InlineActionWidget: React.FC<
 
   const [title, label] = React.useMemo(() => {
     let title = data.tooltip || data.label;
-    let label = data.label;
+    const label = data.label;
     if (data.keybinding) {
       title = `${title} (${data.keybinding})`;
     }
@@ -226,29 +226,6 @@ const InlineActionWidget: React.FC<
     );
   }
 
-  const transformLabel = useCallback((label: string) => {
-    const SEPERATOR = ' ';
-    const ICON_REGX = /\$\(.*?\)/gi;
-    return label.split(SEPERATOR).map((e) => {
-      let icon;
-      if (iconService) {
-        icon = iconService.fromString(e);
-      }
-      if (icon) {
-        return <Icon className={iconService?.fromString(e)} style={{ marginRight: 5 }} key={e} />;
-      } else if (ICON_REGX.test(e)) {
-        const newStr = e.replaceAll(/\$\(.*?\)/gi, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
-        return transformLabel(newStr);
-      } else {
-        return (
-          <span key={e} style={{ marginRight: 5 }}>
-            {e}
-          </span>
-        );
-      }
-    });
-  }, []);
-
   return (
     <Button
       className={clsx(className, styles.btnAction)}
@@ -259,7 +236,7 @@ const InlineActionWidget: React.FC<
       title={title}
       {...restProps}
     >
-      {transformLabel(label)}
+      {transformLabelWithCodicon(label, { margin: '0 3px' }, iconService?.fromString.bind(iconService))}
       {isSubmenuNode && <Icon icon='down' className='kt-button-secondary-more' />}
     </Button>
   );
