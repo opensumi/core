@@ -1,7 +1,8 @@
 import { Injector } from '@opensumi/di';
 import { MonacoService } from '@opensumi/ide-core-browser';
-import { Disposable } from '@opensumi/ide-core-common';
+import { Disposable, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { EditorLayoutInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
@@ -48,6 +49,29 @@ export abstract class BaseCodeEditor extends Disposable {
     });
 
     this.decorations = this.injector.get(MergeEditorDecorations, [this.editor]);
+
+    this.addDispose(
+      Event.debounce(
+        Event.any<MergeEditorDecorations | EditorLayoutInfo>(
+          this.decorations.onDidChangeDecorations,
+          this.editor.onDidLayoutChange,
+        ),
+        () => {},
+        0,
+      )(() => {
+        const marginWith = this.editor.getLayoutInfo().contentLeft;
+        const widgets = this.decorations.getLineWidgets();
+        if (widgets.length > 0) {
+          widgets.forEach((w) => {
+            if (w) {
+              w.setContainerStyle({
+                left: marginWith + 'px',
+              });
+            }
+          });
+        }
+      }),
+    );
   }
 
   public getEditor(): ICodeEditor {
