@@ -441,11 +441,11 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
         // monacoEditor.revealLineInCenter
         expect(revealLineInCenterSpy).toBeCalledTimes(1);
-        expect(revealLineInCenterSpy).toBeCalledWith(12 - 9);
+        expect(revealLineInCenterSpy).toBeCalledWith(7);
 
         expect(dirtyDiffWidget.currentIndex).toBe(1);
-        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(12));
-        expect(dirtyDiffWidget.currentHeightInLines).toBe(18);
+        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(11));
+        expect(dirtyDiffWidget.currentHeightInLines).toBe(10);
 
         // this.onDidChange
         dirtyDiffModel['_changes'].unshift(change0);
@@ -458,8 +458,8 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         ]);
 
         expect(dirtyDiffWidget.currentIndex).toBe(2);
-        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(12));
-        expect(dirtyDiffWidget.currentHeightInLines).toBe(18);
+        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(11));
+        expect(dirtyDiffWidget.currentHeightInLines).toBe(10);
 
         // originalEditor.monacoEditor.onDidChangeModelContent
         originalMonacoEditor['_onDidChangeModelContent'].fire();
