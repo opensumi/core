@@ -99,10 +99,10 @@ export abstract class BaseCodeEditor extends Disposable {
    */
   protected abstract prepareRenderDecorations(
     ranges: LineRange[],
-    innerChanges: Range[],
+    innerChanges: Range[][],
   ): [IRenderChangesInput[], IRenderInnerChangesInput[]];
 
-  protected renderDecorations(ranges: LineRange[], innerChanges: Range[]): void {
+  protected renderDecorations(ranges: LineRange[], innerChanges: Range[][]): void {
     const [r, i] = this.prepareRenderDecorations(ranges, innerChanges);
     this.decorations
       .setRetainDecoration(this.getRetainDecoration())

@@ -25,10 +25,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   protected prepareRenderDecorations(
     ranges: LineRange[],
-    innerChanges: Range[],
+    innerChanges: Range[][],
   ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
     let otherRanges: LineRange[] = [];
-    let innerOtherRanges: Range[] = [];
+    let innerOtherRanges: Range[][] = [];
 
     if (this.currentBaseRange === 1) {
       [otherRanges, innerOtherRanges] = [flatOriginal(this.rangeMapping), flatInnerOriginal(this.rangeMapping)];
@@ -47,14 +47,26 @@ export class ResultCodeEditor extends BaseCodeEditor {
           ranges: ranges[i],
           type: 'remove',
         });
+        innerChangesResult.push({
+          ranges: innerChanges[i],
+          type: 'remove',
+        });
       } else if (ranges[i].isEmpty && !otherRanges[i].isEmpty) {
         changesResult.push({
           ranges: ranges[i],
           type: 'insert',
         });
+        innerChangesResult.push({
+          ranges: innerChanges[i],
+          type: 'insert',
+        });
       } else {
         changesResult.push({
           ranges: ranges[i],
+          type: 'modify',
+        });
+        innerChangesResult.push({
+          ranges: innerChanges[i],
           type: 'modify',
         });
       }

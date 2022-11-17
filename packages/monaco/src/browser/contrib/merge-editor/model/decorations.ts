@@ -1,10 +1,10 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
+import { IRange, Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
-import { monaco } from '../../../monaco-api';
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
 import { LineRangeType } from '../types';
 
@@ -16,7 +16,7 @@ export interface IRenderChangesInput {
 }
 
 export interface IRenderInnerChangesInput {
-  ranges: Range;
+  ranges: Range[];
   type: LineRangeType;
 }
 
@@ -55,6 +55,39 @@ export class MergeEditorDecorations extends Disposable {
     );
   }
 
+  private createLineDecoration(range: LineRange, type: LineRangeType): IDiffDecoration {
+    return {
+      id: '',
+      editorDecoration: {
+        range: {
+          startLineNumber: range.startLineNumber,
+          startColumn: 0,
+          endLineNumber: range.endLineNumberExclusive - 1,
+          endColumn: Number.MAX_SAFE_INTEGER,
+        },
+        options: ModelDecorationOptions.register({
+          description: 'merge-editor-diff-line',
+          className: `merge-editor-diff-line-background ${type}`,
+          isWholeLine: true,
+        }),
+      },
+    };
+  }
+
+  private createInnerCharDecoration(range: IRange, type: LineRangeType): IDiffDecoration {
+    return {
+      id: '',
+      editorDecoration: {
+        range,
+        options: ModelDecorationOptions.register({
+          description: 'merge-editor-diff-inner-char',
+          className: `merge-editor-diff-inner-char-background ${type}`,
+          isWholeLine: false,
+        }),
+      },
+    };
+  }
+
   private setDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
     this.editor.changeDecorations((accessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
@@ -72,25 +105,16 @@ export class MergeEditorDecorations extends Disposable {
           this.lineWidgetSet.add(guidelineWidget);
           this._onDidChangeLineWidget.fire();
         } else {
-          newDecorations.push({
-            id: '',
-            editorDecoration: {
-              range: {
-                startLineNumber: range.ranges.startLineNumber,
-                startColumn: 0,
-                endLineNumber: range.ranges.endLineNumberExclusive - 1,
-                endColumn: Number.MAX_SAFE_INTEGER,
-              },
-              options: {
-                description: '',
-                className: `diff-stack-frame-line-background ${range.type}`,
-                zIndex: 10,
-                isWholeLine: true,
-                stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
-                collapseOnReplaceEdit: true,
-              },
-            },
-          });
+          newDecorations.push(this.createLineDecoration(range.ranges, range.type));
+        }
+      }
+
+      for (const innerRange of innerChanges) {
+        const { ranges, type } = innerRange;
+        for (const range of ranges) {
+          if (!range.isEmpty()) {
+            newDecorations.push(this.createInnerCharDecoration(range, type));
+          }
         }
       }
 
@@ -125,7 +149,7 @@ export class MergeEditorDecorations extends Disposable {
 
   public updateDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
     this.clearDecorations();
-    this.setDecorations(ranges, innerChanges);
+    this.render(ranges, innerChanges);
   }
 
   public getDecorations(): IDiffDecoration[] {

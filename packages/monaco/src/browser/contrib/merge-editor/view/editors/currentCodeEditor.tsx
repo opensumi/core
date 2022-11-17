@@ -19,12 +19,9 @@ export class CurrentCodeEditor extends BaseCodeEditor {
 
   protected prepareRenderDecorations(
     ranges: LineRange[],
-    innerChanges: Range[],
+    innerChanges: Range[][],
   ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
-    const [modifiedRanges, innerModifiedRanges] = [
-      flatModified(this.rangeMapping),
-      flatInnerModified(this.rangeMapping),
-    ];
+    const modifiedRanges = flatModified(this.rangeMapping);
     const length = ranges.length;
 
     const changesResult: IRenderChangesInput[] = [];
@@ -36,14 +33,26 @@ export class CurrentCodeEditor extends BaseCodeEditor {
           ranges: ranges[i],
           type: 'remove',
         });
+        innerChangesResult.push({
+          ranges: innerChanges[i],
+          type: 'remove',
+        });
       } else if (!ranges[i].isEmpty && modifiedRanges[i].isEmpty) {
         changesResult.push({
           ranges: ranges[i],
           type: 'insert',
         });
+        innerChangesResult.push({
+          ranges: innerChanges[i],
+          type: 'insert',
+        });
       } else {
         changesResult.push({
           ranges: ranges[i],
+          type: 'modify',
+        });
+        innerChangesResult.push({
+          ranges: innerChanges[i],
           type: 'modify',
         });
       }
