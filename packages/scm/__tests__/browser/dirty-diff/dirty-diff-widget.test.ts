@@ -172,7 +172,7 @@ describe('scm/src/browser/dirty-diff/dirty-diff-widget.ts', () => {
       const actionList = Array.from(actions.children) as HTMLElement[];
       expect(actionList.length).toBe(5);
       expect(actionList.map((n) => n.className)).toEqual(
-        ['plus', 'rollback', 'up', 'down', 'close'].map((n) => `kaitian-icon kticon-${n}`),
+        ['add', 'discard', 'arrow-up', 'arrow-down', 'close'].map((n) => `kt-icon codicon codicon-${n}`),
       );
       // onclick test
 

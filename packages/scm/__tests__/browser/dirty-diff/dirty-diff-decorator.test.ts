@@ -61,7 +61,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
 
       // ChangeType#Add
-      const change0: ILineChange = [10, 0, 111, 0, []];
+      const change0: ILineChange = [10, 10, 111, 0, []];
       dirtyDiffModel['_changes'] = [change0];
       dirtyDiffModel['_onDidChange'].fire([
         {
@@ -74,10 +74,13 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
+      const startLineNumber = change0[2];
+      const endLineNumber = change0[3] - 1 || startLineNumber - 1;
+
       expect(decos[0].range).toEqual({
-        startLineNumber: change0[2],
+        startLineNumber,
         startColumn: 1,
-        endLineNumber: change0[2],
+        endLineNumber,
         endColumn: 1,
       });
       expect(decos[0].options.linesDecorationsClassName).toBe('dirty-diff-glyph dirty-diff-added');
@@ -105,7 +108,7 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       const spy = jest.spyOn(monacoModel, 'deltaDecorations');
 
       // ChangeType#Delete
-      const change0: ILineChange = [1, 10, 111, 0, []];
+      const change0: ILineChange = [10, 11, 111, 111, []];
       dirtyDiffModel['_changes'] = [change0];
       dirtyDiffModel['_onDidChange'].fire([
         {
@@ -118,10 +121,11 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
+      const startLineNumber = change0[2];
       expect(decos[0].range).toEqual({
-        startLineNumber: change0[2],
+        startLineNumber: startLineNumber - 1,
         startColumn: Number.MAX_VALUE,
-        endLineNumber: change0[2],
+        endLineNumber: startLineNumber > 0 ? startLineNumber - 1 : startLineNumber,
         endColumn: Number.MAX_VALUE,
       });
       expect(decos[0].options.linesDecorationsClassName).toBeNull();
@@ -162,10 +166,13 @@ describe('test for scm/src/browser/dirty-diff/dirty-diff-decorator.ts', () => {
       expect(spy).toHaveBeenCalledTimes(1);
       const decos = spy.mock.calls[0][1];
       expect(decos.length).toBe(1);
+      const startLineNumber = change0[2];
+      const endLineNumber = change0[3] - 1 || startLineNumber - 1;
+
       expect(decos[0].range).toEqual({
-        startLineNumber: change0[2],
+        startLineNumber,
         startColumn: 1,
-        endLineNumber: change0[3],
+        endLineNumber,
         endColumn: 1,
       });
       expect(decos[0].options.linesDecorationsClassName).toBeNull();

@@ -128,7 +128,7 @@ export class DirtyDiffDecorator extends Disposable {
             range: {
               startLineNumber: startLineNumber - 1,
               startColumn: Number.MAX_VALUE,
-              endLineNumber: startLineNumber - 1,
+              endLineNumber: startLineNumber > 0 ? startLineNumber - 1 : startLineNumber,
               endColumn: Number.MAX_VALUE,
             },
             options: this.deletedOptions,
