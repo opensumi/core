@@ -1,12 +1,11 @@
-import { URI, path, CommandService, formatLocalize, ILineChange } from '@opensumi/ide-core-browser';
+import { URI, path, CommandService, formatLocalize } from '@opensumi/ide-core-browser';
 import { ScmChangeTitleCallback } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
-import type { IChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/smartLinesDiffComputer';
 
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
 
-import { ChangeType, getChangeType } from './dirty-diff-util';
+import { ChangeType, getChangeType, toChange } from './dirty-diff-util';
 
 export enum DirtyDiffWidgetActionType {
   close,
@@ -150,40 +149,6 @@ export class DirtyDiffWidget extends ZoneWidget {
     this._relayout(heightInLines);
   }
 
-  private toChange(change: ILineChange): IChange {
-    const changeType = getChangeType(change);
-    switch (changeType) {
-      case ChangeType.Add:
-        return {
-          originalStartLineNumber: change[0],
-          originalEndLineNumber: 0,
-          modifiedStartLineNumber: change[2],
-          modifiedEndLineNumber: change[3],
-        };
-      case ChangeType.Modify:
-        return {
-          originalStartLineNumber: change[0],
-          originalEndLineNumber: change[1],
-          modifiedStartLineNumber: change[2],
-          modifiedEndLineNumber: change[3],
-        };
-      case ChangeType.Delete:
-        return {
-          originalStartLineNumber: change[0],
-          originalEndLineNumber: change[1],
-          modifiedStartLineNumber: change[2],
-          modifiedEndLineNumber: 0,
-        };
-      default:
-        return {
-          originalStartLineNumber: change[0],
-          originalEndLineNumber: change[1],
-          modifiedStartLineNumber: change[2],
-          modifiedEndLineNumber: change[3],
-        };
-    }
-  }
-
   protected handleAction(type: DirtyDiffWidgetActionType) {
     let lineNumber: number;
     /**
@@ -195,7 +160,7 @@ export class DirtyDiffWidget extends ZoneWidget {
 
     const args: Parameters<ScmChangeTitleCallback> = [
       this.uri,
-      this._model.changes.map(this.toChange),
+      this._model.changes.map(toChange),
       this._currentChangeIndex - 1,
     ];
 

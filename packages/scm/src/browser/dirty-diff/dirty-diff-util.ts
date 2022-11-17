@@ -1,4 +1,5 @@
 import { ILineChange } from '@opensumi/ide-core-common';
+import type { IChange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/smartLinesDiffComputer';
 
 export function compareChanges(a: ILineChange, b: ILineChange): number {
   let result = a[2] - b[2];
@@ -47,5 +48,39 @@ export function getChangeType(change: ILineChange): ChangeType {
     return ChangeType.Delete;
   } else {
     return ChangeType.Modify;
+  }
+}
+
+export function toChange(change: ILineChange): IChange {
+  const changeType = getChangeType(change);
+  switch (changeType) {
+    case ChangeType.Add:
+      return {
+        originalStartLineNumber: change[0],
+        originalEndLineNumber: 0,
+        modifiedStartLineNumber: change[2],
+        modifiedEndLineNumber: change[3],
+      };
+    case ChangeType.Modify:
+      return {
+        originalStartLineNumber: change[0],
+        originalEndLineNumber: change[1],
+        modifiedStartLineNumber: change[2],
+        modifiedEndLineNumber: change[3],
+      };
+    case ChangeType.Delete:
+      return {
+        originalStartLineNumber: change[0],
+        originalEndLineNumber: change[1],
+        modifiedStartLineNumber: change[2],
+        modifiedEndLineNumber: 0,
+      };
+    default:
+      return {
+        originalStartLineNumber: change[0],
+        originalEndLineNumber: change[1],
+        modifiedStartLineNumber: change[2],
+        modifiedEndLineNumber: change[3],
+      };
   }
 }
