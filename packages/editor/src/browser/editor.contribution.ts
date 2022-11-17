@@ -75,7 +75,12 @@ import { EditorContextMenuController } from './menu/editor.context';
 import { NavigationMenuContainer } from './navigation.view';
 import { GoToLineQuickOpenHandler } from './quick-open/go-to-line';
 import { WorkspaceSymbolQuickOpenHandler } from './quick-open/workspace-symbol-quickopen';
-import { EditorGroupsResetSizeEvent, BrowserEditorContribution, IEditorFeatureRegistry, ResourceDecorationChangeEvent } from './types';
+import {
+  EditorGroupsResetSizeEvent,
+  BrowserEditorContribution,
+  IEditorFeatureRegistry,
+  ResourceDecorationChangeEvent,
+} from './types';
 import { EditorSuggestWidgetContribution } from './view/suggest-widget';
 import { EditorTopPaddingContribution } from './view/topPadding';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
@@ -341,6 +346,11 @@ export class EditorContribution
       keybinding: 'ctrlcmd+s',
     });
     keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.FOCUS_IF_NOT_ACTIVATE_ELEMENT.id,
+      keybinding: 'ctrlcmd+f',
+      when: '!editorFocus',
+    });
+    keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE.id,
       keybinding: this.isElectronRenderer() ? 'ctrlcmd+w' : 'alt+shift+w',
     });
@@ -483,6 +493,16 @@ export class EditorContribution
     commands.registerCommand(EDITOR_COMMANDS.GO_FORWARD, {
       execute: () => {
         this.historyService.forward();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.FOCUS_IF_NOT_ACTIVATE_ELEMENT, {
+      execute: () => {
+        if (!document.activeElement || document.activeElement === document.body) {
+          const group = this.workbenchEditorService.currentEditorGroup;
+          group?.focus();
+          group?.currentCodeEditor?.monacoEditor?.trigger('api', 'actions.find', null);
+        }
       },
     });
 
