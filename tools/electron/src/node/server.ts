@@ -13,10 +13,10 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   let opts: IServerAppOpts = {
     webSocketHandler: [],
     marketplace: {
-      endpoint: DEFAULT_TRS_REGISTRY,
+      endpoint: DEFAULT_TRS_REGISTRY.ENDPOINT,
       showBuiltinExtensions: true,
-      accountId: 'clcJKq_Gea47whxAJGrgoYqf',
-      masterKey: '_V_LPJ6Ar-1nrSVa05xDGBYp',
+      accountId: DEFAULT_TRS_REGISTRY.ACCOUNT_ID,
+      masterKey: DEFAULT_TRS_REGISTRY.MASTER_KEY,
     },
   };
   if (Array.isArray(arg1)) {

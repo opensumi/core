@@ -53,7 +53,7 @@ export class ServerApp implements IServerApp {
       LogServiceClass: opts.LogServiceClass,
       marketplace: Object.assign(
         {
-          endpoint: DEFAULT_TRS_REGISTRY,
+          endpoint: DEFAULT_TRS_REGISTRY.ENDPOINT,
           extensionDir: path.join(
             os.homedir(),
             ...(isWindows ? [StoragePaths.WINDOWS_APP_DATA_DIR, StoragePaths.WINDOWS_ROAMING_DIR] : ['']),
@@ -61,8 +61,8 @@ export class ServerApp implements IServerApp {
             StoragePaths.MARKETPLACE_DIR,
           ),
           showBuiltinExtensions: false,
-          accountId: 'clcJKq_Gea47whxAJGrgoYqf',
-          masterKey: '_V_LPJ6Ar-1nrSVa05xDGBYp',
+          accountId: DEFAULT_TRS_REGISTRY.ACCOUNT_ID,
+          masterKey: DEFAULT_TRS_REGISTRY.MASTER_KEY,
           ignoreId: [],
         },
         opts.marketplace,

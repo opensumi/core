@@ -39,7 +39,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
     const { endpoint } = marketplaceConfig;
 
     this.marketplace =
-      endpoint === DEFAULT_TRS_REGISTRY
+      endpoint === DEFAULT_TRS_REGISTRY.ENDPOINT
         ? this.injector.get(OpentrsMarketplaceToken)
         : this.injector.get(OpenvsxMarketplaceToken);
   }

@@ -164,7 +164,7 @@ const downloadVscodeExtensions = async () => {
     for (const item of items) {
       const { name, version } = item;
       promises.push(async () => {
-        log('开始安装：%s', name);
+        log('开始安装：%s', name, version);
         try {
           await installExtension(publisher, name, version);
         } catch (e) {
