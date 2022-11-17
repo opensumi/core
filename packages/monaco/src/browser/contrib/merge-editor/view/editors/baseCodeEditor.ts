@@ -86,6 +86,10 @@ export abstract class BaseCodeEditor extends Disposable {
       .updateDecorations(r, i);
   }
 
+  public clearDecorations(): void {
+    this.decorations.clearDecorations();
+  }
+
   /**
    * @param diffByDirection
    * 0 表示自己以 originalRange 为基础，与 modifiedRange 作比较
