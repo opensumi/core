@@ -7,6 +7,7 @@ import { ComputerDiffModel } from './model/computer-diff';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
 import { ResultCodeEditor } from './view/editors/resultCodeEditor';
+import { ScrollSynchronizer } from './view/scroll-synchronizer';
 
 @Injectable()
 export class MergeEditorService extends Disposable {
@@ -21,10 +22,12 @@ export class MergeEditorService extends Disposable {
   private incomingView: IncomingCodeEditor;
 
   private computerDiffModel: ComputerDiffModel;
+  private scrollSynchronizer: ScrollSynchronizer;
 
   constructor() {
     super();
     this.computerDiffModel = new ComputerDiffModel();
+    this.scrollSynchronizer = new ScrollSynchronizer();
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
@@ -35,6 +38,8 @@ export class MergeEditorService extends Disposable {
     this.currentView = this.injector.get(CurrentCodeEditor, [current, this.monacoService, this.injector]);
     this.resultView = this.injector.get(ResultCodeEditor, [result, this.monacoService, this.injector]);
     this.incomingView = this.injector.get(IncomingCodeEditor, [incoming, this.monacoService, this.injector]);
+
+    this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
   }
 
   public override dispose(): void {
@@ -42,6 +47,7 @@ export class MergeEditorService extends Disposable {
     this.currentView.dispose();
     this.resultView.dispose();
     this.incomingView.dispose();
+    this.scrollSynchronizer.dispose();
   }
 
   public getCurrentEditor(): ICodeEditor {
@@ -55,6 +61,8 @@ export class MergeEditorService extends Disposable {
   }
 
   public async compare(): Promise<void> {
+    this.resultView.clearDecorations();
+
     const result = await this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!);
     const { changes } = result;
     this.currentView.inputDiffComputingResult(changes);
