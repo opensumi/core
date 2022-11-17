@@ -41,7 +41,7 @@ export abstract class BaseCodeEditor extends Disposable {
       wordBasedSuggestions: true,
       renderLineHighlight: 'all',
       folding: false,
-      lineNumbersMinChars: 4,
+      lineNumbersMinChars: 0,
       minimap: {
         enabled: false,
       },
