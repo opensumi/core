@@ -99,7 +99,7 @@ jobs:
         run: |
           yarn run download-extension
           SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start &
-          cd tools/playwright && yarn run ui-tests-ci
+          sleep 8 && cd tools/playwright && yarn run ui-tests-ci
 
       - name: Upload test results
         if: always()
