@@ -435,6 +435,29 @@ export const mergeEditorModify = registerColor(
   '',
   true,
 );
+export const mergeEditorInnerCharInserted = registerColor(
+  'mergeEditor.insertedInnerCharColor',
+  { dark: transparent(defaultInsertColor, 1), light: transparent(defaultInsertColor, 1), hcDark: null, hcLight: null },
+  '',
+  true,
+);
+export const mergeEditorInnerCharRemoved = registerColor(
+  'mergeEditor.removedInnerCharColor',
+  { dark: transparent(defaultRemoveColor, 1), light: transparent(defaultRemoveColor, 1), hcDark: null, hcLight: null },
+  '',
+  true,
+);
+export const mergeEditorInnerCharModify = registerColor(
+  'mergeEditor.modifyInnerCharColor',
+  {
+    dark: transparent(defaultModifyColor, 1),
+    light: transparent(defaultModifyColor, 1),
+    hcDark: transparent(defaultHCModifyColor, 1),
+    hcLight: transparent(defaultHCModifyColor, 1),
+  },
+  '',
+  true,
+);
 
 /**
  * Editor View Colors from editorColorRegistry
