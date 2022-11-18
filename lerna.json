@@ -1,6 +1,5 @@
 {
   "version": "2.21.4",
   "npmClient": "yarn",
-  "loglevel": "verbose",
   "useWorkspaces": true
 }
