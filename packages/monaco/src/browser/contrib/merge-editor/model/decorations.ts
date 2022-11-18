@@ -1,7 +1,6 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { IRange, Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
@@ -9,6 +8,7 @@ import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
 import { LineRangeType } from '../types';
 
 import { GuidelineWidget } from './line';
+import { LineRange } from './line-range';
 
 export interface IRenderChangesInput {
   ranges: LineRange;

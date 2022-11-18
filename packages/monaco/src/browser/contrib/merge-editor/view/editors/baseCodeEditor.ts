@@ -4,7 +4,7 @@ import { Disposable, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { EditorLayoutInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
@@ -15,6 +15,8 @@ import {
   MergeEditorDecorations,
 } from '../../model/decorations';
 import { GuidelineWidget } from '../../model/line';
+import { LineRange } from '../../model/line-range';
+import { flatModified, flatOriginal } from '../../utils';
 
 export abstract class BaseCodeEditor extends Disposable {
   protected decorations: MergeEditorDecorations;
@@ -82,6 +84,8 @@ export abstract class BaseCodeEditor extends Disposable {
     return this.editor.getModel();
   }
 
+  protected abstract computeResultRangeMapping: LineRangeMapping[];
+
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
 
   /**
@@ -96,11 +100,35 @@ export abstract class BaseCodeEditor extends Disposable {
 
   /**
    * 在绘制前，计算当前 range 和 innerChanges 是什么类型，如 insert、modify 亦或是 remove
+   * @param withBase: 0: origin，1: modify
    */
-  protected abstract prepareRenderDecorations(
+  protected prepareRenderDecorations(
     ranges: LineRange[],
     innerChanges: Range[][],
-  ): [IRenderChangesInput[], IRenderInnerChangesInput[]];
+    withBase: 0 | 1 = 0,
+  ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
+    const toBeRanges =
+      withBase === 0 ? flatOriginal(this.computeResultRangeMapping) : flatModified(this.computeResultRangeMapping);
+
+    const changesResult: IRenderChangesInput[] = [];
+    const innerChangesResult: IRenderInnerChangesInput[] = [];
+
+    ranges.forEach((range, idx) => {
+      const sameInner = innerChanges[idx];
+      if (range.isTendencyRight(toBeRanges[idx])) {
+        changesResult.push({ ranges: range, type: 'remove' });
+        innerChangesResult.push({ ranges: sameInner, type: 'remove' });
+      } else if (range.isTendencyLeft(toBeRanges[idx])) {
+        changesResult.push({ ranges: range, type: 'insert' });
+        innerChangesResult.push({ ranges: sameInner, type: 'insert' });
+      } else {
+        changesResult.push({ ranges: range, type: 'modify' });
+        innerChangesResult.push({ ranges: sameInner, type: 'modify' });
+      }
+    });
+
+    return [changesResult, innerChangesResult];
+  }
 
   protected renderDecorations(ranges: LineRange[], innerChanges: Range[][]): void {
     const [r, i] = this.prepareRenderDecorations(ranges, innerChanges);

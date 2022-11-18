@@ -1,6 +1,6 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import {
@@ -10,6 +10,7 @@ import {
   MergeEditorDecorations,
 } from '../../model/decorations';
 import { GuidelineWidget } from '../../model/line';
+import { LineRange } from '../../model/line-range';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -20,57 +21,34 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return {};
   }
 
-  private rangeMapping: LineRangeMapping[] = [];
+  protected computeResultRangeMapping: LineRangeMapping[] = [];
   private currentBaseRange: 0 | 1;
 
-  protected prepareRenderDecorations(
+  protected override prepareRenderDecorations(
     ranges: LineRange[],
     innerChanges: Range[][],
   ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
-    let otherRanges: LineRange[] = [];
-    let innerOtherRanges: Range[][] = [];
-
-    if (this.currentBaseRange === 1) {
-      [otherRanges, innerOtherRanges] = [flatOriginal(this.rangeMapping), flatInnerOriginal(this.rangeMapping)];
-    } else if (this.currentBaseRange === 0) {
-      [otherRanges, innerOtherRanges] = [flatModified(this.rangeMapping), flatInnerModified(this.rangeMapping)];
-    }
-
-    const length = ranges.length;
+    const toBeRanges: LineRange[] =
+      this.currentBaseRange === 1
+        ? flatOriginal(this.computeResultRangeMapping)
+        : flatModified(this.computeResultRangeMapping);
 
     const changesResult: IRenderChangesInput[] = [];
     const innerChangesResult: IRenderInnerChangesInput[] = [];
 
-    for (let i = 0; i < length; i++) {
-      if (!ranges[i].isEmpty && otherRanges[i].isEmpty) {
-        changesResult.push({
-          ranges: ranges[i],
-          type: 'remove',
-        });
-        innerChangesResult.push({
-          ranges: innerChanges[i],
-          type: 'remove',
-        });
-      } else if (ranges[i].isEmpty && !otherRanges[i].isEmpty) {
-        changesResult.push({
-          ranges: ranges[i],
-          type: 'insert',
-        });
-        innerChangesResult.push({
-          ranges: innerChanges[i],
-          type: 'insert',
-        });
+    ranges.forEach((range, idx) => {
+      const sameInner = innerChanges[idx];
+      if (range.isTendencyLeft(toBeRanges[idx])) {
+        changesResult.push({ ranges: range, type: 'remove' });
+        innerChangesResult.push({ ranges: sameInner, type: 'remove' });
+      } else if (range.isTendencyRight(toBeRanges[idx])) {
+        changesResult.push({ ranges: range, type: 'insert' });
+        innerChangesResult.push({ ranges: sameInner, type: 'insert' });
       } else {
-        changesResult.push({
-          ranges: ranges[i],
-          type: 'modify',
-        });
-        innerChangesResult.push({
-          ranges: innerChanges[i],
-          type: 'modify',
-        });
+        changesResult.push({ ranges: range, type: 'modify' });
+        innerChangesResult.push({ ranges: sameInner, type: 'modify' });
       }
-    }
+    });
 
     return [changesResult, innerChangesResult];
   }
@@ -84,7 +62,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {
-    this.rangeMapping = changes;
+    this.computeResultRangeMapping = changes;
     this.currentBaseRange = baseRange;
 
     if (baseRange === 1) {
@@ -95,6 +73,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
       this.renderDecorations(c, i);
     }
 
-    this.rangeMapping = [];
+    this.computeResultRangeMapping = [];
   }
 }
