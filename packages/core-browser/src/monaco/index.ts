@@ -1,5 +1,4 @@
 import { IJSONSchema, Event, IDisposable, BasicEvent } from '@opensumi/ide-core-common';
-import type { IMergeEditorEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor-widget';
 import type { ICodeEditor, IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
@@ -15,6 +14,8 @@ import type {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestWidget';
 import type { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import type { BrandedService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
+
+import { IMergeEditorEditor } from './merge-editor-widget';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',

@@ -40,7 +40,6 @@ import {
   Disposable,
   makeRandomHexString,
 } from '@opensumi/ide-core-common';
-import { IMergeEditorEditor } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor-widget';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -91,6 +90,7 @@ import {
   RegisterEditorComponentEvent,
   AskSaveResult,
   IMergeEditorResource,
+  IMergeEditorEditor,
 } from './types';
 import { UntitledDocumentIdCounter } from './untitled-resource';
 
@@ -1644,6 +1644,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         ]);
 
         await this.mergeEditorReady.onceReady(async () => {
+          // FIXME: 类型不对
+          // @ts-ignore
           await this.mergeEditor.open(current, result, incoming);
         });
       } else {

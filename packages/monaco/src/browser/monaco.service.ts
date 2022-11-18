@@ -6,6 +6,7 @@ import {
   ServiceNames,
   ILogger,
 } from '@opensumi/ide-core-browser';
+import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
@@ -16,7 +17,7 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 
 import { MonacoService } from '../common';
 
-import { IMergeEditorEditor, MergeEditorWidget } from './contrib/merge-editor/merge-editor-widget';
+import { MergeEditorWidget } from './contrib/merge-editor/merge-editor-widget';
 import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokenizer';
 import { monaco } from './monaco-api';
 import { ICodeEditor, IDiffEditor } from './monaco-api/types';
