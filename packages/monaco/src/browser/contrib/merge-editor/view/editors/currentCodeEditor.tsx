@@ -1,19 +1,12 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Event, MonacoService } from '@opensumi/ide-core-browser';
-import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { EditorLayoutInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { Injectable } from '@opensumi/di';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import {
-  IDiffDecoration,
-  IRenderChangesInput,
-  IRenderInnerChangesInput,
-  MergeEditorDecorations,
-} from '../../model/decorations';
+import { IDiffDecoration, IRenderChangesInput, IRenderInnerChangesInput } from '../../model/decorations';
 import { GuidelineWidget } from '../../model/line';
-import { flatInnerModified, flatInnerOriginal, flatModified, flatOriginal } from '../../utils';
+import { LineRange } from '../../model/line-range';
+import { flatInnerOriginal, flatModified, flatOriginal } from '../../utils';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -23,42 +16,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return { readOnly: true };
   }
 
-  private rangeMapping: LineRangeMapping[] = [];
-
-  protected prepareRenderDecorations(
-    ranges: LineRange[],
-    innerChanges: Range[],
-  ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
-    const [modifiedRanges, innerModifiedRanges] = [
-      flatModified(this.rangeMapping),
-      flatInnerModified(this.rangeMapping),
-    ];
-    const length = ranges.length;
-
-    const changesResult: IRenderChangesInput[] = [];
-    const innerChangesResult: IRenderInnerChangesInput[] = [];
-
-    for (let i = 0; i < length; i++) {
-      if (ranges[i].isEmpty && !modifiedRanges[i].isEmpty) {
-        changesResult.push({
-          ranges: ranges[i],
-          type: 'remove',
-        });
-      } else if (!ranges[i].isEmpty && modifiedRanges[i].isEmpty) {
-        changesResult.push({
-          ranges: ranges[i],
-          type: 'insert',
-        });
-      } else {
-        changesResult.push({
-          ranges: ranges[i],
-          type: 'modify',
-        });
-      }
-    }
-
-    return [changesResult, innerChangesResult];
-  }
+  protected computeResultRangeMapping: LineRangeMapping[] = [];
 
   protected getRetainDecoration(): IDiffDecoration[] {
     return [];
@@ -68,13 +26,17 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return [];
   }
 
+  protected override prepareRenderDecorations(ranges: LineRange[], innerChanges: Range[][]) {
+    return super.prepareRenderDecorations(ranges, innerChanges, 1);
+  }
+
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
-    this.rangeMapping = changes;
+    this.computeResultRangeMapping = changes;
 
     const [c, i] = [flatOriginal(changes), flatInnerOriginal(changes)];
 
     this.renderDecorations(c, i);
-    this.rangeMapping = [];
+    this.computeResultRangeMapping = [];
   }
 
   public layout(): void {
