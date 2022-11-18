@@ -95,13 +95,11 @@ jobs:
       - name: Init
         run: yarn run init
 
-      - name: Run
+      - name: Run & Test
         run: |
           yarn run download-extension
           SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start &
-
-      - name: Test
-        run: cd tools/playwright && yarn run ui-tests-ci
+          cd tools/playwright && yarn run ui-tests-ci
 
       - name: Upload test results
         if: always()
