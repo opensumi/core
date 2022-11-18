@@ -3,8 +3,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "preinstall": "node scripts/preinstall.js",
-    "prepare": "husky install",
+    "preinstall": "node scripts/preinstall.js && husky install",
     "clean": "rimraf './packages/*/lib'",
     "check:dep": "ts-node ./scripts/depcheck",
     "init": "yarn run clean && yarn run build:all",
