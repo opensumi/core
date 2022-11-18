@@ -38,6 +38,8 @@ export class TerminalLifeCycleContribution implements ClientAppContribution, Mai
   }
 
   onStop() {
+    // dispose all task executor
+    this.terminalController.disposeTerminalClients({ isTaskExecutor: true });
     this.store.save();
   }
 }
