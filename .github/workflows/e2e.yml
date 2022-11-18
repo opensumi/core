@@ -98,7 +98,7 @@ jobs:
       - name: Run & Test
         run: |
           yarn run download-extension
-          node ./scripts/rebuild-native.js
+          yarn run rebuild:node
           SUPPORT_LOAD_WORKSPACE_BY_HASH=true yarn start &
           bash tools/playwright/scripts/wait.sh && cd tools/playwright && yarn run ui-tests-ci
 
