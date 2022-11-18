@@ -49,7 +49,6 @@
       color: @heading-color;
       font-size: @font-size-lg;
       line-height: 24px;
-      word-break: break-word;
 
       // https://github.com/ant-design/ant-design/issues/5846#issuecomment-296244140
       &-single-line-auto-margin {
@@ -205,28 +204,51 @@
 }
 
 .@{notification-prefix-cls}-wrapper {
-  background: var(--notifications-background) !important;
-  border-color: var(--notifications-border) !important;
-  padding: 12px !important;
+  background: var(--notifications-background);
+  border-color: var(--notifications-border);
+  padding: 12px;
   position: relative;
 
   .@{iconfont-css-prefix} {
     font-size: 12px;
-    margin-top: 1px;
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .@{notification-prefix-cls}-notice {
-    &-close,
     &-message,
     &-description {
-      color: var(--notifications-foreground) !important;
-      font-size: 12px !important;
-      margin-left: 22px !important;
-      line-height: 20px !important;
+      width: calc(100% - 24px);
+      color: var(--notifications-foreground);
+      font-size: 12px;
+      margin-left: 22px;
+      line-height: 20px;
+
+      // Hacking markdown style
+      code {
+        display: inline-block;
+        word-wrap: break-word;
+        overflow: hidden;
+        width: 100%;
+        text-overflow: ellipsis;
+      }
+
+      p,
+      pre {
+        margin-bottom: 5px;
+      }
     }
 
     &-close {
-      right: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--notifications-foreground);
+      font-size: 12px;
+      line-height: 20px;
+      right: 18px;
       top: 12px;
     }
 

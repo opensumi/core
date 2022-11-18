@@ -63,9 +63,13 @@
   .sumi-breakpoint-icon-size;
 }
 
-.monaco-editor .sumi-debug-top-stack-frame.sumi-debug-breakpoint {
-  background: url('./assets/current-and-breakpoint.svg') center center no-repeat;
-  .sumi-breakpoint-icon-size;
+.monaco-editor .sumi-debug-top-stack-frame {
+  &.sumi-debug-breakpoint,
+  &.sumi-debug-conditional-breakpoint,
+  &.logpoint {
+    background: url('./assets/current-and-breakpoint.svg') center center no-repeat;
+    .sumi-breakpoint-icon-size;
+  }
 }
 
 .monaco-editor .view-overlays .sumi-debug-top-stack-frame-line {
