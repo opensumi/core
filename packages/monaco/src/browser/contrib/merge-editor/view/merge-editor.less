@@ -20,7 +20,8 @@
   }
 
   .merge-editor-marginClassName,
-  .diff-stack-frame-line-background {
+  .merge-editor-diff-inner-char-background,
+  .merge-editor-diff-line-background {
     &.insert {
       background-color: var(--mergeEditor-insertedBackground);
     }
@@ -29,6 +30,18 @@
     }
     &.remove {
       background-color: var(--mergeEditor-removedBackground);
+    }
+  }
+
+  .merge-editor-diff-inner-char-background {
+    &.insert {
+      background-color: var(--mergeEditor-insertedInnerCharColor);
+    }
+    &.modify {
+      background-color: var(--mergeEditor-modifyInnerCharColor);
+    }
+    &.remove {
+      background-color: var(--mergeEditor-removedInnerCharColor);
     }
   }
 }

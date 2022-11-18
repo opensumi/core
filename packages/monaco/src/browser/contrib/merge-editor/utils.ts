@@ -1,16 +1,22 @@
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRange, LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
-export const flatOriginal = (changes: LineRangeMapping[]): LineRange[] => changes.map((c) => c.originalRange);
+import { LineRange } from './model/line-range';
 
-export const flatInnerOriginal = (changes: LineRangeMapping[]): Range[] => changes
+export const flatOriginal = (changes: LineRangeMapping[]): LineRange[] =>
+  changes.map((c) => c.originalRange as LineRange);
+
+export const flatInnerOriginal = (changes: LineRangeMapping[]): Range[][] =>
+  changes
     .map((c) => c.innerChanges)
     .filter(Boolean)
-    .flatMap((m) => m!.map((m) => m.originalRange));
+    .map((m) => m!.map((m) => m.originalRange));
 
-export const flatModified = (changes: LineRangeMapping[]): LineRange[] => changes.map((c) => c.modifiedRange);
+export const flatModified = (changes: LineRangeMapping[]): LineRange[] =>
+  changes.map((c) => c.modifiedRange as LineRange);
 
-export const flatInnerModified = (changes: LineRangeMapping[]): Range[] => changes
+export const flatInnerModified = (changes: LineRangeMapping[]): Range[][] =>
+  changes
     .map((c) => c.innerChanges)
     .filter(Boolean)
-    .flatMap((m) => m!.map((m) => m.modifiedRange));
+    .map((m) => m!.map((m) => m.modifiedRange));
