@@ -1646,7 +1646,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         await this.mergeEditorReady.onceReady(async () => {
           // FIXME: 类型不对
           // @ts-ignore
-          await this.mergeEditor.open(current, result, incoming);
+          await this.mergeEditor.open(
+            current.instance.getMonacoModel(),
+            result.instance.getMonacoModel(),
+            incoming.instance.getMonacoModel(),
+          );
         });
       } else {
         return; // other type not handled
