@@ -8,6 +8,7 @@ import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
 import { ResultCodeEditor } from './view/editors/resultCodeEditor';
 import { ScrollSynchronizer } from './view/scroll-synchronizer';
+import { StickinessConnectManager } from './view/stickiness-connect-manager';
 
 @Injectable()
 export class MergeEditorService extends Disposable {
@@ -24,10 +25,13 @@ export class MergeEditorService extends Disposable {
   private computerDiffModel: ComputerDiffModel;
   private scrollSynchronizer: ScrollSynchronizer;
 
+  public stickinessConnectManager: StickinessConnectManager;
+
   constructor() {
     super();
     this.computerDiffModel = new ComputerDiffModel();
     this.scrollSynchronizer = new ScrollSynchronizer();
+    this.stickinessConnectManager = new StickinessConnectManager();
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
@@ -40,6 +44,7 @@ export class MergeEditorService extends Disposable {
     this.incomingView = this.injector.get(IncomingCodeEditor, [incoming, this.monacoService, this.injector]);
 
     this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
+    this.stickinessConnectManager.mount(this.currentView, this.resultView, this.incomingView);
   }
 
   public override dispose(): void {
@@ -48,6 +53,7 @@ export class MergeEditorService extends Disposable {
     this.resultView.dispose();
     this.incomingView.dispose();
     this.scrollSynchronizer.dispose();
+    this.stickinessConnectManager.dispose();
   }
 
   public getCurrentEditor(): ICodeEditor {

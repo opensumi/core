@@ -5,7 +5,7 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { LineRangeType } from '../types';
+import { EditorViewType, LineRangeType } from '../types';
 import { GuidelineWidget } from '../view/guideline-widget';
 
 import { LineRange } from './line-range';
@@ -39,7 +39,10 @@ export class MergeEditorDecorations extends Disposable {
   private readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
   public readonly onDidChangeDecorations: Event<MergeEditorDecorations> = this._onDidChangeDecorations.event;
 
-  constructor(@Optional() private readonly editor: ICodeEditor) {
+  constructor(
+    @Optional() private readonly editor: ICodeEditor,
+    @Optional() public readonly editorViewType: EditorViewType,
+  ) {
     super();
     this.initListenEvent();
   }

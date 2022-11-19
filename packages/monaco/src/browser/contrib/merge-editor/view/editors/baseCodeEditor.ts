@@ -15,6 +15,7 @@ import {
   MergeEditorDecorations,
 } from '../../model/decorations';
 import { LineRange } from '../../model/line-range';
+import { EditorViewType } from '../../types';
 import { flatModified, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -50,7 +51,7 @@ export abstract class BaseCodeEditor extends Disposable {
       ...this.getMonacoEditorOptions(),
     });
 
-    this.decorations = this.injector.get(MergeEditorDecorations, [this.editor]);
+    this.decorations = this.injector.get(MergeEditorDecorations, [this.editor, this.getEditorViewType()]);
 
     this.addDispose(
       Event.debounce(
@@ -76,6 +77,10 @@ export abstract class BaseCodeEditor extends Disposable {
     );
   }
 
+  public get onDidChangeDecorations(): Event<MergeEditorDecorations> {
+    return this.decorations.onDidChangeDecorations;
+  }
+
   public getEditor(): ICodeEditor {
     return this.editor;
   }
@@ -84,7 +89,9 @@ export abstract class BaseCodeEditor extends Disposable {
     return this.editor.getModel();
   }
 
-  protected abstract computeResultRangeMapping: LineRangeMapping[];
+  public abstract computeResultRangeMapping: LineRangeMapping[];
+
+  protected abstract getEditorViewType(): EditorViewType;
 
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
 
