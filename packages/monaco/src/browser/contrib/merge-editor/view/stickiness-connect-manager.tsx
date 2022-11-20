@@ -3,22 +3,26 @@ import React, { useCallback } from 'react';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { IScrollEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
+import { ICodeEditor } from '../../../monaco-api/types';
 import { MergeEditorService } from '../merge-editor.service';
-import { MergeEditorDecorations } from '../model/decorations';
 import { LineRange } from '../model/line-range';
-import { EditorViewType, IStickyPiece, LineRangeType } from '../types';
+import { StickyPieceModel } from '../model/sticky-piece';
+import { EditorViewType, LineRangeType } from '../types';
 import { flatModified, flatOriginal } from '../utils';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
-import { CurrentCodeEditor } from './editors/currentCodeEditor';
-import { IncomingCodeEditor } from './editors/incomingCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
 
-const PieceSVG: React.FC<{ piece: IStickyPiece }> = ({ piece }) => {
+
+const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   const { leftTop, rightTop, leftBottom, rightBottom } = piece.path;
 
-  const drawPath = useCallback(() => `M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} L0,0 z`, [leftTop, rightTop, rightBottom, leftBottom, piece.width]);
+  const drawPath = useCallback(
+    () => `M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} L0,0 z`,
+    [leftTop, rightTop, rightBottom, leftBottom, piece.width],
+  );
 
   return (
     <div className={'piece-view-lines'} style={{ top: piece.position.top, width: piece.width }}>
@@ -31,16 +35,51 @@ const PieceSVG: React.FC<{ piece: IStickyPiece }> = ({ piece }) => {
 
 export const WithViewStickinessConnectComponent: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
-  const [pieces, setPieces] = React.useState<IStickyPiece[]>([]);
+  const [pieces, setPieces] = React.useState<StickyPieceModel[]>([]);
 
   React.useEffect(() => {
-    const disposable = Event.filter(
-      mergeEditorService.stickinessConnectManager.onDidChangePiece,
-      ({ editorType }) => editorType === contrastType,
-    )(({ pieces }) => {
-      setPieces(pieces);
-    });
-    return () => disposable.dispose();
+    const disposables = new Disposable();
+
+    disposables.addDispose(
+      Event.filter(
+        mergeEditorService.stickinessConnectManager.onDidChangePiece,
+        ({ editorType }) => editorType === contrastType,
+      )(({ pieces }) => {
+        setPieces(pieces);
+      }),
+    );
+
+    disposables.addDispose(
+      Event.debounce(
+        mergeEditorService.scrollSynchronizer.onScrollChange,
+        (_, e) => e,
+        1,
+      )(() => {
+        let leftEditor: ICodeEditor | undefined;
+        let rightEditor: ICodeEditor | undefined;
+
+        if (contrastType === 'current') {
+          leftEditor = mergeEditorService.getCurrentEditor();
+          rightEditor = mergeEditorService.getResultEditor();
+        } else if (contrastType === 'incoming') {
+          leftEditor = mergeEditorService.getResultEditor();
+          rightEditor = mergeEditorService.getIncomingEditor();
+        }
+
+        if (leftEditor && rightEditor) {
+          const [leftOffest, rightOffest] = [leftEditor.getScrollTop(), rightEditor.getScrollTop()];
+
+          const newPieces = pieces.map((p) => {
+            p.movePosition(leftOffest, rightOffest);
+            return p;
+          });
+
+          setPieces(newPieces);
+        }
+      }),
+    );
+
+    return () => disposables.dispose();
   }, [mergeEditorService, pieces]);
 
   return (
@@ -57,8 +96,8 @@ export class StickinessConnectManager extends Disposable {
   private resultView: BaseCodeEditor | undefined;
   private incomingView: BaseCodeEditor | undefined;
 
-  private readonly _onDidChangePiece = new Emitter<{ pieces: IStickyPiece[]; editorType: EditorViewType }>();
-  public readonly onDidChangePiece: Event<{ pieces: IStickyPiece[]; editorType: EditorViewType }> =
+  private readonly _onDidChangePiece = new Emitter<{ pieces: StickyPieceModel[]; editorType: EditorViewType }>();
+  public readonly onDidChangePiece: Event<{ pieces: StickyPieceModel[]; editorType: EditorViewType }> =
     this._onDidChangePiece.event;
 
   constructor() {
@@ -70,8 +109,8 @@ export class StickinessConnectManager extends Disposable {
     modify: LineRange[],
     editorLayoutInfo: { marginWidth: number; lineHeight: number },
     withBase: 0 | 1 = 0,
-  ): IStickyPiece[] {
-    const result: IStickyPiece[] = [];
+  ): StickyPieceModel[] {
+    const result: StickyPieceModel[] = [];
     const { marginWidth, lineHeight } = editorLayoutInfo;
 
     origin.forEach((range, idx) => {
@@ -98,7 +137,7 @@ export class StickinessConnectManager extends Disposable {
         rangeType = withBase === 0 ? 'remove' : 'insert';
       }
 
-      result.push({ width, height, path, position, rangeType });
+      result.push(new StickyPieceModel(width, height, path, position, rangeType));
     });
 
     return result;
@@ -129,7 +168,7 @@ export class StickinessConnectManager extends Disposable {
         { marginWidth: contentLeft, lineHeight },
         editorType === 'incoming' ? 1 : 0,
       ),
-      editorType: 'current',
+      editorType,
     });
   }
 

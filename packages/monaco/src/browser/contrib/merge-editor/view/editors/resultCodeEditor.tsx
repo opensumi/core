@@ -18,10 +18,6 @@ import { BaseCodeEditor } from './baseCodeEditor';
 
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
-  protected getEditorViewType(): EditorViewType {
-    return 'result';
-  }
-
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return {};
   }
@@ -64,6 +60,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   protected getRetainLineWidget(): GuidelineWidget[] {
     return this.decorations.getLineWidgets();
+  }
+
+  public getEditorViewType(): EditorViewType {
+    return 'result';
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {

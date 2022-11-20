@@ -48,6 +48,7 @@ export abstract class BaseCodeEditor extends Disposable {
       minimap: {
         enabled: false,
       },
+      scrollBeyondLastLine: false,
       ...this.getMonacoEditorOptions(),
     });
 
@@ -91,7 +92,7 @@ export abstract class BaseCodeEditor extends Disposable {
 
   public abstract computeResultRangeMapping: LineRangeMapping[];
 
-  protected abstract getEditorViewType(): EditorViewType;
+  public abstract getEditorViewType(): EditorViewType;
 
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
 

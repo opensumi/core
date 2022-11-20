@@ -15,10 +15,6 @@ import { BaseCodeEditor } from './baseCodeEditor';
 export class CurrentCodeEditor extends BaseCodeEditor {
   public computeResultRangeMapping: LineRangeMapping[] = [];
 
-  protected getEditorViewType(): EditorViewType {
-    return 'current';
-  }
-
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { readOnly: true };
   }
@@ -33,6 +29,10 @@ export class CurrentCodeEditor extends BaseCodeEditor {
 
   protected override prepareRenderDecorations(ranges: LineRange[], innerChanges: Range[][]) {
     return super.prepareRenderDecorations(ranges, innerChanges, 1);
+  }
+
+  public getEditorViewType(): EditorViewType {
+    return 'current';
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {

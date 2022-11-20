@@ -13,10 +13,6 @@ import { BaseCodeEditor } from './baseCodeEditor';
 export class IncomingCodeEditor extends BaseCodeEditor {
   public computeResultRangeMapping: LineRangeMapping[] = [];
 
-  protected getEditorViewType(): EditorViewType {
-    return 'incoming';
-  }
-
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { readOnly: true };
   }
@@ -27,6 +23,10 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
   protected getRetainLineWidget(): GuidelineWidget[] {
     return [];
+  }
+
+  public getEditorViewType(): EditorViewType {
+    return 'incoming';
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {

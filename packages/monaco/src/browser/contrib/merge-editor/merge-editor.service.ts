@@ -23,8 +23,8 @@ export class MergeEditorService extends Disposable {
   private incomingView: IncomingCodeEditor;
 
   private computerDiffModel: ComputerDiffModel;
-  private scrollSynchronizer: ScrollSynchronizer;
 
+  public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
 
   constructor() {
