@@ -8,7 +8,7 @@ export class StickyPieceModel implements IStickyPiece {
   private _path: IStickyPiecePath;
   private _position: IStickyPiecePosition;
   private _rangeType: LineRangeType;
-  private readonly rawData: IStickyPiece;
+  private readonly rawData: Readonly<IStickyPiece>;
 
   public get width(): number {
     return this._width;
@@ -39,11 +39,11 @@ export class StickyPieceModel implements IStickyPiece {
     this._position = position;
     this._rangeType = rangeType;
     this.rawData = Object.freeze({
-      rangeType: clone(rangeType),
-      width: clone(width),
-      height: clone(height),
-      position: Object.freeze(clone(position)),
-      path: Object.freeze(clone(path)),
+      rangeType,
+      width,
+      height,
+      position,
+      path,
     });
   }
 
@@ -78,7 +78,7 @@ export class StickyPieceModel implements IStickyPiece {
     const rawTop = this.rawData.position.top;
     const { leftTop, rightTop } = this.rawData.path;
 
-    const top = Math.min(rawTop + leftTop - leftOffest, rawTop + rightTop - rightOffest);
+    const top = rawTop + Math.min(leftTop - leftOffest, rightTop - rightOffest);
     this._position = { top };
     this._height = this.calcHeight(leftOffest, rightOffest);
     this._path = this.calcPath(leftOffest, rightOffest);
