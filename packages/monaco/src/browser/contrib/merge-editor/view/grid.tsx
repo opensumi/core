@@ -5,6 +5,8 @@ import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 
 import { MergeEditorService } from '../merge-editor.service';
 
+import { WithViewStickinessConnectComponent } from './stickiness-connect-manager';
+
 export const Grid = () => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
 
@@ -32,9 +34,17 @@ export const Grid = () => {
   return (
     <div className={'merge-editor-container'}>
       <SplitPanel overflow='hidden' id='merge-editor-container' flex={2}>
-        <div className={'currentEditorContainer'} ref={currentEditorContainer}></div>
-        <div className={'resultEditorContainer'} ref={resultEditorContainer}></div>
-        <div className={'incomingEditorContainer'} ref={incomingEditorContainer}></div>
+        <div className={'editor-container-arrange'}>
+          <div className={'currentEditorContainer'} ref={currentEditorContainer}></div>
+        </div>
+        <div className={'editor-container-arrange'}>
+          <WithViewStickinessConnectComponent contrastType={'current'}></WithViewStickinessConnectComponent>
+          <div className={'resultEditorContainer'} ref={resultEditorContainer}></div>
+          <WithViewStickinessConnectComponent contrastType={'incoming'}></WithViewStickinessConnectComponent>
+        </div>
+        <div className={'editor-container-arrange'}>
+          <div className={'incomingEditorContainer'} ref={incomingEditorContainer}></div>
+        </div>
       </SplitPanel>
     </div>
   );
