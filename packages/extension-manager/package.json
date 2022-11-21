@@ -8,7 +8,7 @@
   "license": "MIT",
   "main": "lib/index.js",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.extension-manager.json"
   },
   "dependencies": {
@@ -19,6 +19,7 @@
     "compressing": "^1.6.2",
     "fs-extra": "^10.1.0",
     "node-fetch": "^2.6.7",
+    "request": "2.*.*",
     "requestretry": "^7.0.0"
   },
   "devDependencies": {

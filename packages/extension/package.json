@@ -9,8 +9,8 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
-    "build": "npm run build:pkg && npm run build:ext-host && npm run compile:worker",
+    "prepublishOnly": "yarn run build",
+    "build": "yarn run build:pkg && yarn run build:ext-host && yarn run compile:worker",
     "build:pkg": "tsc --build ../../configs/ts/references/tsconfig.extension.json",
     "compile:worker": "webpack --config webpack.config.worker.js",
     "watch:worker": "webpack -w --config webpack.config.worker.js",

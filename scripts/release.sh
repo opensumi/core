@@ -3,6 +3,6 @@
 rm -rf node_modules
 rm -rf packages/**/node_modules
 
-npm install
-npm run init
-npm run publish
+yarn
+yarn run init
+yarn run publish

@@ -24,7 +24,7 @@
     "watch": "run-p watch:*",
     "build": "rimraf -rf ./out && run-p build:*",
     "build-prod": "rimraf -rf ./out && run-p build-prod:*",
-    "pack": "npm run build && node build/pack.js",
+    "pack": "yarn run build && node build/pack.js",
     "rebuild-native": "node ./scripts/rebuild-native.js --target=electron",
     "start": "electron --inspect=9229 .",
     "start:no-dev": "electron ."

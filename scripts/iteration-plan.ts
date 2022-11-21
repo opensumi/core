@@ -7,12 +7,12 @@ import { argv } from '../packages/core-common/src/node/cli';
 import chalk from 'chalk';
 
 if (!process.env.GITHUB_TOKEN) {
-  console.log(chalk.red('Please export your github persional access token as env `GITHUB_TOKEN`'));
+  console.log(chalk.red('Please export your github personal access token as env `GITHUB_TOKEN`'));
   console.log(chalk.green('You can access your own access token by https://github.com/settings/tokens'));
   console.log(chalk.yellow('Please keep your github access token carefully'));
   process.exit();
 } else if (!argv.time || !argv.branch) {
-  console.log(chalk.yellow('Please process a time argv, like `npm run iteration -- --time=2022-2-2 --branch=2.18`'));
+  console.log(chalk.yellow('Please process a time argv, like `yarn run iteration --time=2022-2-2 --branch=2.18`'));
   process.exit();
 }
 
