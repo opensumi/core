@@ -3,7 +3,6 @@ import React, { useCallback } from 'react';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { IScrollEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
 import { ICodeEditor } from '../../../monaco-api/types';
 import { MergeEditorService } from '../merge-editor.service';
@@ -13,8 +12,6 @@ import { EditorViewType, LineRangeType } from '../types';
 import { flatModified, flatOriginal } from '../utils';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
-import { ResultCodeEditor } from './editors/resultCodeEditor';
-
 
 const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   const { leftTop, rightTop, leftBottom, rightBottom } = piece.path;

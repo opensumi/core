@@ -3,11 +3,17 @@ import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/z
 import { LineRangeType } from '../types';
 
 export class GuidelineWidget extends ZoneWidget {
+  private recordLine: number;
+
   protected applyClass(): void {}
   protected applyStyle(): void {}
 
   protected _fillContainer(): void {
     this.setCssClass('merge-editor-guide-underline-widget');
+  }
+
+  public getRecordLine(): number {
+    return this.recordLine;
   }
 
   public setContainerStyle(style: { [key in string]: string }): void {
@@ -25,6 +31,7 @@ export class GuidelineWidget extends ZoneWidget {
   }
 
   public showByLine(line: number): void {
+    this.recordLine = line;
     super.show(
       {
         startLineNumber: line,

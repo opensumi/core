@@ -95,7 +95,7 @@ export class MergeEditorDecorations extends Disposable {
     this.editor.changeDecorations((accessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
       this.retainLineWidgetSet.forEach((widget) => {
-        widget.showByLine(widget.position?.lineNumber!);
+        widget.showByLine(widget.getRecordLine());
         this.lineWidgetSet.add(widget);
       });
 
