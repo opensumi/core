@@ -8,11 +8,21 @@ const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
 const { v4 } = require('uuid');
+const retry = require('async-retry');
+const marketplaceType = process.env.MARKETPLACE ?? 'opentrs';
 
 // 放置 extension 的目录
 const targetDir = path.resolve(__dirname, '../tools/extensions/');
 
-const { extensions } = require(path.resolve(__dirname, '../configs/vscode-extensions.json'));
+const extensionFileName = marketplaceType === 'opentrs' ? 'opentrs-extensions.json' : 'vscode-extensions.json';
+const { extensions } = require(path.resolve(__dirname, `../configs/${extensionFileName}`));
+const headers = {};
+
+if (marketplaceType === 'opentrs') {
+  headers['x-master-key'] = '_V_LPJ6Ar-1nrSVa05xDGBYp';
+  headers['x-account-id'] = 'clcJKq_Gea47whxAJGrgoYqf';
+  headers['x-download-mode'] = 'redirect';
+}
 
 // 限制并发数，运行promise
 const parallelRunPromise = (lazyPromises, n) => {
@@ -47,16 +57,13 @@ const parallelRunPromise = (lazyPromises, n) => {
   return new Promise(addWorking);
 };
 
-const api = 'https://open-vsx.org/api/';
-// const api = 'https://marketplace.smartide.cn/api/'; // China Mirror
-
 async function downloadExtension(url, namespace, extensionName) {
   const tmpPath = path.join(os.tmpdir(), 'extension', v4());
   const tmpZipFile = path.join(tmpPath, path.basename(url));
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
-  const res = await nodeFetch(url, { timeout: 100000 });
+  const res = await nodeFetch(url, { timeout: 100000, headers });
 
   res.body.pipe(tmpStream);
   await Promise.race([awaitEvent(res.body, 'end'), awaitEvent(res.body, 'error')]);
@@ -74,7 +81,9 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
       const extensionDir = path.join(dist, targetDirName);
       const stream = new compressing.zip.UncompressStream({ source: tmpZipFile });
       stream
-        .on('error', reject)
+        .on('error', (err) => {
+          reject(err);
+        })
         .on('finish', () => {
           if (!fs.pathExistsSync(path.join(extensionDir, 'package.json'))) {
             reject(`Download Error: ${extensionDir}/package.json`);
@@ -119,15 +128,25 @@ function unzipFile(dist, targetDirName, tmpZipFile) {
 }
 
 const installExtension = async (namespace, name, version) => {
-  const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
-  const res = await nodeFetch(`${api}${path}`, {
-    timeout: 100000,
-  });
-  const data = await res.json();
-  if (data.files && data.files.download) {
-    const { targetDirName, tmpZipFile } = await downloadExtension(data.files.download, namespace, name);
-    // 解压插件
-    await unzipFile(targetDir, targetDirName, tmpZipFile);
+  let downloadUrl = '';
+
+  if (marketplaceType === 'opentrs') {
+    downloadUrl = `https://marketplace.opentrs.com/openapi/ide/download/${namespace}.${name}?version=${version}`;
+  } else {
+    const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
+    const getDetailApi = `https://open-vsx.org/api/${path}`;
+    const res = await nodeFetch(getDetailApi, { timeout: 100000, headers });
+    const data = await res.json();
+
+    downloadUrl = data.files?.download;
+  }
+
+  if (downloadUrl) {
+    const { targetDirName, tmpZipFile } = await downloadExtension(downloadUrl, namespace, name);
+
+    // 解压插件，使用 opentrs 插件时解压缩容易出错，因此这里加一个重试逻辑
+    await retry(() => unzipFile(targetDir, targetDirName, tmpZipFile), { retries: 5 });
+
     rimraf.sync(tmpZipFile);
   }
 };

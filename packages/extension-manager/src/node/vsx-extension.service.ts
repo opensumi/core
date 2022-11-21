@@ -4,20 +4,21 @@ import { pipeline } from 'stream';
 
 import compressing from 'compressing';
 import fs from 'fs-extra';
-import nodeFetch from 'node-fetch';
 import requestretry from 'requestretry';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
-import { IVSXExtensionBackService, IExtensionInstallParam } from '../common';
+import {
+  IVSXExtensionBackService,
+  IExtensionInstallParam,
+  IMarketplaceService,
+  IOpentrsMarketplaceService,
+  IOpenvsxMarketplaceService,
+} from '../common';
 import { QueryParam, QueryResult, VSXSearchParam, VSXSearchResult } from '../common/vsx-registry-types';
-
-const commonHeaders = {
-  'Content-Type': 'application/json',
-  Accept: 'application/json',
-};
 
 function cleanup(paths: string[]) {
   return Promise.all(paths.map((path) => fs.remove(path)));
@@ -28,16 +29,29 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
+  private marketplace: IMarketplaceService;
+
+  private getMarketplace() {
+    if (this.marketplace) {
+      return this.marketplace;
+    }
+
+    const { marketplace: marketplaceConfig } = this.appConfig;
+    const { endpoint } = marketplaceConfig;
+
+    this.marketplace =
+      endpoint === DEFAULT_TRS_REGISTRY.ENDPOINT
+        ? this.injector.get(IOpentrsMarketplaceService)
+        : this.injector.get(IOpenvsxMarketplaceService);
+
+    return this.marketplace;
+  }
+
   async getExtension(param: QueryParam): Promise<QueryResult | undefined> {
-    const uri = `${this.appConfig.marketplace.endpoint}/api/-/query`;
-    const res = await nodeFetch(uri, {
-      headers: {
-        ...commonHeaders,
-      },
-      method: 'POST',
-      body: JSON.stringify(param),
-    });
-    return res.json();
+    return await this.getMarketplace().getExtensionDetail(param);
   }
 
   async install(param: IExtensionInstallParam): Promise<string> {
@@ -131,6 +145,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
           method: 'GET',
           maxAttempts: 5,
           retryDelay: 2000,
+          headers: this.getMarketplace().downloadHeaders,
           retryStrategy: requestretry.RetryStrategies.HTTPOrNetworkError,
         },
         (err, response) => {
@@ -150,15 +165,6 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   async search(param?: VSXSearchParam): Promise<VSXSearchResult> {
-    const uri = `${this.appConfig.marketplace.endpoint}/api/-/search?${
-      param && new URLSearchParams(param as any).toString()
-    }`;
-    const res = await nodeFetch(uri, {
-      headers: {
-        ...commonHeaders,
-      },
-      timeout: 30000,
-    });
-    return res.json();
+    return await this.getMarketplace().search(param);
   }
 }

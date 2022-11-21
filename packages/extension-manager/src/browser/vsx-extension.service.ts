@@ -89,7 +89,7 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
   }
 
   async install(extension: VSXExtension): Promise<void> {
-    const id = extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
+    const id = this.getExtensionId(extension);
     if (this.tasks.has(id) || !extension.downloadUrl) {
       return;
     }
@@ -127,17 +127,17 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
     }
   }
 
-  private asExtensionId(extension: VSXExtension) {
-    return extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
+  getExtensionId(extension: VSXExtension) {
+    return extension?.extensionId ?? extension?.namespace?.toLowerCase() + '.' + extension?.name?.toLowerCase();
   }
 
   async getLocalExtension(extensionId: string): Promise<VSXExtension | undefined> {
     if (!extensionId) {
       return;
     }
-    const extension = this.extensions.find((e) => this.asExtensionId(e) === extensionId);
+    const extension = this.extensions.find((e) => this.getExtensionId(e) === extensionId);
 
-    return extension || this.installedExtensions.find((e) => this.asExtensionId(e) === extensionId);
+    return extension || this.installedExtensions.find((e) => this.getExtensionId(e) === extensionId);
   }
 
   async getRemoteRawExtension(extensionId: string): Promise<VSXExtensionRaw | undefined> {
@@ -175,7 +175,7 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
     const res = await this.backService.search(param);
     if (res.extensions) {
       this.extensions = res.extensions
-        .filter((ext) => !this.installedExtensions.find((e) => this.asExtensionId(e) === this.asExtensionId(ext)))
+        .filter((ext) => !this.installedExtensions.find((e) => this.getExtensionId(e) === this.getExtensionId(ext)))
         .map((ext) => ({
           ...ext,
           publisher: ext.namespace,
@@ -203,17 +203,22 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
 
   @action
   getInstalledExtensions() {
-    this.installedExtensions = this.extensionInstanceService.getExtensionInstances().map((e) => ({
-      namespace: e.packageJSON.publisher,
-      name: e.packageJSON.name,
-      id: e.extensionId,
-      version: e.packageJSON.version,
-      displayName: e.packageJSON.displayName,
-      description: e.packageJSON.description,
-      publisher: e.packageJSON.publisher,
-      iconUrl: e.packageJSON.icon && e.extensionLocation.toString() + `/${e.packageJSON.icon}`,
-      path: e.path,
-      realpath: e.realPath,
-    }));
+    this.installedExtensions = this.extensionInstanceService.getExtensionInstances().map((e) => {
+      const extensionId = e.extensionId;
+      const namespace = extensionId && extensionId.includes('.') ? extensionId.split('.')[0] : e.packageJSON.publisher;
+
+      return {
+        namespace,
+        name: e.packageJSON.name,
+        id: e.extensionId,
+        version: e.packageJSON.version,
+        displayName: e.packageJSON.displayName,
+        description: e.packageJSON.description,
+        publisher: e.packageJSON.publisher,
+        iconUrl: e.packageJSON.icon && e.extensionLocation.toString() + `/${e.packageJSON.icon}`,
+        path: e.path,
+        realpath: e.realPath,
+      };
+    });
   }
 }

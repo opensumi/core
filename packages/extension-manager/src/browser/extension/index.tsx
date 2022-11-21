@@ -4,6 +4,7 @@ import { Button, Icon, getIcon } from '@opensumi/ide-components';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { InstallState, VSXExtension } from '../../common';
+import { DEFAULT_EXTENSION_ICON_URL } from '../const';
 
 import styles from './extension.module.less';
 
@@ -59,7 +60,7 @@ export const Extension = React.memo(
       <div className={styles.extension_item} onClick={onClickCallback}>
         <img
           className={styles.icon}
-          src={extension.iconUrl || `${openVSXRegistry}/default-icon.png`}
+          src={extension.iconUrl || DEFAULT_EXTENSION_ICON_URL}
           alt={replaceLocalizePlaceholder(extension.displayName, `${extension.publisher}.${extension.name}`)}
         />
         <div className={styles.extension_detail}>
