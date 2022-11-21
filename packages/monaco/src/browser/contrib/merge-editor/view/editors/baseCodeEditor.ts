@@ -14,9 +14,9 @@ import {
   IRenderInnerChangesInput,
   MergeEditorDecorations,
 } from '../../model/decorations';
-import { GuidelineWidget } from '../../model/line';
 import { LineRange } from '../../model/line-range';
 import { flatModified, flatOriginal } from '../../utils';
+import { GuidelineWidget } from '../guideline-widget';
 
 export abstract class BaseCodeEditor extends Disposable {
   protected decorations: MergeEditorDecorations;
