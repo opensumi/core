@@ -1,14 +1,10 @@
 import { Injectable } from '@opensumi/di';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import {
-  IDiffDecoration,
-  IRenderChangesInput,
-  IRenderInnerChangesInput,
-} from '../../model/decorations';
-
+import { IDiffDecoration, IRenderChangesInput, IRenderInnerChangesInput } from '../../model/decorations';
 import { LineRange } from '../../model/line-range';
 import { EditorViewType } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
@@ -60,6 +56,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   protected getRetainLineWidget(): GuidelineWidget[] {
     return this.decorations.getLineWidgets();
+  }
+
+  public getMonacoDecorationOptions(): Omit<IModelDecorationOptions, 'description'> {
+    return {};
   }
 
   public getEditorViewType(): EditorViewType {
