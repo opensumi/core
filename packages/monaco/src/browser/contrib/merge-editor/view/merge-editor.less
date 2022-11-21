@@ -1,10 +1,12 @@
 .merge-editor-container {
   height: 100%;
+  overflow: hidden;
 
   .currentEditorContainer,
   .resultEditorContainer,
   .incomingEditorContainer {
-    height: 100%;
+    height: inherit;
+    width: 100%;
   }
 
   .merge-editor-guide-underline-widget {
@@ -42,6 +44,34 @@
     }
     &.remove {
       background-color: var(--mergeEditor-removedInnerCharColor);
+    }
+  }
+
+  .editor-container-arrange {
+    height: 100%;
+    display: flex;
+    .stickiness-connect-container {
+      height: 100%;
+      position: relative;
+      .piece-view-lines {
+        position: absolute;
+        z-index: 1;
+        & svg {
+          width: 100%;
+          overflow: initial;
+          & path {
+            &.insert {
+              fill: var(--mergeEditor-insertedBackground);
+            }
+            &.modify {
+              fill: var(--mergeEditor-modifyBackground);
+            }
+            &.remove {
+              fill: var(--mergeEditor-removedBackground);
+            }
+          }
+        }
+      }
     }
   }
 }
