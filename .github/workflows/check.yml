@@ -13,37 +13,7 @@ on:
     branches: [main, v*.*]
 
 jobs:
-  # Prepare node modules. Reuse cache if available
-  setup:
-    name: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-      - name: cache yarn.lock
-        uses: actions/cache@v3
-        with:
-          path: .package-temp-dir
-          key: lock-${{ github.sha }}
-      - name: Get yarn cache directory path
-        id: yarn_cache_dir_path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-      - uses: actions/cache@v3
-        id: yarn_cache
-        with:
-          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: create yarn.lock
-        run: yarn install --mode update-lockfile
-
-      - name: hack for single file
-        run: |
-          node ./scripts/actions/cache.js
-
   build:
-    needs: setup
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -57,15 +27,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      # region yarn cache start
-      - name: restore cache from yarn.lock
-        uses: actions/cache@v3
-        with:
-          path: .package-temp-dir
-          key: lock-${{ github.sha }}
-      - name: restore yarn.lock
-        run: |
-          node ./scripts/actions/restore-cache.js
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
         run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
