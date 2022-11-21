@@ -39,7 +39,6 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         run: yarn install
-      #endregion
 
       - name: Build
         run: |
