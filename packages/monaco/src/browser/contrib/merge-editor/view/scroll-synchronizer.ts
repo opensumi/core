@@ -8,7 +8,7 @@ import { ResultCodeEditor } from './editors/resultCodeEditor';
 
 export class ScrollSynchronizer extends Disposable {
   private readonly _onScrollChange = new Emitter<{ event: IScrollEvent; editor: BaseCodeEditor }>();
-  private readonly onScrollChange: Event<{ event: IScrollEvent; editor: BaseCodeEditor }> = this._onScrollChange.event;
+  public readonly onScrollChange: Event<{ event: IScrollEvent; editor: BaseCodeEditor }> = this._onScrollChange.event;
 
   constructor() {
     super();
