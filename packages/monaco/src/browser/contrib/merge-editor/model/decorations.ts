@@ -6,6 +6,7 @@ import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
 import { EditorViewType, LineRangeType } from '../types';
+import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 import { GuidelineWidget } from '../view/guideline-widget';
 
 import { LineRange } from './line-range';
@@ -39,8 +40,12 @@ export class MergeEditorDecorations extends Disposable {
   private readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
   public readonly onDidChangeDecorations: Event<MergeEditorDecorations> = this._onDidChangeDecorations.event;
 
+  private get editor(): ICodeEditor {
+    return this.codeEditor.getEditor();
+  }
+
   constructor(
-    @Optional() private readonly editor: ICodeEditor,
+    @Optional() private readonly codeEditor: BaseCodeEditor,
     @Optional() public readonly editorViewType: EditorViewType,
   ) {
     super();
@@ -59,6 +64,12 @@ export class MergeEditorDecorations extends Disposable {
   }
 
   private createLineDecoration(range: LineRange, type: LineRangeType): IDiffDecoration {
+    const options = ModelDecorationOptions.register({
+      description: 'merge-editor-diff-line',
+      className: `merge-editor-diff-line-background ${type}`,
+      isWholeLine: true,
+    });
+
     return {
       id: '',
       editorDecoration: {
@@ -68,11 +79,10 @@ export class MergeEditorDecorations extends Disposable {
           endLineNumber: range.endLineNumberExclusive - 1,
           endColumn: Number.MAX_SAFE_INTEGER,
         },
-        options: ModelDecorationOptions.register({
-          description: 'merge-editor-diff-line',
-          className: `merge-editor-diff-line-background ${type}`,
-          isWholeLine: true,
-        }),
+        options: {
+          ...options,
+          ...this.codeEditor.getMonacoDecorationOptions(options),
+        },
       },
     };
   }
