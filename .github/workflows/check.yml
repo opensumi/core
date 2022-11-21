@@ -38,7 +38,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
       - name: install
-        run: yarn install
+        run: |
+          yarn install --no-immutable
 
       - name: Build
         run: |

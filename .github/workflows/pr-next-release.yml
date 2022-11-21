@@ -54,7 +54,7 @@ jobs:
       # 安装依赖并构建
       - name: Install dependencies & Build
         run: |
-          yarn install
+          yarn install --no-immutable
           yarn run init
 
       # 发布 next 版本，并在 issue 中回复

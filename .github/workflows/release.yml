@@ -58,7 +58,7 @@ jobs:
       - name: Install dependencies & Build
         if: steps.checkTag.outputs.exists == 'false'
         run: |
-          yarn install
+          yarn install --no-immutable
           yarn run init
           yarn run manifest -v=${{github.event.inputs.version}}
 

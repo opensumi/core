@@ -20,7 +20,7 @@ jobs:
 
       - name: Build
         run: |
-          yarn install
+          yarn install --no-immutable
           yarn run update:iconfont
 
       - name: Deploy
