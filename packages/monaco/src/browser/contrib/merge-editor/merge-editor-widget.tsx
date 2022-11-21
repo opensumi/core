@@ -2,15 +2,13 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { AppConfig, ConfigProvider, MonacoService } from '@opensumi/ide-core-browser';
-import { Disposable, Event, IRange, ISelection } from '@opensumi/ide-core-common';
-import { EditorType } from '@opensumi/ide-editor';
-import { IEditorDocumentModelRef } from '@opensumi/ide-editor/lib/browser';
+import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
+import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { Disposable, IRange, ISelection } from '@opensumi/ide-core-common';
 import { Selection } from '@opensumi/monaco-editor-core';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IDimension } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/dimension';
 import {
-  IEditor,
   IEditorAction,
   IEditorDecorationsCollection,
   IEditorModel,
@@ -26,25 +24,13 @@ import { MergeEditorService } from './merge-editor.service';
 import { Grid } from './view/grid';
 
 export interface IMergeEditorModel {
-  current: ITextModel;
+  ours: ITextModel;
   result: ITextModel;
-  incoming: ITextModel;
+  theirs: ITextModel;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IMergeEditorEditorConstructionOptions {}
-
-export interface IMergeEditorEditor extends IEditor {
-  getCurrentEditor(): ICodeEditor;
-  getResultEditor(): ICodeEditor;
-  getIncomingEditor(): ICodeEditor;
-  open(
-    currentModelRef: IEditorDocumentModelRef,
-    resultModelRef: IEditorDocumentModelRef,
-    incomingModelRef: IEditorDocumentModelRef,
-  ): Promise<void>;
-  compare(): Promise<void>;
-}
 
 let MERGE_EDITOR_ID = 0;
 
@@ -73,15 +59,11 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     this.layout();
   }
 
-  open(
-    currentModelRef: IEditorDocumentModelRef,
-    resultModelRef: IEditorDocumentModelRef,
-    incomingModelRef: IEditorDocumentModelRef,
-  ): Promise<void> {
+  open(oursTextModel: ITextModel, resultTextModel: ITextModel, theirsTextModel: ITextModel): Promise<void> {
     this.setModel({
-      current: currentModelRef.instance.getMonacoModel(),
-      result: resultModelRef.instance.getMonacoModel(),
-      incoming: incomingModelRef.instance.getMonacoModel(),
+      ours: oursTextModel,
+      result: resultTextModel,
+      theirs: theirsTextModel,
     });
 
     this.compare();
@@ -93,7 +75,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     return this.mergeEditorService.compare();
   }
 
-  getCurrentEditor(): ICodeEditor {
+  getOursEditor(): ICodeEditor {
     return this.mergeEditorService.getCurrentEditor()!;
   }
 
@@ -101,7 +83,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     return this.mergeEditorService.getResultEditor()!;
   }
 
-  getIncomingEditor(): ICodeEditor {
+  getTheirsEditor(): ICodeEditor {
     return this.mergeEditorService.getIncomingEditor()!;
   }
 
@@ -118,7 +100,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   }
 
   getEditorType(): string {
-    return EditorType.MERGE_EDITOR_DIFF;
+    return 'MERGE_EDITOR_DIFF';
   }
 
   updateOptions(newOptions: IEditorOptions): void {}
@@ -222,10 +204,10 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   }
 
   setModel(model: IEditorModel | IMergeEditorModel | null): void {
-    const _model = model as IMergeEditorModel;
-    this.getCurrentEditor().setModel(_model.current);
-    this.getResultEditor().setModel(_model.result);
-    this.getIncomingEditor().setModel(_model.incoming);
+    const mergeModel = model as IMergeEditorModel;
+    this.getOursEditor().setModel(mergeModel.ours);
+    this.getResultEditor().setModel(mergeModel.result);
+    this.getTheirsEditor().setModel(mergeModel.theirs);
   }
 
   createDecorationsCollection(decorations?: IModelDeltaDecoration[]): IEditorDecorationsCollection {
