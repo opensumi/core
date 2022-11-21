@@ -26,20 +26,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Get yarn cache directory path
-        id: yarn_cache_dir_path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-      - uses: actions/cache@v3
-        id: yarn_cache
-        with:
-          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+          cache: 'yarn'
       - name: install
         run: yarn install
-      #endregion
 
       - name: Build
         run: |
@@ -56,6 +45,7 @@ jobs:
       - name: Use Node.js 14.x
         uses: actions/setup-node@v3
         with:
+          cache: 'yarn'
           node-version: 14.x
       - name: Build
         run: |

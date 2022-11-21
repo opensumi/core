@@ -38,6 +38,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
+          cache: 'yarn'
 
       - uses: mukunku/tag-exists-action@v1.0.0
         id: checkTag
