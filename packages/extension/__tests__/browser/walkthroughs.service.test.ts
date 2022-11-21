@@ -8,7 +8,6 @@ import { WalkthroughsService } from '../../src/browser/walkthroughs.service';
 import { MOCK_EXTENSIONS } from './extension-service/extension-service-mock-helper';
 import { setupExtensionServiceInjector } from './extension-service/extension-service-mock-helper';
 
-
 describe('walkthroughs api test', () => {
   let injector: MockInjector;
   let walkthroughsService: WalkthroughsService;
@@ -17,6 +16,11 @@ describe('walkthroughs api test', () => {
 
   beforeAll(() => {
     injector = setupExtensionServiceInjector();
+    injector.addProviders({
+      token: WalkthroughsService,
+      useValue: WalkthroughsService,
+    });
+
     walkthroughsService = injector.get(WalkthroughsService);
     extInstanceManagementService = injector.get(AbstractExtInstanceManagementService);
     mockExtension = MOCK_EXTENSIONS[0];
