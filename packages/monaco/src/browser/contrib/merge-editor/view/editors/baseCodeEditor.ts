@@ -5,7 +5,7 @@ import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/
 import { EditorLayoutInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
-import { ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import {
@@ -52,7 +52,7 @@ export abstract class BaseCodeEditor extends Disposable {
       ...this.getMonacoEditorOptions(),
     });
 
-    this.decorations = this.injector.get(MergeEditorDecorations, [this.editor, this.getEditorViewType()]);
+    this.decorations = this.injector.get(MergeEditorDecorations, [this, this.getEditorViewType()]);
 
     this.addDispose(
       Event.debounce(
@@ -93,6 +93,10 @@ export abstract class BaseCodeEditor extends Disposable {
   public abstract computeResultRangeMapping: LineRangeMapping[];
 
   public abstract getEditorViewType(): EditorViewType;
+
+  public abstract getMonacoDecorationOptions(
+    inputDecoration: IModelDecorationOptions,
+  ): Omit<IModelDecorationOptions, 'description'>;
 
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
 
