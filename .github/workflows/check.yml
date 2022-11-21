@@ -39,7 +39,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         run: |
-          yarn install --no-immutable
+          yarn install --immutable
 
       - name: Build
         run: |
@@ -59,7 +59,7 @@ jobs:
           node-version: 14.x
       - name: Build
         run: |
-          yarn install --no-immutable
+          yarn install --immutable
           yarn run init
           yarn run bundle:lite
 

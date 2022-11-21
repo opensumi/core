@@ -44,7 +44,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         run: |
-          yarn install --no-immutable
+          yarn install --immutable
 
       - name: CI
         run: |
@@ -82,7 +82,7 @@ jobs:
             ${{ runner.os }}-yarn-
       - name: install
         run: |
-          yarn install --no-immutable
+          yarn install --immutable
 
       - name: CI
         run: |
