@@ -175,7 +175,7 @@ export function addMapElement<K, T>(map: Map<K, T>, key: K, element: T): IDispos
 type NonFunctional<T> = T extends Function ? never : T;
 
 // 枚举 value 转数组值
-export function enumValueToArray<T>(enumeration: T): NonFunctional<T[keyof T]>[] {
+export function enumValueToArray<T extends object>(enumeration: T): NonFunctional<T[keyof T]>[] {
   return Object.keys(enumeration)
     .filter((key) => isNaN(Number(key)))
     .map((key) => enumeration[key])

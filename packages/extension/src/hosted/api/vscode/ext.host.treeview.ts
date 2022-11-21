@@ -61,7 +61,10 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     });
   }
 
-  registerTreeDataProvider<T>(treeViewId: string, treeDataProvider: vscode.TreeDataProvider<T>): IDisposable {
+  registerTreeDataProvider<T extends vscode.TreeItem>(
+    treeViewId: string,
+    treeDataProvider: vscode.TreeDataProvider<T>,
+  ): IDisposable {
     const treeView = this.createTreeView(treeViewId, { treeDataProvider });
 
     return Disposable.create(() => {
@@ -70,7 +73,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     });
   }
 
-  createTreeView<T>(treeViewId: string, options: vscode.TreeViewOptions<T>): TreeView<T> {
+  createTreeView<T extends vscode.TreeItem>(treeViewId: string, options: vscode.TreeViewOptions<T>): TreeView<T> {
     if (!options || !options.treeDataProvider) {
       throw new Error('Options with treeDataProvider is mandatory');
     }

@@ -8,6 +8,7 @@ import {
   Throttler,
   Uri,
   path,
+  isEmptyObject,
 } from '@opensumi/ide-core-common';
 import { IFileServiceClient, FileStat } from '@opensumi/ide-file-service';
 
@@ -106,7 +107,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     for (const path of storagePaths) {
       const data = await this.readFromFile(path);
       for (const { key, value } of tasks[path]) {
-        if (value === undefined || value === {}) {
+        if (value === undefined || isEmptyObject(value)) {
           delete data[key];
         } else {
           data[key] = value;

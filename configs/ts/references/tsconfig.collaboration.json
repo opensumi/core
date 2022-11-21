@@ -2,7 +2,10 @@
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "../../../packages/collaboration/src",
-    "outDir": "../../../packages/collaboration/lib"
+    "outDir": "../../../packages/collaboration/lib",
+    "paths": {
+      "yjs": ["../../../node_modules/yjs/dist/yjs.cjs"]
+    }
   },
   "include": ["../../../packages/collaboration/src"],
   "exclude": ["../../../packages/collaboration/__mocks__"]
