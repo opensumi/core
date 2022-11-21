@@ -5,7 +5,7 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { LineRangeType } from '../types';
+import { EditorViewType, LineRangeType } from '../types';
 import { GuidelineWidget } from '../view/guideline-widget';
 
 import { LineRange } from './line-range';
@@ -39,7 +39,10 @@ export class MergeEditorDecorations extends Disposable {
   private readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
   public readonly onDidChangeDecorations: Event<MergeEditorDecorations> = this._onDidChangeDecorations.event;
 
-  constructor(@Optional() private readonly editor: ICodeEditor) {
+  constructor(
+    @Optional() private readonly editor: ICodeEditor,
+    @Optional() public readonly editorViewType: EditorViewType,
+  ) {
     super();
     this.initListenEvent();
   }
@@ -92,7 +95,7 @@ export class MergeEditorDecorations extends Disposable {
     this.editor.changeDecorations((accessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
       this.retainLineWidgetSet.forEach((widget) => {
-        widget.showByLine(widget.position?.lineNumber!);
+        widget.showByLine(widget.getRecordLine());
         this.lineWidgetSet.add(widget);
       });
 
@@ -130,7 +133,7 @@ export class MergeEditorDecorations extends Disposable {
 
   private cleanUpLineWidget(widgets: Set<GuidelineWidget>): void {
     widgets.forEach((w) => {
-      w.dispose();
+      w.hide();
     });
     widgets.clear();
   }
@@ -176,5 +179,12 @@ export class MergeEditorDecorations extends Disposable {
 
   public render(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
     this.setDecorations(ranges, innerChanges);
+  }
+
+  public dispose(): void {
+    super.dispose();
+
+    this.lineWidgetSet.forEach((w) => w.dispose());
+    this.retainLineWidgetSet.forEach((w) => w.dispose());
   }
 }
