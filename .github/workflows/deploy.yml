@@ -17,7 +17,16 @@ jobs:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - uses: actions/checkout@v3
-
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       - name: Build
         run: |
           yarn install --immutable

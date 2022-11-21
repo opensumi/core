@@ -53,7 +53,16 @@ jobs:
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       # 安装依赖并构建
       - name: Install dependencies & Build
         if: steps.checkTag.outputs.exists == 'false'

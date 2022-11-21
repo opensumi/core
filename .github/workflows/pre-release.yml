@@ -34,8 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -55,7 +54,16 @@ jobs:
               repo: context.repo.repo,
               body: `🤖 Pre-Release version is publishing ...`
             });
-
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       # 安装依赖并构建
       - name: Install dependencies & Build
         run: |
