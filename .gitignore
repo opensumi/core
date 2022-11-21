@@ -7,7 +7,6 @@
 !.yarn/versions
 
 .DS_Store
-yarn.lock
 
 .package-temp-dir
 
