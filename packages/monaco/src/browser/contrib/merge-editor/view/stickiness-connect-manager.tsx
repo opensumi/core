@@ -47,32 +47,13 @@ export const WithViewStickinessConnectComponent: React.FC<{ contrastType: Editor
     );
 
     disposables.addDispose(
-      Event.debounce(
-        mergeEditorService.scrollSynchronizer.onScrollChange,
-        (_, e) => e,
-        1,
-      )(() => {
-        let leftEditor: ICodeEditor | undefined;
-        let rightEditor: ICodeEditor | undefined;
+      mergeEditorService.scrollSynchronizer.onScrollChange(() => {
+        const [leftOffest, rightOffest] =
+          mergeEditorService.stickinessConnectManager.getScrollTopWithBoth(contrastType);
 
-        if (contrastType === 'current') {
-          leftEditor = mergeEditorService.getCurrentEditor();
-          rightEditor = mergeEditorService.getResultEditor();
-        } else if (contrastType === 'incoming') {
-          leftEditor = mergeEditorService.getResultEditor();
-          rightEditor = mergeEditorService.getIncomingEditor();
-        }
+        const newPieces = pieces.map((p) => p.movePosition(leftOffest, rightOffest));
 
-        if (leftEditor && rightEditor) {
-          const [leftOffest, rightOffest] = [leftEditor.getScrollTop(), rightEditor.getScrollTop()];
-
-          const newPieces = pieces.map((p) => {
-            p.movePosition(leftOffest, rightOffest);
-            return p;
-          });
-
-          setPieces(newPieces);
-        }
+        setPieces(newPieces);
       }),
     );
 
@@ -158,15 +139,42 @@ export class StickinessConnectManager extends Disposable {
     ];
     const lineHeight = view!.getEditor().getOption(EditorOption.lineHeight);
     const { contentLeft } = this.resultView!.getEditor().getLayoutInfo();
-    this._onDidChangePiece.fire({
-      pieces: this.generatePiece(
-        originRange,
-        modifyRange,
-        { marginWidth: contentLeft, lineHeight },
-        editorType === 'incoming' ? 1 : 0,
-      ),
-      editorType,
-    });
+
+    const pieces = this.generatePiece(
+      originRange,
+      modifyRange,
+      { marginWidth: contentLeft, lineHeight },
+      editorType === 'incoming' ? 1 : 0,
+    ).map((p) => p.movePosition(...this.getScrollTopWithBoth(editorType)));
+
+    this._onDidChangePiece.fire({ pieces, editorType });
+  }
+
+  public getScrollTopWithBoth(contrastType: EditorViewType): [number, number] {
+    if (contrastType === 'result') {
+      return [0, 0];
+    }
+
+    if (!(this.currentView || this.resultView || this.incomingView)) {
+      return [0, 0];
+    }
+
+    let leftEditor: ICodeEditor | undefined;
+    let rightEditor: ICodeEditor | undefined;
+
+    if (contrastType === 'current') {
+      leftEditor = this.currentView!.getEditor();
+      rightEditor = this.resultView!.getEditor();
+    } else if (contrastType === 'incoming') {
+      leftEditor = this.resultView!.getEditor();
+      rightEditor = this.incomingView!.getEditor();
+    }
+
+    if (leftEditor && rightEditor) {
+      return [leftEditor.getScrollTop(), rightEditor.getScrollTop()];
+    }
+
+    return [0, 0];
   }
 
   public mount(currentView: BaseCodeEditor, resultView: BaseCodeEditor, incomingView: BaseCodeEditor): void {
@@ -178,7 +186,7 @@ export class StickinessConnectManager extends Disposable {
       Event.debounce(
         currentView.onDidChangeDecorations,
         () => {},
-        10,
+        1,
       )(() => {
         this.computePiece('current');
       }),
@@ -188,7 +196,7 @@ export class StickinessConnectManager extends Disposable {
       Event.debounce(
         incomingView.onDidChangeDecorations,
         () => {},
-        10,
+        1,
       )(() => {
         this.computePiece('incoming');
       }),

@@ -133,7 +133,7 @@ export class MergeEditorDecorations extends Disposable {
 
   private cleanUpLineWidget(widgets: Set<GuidelineWidget>): void {
     widgets.forEach((w) => {
-      w.dispose();
+      w.hide();
     });
     widgets.clear();
   }
@@ -179,5 +179,12 @@ export class MergeEditorDecorations extends Disposable {
 
   public render(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
     this.setDecorations(ranges, innerChanges);
+  }
+
+  public dispose(): void {
+    super.dispose();
+
+    this.lineWidgetSet.forEach((w) => w.dispose());
+    this.retainLineWidgetSet.forEach((w) => w.dispose());
   }
 }

@@ -58,11 +58,11 @@ export class StickyPieceModel implements IStickyPiece {
   private calcPath(leftOffest: number, rightOffest: number): IStickyPiecePath {
     const { path: rawPath } = this.rawData;
 
-    const offestLeftTop = rawPath.leftTop - leftOffest;
-    const offestRightTop = rawPath.rightTop - rightOffest;
+    const offestLT = rawPath.leftTop - leftOffest;
+    const offestRT = rawPath.rightTop - rightOffest;
 
-    const leftTop = Math.max(0, offestLeftTop - offestRightTop);
-    const rightTop = Math.max(0, offestRightTop - offestLeftTop);
+    const leftTop = Math.max(0, offestLT - offestRT);
+    const rightTop = Math.max(0, offestRT - offestLT);
     const leftBottom = Math.min(this.height, leftTop + (rawPath.leftBottom - rawPath.leftTop));
     const rightBottom = Math.min(this.height, rightTop + (rawPath.rightBottom - rawPath.rightTop));
 
