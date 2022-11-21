@@ -1,6 +1,6 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
-import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
+import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
 import { ITaskService, ITaskSystem } from '../common';
 
@@ -16,7 +16,7 @@ export class TaskModule extends BrowserModule {
     TaskContribution,
     TaskPreferencesContribution,
     {
-      token: FolderPreferenceProvider,
+      token: FolderFilePreferenceProvider,
       useClass: TaskFolderPreferenceProvider,
       dropdownForTag: true,
       tag: 'tasks',
