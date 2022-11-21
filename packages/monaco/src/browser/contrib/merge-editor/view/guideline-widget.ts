@@ -1,6 +1,5 @@
-import { ZoneWidget } from '@opensumi/ide-monaco-enhance';
+import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 
-import { ICodeEditor } from '../../../monaco-api/types';
 import { LineRangeType } from '../types';
 
 export class GuidelineWidget extends ZoneWidget {
@@ -14,8 +13,8 @@ export class GuidelineWidget extends ZoneWidget {
   public setContainerStyle(style: { [key in string]: string }): void {
     const keys = Object.keys(style);
     for (const key of keys) {
-      if (Object.prototype.hasOwnProperty.call(this._container.style, key)) {
-        this._container.style[key] = style[key];
+      if (Object.prototype.hasOwnProperty.call(this.container?.style, key)) {
+        this.container!.style[key] = style[key];
       }
     }
   }

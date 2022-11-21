@@ -4,9 +4,9 @@ import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/com
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration, IRenderChangesInput, IRenderInnerChangesInput } from '../../model/decorations';
-import { GuidelineWidget } from '../../model/line';
 import { LineRange } from '../../model/line-range';
 import { flatInnerOriginal, flatModified, flatOriginal } from '../../utils';
+import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 

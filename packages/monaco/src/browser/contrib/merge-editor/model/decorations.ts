@@ -6,8 +6,8 @@ import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
 import { LineRangeType } from '../types';
+import { GuidelineWidget } from '../view/guideline-widget';
 
-import { GuidelineWidget } from './line';
 import { LineRange } from './line-range';
 
 export interface IRenderChangesInput {
@@ -92,7 +92,7 @@ export class MergeEditorDecorations extends Disposable {
     this.editor.changeDecorations((accessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
       this.retainLineWidgetSet.forEach((widget) => {
-        widget.showByLine(widget.currentRange.startLineNumber);
+        widget.showByLine(widget.position?.lineNumber!);
         this.lineWidgetSet.add(widget);
       });
 

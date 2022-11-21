@@ -9,9 +9,9 @@ import {
   IRenderInnerChangesInput,
   MergeEditorDecorations,
 } from '../../model/decorations';
-import { GuidelineWidget } from '../../model/line';
 import { LineRange } from '../../model/line-range';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
+import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
