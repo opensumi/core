@@ -233,7 +233,8 @@ export interface AppConfig {
    */
   extensionBrowserStyleSheet?: ExtensionBrowserStyleSheet;
   /**
-   * 是否采用工作区内的 .vscode 配置作为项目启动的配置默认值
+   * 是否采用工作区内的 `.vscode` 配置作为项目启动的配置默认值
+   * 该配置默认值仅在首次启动时进行同步，后续的更改将不会带来任何效果，即框架本身将不监听 `.vscode` 内的文件变化
    */
   useVSCodeWorkspaceConfiguration?: boolean;
 }
