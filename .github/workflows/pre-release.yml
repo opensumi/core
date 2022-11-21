@@ -97,7 +97,13 @@ jobs:
               title: `🤖 OpenSumi Pre-Release ${nextVersion}`,
               body: `## ${nextVersion} Pre-Release Summary \r\n ${releasemd}`
             });
-
+      - name: Setup .yarnrc.yml
+        run: |
+          yarn config set -H npmRegistryServer "https://registry.npmjs.org"
+          yarn config set -H npmAlwaysAuth true
+          yarn config set -H npmAuthToken $NPM_AUTH_TOKEN
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # 发布 next 版本，并在 issue 中回复
       # 使用 lerna publish 命令
       # --preid 指定前缀，确保版本唯一，前缀使用 $(date +%s) 生成类似  2.12.1-1640328423.0

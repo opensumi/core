@@ -53,7 +53,13 @@ jobs:
         run: |
           yarn install --immutable
           yarn run init
-
+      - name: Setup .yarnrc.yml
+        run: |
+          yarn config set -H npmRegistryServer "https://registry.npmjs.org"
+          yarn config set -H npmAlwaysAuth true
+          yarn config set -H npmAuthToken $NPM_AUTH_TOKEN
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Publish prepatch version
         run: |
           lerna publish --exact --preid rc-$(date +%s) --dist-tag rc --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --ignore-scripts --no-private -y
