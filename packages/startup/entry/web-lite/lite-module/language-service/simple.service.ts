@@ -1,7 +1,6 @@
 import * as monaco from '@ali/monaco-editor-core/esm/vs/editor/editor.api';
 import type * as vscode from 'vscode';
 import { DocumentSelector, HoverProvider, CancellationToken, DefinitionProvider, ReferenceProvider } from 'vscode';
-import { DocumentFilter } from 'vscode-languageserver-protocol';
 
 import { Autowired, Injectable, ConstructorOf } from '@opensumi/di';
 import { Uri, URI, LRUMap, DisposableCollection } from '@opensumi/ide-core-common';
@@ -18,6 +17,7 @@ import {
   DefinitionLink,
   ReferenceContext,
   Location,
+  isDocumentFilter,
 } from '@opensumi/ide-extension/lib/common/vscode/model.api';
 import { ExtHostDocumentData } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc/ext-data.host';
 import { Adapter } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.language';
@@ -336,7 +336,7 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
       return selector.some((filter) => this.matchLanguage(filter, languageId));
     }
 
-    if (DocumentFilter.is(selector)) {
+    if (isDocumentFilter(selector)) {
       return !selector.language || selector.language === languageId;
     }
 
@@ -347,7 +347,7 @@ export class SimpleLanguageService implements Partial<IExtHostLanguages> {
     if (Array.isArray(selector)) {
       return selector.some((filter) => this.matchModel(filter, model));
     }
-    if (DocumentFilter.is(selector)) {
+    if (isDocumentFilter(selector)) {
       if (!!selector.language && selector.language !== model.languageId) {
         return false;
       }
