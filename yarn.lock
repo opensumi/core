@@ -3503,7 +3503,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-utils@2.21.4, @opensumi/ide-utils@workspace:packages/utils":
+"@opensumi/ide-utils@2.21.4, @opensumi/ide-utils@workspace:*, @opensumi/ide-utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-utils@workspace:packages/utils"
   dependencies:
@@ -3514,29 +3514,6 @@ __metadata:
     vscode-uri: 3.0.2
   languageName: unknown
   linkType: soft
-
-"@opensumi/ide-utils@npm:2.18.10":
-  version: 2.18.10
-  resolution: "@opensumi/ide-utils@npm:2.18.10"
-  dependencies:
-    iconv-lite: ^0.6.3
-    nanoid: ^3.3.3
-    vscode-uri: ^3.0.2
-  checksum: 9dae41491ff969aef1c7c67c928def9ffcf5ae4ba738565ba0c5d08493bdc56d9e85fe6842b5e813a92eaf66bfd4425c2c1208b414b92b05a510e1c54bb0806c
-  languageName: node
-  linkType: hard
-
-"@opensumi/ide-utils@npm:2.21.0":
-  version: 2.21.0
-  resolution: "@opensumi/ide-utils@npm:2.21.0"
-  dependencies:
-    iconv-lite: ^0.6.3
-    mri: ^1.2.0
-    nanoid: ^3.3.3
-    vscode-uri: 3.0.2
-  checksum: 85b6e8f421880109551fc2efddebf4a6ea39f5d41e441f75ce73922f3bf486cb07da0d4eeff3d6e4b758e1ad45f8baa05226a6d486ede6313ff349d0e8596cf2
-  languageName: node
-  linkType: hard
 
 "@opensumi/ide-variable@2.21.4, @opensumi/ide-variable@workspace:packages/variable":
   version: 0.0.0-use.local
@@ -3605,7 +3582,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/playwright@workspace:tools/playwright"
   dependencies:
-    "@opensumi/ide-utils": 2.18.10
+    "@opensumi/ide-utils": "workspace:*"
     "@playwright/test": 1.22.2
     allure-commandline: ^2.13.8
     allure-playwright: ^2.0.0-beta.14
@@ -3618,7 +3595,7 @@ __metadata:
   resolution: "@opensumi/remote-cli@workspace:packages/remote-cli"
   dependencies:
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-utils": 2.21.0
+    "@opensumi/ide-utils": "workspace:*"
     chalk: ^4.1.2
     got: ^12.1.0
     mri: ^1.2.0
