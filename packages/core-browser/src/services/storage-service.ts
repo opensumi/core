@@ -93,7 +93,12 @@ abstract class BaseBrowserStorageService implements StorageService {
     if (isUndefinedOrNull(result)) {
       return defaultValue;
     }
-    return JSON.parse(result);
+    try {
+      return JSON.parse(result);
+    } catch (e) {
+      this.logger.error(`storage getDate error: ${e}, use defaultValue as result.`);
+    }
+    return defaultValue;
   }
 
   public removeData<T>(key: string): void {
