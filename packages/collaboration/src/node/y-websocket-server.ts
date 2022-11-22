@@ -2,7 +2,9 @@ import http from 'http';
 
 import ws from 'ws';
 import utils from 'y-websocket/bin/utils';
-import * as Y from 'yjs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import Y from 'yjs';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';

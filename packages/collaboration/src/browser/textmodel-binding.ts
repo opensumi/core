@@ -1,6 +1,8 @@
 import { createMutex } from 'lib0/mutex';
 import { Awareness } from 'y-protocols/awareness';
-import * as Y from 'yjs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import Y from 'yjs';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { ITextModel, ICodeEditor, Position } from '@opensumi/ide-monaco';
