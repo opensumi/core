@@ -2,12 +2,13 @@ import { Injector } from '@opensumi/di';
 import { MonacoService } from '@opensumi/ide-core-browser';
 import { Disposable, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { EditorLayoutInfo } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
+import { ConflictActions } from '../../model/conflict-actions';
 import {
   IDiffDecoration,
   IRenderChangesInput,
@@ -15,11 +16,14 @@ import {
   MergeEditorDecorations,
 } from '../../model/decorations';
 import { LineRange } from '../../model/line-range';
-import { EditorViewType } from '../../types';
+import { EditorViewType, IActionsProvider, IBaseCodeEditor } from '../../types';
 import { flatModified, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
-export abstract class BaseCodeEditor extends Disposable {
+export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEditor {
+  #actionsProvider: IActionsProvider | undefined;
+  #conflictActions: ConflictActions;
+
   protected decorations: MergeEditorDecorations;
   protected editor: ICodeEditor;
 
@@ -36,6 +40,7 @@ export abstract class BaseCodeEditor extends Disposable {
     super.dispose();
     this.editor.dispose();
     this.decorations.dispose();
+    this.#conflictActions.dispose();
   }
 
   public mount(): void {
@@ -53,6 +58,7 @@ export abstract class BaseCodeEditor extends Disposable {
     });
 
     this.decorations = this.injector.get(MergeEditorDecorations, [this, this.getEditorViewType()]);
+    this.#conflictActions = this.injector.get(ConflictActions, [this]);
 
     this.addDispose(
       Event.debounce(
@@ -63,13 +69,15 @@ export abstract class BaseCodeEditor extends Disposable {
         () => {},
         0,
       )(() => {
-        const marginWith = this.editor.getLayoutInfo().contentLeft;
+        const lineDecorationsWidth = this.editor.getOption(EditorOption.lineDecorationsWidth);
+        const contentLeft = this.editor.getLayoutInfo().contentLeft;
+        const marginWidth = contentLeft - (typeof lineDecorationsWidth === 'number' ? lineDecorationsWidth : 0);
         const widgets = this.decorations.getLineWidgets();
         if (widgets.length > 0) {
           widgets.forEach((w) => {
             if (w) {
               w.setContainerStyle({
-                left: marginWith + 'px',
+                left: marginWidth + 'px',
               });
             }
           });
@@ -148,6 +156,21 @@ export abstract class BaseCodeEditor extends Disposable {
       .setRetainDecoration(this.getRetainDecoration())
       .setRetainLineWidget(this.getRetainLineWidget())
       .updateDecorations(r, i);
+  }
+
+  protected registerActionsProvider(provider: IActionsProvider): void {
+    if (this.#actionsProvider) {
+      return;
+    }
+
+    this.#actionsProvider = provider;
+
+    const { provideActionsItems } = provider;
+    this.#conflictActions.setActions(provideActionsItems());
+  }
+
+  public get actionsProvider(): IActionsProvider | undefined {
+    return this.#actionsProvider;
   }
 
   public clearDecorations(): void {

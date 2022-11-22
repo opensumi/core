@@ -74,4 +74,20 @@
       }
     }
   }
+
+  .conflict-actions {
+    cursor: pointer;
+    z-index: 1;
+
+    &.offset-left {
+      left: 18px !important;
+      z-index: 2;
+    }
+
+    &.offset-right {
+      left: initial !important;
+      right: 8px !important;
+      z-index: 2;
+    }
+  }
 }
