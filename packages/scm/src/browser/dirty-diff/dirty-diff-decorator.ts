@@ -10,46 +10,33 @@ import {
   overviewRulerModifiedForeground,
   overviewRulerDeletedForeground,
   overviewRulerAddedForeground,
+  minimapGutterAddedBackground,
+  minimapGutterModifiedBackground,
+  minimapGutterDeletedBackground,
 } from '../scm-color';
 import { SCMPreferences } from '../scm-preference';
 
 import { DirtyDiffModel } from './dirty-diff-model';
-
-enum ChangeType {
-  Modify = 'Modify',
-  Add = 'Add',
-  Delete = 'Delete',
-}
-
-function getChangeType(change: ILineChange): ChangeType {
-  if (change[1] === 0) {
-    return ChangeType.Add;
-  } else if (change[3] === 0) {
-    return ChangeType.Delete;
-  }
-  return ChangeType.Modify;
-}
+import { ChangeType, getChangeType } from './dirty-diff-util';
 
 @Injectable({ multiple: true })
 export class DirtyDiffDecorator extends Disposable {
   /**
-   * -------------------------------- IMPORTANT --------------------------------
-   * 需要注意区分 model.IModelDecorationOptions 与 monaco.editor.IModelDecorationOptions 两个类型
-   * 将 model.IModelDecorationOptions 类型的对象传给签名为 monaco.editor.IModelDecorationOptions 的方法时需要做 Type Assertion
-   * 这是因为 monaco.d.ts 与 vs/editor/common/model 分别导出了枚举 TrackedRangeStickiness
-   * 这种情况下两个枚举的类型是不兼容的，即使他们是同一段代码的编译产物
-   * -------------------------------- IMPORTANT --------------------------------
    * @param className
    * @param foregroundColor
    * @param options
    */
   static createDecoration(
     className: string,
-    foregroundColor: string,
-    options: { gutter: boolean; overview: boolean; isWholeLine: boolean },
+    options: {
+      gutter: boolean;
+      overview: { active: boolean; color: string };
+      minimap: { active: boolean; color: string };
+      isWholeLine: boolean;
+    },
   ): textModel.ModelDecorationOptions {
     const decorationOptions: model.IModelDecorationOptions = {
-      description: 'dirty-diff',
+      description: 'dirty-diff-decoration',
       isWholeLine: options.isWholeLine,
     };
 
@@ -57,19 +44,27 @@ export class DirtyDiffDecorator extends Disposable {
       decorationOptions.linesDecorationsClassName = `dirty-diff-glyph ${className}`;
     }
 
-    if (options.overview) {
+    if (options.overview.active) {
       decorationOptions.overviewRuler = {
-        color: themeColorFromId(foregroundColor),
+        color: themeColorFromId(options.overview.color),
         position: OverviewRulerLane.Left,
+      };
+    }
+
+    if (options.minimap.active) {
+      decorationOptions.minimap = {
+        color: themeColorFromId(options.minimap.color),
+        position: model.MinimapPosition.Gutter,
       };
     }
 
     return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
   }
 
-  private modifiedOptions: textModel.ModelDecorationOptions;
   private addedOptions: textModel.ModelDecorationOptions;
+  private modifiedOptions: textModel.ModelDecorationOptions;
   private deletedOptions: textModel.ModelDecorationOptions;
+
   private decorations: string[] = [];
   private editorModel: IEditorDocumentModel | null;
 
@@ -82,16 +77,26 @@ export class DirtyDiffDecorator extends Disposable {
     const decorations = this.scmPreferences['scm.diffDecorations'];
     const gutter = decorations === 'all' || decorations === 'gutter';
     const overview = decorations === 'all' || decorations === 'overview';
-    const options = { gutter, overview, isWholeLine: true };
+    const minimap = decorations === 'all' || decorations === 'minimap';
 
-    this.modifiedOptions = DirtyDiffDecorator.createDecoration(
-      'dirty-diff-modified',
-      overviewRulerModifiedForeground,
-      options,
-    );
-    this.addedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-added', overviewRulerAddedForeground, options);
-    this.deletedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-deleted', overviewRulerDeletedForeground, {
-      ...options,
+    this.modifiedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-modified', {
+      gutter,
+      overview: { active: overview, color: overviewRulerModifiedForeground },
+      minimap: { active: minimap, color: minimapGutterModifiedBackground },
+      isWholeLine: true,
+    });
+
+    this.addedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-added', {
+      gutter,
+      overview: { active: overview, color: overviewRulerAddedForeground },
+      minimap: { active: minimap, color: minimapGutterAddedBackground },
+      isWholeLine: true,
+    });
+
+    this.deletedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-deleted', {
+      gutter,
+      overview: { active: overview, color: overviewRulerDeletedForeground },
+      minimap: { active: minimap, color: minimapGutterDeletedBackground },
       isWholeLine: false,
     });
 
@@ -105,7 +110,7 @@ export class DirtyDiffDecorator extends Disposable {
     const decorations = this.model.changes.map((change) => {
       const changeType = getChangeType(change);
       const startLineNumber = change[2];
-      const endLineNumber = change[3] || startLineNumber;
+      const endLineNumber = change[3] - 1 || startLineNumber - 1;
 
       switch (changeType) {
         case ChangeType.Add:
@@ -121,9 +126,9 @@ export class DirtyDiffDecorator extends Disposable {
         case ChangeType.Delete:
           return {
             range: {
-              startLineNumber,
+              startLineNumber: startLineNumber - 1,
               startColumn: Number.MAX_VALUE,
-              endLineNumber: startLineNumber,
+              endLineNumber: startLineNumber > 0 ? startLineNumber - 1 : startLineNumber,
               endColumn: Number.MAX_VALUE,
             },
             options: this.deletedOptions,
@@ -141,9 +146,7 @@ export class DirtyDiffDecorator extends Disposable {
       }
     });
 
-    this.decorations = this.editorModel
-      .getMonacoModel()
-      .deltaDecorations(this.decorations, decorations);
+    this.decorations = this.editorModel.getMonacoModel().deltaDecorations(this.decorations, decorations);
   }
 
   dispose(): void {

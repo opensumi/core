@@ -1,5 +1,5 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { PreferenceChange } from '@opensumi/ide-core-browser';
+import { IContextKeyService, PreferenceChange } from '@opensumi/ide-core-browser';
 import {
   DisposableCollection,
   PreferenceScope,
@@ -26,6 +26,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
+import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { IDirtyDiffWorkbenchController } from '../../../src';
 import { DirtyDiffWorkbenchController, DirtyDiffItem } from '../../../src/browser/dirty-diff';
 import { DirtyDiffDecorator } from '../../../src/browser/dirty-diff/dirty-diff-decorator';
@@ -92,6 +93,10 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
     injector = createBrowserInjector(
       [],
       new Injector([
+        {
+          token: IContextKeyService,
+          useClass: MockContextKeyService,
+        },
         {
           token: IDocPersistentCacheProvider,
           useClass: EmptyDocCacheImpl,
@@ -423,20 +428,8 @@ describe('scm/src/browser/dirty-diff/index.ts', () => {
       const dirtyDiffDecorator = injector.get(DirtyDiffDecorator, [editorModel, dirtyDiffModel]);
       const dirtyDiffWidget = injector.get(DirtyDiffWidget, [monacoEditor, dirtyDiffModel, commandService]);
 
-      const change0: ILineChange = [
-        11,
-        11,
-        11,
-        11,
-        [],
-      ];
-      const change1: ILineChange = [
-        12,
-        12,
-        12,
-        12,
-        [],
-      ];
+      const change0: ILineChange = [11, 11, 11, 11, []];
+      const change1: ILineChange = [12, 12, 12, 12, []];
 
       dirtyDiffModel['_changes'] = [change0, change1];
       dirtyDiffWidget.updateCurrent(1);

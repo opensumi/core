@@ -1,4 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
 import { toDisposable, Event, CommandService, positionToRange, URI, ILineChange } from '@opensumi/ide-core-common';
 import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
 import { EditorCollectionService } from '@opensumi/ide-editor';
@@ -15,6 +16,7 @@ import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/s
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
+import { MockContextKeyService } from '../../../../monaco/__mocks__/monaco.context-key.service';
 import { SCMService, ISCMRepository } from '../../../src';
 import { DirtyDiffModel } from '../../../src/browser/dirty-diff/dirty-diff-model';
 import { DirtyDiffWidget } from '../../../src/browser/dirty-diff/dirty-diff-widget';
@@ -95,6 +97,10 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
       injector = createBrowserInjector(
         [],
         new MockInjector([
+          {
+            token: IContextKeyService,
+            useClass: MockContextKeyService,
+          },
           {
             token: IDocPersistentCacheProvider,
             useClass: EmptyDocCacheImpl,
@@ -435,11 +441,11 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
 
         // monacoEditor.revealLineInCenter
         expect(revealLineInCenterSpy).toBeCalledTimes(1);
-        expect(revealLineInCenterSpy).toBeCalledWith(12 - 9);
+        expect(revealLineInCenterSpy).toBeCalledWith(7);
 
         expect(dirtyDiffWidget.currentIndex).toBe(1);
-        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(12));
-        expect(dirtyDiffWidget.currentHeightInLines).toBe(18);
+        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(11));
+        expect(dirtyDiffWidget.currentHeightInLines).toBe(10);
 
         // this.onDidChange
         dirtyDiffModel['_changes'].unshift(change0);
@@ -452,13 +458,13 @@ describe('scm/src/browser/dirty-diff/dirty-diff-model.ts', () => {
         ]);
 
         expect(dirtyDiffWidget.currentIndex).toBe(2);
-        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(12));
-        expect(dirtyDiffWidget.currentHeightInLines).toBe(18);
+        expect(dirtyDiffWidget.currentRange).toEqual(positionToRange(11));
+        expect(dirtyDiffWidget.currentHeightInLines).toBe(10);
 
         // originalEditor.monacoEditor.onDidChangeModelContent
         originalMonacoEditor['_onDidChangeModelContent'].fire();
         expect(relayoutSpy).toBeCalledTimes(1);
-        expect(relayoutSpy).toBeCalledWith(18);
+        expect(relayoutSpy).toBeCalledWith(10);
 
         // widget.onDispose
         dirtyDiffWidget.dispose();

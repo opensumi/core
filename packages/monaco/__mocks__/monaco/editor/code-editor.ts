@@ -161,7 +161,9 @@ export class MockedCodeEditor extends Disposable implements monaco.editor.ICodeE
     throw new Error('Method not implemented.');
   }
   getOption(_: any): any {
-    throw new Error('Method not implemented.');
+    const options = new Map();
+    options.set(60, 30);
+    return options;
   }
   getContentWidth(): number {
     throw new Error('Method not implemented.');
