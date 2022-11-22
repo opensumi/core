@@ -50,14 +50,16 @@ export class DatabaseStorageContribution implements StorageResolverContribution,
         if (!this.scopedLocalStorage) {
           this.scopedLocalStorage = this.injector.get(ScopedBrowserStorageService, [this.appConfig.workspaceDir]);
         }
+        storage = new Storage(
+          this.workspaceStorage,
+          this.workspaceService,
+          this.appConfig,
+          storageName,
+          this.scopedLocalStorage,
+        );
+      } else {
+        storage = new Storage(this.workspaceStorage, this.workspaceService, this.appConfig, storageName);
       }
-      storage = new Storage(
-        this.workspaceStorage,
-        this.workspaceService,
-        this.appConfig,
-        storageName,
-        this.scopedLocalStorage,
-      );
     } else if (storageId.scheme === STORAGE_SCHEMA.GLOBAL) {
       if (this.isBuiltinStorage(storageId)) {
         // 如果是内置的 Storage，在初始化过程中采用 GlobalBrowserStorageService 代理
