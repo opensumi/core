@@ -1,7 +1,15 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Awareness } from 'y-protocols/awareness';
 import { WebsocketProvider } from 'y-websocket';
-import * as Y from 'yjs';
+// @ts-ignore
+import {
+  Doc as YDoc,
+  Text as YText,
+  RelativePosition,
+  AbsolutePosition,
+  createAbsolutePositionFromRelativePosition,
+} from 'yjs';
 
 import { Injector } from '@opensumi/di';
 import { uuid } from '@opensumi/ide-core-common';
@@ -20,7 +28,7 @@ injector.addProviders({
   },
 });
 
-const createBindingWithTextModel = (doc: Y.Doc, awareness: Awareness) => {
+const createBindingWithTextModel = (doc: YDoc, awareness: Awareness) => {
   const textModel = monaco.editor.createModel('');
   const yText = doc.getText('test');
   // const binding = new TextModelBinding(yText, textModel, awareness);
@@ -33,13 +41,13 @@ const createBindingWithTextModel = (doc: Y.Doc, awareness: Awareness) => {
 };
 
 describe('TextModelBinding test for yText and TextModel', () => {
-  let doc: Y.Doc;
+  let doc: YDoc;
   let user1: ReturnType<typeof createBindingWithTextModel>;
   let user2: ReturnType<typeof createBindingWithTextModel>;
   let wsProvider: WebsocketProvider;
 
   beforeEach(() => {
-    doc = new Y.Doc();
+    doc = new YDoc();
     wsProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'test', doc, { connect: false }); // we don't use wsProvider here
     user1 = createBindingWithTextModel(doc, wsProvider.awareness);
     user2 = createBindingWithTextModel(doc, wsProvider.awareness);
@@ -49,6 +57,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
   afterEach(() => {
     user1.binding.destroy();
     user2.binding.destroy();
+    // @ts-ignore
     doc.destroy();
   });
 
@@ -92,7 +101,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     disposable2.dispose();
   });
 
-  it('should set value of TextModel when current content of TextModel is not the same with Y.Text', () => {
+  it('should set value of TextModel when current content of TextModel is not the same with YText', () => {
     user1.yText.insert(0, '1145141919810');
 
     const model = monaco.editor.createModel('114514');
@@ -107,7 +116,7 @@ describe('TextModelBinding test for yText and TextModel', () => {
     binding.destroy();
   });
 
-  it('should correctly handle Y.Text event', () => {
+  it('should correctly handle YText event', () => {
     // insertion
     const textModel = user2.textModel;
     const insertionSpy = jest.spyOn(textModel, 'applyEdits');
@@ -198,13 +207,13 @@ describe('TextModelBinding test for yText and TextModel', () => {
 
 describe('TextModelBinding test for editor', () => {
   let editor: ICodeEditor;
-  let doc: Y.Doc;
+  let doc: YDoc;
   let binding: TextModelBinding;
-  let yText: Y.Text;
+  let yText: YText;
   let textModel: monaco.editor.ITextModel;
 
   beforeAll(() => {
-    doc = new Y.Doc();
+    doc = new YDoc();
     const wsProvider = new WebsocketProvider('ws://127.0.0.1:12345', 'test', doc, { connect: false });
 
     const {
@@ -253,19 +262,19 @@ describe('TextModelBinding test for editor', () => {
     expect('selection' in state).toBeTruthy();
     // check correctness of awareness field
     const selectionField: {
-      anchor: Y.RelativePosition;
-      head: Y.RelativePosition;
+      anchor: RelativePosition;
+      head: RelativePosition;
     } = state['selection']!;
     expect(selectionField).toBeTruthy();
 
     {
       const relStart = selectionField.anchor;
       const relEnd = selectionField.head;
-      expect(relStart).toBeInstanceOf(Y.RelativePosition);
-      expect(relEnd).toBeInstanceOf(Y.RelativePosition);
+      expect(relStart).toBeInstanceOf(RelativePosition);
+      expect(relEnd).toBeInstanceOf(RelativePosition);
       // convert back to abs position
-      const absStart = Y.createAbsolutePositionFromRelativePosition(relStart, doc)!;
-      const absEnd = Y.createAbsolutePositionFromRelativePosition(relEnd, doc)!;
+      const absStart = createAbsolutePositionFromRelativePosition(relStart, doc)!;
+      const absEnd = createAbsolutePositionFromRelativePosition(relEnd, doc)!;
       expect(absStart !== null).toBeTruthy();
       expect(absEnd !== undefined).toBeTruthy();
       // create range from relative position
@@ -280,7 +289,7 @@ describe('TextModelBinding test for editor', () => {
     disposable.dispose();
   });
 
-  it('should save current selections before Y transaction and restore current selections after Y.Text was changed', () => {
+  it('should save current selections before Y transaction and restore current selections after YText was changed', () => {
     // init value
     textModel.setValue('');
     textModel.applyEdits([{ range: new monaco.Range(1, 1, 1, 1), text: '114514' }]);
@@ -299,10 +308,10 @@ describe('TextModelBinding test for editor', () => {
     expect(binding['savedSelections'].has(editor)).toBeTruthy();
     {
       const savedSelection = binding['savedSelections'].get(editor)!;
-      const absStart = Y.createAbsolutePositionFromRelativePosition(savedSelection.start, doc)!;
-      const absEnd = Y.createAbsolutePositionFromRelativePosition(savedSelection.end, doc)!;
-      expect(absStart).toBeInstanceOf(Y.AbsolutePosition);
-      expect(absEnd).toBeInstanceOf(Y.AbsolutePosition);
+      const absStart = createAbsolutePositionFromRelativePosition(savedSelection.start, doc)!;
+      const absEnd = createAbsolutePositionFromRelativePosition(savedSelection.end, doc)!;
+      expect(absStart).toBeInstanceOf(AbsolutePosition);
+      expect(absEnd).toBeInstanceOf(AbsolutePosition);
       // construct range
       const start = textModel.getPositionAt(absStart.index);
       const end = textModel.getPositionAt(absEnd.index);
@@ -312,7 +321,7 @@ describe('TextModelBinding test for editor', () => {
       expect(currentSelection.equalsRange(range)).toBeTruthy();
       expect(currentSelection.equalsRange(new monaco.Range(1, 1, 1, 11))).toBeTruthy();
     }
-
+    // @ts-ignore
     doc.off('beforeAllTransactions', probeFnForYDocBeforeAllTransaction);
   });
 

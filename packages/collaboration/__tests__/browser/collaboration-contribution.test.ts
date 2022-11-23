@@ -2,7 +2,6 @@ import { KeybindingRegistry, KeybindingWeight, PreferenceService } from '@opensu
 import { CommandRegistry, CommandRegistryImpl, IDisposable, ILogger } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { AUTO_SAVE_MODE } from '@opensumi/ide-editor';
 import { IFileService, IFileServiceClient } from '@opensumi/ide-file-service';
 
 import {
