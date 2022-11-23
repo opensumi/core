@@ -1629,8 +1629,8 @@ export class FileTreeModelService {
       }
     }
 
-    if (this.pasteStore.type === PasteTypes.CUT) {
-      for (const file of this.pasteStore.files) {
+    if (pasteStore.type === PasteTypes.CUT) {
+      for (const file of pasteStore.files) {
         if (file) {
           this.cutDecoration.removeTarget(file);
         }
@@ -1656,7 +1656,7 @@ export class FileTreeModelService {
         type: PasteTypes.NONE,
         crossFiles: undefined,
       };
-    } else if (this.pasteStore.type === PasteTypes.COPY) {
+    } else if (pasteStore.type === PasteTypes.COPY) {
       const uriList = pasteStore.crossFiles ? pasteStore.crossFiles : pasteStore.files.map((file) => file.uri);
       for (const uri of uriList) {
         if (parent.uri.isEqual(uri) && !pasteToFile) {
