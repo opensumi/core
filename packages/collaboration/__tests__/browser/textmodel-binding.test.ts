@@ -2,13 +2,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Awareness } from 'y-protocols/awareness';
 import { WebsocketProvider } from 'y-websocket';
-// @ts-ignore
 import {
   Doc as YDoc,
   Text as YText,
   RelativePosition,
   AbsolutePosition,
   createAbsolutePositionFromRelativePosition,
+  // @ts-ignore
 } from 'yjs';
 
 import { Injector } from '@opensumi/di';
