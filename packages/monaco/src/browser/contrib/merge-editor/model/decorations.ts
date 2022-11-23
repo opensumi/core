@@ -26,7 +26,7 @@ export interface IDiffDecoration {
   readonly editorDecoration: IModelDeltaDecoration;
 }
 
-@Injectable({ multiple: true })
+@Injectable({ multiple: false })
 export class MergeEditorDecorations extends Disposable {
   private deltaDecoration: IDiffDecoration[] = [];
   private retainDecoration: IDiffDecoration[] = [];
