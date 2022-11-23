@@ -1,7 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { AppConfig } from '@opensumi/ide-core-browser/lib/react-providers/config-provider';
 import { Disposable } from '@opensumi/ide-core-common';
 
 import { ITerminalRestore, ITerminalController, ITerminalInternalService } from '../common';
+
+const DEFAULT_TERMINAL_STORE_KEY = 'OPENSUMI_TERMINAL_RESTORE';
 
 @Injectable()
 export class TerminalRestore extends Disposable implements ITerminalRestore {
@@ -11,9 +14,12 @@ export class TerminalRestore extends Disposable implements ITerminalRestore {
   @Autowired(ITerminalInternalService)
   protected readonly service: ITerminalInternalService;
 
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
+
   get storageKey() {
-    // 集成方根据自己的场景来自定义storageKey做到终端恢复场景的准确性
-    return 'OPENSUMI_TERMINAL_RESTORE';
+    // 集成方可以根据自己的场景来通过 override 自定义 storageKey 做到终端恢复场景的准确性
+    return `${this.appConfig.workspaceDir}-${DEFAULT_TERMINAL_STORE_KEY}`;
   }
 
   save() {

@@ -39,16 +39,16 @@ English | [简体中文](./README-zh_CN.md)
 ## ⚡️ Quick Start
 
 ```bash
-$ npm install
-$ npm run init
-$ npm run download-extension  # Optional
-$ npm run start
+$ yarn install
+$ yarn run init
+$ yarn run download-extension  # Optional
+$ yarn run start
 ```
 
 By default, the `tools/workspace` folder in the project would be opened, or you can run the project by specifying the directory in the following way:
 
 ```bash
-$ MY_WORKSPACE={local_path} npm run start
+$ MY_WORKSPACE={local_path} yarn run start
 ```
 
 Usually, you may still encounter some system-level environment dependencies. You can visit [Development Environment Preparation](./CONTRIBUTING.md#development-environment-preparation) to see how to install the corresponding environment dependencies.

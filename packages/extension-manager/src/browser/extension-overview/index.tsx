@@ -9,6 +9,7 @@ import { Markdown } from '@opensumi/ide-markdown';
 
 import { InstallState, IVSXExtensionService, VSXExtension, VSXExtensionServiceToken } from '../../common';
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
+import { DEFAULT_EXTENSION_ICON_URL } from '../const';
 
 import styles from './overview.module.less';
 
@@ -55,19 +56,16 @@ export const ExtensionOverview: ReactEditorComponent<
     }
   }, []);
 
-  const getExtensionMetadata = useCallback(
-    ({ readme, changelog }: { [prop: string]: string | undefined }) =>
-      [
-        readme && fetch(readme).then((res) => res.text()),
-        changelog && fetch(changelog).then((res) => res.text()),
-      ].filter(Boolean),
-    [],
-  );
-
   const initExtensionMetadata = useCallback(async () => {
     const extension = await vsxExtensionService.getRemoteRawExtension(resource.metadata?.extensionId);
+
     if (extension) {
-      const tasks = getExtensionMetadata({ readme: extension.files.readme, changelog: extension.files.changelog });
+      const tasks = ['readme', 'changelog'].map((key) => {
+        const file = extension.files?.[key];
+
+        return file ? fetch(file).then((res) => res.text()) : extension[key] ?? '';
+      });
+
       const [readme, changelog] = await Promise.all(tasks);
       setMetadata({ readme, changelog, downloadCount: extension.downloadCount });
     }
@@ -186,7 +184,7 @@ export const ExtensionOverview: ReactEditorComponent<
       <ProgressBar loading={loading} />
       <div className={styles.extension_overview_header}>
         <img
-          src={resource.metadata?.iconUrl || `${resource.metadata?.openVSXRegistry}/default-icon.png`}
+          src={resource.metadata?.iconUrl || DEFAULT_EXTENSION_ICON_URL}
           alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
         />
         <div className={styles.extension_detail}>

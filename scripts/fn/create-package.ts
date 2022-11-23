@@ -78,5 +78,5 @@ export async function createPackage(name: string) {
   await fs.writeFile(moduleTsJsonPath, JSON.stringify(moduleTsConfig, null, 2) + '\n');
 
   // 创建完模块之后执行一次初始化
-  run('npm run init');
+  run('yarn run init');
 }

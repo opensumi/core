@@ -46,16 +46,16 @@ $ npm config set registry https://registry.npmmirror.com
 ```
 
 ```bash
-$ npm install
-$ npm run init
-$ npm run download-extension  # 可选
-$ npm run start
+$ yarn
+$ yarn run init
+$ yarn run download-extension  # 可选
+$ yarn run start
 ```
 
 默认情况下，框架会将项目下的 `tools/workspace` 目录作为工作区目录展现, 同时，你也可以通过下面的命令指定你要打开的工作区路径:
 
 ```bash
-$ MY_WORKSPACE={local_path} npm run start
+$ MY_WORKSPACE={local_path} yarn run start
 ```
 
 通常情况下，你可能还会遇到一些系统级别的环境依赖问题，你可以访问 [开发环境准备](./CONTRIBUTING-zh_CN.md#开发环境准备) 查看如何安装对应环境依赖。

@@ -4,7 +4,7 @@ import { run } from './fn/shell';
 import * as fs from 'fs-extra';
 
 (async () => {
-  await run('npm run clean');
+  await run('yarn run clean');
   await run('npx tsc --build configs/ts/tsconfig.build.json');
 
   const filePatten = '*/src/**/!(*.ts|*.tsx)';

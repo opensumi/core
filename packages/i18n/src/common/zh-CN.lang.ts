@@ -243,6 +243,7 @@ export const localizationBundle = {
     'scm.diff.change.next': '下一个变化',
     'scm.diff.change.previous': '上一个变化',
     'scm.diff.toggle.renderSideBySide': '切换内联视图',
+    'scm.dirtyDiff.changes': '第 {0} 个更改 (共 {1} 个)',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',

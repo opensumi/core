@@ -278,6 +278,7 @@ export const localizationBundle = {
     'scm.diff.change.next': 'Next Change',
     'scm.diff.change.previous': 'Previous Change',
     'scm.diff.toggle.renderSideBySide': 'Toggle Inline View',
+    'scm.dirtyDiff.changes': '{0} of {1} changes',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',

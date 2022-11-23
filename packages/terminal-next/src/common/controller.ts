@@ -58,6 +58,12 @@ export interface ICreateClientWithWidgetOptions {
   beforeCreate?: (terminalId: string) => void;
 }
 
+export interface TerminalCliterFilter {
+  id?: string;
+  name?: string;
+  isTaskExecutor?: boolean;
+}
+
 export const ITerminalController = Symbol('ITerminalController');
 export interface ITerminalController extends Disposable {
   ready: Deferred<void>;
@@ -67,6 +73,7 @@ export interface ITerminalController extends Disposable {
   themeBackground: string;
   contextKeyService?: IContextKeyService;
   viewReady: Deferred<void>;
+  disposeTerminalClients(filter?: TerminalCliterFilter): void;
   initContextKey(dom: HTMLDivElement): void;
   firstInitialize(): void;
   recovery(history: ITerminalBrowserHistory): Promise<void>;

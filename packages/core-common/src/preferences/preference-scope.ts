@@ -46,4 +46,5 @@ export namespace PreferenceScope {
   }
 }
 
-export const DEFAULT_WORKSPACE_STORAGE_DIR_NAME = '.sumi';
+export const DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME = '.sumi';
+export const VSCODE_WORKSPACE_CONFIGURATION_DIR_NAME = '.vscode';

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/sumi",
-  "version": "2.21.4",
+  "version": "2.21.5",
   "typings": "index.d.ts",
   "license": "MIT",
   "repository": {
@@ -8,11 +8,11 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "ts-node ./build"
   },
   "dependencies": {
-    "@opensumi/ide-components": "2.21.4",
+    "@opensumi/ide-components": "2.21.5",
     "@types/react": "^16.9.33",
     "vscode-uri": "3.0.2"
   }

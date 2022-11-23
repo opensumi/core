@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-utils",
-  "version": "2.21.4",
+  "version": "2.21.5",
   "files": [
     "lib",
     "src"
@@ -8,7 +8,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.utils.json"
   },
   "repository": {

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-storage",
-  "version": "2.21.4",
+  "version": "2.21.5",
   "files": [
     "lib",
     "src"
@@ -9,7 +9,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.storage.json"
   },
   "repository": {
@@ -17,12 +17,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.21.4"
+    "@opensumi/ide-core-common": "2.21.5"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.21.4",
+    "@opensumi/ide-core-browser": "2.21.5",
     "@opensumi/ide-dev-tool": "^1.3.1",
-    "@opensumi/ide-file-service": "2.21.4",
-    "@opensumi/ide-workspace": "2.21.4"
+    "@opensumi/ide-file-service": "2.21.5",
+    "@opensumi/ide-workspace": "2.21.5"
   }
 }

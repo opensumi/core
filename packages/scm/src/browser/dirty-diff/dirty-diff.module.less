@@ -97,11 +97,14 @@
   }
 
   .dirty-diff-widget-header {
-    height: 24px;
+    min-height: 24px;
     width: 100%;
-    border-top: 1px solid lightblue;
-    border-bottom: 1px solid lightblue;
+    border-top: 1px solid;
+    border-bottom: 1px solid;
     display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--peekViewTitle-background);
 
     .file-name {
       flex: 1;
@@ -113,6 +116,14 @@
       display: flex;
       justify-content: flex-end;
       cursor: pointer;
+
+      .kt-icon {
+        padding: 3px;
+        &:hover {
+          border-radius: 4px;
+          background-color: var(--kt-icon-hoverBackground);
+        }
+      }
 
       .iconfont-rotate-180 {
         transform: rotate(180deg) translateY(-2px);
@@ -129,6 +140,6 @@
   .dirty-diff-widget-content {
     flex: 1;
     width: 100%;
-    border-bottom: 1px solid lightblue;
+    border-bottom: 1px solid;
   }
 }

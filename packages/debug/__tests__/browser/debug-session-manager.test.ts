@@ -45,7 +45,7 @@ describe('DebugSessionManager', () => {
   };
 
   const mockTaskService = {
-    getTask: jest.fn(() => ({ task: 'npm run build' })),
+    getTask: jest.fn(() => ({ task: 'yarn run build' })),
     run: jest.fn(() => ({ exitCode: 200 })),
   };
 
