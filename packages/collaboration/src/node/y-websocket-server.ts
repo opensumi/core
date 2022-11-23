@@ -4,7 +4,7 @@ import ws from 'ws';
 import utils from 'y-websocket/bin/utils';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import Y from 'yjs';
+import { Doc as YDoc, Map as YMap, Text as YText } from 'yjs';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { INodeLogger } from '@opensumi/ide-core-node';
@@ -21,9 +21,9 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
   @Autowired(IFileService)
   private fileService: FileService;
 
-  private yDoc: Y.Doc;
+  private yDoc: YDoc;
 
-  private yMap: Y.Map<Y.Text>;
+  private yMap: YMap<YText>;
 
   private websocketServer: ws.Server;
 
@@ -73,7 +73,7 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
           if (e.type === FileChangeType.DELETED) {
             this.logger.debug('on file event deleted', e);
             this.removeYText(e.uri);
-            this.logger.debug('removed Y.Text of', e.uri);
+            this.logger.debug('removed YText of', e.uri);
           }
         });
 
@@ -108,7 +108,7 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
       const { content } = await this.fileService.resolveContent(uri);
       this.logger.debug('resolved content', content.substring(0, 20), 'from', uri);
       if (!this.yMap.has(uri)) {
-        const yText = new Y.Text(content); // create yText with initial content
+        const yText = new YText(content); // create yText with initial content
         this.yMap.set(uri, yText);
       }
     } catch (e) {
@@ -134,7 +134,7 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
     this.server.close();
   }
 
-  getYDoc(room: string): Y.Doc {
+  getYDoc(room: string): YDoc {
     const { getYDoc } = utils;
     return getYDoc(room);
   }

@@ -2,7 +2,7 @@
 import { WebsocketProvider } from 'y-websocket';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import Y from 'yjs';
+import { Doc as YDoc, Map as YMap, YMapEvent, Text as YText } from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
@@ -63,11 +63,11 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private userInfo: UserInfo;
 
-  private yDoc: Y.Doc;
+  private yDoc: YDoc;
 
   private yWebSocketProvider: WebsocketProvider;
 
-  private yTextMap: Y.Map<Y.Text>;
+  private yTextMap: YMap<YText>;
 
   private bindingMap: Map<string, TextModelBinding> = new Map();
 
@@ -75,7 +75,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
   private bindingReadyMap: Map<string, Deferred<void>> = new Map();
 
-  private yMapObserver = (event: Y.YMapEvent<Y.Text>) => {
+  private yMapObserver = (event: YMapEvent<YText>) => {
     const changes = event.changes.keys;
     changes.forEach((change, key) => {
       if (change.action === 'add') {
@@ -97,7 +97,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   }
 
   initialize() {
-    this.yDoc = new Y.Doc();
+    this.yDoc = new YDoc();
     this.yTextMap = this.yDoc.getMap();
 
     // transform url
