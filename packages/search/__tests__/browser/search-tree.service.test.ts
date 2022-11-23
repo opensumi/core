@@ -6,8 +6,13 @@ import { Uri, URI } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@opensumi/ide-editor/lib/browser';
+import {
+  IEditorDocumentModelService,
+  IEditorDocumentModelContentRegistry,
+  ResourceService,
+} from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
+import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
@@ -134,6 +139,10 @@ describe('search.service.ts', () => {
       {
         token: ContentSearchClientService,
         useClass: ContentSearchClientService,
+      },
+      {
+        token: ResourceService,
+        useClass: ResourceServiceImpl,
       },
       {
         token: IWorkspaceService,

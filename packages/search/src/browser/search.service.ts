@@ -34,6 +34,7 @@ import {
   IEditorDocumentModel,
   EditorDocumentModelContentChangedEvent,
   IEditorDocumentModelContentChangedEventPayload,
+  ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -134,6 +135,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @Autowired(WorkbenchEditorService)
   private readonly workbenchEditorService: WorkbenchEditorService;
 
+  @Autowired()
+  private readonly resourceService: ResourceService;
+
   @observable
   replaceValue = '';
   @observable
@@ -215,7 +219,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
   }
 
-  search = (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
+  search = async (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
     if (e && e.keyCode !== Key.ENTER.keyCode) {
       return;
     }
@@ -227,10 +231,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     const state = insertUIState || this.UIState;
 
-    this.doSearch(value, state);
+    await this.doSearch(value, state);
   };
 
-  doSearch(value: string, state: IUIState) {
+  async doSearch(value: string, state: IUIState) {
     const searchOptions: ContentSearchOptions = {
       maxResults: 2000,
       matchCase: state.isMatchCase,
@@ -318,7 +322,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
     const rootDirs = Array.from(rootDirSet);
     // 从 doc model 中搜索
-    const searchFromDocModelInfo = this.searchAllFromDocModel({
+    const searchFromDocModelInfo = await this.searchAllFromDocModel({
       searchValue: value,
       searchOptions,
       documentModelManager: this.documentModelManager,
@@ -836,10 +840,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
     };
   }
 
-  private searchAllFromDocModel(options: SearchAllFromDocModelOptions): {
+  private async searchAllFromDocModel(options: SearchAllFromDocModelOptions): Promise<{
     result: ContentSearchResult[];
     searchedList: string[];
-  } {
+  }> {
     const searchValue = options.searchValue;
     const searchOptions = options.searchOptions;
     const documentModelManager = options.documentModelManager;
@@ -852,23 +856,30 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     const filterFileWithGlobRelativePath = new FilterFileWithGlobRelativePath(rootDirs, searchOptions.include || []);
 
-    docModels.forEach((docModel: IEditorDocumentModel) => {
-      const uriString = docModel.uri.toString();
+    await Promise.all(
+      docModels.map(async (docModel: IEditorDocumentModel) => {
+        const uriString = docModel.uri.toString();
 
-      // 只搜索file协议内容
-      if (docModel.uri.scheme !== Schemes.file) {
-        return;
-      }
+        // 只搜索file协议内容
+        if (docModel.uri.scheme !== Schemes.file) {
+          return;
+        }
 
-      if (!filterFileWithGlobRelativePath.test(uriString)) {
-        return;
-      }
+        const resource = await this.resourceService.getResource(docModel.uri);
+        if (!resource || resource.deleted) {
+          return;
+        }
 
-      const data = this.searchFromDocModel(searchOptions, docModel, searchValue, rootDirs, group.codeEditor);
+        if (!filterFileWithGlobRelativePath.test(uriString)) {
+          return;
+        }
 
-      result = result.concat(data.result);
-      searchedList = searchedList.concat(data.searchedList);
-    });
+        const data = this.searchFromDocModel(searchOptions, docModel, searchValue, rootDirs, group.codeEditor);
+
+        result = result.concat(data.result);
+        searchedList = searchedList.concat(data.searchedList);
+      }),
+    );
 
     return {
       result,

@@ -4,7 +4,7 @@ import { Injector, Injectable } from '@opensumi/di';
 import { CorePreferences } from '@opensumi/ide-core-browser';
 import { Uri } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelService, ResourceService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -145,7 +145,7 @@ describe('search.service.ts', () => {
     expect(service.contentSearchServer.catchSearchOptions.exclude).toEqual(['**/node_modules', '**/bower_components']);
   });
 
-  test.only('method:search options', () => {
+  test.only('method:search options', async () => {
     const service: any = searchService;
     searchService.searchValue = 'value';
     (service.UIState as IUIState) = {
@@ -163,7 +163,7 @@ describe('search.service.ts', () => {
     service.includeValue = 'includeValue1, includeValue2';
     service.excludeValue = 'excludeValue';
 
-    service.search();
+    await service.search();
     expect(service.contentSearchServer.catchSearchValue).toBe('value');
     expect(service.contentSearchServer.catchSearchRootDirs).toEqual([rootUri]);
 
