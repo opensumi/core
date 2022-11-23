@@ -1,5 +1,3 @@
-import clone from 'lodash/clone';
-
 import { IStickyPiece, IStickyPiecePath, IStickyPiecePosition, LineRangeType } from '../types';
 
 export class StickyPieceModel implements IStickyPiece {

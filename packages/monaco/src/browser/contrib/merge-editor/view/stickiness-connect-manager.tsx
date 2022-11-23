@@ -138,12 +138,22 @@ export class StickinessConnectManager extends Disposable {
       flatModified(computeResultRangeMapping),
     ];
     const lineHeight = view!.getEditor().getOption(EditorOption.lineHeight);
-    const { contentLeft } = this.resultView!.getEditor().getLayoutInfo();
+    const layoutInfo =
+      editorType === 'current'
+        ? this.resultView!.getEditor().getLayoutInfo()
+        : this.incomingView!.getEditor().getLayoutInfo();
+
+    let marginWidth: number = layoutInfo.contentLeft;
+
+    const lineDecorationsWidth = (editorType === 'current' ? this.resultView : this.incomingView)!
+      .getEditor()
+      .getOption(EditorOption.lineDecorationsWidth);
+    marginWidth -= typeof lineDecorationsWidth === 'number' ? lineDecorationsWidth : 0;
 
     const pieces = this.generatePiece(
       originRange,
       modifyRange,
-      { marginWidth: contentLeft, lineHeight },
+      { marginWidth, lineHeight },
       editorType === 'incoming' ? 1 : 0,
     ).map((p) => p.movePosition(...this.getScrollTopWithBoth(editorType)));
 

@@ -4,6 +4,7 @@ import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { ComputerDiffModel } from './model/computer-diff';
+import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
 import { ResultCodeEditor } from './view/editors/resultCodeEditor';
@@ -23,6 +24,7 @@ export class MergeEditorService extends Disposable {
   private incomingView: IncomingCodeEditor;
 
   private computerDiffModel: ComputerDiffModel;
+  private actionsManager: ActionsManager;
 
   public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
@@ -32,6 +34,7 @@ export class MergeEditorService extends Disposable {
     this.computerDiffModel = new ComputerDiffModel();
     this.scrollSynchronizer = new ScrollSynchronizer();
     this.stickinessConnectManager = new StickinessConnectManager();
+    this.actionsManager = new ActionsManager();
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
@@ -45,6 +48,7 @@ export class MergeEditorService extends Disposable {
 
     this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
     this.stickinessConnectManager.mount(this.currentView, this.resultView, this.incomingView);
+    this.actionsManager.mount(this.currentView, this.resultView, this.incomingView);
   }
 
   public override dispose(): void {
@@ -54,6 +58,7 @@ export class MergeEditorService extends Disposable {
     this.incomingView.dispose();
     this.scrollSynchronizer.dispose();
     this.stickinessConnectManager.dispose();
+    this.actionsManager.dispose();
   }
 
   public getCurrentEditor(): ICodeEditor {

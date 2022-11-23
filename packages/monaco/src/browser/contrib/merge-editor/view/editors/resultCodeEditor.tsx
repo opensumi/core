@@ -15,7 +15,7 @@ import { BaseCodeEditor } from './baseCodeEditor';
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
-    return {};
+    return { lineNumbersMinChars: 2, lineDecorationsWidth: 24 };
   }
 
   private currentBaseRange: 0 | 1;
@@ -58,8 +58,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.decorations.getLineWidgets();
   }
 
-  public getMonacoDecorationOptions(): Omit<IModelDecorationOptions, 'description'> {
-    return {};
+  public getMonacoDecorationOptions(
+    preDecorations: IModelDecorationOptions,
+  ): Omit<IModelDecorationOptions, 'description'> {
+    return {
+      linesDecorationsClassName: preDecorations.className,
+    };
   }
 
   public getEditorViewType(): EditorViewType {
