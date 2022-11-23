@@ -1,11 +1,10 @@
-import { Injectable, Injector } from '@opensumi/di';
-import { getIcon, MonacoService } from '@opensumi/ide-core-browser';
+import { Injectable } from '@opensumi/di';
 import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration } from '../../model/decorations';
-import { ACCEPT_CURRENT, EditorViewType, IGNORE } from '../../types';
+import { CONFLICT_ACTIONS_ICON, EditorViewType } from '../../types';
 import { flatInnerModified, flatModified } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -49,8 +48,8 @@ export class IncomingCodeEditor extends BaseCodeEditor {
       provideActionsItems: () => {
         const decorationOptions = {
           description: 'incoming editor view conflict actions',
-          glyphMarginClassName: `conflict-actions offset-right ${IGNORE} ${getIcon('close')}`,
-          firstLineDecorationClassName: `conflict-actions ${ACCEPT_CURRENT} ${getIcon('left')}`,
+          glyphMarginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ' offset-right',
+          firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.LEFT,
         };
         return ranges.map((range) => ({ range, decorationOptions }));
       },

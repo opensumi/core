@@ -1,3 +1,4 @@
+import { getIcon } from '@opensumi/ide-core-browser';
 import { IEditorMouseEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 
 import { IModelDecorationOptions } from '../../monaco-api/editor';
@@ -47,8 +48,15 @@ export interface IActionsProvider {
     resultView: IBaseCodeEditor,
     incomingView: IBaseCodeEditor,
   ) => void;
+  mouseDownGuard?: (e: IEditorMouseEvent) => boolean;
   /**
    * 提供 actions 操作项
    */
   provideActionsItems: () => IActionsDescription[];
+}
+
+export namespace CONFLICT_ACTIONS_ICON {
+  export const RIGHT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('right')}`;
+  export const LEFT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('left')}`;
+  export const CLOSE = `conflict-actions ${IGNORE} ${getIcon('close')}`;
 }
