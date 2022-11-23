@@ -52,6 +52,7 @@ import {
   asTerminalIcon,
   TERMINAL_ID_SEPARATOR,
   ITerminalProfile,
+  TerminalCliterFilter,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -549,10 +550,10 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   }
 
   toJSON() {
-    const groups: { client: string; task?: string }[][] = [];
-    const cClient = this._clients.get(this.terminalView.currentWidgetId);
+    const groups: { client: string }[][] = [];
+    let cClient = this._clients.get(this.terminalView.currentWidgetId);
     this.terminalView.groups.forEach((wGroup) => {
-      const group: { client: string; task?: string }[] = [];
+      const group: { client: string }[] = [];
 
       wGroup.widgets.forEach((widget) => {
         const client = this._clients.get(widget.id);
@@ -564,10 +565,15 @@ export class TerminalController extends WithEventBus implements ITerminalControl
           return;
         }
 
-        const record: { client: string; task?: string } = { client: client.id };
         if (client.isTaskExecutor) {
-          record.task = client.taskId;
+          return;
         }
+
+        if (!cClient) {
+          cClient = client;
+        }
+
+        const record: { client: string } = { client: client.id };
         group.push(record);
       });
 
@@ -580,6 +586,21 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       groups,
       current: cClient && cClient.id,
     };
+  }
+
+  disposeTerminalClients(filter?: TerminalCliterFilter) {
+    const clients = Array.from(this.clients.values()).filter(
+      (client) =>
+        client.id === filter?.id || client.isTaskExecutor === filter?.isTaskExecutor || client.name === filter?.name,
+    );
+
+    for (const client of clients) {
+      try {
+        client.dispose();
+      } catch (err) {
+        //
+      }
+    }
   }
 
   findClientFromWidgetId(widgetId: string) {
