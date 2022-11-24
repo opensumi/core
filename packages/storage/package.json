@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-storage",
-  "version": "2.21.5",
+  "version": "workspace:*",
   "files": [
     "lib",
     "src"
@@ -17,12 +17,12 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.21.5"
+    "@opensumi/ide-core-common": "workspace:*"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.21.5",
-    "@opensumi/ide-dev-tool": "^1.3.1",
-    "@opensumi/ide-file-service": "2.21.5",
-    "@opensumi/ide-workspace": "2.21.5"
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-dev-tool": "workspace:*",
+    "@opensumi/ide-file-service": "workspace:*",
+    "@opensumi/ide-workspace": "workspace:*"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-logs",
-  "version": "2.21.5",
+  "version": "workspace:*",
   "files": [
     "lib",
     "src"
@@ -17,15 +17,15 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.21.5",
-    "@opensumi/ide-core-common": "2.21.5",
-    "@opensumi/ide-core-node": "2.21.5",
+    "@opensumi/ide-connection": "workspace:*",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-core-node": "workspace:*",
     "compressing": "^1.6.2",
     "spdlog": "^0.9.0"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.21.5",
-    "@opensumi/ide-dev-tool": "^1.3.1",
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-dev-tool": "workspace:*",
     "@types/debug": "^4.1.5"
   }
 }

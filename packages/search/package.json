@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-search",
-  "version": "2.21.5",
+  "version": "workspace:*",
   "files": [
     "lib",
     "src"
@@ -18,23 +18,23 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.21.5",
-    "@opensumi/ide-core-common": "2.21.5",
-    "@opensumi/ide-core-node": "2.21.5",
-    "@opensumi/ide-logs": "2.21.5",
-    "@opensumi/ide-process": "2.21.5",
+    "@opensumi/ide-connection": "workspace:*",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-core-node": "workspace:*",
+    "@opensumi/ide-logs": "workspace:*",
+    "@opensumi/ide-process": "workspace:*",
     "@opensumi/vscode-ripgrep": "^1.4.0"
   },
   "devDependencies": {
-    "@opensumi/ide-components": "2.21.5",
-    "@opensumi/ide-core-browser": "2.21.5",
-    "@opensumi/ide-dev-tool": "^1.3.1",
-    "@opensumi/ide-editor": "2.21.5",
-    "@opensumi/ide-file-service": "2.21.5",
-    "@opensumi/ide-main-layout": "2.21.5",
-    "@opensumi/ide-monaco": "2.21.5",
-    "@opensumi/ide-overlay": "2.21.5",
-    "@opensumi/ide-workspace": "2.21.5",
-    "@opensumi/ide-workspace-edit": "2.21.5"
+    "@opensumi/ide-components": "workspace:*",
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-dev-tool": "workspace:*",
+    "@opensumi/ide-editor": "workspace:*",
+    "@opensumi/ide-file-service": "workspace:*",
+    "@opensumi/ide-main-layout": "workspace:*",
+    "@opensumi/ide-monaco": "workspace:*",
+    "@opensumi/ide-overlay": "workspace:*",
+    "@opensumi/ide-workspace": "workspace:*",
+    "@opensumi/ide-workspace-edit": "workspace:*"
   }
 }

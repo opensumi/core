@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-file-service",
-  "version": "2.21.5",
+  "version": "workspace:*",
   "files": [
     "lib",
     "src"
@@ -17,10 +17,10 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-connection": "2.21.5",
-    "@opensumi/ide-core-common": "2.21.5",
-    "@opensumi/ide-core-node": "2.21.5",
-    "@opensumi/ide-logs": "2.21.5",
+    "@opensumi/ide-connection": "workspace:*",
+    "@opensumi/ide-core-common": "workspace:*",
+    "@opensumi/ide-core-node": "workspace:*",
+    "@opensumi/ide-logs": "workspace:*",
     "@parcel/watcher": "2.0.6",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
@@ -29,7 +29,7 @@
     "write-file-atomic": "^4.0.1"
   },
   "devDependencies": {
-    "@opensumi/ide-core-browser": "2.21.5",
-    "@opensumi/ide-dev-tool": "^1.3.1"
+    "@opensumi/ide-core-browser": "workspace:*",
+    "@opensumi/ide-dev-tool": "workspace:*"
   }
 }
