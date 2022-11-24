@@ -1,10 +1,11 @@
 import { Injectable } from '@opensumi/di';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration } from '../../model/decorations';
-import { CONFLICT_ACTIONS_ICON, EditorViewType } from '../../types';
+import { DocumentMapping } from '../../model/document-mapping';
+import { LineRangeMapping } from '../../model/line-range-mapping';
+import { CONFLICT_ACTIONS_ICON, EDiffRangeTurn, EditorViewType } from '../../types';
 import { flatInnerModified, flatModified } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -12,7 +13,13 @@ import { BaseCodeEditor } from './baseCodeEditor';
 
 @Injectable({ multiple: false })
 export class IncomingCodeEditor extends BaseCodeEditor {
-  public computeResultRangeMapping: LineRangeMapping[] = [];
+  public documentMapping: DocumentMapping;
+
+  public override mount(): void {
+    super.mount();
+
+    this.documentMapping = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.MODIFIED]);
+  }
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { readOnly: true, lineDecorationsWidth: 42 };
@@ -39,7 +46,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
-    this.computeResultRangeMapping = changes;
+    this.inputComputeResultRangeMapping(changes);
 
     const [ranges, innerRanges] = [flatModified(changes), flatInnerModified(changes)];
     this.renderDecorations(ranges, innerRanges);

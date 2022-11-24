@@ -1,9 +1,6 @@
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IDocumentDiff } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/documentDiffProvider';
-import {
-  LineRangeMapping,
-  RangeMapping,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { RangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import {
   IEditorWorkerService,
   IDiffComputationResult,
@@ -13,6 +10,7 @@ import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/s
 import { ITextModel } from '../../../monaco-api/types';
 
 import { LineRange } from './line-range';
+import { LineRangeMapping } from './line-range-mapping';
 
 export class ComputerDiffModel {
   private editorWorkerService: IEditorWorkerService;

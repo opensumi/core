@@ -2,24 +2,32 @@ import { Injectable } from '@opensumi/di';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Margin } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/viewParts/margin/margin';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration } from '../../model/decorations';
+import { DocumentMapping } from '../../model/document-mapping';
 import { LineRange } from '../../model/line-range';
-import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
+import { LineRangeMapping } from '../../model/line-range-mapping';
+import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EDiffRangeTurn, EditorViewType, IGNORE } from '../../types';
 import { flatInnerOriginal, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
+import { ResultCodeEditor } from './resultCodeEditor';
 
 // 用来寻址点击事件时的标记
 const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
 
 @Injectable({ multiple: false })
 export class CurrentCodeEditor extends BaseCodeEditor {
-  public computeResultRangeMapping: LineRangeMapping[] = [];
+  public documentMapping: DocumentMapping;
+
+  public override mount(): void {
+    super.mount();
+
+    this.documentMapping = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.ORIGIN]);
+  }
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { readOnly: true, lineNumbersMinChars: 5 };
@@ -37,7 +45,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return super.prepareRenderDecorations(ranges, innerChanges, 1);
   }
 
-  private onActionsClick(e: IEditorMouseEvent): void {
+  private onActionsClick(e: IEditorMouseEvent, currentView: BaseCodeEditor, resultView: ResultCodeEditor): void {
     const element = e.target.element!;
 
     if (element.classList.contains(ACCEPT_CURRENT)) {
@@ -46,7 +54,25 @@ export class CurrentCodeEditor extends BaseCodeEditor {
       if (find) {
         const posiLine = Number(find.replace(ADDRESSING_TAG_CLASSNAME, ''));
         if (typeof posiLine === 'number') {
-          // not implement
+          const action = this.conflictActions.getActions(posiLine);
+          if (!action) {
+            return;
+          }
+
+          const { range } = action;
+          const sameRange = resultView.documentMappingTurnLeft.sameComputeResultRange.get(range.id);
+
+          const applyText = currentView.getModel()!.getValueInRange(range.toRange());
+
+          if (sameRange) {
+            this.conflictActions.applyLineRangeEdits(resultView.getModel()!, [
+              {
+                range: sameRange as LineRange,
+                text: applyText,
+              },
+            ]);
+            resultView.documentMappingTurnLeft.delta(sameRange as LineRange, range.length);
+          }
         }
       }
 
@@ -72,7 +98,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
-    this.computeResultRangeMapping = changes;
+    this.inputComputeResultRangeMapping(changes);
 
     const [ranges, innerRanges] = [flatOriginal(changes), flatInnerOriginal(changes)];
 

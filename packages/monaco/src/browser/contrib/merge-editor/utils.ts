@@ -1,7 +1,7 @@
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
 import { LineRange } from './model/line-range';
+import { LineRangeMapping } from './model/line-range-mapping';
 
 export const flatOriginal = (changes: LineRangeMapping[]): LineRange[] =>
   changes.map((c) => c.originalRange as LineRange);

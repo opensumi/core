@@ -17,7 +17,7 @@ const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   const { leftTop, rightTop, leftBottom, rightBottom } = piece.path;
 
   const drawPath = useCallback(
-    () => `M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} L0,0 z`,
+    () => `M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} z`,
     [leftTop, rightTop, rightBottom, leftBottom, piece.width],
   );
 

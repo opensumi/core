@@ -4,7 +4,6 @@ import { Disposable, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
@@ -15,7 +14,9 @@ import {
   IRenderInnerChangesInput,
   MergeEditorDecorations,
 } from '../../model/decorations';
+import { DocumentMapping } from '../../model/document-mapping';
 import { LineRange } from '../../model/line-range';
+import { LineRangeMapping } from '../../model/line-range-mapping';
 import { EditorViewType, IActionsProvider, IBaseCodeEditor } from '../../types';
 import { flatModified, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
@@ -30,7 +31,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   constructor(
     private readonly container: HTMLDivElement,
     private readonly monacoService: MonacoService,
-    private readonly injector: Injector,
+    protected readonly injector: Injector,
   ) {
     super();
     this.mount();
@@ -98,7 +99,15 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     return this.editor.getModel();
   }
 
-  public abstract computeResultRangeMapping: LineRangeMapping[];
+  public inputComputeResultRangeMapping(changes: LineRangeMapping[]) {
+    this.documentMapping.inputComputeResultRangeMapping(changes);
+  }
+
+  public get computeResultRangeMapping(): LineRangeMapping[] {
+    return this.documentMapping.computeResultRangeMapping;
+  }
+
+  public abstract documentMapping: DocumentMapping;
 
   public abstract getEditorViewType(): EditorViewType;
 
@@ -171,6 +180,10 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   public get actionsProvider(): IActionsProvider | undefined {
     return this.#actionsProvider;
+  }
+
+  protected get conflictActions(): ConflictActions {
+    return this.#conflictActions;
   }
 
   public clearDecorations(): void {

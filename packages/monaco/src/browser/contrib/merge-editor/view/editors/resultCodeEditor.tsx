@@ -1,12 +1,13 @@
 import { Injectable } from '@opensumi/di';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration, IRenderChangesInput, IRenderInnerChangesInput } from '../../model/decorations';
+import { DocumentMapping } from '../../model/document-mapping';
 import { LineRange } from '../../model/line-range';
-import { EditorViewType } from '../../types';
+import { LineRangeMapping } from '../../model/line-range-mapping';
+import { EDiffRangeTurn, EditorViewType } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -19,7 +20,25 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private currentBaseRange: 0 | 1;
-  public computeResultRangeMapping: LineRangeMapping[] = [];
+
+  /** @deprecated */
+  public documentMapping: DocumentMapping;
+
+  public documentMappingTurnLeft: DocumentMapping;
+  public documentMappingTurnRight: DocumentMapping;
+
+  public override get computeResultRangeMapping(): LineRangeMapping[] {
+    return this.currentBaseRange === 1
+      ? this.documentMappingTurnLeft.computeResultRangeMapping
+      : this.documentMappingTurnRight.computeResultRangeMapping;
+  }
+
+  public override mount(): void {
+    super.mount();
+
+    this.documentMappingTurnLeft = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.MODIFIED]);
+    this.documentMappingTurnRight = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.ORIGIN]);
+  }
 
   protected override prepareRenderDecorations(
     ranges: LineRange[],
@@ -71,13 +90,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {
-    this.computeResultRangeMapping = changes;
     this.currentBaseRange = baseRange;
 
     if (baseRange === 1) {
+      this.documentMappingTurnLeft.inputComputeResultRangeMapping(changes);
       const [c, i] = [flatModified(changes), flatInnerModified(changes)];
       this.renderDecorations(c, i);
     } else if (baseRange === 0) {
+      this.documentMappingTurnRight.inputComputeResultRangeMapping(changes);
       const [c, i] = [flatOriginal(changes), flatInnerOriginal(changes)];
       this.renderDecorations(c, i);
     }

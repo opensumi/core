@@ -13,6 +13,11 @@ export type LineRangeType = 'insert' | 'modify' | 'remove';
 
 export type EditorViewType = 'current' | 'result' | 'incoming';
 
+export enum EDiffRangeTurn {
+  ORIGIN,
+  MODIFIED,
+}
+
 export interface IStickyPiecePosition {
   top: number;
 }
