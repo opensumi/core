@@ -1,16 +1,14 @@
-
 import { tmpdir } from 'os';
 import { join, dirname } from 'path';
 
 import { ensureDir, writeFile, readFile } from 'fs-extra';
 
-import { URI } from '@opensumi/ide-core-common';
+import { URI, iconvEncode, iconvDecode } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
 } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IFileService, FileStat } from '@opensumi/ide-file-service';
-import { encode, decode } from '@opensumi/ide-file-service/lib/node/encoding';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IFileSchemeDocNodeService } from '../../src/common';
@@ -179,7 +177,7 @@ describe('node file doc service test', () => {
     expect(res6.state).toBe('diff');
 
     const file2 = await createFixtureFile();
-    await writeFile(file2, encode('\n\n测试', 'gbk'));
+    await writeFile(file2, iconvEncode('\n\n测试', 'gbk'));
 
     const res7 = await fileDocNodeService.$saveByChange(
       URI.file(file2).toString(),
@@ -207,7 +205,7 @@ describe('node file doc service test', () => {
 
     expect(res7.state).toBe('success');
 
-    expect(decode(await readFile(file2), 'gbk')).toBe('测试\n\n测试');
+    expect(iconvDecode(await readFile(file2), 'gbk')).toBe('测试\n\n测试');
   });
 });
 

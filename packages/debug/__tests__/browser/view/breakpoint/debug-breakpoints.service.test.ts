@@ -1,13 +1,13 @@
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable, URI, IFileServiceClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser';
+import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugBreakpointsService } from '@opensumi/ide-debug/lib/browser/view/breakpoints/debug-breakpoints.service';
 import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-model';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IWorkspaceService, IWorkspaceStorageService } from '@opensumi/ide-workspace';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
 

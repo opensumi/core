@@ -93,7 +93,7 @@ describe('FileService', () => {
       // tslint:disable-next-line
       await expectThrowsAsync(
         fileService.resolveContent(uri.toString(), { encoding: 'unknownEncoding' }),
-        /unknownEncoding/,
+        /unknownencoding/,
       );
     });
 

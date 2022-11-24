@@ -5,6 +5,7 @@ import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@ope
 import { IThemeService } from '@opensumi/ide-theme';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
+import { IDebugConsoleSession } from '../../../common';
 import { handleANSIOutput } from '../../debug-ansi-handle';
 import { LinkDetector } from '../../debug-link-detector';
 import { DebugSession } from '../../debug-session';
@@ -15,7 +16,7 @@ import { DebugConsoleTreeModel } from './debug-console-model';
 type ConsoleNodes = DebugConsoleNode | AnsiConsoleNode | DebugVariableContainer;
 
 @Injectable({ multiple: true })
-export class DebugConsoleSession {
+export class DebugConsoleSession implements IDebugConsoleSession {
   @Autowired(ILogger)
   private logger: ILogger;
 

@@ -2,7 +2,7 @@ import { Autowired } from '@opensumi/di';
 import { Domain, CommandContribution, CommandRegistry, localize, IClipboardService } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { DEBUG_COMMANDS } from '../../debug-contribution';
+import { DEBUG_COMMANDS } from '../../../common';
 
 import {
   CONTEXT_CALLSTACK_ITEM_TYPE,

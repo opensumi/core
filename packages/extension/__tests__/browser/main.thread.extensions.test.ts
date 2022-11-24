@@ -8,7 +8,7 @@ import { AppConfig as NodeAppConfig } from '@opensumi/ide-core-node';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 import { IGlobalStorageServer } from '@opensumi/ide-storage';

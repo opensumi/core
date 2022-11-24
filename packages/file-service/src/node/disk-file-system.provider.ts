@@ -19,7 +19,6 @@ import {
   Emitter,
   isUndefined,
   DisposableCollection,
-  isWindows,
   FileUri,
   uuid,
 } from '@opensumi/ide-core-node';

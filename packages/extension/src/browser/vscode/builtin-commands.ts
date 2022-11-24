@@ -8,7 +8,7 @@ import {
   SEARCH_COMMANDS,
   LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
-import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
+import { DEBUG_COMMANDS } from '@opensumi/ide-debug';
 import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 /**

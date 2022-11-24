@@ -10,12 +10,12 @@ import {
   DebugModelFactory,
   IDebugServer,
 } from '@opensumi/ide-debug';
-import {
-  DebugSessionFactory,
-  DebugPreferences,
-  DebugSessionContributionRegistry,
-} from '@opensumi/ide-debug/lib/browser';
 import { DebugContextKey } from '@opensumi/ide-debug/lib/browser/contextkeys/debug-contextkey.service';
+import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
+import {
+  DebugSessionContributionRegistry,
+  DebugSessionFactory,
+} from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { DebugHoverSource } from '@opensumi/ide-debug/lib/browser/editor/debug-hover-source';
 import { DebugConsoleNode } from '@opensumi/ide-debug/lib/browser/tree';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';

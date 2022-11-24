@@ -2,7 +2,15 @@ import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule, IContextKeyService } from '@opensumi/ide-core-browser';
 import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
-import { DebugEditor, DebugModelFactory, IDebugProgress, IDebugService, IDebugSessionManager } from '../common';
+import {
+  DebugEditor,
+  DebugModelFactory,
+  IDebugConsoleModelService,
+  IDebugModelManager,
+  IDebugProgress,
+  IDebugService,
+  IDebugSessionManager,
+} from '../common';
 
 import { BreakpointManager } from './breakpoint';
 import { DebugCallStackItemTypeKey } from './contextkeys';
@@ -23,6 +31,7 @@ import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from 
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
 import { DebugToolbarOverlayWidget } from './view/configuration/debug-toolbar.view';
+import { DebugConsoleModelService } from './view/console/debug-console-tree.model.service';
 import { DebugConsoleContribution } from './view/console/debug-console.contribution';
 import { DebugCallStackContribution } from './view/frames/debug-call-stack.contribution';
 import { VariablesPanelContribution } from './view/variables/debug-variables.contribution';
@@ -42,7 +51,7 @@ export class DebugModule extends BrowserModule {
       useClass: DebugExpressionProvider,
     },
     {
-      token: DebugModelManager,
+      token: IDebugModelManager,
       useClass: DebugModelManager,
     },
     {
@@ -83,6 +92,10 @@ export class DebugModule extends BrowserModule {
       token: IDebugProgress,
       useClass: DebugProgressService,
     },
+    {
+      token: IDebugConsoleModelService,
+      useClass: DebugConsoleModelService,
+    },
     // contributions
     LaunchPreferencesContribution,
     DebugContribution,
@@ -104,18 +117,3 @@ export class DebugModule extends BrowserModule {
   isOverlay = true;
   component = DebugToolbarOverlayWidget;
 }
-
-export * from './breakpoint';
-export * from './contextkeys';
-export * from './debug-configuration-manager';
-export * from './debug-configuration-model';
-export * from './debug-contribution';
-export * from './debug-preferences';
-export * from './debug-schema-updater';
-export * from './debug-session';
-export * from './debug-session-connection';
-export * from './debug-session-contribution';
-export * from './debug-session-manager';
-export * from './editor/debug-model-manager';
-export * from './markers';
-export * from './model';

@@ -8,7 +8,7 @@ import {
   WaitUntilEvent,
 } from '@opensumi/ide-core-browser';
 import { DebugServer, DebuggerDescription, IDebugSessionManager, IDebugSessionDTO } from '@opensumi/ide-debug';
-import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
 import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@opensumi/ide-logs/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';

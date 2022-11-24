@@ -1,5 +1,7 @@
 import { MaybePromise, IJSONSchema, IJSONSchemaSnippet } from '@opensumi/ide-core-browser';
-import { DebuggerDescription, DebugConfiguration, IDebugSessionDTO } from '@opensumi/ide-debug';
+import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
+import { DebuggerDescription } from '@opensumi/ide-debug/lib/common/debug-service';
+import { IDebugSessionDTO } from '@opensumi/ide-debug/lib/common/debug-session-options';
 
 import { IExtHostDebug } from '../../../../common/vscode';
 import { IActivationEventService } from '../../../types';
