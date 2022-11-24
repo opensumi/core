@@ -37,8 +37,12 @@ import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   IEditorActionRegistry,
+  EditorComponentRegistry,
+  ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
+import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { EditorActionRegistryImpl } from '@opensumi/ide-editor/lib/browser/menu/editor.menu';
+import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { BrowserRequireInterceptorContribution } from '@opensumi/ide-extension/lib/browser/require-interceptor.contribution';
@@ -352,6 +356,14 @@ export const mockKaitianExtensionProviders: Provider[] = [
   {
     token: ExtensionService,
     useClass: ExtensionServiceImpl,
+  },
+  {
+    token: EditorComponentRegistry,
+    useClass: EditorComponentRegistryImpl,
+  },
+  {
+    token: ResourceService,
+    useClass: ResourceServiceImpl,
   },
 ];
 
