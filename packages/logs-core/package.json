@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-logs",
-  "version": "workspace:*",
+  "version": "2.21.5",
   "files": [
     "lib",
     "src"

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-browser",
-  "version": "workspace:*",
+  "version": "2.21.5",
   "description": "@opensumi/ide-core-browser",
   "files": [
     "lib",

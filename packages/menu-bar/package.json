@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-menu-bar",
-  "version": "workspace:*",
+  "version": "2.21.5",
   "description": "@opensumi/ide-menu-bar",
   "files": [
     "lib",
