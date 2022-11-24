@@ -747,6 +747,8 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
     if (Uri.isUri(iconPath)) {
       if (/^http(s)?/.test(iconPath.scheme)) {
         return iconPath.toString();
+      } else if (/^image/.test(iconPath.path.toString())) {
+        return `data:${iconPath.fsPath.toString()}`;
       }
       return iconPath.with({ scheme: '' }).toString();
     }
