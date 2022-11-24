@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
 import { URI, IDisposable, Disposable, IEventBus } from '@opensumi/ide-core-browser';
-import { IThemeService } from '@opensumi/ide-theme';
+import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { ICSSStyleService } from '@opensumi/ide-theme/lib/common/style';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -22,13 +22,16 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   decorations: Map<string, IBrowserTextEditorDecorationType> = new Map();
 
   @Autowired(ICSSStyleService)
-  cssManager: ICSSStyleService;
+  private readonly cssManager: ICSSStyleService;
 
   @Autowired(IThemeService)
-  themeService: IThemeService;
+  private readonly themeService: IThemeService;
+
+  @Autowired(IIconService)
+  private readonly iconService: IIconService;
 
   @Autowired(IEventBus)
-  eventBus: IEventBus;
+  private readonly eventBus: IEventBus;
 
   private tempId = 0;
 
@@ -139,9 +142,12 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   }
 
   private resolveCSSStyle(styles: IThemeDecorationRenderOptions): CSSStyleDeclaration {
+    const iconPath = styles.backgroundIcon?.startsWith('data:')
+      ? this.iconService.encodeBase64Path(decodeURIComponent(styles.backgroundIcon))
+      : styles.backgroundIcon;
     return {
       backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
-      background: styles.backgroundIcon ? `url('${styles.backgroundIcon}') center center no-repeat` : undefined,
+      background: styles.backgroundIcon ? `url("${iconPath}") center center no-repeat` : undefined,
       backgroundSize: styles.backgroundIconSize ? `${styles.backgroundIconSize}` : undefined,
 
       outline: styles.outline,
