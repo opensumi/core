@@ -12,6 +12,7 @@ import {
   STORAGE_NAMESPACE,
   ScopedBrowserStorageService,
   GlobalBrowserStorageService,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
@@ -92,6 +93,12 @@ describe('StorageProvider should be work', () => {
         useValue: MockWorkspaceService,
       },
       {
+        token: AppConfig,
+        useValue: {
+          workspaceDir: MockWorkspaceService.workspace.uri,
+        },
+      },
+      {
         token: StorageProvider,
         useFactory: () => (storageId) => injector.get(DefaultStorageProvider).get(storageId),
       },
@@ -154,7 +161,7 @@ describe('StorageProvider should be work', () => {
     expect(cache?.recents).toBe(JSON.stringify(recents));
   });
 
-  it('Custom ScopedStorage will disable cache on LocalStorage', async () => {
+  it('Custom ScopedStorage will not cache on LocalStorage', async () => {
     const getStorage: StorageProvider = injector.get(StorageProvider);
     const customId = new URI('test').withScheme(STORAGE_SCHEMA.SCOPE);
     const extensionStorage = await getStorage(customId);
