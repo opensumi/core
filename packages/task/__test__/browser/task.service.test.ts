@@ -1,9 +1,19 @@
-import path from 'path';
-
 import { PreferenceService, IJSONSchemaRegistry, ISchemaStore, QuickOpenService } from '@opensumi/ide-core-browser';
-import { FileUri, Uri } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { FileUri, Schemes, Uri } from '@opensumi/ide-core-common';
+import {
+  HashCalculateServiceImpl,
+  IHashCalculateService,
+} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import {
+  EmptyDocCacheImpl,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
+} from '@opensumi/ide-editor/src/browser';
+import {
+  EditorDocumentModelContentRegistryImpl,
+  EditorDocumentModelServiceImpl,
+} from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
@@ -14,13 +24,26 @@ import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task
 import { ITaskService, ITaskSystem, ITaskProvider } from '@opensumi/ide-task/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
+import { Disposable } from '@opensumi/vscode-jsonrpc';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MonacoService } from '../../../monaco';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-registry';
 
+const path = require('path');
+
 const preferences: Map<string, any> = new Map();
+
+export const mockDebugConsoleInputDocumentProvider = {
+  handlesScheme: (v) => v === Schemes.walkThroughSnippet,
+  provideEditorDocumentModelContent: () => '123',
+  isReadonly: false,
+  onDidChangeContent: () => Disposable.create(() => {}),
+  preferLanguageForUri() {
+    return 'plaintext';
+  },
+};
 
 const mockedPreferenceService: any = {
   get: (k) => preferences.get(k),
@@ -42,6 +65,7 @@ describe('TaskService Test Suite', () => {
         token: QuickOpenService,
         useClass: MockQuickOpenService,
       },
+
       {
         token: PreferenceService,
         useValue: mockedPreferenceService,
@@ -49,6 +73,14 @@ describe('TaskService Test Suite', () => {
       {
         token: MonacoService,
         useClass: MockedMonacoService,
+      },
+      {
+        token: IEditorDocumentModelContentRegistry,
+        useClass: EditorDocumentModelContentRegistryImpl,
+      },
+      {
+        token: IHashCalculateService,
+        useClass: HashCalculateServiceImpl,
       },
       {
         token: IEditorDocumentModelService,
@@ -84,6 +116,10 @@ describe('TaskService Test Suite', () => {
         token: IWorkspaceService,
         useClass: MockWorkspaceService,
       },
+      {
+        token: IDocPersistentCacheProvider,
+        useClass: EmptyDocCacheImpl,
+      },
     ],
   );
 
@@ -108,9 +144,12 @@ describe('TaskService Test Suite', () => {
         }),
       },
     });
+    const documentRegistry = injector.get<IEditorDocumentModelContentRegistry>(IEditorDocumentModelContentRegistry);
+    documentRegistry.registerEditorDocumentModelContentProvider(mockDebugConsoleInputDocumentProvider as any);
     taskService = injector.get<ITaskService>(ITaskService);
     workspace = injector.get<MockWorkspaceService>(IWorkspaceService);
     const schemaRegistry: IJSONSchemaRegistry = injector.get(IJSONSchemaRegistry);
+
     schemaRegistry.registerSchema(taskSchemaUri, schema, ['tasks.json']);
     const rootPath = path.resolve(__dirname);
     const rootUri = FileUri.create(rootPath).toString();

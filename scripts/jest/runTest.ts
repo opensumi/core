@@ -3,8 +3,6 @@ import { Config } from '@jest/types';
 import { argv } from '../../packages/core-common/src/node/cli';
 
 export async function runTest(target: string, project?: string) {
-  console.log(argv);
-
   return await jest.runCLI(
     {
       runInBand: true,
@@ -15,7 +13,7 @@ export async function runTest(target: string, project?: string) {
       detectOpenHandles: true,
       forceExit: true,
       ...argv,
-    } as Config.Argv,
+    } as unknown as Config.Argv,
     [process.cwd()],
   );
 }
