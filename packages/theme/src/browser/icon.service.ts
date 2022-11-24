@@ -210,6 +210,12 @@ export class IconService extends WithEventBus implements IIconService {
     return className;
   }
 
+  encodeBase64Path(iconPath: string) {
+    // 由于进行 Background 样式拼接时采用的 `url("${iconPath}")` 结构
+    // 故这里需要对 iconPath 中的 `"` 及常见字符进行转义处理
+    return iconPath.replaceAll('"', '\\"').replaceAll(/\?|#/g, (m) => encodeURIComponent(m));
+  }
+
   fromIcon(
     basePath = '',
     icon?: { [index in IconThemeType]: string } | string,
@@ -233,7 +239,7 @@ export class IconService extends WithEventBus implements IIconService {
        * 此时无需 static service
        */
       if (type === IconType.Base64) {
-        this.appendStyleSheet(this.getBackgroundStyleSheet(icon, randomClass), fromExtension);
+        this.appendStyleSheet(this.getBackgroundStyleSheet(this.encodeBase64Path(icon), randomClass), fromExtension);
       } else {
         const targetPath = this.getPath(basePath, icon);
         if (type === IconType.Mask) {
@@ -246,8 +252,19 @@ export class IconService extends WithEventBus implements IIconService {
       // eslint-disable-next-line guard-for-in
       for (const themeType in icon) {
         const themeSelector = getThemeTypeSelector(themeType as ThemeType);
-        const targetPath = this.getPath(basePath, icon[themeType]);
-        if (type === IconType.Mask) {
+        const iconPath = icon[themeType];
+        const targetPath = this.getPath(basePath, iconPath);
+        if (type === IconType.Base64) {
+          /**
+           * 处理 data:image 格式，/^data:image\//
+           * 如 data:image/svg+xml or data:image/gif;base64,
+           * 此时无需 static service
+           */
+          this.appendStyleSheet(
+            this.getBackgroundStyleSheet(this.encodeBase64Path(iconPath), randomClass, `.${themeSelector}`),
+            fromExtension,
+          );
+        } else if (type === IconType.Mask) {
           this.appendStyleSheet(
             this.getMaskStyleSheetWithStaticService(targetPath, randomClass, `.${themeSelector}`),
             fromExtension,

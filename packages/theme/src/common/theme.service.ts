@@ -44,6 +44,11 @@ export interface IIconService {
    * */
   applyTheme(themeId: string): Promise<void>;
   /**
+   * 将 Base64 路径进行转义，便于在 `background: url("${iconPath}")` 结构中使用
+   * @param iconPath Base64 路径
+   */
+  encodeBase64Path(iconPath: string): string;
+  /**
    * 将 codicon 的 id 转换为 codicon 的 class
    * @param str codicon id eg. $(add), $(add~sync)
    */
