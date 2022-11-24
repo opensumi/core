@@ -2851,6 +2851,7 @@ __metadata:
     "@opensumi/ide-i18n": 2.21.5
     "@opensumi/ide-logs": 2.21.5
     "@opensumi/ide-main-layout": 2.21.5
+    "@opensumi/ide-markdown": 2.21.5
     "@opensumi/ide-monaco": 2.21.5
     "@opensumi/ide-output": 2.21.5
     "@opensumi/ide-overlay": 2.21.5
