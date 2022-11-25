@@ -2304,6 +2304,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": ^15.0.0
     "@commitlint/config-conventional": ^7.1.2
+    "@types/debug": ^4.1.5
     "@types/fs-extra": ^9.0.13
     "@types/glob": ^7.1.1
     "@types/jest": ^27.4.0
@@ -2362,6 +2363,7 @@ __metadata:
     simple-git: ^3.3.0
     temp: ^0.9.4
     ts-jest: ^28.0.0
+    ts-loader: ^6.0.1
     ts-node: ^10.0.0
     tslib: ^2.4.0
     typescript: 4.6.4
@@ -2876,7 +2878,6 @@ __metadata:
     "@opensumi/ide-core-common": "workspace:*"
     "@opensumi/ide-core-node": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
-    "@types/debug": ^4.1.5
     compressing: ^1.6.2
     spdlog: ^0.9.0
   languageName: unknown

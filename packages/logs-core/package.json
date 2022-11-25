@@ -10,7 +10,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "prepublishOnly": "yarn run build",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.logs.json"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.logs-core.json"
   },
   "repository": {
     "type": "git",
@@ -25,7 +25,6 @@
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
-    "@opensumi/ide-dev-tool": "workspace:*",
-    "@types/debug": "^4.1.5"
+    "@opensumi/ide-dev-tool": "workspace:*"
   }
 }
