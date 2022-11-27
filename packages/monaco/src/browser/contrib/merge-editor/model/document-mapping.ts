@@ -71,10 +71,11 @@ export class DocumentMapping extends Disposable {
     }
   }
 
-  public deltaQueue(range: LineRange, offset: number): void {
+  public deltaAdjacentQueue(range: LineRange, offset: number): void {
+    const sameRange = this.adjacentComputeRangeMap.get(range.id);
+
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
-      const sameRange = this.adjacentComputeRangeMap.get(range.id);
-      if (sameRange && sameRange.isAfter(pick)) {
+      if (sameRange && pick.isAfter(sameRange)) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }

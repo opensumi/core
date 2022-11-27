@@ -45,6 +45,10 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return 'incoming';
   }
 
+  public updateDecorations(): void {
+    throw new Error('Method not implemented.');
+  }
+
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
     this.inputComputeResultRangeMapping(changes);
 

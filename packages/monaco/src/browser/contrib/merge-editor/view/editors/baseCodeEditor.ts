@@ -3,18 +3,13 @@ import { MonacoService } from '@opensumi/ide-core-browser';
 import { Disposable, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { ConflictActions } from '../../model/conflict-actions';
-import {
-  IDiffDecoration,
-  IRenderChangesInput,
-  IRenderInnerChangesInput,
-  MergeEditorDecorations,
-} from '../../model/decorations';
+import { IDiffDecoration, MergeEditorDecorations } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
+import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import { EditorViewType, IActionsProvider, IBaseCodeEditor } from '../../types';
@@ -112,6 +107,8 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
 
+  public abstract updateDecorations(): void;
+
   /**
    * 每次重新绘制之前要保留哪些 decoration
    */
@@ -128,33 +125,33 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
    */
   protected prepareRenderDecorations(
     ranges: LineRange[],
-    innerChanges: Range[][],
+    innerChanges: InnerRange[][],
     withBase: 0 | 1 = 0,
-  ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
+  ): [LineRange[], InnerRange[][]] {
     const toBeRanges =
       withBase === 0 ? this.documentMapping.getOriginalRange() : this.documentMapping.getModifiedRange();
 
-    const changesResult: IRenderChangesInput[] = [];
-    const innerChangesResult: IRenderInnerChangesInput[] = [];
+    const changesResult: LineRange[] = [];
+    const innerChangesResult: InnerRange[][] = [];
 
     ranges.forEach((range, idx) => {
       const sameInner = innerChanges[idx];
       if (range.isTendencyRight(toBeRanges[idx])) {
-        changesResult.push({ ranges: range, type: 'remove' });
-        innerChangesResult.push({ ranges: sameInner, type: 'remove' });
+        changesResult.push(range.setType('remove'));
+        innerChangesResult.push(sameInner.map((i) => i.setType('remove')));
       } else if (range.isTendencyLeft(toBeRanges[idx])) {
-        changesResult.push({ ranges: range, type: 'insert' });
-        innerChangesResult.push({ ranges: sameInner, type: 'insert' });
+        changesResult.push(range.setType('insert'));
+        innerChangesResult.push(sameInner.map((i) => i.setType('insert')));
       } else {
-        changesResult.push({ ranges: range, type: 'modify' });
-        innerChangesResult.push({ ranges: sameInner, type: 'modify' });
+        changesResult.push(range.setType('modify'));
+        innerChangesResult.push(sameInner.map((i) => i.setType('modify')));
       }
     });
 
     return [changesResult, innerChangesResult];
   }
 
-  protected renderDecorations(ranges: LineRange[], innerChanges: Range[][]): void {
+  protected renderDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     const [r, i] = this.prepareRenderDecorations(ranges, innerChanges);
     this.decorations
       .setRetainDecoration(this.getRetainDecoration())

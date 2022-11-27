@@ -5,6 +5,10 @@ import { IModelDecorationOptions } from '../../monaco-api/editor';
 
 import { LineRange } from './model/line-range';
 
+export interface IRangeContrast {
+  type: LineRangeType;
+}
+
 export interface IBaseCodeEditor {
   mount(): void;
 }

@@ -1,12 +1,12 @@
 import { Injectable } from '@opensumi/di';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Margin } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/viewParts/margin/margin';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
+import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EDiffRangeTurn, EditorViewType, IGNORE } from '../../types';
@@ -41,7 +41,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return [];
   }
 
-  protected override prepareRenderDecorations(ranges: LineRange[], innerChanges: Range[][]) {
+  protected override prepareRenderDecorations(ranges: LineRange[], innerChanges: InnerRange[][]) {
     return super.prepareRenderDecorations(ranges, innerChanges, 1);
   }
 
@@ -72,8 +72,8 @@ export class CurrentCodeEditor extends BaseCodeEditor {
               },
             ]);
 
-            this.documentMapping.deltaQueue(range, range.calcMargin(sameRange));
-            resultView.documentMappingTurnLeft.deltaQueue(sameRange, range.calcMargin(sameRange));
+            this.documentMapping.deltaAdjacentQueue(range, range.calcMargin(sameRange));
+            resultView.documentMappingTurnLeft.deltaAdjacentQueue(range, range.calcMargin(sameRange));
 
             this.conflictActions.clearActions(posiLine);
             this.decorations.clearDecorationsByRange(range);
@@ -147,6 +147,11 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     });
 
     this.layout();
+  }
+
+  public updateDecorations(): void {
+    // const []
+    // this.decorations.updateDecorations();
   }
 
   /**

@@ -1,14 +1,28 @@
 import { IRange } from '@opensumi/monaco-editor-core';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
-export class LineRange extends MonacoLineRange {
+import { IRangeContrast, LineRangeType } from '../types';
+
+import { InnerRange } from './inner-range';
+
+export class LineRange extends MonacoLineRange implements IRangeContrast {
   static fromRange(range: IRange): LineRange {
     return new LineRange(range.startLineNumber, range.endLineNumber);
   }
 
+  private _type: LineRangeType;
+  public get type(): LineRangeType {
+    return this._type;
+  }
+
   constructor(startLineNumber: number, endLineNumberExclusive: number) {
     super(startLineNumber, endLineNumberExclusive);
+    this._type = 'insert';
+  }
+
+  public setType(v: LineRangeType): this {
+    this._type = v;
+    return this;
   }
 
   public get id(): string {
@@ -35,12 +49,12 @@ export class LineRange extends MonacoLineRange {
     return range.startLineNumber >= this.endLineNumberExclusive;
   }
 
-  public isInclude(range: LineRange | Range): boolean {
+  public isInclude(range: LineRange | InnerRange): boolean {
     if (range instanceof LineRange) {
       return (
         this.startLineNumber <= range.startLineNumber && this.endLineNumberExclusive >= range.endLineNumberExclusive
       );
-    } else if (range instanceof Range) {
+    } else if (range instanceof InnerRange) {
       if (this.isEmpty) {
         return false;
       }
@@ -55,10 +69,10 @@ export class LineRange extends MonacoLineRange {
 
   public toRange(startColumn = 0, endColumn: number = Number.MAX_SAFE_INTEGER): IRange {
     if (this.isEmpty) {
-      return Range.fromPositions({ lineNumber: this.startLineNumber, column: startColumn });
+      return InnerRange.fromPositions({ lineNumber: this.startLineNumber, column: startColumn });
     }
 
-    return Range.fromPositions(
+    return InnerRange.fromPositions(
       { lineNumber: this.startLineNumber, column: startColumn },
       { lineNumber: this.endLineNumberExclusive - 1, column: endColumn },
     );

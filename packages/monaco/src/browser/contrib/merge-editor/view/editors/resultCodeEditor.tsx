@@ -1,14 +1,10 @@
 import { Injectable } from '@opensumi/di';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
-import {
-  IModelContentChange,
-  IModelContentChangedEvent,
-} from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import { IDiffDecoration, IRenderChangesInput, IRenderInnerChangesInput } from '../../model/decorations';
+import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
+import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import { EDiffRangeTurn, EditorViewType } from '../../types';
@@ -40,27 +36,27 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   protected override prepareRenderDecorations(
     ranges: LineRange[],
-    innerChanges: Range[][],
-  ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
+    innerChanges: InnerRange[][],
+  ): [LineRange[], InnerRange[][]] {
     const toBeRanges: LineRange[] =
       this.currentBaseRange === 1
         ? this.documentMappingTurnLeft.getOriginalRange()
         : this.documentMappingTurnRight.getModifiedRange();
 
-    const changesResult: IRenderChangesInput[] = [];
-    const innerChangesResult: IRenderInnerChangesInput[] = [];
+    const changesResult: LineRange[] = [];
+    const innerChangesResult: InnerRange[][] = [];
 
     ranges.forEach((range, idx) => {
       const sameInner = innerChanges[idx];
       if (range.isTendencyLeft(toBeRanges[idx])) {
-        changesResult.push({ ranges: range, type: 'remove' });
-        innerChangesResult.push({ ranges: sameInner, type: 'remove' });
+        changesResult.push(range.setType('remove'));
+        innerChangesResult.push(sameInner.map((i) => i.setType('remove')));
       } else if (range.isTendencyRight(toBeRanges[idx])) {
-        changesResult.push({ ranges: range, type: 'insert' });
-        innerChangesResult.push({ ranges: sameInner, type: 'insert' });
+        changesResult.push(range.setType('insert'));
+        innerChangesResult.push(sameInner.map((i) => i.setType('insert')));
       } else {
-        changesResult.push({ ranges: range, type: 'modify' });
-        innerChangesResult.push({ ranges: sameInner, type: 'modify' });
+        changesResult.push(range.setType('modify'));
+        innerChangesResult.push(sameInner.map((i) => i.setType('modify')));
       }
     });
 
@@ -85,6 +81,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public getEditorViewType(): EditorViewType {
     return 'result';
+  }
+
+  public updateDecorations(): void {
+    throw new Error('Method not implemented.');
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {
