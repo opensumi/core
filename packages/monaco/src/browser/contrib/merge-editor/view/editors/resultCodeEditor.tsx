@@ -7,7 +7,7 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { EDiffRangeTurn, EditorViewType } from '../../types';
+import { EDiffRangeTurn, EditorViewType, LineRangeType } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -48,27 +48,43 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     ranges.forEach((range, idx) => {
       const sameInner = innerChanges[idx];
-      if (range.isTendencyLeft(toBeRanges[idx])) {
-        changesResult.push(range.setType('remove'));
-        innerChangesResult.push(sameInner.map((i) => i.setType('remove')));
-      } else if (range.isTendencyRight(toBeRanges[idx])) {
-        changesResult.push(range.setType('insert'));
-        innerChangesResult.push(sameInner.map((i) => i.setType('insert')));
-      } else {
-        changesResult.push(range.setType('modify'));
-        innerChangesResult.push(sameInner.map((i) => i.setType('modify')));
-      }
-    });
+      const sameRange = toBeRanges[idx];
+      const _exec = (type: LineRangeType) => {
+        changesResult.push(range.setType(type));
+        innerChangesResult.push(sameInner.map((i) => i.setType(type)));
+        const entries = this.documentMappingTurnLeft.adjacentComputeRangeMap.entries();
+        for (const [key, value] of entries) {
+          if (sameRange.id === key) {
+            this.documentMappingTurnLeft.adjacentComputeRangeMap.set(key, value.setType(type));
+          }
+        }
+      };
 
+      _exec(range.isTendencyLeft(sameRange) ? 'remove' : range.isTendencyRight(sameRange) ? 'insert' : 'modify');
+    });
     return [changesResult, innerChangesResult];
   }
 
   protected getRetainDecoration(): IDiffDecoration[] {
-    return this.decorations.getDecorations();
+    const values = this.currentBaseRange === 1 ? [] : this.documentMappingTurnLeft.getModifiedRange();
+    const retain: IDiffDecoration[] = [];
+    for (const range of values) {
+      if (!range.isEmpty) {
+        retain.push(this.decorations.createLineDecoration(range));
+      }
+    }
+    return retain;
   }
 
   protected getRetainLineWidget(): GuidelineWidget[] {
-    return this.decorations.getLineWidgets();
+    const values = this.currentBaseRange === 1 ? [] : this.documentMappingTurnLeft.getModifiedRange();
+    const retain: GuidelineWidget[] = [];
+    for (const range of values) {
+      if (range.isEmpty) {
+        retain.push(this.decorations.createGuideLineWidget(range));
+      }
+    }
+    return retain;
   }
 
   public getMonacoDecorationOptions(
@@ -84,7 +100,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public updateDecorations(): void {
-    throw new Error('Method not implemented.');
+    const toBeRanges: LineRange[] =
+      this.currentBaseRange === 1
+        ? this.documentMappingTurnLeft.getModifiedRange()
+        : this.documentMappingTurnRight.getOriginalRange();
+    this.decorations
+      .setRetainDecoration(this.getRetainDecoration())
+      .setRetainLineWidget(this.getRetainLineWidget())
+      .updateDecorations(toBeRanges, []);
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {

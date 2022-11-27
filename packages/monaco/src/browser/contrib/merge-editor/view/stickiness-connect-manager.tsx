@@ -209,19 +209,5 @@ export class StickinessConnectManager extends Disposable {
         this.computePiece('incoming');
       }),
     );
-
-    this.addDispose(
-      Event.debounce(
-        resultView.getEditor()!.onDidChangeModelContent,
-        (_, e) => e,
-        1,
-      )((e: IModelContentChangedEvent) => {
-        const { changes } = e;
-        if (changes.some((c) => c.rangeLength > 0)) {
-          this.computePiece('current');
-          this.computePiece('incoming');
-        }
-      }),
-    );
   }
 }

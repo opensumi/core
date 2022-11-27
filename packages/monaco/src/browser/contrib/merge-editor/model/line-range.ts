@@ -6,10 +6,6 @@ import { IRangeContrast, LineRangeType } from '../types';
 import { InnerRange } from './inner-range';
 
 export class LineRange extends MonacoLineRange implements IRangeContrast {
-  static fromRange(range: IRange): LineRange {
-    return new LineRange(range.startLineNumber, range.endLineNumber);
-  }
-
   private _type: LineRangeType;
   public get type(): LineRangeType {
     return this._type;
@@ -69,24 +65,24 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
 
   public toRange(startColumn = 0, endColumn: number = Number.MAX_SAFE_INTEGER): IRange {
     if (this.isEmpty) {
-      return InnerRange.fromPositions({ lineNumber: this.startLineNumber, column: startColumn });
+      return InnerRange.fromPositions({ lineNumber: this.startLineNumber, column: startColumn }).setType(this._type);
     }
 
     return InnerRange.fromPositions(
       { lineNumber: this.startLineNumber, column: startColumn },
       { lineNumber: this.endLineNumberExclusive - 1, column: endColumn },
-    );
+    ).setType(this._type);
   }
 
   public override delta(offset: number): LineRange {
-    return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive + offset);
+    return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive + offset).setType(this._type);
   }
 
   public deltaStart(offset: number): LineRange {
-    return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive);
+    return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive).setType(this._type);
   }
 
   public deltaEnd(offset: number): LineRange {
-    return new LineRange(this.startLineNumber, this.endLineNumberExclusive + offset);
+    return new LineRange(this.startLineNumber, this.endLineNumberExclusive + offset).setType(this._type);
   }
 }

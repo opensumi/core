@@ -75,10 +75,16 @@ export class CurrentCodeEditor extends BaseCodeEditor {
             this.documentMapping.deltaAdjacentQueue(range, range.calcMargin(sameRange));
             resultView.documentMappingTurnLeft.deltaAdjacentQueue(range, range.calcMargin(sameRange));
 
-            this.conflictActions.clearActions(posiLine);
-            this.decorations.clearDecorationsByRange(range);
-            resultView.decorations.clearDecorationsByRange(sameRange);
+            this.documentMapping.computeRangeMap.delete(range.id);
+            this.documentMapping.adjacentComputeRangeMap.delete(range.id);
+            this.updateDecorations();
 
+            resultView.documentMappingTurnLeft.computeRangeMap.delete(range.id);
+            resultView.documentMappingTurnLeft.adjacentComputeRangeMap.delete(range.id);
+            resultView.updateDecorations();
+            this.conflictActions.clearActions(posiLine);
+
+            this.decorations._onDidChangeDecorations.fire(this.decorations);
             return true;
           }
         }
@@ -150,8 +156,11 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public updateDecorations(): void {
-    // const []
-    // this.decorations.updateDecorations();
+    const [range] = [this.documentMapping.getOriginalRange()];
+    this.decorations
+      .setRetainDecoration(this.getRetainDecoration())
+      .setRetainLineWidget(this.getRetainLineWidget())
+      .updateDecorations(range, []);
   }
 
   /**

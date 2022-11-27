@@ -27,7 +27,7 @@ export class MergeEditorDecorations extends Disposable {
   private readonly _onDidChangeLineWidget = new Emitter<void>();
   private readonly onDidChangeLineWidget: Event<void> = this._onDidChangeLineWidget.event;
 
-  private readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
+  public readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
   public readonly onDidChangeDecorations: Event<MergeEditorDecorations> = this._onDidChangeDecorations.event;
 
   private get editor(): ICodeEditor {
@@ -53,10 +53,10 @@ export class MergeEditorDecorations extends Disposable {
     );
   }
 
-  private createLineDecoration(range: LineRange, type: LineRangeType): IDiffDecoration {
+  public createLineDecoration(range: LineRange): IDiffDecoration {
     const options = ModelDecorationOptions.register({
       description: range.id,
-      className: `merge-editor-diff-line-background ${type}`,
+      className: `merge-editor-diff-line-background ${range.type}`,
       isWholeLine: true,
     });
 
@@ -66,7 +66,7 @@ export class MergeEditorDecorations extends Disposable {
         range: {
           startLineNumber: range.startLineNumber,
           startColumn: 0,
-          endLineNumber: range.endLineNumberExclusive - 1,
+          endLineNumber: Math.max(range.startLineNumber, range.endLineNumberExclusive - 1),
           endColumn: Number.MAX_SAFE_INTEGER,
         },
         options: {
@@ -77,7 +77,7 @@ export class MergeEditorDecorations extends Disposable {
     };
   }
 
-  private createInnerCharDecoration(range: InnerRange): IDiffDecoration {
+  public createInnerCharDecoration(range: InnerRange): IDiffDecoration {
     return {
       id: '',
       editorDecoration: {
@@ -91,6 +91,13 @@ export class MergeEditorDecorations extends Disposable {
     };
   }
 
+  public createGuideLineWidget(range: LineRange): GuidelineWidget {
+    const guidelineWidget = new GuidelineWidget(this.editor);
+    guidelineWidget.create();
+    guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
+    return guidelineWidget;
+  }
+
   private setDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     this.editor.changeDecorations((accessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
@@ -101,14 +108,11 @@ export class MergeEditorDecorations extends Disposable {
 
       for (const range of ranges) {
         if (range.isEmpty) {
-          const guidelineWidget = new GuidelineWidget(this.editor);
-          guidelineWidget.create();
-          guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
-
+          const guidelineWidget = this.createGuideLineWidget(range);
           this.lineWidgetSet.add(guidelineWidget);
           this._onDidChangeLineWidget.fire();
         } else {
-          newDecorations.push(this.createLineDecoration(range, range.type));
+          newDecorations.push(this.createLineDecoration(range));
         }
       }
 
@@ -147,33 +151,6 @@ export class MergeEditorDecorations extends Disposable {
     });
 
     this.cleanUpLineWidget(this.lineWidgetSet);
-  }
-
-  public clearDecorationsByRange(range: LineRange): void {
-    if (range.isEmpty) {
-      for (const matchLineWidget of this.lineWidgetSet.values()) {
-        if (matchLineWidget.getRecordLine() === Math.max(0, range.startLineNumber - 1)) {
-          matchLineWidget.hide();
-        }
-      }
-    } else {
-      this.editor.changeDecorations((accessor) => {
-        const findLineDecoration = this.deltaDecoration.find(
-          (d) => d.editorDecoration.options.description === range.id,
-        );
-        if (findLineDecoration) {
-          accessor.removeDecoration(findLineDecoration.id);
-
-          // 找出这个 LineRange 范围内的 innerChange
-          const findInnerChange = this.deltaDecoration.filter((d) =>
-            range.isInclude(d.editorDecoration.range as InnerRange),
-          );
-          findInnerChange.forEach((inner) => {
-            accessor.removeDecoration(inner.id);
-          });
-        }
-      });
-    }
   }
 
   public updateDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {

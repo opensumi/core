@@ -12,7 +12,7 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { EditorViewType, IActionsProvider, IBaseCodeEditor } from '../../types';
+import { EditorViewType, IActionsProvider, IBaseCodeEditor, LineRangeType } from '../../types';
 import { GuidelineWidget } from '../guideline-widget';
 
 export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEditor {
@@ -136,16 +136,13 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
     ranges.forEach((range, idx) => {
       const sameInner = innerChanges[idx];
-      if (range.isTendencyRight(toBeRanges[idx])) {
-        changesResult.push(range.setType('remove'));
-        innerChangesResult.push(sameInner.map((i) => i.setType('remove')));
-      } else if (range.isTendencyLeft(toBeRanges[idx])) {
-        changesResult.push(range.setType('insert'));
-        innerChangesResult.push(sameInner.map((i) => i.setType('insert')));
-      } else {
-        changesResult.push(range.setType('modify'));
-        innerChangesResult.push(sameInner.map((i) => i.setType('modify')));
-      }
+      const sameRange = toBeRanges[idx];
+      const _exec = (type: LineRangeType) => {
+        changesResult.push(range.setType(type));
+        innerChangesResult.push(sameInner.map((i) => i.setType(type)));
+      };
+
+      _exec(range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify');
     });
 
     return [changesResult, innerChangesResult];
