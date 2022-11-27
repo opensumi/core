@@ -49,8 +49,8 @@ export class DocumentMapping extends Disposable {
     const entries = this.adjacentComputeRangeMap.entries();
     for (const pack of entries) {
       const [k, v] = pack;
-      if (v.id === range.id && this.computeRangeMap.has(v.id)) {
-        return this.computeRangeMap.get(v.id);
+      if (v.id === range.id && this.computeRangeMap.has(k)) {
+        return this.computeRangeMap.get(k);
       }
     }
   }

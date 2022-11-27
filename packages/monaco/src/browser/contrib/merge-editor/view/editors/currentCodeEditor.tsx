@@ -84,7 +84,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
             resultView.updateDecorations();
             this.conflictActions.clearActions(posiLine);
 
-            this.decorations._onDidChangeDecorations.fire(this.decorations);
+            this.decorations.launchChange();
             return true;
           }
         }

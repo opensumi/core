@@ -66,7 +66,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   protected getRetainDecoration(): IDiffDecoration[] {
-    const values = this.currentBaseRange === 1 ? [] : this.documentMappingTurnLeft.getModifiedRange();
+    if (this.currentBaseRange === 1) {
+      return [];
+    }
+
+    const values = this.documentMappingTurnLeft.getModifiedRange();
     const retain: IDiffDecoration[] = [];
     for (const range of values) {
       if (!range.isEmpty) {
@@ -77,7 +81,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   protected getRetainLineWidget(): GuidelineWidget[] {
-    const values = this.currentBaseRange === 1 ? [] : this.documentMappingTurnLeft.getModifiedRange();
+    if (this.currentBaseRange === 1) {
+      return [];
+    }
+
+    const values = this.documentMappingTurnLeft.getModifiedRange();
     const retain: GuidelineWidget[] = [];
     for (const range of values) {
       if (range.isEmpty) {

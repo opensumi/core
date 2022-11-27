@@ -27,7 +27,7 @@ export class MergeEditorDecorations extends Disposable {
   private readonly _onDidChangeLineWidget = new Emitter<void>();
   private readonly onDidChangeLineWidget: Event<void> = this._onDidChangeLineWidget.event;
 
-  public readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
+  private readonly _onDidChangeDecorations = new Emitter<MergeEditorDecorations>();
   public readonly onDidChangeDecorations: Event<MergeEditorDecorations> = this._onDidChangeDecorations.event;
 
   private get editor(): ICodeEditor {
@@ -48,9 +48,13 @@ export class MergeEditorDecorations extends Disposable {
         this.editor.onDidChangeModelDecorations,
         this.onDidChangeLineWidget,
       )(() => {
-        this._onDidChangeDecorations.fire(this);
+        this.launchChange();
       }),
     );
+  }
+
+  public launchChange(): void {
+    this._onDidChangeDecorations.fire(this);
   }
 
   public createLineDecoration(range: LineRange): IDiffDecoration {
