@@ -45,7 +45,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return super.prepareRenderDecorations(ranges, innerChanges, 1);
   }
 
-  private onActionsClick(e: IEditorMouseEvent, currentView: BaseCodeEditor, resultView: ResultCodeEditor): void {
+  private onActionsClick(e: IEditorMouseEvent, currentView: BaseCodeEditor, resultView: ResultCodeEditor): boolean {
     const element = e.target.element!;
 
     if (element.classList.contains(ACCEPT_CURRENT)) {
@@ -56,33 +56,43 @@ export class CurrentCodeEditor extends BaseCodeEditor {
         if (typeof posiLine === 'number') {
           const action = this.conflictActions.getActions(posiLine);
           if (!action) {
-            return;
+            return false;
           }
 
           const { range } = action;
-          const sameRange = resultView.documentMappingTurnLeft.sameComputeResultRange.get(range.id);
+          const sameRange = resultView.documentMappingTurnLeft.adjacentComputeRangeMap.get(range.id);
 
           const applyText = currentView.getModel()!.getValueInRange(range.toRange());
 
           if (sameRange) {
             this.conflictActions.applyLineRangeEdits(resultView.getModel()!, [
               {
-                range: sameRange as LineRange,
-                text: applyText,
+                range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
+                text: applyText + (sameRange.isEmpty ? '\n' : ''),
               },
             ]);
-            resultView.documentMappingTurnLeft.delta(sameRange as LineRange, range.length);
+
+            this.documentMapping.deltaQueue(range, range.calcMargin(sameRange));
+            resultView.documentMappingTurnLeft.deltaQueue(sameRange, range.calcMargin(sameRange));
+
+            this.conflictActions.clearActions(posiLine);
+            this.decorations.clearDecorationsByRange(range);
+            resultView.decorations.clearDecorationsByRange(sameRange);
+
+            return true;
           }
         }
       }
 
-      return;
+      return false;
     }
 
     if (element.classList.contains(IGNORE)) {
       // not implement
-      return;
+      return false;
     }
+
+    return false;
   }
 
   public getMonacoDecorationOptions(
@@ -111,7 +121,6 @@ export class CurrentCodeEditor extends BaseCodeEditor {
           return {
             range,
             decorationOptions: {
-              description: 'current editor view conflict actions',
               glyphMarginClassName: CONFLICT_ACTIONS_ICON.RIGHT + ` offset-left ${posiMark}`,
               marginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ` ${posiMark}`,
             },

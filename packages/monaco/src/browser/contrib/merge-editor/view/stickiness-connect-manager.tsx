@@ -3,13 +3,13 @@ import React, { useCallback } from 'react';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
+import { IModelContentChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor } from '../../../monaco-api/types';
 import { MergeEditorService } from '../merge-editor.service';
 import { LineRange } from '../model/line-range';
 import { StickyPieceModel } from '../model/sticky-piece';
 import { EditorViewType, LineRangeType } from '../types';
-import { flatModified, flatOriginal } from '../utils';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 
@@ -132,11 +132,9 @@ export class StickinessConnectManager extends Disposable {
 
     const view = editorType === 'current' ? this.currentView : this.incomingView;
 
-    const { computeResultRangeMapping } = view!;
-    const [originRange, modifyRange] = [
-      flatOriginal(computeResultRangeMapping),
-      flatModified(computeResultRangeMapping),
-    ];
+    const { documentMapping } = view!;
+
+    const [originRange, modifyRange] = [documentMapping.getOriginalRange(), documentMapping.getModifiedRange()];
     const lineHeight = view!.getEditor().getOption(EditorOption.lineHeight);
     const layoutInfo =
       editorType === 'current'
@@ -209,6 +207,20 @@ export class StickinessConnectManager extends Disposable {
         1,
       )(() => {
         this.computePiece('incoming');
+      }),
+    );
+
+    this.addDispose(
+      Event.debounce(
+        resultView.getEditor()!.onDidChangeModelContent,
+        (_, e) => e,
+        1,
+      )((e: IModelContentChangedEvent) => {
+        const { changes } = e;
+        if (changes.some((c) => c.rangeLength > 0)) {
+          this.computePiece('current');
+          this.computePiece('incoming');
+        }
       }),
     );
   }

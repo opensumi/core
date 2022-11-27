@@ -18,14 +18,13 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import { EditorViewType, IActionsProvider, IBaseCodeEditor } from '../../types';
-import { flatModified, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEditor {
   #actionsProvider: IActionsProvider | undefined;
   #conflictActions: ConflictActions;
 
-  protected decorations: MergeEditorDecorations;
+  public decorations: MergeEditorDecorations;
   protected editor: ICodeEditor;
 
   constructor(
@@ -103,10 +102,6 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     this.documentMapping.inputComputeResultRangeMapping(changes);
   }
 
-  public get computeResultRangeMapping(): LineRangeMapping[] {
-    return this.documentMapping.computeResultRangeMapping;
-  }
-
   public abstract documentMapping: DocumentMapping;
 
   public abstract getEditorViewType(): EditorViewType;
@@ -137,7 +132,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     withBase: 0 | 1 = 0,
   ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
     const toBeRanges =
-      withBase === 0 ? flatOriginal(this.computeResultRangeMapping) : flatModified(this.computeResultRangeMapping);
+      withBase === 0 ? this.documentMapping.getOriginalRange() : this.documentMapping.getModifiedRange();
 
     const changesResult: IRenderChangesInput[] = [];
     const innerChangesResult: IRenderInnerChangesInput[] = [];

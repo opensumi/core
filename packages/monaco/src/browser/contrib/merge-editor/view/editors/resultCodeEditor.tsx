@@ -1,6 +1,10 @@
 import { Injectable } from '@opensumi/di';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
+import {
+  IModelContentChange,
+  IModelContentChangedEvent,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration, IRenderChangesInput, IRenderInnerChangesInput } from '../../model/decorations';
@@ -27,17 +31,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
   public documentMappingTurnLeft: DocumentMapping;
   public documentMappingTurnRight: DocumentMapping;
 
-  public override get computeResultRangeMapping(): LineRangeMapping[] {
-    return this.currentBaseRange === 1
-      ? this.documentMappingTurnLeft.computeResultRangeMapping
-      : this.documentMappingTurnRight.computeResultRangeMapping;
-  }
-
   public override mount(): void {
     super.mount();
 
-    this.documentMappingTurnLeft = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.MODIFIED]);
-    this.documentMappingTurnRight = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.ORIGIN]);
+    this.documentMappingTurnLeft = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.ORIGIN]);
+    this.documentMappingTurnRight = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.MODIFIED]);
   }
 
   protected override prepareRenderDecorations(
@@ -46,8 +44,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
   ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
     const toBeRanges: LineRange[] =
       this.currentBaseRange === 1
-        ? flatOriginal(this.computeResultRangeMapping)
-        : flatModified(this.computeResultRangeMapping);
+        ? this.documentMappingTurnLeft.getOriginalRange()
+        : this.documentMappingTurnRight.getModifiedRange();
 
     const changesResult: IRenderChangesInput[] = [];
     const innerChangesResult: IRenderInnerChangesInput[] = [];

@@ -1,5 +1,5 @@
 import { Injectable, Optional } from '@opensumi/di';
-import { Disposable, match } from '@opensumi/ide-core-common';
+import { Disposable } from '@opensumi/ide-core-common';
 
 import { ICodeEditor } from '../../../monaco-api/types';
 import { EDiffRangeTurn } from '../types';
@@ -15,8 +15,8 @@ import { LineRangeMapping } from './line-range-mapping';
  */
 @Injectable({ multiple: false })
 export class DocumentMapping extends Disposable {
-  #computeResultRangeMapping: LineRangeMapping[] = [];
-  public sameComputeResultRange: Map<string, LineRange> = new Map();
+  public adjacentComputeRangeMap: Map<string, LineRange> = new Map();
+  public computeRangeMap: Map<string, LineRange> = new Map();
 
   private get editor(): ICodeEditor {
     return this.codeEditor.getEditor();
@@ -29,51 +29,54 @@ export class DocumentMapping extends Disposable {
     super();
   }
 
-  private reverse(id: string): string {
-    const entries = this.sameComputeResultRange.entries();
-    for (const pack of entries) {
-      const [k, v] = pack;
-      if (v.id === id) {
-        return k;
-      }
-    }
-    return '';
+  public getOriginalRange(): LineRange[] {
+    return Array.from(
+      this.diffRangeTurn === EDiffRangeTurn.ORIGIN
+        ? this.computeRangeMap.values()
+        : this.adjacentComputeRangeMap.values(),
+    );
   }
 
-  private updateComputeResultRangeMapping(): void {}
+  public getModifiedRange(): LineRange[] {
+    return Array.from(
+      this.diffRangeTurn === EDiffRangeTurn.ORIGIN
+        ? this.adjacentComputeRangeMap.values()
+        : this.computeRangeMap.values(),
+    );
+  }
+
+  public reverse(range: LineRange): LineRange | undefined {
+    const entries = this.adjacentComputeRangeMap.entries();
+    for (const pack of entries) {
+      const [k, v] = pack;
+      if (v.id === range.id && this.computeRangeMap.has(v.id)) {
+        return this.computeRangeMap.get(v.id);
+      }
+    }
+  }
 
   public inputComputeResultRangeMapping(changes: LineRangeMapping[]): void {
-    this.#computeResultRangeMapping = changes;
-
     const [originalRange, modifiedRange] = [flatOriginal(changes), flatModified(changes)];
 
     if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {
-      originalRange.forEach((range, idx) => {
-        this.sameComputeResultRange.set(range.id, modifiedRange[idx]);
+      modifiedRange.forEach((range, idx) => {
+        this.computeRangeMap.set(range.id, range);
+        this.adjacentComputeRangeMap.set(range.id, originalRange[idx]);
       });
     } else if (this.diffRangeTurn === EDiffRangeTurn.ORIGIN) {
-      modifiedRange.forEach((range, idx) => {
-        this.sameComputeResultRange.set(range.id, originalRange[idx]);
+      originalRange.forEach((range, idx) => {
+        this.computeRangeMap.set(range.id, range);
+        this.adjacentComputeRangeMap.set(range.id, modifiedRange[idx]);
       });
     }
   }
 
-  public get computeResultRangeMapping(): LineRangeMapping[] {
-    return this.#computeResultRangeMapping;
-  }
-
-  public delta(range: LineRange, offset: number): void {
-    const turnRanges = this.sameComputeResultRange.values();
-
-    const pickAfterRanges = Array.from(turnRanges).filter((r) => r.isAfter(range));
-
-    if (pickAfterRanges.length > 0) {
-      pickAfterRanges.forEach((pick) => {
-        const sameId = this.reverse(pick.id);
-        if (this.sameComputeResultRange.has(sameId)) {
-          this.sameComputeResultRange.set(sameId, pick.delta(offset));
-        }
-      });
+  public deltaQueue(range: LineRange, offset: number): void {
+    for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
+      const sameRange = this.adjacentComputeRangeMap.get(range.id);
+      if (sameRange && sameRange.isAfter(pick)) {
+        this.adjacentComputeRangeMap.set(key, pick.delta(offset));
+      }
     }
   }
 }

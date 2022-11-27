@@ -39,7 +39,7 @@ export interface IStickyPiece {
 
 export interface IActionsDescription {
   range: LineRange;
-  decorationOptions: IModelDecorationOptions;
+  decorationOptions: Omit<IModelDecorationOptions, 'description'>;
 }
 
 export const ACCEPT_CURRENT = 'accpet_current';
@@ -52,7 +52,7 @@ export interface IActionsProvider {
     currentView: IBaseCodeEditor,
     resultView: IBaseCodeEditor,
     incomingView: IBaseCodeEditor,
-  ) => void;
+  ) => boolean;
   mouseDownGuard?: (e: IEditorMouseEvent) => boolean;
   /**
    * 提供 actions 操作项
