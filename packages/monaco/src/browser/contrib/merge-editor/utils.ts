@@ -9,7 +9,7 @@ export const flatInnerOriginal = (changes: LineRangeMapping[]): InnerRange[][] =
   changes
     .map((c) => c.innerChanges)
     .filter(Boolean)
-    .map((m) => m!.map((m) => m.originalRange));
+    .map((m) => m!.map((m) => m.originalRange as InnerRange));
 
 export const flatModified = (changes: LineRangeMapping[]): LineRange[] =>
   changes.map((c) => c.modifiedRange as LineRange);
@@ -18,4 +18,4 @@ export const flatInnerModified = (changes: LineRangeMapping[]): InnerRange[][] =
   changes
     .map((c) => c.innerChanges)
     .filter(Boolean)
-    .map((m) => m!.map((m) => m.modifiedRange));
+    .map((m) => m!.map((m) => m.modifiedRange as InnerRange));

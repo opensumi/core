@@ -9,7 +9,7 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EDiffRangeTurn, EditorViewType, IGNORE } from '../../types';
+import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
 import { flatInnerOriginal, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -21,12 +21,8 @@ const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
 
 @Injectable({ multiple: false })
 export class CurrentCodeEditor extends BaseCodeEditor {
-  public documentMapping: DocumentMapping;
-
-  public override mount(): void {
-    super.mount();
-
-    this.documentMapping = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.ORIGIN]);
+  public get documentMapping(): DocumentMapping {
+    return this.mappingManagerService.documentMappingTurnLeft;
   }
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
@@ -60,33 +56,8 @@ export class CurrentCodeEditor extends BaseCodeEditor {
           }
 
           const { range } = action;
-          const sameRange = resultView.documentMappingTurnLeft.adjacentComputeRangeMap.get(range.id);
-
-          const applyText = currentView.getModel()!.getValueInRange(range.toRange());
-
-          if (sameRange) {
-            this.conflictActions.applyLineRangeEdits(resultView.getModel()!, [
-              {
-                range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
-                text: applyText + (sameRange.isEmpty ? '\n' : ''),
-              },
-            ]);
-
-            this.documentMapping.deltaAdjacentQueue(range, range.calcMargin(sameRange));
-            resultView.documentMappingTurnLeft.deltaAdjacentQueue(range, range.calcMargin(sameRange));
-
-            this.documentMapping.computeRangeMap.delete(range.id);
-            this.documentMapping.adjacentComputeRangeMap.delete(range.id);
-            this.updateDecorations();
-
-            resultView.documentMappingTurnLeft.computeRangeMap.delete(range.id);
-            resultView.documentMappingTurnLeft.adjacentComputeRangeMap.delete(range.id);
-            resultView.updateDecorations();
-            this.conflictActions.clearActions(posiLine);
-
-            this.decorations.launchChange();
-            return true;
-          }
+          this._onDidConflictActions.fire({ range, withViewType: 'current' });
+          return true;
         }
       }
 
@@ -114,7 +85,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
-    this.inputComputeResultRangeMapping(changes);
+    this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
 
     const [ranges, innerRanges] = [flatOriginal(changes), flatInnerOriginal(changes)];
 

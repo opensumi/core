@@ -7,7 +7,7 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { EDiffRangeTurn, EditorViewType, LineRangeType } from '../../types';
+import { EditorViewType, LineRangeType } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -24,14 +24,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
   /** @deprecated */
   public documentMapping: DocumentMapping;
 
-  public documentMappingTurnLeft: DocumentMapping;
-  public documentMappingTurnRight: DocumentMapping;
-
-  public override mount(): void {
-    super.mount();
-
-    this.documentMappingTurnLeft = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.ORIGIN]);
-    this.documentMappingTurnRight = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.MODIFIED]);
+  public get documentMappingTurnLeft(): DocumentMapping {
+    return this.mappingManagerService.documentMappingTurnLeft;
+  }
+  public get documentMappingTurnRight(): DocumentMapping {
+    return this.mappingManagerService.documentMappingTurnRight;
   }
 
   protected override prepareRenderDecorations(
@@ -122,11 +119,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
     this.currentBaseRange = baseRange;
 
     if (baseRange === 1) {
-      this.documentMappingTurnLeft.inputComputeResultRangeMapping(changes);
+      this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
       const [c, i] = [flatModified(changes), flatInnerModified(changes)];
       this.renderDecorations(c, i);
     } else if (baseRange === 0) {
-      this.documentMappingTurnRight.inputComputeResultRangeMapping(changes);
+      this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
       const [c, i] = [flatOriginal(changes), flatInnerOriginal(changes)];
       this.renderDecorations(c, i);
     }

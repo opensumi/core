@@ -69,3 +69,8 @@ export namespace CONFLICT_ACTIONS_ICON {
   export const LEFT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('left')}`;
   export const CLOSE = `conflict-actions ${IGNORE} ${getIcon('close')}`;
 }
+
+export interface IConflictActionsEvent {
+  range: LineRange;
+  withViewType: EditorViewType;
+}

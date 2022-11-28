@@ -45,6 +45,10 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return range.startLineNumber >= this.endLineNumberExclusive;
   }
 
+  public isTouches(range: LineRange): boolean {
+    return this.endLineNumberExclusive >= range.startLineNumber && range.endLineNumberExclusive >= this.startLineNumber;
+  }
+
   public isInclude(range: LineRange | InnerRange): boolean {
     if (range instanceof LineRange) {
       return (

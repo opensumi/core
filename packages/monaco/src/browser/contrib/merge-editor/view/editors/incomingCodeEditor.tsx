@@ -6,21 +6,16 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EDiffRangeTurn, EditorViewType, IGNORE } from '../../types';
+import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
 import { flatInnerModified, flatModified } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
-import { ResultCodeEditor } from './resultCodeEditor';
 
 @Injectable({ multiple: false })
 export class IncomingCodeEditor extends BaseCodeEditor {
-  public documentMapping: DocumentMapping;
-
-  public override mount(): void {
-    super.mount();
-
-    this.documentMapping = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.MODIFIED]);
+  public get documentMapping(): DocumentMapping {
+    return this.mappingManagerService.documentMappingTurnRight;
   }
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
@@ -35,12 +30,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return [];
   }
 
-  private onActionsClick(
-    e: IEditorMouseEvent,
-    currentView: BaseCodeEditor,
-    resultView: ResultCodeEditor,
-    incomingView: BaseCodeEditor,
-  ): boolean {
+  private onActionsClick(e: IEditorMouseEvent): boolean {
     const element = e.target.element!;
     const position = e.target.position;
 
@@ -51,29 +41,8 @@ export class IncomingCodeEditor extends BaseCodeEditor {
       }
 
       const { range } = action;
-      const sameRange = resultView.documentMappingTurnRight.adjacentComputeRangeMap.get(range.id);
-
-      const applyText = incomingView.getModel()!.getValueInRange(range.toRange());
-
-      if (sameRange) {
-        this.conflictActions.applyLineRangeEdits(resultView.getModel()!, [
-          {
-            range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
-            text: applyText + (sameRange.isEmpty ? '\n' : ''),
-          },
-        ]);
-
-        this.documentMapping.deltaAdjacentQueue(range, range.calcMargin(sameRange));
-        resultView.documentMappingTurnRight.deltaAdjacentQueue(range, range.calcMargin(sameRange));
-
-        this.documentMapping.computeRangeMap.delete(range.id);
-        this.updateDecorations();
-
-        resultView.documentMappingTurnRight.adjacentComputeRangeMap.delete(range.id);
-        resultView.updateDecorations();
-        this.conflictActions.clearActions(position.lineNumber);
-        return true;
-      }
+      this._onDidConflictActions.fire({ range, withViewType: 'incoming' });
+      return true;
     }
 
     if (element.classList.contains(IGNORE)) {
@@ -98,11 +67,14 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
   public updateDecorations(): void {
     const [range] = [this.documentMapping.getModifiedRange()];
-    this.decorations.setRetainDecoration(this.getRetainDecoration()).updateDecorations(range, []);
+    this.decorations
+      .setRetainDecoration(this.getRetainDecoration())
+      .setRetainLineWidget(this.getRetainLineWidget())
+      .updateDecorations(range, []);
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
-    this.inputComputeResultRangeMapping(changes);
+    this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
 
     const [ranges, innerRanges] = [flatModified(changes), flatInnerModified(changes)];
     this.renderDecorations(ranges, innerRanges);
@@ -110,7 +82,6 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     this.registerActionsProvider({
       provideActionsItems: () => {
         const decorationOptions = {
-          description: 'incoming editor view conflict actions',
           glyphMarginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ' offset-right',
           firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.LEFT,
         };

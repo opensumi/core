@@ -102,22 +102,4 @@ export class ConflictActions extends Disposable {
   public getActions(line: number): IActionsDescription | undefined {
     return this.actionsCollect.get(line);
   }
-
-  public applyLineRangeEdits(model: ITextModel, edits: { range: IRange; text: string }[]): void {
-    model.pushStackElement();
-    model.pushEditOperations(
-      null,
-      edits.map((edit) => {
-        const { range, text } = edit;
-
-        return {
-          range,
-          isAutoWhitespaceEdit: false,
-          text,
-        };
-      }),
-      () => null,
-    );
-    model.pushStackElement();
-  }
 }

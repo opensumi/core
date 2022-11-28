@@ -75,9 +75,26 @@ export class DocumentMapping extends Disposable {
     const sameRange = this.adjacentComputeRangeMap.get(range.id);
 
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
-      if (sameRange && pick.isAfter(sameRange)) {
+      if (sameRange && (pick.isTouches(sameRange) || pick.isAfter(sameRange))) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
+  }
+
+  /**
+   * 寻找下一个离 sameRange 最近的 sameRange 点
+   * @param sameRange 对位 lineRange，不一定存在于 map 中
+   * @returns 下一个最近的 lineRange
+   */
+  public huntForNextSameRange(sameRange: LineRange): LineRange | undefined {
+    const values = this.adjacentComputeRangeMap.values();
+
+    for (const range of values) {
+      if (range.isAfter(sameRange)) {
+        return range;
+      }
+    }
+
+    return undefined;
   }
 }

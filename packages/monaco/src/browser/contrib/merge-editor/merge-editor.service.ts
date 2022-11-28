@@ -4,11 +4,11 @@ import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { ComputerDiffModel } from './model/computer-diff';
+import { MappingManagerService } from './service/mapping-manager.service';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
 import { ResultCodeEditor } from './view/editors/resultCodeEditor';
-import { MappingManager } from './view/mapping-manager';
 import { ScrollSynchronizer } from './view/scroll-synchronizer';
 import { StickinessConnectManager } from './view/stickiness-connect-manager';
 
@@ -20,13 +20,15 @@ export class MergeEditorService extends Disposable {
   @Autowired(MonacoService)
   private readonly monacoService: MonacoService;
 
+  @Autowired(MappingManagerService)
+  protected readonly mappingManagerService: MappingManagerService;
+
   private currentView: CurrentCodeEditor;
   private resultView: ResultCodeEditor;
   private incomingView: IncomingCodeEditor;
 
   private computerDiffModel: ComputerDiffModel;
   private actionsManager: ActionsManager;
-  private mappingManager: MappingManager;
 
   public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
@@ -36,8 +38,7 @@ export class MergeEditorService extends Disposable {
     this.computerDiffModel = new ComputerDiffModel();
     this.scrollSynchronizer = new ScrollSynchronizer();
     this.stickinessConnectManager = new StickinessConnectManager();
-    this.actionsManager = new ActionsManager();
-    this.mappingManager = new MappingManager();
+    this.actionsManager = this.injector.get(ActionsManager, [this.mappingManagerService]);
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
@@ -52,7 +53,6 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
     this.stickinessConnectManager.mount(this.currentView, this.resultView, this.incomingView);
     this.actionsManager.mount(this.currentView, this.resultView, this.incomingView);
-    this.mappingManager.mount(this.currentView, this.resultView, this.incomingView);
   }
 
   public override dispose(): void {
@@ -63,7 +63,6 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.dispose();
     this.stickinessConnectManager.dispose();
     this.actionsManager.dispose();
-    this.mappingManager.dispose();
   }
 
   public getCurrentEditor(): ICodeEditor {
