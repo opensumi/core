@@ -1,35 +1,43 @@
 .kt_image_preview {
   height: 100%;
+  display: flex;
+
   > div {
     background-image: linear-gradient(
         45deg,
-        rgb(230, 230, 230) 25%,
+        var(--editorImagePreview-background) 25%,
         transparent 25%,
         transparent 75%,
-        rgb(230, 230, 230) 75%,
-        rgb(230, 230, 230)
+        var(--editorImagePreview-background) 75%,
+        var(--editorImagePreview-background)
       ),
       linear-gradient(
         45deg,
-        rgb(230, 230, 230) 25%,
+        var(--editorImagePreview-background) 25%,
         transparent 25%,
         transparent 75%,
-        rgb(230, 230, 230) 75%,
-        rgb(230, 230, 230)
+        var(--editorImagePreview-background) 75%,
+        var(--editorImagePreview-background)
       );
     background-size: 16px 16px;
     background-position: 0 0, 8px 8px;
-    background-color: #fff;
-    display: block;
+    background-color: var(--editor-background);
+    display: flex;
+    justify-content: center;
+    align-items: center;
     margin: 0 auto;
+    flex: 1;
+    padding: 20px;
   }
+
   img {
-    image-rendering: pixelated;
     display: block;
     margin: 0 auto;
     flex-grow: 0;
-    width: 100%;
-    height: 100%;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
   }
 }
 
