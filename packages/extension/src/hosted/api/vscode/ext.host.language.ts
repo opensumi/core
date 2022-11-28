@@ -159,41 +159,41 @@ export function createLanguagesApiFactory(
       return extHostLanguages.getLanguages();
     },
     registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
-      return extHostLanguages.registerHoverProvider(selector, provider);
+      return extHostLanguages.registerHoverProvider(selector, provider, extension);
     },
     registerCompletionItemProvider(
       selector: DocumentSelector,
       provider: CompletionItemProvider,
       ...triggerCharacters: string[]
     ): Disposable {
-      return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters);
+      return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters, extension);
     },
     registerInlineCompletionItemProvider(
       selector: vscode.DocumentSelector,
       provider: vscode.InlineCompletionItemProvider,
     ): vscode.Disposable {
-      return extHostLanguages.registerInlineCompletionsProvider(selector, provider);
+      return extHostLanguages.registerInlineCompletionsProvider(selector, provider, extension);
     },
     registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
-      return extHostLanguages.registerDefinitionProvider(selector, provider);
+      return extHostLanguages.registerDefinitionProvider(selector, provider, extension);
     },
     registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable {
-      return extHostLanguages.registerTypeDefinitionProvider(selector, provider);
+      return extHostLanguages.registerTypeDefinitionProvider(selector, provider, extension);
     },
     registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
-      return extHostLanguages.registerFoldingRangeProvider(selector, provider);
+      return extHostLanguages.registerFoldingRangeProvider(selector, provider, extension);
     },
     registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable {
-      return extHostLanguages.registerColorProvider(selector, provider);
+      return extHostLanguages.registerColorProvider(selector, provider, extension);
     },
     registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable {
-      return extHostLanguages.registerDocumentHighlightProvider(selector, provider);
+      return extHostLanguages.registerDocumentHighlightProvider(selector, provider, extension);
     },
     registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
-      return extHostLanguages.registerDocumentLinkProvider(selector, provider);
+      return extHostLanguages.registerDocumentLinkProvider(selector, provider, extension);
     },
     registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
-      return extHostLanguages.registerReferenceProvider(selector, provider);
+      return extHostLanguages.registerReferenceProvider(selector, provider, extension);
     },
     match(selector: DocumentSelector, document: TextDocument): number {
       return score(typeConvert.fromLanguageSelector(selector), document.uri, document.languageId, true);
@@ -214,16 +214,16 @@ export function createLanguagesApiFactory(
       return extHostLanguages.getDiagnostics(resource) as any;
     },
     registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider) {
-      return extHostLanguages.registerWorkspaceSymbolProvider(provider);
+      return extHostLanguages.registerWorkspaceSymbolProvider(provider, extension);
     },
     registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider) {
-      return extHostLanguages.registerDocumentSymbolProvider(selector, provider);
+      return extHostLanguages.registerDocumentSymbolProvider(selector, provider, extension);
     },
     registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
-      return extHostLanguages.registerImplementationProvider(selector, provider);
+      return extHostLanguages.registerImplementationProvider(selector, provider, extension);
     },
     registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable {
-      return extHostLanguages.registerDeclarationProvider(selector, provider);
+      return extHostLanguages.registerDeclarationProvider(selector, provider, extension);
     },
     registerCodeActionsProvider(
       selector: DocumentSelector,
@@ -233,7 +233,7 @@ export function createLanguagesApiFactory(
       return extHostLanguages.registerCodeActionsProvider(extension, selector, provider, metadata);
     },
     registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
-      return extHostLanguages.registerRenameProvider(selector, provider);
+      return extHostLanguages.registerRenameProvider(selector, provider, extension);
     },
     registerSignatureHelpProvider(
       selector: DocumentSelector,
@@ -242,16 +242,17 @@ export function createLanguagesApiFactory(
       ...remaining: string[]
     ) {
       if (typeof firstItem === 'object') {
-        return extHostLanguages.registerSignatureHelpProvider(selector, provider, firstItem);
+        return extHostLanguages.registerSignatureHelpProvider(selector, provider, firstItem, extension);
       }
       return extHostLanguages.registerSignatureHelpProvider(
         selector,
         provider,
         typeof firstItem === 'undefined' ? [] : [firstItem, ...remaining],
+        extension,
       );
     },
     registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
-      return extHostLanguages.registerCodeLensProvider(selector, provider);
+      return extHostLanguages.registerCodeLensProvider(selector, provider, extension);
     },
     registerOnTypeFormattingEditProvider(
       selector: DocumentSelector,
@@ -263,6 +264,7 @@ export function createLanguagesApiFactory(
         selector,
         provider,
         [firstTriggerCharacter].concat(moreTriggerCharacter),
+        extension,
       );
     },
     registerDocumentRangeFormattingEditProvider(
@@ -278,20 +280,20 @@ export function createLanguagesApiFactory(
       return extHostLanguages.registerDocumentFormattingEditProvider(extension, selector, provider);
     },
     registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
-      return extHostLanguages.registerSelectionRangeProvider(selector, provider);
+      return extHostLanguages.registerSelectionRangeProvider(selector, provider, extension);
     },
     registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable {
-      return extHostLanguages.registerCallHierarchyProvider(selector, provider);
+      return extHostLanguages.registerCallHierarchyProvider(selector, provider, extension);
     },
     registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable {
-      return extHostLanguages.registerTypeHierarchyProvider(selector, provider);
+      return extHostLanguages.registerTypeHierarchyProvider(selector, provider, extension);
     },
     registerDocumentSemanticTokensProvider(
       selector: DocumentSelector,
       provider: DocumentSemanticTokensProvider,
       legend: SemanticTokensLegend,
     ): Disposable {
-      return extHostLanguages.registerDocumentSemanticTokensProvider(selector, provider, legend);
+      return extHostLanguages.registerDocumentSemanticTokensProvider(selector, provider, legend, extension);
     },
     registerDocumentRangeSemanticTokensProvider(
       selector: DocumentSelector,
@@ -322,6 +324,10 @@ export function createLanguagesApiFactory(
       return extHostLanguages.createLanguageStatusItem(extension, id, selector);
     },
   };
+}
+
+class AdapterData {
+  constructor(readonly adapter: Adapter, readonly extension: IExtensionDescription) {}
 }
 
 export type Adapter =
@@ -360,7 +366,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
   private readonly rpcProtocol: IRPCProtocol;
   private callId = 0;
-  private adaptersMap = new Map<number, Adapter>();
+  private _adapter = new Map<number, AdapterData>();
   private diagnostics: Diagnostics;
 
   constructor(
@@ -404,14 +410,14 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   private createDisposable(callId: number): Disposable {
     return new Disposable(() => {
-      this.adaptersMap.delete(callId);
+      this._adapter.delete(callId);
       this.proxy.$unregister(callId);
     });
   }
 
-  private addNewAdapter(adapter: Adapter, extension?: IExtensionDescription): number {
+  private addNewAdapter(adapter: Adapter, extension: IExtensionDescription): number {
     const callId = this.nextCallId();
-    this.adaptersMap.set(callId, adapter);
+    this._adapter.set(callId, { adapter, extension });
     return callId;
   }
 
@@ -422,15 +428,15 @@ export class ExtHostLanguages implements IExtHostLanguages {
   private withAdapter<A, R>(
     handle: number,
     constructor: ConstructorOf<A>,
-    callback: (adapter: A) => Promise<R>,
+    callback: (adapter: A, extension: IExtensionDescription) => Promise<R>,
     allowCancellationError = false,
     fallbackValue: R,
   ): Promise<R> {
-    const adapter = this.adaptersMap.get(handle);
-    if (!adapter || !(adapter instanceof constructor)) {
+    const data = this._adapter.get(handle);
+    if (!data || !data.adapter || !(data.adapter instanceof constructor)) {
       return Promise.resolve(fallbackValue);
     }
-    const p = callback(adapter as A);
+    const p = callback(data.adapter as A, data.extension);
 
     p.catch((err) => {
       const isExpectedError = allowCancellationError && err instanceof CancellationError;
@@ -488,8 +494,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   // ### Hover begin
-  registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
-    const callId = this.addNewAdapter(new HoverAdapter(provider, this.documents));
+  registerHoverProvider(
+    selector: DocumentSelector,
+    provider: HoverProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new HoverAdapter(provider, this.documents), extension);
     this.proxy.$registerHoverProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -557,8 +567,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: CompletionItemProvider,
     triggerCharacters: string[],
+    extension: IExtensionDescription,
   ): Disposable {
-    const callId = this.addNewAdapter(new CompletionAdapter(provider, this.commands.converter, this.documents));
+    const callId = this.addNewAdapter(
+      new CompletionAdapter(provider, this.commands.converter, this.documents),
+      extension,
+    );
     this.proxy.$registerCompletionSupport(
       callId,
       this.transformDocumentSelector(selector),
@@ -573,8 +587,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   registerInlineCompletionsProvider(
     selector: vscode.DocumentSelector,
     provider: vscode.InlineCompletionItemProvider,
+    extension: IExtensionDescription,
   ): Disposable {
-    const callId = this.addNewAdapter(new InlineCompletionAdapter(this.documents, provider, this.commands.converter));
+    const callId = this.addNewAdapter(
+      new InlineCompletionAdapter(this.documents, provider, this.commands.converter),
+      extension,
+    );
     this.proxy.$registerInlineCompletionsSupport(callId, this.transformDocumentSelector(selector), true);
     return this.createDisposable(callId);
   }
@@ -643,8 +661,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withDurationRecord(() => this.$provideDefinition(handle, resource, position, token));
   }
 
-  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
-    const callId = this.addNewAdapter(new DefinitionAdapter(provider, this.documents));
+  registerDefinitionProvider(
+    selector: DocumentSelector,
+    provider: DefinitionProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new DefinitionAdapter(provider, this.documents), extension);
     this.proxy.$registerDefinitionProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -669,15 +691,23 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withDurationRecord(() => this.$provideTypeDefinition(handle, resource, position, token));
   }
 
-  registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable {
-    const callId = this.addNewAdapter(new TypeDefinitionAdapter(provider, this.documents));
+  registerTypeDefinitionProvider(
+    selector: DocumentSelector,
+    provider: TypeDefinitionProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new TypeDefinitionAdapter(provider, this.documents), extension);
     this.proxy.$registerTypeDefinitionProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
   // ### Type Definition provider end
 
-  registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
-    const callId = this.addNewAdapter(new FoldingProviderAdapter(this.documents, provider));
+  registerFoldingRangeProvider(
+    selector: DocumentSelector,
+    provider: FoldingRangeProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new FoldingProviderAdapter(this.documents, provider), extension);
     const eventHandle = typeof provider.onDidChangeFoldingRanges === 'function' ? this.nextCallId() : undefined;
 
     this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector), eventHandle);
@@ -707,8 +737,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   // ### Color Provider begin
-  registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable {
-    const callId = this.addNewAdapter(new ColorProviderAdapter(this.documents, provider));
+  registerColorProvider(
+    selector: DocumentSelector,
+    provider: DocumentColorProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new ColorProviderAdapter(this.documents, provider), extension);
     this.proxy.$registerDocumentColorProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -740,8 +774,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Color Provider end
 
   // ### Document Highlight Provider begin
-  registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable {
-    const callId = this.addNewAdapter(new DocumentHighlightAdapter(provider, this.documents));
+  registerDocumentHighlightProvider(
+    selector: DocumentSelector,
+    provider: DocumentHighlightProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new DocumentHighlightAdapter(provider, this.documents), extension);
     this.proxy.$registerDocumentHighlightProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -768,7 +806,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: DocumentFormattingEditProvider,
   ): Disposable {
-    const callId = this.addNewAdapter(new FormattingAdapter(provider, this.documents));
+    const callId = this.addNewAdapter(new FormattingAdapter(provider, this.documents), extension);
     this.proxy.$registerDocumentFormattingProvider(callId, extension, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -794,7 +832,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: DocumentRangeFormattingEditProvider,
   ): Disposable {
-    const callId = this.addNewAdapter(new RangeFormattingAdapter(provider, this.documents));
+    const callId = this.addNewAdapter(new RangeFormattingAdapter(provider, this.documents), extension);
     this.proxy.$registerRangeFormattingProvider(callId, extension, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -820,8 +858,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: OnTypeFormattingEditProvider,
     triggerCharacters: string[],
+    extension: IExtensionDescription,
   ): Disposable {
-    const callId = this.addNewAdapter(new OnTypeFormattingAdapter(provider, this.documents));
+    const callId = this.addNewAdapter(new OnTypeFormattingAdapter(provider, this.documents), extension);
     this.proxy.$registerOnTypeFormattingProvider(callId, this.transformDocumentSelector(selector), triggerCharacters);
     return this.createDisposable(callId);
   }
@@ -853,8 +892,15 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Document Type Formatting Provider end
 
   // ### Document Code Lens Provider begin
-  registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
-    const callId = this.addNewAdapter(new CodeLensAdapter(provider, this.documents, this.commands.converter));
+  registerCodeLensProvider(
+    selector: DocumentSelector,
+    provider: CodeLensProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(
+      new CodeLensAdapter(provider, this.documents, this.commands.converter),
+      extension,
+    );
     const eventHandle = typeof provider.onDidChangeCodeLenses === 'function' ? this.nextCallId() : undefined;
 
     this.proxy.$registerCodeLensSupport(callId, this.transformDocumentSelector(selector), eventHandle);
@@ -908,7 +954,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     metadata?: CodeActionProviderMetadata,
   ): Disposable {
     const store = new DisposableStore();
-    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics));
+    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics), extension);
     this.proxy.$registerQuickFixProvider(
       callId,
       this.transformDocumentSelector(selector),
@@ -963,16 +1009,24 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withDurationRecord(() => this.$provideImplementation(handle, resource, position));
   }
 
-  registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
-    const callId = this.addNewAdapter(new ImplementationAdapter(provider, this.documents));
+  registerImplementationProvider(
+    selector: DocumentSelector,
+    provider: ImplementationProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new ImplementationAdapter(provider, this.documents), extension);
     this.proxy.$registerImplementationProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
   // ### Implementation provider end
 
   // ### Declaration provider begin
-  registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable {
-    const callId = this.addNewAdapter(new DeclarationAdapter(provider, this.documents));
+  registerDeclarationProvider(
+    selector: DocumentSelector,
+    provider: DeclarationProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new DeclarationAdapter(provider, this.documents), extension);
     this.proxy.$registerDeclarationProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -1017,8 +1071,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     );
   }
 
-  registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
-    const callId = this.addNewAdapter(new LinkProviderAdapter(provider, this.documents));
+  registerDocumentLinkProvider(
+    selector: DocumentSelector,
+    provider: DocumentLinkProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new LinkProviderAdapter(provider, this.documents), extension);
     this.proxy.$registerDocumentLinkProvider(
       callId,
       this.transformDocumentSelector(selector),
@@ -1055,8 +1113,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withDurationRecord(() => this.$provideReferences(handle, resource, position, context, token));
   }
 
-  registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
-    const callId = this.addNewAdapter(new ReferenceAdapter(provider, this.documents));
+  registerReferenceProvider(
+    selector: DocumentSelector,
+    provider: ReferenceProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new ReferenceAdapter(provider, this.documents), extension);
     this.proxy.$registerReferenceProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -1085,8 +1147,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   // ### Document Symbol Provider begin
-  registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider): Disposable {
-    const callId = this.addNewAdapter(new OutlineAdapter(this.documents, provider));
+  registerDocumentSymbolProvider(
+    selector: DocumentSelector,
+    provider: DocumentSymbolProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new OutlineAdapter(this.documents, provider), extension);
     this.proxy.$registerOutlineSupport(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -1107,8 +1173,8 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Document Symbol Provider end
 
   // ### WorkspaceSymbol Provider begin
-  registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): Disposable {
-    const callId = this.addNewAdapter(new WorkspaceSymbolAdapter(provider));
+  registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider, extension: IExtensionDescription): Disposable {
+    const callId = this.addNewAdapter(new WorkspaceSymbolAdapter(provider), extension);
     this.proxy.$registerWorkspaceSymbolProvider(callId);
     return this.createDisposable(callId);
   }
@@ -1168,19 +1234,24 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: SignatureHelpProvider,
     metadataOrTriggerChars: string[] | SignatureHelpProviderMetadata,
+    extension: IExtensionDescription,
   ): Disposable {
     const metadata: ISerializedSignatureHelpProviderMetadata | undefined = Array.isArray(metadataOrTriggerChars)
       ? { triggerCharacters: metadataOrTriggerChars, retriggerCharacters: [] }
       : metadataOrTriggerChars;
-    const callId = this.addNewAdapter(new SignatureHelpAdapter(provider, this.documents));
+    const callId = this.addNewAdapter(new SignatureHelpAdapter(provider, this.documents), extension);
     this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), metadata);
     return this.createDisposable(callId);
   }
 
   // ### Signature help end
   // ### Rename Provider begin
-  registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
-    const callId = this.addNewAdapter(new RenameAdapter(provider, this.documents));
+  registerRenameProvider(
+    selector: DocumentSelector,
+    provider: RenameProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new RenameAdapter(provider, this.documents), extension);
     this.proxy.$registerRenameProvider(
       callId,
       this.transformDocumentSelector(selector),
@@ -1222,8 +1293,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Rename Provider end
 
   // ### smart select
-  registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
-    const callId = this.addNewAdapter(new SelectionRangeAdapter(this.documents, provider));
+  registerSelectionRangeProvider(
+    selector: DocumentSelector,
+    provider: SelectionRangeProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new SelectionRangeAdapter(this.documents, provider), extension);
     this.proxy.$registerSelectionRangeProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -1243,8 +1318,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     );
   }
 
-  registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable {
-    const callId = this.addNewAdapter(new CallHierarchyAdapter(this.documents, provider));
+  registerCallHierarchyProvider(
+    selector: DocumentSelector,
+    provider: CallHierarchyProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new CallHierarchyAdapter(this.documents, provider), extension);
     this.proxy.$registerCallHierarchyProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -1304,8 +1383,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     );
   }
 
-  registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable {
-    const callId = this.addNewAdapter(new TypeHierarchyAdapter(this.documents, provider));
+  registerTypeHierarchyProvider(
+    selector: DocumentSelector,
+    provider: TypeHierarchyProvider,
+    extension: IExtensionDescription,
+  ): Disposable {
+    const callId = this.addNewAdapter(new TypeHierarchyAdapter(this.documents, provider), extension);
     this.proxy.$registerTypeHierarchyProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
   }
@@ -1355,8 +1438,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
     selector: DocumentSelector,
     provider: DocumentSemanticTokensProvider,
     legend: SemanticTokensLegend,
+    extension: IExtensionDescription,
   ): Disposable {
-    const callId = this.addNewAdapter(new DocumentSemanticTokensAdapter(this.documents, provider));
+    const callId = this.addNewAdapter(new DocumentSemanticTokensAdapter(this.documents, provider), extension);
     this.proxy.$registerDocumentSemanticTokensProvider(callId, this.transformDocumentSelector(selector), legend);
     return this.createDisposable(callId);
   }
