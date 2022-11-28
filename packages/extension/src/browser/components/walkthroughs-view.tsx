@@ -9,7 +9,6 @@ import {
   transformLabelWithCodicon,
   useInjectable,
 } from '@opensumi/ide-core-browser';
-import { renderLabelWithIcons } from '@opensumi/ide-core-browser/lib/utils/iconLabels';
 import { IResource } from '@opensumi/ide-editor';
 import { Markdown } from '@opensumi/ide-markdown';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
@@ -138,13 +137,15 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
         const node = desc.nodes[0];
         lineElements.push(
           <div key={i.toString() + lineElements.length} title={node.title}>
-            <Button onClick={() => handleOpen(node)}>{renderLabelWithIcons(node.label)}</Button>
+            <Button onClick={() => handleOpen(node)}>
+              {transformLabelWithCodicon(node.label, {}, iconService.fromString.bind(iconService))}
+            </Button>
           </div>,
         );
       } else {
         const textNodes = desc.nodes.map((node, idx) => {
           if (typeof node === 'string') {
-            return renderLabelWithIcons(node, {}, iconService.fromString.bind(iconService));
+            return node;
           } else {
             return (
               <a key={node.label + '#' + idx} title={node.title} onClick={() => handleOpen(node)}>
@@ -167,7 +168,7 @@ const StepItem: React.FC<{ step: IWalkthroughStep; isExpanded: boolean; onSelect
   }, [description]);
 
   const renderLabel = useCallback(
-    () => renderLabelWithIcons(step.title, {}, iconService.fromString.bind(iconService)),
+    () => transformLabelWithCodicon(step.title, {}, iconService.fromString.bind(iconService)),
     [step.title],
   );
 
