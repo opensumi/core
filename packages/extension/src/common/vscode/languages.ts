@@ -350,6 +350,7 @@ export interface IExtHostLanguages {
     resource: UriComponents,
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
+    token: CancellationToken,
   ): Promise<ICodeActionListDto | undefined>;
   $resolveCodeAction(
     handle: number,
