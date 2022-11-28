@@ -976,11 +976,12 @@ export class ExtHostLanguages implements IExtHostLanguages {
     resource: Uri,
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
+    token: CancellationToken,
   ): Promise<ICodeActionListDto | undefined> {
     return this.withAdapter(
       handle,
       CodeActionAdapter,
-      (adapter) => adapter.provideCodeAction(resource, rangeOrSelection, context, this.commands.converter),
+      (adapter) => adapter.provideCodeAction(resource, rangeOrSelection, context, this.commands.converter, token),
       false,
       undefined,
     );
