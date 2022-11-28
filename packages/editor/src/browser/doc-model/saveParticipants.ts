@@ -15,7 +15,6 @@ import {
   formatLocalize,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import {} from '@opensumi/ide-extension/lib/common/vscode/converter';
 import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
