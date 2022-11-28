@@ -5,13 +5,26 @@ import { IModelDecorationOptions } from '../../monaco-api/editor';
 
 import { LineRange } from './model/line-range';
 
+export interface IRangeContrast {
+  type: LineRangeType;
+}
+
 export interface IBaseCodeEditor {
   mount(): void;
 }
 
 export type LineRangeType = 'insert' | 'modify' | 'remove';
 
-export type EditorViewType = 'current' | 'result' | 'incoming';
+export enum EditorViewType {
+  CURRENT,
+  RESULT,
+  INCOMING,
+}
+
+export enum EDiffRangeTurn {
+  ORIGIN,
+  MODIFIED,
+}
 
 export interface IStickyPiecePosition {
   top: number;
@@ -34,7 +47,7 @@ export interface IStickyPiece {
 
 export interface IActionsDescription {
   range: LineRange;
-  decorationOptions: IModelDecorationOptions;
+  decorationOptions: Omit<IModelDecorationOptions, 'description'>;
 }
 
 export const ACCEPT_CURRENT = 'accpet_current';
@@ -47,7 +60,7 @@ export interface IActionsProvider {
     currentView: IBaseCodeEditor,
     resultView: IBaseCodeEditor,
     incomingView: IBaseCodeEditor,
-  ) => void;
+  ) => boolean;
   mouseDownGuard?: (e: IEditorMouseEvent) => boolean;
   /**
    * 提供 actions 操作项
@@ -59,4 +72,10 @@ export namespace CONFLICT_ACTIONS_ICON {
   export const RIGHT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('right')}`;
   export const LEFT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('left')}`;
   export const CLOSE = `conflict-actions ${IGNORE} ${getIcon('close')}`;
+}
+
+export interface IConflictActionsEvent {
+  range: LineRange;
+  action: typeof ACCEPT_CURRENT | typeof ACCEPT_COMBINATION | typeof IGNORE;
+  withViewType: EditorViewType;
 }
