@@ -200,7 +200,6 @@ export class XTerm extends Disposable implements IXTerm {
 
   open() {
     this.raw.open(this.container);
-
     if (this.loadWebGLAddon()) {
       this.enableWebglRenderer();
     }

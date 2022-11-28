@@ -91,6 +91,7 @@ describe('extension browser test', () => {
 
     preferenceContribution.registerCommands(commandRegistry);
     commandService = injector.get<CommandService>(CommandService);
+    injector.mockCommand('editor.openUri', () => {});
   });
 
   afterEach(async () => {
