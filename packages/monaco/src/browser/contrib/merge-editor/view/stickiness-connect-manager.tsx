@@ -9,7 +9,6 @@ import { MergeEditorService } from '../merge-editor.service';
 import { LineRange } from '../model/line-range';
 import { StickyPieceModel } from '../model/sticky-piece';
 import { EditorViewType, LineRangeType } from '../types';
-import { flatModified, flatOriginal } from '../utils';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 
@@ -17,7 +16,7 @@ const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   const { leftTop, rightTop, leftBottom, rightBottom } = piece.path;
 
   const drawPath = useCallback(
-    () => `M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} L0,0 z`,
+    () => `M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} z`,
     [leftTop, rightTop, rightBottom, leftBottom, piece.width],
   );
 
@@ -122,7 +121,7 @@ export class StickinessConnectManager extends Disposable {
   }
 
   private computePiece(editorType: EditorViewType) {
-    if (editorType === 'result') {
+    if (editorType === EditorViewType.RESULT) {
       return;
     }
 
@@ -130,22 +129,20 @@ export class StickinessConnectManager extends Disposable {
       return;
     }
 
-    const view = editorType === 'current' ? this.currentView : this.incomingView;
+    const view = editorType === EditorViewType.CURRENT ? this.currentView : this.incomingView;
 
-    const { computeResultRangeMapping } = view!;
-    const [originRange, modifyRange] = [
-      flatOriginal(computeResultRangeMapping),
-      flatModified(computeResultRangeMapping),
-    ];
+    const { documentMapping } = view!;
+
+    const [originRange, modifyRange] = [documentMapping.getOriginalRange(), documentMapping.getModifiedRange()];
     const lineHeight = view!.getEditor().getOption(EditorOption.lineHeight);
     const layoutInfo =
-      editorType === 'current'
+      editorType === EditorViewType.CURRENT
         ? this.resultView!.getEditor().getLayoutInfo()
         : this.incomingView!.getEditor().getLayoutInfo();
 
     let marginWidth: number = layoutInfo.contentLeft;
 
-    const lineDecorationsWidth = (editorType === 'current' ? this.resultView : this.incomingView)!
+    const lineDecorationsWidth = (editorType === EditorViewType.CURRENT ? this.resultView : this.incomingView)!
       .getEditor()
       .getOption(EditorOption.lineDecorationsWidth);
     marginWidth -= typeof lineDecorationsWidth === 'number' ? lineDecorationsWidth : 0;
@@ -154,14 +151,14 @@ export class StickinessConnectManager extends Disposable {
       originRange,
       modifyRange,
       { marginWidth, lineHeight },
-      editorType === 'incoming' ? 1 : 0,
+      editorType === EditorViewType.INCOMING ? 1 : 0,
     ).map((p) => p.movePosition(...this.getScrollTopWithBoth(editorType)));
 
     this._onDidChangePiece.fire({ pieces, editorType });
   }
 
   public getScrollTopWithBoth(contrastType: EditorViewType): [number, number] {
-    if (contrastType === 'result') {
+    if (contrastType === EditorViewType.RESULT) {
       return [0, 0];
     }
 
@@ -172,10 +169,10 @@ export class StickinessConnectManager extends Disposable {
     let leftEditor: ICodeEditor | undefined;
     let rightEditor: ICodeEditor | undefined;
 
-    if (contrastType === 'current') {
+    if (contrastType === EditorViewType.CURRENT) {
       leftEditor = this.currentView!.getEditor();
       rightEditor = this.resultView!.getEditor();
-    } else if (contrastType === 'incoming') {
+    } else if (contrastType === EditorViewType.INCOMING) {
       leftEditor = this.resultView!.getEditor();
       rightEditor = this.incomingView!.getEditor();
     }
@@ -198,7 +195,7 @@ export class StickinessConnectManager extends Disposable {
         () => {},
         1,
       )(() => {
-        this.computePiece('current');
+        this.computePiece(EditorViewType.CURRENT);
       }),
     );
 
@@ -208,7 +205,7 @@ export class StickinessConnectManager extends Disposable {
         () => {},
         1,
       )(() => {
-        this.computePiece('incoming');
+        this.computePiece(EditorViewType.INCOMING);
       }),
     );
   }

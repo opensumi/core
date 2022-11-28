@@ -1,10 +1,12 @@
 import { Injectable } from '@opensumi/di';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
+import { IEditorMouseEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration } from '../../model/decorations';
-import { CONFLICT_ACTIONS_ICON, EditorViewType } from '../../types';
+import { DocumentMapping } from '../../model/document-mapping';
+import { LineRangeMapping } from '../../model/line-range-mapping';
+import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
 import { flatInnerModified, flatModified } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -12,7 +14,9 @@ import { BaseCodeEditor } from './baseCodeEditor';
 
 @Injectable({ multiple: false })
 export class IncomingCodeEditor extends BaseCodeEditor {
-  public computeResultRangeMapping: LineRangeMapping[] = [];
+  public get documentMapping(): DocumentMapping {
+    return this.mappingManagerService.documentMappingTurnRight;
+  }
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { readOnly: true, lineDecorationsWidth: 42 };
@@ -26,6 +30,29 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return [];
   }
 
+  private onActionsClick(e: IEditorMouseEvent): boolean {
+    const element = e.target.element!;
+    const position = e.target.position;
+
+    if (element.classList.contains(ACCEPT_CURRENT) && position) {
+      const action = this.conflictActions.getActions(position.lineNumber);
+      if (!action) {
+        return false;
+      }
+
+      const { range } = action;
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: ACCEPT_CURRENT });
+      return true;
+    }
+
+    if (element.classList.contains(IGNORE)) {
+      // not implement
+      return false;
+    }
+
+    return false;
+  }
+
   public getMonacoDecorationOptions(
     preDecorations: IModelDecorationOptions,
   ): Omit<IModelDecorationOptions, 'description'> {
@@ -35,11 +62,19 @@ export class IncomingCodeEditor extends BaseCodeEditor {
   }
 
   public getEditorViewType(): EditorViewType {
-    return 'incoming';
+    return EditorViewType.INCOMING;
+  }
+
+  public updateDecorations(): void {
+    const [range] = [this.documentMapping.getModifiedRange()];
+    this.decorations
+      .setRetainDecoration(this.getRetainDecoration())
+      .setRetainLineWidget(this.getRetainLineWidget())
+      .updateDecorations(range, []);
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
-    this.computeResultRangeMapping = changes;
+    this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
 
     const [ranges, innerRanges] = [flatModified(changes), flatInnerModified(changes)];
     this.renderDecorations(ranges, innerRanges);
@@ -47,12 +82,12 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     this.registerActionsProvider({
       provideActionsItems: () => {
         const decorationOptions = {
-          description: 'incoming editor view conflict actions',
           glyphMarginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ' offset-right',
           firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.LEFT,
         };
         return ranges.map((range) => ({ range, decorationOptions }));
       },
+      onActionsClick: this.onActionsClick,
     });
   }
 }

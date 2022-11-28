@@ -1,25 +1,15 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
-import { IRange, Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { EditorViewType, LineRangeType } from '../types';
+import { EditorViewType } from '../types';
 import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 import { GuidelineWidget } from '../view/guideline-widget';
 
+import { InnerRange } from './inner-range';
 import { LineRange } from './line-range';
-
-export interface IRenderChangesInput {
-  ranges: LineRange;
-  type: LineRangeType;
-}
-
-export interface IRenderInnerChangesInput {
-  ranges: Range[];
-  type: LineRangeType;
-}
 
 export interface IDiffDecoration {
   id: string;
@@ -58,15 +48,19 @@ export class MergeEditorDecorations extends Disposable {
         this.editor.onDidChangeModelDecorations,
         this.onDidChangeLineWidget,
       )(() => {
-        this._onDidChangeDecorations.fire(this);
+        this.launchChange();
       }),
     );
   }
 
-  private createLineDecoration(range: LineRange, type: LineRangeType): IDiffDecoration {
+  public launchChange(): void {
+    this._onDidChangeDecorations.fire(this);
+  }
+
+  public createLineDecoration(range: LineRange): IDiffDecoration {
     const options = ModelDecorationOptions.register({
-      description: 'merge-editor-diff-line',
-      className: `merge-editor-diff-line-background ${type}`,
+      description: range.id,
+      className: `merge-editor-diff-line-background ${range.type}`,
       isWholeLine: true,
     });
 
@@ -76,7 +70,7 @@ export class MergeEditorDecorations extends Disposable {
         range: {
           startLineNumber: range.startLineNumber,
           startColumn: 0,
-          endLineNumber: range.endLineNumberExclusive - 1,
+          endLineNumber: Math.max(range.startLineNumber, range.endLineNumberExclusive - 1),
           endColumn: Number.MAX_SAFE_INTEGER,
         },
         options: {
@@ -87,21 +81,28 @@ export class MergeEditorDecorations extends Disposable {
     };
   }
 
-  private createInnerCharDecoration(range: IRange, type: LineRangeType): IDiffDecoration {
+  public createInnerCharDecoration(range: InnerRange): IDiffDecoration {
     return {
       id: '',
       editorDecoration: {
         range,
         options: ModelDecorationOptions.register({
-          description: 'merge-editor-diff-inner-char',
-          className: `merge-editor-diff-inner-char-background ${type}`,
+          description: range.toString(),
+          className: `merge-editor-diff-inner-char-background ${range.type}`,
           isWholeLine: false,
         }),
       },
     };
   }
 
-  private setDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
+  public createGuideLineWidget(range: LineRange): GuidelineWidget {
+    const guidelineWidget = new GuidelineWidget(this.editor);
+    guidelineWidget.create();
+    guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
+    return guidelineWidget;
+  }
+
+  private setDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     this.editor.changeDecorations((accessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
       this.retainLineWidgetSet.forEach((widget) => {
@@ -110,23 +111,19 @@ export class MergeEditorDecorations extends Disposable {
       });
 
       for (const range of ranges) {
-        if (range.ranges.isEmpty) {
-          const guidelineWidget = new GuidelineWidget(this.editor);
-          guidelineWidget.create();
-          guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, range.ranges.startLineNumber - 1));
-
+        if (range.isEmpty) {
+          const guidelineWidget = this.createGuideLineWidget(range);
           this.lineWidgetSet.add(guidelineWidget);
           this._onDidChangeLineWidget.fire();
         } else {
-          newDecorations.push(this.createLineDecoration(range.ranges, range.type));
+          newDecorations.push(this.createLineDecoration(range));
         }
       }
 
       for (const innerRange of innerChanges) {
-        const { ranges, type } = innerRange;
-        for (const range of ranges) {
+        for (const range of innerRange) {
           if (!range.isEmpty()) {
-            newDecorations.push(this.createInnerCharDecoration(range, type));
+            newDecorations.push(this.createInnerCharDecoration(range));
           }
         }
       }
@@ -160,7 +157,7 @@ export class MergeEditorDecorations extends Disposable {
     this.cleanUpLineWidget(this.lineWidgetSet);
   }
 
-  public updateDecorations(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
+  public updateDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     this.clearDecorations();
     this.render(ranges, innerChanges);
   }
@@ -187,7 +184,7 @@ export class MergeEditorDecorations extends Disposable {
     return this;
   }
 
-  public render(ranges: IRenderChangesInput[], innerChanges: IRenderInnerChangesInput[]): void {
+  public render(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     this.setDecorations(ranges, innerChanges);
   }
 
