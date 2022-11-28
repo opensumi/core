@@ -4,6 +4,7 @@ import { useInjectable } from '@opensumi/ide-core-browser';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 
 import { MergeEditorService } from '../merge-editor.service';
+import { EditorViewType } from '../types';
 
 import { WithViewStickinessConnectComponent } from './stickiness-connect-manager';
 
@@ -38,9 +39,13 @@ export const Grid = () => {
           <div className={'currentEditorContainer'} ref={currentEditorContainer}></div>
         </div>
         <div className={'editor-container-arrange'}>
-          <WithViewStickinessConnectComponent contrastType={'current'}></WithViewStickinessConnectComponent>
+          <WithViewStickinessConnectComponent
+            contrastType={EditorViewType.CURRENT}
+          ></WithViewStickinessConnectComponent>
           <div className={'resultEditorContainer'} ref={resultEditorContainer}></div>
-          <WithViewStickinessConnectComponent contrastType={'incoming'}></WithViewStickinessConnectComponent>
+          <WithViewStickinessConnectComponent
+            contrastType={EditorViewType.INCOMING}
+          ></WithViewStickinessConnectComponent>
         </div>
         <div className={'editor-container-arrange'}>
           <div className={'incomingEditorContainer'} ref={incomingEditorContainer}></div>

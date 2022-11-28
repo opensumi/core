@@ -1,25 +1,29 @@
 import { Injectable } from '@opensumi/di';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { Margin } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/viewParts/margin/margin';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { IDiffDecoration } from '../../model/decorations';
+import { DocumentMapping } from '../../model/document-mapping';
+import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
+import { LineRangeMapping } from '../../model/line-range-mapping';
 import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
 import { flatInnerOriginal, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
+import { ResultCodeEditor } from './resultCodeEditor';
 
 // 用来寻址点击事件时的标记
 const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
 
 @Injectable({ multiple: false })
 export class CurrentCodeEditor extends BaseCodeEditor {
-  public computeResultRangeMapping: LineRangeMapping[] = [];
+  public get documentMapping(): DocumentMapping {
+    return this.mappingManagerService.documentMappingTurnLeft;
+  }
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { readOnly: true, lineNumbersMinChars: 5 };
@@ -33,11 +37,11 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return [];
   }
 
-  protected override prepareRenderDecorations(ranges: LineRange[], innerChanges: Range[][]) {
+  protected override prepareRenderDecorations(ranges: LineRange[], innerChanges: InnerRange[][]) {
     return super.prepareRenderDecorations(ranges, innerChanges, 1);
   }
 
-  private onActionsClick(e: IEditorMouseEvent): void {
+  private onActionsClick(e: IEditorMouseEvent, currentView: BaseCodeEditor, resultView: ResultCodeEditor): boolean {
     const element = e.target.element!;
 
     if (element.classList.contains(ACCEPT_CURRENT)) {
@@ -46,17 +50,26 @@ export class CurrentCodeEditor extends BaseCodeEditor {
       if (find) {
         const posiLine = Number(find.replace(ADDRESSING_TAG_CLASSNAME, ''));
         if (typeof posiLine === 'number') {
-          // not implement
+          const action = this.conflictActions.getActions(posiLine);
+          if (!action) {
+            return false;
+          }
+
+          const { range } = action;
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: ACCEPT_CURRENT });
+          return true;
         }
       }
 
-      return;
+      return false;
     }
 
     if (element.classList.contains(IGNORE)) {
       // not implement
-      return;
+      return false;
     }
+
+    return false;
   }
 
   public getMonacoDecorationOptions(
@@ -68,11 +81,11 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public getEditorViewType(): EditorViewType {
-    return 'current';
+    return EditorViewType.CURRENT;
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
-    this.computeResultRangeMapping = changes;
+    this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
 
     const [ranges, innerRanges] = [flatOriginal(changes), flatInnerOriginal(changes)];
 
@@ -85,7 +98,6 @@ export class CurrentCodeEditor extends BaseCodeEditor {
           return {
             range,
             decorationOptions: {
-              description: 'current editor view conflict actions',
               glyphMarginClassName: CONFLICT_ACTIONS_ICON.RIGHT + ` offset-left ${posiMark}`,
               marginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ` ${posiMark}`,
             },
@@ -112,6 +124,14 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     });
 
     this.layout();
+  }
+
+  public updateDecorations(): void {
+    const [range] = [this.documentMapping.getOriginalRange()];
+    this.decorations
+      .setRetainDecoration(this.getRetainDecoration())
+      .setRetainLineWidget(this.getRetainLineWidget())
+      .updateDecorations(range, []);
   }
 
   /**
