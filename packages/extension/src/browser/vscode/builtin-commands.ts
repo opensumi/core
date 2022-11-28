@@ -366,3 +366,7 @@ export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
   id: 'workbench.action.maximizeEditor',
   delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
 };
+
+export const WALKTHROUGHS_COMMAND_GET_STARTED: Command = {
+  id: 'walkthroughs.get.started',
+};

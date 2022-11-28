@@ -7,6 +7,9 @@ import { mockExtensionProps } from './extensions';
 
 @Injectable()
 export class MockExtNodeClientService implements IExtensionNodeClientService {
+  getOpenVSXRegistry(): Promise<string> {
+    return Promise.resolve('');
+  }
   getElectronMainThreadListenPath(clientId: string): Promise<string> {
     throw new Error('Method not implemented.');
   }

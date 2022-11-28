@@ -1046,6 +1046,11 @@ export const localizationBundle = {
     'task.contribute': '贡献',
     'task.cannotFindTask': '未找到 {0} 的任务，按回车键返回',
     // extension contribute
+
+    // #region walkthrough
+    'walkthroughs.welcome': '欢迎使用',
+    'walkthroughs.get.started': '打开 `入门` 演示',
+    // #endregion walkthrough
     ...browserViews,
   },
 };

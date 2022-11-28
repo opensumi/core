@@ -1,10 +1,12 @@
 import { marked, Renderer } from 'marked';
 
+export type IMarkedOptions = marked.MarkedOptions;
+
 export const createMarkedRenderer = () => new Renderer();
 
 export const parseMarkdown = (
   value: string,
-  options?: marked.MarkedOptions,
+  options?: IMarkedOptions,
   callback?: (error: any, parseResult: string) => void,
 ) => {
   if (!callback) {
@@ -17,4 +19,4 @@ export const parseMarkdown = (
   }
 };
 
-export const toMarkdownHtml = (value: string, options?: marked.MarkedOptions) => marked(value, options);
+export const toMarkdownHtml = (value: string, options?: IMarkedOptions) => marked(value, options);

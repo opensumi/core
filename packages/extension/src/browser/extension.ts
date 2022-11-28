@@ -11,7 +11,15 @@ import {
 } from '@opensumi/ide-core-browser';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
-import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
+import {
+  JSONType,
+  ExtensionService,
+  IExtension,
+  IExtensionProps,
+  IExtensionMetaData,
+  IExtensionNodeClientService,
+  ExtensionNodeServiceServerPath,
+} from '../common';
 
 import { ExtensionMetadataService } from './metadata.service';
 import { AbstractExtInstanceManagementService, ExtensionDidActivatedEvent, ExtensionWillActivateEvent } from './types';
@@ -52,6 +60,9 @@ export class Extension extends WithEventBus implements IExtension {
 
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
+
+  @Autowired(ExtensionNodeServiceServerPath)
+  private readonly extensionNodeClient: IExtensionNodeClientService;
 
   private pkgLocalizedField = new Map<string, string>();
 
@@ -107,6 +118,15 @@ export class Extension extends WithEventBus implements IExtension {
 
   set enabled(enable: boolean) {
     this._enabled = enable;
+  }
+
+  get icon() {
+    return this.packageJSON.icon && this.uri && this.extensionLocation.toString() + `/${this.packageJSON.icon}`;
+  }
+
+  async getDefaultIcon() {
+    const registry = await this.extensionNodeClient.getOpenVSXRegistry();
+    return registry + '/default-icon.png';
   }
 
   disable() {

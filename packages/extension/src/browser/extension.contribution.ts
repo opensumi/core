@@ -28,6 +28,7 @@ import {
   AppConfig,
   CUSTOM_EDITOR_SCHEME,
   runWhenIdle,
+  QuickPickService,
 } from '@opensumi/ide-core-browser';
 import {
   IStatusBarService,
@@ -60,6 +61,7 @@ import {
   Serializable,
 } from './types';
 import * as VSCodeBuiltinCommands from './vscode/builtin-commands';
+import { WalkthroughsService } from './walkthroughs.service';
 
 export const getClientId = (injector: Injector) => {
   let clientId: string;
@@ -158,6 +160,9 @@ export class ExtensionCommandContribution implements CommandContribution {
   @Autowired(QuickOpenService)
   protected readonly quickOpenService: QuickOpenService;
 
+  @Autowired(QuickPickService)
+  protected readonly quickPickService: QuickPickService;
+
   @Autowired(ExtensionHostProfilerServicePath)
   private readonly extensionProfiler: IExtensionHostProfilerService;
 
@@ -187,6 +192,9 @@ export class ExtensionCommandContribution implements CommandContribution {
 
   @Autowired(AbstractExtInstanceManagementService)
   private readonly extensionInstanceManageService: AbstractExtInstanceManagementService;
+
+  @Autowired(WalkthroughsService)
+  private readonly walkthroughsService: WalkthroughsService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -365,6 +373,36 @@ export class ExtensionCommandContribution implements CommandContribution {
         );
       },
     });
+
+    registry.registerCommand(
+      {
+        id: VSCodeBuiltinCommands.WALKTHROUGHS_COMMAND_GET_STARTED.id,
+        category: localize('walkthroughs.welcome'),
+        label: localize('walkthroughs.get.started'),
+      },
+      {
+        execute: async (extensionId?: string) => {
+          const allWalkthrough = this.walkthroughsService.getWalkthroughs();
+
+          if (extensionId) {
+            this.walkthroughsService.openWalkthroughEditor(extensionId);
+          } else {
+            const result = await this.quickPickService.show(
+              allWalkthrough.map((w) => ({
+                label: w.title,
+                value: w.id,
+                description: w.source,
+                detail: w.description,
+              })),
+            );
+
+            if (result) {
+              this.walkthroughsService.openWalkthroughEditor(result);
+            }
+          }
+        },
+      },
+    );
 
     [
       // layout builtin commands

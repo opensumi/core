@@ -37,8 +37,12 @@ import {
   IEditorDocumentModelContentRegistry,
   IEditorDocumentModelService,
   IEditorActionRegistry,
+  EditorComponentRegistry,
+  ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
+import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { EditorActionRegistryImpl } from '@opensumi/ide-editor/lib/browser/menu/editor.menu';
+import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { BrowserRequireInterceptorContribution } from '@opensumi/ide-extension/lib/browser/require-interceptor.contribution';
@@ -46,6 +50,7 @@ import {
   AbstractExtInstanceManagementService,
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
+import { WalkthroughsService } from '@opensumi/ide-extension/lib/browser/walkthroughs.service';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
@@ -230,6 +235,45 @@ const mockExtensionProps: IExtensionProps = {
           path: './javascript.json',
         },
       ],
+      walkthroughs: [
+        {
+          id: 'sample',
+          title: 'Sample',
+          description: 'A sample walkthrough',
+          steps: [
+            {
+              id: 'runcommand',
+              title: 'Run Command',
+              description:
+                '$(git-commit) This step will run a command and check off once it has been run.\n[Run Command](command:getting-started-sample.runCommand)',
+              media: {
+                image: 'media/image.png',
+                altText: 'Empty image',
+              },
+              completionEvents: ['onCommand:getting-started-sample.runCommand'],
+            },
+            {
+              id: 'usesvg',
+              title: "Use SVG's",
+              description:
+                'Try out using SVG\'s in your content, they can react to the theme (try: ``var(--vscode-foreground)``) and even host command links (try: ``xlink:href="command:``)',
+              media: {
+                svg: 'media/image.svg',
+                altText: 'Empty svg image',
+              },
+            },
+            {
+              id: 'mac',
+              title: 'UI Platform: Mac',
+              description: 'This step will only show on a Mac.',
+              when: 'isMac',
+              media: {
+                markdown: 'media/mac.md',
+              },
+            },
+          ],
+        },
+      ],
     },
   },
   extendConfig: {
@@ -268,6 +312,7 @@ const mockExtension = {
   reset() {},
   enable() {},
   toJSON: () => mockExtensionProps,
+  getDefaultIcon: () => '',
   addDispose() {},
 };
 
@@ -311,6 +356,14 @@ export const mockKaitianExtensionProviders: Provider[] = [
   {
     token: ExtensionService,
     useClass: ExtensionServiceImpl,
+  },
+  {
+    token: EditorComponentRegistry,
+    useClass: EditorComponentRegistryImpl,
+  },
+  {
+    token: ResourceService,
+    useClass: ResourceServiceImpl,
   },
 ];
 
@@ -499,6 +552,10 @@ export function setupExtensionServiceInjector() {
     {
       token: IWorkspaceFileService,
       useClass: WorkspaceFileService,
+    },
+    {
+      token: WalkthroughsService,
+      useClass: WalkthroughsService,
     },
     BrowserRequireInterceptorContribution,
   );
