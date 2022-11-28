@@ -4,6 +4,7 @@ import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { ComputerDiffModel } from './model/computer-diff';
+import { MappingManagerService } from './service/mapping-manager.service';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -18,6 +19,9 @@ export class MergeEditorService extends Disposable {
 
   @Autowired(MonacoService)
   private readonly monacoService: MonacoService;
+
+  @Autowired(MappingManagerService)
+  protected readonly mappingManagerService: MappingManagerService;
 
   private currentView: CurrentCodeEditor;
   private resultView: ResultCodeEditor;
@@ -34,7 +38,7 @@ export class MergeEditorService extends Disposable {
     this.computerDiffModel = new ComputerDiffModel();
     this.scrollSynchronizer = new ScrollSynchronizer();
     this.stickinessConnectManager = new StickinessConnectManager();
-    this.actionsManager = new ActionsManager();
+    this.actionsManager = this.injector.get(ActionsManager, [this.mappingManagerService]);
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {

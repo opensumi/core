@@ -1,23 +1,19 @@
 import { Injector } from '@opensumi/di';
 import { MonacoService } from '@opensumi/ide-core-browser';
-import { Disposable, Event } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
-import { LineRangeMapping } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
 import { ConflictActions } from '../../model/conflict-actions';
-import {
-  IDiffDecoration,
-  IRenderChangesInput,
-  IRenderInnerChangesInput,
-  MergeEditorDecorations,
-} from '../../model/decorations';
+import { IDiffDecoration, MergeEditorDecorations } from '../../model/decorations';
+import { DocumentMapping } from '../../model/document-mapping';
+import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
-import { EditorViewType, IActionsProvider, IBaseCodeEditor } from '../../types';
-import { flatModified, flatOriginal } from '../../utils';
+import { LineRangeMapping } from '../../model/line-range-mapping';
+import { MappingManagerService } from '../../service/mapping-manager.service';
+import { EditorViewType, IActionsProvider, IBaseCodeEditor, IConflictActionsEvent, LineRangeType } from '../../types';
 import { GuidelineWidget } from '../guideline-widget';
 
 export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEditor {
@@ -26,6 +22,10 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   protected decorations: MergeEditorDecorations;
   protected editor: ICodeEditor;
+  protected mappingManagerService: MappingManagerService;
+
+  protected readonly _onDidConflictActions = new Emitter<IConflictActionsEvent>();
+  public readonly onDidConflictActions: Event<IConflictActionsEvent> = this._onDidConflictActions.event;
 
   constructor(
     private readonly container: HTMLDivElement,
@@ -59,6 +59,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
     this.decorations = this.injector.get(MergeEditorDecorations, [this, this.getEditorViewType()]);
     this.#conflictActions = this.injector.get(ConflictActions, [this]);
+    this.mappingManagerService = this.injector.get(MappingManagerService);
 
     this.addDispose(
       Event.debounce(
@@ -98,7 +99,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     return this.editor.getModel();
   }
 
-  public abstract computeResultRangeMapping: LineRangeMapping[];
+  public abstract documentMapping: DocumentMapping;
 
   public abstract getEditorViewType(): EditorViewType;
 
@@ -107,6 +108,11 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   ): Omit<IModelDecorationOptions, 'description'>;
 
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
+
+  public abstract updateDecorations(): void;
+  public launchChange(): void {
+    this.decorations.launchChange();
+  }
 
   /**
    * 每次重新绘制之前要保留哪些 decoration
@@ -124,33 +130,30 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
    */
   protected prepareRenderDecorations(
     ranges: LineRange[],
-    innerChanges: Range[][],
+    innerChanges: InnerRange[][],
     withBase: 0 | 1 = 0,
-  ): [IRenderChangesInput[], IRenderInnerChangesInput[]] {
+  ): [LineRange[], InnerRange[][]] {
     const toBeRanges =
-      withBase === 0 ? flatOriginal(this.computeResultRangeMapping) : flatModified(this.computeResultRangeMapping);
+      withBase === 0 ? this.documentMapping.getOriginalRange() : this.documentMapping.getModifiedRange();
 
-    const changesResult: IRenderChangesInput[] = [];
-    const innerChangesResult: IRenderInnerChangesInput[] = [];
+    const changesResult: LineRange[] = [];
+    const innerChangesResult: InnerRange[][] = [];
 
     ranges.forEach((range, idx) => {
       const sameInner = innerChanges[idx];
-      if (range.isTendencyRight(toBeRanges[idx])) {
-        changesResult.push({ ranges: range, type: 'remove' });
-        innerChangesResult.push({ ranges: sameInner, type: 'remove' });
-      } else if (range.isTendencyLeft(toBeRanges[idx])) {
-        changesResult.push({ ranges: range, type: 'insert' });
-        innerChangesResult.push({ ranges: sameInner, type: 'insert' });
-      } else {
-        changesResult.push({ ranges: range, type: 'modify' });
-        innerChangesResult.push({ ranges: sameInner, type: 'modify' });
-      }
+      const sameRange = toBeRanges[idx];
+      const _exec = (type: LineRangeType) => {
+        changesResult.push(range.setType(type));
+        innerChangesResult.push(sameInner.map((i) => i.setType(type)));
+      };
+
+      _exec(range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify');
     });
 
     return [changesResult, innerChangesResult];
   }
 
-  protected renderDecorations(ranges: LineRange[], innerChanges: Range[][]): void {
+  protected renderDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     const [r, i] = this.prepareRenderDecorations(ranges, innerChanges);
     this.decorations
       .setRetainDecoration(this.getRetainDecoration())
@@ -171,6 +174,14 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   public get actionsProvider(): IActionsProvider | undefined {
     return this.#actionsProvider;
+  }
+
+  public get conflictActions(): ConflictActions {
+    return this.#conflictActions;
+  }
+
+  public clearActions(range: LineRange): void {
+    this.conflictActions.clearActions(range.startLineNumber);
   }
 
   public clearDecorations(): void {
