@@ -259,7 +259,7 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     const provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {
-      throw new Error(`未找到${uri.toString()}的文档提供商`);
+      throw new Error(`No document provider found for ${uri.toString()}`);
     }
 
     const [content, readonly, languageId, eol, alwaysDirty, closeAutoSave, disposeEvenDirty] = await Promise.all([
@@ -327,10 +327,10 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
     const provider = await this.contentRegistry.getProvider(uri);
 
     if (!provider) {
-      throw new Error(`未找到${uri.toString()}的文档提供商`);
+      throw new Error(`No document provider found for ${uri.toString()}`);
     }
     if (!provider.saveDocumentModel) {
-      throw new Error(`${uri.toString()}的文档提供商不存在保存方法`);
+      throw new Error(`The document provider of ${uri.toString()} does not have a save method`);
     }
 
     const result = await provider.saveDocumentModel(uri, content, baseContent, changes, encoding, ignoreDiff, eol);
