@@ -5,9 +5,9 @@ import { pipeline } from 'stream';
 import compressing from 'compressing';
 import fs from 'fs-extra';
 import requestretry from 'requestretry';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { uuid } from '@opensumi/ide-core-common';
 import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 
@@ -133,7 +133,7 @@ export class VSXExtensionService implements IVSXExtensionBackService {
   }
 
   private async downloadExtension({ url, id }): Promise<{ downloadPath: string }> {
-    const extensionDir = path.join(os.tmpdir(), 'extension', uuidv4());
+    const extensionDir = path.join(os.tmpdir(), 'extension', uuid());
     await fs.mkdirp(extensionDir);
     const vsixFileName = id + '.vsix';
     const downloadPath = path.join(extensionDir, vsixFileName);
