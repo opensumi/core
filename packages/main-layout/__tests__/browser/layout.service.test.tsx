@@ -11,10 +11,10 @@ import {
   ViewContainerOptions,
   PreferenceService,
   Disposable,
-  ClientApp,
 } from '@opensumi/ide-core-browser';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { CommonServerPath, Deferred, ILoggerManagerClient, OS } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';

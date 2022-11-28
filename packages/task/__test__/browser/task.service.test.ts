@@ -1,5 +1,5 @@
 import { PreferenceService, IJSONSchemaRegistry, ISchemaStore, QuickOpenService } from '@opensumi/ide-core-browser';
-import { FileUri, Schemes, Uri } from '@opensumi/ide-core-common';
+import { FileUri, Uri } from '@opensumi/ide-core-common';
 import {
   HashCalculateServiceImpl,
   IHashCalculateService,
@@ -24,9 +24,9 @@ import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task
 import { ITaskService, ITaskSystem, ITaskProvider } from '@opensumi/ide-task/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
-import { Disposable } from '@opensumi/vscode-jsonrpc';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { MockWalkThroughSnippetSchemeDocumentProvider } from '../../../file-scheme/__mocks__/browser/file-doc';
 import { MonacoService } from '../../../monaco';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-registry';
@@ -34,16 +34,6 @@ import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-
 const path = require('path');
 
 const preferences: Map<string, any> = new Map();
-
-export const mockDebugConsoleInputDocumentProvider = {
-  handlesScheme: (v) => v === Schemes.walkThroughSnippet,
-  provideEditorDocumentModelContent: () => '123',
-  isReadonly: false,
-  onDidChangeContent: () => Disposable.create(() => {}),
-  preferLanguageForUri() {
-    return 'plaintext';
-  },
-};
 
 const mockedPreferenceService: any = {
   get: (k) => preferences.get(k),
@@ -145,7 +135,9 @@ describe('TaskService Test Suite', () => {
       },
     });
     const documentRegistry = injector.get<IEditorDocumentModelContentRegistry>(IEditorDocumentModelContentRegistry);
-    documentRegistry.registerEditorDocumentModelContentProvider(mockDebugConsoleInputDocumentProvider as any);
+    documentRegistry.registerEditorDocumentModelContentProvider(
+      injector.get(MockWalkThroughSnippetSchemeDocumentProvider),
+    );
     taskService = injector.get<ITaskService>(ITaskService);
     workspace = injector.get<MockWorkspaceService>(IWorkspaceService);
     const schemaRegistry: IJSONSchemaRegistry = injector.get(IJSONSchemaRegistry);

@@ -6,4 +6,19 @@ process.on('unhandledRejection', (error) => {
   }
 });
 
+// Do not log message on GitHub Actions.
+// Because these logs will affect the detection of real problems.
+const _console = global.console;
+global.console = process.env.CI
+  ? {
+      info: () => {},
+      console: () => {},
+      warn: () => {},
+      error: () => {},
+      log: () => {},
+      time: () => {},
+      timeEnd: () => {},
+    }
+  : _console;
+
 process.env.IS_JEST_TEST = true;
