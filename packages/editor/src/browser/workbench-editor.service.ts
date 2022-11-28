@@ -16,6 +16,7 @@ import {
   toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
+import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { isUndefinedOrNull, Schemes, REPORT_NAME, match, localize, MessageType } from '@opensumi/ide-core-common';
 import {
   CommandService,
@@ -90,7 +91,6 @@ import {
   RegisterEditorComponentEvent,
   AskSaveResult,
   IMergeEditorResource,
-  IMergeEditorEditor,
 } from './types';
 import { UntitledDocumentIdCounter } from './untitled-resource';
 
@@ -1137,7 +1137,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   createMergeEditor(dom: HTMLElement) {
-    // @ts-ignore
     this.mergeEditor = this.collectionService.createMergeEditor(
       dom,
       {},
@@ -1644,8 +1643,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         ]);
 
         await this.mergeEditorReady.onceReady(async () => {
-          // FIXME: 类型不对
-          // @ts-ignore
           await this.mergeEditor.open(
             current.instance.getMonacoModel(),
             result.instance.getMonacoModel(),
