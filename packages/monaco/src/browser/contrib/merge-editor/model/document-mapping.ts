@@ -1,31 +1,29 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
-import { ICodeEditor } from '../../../monaco-api/types';
 import { EDiffRangeTurn } from '../types';
 import { flatModified, flatOriginal } from '../utils';
-import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 
 import { LineRange } from './line-range';
 import { LineRangeMapping } from './line-range-mapping';
 
 /**
  * 反映在文档上的 LineRangeMapping 映射关系
- * 所有因为 conflict-actions 的操作而导致 line range mapping 对应关系需要重新计算的任务都在该类处理
+ * editor 视图要渲染的 decoration 也是从这里拿到源数据
+ * conflict actions 的各种操作如 accept current 或 ignore 等也需要计算该源数据，因为当触发 accept 后，result 视图的文本内容受到改变后，同位的映射关系位置也会发生变化
+ * 例: 点击左侧视图的 accept 操作，导致 result 视图的文本增加了 3 行（e.g 第 3 行到第 6 行增加了文本）, 那么这第 3 行之后的所有源数据的 lineRange offset 都需要增加 3
+ * 这样再后续处理其他的 conflict 操作时才能计算正确
+ *
+ * @param diffRangeTurn
+ * ORIGIN: 表示 current editor view 与 result editor view 的 lineRangeMapping 映射关系
+ * MODIFIED: 表示 result editor view 与 incoming editor view 的 lineRangeMapping 映射关系
  */
 @Injectable({ multiple: false })
 export class DocumentMapping extends Disposable {
   public adjacentComputeRangeMap: Map<string, LineRange> = new Map();
   public computeRangeMap: Map<string, LineRange> = new Map();
 
-  private get editor(): ICodeEditor {
-    return this.codeEditor.getEditor();
-  }
-
-  constructor(
-    @Optional() private readonly codeEditor: BaseCodeEditor,
-    @Optional() private readonly diffRangeTurn: EDiffRangeTurn,
-  ) {
+  constructor(@Optional() private readonly diffRangeTurn: EDiffRangeTurn) {
     super();
   }
 

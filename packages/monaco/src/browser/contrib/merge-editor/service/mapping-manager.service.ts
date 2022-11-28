@@ -17,8 +17,8 @@ export class MappingManagerService extends Disposable {
   constructor() {
     super();
 
-    this.documentMappingTurnLeft = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.ORIGIN]);
-    this.documentMappingTurnRight = this.injector.get(DocumentMapping, [this, EDiffRangeTurn.MODIFIED]);
+    this.documentMappingTurnLeft = this.injector.get(DocumentMapping, [EDiffRangeTurn.ORIGIN]);
+    this.documentMappingTurnRight = this.injector.get(DocumentMapping, [EDiffRangeTurn.MODIFIED]);
   }
 
   private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange) => void {
