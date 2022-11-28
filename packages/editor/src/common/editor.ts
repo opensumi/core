@@ -1,5 +1,6 @@
 import { Injectable } from '@opensumi/di';
 import { IScopedContextKeyService } from '@opensumi/ide-core-browser';
+import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import {
   URI,
   Event,
@@ -158,8 +159,6 @@ export interface IDiffEditor extends IDisposable {
 
   getLineChanges(): ILineChange[] | null;
 }
-
-export type IMergeEditorEditor = ICodeEditor;
 
 @Injectable()
 export abstract class EditorCollectionService {
