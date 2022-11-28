@@ -41,7 +41,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
       }
 
       const { range } = action;
-      this._onDidConflictActions.fire({ range, withViewType: 'incoming' });
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: ACCEPT_CURRENT });
       return true;
     }
 
@@ -62,7 +62,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
   }
 
   public getEditorViewType(): EditorViewType {
-    return 'incoming';
+    return EditorViewType.INCOMING;
   }
 
   public updateDecorations(): void {

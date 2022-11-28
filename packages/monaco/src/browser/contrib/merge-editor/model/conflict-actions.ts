@@ -1,10 +1,8 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
-import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { ITextModel } from '../../../monaco-api/types';
 import { IActionsDescription } from '../types';
 import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 

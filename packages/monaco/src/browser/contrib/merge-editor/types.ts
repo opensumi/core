@@ -15,7 +15,11 @@ export interface IBaseCodeEditor {
 
 export type LineRangeType = 'insert' | 'modify' | 'remove';
 
-export type EditorViewType = 'current' | 'result' | 'incoming';
+export enum EditorViewType {
+  CURRENT,
+  RESULT,
+  INCOMING,
+}
 
 export enum EDiffRangeTurn {
   ORIGIN,
@@ -72,5 +76,6 @@ export namespace CONFLICT_ACTIONS_ICON {
 
 export interface IConflictActionsEvent {
   range: LineRange;
+  action: typeof ACCEPT_CURRENT | typeof ACCEPT_COMBINATION | typeof IGNORE;
   withViewType: EditorViewType;
 }

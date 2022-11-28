@@ -101,7 +101,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public getEditorViewType(): EditorViewType {
-    return 'result';
+    return EditorViewType.RESULT;
   }
 
   public updateDecorations(): void {

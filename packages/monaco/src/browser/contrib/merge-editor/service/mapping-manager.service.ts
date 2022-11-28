@@ -4,8 +4,7 @@ import { Disposable } from '@opensumi/ide-core-common';
 import { DocumentMapping } from '../model/document-mapping';
 import { LineRange } from '../model/line-range';
 import { LineRangeMapping } from '../model/line-range-mapping';
-import { EDiffRangeTurn, EditorViewType } from '../types';
-import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
+import { EDiffRangeTurn } from '../types';
 
 @Injectable()
 export class MappingManagerService extends Disposable {

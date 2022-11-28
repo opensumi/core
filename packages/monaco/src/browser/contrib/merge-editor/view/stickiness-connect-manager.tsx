@@ -3,7 +3,6 @@ import React, { useCallback } from 'react';
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
 import { EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
-import { IModelContentChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor } from '../../../monaco-api/types';
 import { MergeEditorService } from '../merge-editor.service';
@@ -122,7 +121,7 @@ export class StickinessConnectManager extends Disposable {
   }
 
   private computePiece(editorType: EditorViewType) {
-    if (editorType === 'result') {
+    if (editorType === EditorViewType.RESULT) {
       return;
     }
 
@@ -130,20 +129,20 @@ export class StickinessConnectManager extends Disposable {
       return;
     }
 
-    const view = editorType === 'current' ? this.currentView : this.incomingView;
+    const view = editorType === EditorViewType.CURRENT ? this.currentView : this.incomingView;
 
     const { documentMapping } = view!;
 
     const [originRange, modifyRange] = [documentMapping.getOriginalRange(), documentMapping.getModifiedRange()];
     const lineHeight = view!.getEditor().getOption(EditorOption.lineHeight);
     const layoutInfo =
-      editorType === 'current'
+      editorType === EditorViewType.CURRENT
         ? this.resultView!.getEditor().getLayoutInfo()
         : this.incomingView!.getEditor().getLayoutInfo();
 
     let marginWidth: number = layoutInfo.contentLeft;
 
-    const lineDecorationsWidth = (editorType === 'current' ? this.resultView : this.incomingView)!
+    const lineDecorationsWidth = (editorType === EditorViewType.CURRENT ? this.resultView : this.incomingView)!
       .getEditor()
       .getOption(EditorOption.lineDecorationsWidth);
     marginWidth -= typeof lineDecorationsWidth === 'number' ? lineDecorationsWidth : 0;
@@ -152,14 +151,14 @@ export class StickinessConnectManager extends Disposable {
       originRange,
       modifyRange,
       { marginWidth, lineHeight },
-      editorType === 'incoming' ? 1 : 0,
+      editorType === EditorViewType.INCOMING ? 1 : 0,
     ).map((p) => p.movePosition(...this.getScrollTopWithBoth(editorType)));
 
     this._onDidChangePiece.fire({ pieces, editorType });
   }
 
   public getScrollTopWithBoth(contrastType: EditorViewType): [number, number] {
-    if (contrastType === 'result') {
+    if (contrastType === EditorViewType.RESULT) {
       return [0, 0];
     }
 
@@ -170,10 +169,10 @@ export class StickinessConnectManager extends Disposable {
     let leftEditor: ICodeEditor | undefined;
     let rightEditor: ICodeEditor | undefined;
 
-    if (contrastType === 'current') {
+    if (contrastType === EditorViewType.CURRENT) {
       leftEditor = this.currentView!.getEditor();
       rightEditor = this.resultView!.getEditor();
-    } else if (contrastType === 'incoming') {
+    } else if (contrastType === EditorViewType.INCOMING) {
       leftEditor = this.resultView!.getEditor();
       rightEditor = this.incomingView!.getEditor();
     }
@@ -196,7 +195,7 @@ export class StickinessConnectManager extends Disposable {
         () => {},
         1,
       )(() => {
-        this.computePiece('current');
+        this.computePiece(EditorViewType.CURRENT);
       }),
     );
 
@@ -206,7 +205,7 @@ export class StickinessConnectManager extends Disposable {
         () => {},
         1,
       )(() => {
-        this.computePiece('incoming');
+        this.computePiece(EditorViewType.INCOMING);
       }),
     );
   }

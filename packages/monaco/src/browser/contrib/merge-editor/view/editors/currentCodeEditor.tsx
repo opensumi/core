@@ -56,7 +56,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
           }
 
           const { range } = action;
-          this._onDidConflictActions.fire({ range, withViewType: 'current' });
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: ACCEPT_CURRENT });
           return true;
         }
       }
@@ -81,7 +81,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public getEditorViewType(): EditorViewType {
-    return 'current';
+    return EditorViewType.CURRENT;
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {

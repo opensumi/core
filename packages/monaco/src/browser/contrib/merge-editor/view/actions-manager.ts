@@ -3,7 +3,7 @@ import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { MappingManagerService } from '../service/mapping-manager.service';
-import { IActionsDescription, IConflictActionsEvent } from '../types';
+import { EditorViewType, IActionsDescription, IConflictActionsEvent } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
@@ -55,7 +55,7 @@ export class ActionsManager extends Disposable {
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
       )(({ range, withViewType }) => {
-        if (withViewType === 'current') {
+        if (withViewType === EditorViewType.CURRENT) {
           const sameRange = this.mappingManagerService.documentMappingTurnLeft.adjacentComputeRangeMap.get(range.id);
 
           const applyText = this.currentView!.getModel()!.getValueInRange(range.toRange());
@@ -77,11 +77,10 @@ export class ActionsManager extends Disposable {
 
             this.currentView!.launchChange();
             this.incomingView!.launchChange();
-            return true;
           }
         }
 
-        if (withViewType === 'incoming') {
+        if (withViewType === EditorViewType.INCOMING) {
           const sameRange = this.mappingManagerService.documentMappingTurnRight.adjacentComputeRangeMap.get(range.id);
 
           const applyText = this.incomingView!.getModel()!.getValueInRange(range.toRange());
@@ -103,7 +102,6 @@ export class ActionsManager extends Disposable {
 
             this.currentView!.launchChange();
             this.incomingView!.launchChange();
-            return true;
           }
         }
       }),
