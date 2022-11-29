@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ITerminalOptions, ITheme, Terminal } from 'xterm';
 import type { CanvasAddon as CanvasAddonType } from 'xterm-addon-canvas';
 import { FitAddon } from 'xterm-addon-fit';
@@ -96,6 +97,7 @@ export class XTerm extends Disposable implements IXTerm {
   private async enableCanvasRenderer() {
     try {
       if (!this._canvasAddon) {
+        // @ts-ignore
         this._canvasAddon = new (await import('xterm-addon-canvas')).CanvasAddon();
       }
 
@@ -114,6 +116,7 @@ export class XTerm extends Disposable implements IXTerm {
   private async enableWebglRenderer() {
     try {
       if (!this._webglAddon) {
+        // @ts-ignore
         this._webglAddon = new (await import('xterm-addon-webgl')).WebglAddon();
       }
 

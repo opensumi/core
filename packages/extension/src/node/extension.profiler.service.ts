@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { writeFile } from 'fs-extra';
 import { ProfilingSession, Profile } from 'v8-inspect-profiler';
 
@@ -38,6 +39,7 @@ export class ExtensionProfilerService implements IExtensionHostProfilerService {
   }
 
   private async doStartProfiler(port: number): Promise<ProfilingSession> {
+    // @ts-ignore
     const profiler = await import('v8-inspect-profiler');
     const session = await profiler.startProfiling({ port, checkForPaused: true });
     return {

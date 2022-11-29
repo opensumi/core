@@ -461,6 +461,7 @@ describe('FileTree should be work while on single workspace model', () => {
 
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
+      await treeModel.ensureReady;
       const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
       if (directoryNode.expanded) {
         const dispose = directoryNode.watcher.on(TreeNodeEvent.DidChangeExpansionState, async () => {
