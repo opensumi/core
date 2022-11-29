@@ -73,6 +73,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
       {
         title: formatLocalize('editor.saveActions.saveing', e.payload.uri.displayName),
         location: ProgressLocation.Notification,
+        cancellable: true,
       },
       async (progress) => {
         const preferenceActions = this.preferenceService.get<
