@@ -72,10 +72,10 @@ describe('KeyboardLayoutService should be work', () => {
       );
       const disposable = keyboardLayoutService.onKeyboardLayoutChanged(() => {
         const toggleComment = keyboardLayoutService.resolveKeyCode(KeyCode.createKeyCode('Slash+M1'));
-        expect(toggleComment.toString()).toBe(`${isOSX ? '⌘' : 'Ctrl'}+/`);
+        expect(toggleComment.toString()).toBe(`${isOSX ? 'Cmd' : 'Ctrl'}+/`);
         expect(keyboardLayoutService.getKeyboardCharacter(toggleComment.key!)).toBe('/');
         const indentLine = keyboardLayoutService.resolveKeyCode(KeyCode.createKeyCode('BracketRight+M1'));
-        expect(indentLine.toString()).toBe(`${isOSX ? '⌘' : 'Ctrl'}+]`);
+        expect(indentLine.toString()).toBe(`${isOSX ? 'Cmd' : 'Ctrl'}+]`);
         expect(keyboardLayoutService.getKeyboardCharacter(indentLine.key!)).toBe(']');
         disposable.dispose();
         done();

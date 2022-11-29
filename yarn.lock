@@ -2378,37 +2378,37 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-addons@2.21.5, @opensumi/ide-addons@workspace:packages/addons":
+"@opensumi/ide-addons@2.21.6, @opensumi/ide-addons@workspace:packages/addons":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-addons@workspace:packages/addons"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-search": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-quick-open": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
-    "@opensumi/ide-workspace-edit": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-search": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-quick-open": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
+    "@opensumi/ide-workspace-edit": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-collaboration@2.21.5, @opensumi/ide-collaboration@workspace:packages/collaboration":
+"@opensumi/ide-collaboration@2.21.6, @opensumi/ide-collaboration@workspace:packages/collaboration":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-collaboration@workspace:packages/collaboration"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
     lib0: ^0.2.51
     ws: ^8.9.0
     y-protocols: ^1.0.2
@@ -2417,29 +2417,29 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-comments@2.21.5, @opensumi/ide-comments@workspace:packages/comments":
+"@opensumi/ide-comments@2.21.6, @opensumi/ide-comments@workspace:packages/comments":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-comments@workspace:packages/comments"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-monaco-enhance": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-monaco-enhance": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
     react-mentions: ^3.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-components@2.21.5, @opensumi/ide-components@workspace:packages/components":
+"@opensumi/ide-components@2.21.6, @opensumi/ide-components@workspace:packages/components":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-components@workspace:packages/components"
   dependencies:
     "@ant-design/icons": ^4.6.4
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-utils": 2.21.5
+    "@opensumi/ide-utils": 2.21.6
     "@types/marked": ^4.0.7
     "@types/react-window": ^1.8.5
     fuzzy: ^0.1.3
@@ -2482,12 +2482,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-connection@2.21.5, @opensumi/ide-connection@workspace:packages/connection":
+"@opensumi/ide-connection@2.21.6, @opensumi/ide-connection@workspace:packages/connection":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-connection@workspace:packages/connection"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/vscode-jsonrpc": ^8.0.0-next.2
     mock-socket: ^9.0.2
@@ -2510,13 +2510,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-core-browser@2.21.5, @opensumi/ide-core-browser@workspace:packages/core-browser":
+"@opensumi/ide-core-browser@2.21.6, @opensumi/ide-core-browser@workspace:packages/core-browser":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-browser@workspace:packages/core-browser"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/vscode-debugprotocol": 1.49.0-beta.1
     "@vscode/codicons": 0.0.27
     ajv: ^6.10.0
@@ -2587,13 +2587,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-core-common@2.21.5, @opensumi/ide-core-common@workspace:packages/core-common":
+"@opensumi/ide-core-common@2.21.6, @opensumi/ide-core-common@workspace:packages/core-common":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-common@workspace:packages/core-common"
   dependencies:
     "@opensumi/di": ^1.4.0
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-utils": 2.21.5
+    "@opensumi/ide-utils": 2.21.6
   languageName: unknown
   linkType: soft
 
@@ -2611,11 +2611,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-core-electron-main@2.21.5, @opensumi/ide-core-electron-main@workspace:packages/core-electron-main":
+"@opensumi/ide-core-electron-main@2.21.6, @opensumi/ide-core-electron-main@workspace:packages/core-electron-main":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-electron-main@workspace:packages/core-electron-main"
   dependencies:
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
     tree-kill: ^1.2.2
   peerDependencies:
@@ -2623,12 +2623,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-core-node@2.21.5, @opensumi/ide-core-node@workspace:packages/core-node":
+"@opensumi/ide-core-node@2.21.6, @opensumi/ide-core-node@workspace:packages/core-node":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-core-node@workspace:packages/core-node"
   dependencies:
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
     keytar: ^7.7.0
   languageName: unknown
@@ -2645,45 +2645,45 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-debug@2.21.5, @opensumi/ide-debug@workspace:packages/debug":
+"@opensumi/ide-debug@2.21.6, @opensumi/ide-debug@workspace:packages/debug":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-debug@workspace:packages/debug"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-monaco-enhance": 2.21.5
-    "@opensumi/ide-output": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-preferences": 2.21.5
-    "@opensumi/ide-quick-open": 2.21.5
-    "@opensumi/ide-storage": 2.21.5
-    "@opensumi/ide-task": 2.21.5
-    "@opensumi/ide-terminal-next": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-variable": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
-    "@opensumi/ide-workspace-edit": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-monaco-enhance": 2.21.6
+    "@opensumi/ide-output": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-preferences": 2.21.6
+    "@opensumi/ide-quick-open": 2.21.6
+    "@opensumi/ide-storage": 2.21.6
+    "@opensumi/ide-task": 2.21.6
+    "@opensumi/ide-terminal-next": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-variable": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
+    "@opensumi/ide-workspace-edit": 2.21.6
     "@types/btoa": ^1.2.3
     anser: ^1.4.9
     btoa: ^1.2.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-decoration@2.21.5, @opensumi/ide-decoration@workspace:packages/decoration":
+"@opensumi/ide-decoration@2.21.6, @opensumi/ide-decoration@workspace:packages/decoration":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-decoration@workspace:packages/decoration"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
@@ -2729,22 +2729,22 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-editor@2.21.5, @opensumi/ide-editor@workspace:packages/editor":
+"@opensumi/ide-editor@2.21.6, @opensumi/ide-editor@workspace:packages/editor":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-editor@workspace:packages/editor"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-quick-open": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-utils": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-quick-open": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-utils": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
     vscode-oniguruma: 1.5.1
   languageName: unknown
   linkType: soft
@@ -2753,24 +2753,24 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-electron-basic@workspace:packages/electron-basic"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-utils": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-utils": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-explorer@2.21.5, @opensumi/ide-explorer@workspace:packages/explorer":
+"@opensumi/ide-explorer@2.21.6, @opensumi/ide-explorer@workspace:packages/explorer":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-explorer@workspace:packages/explorer"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
@@ -2779,32 +2779,32 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-express-file-server@workspace:packages/express-file-server"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-static-resource": 2.21.5
+    "@opensumi/ide-static-resource": 2.21.6
     "@types/koa-mount": ^4.0.1
     koa-mount: ^4.0.0
     superagent: ^5.1.0
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-extension-manager@2.21.5, @opensumi/ide-extension-manager@workspace:packages/extension-manager":
+"@opensumi/ide-extension-manager@2.21.6, @opensumi/ide-extension-manager@workspace:packages/extension-manager":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-extension-manager@workspace:packages/extension-manager"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-extension": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-markdown": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-extension": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-markdown": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-static-resource": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
     "@types/node-fetch": ^2.6.1
     "@types/requestretry": ^1.12.7
     "@types/uuid": ^8.3.4
@@ -2816,56 +2816,56 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-extension-storage@2.21.5, @opensumi/ide-extension-storage@workspace:packages/extension-storage":
+"@opensumi/ide-extension-storage@2.21.6, @opensumi/ide-extension-storage@workspace:packages/extension-storage":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-extension-storage@workspace:packages/extension-storage"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-logs": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-logs": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-extension@2.21.5, @opensumi/ide-extension@workspace:packages/extension":
+"@opensumi/ide-extension@2.21.6, @opensumi/ide-extension@workspace:packages/extension":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-extension@workspace:packages/extension"
   dependencies:
-    "@opensumi/ide-comments": 2.21.5
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
-    "@opensumi/ide-debug": 2.21.5
-    "@opensumi/ide-decoration": 2.21.5
+    "@opensumi/ide-comments": 2.21.6
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
+    "@opensumi/ide-debug": 2.21.6
+    "@opensumi/ide-decoration": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-extension-storage": 2.21.5
-    "@opensumi/ide-file-search": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-file-tree-next": 2.21.5
-    "@opensumi/ide-i18n": 2.21.5
-    "@opensumi/ide-logs": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-markdown": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-output": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-quick-open": 2.21.5
-    "@opensumi/ide-scm": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
-    "@opensumi/ide-task": 2.21.5
-    "@opensumi/ide-terminal-next": 2.21.5
-    "@opensumi/ide-testing": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-toolbar": 2.21.5
-    "@opensumi/ide-webview": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
-    "@opensumi/ide-workspace-edit": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-extension-storage": 2.21.6
+    "@opensumi/ide-file-search": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-file-tree-next": 2.21.6
+    "@opensumi/ide-i18n": 2.21.6
+    "@opensumi/ide-logs": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-markdown": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-output": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-quick-open": 2.21.6
+    "@opensumi/ide-scm": 2.21.6
+    "@opensumi/ide-static-resource": 2.21.6
+    "@opensumi/ide-task": 2.21.6
+    "@opensumi/ide-terminal-next": 2.21.6
+    "@opensumi/ide-testing": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-toolbar": 2.21.6
+    "@opensumi/ide-webview": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
+    "@opensumi/ide-workspace-edit": 2.21.6
     "@opensumi/vscode-jsonrpc": ^8.0.0-next.2
     address: ^1.1.2
     glob-to-regexp: 0.4.1
@@ -2876,46 +2876,46 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-file-scheme@2.21.5, @opensumi/ide-file-scheme@workspace:packages/file-scheme":
+"@opensumi/ide-file-scheme@2.21.6, @opensumi/ide-file-scheme@workspace:packages/file-scheme":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-scheme@workspace:packages/file-scheme"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-static-resource": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-file-search@2.21.5, @opensumi/ide-file-search@workspace:packages/file-search":
+"@opensumi/ide-file-search@2.21.6, @opensumi/ide-file-search@workspace:packages/file-search":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-search@workspace:packages/file-search"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-process": 2.21.5
+    "@opensumi/ide-process": 2.21.6
     "@opensumi/vscode-ripgrep": ^1.4.0
     fuzzy: ^0.1.3
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-file-service@2.21.5, @opensumi/ide-file-service@workspace:packages/file-service":
+"@opensumi/ide-file-service@2.21.6, @opensumi/ide-file-service@workspace:packages/file-service":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-service@workspace:packages/file-service"
   dependencies:
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-logs": 2.21.5
+    "@opensumi/ide-logs": 2.21.6
     "@parcel/watcher": 2.0.6
     drivelist: ^6.4.3
     file-type: ^12.0.0
@@ -2947,61 +2947,61 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-file-tree-next@2.21.5, @opensumi/ide-file-tree-next@workspace:packages/file-tree-next":
+"@opensumi/ide-file-tree-next@2.21.6, @opensumi/ide-file-tree-next@workspace:packages/file-tree-next":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-tree-next@workspace:packages/file-tree-next"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
-    "@opensumi/ide-decoration": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
+    "@opensumi/ide-decoration": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-explorer": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-terminal-next": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
-    "@opensumi/ide-workspace-edit": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-explorer": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-terminal-next": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
+    "@opensumi/ide-workspace-edit": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-i18n@2.21.5, @opensumi/ide-i18n@workspace:packages/i18n":
+"@opensumi/ide-i18n@2.21.6, @opensumi/ide-i18n@workspace:packages/i18n":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-i18n@workspace:packages/i18n"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-keymaps@2.21.5, @opensumi/ide-keymaps@workspace:packages/keymaps":
+"@opensumi/ide-keymaps@2.21.6, @opensumi/ide-keymaps@workspace:packages/keymaps":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-keymaps@workspace:packages/keymaps"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-preferences": 2.21.5
-    "@opensumi/ide-quick-open": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-preferences": 2.21.6
+    "@opensumi/ide-quick-open": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-logs@2.21.5, @opensumi/ide-logs@workspace:packages/logs-core":
+"@opensumi/ide-logs@2.21.6, @opensumi/ide-logs@workspace:packages/logs-core":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-logs@workspace:packages/logs-core"
   dependencies:
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
     "@types/debug": ^4.1.5
     compressing: ^1.6.2
@@ -3022,232 +3022,232 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-main-layout@2.21.5, @opensumi/ide-main-layout@workspace:packages/main-layout":
+"@opensumi/ide-main-layout@2.21.6, @opensumi/ide-main-layout@workspace:packages/main-layout":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-main-layout@workspace:packages/main-layout"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-theme": 2.21.5
+    "@opensumi/ide-theme": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-markdown@2.21.5, @opensumi/ide-markdown@workspace:packages/markdown":
+"@opensumi/ide-markdown@2.21.6, @opensumi/ide-markdown@workspace:packages/markdown":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-markdown@workspace:packages/markdown"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-webview": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-webview": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-markers@2.21.5, @opensumi/ide-markers@workspace:packages/markers":
+"@opensumi/ide-markers@2.21.6, @opensumi/ide-markers@workspace:packages/markers":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-markers@workspace:packages/markers"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-menu-bar@2.21.5, @opensumi/ide-menu-bar@workspace:packages/menu-bar":
+"@opensumi/ide-menu-bar@2.21.6, @opensumi/ide-menu-bar@workspace:packages/menu-bar":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-menu-bar@workspace:packages/menu-bar"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-monaco-enhance@2.21.5, @opensumi/ide-monaco-enhance@workspace:packages/monaco-enhance":
+"@opensumi/ide-monaco-enhance@2.21.6, @opensumi/ide-monaco-enhance@workspace:packages/monaco-enhance":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-monaco-enhance@workspace:packages/monaco-enhance"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-monaco": 2.21.5
+    "@opensumi/ide-monaco": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-monaco@2.21.5, @opensumi/ide-monaco@workspace:packages/monaco":
+"@opensumi/ide-monaco@2.21.6, @opensumi/ide-monaco@workspace:packages/monaco":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-monaco@workspace:packages/monaco"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
     "@opensumi/monaco-editor-core": 0.35.0-patch.0
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-opened-editor@2.21.5, @opensumi/ide-opened-editor@workspace:packages/opened-editor":
+"@opensumi/ide-opened-editor@2.21.6, @opensumi/ide-opened-editor@workspace:packages/opened-editor":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-opened-editor@workspace:packages/opened-editor"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-decoration": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-decoration": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-explorer": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-webview": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-explorer": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-webview": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-outline@2.21.5, @opensumi/ide-outline@workspace:packages/outline":
+"@opensumi/ide-outline@2.21.6, @opensumi/ide-outline@workspace:packages/outline":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-outline@workspace:packages/outline"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-explorer": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-explorer": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-output@2.21.5, @opensumi/ide-output@workspace:packages/output":
+"@opensumi/ide-output@2.21.6, @opensumi/ide-output@workspace:packages/output":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-output@workspace:packages/output"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
     escape-carriage: ^1.3.0
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-overlay@2.21.5, @opensumi/ide-overlay@workspace:packages/overlay":
+"@opensumi/ide-overlay@2.21.6, @opensumi/ide-overlay@workspace:packages/overlay":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-overlay@workspace:packages/overlay"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-preferences@2.21.5, @opensumi/ide-preferences@workspace:packages/preferences":
+"@opensumi/ide-preferences@2.21.6, @opensumi/ide-preferences@workspace:packages/preferences":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-preferences@workspace:packages/preferences"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-process@2.21.5, @opensumi/ide-process@workspace:packages/process":
+"@opensumi/ide-process@2.21.6, @opensumi/ide-process@workspace:packages/process":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-process@workspace:packages/process"
   dependencies:
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-quick-open@2.21.5, @opensumi/ide-quick-open@workspace:packages/quick-open":
+"@opensumi/ide-quick-open@2.21.6, @opensumi/ide-quick-open@workspace:packages/quick-open":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-quick-open@workspace:packages/quick-open"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-utils": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-static-resource": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-utils": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-remote-opener@2.21.5, @opensumi/ide-remote-opener@workspace:packages/remote-opener":
+"@opensumi/ide-remote-opener@2.21.6, @opensumi/ide-remote-opener@workspace:packages/remote-opener":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-remote-opener@workspace:packages/remote-opener"
   dependencies:
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
-    "@opensumi/ide-editor": 2.21.5
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
+    "@opensumi/ide-editor": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-scm@2.21.5, @opensumi/ide-scm@workspace:packages/scm":
+"@opensumi/ide-scm@2.21.6, @opensumi/ide-scm@workspace:packages/scm":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-scm@workspace:packages/scm"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-decoration": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-decoration": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-monaco-enhance": 2.21.5
-    "@opensumi/ide-status-bar": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-monaco-enhance": 2.21.6
+    "@opensumi/ide-status-bar": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-search@2.21.5, @opensumi/ide-search@workspace:packages/search":
+"@opensumi/ide-search@2.21.6, @opensumi/ide-search@workspace:packages/search":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-search@workspace:packages/search"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-logs": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-process": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
-    "@opensumi/ide-workspace-edit": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-logs": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-process": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
+    "@opensumi/ide-workspace-edit": 2.21.6
     "@opensumi/vscode-ripgrep": ^1.4.0
   languageName: unknown
   linkType: soft
@@ -3256,56 +3256,56 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-startup@workspace:packages/startup"
   dependencies:
-    "@opensumi/ide-addons": 2.21.5
-    "@opensumi/ide-collaboration": 2.21.5
-    "@opensumi/ide-comments": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
-    "@opensumi/ide-debug": 2.21.5
-    "@opensumi/ide-decoration": 2.21.5
+    "@opensumi/ide-addons": 2.21.6
+    "@opensumi/ide-collaboration": 2.21.6
+    "@opensumi/ide-comments": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
+    "@opensumi/ide-debug": 2.21.6
+    "@opensumi/ide-decoration": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-explorer": 2.21.5
-    "@opensumi/ide-extension": 2.21.5
-    "@opensumi/ide-extension-manager": 2.21.5
-    "@opensumi/ide-extension-storage": 2.21.5
-    "@opensumi/ide-file-scheme": 2.21.5
-    "@opensumi/ide-file-search": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-file-tree-next": 2.21.5
-    "@opensumi/ide-i18n": 2.21.5
-    "@opensumi/ide-keymaps": 2.21.5
-    "@opensumi/ide-logs": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-markdown": 2.21.5
-    "@opensumi/ide-markers": 2.21.5
-    "@opensumi/ide-menu-bar": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-monaco-enhance": 2.21.5
-    "@opensumi/ide-opened-editor": 2.21.5
-    "@opensumi/ide-outline": 2.21.5
-    "@opensumi/ide-output": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-preferences": 2.21.5
-    "@opensumi/ide-process": 2.21.5
-    "@opensumi/ide-quick-open": 2.21.5
-    "@opensumi/ide-remote-opener": 2.21.5
-    "@opensumi/ide-scm": 2.21.5
-    "@opensumi/ide-search": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
-    "@opensumi/ide-status-bar": 2.21.5
-    "@opensumi/ide-storage": 2.21.5
-    "@opensumi/ide-task": 2.21.5
-    "@opensumi/ide-terminal-next": 2.21.5
-    "@opensumi/ide-testing": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-toolbar": 2.21.5
-    "@opensumi/ide-userstorage": 2.21.5
-    "@opensumi/ide-variable": 2.21.5
-    "@opensumi/ide-webview": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
-    "@opensumi/ide-workspace-edit": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-explorer": 2.21.6
+    "@opensumi/ide-extension": 2.21.6
+    "@opensumi/ide-extension-manager": 2.21.6
+    "@opensumi/ide-extension-storage": 2.21.6
+    "@opensumi/ide-file-scheme": 2.21.6
+    "@opensumi/ide-file-search": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-file-tree-next": 2.21.6
+    "@opensumi/ide-i18n": 2.21.6
+    "@opensumi/ide-keymaps": 2.21.6
+    "@opensumi/ide-logs": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-markdown": 2.21.6
+    "@opensumi/ide-markers": 2.21.6
+    "@opensumi/ide-menu-bar": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-monaco-enhance": 2.21.6
+    "@opensumi/ide-opened-editor": 2.21.6
+    "@opensumi/ide-outline": 2.21.6
+    "@opensumi/ide-output": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-preferences": 2.21.6
+    "@opensumi/ide-process": 2.21.6
+    "@opensumi/ide-quick-open": 2.21.6
+    "@opensumi/ide-remote-opener": 2.21.6
+    "@opensumi/ide-scm": 2.21.6
+    "@opensumi/ide-search": 2.21.6
+    "@opensumi/ide-static-resource": 2.21.6
+    "@opensumi/ide-status-bar": 2.21.6
+    "@opensumi/ide-storage": 2.21.6
+    "@opensumi/ide-task": 2.21.6
+    "@opensumi/ide-terminal-next": 2.21.6
+    "@opensumi/ide-testing": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-toolbar": 2.21.6
+    "@opensumi/ide-userstorage": 2.21.6
+    "@opensumi/ide-variable": 2.21.6
+    "@opensumi/ide-webview": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
+    "@opensumi/ide-workspace-edit": 2.21.6
     "@opensumi/textmate-languages": ^2.6.1
     browserfs: ^1.4.3
     clean-webpack-plugin: ^3.0.0
@@ -3342,11 +3342,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-static-resource@2.21.5, @opensumi/ide-static-resource@workspace:packages/static-resource":
+"@opensumi/ide-static-resource@2.21.6, @opensumi/ide-static-resource@workspace:packages/static-resource":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-static-resource@workspace:packages/static-resource"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
@@ -3361,66 +3361,66 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-status-bar@2.21.5, @opensumi/ide-status-bar@workspace:packages/status-bar":
+"@opensumi/ide-status-bar@2.21.6, @opensumi/ide-status-bar@workspace:packages/status-bar":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-status-bar@workspace:packages/status-bar"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-theme": 2.14.4
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-storage@2.21.5, @opensumi/ide-storage@workspace:packages/storage":
+"@opensumi/ide-storage@2.21.6, @opensumi/ide-storage@workspace:packages/storage":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-storage@workspace:packages/storage"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-task@2.21.5, @opensumi/ide-task@workspace:packages/task":
+"@opensumi/ide-task@2.21.6, @opensumi/ide-task@workspace:packages/task":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-task@workspace:packages/task"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-output": 2.21.5
-    "@opensumi/ide-preferences": 2.21.5
-    "@opensumi/ide-terminal-next": 2.21.5
-    "@opensumi/ide-variable": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-output": 2.21.6
+    "@opensumi/ide-preferences": 2.21.6
+    "@opensumi/ide-terminal-next": 2.21.6
+    "@opensumi/ide-variable": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-terminal-next@2.21.5, @opensumi/ide-terminal-next@workspace:packages/terminal-next":
+"@opensumi/ide-terminal-next@2.21.6, @opensumi/ide-terminal-next@workspace:packages/terminal-next":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-terminal-next@workspace:packages/terminal-next"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-connection": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-connection": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-status-bar": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
-    "@opensumi/ide-variable": 2.21.5
-    "@opensumi/ide-workspace": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
+    "@opensumi/ide-status-bar": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
+    "@opensumi/ide-variable": 2.21.6
+    "@opensumi/ide-workspace": 2.21.6
     "@types/event-kit": ^2.4.0
     "@types/http-proxy": ^1.17.2
     "@types/puppeteer": ^2.0.0
@@ -3437,33 +3437,33 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-testing@2.21.5, @opensumi/ide-testing@workspace:packages/testing":
+"@opensumi/ide-testing@2.21.6, @opensumi/ide-testing@workspace:packages/testing":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-testing@workspace:packages/testing"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.1.0
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-markdown": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-monaco-enhance": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-markdown": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-monaco-enhance": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-theme@2.21.5, @opensumi/ide-theme@workspace:packages/theme":
+"@opensumi/ide-theme@2.21.6, @opensumi/ide-theme@workspace:packages/theme":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-theme@workspace:packages/theme"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-logs": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-logs": 2.21.6
+    "@opensumi/ide-static-resource": 2.21.6
   languageName: unknown
   linkType: soft
 
@@ -3481,27 +3481,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-toolbar@2.21.5, @opensumi/ide-toolbar@workspace:packages/toolbar":
+"@opensumi/ide-toolbar@2.21.6, @opensumi/ide-toolbar@workspace:packages/toolbar":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-toolbar@workspace:packages/toolbar"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-userstorage@2.21.5, @opensumi/ide-userstorage@workspace:packages/userstorage":
+"@opensumi/ide-userstorage@2.21.6, @opensumi/ide-userstorage@workspace:packages/userstorage":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-userstorage@workspace:packages/userstorage"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-utils@2.21.5, @opensumi/ide-utils@workspace:*, @opensumi/ide-utils@workspace:packages/utils":
+"@opensumi/ide-utils@2.21.6, @opensumi/ide-utils@workspace:*, @opensumi/ide-utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-utils@workspace:packages/utils"
   dependencies:
@@ -3514,59 +3514,59 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-variable@2.21.5, @opensumi/ide-variable@workspace:packages/variable":
+"@opensumi/ide-variable@2.21.6, @opensumi/ide-variable@workspace:packages/variable":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-variable@workspace:packages/variable"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-quick-open": 2.21.5
+    "@opensumi/ide-quick-open": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-webview@2.21.5, @opensumi/ide-webview@workspace:packages/webview":
+"@opensumi/ide-webview@2.21.6, @opensumi/ide-webview@workspace:packages/webview":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-webview@workspace:packages/webview"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-electron-main": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
+    "@opensumi/ide-core-electron-main": 2.21.6
+    "@opensumi/ide-core-node": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
-    "@opensumi/ide-theme": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-static-resource": 2.21.6
+    "@opensumi/ide-theme": 2.21.6
   peerDependencies:
     electron: "*"
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-workspace-edit@2.21.5, @opensumi/ide-workspace-edit@workspace:packages/workspace-edit":
+"@opensumi/ide-workspace-edit@2.21.6, @opensumi/ide-workspace-edit@workspace:packages/workspace-edit":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-workspace-edit@workspace:packages/workspace-edit"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-components": 2.21.6
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-editor": 2.21.5
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-main-layout": 2.21.5
-    "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
+    "@opensumi/ide-editor": 2.21.6
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-main-layout": 2.21.6
+    "@opensumi/ide-monaco": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-workspace@2.21.5, @opensumi/ide-workspace@workspace:packages/workspace":
+"@opensumi/ide-workspace@2.21.6, @opensumi/ide-workspace@workspace:packages/workspace":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-workspace@workspace:packages/workspace"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
+    "@opensumi/ide-core-browser": 2.21.6
+    "@opensumi/ide-core-common": 2.21.6
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
+    "@opensumi/ide-file-service": 2.21.6
+    "@opensumi/ide-overlay": 2.21.6
   languageName: unknown
   linkType: soft
 
@@ -3605,7 +3605,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/sumi@workspace:packages/types"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
+    "@opensumi/ide-components": 2.21.6
     "@types/react": ^16.9.33
     vscode-uri: 3.0.2
   languageName: unknown
