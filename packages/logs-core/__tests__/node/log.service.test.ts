@@ -7,9 +7,9 @@ import { toLocalISOString, ILogService } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
-import { LogServiceManager } from '../../lib/node/log-manager';
 import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 import { LogServiceModule } from '../../src/node';
+import { LogServiceManager } from '../../src/node/log-manager';
 import { LogLevelMessageMap } from '../../src/node/log.service';
 
 const track = temp.track();
