@@ -1,7 +1,7 @@
-import os from 'os';
 import path from 'path';
 
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
+import temp from 'temp';
 
 import { toLocalISOString, ILogService } from '@opensumi/ide-core-common';
 import { AppConfig } from '@opensumi/ide-core-node';
@@ -12,8 +12,8 @@ import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/com
 import { LogServiceModule } from '../../src/node';
 import { LogLevelMessageMap } from '../../src/node/log.service';
 
-const testDir = path.join(os.homedir(), '.sumi-test');
-const logDir = path.join(testDir, 'logs_1');
+const track = temp.track();
+const logDir = temp.mkdirSync('log-service');
 const today = Number(
   toLocalISOString(new Date())
     .replace(/-/g, '')
@@ -47,7 +47,7 @@ describe('LogService', () => {
 
   afterAll(() => {
     loggerManager.cleanAllLogs();
-    fs.rmdirSync(testDir);
+    track.cleanupSync();
   });
 
   test('Test level with default Info', async () => {
