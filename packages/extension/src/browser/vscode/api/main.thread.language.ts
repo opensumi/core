@@ -976,7 +976,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     supportsResolve: boolean,
   ): modes.CodeActionProvider {
     const provider: modes.CodeActionProvider = {
-      provideCodeActions: async (model: any, rangeOrSelection, monacoContext) => {
+      provideCodeActions: async (model: any, rangeOrSelection, monacoContext, token: CancellationToken) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined;
         }
@@ -985,7 +985,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_ACTIONS);
         const listDto = await this.proxy
-          .$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext)
+          .$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext, token)
           .then((v) => {
             timer.timeEnd(extname(model.uri.fsPath));
             return v;

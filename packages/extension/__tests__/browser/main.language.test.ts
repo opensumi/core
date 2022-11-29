@@ -3,7 +3,7 @@ import type vscode from 'vscode';
 import { RPCProtocol } from '@opensumi/ide-connection';
 import { Emitter, CancellationToken, MonacoService, DisposableCollection } from '@opensumi/ide-core-browser';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
-import { URI, Uri, Position, language } from '@opensumi/ide-core-common';
+import { URI, Uri, Position } from '@opensumi/ide-core-common';
 import {
   EvaluatableExpressionServiceImpl,
   IEvaluatableExpressionService,
@@ -37,6 +37,7 @@ import * as modes from '../../src/common/vscode/model.api';
 import { ExtensionDocumentDataManagerImpl } from '../../src/hosted/api/vscode/doc';
 import { ExtHostCommands } from '../../src/hosted/api/vscode/ext.host.command';
 import { ExtHostLanguages } from '../../src/hosted/api/vscode/ext.host.language';
+import { createToken } from '../../src/hosted/api/vscode/language/util';
 
 const emitterA = new Emitter<any>();
 const emitterB = new Emitter<any>();
@@ -65,7 +66,6 @@ let model: ITextModel;
 describe('ExtHostLanguageFeatures', () => {
   jest.setTimeout(10 * 1000);
   const injector = createBrowserInjector([]);
-  let monacoService: MonacoService;
 
   injector.addProviders(
     {
@@ -102,7 +102,7 @@ describe('ExtHostLanguageFeatures', () => {
   addEditorProviders(injector);
 
   beforeAll(async () => {
-    monacoService = injector.get(MonacoService);
+    // injector.get(MonacoService);
 
     model = createModel(
       ['This is the first line', 'This is the second line', 'This is the third line'].join('\n'),
@@ -154,6 +154,7 @@ describe('ExtHostLanguageFeatures', () => {
             throw new Error('evil');
           }
         })(),
+        createToken(),
       ),
     );
     disposables.push(
@@ -164,6 +165,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -188,6 +190,7 @@ describe('ExtHostLanguageFeatures', () => {
             console.warn('do not resolve');
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -209,6 +212,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.CodeLens(new types.Range(0, 0, 0, 0))];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -229,6 +233,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -256,6 +261,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -282,6 +288,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.Location(model.uri, new types.Range(1, 2, 3, 4))];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -308,6 +315,7 @@ describe('ExtHostLanguageFeatures', () => {
             return new types.Hover('Hello');
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -327,6 +335,7 @@ describe('ExtHostLanguageFeatures', () => {
             return new types.Hover('Hello', new types.Range(3, 0, 8, 7));
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -347,6 +356,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.DocumentHighlight(new types.Range(0, 0, 0, 4))];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -377,6 +387,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [new types.Location(model.uri, new types.Position(0, 0))];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -507,6 +518,7 @@ describe('ExtHostLanguageFeatures', () => {
             return edit;
           }
         })(),
+        createToken(),
       ),
     );
 
@@ -540,6 +552,7 @@ describe('ExtHostLanguageFeatures', () => {
           }
         })(),
         [],
+        createToken(),
       ),
     );
 
@@ -569,6 +582,7 @@ describe('ExtHostLanguageFeatures', () => {
           }
         })(),
         [],
+        createToken(),
       ),
     );
 
@@ -630,6 +644,7 @@ describe('ExtHostLanguageFeatures', () => {
           }
         })(),
         [';'],
+        createToken(),
       ),
     );
 
@@ -661,6 +676,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [link];
           }
         })(),
+        createToken(),
       ),
     );
 
@@ -692,6 +708,7 @@ describe('ExtHostLanguageFeatures', () => {
             return [];
           }
         })(),
+        createToken(),
       ),
     );
 
@@ -721,6 +738,7 @@ describe('ExtHostLanguageFeatures', () => {
             ];
           }
         })(),
+        createToken(),
       ),
     );
     setTimeout(async () => {
@@ -896,7 +914,12 @@ An error case:
     const mockMainThreadFunc = jest.spyOn(mainThread, '$registerDocumentSemanticTokensProvider');
 
     disposables.push(
-      extHost.registerDocumentSemanticTokensProvider({ language: 'semanticLanguage' }, hostedProvider, semanticLegend),
+      extHost.registerDocumentSemanticTokensProvider(
+        { language: 'semanticLanguage' },
+        hostedProvider,
+        semanticLegend,
+        createToken(),
+      ),
     );
 
     setTimeout(() => {
@@ -1006,7 +1029,7 @@ An error case:
       const callHierarchyService = injector.get<ICallHierarchyService>(ICallHierarchyService);
       const mockMainThreadFunc = jest.spyOn(mainThread, '$registerCallHierarchyProvider');
 
-      extHost.registerCallHierarchyProvider('plaintext', new TestCallHierarchyProvider());
+      extHost.registerCallHierarchyProvider('plaintext', new TestCallHierarchyProvider(), createToken());
 
       await 0;
 
@@ -1113,7 +1136,7 @@ An error case:
       const typeHierarchyService = injector.get<ITypeHierarchyService>(ITypeHierarchyService);
       const mockMainThreadFunc = jest.spyOn(mainThread, '$registerTypeHierarchyProvider');
 
-      extHost.registerTypeHierarchyProvider('plaintext', new TestTypeHierarchyProvider());
+      extHost.registerTypeHierarchyProvider('plaintext', new TestTypeHierarchyProvider(), createToken());
 
       await 0;
 
