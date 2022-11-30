@@ -9,7 +9,6 @@ import { Markdown } from '@opensumi/ide-markdown';
 
 import { InstallState, IVSXExtensionService, VSXExtension, VSXExtensionServiceToken } from '../../common';
 import { VSXExtensionRaw } from '../../common/vsx-registry-types';
-import { DEFAULT_EXTENSION_ICON_URL } from '../const';
 
 import styles from './overview.module.less';
 
@@ -183,10 +182,16 @@ export const ExtensionOverview: ReactEditorComponent<
     <div className={styles.extension_overview_container}>
       <ProgressBar loading={loading} />
       <div className={styles.extension_overview_header}>
-        <img
-          src={resource.metadata?.iconUrl || DEFAULT_EXTENSION_ICON_URL}
-          alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
-        />
+        {resource.metadata?.iconUrl ? (
+          <img
+            src={resource.metadata?.iconUrl}
+            alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
+          />
+        ) : (
+          <div className={styles.default_icon}>
+            <Icon iconClass={getIcon('extension')} />
+          </div>
+        )}
         <div className={styles.extension_detail}>
           <div className={styles.extension_name}>
             <h1>
