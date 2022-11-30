@@ -10,7 +10,7 @@ const helloUtf8 = new Uint8Array([228, 189, 160, 229, 165, 189]);
 const helloGbk = new Uint8Array([196, 227, 186, 195]);
 const helloWithBOM = utf8BOM.concat(Array.from(helloUtf8));
 
-describe.skip('encodings', () => {
+describe('encodings', () => {
   test('iconv: encoding keys valid for iconv', () => {
     const keys = Object.keys(SUPPORTED_ENCODINGS);
     for (const encoding of keys) {
