@@ -2,8 +2,9 @@ import { Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
+import { LineRange } from '../model/line-range';
 import { MappingManagerService } from '../service/mapping-manager.service';
-import { EditorViewType, IActionsDescription, IConflictActionsEvent } from '../types';
+import { EditorViewType, IActionsDescription, IConflictActionsEvent, ACCEPT_CURRENT, IGNORE } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
@@ -54,55 +55,46 @@ export class ActionsManager extends Disposable {
         this.currentView.onDidConflictActions,
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
-      )(({ range, withViewType }) => {
-        if (withViewType === EditorViewType.CURRENT) {
-          const sameRange = this.mappingManagerService.documentMappingTurnLeft.adjacentComputeRangeMap.get(range.id);
+      )(({ range, withViewType, action }) => {
+        const markComplete = (range: LineRange, isIgnore: boolean) => {
+          if (withViewType === EditorViewType.CURRENT) {
+            this.mappingManagerService.markCompleteTurnLeft(range, isIgnore);
+          } else if (withViewType === EditorViewType.INCOMING) {
+            this.mappingManagerService.markCompleteTurnRight(range, isIgnore);
+          }
+        };
 
-          const applyText = this.currentView!.getModel()!.getValueInRange(range.toRange());
+        if (withViewType !== EditorViewType.RESULT) {
+          const documentMapping =
+            withViewType === EditorViewType.CURRENT
+              ? this.mappingManagerService.documentMappingTurnLeft
+              : this.mappingManagerService.documentMappingTurnRight;
+          const viewEditor = withViewType === EditorViewType.CURRENT ? this.currentView : this.incomingView;
 
-          if (sameRange) {
+          if (action === ACCEPT_CURRENT) {
+            const applyText = viewEditor!.getModel()!.getValueInRange(range.toRange());
+            const sameRange = documentMapping.adjacentComputeRangeMap.get(range.id);
+
+            if (!sameRange) {
+              return;
+            }
+
             this.applyLineRangeEdits([
               {
                 range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
                 text: applyText + (sameRange.isEmpty ? '\n' : ''),
               },
             ]);
-
-            this.mappingManagerService.markCompleteTurnLeft(range);
-
-            this.currentView!.updateDecorations();
-            this.currentView!.clearActions(range);
-
-            this.resultView!.updateDecorations();
-
-            this.currentView!.launchChange();
-            this.incomingView!.launchChange();
           }
-        }
 
-        if (withViewType === EditorViewType.INCOMING) {
-          const sameRange = this.mappingManagerService.documentMappingTurnRight.adjacentComputeRangeMap.get(range.id);
+          markComplete(range, action === IGNORE);
 
-          const applyText = this.incomingView!.getModel()!.getValueInRange(range.toRange());
+          viewEditor!.updateDecorations();
+          viewEditor!.clearActions(range);
 
-          if (sameRange) {
-            this.applyLineRangeEdits([
-              {
-                range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
-                text: applyText + (sameRange.isEmpty ? '\n' : ''),
-              },
-            ]);
-
-            this.mappingManagerService.markCompleteTurnRight(range);
-
-            this.incomingView!.updateDecorations();
-            this.incomingView!.clearActions(range);
-
-            this.resultView!.updateDecorations();
-
-            this.currentView!.launchChange();
-            this.incomingView!.launchChange();
-          }
+          this.resultView!.updateDecorations();
+          this.currentView!.launchChange();
+          this.incomingView!.launchChange();
         }
       }),
     );
