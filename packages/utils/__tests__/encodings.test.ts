@@ -1,8 +1,12 @@
-import iconv from 'iconv-lite';
-
 import { BinaryBuffer } from '../src/buffer';
 import { SUPPORTED_ENCODINGS } from '../src/const';
-import { toIconvLiteEncoding, toCanonicalName, detectEncodingFromBuffer } from '../src/encoding';
+import {
+  iconvDecode,
+  encodingExists,
+  toIconvLiteEncoding,
+  toCanonicalName,
+  detectEncodingFromBuffer,
+} from '../src/encoding';
 
 const utf8BOM = [0xef, 0xbb, 0xbf];
 
@@ -14,7 +18,7 @@ describe('encodings', () => {
   test('iconv: encoding keys valid for iconv', () => {
     const keys = Object.keys(SUPPORTED_ENCODINGS);
     for (const encoding of keys) {
-      expect(iconv.encodingExists(toIconvLiteEncoding(encoding))).toBeTruthy();
+      expect(encodingExists(toIconvLiteEncoding(encoding))).toBeTruthy();
     }
   });
 
@@ -30,26 +34,26 @@ describe('encodings', () => {
 
   test('iconv: decode gbk', () => {
     const buffer = Buffer.from(helloGbk);
-    let result = iconv.decode(buffer as Buffer, 'gbk');
+    let result = iconvDecode(buffer as Buffer, 'gbk');
     expect(result).toBe('你好');
 
     const hello = new Uint8Array(helloGbk);
-    result = iconv.decode(hello as Buffer, 'gbk');
+    result = iconvDecode(hello as Buffer, 'gbk');
     expect(result).toBe('你好');
   });
 
-  test('iconv: decode utf8', () => {
+  test('iconv: iconvDecode utf8', () => {
     const buffer = Buffer.from(helloUtf8);
-    let result = iconv.decode(buffer as Buffer, 'utf8');
+    let result = iconvDecode(buffer as Buffer, 'utf8');
     expect(result).toBe('你好');
     const hello = new Uint8Array(helloUtf8);
-    result = iconv.decode(hello as Buffer, 'utf8');
+    result = iconvDecode(hello as Buffer, 'utf8');
     expect(result).toBe('你好');
   });
 
   test('iconv: test utf8bom', () => {
     const buffer = Buffer.from(helloWithBOM);
-    const result = iconv.decode(buffer as Buffer, 'utf8');
+    const result = iconvDecode(buffer as Buffer, 'utf8');
     expect(result).toBe('你好');
   });
 

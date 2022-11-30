@@ -64,7 +64,6 @@
     "fs-extra": "^10.1.0",
     "glob": "^8.0.1",
     "husky": "^7.0.4",
-    "iconv-lite": "^0.6.3",
     "lerna": "^6.0.0",
     "lint-staged": "^12.1.2",
     "lodash": "^4.17.15",
