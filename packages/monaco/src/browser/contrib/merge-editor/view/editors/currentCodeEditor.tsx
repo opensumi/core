@@ -44,29 +44,26 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   private onActionsClick(e: IEditorMouseEvent, currentView: BaseCodeEditor, resultView: ResultCodeEditor): boolean {
     const element = e.target.element!;
 
-    if (element.classList.contains(ACCEPT_CURRENT)) {
-      const toArry = Array.from(element.classList);
-      const find = toArry.find((c) => c.startsWith(ADDRESSING_TAG_CLASSNAME));
-      if (find) {
-        const posiLine = Number(find.replace(ADDRESSING_TAG_CLASSNAME, ''));
-        if (typeof posiLine === 'number') {
-          const action = this.conflictActions.getActions(posiLine);
-          if (!action) {
-            return false;
-          }
-
-          const { range } = action;
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: ACCEPT_CURRENT });
-          return true;
+    const toArry = Array.from(element.classList);
+    const find = toArry.find((c) => c.startsWith(ADDRESSING_TAG_CLASSNAME));
+    if (find) {
+      const posiLine = Number(find.replace(ADDRESSING_TAG_CLASSNAME, ''));
+      if (typeof posiLine === 'number') {
+        const action = this.conflictActions.getActions(posiLine);
+        if (!action) {
+          return false;
         }
+
+        const { range } = action;
+
+        if (element.classList.contains(ACCEPT_CURRENT)) {
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: ACCEPT_CURRENT });
+        } else if (element.classList.contains(IGNORE)) {
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE });
+        }
+
+        return true;
       }
-
-      return false;
-    }
-
-    if (element.classList.contains(IGNORE)) {
-      // not implement
-      return false;
     }
 
     return false;
