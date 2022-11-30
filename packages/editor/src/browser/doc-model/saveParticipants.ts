@@ -69,23 +69,23 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
       return;
     }
 
+    const preferenceActions = this.preferenceService.get<
+      | {
+          [prop: string]: any;
+        }
+      | string[]
+    >('editor.codeActionsOnSave', undefined, e.payload.uri.toString(), e.payload.language);
+    if (!preferenceActions) {
+      return undefined;
+    }
+
     return this.progressService.withProgress(
       {
-        title: formatLocalize('editor.saveActions.saveing', e.payload.uri.displayName),
+        title: formatLocalize('editor.saveCodeActions.saving', e.payload.uri.displayName),
         location: ProgressLocation.Notification,
         cancellable: true,
       },
       async (progress) => {
-        const preferenceActions = this.preferenceService.get<
-          | {
-              [prop: string]: any;
-            }
-          | string[]
-        >('editor.codeActionsOnSave', undefined, e.payload.uri.toString(), e.payload.language);
-        if (!preferenceActions) {
-          return undefined;
-        }
-
         const codeActions = Array.isArray(preferenceActions) ? preferenceActions : Object.keys(preferenceActions);
         const codeActionsOnSave: CodeActionKind[] = codeActions.map((p) => new CodeActionKind(p));
 
@@ -157,7 +157,7 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
       private _report(): void {
         progress.report({
           message: formatLocalize(
-            'editor.saveActions.gettingCodeAction',
+            'editor.saveCodeActions.getting',
             [...this._names].map((name) => `'${name}'`).join(', '),
           ),
         });
