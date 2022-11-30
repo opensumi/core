@@ -34,23 +34,24 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     const element = e.target.element!;
     const position = e.target.position;
 
-    if (element.classList.contains(ACCEPT_CURRENT) && position) {
-      const action = this.conflictActions.getActions(position.lineNumber);
-      if (!action) {
-        return false;
-      }
-
-      const { range } = action;
-      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: ACCEPT_CURRENT });
-      return true;
-    }
-
-    if (element.classList.contains(IGNORE)) {
-      // not implement
+    if (!position) {
       return false;
     }
 
-    return false;
+    const action = this.conflictActions.getActions(position.lineNumber);
+    if (!action) {
+      return false;
+    }
+
+    const { range } = action;
+
+    if (element.classList.contains(ACCEPT_CURRENT)) {
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: ACCEPT_CURRENT });
+    } else if (element.classList.contains(IGNORE)) {
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: IGNORE });
+    }
+
+    return true;
   }
 
   public getMonacoDecorationOptions(
