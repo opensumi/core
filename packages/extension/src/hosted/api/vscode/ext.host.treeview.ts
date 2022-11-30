@@ -316,7 +316,6 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
   private refreshPromise: Promise<void> = Promise.resolve();
   private refreshQueue: Promise<void> = Promise.resolve();
 
-  private isFetchingChildren = false;
   constructor(
     private treeViewId: string,
     private options: vscode.TreeViewOptions<T>,
@@ -343,10 +342,6 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
 
     if (this.dataProvider.onDidChangeTreeData) {
       const dispose = this.dataProvider.onDidChangeTreeData((itemToRefresh) => {
-        if (this.isFetchingChildren) {
-          // cause of https://github.com/opensumi/core/issues/723.
-          return;
-        }
         this._onDidChangeData.fire({ element: itemToRefresh, message: false });
       });
       if (dispose) {
@@ -367,9 +362,6 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
         (result, current) => {
           if (!result) {
             result = { message: false, elements: [] };
-            if (this.isFetchingChildren) {
-              return result;
-            }
           }
           if (current.element !== false) {
             if (!refreshingPromise) {
@@ -597,9 +589,7 @@ class ExtHostTreeView<T extends vscode.TreeItem> implements IDisposable {
       return this.roots;
     }
     let children: TreeViewItem[] | undefined;
-    this.isFetchingChildren = true;
     const results = await this.dataProvider.getChildren(cachedElement);
-    this.isFetchingChildren = false;
     if (this._refreshCancellationSource.token.isCancellationRequested) {
       children = undefined;
     } else {
