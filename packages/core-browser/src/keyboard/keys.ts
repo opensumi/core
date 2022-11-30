@@ -160,7 +160,7 @@ export class KeyCode {
   public toString(): string {
     const result: string[] = [];
     if (this.meta) {
-      result.push(isOSX ? '⌘' : 'Win');
+      result.push(isOSX ? 'Cmd' : 'Win');
     }
     if (this.shift) {
       result.push(toNormalCase(Key.SHIFT_LEFT.easyString));
