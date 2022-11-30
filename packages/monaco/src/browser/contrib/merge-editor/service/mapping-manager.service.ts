@@ -21,28 +21,36 @@ export class MappingManagerService extends Disposable {
     this.documentMappingTurnRight = this.injector.get(DocumentMapping, [EDiffRangeTurn.MODIFIED]);
   }
 
-  private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange) => void {
+  private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange, isIgnore: boolean) => void {
     const [mapping, sameMapping] =
       turn === EDiffRangeTurn.ORIGIN
         ? [this.documentMappingTurnLeft, this.documentMappingTurnRight]
         : [this.documentMappingTurnRight, this.documentMappingTurnLeft];
 
-    return (range: LineRange) => {
-      const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
-      if (!sameRange) {
-        return;
-      }
+    return (range: LineRange, isIgnore: boolean) => {
+      const doMark = () => {
+        mapping.computeRangeMap.delete(range.id);
+        mapping.adjacentComputeRangeMap.delete(range.id);
+      };
 
-      const marginLength = range.calcMargin(sameRange);
+      if (isIgnore) {
+        doMark();
+      } else {
+        const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
+        if (!sameRange) {
+          return;
+        }
 
-      mapping.deltaAdjacentQueue(range, marginLength);
-      mapping.computeRangeMap.delete(range.id);
-      mapping.adjacentComputeRangeMap.delete(range.id);
+        const marginLength = range.calcMargin(sameRange);
 
-      const findNextRange = sameMapping.huntForNextSameRange(sameRange);
-      const reverseRange = findNextRange && sameMapping.reverse(findNextRange);
-      if (reverseRange) {
-        sameMapping.deltaAdjacentQueue(reverseRange, marginLength);
+        mapping.deltaAdjacentQueue(range, marginLength);
+        doMark();
+
+        const findNextRange = sameMapping.huntForNextSameRange(sameRange);
+        const reverseRange = findNextRange && sameMapping.reverse(findNextRange);
+        if (reverseRange) {
+          sameMapping.deltaAdjacentQueue(reverseRange, marginLength);
+        }
       }
     };
   }
@@ -55,11 +63,11 @@ export class MappingManagerService extends Disposable {
     this.documentMappingTurnRight.inputComputeResultRangeMapping(changes);
   }
 
-  public markCompleteTurnLeft(range: LineRange): void {
-    this.markCompleteFactory(EDiffRangeTurn.ORIGIN)(range);
+  public markCompleteTurnLeft(range: LineRange, isIgnore = false): void {
+    this.markCompleteFactory(EDiffRangeTurn.ORIGIN)(range, isIgnore);
   }
 
-  public markCompleteTurnRight(range: LineRange): void {
-    this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range);
+  public markCompleteTurnRight(range: LineRange, isIgnore = false): void {
+    this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range, isIgnore);
   }
 }
