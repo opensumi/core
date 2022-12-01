@@ -37,6 +37,10 @@ describe('file scheme tests', () => {
       useValue: {},
     },
     {
+      token: IDialogService,
+      useValue: {},
+    },
+    {
       token: EditorPreferences,
       useValue: {
         'editor.readonlyFiles': ['.readonly.js'],

@@ -14,6 +14,7 @@ import {
   EditorDocumentModelContentRegistryImpl,
   EditorDocumentModelServiceImpl,
 } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { taskSchemaUri, schema } from '@opensumi/ide-task/lib/browser/task.schema';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
@@ -24,7 +25,6 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockWalkThroughSnippetSchemeDocumentProvider } from '../../../file-scheme/__mocks__/browser/file-doc';
-import { IMainLayoutService } from '../../../main-layout';
 import { LayoutService } from '../../../main-layout/src/browser/layout.service';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
 import { MonacoService } from '../../../monaco/lib/index';

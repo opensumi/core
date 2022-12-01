@@ -24,6 +24,7 @@ import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task
 import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import {
   ITerminalApiService,
+  ITerminalClientFactory2,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
@@ -32,6 +33,10 @@ import {
   ITerminalService,
   ITerminalTheme,
 } from '@opensumi/ide-terminal-next';
+import {
+  createTerminalClientFactory2,
+  TerminalClientFactory,
+} from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { TerminalEnvironmentService } from '@opensumi/ide-terminal-next/lib/browser/terminal.environment.service';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
@@ -40,6 +45,7 @@ import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/
 import { TerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/browser/terminal.view';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
+import { IVariableResolverService } from '@opensumi/ide-variable';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
@@ -100,6 +106,12 @@ describe('ExtHostTask API', () => {
       }),
     },
     {
+      token: IVariableResolverService,
+      useValue: {
+        resolve: () => '',
+      },
+    },
+    {
       token: ITerminalProfileInternalService,
       useValue: {
         resolveDefaultProfile: jest.fn(() => ({
@@ -139,6 +151,13 @@ describe('ExtHostTask API', () => {
     {
       token: ITaskService,
       useClass: TaskService,
+    },
+    {
+      token: ITerminalClientFactory2,
+      useFactory:
+        (injector) =>
+        (widget, options = {}) =>
+          createTerminalClientFactory2(injector)(widget, options),
     },
     {
       token: ITaskSystem,
