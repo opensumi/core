@@ -83,6 +83,25 @@ export namespace CONFLICT_ACTIONS_ICON {
   export const CLOSE = `conflict-actions ${IGNORE} ${getIcon('close')}`;
 }
 
+/**
+ * 绘制 decoration 和 line widget 线的样式类名集合
+ */
+export namespace DECORATIONS_CLASSNAME {
+  export const combine = (...args: string[]) => args.reduce((pre, cur) => pre + ' ' + cur, ' ');
+  // conflict 操作后虚线框的主类名
+  export const conflict_wrap = 'conflict-wrap';
+  // 用于处理每条 decoration 的虚线框的哪个方向需要不闭合
+  export const stretch_top = 'stretch-top';
+  export const stretch_bottom = 'stretch-bottom';
+  export const stretch_left = 'stretch-left';
+  export const stretch_right = 'stretch-right';
+
+  export const margin_className = 'merge-editor-margin-className';
+  export const diff_line_background = 'merge-editor-diff-line-background';
+  export const diff_inner_char_background = 'merge-editor-diff-inner-char-background';
+  export const guide_underline_widget = 'merge-editor-guide-underline-widget';
+}
+
 export interface IConflictActionsEvent {
   range: LineRange;
   action: typeof ACCEPT_CURRENT | typeof ACCEPT_COMBINATION | typeof IGNORE;

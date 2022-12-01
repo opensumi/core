@@ -4,8 +4,7 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { EditorViewType } from '../types';
-import { getEditorViewTypeClassName } from '../utils';
+import { EditorViewType, DECORATIONS_CLASSNAME } from '../types';
 import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 import { GuidelineWidget } from '../view/guideline-widget';
 
@@ -65,15 +64,19 @@ export class MergeEditorDecorations extends Disposable {
 
     const options = ModelDecorationOptions.register({
       description: range.id,
-      className: `merge-editor-diff-line-background ${range.type} ${getEditorViewTypeClassName(this.editorViewType)}`,
+      className: DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.diff_line_background, range.type),
       isWholeLine: true,
     });
 
     return Array.from({ length }).map((_, idx) => {
-      // conflict 操作后虚线框的主类名
-      let wrapClassName = ' conflict-wrap ';
+      let wrapClassName = ` ${DECORATIONS_CLASSNAME.conflict_wrap} `;
       if (length !== 1) {
-        wrapClassName += idx === 0 ? 'wrap-begin' : idx === length - 1 ? 'wrap-end' : 'wrap-middle';
+        wrapClassName +=
+          idx === 0
+            ? DECORATIONS_CLASSNAME.stretch_bottom
+            : idx === length - 1
+            ? DECORATIONS_CLASSNAME.stretch_top
+            : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_top, DECORATIONS_CLASSNAME.stretch_bottom);
       }
 
       const mergeOptions = {
@@ -112,7 +115,7 @@ export class MergeEditorDecorations extends Disposable {
         range,
         options: ModelDecorationOptions.register({
           description: range.toString(),
-          className: `merge-editor-diff-inner-char-background ${range.type}`,
+          className: DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.diff_inner_char_background, range.type),
           isWholeLine: false,
         }),
       },
@@ -122,7 +125,10 @@ export class MergeEditorDecorations extends Disposable {
   public createGuideLineWidget(range: LineRange): GuidelineWidget {
     const guidelineWidget = new GuidelineWidget(this.editor);
     guidelineWidget.create();
-    guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
+    if (range.isComplete) {
+      guidelineWidget.addClassName('dashed');
+    }
+    guidelineWidget.addClassName(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
     return guidelineWidget;
   }
 

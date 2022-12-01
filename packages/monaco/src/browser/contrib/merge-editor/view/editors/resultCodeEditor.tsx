@@ -7,7 +7,7 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { EditorViewType, LineRangeType } from '../../types';
+import { EditorViewType, LineRangeType, DECORATIONS_CLASSNAME } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -100,9 +100,18 @@ export class ResultCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
-    const stretchClassName = ` stretch-right ${range.turnDirection === EditorViewType.CURRENT ? 'stretch-left' : ''}`;
+    const stretchClassName = DECORATIONS_CLASSNAME.combine(
+      DECORATIONS_CLASSNAME.stretch_right,
+      range.turnDirection === EditorViewType.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
+    );
     return {
-      linesDecorationsClassName: preDecorations.className + stretchClassName,
+      linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(preDecorations.className || '', stretchClassName),
+      className: DECORATIONS_CLASSNAME.combine(
+        preDecorations.className || '',
+        range.turnDirection === EditorViewType.CURRENT
+          ? DECORATIONS_CLASSNAME.stretch_left
+          : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_left, DECORATIONS_CLASSNAME.stretch_right),
+      ),
     };
   }
 

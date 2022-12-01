@@ -10,14 +10,19 @@
   }
 
   .merge-editor-guide-underline-widget {
+    border-style: solid;
+    border-top-width: 2px !important;
+    &.dashed {
+      border-style: dashed;
+    }
     &.insert {
-      border-top: 2px solid var(--mergeEditor-insertedBackground);
+      border-color: var(--mergeEditor-insertedBackground);
     }
     &.modify {
-      border-top: 2px solid var(--mergeEditor-modifyBackground);
+      border-color: var(--mergeEditor-modifyBackground);
     }
     &.remove {
-      border-top: 2px solid var(--mergeEditor-removedBackground);
+      border-color: var(--mergeEditor-removedBackground);
     }
   }
 
@@ -100,23 +105,9 @@
   .merge-editor-margin-className,
   .merge-editor-diff-line-background {
     &.conflict-wrap {
-      border: 2px dashed;
+      border-width: 2px;
+      border-style: dashed;
       background-color: transparent;
-
-      &.editor-view-current-type {
-        border-right: none;
-      }
-      &.editor-view-incoming-type {
-        border-left: none;
-      }
-      &.editor-view-result-type {
-        &.stretch-left {
-          border-left: none;
-        }
-        &.stretch-right {
-          border-right: none;
-        }
-      }
 
       &.insert {
         border-color: var(--mergeEditor-insertedBackground);
@@ -127,19 +118,22 @@
       &.remove {
         border-color: var(--mergeEditor-removedBackground);
       }
-    }
 
-    &.wrap-begin {
-      border-bottom: none;
-    }
+      &.stretch-left {
+        border-left: none;
+      }
 
-    &.wrap-middle {
-      border-bottom: none;
-      border-top: none;
-    }
+      &.stretch-right {
+        border-right: none;
+      }
 
-    &.wrap-end {
-      border-top: none;
+      &.stretch-top {
+        border-top: none;
+      }
+
+      &.stretch-bottom {
+        border-bottom: none;
+      }
     }
   }
 

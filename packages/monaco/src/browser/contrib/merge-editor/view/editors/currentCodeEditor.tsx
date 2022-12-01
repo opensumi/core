@@ -9,8 +9,8 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
-import { flatInnerOriginal, flatOriginal, getEditorViewTypeClassName } from '../../utils';
+import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE, DECORATIONS_CLASSNAME } from '../../types';
+import { flatInnerOriginal, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -70,13 +70,17 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public getMonacoDecorationOptions(
-    _: IModelDecorationOptions,
+    preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
     return {
-      marginClassName: `merge-editor-margin-className ${range.type} ${getEditorViewTypeClassName(
-        this.getEditorViewType(),
-      )}`,
+      marginClassName: DECORATIONS_CLASSNAME.combine(
+        DECORATIONS_CLASSNAME.margin_className,
+        range.type,
+        DECORATIONS_CLASSNAME.stretch_right,
+        DECORATIONS_CLASSNAME.stretch_left,
+      ),
+      className: DECORATIONS_CLASSNAME.combine(preDecorations.className || '', DECORATIONS_CLASSNAME.stretch_right),
     };
   }
 
