@@ -18,9 +18,12 @@ import {
   Emitter,
   IExtensionProps,
   IExtensionsSchemaService,
+  LinkedText,
+  URI,
 } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IconType, IIconService, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
+import { ContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { Extension } from '../hosted/vscode.extension';
@@ -28,6 +31,7 @@ import { Extension } from '../hosted/vscode.extension';
 import { ActivatedExtension, ExtensionsActivator, ActivatedExtensionJSON } from './activator';
 import { ISumiExtensionContributions } from './sumi/extension';
 import { IExtensionContributions, IMainThreadCommands } from './vscode';
+import { ThemeIcon } from './vscode/ext-types';
 
 export { IExtensionProps } from '@opensumi/ide-core-common';
 
@@ -119,6 +123,7 @@ export interface IExtensionNodeClientService {
   restartExtProcessByClient(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
+  getOpenVSXRegistry(): Promise<string>;
 }
 
 export type ExtensionHostType = 'node' | 'worker';
@@ -581,3 +586,55 @@ export function validateTypeOrModifier(
 export const enum ExtensionContributePoint {
   Terminal = 'terminal',
 }
+
+// #region Walkthroughs
+export interface IWalkthrough {
+  id: string;
+  title: string;
+  description: string;
+  order: number;
+  source: string;
+  isFeatured: boolean;
+  next?: string;
+  when: ContextKeyExpression;
+  steps: IWalkthroughStep[];
+  icon: { type: 'icon'; icon: ThemeIcon } | { type: 'image'; path: string };
+}
+
+export type IWalkthroughLoose = Omit<IWalkthrough, 'steps'> & {
+  steps: (Omit<IWalkthroughStep, 'description'> & { description: string })[];
+};
+
+export interface IWalkthroughStep {
+  id: string;
+  title: string;
+  description: LinkedText[];
+  category: string;
+  when: ContextKeyExpression;
+  order: number;
+  completionEvents: string[];
+  media:
+    | { type: 'image'; path: { hcDark: URI; hcLight: URI; light: URI; dark: URI }; altText: string }
+    | { type: 'svg'; path: URI; altText: string }
+    | { type: 'markdown'; path: URI; base: URI; root: URI };
+}
+
+export interface StepProgress {
+  done: boolean;
+}
+
+export interface IResolvedWalkthroughStep extends IWalkthroughStep, StepProgress {}
+
+export namespace CompletionEventsType {
+  export const onLink = 'onLink';
+  export const onEvent = 'onEvent';
+  export const onView = 'onView';
+  export const onSettingChanged = 'onSettingChanged';
+  export const onContext = 'onContext';
+  export const onStepSelected = 'onStepSelected';
+  export const stepSelected = 'stepSelected';
+  export const onCommand = 'onCommand';
+  export const onExtensionInstalled = 'onExtensionInstalled';
+  export const extensionInstalled = 'extensionInstalled';
+}
+// #endregion Walkthroughs

@@ -24,6 +24,30 @@
     padding-right: 14px;
   }
 
+  .default_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    height: 26px;
+    width: 26px;
+    flex-shrink: 0;
+    object-fit: contain;
+    margin-right: 14px;
+    background-color: #f1f2f2;
+    border-radius: 50%;
+
+    :global {
+      .kaitian-icon {
+        font-size: 14px;
+      }
+
+      .kt-icon {
+        color: #d8d9d9;
+      }
+    }
+  }
+
   .extension_detail {
     flex: 1;
     padding: 4px 0;

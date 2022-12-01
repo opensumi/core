@@ -8,7 +8,7 @@ import {
   SEARCH_COMMANDS,
   LAYOUT_COMMANDS,
 } from '@opensumi/ide-core-browser';
-import { DEBUG_COMMANDS } from '@opensumi/ide-debug/lib/browser/debug-contribution';
+import { DEBUG_COMMANDS } from '@opensumi/ide-debug';
 import { THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 /**
@@ -365,4 +365,8 @@ export const THEME_COMMAND_QUICK_SELECT: Command = {
 export const LAYOUT_COMMAND_MAXIMIZE_EDITOR: Command = {
   id: 'workbench.action.maximizeEditor',
   delegate: LAYOUT_COMMANDS.MAXIMIZE_EDITOR.id,
+};
+
+export const WALKTHROUGHS_COMMAND_GET_STARTED: Command = {
+  id: 'walkthroughs.get.started',
 };

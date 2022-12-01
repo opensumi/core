@@ -1,6 +1,6 @@
 import { IReporterService } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { DebugWatch, DebugThread } from '@opensumi/ide-debug/lib/browser';
+import { DebugThread, DebugWatch } from '@opensumi/ide-debug/lib/browser/model';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';

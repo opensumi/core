@@ -51,6 +51,8 @@ import {
   DEBUG_WELCOME_ID,
   DEBUG_SCHEME,
   TSourceBrekpointProperties,
+  DEBUG_COMMANDS,
+  IDebugModelManager,
 } from '../common';
 
 import {
@@ -69,7 +71,6 @@ import { launchSchema } from './debug-schema-updater';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
-import { DebugModelManager } from './editor/debug-model-manager';
 import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
 import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
@@ -83,156 +84,6 @@ import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
 const LAUNCH_JSON_REGEX = /launch\.json$/;
-
-export namespace DEBUG_COMMANDS {
-  export const ADD_WATCHER = {
-    id: 'debug.watch.add',
-    iconClass: getIcon('plus'),
-  };
-  export const COLLAPSE_ALL_WATCHER = {
-    id: 'debug.watch.collapseAll',
-    iconClass: getIcon('collapse-all'),
-  };
-  export const REMOVE_ALL_WATCHER = {
-    id: 'debug.watch.removeAll',
-    iconClass: getIcon('close-all'),
-  };
-  export const REMOVE_WATCHER = {
-    id: 'debug.watch.remove',
-  };
-  export const EDIT_WATCHER = {
-    id: 'debug.watch.edit',
-  };
-  export const COPY_WATCHER_VALUE = {
-    id: 'debug.watch.copyValue',
-  };
-  export const REMOVE_ALL_BREAKPOINTS = {
-    id: 'debug.breakpoints.remove.all',
-    iconClass: getIcon('close-all'),
-  };
-  export const TOGGLE_BREAKPOINTS = {
-    id: 'debug.breakpoints.toggle',
-    iconClass: getIcon('deactivate-breakpoints'),
-  };
-  export const START = {
-    id: 'debug.start',
-  };
-  export const NEXT = {
-    id: 'debug.next',
-  };
-  export const PREV = {
-    id: 'debug.prev',
-  };
-  export const OVER = {
-    id: 'debug.over',
-  };
-  export const STOP = {
-    id: 'debug.stop',
-  };
-  export const CONTINUE = {
-    id: 'debug.continue',
-  };
-  export const RESTART = {
-    id: 'debug.restart',
-  };
-  export const PAUSE = {
-    id: 'debug.pause',
-  };
-  // menu commands
-  export const DELETE_BREAKPOINT = {
-    id: 'debug.delete.breakpoint',
-    label: '%debug.menu.delete.breakpoint%',
-  };
-  export const EDIT_BREAKPOINT = {
-    id: 'debug.edit.breakpoint',
-    label: '%debug.menu.edit.breakpoint%',
-  };
-  export const DISABLE_BREAKPOINT = {
-    id: 'debug.disable.breakpoint',
-    label: '%debug.menu.disable.breakpoint%',
-  };
-  export const ENABLE_BREAKPOINT = {
-    id: 'debug.enable.breakpoint',
-    label: '%debug.menu.enable.breakpoint%',
-  };
-  export const ENABLE_LOGPOINT = {
-    id: 'debug.enable.logpoint',
-    label: '%debug.menu.enable.logpoint',
-  };
-  export const ADD_BREAKPOINT = {
-    id: 'debug.add.breakpoint',
-    label: '%debug.menu.add.breakpoint%',
-  };
-  export const ADD_LOGPOINT = {
-    id: 'debug.add.logpoint',
-    label: '%debug.menu.add.logpoint%',
-  };
-  export const ADD_CONDITIONAL_BREAKPOINT = {
-    id: 'debug.add.conditional',
-    label: '%debug.menu.add.conditional%',
-  };
-  export const RESTART_FRAME = {
-    id: 'debug.callstack.restart.frame',
-  };
-  export const COPY_STACK_TRACE = {
-    id: 'debug.callstack.copy',
-  };
-  // variables
-  export const SET_VARIABLE_VALUE = {
-    id: 'debug.variables.setValue',
-  };
-  export const COPY_VARIABLE_VALUE = {
-    id: 'debug.variables.copy',
-  };
-  export const COPY_EVALUATE_PATH = {
-    id: 'debug.evaluate.copy',
-  };
-  export const ADD_TO_WATCH_ID = {
-    id: 'debug.addToWatchExpressions',
-  };
-  export const VIEW_MEMORY_ID = {
-    id: 'debug.variables.view.memory',
-  };
-  // console commands
-  export const CLEAR_CONSOLE = {
-    id: 'debug.console.clear',
-    label: '%debug.console.clear%',
-  };
-  export const COPY_CONSOLE_ITEM = {
-    id: 'debug.console.copy',
-  };
-  export const COPY_CONSOLE_ALL = {
-    id: 'debug.console.copyALl',
-  };
-  export const COLLAPSE_ALL_CONSOLE_ITEM = {
-    id: 'debug.console.collapseAll',
-    label: '%debug.console.collapseAll%',
-  };
-  export const CONSOLE_ENTER_EVALUATE = {
-    id: 'debug.console.keybing.enter.evaluate',
-  };
-  export const CONSOLE_INPUT_DOWN_ARROW = {
-    id: 'debug.console.input.down.arrow',
-  };
-  export const CONSOLE_INPUT_UP_ARROW = {
-    id: 'debug.console.input.up.arrow',
-  };
-  export const CONSOLE_FILTER_FOCUS = {
-    id: 'debug.console.filter.input.focus',
-  };
-  export const RUN_TO_CURSOR = {
-    id: 'debug.action.runToCursor',
-    label: '%debug.action.runToCursor%',
-  };
-  export const FORCE_RUN_TO_CURSOR = {
-    id: 'debug.action.forceRunToCursor',
-    label: '%debug.action.forceRunToCursor%',
-  };
-  // exception widget
-  export const EXCEPTION_WIDGET_CLOSE = {
-    id: 'debug.action.closeExceptionWidget',
-  };
-}
 
 export namespace DebugBreakpointWidgetCommands {
   export const ACCEPT = {
@@ -276,8 +127,8 @@ export class DebugContribution
   @Autowired(DebugConfigurationManager)
   protected readonly configurations: DebugConfigurationManager;
 
-  @Autowired(DebugModelManager)
-  protected debugEditorController: DebugModelManager;
+  @Autowired(IDebugModelManager)
+  protected debugEditorController: IDebugModelManager;
 
   @Autowired(DebugBreakpointsService)
   protected debugBreakpointsService: DebugBreakpointsService;
@@ -739,6 +590,7 @@ export class DebugContribution
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
+      iconClass: getIcon('close-all'),
       viewId: DEBUG_BREAKPOINTS_ID,
       tooltip: localize('debug.breakpoint.removeAll'),
     });
@@ -746,6 +598,7 @@ export class DebugContribution
     registry.registerItem({
       id: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
+      iconClass: getIcon('deactivate-breakpoints'),
       viewId: DEBUG_BREAKPOINTS_ID,
       tooltip: localize('debug.breakpoint.toggle'),
     });
@@ -851,7 +704,7 @@ export class DebugContribution
     menuRegistry.registerMenuItem(MenuId.EditorContext, {
       command: {
         id: DEBUG_COMMANDS.RUN_TO_CURSOR.id,
-        label: DEBUG_COMMANDS.RUN_TO_CURSOR.label,
+        label: DEBUG_COMMANDS.RUN_TO_CURSOR.label || '',
       },
       when: `${CONTEXT_IN_DEBUG_MODE.raw}`,
       group: 'debug',
@@ -860,7 +713,7 @@ export class DebugContribution
     menuRegistry.registerMenuItem(MenuId.EditorContext, {
       command: {
         id: DEBUG_COMMANDS.FORCE_RUN_TO_CURSOR.id,
-        label: DEBUG_COMMANDS.FORCE_RUN_TO_CURSOR.label,
+        label: DEBUG_COMMANDS.FORCE_RUN_TO_CURSOR.label || '',
       },
       when: `${CONTEXT_IN_DEBUG_MODE.raw}`,
       group: 'debug',

@@ -8,7 +8,8 @@ import {
   StorageProvider,
 } from '@opensumi/ide-core-browser';
 import { IDebugServer } from '@opensumi/ide-debug';
-import { DebugConfigurationManager, DebugPreferences } from '@opensumi/ide-debug/lib/browser';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
+import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';

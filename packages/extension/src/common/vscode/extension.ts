@@ -6,6 +6,8 @@
 import { strings, IExtensionProps } from '@opensumi/ide-core-common';
 import type { Uri } from '@opensumi/ide-core-common';
 
+import { IExtensionWalkthrough } from './walkthrough';
+
 const { equalsIgnoreCase } = strings;
 
 export const MANIFEST_CACHE_FOLDER = 'CachedExtensions';
@@ -105,6 +107,7 @@ export interface IExtensionContributions {
   iconThemes?: ITheme[];
   viewsContainers?: { [location: string]: IViewContainer[] };
   views?: { [location: string]: IView[] };
+  walkthroughs?: IExtensionWalkthrough[];
   colors?: IColor[];
   localizations?: any[]; // ILocalization[];
 }

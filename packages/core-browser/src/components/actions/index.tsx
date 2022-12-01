@@ -1,9 +1,9 @@
 import clsx from 'classnames';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
-import { strings } from '@opensumi/ide-core-common';
+import { isBoolean, strings } from '@opensumi/ide-core-common';
 
 import {
   MenuNode,
@@ -138,14 +138,19 @@ export const MenuActionList: React.FC<{
 const EllipsisWidget: React.FC<{
   type?: ActionListType;
   icon?: string;
+  disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLElement>;
-}> = ({ type, icon, onClick }) => {
+}> = ({ type, icon, disabled, onClick }) => {
   if (type === 'icon') {
     return <Icon icon={icon || 'ellipsis'} className={styles.iconAction} onClick={onClick} />;
   }
+  const props = {};
+  if (isBoolean(disabled)) {
+    props['disabled'] = disabled;
+  }
 
   return (
-    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick}>
+    <Button size='small' type='secondary' className={styles.btnAction} onClick={onClick} {...props}>
       <Icon icon={icon || 'ellipsis'} />
     </Button>
   );
@@ -354,7 +359,9 @@ export const TitleActionList: React.FC<
     }
 
     const moreAction =
-      secondary.length > 0 ? <EllipsisWidget icon={moreIcon} type={type} onClick={handleShowMore} /> : null;
+      secondary.length > 0 ? (
+        <EllipsisWidget disabled={secondary[0].disabled} icon={moreIcon} type={type} onClick={handleShowMore} />
+      ) : null;
 
     return (
       <div className={clsx([styles.titleActions, className])} data-menu-id={menuId}>

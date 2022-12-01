@@ -2,8 +2,7 @@ import throttle from 'lodash/throttle';
 
 import { DisposableCollection, Emitter, Event, IReporterService } from '@opensumi/ide-core-browser';
 
-import { DEBUG_REPORT_NAME } from '../../common';
-import { DEBUG_COMMANDS } from '../debug-contribution';
+import { DEBUG_COMMANDS, DEBUG_REPORT_NAME } from '../../common';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugWatchRoot, DebugWatchNode } from '../tree/debug-tree-node.define';
 

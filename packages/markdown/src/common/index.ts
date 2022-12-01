@@ -5,6 +5,7 @@ export interface IMarkdownService {
     content: string,
     container: HTMLElement,
     cancellationToken: CancellationToken,
+    options?: { baseUrl?: string | undefined },
     onUpdate?: Event<string>,
     onLinkClick?: (uri: URI) => void,
   ): Promise<IDisposable>;

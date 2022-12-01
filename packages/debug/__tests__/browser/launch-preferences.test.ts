@@ -30,6 +30,8 @@ import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
+import { DebugModule } from '../../src/browser';
+import { DebugContribution } from '../../src/browser/debug-contribution';
 
 /**
  * launch配置项需要与VSCode中的配置项对齐

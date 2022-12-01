@@ -67,7 +67,7 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
   }
 
   public isChord(): boolean {
-    return this.parts.length >= 1;
+    return this.parts.length > 1;
   }
 
   public getDispatchParts(): (string | null)[] {

@@ -4,7 +4,7 @@ import path from 'path';
 import { Injectable, Autowired } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
-import { uuid, INodeLogger, Uri } from '@opensumi/ide-core-node';
+import { uuid, INodeLogger, Uri, AppConfig } from '@opensumi/ide-core-node';
 import { IFileService } from '@opensumi/ide-file-service';
 
 import {
@@ -39,6 +39,9 @@ export class ExtensionServiceClientImpl
   @Autowired(IHashCalculateService)
   private readonly hashCalculateService: IHashCalculateService;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   @Autowired(INodeLogger)
   logger: INodeLogger;
 
@@ -47,6 +50,10 @@ export class ExtensionServiceClientImpl
   public setConnectionClientId(clientId: string) {
     this.clientId = clientId;
     this.extensionService.setConnectionServiceClient(this.clientId, this);
+  }
+
+  async getOpenVSXRegistry(): Promise<string> {
+    return this.appConfig.marketplace.endpoint;
   }
 
   public infoProcessNotExist() {

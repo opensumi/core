@@ -9,7 +9,8 @@ import {
   IJSONSchemaMap,
 } from '@opensumi/ide-core-common';
 import { IDebugService, IDebuggerContribution } from '@opensumi/ide-debug';
-import { DebugConfigurationManager, DebugSchemaUpdater } from '@opensumi/ide-debug/lib/browser';
+import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
+import { DebugSchemaUpdater } from '@opensumi/ide-debug/lib/browser/debug-schema-updater';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { Extension } from '../../extension';
