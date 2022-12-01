@@ -7,6 +7,15 @@ import { LineRange } from './model/line-range';
 
 export interface IRangeContrast {
   type: LineRangeType;
+  // 是否解决操作完成
+  get isComplete(): boolean;
+  setComplete: (b: boolean) => this;
+  /**
+   * 表示这个 range 区域是倾向于 current editor 还是 incoming editor（如果本身就是在 current editor 则返回 current）
+   * 在 result editor 视图里可以通过该字段来判读它是与 current editor 相比较的还是与 incoming 相比较的 diff
+   */
+  get turnDirection(): EditorViewType.CURRENT | EditorViewType.INCOMING;
+  setTurnDirection: (t: EditorViewType.CURRENT | EditorViewType.INCOMING) => this;
 }
 
 export interface IBaseCodeEditor {
@@ -16,14 +25,14 @@ export interface IBaseCodeEditor {
 export type LineRangeType = 'insert' | 'modify' | 'remove';
 
 export enum EditorViewType {
-  CURRENT,
-  RESULT,
-  INCOMING,
+  CURRENT = 'current',
+  RESULT = 'result',
+  INCOMING = 'incoming',
 }
 
 export enum EDiffRangeTurn {
-  ORIGIN,
-  MODIFIED,
+  ORIGIN = 'origin',
+  MODIFIED = 'modified',
 }
 
 export interface IStickyPiecePosition {
@@ -72,6 +81,25 @@ export namespace CONFLICT_ACTIONS_ICON {
   export const RIGHT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('right')}`;
   export const LEFT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('left')}`;
   export const CLOSE = `conflict-actions ${IGNORE} ${getIcon('close')}`;
+}
+
+/**
+ * 绘制 decoration 和 line widget 线的样式类名集合
+ */
+export namespace DECORATIONS_CLASSNAME {
+  export const combine = (...args: string[]) => args.reduce((pre, cur) => pre + ' ' + cur, ' ');
+  // conflict 操作后虚线框的主类名
+  export const conflict_wrap = 'conflict-wrap';
+  // 用于处理每条 decoration 的虚线框的哪个方向需要不闭合
+  export const stretch_top = 'stretch-top';
+  export const stretch_bottom = 'stretch-bottom';
+  export const stretch_left = 'stretch-left';
+  export const stretch_right = 'stretch-right';
+
+  export const margin_className = 'merge-editor-margin-className';
+  export const diff_line_background = 'merge-editor-diff-line-background';
+  export const diff_inner_char_background = 'merge-editor-diff-inner-char-background';
+  export const guide_underline_widget = 'merge-editor-guide-underline-widget';
 }
 
 export interface IConflictActionsEvent {
