@@ -7,45 +7,27 @@ const baseConfig = {
   preset: 'ts-jest',
   testRunner: 'jest-jasmine2',
   resolver: '<rootDir>/tools/dev-tool/src/jest-resolver.js',
-  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
+  // coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'v8',
   // https://dev.to/vantanev/make-your-jest-tests-up-to-20-faster-by-changing-a-single-setting-i36
   maxWorkers: '50%',
-  collectCoverageFrom: [
-    'packages/*/src/**/*.ts',
-    '!packages/**/*.contribution.ts',
-    // 部分contribution文件为-contribution结尾
-    '!packages/**/*-contribution.ts',
-    '!packages/startup/**/*.ts',
-    // Test 功能暂未完成
-    '!packages/testing/**/*.ts',
-    // CLI 不需要测试
-    '!packages/remote-cli/**/*.ts',
-    '!packages/core-electron-main/**/*.ts',
-    '!packages/*/src/electron-main/**/*.ts',
-  ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
     '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js',
   },
   testPathIgnorePatterns: [
     '/dist/',
+    '/node_modules/',
     '/tools/workspace/',
+    '/tools/template/',
     '/tools/extensions/',
     '/packages/status-bar/entry',
     '/packages/startup/entry',
+    '/__mocks__/',
     '/packages/quick-open/entry',
     // 终端渲染测试暂时不跟随单元测试
     '/packages/terminal-next/__tests__/browser/render.test.ts',
   ],
   modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/tools/workspace/'],
-  coveragePathIgnorePatterns: [
-    '/dist/',
-    '/node_modules/',
-    '/mocks/',
-    '/tools/template/',
-    '/tools/workspace/',
-    '/packages/startup/entry',
-  ],
   coverageThreshold: {
     global: {
       branches: 0,
