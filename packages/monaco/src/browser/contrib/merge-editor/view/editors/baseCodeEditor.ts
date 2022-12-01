@@ -105,6 +105,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   public abstract getMonacoDecorationOptions(
     inputDecoration: IModelDecorationOptions,
+    inputRange: LineRange,
   ): Omit<IModelDecorationOptions, 'description'>;
 
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
@@ -143,8 +144,9 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
       const sameInner = innerChanges[idx];
       const sameRange = toBeRanges[idx];
       const _exec = (type: LineRangeType) => {
-        changesResult.push(range.setType(type));
-        innerChangesResult.push(sameInner.map((i) => i.setType(type)));
+        const direction = withBase === 1 ? EditorViewType.CURRENT : EditorViewType.INCOMING;
+        changesResult.push(range.setType(type).setTurnDirection(direction));
+        innerChangesResult.push(sameInner.map((i) => i.setType(type).setTurnDirection(direction)));
       };
 
       _exec(range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify');

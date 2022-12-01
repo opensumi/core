@@ -6,7 +6,7 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
+import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE, DECORATIONS_CLASSNAME } from '../../types';
 import { flatInnerModified, flatModified } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -58,7 +58,12 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
   ): Omit<IModelDecorationOptions, 'description'> {
     return {
-      linesDecorationsClassName: preDecorations.className,
+      linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
+        DECORATIONS_CLASSNAME.stretch_right,
+        DECORATIONS_CLASSNAME.stretch_left,
+        preDecorations.className || '',
+      ),
+      className: DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_left, preDecorations.className || ''),
     };
   }
 

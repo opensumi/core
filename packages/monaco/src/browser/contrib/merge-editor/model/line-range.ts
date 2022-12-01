@@ -1,7 +1,7 @@
 import { IRange } from '@opensumi/monaco-editor-core';
 import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
-import { IRangeContrast, LineRangeType } from '../types';
+import { EditorViewType, IRangeContrast, LineRangeType } from '../types';
 
 import { InnerRange } from './inner-range';
 
@@ -11,9 +11,29 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this._type;
   }
 
+  private _isComplete: boolean;
+  public get isComplete(): boolean {
+    return this._isComplete;
+  }
+
+  private _turnDirection: EditorViewType.CURRENT | EditorViewType.INCOMING;
+  public get turnDirection(): EditorViewType.CURRENT | EditorViewType.INCOMING {
+    return this._turnDirection;
+  }
+
   constructor(startLineNumber: number, endLineNumberExclusive: number) {
     super(startLineNumber, endLineNumberExclusive);
     this._type = 'insert';
+  }
+
+  public setTurnDirection(t: EditorViewType.CURRENT | EditorViewType.INCOMING) {
+    this._turnDirection = t;
+    return this;
+  }
+
+  public setComplete(b: boolean): this {
+    this._isComplete = b;
+    return this;
   }
 
   public setType(v: LineRangeType): this {
