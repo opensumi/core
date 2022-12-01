@@ -2547,7 +2547,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-collaboration@2.21.5, @opensumi/ide-collaboration@workspace:packages/collaboration":
+"@opensumi/ide-collaboration@workspace:packages/collaboration":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-collaboration@workspace:packages/collaboration"
   dependencies:
@@ -2595,6 +2595,7 @@ __metadata:
     fuzzy: ^0.1.3
     lodash: ^4.17.15
     marked: 4.0.10
+    prop-types: ^15.8.1
     raf: ^3.4.1
     rc-dialog: ~7.6.0
     rc-dropdown: ~2.4.1
@@ -2642,6 +2643,7 @@ __metadata:
     "@opensumi/vscode-jsonrpc": ^8.0.0-next.2
     mock-socket: ^9.0.2
     path-match: ^1.2.4
+    reconnecting-websocket: ^4.2.0
     ws: ^8.9.0
   languageName: unknown
   linkType: soft
@@ -2688,7 +2690,6 @@ __metadata:
     react-perfect-scrollbar: ^1.5.2
     react-sticky: ^6.0.3
     react-window: ^1.8.5
-    reconnecting-websocket: ^4.2.0
     resize-observer-polyfill: 1.5.1
     strip-json-comments: 3.0.1
     vscode-textmate: 7.0.1
@@ -2744,7 +2745,6 @@ __metadata:
     "@opensumi/di": ^1.4.0
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-utils": 2.21.5
-    jschardet: 3.0.0
   languageName: unknown
   linkType: soft
 
@@ -2768,6 +2768,7 @@ __metadata:
   dependencies:
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
+    semver: ^6.3.0
     tree-kill: ^1.2.2
   peerDependencies:
     electron: "*"
@@ -2782,6 +2783,8 @@ __metadata:
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     keytar: ^7.7.0
+    koa: ^2.13.4
+    ws: ^8.9.0
   languageName: unknown
   linkType: soft
 
@@ -2804,7 +2807,6 @@ __metadata:
     "@opensumi/ide-connection": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-file-service": 2.21.5
@@ -2815,7 +2817,6 @@ __metadata:
     "@opensumi/ide-overlay": 2.21.5
     "@opensumi/ide-preferences": 2.21.5
     "@opensumi/ide-quick-open": 2.21.5
-    "@opensumi/ide-storage": 2.21.5
     "@opensumi/ide-task": 2.21.5
     "@opensumi/ide-terminal-next": 2.21.5
     "@opensumi/ide-theme": 2.21.5
@@ -2834,7 +2835,6 @@ __metadata:
   dependencies:
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
@@ -2886,7 +2886,6 @@ __metadata:
     "@opensumi/ide-components": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-file-service": 2.21.5
     "@opensumi/ide-monaco": 2.21.5
@@ -2905,7 +2904,6 @@ __metadata:
   dependencies:
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-overlay": 2.21.5
@@ -2920,17 +2918,15 @@ __metadata:
   dependencies:
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-express-file-server@workspace:packages/express-file-server":
+"@opensumi/ide-express-file-server@2.21.5, @opensumi/ide-express-file-server@workspace:packages/express-file-server":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-express-file-server@workspace:packages/express-file-server"
   dependencies:
     "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-static-resource": 2.21.5
@@ -2952,8 +2948,6 @@ __metadata:
     "@opensumi/ide-extension": 2.21.5
     "@opensumi/ide-main-layout": 2.21.5
     "@opensumi/ide-markdown": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-static-resource": 2.21.5
     "@opensumi/ide-theme": 2.21.5
     "@types/node-fetch": ^2.6.1
     "@types/requestretry": ^1.12.7
@@ -2972,7 +2966,6 @@ __metadata:
   dependencies:
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-file-service": 2.21.5
     "@opensumi/ide-logs": 2.21.5
@@ -2994,6 +2987,7 @@ __metadata:
     "@opensumi/ide-decoration": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
+    "@opensumi/ide-extension": 2.21.5
     "@opensumi/ide-extension-storage": 2.21.5
     "@opensumi/ide-file-search": 2.21.5
     "@opensumi/ide-file-service": 2.21.5
@@ -3020,6 +3014,7 @@ __metadata:
     glob-to-regexp: 0.4.1
     is-running: ^2.1.0
     picomatch: ^2.2.1
+    semver: ^6.3.0
     tree-kill: ^1.2.2
     v8-inspect-profiler: ^0.0.20
   languageName: unknown
@@ -3036,7 +3031,6 @@ __metadata:
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-file-service": 2.21.5
     "@opensumi/ide-monaco": 2.21.5
-    "@opensumi/ide-overlay": 2.21.5
     "@opensumi/ide-static-resource": 2.21.5
   languageName: unknown
   linkType: soft
@@ -3045,7 +3039,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-file-search@workspace:packages/file-search"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
@@ -3064,7 +3057,6 @@ __metadata:
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
-    "@opensumi/ide-logs": 2.21.5
     "@parcel/watcher": 2.0.6
     drivelist: ^6.4.3
     file-type: ^12.0.0
@@ -3105,7 +3097,6 @@ __metadata:
     "@opensumi/ide-components": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-decoration": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
@@ -3113,7 +3104,6 @@ __metadata:
     "@opensumi/ide-file-service": 2.21.5
     "@opensumi/ide-main-layout": 2.21.5
     "@opensumi/ide-overlay": 2.21.5
-    "@opensumi/ide-terminal-next": 2.21.5
     "@opensumi/ide-theme": 2.21.5
     "@opensumi/ide-workspace": 2.21.5
     "@opensumi/ide-workspace-edit": 2.21.5
@@ -3124,7 +3114,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-i18n@workspace:packages/i18n"
   dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
   languageName: unknown
@@ -3136,11 +3125,9 @@ __metadata:
   dependencies:
     "@opensumi/ide-components": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-preferences": 2.21.5
     "@opensumi/ide-quick-open": 2.21.5
   languageName: unknown
   linkType: soft
@@ -3192,7 +3179,6 @@ __metadata:
     "@opensumi/ide-components": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-webview": 2.21.5
@@ -3203,7 +3189,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-markers@workspace:packages/markers"
   dependencies:
-    "@opensumi/ide-components": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
@@ -3255,7 +3240,6 @@ __metadata:
   dependencies:
     "@opensumi/ide-components": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-decoration": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
@@ -3294,7 +3278,6 @@ __metadata:
     "@opensumi/ide-main-layout": 2.21.5
     "@opensumi/ide-monaco": 2.21.5
     "@opensumi/ide-workspace": 2.21.5
-    escape-carriage: ^1.3.0
   languageName: unknown
   linkType: soft
 
@@ -3408,7 +3391,6 @@ __metadata:
   resolution: "@opensumi/ide-startup@workspace:packages/startup"
   dependencies:
     "@opensumi/ide-addons": 2.21.5
-    "@opensumi/ide-collaboration": 2.21.5
     "@opensumi/ide-comments": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
@@ -3418,6 +3400,7 @@ __metadata:
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-explorer": 2.21.5
+    "@opensumi/ide-express-file-server": 2.21.5
     "@opensumi/ide-extension": 2.21.5
     "@opensumi/ide-extension-manager": 2.21.5
     "@opensumi/ide-extension-storage": 2.21.5
@@ -3452,38 +3435,20 @@ __metadata:
     "@opensumi/ide-testing": 2.21.5
     "@opensumi/ide-theme": 2.21.5
     "@opensumi/ide-toolbar": 2.21.5
-    "@opensumi/ide-userstorage": 2.21.5
     "@opensumi/ide-variable": 2.21.5
     "@opensumi/ide-webview": 2.21.5
     "@opensumi/ide-workspace": 2.21.5
     "@opensumi/ide-workspace-edit": 2.21.5
     "@opensumi/textmate-languages": ^2.6.1
     browserfs: ^1.4.3
-    clean-webpack-plugin: ^3.0.0
-    compression: ^1.7.4
-    cross-env: ^7.0.3
     css-loader: ^2.1.1
     electron: ^18.3.0
     file-loader: ^3.0.1
-    friendly-errors-webpack-plugin: ^1.7.0
-    html-webpack-plugin: ^3.2.0
-    http-proxy-middleware: ^1.0.4
-    koa: ^2.13.4
-    koa-bodyparser: ^4.3.0
-    less: ^3.9.0
     less-loader: ^6.0.0
-    mini-css-extract-plugin: ^0.6.0
-    mobx: ^5.9.4
-    mobx-react-lite: ^1.3.1
     nodemon: ^2.0.15
     npm-run: ^5.0.1
     npm-run-all: ^4.1.5
     react-dom: ^16.8.6
-    serviceworker-webpack-plugin: ^1.0.1
-    style-loader: ^0.23.1
-    style-resources-loader: ^1.2.1
-    tsconfig-paths: ^3.8.0
-    tsconfig-paths-webpack-plugin: ^3.2.0
     webpack-bundle-analyzer: ^3.8.0
     webpack-dev-server: 3.8.0
   languageName: unknown
@@ -3515,7 +3480,6 @@ __metadata:
     "@opensumi/ide-components": 2.21.5
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-theme": 2.14.4
   languageName: unknown
@@ -3539,7 +3503,6 @@ __metadata:
   dependencies:
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-output": 2.21.5
@@ -3609,7 +3572,6 @@ __metadata:
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-file-service": 2.21.5
-    "@opensumi/ide-logs": 2.21.5
     "@opensumi/ide-static-resource": 2.21.5
   languageName: unknown
   linkType: soft
@@ -3638,22 +3600,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-userstorage@2.21.5, @opensumi/ide-userstorage@workspace:packages/userstorage":
-  version: 0.0.0-use.local
-  resolution: "@opensumi/ide-userstorage@workspace:packages/userstorage"
-  dependencies:
-    "@opensumi/ide-core-browser": 2.21.5
-    "@opensumi/ide-core-common": 2.21.5
-    "@opensumi/ide-dev-tool": ^1.3.1
-  languageName: unknown
-  linkType: soft
-
 "@opensumi/ide-utils@2.21.5, @opensumi/ide-utils@workspace:*, @opensumi/ide-utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-utils@workspace:packages/utils"
   dependencies:
     "@opensumi/ide-dev-tool": ^1.3.1
     iconv-lite: ^0.6.3
+    jschardet: 3.0.0
     mri: ^1.2.0
     nanoid: 3.3.4
     vscode-uri: 3.0.2
@@ -3678,7 +3631,6 @@ __metadata:
     "@opensumi/ide-core-browser": 2.21.5
     "@opensumi/ide-core-common": 2.21.5
     "@opensumi/ide-core-electron-main": 2.21.5
-    "@opensumi/ide-core-node": 2.21.5
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-editor": 2.21.5
     "@opensumi/ide-static-resource": 2.21.5
@@ -4176,7 +4128,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/http-proxy@npm:^1.17.2, @types/http-proxy@npm:^1.17.5":
+"@types/http-proxy@npm:^1.17.2":
   version: 1.17.9
   resolution: "@types/http-proxy@npm:1.17.9"
   dependencies:
@@ -4572,24 +4524,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/source-list-map@npm:*":
-  version: 0.1.2
-  resolution: "@types/source-list-map@npm:0.1.2"
-  checksum: fda8f37537aca9d3ed860d559289ab1dddb6897e642e6f53e909bbd18a7ac3129a8faa2a7d093847c91346cf09c86ef36e350c715406fba1f2271759b449adf6
-  languageName: node
-  linkType: hard
-
 "@types/stack-utils@npm:^2.0.0":
   version: 2.0.1
   resolution: "@types/stack-utils@npm:2.0.1"
   checksum: 205fdbe3326b7046d7eaf5e494d8084f2659086a266f3f9cf00bccc549c8e36e407f88168ad4383c8b07099957ad669f75f2532ed4bc70be2b037330f7bae019
-  languageName: node
-  linkType: hard
-
-"@types/tapable@npm:^1":
-  version: 1.0.8
-  resolution: "@types/tapable@npm:1.0.8"
-  checksum: b4b754dd0822c407b8f29ef6b766490721c276880f9e976d92ee2b3ef915f11a05a2442ae36c8978bcd872ad6bc833b0a2c4d267f2d611590668a366bad50652
   languageName: node
   linkType: hard
 
@@ -4609,44 +4547,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/uglify-js@npm:*":
-  version: 3.17.1
-  resolution: "@types/uglify-js@npm:3.17.1"
-  dependencies:
-    source-map: ^0.6.1
-  checksum: 76b9aa6b5c19690bee1fba29835ca580ec92db2b43cb8e2acd0278086138372a66e55bbd785c90d032bc890069f0cfde9c763f2d2860bb1a747b581a04d0999b
-  languageName: node
-  linkType: hard
-
 "@types/uuid@npm:^8.3.4":
   version: 8.3.4
   resolution: "@types/uuid@npm:8.3.4"
   checksum: 6f11f3ff70f30210edaa8071422d405e9c1d4e53abbe50fdce365150d3c698fe7bbff65c1e71ae080cbfb8fded860dbb5e174da96fdbbdfcaa3fb3daa474d20f
-  languageName: node
-  linkType: hard
-
-"@types/webpack-sources@npm:*":
-  version: 3.2.0
-  resolution: "@types/webpack-sources@npm:3.2.0"
-  dependencies:
-    "@types/node": "*"
-    "@types/source-list-map": "*"
-    source-map: ^0.7.3
-  checksum: fa23dcfb99f79cc0ba8e6ca41cb8dedb406f8d7772e8e3d3d9b443bfb36557a1a78f4de2b97905554db98beee1a2ef6f930e188977adde6452392a64dd4b7c2a
-  languageName: node
-  linkType: hard
-
-"@types/webpack@npm:^4.4.31":
-  version: 4.41.33
-  resolution: "@types/webpack@npm:4.41.33"
-  dependencies:
-    "@types/node": "*"
-    "@types/tapable": ^1
-    "@types/uglify-js": "*"
-    "@types/webpack-sources": "*"
-    anymatch: ^3.0.0
-    source-map: ^0.6.0
-  checksum: 5f64818128c94026be0e43e77d687e2d90f0da526a3a7c308c6a0bb12e93a35c9243be427bbf6865f64fd71dc5b32715af9b9da0cd6ae8335081b6db995bad2b
   languageName: node
   linkType: hard
 
@@ -5495,7 +5399,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"anymatch@npm:^3.0.0, anymatch@npm:^3.0.3, anymatch@npm:~3.1.2":
+"anymatch@npm:^3.0.3, anymatch@npm:~3.1.2":
   version: 3.1.3
   resolution: "anymatch@npm:3.1.3"
   dependencies:
@@ -6971,18 +6875,6 @@ __metadata:
   version: 2.2.0
   resolution: "clean-stack@npm:2.2.0"
   checksum: 2ac8cd2b2f5ec986a3c743935ec85b07bc174d5421a5efc8017e1f146a1cf5f781ae962618f416352103b32c9cd7e203276e8c28241bbe946160cab16149fb68
-  languageName: node
-  linkType: hard
-
-"clean-webpack-plugin@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "clean-webpack-plugin@npm:3.0.0"
-  dependencies:
-    "@types/webpack": ^4.4.31
-    del: ^4.1.1
-  peerDependencies:
-    webpack: "*"
-  checksum: ca933e80d34e079084ca2fd70f05bed1d0e93fcb5cd21a6ab8aeca521ab92749d28a28ea7600b9b92de9326ddc253147187dee8b1bea9d60b0be0b76600914d6
   languageName: node
   linkType: hard
 
@@ -9301,13 +9193,6 @@ __metadata:
   version: 3.1.1
   resolution: "escalade@npm:3.1.1"
   checksum: a3e2a99f07acb74b3ad4989c48ca0c3140f69f923e56d0cba0526240ee470b91010f9d39001f2a4a313841d237ede70a729e92125191ba5d21e74b106800b133
-  languageName: node
-  linkType: hard
-
-"escape-carriage@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "escape-carriage@npm:1.3.0"
-  checksum: ced9a6cfc4cca4ea51882809a182ce135c7869c43dfffc7a8edd7f1eb0d22904a6cce08b61cad6c645a9eb73e895db564e05fe020e1d9b83a92bcfd5adf14436
   languageName: node
   linkType: hard
 
@@ -11637,19 +11522,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-proxy-middleware@npm:^1.0.4":
-  version: 1.3.1
-  resolution: "http-proxy-middleware@npm:1.3.1"
-  dependencies:
-    "@types/http-proxy": ^1.17.5
-    http-proxy: ^1.18.1
-    is-glob: ^4.0.1
-    is-plain-obj: ^3.0.0
-    micromatch: ^4.0.2
-  checksum: c6f0fe6d5aa58f3757084f1fad8109e7384fdea1b0a5c62f58ac767c42f367a18d3819bed8cbf8b5183f17e3e14fad04322f179c569629004da5fbec9b81a88a
-  languageName: node
-  linkType: hard
-
 "http-proxy@npm:^1.18.0, http-proxy@npm:^1.18.1":
   version: 1.18.1
   resolution: "http-proxy@npm:1.18.1"
@@ -12508,13 +12380,6 @@ __metadata:
   version: 2.1.0
   resolution: "is-plain-obj@npm:2.1.0"
   checksum: cec9100678b0a9fe0248a81743041ed990c2d4c99f893d935545cfbc42876cbe86d207f3b895700c690ad2fa520e568c44afc1605044b535a7820c1d40e38daa
-  languageName: node
-  linkType: hard
-
-"is-plain-obj@npm:^3.0.0":
-  version: 3.0.0
-  resolution: "is-plain-obj@npm:3.0.0"
-  checksum: a6ebdf8e12ab73f33530641972a72a4b8aed6df04f762070d823808303e4f76d87d5ea5bd76f96a7bbe83d93f04ac7764429c29413bd9049853a69cb630fb21c
   languageName: node
   linkType: hard
 
@@ -17980,7 +17845,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.6, prop-types@npm:^15.5.8, prop-types@npm:^15.6.0, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2":
+"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.6, prop-types@npm:^15.5.8, prop-types@npm:^15.6.0, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -19646,17 +19511,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"serviceworker-webpack-plugin@npm:^1.0.1":
-  version: 1.0.1
-  resolution: "serviceworker-webpack-plugin@npm:1.0.1"
-  dependencies:
-    minimatch: ^3.0.4
-  peerDependencies:
-    webpack: ^4
-  checksum: 0de36e17f4905274d274520a03f7d7a8f5cf238c17ef67fd66a4bf133df1a1dab89d3707c1a632ff82e6faaba8545799283f748bc801aa2b42b189a8b5e0f476
-  languageName: node
-  linkType: hard
-
 "set-blocking@npm:^2.0.0, set-blocking@npm:~2.0.0":
   version: 2.0.0
   resolution: "set-blocking@npm:2.0.0"
@@ -20093,13 +19947,6 @@ __metadata:
   version: 0.6.1
   resolution: "source-map@npm:0.6.1"
   checksum: 59ce8640cf3f3124f64ac289012c2b8bd377c238e316fb323ea22fbfe83da07d81e000071d7242cad7a23cd91c7de98e4df8830ec3f133cb6133a5f6e9f67bc2
-  languageName: node
-  linkType: hard
-
-"source-map@npm:^0.7.3":
-  version: 0.7.4
-  resolution: "source-map@npm:0.7.4"
-  checksum: 01cc5a74b1f0e1d626a58d36ad6898ea820567e87f18dfc9d24a9843a351aaa2ec09b87422589906d6ff1deed29693e176194dc88bcae7c9a852dc74b311dbf5
   languageName: node
   linkType: hard
 

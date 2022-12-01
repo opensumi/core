@@ -17,8 +17,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.21.5",
-    "@opensumi/ide-core-node": "2.21.5"
+    "@opensumi/ide-core-common": "2.21.5"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "2.21.5",

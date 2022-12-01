@@ -2,12 +2,12 @@ import { IContextKeyService, CommandService, WORKSPACE_COMMANDS } from '@opensum
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { URI } from '@opensumi/ide-core-common';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { WorkspaceContribution } from '@opensumi/ide-workspace/lib/browser/workspace-contribution';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { WorkspaceModule } from '../../src/browser';
+import { WorkspaceContribution } from '../../src/browser/workspace-contribution';
+import { IWorkspaceService } from '../../src/common';
 
 describe('WorkspaceContribution should be work', () => {
   let workspaceContribution: WorkspaceContribution;

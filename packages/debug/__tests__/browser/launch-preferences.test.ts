@@ -11,8 +11,8 @@ import {
   PreferenceScope,
   URI,
   IContextKeyService,
+  AppConfig,
 } from '@opensumi/ide-core-browser';
-import { AppConfig } from '@opensumi/ide-core-node/lib/types';
 import { DebugContribution, DebugModule } from '@opensumi/ide-debug/lib/browser';
 import { EditorCollectionService } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';

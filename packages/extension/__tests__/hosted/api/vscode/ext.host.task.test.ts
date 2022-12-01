@@ -32,7 +32,6 @@ import {
   ITerminalService,
   ITerminalTheme,
 } from '@opensumi/ide-terminal-next';
-import { TerminalClientFactory } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { TerminalEnvironmentService } from '@opensumi/ide-terminal-next/lib/browser/terminal.environment.service';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
@@ -41,8 +40,6 @@ import { TerminalProfileService } from '@opensumi/ide-terminal-next/lib/browser/
 import { TerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/browser/terminal.view';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
-import { IVariableResolverService } from '@opensumi/ide-variable';
-import { VariableResolverService } from '@opensumi/ide-variable/lib/browser/variable-resolver.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
@@ -146,10 +143,6 @@ describe('ExtHostTask API', () => {
     {
       token: ITaskSystem,
       useClass: TerminalTaskSystem,
-    },
-    {
-      token: IVariableResolverService,
-      useClass: VariableResolverService,
     },
     {
       token: ITerminalGroupViewService,

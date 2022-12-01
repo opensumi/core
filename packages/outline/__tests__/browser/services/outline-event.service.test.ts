@@ -3,7 +3,8 @@ import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helpe
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { EditorActiveResourceStateChangedEvent, EditorSelectionChangeEvent } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbolChangedEvent } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { OutlineEventService } from '@opensumi/ide-outline/lib/browser/services/outline-event.service';
+
+import { OutlineEventService } from '../../../src/browser/services/outline-event.service';
 
 describe('OutlineEventService', () => {
   let outlineEventService: OutlineEventService;

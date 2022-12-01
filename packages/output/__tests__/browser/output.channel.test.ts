@@ -17,11 +17,11 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/src/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
-import { ContentChangeEvent, ContentChangeType } from '@opensumi/ide-output';
 
 import { MockWalkThroughSnippetSchemeDocumentProvider } from '../../../file-scheme/__mocks__/browser/file-doc';
 import { OutputPreferences } from '../../src/browser/output-preference';
 import { OutputChannel } from '../../src/browser/output.channel';
+import { ContentChangeEvent, ContentChangeType } from '../../src/common';
 
 @Injectable()
 class MockMainLayoutService {

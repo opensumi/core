@@ -1,4 +1,4 @@
-import globToRegExp = require('glob-to-regexp');
+import globToRegExp from 'glob-to-regexp';
 import {
   DocumentSelector,
   CompletionItemProvider,

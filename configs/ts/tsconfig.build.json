@@ -127,9 +127,6 @@
       "path": "./references/tsconfig.markdown.json"
     },
     {
-      "path": "./references/tsconfig.userstorage.json"
-    },
-    {
       "path": "./references/tsconfig.preferences.json"
     },
     {

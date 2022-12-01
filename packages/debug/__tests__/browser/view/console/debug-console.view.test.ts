@@ -1,8 +1,7 @@
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { IContextKeyService } from '@opensumi/ide-core-browser/src';
+import { IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-core-node';
 import {
   DebugModelFactory,
   IDebugServer,

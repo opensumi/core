@@ -19,7 +19,6 @@
   "dependencies": {
     "@opensumi/ide-components": "2.21.5",
     "@opensumi/ide-core-common": "2.21.5",
-    "@opensumi/ide-core-node": "2.21.5",
     "@opensumi/ide-theme": "2.21.5"
   },
   "devDependencies": {

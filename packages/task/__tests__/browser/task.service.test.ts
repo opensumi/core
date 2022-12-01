@@ -14,10 +14,7 @@ import {
   EditorDocumentModelContentRegistryImpl,
   EditorDocumentModelServiceImpl,
 } from '@opensumi/ide-editor/src/browser/doc-model/main';
-import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
-import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 import { taskSchemaUri, schema } from '@opensumi/ide-task/lib/browser/task.schema';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
@@ -27,9 +24,12 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockWalkThroughSnippetSchemeDocumentProvider } from '../../../file-scheme/__mocks__/browser/file-doc';
-import { MonacoService } from '../../../monaco';
+import { IMainLayoutService } from '../../../main-layout';
+import { LayoutService } from '../../../main-layout/src/browser/layout.service';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
+import { MonacoService } from '../../../monaco/lib/index';
 import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-registry';
+import { MockQuickOpenService } from '../../../quick-open/src/common/mocks/quick-open.service';
 
 const path = require('path');
 
