@@ -10,18 +10,23 @@
   }
 
   .merge-editor-guide-underline-widget {
+    border-style: solid;
+    border-top-width: 2px !important;
+    &.dashed {
+      border-style: dashed;
+    }
     &.insert {
-      border-top: 2px solid var(--mergeEditor-insertedBackground);
+      border-color: var(--mergeEditor-insertedBackground);
     }
     &.modify {
-      border-top: 2px solid var(--mergeEditor-modifyBackground);
+      border-color: var(--mergeEditor-modifyBackground);
     }
     &.remove {
-      border-top: 2px solid var(--mergeEditor-removedBackground);
+      border-color: var(--mergeEditor-removedBackground);
     }
   }
 
-  .merge-editor-marginClassName,
+  .merge-editor-margin-className,
   .merge-editor-diff-inner-char-background,
   .merge-editor-diff-line-background {
     &.insert {
@@ -60,14 +65,19 @@
           width: 100%;
           overflow: initial;
           & path {
+            stroke-dasharray: 3;
+            stroke-width: 2;
             &.insert {
               fill: var(--mergeEditor-insertedBackground);
+              stroke: var(--mergeEditor-insertedBackground);
             }
             &.modify {
               fill: var(--mergeEditor-modifyBackground);
+              stroke: var(--mergeEditor-modifyBackground);
             }
             &.remove {
               fill: var(--mergeEditor-removedBackground);
+              stroke: var(--mergeEditor-removedBackground);
             }
           }
         }
@@ -88,6 +98,53 @@
       left: initial !important;
       right: 8px !important;
       z-index: 2;
+    }
+  }
+
+  // conflict action 完成后的虚线框效果
+  .merge-editor-margin-className,
+  .merge-editor-diff-line-background {
+    &.conflict-wrap {
+      border-width: 2px;
+      border-style: dashed;
+      background-color: transparent;
+
+      &.insert {
+        border-color: var(--mergeEditor-insertedBackground);
+      }
+      &.modify {
+        border-color: var(--mergeEditor-modifyBackground);
+      }
+      &.remove {
+        border-color: var(--mergeEditor-removedBackground);
+      }
+
+      &.stretch-left {
+        border-left: none;
+      }
+
+      &.stretch-right {
+        border-right: none;
+      }
+
+      &.stretch-top {
+        border-top: none;
+      }
+
+      &.stretch-bottom {
+        border-bottom: none;
+      }
+    }
+  }
+
+  .merge-editor-margin-className {
+    &.conflict-wrap {
+      &.editor-view-current-type {
+        border-left: none;
+      }
+      &.editor-view-incoming-type {
+        border-right: none;
+      }
     }
   }
 }

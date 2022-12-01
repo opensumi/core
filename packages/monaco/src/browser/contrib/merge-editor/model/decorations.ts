@@ -4,7 +4,7 @@ import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/edit
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
-import { EditorViewType } from '../types';
+import { EditorViewType, DECORATIONS_CLASSNAME } from '../types';
 import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 import { GuidelineWidget } from '../view/guideline-widget';
 
@@ -57,28 +57,55 @@ export class MergeEditorDecorations extends Disposable {
     this._onDidChangeDecorations.fire(this);
   }
 
-  public createLineDecoration(range: LineRange): IDiffDecoration {
+  public createLineDecoration(range: LineRange): IDiffDecoration[] {
+    const begin = range.startLineNumber;
+    const end = Math.max(range.startLineNumber, range.endLineNumberExclusive - 1);
+    const length = end - begin + 1;
+
     const options = ModelDecorationOptions.register({
       description: range.id,
-      className: `merge-editor-diff-line-background ${range.type}`,
+      className: DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.diff_line_background, range.type),
       isWholeLine: true,
     });
 
-    return {
-      id: '',
-      editorDecoration: {
-        range: {
-          startLineNumber: range.startLineNumber,
-          startColumn: 0,
-          endLineNumber: Math.max(range.startLineNumber, range.endLineNumberExclusive - 1),
-          endColumn: Number.MAX_SAFE_INTEGER,
+    return Array.from({ length }).map((_, idx) => {
+      let wrapClassName = ` ${DECORATIONS_CLASSNAME.conflict_wrap} `;
+      if (length !== 1) {
+        wrapClassName +=
+          idx === 0
+            ? DECORATIONS_CLASSNAME.stretch_bottom
+            : idx === length - 1
+            ? DECORATIONS_CLASSNAME.stretch_top
+            : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_top, DECORATIONS_CLASSNAME.stretch_bottom);
+      }
+
+      const mergeOptions = {
+        ...options,
+        ...this.codeEditor.getMonacoDecorationOptions(options, range),
+      };
+
+      return {
+        id: '',
+        editorDecoration: {
+          range: {
+            startLineNumber: begin + idx,
+            startColumn: 0,
+            endLineNumber: begin + idx,
+            endColumn: Number.MAX_SAFE_INTEGER,
+          },
+          options: {
+            ...mergeOptions,
+            ...(range.isComplete
+              ? {
+                  className: (mergeOptions.className || '') + wrapClassName,
+                  marginClassName: (mergeOptions.marginClassName || '') + wrapClassName,
+                  linesDecorationsClassName: (mergeOptions.linesDecorationsClassName || '') + wrapClassName,
+                }
+              : {}),
+          },
         },
-        options: {
-          ...options,
-          ...this.codeEditor.getMonacoDecorationOptions(options),
-        },
-      },
-    };
+      };
+    });
   }
 
   public createInnerCharDecoration(range: InnerRange): IDiffDecoration {
@@ -88,7 +115,7 @@ export class MergeEditorDecorations extends Disposable {
         range,
         options: ModelDecorationOptions.register({
           description: range.toString(),
-          className: `merge-editor-diff-inner-char-background ${range.type}`,
+          className: DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.diff_inner_char_background, range.type),
           isWholeLine: false,
         }),
       },
@@ -98,7 +125,10 @@ export class MergeEditorDecorations extends Disposable {
   public createGuideLineWidget(range: LineRange): GuidelineWidget {
     const guidelineWidget = new GuidelineWidget(this.editor);
     guidelineWidget.create();
-    guidelineWidget.setLineRangeType(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
+    if (range.isComplete) {
+      guidelineWidget.addClassName('dashed');
+    }
+    guidelineWidget.addClassName(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
     return guidelineWidget;
   }
 
@@ -116,7 +146,7 @@ export class MergeEditorDecorations extends Disposable {
           this.lineWidgetSet.add(guidelineWidget);
           this._onDidChangeLineWidget.fire();
         } else {
-          newDecorations.push(this.createLineDecoration(range));
+          newDecorations.push(...this.createLineDecoration(range));
         }
       }
 

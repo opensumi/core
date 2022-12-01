@@ -1,7 +1,7 @@
 import { ZoneWidget } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/zoneWidget/browser/zoneWidget';
 
 import { ICodeEditor } from '../../../monaco-api/types';
-import { LineRangeType } from '../types';
+import { DECORATIONS_CLASSNAME, LineRangeType } from '../types';
 
 export class GuidelineWidget extends ZoneWidget {
   private recordLine: number;
@@ -10,7 +10,7 @@ export class GuidelineWidget extends ZoneWidget {
   protected applyStyle(): void {}
 
   protected _fillContainer(): void {
-    this.setCssClass('merge-editor-guide-underline-widget');
+    this.setCssClass(DECORATIONS_CLASSNAME.guide_underline_widget);
   }
 
   constructor(editor: ICodeEditor) {
@@ -35,7 +35,7 @@ export class GuidelineWidget extends ZoneWidget {
     }
   }
 
-  public setLineRangeType(type: LineRangeType): this {
+  public addClassName(type: LineRangeType | string): this {
     this.setCssClass(type);
     return this;
   }

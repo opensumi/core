@@ -28,19 +28,20 @@ export class MappingManagerService extends Disposable {
         : [this.documentMappingTurnRight, this.documentMappingTurnLeft];
 
     return (range: LineRange, isIgnore: boolean) => {
+      const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
+      if (!sameRange) {
+        return;
+      }
+
       const doMark = () => {
-        mapping.computeRangeMap.delete(range.id);
-        mapping.adjacentComputeRangeMap.delete(range.id);
+        // 标记该 range 区域已经解决完成
+        range.setComplete(true);
+        sameRange.setComplete(true);
       };
 
       if (isIgnore) {
         doMark();
       } else {
-        const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
-        if (!sameRange) {
-          return;
-        }
-
         const marginLength = range.calcMargin(sameRange);
 
         mapping.deltaAdjacentQueue(range, marginLength);

@@ -6,6 +6,7 @@ export class StickyPieceModel implements IStickyPiece {
   private _path: IStickyPiecePath;
   private _position: IStickyPiecePosition;
   private _rangeType: LineRangeType;
+  private _isComplete: boolean;
   private readonly rawData: Readonly<IStickyPiece>;
 
   public get width(): number {
@@ -24,18 +25,24 @@ export class StickyPieceModel implements IStickyPiece {
     return this._rangeType;
   }
 
+  public get isComplete(): boolean {
+    return this._isComplete;
+  }
+
   constructor(
     width: number,
     height: number,
     path: IStickyPiecePath,
     position: IStickyPiecePosition,
     rangeType: LineRangeType,
+    isComplete?: boolean,
   ) {
     this._width = width;
     this._height = height;
     this._path = path;
     this._position = position;
     this._rangeType = rangeType;
+    this._isComplete = !!isComplete;
     this.rawData = Object.freeze({
       rangeType,
       width,
