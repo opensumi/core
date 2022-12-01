@@ -2342,7 +2342,6 @@ __metadata:
     got: ^12.1.0
     handlebars: ^4.7.3
     husky: ^7.0.4
-    iconv-lite: ^0.6.3
     is-git-clean: ^1.1.0
     jest: ^28.0.3
     jest-canvas-mock: ^2.4.0
