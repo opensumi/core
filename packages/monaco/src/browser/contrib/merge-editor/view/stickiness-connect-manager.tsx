@@ -15,15 +15,26 @@ import { BaseCodeEditor } from './editors/baseCodeEditor';
 const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   const { leftTop, rightTop, leftBottom, rightBottom } = piece.path;
 
-  const drawPath = useCallback(
-    () => `M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} z`,
-    [leftTop, rightTop, rightBottom, leftBottom, piece.width],
+  const drawSolidPath = () => (
+    <path
+      className={piece.rangeType}
+      strokeOpacity={0}
+      d={`M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} z`}
+    ></path>
+  );
+
+  const drawDashedPath = () => (
+    <path
+      className={piece.rangeType}
+      fillOpacity={0}
+      d={`M0,${leftTop} L${piece.width},${rightTop} M${piece.width},${rightBottom} L0,${leftBottom}`}
+    ></path>
   );
 
   return (
     <div className={'piece-view-lines'} style={{ top: piece.position.top, width: piece.width }}>
       <svg viewBox={`0 0 ${piece.width} ${piece.height}`} style={{ height: piece.height }}>
-        <path className={piece.rangeType} d={drawPath()}></path>
+        {piece.isComplete ? drawDashedPath() : drawSolidPath()}
       </svg>
     </div>
   );
@@ -114,7 +125,16 @@ export class StickinessConnectManager extends Disposable {
         rangeType = withBase === 0 ? 'remove' : 'insert';
       }
 
-      result.push(new StickyPieceModel(width, height, path, position, rangeType));
+      result.push(
+        new StickyPieceModel(
+          width,
+          height,
+          path,
+          position,
+          rangeType,
+          withBase === 0 ? range.isComplete : sameModify.isComplete,
+        ),
+      );
     });
 
     return result;

@@ -5,6 +5,7 @@ import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/
 
 import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
 import { EditorViewType } from '../types';
+import { getEditorViewTypeClassName } from '../utils';
 import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 import { GuidelineWidget } from '../view/guideline-widget';
 
@@ -57,28 +58,51 @@ export class MergeEditorDecorations extends Disposable {
     this._onDidChangeDecorations.fire(this);
   }
 
-  public createLineDecoration(range: LineRange): IDiffDecoration {
+  public createLineDecoration(range: LineRange): IDiffDecoration[] {
+    const begin = range.startLineNumber;
+    const end = Math.max(range.startLineNumber, range.endLineNumberExclusive - 1);
+    const length = end - begin + 1;
+
     const options = ModelDecorationOptions.register({
       description: range.id,
-      className: `merge-editor-diff-line-background ${range.type}`,
+      className: `merge-editor-diff-line-background ${range.type} ${getEditorViewTypeClassName(this.editorViewType)}`,
       isWholeLine: true,
     });
 
-    return {
-      id: '',
-      editorDecoration: {
-        range: {
-          startLineNumber: range.startLineNumber,
-          startColumn: 0,
-          endLineNumber: Math.max(range.startLineNumber, range.endLineNumberExclusive - 1),
-          endColumn: Number.MAX_SAFE_INTEGER,
+    return Array.from({ length }).map((_, idx) => {
+      // conflict 操作后虚线框的主类名
+      let wrapClassName = ' conflict-wrap ';
+      if (length !== 1) {
+        wrapClassName += idx === 0 ? 'wrap-begin' : idx === length - 1 ? 'wrap-end' : 'wrap-middle';
+      }
+
+      const mergeOptions = {
+        ...options,
+        ...this.codeEditor.getMonacoDecorationOptions(options, range),
+      };
+
+      return {
+        id: '',
+        editorDecoration: {
+          range: {
+            startLineNumber: begin + idx,
+            startColumn: 0,
+            endLineNumber: begin + idx,
+            endColumn: Number.MAX_SAFE_INTEGER,
+          },
+          options: {
+            ...mergeOptions,
+            ...(range.isComplete
+              ? {
+                  className: (mergeOptions.className || '') + wrapClassName,
+                  marginClassName: (mergeOptions.marginClassName || '') + wrapClassName,
+                  linesDecorationsClassName: (mergeOptions.linesDecorationsClassName || '') + wrapClassName,
+                }
+              : {}),
+          },
         },
-        options: {
-          ...options,
-          ...this.codeEditor.getMonacoDecorationOptions(options),
-        },
-      },
-    };
+      };
+    });
   }
 
   public createInnerCharDecoration(range: InnerRange): IDiffDecoration {
@@ -116,7 +140,7 @@ export class MergeEditorDecorations extends Disposable {
           this.lineWidgetSet.add(guidelineWidget);
           this._onDidChangeLineWidget.fire();
         } else {
-          newDecorations.push(this.createLineDecoration(range));
+          newDecorations.push(...this.createLineDecoration(range));
         }
       }
 

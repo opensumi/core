@@ -7,6 +7,15 @@ import { LineRange } from './model/line-range';
 
 export interface IRangeContrast {
   type: LineRangeType;
+  // 是否解决操作完成
+  get isComplete(): boolean;
+  setComplete: (b: boolean) => this;
+  /**
+   * 表示这个 range 区域是倾向于 current editor 还是 incoming editor（如果本身就是在 current editor 则返回 current）
+   * 在 result editor 视图里可以通过该字段来判读它是与 current editor 相比较的还是与 incoming 相比较的 diff
+   */
+  get turnDirection(): EditorViewType.CURRENT | EditorViewType.INCOMING;
+  setTurnDirection: (t: EditorViewType.CURRENT | EditorViewType.INCOMING) => this;
 }
 
 export interface IBaseCodeEditor {
@@ -16,14 +25,14 @@ export interface IBaseCodeEditor {
 export type LineRangeType = 'insert' | 'modify' | 'remove';
 
 export enum EditorViewType {
-  CURRENT,
-  RESULT,
-  INCOMING,
+  CURRENT = 'current',
+  RESULT = 'result',
+  INCOMING = 'incoming',
 }
 
 export enum EDiffRangeTurn {
-  ORIGIN,
-  MODIFIED,
+  ORIGIN = 'origin',
+  MODIFIED = 'modified',
 }
 
 export interface IStickyPiecePosition {

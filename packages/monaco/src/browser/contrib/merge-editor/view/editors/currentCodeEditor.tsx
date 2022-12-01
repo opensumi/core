@@ -10,7 +10,7 @@ import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE } from '../../types';
-import { flatInnerOriginal, flatOriginal } from '../../utils';
+import { flatInnerOriginal, flatOriginal, getEditorViewTypeClassName } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -70,10 +70,13 @@ export class CurrentCodeEditor extends BaseCodeEditor {
   }
 
   public getMonacoDecorationOptions(
-    preDecorations: IModelDecorationOptions,
+    _: IModelDecorationOptions,
+    range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
     return {
-      marginClassName: preDecorations.className,
+      marginClassName: `merge-editor-margin-className ${range.type} ${getEditorViewTypeClassName(
+        this.getEditorViewType(),
+      )}`,
     };
   }
 

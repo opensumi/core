@@ -21,7 +21,7 @@
     }
   }
 
-  .merge-editor-marginClassName,
+  .merge-editor-margin-className,
   .merge-editor-diff-inner-char-background,
   .merge-editor-diff-line-background {
     &.insert {
@@ -60,14 +60,19 @@
           width: 100%;
           overflow: initial;
           & path {
+            stroke-dasharray: 3;
+            stroke-width: 2;
             &.insert {
               fill: var(--mergeEditor-insertedBackground);
+              stroke: var(--mergeEditor-insertedBackground);
             }
             &.modify {
               fill: var(--mergeEditor-modifyBackground);
+              stroke: var(--mergeEditor-modifyBackground);
             }
             &.remove {
               fill: var(--mergeEditor-removedBackground);
+              stroke: var(--mergeEditor-removedBackground);
             }
           }
         }
@@ -88,6 +93,64 @@
       left: initial !important;
       right: 8px !important;
       z-index: 2;
+    }
+  }
+
+  // conflict action 完成后的虚线框效果
+  .merge-editor-margin-className,
+  .merge-editor-diff-line-background {
+    &.conflict-wrap {
+      border: 2px dashed;
+      background-color: transparent;
+
+      &.editor-view-current-type {
+        border-right: none;
+      }
+      &.editor-view-incoming-type {
+        border-left: none;
+      }
+      &.editor-view-result-type {
+        &.stretch-left {
+          border-left: none;
+        }
+        &.stretch-right {
+          border-right: none;
+        }
+      }
+
+      &.insert {
+        border-color: var(--mergeEditor-insertedBackground);
+      }
+      &.modify {
+        border-color: var(--mergeEditor-modifyBackground);
+      }
+      &.remove {
+        border-color: var(--mergeEditor-removedBackground);
+      }
+    }
+
+    &.wrap-begin {
+      border-bottom: none;
+    }
+
+    &.wrap-middle {
+      border-bottom: none;
+      border-top: none;
+    }
+
+    &.wrap-end {
+      border-top: none;
+    }
+  }
+
+  .merge-editor-margin-className {
+    &.conflict-wrap {
+      &.editor-view-current-type {
+        border-left: none;
+      }
+      &.editor-view-incoming-type {
+        border-right: none;
+      }
     }
   }
 }

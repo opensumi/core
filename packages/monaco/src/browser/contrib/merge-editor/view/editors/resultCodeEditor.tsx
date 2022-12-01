@@ -47,12 +47,16 @@ export class ResultCodeEditor extends BaseCodeEditor {
       const sameInner = innerChanges[idx];
       const sameRange = toBeRanges[idx];
       const _exec = (type: LineRangeType) => {
-        changesResult.push(range.setType(type));
-        innerChangesResult.push(sameInner.map((i) => i.setType(type)));
+        const direction = this.currentBaseRange === 0 ? EditorViewType.INCOMING : EditorViewType.CURRENT;
+        changesResult.push(range.setType(type).setTurnDirection(direction));
+        innerChangesResult.push(sameInner.map((i) => i.setType(type).setTurnDirection(direction)));
         const entries = this.documentMappingTurnLeft.adjacentComputeRangeMap.entries();
         for (const [key, value] of entries) {
           if (sameRange.id === key) {
-            this.documentMappingTurnLeft.adjacentComputeRangeMap.set(key, value.setType(type));
+            this.documentMappingTurnLeft.adjacentComputeRangeMap.set(
+              key,
+              value.setType(type).setTurnDirection(direction),
+            );
           }
         }
       };
@@ -71,7 +75,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const retain: IDiffDecoration[] = [];
     for (const range of values) {
       if (!range.isEmpty) {
-        retain.push(this.decorations.createLineDecoration(range));
+        retain.push(...this.decorations.createLineDecoration(range));
       }
     }
     return retain;
@@ -94,9 +98,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public getMonacoDecorationOptions(
     preDecorations: IModelDecorationOptions,
+    range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
+    const stretchClassName = ` stretch-right ${range.turnDirection === EditorViewType.CURRENT ? 'stretch-left' : ''}`;
     return {
-      linesDecorationsClassName: preDecorations.className,
+      linesDecorationsClassName: preDecorations.className + stretchClassName,
     };
   }
 
