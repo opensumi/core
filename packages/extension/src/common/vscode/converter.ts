@@ -561,11 +561,22 @@ export function convertDiagnosticToMarkerData(diagnostic: vscode.Diagnostic): IM
   };
 }
 
-function convertCode(code: string | number | undefined | { target: URI; value: string }): string | undefined {
+function convertCode(
+  code?:
+    | string
+    | number
+    | {
+        value: string | number;
+        target: Uri;
+      },
+): string | { target: URI; value: string } | undefined {
   if (typeof code === 'number') {
     return String(code);
   } else if (typeof code === 'object') {
-    return code.value;
+    return {
+      value: String(code.value),
+      target: new URI(code.target),
+    };
   } else {
     return code;
   }

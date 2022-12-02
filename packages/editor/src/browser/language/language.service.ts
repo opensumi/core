@@ -63,7 +63,13 @@ function reviveRelated(related: IRelatedInformation): DiagnosticRelatedInformati
 
 function reviveMarker(marker: IMarkerData): Diagnostic {
   const monacoMarker: Diagnostic = {
-    code: marker.code,
+    code:
+      typeof marker.code === 'object'
+        ? {
+            value: marker.code.value,
+            target: marker.code.target.codeUri,
+          }
+        : marker.code,
     severity: reviveSeverity(marker.severity) as any,
     range: reviveRange(marker.startLineNumber, marker.startColumn, marker.endLineNumber, marker.endColumn),
     message: marker.message,
