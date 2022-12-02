@@ -20,6 +20,7 @@ import {
   MarkerModelBuilder,
   ResourceGlobMatcher,
 } from '../common';
+import { getMarkerCodeValue } from '../common/utils';
 
 import Messages from './messages';
 
@@ -136,7 +137,9 @@ export class Filter {
 
     const messageMatches = marker.message ? FilterOptions._filter(this.options.textFilter, marker.message) : undefined;
     const sourceMatches = marker.source ? FilterOptions._filter(this.options.textFilter, marker.source) : undefined;
-    const codeMatches = marker.code ? FilterOptions._filter(this.options.textFilter, marker.code) : undefined;
+    const codeMatches = marker.code
+      ? FilterOptions._filter(this.options.textFilter, getMarkerCodeValue(marker.code))
+      : undefined;
 
     if (messageMatches || sourceMatches || codeMatches) {
       return MarkerItemBuilder.buildFilterItem(marker, true, {

@@ -255,9 +255,60 @@ export interface ProblemMatchData extends ProblemMatch {
   marker: Diagnostic;
 }
 
+function rangeAreEqual(a, b) {
+  return (
+    a.start.line === b.start.line &&
+    a.start.character === b.start.character &&
+    a.end.line === b.end.line &&
+    a.end.character === b.end.character
+  );
+}
+
+function codeAreEquals(
+  a?:
+    | string
+    | number
+    | {
+        value: string | number;
+
+        target: any;
+      },
+  b?:
+    | string
+    | number
+    | {
+        value: string | number;
+
+        target: any;
+      },
+) {
+  if (typeof a === 'object' && typeof b === 'object') {
+    return a.value === b.value && a.target === b.target;
+  }
+  return a === b;
+}
+
+export function diagnosticAreEquals(a?: Diagnostic, b?: Diagnostic) {
+  return (
+    codeAreEquals(a?.code, b?.code) &&
+    a?.message === b?.message &&
+    a?.source === b?.source &&
+    rangeAreEqual(a?.range, b?.range)
+  );
+}
+
 export namespace ProblemMatchData {
   export function is(data: ProblemMatch): data is ProblemMatchData {
     return 'marker' in data;
+  }
+  export function areEquals(a: ProblemMatchData | ProblemMatch, b: ProblemMatchData | ProblemMatch) {
+    return (
+      a.resource?.toString() === b.resource?.toString() &&
+      a.description.owner === b.description.owner &&
+      a.description.severity === b.description.severity &&
+      a.description.source === b.description.source &&
+      diagnosticAreEquals((a as ProblemMatchData)?.marker, (b as ProblemMatchData)?.marker)
+    );
   }
 }
 
