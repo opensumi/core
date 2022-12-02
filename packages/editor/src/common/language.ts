@@ -70,10 +70,26 @@ export interface Diagnostic {
    * client to interpret diagnostics as error, warning, info or hint.
    */
   severity?: DiagnosticSeverity;
+
   /**
-   * The diagnostic's code, which might appear in the user interface.
+   * A code or identifier for this diagnostic.
+   * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.
    */
-  code?: number | string;
+  code?:
+    | string
+    | number
+    | {
+        /**
+         * A code or identifier for this diagnostic.
+         * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.
+         */
+        value: string | number;
+
+        /**
+         * A target URI to open with more information about the diagnostic error.
+         */
+        target: Uri;
+      };
   /**
    * A human-readable string describing the source of this
    * diagnostic, e.g. 'typescript' or 'super lint'.
@@ -137,7 +153,15 @@ export function asDiagnostics(diagnostics: Diagnostic[] | undefined): editor.IMa
 
 export function asDiagnostic(diagnostic: Diagnostic): editor.IMarkerData {
   return {
-    code: typeof diagnostic.code === 'number' ? diagnostic.code.toString() : diagnostic.code,
+    code:
+      typeof diagnostic.code === 'number'
+        ? diagnostic.code.toString()
+        : typeof diagnostic.code === 'object'
+        ? {
+            value: diagnostic.code.value.toString(),
+            target: diagnostic.code.target,
+          }
+        : diagnostic.code,
     severity: asSeverity(diagnostic.severity),
     message: diagnostic.message,
     source: diagnostic.source,
