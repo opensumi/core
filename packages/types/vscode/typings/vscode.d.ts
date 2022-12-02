@@ -2375,9 +2375,20 @@ declare module 'vscode' {
 
     /**
      * A code or identifier for this diagnostic.
-     * Should be used for later processing, e.g. when providing [code actions](#CodeActionContext).
+     * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.
      */
-    code?: string | number;
+     code?: string | number | {
+      /**
+       * A code or identifier for this diagnostic.
+       * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.
+       */
+      value: string | number;
+
+      /**
+       * A target URI to open with more information about the diagnostic error.
+       */
+      target: Uri;
+    };
 
     /**
      * An array of related diagnostic information, e.g. when symbol-names within
@@ -2607,9 +2618,9 @@ declare module 'vscode' {
     readonly processId: Thenable<number>;
 
     /**
-		 * The current state of the {@link Terminal}.
-		 */
-		readonly state: TerminalState;
+     * The current state of the {@link Terminal}.
+     */
+    readonly state: TerminalState;
 
     /**
      * The object used to initialize the terminal, this is useful for example to detecting the
