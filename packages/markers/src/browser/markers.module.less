@@ -83,6 +83,20 @@
         text-overflow: ellipsis;
       }
     }
+    .codeHref {
+      color: @markers-inline-color;
+      text-decoration: underline;
+      border-bottom: 1px solid transparent;
+      text-underline-position: under;
+      background-color: transparent;
+      outline: none;
+      cursor: pointer;
+      transition: color 0.3s;
+      -webkit-text-decoration-skip: objects;
+      :global(a) {
+        color: inherit;
+      }
+    }
 
     .position {
       // 错误位置信息

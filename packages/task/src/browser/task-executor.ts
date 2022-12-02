@@ -31,27 +31,6 @@ export enum TaskStatus {
   PROCESS_RUNNING,
   PROCESS_EXITED,
 }
-function rangeAreEqual(a, b) {
-  return (
-    a.start.line === b.start.line &&
-    a.start.character === b.start.character &&
-    a.end.line === b.end.line &&
-    a.end.character === b.end.character
-  );
-}
-
-function problemAreEquals(a: ProblemMatchData | ProblemMatch, b: ProblemMatchData | ProblemMatch) {
-  return (
-    a.resource?.toString() === b.resource?.toString() &&
-    a.description.owner === b.description.owner &&
-    a.description.severity === b.description.severity &&
-    a.description.source === b.description.source &&
-    (a as ProblemMatchData)?.marker.code === (b as ProblemMatchData)?.marker.code &&
-    (a as ProblemMatchData)?.marker.message === (b as ProblemMatchData)?.marker.message &&
-    (a as ProblemMatchData)?.marker.source === (b as ProblemMatchData)?.marker.source &&
-    rangeAreEqual((a as ProblemMatchData).marker.range, (b as ProblemMatchData).marker.range)
-  );
-}
 
 @Injectable({ multiple: true })
 export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
@@ -191,7 +170,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
           const markers = this.collector.processLine(l);
           if (markers && markers.length > 0) {
             for (const marker of markers) {
-              const existing = markerResults.findIndex((e) => problemAreEquals(e, marker));
+              const existing = markerResults.findIndex((e) => ProblemMatchData.areEquals(e, marker));
               if (existing === -1) {
                 markerResults.push(marker);
               }
