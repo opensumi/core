@@ -1,6 +1,7 @@
 import WebSocket from 'ws';
 import { Terminal } from 'xterm';
 
+import { Injectable } from '@opensumi/di';
 import { Disposable, PreferenceProvider, PreferenceResolveResult } from '@opensumi/ide-core-browser';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { uuid, URI, Emitter, IDisposable, PreferenceScope, Deferred, OperatingSystem } from '@opensumi/ide-core-common';
@@ -42,6 +43,7 @@ Object.defineProperty(window, 'matchMedia', {
 
 export const defaultName = 'bash';
 
+@Injectable()
 export class MockSocketService implements ITerminalService {
   static resId = 1;
 
@@ -66,8 +68,7 @@ export class MockSocketService implements ITerminalService {
     const sock = new WebSocket(localhost(getPort()));
     this._socks.set(sessionId, sock);
 
-    await delay(1000);
-
+    await delay(2000);
     this._handleMethod(sessionId);
 
     await this._doMethod(sessionId, MessageMethod.create, { sessionId, cols, rows });

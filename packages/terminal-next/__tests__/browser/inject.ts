@@ -86,7 +86,7 @@ export const injector = new MockInjector([
   },
   {
     token: ITerminalService,
-    useValue: new MockSocketService(),
+    useClass: MockSocketService,
   },
   {
     token: IContextKeyService,

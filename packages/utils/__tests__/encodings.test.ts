@@ -14,7 +14,7 @@ const helloUtf8 = new Uint8Array([228, 189, 160, 229, 165, 189]);
 const helloGbk = new Uint8Array([196, 227, 186, 195]);
 const helloWithBOM = utf8BOM.concat(Array.from(helloUtf8));
 
-describe.skip('encodings', () => {
+describe('encodings', () => {
   test('iconv: encoding keys valid for iconv', () => {
     const keys = Object.keys(SUPPORTED_ENCODINGS);
     for (const encoding of keys) {
@@ -57,7 +57,8 @@ describe.skip('encodings', () => {
     expect(result).toBe('你好');
   });
 
-  test('guess encoding', async () => {
+  // can not test with dynamic imports
+  test.skip('guess encoding (dynamic imports is not supported on Jest test)', async () => {
     const buffer = BinaryBuffer.wrap(
       Uint8Array.from([
         0xb4, 0xb0, 0xc7, 0xb0, 0xc3, 0xf7, 0xd4, 0xc2, 0xb9, 0xe2, 0x0a, 0xd2, 0xc9, 0xca, 0xc7, 0xb5, 0xd8, 0xc9,
