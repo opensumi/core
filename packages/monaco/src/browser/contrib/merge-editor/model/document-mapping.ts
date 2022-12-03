@@ -69,12 +69,34 @@ export class DocumentMapping extends Disposable {
     }
   }
 
-  public deltaAdjacentQueue(range: LineRange, offset: number): void {
+  /**
+   * @param range
+   * @param offset
+   * @param isContainSelf 是否包含自己，也增量 offset
+   * @returns
+   */
+  public deltaAdjacentQueueAfter(range: LineRange, offset: number, isContainSelf = false): void {
     const sameRange = this.adjacentComputeRangeMap.get(range.id);
+    if (!sameRange) {
+      return;
+    }
 
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
-      if (sameRange && (pick.isTouches(sameRange) || pick.isAfter(sameRange))) {
+      if (pick.isAfter(sameRange)) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
+      }
+
+      if (isContainSelf && pick.id === sameRange.id) {
+        this.adjacentComputeRangeMap.set(key, pick.delta(offset));
+      }
+    }
+  }
+
+  public deltaEndAdjacent(sameRange: LineRange, offset: number): void {
+    for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
+      if (pick.id === sameRange.id) {
+        this.adjacentComputeRangeMap.set(key, sameRange.deltaEnd(offset));
+        return;
       }
     }
   }
@@ -88,7 +110,7 @@ export class DocumentMapping extends Disposable {
     const values = this.adjacentComputeRangeMap.values();
 
     for (const range of values) {
-      if (range.isAfter(sameRange)) {
+      if (range.id !== sameRange.id && range.isAfter(sameRange)) {
         return range;
       }
     }

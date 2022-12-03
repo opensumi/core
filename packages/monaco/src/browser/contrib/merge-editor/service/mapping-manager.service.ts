@@ -44,13 +44,14 @@ export class MappingManagerService extends Disposable {
       } else {
         const marginLength = range.calcMargin(sameRange);
 
-        mapping.deltaAdjacentQueue(range, marginLength);
+        mapping.deltaAdjacentQueueAfter(range, marginLength);
         doMark();
+        mapping.deltaEndAdjacent(sameRange, marginLength);
 
         const findNextRange = sameMapping.huntForNextSameRange(sameRange);
         const reverseRange = findNextRange && sameMapping.reverse(findNextRange);
         if (reverseRange) {
-          sameMapping.deltaAdjacentQueue(reverseRange, marginLength);
+          sameMapping.deltaAdjacentQueueAfter(reverseRange, marginLength, true);
         }
       }
     };

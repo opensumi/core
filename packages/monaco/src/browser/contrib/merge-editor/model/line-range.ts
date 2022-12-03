@@ -6,6 +6,11 @@ import { EditorViewType, IRangeContrast, LineRangeType } from '../types';
 import { InnerRange } from './inner-range';
 
 export class LineRange extends MonacoLineRange implements IRangeContrast {
+  private _id: string;
+  public get id(): string {
+    return this._id;
+  }
+
   private _type: LineRangeType;
   public get type(): LineRangeType {
     return this._type;
@@ -24,6 +29,13 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
   constructor(startLineNumber: number, endLineNumberExclusive: number) {
     super(startLineNumber, endLineNumberExclusive);
     this._type = 'insert';
+    this._isComplete = false;
+    this._id = `${this.startLineNumber}_${this.endLineNumberExclusive}_${this.length}`;
+  }
+
+  private setId(id: string): this {
+    this._id = id;
+    return this;
   }
 
   public setTurnDirection(t: EditorViewType.CURRENT | EditorViewType.INCOMING) {
@@ -39,10 +51,6 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
   public setType(v: LineRangeType): this {
     this._type = v;
     return this;
-  }
-
-  public get id(): string {
-    return `${this.startLineNumber}_${this.endLineNumberExclusive}_${this.length}`;
   }
 
   public calcMargin(range: LineRange): number {
@@ -98,15 +106,23 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     ).setType(this._type);
   }
 
+  private retainState(range: LineRange): LineRange {
+    return range
+      .setId(this._id)
+      .setType(this._type)
+      .setTurnDirection(this._turnDirection)
+      .setComplete(this._isComplete);
+  }
+
   public override delta(offset: number): LineRange {
-    return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive + offset).setType(this._type);
+    return this.retainState(new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive + offset));
   }
 
   public deltaStart(offset: number): LineRange {
-    return new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive).setType(this._type);
+    return this.retainState(new LineRange(this.startLineNumber + offset, this.endLineNumberExclusive));
   }
 
   public deltaEnd(offset: number): LineRange {
-    return new LineRange(this.startLineNumber, this.endLineNumberExclusive + offset).setType(this._type);
+    return this.retainState(new LineRange(this.startLineNumber, this.endLineNumberExclusive + offset));
   }
 }
