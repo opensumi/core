@@ -77,6 +77,7 @@ export class CodeActionAdapter {
         } else {
           if (codeActionContext.only) {
             if (!candidate.kind) {
+              // TODO: 当 kind 是 Empty 时， kind === ''，此时似乎不应该提示这个 warning
               // eslint-disable-next-line no-console
               console.warn(
                 `Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`,
