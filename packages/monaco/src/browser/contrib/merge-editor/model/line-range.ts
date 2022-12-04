@@ -6,6 +6,10 @@ import { EditorViewType, IRangeContrast, LineRangeType } from '../types';
 import { InnerRange } from './inner-range';
 
 export class LineRange extends MonacoLineRange implements IRangeContrast {
+  static fromPositions(startLineNumber: number, endLineNumber: number = startLineNumber): LineRange {
+    return new LineRange(startLineNumber, endLineNumber);
+  }
+
   private _id: string;
   public get id(): string {
     return this._id;

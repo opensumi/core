@@ -3,8 +3,8 @@ import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
 
 import { ICodeEditor } from '../../monaco-api/editor';
 
+import { MappingManagerService } from './mapping-manager.service';
 import { ComputerDiffModel } from './model/computer-diff';
-import { MappingManagerService } from './service/mapping-manager.service';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -41,6 +41,15 @@ export class MergeEditorService extends Disposable {
     this.actionsManager = this.injector.get(ActionsManager, [this.mappingManagerService]);
   }
 
+  private initListenEvent(): void {
+    this.addDispose(
+      this.resultView.onDidChangeContent(() => {
+        this.currentView.launchChange();
+        this.incomingView.launchChange();
+      }),
+    );
+  }
+
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
     if (this.currentView && this.resultView && this.incomingView) {
       return;
@@ -53,6 +62,8 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.mount(this.currentView, this.resultView, this.incomingView);
     this.stickinessConnectManager.mount(this.currentView, this.resultView, this.incomingView);
     this.actionsManager.mount(this.currentView, this.resultView, this.incomingView);
+
+    this.initListenEvent();
   }
 
   public override dispose(): void {

@@ -6,13 +6,13 @@ import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
+import { MappingManagerService } from '../../mapping-manager.service';
 import { ConflictActions } from '../../model/conflict-actions';
 import { IDiffDecoration, MergeEditorDecorations } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { MappingManagerService } from '../../service/mapping-manager.service';
 import { EditorViewType, IActionsProvider, IBaseCodeEditor, IConflictActionsEvent, LineRangeType } from '../../types';
 import { GuidelineWidget } from '../guideline-widget';
 

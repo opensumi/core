@@ -1,10 +1,10 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 
-import { DocumentMapping } from '../model/document-mapping';
-import { LineRange } from '../model/line-range';
-import { LineRangeMapping } from '../model/line-range-mapping';
-import { EDiffRangeTurn } from '../types';
+import { DocumentMapping } from './model/document-mapping';
+import { LineRange } from './model/line-range';
+import { LineRangeMapping } from './model/line-range-mapping';
+import { EDiffRangeTurn, EditorViewType } from './types';
 
 @Injectable()
 export class MappingManagerService extends Disposable {
@@ -48,7 +48,7 @@ export class MappingManagerService extends Disposable {
         doMark();
         mapping.deltaEndAdjacent(sameRange, marginLength);
 
-        const findNextRange = sameMapping.huntForNextSameRange(sameRange);
+        const findNextRange = sameMapping.findNextSameRange(sameRange);
         const reverseRange = findNextRange && sameMapping.reverse(findNextRange);
         if (reverseRange) {
           sameMapping.deltaAdjacentQueueAfter(reverseRange, marginLength, true);
@@ -71,5 +71,51 @@ export class MappingManagerService extends Disposable {
 
   public markCompleteTurnRight(range: LineRange, isIgnore = false): void {
     this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range, isIgnore);
+  }
+
+  /**
+   * 分别找出离目标 lineRange 最近的 documentMappingTurnLeft 和 documentMappingTurnRight 里的 lineRange
+   * 其中 target 只能是 result view 视图中的 range
+   */
+  public findNextLineRanges(target: LineRange): {
+    [key in EditorViewType.CURRENT | EditorViewType.INCOMING]: LineRange | undefined;
+  } {
+    const [turnLeftRange, turnRightRange] = [this.documentMappingTurnLeft, this.documentMappingTurnRight].map(
+      (mapping) => mapping.findNextSameRange(target),
+    );
+    return {
+      [EditorViewType.CURRENT]: turnLeftRange,
+      [EditorViewType.INCOMING]: turnRightRange,
+    };
+  }
+
+  public findTouchesRanges(target: LineRange): {
+    [key in EditorViewType.CURRENT | EditorViewType.INCOMING]: LineRange | undefined;
+  } {
+    const [turnLeftRange, turnRightRange] = [this.documentMappingTurnLeft, this.documentMappingTurnRight].map(
+      (mapping) => mapping.findTouchesRange(target),
+    );
+    return {
+      [EditorViewType.CURRENT]: turnLeftRange,
+      [EditorViewType.INCOMING]: turnRightRange,
+    };
+  }
+
+  /**
+   * 检查目标 lineRange 是被包裹在哪一个 documentMapping 的其中一个 LineRange 内
+   * 有可能左右两者都有包含
+   * 其中 target 只能是 result view 视图中的 range
+   */
+  public findIncludeRanges(target: LineRange): {
+    [key in EditorViewType.CURRENT | EditorViewType.INCOMING]: LineRange | undefined;
+  } {
+    const [turnLeftRange, turnRightRange] = [this.documentMappingTurnLeft, this.documentMappingTurnRight].map(
+      (mapping) => mapping.findIncludeRange(target),
+    );
+
+    return {
+      [EditorViewType.CURRENT]: turnLeftRange,
+      [EditorViewType.INCOMING]: turnRightRange,
+    };
   }
 }

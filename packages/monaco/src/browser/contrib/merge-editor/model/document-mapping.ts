@@ -70,8 +70,9 @@ export class DocumentMapping extends Disposable {
   }
 
   /**
-   * @param range
-   * @param offset
+   * 将 range 之后的所有 range 都增量 offset
+   * @param range 目标 range
+   * @param offset 有增有减
    * @param isContainSelf 是否包含自己，也增量 offset
    * @returns
    */
@@ -106,11 +107,41 @@ export class DocumentMapping extends Disposable {
    * @param sameRange 对位 lineRange，不一定存在于 map 中
    * @returns 下一个最近的 lineRange
    */
-  public huntForNextSameRange(sameRange: LineRange): LineRange | undefined {
+  public findNextSameRange(sameRange: LineRange): LineRange | undefined {
     const values = this.adjacentComputeRangeMap.values();
 
     for (const range of values) {
       if (range.id !== sameRange.id && range.isAfter(sameRange)) {
+        return range;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * 找出 sameRange 是否被包裹在哪一个 lineRange 里，如果有并返回该 lineRange
+   */
+  public findIncludeRange(sameRange: LineRange): LineRange | undefined {
+    const values = this.adjacentComputeRangeMap.values();
+
+    for (const range of values) {
+      if (range.isInclude(sameRange)) {
+        return range;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * 找出 sameRange 是否与哪一个 lineRange 接触
+   */
+  public findTouchesRange(sameRange: LineRange): LineRange | undefined {
+    const values = this.adjacentComputeRangeMap.values();
+
+    for (const range of values) {
+      if (range.isTouches(sameRange)) {
         return range;
       }
     }

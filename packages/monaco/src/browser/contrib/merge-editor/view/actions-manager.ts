@@ -2,8 +2,8 @@ import { Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
+import { MappingManagerService } from '../mapping-manager.service';
 import { LineRange } from '../model/line-range';
-import { MappingManagerService } from '../service/mapping-manager.service';
 import { EditorViewType, IActionsDescription, IConflictActionsEvent, ACCEPT_CURRENT, IGNORE } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
