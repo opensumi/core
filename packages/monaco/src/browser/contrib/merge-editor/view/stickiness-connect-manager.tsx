@@ -16,17 +16,29 @@ const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   const { leftTop, rightTop, leftBottom, rightBottom } = piece.path;
 
   const drawSolidPath = () => (
-    <path
-      className={piece.rangeType}
-      strokeOpacity={0}
-      d={`M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} z`}
-    ></path>
+    <>
+      <path
+        className={piece.rangeType}
+        strokeOpacity={0}
+        d={`M0,${leftTop} L${piece.width},${rightTop} L${piece.width},${rightBottom} L0,${leftBottom} z`}
+      ></path>
+      {/* 描边 */}
+      <path
+        className={piece.rangeType}
+        fillOpacity={0}
+        strokeLinecap={'round'}
+        strokeWidth={2}
+        d={`M0,${leftTop} L${piece.width},${rightTop} M${piece.width},${rightBottom} L0,${leftBottom}`}
+      ></path>
+    </>
   );
 
   const drawDashedPath = () => (
     <path
       className={piece.rangeType}
       fillOpacity={0}
+      strokeDasharray={3}
+      strokeWidth={2}
       d={`M0,${leftTop} L${piece.width},${rightTop} M${piece.width},${rightBottom} L0,${leftBottom}`}
     ></path>
   );

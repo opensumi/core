@@ -65,8 +65,6 @@
           width: 100%;
           overflow: initial;
           & path {
-            stroke-dasharray: 3;
-            stroke-width: 2;
             &.insert {
               fill: var(--mergeEditor-insertedBackground);
               stroke: var(--mergeEditor-insertedBackground);
@@ -104,47 +102,39 @@
   // conflict action 完成后的虚线框效果
   .merge-editor-margin-className,
   .merge-editor-diff-line-background {
+    border-width: 1px;
+    border-style: solid;
+
     &.conflict-wrap {
       border-width: 2px;
       border-style: dashed;
       background-color: transparent;
-
-      &.insert {
-        border-color: var(--mergeEditor-insertedBackground);
-      }
-      &.modify {
-        border-color: var(--mergeEditor-modifyBackground);
-      }
-      &.remove {
-        border-color: var(--mergeEditor-removedBackground);
-      }
-
-      &.stretch-left {
-        border-left: none;
-      }
-
-      &.stretch-right {
-        border-right: none;
-      }
-
-      &.stretch-top {
-        border-top: none;
-      }
-
-      &.stretch-bottom {
-        border-bottom: none;
-      }
     }
-  }
 
-  .merge-editor-margin-className {
-    &.conflict-wrap {
-      &.editor-view-current-type {
-        border-left: none;
-      }
-      &.editor-view-incoming-type {
-        border-right: none;
-      }
+    &.insert {
+      border-color: var(--mergeEditor-insertedBackground);
+    }
+    &.modify {
+      border-color: var(--mergeEditor-modifyBackground);
+    }
+    &.remove {
+      border-color: var(--mergeEditor-removedBackground);
+    }
+
+    &.stretch-left {
+      border-left: transparent;
+    }
+
+    &.stretch-right {
+      border-right: transparent;
+    }
+
+    &.stretch-top {
+      border-top: transparent;
+    }
+
+    &.stretch-bottom {
+      border-bottom: transparent;
     }
   }
 }
