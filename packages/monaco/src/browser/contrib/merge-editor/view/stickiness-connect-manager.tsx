@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import { useInjectable } from '@opensumi/ide-core-browser';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
@@ -8,7 +8,7 @@ import { ICodeEditor } from '../../../monaco-api/types';
 import { MergeEditorService } from '../merge-editor.service';
 import { LineRange } from '../model/line-range';
 import { StickyPieceModel } from '../model/sticky-piece';
-import { EditorViewType, LineRangeType } from '../types';
+import { EditorViewType } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 
@@ -117,21 +117,13 @@ export class StickinessConnectManager extends Disposable {
         rightBottom: (sameModify.endLineNumberExclusive - minTop) * lineHeight,
       };
 
-      let rangeType: LineRangeType = 'modify';
-
-      if (range.isTendencyLeft(sameModify)) {
-        rangeType = withBase === 0 ? 'insert' : 'remove';
-      } else if (range.isTendencyRight(sameModify)) {
-        rangeType = withBase === 0 ? 'remove' : 'insert';
-      }
-
       result.push(
         new StickyPieceModel(
           width,
           height,
           path,
           position,
-          rangeType,
+          range.type,
           withBase === 0 ? range.isComplete : sameModify.isComplete,
         ),
       );

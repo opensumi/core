@@ -1,5 +1,9 @@
 import { Injectable, Optional } from '@opensumi/di';
 import { Disposable, Emitter, Event } from '@opensumi/ide-core-common';
+import {
+  IModelDecorationsChangeAccessor,
+  TrackedRangeStickiness,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 import { IModelDecorationsChangedEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/common/textModelEvents';
 
@@ -66,6 +70,7 @@ export class MergeEditorDecorations extends Disposable {
       description: range.id,
       className: DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.diff_line_background, range.type),
       isWholeLine: true,
+      stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
     });
 
     return Array.from({ length }).map((_, idx) => {
@@ -133,7 +138,7 @@ export class MergeEditorDecorations extends Disposable {
   }
 
   private setDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
-    this.editor.changeDecorations((accessor) => {
+    this.editor.changeDecorations((accessor: IModelDecorationsChangeAccessor) => {
       const newDecorations: IDiffDecoration[] = this.retainDecoration;
       this.retainLineWidgetSet.forEach((widget) => {
         widget.showByLine(widget.getRecordLine());
@@ -158,12 +163,9 @@ export class MergeEditorDecorations extends Disposable {
         }
       }
 
-      accessor
-        .deltaDecorations(
-          this.deltaDecoration.map((d) => d.id),
-          newDecorations.map((d) => d.editorDecoration),
-        )
-        .forEach((id, i) => (newDecorations[i].id = id));
+      newDecorations.forEach((d) => {
+        d.id = accessor.addDecoration(d.editorDecoration.range, d.editorDecoration.options);
+      });
       this.deltaDecoration = newDecorations;
     });
   }
@@ -175,7 +177,7 @@ export class MergeEditorDecorations extends Disposable {
     widgets.clear();
   }
 
-  public clearDecorations(): void {
+  public clearDecorations(): this {
     this.editor.changeDecorations((accessor) => {
       for (const decoration of this.deltaDecoration) {
         accessor.removeDecoration(decoration.id);
@@ -185,11 +187,13 @@ export class MergeEditorDecorations extends Disposable {
     });
 
     this.cleanUpLineWidget(this.lineWidgetSet);
+    return this;
   }
 
-  public updateDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
+  public updateDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): this {
     this.clearDecorations();
     this.render(ranges, innerChanges);
+    return this;
   }
 
   public getDecorations(): IDiffDecoration[] {
