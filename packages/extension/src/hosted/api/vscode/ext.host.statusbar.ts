@@ -1,8 +1,7 @@
-import { v4 } from 'uuid';
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { formatLocalize } from '@opensumi/ide-core-common';
+import { formatLocalize, uuid } from '@opensumi/ide-core-common';
 
 import {
   MainThreadAPIIdentifier,
@@ -252,7 +251,7 @@ export class StatusBarItemImpl implements vscode.StatusBarItem {
   }
 
   static nextId(): string {
-    return StatusBarItemImpl.ID_PREFIX + ':' + v4();
+    return StatusBarItemImpl.ID_PREFIX + ':' + uuid();
   }
   static ID_PREFIX = 'plugin-status-bar-item';
 }

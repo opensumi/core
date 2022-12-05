@@ -17,7 +17,6 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-common": "2.21.6",
     "@opensumi/ide-core-node": "2.21.6",
     "@opensumi/ide-static-resource": "2.21.6",
     "koa-mount": "^4.0.0"

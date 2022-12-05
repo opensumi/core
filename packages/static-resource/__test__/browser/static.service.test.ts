@@ -1,4 +1,4 @@
-import { URI } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-browser';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
 import { StaticResourceModule, StaticResourceService } from '../../src/browser/index';

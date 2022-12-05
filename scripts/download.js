@@ -7,7 +7,6 @@ const os = require('os');
 const nodeFetch = require('node-fetch');
 const awaitEvent = require('await-event');
 const pipeline = require('stream').pipeline;
-const { v4 } = require('uuid');
 const retry = require('async-retry');
 const marketplaceType = process.env.MARKETPLACE ?? 'opentrs';
 
@@ -58,7 +57,7 @@ const parallelRunPromise = (lazyPromises, n) => {
 };
 
 async function downloadExtension(url, namespace, extensionName) {
-  const tmpPath = path.join(os.tmpdir(), 'extension', v4());
+  const tmpPath = path.join(os.tmpdir(), 'extension');
   const tmpZipFile = path.join(tmpPath, path.basename(url));
   await fs.mkdirp(tmpPath);
 

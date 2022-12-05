@@ -11,10 +11,10 @@ import {
   ViewContainerOptions,
   PreferenceService,
   Disposable,
-  ClientApp,
 } from '@opensumi/ide-core-browser';
 import { MockLoggerManageClient } from '@opensumi/ide-core-browser/__mocks__/logger';
 import { useMockStorage } from '@opensumi/ide-core-browser/__mocks__/storage';
+import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { LayoutState } from '@opensumi/ide-core-browser/lib/layout/layout-state';
 import { CommonServerPath, Deferred, ILoggerManagerClient, OS } from '@opensumi/ide-core-common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -23,8 +23,6 @@ import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.serv
 import { MainLayoutModuleContribution } from '@opensumi/ide-main-layout/lib/browser/main-layout.contribution';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import { IIconService } from '@opensumi/ide-theme/lib/common/theme.service';
-import { IWorkspaceService } from '@opensumi/ide-workspace';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
@@ -115,10 +113,6 @@ describe('main layout test', () => {
       {
         token: IContextKeyService,
         useClass: MockContextKeyService,
-      },
-      {
-        token: IWorkspaceService,
-        useClass: MockWorkspaceService,
       },
       {
         token: PreferenceService,

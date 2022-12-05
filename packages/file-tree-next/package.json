@@ -17,7 +17,6 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-node": "2.21.6",
     "@opensumi/ide-file-service": "2.21.6"
   },
   "devDependencies": {
@@ -30,7 +29,6 @@
     "@opensumi/ide-explorer": "2.21.6",
     "@opensumi/ide-main-layout": "2.21.6",
     "@opensumi/ide-overlay": "2.21.6",
-    "@opensumi/ide-terminal-next": "2.21.6",
     "@opensumi/ide-theme": "2.21.6",
     "@opensumi/ide-workspace": "2.21.6",
     "@opensumi/ide-workspace-edit": "2.21.6"

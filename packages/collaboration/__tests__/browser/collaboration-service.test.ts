@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import * as Y from 'yjs';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { Text as YText } from 'yjs';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig } from '@opensumi/ide-core-browser';
@@ -112,7 +114,7 @@ describe('CollaborationService basic routines', () => {
     // mock impl, because origin impl comes with nodejs
     jest.spyOn(server, 'requestInitContent').mockImplementation(async (uri: string) => {
       if (!server['yMap'].has(uri)) {
-        server['yMap'].set(uri, new Y.Text('init content'));
+        server['yMap'].set(uri, new YText('init content'));
       }
     });
 
@@ -145,8 +147,8 @@ describe('CollaborationService basic routines', () => {
     expect(redoSpy).toBeCalled();
   });
 
-  it('should change Y.Text when remote Y.Text was changed', async () => {
-    // simulate Y.Text delete and add
+  it('should change YText when remote YText was changed', async () => {
+    // simulate YText delete and add
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const binding = service['bindingMap'].get(workbenchEditorService.uri.toString())!;
     expect(binding).toBeInstanceOf(TextModelBinding);
@@ -156,7 +158,7 @@ describe('CollaborationService basic routines', () => {
     const { yMapReady } = service['getDeferred'](workbenchEditorService.uri.toString());
 
     service['yTextMap'].delete(workbenchEditorService.uri.toString());
-    service['yTextMap'].set(workbenchEditorService.uri.toString(), new Y.Text('1919810'));
+    service['yTextMap'].set(workbenchEditorService.uri.toString(), new YText('1919810'));
 
     await yMapReady.promise;
 

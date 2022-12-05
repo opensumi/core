@@ -5,7 +5,7 @@
 import '@opensumi/monaco-editor-core/esm/vs/editor/editor.main';
 import ResizeObserver from 'resize-observer-polyfill';
 
-import { Injector, ConstructorOf } from '@opensumi/di';
+import { Injector } from '@opensumi/di';
 import { RPCMessageConnection } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser';
 import {
@@ -69,47 +69,10 @@ import { AppConfig } from '../react-providers/config-provider';
 import { DEFAULT_CDN_ICON, IDE_OCTICONS_CN_CSS, IDE_CODICONS_CN_CSS, updateIconMap } from '../style/icon/icon';
 import { electronEnv } from '../utils';
 
+import { IClientAppOpts, IconInfo, IconMap, IPreferences, LayoutConfig, ModuleConstructor } from './app.interface';
 import { renderClientApp, IAppRenderer } from './app.view';
 import { createClientConnection2, bindConnectionService } from './connection';
 import { injectInnerProviders } from './inner-providers';
-import { AppLifeCycleService } from './lifecycle.service';
-
-export type ModuleConstructor = ConstructorOf<BrowserModule>;
-export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
-export type Direction = 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
-export interface IconMap {
-  [iconKey: string]: string;
-}
-export interface IPreferences {
-  [key: string]: any;
-}
-export interface IconInfo {
-  cssPath: string;
-  prefix: string;
-  iconMap: IconMap;
-}
-export interface IClientAppOpts extends Partial<AppConfig> {
-  modules: ModuleConstructor[];
-  contributions?: ContributionConstructor[];
-  modulesInstances?: BrowserModule[];
-  connectionPath?: UrlProvider;
-  connectionProtocols?: string[];
-  iconStyleSheets?: IconInfo[];
-  useCdnIcon?: boolean;
-  editorBackgroundImage?: string;
-  /**
-   * 插件开发模式下指定的插件路径
-   */
-  extensionDevelopmentPath?: string | string[];
-}
-
-export interface LayoutConfig {
-  [area: string]: {
-    modules: Array<string>;
-    // @deprecated
-    size?: number;
-  };
-}
 
 // 添加resize observer polyfill
 if (typeof (window as any).ResizeObserver === 'undefined') {
@@ -636,7 +599,9 @@ export class ClientApp implements IClientApp, IDisposable {
 
   protected updateIconMap(prefix: string, iconMap: IconMap) {
     if (prefix === 'kaitian-icon kticon-') {
-      this.logger.error('icon prefix与内置图标冲突，请检查图标配置！');
+      this.logger.error(
+        `The icon prefix '${prefix}' conflicts with the built-in icon, please check the icon configuration.`,
+      );
     }
     updateIconMap(prefix, iconMap);
   }

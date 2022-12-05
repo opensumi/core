@@ -1,3 +1,4 @@
+// @ts-ignore
 import { nanoid } from 'nanoid';
 
 export function uuid(): string {

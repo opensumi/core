@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-ignore
 import * as Y from 'yjs';
 
 import { INodeLogger } from '@opensumi/ide-core-node';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { FileStat, IFileService } from '@opensumi/ide-file-service';
+import { IFileService } from '@opensumi/ide-file-service';
 import { FileService } from '@opensumi/ide-file-service/src/node';
 
 import { ICollaborationServiceForClient, IYWebsocketServer, ROOM_NAME } from '../../src';
@@ -75,6 +77,7 @@ describe('Collaboration node ws server test', () => {
   });
 
   afterAll(() => {
+    // @ts-ignore
     yDoc.destroy();
   });
 });

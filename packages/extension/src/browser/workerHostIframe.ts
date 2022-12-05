@@ -1,4 +1,4 @@
-import { v4 } from 'uuid';
+import { uuid } from '@opensumi/ide-core-common';
 
 export const WORKER_HOST_HARD_CODE = `
 (function() {
@@ -53,7 +53,7 @@ export function startInsideIframe(workerSrc: string) {
   iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
   iframe.style.display = 'none';
   const escapeAttribute = (value: string): string => value.replace(/"/g, '&quot;');
-  const extHostUuid = v4();
+  const extHostUuid = uuid();
   const html = `<!DOCTYPE html>
 <html>
 	<head>

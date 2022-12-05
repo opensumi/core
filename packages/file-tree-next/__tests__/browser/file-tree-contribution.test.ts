@@ -6,8 +6,8 @@ import {
   PreferenceService,
   QuickOpenService,
 } from '@opensumi/ide-core-browser';
+import { Emitter, URI } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
-import { Emitter, URI } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { MockWorkbenchEditorService } from '@opensumi/ide-editor/lib/common/mocks/workbench-editor.service';
@@ -17,13 +17,12 @@ import { IFileTreeAPI, IFileTreeService } from '@opensumi/ide-file-tree-next';
 import { FileTreeContribution } from '@opensumi/ide-file-tree-next/lib/browser/file-tree-contribution';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
-import { OutlineModule } from '@opensumi/ide-outline/lib/browser';
 import { IDialogService, IMessageService, IWindowDialogService } from '@opensumi/ide-overlay';
-import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockQuickOpenService } from '../../../quick-open/src/common/mocks/quick-open.service';
 
 describe('FileTreeContribution', () => {
   let mockInjector: MockInjector;
@@ -72,7 +71,7 @@ describe('FileTreeContribution', () => {
   const mockFileService = {};
 
   beforeEach(() => {
-    mockInjector = createBrowserInjector([OutlineModule]);
+    mockInjector = createBrowserInjector([]);
 
     mockInjector.overrideProviders(
       {

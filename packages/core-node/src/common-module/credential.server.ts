@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Injectable, Autowired } from '@opensumi/di';
 import { IChunkedPassword, INativeCredentialService, isWindows } from '@opensumi/ide-core-common';
 
@@ -85,6 +86,7 @@ export class CredentialService implements INativeCredentialService {
     if (this.appConfig.disableKeytar) {
       throw new Error('keytar has been disabled via --disable-keytar option');
     }
+    // @ts-ignore
     return await import('keytar');
   }
 }

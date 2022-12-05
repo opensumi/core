@@ -1,4 +1,3 @@
-import { quickFileOpen } from '@opensumi/ide-addons/lib/browser/file-search.contribution';
 import { EDITOR_COMMANDS, QUICK_OPEN_COMMANDS } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import {
@@ -48,7 +47,7 @@ describe('prefix quick open service test', () => {
     handler = injector.get(QuickOpenHandlerRegistry);
     handler.registerHandler(fileSearchQuickCommandHandler, {
       title: localize('quickopen.tab.file'),
-      commandId: quickFileOpen.id,
+      commandId: 'workbench.action.quickOpen',
       order: 1,
     });
     handler.registerHandler(workspaceSymbolQuickOpenHandler, {

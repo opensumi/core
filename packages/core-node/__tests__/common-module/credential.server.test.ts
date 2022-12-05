@@ -11,6 +11,14 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
     service: 'test',
     account: 'test',
   };
+
+  const mockKeytar = {
+    setPassword: jest.fn(),
+    deletePassword: jest.fn(() => true),
+    getPassword: jest.fn(),
+    findPassword: jest.fn(),
+    findCredentials: jest.fn(() => []),
+  };
   beforeAll(() => {
     injector = createBrowserInjector([]);
     injector.addProviders(
@@ -29,6 +37,7 @@ describe('test for core-browser/src/services/credentials-service.ts', () => {
         },
       },
     );
+    injector.mock(INativeCredentialService, 'withKeytar', () => Promise.resolve(mockKeytar));
     credentialsService = injector.get<INativeCredentialService>(INativeCredentialService);
   });
 

@@ -16,10 +16,8 @@ import { BackService } from '@opensumi/ide-core-common/lib/module';
 
 import { ClientAppStateService } from '../application';
 
-import { ModuleConstructor } from './app';
+import { ModuleConstructor } from './app.interface';
 
-// 建立连接之前，无法使用落盘的 logger
-// 初始化时使用不落盘的 logger
 const initialLogger = getDebugLogger();
 
 export async function createClientConnection2(
@@ -110,7 +108,9 @@ export async function bindConnectionService(
   for (const backService of dependClientBackServices) {
     const { servicePath } = backService;
     const rpcService = getRPCService(servicePath);
-    const clientService = injector.get(backService.clientToken!);
-    rpcService.onRequestService(clientService);
+    if (backService.clientToken) {
+      const clientService = injector.get(backService.clientToken);
+      rpcService.onRequestService(clientService);
+    }
   }
 }

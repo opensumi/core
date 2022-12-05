@@ -3,7 +3,7 @@ import React from 'react';
 import warning from './warning';
 
 // @deprecated wrapper
-export function Deprecated<T>(fc: React.FC<T>, msg: string) {
+export function Deprecated<T extends {}>(fc: React.FC<T>, msg: string) {
   return (props: T) => {
     React.useEffect(() => {
       // https://reactjs.org/docs/higher-order-components.html#convention-wrap-the-display-name-for-easy-debugging

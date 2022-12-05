@@ -20,7 +20,6 @@
     "@opensumi/ide-connection": "2.21.6",
     "@opensumi/ide-core-common": "2.21.6",
     "@opensumi/ide-core-node": "2.21.6",
-    "@opensumi/ide-logs": "2.21.6",
     "@parcel/watcher": "2.0.6",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",

@@ -7,19 +7,14 @@ import {
   INormalizedDocumentSymbol,
   DocumentSymbolStore,
 } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { SymbolKind } from '@opensumi/ide-extension/lib/hosted/api/worker/worker.ext-types';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { IOutlineDecorationService } from '@opensumi/ide-outline';
-import {
-  OutlineRoot,
-  OutlineCompositeTreeNode,
-  OutlineTreeNode,
-} from '@opensumi/ide-outline/lib/browser/outline-node.define';
-import { OutlineEventService } from '@opensumi/ide-outline/lib/browser/services/outline-event.service';
-import { OutlineModelService } from '@opensumi/ide-outline/lib/browser/services/outline-model.service';
-import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
 
 import styles from '../../../../src/browser/outline-node.module.less';
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '../../../src/browser/outline-node.define';
+import { OutlineEventService } from '../../../src/browser/services/outline-event.service';
+import { OutlineModelService } from '../../../src/browser/services/outline-model.service';
+import { OutlineTreeService } from '../../../src/browser/services/outline-tree.service';
+import { IOutlineDecorationService } from '../../../src/common';
 
 describe('OutlineTreeModelService', () => {
   let outlineTreeModelService: OutlineModelService;
@@ -29,7 +24,8 @@ describe('OutlineTreeModelService', () => {
     name: 'test',
     id: 'id',
     detail: '',
-    kind: SymbolKind.Boolean,
+    // kind: SymbolKind.Boolean,
+    kind: 16,
     range: {
       startColumn: 0,
       endColumn: 10,

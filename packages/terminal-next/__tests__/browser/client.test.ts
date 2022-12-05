@@ -7,8 +7,9 @@ import path from 'path';
 import * as fs from 'fs-extra';
 import httpProxy from 'http-proxy';
 import WebSocket from 'ws';
+import type { ITerminalAddon } from 'xterm';
 
-import { Disposable, FileUri, URI } from '@opensumi/ide-core-common';
+import { Disposable, FileUri, URI, Event } from '@opensumi/ide-core-common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import {
@@ -21,8 +22,8 @@ import {
 } from '../../src/common';
 
 import { injector } from './inject';
-import { createProxyServer, createWsServer, resetPort } from './proxy';
-import { delay } from './utils';
+import { createProxyServer, createWsServer } from './proxy';
+import { createBufferLineArray, delay } from './utils';
 
 function createDOMContainer() {
   const div = document.createElement('div');
@@ -31,6 +32,90 @@ function createDOMContainer() {
   document.body.appendChild(div);
   return div;
 }
+
+class MockXTermAddonWebgl {
+  WebglAddon() {
+    return {
+      activate: () => {},
+      onContextLoss: Event.None,
+      dispose: () => {},
+    };
+  }
+}
+
+jest.mock('xterm', () => {
+  const Terminal = class MockXTerminal {
+    private _text = '';
+    public options = {};
+    get cols() {
+      return 0;
+    }
+    get onResize() {
+      return Event.None;
+    }
+    get onCursorMove() {
+      return Event.None;
+    }
+    get onBinary() {
+      return Event.None;
+    }
+    get onData() {
+      return Event.None;
+    }
+    get onWriteParsed() {
+      return Event.None;
+    }
+    getSelection() {
+      // Mock for test
+      return 'pwd';
+    }
+    get buffer() {
+      return {
+        active: {
+          getLine: (index: number) =>
+            createBufferLineArray(this._text.split('\n').map((text: string) => ({ text, width: text.length })))[index],
+        },
+      };
+    }
+    onSelectionChange() {}
+    clearSelection() {}
+    focus() {}
+    write(text: string) {
+      this._text = text;
+    }
+    clear() {
+      this._text = '';
+    }
+    selectAll() {}
+    dispose() {}
+    loadAddon(addon: ITerminalAddon) {
+      addon.activate(this as any);
+    }
+    hasSelection() {
+      return true;
+    }
+    getSelectionPosition() {
+      return {
+        start: {
+          x: 0,
+          y: 0,
+        },
+        end: {
+          x: this._text.length,
+          y: 0,
+        },
+      };
+    }
+    registerLinkProvider() {
+      return Disposable.create(() => {});
+    }
+  };
+  return {
+    ...jest.requireActual('xterm'),
+    Terminal,
+  };
+});
+jest.mock('xterm-addon-webgl', () => MockXTermAddonWebgl);
 
 describe('Terminal Client', () => {
   let client: ITerminalClient;
@@ -54,11 +139,10 @@ describe('Terminal Client', () => {
       lastModification: new Date().getTime(),
       isDirectory: true,
     });
-    resetPort();
-    factory2 = injector.get(ITerminalClientFactory2);
-    view = injector.get(ITerminalGroupViewService);
     server = createWsServer();
     proxy = createProxyServer();
+    factory2 = injector.get(ITerminalClientFactory2);
+    view = injector.get(ITerminalGroupViewService);
     const index = view.createGroup();
     const group = view.getGroup(index);
     widget = view.createWidget(group);

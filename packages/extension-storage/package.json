@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@opensumi/ide-core-common": "2.21.6",
-    "@opensumi/ide-core-node": "2.21.6",
     "@opensumi/ide-file-service": "2.21.6",
     "@opensumi/ide-logs": "2.21.6",
     "@opensumi/ide-workspace": "2.21.6"

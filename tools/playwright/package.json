@@ -32,6 +32,6 @@
     "@opensumi/ide-utils": "workspace:*",
     "allure-commandline": "^2.13.8",
     "allure-playwright": "^2.0.0-beta.14",
-    "typescript": "4.6.4"
+    "typescript": "4.9.3"
   }
 }
