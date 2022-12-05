@@ -85,19 +85,19 @@ export class DocumentMapping extends Disposable {
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
       if (pick.isAfter(sameRange)) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
-      }
-
-      if (isContainSelf && pick.id === sameRange.id) {
+      } else if (isContainSelf && pick.id === sameRange.id) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
   }
 
-  public deltaEndAdjacent(sameRange: LineRange, offset: number): void {
+  public deltaEndAdjacentQueue(sameRange: LineRange, offset: number): void {
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
       if (pick.id === sameRange.id) {
         this.adjacentComputeRangeMap.set(key, sameRange.deltaEnd(offset));
-        return;
+        // 将在 sameRange 之后的 range offset 都增加
+      } else if (pick.isAfter(sameRange)) {
+        this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
   }

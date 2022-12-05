@@ -21,39 +21,18 @@ export class MappingManagerService extends Disposable {
     this.documentMappingTurnRight = this.injector.get(DocumentMapping, [EDiffRangeTurn.MODIFIED]);
   }
 
-  private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange, isIgnore: boolean) => void {
-    const [mapping, sameMapping] =
-      turn === EDiffRangeTurn.ORIGIN
-        ? [this.documentMappingTurnLeft, this.documentMappingTurnRight]
-        : [this.documentMappingTurnRight, this.documentMappingTurnLeft];
+  private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange) => void {
+    const mapping = turn === EDiffRangeTurn.ORIGIN ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
-    return (range: LineRange, isIgnore: boolean) => {
+    return (range: LineRange) => {
       const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
       if (!sameRange) {
         return;
       }
 
-      const doMark = () => {
-        // 标记该 range 区域已经解决完成
-        range.setComplete(true);
-        sameRange.setComplete(true);
-      };
-
-      if (isIgnore) {
-        doMark();
-      } else {
-        const marginLength = range.calcMargin(sameRange);
-
-        mapping.deltaAdjacentQueueAfter(range, marginLength);
-        doMark();
-        mapping.deltaEndAdjacent(sameRange, marginLength);
-
-        const findNextRange = sameMapping.findNextSameRange(sameRange);
-        const reverseRange = findNextRange && sameMapping.reverse(findNextRange);
-        if (reverseRange) {
-          sameMapping.deltaAdjacentQueueAfter(reverseRange, marginLength, true);
-        }
-      }
+      // 标记该 range 区域已经解决完成
+      range.setComplete(true);
+      sameRange.setComplete(true);
     };
   }
 
@@ -65,12 +44,12 @@ export class MappingManagerService extends Disposable {
     this.documentMappingTurnRight.inputComputeResultRangeMapping(changes);
   }
 
-  public markCompleteTurnLeft(range: LineRange, isIgnore = false): void {
-    this.markCompleteFactory(EDiffRangeTurn.ORIGIN)(range, isIgnore);
+  public markCompleteTurnLeft(range: LineRange): void {
+    this.markCompleteFactory(EDiffRangeTurn.ORIGIN)(range);
   }
 
-  public markCompleteTurnRight(range: LineRange, isIgnore = false): void {
-    this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range, isIgnore);
+  public markCompleteTurnRight(range: LineRange): void {
+    this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range);
   }
 
   /**

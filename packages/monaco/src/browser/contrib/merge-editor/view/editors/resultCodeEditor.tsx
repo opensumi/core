@@ -87,17 +87,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
             const toLineRange = LineRange.fromPositions(startLineNumber, endLineNumber);
             const { [EditorViewType.CURRENT]: includeLeftRange, [EditorViewType.INCOMING]: includeRightRange } =
               this.mappingManagerService.findIncludeRanges(toLineRange);
-
-            if (includeLeftRange) {
-              this.documentMappingTurnLeft.deltaEndAdjacent(includeLeftRange, offset);
-            }
-
-            if (includeRightRange) {
-              this.documentMappingTurnRight.deltaEndAdjacent(includeRightRange, offset);
-            }
-
             /**
-             * 这里需要处理 touch 的情况（也就是 toLineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分，表明当前编辑的 edits changes 是在这个 lineRange 范围内）
+             * 这里需要处理 touch 的情况（也就是 toLineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
              * 那么就要以当前 touch range 的结果作为要 delta 的起点
              */
             const { [EditorViewType.CURRENT]: touchLeftRanges, [EditorViewType.INCOMING]: touchRightRanges } =
@@ -108,18 +99,21 @@ export class ResultCodeEditor extends BaseCodeEditor {
             const leftRange = touchLeftRanges || nextLeftRanges;
             const rightRange = touchRightRanges || nextRightRanges;
 
-            if (leftRange) {
+            if (includeLeftRange) {
+              this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
+            } else if (leftRange) {
               const reverse = this.documentMappingTurnLeft.reverse(leftRange);
               if (reverse) {
-                // 如果 includeLeftRange 存在则表示不需要计算自己的增量 offset
-                this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, !includeLeftRange);
+                this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
               }
             }
 
-            if (rightRange) {
+            if (includeRightRange) {
+              this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
+            } else if (rightRange) {
               const reverse = this.documentMappingTurnRight.reverse(rightRange);
               if (reverse) {
-                this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, !includeRightRange);
+                this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
               }
             }
           });

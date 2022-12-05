@@ -160,7 +160,8 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     this.decorations
       .setRetainDecoration(this.getRetainDecoration())
       .setRetainLineWidget(this.getRetainLineWidget())
-      .updateDecorations(r, i);
+      .clearDecorations()
+      .render(r, i);
   }
 
   protected registerActionsProvider(provider: IActionsProvider): void {
