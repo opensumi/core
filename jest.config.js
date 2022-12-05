@@ -7,7 +7,7 @@ const baseConfig = {
   preset: 'ts-jest',
   testRunner: 'jest-jasmine2',
   resolver: '<rootDir>/tools/dev-tool/src/jest-resolver.js',
-  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'v8',
+  coverageProvider: process.env.JEST_COVERAGE_PROVIDER || 'babel',
   // https://dev.to/vantanev/make-your-jest-tests-up-to-20-faster-by-changing-a-single-setting-i36
   maxWorkers: '50%',
   collectCoverageFrom: [
