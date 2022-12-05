@@ -40,7 +40,7 @@ export class OpenSumiView extends OpenSumiViewBase {
       return;
     }
     await this.app.quickOpenPalette.type('view ');
-    await this.app.quickOpenPalette.trigger(this.name);
+    await this.app.quickOpenPalette.trigger(this.name.toUpperCase());
     await this.waitForVisible();
     return this;
   }
