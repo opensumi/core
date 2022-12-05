@@ -1,5 +1,6 @@
 import { localize } from '@opensumi/ide-core-browser';
 import { MessageType, URI } from '@opensumi/ide-core-common';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
@@ -7,6 +8,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { ContentSearchResult, ResultTotal } from '../common/';
 
 export async function replaceAll(
+  documentModelManager: IEditorDocumentModelService,
   workspaceEditService: IWorkspaceEditService,
   resultMap: Map<string, ContentSearchResult[]>,
   replaceText: string,
@@ -37,7 +39,7 @@ export async function replaceAll(
   }
   for (const resultArray of resultMap) {
     const results = resultArray[1];
-    await replace(workspaceEditService, results, replaceText);
+    await replace(documentModelManager, workspaceEditService, results, replaceText);
   }
   if (messageService && resultTotal) {
     messageService.info(
@@ -61,10 +63,15 @@ export function getSelection(result: ContentSearchResult) {
 }
 
 export async function replace(
+  documentModelManager: IEditorDocumentModelService,
   workspaceEditService: IWorkspaceEditService,
   results: ContentSearchResult[],
   replaceText: string,
 ) {
+  const autoSavedDocs = results
+    .map((result) => documentModelManager.getModelReference(new URI(result.fileUri)))
+    .filter((doc) => doc?.instance && !doc.instance.dirty);
+
   await workspaceEditService.apply({
     edits: results.map((result) => ({
       options: {
@@ -76,5 +83,9 @@ export async function replace(
         text: replaceText,
       },
     })),
+  });
+
+  autoSavedDocs.forEach((doc) => {
+    doc!.instance.save();
   });
 }

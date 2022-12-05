@@ -1649,7 +1649,7 @@ export namespace TestTag {
 export namespace TestItem {
   export type Raw = vscode.TestItem;
 
-  export function from(item: TestItemImpl): ITestItem {
+  export function from(item: vscode.TestItem): ITestItem {
     const ctrlId = getPrivateApiFor(item).controllerId;
     return {
       extId: TestId.fromExtHostTestItem(item, ctrlId).toString(),
@@ -1658,6 +1658,7 @@ export namespace TestItem {
       tags: item.tags.map((t) => TestTag.namespace(ctrlId, t.id)),
       range: Range.from(item.range) || null,
       description: item.description || null,
+      sortText: item.sortText || null,
       error: item.error ? MarkdownString.fromStrict(item.error) || null : null,
     };
   }
@@ -1678,6 +1679,7 @@ export namespace TestItem {
       canResolveChildren: false,
       busy: false,
       description: item.description || undefined,
+      sortText: item.sortText || undefined,
     };
   }
 

@@ -1,5 +1,11 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Event, Disposable, DisposableStore, DisposableCollection } from '@opensumi/ide-core-browser';
+import {
+  Event,
+  Disposable,
+  DisposableStore,
+  DisposableCollection,
+  KeybindingRegistry,
+} from '@opensumi/ide-core-browser';
 import { IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
@@ -8,11 +14,11 @@ import { IMonacoImplEditor } from '@opensumi/ide-editor/lib/browser/editor-colle
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IDirtyDiffWorkbenchController } from '../../common';
+import { CLOSE_DIRTY_DIFF_WIDGET, IDirtyDiffWorkbenchController } from '../../common';
 import { SCMPreferences } from '../scm-preference';
 
 import { DirtyDiffDecorator } from './dirty-diff-decorator';
-import { DirtyDiffModel } from './dirty-diff-model';
+import { DirtyDiffModel, isDirtyDiffVisible } from './dirty-diff-model';
 import { DirtyDiffWidget } from './dirty-diff-widget';
 
 import './dirty-diff.module.less';
@@ -52,8 +58,17 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
+  @Autowired(KeybindingRegistry)
+  protected readonly keybindingRegistry: KeybindingRegistry;
+
   constructor() {
     super();
+
+    this.keybindingRegistry.registerKeybinding({
+      command: CLOSE_DIRTY_DIFF_WIDGET.id,
+      keybinding: 'esc',
+      when: isDirtyDiffVisible.equalsTo(true),
+    });
   }
 
   public start() {
@@ -102,8 +117,6 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     if (isNaN(width) || width <= 0 || width > 5) {
       width = 3;
     }
-    // @todo
-    // this.stylesheet.innerHTML = `.monaco-editor .dirty-diff-modified,.monaco-editor .dirty-diff-added{border-left-width:${width}px;}`;
   }
 
   private enable(): void {
@@ -180,6 +193,13 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
   private onModelInvisible(editorModel: IEditorDocumentModel): void {
     this.items[editorModel.id].dispose();
     delete this.items[editorModel.id];
+  }
+
+  public closeDirtyDiffWidget(codeEditor: IMonacoCodeEditor) {
+    const widget = this.widgets.get(codeEditor.getId());
+    if (widget) {
+      widget.dispose();
+    }
   }
 
   public toggleDirtyDiffWidget(codeEditor: IMonacoCodeEditor, position: monaco.IPosition) {

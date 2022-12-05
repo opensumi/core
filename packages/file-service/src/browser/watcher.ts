@@ -4,7 +4,7 @@ import { IFileServiceClient, IFileServiceWatcher, FileServiceWatcherOptions, Fil
 
 function filterChange(fileChangeList: FileChange[], watchUri: string) {
   return fileChangeList.filter((fileChange) => {
-    if (fileChange.uri.indexOf(watchUri) === 0) {
+    if (fileChange.uri.startsWith(watchUri)) {
       return true;
     }
     return false;

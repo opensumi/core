@@ -218,6 +218,7 @@ export interface ITestItem {
   range: IRange | null;
   description: string | null;
   error: string | IMarkdownString | null;
+  sortText: string | null;
 }
 
 export const enum TestItemExpandState {

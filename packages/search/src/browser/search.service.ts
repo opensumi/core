@@ -669,6 +669,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
     this.isReplaceDoing = true;
     replaceAll(
+      this.documentModelManager,
       this.workspaceEditService,
       this.searchResults,
       this.replaceValue || '',

@@ -2,7 +2,8 @@
   "name": "@opensumi/ide-userstorage",
   "version": "2.21.6",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",

@@ -35,6 +35,7 @@ import {
   SET_SCM_TREE_VIEW_MODE,
   SET_SCM_LIST_VIEW_MODE,
   SCMViewModelMode,
+  CLOSE_DIRTY_DIFF_WIDGET,
 } from '../common';
 
 import { SCMTreeService } from './components/scm-resource-tree/scm-tree.service';
@@ -138,7 +139,17 @@ export class SCMContribution
           });
           setTimeout(() => {
             codeEditor.revealLineInCenter(lineNumber);
-          }, 50);
+          }, 0);
+        }
+      },
+    });
+
+    commands.registerCommand(CLOSE_DIRTY_DIFF_WIDGET, {
+      execute: async () => {
+        const editor = this.editorService.currentEditor;
+        if (editor) {
+          const codeEditor = editor.monacoEditor;
+          this.dirtyDiffWorkbenchController.closeDirtyDiffWidget(codeEditor);
         }
       },
     });

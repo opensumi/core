@@ -500,6 +500,8 @@ export const localizationBundle = {
     'preference.item.notValid': '{0} 不是有效选项',
 
     'editor.saveAll': '保存全部',
+    'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
+    'editor.saveCodeActions.saving': '保存 "{0}"',
 
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',

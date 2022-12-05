@@ -4,6 +4,7 @@ import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { DEBUG_WELCOME_ID } from '@opensumi/ide-debug';
 import { FILE_EXPLORER_WELCOME_ID } from '@opensumi/ide-file-tree-next';
 import { IMainLayoutService, IViewContentDescriptor, IViewsRegistry } from '@opensumi/ide-main-layout';
+import { SCM_WELCOME_ID } from '@opensumi/ide-scm';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
@@ -29,7 +30,7 @@ export type ViewsWelcomeSchema = ViewWelcome[];
 export const ViewIdentifierMap: { [key: string]: string } = {
   explorer: FILE_EXPLORER_WELCOME_ID,
   debug: DEBUG_WELCOME_ID,
-  scm: 'scm_view',
+  scm: SCM_WELCOME_ID,
 };
 
 @Injectable()

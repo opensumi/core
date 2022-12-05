@@ -189,9 +189,17 @@ export class ExtHostTestsImpl implements IExtHostTests {
     this.controllers.get(controllerId)?.profiles.get(profileId)?.configureHandler?.();
   }
 
+  async $refreshTests(controllerId: string, token: CancellationToken) {
+    await this.controllers.get(controllerId)?.controller.refreshHandler?.(token);
+  }
+
   // #endregion
 
-  createTestController(controllerId: string, label: string): TestController {
+  createTestController(
+    controllerId: string,
+    label: string,
+    refreshHandler?: (token: CancellationToken) => Thenable<void> | void,
+  ): TestController {
     if (this.controllers.has(controllerId)) {
       throw new Error(`Attempt to insert a duplicate controller with ID "${controllerId}"`);
     }
@@ -211,7 +219,14 @@ export class ExtHostTestsImpl implements IExtHostTests {
       set label(value: string) {
         label = value;
         collection.root.label = value;
-        proxy.$updateControllerLabel(controllerId, label);
+        proxy.$updateController(controllerId, { label });
+      },
+      get refreshHandler() {
+        return refreshHandler;
+      },
+      set refreshHandler(value: ((token: CancellationToken) => Thenable<void> | void) | undefined) {
+        refreshHandler = value;
+        proxy.$updateController(controllerId, { canRefresh: !!value });
       },
       get id() {
         return controllerId;
@@ -256,7 +271,7 @@ export class ExtHostTestsImpl implements IExtHostTests {
     // back compat:
     (controller as any).createRunConfiguration = controller.createRunProfile;
 
-    proxy.$registerTestController(controllerId, label);
+    proxy.$registerTestController(controllerId, label, !!refreshHandler);
     disposable.add(toDisposable(() => proxy.$unregisterTestController(controllerId)));
 
     const info: ControllerInfo = { controller, collection, profiles };

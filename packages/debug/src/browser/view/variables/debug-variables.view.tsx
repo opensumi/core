@@ -206,7 +206,7 @@ export const DebugVariableRenderedNode: React.FC<IDebugVariableNodeRenderedProps
     <div
       className={cls(
         styles.debug_variables_node_segment,
-        styles.debug_variables_node_display_name,
+        styles.debug_variables_node_displayname,
         styles.debug_variables_variable,
         (node as DebugVariable).description ? styles.name : '',
       )}

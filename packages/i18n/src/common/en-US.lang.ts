@@ -98,6 +98,8 @@ export const localizationBundle = {
     'editor.redo': 'Redo',
     'editor.saveAll': 'Save All',
     'editor.saveCurrent': 'Save Current File',
+    'editor.saveCodeActions.getting': 'Getting code actions from {0}.',
+    'editor.saveCodeActions.saving': 'Saving "{0}"',
     'editor.title.context.close': 'Close',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',

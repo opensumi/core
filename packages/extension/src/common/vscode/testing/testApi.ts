@@ -49,13 +49,13 @@ export type ExtHostTestItemEvent =
 
 export interface IExtHostTestItemApi {
   controllerId: string;
-  parent?: TestItemImpl;
+  parent?: vscode.TestItem;
   listener?: (evt: ExtHostTestItemEvent) => void;
 }
 
-const eventPrivateApis = new WeakMap<TestItemImpl, IExtHostTestItemApi>();
+const eventPrivateApis = new WeakMap<vscode.TestItem, IExtHostTestItemApi>();
 
-export const createPrivateApiFor = (impl: TestItemImpl, controllerId: string) => {
+export const createPrivateApiFor = (impl: vscode.TestItem, controllerId: string) => {
   const api: IExtHostTestItemApi = { controllerId };
   eventPrivateApis.set(impl, api);
   return api;
@@ -66,7 +66,7 @@ export const createPrivateApiFor = (impl: TestItemImpl, controllerId: string) =>
  * is a managed object, but we keep a weakmap to avoid exposing any of the
  * internals to extensions.
  */
-export const getPrivateApiFor = (impl: TestItemImpl) => eventPrivateApis.get(impl)!;
+export const getPrivateApiFor = (impl: vscode.TestItem) => eventPrivateApis.get(impl)!;
 
 const testItemPropAccessor = <K extends keyof vscode.TestItem>(
   api: IExtHostTestItemApi,
@@ -98,7 +98,7 @@ const testItemPropAccessor = <K extends keyof vscode.TestItem>(
 
 type WritableProps = Pick<
   vscode.TestItem,
-  'range' | 'label' | 'description' | 'canResolveChildren' | 'busy' | 'error' | 'tags'
+  'range' | 'label' | 'description' | 'canResolveChildren' | 'busy' | 'error' | 'tags' | 'sortText'
 >;
 
 const strictEqualComparator = <T>(a: T, b: T) => a === b;
@@ -117,6 +117,7 @@ const propComparators: {
   },
   label: strictEqualComparator,
   description: strictEqualComparator,
+  sortText: strictEqualComparator,
   busy: strictEqualComparator,
   error: strictEqualComparator,
   canResolveChildren: strictEqualComparator,
@@ -142,6 +143,7 @@ const makePropDescriptors = (
   range: testItemPropAccessor(api, 'range', undefined, propComparators.range),
   label: testItemPropAccessor(api, 'label', label, propComparators.label),
   description: testItemPropAccessor(api, 'description', undefined, propComparators.description),
+  sortText: testItemPropAccessor(api, 'sortText', undefined, propComparators.sortText),
   canResolveChildren: testItemPropAccessor(api, 'canResolveChildren', false, propComparators.canResolveChildren),
   busy: testItemPropAccessor(api, 'busy', false, propComparators.busy),
   error: testItemPropAccessor(api, 'error', undefined, propComparators.error),
@@ -282,6 +284,7 @@ export class TestItemImpl implements vscode.TestItem {
 
   public range!: vscode.Range | undefined;
   public description!: string | undefined;
+  public sortText!: string | undefined;
   public label!: string;
   public error!: string | vscode.MarkdownString;
   public busy!: boolean;

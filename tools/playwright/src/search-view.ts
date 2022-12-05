@@ -3,7 +3,7 @@ import { OpenSumiPanel } from './panel';
 
 export class OpenSumiSearchView extends OpenSumiPanel {
   constructor(app: OpenSumiApp) {
-    super(app, 'search');
+    super(app, 'SEARCH');
   }
 
   get searchInputSelector() {

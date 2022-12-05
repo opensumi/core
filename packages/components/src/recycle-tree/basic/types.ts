@@ -79,6 +79,10 @@ export interface IBasicTreeData {
    */
   expandable?: boolean;
   /**
+   * 用于排序的字符串，若为空则默认以 label 作排序
+   */
+  sortText?: string | null;
+  /**
    * 其他属性
    */
   [key: string]: any;
