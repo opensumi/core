@@ -1,4 +1,5 @@
-import { Injectable } from '@opensumi/di';
+import { Injectable, Injector } from '@opensumi/di';
+import { Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
@@ -15,6 +16,9 @@ import { BaseCodeEditor } from './baseCodeEditor';
 
 @Injectable({ multiple: false })
 export class ResultCodeEditor extends BaseCodeEditor {
+  private readonly _onDidChangeContent = new Emitter<void>();
+  public readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
+
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { lineNumbersMinChars: 2, lineDecorationsWidth: 24 };
   }
@@ -24,11 +28,100 @@ export class ResultCodeEditor extends BaseCodeEditor {
   /** @deprecated */
   public documentMapping: DocumentMapping;
 
-  public get documentMappingTurnLeft(): DocumentMapping {
+  private get documentMappingTurnLeft(): DocumentMapping {
     return this.mappingManagerService.documentMappingTurnLeft;
   }
-  public get documentMappingTurnRight(): DocumentMapping {
+  private get documentMappingTurnRight(): DocumentMapping {
     return this.mappingManagerService.documentMappingTurnRight;
+  }
+
+  constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
+    super(container, monacoService, injector);
+
+    let preLineCount = 0;
+
+    this.addDispose(
+      this.editor.onDidChangeModel((e) => {
+        const model = this.editor.getModel();
+        if (model) {
+          preLineCount = model.getLineCount();
+        }
+      }),
+    );
+
+    this.addDispose(
+      this.editor.onDidChangeModelContent((e) => {
+        const model = this.editor.getModel();
+        if (model && model.getLineCount() !== preLineCount) {
+          preLineCount = model.getLineCount();
+
+          const { changes, eol } = e;
+
+          const deltaEdits: Array<{ startLineNumber: number; endLineNumber: number; offset: number }> = [];
+
+          changes.forEach((change) => {
+            const { text, range } = change;
+            const textLineCount = (text.match(new RegExp(eol, 'ig')) ?? []).length;
+            const { startLineNumber, endLineNumber } = range;
+
+            /**
+             * startLineNumber 与 endLineNumber 的差值表示选区选了多少行
+             * textLineCount 则表示文本出现的换行符数量
+             * 两者相加就得出此次文本变更最终新增或减少了多少行
+             */
+            const offset = startLineNumber - endLineNumber + textLineCount;
+            if (offset === 0) {
+              return;
+            }
+
+            deltaEdits.push({
+              startLineNumber,
+              endLineNumber,
+              offset,
+            });
+          });
+
+          deltaEdits.forEach((edits) => {
+            const { startLineNumber, endLineNumber, offset } = edits;
+
+            const toLineRange = LineRange.fromPositions(startLineNumber, endLineNumber);
+            const { [EditorViewType.CURRENT]: includeLeftRange, [EditorViewType.INCOMING]: includeRightRange } =
+              this.mappingManagerService.findIncludeRanges(toLineRange);
+            /**
+             * 这里需要处理 touch 的情况（也就是 toLineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
+             * 那么就要以当前 touch range 的结果作为要 delta 的起点
+             */
+            const { [EditorViewType.CURRENT]: touchLeftRanges, [EditorViewType.INCOMING]: touchRightRanges } =
+              this.mappingManagerService.findTouchesRanges(toLineRange);
+            const { [EditorViewType.CURRENT]: nextLeftRanges, [EditorViewType.INCOMING]: nextRightRanges } =
+              this.mappingManagerService.findNextLineRanges(toLineRange);
+
+            const leftRange = touchLeftRanges || nextLeftRanges;
+            const rightRange = touchRightRanges || nextRightRanges;
+
+            if (includeLeftRange) {
+              this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
+            } else if (leftRange) {
+              const reverse = this.documentMappingTurnLeft.reverse(leftRange);
+              if (reverse) {
+                this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
+              }
+            }
+
+            if (includeRightRange) {
+              this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
+            } else if (rightRange) {
+              const reverse = this.documentMappingTurnRight.reverse(rightRange);
+              if (reverse) {
+                this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
+              }
+            }
+          });
+
+          this._onDidChangeContent.fire();
+        }
+      }),
+    );
   }
 
   protected override prepareRenderDecorations(

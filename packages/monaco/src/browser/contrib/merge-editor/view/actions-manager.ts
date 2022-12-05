@@ -2,8 +2,8 @@ import { Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
+import { MappingManagerService } from '../mapping-manager.service';
 import { LineRange } from '../model/line-range';
-import { MappingManagerService } from '../service/mapping-manager.service';
 import { EditorViewType, IActionsDescription, IConflictActionsEvent, ACCEPT_CURRENT, IGNORE } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
@@ -56,11 +56,11 @@ export class ActionsManager extends Disposable {
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
       )(({ range, withViewType, action }) => {
-        const markComplete = (range: LineRange, isIgnore: boolean) => {
+        const markComplete = (range: LineRange) => {
           if (withViewType === EditorViewType.CURRENT) {
-            this.mappingManagerService.markCompleteTurnLeft(range, isIgnore);
+            this.mappingManagerService.markCompleteTurnLeft(range);
           } else if (withViewType === EditorViewType.INCOMING) {
-            this.mappingManagerService.markCompleteTurnRight(range, isIgnore);
+            this.mappingManagerService.markCompleteTurnRight(range);
           }
         };
 
@@ -87,7 +87,7 @@ export class ActionsManager extends Disposable {
             ]);
           }
 
-          markComplete(range, action === IGNORE);
+          markComplete(range);
 
           viewEditor!.updateDecorations();
           viewEditor!.clearActions(range);
