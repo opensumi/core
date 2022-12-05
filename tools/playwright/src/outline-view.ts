@@ -1,12 +1,13 @@
 import { OpenSumiApp } from './app';
+import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiView } from './view';
 
-export class OpenSumiOpenedEditorView extends OpenSumiView {
+export class OpenSumiOutlineView extends OpenSumiView {
   constructor(app: OpenSumiApp) {
     super(app, {
-      viewSelector: '[data-view-id="file-opened-editor"]',
-      tabSelector: '[data-view-id="file-opened-editor"] [tabindex="0"]',
-      name: 'OPENED EDITORS',
+      viewSelector: '[data-view-id="outline-view"]',
+      tabSelector: '[data-view-id="outline-view"] [tabindex="0"]',
+      name: 'OUTLINE',
     });
   }
 
@@ -24,5 +25,13 @@ export class OpenSumiOpenedEditorView extends OpenSumiView {
         return action;
       }
     }
+  }
+
+  async openTabContextMenu() {
+    const header = await this.getTabElement();
+    if (!header) {
+      return;
+    }
+    return OpenSumiContextMenu.open(this.app, async () => header);
   }
 }

@@ -57,7 +57,7 @@ export class ViewQuickOpenHandler implements QuickOpenHandler {
             id,
             views[i],
             {
-              groupLabel: i === 0 ? formatLocalize('layout.openView.viewTitle', String(id).toLocaleUpperCase()) : '',
+              groupLabel: i === 0 ? formatLocalize('layout.openView.viewTitle', String(id).toUpperCase()) : '',
               showBorder: false,
             },
           ]),
@@ -115,7 +115,7 @@ export class ViewQuickOpenItem extends QuickOpenItem {
   }
 
   getLabel() {
-    return this.view.name;
+    return this.view.name?.toUpperCase();
   }
 
   isHidden(): boolean {

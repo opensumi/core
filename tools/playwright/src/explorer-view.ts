@@ -1,6 +1,7 @@
 import { OpenSumiApp } from './app';
 import { OpenSumiFileTreeView } from './filetree-view';
 import { OpenSumiOpenedEditorView } from './opened-editor-view';
+import { OpenSumiOutlineView } from './outline-view';
 import { OpenSumiPanel } from './panel';
 import { OpenSumiTreeNode } from './tree-node';
 
@@ -70,10 +71,12 @@ export class OpenSumiExplorerOpenedEditorNode extends OpenSumiTreeNode {
 export class OpenSumiExplorerView extends OpenSumiPanel {
   private _fileTreeView: OpenSumiFileTreeView;
   private _openedEditorView: OpenSumiOpenedEditorView;
+  private _outlineView: OpenSumiOutlineView;
 
   constructor(app: OpenSumiApp) {
     super(app, 'EXPLORER');
-    this._openedEditorView = new OpenSumiOpenedEditorView(this.app, 'OPENED EDITORS');
+    this._openedEditorView = new OpenSumiOpenedEditorView(this.app);
+    this._outlineView = new OpenSumiOutlineView(this.app);
   }
 
   initFileTreeView(name: string) {
@@ -86,6 +89,10 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
 
   get openedEditorView() {
     return this._openedEditorView;
+  }
+
+  get outlineView() {
+    return this._outlineView;
   }
 
   async getFileStatTreeNodeByPath(path: string) {
