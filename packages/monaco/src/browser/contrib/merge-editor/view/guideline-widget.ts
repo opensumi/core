@@ -19,6 +19,8 @@ export class GuidelineWidget extends ZoneWidget {
       showFrame: false,
       arrowColor: undefined,
       frameColor: undefined,
+      // 这里有个小坑，如果不开启这个配置，那么在调用 show 函数的时候会自动对焦并滚动到对应 range，导致在编辑 result 视图中代码时光标总是滚动在最后一个 widget 上
+      keepEditorSelection: true,
     });
   }
 

@@ -69,11 +69,34 @@ export class DocumentMapping extends Disposable {
     }
   }
 
-  public deltaAdjacentQueue(range: LineRange, offset: number): void {
+  /**
+   * 将 range 之后的所有 range 都增量 offset
+   * @param range 目标 range
+   * @param offset 有增有减
+   * @param isContainSelf 是否包含自己，也增量 offset
+   * @returns
+   */
+  public deltaAdjacentQueueAfter(range: LineRange, offset: number, isContainSelf = false): void {
     const sameRange = this.adjacentComputeRangeMap.get(range.id);
+    if (!sameRange) {
+      return;
+    }
 
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
-      if (sameRange && (pick.isTouches(sameRange) || pick.isAfter(sameRange))) {
+      if (pick.isAfter(sameRange)) {
+        this.adjacentComputeRangeMap.set(key, pick.delta(offset));
+      } else if (isContainSelf && pick.id === sameRange.id) {
+        this.adjacentComputeRangeMap.set(key, pick.delta(offset));
+      }
+    }
+  }
+
+  public deltaEndAdjacentQueue(sameRange: LineRange, offset: number): void {
+    for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
+      if (pick.id === sameRange.id) {
+        this.adjacentComputeRangeMap.set(key, sameRange.deltaEnd(offset));
+        // 将在 sameRange 之后的 range offset 都增加
+      } else if (pick.isAfter(sameRange)) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
@@ -84,11 +107,41 @@ export class DocumentMapping extends Disposable {
    * @param sameRange 对位 lineRange，不一定存在于 map 中
    * @returns 下一个最近的 lineRange
    */
-  public huntForNextSameRange(sameRange: LineRange): LineRange | undefined {
+  public findNextSameRange(sameRange: LineRange): LineRange | undefined {
     const values = this.adjacentComputeRangeMap.values();
 
     for (const range of values) {
-      if (range.isAfter(sameRange)) {
+      if (range.id !== sameRange.id && range.isAfter(sameRange)) {
+        return range;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * 找出 sameRange 是否被包裹在哪一个 lineRange 里，如果有并返回该 lineRange
+   */
+  public findIncludeRange(sameRange: LineRange): LineRange | undefined {
+    const values = this.adjacentComputeRangeMap.values();
+
+    for (const range of values) {
+      if (range.isInclude(sameRange)) {
+        return range;
+      }
+    }
+
+    return undefined;
+  }
+
+  /**
+   * 找出 sameRange 是否与哪一个 lineRange 接触
+   */
+  public findTouchesRange(sameRange: LineRange): LineRange | undefined {
+    const values = this.adjacentComputeRangeMap.values();
+
+    for (const range of values) {
+      if (range.isTouches(sameRange)) {
         return range;
       }
     }
