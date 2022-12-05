@@ -69,14 +69,20 @@ export class MergeEditorDecorations extends Disposable {
     });
 
     return Array.from({ length }).map((_, idx) => {
+      let borderClassName = ' ';
       let wrapClassName = ` ${DECORATIONS_CLASSNAME.conflict_wrap} `;
+
       if (length !== 1) {
-        wrapClassName +=
+        borderClassName +=
           idx === 0
             ? DECORATIONS_CLASSNAME.stretch_bottom
             : idx === length - 1
             ? DECORATIONS_CLASSNAME.stretch_top
             : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_top, DECORATIONS_CLASSNAME.stretch_bottom);
+      }
+
+      if (range.isComplete) {
+        borderClassName += wrapClassName;
       }
 
       const mergeOptions = {
@@ -95,13 +101,9 @@ export class MergeEditorDecorations extends Disposable {
           },
           options: {
             ...mergeOptions,
-            ...(range.isComplete
-              ? {
-                  className: (mergeOptions.className || '') + wrapClassName,
-                  marginClassName: (mergeOptions.marginClassName || '') + wrapClassName,
-                  linesDecorationsClassName: (mergeOptions.linesDecorationsClassName || '') + wrapClassName,
-                }
-              : {}),
+            className: (mergeOptions.className || '') + borderClassName,
+            marginClassName: (mergeOptions.marginClassName || '') + borderClassName,
+            linesDecorationsClassName: (mergeOptions.linesDecorationsClassName || '') + borderClassName,
           },
         },
       };
