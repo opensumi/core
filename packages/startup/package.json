@@ -21,10 +21,7 @@
     "start:server:extjs": "cross-env EXT_MODE=js NODE_ENV=development KTLOG_SHOW_DEBUG=1 node --inspect=9999 -r ts-node/register ./entry/web/server.ts",
     "build": "tsc --build ../../configs/ts/references/tsconfig.startup.json",
     "bundle:standard": "cross-env NODE_ENV=production webpack --config webpack.standard.config.js",
-    "bundle:standard:analysis": "cross-env analysis=1 yarn run bundle:standard",
-    "bundle:lite": "cross-env NODE_ENV=production webpack --config webpack.lite.config.js",
-    "bundle:lite:stats": "cross-env NODE_ENV=production webpack --profile --config webpack.lite.config.js --json > stats.json",
-    "bundle:lite:analysis": "cross-env analysis=1 yarn run bundle:lite"
+    "bundle:standard:analysis": "cross-env analysis=1 yarn run bundle:standard"
   },
   "repository": {
     "type": "git",
@@ -106,8 +103,7 @@
     "@opensumi/ide-variable": "2.21.6",
     "@opensumi/ide-webview": "2.21.6",
     "@opensumi/ide-workspace": "2.21.6",
-    "@opensumi/ide-workspace-edit": "2.21.6",
-    "@opensumi/textmate-languages": "^2.6.1"
+    "@opensumi/ide-workspace-edit": "2.21.6"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "^1.3.1",
