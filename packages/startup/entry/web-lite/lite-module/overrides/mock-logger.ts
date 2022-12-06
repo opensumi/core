@@ -51,4 +51,8 @@ export class MockLogServiceForClient {
   async critical(...args) {
     this.catchLogArgs = args;
   }
+
+  getGlobalLogLevel() {
+    return this.level;
+  }
 }
