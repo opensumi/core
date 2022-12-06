@@ -44,7 +44,6 @@ jobs:
       - name: Build
         run: |
           yarn run init
-          yarn run bundle:lite
 
       - name: Lint
         run: |
@@ -71,7 +70,6 @@ jobs:
         run: |
           yarn install --immutable
           yarn run init
-          yarn run bundle:lite
 
       - name: Lint
         run: |
