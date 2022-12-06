@@ -63,7 +63,7 @@ export class BrowserClipboardService implements IClipboardService {
   async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
     this.browserStorage.setData(
       field,
-      resources.map((uri) => uri.toString()),
+      resources.filter((uri) => Boolean(uri)).map((uri) => uri.toString()),
     );
   }
 
