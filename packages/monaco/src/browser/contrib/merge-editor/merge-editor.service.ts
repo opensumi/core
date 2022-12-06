@@ -5,6 +5,7 @@ import { ICodeEditor } from '../../monaco-api/editor';
 
 import { MappingManagerService } from './mapping-manager.service';
 import { ComputerDiffModel } from './model/computer-diff';
+import { EDiffRangeTurn } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
 import { IncomingCodeEditor } from './view/editors/incomingCodeEditor';
@@ -93,14 +94,16 @@ export class MergeEditorService extends Disposable {
     const result = await this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!);
     const { changes } = result;
     this.currentView.inputDiffComputingResult(changes);
-    this.resultView.inputDiffComputingResult(changes, 1);
+    this.resultView.inputDiffComputingResult(changes, EDiffRangeTurn.MODIFIED);
 
     const result2 = await this.computerDiffModel.computeDiff(
       this.resultView.getModel()!,
       this.incomingView.getModel()!,
     );
     const { changes: changes2 } = result2;
-    this.resultView.inputDiffComputingResult(changes2, 0);
+
+    // resultView 的 inputDiffComputingResult 顺序不要变，第二次的 turnType 参数得是 origin
+    this.resultView.inputDiffComputingResult(changes2, EDiffRangeTurn.ORIGIN);
     this.incomingView.inputDiffComputingResult(changes2);
   }
 }

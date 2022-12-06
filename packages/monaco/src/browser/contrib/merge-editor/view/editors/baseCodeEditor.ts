@@ -13,7 +13,15 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { EditorViewType, IActionsProvider, IBaseCodeEditor, IConflictActionsEvent, LineRangeType } from '../../types';
+import {
+  EDiffRangeTurn,
+  EditorViewType,
+  IActionsDescription,
+  IActionsProvider,
+  IBaseCodeEditor,
+  IConflictActionsEvent,
+  LineRangeType,
+} from '../../types';
 import { GuidelineWidget } from '../guideline-widget';
 
 export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEditor {
@@ -172,7 +180,11 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     this.#actionsProvider = provider;
 
     const { provideActionsItems } = provider;
-    this.#conflictActions.setActions(provideActionsItems());
+    this.setConflictActions(provideActionsItems());
+  }
+
+  protected setConflictActions(actions: IActionsDescription[]): void {
+    this.#conflictActions.setActions(actions);
   }
 
   public get actionsProvider(): IActionsProvider | undefined {
@@ -184,7 +196,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   }
 
   public clearActions(range: LineRange): void {
-    this.conflictActions.clearActions(range.startLineNumber);
+    this.conflictActions.clearActions(range.id);
   }
 
   public clearDecorations(): void {
@@ -192,9 +204,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   }
 
   /**
-   * @param diffByDirection
-   * 0 表示自己以 originalRange 为基础，与 modifiedRange 作比较
-   * 1 与 0 相反
+   * @param turnType: 表示 computer diff 的结果是以 origin 作为比较还是 modify 作为比较
    */
-  public abstract inputDiffComputingResult(changes: LineRangeMapping[], baseRange?: 0 | 1): void;
+  public abstract inputDiffComputingResult(changes: LineRangeMapping[], turnType?: EDiffRangeTurn): void;
 }

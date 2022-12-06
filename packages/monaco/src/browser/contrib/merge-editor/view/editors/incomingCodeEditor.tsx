@@ -6,7 +6,15 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE, DECORATIONS_CLASSNAME } from '../../types';
+import {
+  ACCEPT_CURRENT_ACTIONS,
+  CONFLICT_ACTIONS_ICON,
+  EditorViewType,
+  IGNORE_ACTIONS,
+  DECORATIONS_CLASSNAME,
+  ADDRESSING_TAG_CLASSNAME,
+  TActionsType,
+} from '../../types';
 import { flatInnerModified, flatModified } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -30,28 +38,19 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return [];
   }
 
-  private onActionsClick(e: IEditorMouseEvent): boolean {
-    const element = e.target.element!;
-    const position = e.target.position;
-
-    if (!position) {
-      return false;
-    }
-
-    const action = this.conflictActions.getActions(position.lineNumber);
+  private onActionsClick(rangeId: string, actionType: TActionsType): void {
+    const action = this.conflictActions.getActions(rangeId);
     if (!action) {
-      return false;
+      return;
     }
 
     const { range } = action;
 
-    if (element.classList.contains(ACCEPT_CURRENT)) {
-      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: ACCEPT_CURRENT });
-    } else if (element.classList.contains(IGNORE)) {
-      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: IGNORE });
+    if (actionType === ACCEPT_CURRENT_ACTIONS) {
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: ACCEPT_CURRENT_ACTIONS });
+    } else if (actionType === IGNORE_ACTIONS) {
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: IGNORE_ACTIONS });
     }
-
-    return true;
   }
 
   public getMonacoDecorationOptions(
@@ -86,13 +85,16 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     this.renderDecorations(ranges, innerRanges);
 
     this.registerActionsProvider({
-      provideActionsItems: () => {
-        const decorationOptions = {
-          glyphMarginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ' offset-right',
-          firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.LEFT,
-        };
-        return ranges.map((range) => ({ range, decorationOptions }));
-      },
+      provideActionsItems: () => ranges.map((range) => {
+          const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
+          return {
+            range,
+            decorationOptions: {
+              glyphMarginClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.CLOSE, 'offset-right', idMark),
+              firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.LEFT, idMark),
+            },
+          };
+        }),
       onActionsClick: this.onActionsClick,
     });
   }

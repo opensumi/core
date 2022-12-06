@@ -9,15 +9,20 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { ACCEPT_CURRENT, CONFLICT_ACTIONS_ICON, EditorViewType, IGNORE, DECORATIONS_CLASSNAME } from '../../types';
+import {
+  ACCEPT_CURRENT_ACTIONS,
+  CONFLICT_ACTIONS_ICON,
+  EditorViewType,
+  IGNORE_ACTIONS,
+  DECORATIONS_CLASSNAME,
+  ADDRESSING_TAG_CLASSNAME,
+  TActionsType,
+} from '../../types';
 import { flatInnerOriginal, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 import { ResultCodeEditor } from './resultCodeEditor';
-
-// 用来寻址点击事件时的标记
-const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
 
 @Injectable({ multiple: false })
 export class CurrentCodeEditor extends BaseCodeEditor {
@@ -41,32 +46,19 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return super.prepareRenderDecorations(ranges, innerChanges, 1);
   }
 
-  private onActionsClick(e: IEditorMouseEvent, currentView: BaseCodeEditor, resultView: ResultCodeEditor): boolean {
-    const element = e.target.element!;
-
-    const toArry = Array.from(element.classList);
-    const find = toArry.find((c) => c.startsWith(ADDRESSING_TAG_CLASSNAME));
-    if (find) {
-      const posiLine = Number(find.replace(ADDRESSING_TAG_CLASSNAME, ''));
-      if (typeof posiLine === 'number') {
-        const action = this.conflictActions.getActions(posiLine);
-        if (!action) {
-          return false;
-        }
-
-        const { range } = action;
-
-        if (element.classList.contains(ACCEPT_CURRENT)) {
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: ACCEPT_CURRENT });
-        } else if (element.classList.contains(IGNORE)) {
-          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE });
-        }
-
-        return true;
-      }
+  private onActionsClick(rangeId: string, actionType: TActionsType): void {
+    const action = this.conflictActions.getActions(rangeId);
+    if (!action) {
+      return;
     }
 
-    return false;
+    const { range } = action;
+
+    if (actionType === ACCEPT_CURRENT_ACTIONS) {
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: ACCEPT_CURRENT_ACTIONS });
+    } else if (actionType === IGNORE_ACTIONS) {
+      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE_ACTIONS });
+    }
   }
 
   public getMonacoDecorationOptions(
@@ -98,12 +90,12 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     this.registerActionsProvider({
       provideActionsItems: () =>
         ranges.map((range) => {
-          const posiMark = `${ADDRESSING_TAG_CLASSNAME}${range.startLineNumber}`;
+          const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
           return {
             range,
             decorationOptions: {
-              glyphMarginClassName: CONFLICT_ACTIONS_ICON.RIGHT + ` offset-left ${posiMark}`,
-              marginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ` ${posiMark}`,
+              glyphMarginClassName: CONFLICT_ACTIONS_ICON.RIGHT + ` offset-left ${idMark}`,
+              marginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ` ${idMark}`,
             },
           };
         }),

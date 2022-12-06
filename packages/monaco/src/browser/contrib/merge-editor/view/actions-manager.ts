@@ -4,7 +4,17 @@ import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/r
 
 import { MappingManagerService } from '../mapping-manager.service';
 import { LineRange } from '../model/line-range';
-import { EditorViewType, IActionsDescription, IConflictActionsEvent, ACCEPT_CURRENT, IGNORE } from '../types';
+import {
+  EditorViewType,
+  IActionsDescription,
+  IConflictActionsEvent,
+  ACCEPT_CURRENT_ACTIONS,
+  IGNORE_ACTIONS,
+  ADDRESSING_TAG_CLASSNAME,
+  TActionsType,
+  ACCEPT_COMBINATION_ACTIONS,
+  REVOKE_ACTIONS,
+} from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
@@ -71,7 +81,7 @@ export class ActionsManager extends Disposable {
               : this.mappingManagerService.documentMappingTurnRight;
           const viewEditor = withViewType === EditorViewType.CURRENT ? this.currentView : this.incomingView;
 
-          if (action === ACCEPT_CURRENT) {
+          if (action === ACCEPT_CURRENT_ACTIONS) {
             const applyText = viewEditor!.getModel()!.getValueInRange(range.toRange());
             const sameRange = documentMapping.adjacentComputeRangeMap.get(range.id);
 
@@ -136,7 +146,30 @@ export class ActionsManager extends Disposable {
       }
 
       if (mouseDownGuard(e) === true && onActionsClick) {
-        onActionsClick.call(_this, e, currentView, resultView, incomingView);
+        const element = e.target.element!;
+        const { classList } = element;
+
+        const find = Array.from(classList).find((c) => c.startsWith(ADDRESSING_TAG_CLASSNAME));
+
+        if (find) {
+          const rangeId = find.replace(ADDRESSING_TAG_CLASSNAME, '');
+
+          let type: TActionsType | undefined;
+
+          if (classList.contains(ACCEPT_CURRENT_ACTIONS)) {
+            type = ACCEPT_CURRENT_ACTIONS;
+          } else if (classList.contains(ACCEPT_COMBINATION_ACTIONS)) {
+            type = ACCEPT_COMBINATION_ACTIONS;
+          } else if (classList.contains(IGNORE_ACTIONS)) {
+            type = IGNORE_ACTIONS;
+          } else if (classList.contains(REVOKE_ACTIONS)) {
+            type = REVOKE_ACTIONS;
+          }
+
+          if (type) {
+            onActionsClick.call(_this, rangeId, type);
+          }
+        }
       }
     };
 
