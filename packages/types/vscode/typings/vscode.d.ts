@@ -2626,7 +2626,7 @@ declare module 'vscode' {
      * A code or identifier for this diagnostic.
      * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.
      */
-     code?: string | number | {
+    code?: string | number | {
       /**
        * A code or identifier for this diagnostic.
        * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.

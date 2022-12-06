@@ -96,12 +96,8 @@ export interface IRelatedInformation {
  * A structure defining a problem/warning/etc.
  */
 export interface IMarkerData {
-  code?:
-    | string
-    | {
-        value: string;
-        target: URI;
-      };
+  code?: string;
+  codeHref?: URI;
   severity: MarkerSeverity;
   message: string;
   source?: string;

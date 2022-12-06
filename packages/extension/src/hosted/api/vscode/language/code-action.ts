@@ -101,7 +101,7 @@ export class CodeActionAdapter {
               cacheId: [cacheId, i],
               title: candidate.title,
               command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
-              diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData),
+              diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.Diagnostic.toMarker),
               edit: candidate.edit && (Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit),
               kind: candidate.kind && candidate.kind.value,
               isPreferred: candidate.isPreferred,
