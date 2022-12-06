@@ -4,12 +4,17 @@ import { URI } from '@opensumi/ide-core-common';
 
 import { ILogger } from '../logger';
 
+import { GlobalBrowserStorageService } from './storage-service';
+
 export { CLIPBOARD_FILE_TOKEN, IClipboardService };
 
 @Injectable()
 export class BrowserClipboardService implements IClipboardService {
   @Autowired(ILogger)
   private readonly logger: ILogger;
+
+  @Autowired(GlobalBrowserStorageService)
+  private readonly browserStorage: GlobalBrowserStorageService;
 
   async writeText(text: string): Promise<void> {
     try {
@@ -47,7 +52,7 @@ export class BrowserClipboardService implements IClipboardService {
   async readText(): Promise<string> {
     try {
       if (!navigator.clipboard) {
-        throw new Error('当前环境不支持剪贴板API');
+        throw new Error('The current environment does not support the `clipboard` API');
       }
       return await navigator.clipboard.readText();
     } catch (error) {
@@ -56,42 +61,32 @@ export class BrowserClipboardService implements IClipboardService {
     }
   }
   async writeResources(resources: URI[], field = CLIPBOARD_FILE_TOKEN): Promise<void> {
-    try {
-      localStorage.setItem(field, JSON.stringify(resources.map((uri) => uri.toString())));
-    } catch (e) {
-      this.logger.error(e);
-    }
+    this.browserStorage.setData(
+      field,
+      resources.map((uri) => uri.toString()),
+    );
   }
+
   async readResources(field = CLIPBOARD_FILE_TOKEN): Promise<URI[]> {
-    try {
-      const localStorgeUriList = JSON.parse(localStorage.getItem(field) ?? '');
-      if (
-        !Array.isArray(localStorgeUriList) ||
-        !localStorgeUriList.length ||
-        !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
-      ) {
-        return [];
-      }
-      return localStorgeUriList.map((str) => URI.parse(str));
-    } catch (e) {
-      this.logger.error(e);
+    const localStorgeUriList = this.browserStorage.getData(field);
+    if (
+      !Array.isArray(localStorgeUriList) ||
+      !localStorgeUriList.length ||
+      !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
+    ) {
       return [];
     }
+    return localStorgeUriList.map((str) => URI.parse(str));
   }
   async hasResources(field?: string | undefined): Promise<boolean> {
-    try {
-      const localStorgeUriList = JSON.parse(localStorage.getItem(field ?? CLIPBOARD_FILE_TOKEN) ?? '');
-      if (
-        !Array.isArray(localStorgeUriList) ||
-        !localStorgeUriList.length ||
-        !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
-      ) {
-        return false;
-      }
-      return true;
-    } catch (e) {
-      this.logger.error(e);
+    const localStorgeUriList = this.browserStorage.getData(field ?? CLIPBOARD_FILE_TOKEN) ?? '';
+    if (
+      !Array.isArray(localStorgeUriList) ||
+      !localStorgeUriList.length ||
+      !localStorgeUriList.every((str) => typeof str === 'string' && URI.isUriString(str))
+    ) {
       return false;
     }
+    return true;
   }
 }
