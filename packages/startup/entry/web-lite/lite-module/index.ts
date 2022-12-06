@@ -1,9 +1,11 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule, LogServiceForClientPath } from '@opensumi/ide-core-browser';
 import { CommonServerPath, KeytarServicePath } from '@opensumi/ide-core-common';
+import { IDebugService } from '@opensumi/ide-debug';
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { ExtensionNodeServiceServerPath } from '@opensumi/ide-extension/lib/common';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common';
+import { ITerminalProfileService } from '@opensumi/ide-terminal-next';
 
 import { ExtensionClientService } from './extension';
 import { FileProviderContribution } from './file-provider/index.contribution';
@@ -38,6 +40,14 @@ export class WebLiteModule extends BrowserModule {
     {
       token: KeytarServicePath,
       useClass: MockCredentialService,
+    },
+    {
+      token: IDebugService,
+      useValue: {},
+    },
+    {
+      token: ITerminalProfileService,
+      useValue: {},
     },
     {
       token: DebugPreferences,
