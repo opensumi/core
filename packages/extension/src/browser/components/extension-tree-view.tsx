@@ -190,9 +190,7 @@ export const ExtensionTabBarTreeView = observer(
       (async () => {
         await model.whenReady;
         if (model.treeModel && isVisible) {
-          // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-          // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-          await model.treeModel.root.ensureLoaded();
+          await model.treeModel.ensureReady;
         }
         if (!unmouted) {
           setIsReady(true);

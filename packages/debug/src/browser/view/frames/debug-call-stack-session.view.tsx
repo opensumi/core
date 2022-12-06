@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 
 import { ViewState, getIcon, useInjectable, DisposableCollection } from '@opensumi/ide-core-browser';
 
@@ -20,16 +20,16 @@ export interface DebugStackSessionViewProps {
 }
 
 export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
-  const { session, viewState, indent } = props;
+  const { session, viewState } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
-  const [threads, setThreads] = React.useState<DebugThread[]>([]);
-  const [otherThreads, setOtherThreads] = React.useState<DebugThread[]>([]);
-  const [multipleThreadPaused, setMultipleThreadPaused] = React.useState<DebugThread[]>([]);
-  const [subSession, setSubSession] = React.useState<DebugSession[]>([]);
-  const [unfold, setUnfold] = React.useState<boolean>(true);
-  const [hover, setHover] = React.useState<boolean>(false);
-  const [loading, setLoading] = React.useState<boolean>(true);
+  const [threads, setThreads] = useState<DebugThread[]>([]);
+  const [otherThreads, setOtherThreads] = useState<DebugThread[]>([]);
+  const [multipleThreadPaused, setMultipleThreadPaused] = useState<DebugThread[]>([]);
+  const [subSession, setSubSession] = useState<DebugSession[]>([]);
+  const [unfold, setUnfold] = useState<boolean>(true);
+  const [hover, setHover] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   // 多 session 调试
   const mutipleSession = manager.sessions.length > 1;
   const supportsThreadIdCorrespond = session.supportsThreadIdCorrespond;
@@ -56,7 +56,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     setOtherThreads(_threads);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const createDispose = manager.onDidCreateDebugSession(() => {
       const sub = findSubSessions();
       setSubSession(sub);
@@ -74,14 +74,21 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     };
   }, []);
 
-  React.useEffect(() => {
-    setThreads(Array.from(session.threads));
+  const updateThreads = useCallback(
+    (threads: DebugThread[]) => {
+      setThreads(threads);
+    },
+    [threads],
+  );
+
+  useEffect(() => {
+    updateThreads(Array.from(session.threads));
 
     const disposable = new DisposableCollection();
 
     disposable.push(
       session.onDidChange(() => {
-        setThreads([...session.threads]);
+        updateThreads([...session.threads]);
       }),
     );
 
