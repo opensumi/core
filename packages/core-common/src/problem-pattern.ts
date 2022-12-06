@@ -255,7 +255,11 @@ export interface ProblemMatchData extends ProblemMatch {
   marker: Diagnostic;
 }
 
-function rangeAreEqual(a, b) {
+export function rangeAreEqual(a, b) {
+  if (typeof a === 'undefined' && typeof b === 'undefined') {
+    return true;
+  }
+
   return (
     a.start.line === b.start.line &&
     a.start.character === b.start.character &&
@@ -278,7 +282,6 @@ function codeAreEquals(
     | number
     | {
         value: string | number;
-
         target: any;
       },
 ) {
@@ -300,15 +303,6 @@ export function diagnosticAreEquals(a?: Diagnostic, b?: Diagnostic) {
 export namespace ProblemMatchData {
   export function is(data: ProblemMatch): data is ProblemMatchData {
     return 'marker' in data;
-  }
-  export function areEquals(a: ProblemMatchData | ProblemMatch, b: ProblemMatchData | ProblemMatch) {
-    return (
-      a.resource?.toString() === b.resource?.toString() &&
-      a.description.owner === b.description.owner &&
-      a.description.severity === b.description.severity &&
-      a.description.source === b.description.source &&
-      diagnosticAreEquals((a as ProblemMatchData)?.marker, (b as ProblemMatchData)?.marker)
-    );
   }
 }
 
