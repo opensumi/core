@@ -48,7 +48,7 @@ function buildItemChildId(res: string, index: number): string {
 const MarkerItemTitleName: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
   const filenameMatches = model.matches && model.matches.filenameMatches;
   if (filenameMatches) {
-    return <HightlightData data={model.filename} matches={filenameMatches} className={styles.itemTitleName} />;
+    return <HighlightData data={model.filename} matches={filenameMatches} className={styles.itemTitleName} />;
   } else {
     return <div className={styles.itemTitleName}>{model.filename}</div>;
   }
@@ -65,7 +65,7 @@ const MarkerItemTitleDescription: React.FC<{ model: IRenderableMarkerModel }> = 
 /**
  * render highlight info which is filterd
  */
-const HightlightData: React.FC<{
+const HighlightData: React.FC<{
   data: string;
   matches: IMatch[];
   className: string;
@@ -74,17 +74,17 @@ const HightlightData: React.FC<{
   let first = 0;
   matches.forEach((match) => {
     if (first < match.start) {
-      result.push(<span key={`hightlight-data-${first}-${match.start}`}>{data.substring(first, match.start)}</span>);
+      result.push(<span key={`highlight-data-${first}-${match.start}`}>{data.substring(first, match.start)}</span>);
     }
     result.push(
-      <span key={`hightlight-data-${match.start}-${match.end}`} className={styles.highlight}>
+      <span key={`highlight-data-${match.start}-${match.end}`} className={styles.highlight}>
         {data.substring(match.start, match.end)}
       </span>,
     );
     first = match.end;
   });
   if (first < data.length) {
-    result.push(<span key={`hightlight-data-${first}-${data.length - 1}`}>{data.substring(first)}</span>);
+    result.push(<span key={`highlight-data-${first}-${data.length - 1}`}>{data.substring(first)}</span>);
   }
   return <div className={className}>{result}</div>;
 });
@@ -93,9 +93,9 @@ const HightlightData: React.FC<{
  * render marker message
  */
 const MarkerItemName: React.FC<{ data: IRenderableMarker }> = observer(({ data }) => {
-  const messageMatchs = data.matches && data.matches.messageMatches;
-  if (messageMatchs) {
-    return <HightlightData data={data.message} matches={messageMatchs} className={styles.itemDetailName} />;
+  const messageMatches = data.matches && data.matches.messageMatches;
+  if (messageMatches) {
+    return <HighlightData data={data.message} matches={messageMatches} className={styles.itemDetailName} />;
   } else {
     return <div className={styles.itemDetailName}>{data.message}</div>;
   }
@@ -140,11 +140,11 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
     <div className={styles.itemDetailDescription}>
       <div className={styles.typeContainer}>
         {sourceMatches
-          ? data.source && <HightlightData data={data.source} matches={sourceMatches} className={styles.type} />
+          ? data.source && <HighlightData data={data.source} matches={sourceMatches} className={styles.type} />
           : data.source}
         {data.code && '('}
         {data.code && codeMatches ? (
-          <HightlightData data={data.code} matches={codeMatches} className={styles.type} />
+          <HighlightData data={data.code} matches={codeMatches} className={styles.type} />
         ) : (
           <MarkerCode data={data.code} href={data.codeHref} />
         )}
