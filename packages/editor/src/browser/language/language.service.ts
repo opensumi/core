@@ -64,10 +64,10 @@ function reviveRelated(related: IRelatedInformation): DiagnosticRelatedInformati
 function reviveMarker(marker: IMarkerData): Diagnostic {
   const monacoMarker: Diagnostic = {
     code:
-      typeof marker.code === 'object'
+      typeof marker.codeHref !== 'undefined'
         ? {
-            value: marker.code.value,
-            target: marker.code.target.codeUri,
+            value: String(marker.code),
+            target: marker.codeHref.codeUri,
           }
         : marker.code,
     severity: reviveSeverity(marker.severity) as any,

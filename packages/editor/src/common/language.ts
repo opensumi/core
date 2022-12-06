@@ -62,14 +62,13 @@ export enum DiagnosticSeverity {
 export interface Diagnostic {
   /**
    * The range at which the message applies
-   * TODO 类型声明
    */
   range: LSTypes.Range;
   /**
    * The diagnostic's severity. Can be omitted. If omitted it is up to the
    * client to interpret diagnostics as error, warning, info or hint.
    */
-  severity?: DiagnosticSeverity;
+  severity: DiagnosticSeverity;
 
   /**
    * A code or identifier for this diagnostic.
@@ -144,14 +143,14 @@ export function asRelatedInformation(relatedInformation: DiagnosticRelatedInform
     message: relatedInformation.message,
   };
 }
-export function asDiagnostics(diagnostics: Diagnostic[] | undefined): editor.IMarkerData[] | undefined {
+export function asMonacoDiagnostics(diagnostics: Diagnostic[] | undefined): editor.IMarkerData[] | undefined {
   if (!diagnostics) {
     return undefined;
   }
-  return diagnostics.map((diagnostic) => asDiagnostic(diagnostic));
+  return diagnostics.map((diagnostic) => asMonacoDiagnostic(diagnostic));
 }
 
-export function asDiagnostic(diagnostic: Diagnostic): editor.IMarkerData {
+export function asMonacoDiagnostic(diagnostic: Diagnostic): editor.IMarkerData {
   return {
     code:
       typeof diagnostic.code === 'number'

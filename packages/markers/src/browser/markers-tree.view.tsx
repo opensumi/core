@@ -5,7 +5,6 @@ import { ViewState, useInjectable, IMatch, URI, IOpenerService } from '@opensumi
 import { DeprecatedRecycleTree, TreeNode } from '@opensumi/ide-core-browser/lib/components';
 
 import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../common';
-import { getMarkerCodeValue } from '../common/utils';
 
 import { SeverityIconStyle } from './markers-seriverty-icon';
 import { MarkerService } from './markers-service';
@@ -67,33 +66,25 @@ const MarkerItemTitleDescription: React.FC<{ model: IRenderableMarkerModel }> = 
  * render highlight info which is filterd
  */
 const HightlightData: React.FC<{
-  data:
-    | string
-    | {
-        value: string;
-        target: URI;
-      };
+  data: string;
   matches: IMatch[];
   className: string;
 }> = observer(({ data, matches, className }) => {
   const result: React.ReactNode[] = [];
   let first = 0;
-  const codeValue = getMarkerCodeValue(data);
   matches.forEach((match) => {
     if (first < match.start) {
-      result.push(
-        <span key={`hightlight-data-${first}-${match.start}`}>{codeValue.substring(first, match.start)}</span>,
-      );
+      result.push(<span key={`hightlight-data-${first}-${match.start}`}>{data.substring(first, match.start)}</span>);
     }
     result.push(
       <span key={`hightlight-data-${match.start}-${match.end}`} className={styles.highlight}>
-        {codeValue.substring(match.start, match.end)}
+        {data.substring(match.start, match.end)}
       </span>,
     );
     first = match.end;
   });
-  if (first < codeValue.length) {
-    result.push(<span key={`hightlight-data-${first}-${codeValue.length - 1}`}>{codeValue.substring(first)}</span>);
+  if (first < data.length) {
+    result.push(<span key={`hightlight-data-${first}-${data.length - 1}`}>{data.substring(first)}</span>);
   }
   return <div className={className}>{result}</div>;
 });
@@ -111,38 +102,32 @@ const MarkerItemName: React.FC<{ data: IRenderableMarker }> = observer(({ data }
 });
 
 const MarkerCode: React.FC<{
-  data:
-    | string
-    | {
-        value: string;
-        target: URI;
-      }
-    | undefined;
-}> = ({ data }) => {
+  data: string | undefined;
+  href?: URI;
+}> = ({ data, href }) => {
   const openerService = useInjectable(IOpenerService) as IOpenerService;
-  const codeText = data ? getMarkerCodeValue(data) : undefined;
 
-  if (typeof data === 'object') {
+  if (typeof href !== 'undefined') {
     return (
       <>
         <a
           className={styles.codeHref}
           onClick={() => {
             // 这里新建一个，mobx 对 target 做了 proxy 导致 openerService 取不到值。
-            const targetUri = new URI(data.target.codeUri);
+            const targetUri = new URI(href.codeUri);
             openerService.open(targetUri);
           }}
           rel='noopener'
           target='_blank'
           href='javascript:void(0)'
-          title={codeText}
+          title={data}
         >
-          {codeText}
+          {data}
         </a>
       </>
     );
   }
-  return <>{codeText}</>;
+  return <>{data}</>;
 };
 
 /**
@@ -159,9 +144,9 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
           : data.source}
         {data.code && '('}
         {data.code && codeMatches ? (
-          <HightlightData data={getMarkerCodeValue(data.code)} matches={codeMatches} className={styles.type} />
+          <HightlightData data={data.code} matches={codeMatches} className={styles.type} />
         ) : (
-          <MarkerCode data={data.code} />
+          <MarkerCode data={data.code} href={data.codeHref} />
         )}
         {data.code && ')'}
       </div>
