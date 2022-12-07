@@ -2,7 +2,7 @@ import { Injectable, Optional } from '@opensumi/di';
 import { Disposable } from '@opensumi/ide-core-common';
 import { ModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model/textModel';
 
-import { ICodeEditor, IModelDecorationOptions, IModelDeltaDecoration } from '../../../monaco-api/editor';
+import { ICodeEditor, IModelDeltaDecoration } from '../../../monaco-api/editor';
 import { IActionsDescription } from '../types';
 import { BaseCodeEditor } from '../view/editors/baseCodeEditor';
 

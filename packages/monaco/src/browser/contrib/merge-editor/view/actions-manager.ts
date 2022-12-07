@@ -29,7 +29,7 @@ export class ActionsManager extends Disposable {
     super();
   }
 
-  private applyLineRangeEdits(edits: { range: IRange; text: string }[]): void {
+  private applyLineRangeEdits(edits: { range: IRange; text: string | null }[]): void {
     if (!this.resultView) {
       return;
     }
@@ -95,7 +95,10 @@ export class ActionsManager extends Disposable {
          */
         if (withViewType !== EditorViewType.RESULT) {
           if (action === ACCEPT_CURRENT_ACTIONS) {
-            const applyText = viewEditor!.getModel()!.getValueInRange(range.toRange());
+            const model = viewEditor!.getModel()!;
+            const eol = model.getEOL();
+
+            const applyText = model.getValueInRange(range.toRange());
             const sameRange = documentMapping.adjacentComputeRangeMap.get(range.id);
 
             if (!sameRange) {
@@ -105,7 +108,7 @@ export class ActionsManager extends Disposable {
             this.applyLineRangeEdits([
               {
                 range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
-                text: applyText + (sameRange.isEmpty ? '\n' : ''),
+                text: applyText + (sameRange.isEmpty ? eol : ''),
               },
             ]);
           }
@@ -125,6 +128,29 @@ export class ActionsManager extends Disposable {
             this.mappingManagerService.revokeActionsTurnLeft(range);
           } else if (turnDirection === EditorViewType.INCOMING) {
             this.mappingManagerService.revokeActionsTurnRight(range);
+          }
+
+          const metaData = this.resultView!.getContentInTimeMachineDocument(range.id);
+          if (!metaData) {
+            return;
+          }
+
+          const { text } = metaData;
+
+          if (text) {
+            this.applyLineRangeEdits([
+              {
+                range: range.toRange(),
+                text,
+              },
+            ]);
+          } else {
+            this.applyLineRangeEdits([
+              {
+                range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER),
+                text: null,
+              },
+            ]);
           }
 
           viewEditor!.updateDecorations();
@@ -149,10 +175,9 @@ export class ActionsManager extends Disposable {
       }
 
       let { mouseDownGuard } = provider;
-      const { onActionsClick, provideActionsItems } = provider;
+      const { onActionsClick } = provider;
 
       if (typeof mouseDownGuard === 'undefined') {
-        const items = provideActionsItems.call(_this);
         mouseDownGuard = (e: IEditorMouseEvent) => {
           if (e.event.rightButton) {
             return false;
@@ -162,9 +187,9 @@ export class ActionsManager extends Disposable {
             return false;
           }
 
-          const { position } = e.target;
+          const { element } = e.target;
 
-          if (!items.some((item: IActionsDescription) => item.range.startLineNumber === position.lineNumber)) {
+          if (!element?.className.includes(ADDRESSING_TAG_CLASSNAME)) {
             return false;
           }
 

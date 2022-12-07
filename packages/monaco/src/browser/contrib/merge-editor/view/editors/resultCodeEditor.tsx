@@ -8,6 +8,7 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
+import { TimeMachineDocument } from '../../model/time-machine';
 import {
   EditorViewType,
   LineRangeType,
@@ -18,6 +19,7 @@ import {
   EDiffRangeTurn,
   IActionsDescription,
   REVOKE_ACTIONS,
+  ITimeMachineMetaData,
 } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
@@ -33,6 +35,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return { lineNumbersMinChars: 2, lineDecorationsWidth: 24 };
   }
 
+  private timeMachineDocument: TimeMachineDocument;
   private currentTurnType: EDiffRangeTurn;
 
   /** @deprecated */
@@ -47,7 +50,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
+    this.timeMachineDocument = injector.get(TimeMachineDocument, []);
+    this.initListenEvent();
+  }
 
+  private initListenEvent(): void {
     let preLineCount = 0;
 
     this.addDispose(
@@ -134,11 +141,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
     );
   }
 
-  private provideActionsItems(): IActionsDescription[] {
-    const turnLeftRanges = this.documentMappingTurnLeft.getModifiedRange();
-    const turnRightRanges = this.documentMappingTurnRight.getOriginalRange();
-    return turnLeftRanges
-      .concat(turnRightRanges)
+  private getAllDiffRanges(): LineRange[] {
+    return this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange());
+  }
+
+  private provideActionsItems(ranges: LineRange[]): IActionsDescription[] {
+    return ranges
       .filter((r) => r.isComplete)
       .map((range) => ({
         range,
@@ -218,12 +226,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
-    const stretchClassName = DECORATIONS_CLASSNAME.combine(
-      DECORATIONS_CLASSNAME.stretch_right,
-      range.turnDirection === EditorViewType.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
-    );
     return {
-      linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(preDecorations.className || '', stretchClassName),
+      linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
+        preDecorations.className || '',
+        DECORATIONS_CLASSNAME.stretch_right,
+        range.turnDirection === EditorViewType.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
+      ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
         range.turnDirection === EditorViewType.CURRENT
@@ -248,7 +256,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
       .updateDecorations(toBeRanges, []);
 
     // 每次 update decoration 时也需要更新 conflict actions 操作
-    this.conflictActions.updateActions(this.provideActionsItems());
+    this.conflictActions.updateActions(this.provideActionsItems(this.getAllDiffRanges()));
+  }
+
+  public getContentInTimeMachineDocument(rangeId: string): ITimeMachineMetaData | undefined {
+    return this.timeMachineDocument.getMetaData(rangeId);
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], turnType: EDiffRangeTurn): void {
@@ -263,13 +275,22 @@ export class ResultCodeEditor extends BaseCodeEditor {
     }
 
     if (turnType === EDiffRangeTurn.ORIGIN) {
+      const diffRanges = this.getAllDiffRanges();
+
       this.registerActionsProvider({
-        provideActionsItems: this.provideActionsItems,
+        provideActionsItems: () => this.provideActionsItems(diffRanges),
         onActionsClick: (range: LineRange, actionType: TActionsType) => {
           if (actionType === REVOKE_ACTIONS) {
             this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
           }
         },
+      });
+
+      diffRanges.forEach((range) => {
+        this.timeMachineDocument.record(range.id, {
+          range,
+          text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toRange()),
+        });
       });
     }
   }

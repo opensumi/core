@@ -120,3 +120,11 @@ export interface IConflictActionsEvent {
     | typeof REVOKE_ACTIONS;
   withViewType: EditorViewType;
 }
+
+/**
+ * Time Machine
+ */
+export interface ITimeMachineMetaData {
+  range: LineRange;
+  text: string | null;
+}
