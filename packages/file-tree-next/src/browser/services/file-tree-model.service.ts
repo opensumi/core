@@ -119,17 +119,11 @@ export class FileTreeModelService {
   @Autowired(WorkbenchEditorService)
   private readonly editorService: WorkbenchEditorService;
 
-  @Autowired(IApplicationService)
-  private readonly appService: IApplicationService;
-
   @Autowired(CommandService)
   private readonly commandService: CommandService;
 
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
-
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
 
   private _isDisposed = false;
 
@@ -313,10 +307,6 @@ export class FileTreeModelService {
     this.initDecorations(root);
     // _dndService依赖装饰器逻辑加载
     this._dndService = this.injector.get<any>(DragAndDropService, [this]);
-    // 确保文件树响应刷新操作时无正在操作的 CollapsedAll 和 Location
-    this.disposableCollection.push(
-      this.fileTreeService.requestFlushEventSignalEvent(async () => await this.canHandleRefreshEvent()),
-    );
     // 等待初次加载完成后再初始化当前的 treeStateWatcher, 只加载可见的节点
     this.treeStateWatcher = this._treeModel.getTreeStateWatcher(true);
     this.disposableCollection.push(
@@ -474,10 +464,6 @@ export class FileTreeModelService {
 
   private async loadFileTreeSnapshot(snapshot: ISerializableState) {
     await this._treeModel.loadTreeState(snapshot);
-  }
-
-  private async canHandleRefreshEvent() {
-    await this.whenReady;
   }
 
   // 清空所有节点选中态
@@ -1431,6 +1417,7 @@ export class FileTreeModelService {
       this.contextKey?.filesExplorerInputFocused.set(true);
     };
     const handleDestroy = () => {
+      this.fileTreeService.updateRefreshable(true);
       this.contextKey?.filesExplorerInputFocused.set(false);
       if (this.contextMenuFile) {
         // 卸载输入框时及时更新选中态
@@ -1456,6 +1443,9 @@ export class FileTreeModelService {
       }
     };
     if (!promptHandle.destroyed) {
+      // 输入框出现时，屏蔽文件树刷新事件
+      this.fileTreeService.updateRefreshable(false);
+
       promptHandle.onChange(handleChange);
       promptHandle.onCommit(enterCommit);
       promptHandle.onBlur(blurCommit);
@@ -1463,8 +1453,9 @@ export class FileTreeModelService {
       promptHandle.onDestroy(handleDestroy);
       promptHandle.onCancel(handleCancel);
     }
-    // 文件树刷新操作会让重命名/新建输入框销毁
-    // 可能存在部分用户疑惑
+
+    // 如果上一次文件树刷新操作刚好在插件输入框时执行
+    // 会让重命名/新建输入框销毁
     this.disposableCollection.push(
       Event.once(this.fileTreeService.onNodeRefreshed)(() => {
         if (promptHandle && !promptHandle.destroyed) {
