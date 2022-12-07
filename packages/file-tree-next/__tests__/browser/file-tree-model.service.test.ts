@@ -94,7 +94,6 @@ describe('FileTreeModelService should be work', () => {
   const mockFileTreeService = {
     onNodeRefreshed: jest.fn(() => Disposable.create(() => {})),
     onWorkspaceChange: jest.fn(() => Disposable.create(() => {})),
-    requestFlushEventSignalEvent: jest.fn(() => Disposable.create(() => {})),
     resolveChildren: jest.fn(() => [mockRoot]),
     startWatchFileEvent: jest.fn(),
     refresh: jest.fn(),
@@ -192,7 +191,6 @@ describe('FileTreeModelService should be work', () => {
     expect(mockLabelService.onDidChange).toBeCalledTimes(1);
     expect(mockFileTreeService.onNodeRefreshed).toBeCalledTimes(1);
     expect(mockFileTreeService.onWorkspaceChange).toBeCalledTimes(1);
-    expect(mockFileTreeService.requestFlushEventSignalEvent).toBeCalledTimes(1);
     expect(mockFileTreeService.startWatchFileEvent).toBeCalledTimes(1);
     expect(mockThemeService.onThemeChange).toBeCalledTimes(1);
     expect(mockDecorationsService.onDidChangeDecorations).toBeCalledTimes(1);
