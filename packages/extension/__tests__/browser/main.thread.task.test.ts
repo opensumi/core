@@ -32,7 +32,6 @@ import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
-import { MockDebugConsoleInputDocumentProvider } from '../../__mocks__/debugConsoleInputDocumentProvider';
 import { mockExtensions } from '../../__mocks__/extensions';
 import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';
 

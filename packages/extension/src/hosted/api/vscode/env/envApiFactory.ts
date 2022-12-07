@@ -1,11 +1,10 @@
 import { createHash } from 'crypto';
 
 import address from 'address';
-import { v4 } from 'uuid';
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Event } from '@opensumi/ide-core-common';
+import { Event, uuid } from '@opensumi/ide-core-common';
 
 import {
   IExtensionDescription,
@@ -25,11 +24,11 @@ export class Env {
       if (!err && macAddress) {
         this.macMachineId = createHash('sha256').update(macAddress, 'utf8').digest('hex');
       } else {
-        this.macMachineId = v4();
+        this.macMachineId = uuid();
       }
     });
 
-    this.sessionId = v4();
+    this.sessionId = uuid();
   }
 
   get machineId(): string {

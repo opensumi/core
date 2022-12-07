@@ -12,6 +12,7 @@ import {
   Emitter,
 } from '@opensumi/ide-core-browser';
 import { ILogger } from '@opensumi/ide-core-browser';
+import { AppConfig } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import {
@@ -24,7 +25,6 @@ import {
   Deferred,
   IClipboardService,
 } from '@opensumi/ide-core-common';
-import { AppConfig, INodeLogger } from '@opensumi/ide-core-node';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { FileDecorationsService } from '@opensumi/ide-decoration/lib/browser/decorationsService';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -151,10 +151,6 @@ describe('FileTree should be work while on single workspace model', () => {
       },
       {
         token: ILogger,
-        useValue: mockConsole,
-      },
-      {
-        token: INodeLogger,
         useValue: mockConsole,
       },
       {
@@ -461,6 +457,7 @@ describe('FileTree should be work while on single workspace model', () => {
 
       const treeModel = fileTreeModelService.treeModel;
       const rootNode = treeModel.root;
+      await treeModel.ensureReady;
       const directoryNode = rootNode.getTreeNodeAtIndex(0) as Directory;
       if (directoryNode.expanded) {
         const dispose = directoryNode.watcher.on(TreeNodeEvent.DidChangeExpansionState, async () => {

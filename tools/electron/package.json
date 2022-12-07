@@ -36,11 +36,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "node-pty": "0.11.0-beta19",
+    "@opensumi/vscode-ripgrep": "^1.4.0",
     "@parcel/watcher": "2.0.6",
+    "node-gyp": "^9.3.0",
+    "node-pty": "0.11.0-beta19",
     "spdlog": "^0.9.0",
-    "vscode-oniguruma": "1.6.1",
-    "@opensumi/vscode-ripgrep": "^1.4.0"
+    "vscode-oniguruma": "1.6.1"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^3.0.0",
@@ -66,11 +67,11 @@
     "rimraf": "^3.0.0",
     "style-loader": "^0.23.1",
     "style-resources-loader": "^1.2.1",
-    "ts-loader": "^6.0.1",
-    "ts-node": "^10.0.0",
+    "ts-loader": "^8.2.0",
+    "ts-node": "^10.9.1",
     "tsconfig-paths": "^3.8.0",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
-    "typescript": "4.6.4",
+    "typescript": "4.9.3",
     "webpack": "^4.39.3",
     "webpack-cli": "^3.3.1"
   }

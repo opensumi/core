@@ -1,13 +1,21 @@
-import path from 'path';
-
 import { PreferenceService, IJSONSchemaRegistry, ISchemaStore, QuickOpenService } from '@opensumi/ide-core-browser';
 import { FileUri, Uri } from '@opensumi/ide-core-common';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/src/browser';
-import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/src/browser/doc-model/main';
+import {
+  HashCalculateServiceImpl,
+  IHashCalculateService,
+} from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
+import { IDocPersistentCacheProvider } from '@opensumi/ide-editor';
+import {
+  EmptyDocCacheImpl,
+  IEditorDocumentModelContentRegistry,
+  IEditorDocumentModelService,
+} from '@opensumi/ide-editor/src/browser';
+import {
+  EditorDocumentModelContentRegistryImpl,
+  EditorDocumentModelServiceImpl,
+} from '@opensumi/ide-editor/src/browser/doc-model/main';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
-import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
-import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 import { taskSchemaUri, schema } from '@opensumi/ide-task/lib/browser/task.schema';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
 import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task-system';
@@ -16,9 +24,14 @@ import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MonacoService } from '../../../monaco';
+import { MockWalkThroughSnippetSchemeDocumentProvider } from '../../../file-scheme/__mocks__/browser/file-doc';
+import { LayoutService } from '../../../main-layout/src/browser/layout.service';
 import { MockedMonacoService } from '../../../monaco/__mocks__/monaco.service.mock';
+import { MonacoService } from '../../../monaco/lib/index';
 import { SchemaRegistry, SchemaStore } from '../../../monaco/src/browser/schema-registry';
+import { MockQuickOpenService } from '../../../quick-open/src/common/mocks/quick-open.service';
+
+const path = require('path');
 
 const preferences: Map<string, any> = new Map();
 
@@ -42,6 +55,7 @@ describe('TaskService Test Suite', () => {
         token: QuickOpenService,
         useClass: MockQuickOpenService,
       },
+
       {
         token: PreferenceService,
         useValue: mockedPreferenceService,
@@ -49,6 +63,14 @@ describe('TaskService Test Suite', () => {
       {
         token: MonacoService,
         useClass: MockedMonacoService,
+      },
+      {
+        token: IEditorDocumentModelContentRegistry,
+        useClass: EditorDocumentModelContentRegistryImpl,
+      },
+      {
+        token: IHashCalculateService,
+        useClass: HashCalculateServiceImpl,
       },
       {
         token: IEditorDocumentModelService,
@@ -84,6 +106,10 @@ describe('TaskService Test Suite', () => {
         token: IWorkspaceService,
         useClass: MockWorkspaceService,
       },
+      {
+        token: IDocPersistentCacheProvider,
+        useClass: EmptyDocCacheImpl,
+      },
     ],
   );
 
@@ -108,9 +134,14 @@ describe('TaskService Test Suite', () => {
         }),
       },
     });
+    const documentRegistry = injector.get<IEditorDocumentModelContentRegistry>(IEditorDocumentModelContentRegistry);
+    documentRegistry.registerEditorDocumentModelContentProvider(
+      injector.get(MockWalkThroughSnippetSchemeDocumentProvider),
+    );
     taskService = injector.get<ITaskService>(ITaskService);
     workspace = injector.get<MockWorkspaceService>(IWorkspaceService);
     const schemaRegistry: IJSONSchemaRegistry = injector.get(IJSONSchemaRegistry);
+
     schemaRegistry.registerSchema(taskSchemaUri, schema, ['tasks.json']);
     const rootPath = path.resolve(__dirname);
     const rootUri = FileUri.create(rootPath).toString();

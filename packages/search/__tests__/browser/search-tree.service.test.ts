@@ -16,11 +16,11 @@ import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.s
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
-import { SearchPreferences } from '@opensumi/ide-search/lib/browser/search-preferences';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 
 import { SearchModule } from '../../src/browser/';
+import { SearchPreferences } from '../../src/browser/search-preferences';
 import { SearchTreeService } from '../../src/browser/search-tree.service';
 import { ContentSearchClientService } from '../../src/browser/search.service';
 import {

@@ -48,6 +48,11 @@ function rebuildModule(modulePath, type, version, arch) {
     if (process.platform === 'linux') {
       execSync(`cp -r ${cache} ${join(modulePath, 'build')}`);
     } else {
+      try {
+        rmSync(join(modulePath, 'build'), { recursive: true });
+      } catch (error) {
+        // do nothing
+      }
       copySync(cache, join(modulePath, 'build'));
     }
   } else {

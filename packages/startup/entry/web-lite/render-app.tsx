@@ -3,7 +3,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import { Injector } from '@opensumi/di';
-import { ClientApp, IClientAppOpts, DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME, Uri } from '@opensumi/ide-core-browser';
+import { IClientAppOpts, DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME } from '@opensumi/ide-core-browser';
+import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
 

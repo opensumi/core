@@ -15,7 +15,6 @@ import {
   IApplicationService,
   IReporter,
   REPORT_NAME,
-  Uri,
   OperatingSystem,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/common';
@@ -605,13 +604,13 @@ export class TerminalClient extends Disposable implements ITerminalClient {
 
   private _layout() {
     // 如果 xterm 视图还没初始化，则先尝试初始化
-    this._renderOnDemand();
-    if (this.xterm.raw.element) {
-      try {
+    try {
+      this._renderOnDemand();
+      if (this.xterm.raw.element) {
         this.xterm.fit();
-      } catch (_e) {
-        // noop
       }
+    } catch (e) {
+      // noop
     }
   }
 

@@ -613,7 +613,7 @@ const EditorSideView = ({ side, resource }: { side: EditorSide; resource: IResou
     <div className={classnames(styles['kt_editor_side_widgets'], styles['kt_editor_side_widgets_' + side])}>
       {widgets.map((widget) => {
         const C = widget.component;
-        return <C resource={resource} key={widget.id} {...widget.initialProps}></C>;
+        return <C resource={resource} key={widget.id} {...(widget.initialProps || {})}></C>;
       })}
     </div>
   );

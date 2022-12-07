@@ -107,7 +107,7 @@ export class TaskService extends Disposable implements ITaskService {
 
   private providerHandler = 0;
 
-  private outputChannel: OutputChannel;
+  private _outputChannel: OutputChannel;
 
   private _workspaceFolders: Uri[];
 
@@ -118,7 +118,6 @@ export class TaskService extends Disposable implements ITaskService {
 
   constructor() {
     super();
-    this.outputChannel = this.outputService.getChannel(localize('task.outputchannel.name'));
     this.providers = new Map();
     this.providerTypes = new Map();
     this.addDispose([
@@ -127,6 +126,13 @@ export class TaskService extends Disposable implements ITaskService {
       this.taskSystem.onDidBackgroundTaskEnded((e) => this._onDidStateChange.fire(e)),
       this.taskSystem.onDidProblemMatched((e) => this._onDidStateChange.fire(e)),
     ]);
+  }
+
+  get outputChannel() {
+    if (!this._outputChannel) {
+      this._outputChannel = this.outputService.getChannel(localize('task.outputchannel.name'));
+    }
+    return this._outputChannel;
   }
 
   private get workspaceFolders() {

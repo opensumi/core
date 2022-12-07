@@ -1,30 +1,17 @@
-import { ILogger } from '@opensumi/ide-logs/lib/common';
-import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/semantic-tokens-registry';
-import { getStylingSchemeEntry, ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
-
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { SemanticTokenRegistryImpl } from '../../src/browser/semantic-tokens-registry';
+import { getStylingSchemeEntry, ISemanticTokenRegistry } from '../../src/common/semantic-tokens-registry';
 
 describe('Semantic Tokens Registry', () => {
   let injector: MockInjector;
   let semanticTokenRegistry: SemanticTokenRegistryImpl;
   beforeAll(() => {
     injector = createBrowserInjector([]);
-    injector.addProviders(
-      {
-        token: ILogger,
-        useValue: {
-          debug: jest.fn(),
-          log: jest.fn(),
-          info: jest.fn(),
-          warn: jest.fn(),
-        },
-      },
-      {
-        token: ISemanticTokenRegistry,
-        useClass: SemanticTokenRegistryImpl,
-      },
-    );
+    injector.addProviders({
+      token: ISemanticTokenRegistry,
+      useClass: SemanticTokenRegistryImpl,
+    });
 
     semanticTokenRegistry = injector.get(ISemanticTokenRegistry);
   });

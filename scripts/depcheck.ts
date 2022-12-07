@@ -1,4 +1,4 @@
-import { join, resolve, relative } from 'path';
+import { join, relative } from 'path';
 import depcheck from 'depcheck';
 import chalk from 'chalk';
 import { readdirSync, existsSync } from 'fs-extra';
@@ -6,15 +6,36 @@ import { argv } from '../packages/core-common/src/node/cli';
 
 const packagesDir = join(__dirname, '../packages');
 
+const ghostDepsWhiteLists = [
+  // common deps from `@opensumi/ide-core-browser` or `@opensumi/ide-core-node`.
+  '@opensumi/di',
+  'ajv',
+  'fuzzy',
+  'jsonc-parser',
+  'classnames',
+  'react',
+  'react-dom',
+  'fs-extra',
+  'lodash',
+  'mobx',
+  'mobx-react-lite',
+  '@opensumi/monaco-editor-core',
+  '@opensumi/vscode-debugprotocol',
+  'vscode',
+  'vscode-textmate',
+  'react-window',
+  'react-ctxmenu-trigger',
+  'vscode-languageserver-types',
+  'react-is',
+  'ws',
+  'koa',
+];
+
 const options = {
   ignoreBinPackage: false, // ignore the packages with bin entry
   skipMissing: false, // skip calculation of missing dependencies
-  ignoreDirs: ['bower_components', 'node_modules', 'lib'],
+  ignoreDirs: ['bower_components', 'node_modules', 'lib', '__tests__'],
   ignoreMatches: [
-    '@opensumi/ide-core-browser',
-    '@opensumi/ide-core-common',
-    '@opensumi/ide-core-node',
-    '@opensumi/ide-components',
     // devtool related
     '@opensumi/ide-dev-tool',
     'npm-run-all',
@@ -22,10 +43,11 @@ const options = {
     'webpack-dev-server',
     '@types/*',
   ],
+  ignorePatterns: ['__tests__', '__mocks__'],
   parsers: {
     // the target parsers
-    '*.ts': depcheck.parser.typescript,
-    '*.tsx': depcheck.parser.typescript,
+    '**/*.ts': depcheck.parser.typescript,
+    '**/*.tsx': depcheck.parser.typescript,
   },
   detectors: [
     // the target detectors
@@ -52,12 +74,12 @@ function check(
     depcheck(rootDir, options, (unused) => {
       if (config.unusedDependency) {
         if (unused.dependencies.length > 0) {
-          console.log(chalk.yellow('Unused dependencies:'));
+          console.log(chalk.yellow('Unused dependencies (or dynamic import):'));
           unused.dependencies.forEach((dependency) => {
             console.log('* ' + dependency);
           });
         } else {
-          console.log(chalk.greenBright('No unused dependency'));
+          // console.log(chalk.greenBright('No unused dependency'));
         }
       }
 
@@ -68,12 +90,17 @@ function check(
             console.log('* ' + dependency);
           });
         } else {
-          console.log(chalk.greenBright('No unused devDependency'));
+          // console.log(chalk.greenBright('No unused devDependency'));
         }
       }
-
       if (config.missing) {
-        const missingDeps = Object.keys(unused.missing);
+        let missingDeps = Object.keys(unused.missing).filter(
+          (dep) => !ghostDepsWhiteLists.includes(dep) && (!rootDir.endsWith('browser') || !rootDir.endsWith('node')),
+        );
+        // 排除自身对模块的引用影响
+        missingDeps = missingDeps.filter((dep) => {
+          return !rootDir.endsWith(dep.split('ide-')[1]);
+        });
         if (missingDeps.length > 0) {
           console.log(chalk.red('Missing dependencies:'));
           missingDeps.forEach((dependency) => {
@@ -83,7 +110,7 @@ function check(
             });
           });
         } else {
-          console.log(chalk.greenBright('No missing dependency'));
+          // console.log(chalk.greenBright('No missing dependency'));
         }
       }
 
@@ -101,9 +128,9 @@ async function runTaskWithPackages(targetPacks: string[]) {
       continue;
     }
 
-    console.log(chalk.greenBright(`--- [检查依赖: ${targetModuleName}] ---`));
+    console.log(chalk.greenBright(`--- [Deps check: ${targetModuleName}] ---`));
     await check(packageDir);
-    console.log('\n');
+    console.log('');
   }
 
   process.exit();
@@ -129,10 +156,10 @@ const targetModule = (argv as any).module as string;
 
 // 指定模块加载
 if (targetModule) {
-  console.log(`单模块模式依赖检查: ${targetModule}`);
+  console.log(`Single module mode dependency check: ${targetModule}`);
   const moduleName = targetModule.replace(/@ali\//, '');
   runTaskWithPackages([moduleName]);
 } else {
-  console.log('项目级别依赖检查');
+  console.log('Project level dependency check');
   bootAll();
 }

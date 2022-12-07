@@ -1,6 +1,11 @@
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
 import { ElectronURLService } from '../src/bootstrap/services/url';
 
+jest.mock('electron', () => ({
+  app: {},
+  BrowserWindow: {},
+}));
+
 describe('electron main url handler tests', () => {
   it('Register url handlers', async () => {
     const injector = new MockInjector();

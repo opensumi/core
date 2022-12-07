@@ -863,8 +863,11 @@ export class DebugSession implements IDebugSession {
         if (model) {
           const uri = URI.parse(model.uri.toString());
           const curFram = frames.filter((f: DebugStackFrame) => f.source!.uri.toString() === uri.toString());
-          if (Array.isArray(curFram)) {
+          if (curFram.length > 0) {
             focus(curFram[0]);
+          } else {
+            // 说明不是因断点而被 pause, 可能是手动点击暂停按钮
+            focus(frames[0]);
           }
         }
       } else {

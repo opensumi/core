@@ -2,8 +2,9 @@ import { act } from 'react-dom/test-utils';
 
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { createBrowserApp, MockClientApp } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IDialogService } from '@opensumi/ide-overlay';
-import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
+
+import { OverlayModule } from '../../src/browser';
+import { IDialogService } from '../../src/common';
 
 describe.skip('packages/overlay/src/browser/dialog.service.ts', () => {
   let app: MockClientApp;
