@@ -1,5 +1,5 @@
 const { execSync } = require('child_process');
-const { rmSync, pathExistsSync, copySync, removeSync } = require('fs-extra');
+const { pathExistsSync, copySync, removeSync } = require('fs-extra');
 const { join } = require('path');
 const os = require('os');
 const mri = require('mri');
@@ -10,6 +10,7 @@ const nativeModules = [
   join(__dirname, '../node_modules/node-pty'),
   join(__dirname, '../node_modules/@parcel/watcher'),
   join(__dirname, '../node_modules/spdlog'),
+  join(__dirname, '../node_modules/keytar'),
 ];
 
 let commands;
@@ -43,29 +44,36 @@ function rebuildModule(modulePath, type, version, arch) {
   const cache = getBuildCacheDir(modulePath, type, version, arch);
   console.log(`cache dir ${cache}`);
   if (pathExistsSync(cache) && !force) {
-    console.log('cache found for ' + info.name);
     try {
-      rmSync(join(modulePath, 'build'), { recursive: true });
+      console.log('cache found for ' + info.name);
+      removeSync(join(modulePath, 'build'));
+
+      if (process.platform === 'linux') {
+        execSync(`cp -r ${cache} ${join(modulePath, 'build')}`);
+      } else {
+        copySync(cache, join(modulePath, 'build'), { dereference: true });
+      }
+
+      return;
     } catch (error) {
-      // do nothing
+      console.log('cache restore error', error);
+      console.log('build from source');
     }
-    copySync(cache, join(modulePath, 'build'));
-  } else {
-    console.log(`running command ${commands.join(' ')}`);
-    execSync(commands.join(' '), {
-      cwd: modulePath,
-      stdio: 'inherit',
-    });
-    removeSync(cache);
-    copySync(join(modulePath, 'build'), cache);
   }
+  console.log(`running command ${commands.join(' ')}`);
+  execSync(commands.join(' '), {
+    cwd: modulePath,
+    stdio: 'inherit',
+  });
+  removeSync(cache);
+  copySync(join(modulePath, 'build'), cache, { dereference: true });
 }
 
 function getBuildCacheDir(modulePath, type, version, arch) {
   const info = require(join(modulePath, './package.json'));
   return join(
     require('os').tmpdir(),
-    'kaitian_build_cache',
+    'opensumi_build_cache',
     `${type}-${version}-${arch}`,
     info.name + '-' + info.version,
   );

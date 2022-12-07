@@ -44,26 +44,29 @@ function rebuildModule(modulePath, type, version, arch) {
   const cache = getBuildCacheDir(modulePath, type, version, arch);
   console.log(`cache dir ${cache}`);
   if (pathExistsSync(cache) && !force) {
-    console.log('cache found for ' + info.name);
-    if (process.platform === 'linux') {
-      execSync(`cp -r ${cache} ${join(modulePath, 'build')}`);
-    } else {
-      try {
-        rmSync(join(modulePath, 'build'), { recursive: true });
-      } catch (error) {
-        // do nothing
+    try {
+      console.log('cache found for ' + info.name);
+      removeSync(join(modulePath, 'build'));
+
+      if (process.platform === 'linux') {
+        execSync(`cp -r ${cache} ${join(modulePath, 'build')}`);
+      } else {
+        copySync(cache, join(modulePath, 'build'), { dereference: true });
       }
-      copySync(cache, join(modulePath, 'build'));
+
+      return;
+    } catch (error) {
+      console.log('cache restore error', error);
+      console.log('build from source');
     }
-  } else {
-    console.log(`running command ${commands.join(' ')}`);
-    execSync(commands.join(' '), {
-      cwd: modulePath,
-      stdio: 'inherit',
-    });
-    removeSync(cache);
-    copySync(join(modulePath, 'build'), cache);
   }
+  console.log(`running command ${commands.join(' ')}`);
+  execSync(commands.join(' '), {
+    cwd: modulePath,
+    stdio: 'inherit',
+  });
+  removeSync(cache);
+  copySync(join(modulePath, 'build'), cache, { dereference: true });
 }
 
 function getBuildCacheDir(modulePath, type, version, arch) {

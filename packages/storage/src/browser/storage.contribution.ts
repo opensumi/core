@@ -31,12 +31,10 @@ export class DatabaseStorageContribution implements StorageResolverContribution,
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
-
   @Autowired(GlobalBrowserStorageService)
   private globalLocalStorage: GlobalBrowserStorageService;
 
+  @Autowired(ScopedBrowserStorageService)
   private scopedLocalStorage: ScopedBrowserStorageService;
 
   storage: IStorage;
@@ -47,9 +45,6 @@ export class DatabaseStorageContribution implements StorageResolverContribution,
     if (storageId.scheme === STORAGE_SCHEMA.SCOPE) {
       // 如果是内置的 Storage，在初始化过程中采用 ScopedBrowserStorageService 代理
       if (this.isBuiltinStorage(storageId)) {
-        if (!this.scopedLocalStorage) {
-          this.scopedLocalStorage = this.injector.get(ScopedBrowserStorageService, [this.appConfig.workspaceDir]);
-        }
         storage = new Storage(
           this.workspaceStorage,
           this.workspaceService,

@@ -43,19 +43,17 @@ export function isNodeIntegrated(): boolean {
   return typeof module !== 'undefined' && !!module.exports;
 }
 
-/**
- * @deprecated isElectronEnv is deprecated, please use appConfig#isElectronRenderer instead.
- * 框架目前使用 isElectronEnv 的场景基本都与 isElectronRenderer 重复，所以直接废弃 isElectronEnv
- */
 export function isElectronEnv(): boolean {
   return isElectronRenderer() || isElectronNode();
 }
 
-/**
- * @deprecated isElectronRenderer will deprecate, please use appConfig#isElectronRenderer instead.
- */
 export function isElectronRenderer() {
-  return (global as any).isElectronRenderer;
+  return (
+    (global as any).isElectronRenderer ||
+    (typeof navigator === 'object' &&
+      typeof navigator.userAgent === 'string' &&
+      navigator.userAgent.indexOf('Electron') >= 0)
+  );
 }
 
 export function isElectronNode() {
