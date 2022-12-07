@@ -17,12 +17,12 @@ import {
   DECORATIONS_CLASSNAME,
   ADDRESSING_TAG_CLASSNAME,
   TActionsType,
+  IActionsDescription,
 } from '../../types';
 import { flatInnerOriginal, flatOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
-import { ResultCodeEditor } from './resultCodeEditor';
 
 @Injectable({ multiple: false })
 export class CurrentCodeEditor extends BaseCodeEditor {
@@ -46,8 +46,26 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return super.prepareRenderDecorations(ranges, innerChanges, 1);
   }
 
+  private provideActionsItems(): IActionsDescription[] {
+    const ranges = this.documentMapping.getOriginalRange();
+    return ranges.map((range) => {
+      const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
+      return {
+        range,
+        decorationOptions: {
+          glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
+            CONFLICT_ACTIONS_ICON.RIGHT,
+            DECORATIONS_CLASSNAME.offset_left,
+            idMark,
+          ),
+          marginClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.CLOSE, idMark),
+        },
+      };
+    });
+  }
+
   private onActionsClick(rangeId: string, actionType: TActionsType): void {
-    const action = this.conflictActions.getActions(rangeId);
+    const action = this.conflictActions.getAction(rangeId);
     if (!action) {
       return;
     }
@@ -88,17 +106,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     this.renderDecorations(ranges, innerRanges);
 
     this.registerActionsProvider({
-      provideActionsItems: () =>
-        ranges.map((range) => {
-          const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
-          return {
-            range,
-            decorationOptions: {
-              glyphMarginClassName: CONFLICT_ACTIONS_ICON.RIGHT + ` offset-left ${idMark}`,
-              marginClassName: CONFLICT_ACTIONS_ICON.CLOSE + ` ${idMark}`,
-            },
-          };
-        }),
+      provideActionsItems: this.provideActionsItems,
       mouseDownGuard: (e: IEditorMouseEvent) => {
         /**
          * 注: 由于 current view 视图已经将 margin 区域和 code 区域交换了

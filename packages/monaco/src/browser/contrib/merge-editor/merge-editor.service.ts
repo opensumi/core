@@ -102,7 +102,6 @@ export class MergeEditorService extends Disposable {
     );
     const { changes: changes2 } = result2;
 
-    // resultView 的 inputDiffComputingResult 顺序不要变，第二次的 turnType 参数得是 origin
     this.resultView.inputDiffComputingResult(changes2, EDiffRangeTurn.ORIGIN);
     this.incomingView.inputDiffComputingResult(changes2);
   }

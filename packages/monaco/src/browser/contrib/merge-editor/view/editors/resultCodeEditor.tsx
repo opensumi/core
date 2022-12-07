@@ -16,6 +16,7 @@ import {
   ADDRESSING_TAG_CLASSNAME,
   CONFLICT_ACTIONS_ICON,
   EDiffRangeTurn,
+  IActionsDescription,
 } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
@@ -49,7 +50,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     let preLineCount = 0;
 
     this.addDispose(
-      this.editor.onDidChangeModel((e) => {
+      this.editor.onDidChangeModel(() => {
         const model = this.editor.getModel();
         if (model) {
           preLineCount = model.getLineCount();
@@ -130,6 +131,21 @@ export class ResultCodeEditor extends BaseCodeEditor {
         }
       }),
     );
+  }
+
+  private provideActionsItems(): IActionsDescription[] {
+    const turnLeftRanges = this.documentMappingTurnLeft.getModifiedRange();
+    const turnRightRanges = this.documentMappingTurnRight.getOriginalRange();
+    return turnLeftRanges.concat(turnRightRanges).map((range) => ({
+        range,
+        decorationOptions: {
+          ...(range.isComplete
+            ? {
+                firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.REVOKE + ` ${ADDRESSING_TAG_CLASSNAME}${range.id}`,
+              }
+            : {}),
+        },
+      }));
   }
 
   private onActionsClick(rangeId: string, actionType: TActionsType): void {}
@@ -232,31 +248,24 @@ export class ResultCodeEditor extends BaseCodeEditor {
       .setRetainDecoration(this.getRetainDecoration())
       .setRetainLineWidget(this.getRetainLineWidget())
       .updateDecorations(toBeRanges, []);
+
+    this.conflictActions.updateActions(this.provideActionsItems());
   }
 
-  private _turnModifiedChanges: LineRange[] = [];
-  private _turnOriginChanges: LineRange[] = [];
   public inputDiffComputingResult(changes: LineRangeMapping[], turnType: EDiffRangeTurn): void {
     this.currentTurnType = turnType;
 
     if (turnType === EDiffRangeTurn.MODIFIED) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
-      this._turnModifiedChanges = flatModified(changes);
-      this.renderDecorations(this._turnModifiedChanges, flatInnerModified(changes));
+      this.renderDecorations(flatModified(changes), flatInnerModified(changes));
     } else if (turnType === EDiffRangeTurn.ORIGIN) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
-      this._turnOriginChanges = flatOriginal(changes);
-      this.renderDecorations(this._turnOriginChanges, flatInnerOriginal(changes));
+      this.renderDecorations(flatOriginal(changes), flatInnerOriginal(changes));
     }
 
     if (turnType === EDiffRangeTurn.ORIGIN) {
       this.registerActionsProvider({
-        provideActionsItems: () => this._turnModifiedChanges.concat(this._turnOriginChanges).map((range) => ({
-              range,
-              decorationOptions: {
-                firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.REVOKE + ` ${ADDRESSING_TAG_CLASSNAME}${range.id}`,
-              },
-            })),
+        provideActionsItems: this.provideActionsItems,
         onActionsClick: this.onActionsClick,
       });
     }

@@ -1,5 +1,4 @@
 import { Injectable } from '@opensumi/di';
-import { IEditorMouseEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
@@ -14,6 +13,7 @@ import {
   DECORATIONS_CLASSNAME,
   ADDRESSING_TAG_CLASSNAME,
   TActionsType,
+  IActionsDescription,
 } from '../../types';
 import { flatInnerModified, flatModified } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
@@ -38,8 +38,26 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return [];
   }
 
+  private provideActionsItems(): IActionsDescription[] {
+    const ranges = this.documentMapping.getModifiedRange();
+    return ranges.map((range) => {
+      const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
+      return {
+        range,
+        decorationOptions: {
+          glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
+            CONFLICT_ACTIONS_ICON.CLOSE,
+            DECORATIONS_CLASSNAME.offset_right,
+            idMark,
+          ),
+          firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.LEFT, idMark),
+        },
+      };
+    });
+  }
+
   private onActionsClick(rangeId: string, actionType: TActionsType): void {
-    const action = this.conflictActions.getActions(rangeId);
+    const action = this.conflictActions.getAction(rangeId);
     if (!action) {
       return;
     }
@@ -85,16 +103,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     this.renderDecorations(ranges, innerRanges);
 
     this.registerActionsProvider({
-      provideActionsItems: () => ranges.map((range) => {
-          const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
-          return {
-            range,
-            decorationOptions: {
-              glyphMarginClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.CLOSE, 'offset-right', idMark),
-              firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.LEFT, idMark),
-            },
-          };
-        }),
+      provideActionsItems: this.provideActionsItems,
       onActionsClick: this.onActionsClick,
     });
   }

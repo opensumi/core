@@ -14,6 +14,7 @@ import {
   TActionsType,
   ACCEPT_COMBINATION_ACTIONS,
   REVOKE_ACTIONS,
+  IActionsProvider,
 } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
@@ -59,6 +60,20 @@ export class ActionsManager extends Disposable {
     if (!this.currentView || !this.resultView || !this.incomingView) {
       return;
     }
+
+    this.addDispose(
+      Event.any<{
+        provider: IActionsProvider;
+        editor: BaseCodeEditor;
+      }>(
+        this.currentView.onDidActionsProvider,
+        this.resultView.onDidActionsProvider,
+        this.incomingView.onDidActionsProvider,
+      )(({ provider, editor }) => {
+        const { provideActionsItems } = provider;
+        editor.setConflictActions(provideActionsItems.call(editor));
+      }),
+    );
 
     this.addDispose(
       Event.any<IConflictActionsEvent>(
@@ -125,7 +140,7 @@ export class ActionsManager extends Disposable {
       const { onActionsClick, provideActionsItems } = provider;
 
       if (typeof mouseDownGuard === 'undefined') {
-        const items = provideActionsItems();
+        const items = provideActionsItems.call(_this);
         mouseDownGuard = (e: IEditorMouseEvent) => {
           if (e.event.rightButton) {
             return false;

@@ -80,7 +80,7 @@ export interface IActionsProvider {
 }
 
 export namespace CONFLICT_ACTIONS_ICON {
-  export const RIGHT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('right')}`;
+  export const RIGHT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
   export const LEFT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('left')}`;
   export const CLOSE = `conflict-actions ${IGNORE_ACTIONS} ${getIcon('close')}`;
   export const REVOKE = `conflict-actions ${REVOKE_ACTIONS} ${getIcon('arrowleft')}`;
@@ -106,6 +106,9 @@ export namespace DECORATIONS_CLASSNAME {
   export const diff_line_background = 'merge-editor-diff-line-background';
   export const diff_inner_char_background = 'merge-editor-diff-inner-char-background';
   export const guide_underline_widget = 'merge-editor-guide-underline-widget';
+
+  export const offset_right = 'offset-right';
+  export const offset_left = 'offset-left';
 }
 
 export interface IConflictActionsEvent {

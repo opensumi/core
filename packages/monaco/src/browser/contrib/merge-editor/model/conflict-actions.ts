@@ -78,9 +78,12 @@ export class ConflictActions extends Disposable {
     });
 
     this.editor.changeDecorations((accessor) => {
-      newDecorations.forEach((d) => {
-        d.id = accessor.addDecoration(d.editorDecoration.range, d.editorDecoration.options);
-      });
+      accessor
+        .deltaDecorations(
+          this.deltaDecoration.map((d) => d.id),
+          newDecorations.map((d) => d.editorDecoration),
+        )
+        .forEach((id, i) => (newDecorations[i].id = id));
       this.deltaDecoration = newDecorations;
     });
   }
@@ -100,41 +103,16 @@ export class ConflictActions extends Disposable {
     }
   }
 
-  public updateActions(id: string, action: IActionsDescription): void {
-    if (this.actionsCollect.has(id)) {
-      const preAction = this.actionsCollect.get(id);
-
-      let matchIndex: number | undefined;
-      const matchDecoration = this.deltaDecoration.find((d, idx) => {
-        if (d.editorDecoration.options.description === id) {
-          matchIndex = idx;
-          return true;
-        }
-        return false;
-      });
-
-      if (matchDecoration) {
-        const { id: decorationId } = matchDecoration;
-        this.editor.changeDecorations((accessor) => {
-          const range = action.range.toRange();
-          const decorationOptions = action.decorationOptions as IModelDecorationOptions;
-
-          accessor.changeDecoration(decorationId, range);
-          accessor.changeDecorationOptions(decorationId, decorationOptions);
-
-          matchDecoration.editorDecoration.range = range;
-          matchDecoration.editorDecoration.options = decorationOptions;
-        });
-
-        this.actionsCollect.set(id, action);
-        if (typeof matchIndex === 'number') {
-          this.deltaDecoration.splice(matchIndex, 1, matchDecoration);
-        }
-      }
-    }
+  public updateActions(actions: IActionsDescription[]): void {
+    this.clearDecorations();
+    this.setActions(actions);
   }
 
-  public getActions(id: string): IActionsDescription | undefined {
+  public getActions(): IterableIterator<IActionsDescription> {
+    return this.actionsCollect.values();
+  }
+
+  public getAction(id: string): IActionsDescription | undefined {
     return this.actionsCollect.get(id);
   }
 }

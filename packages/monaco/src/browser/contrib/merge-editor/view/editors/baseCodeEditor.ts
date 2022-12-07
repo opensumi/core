@@ -35,6 +35,10 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   protected readonly _onDidConflictActions = new Emitter<IConflictActionsEvent>();
   public readonly onDidConflictActions: Event<IConflictActionsEvent> = this._onDidConflictActions.event;
 
+  protected readonly _onDidActionsProvider = new Emitter<{ provider: IActionsProvider; editor: BaseCodeEditor }>();
+  public readonly onDidActionsProvider: Event<{ provider: IActionsProvider; editor: BaseCodeEditor }> =
+    this._onDidActionsProvider.event;
+
   constructor(
     private readonly container: HTMLDivElement,
     private readonly monacoService: MonacoService,
@@ -178,12 +182,13 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     }
 
     this.#actionsProvider = provider;
-
-    const { provideActionsItems } = provider;
-    this.setConflictActions(provideActionsItems());
+    this._onDidActionsProvider.fire({
+      provider,
+      editor: this,
+    });
   }
 
-  protected setConflictActions(actions: IActionsDescription[]): void {
+  public setConflictActions(actions: IActionsDescription[]): void {
     this.#conflictActions.setActions(actions);
   }
 
