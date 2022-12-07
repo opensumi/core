@@ -1,5 +1,5 @@
 const { execSync } = require('child_process');
-const { pathExistsSync, copySync, removeSync } = require('fs-extra');
+const { rmSync, pathExistsSync, copySync, removeSync } = require('fs-extra');
 const { join } = require('path');
 const os = require('os');
 const mri = require('mri');
@@ -44,6 +44,11 @@ function rebuildModule(modulePath, type, version, arch) {
   console.log(`cache dir ${cache}`);
   if (pathExistsSync(cache) && !force) {
     console.log('cache found for ' + info.name);
+    try {
+      rmSync(join(modulePath, 'build'), { recursive: true });
+    } catch (error) {
+      // do nothing
+    }
     copySync(cache, join(modulePath, 'build'));
   } else {
     console.log(`running command ${commands.join(' ')}`);
