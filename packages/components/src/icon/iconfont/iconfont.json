@@ -6,6 +6,62 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "17575812",
+      "name": "reply",
+      "font_class": "revoke",
+      "unicode": "e6b8",
+      "unicode_decimal": 59064
+    },
+    {
+      "icon_id": "4767018",
+      "name": "doubleleft",
+      "font_class": "doubleleft",
+      "unicode": "e7f3",
+      "unicode_decimal": 59379
+    },
+    {
+      "icon_id": "7457698",
+      "name": "Terminal",
+      "font_class": "bash",
+      "unicode": "e616",
+      "unicode_decimal": 58902
+    },
+    {
+      "icon_id": "10943994",
+      "name": "python-file-16",
+      "font_class": "python",
+      "unicode": "e638",
+      "unicode_decimal": 58936
+    },
+    {
+      "icon_id": "15378527",
+      "name": "kotlin",
+      "font_class": "kotlin",
+      "unicode": "ebed",
+      "unicode_decimal": 60397
+    },
+    {
+      "icon_id": "27533565",
+      "name": "terminal-line",
+      "font_class": "zsh",
+      "unicode": "e688",
+      "unicode_decimal": 59016
+    },
+    {
+      "icon_id": "1311737",
+      "name": "arrow-left",
+      "font_class": "arrowleft",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    },
+    {
+      "icon_id": "1311738",
+      "name": "arrow-right",
+      "font_class": "arrowright",
+      "unicode": "e606",
+      "unicode_decimal": 58886
+    },
+    {
       "icon_id": "29682618",
       "name": "hex",
       "font_class": "hex",
@@ -18,13 +74,6 @@
       "font_class": "node",
       "unicode": "e700",
       "unicode_decimal": 59136
-    },
-    {
-      "icon_id": "24347009",
-      "name": "gnubash",
-      "font_class": "bash",
-      "unicode": "e600",
-      "unicode_decimal": 58880
     },
     {
       "icon_id": "431778",
@@ -48,13 +97,6 @@
       "unicode_decimal": 58915
     },
     {
-      "icon_id": "13304033",
-      "name": "python",
-      "font_class": "python",
-      "unicode": "e690",
-      "unicode_decimal": 59024
-    },
-    {
       "icon_id": "15378928",
       "name": "vim",
       "font_class": "vim",
@@ -67,13 +109,6 @@
       "font_class": "brew",
       "unicode": "e7c0",
       "unicode_decimal": 59328
-    },
-    {
-      "icon_id": "21815633",
-      "name": "kotlin",
-      "font_class": "kotlin",
-      "unicode": "e68d",
-      "unicode_decimal": 59021
     },
     {
       "icon_id": "27365328",

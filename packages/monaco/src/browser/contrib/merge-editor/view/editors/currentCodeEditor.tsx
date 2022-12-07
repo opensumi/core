@@ -48,35 +48,22 @@ export class CurrentCodeEditor extends BaseCodeEditor {
 
   private provideActionsItems(): IActionsDescription[] {
     const ranges = this.documentMapping.getOriginalRange();
-    return ranges.map((range) => {
-      const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
-      return {
-        range,
-        decorationOptions: {
-          glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
-            CONFLICT_ACTIONS_ICON.RIGHT,
-            DECORATIONS_CLASSNAME.offset_left,
-            idMark,
-          ),
-          marginClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.CLOSE, idMark),
-        },
-      };
-    });
-  }
-
-  private onActionsClick(rangeId: string, actionType: TActionsType): void {
-    const action = this.conflictActions.getAction(rangeId);
-    if (!action) {
-      return;
-    }
-
-    const { range } = action;
-
-    if (actionType === ACCEPT_CURRENT_ACTIONS) {
-      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: ACCEPT_CURRENT_ACTIONS });
-    } else if (actionType === IGNORE_ACTIONS) {
-      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE_ACTIONS });
-    }
+    return ranges
+      .filter((r) => !r.isComplete)
+      .map((range) => {
+        const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
+        return {
+          range,
+          decorationOptions: {
+            glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
+              CONFLICT_ACTIONS_ICON.RIGHT,
+              DECORATIONS_CLASSNAME.offset_left,
+              idMark,
+            ),
+            marginClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.CLOSE, idMark),
+          },
+        };
+      });
   }
 
   public getMonacoDecorationOptions(
@@ -124,7 +111,17 @@ export class CurrentCodeEditor extends BaseCodeEditor {
 
         return true;
       },
-      onActionsClick: this.onActionsClick,
+      onActionsClick: (range: LineRange, actionType: TActionsType) => {
+        if (actionType === ACCEPT_CURRENT_ACTIONS) {
+          this._onDidConflictActions.fire({
+            range,
+            withViewType: EditorViewType.CURRENT,
+            action: ACCEPT_CURRENT_ACTIONS,
+          });
+        } else if (actionType === IGNORE_ACTIONS) {
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE_ACTIONS });
+        }
+      },
     });
 
     this.layout();
@@ -136,6 +133,8 @@ export class CurrentCodeEditor extends BaseCodeEditor {
       .setRetainDecoration(this.getRetainDecoration())
       .setRetainLineWidget(this.getRetainLineWidget())
       .updateDecorations(range, []);
+
+    this.conflictActions.updateActions(this.provideActionsItems());
   }
 
   /**

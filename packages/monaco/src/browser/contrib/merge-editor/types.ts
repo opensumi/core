@@ -71,7 +71,7 @@ export type TActionsType =
   | typeof REVOKE_ACTIONS;
 
 export interface IActionsProvider {
-  onActionsClick?: (rangeId: string, actionType: TActionsType) => void;
+  onActionsClick?: (range: LineRange, actionType: TActionsType) => void;
   mouseDownGuard?: (e: IEditorMouseEvent) => boolean;
   /**
    * 提供 actions 操作项
@@ -81,9 +81,9 @@ export interface IActionsProvider {
 
 export namespace CONFLICT_ACTIONS_ICON {
   export const RIGHT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
-  export const LEFT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('left')}`;
+  export const LEFT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleleft')}`;
   export const CLOSE = `conflict-actions ${IGNORE_ACTIONS} ${getIcon('close')}`;
-  export const REVOKE = `conflict-actions ${REVOKE_ACTIONS} ${getIcon('arrowleft')}`;
+  export const REVOKE = `conflict-actions ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
 }
 
 // 用来寻址点击事件时的标记
@@ -113,6 +113,10 @@ export namespace DECORATIONS_CLASSNAME {
 
 export interface IConflictActionsEvent {
   range: LineRange;
-  action: typeof ACCEPT_CURRENT_ACTIONS | typeof ACCEPT_COMBINATION_ACTIONS | typeof IGNORE_ACTIONS;
+  action:
+    | typeof ACCEPT_CURRENT_ACTIONS
+    | typeof ACCEPT_COMBINATION_ACTIONS
+    | typeof IGNORE_ACTIONS
+    | typeof REVOKE_ACTIONS;
   withViewType: EditorViewType;
 }

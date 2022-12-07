@@ -81,21 +81,19 @@ export class ActionsManager extends Disposable {
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
       )(({ range, withViewType, action }) => {
-        const markComplete = (range: LineRange) => {
-          if (withViewType === EditorViewType.CURRENT) {
-            this.mappingManagerService.markCompleteTurnLeft(range);
-          } else if (withViewType === EditorViewType.INCOMING) {
-            this.mappingManagerService.markCompleteTurnRight(range);
-          }
-        };
+        const { turnDirection } = range;
 
+        const documentMapping =
+          turnDirection === EditorViewType.CURRENT
+            ? this.mappingManagerService.documentMappingTurnLeft
+            : this.mappingManagerService.documentMappingTurnRight;
+
+        const viewEditor = turnDirection === EditorViewType.CURRENT ? this.currentView : this.incomingView;
+
+        /**
+         * accept current 或 ignore
+         */
         if (withViewType !== EditorViewType.RESULT) {
-          const documentMapping =
-            withViewType === EditorViewType.CURRENT
-              ? this.mappingManagerService.documentMappingTurnLeft
-              : this.mappingManagerService.documentMappingTurnRight;
-          const viewEditor = withViewType === EditorViewType.CURRENT ? this.currentView : this.incomingView;
-
           if (action === ACCEPT_CURRENT_ACTIONS) {
             const applyText = viewEditor!.getModel()!.getValueInRange(range.toRange());
             const sameRange = documentMapping.adjacentComputeRangeMap.get(range.id);
@@ -112,15 +110,29 @@ export class ActionsManager extends Disposable {
             ]);
           }
 
-          markComplete(range);
+          if (turnDirection === EditorViewType.CURRENT) {
+            this.mappingManagerService.markCompleteTurnLeft(range);
+          } else if (turnDirection === EditorViewType.INCOMING) {
+            this.mappingManagerService.markCompleteTurnRight(range);
+          }
 
           viewEditor!.updateDecorations();
-          viewEditor!.clearActions(range);
+        } else {
+          /**
+           * revoke
+           */
+          if (turnDirection === EditorViewType.CURRENT) {
+            this.mappingManagerService.revokeActionsTurnLeft(range);
+          } else if (turnDirection === EditorViewType.INCOMING) {
+            this.mappingManagerService.revokeActionsTurnRight(range);
+          }
 
-          this.resultView!.updateDecorations();
-          this.currentView!.launchChange();
-          this.incomingView!.launchChange();
+          viewEditor!.updateDecorations();
         }
+
+        this.resultView!.updateDecorations();
+        this.currentView!.launchChange();
+        this.incomingView!.launchChange();
       }),
     );
   }
@@ -160,7 +172,7 @@ export class ActionsManager extends Disposable {
         };
       }
 
-      if (mouseDownGuard(e) === true && onActionsClick) {
+      if (mouseDownGuard(e) && onActionsClick) {
         const element = e.target.element!;
         const { classList } = element;
 
@@ -168,6 +180,7 @@ export class ActionsManager extends Disposable {
 
         if (find) {
           const rangeId = find.replace(ADDRESSING_TAG_CLASSNAME, '');
+          const action = _this.conflictActions.getAction(rangeId);
 
           let type: TActionsType | undefined;
 
@@ -181,8 +194,8 @@ export class ActionsManager extends Disposable {
             type = REVOKE_ACTIONS;
           }
 
-          if (type) {
-            onActionsClick.call(_this, rangeId, type);
+          if (type && action) {
+            onActionsClick.call(_this, action.range, type);
           }
         }
       }

@@ -17,6 +17,7 @@ import {
   CONFLICT_ACTIONS_ICON,
   EDiffRangeTurn,
   IActionsDescription,
+  REVOKE_ACTIONS,
 } from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
@@ -136,19 +137,16 @@ export class ResultCodeEditor extends BaseCodeEditor {
   private provideActionsItems(): IActionsDescription[] {
     const turnLeftRanges = this.documentMappingTurnLeft.getModifiedRange();
     const turnRightRanges = this.documentMappingTurnRight.getOriginalRange();
-    return turnLeftRanges.concat(turnRightRanges).map((range) => ({
+    return turnLeftRanges
+      .concat(turnRightRanges)
+      .filter((r) => r.isComplete)
+      .map((range) => ({
         range,
         decorationOptions: {
-          ...(range.isComplete
-            ? {
-                firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.REVOKE + ` ${ADDRESSING_TAG_CLASSNAME}${range.id}`,
-              }
-            : {}),
+          firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.REVOKE + ` ${ADDRESSING_TAG_CLASSNAME}${range.id}`,
         },
       }));
   }
-
-  private onActionsClick(rangeId: string, actionType: TActionsType): void {}
 
   protected override prepareRenderDecorations(
     ranges: LineRange[],
@@ -249,6 +247,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
       .setRetainLineWidget(this.getRetainLineWidget())
       .updateDecorations(toBeRanges, []);
 
+    // 每次 update decoration 时也需要更新 conflict actions 操作
     this.conflictActions.updateActions(this.provideActionsItems());
   }
 
@@ -266,7 +265,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
     if (turnType === EDiffRangeTurn.ORIGIN) {
       this.registerActionsProvider({
         provideActionsItems: this.provideActionsItems,
-        onActionsClick: this.onActionsClick,
+        onActionsClick: (range: LineRange, actionType: TActionsType) => {
+          if (actionType === REVOKE_ACTIONS) {
+            this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
+          }
+        },
       });
     }
   }

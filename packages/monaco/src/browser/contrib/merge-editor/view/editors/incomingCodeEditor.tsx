@@ -4,6 +4,7 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 
 import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
+import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   ACCEPT_CURRENT_ACTIONS,
@@ -40,35 +41,22 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
   private provideActionsItems(): IActionsDescription[] {
     const ranges = this.documentMapping.getModifiedRange();
-    return ranges.map((range) => {
-      const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
-      return {
-        range,
-        decorationOptions: {
-          glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
-            CONFLICT_ACTIONS_ICON.CLOSE,
-            DECORATIONS_CLASSNAME.offset_right,
-            idMark,
-          ),
-          firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.LEFT, idMark),
-        },
-      };
-    });
-  }
-
-  private onActionsClick(rangeId: string, actionType: TActionsType): void {
-    const action = this.conflictActions.getAction(rangeId);
-    if (!action) {
-      return;
-    }
-
-    const { range } = action;
-
-    if (actionType === ACCEPT_CURRENT_ACTIONS) {
-      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: ACCEPT_CURRENT_ACTIONS });
-    } else if (actionType === IGNORE_ACTIONS) {
-      this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: IGNORE_ACTIONS });
-    }
+    return ranges
+      .filter((r) => !r.isComplete)
+      .map((range) => {
+        const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
+        return {
+          range,
+          decorationOptions: {
+            glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
+              CONFLICT_ACTIONS_ICON.CLOSE,
+              DECORATIONS_CLASSNAME.offset_right,
+              idMark,
+            ),
+            firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.LEFT, idMark),
+          },
+        };
+      });
   }
 
   public getMonacoDecorationOptions(
@@ -94,6 +82,8 @@ export class IncomingCodeEditor extends BaseCodeEditor {
       .setRetainDecoration(this.getRetainDecoration())
       .setRetainLineWidget(this.getRetainLineWidget())
       .updateDecorations(range, []);
+
+    this.conflictActions.updateActions(this.provideActionsItems());
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
@@ -104,7 +94,17 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
     this.registerActionsProvider({
       provideActionsItems: this.provideActionsItems,
-      onActionsClick: this.onActionsClick,
+      onActionsClick: (range: LineRange, actionType: TActionsType) => {
+        if (actionType === ACCEPT_CURRENT_ACTIONS) {
+          this._onDidConflictActions.fire({
+            range,
+            withViewType: EditorViewType.INCOMING,
+            action: ACCEPT_CURRENT_ACTIONS,
+          });
+        } else if (actionType === IGNORE_ACTIONS) {
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.INCOMING, action: IGNORE_ACTIONS });
+        }
+      },
     });
   }
 }
