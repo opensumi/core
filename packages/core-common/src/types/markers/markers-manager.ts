@@ -195,7 +195,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
    * @param data marker数据
    */
   private convertToMarker(type: string, resource: string, data: IMarkerData): IMarker | undefined {
-    const { code, severity, message, source, relatedInformation, tags } = data;
+    const { code, codeHref, severity, message, source, relatedInformation, tags } = data;
 
     if (!message) {
       return undefined;
@@ -213,6 +213,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
       resource,
       type,
       code,
+      codeHref,
       severity,
       message,
       source,
