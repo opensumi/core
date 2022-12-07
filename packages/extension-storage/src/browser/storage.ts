@@ -98,7 +98,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     return {
       logUri: logUri.codeUri || undefined,
       storageUri: storageUri?.codeUri,
-      globalStorageUri: Uri.parse(this.globalDataPath),
+      globalStorageUri: Uri.file(this.globalDataPath),
     };
   }
 
