@@ -1,11 +1,11 @@
-import { URI, path, CommandService } from '@opensumi/ide-core-browser';
+import { URI, path, CommandService, formatLocalize } from '@opensumi/ide-core-browser';
 import { ScmChangeTitleCallback } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ZoneWidget } from '@opensumi/ide-monaco-enhance/lib/browser';
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 
 import { IDirtyDiffModel, OPEN_DIRTY_DIFF_WIDGET } from '../../common';
 
-import { ChangeType, getChangeType } from './dirty-diff-util';
+import { ChangeType, getChangeType, toChange } from './dirty-diff-util';
 
 export enum DirtyDiffWidgetActionType {
   close,
@@ -63,7 +63,7 @@ export class DirtyDiffWidget extends ZoneWidget {
 
     const detail = document.createElement('span');
     detail.className = 'dirty-diff-widget-title-detail';
-    detail.innerText = `第 ${this._currentChangeIndex} 个更改（共 ${this._model.changes.length} 个）`;
+    detail.innerText = formatLocalize('scm.dirtyDiff.changes', this._currentChangeIndex, this._model.changes.length);
     this._title.appendChild(detail);
   }
 
@@ -158,7 +158,11 @@ export class DirtyDiffWidget extends ZoneWidget {
      */
     const current = this.currentRange;
 
-    const args: Parameters<ScmChangeTitleCallback> = [this.uri, this._model.changes, this._currentChangeIndex - 1];
+    const args: Parameters<ScmChangeTitleCallback> = [
+      this.uri,
+      this._model.changes.map(toChange),
+      this._currentChangeIndex - 1,
+    ];
 
     switch (type) {
       case DirtyDiffWidgetActionType.next:
