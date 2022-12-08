@@ -140,7 +140,7 @@ export class ResourceTextEditTask {
         newEOL = edit.textEdit.eol;
       }
       edits.push({
-        forceMoveMarkers: true,
+        forceMoveMarkers: false,
         range: Range.lift(edit.textEdit.range),
         text: edit.textEdit.text,
       });

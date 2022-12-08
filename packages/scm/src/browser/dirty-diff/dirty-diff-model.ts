@@ -371,7 +371,7 @@ export class DirtyDiffModel extends Disposable implements IDirtyDiffModel {
 
       function refreshWidget(current: number, currentChange: ILineChange) {
         widget.updateCurrent(current);
-        widget.show(positionToRange(currentChange[3] || currentChange[2]), DirtyDiffModel.heightInLines);
+        widget.show(positionToRange(currentChange[3] - 1), DirtyDiffModel.heightInLines);
         that.isDirtyDiffVisible.set(true);
       }
 
