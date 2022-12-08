@@ -102,7 +102,7 @@ export class MergeEditorService extends Disposable {
     );
     const { changes: changes2 } = result2;
 
-    this.resultView.inputDiffComputingResult(changes2, EDiffRangeTurn.ORIGIN);
     this.incomingView.inputDiffComputingResult(changes2);
+    this.resultView.inputDiffComputingResult(changes2, EDiffRangeTurn.ORIGIN);
   }
 }

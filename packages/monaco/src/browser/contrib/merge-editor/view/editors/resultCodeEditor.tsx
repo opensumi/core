@@ -3,7 +3,6 @@ import { Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
@@ -11,7 +10,6 @@ import { LineRangeMapping } from '../../model/line-range-mapping';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
   EditorViewType,
-  LineRangeType,
   DECORATIONS_CLASSNAME,
   TActionsType,
   ADDRESSING_TAG_CLASSNAME,
@@ -21,8 +19,6 @@ import {
   REVOKE_ACTIONS,
   ITimeMachineMetaData,
 } from '../../types';
-import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
-import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -36,7 +32,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private timeMachineDocument: TimeMachineDocument;
-  private currentTurnType: EDiffRangeTurn;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -157,70 +152,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }));
   }
 
-  protected override prepareRenderDecorations(
-    ranges: LineRange[],
-    innerChanges: InnerRange[][],
-  ): [LineRange[], InnerRange[][]] {
-    const toBeRanges: LineRange[] =
-      this.currentTurnType === EDiffRangeTurn.MODIFIED
-        ? this.documentMappingTurnLeft.getOriginalRange()
-        : this.documentMappingTurnRight.getModifiedRange();
-
-    const changesResult: LineRange[] = [];
+  protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
+    const changesResult: LineRange[] = this.getAllDiffRanges();
     const innerChangesResult: InnerRange[][] = [];
-
-    ranges.forEach((range, idx) => {
-      const sameInner = innerChanges[idx];
-      const sameRange = toBeRanges[idx];
-      const _exec = (type: LineRangeType) => {
-        const direction =
-          this.currentTurnType === EDiffRangeTurn.ORIGIN ? EditorViewType.INCOMING : EditorViewType.CURRENT;
-        changesResult.push(range.setType(type).setTurnDirection(direction));
-        innerChangesResult.push(sameInner.map((i) => i.setType(type).setTurnDirection(direction)));
-        const entries = this.documentMappingTurnLeft.adjacentComputeRangeMap.entries();
-        for (const [key, value] of entries) {
-          if (sameRange.id === key) {
-            this.documentMappingTurnLeft.adjacentComputeRangeMap.set(
-              key,
-              value.setType(type).setTurnDirection(direction),
-            );
-          }
-        }
-      };
-
-      _exec(range.isTendencyLeft(sameRange) ? 'remove' : range.isTendencyRight(sameRange) ? 'insert' : 'modify');
-    });
     return [changesResult, innerChangesResult];
-  }
-
-  protected getRetainDecoration(): IDiffDecoration[] {
-    if (this.currentTurnType === EDiffRangeTurn.MODIFIED) {
-      return [];
-    }
-
-    const values = this.documentMappingTurnLeft.getModifiedRange();
-    const retain: IDiffDecoration[] = [];
-    for (const range of values) {
-      if (!range.isEmpty) {
-        retain.push(...this.decorations.createLineDecoration(range));
-      }
-    }
-    return retain;
-  }
-
-  protected getRetainLineWidget(): GuidelineWidget[] {
-    if (this.currentTurnType === EDiffRangeTurn.MODIFIED) {
-      return [];
-    }
-
-    const values = this.documentMappingTurnLeft.getModifiedRange();
-    const retain: GuidelineWidget[] = [];
-    for (const range of values) {
-      if (range.isEmpty) {
-        retain.push(this.decorations.createGuideLineWidget(range));
-      }
-    }
-    return retain;
   }
 
   public getMonacoDecorationOptions(
@@ -246,16 +181,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return EditorViewType.RESULT;
   }
 
-  public updateDecorations(): void {
-    const toBeRanges: LineRange[] =
-      this.currentTurnType === EDiffRangeTurn.MODIFIED
-        ? this.documentMappingTurnLeft.getModifiedRange()
-        : this.documentMappingTurnRight.getOriginalRange();
-    this.decorations
-      .setRetainDecoration(this.getRetainDecoration())
-      .setRetainLineWidget(this.getRetainLineWidget())
-      .updateDecorations(toBeRanges, []);
-
+  public override updateDecorations(): void {
+    super.updateDecorations();
     // 每次 update decoration 时也需要更新 conflict actions 操作
     this.conflictActions.updateActions(this.provideActionsItems(this.getAllDiffRanges()));
   }
@@ -265,17 +192,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], turnType: EDiffRangeTurn): void {
-    this.currentTurnType = turnType;
-
     if (turnType === EDiffRangeTurn.MODIFIED) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
-      this.renderDecorations(flatModified(changes), flatInnerModified(changes));
     } else if (turnType === EDiffRangeTurn.ORIGIN) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
-      this.renderDecorations(flatOriginal(changes), flatInnerOriginal(changes));
     }
 
     if (turnType === EDiffRangeTurn.ORIGIN) {
+      this.updateDecorations();
       const diffRanges = this.getAllDiffRanges();
 
       this.registerActionsProvider({
