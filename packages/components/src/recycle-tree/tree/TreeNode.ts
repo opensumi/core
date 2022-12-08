@@ -603,6 +603,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       TreeNode.setGlobalTreeState(this.path, {
         isExpanding: false,
       });
+      TreeNode.setTreeNode(this.id, this.path, this);
     }
   }
 
@@ -1049,6 +1050,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       this.shrinkBranch(this, quiet);
     }
     this.isExpanded = false;
+    TreeNode.setTreeNode(this.id, this.path, this);
     this._watcher.notifyDidChangeExpansionState(this, false);
   }
 

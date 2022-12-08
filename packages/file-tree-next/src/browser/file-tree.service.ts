@@ -115,6 +115,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
   private readonly onTreeIndentChangeEmitter = new Emitter<ITreeIndent>();
   private readonly onFilterModeChangeEmitter = new Emitter<boolean>();
+  private readonly onNodeRefreshedEmitter = new Emitter<void>();
 
   // 筛选模式开关
   private _filterMode = false;
@@ -123,6 +124,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private _refreshable = true;
 
   private refreshCancelToken: CancellationTokenSource;
+
+  get onNodeRefreshed() {
+    return this.onNodeRefreshedEmitter.event;
+  }
 
   get refreshable() {
     return this._refreshable;
