@@ -21,6 +21,20 @@ export class MappingManagerService extends Disposable {
     this.documentMappingTurnRight = this.injector.get(DocumentMapping, [EDiffRangeTurn.MODIFIED]);
   }
 
+  private revokeActionsFactory(turn: EDiffRangeTurn): (sameRange: LineRange) => void {
+    const mapping = turn === EDiffRangeTurn.ORIGIN ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
+
+    return (sameRange: LineRange) => {
+      const range = mapping.reverse(sameRange);
+      if (!range) {
+        return;
+      }
+
+      range.setComplete(false);
+      sameRange.setComplete(false);
+    };
+  }
+
   private markCompleteFactory(turn: EDiffRangeTurn): (range: LineRange) => void {
     const mapping = turn === EDiffRangeTurn.ORIGIN ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
@@ -50,6 +64,14 @@ export class MappingManagerService extends Disposable {
 
   public markCompleteTurnRight(range: LineRange): void {
     this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range);
+  }
+
+  public revokeActionsTurnLeft(sameRange: LineRange): void {
+    this.revokeActionsFactory(EDiffRangeTurn.ORIGIN)(sameRange);
+  }
+
+  public revokeActionsTurnRight(sameRange: LineRange): void {
+    this.revokeActionsFactory(EDiffRangeTurn.MODIFIED)(sameRange);
   }
 
   /**
