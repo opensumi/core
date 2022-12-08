@@ -8,7 +8,19 @@ import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
-import { EditorViewType, LineRangeType, DECORATIONS_CLASSNAME } from '../../types';
+import { TimeMachineDocument } from '../../model/time-machine';
+import {
+  EditorViewType,
+  LineRangeType,
+  DECORATIONS_CLASSNAME,
+  TActionsType,
+  ADDRESSING_TAG_CLASSNAME,
+  CONFLICT_ACTIONS_ICON,
+  EDiffRangeTurn,
+  IActionsDescription,
+  REVOKE_ACTIONS,
+  ITimeMachineMetaData,
+} from '../../types';
 import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
 import { GuidelineWidget } from '../guideline-widget';
 
@@ -23,7 +35,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return { lineNumbersMinChars: 2, lineDecorationsWidth: 24 };
   }
 
-  private currentBaseRange: 0 | 1;
+  private timeMachineDocument: TimeMachineDocument;
+  private currentTurnType: EDiffRangeTurn;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -37,11 +50,15 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
+    this.timeMachineDocument = injector.get(TimeMachineDocument, []);
+    this.initListenEvent();
+  }
 
+  private initListenEvent(): void {
     let preLineCount = 0;
 
     this.addDispose(
-      this.editor.onDidChangeModel((e) => {
+      this.editor.onDidChangeModel(() => {
         const model = this.editor.getModel();
         if (model) {
           preLineCount = model.getLineCount();
@@ -96,13 +113,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
             const { [EditorViewType.CURRENT]: nextLeftRanges, [EditorViewType.INCOMING]: nextRightRanges } =
               this.mappingManagerService.findNextLineRanges(toLineRange);
 
-            const leftRange = touchLeftRanges || nextLeftRanges;
-            const rightRange = touchRightRanges || nextRightRanges;
-
             if (includeLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
-            } else if (leftRange) {
-              const reverse = this.documentMappingTurnLeft.reverse(leftRange);
+            } else if (touchLeftRanges && !toLineRange.isAfter(touchLeftRanges)) {
+              this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchLeftRanges, offset);
+            } else if (nextLeftRanges) {
+              const reverse = this.documentMappingTurnLeft.reverse(nextLeftRanges);
               if (reverse) {
                 this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
               }
@@ -110,8 +126,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
             if (includeRightRange) {
               this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
-            } else if (rightRange) {
-              const reverse = this.documentMappingTurnRight.reverse(rightRange);
+            } else if (touchRightRanges && !toLineRange.isAfter(touchRightRanges)) {
+              this.documentMappingTurnRight.deltaEndAdjacentQueue(touchRightRanges, offset);
+            } else if (nextRightRanges) {
+              const reverse = this.documentMappingTurnRight.reverse(nextRightRanges);
               if (reverse) {
                 this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
               }
@@ -124,12 +142,27 @@ export class ResultCodeEditor extends BaseCodeEditor {
     );
   }
 
+  private getAllDiffRanges(): LineRange[] {
+    return this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange());
+  }
+
+  private provideActionsItems(ranges: LineRange[]): IActionsDescription[] {
+    return ranges
+      .filter((r) => r.isComplete)
+      .map((range) => ({
+        range,
+        decorationOptions: {
+          firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.REVOKE + ` ${ADDRESSING_TAG_CLASSNAME}${range.id}`,
+        },
+      }));
+  }
+
   protected override prepareRenderDecorations(
     ranges: LineRange[],
     innerChanges: InnerRange[][],
   ): [LineRange[], InnerRange[][]] {
     const toBeRanges: LineRange[] =
-      this.currentBaseRange === 1
+      this.currentTurnType === EDiffRangeTurn.MODIFIED
         ? this.documentMappingTurnLeft.getOriginalRange()
         : this.documentMappingTurnRight.getModifiedRange();
 
@@ -140,7 +173,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
       const sameInner = innerChanges[idx];
       const sameRange = toBeRanges[idx];
       const _exec = (type: LineRangeType) => {
-        const direction = this.currentBaseRange === 0 ? EditorViewType.INCOMING : EditorViewType.CURRENT;
+        const direction =
+          this.currentTurnType === EDiffRangeTurn.ORIGIN ? EditorViewType.INCOMING : EditorViewType.CURRENT;
         changesResult.push(range.setType(type).setTurnDirection(direction));
         innerChangesResult.push(sameInner.map((i) => i.setType(type).setTurnDirection(direction)));
         const entries = this.documentMappingTurnLeft.adjacentComputeRangeMap.entries();
@@ -160,7 +194,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   protected getRetainDecoration(): IDiffDecoration[] {
-    if (this.currentBaseRange === 1) {
+    if (this.currentTurnType === EDiffRangeTurn.MODIFIED) {
       return [];
     }
 
@@ -175,7 +209,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   protected getRetainLineWidget(): GuidelineWidget[] {
-    if (this.currentBaseRange === 1) {
+    if (this.currentTurnType === EDiffRangeTurn.MODIFIED) {
       return [];
     }
 
@@ -193,12 +227,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
     preDecorations: IModelDecorationOptions,
     range: LineRange,
   ): Omit<IModelDecorationOptions, 'description'> {
-    const stretchClassName = DECORATIONS_CLASSNAME.combine(
-      DECORATIONS_CLASSNAME.stretch_right,
-      range.turnDirection === EditorViewType.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
-    );
     return {
-      linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(preDecorations.className || '', stretchClassName),
+      linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
+        preDecorations.className || '',
+        DECORATIONS_CLASSNAME.stretch_right,
+        range.turnDirection === EditorViewType.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
+      ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
         range.turnDirection === EditorViewType.CURRENT
@@ -214,26 +248,51 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public updateDecorations(): void {
     const toBeRanges: LineRange[] =
-      this.currentBaseRange === 1
+      this.currentTurnType === EDiffRangeTurn.MODIFIED
         ? this.documentMappingTurnLeft.getModifiedRange()
         : this.documentMappingTurnRight.getOriginalRange();
     this.decorations
       .setRetainDecoration(this.getRetainDecoration())
       .setRetainLineWidget(this.getRetainLineWidget())
       .updateDecorations(toBeRanges, []);
+
+    // 每次 update decoration 时也需要更新 conflict actions 操作
+    this.conflictActions.updateActions(this.provideActionsItems(this.getAllDiffRanges()));
   }
 
-  public inputDiffComputingResult(changes: LineRangeMapping[], baseRange: 0 | 1): void {
-    this.currentBaseRange = baseRange;
+  public getContentInTimeMachineDocument(rangeId: string): ITimeMachineMetaData | undefined {
+    return this.timeMachineDocument.getMetaData(rangeId);
+  }
 
-    if (baseRange === 1) {
+  public inputDiffComputingResult(changes: LineRangeMapping[], turnType: EDiffRangeTurn): void {
+    this.currentTurnType = turnType;
+
+    if (turnType === EDiffRangeTurn.MODIFIED) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
-      const [c, i] = [flatModified(changes), flatInnerModified(changes)];
-      this.renderDecorations(c, i);
-    } else if (baseRange === 0) {
+      this.renderDecorations(flatModified(changes), flatInnerModified(changes));
+    } else if (turnType === EDiffRangeTurn.ORIGIN) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
-      const [c, i] = [flatOriginal(changes), flatInnerOriginal(changes)];
-      this.renderDecorations(c, i);
+      this.renderDecorations(flatOriginal(changes), flatInnerOriginal(changes));
+    }
+
+    if (turnType === EDiffRangeTurn.ORIGIN) {
+      const diffRanges = this.getAllDiffRanges();
+
+      this.registerActionsProvider({
+        provideActionsItems: () => this.provideActionsItems(diffRanges),
+        onActionsClick: (range: LineRange, actionType: TActionsType) => {
+          if (actionType === REVOKE_ACTIONS) {
+            this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
+          }
+        },
+      });
+
+      diffRanges.forEach((range) => {
+        this.timeMachineDocument.record(range.id, {
+          range,
+          text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toRange()),
+        });
+      });
     }
   }
 }
