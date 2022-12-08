@@ -163,7 +163,7 @@ export interface ArgsProps {
 function notice(args: ArgsProps) {
   const outerPrefixCls = args.prefixCls || 'kt-notification';
   const prefixCls = `${outerPrefixCls}-notice`;
-  const duration = 80000000000; // isUndefined(args.duration) ? defaultDuration : args.duration;
+  const duration = isUndefined(args.duration) ? defaultDuration : args.duration;
   let iconNode: React.ReactNode = null;
   if (args.icon) {
     iconNode = <span className={`${prefixCls}-icon`}>{args.icon}</span>;
