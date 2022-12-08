@@ -11,13 +11,11 @@ import {
   FILE_COMMANDS,
   PreferenceService,
   Deferred,
-  Event,
   Emitter,
-  IApplicationService,
   ILogger,
   path,
-  Throttler,
   pSeries,
+  CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -123,6 +121,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
   private _baseIndent: number;
   private _indent: number;
   private _refreshable = true;
+
+  private refreshCancelToken: CancellationTokenSource;
 
   get refreshable() {
     return this._refreshable;
@@ -362,6 +362,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     if (this._refreshable) {
       // 切换到可刷新状态时，处理遗留的文件树刷新事件
       this.doHandleQueueChange();
+    } else {
+      this.refreshCancelToken?.cancel();
     }
   }
 
@@ -751,10 +753,13 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const queue = Array.from(this._changeEventDispatchQueue);
 
     const effectedRoots = this.sortPaths(queue);
+    if (!this.refreshCancelToken || this.refreshCancelToken.token.isCancellationRequested) {
+      this.refreshCancelToken = new CancellationTokenSource();
+    }
     const promise = pSeries(
       effectedRoots.map((root) => async () => {
         if (Directory.is(root.node)) {
-          await (root.node as Directory).refresh();
+          await (root.node as Directory).refresh(this.refreshCancelToken);
         }
       }),
     );

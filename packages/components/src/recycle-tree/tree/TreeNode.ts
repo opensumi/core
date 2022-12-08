@@ -1475,22 +1475,31 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   };
 
   // 当没有传入具体路径时，使用当前展开目录作为刷新路径
-  public async refresh() {
+  public async refresh(tokenSource?: CancellationTokenSource) {
     const state = TreeNode.getGlobalTreeState(this.path);
     if (state.isLoadingPath || state.isExpanding) {
       return;
     }
     let token;
-    if (state.refreshCancelToken.token.isCancellationRequested) {
-      const refreshCancelToken = new CancellationTokenSource();
+    if (tokenSource && !tokenSource.token.isCancellationRequested) {
       TreeNode.setGlobalTreeState(this.path, {
         isRefreshing: true,
-        refreshCancelToken,
+        refreshCancelToken: tokenSource,
       });
-      token = refreshCancelToken.token;
+      token = tokenSource.token;
     } else {
-      token = state.refreshCancelToken.token;
+      if (state.refreshCancelToken.token.isCancellationRequested) {
+        const refreshCancelToken = new CancellationTokenSource();
+        TreeNode.setGlobalTreeState(this.path, {
+          isRefreshing: true,
+          refreshCancelToken,
+        });
+        token = refreshCancelToken.token;
+      } else {
+        token = state.refreshCancelToken.token;
+      }
     }
+
     await this.refreshThrottler.queue(async () => this.doRefresh(token));
     TreeNode.setGlobalTreeState(this.path, {
       isRefreshing: false,
