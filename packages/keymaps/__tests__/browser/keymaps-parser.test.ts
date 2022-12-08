@@ -2,8 +2,8 @@ import { KeymapsParser } from '../../src/browser/keymaps-parser';
 
 describe('KeymapsParser should be work', () => {
   const parser = new KeymapsParser();
-  it('well formatted raw text', () => {
-    expectParsing(
+  it('well formatted raw text', async () => {
+    await expectParsing(
       `{
   "keybindings": [
     {
@@ -30,8 +30,8 @@ describe('KeymapsParser should be work', () => {
     );
   });
 
-  it('no array', () => {
-    expectParsing(
+  it('no array', async () => {
+    await expectParsing(
       `{
   "keybindings": [],
   "errors": [
@@ -45,8 +45,8 @@ describe('KeymapsParser should be work', () => {
     );
   });
 
-  it('additional property', () => {
-    expectParsing(
+  it('additional property', async () => {
+    await expectParsing(
       `{
   "keybindings": [],
   "errors": [
@@ -63,8 +63,8 @@ describe('KeymapsParser should be work', () => {
     );
   });
 
-  it('wrong type', () => {
-    expectParsing(
+  it('wrong type', async () => {
+    await expectParsing(
       `{
   "keybindings": [],
   "errors": [
@@ -84,8 +84,8 @@ describe('KeymapsParser should be work', () => {
     );
   });
 
-  it('missing property', () => {
-    expectParsing(
+  it('missing property', async () => {
+    await expectParsing(
       `{
   "keybindings": [],
   "errors": [
@@ -107,9 +107,9 @@ describe('KeymapsParser should be work', () => {
    * @param {string} expectation
    * @param {string} content
    */
-  function expectParsing(expectation: string, content: string): void {
+  async function expectParsing(expectation: string, content: string): Promise<void> {
     const errors: string[] = [];
-    const keybindings = parser.parse(content, errors);
+    const keybindings = await parser.parse(content, errors);
     expect(expectation).toBe(JSON.stringify({ keybindings, errors }, undefined, 2));
   }
 });

@@ -257,11 +257,11 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     return preferences;
   }
 
-  protected validate(preferenceName: string, preferenceValue: any): boolean {
+  protected async validate(preferenceName: string, preferenceValue: any): Promise<boolean> {
     if (this.configurations.getPath(this.getUri()) !== this.configurations.getPaths()[0]) {
       return true;
     }
-    return isUndefined(preferenceValue) || this.schemaProvider.validate(preferenceName, preferenceValue).valid;
+    return isUndefined(preferenceValue) || (await this.schemaProvider.validate(preferenceName, preferenceValue)).valid;
   }
 
   protected parse(content: string): any {

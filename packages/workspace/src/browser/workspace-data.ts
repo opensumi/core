@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { URI, Schemes } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
@@ -33,10 +34,11 @@ const workspaceSchema = {
 export namespace WorkspaceData {
   let validateSchema;
 
-  export function is(data: any): data is WorkspaceData {
+  export async function is(data: any): Promise<boolean> {
     if (!validateSchema) {
       // 避免一开始就加载 ajv，初始化和 compile 都会花费大量的时间进行编译
-      const Ajv = require('ajv');
+      // @ts-ignore
+      const { default: Ajv } = await import('ajv');
       validateSchema = new Ajv().compile(workspaceSchema);
     }
     return !!validateSchema(data);

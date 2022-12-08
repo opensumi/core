@@ -3,7 +3,7 @@ import { DEFAULT_WORKSPACE_SUFFIX_NAME } from '@opensumi/ide-workspace';
 import { WorkspaceData } from '@opensumi/ide-workspace/lib/browser/workspace-data';
 
 describe('WorkspaceData methods', () => {
-  it('is method should be work', () => {
+  it('is method should be work', async () => {
     const workspaceData = {
       folders: [
         {
@@ -12,11 +12,11 @@ describe('WorkspaceData methods', () => {
       ],
       settings: {},
     };
-    expect(WorkspaceData.is(workspaceData)).toBeTruthy();
+    expect(await WorkspaceData.is(workspaceData)).toBeTruthy();
     const unknownData = {
       test: [],
     };
-    expect(WorkspaceData.is(unknownData)).toBeFalsy();
+    expect(await WorkspaceData.is(unknownData)).toBeFalsy();
   });
 
   it('buildWorkspaceData method should be work', () => {

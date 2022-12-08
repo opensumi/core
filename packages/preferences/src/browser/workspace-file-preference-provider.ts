@@ -28,9 +28,9 @@ export class WorkspaceFilePreferenceProvider extends AbstractResourcePreferenceP
     return this.options.workspaceUri;
   }
 
-  protected parse(content: string): any {
+  protected async parse(content: string): Promise<any> {
     const data = super.parse(content);
-    if (WorkspaceData.is(data)) {
+    if (await WorkspaceData.is(data)) {
       return data.settings || {};
     }
     return {};

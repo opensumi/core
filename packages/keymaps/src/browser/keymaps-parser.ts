@@ -1,4 +1,5 @@
-import Ajv from 'ajv';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import type Ajv from 'ajv';
 import * as parser from 'jsonc-parser';
 
 import { Injectable } from '@opensumi/di';
@@ -37,13 +38,10 @@ export const keymapsSchema = {
 
 @Injectable()
 export class KeymapsParser {
-  protected readonly validate: Ajv.ValidateFunction;
+  private _validate: Ajv.ValidateFunction;
 
-  constructor() {
-    // https://github.com/epoberezkin/ajv#validation-and-reporting-options
-    this.validate = new Ajv({
-      jsonPointers: true,
-    }).compile(keymapsSchema);
+  get validate() {
+    return this._validate;
   }
 
   /**
@@ -51,7 +49,14 @@ export class KeymapsParser {
    * @param content 内容.
    * @param errors 可选的错误存储指针.
    */
-  parse(content: string, errors?: string[]): KeymapItem[] {
+  async parse(content: string, errors?: string[]): Promise<KeymapItem[]> {
+    if (!this.validate) {
+      // @ts-ignore
+      const { default: Ajv } = await import('ajv');
+      this._validate = new Ajv({
+        jsonPointers: true,
+      }).compile(keymapsSchema);
+    }
     const strippedContent = parser.stripComments(content);
     const parsingErrors: parser.ParseError[] | undefined = errors ? [] : undefined;
     const bindings = parser.parse(strippedContent, parsingErrors);

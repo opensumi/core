@@ -1,6 +1,8 @@
 import classNames from 'classnames';
 import React from 'react';
 
+import { MaybePromise } from '@opensumi/ide-utils';
+
 import warning from '../utils/warning';
 
 import { IInputBaseProps, Input } from './Input';
@@ -26,7 +28,7 @@ export interface ValidateMessage {
 export interface ValidateInputProp extends IInputBaseProps {
   // void 返回代表验证通过
   // string 代表有错误信息
-  validate?: (value: string | number) => ValidateMessage | undefined;
+  validate?: (value: string | number) => MaybePromise<ValidateMessage | undefined>;
   validateMessage?: ValidateMessage;
   popup?: boolean;
 }
@@ -60,7 +62,7 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
       }
     };
 
-    const handleChange = (event) => {
+    const handleChange = async (event) => {
       const input: HTMLInputElement = event.target;
       let value;
       if (input.type === 'number') {
@@ -72,12 +74,12 @@ export const ValidateInput = React.forwardRef<HTMLInputElement, ValidateInputPro
         let message;
         if (type === 'number') {
           if (/^[0-9]+$/.test(value)) {
-            message = validate(Number(value));
+            message = await validate(Number(value));
           } else {
-            message = validate(String(value));
+            message = await validate(String(value));
           }
         } else {
-          message = validate(value);
+          message = await validate(value);
         }
         setValidateMessage(message);
       }

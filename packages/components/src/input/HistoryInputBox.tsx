@@ -25,7 +25,7 @@ export class HistoryInputBox extends React.Component<HistoryInputBoxProp> {
   public history: HistoryNavigator<string>;
   public inputProps: HistoryInputBoxProp;
 
-  public readonly state: {
+  public declare readonly state: {
     inputValue: '';
   };
 

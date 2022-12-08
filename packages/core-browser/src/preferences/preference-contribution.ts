@@ -1,4 +1,4 @@
-import Ajv from 'ajv';
+import type Ajv from 'ajv';
 
 import { Injectable, Autowired, Injector } from '@opensumi/di';
 import {
@@ -92,13 +92,6 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   protected fireDidPreferenceSchemaChanged(): void {
     this.onDidPreferenceSchemaChangedEmitter.fire(undefined);
-  }
-
-  protected get validateFunction(): Ajv.ValidateFunction {
-    if (!this._validateFunction) {
-      this.doUpdateValidate();
-    }
-    return this._validateFunction!;
   }
 
   constructor() {
@@ -226,22 +219,9 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     this._validateFunction = undefined;
   }
 
-  private doUpdateValidate(): void {
-    const schema = {
-      ...this.combinedSchema,
-      properties: {
-        ...this.combinedSchema.properties,
-      },
-    };
-    for (const sectionName of this.configurations.getSectionNames()) {
-      delete schema.properties[sectionName];
-    }
-    this._validateFunction = new Ajv().compile(schema);
-  }
-
   protected readonly unsupportedPreferences = new Set<string>();
 
-  public validate(name: string, value: any): { valid: boolean; reason?: string } {
+  public async validate(name: string, value: any): Promise<{ valid: boolean; reason?: string }> {
     if (this.configurations.isSectionName(name)) {
       return { valid: true };
     }
@@ -250,6 +230,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
       return { valid: true };
     }
     if (!this.validationFunctions.has(name)) {
+      const { default: Ajv } = await import('ajv');
       this.validationFunctions.set(name, new Ajv().compile(this.getPreferenceProperty(name)!));
     }
     // 验证是否合并schema配置

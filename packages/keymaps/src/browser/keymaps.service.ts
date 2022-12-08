@@ -312,7 +312,7 @@ export class KeymapService implements IKeymapService {
         return [];
       }
       const { content } = await this.filesystem.readFile(resource.uri);
-      this.storeKeybindings = this.parser.parse(content.toString());
+      this.storeKeybindings = await this.parser.parse(content.toString());
     } catch (error) {
       this.logger.warn(`ParseKeybindings fail: ${error.stack}`);
       this.storeKeybindings = [];

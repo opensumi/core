@@ -331,7 +331,7 @@ export class WorkspaceService implements IWorkspaceService {
       const { content } = await this.fileServiceClient.resolveContent(this._workspace.uri);
       const strippedContent = jsoncparser.stripComments(content);
       const data = jsoncparser.parse(strippedContent);
-      if (data && WorkspaceData.is(data)) {
+      if (data && (await WorkspaceData.is(data))) {
         const stat = await this.fileServiceClient.getFileStat(this._workspace.uri);
         return WorkspaceData.transformToAbsolute(data, stat);
       }

@@ -283,16 +283,16 @@ function InputPreferenceItem({
     setValue(currentValue);
   }, [currentValue]);
 
-  const handleValueChange = (value) => {
-    if (hasValidateError(isNumber && /^[0-9]+$/.test(value) ? Number(value) : value)) {
+  const handleValueChange = async (value) => {
+    if (await hasValidateError(isNumber && /^[0-9]+$/.test(value) ? Number(value) : value)) {
       return;
     }
 
     preferenceService.set(preferenceName, value, scope);
   };
 
-  function hasValidateError(value): ValidateMessage | undefined {
-    const res = schemaProvider.validate(preferenceName, value);
+  async function hasValidateError(value): Promise<ValidateMessage | undefined> {
+    const res = await schemaProvider.validate(preferenceName, value);
     if (res.valid) {
       return undefined;
     } else {
