@@ -15,7 +15,7 @@ export interface IActionsDecoration {
 export class ConflictActions extends Disposable {
   private deltaDecoration: IActionsDecoration[] = [];
 
-  private actionsCollect: Map<number, IActionsDescription> = new Map();
+  private actionsCollect: Map<string, IActionsDescription> = new Map();
 
   private get editor(): ICodeEditor {
     return this.codeEditor.getEditor();
@@ -23,6 +23,26 @@ export class ConflictActions extends Disposable {
 
   constructor(@Optional() private readonly codeEditor: BaseCodeEditor) {
     super();
+  }
+
+  private createActionDecoration(action: IActionsDescription): IActionsDecoration {
+    const { range } = action;
+
+    return {
+      id: '',
+      editorDecoration: {
+        range: {
+          startLineNumber: range.startLineNumber,
+          startColumn: 0,
+          endLineNumber: range.startLineNumber,
+          endColumn: 0,
+        },
+        options: ModelDecorationOptions.register({
+          description: range.id,
+          ...action.decorationOptions,
+        }),
+      },
+    };
   }
 
   public override dispose(): void {
@@ -52,23 +72,9 @@ export class ConflictActions extends Disposable {
   public setActions(actions: IActionsDescription[]): void {
     const newDecorations: IActionsDecoration[] = actions.map((action) => {
       const { range } = action;
-      this.actionsCollect.set(range.startLineNumber, action);
+      this.actionsCollect.set(range.id, action);
 
-      return {
-        id: '',
-        editorDecoration: {
-          range: {
-            startLineNumber: range.startLineNumber,
-            startColumn: 0,
-            endLineNumber: range.startLineNumber,
-            endColumn: 0,
-          },
-          options: ModelDecorationOptions.register({
-            description: range.id,
-            ...action.decorationOptions,
-          }),
-        },
-      };
+      return this.createActionDecoration(action);
     });
 
     this.editor.changeDecorations((accessor) => {
@@ -82,9 +88,9 @@ export class ConflictActions extends Disposable {
     });
   }
 
-  public clearActions(line: number): void {
-    if (this.actionsCollect.has(line)) {
-      const actions = this.actionsCollect.get(line);
+  public clearActions(id: string): void {
+    if (this.actionsCollect.has(id)) {
+      const actions = this.actionsCollect.get(id);
 
       const matchDecoration = this.deltaDecoration.find(
         (d) => d.editorDecoration.options.description === actions!.range.id,
@@ -93,11 +99,20 @@ export class ConflictActions extends Disposable {
         this.clearDecorationsById(matchDecoration.id);
       }
 
-      this.actionsCollect.delete(line);
+      this.actionsCollect.delete(id);
     }
   }
 
-  public getActions(line: number): IActionsDescription | undefined {
-    return this.actionsCollect.get(line);
+  public updateActions(actions: IActionsDescription[]): void {
+    this.clearDecorations();
+    this.setActions(actions);
+  }
+
+  public getActions(): IterableIterator<IActionsDescription> {
+    return this.actionsCollect.values();
+  }
+
+  public getAction(id: string): IActionsDescription | undefined {
+    return this.actionsCollect.get(id);
   }
 }

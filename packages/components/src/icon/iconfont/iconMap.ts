@@ -63,6 +63,8 @@ export const defaultIconfont = {
   'dock-down': 'dock-down',
   'dock-right': 'dock-right',
   'doubleright': 'doubleright',
+  'revoke': 'revoke',
+  'doubleleft': 'doubleleft',
   'down': 'down',
   'download': 'download',
   'drag': 'drag',

@@ -59,17 +59,19 @@ export interface IActionsDescription {
   decorationOptions: Omit<IModelDecorationOptions, 'description'>;
 }
 
-export const ACCEPT_CURRENT = 'accpet_current';
-export const ACCEPT_COMBINATION = 'accpet_combination';
-export const IGNORE = 'ignore';
+export const ACCEPT_CURRENT_ACTIONS = 'accpet_current';
+export const ACCEPT_COMBINATION_ACTIONS = 'accpet_combination';
+export const IGNORE_ACTIONS = 'ignore';
+export const REVOKE_ACTIONS = 'revoke';
+
+export type TActionsType =
+  | typeof ACCEPT_CURRENT_ACTIONS
+  | typeof ACCEPT_COMBINATION_ACTIONS
+  | typeof IGNORE_ACTIONS
+  | typeof REVOKE_ACTIONS;
 
 export interface IActionsProvider {
-  onActionsClick?: (
-    e: IEditorMouseEvent,
-    currentView: IBaseCodeEditor,
-    resultView: IBaseCodeEditor,
-    incomingView: IBaseCodeEditor,
-  ) => boolean;
+  onActionsClick?: (range: LineRange, actionType: TActionsType) => void;
   mouseDownGuard?: (e: IEditorMouseEvent) => boolean;
   /**
    * 提供 actions 操作项
@@ -78,10 +80,14 @@ export interface IActionsProvider {
 }
 
 export namespace CONFLICT_ACTIONS_ICON {
-  export const RIGHT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('right')}`;
-  export const LEFT = `conflict-actions ${ACCEPT_CURRENT} ${getIcon('left')}`;
-  export const CLOSE = `conflict-actions ${IGNORE} ${getIcon('close')}`;
+  export const RIGHT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
+  export const LEFT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleleft')}`;
+  export const CLOSE = `conflict-actions ${IGNORE_ACTIONS} ${getIcon('close')}`;
+  export const REVOKE = `conflict-actions ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
 }
+
+// 用来寻址点击事件时的标记
+export const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
 
 /**
  * 绘制 decoration 和 line widget 线的样式类名集合
@@ -100,10 +106,25 @@ export namespace DECORATIONS_CLASSNAME {
   export const diff_line_background = 'merge-editor-diff-line-background';
   export const diff_inner_char_background = 'merge-editor-diff-inner-char-background';
   export const guide_underline_widget = 'merge-editor-guide-underline-widget';
+
+  export const offset_right = 'offset-right';
+  export const offset_left = 'offset-left';
 }
 
 export interface IConflictActionsEvent {
   range: LineRange;
-  action: typeof ACCEPT_CURRENT | typeof ACCEPT_COMBINATION | typeof IGNORE;
+  action:
+    | typeof ACCEPT_CURRENT_ACTIONS
+    | typeof ACCEPT_COMBINATION_ACTIONS
+    | typeof IGNORE_ACTIONS
+    | typeof REVOKE_ACTIONS;
   withViewType: EditorViewType;
+}
+
+/**
+ * Time Machine
+ */
+export interface ITimeMachineMetaData {
+  range: LineRange;
+  text: string | null;
 }
