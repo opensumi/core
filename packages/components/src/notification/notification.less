@@ -38,7 +38,7 @@
     margin-bottom: @notification-margin-bottom;
     padding: @notification-padding;
     overflow: hidden;
-    line-height: 1.5;
+    line-height: 18px;
     background: @component-background;
     border-radius: @border-radius-base;
     box-shadow: @shadow-2;
@@ -49,27 +49,10 @@
       color: @heading-color;
       font-size: @font-size-lg;
       line-height: 24px;
-
-      // https://github.com/ant-design/ant-design/issues/5846#issuecomment-296244140
-      &-single-line-auto-margin {
-        display: block;
-        width: ~'calc(@{notification-width} - @{notification-padding-horizontal} * 2 - 24px - 48px - 100%)';
-        max-width: 4px;
-        background-color: transparent;
-        pointer-events: none;
-        &::before {
-          display: block;
-          content: '';
-        }
-      }
     }
 
     &-description {
       font-size: @font-size-base;
-    }
-
-    &-closable &-message {
-      padding-right: 24px;
     }
 
     &-with-icon &-message {
@@ -91,6 +74,7 @@
       margin-left: 4px;
       font-size: 24px;
       line-height: 24px;
+      top: 12px;
     }
 
     .@{iconfont-css-prefix}&-icon {
@@ -220,10 +204,12 @@
   .@{notification-prefix-cls}-notice {
     &-message,
     &-description {
-      width: calc(100% - 24px);
+      width: calc(100% - 48px);
       color: var(--notifications-foreground);
       font-size: 12px;
-      margin-left: 22px;
+      margin-left: 24px;
+      margin-right: 24px;
+      margin-bottom: 0;
       line-height: 20px;
 
       // Hacking markdown style
@@ -237,8 +223,13 @@
 
       p,
       pre {
-        margin-bottom: 5px;
+        margin-bottom: 0;
       }
+    }
+
+    &-description {
+      margin-top: 4px;
+      margin-bottom: 4px;
     }
 
     &-close {
