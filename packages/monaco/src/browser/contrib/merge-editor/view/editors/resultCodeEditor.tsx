@@ -113,13 +113,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
             const { [EditorViewType.CURRENT]: nextLeftRanges, [EditorViewType.INCOMING]: nextRightRanges } =
               this.mappingManagerService.findNextLineRanges(toLineRange);
 
-            const leftRange = touchLeftRanges || nextLeftRanges;
-            const rightRange = touchRightRanges || nextRightRanges;
-
             if (includeLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
-            } else if (leftRange) {
-              const reverse = this.documentMappingTurnLeft.reverse(leftRange);
+            } else if (touchLeftRanges && !toLineRange.isAfter(touchLeftRanges)) {
+              this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchLeftRanges, offset);
+            } else if (nextLeftRanges) {
+              const reverse = this.documentMappingTurnLeft.reverse(nextLeftRanges);
               if (reverse) {
                 this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
               }
@@ -127,8 +126,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
             if (includeRightRange) {
               this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
-            } else if (rightRange) {
-              const reverse = this.documentMappingTurnRight.reverse(rightRange);
+            } else if (touchRightRanges && !toLineRange.isAfter(touchRightRanges)) {
+              this.documentMappingTurnRight.deltaEndAdjacentQueue(touchRightRanges, offset);
+            } else if (nextRightRanges) {
+              const reverse = this.documentMappingTurnRight.reverse(nextRightRanges);
               if (reverse) {
                 this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
               }
