@@ -23,10 +23,7 @@ export interface IDiffDecoration {
 @Injectable({ multiple: false })
 export class MergeEditorDecorations extends Disposable {
   private deltaDecoration: IDiffDecoration[] = [];
-  private retainDecoration: IDiffDecoration[] = [];
-
   private lineWidgetSet: Set<GuidelineWidget> = new Set();
-  private retainLineWidgetSet: Set<GuidelineWidget> = new Set();
 
   private readonly _onDidChangeLineWidget = new Emitter<void>();
   private readonly onDidChangeLineWidget: Event<void> = this._onDidChangeLineWidget.event;
@@ -141,11 +138,7 @@ export class MergeEditorDecorations extends Disposable {
 
   private setDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     this.editor.changeDecorations((accessor: IModelDecorationsChangeAccessor) => {
-      const newDecorations: IDiffDecoration[] = this.retainDecoration;
-      this.retainLineWidgetSet.forEach((widget) => {
-        widget.showByLine(widget.getRecordLine());
-        this.lineWidgetSet.add(widget);
-      });
+      const newDecorations: IDiffDecoration[] = [];
 
       for (const range of ranges) {
         if (range.isEmpty) {
@@ -206,20 +199,6 @@ export class MergeEditorDecorations extends Disposable {
     return Array.from(this.lineWidgetSet.keys());
   }
 
-  public setRetainDecoration(retain: IDiffDecoration[] = []): this {
-    this.retainDecoration = retain;
-    return this;
-  }
-
-  public setRetainLineWidget(retain: GuidelineWidget[] = []): this {
-    this.cleanUpLineWidget(this.retainLineWidgetSet);
-
-    retain.forEach((r) => {
-      this.retainLineWidgetSet.add(r);
-    });
-    return this;
-  }
-
   public render(ranges: LineRange[], innerChanges: InnerRange[][]): void {
     this.setDecorations(ranges, innerChanges);
   }
@@ -228,6 +207,5 @@ export class MergeEditorDecorations extends Disposable {
     super.dispose();
 
     this.lineWidgetSet.forEach((w) => w.dispose());
-    this.retainLineWidgetSet.forEach((w) => w.dispose());
   }
 }

@@ -2,7 +2,6 @@ import { Injectable } from '@opensumi/di';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
@@ -16,8 +15,6 @@ import {
   TActionsType,
   IActionsDescription,
 } from '../../types';
-import { flatInnerModified, flatModified } from '../../utils';
-import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -29,14 +26,6 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
   protected getMonacoEditorOptions(): IStandaloneEditorConstructionOptions {
     return { readOnly: true, lineDecorationsWidth: 42 };
-  }
-
-  protected getRetainDecoration(): IDiffDecoration[] {
-    return [];
-  }
-
-  protected getRetainLineWidget(): GuidelineWidget[] {
-    return [];
   }
 
   private provideActionsItems(): IActionsDescription[] {
@@ -76,22 +65,14 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return EditorViewType.INCOMING;
   }
 
-  public updateDecorations(): void {
-    const [range] = [this.documentMapping.getModifiedRange()];
-    this.decorations
-      .setRetainDecoration(this.getRetainDecoration())
-      .setRetainLineWidget(this.getRetainLineWidget())
-      .updateDecorations(range, []);
-
+  public override updateDecorations(): void {
+    super.updateDecorations();
     this.conflictActions.updateActions(this.provideActionsItems());
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
-
-    const [ranges, innerRanges] = [flatModified(changes), flatInnerModified(changes)];
-    this.renderDecorations(ranges, innerRanges);
-
+    this.updateDecorations();
     this.registerActionsProvider({
       provideActionsItems: this.provideActionsItems,
       onActionsClick: (range: LineRange, actionType: TActionsType) => {

@@ -43,6 +43,9 @@ export class DocumentMapping extends Disposable {
     );
   }
 
+  /**
+   * 取对位的 range
+   */
   public reverse(range: LineRange): LineRange | undefined {
     const entries = this.adjacentComputeRangeMap.entries();
     for (const pack of entries) {
@@ -58,13 +61,11 @@ export class DocumentMapping extends Disposable {
 
     if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {
       modifiedRange.forEach((range, idx) => {
-        this.computeRangeMap.set(range.id, range);
-        this.adjacentComputeRangeMap.set(range.id, originalRange[idx]);
+        this.addRange(range, originalRange[idx]);
       });
     } else if (this.diffRangeTurn === EDiffRangeTurn.ORIGIN) {
       originalRange.forEach((range, idx) => {
-        this.computeRangeMap.set(range.id, range);
-        this.adjacentComputeRangeMap.set(range.id, modifiedRange[idx]);
+        this.addRange(range, modifiedRange[idx]);
       });
     }
   }
@@ -100,6 +101,16 @@ export class DocumentMapping extends Disposable {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
+  }
+
+  public deleteRange(range: LineRange): void {
+    this.computeRangeMap.delete(range.id);
+    this.adjacentComputeRangeMap.delete(range.id);
+  }
+
+  public addRange(newRange: LineRange, adjacentRange: LineRange): void {
+    this.computeRangeMap.set(newRange.id, newRange);
+    this.adjacentComputeRangeMap.set(newRange.id, adjacentRange);
   }
 
   /**

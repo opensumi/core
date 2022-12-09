@@ -99,6 +99,22 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.startLineNumber === range.startLineNumber && this.length === range.length;
   }
 
+  public merge(other: LineRange): LineRange {
+    return this.retainState(
+      new LineRange(
+        Math.min(this.startLineNumber, other.startLineNumber),
+        Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive),
+      ),
+    );
+  }
+
+  // 生一个除 id 以外，state 状态都相同的 lineRange
+  public born(): LineRange {
+    const child = LineRange.fromPositions(this.startLineNumber, this.endLineNumberExclusive);
+    const preId = child.id;
+    return this.retainState(child).setId(preId);
+  }
+
   public toRange(startColumn = 0, endColumn: number = Number.MAX_SAFE_INTEGER): IRange {
     if (this.isEmpty) {
       return InnerRange.fromPositions({ lineNumber: this.startLineNumber, column: startColumn }).setType(this._type);
