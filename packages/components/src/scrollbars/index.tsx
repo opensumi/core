@@ -18,6 +18,10 @@ export interface ICustomScrollbarProps {
    * 这种模式下，左右滚动和上下滚动都会被视为左右滚动
    */
   tabBarMode?: boolean;
+  /**
+   * 滚动条滑块大小，默认 5px
+   */
+  thumbSize?: number;
 }
 
 export const Scrollbars = ({
@@ -29,6 +33,7 @@ export const Scrollbars = ({
   className,
   onReachBottom,
   tabBarMode,
+  thumbSize = 5,
 }: ICustomScrollbarProps) => {
   const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
   const scrollerRef = useRef<HTMLDivElement>();
@@ -113,16 +118,16 @@ export const Scrollbars = ({
       onUpdate={handleUpdate}
       onScroll={onScroll}
       renderTrackHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style, left: 0, right: 0, bottom: 0 }} />
+        <div {...props} style={{ ...style, height: thumbSize, left: 0, right: 0, bottom: 0 }} />
       )}
       renderTrackVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, top: 0, right: 0, bottom: 0 }} />
+        <div {...props} style={{ ...style, width: thumbSize, top: 0, right: 0, bottom: 0 }} />
       )}
       renderThumbVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style }} className={'scrollbar-thumb-vertical'} />
+        <div {...props} style={{ ...style, width: thumbSize }} className={'scrollbar-thumb-vertical'} />
       )}
       renderThumbHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style }} className={'scrollbar-thumb-horizontal'} />
+        <div {...props} style={{ ...style, height: thumbSize }} className={'scrollbar-thumb-horizontal'} />
       )}
     >
       <div
@@ -142,4 +147,6 @@ export const Scrollbars = ({
   );
 };
 
-export const ScrollbarsVirtualList = React.forwardRef((props, ref) => <Scrollbars {...props} forwardedRef={ref} />);
+export const ScrollbarsVirtualList = React.forwardRef((props, ref) => (
+  <Scrollbars {...props} thumbSize={6} forwardedRef={ref} />
+));
