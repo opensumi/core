@@ -182,7 +182,6 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
     } else if (model.treeModel) {
       return (
         <RecycleTree
-          width={398}
           height={300}
           itemHeight={FILE_TREE_DIALOG_HEIGHT}
           onReady={handleTreeReady}
@@ -216,7 +215,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
         <div className={styles.file_dialog_content} ref={wrapperRef}>
           {renderDialogTree()}
         </div>
-        <div className={styles.buttonWrap}>
+        <div className={styles.file_dialog_buttons}>
           <Button onClick={() => close()} type='secondary' className={styles.button}>
             {localize('dialog.file.close')}
           </Button>
@@ -246,7 +245,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
             ></Input>
           </div>
         )}
-        <div className={styles.buttonWrap}>
+        <div className={styles.file_dialog_buttons}>
           <Button onClick={() => close()} type='secondary' className={styles.button}>
             {localize('dialog.file.close')}
           </Button>

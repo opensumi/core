@@ -11,13 +11,11 @@ import {
   FILE_COMMANDS,
   PreferenceService,
   Deferred,
-  Event,
   Emitter,
-  IApplicationService,
   ILogger,
   path,
-  Throttler,
   pSeries,
+  CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -57,7 +55,6 @@ export interface ISortNode {
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
   private static DEFAULT_REFRESH_DELAY = 100;
-  private static DEFAULT_FILE_EVENT_REFRESH_DELAY = 100;
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
@@ -89,9 +86,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
   @Autowired(IIconService)
   public readonly iconService: IIconService;
 
-  @Autowired(IApplicationService)
-  private readonly appService: IApplicationService;
-
   @Autowired(ILogger)
   private readonly logger: ILogger;
 
@@ -116,20 +110,28 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private willRefreshDeferred: Deferred<void> | null;
 
-  private requestFlushEventSignalEmitter: Emitter<void> = new Emitter();
-
   private effectedNodes: Directory[] = [];
-  private refreshThrottler: Throttler = new Throttler();
-  private fileEventRefreshResolver;
 
   private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
   private readonly onTreeIndentChangeEmitter = new Emitter<ITreeIndent>();
   private readonly onFilterModeChangeEmitter = new Emitter<boolean>();
+  private readonly onNodeRefreshedEmitter = new Emitter<void>();
 
   // 筛选模式开关
   private _filterMode = false;
   private _baseIndent: number;
   private _indent: number;
+  private _refreshable = true;
+
+  private refreshCancelToken: CancellationTokenSource;
+
+  get onNodeRefreshed() {
+    return this.onNodeRefreshedEmitter.event;
+  }
+
+  get refreshable() {
+    return this._refreshable;
+  }
 
   get filterMode() {
     return this._filterMode;
@@ -157,10 +159,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   get willRefreshPromise() {
     return this.willRefreshDeferred?.promise;
-  }
-
-  get requestFlushEventSignalEvent(): Event<void> {
-    return this.requestFlushEventSignalEmitter.event;
   }
 
   get isCompactMode(): boolean {
@@ -361,6 +359,19 @@ export class FileTreeService extends Tree implements IFileTreeService {
     this._fileServiceWatchers.set(uri.toString(), watcher);
   }
 
+  public updateRefreshable(enable: boolean) {
+    if (enable === this.refreshable) {
+      return;
+    }
+    this._refreshable = enable;
+    if (this._refreshable) {
+      // 切换到可刷新状态时，处理遗留的文件树刷新事件
+      this.doHandleQueueChange();
+    } else {
+      this.refreshCancelToken?.cancel();
+    }
+  }
+
   private isContentFile(node: any | undefined) {
     return !!node && 'filestat' in node && !node.filestat.isDirectory;
   }
@@ -399,15 +410,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     } else if (!(nodes.length > 0) && this.isRootAffected(changes)) {
       this.effectedNodes.push(this.root as Directory);
     }
-    // 文件事件引起的刷新进行队列化处理，每 200 ms 处理一次刷新任务
-    return this.refreshThrottler.queue(this.doDelayRefresh.bind(this));
-  }
-
-  private async doDelayRefresh() {
-    return new Promise<void>((resolve) => {
-      this.fileEventRefreshResolver = resolve;
-      setTimeout(this.refreshEffectNode, FileTreeService.DEFAULT_FILE_EVENT_REFRESH_DELAY);
-    });
+    return this.refreshEffectNode();
   }
 
   private refreshEffectNode = () => {
@@ -422,9 +425,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
         this.refresh(node);
       }
     }
-    if (this.fileEventRefreshResolver) {
-      this.fileEventRefreshResolver();
-    }
   };
 
   public async getFileTreeNodePathByUri(uri: URI) {
@@ -438,7 +438,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
       if (rootStr) {
         const rootUri = new URI(rootStr);
         if (rootUri.isEqualOrParent(uri)) {
-          return new Path(this.root?.path || '').join(rootUri.relative(uri)!.toString()).toString();
+          return new Path(this.root?.path || '').join(rootUri.relative(uri)?.toString() || '').toString();
         }
       }
     } else {
@@ -452,7 +452,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
           // 多工作区模式下，路径需要拼接项目名称
           return new Path(this.root?.path || '/')
             .join(rootUri.displayName)
-            .join(rootUri.relative(uri)!.toString())
+            .join(rootUri.relative(uri)?.toString() || '')
             .toString();
         }
       }
@@ -693,9 +693,10 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private doHandleQueueChange = throttle(
     async () => {
+      if (!this.refreshable) {
+        return;
+      }
       try {
-        // 询问是否此时可进行刷新事件
-        await this.requestFlushEventSignalEmitter.fireAndAwait();
         await this.flushEventQueue();
       } catch (error) {
         this.logger.error('flush file change event queue error:', error);
@@ -757,10 +758,13 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const queue = Array.from(this._changeEventDispatchQueue);
 
     const effectedRoots = this.sortPaths(queue);
+    if (!this.refreshCancelToken || this.refreshCancelToken.token.isCancellationRequested) {
+      this.refreshCancelToken = new CancellationTokenSource();
+    }
     const promise = pSeries(
       effectedRoots.map((root) => async () => {
         if (Directory.is(root.node)) {
-          await (root.node as Directory).refresh();
+          await (root.node as Directory).refresh(this.refreshCancelToken);
         }
       }),
     );
