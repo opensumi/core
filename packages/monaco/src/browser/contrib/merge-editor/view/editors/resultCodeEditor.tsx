@@ -197,106 +197,96 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return Array.from(result.values());
   }
 
-  protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
-    const diffRanges: LineRange[] = this.getAllDiffRanges().sort((a, b) => a.startLineNumber - b.startLineNumber);
-    const innerChangesResult: InnerRange[][] = [];
-
-    const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
-
-    for (const { rawRanges, mergeRange } of maybeNeedMergeRanges) {
-      let reverseLeftRanges: LineRange | undefined;
-      let reverseRightRanges: LineRange | undefined;
-
+  private handleNeedMergeRanges(
+    needMergeRanges: {
+      rawRanges: LineRange[];
+      mergeRange: LineRange;
+    }[],
+  ): void {
+    for (const { rawRanges, mergeRange } of needMergeRanges) {
       // 需要合并的 range 一定多于两个
       const length = rawRanges.length;
       if (length <= 1) {
         continue;
       }
 
-      // 计算第二个和倒数第二个的高度
+      /**
+       * 取第二个 range 和倒数第二个 range，来对齐最终要合并的 range 的高度
+       * 举个例子:
+       * 比如有三个 lineRange，位置分别是
+       *  1. { startLine: 10，endLine: 20 } // 方向向右
+       *  2. { startLine: 20，endLine: 30 } // 方向向左
+       *  3. { startLine: 30，endLine: 40 } // 方向向右
+       *
+       * 首先这三者的 turn directio 方向一定是左右交替的
+       * 那么第二个 lineRange 的对位关系 sameLineRange 的起点 startLine 就一定会比第一个 lineRange 的起点 startLine 少一个高度
+       * 这个高度的差距会影响后续所有的 conflict action 操作（因为缺失的这部分高度会导致 accept 操作后的代码内容丢失）
+       *
+       * 而我们只需要补齐这第二个和倒数第二个的高度即可，中间部分的所有 lineRange 都会在最终合并到一起
+       */
       const secondRange = rawRanges[1];
       const secondLastRange = rawRanges[length - 2];
 
+      let mergeRangeTurnLeft: LineRange | undefined;
+      let mergeRangeTurnRight: LineRange | undefined;
+
       for (const range of rawRanges) {
-        // const mapping = range.turnDirection === EditorViewType.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight
+        const mapping =
+          range.turnDirection === EditorViewType.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
+        let reverse = mapping.reverse(range);
+        if (!reverse) {
+          continue;
+        }
+
+        if (range.id === secondRange.id) {
+          reverse = reverse.deltaStart(-rawRanges[0].length);
+        }
+
+        if (range.id === secondLastRange.id) {
+          reverse = reverse.deltaEnd(rawRanges[length - 1].length);
+        }
 
         if (range.turnDirection === EditorViewType.CURRENT) {
-          let reverse = this.documentMappingTurnLeft.reverse(range);
-          if (!reverse) {
-            continue;
-          }
-
-          if (range.id === secondRange.id) {
-            const calcMargin = rawRanges[0].startLineNumber - secondRange.startLineNumber;
-            reverse = reverse.deltaStart(calcMargin);
-          }
-
-          if (range.id === secondLastRange.id) {
-            const calcMargin = rawRanges[length - 1].startLineNumber - secondLastRange.startLineNumber;
-            reverse = reverse.deltaEnd(calcMargin);
-          }
-
-          if (!reverseLeftRanges) {
-            reverseLeftRanges = reverse;
+          if (!mergeRangeTurnLeft) {
+            mergeRangeTurnLeft = reverse;
           } else {
-            reverseLeftRanges = reverseLeftRanges.merge(reverse);
+            mergeRangeTurnLeft = mergeRangeTurnLeft.merge(reverse);
           }
-
-          this.documentMappingTurnLeft.computeRangeMap.delete(reverse.id);
-          this.documentMappingTurnLeft.adjacentComputeRangeMap.delete(reverse.id);
         } else if (range.turnDirection === EditorViewType.INCOMING) {
-          let reverse = this.documentMappingTurnRight.reverse(range);
-          if (!reverse) {
-            continue;
-          }
-
-          if (range.id === secondRange.id) {
-            const calcMargin = rawRanges[0].startLineNumber - secondRange.startLineNumber;
-            reverse = reverse.deltaStart(calcMargin);
-          }
-
-          if (range.id === secondLastRange.id) {
-            const calcMargin = rawRanges[length - 1].startLineNumber - secondLastRange.startLineNumber;
-            reverse = reverse.deltaEnd(calcMargin);
-          }
-
-          if (!reverseRightRanges) {
-            reverseRightRanges = reverse;
+          if (!mergeRangeTurnRight) {
+            mergeRangeTurnRight = reverse;
           } else {
-            reverseRightRanges = reverseRightRanges.merge(reverse);
+            mergeRangeTurnRight = mergeRangeTurnRight.merge(reverse);
           }
-
-          this.documentMappingTurnRight.computeRangeMap.delete(reverse.id);
-          this.documentMappingTurnRight.adjacentComputeRangeMap.delete(reverse.id);
         }
+
+        mapping.deleteRange(reverse);
       }
 
-      if (reverseLeftRanges) {
-        const newLineRange = LineRange.fromPositions(
-          reverseLeftRanges.startLineNumber,
-          reverseLeftRanges.endLineNumberExclusive,
-        )
-          .setType(reverseLeftRanges.type)
-          .setTurnDirection(reverseLeftRanges.turnDirection)
-          .setComplete(reverseLeftRanges.isComplete);
-        this.documentMappingTurnLeft.computeRangeMap.set(newLineRange.id, newLineRange);
-        this.documentMappingTurnLeft.adjacentComputeRangeMap.set(newLineRange.id, mergeRange);
+      if (mergeRangeTurnLeft) {
+        const newLineRange = mergeRangeTurnLeft.born();
+        this.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
       }
 
-      if (reverseRightRanges) {
-        const newLineRange = LineRange.fromPositions(
-          reverseRightRanges.startLineNumber,
-          reverseRightRanges.endLineNumberExclusive,
-        )
-          .setType(reverseRightRanges.type)
-          .setTurnDirection(reverseRightRanges.turnDirection)
-          .setComplete(reverseRightRanges.isComplete);
-        this.documentMappingTurnRight.computeRangeMap.set(newLineRange.id, newLineRange);
-        this.documentMappingTurnRight.adjacentComputeRangeMap.set(newLineRange.id, mergeRange);
+      if (mergeRangeTurnRight) {
+        const newLineRange = mergeRangeTurnRight.born();
+        this.documentMappingTurnRight.addRange(newLineRange, mergeRange);
       }
     }
+  }
 
-    const changesResult: LineRange[] = this.getAllDiffRanges();
+  protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
+    const diffRanges: LineRange[] = this.getAllDiffRanges().sort((a, b) => a.startLineNumber - b.startLineNumber);
+    const innerChangesResult: InnerRange[][] = [];
+
+    const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
+    this.handleNeedMergeRanges(maybeNeedMergeRanges);
+
+    /**
+     * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
+     * 则需要重新获取一次
+     */
+    const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
     return [changesResult, innerChangesResult];
   }
 
