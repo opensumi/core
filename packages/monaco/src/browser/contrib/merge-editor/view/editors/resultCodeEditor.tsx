@@ -3,7 +3,6 @@ import { Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
@@ -11,7 +10,6 @@ import { LineRangeMapping } from '../../model/line-range-mapping';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
   EditorViewType,
-  LineRangeType,
   DECORATIONS_CLASSNAME,
   TActionsType,
   ADDRESSING_TAG_CLASSNAME,
@@ -21,8 +19,6 @@ import {
   REVOKE_ACTIONS,
   ITimeMachineMetaData,
 } from '../../types';
-import { flatInnerModified, flatModified, flatOriginal, flatInnerOriginal } from '../../utils';
-import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -36,7 +32,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private timeMachineDocument: TimeMachineDocument;
-  private currentTurnType: EDiffRangeTurn;
 
   /** @deprecated */
   public documentMapping: DocumentMapping;
@@ -157,70 +152,142 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }));
   }
 
-  protected override prepareRenderDecorations(
-    ranges: LineRange[],
-    innerChanges: InnerRange[][],
-  ): [LineRange[], InnerRange[][]] {
-    const toBeRanges: LineRange[] =
-      this.currentTurnType === EDiffRangeTurn.MODIFIED
-        ? this.documentMappingTurnLeft.getOriginalRange()
-        : this.documentMappingTurnRight.getModifiedRange();
+  /**
+   * 提取需要合并的 diff range 区域列表
+   */
+  private distillNeedMergeRanges(diffRanges: LineRange[]): {
+    rawRanges: LineRange[];
+    mergeRange: LineRange;
+  }[] {
+    const result: Map<number, { rawRanges: LineRange[]; mergeRange: LineRange }> = new Map();
+    const length = diffRanges.length;
+    let slow = 0;
+    let mergeRange: LineRange | undefined;
 
-    const changesResult: LineRange[] = [];
-    const innerChangesResult: InnerRange[][] = [];
+    /** Two Pointers 算法 */
+    for (let fast = 0; fast < length; fast++) {
+      const slowRange = diffRanges[slow];
+      const fastRange = diffRanges[fast];
 
-    ranges.forEach((range, idx) => {
-      const sameInner = innerChanges[idx];
-      const sameRange = toBeRanges[idx];
-      const _exec = (type: LineRangeType) => {
-        const direction =
-          this.currentTurnType === EDiffRangeTurn.ORIGIN ? EditorViewType.INCOMING : EditorViewType.CURRENT;
-        changesResult.push(range.setType(type).setTurnDirection(direction));
-        innerChangesResult.push(sameInner.map((i) => i.setType(type).setTurnDirection(direction)));
-        const entries = this.documentMappingTurnLeft.adjacentComputeRangeMap.entries();
-        for (const [key, value] of entries) {
-          if (sameRange.id === key) {
-            this.documentMappingTurnLeft.adjacentComputeRangeMap.set(
-              key,
-              value.setType(type).setTurnDirection(direction),
-            );
+      if (slowRange.id === fastRange.id) {
+        continue;
+      }
+
+      // 说明上一次循环已经找到有接触的 range，则以该 mergeRange 作为是否 touch 的比较
+      if (mergeRange) {
+        if (mergeRange.isTouches(fastRange)) {
+          mergeRange = mergeRange.merge(fastRange);
+          result.set(slow, { rawRanges: (result.get(slow)?.rawRanges || []).concat(fastRange), mergeRange });
+          continue;
+        } else {
+          // 重置
+          mergeRange = undefined;
+          slow = fast;
+        }
+      } else if (slowRange.isTouches(fastRange)) {
+        // 如果 range 有接触，则需要合并在一起，同时 slow 指针位置不变
+        mergeRange = slowRange.merge(fastRange);
+        result.set(slow, { rawRanges: [slowRange, fastRange], mergeRange });
+        continue;
+      }
+
+      slow += 1;
+    }
+
+    return Array.from(result.values());
+  }
+
+  private handleNeedMergeRanges(
+    needMergeRanges: {
+      rawRanges: LineRange[];
+      mergeRange: LineRange;
+    }[],
+  ): void {
+    for (const { rawRanges, mergeRange } of needMergeRanges) {
+      // 需要合并的 range 一定多于两个
+      const length = rawRanges.length;
+      if (length <= 1) {
+        continue;
+      }
+
+      /**
+       * 取第二个 range 和倒数第二个 range，来对齐最终要合并的 range 的高度
+       * 举个例子:
+       * 比如有三个 lineRange，位置分别是
+       *  1. { startLine: 10，endLine: 20 } // 方向向右
+       *  2. { startLine: 20，endLine: 30 } // 方向向左
+       *  3. { startLine: 30，endLine: 40 } // 方向向右
+       *
+       * 首先这三者的 turn directio 方向一定是左右交替的
+       * 那么第二个 lineRange 的对位关系 sameLineRange 的起点 startLine 就一定会比第一个 lineRange 的起点 startLine 少一个高度
+       * 这个高度的差距会影响后续所有的 conflict action 操作（因为缺失的这部分高度会导致 accept 操作后的代码内容丢失）
+       *
+       * 而我们只需要补齐这第二个和倒数第二个的高度即可，中间部分的所有 lineRange 都会在最终合并到一起
+       */
+      const secondRange = rawRanges[1];
+      const secondLastRange = rawRanges[length - 2];
+
+      let mergeRangeTurnLeft: LineRange | undefined;
+      let mergeRangeTurnRight: LineRange | undefined;
+
+      for (const range of rawRanges) {
+        const mapping =
+          range.turnDirection === EditorViewType.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
+        let reverse = mapping.reverse(range);
+        if (!reverse) {
+          continue;
+        }
+
+        if (range.id === secondRange.id) {
+          reverse = reverse.deltaStart(-rawRanges[0].length);
+        }
+
+        if (range.id === secondLastRange.id) {
+          reverse = reverse.deltaEnd(rawRanges[length - 1].length);
+        }
+
+        if (range.turnDirection === EditorViewType.CURRENT) {
+          if (!mergeRangeTurnLeft) {
+            mergeRangeTurnLeft = reverse;
+          } else {
+            mergeRangeTurnLeft = mergeRangeTurnLeft.merge(reverse);
+          }
+        } else if (range.turnDirection === EditorViewType.INCOMING) {
+          if (!mergeRangeTurnRight) {
+            mergeRangeTurnRight = reverse;
+          } else {
+            mergeRangeTurnRight = mergeRangeTurnRight.merge(reverse);
           }
         }
-      };
 
-      _exec(range.isTendencyLeft(sameRange) ? 'remove' : range.isTendencyRight(sameRange) ? 'insert' : 'modify');
-    });
+        mapping.deleteRange(reverse);
+      }
+
+      if (mergeRangeTurnLeft) {
+        const newLineRange = mergeRangeTurnLeft.born();
+        this.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
+      }
+
+      if (mergeRangeTurnRight) {
+        const newLineRange = mergeRangeTurnRight.born();
+        this.documentMappingTurnRight.addRange(newLineRange, mergeRange);
+      }
+    }
+  }
+
+  protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
+    const diffRanges: LineRange[] = this.getAllDiffRanges().sort((a, b) => a.startLineNumber - b.startLineNumber);
+    const innerChangesResult: InnerRange[][] = [];
+
+    const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
+    this.handleNeedMergeRanges(maybeNeedMergeRanges);
+
+    /**
+     * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
+     * 则需要重新获取一次
+     */
+    const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
     return [changesResult, innerChangesResult];
-  }
-
-  protected getRetainDecoration(): IDiffDecoration[] {
-    if (this.currentTurnType === EDiffRangeTurn.MODIFIED) {
-      return [];
-    }
-
-    const values = this.documentMappingTurnLeft.getModifiedRange();
-    const retain: IDiffDecoration[] = [];
-    for (const range of values) {
-      if (!range.isEmpty) {
-        retain.push(...this.decorations.createLineDecoration(range));
-      }
-    }
-    return retain;
-  }
-
-  protected getRetainLineWidget(): GuidelineWidget[] {
-    if (this.currentTurnType === EDiffRangeTurn.MODIFIED) {
-      return [];
-    }
-
-    const values = this.documentMappingTurnLeft.getModifiedRange();
-    const retain: GuidelineWidget[] = [];
-    for (const range of values) {
-      if (range.isEmpty) {
-        retain.push(this.decorations.createGuideLineWidget(range));
-      }
-    }
-    return retain;
   }
 
   public getMonacoDecorationOptions(
@@ -246,16 +313,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return EditorViewType.RESULT;
   }
 
-  public updateDecorations(): void {
-    const toBeRanges: LineRange[] =
-      this.currentTurnType === EDiffRangeTurn.MODIFIED
-        ? this.documentMappingTurnLeft.getModifiedRange()
-        : this.documentMappingTurnRight.getOriginalRange();
-    this.decorations
-      .setRetainDecoration(this.getRetainDecoration())
-      .setRetainLineWidget(this.getRetainLineWidget())
-      .updateDecorations(toBeRanges, []);
-
+  public override updateDecorations(): void {
+    super.updateDecorations();
     // 每次 update decoration 时也需要更新 conflict actions 操作
     this.conflictActions.updateActions(this.provideActionsItems(this.getAllDiffRanges()));
   }
@@ -265,17 +324,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[], turnType: EDiffRangeTurn): void {
-    this.currentTurnType = turnType;
-
     if (turnType === EDiffRangeTurn.MODIFIED) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
-      this.renderDecorations(flatModified(changes), flatInnerModified(changes));
     } else if (turnType === EDiffRangeTurn.ORIGIN) {
       this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
-      this.renderDecorations(flatOriginal(changes), flatInnerOriginal(changes));
     }
 
     if (turnType === EDiffRangeTurn.ORIGIN) {
+      this.updateDecorations();
       const diffRanges = this.getAllDiffRanges();
 
       this.registerActionsProvider({

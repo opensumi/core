@@ -8,7 +8,7 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 
 import { MappingManagerService } from '../../mapping-manager.service';
 import { ConflictActions } from '../../model/conflict-actions';
-import { IDiffDecoration, MergeEditorDecorations } from '../../model/decorations';
+import { MergeEditorDecorations } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
@@ -22,7 +22,6 @@ import {
   IConflictActionsEvent,
   LineRangeType,
 } from '../../types';
-import { GuidelineWidget } from '../guideline-widget';
 
 export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEditor {
   #actionsProvider: IActionsProvider | undefined;
@@ -122,58 +121,44 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
 
   protected abstract getMonacoEditorOptions(): IStandaloneEditorConstructionOptions;
 
-  public abstract updateDecorations(): void;
   public launchChange(): void {
     this.decorations.launchChange();
   }
 
   /**
-   * 每次重新绘制之前要保留哪些 decoration
-   */
-  protected abstract getRetainDecoration(): IDiffDecoration[];
-
-  /**
-   * 每次重新绘制之前要保留哪些 line widget
-   */
-  protected abstract getRetainLineWidget(): GuidelineWidget[];
-
-  /**
    * 在绘制前，计算当前 range 和 innerChanges 是什么类型，如 insert、modify 亦或是 remove
    * @param withBase: 0: origin，1: modify
    */
-  protected prepareRenderDecorations(
-    ranges: LineRange[],
-    innerChanges: InnerRange[][],
-    withBase: 0 | 1 = 0,
-  ): [LineRange[], InnerRange[][]] {
-    const toBeRanges =
-      withBase === 0 ? this.documentMapping.getOriginalRange() : this.documentMapping.getModifiedRange();
+  protected prepareRenderDecorations(withBase: 0 | 1 = 0): [LineRange[], InnerRange[][]] {
+    const [turnLeft, turnRight] =
+      withBase === 0
+        ? [this.documentMapping.getModifiedRange(), this.documentMapping.getOriginalRange()]
+        : [this.documentMapping.getOriginalRange(), this.documentMapping.getModifiedRange()];
 
     const changesResult: LineRange[] = [];
     const innerChangesResult: InnerRange[][] = [];
 
-    ranges.forEach((range, idx) => {
-      const sameInner = innerChanges[idx];
-      const sameRange = toBeRanges[idx];
+    turnLeft.forEach((range, idx) => {
+      const sameRange = turnRight[idx];
       const _exec = (type: LineRangeType) => {
         const direction = withBase === 1 ? EditorViewType.CURRENT : EditorViewType.INCOMING;
+        // 同时将 sameRange 赋予一样的状态
+        sameRange.setType(type).setTurnDirection(direction);
         changesResult.push(range.setType(type).setTurnDirection(direction));
-        innerChangesResult.push(sameInner.map((i) => i.setType(type).setTurnDirection(direction)));
+        // inner range 先不计算
       };
 
-      _exec(range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify');
+      if (sameRange) {
+        _exec(range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify');
+      }
     });
 
     return [changesResult, innerChangesResult];
   }
 
-  protected renderDecorations(ranges: LineRange[], innerChanges: InnerRange[][]): void {
-    const [r, i] = this.prepareRenderDecorations(ranges, innerChanges);
-    this.decorations
-      .setRetainDecoration(this.getRetainDecoration())
-      .setRetainLineWidget(this.getRetainLineWidget())
-      .clearDecorations()
-      .render(r, i);
+  public updateDecorations(): void {
+    const [r, i] = this.prepareRenderDecorations();
+    this.decorations.updateDecorations(r, i);
   }
 
   protected registerActionsProvider(provider: IActionsProvider): void {

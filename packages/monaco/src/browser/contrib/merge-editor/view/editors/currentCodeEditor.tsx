@@ -4,9 +4,7 @@ import { Margin } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/viewP
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
-import { IDiffDecoration } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
-import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
 import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
@@ -19,8 +17,6 @@ import {
   TActionsType,
   IActionsDescription,
 } from '../../types';
-import { flatInnerOriginal, flatOriginal } from '../../utils';
-import { GuidelineWidget } from '../guideline-widget';
 
 import { BaseCodeEditor } from './baseCodeEditor';
 
@@ -34,16 +30,8 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return { readOnly: true, lineNumbersMinChars: 5 };
   }
 
-  protected getRetainDecoration(): IDiffDecoration[] {
-    return [];
-  }
-
-  protected getRetainLineWidget(): GuidelineWidget[] {
-    return [];
-  }
-
-  protected override prepareRenderDecorations(ranges: LineRange[], innerChanges: InnerRange[][]) {
-    return super.prepareRenderDecorations(ranges, innerChanges, 1);
+  protected override prepareRenderDecorations() {
+    return super.prepareRenderDecorations(1);
   }
 
   private provideActionsItems(): IActionsDescription[] {
@@ -85,13 +73,14 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return EditorViewType.CURRENT;
   }
 
+  public override updateDecorations(): void {
+    super.updateDecorations();
+    this.conflictActions.updateActions(this.provideActionsItems());
+  }
+
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
     this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
-
-    const [ranges, innerRanges] = [flatOriginal(changes), flatInnerOriginal(changes)];
-
-    this.renderDecorations(ranges, innerRanges);
-
+    this.updateDecorations();
     this.registerActionsProvider({
       provideActionsItems: this.provideActionsItems,
       mouseDownGuard: (e: IEditorMouseEvent) => {
@@ -125,16 +114,6 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     });
 
     this.layout();
-  }
-
-  public updateDecorations(): void {
-    const [range] = [this.documentMapping.getOriginalRange()];
-    this.decorations
-      .setRetainDecoration(this.getRetainDecoration())
-      .setRetainLineWidget(this.getRetainLineWidget())
-      .updateDecorations(range, []);
-
-    this.conflictActions.updateActions(this.provideActionsItems());
   }
 
   /**
