@@ -1453,16 +1453,6 @@ export class FileTreeModelService {
       promptHandle.onDestroy(handleDestroy);
       promptHandle.onCancel(handleCancel);
     }
-
-    // 如果上一次文件树刷新操作刚好在插件输入框时执行
-    // 会让重命名/新建输入框销毁
-    this.disposableCollection.push(
-      Event.once(this.fileTreeService.onNodeRefreshed)(() => {
-        if (promptHandle && !promptHandle.destroyed) {
-          promptHandle.destroy();
-        }
-      }),
-    );
   };
 
   private async getPromptTarget(uri: URI, isCreatingFile?: boolean) {
