@@ -190,8 +190,8 @@
       display: flex;
       position: relative;
       align-items: center;
-      flex-shrink: 0;
-      flex-grow: 0.5;
+      flex-shrink: 1;
+      flex-grow: 1;
       padding: 0 12px;
       border-right: 1px solid var(--tab-border);
       height: 100%;
@@ -204,6 +204,8 @@
       border-top: 1px solid transparent;
       box-sizing: border-box;
       z-index: 1;
+      word-break: keep-all;
+      white-space: nowrap;
       &::after {
         position: absolute;
         content: '';
