@@ -152,9 +152,151 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }));
   }
 
+  /**
+   * 提取需要合并的 diff range 区域列表
+   */
+  private distillNeedMergeRanges(diffRanges: LineRange[]): {
+    rawRanges: LineRange[];
+    mergeRange: LineRange;
+  }[] {
+    const result: Map<number, { rawRanges: LineRange[]; mergeRange: LineRange }> = new Map();
+    const length = diffRanges.length;
+    let slow = 0;
+    let mergeRange: LineRange | undefined;
+
+    /** Two Pointers 算法 */
+    for (let fast = 0; fast < length; fast++) {
+      const slowRange = diffRanges[slow];
+      const fastRange = diffRanges[fast];
+
+      if (slowRange.id === fastRange.id) {
+        continue;
+      }
+
+      // 说明上一次循环已经找到有接触的 range，则以该 mergeRange 作为是否 touch 的比较
+      if (mergeRange) {
+        if (mergeRange.isTouches(fastRange)) {
+          mergeRange = mergeRange.merge(fastRange);
+          result.set(slow, { rawRanges: (result.get(slow)?.rawRanges || []).concat(fastRange), mergeRange });
+          continue;
+        } else {
+          // 重置
+          mergeRange = undefined;
+          slow = fast;
+        }
+      } else if (slowRange.isTouches(fastRange)) {
+        // 如果 range 有接触，则需要合并在一起，同时 slow 指针位置不变
+        mergeRange = slowRange.merge(fastRange);
+        result.set(slow, { rawRanges: [slowRange, fastRange], mergeRange });
+        continue;
+      }
+
+      slow += 1;
+    }
+
+    return Array.from(result.values());
+  }
+
   protected override prepareRenderDecorations(): [LineRange[], InnerRange[][]] {
-    const changesResult: LineRange[] = this.getAllDiffRanges();
+    const diffRanges: LineRange[] = this.getAllDiffRanges().sort((a, b) => a.startLineNumber - b.startLineNumber);
     const innerChangesResult: InnerRange[][] = [];
+
+    const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
+
+    for (const { rawRanges, mergeRange } of maybeNeedMergeRanges) {
+      let reverseLeftRanges: LineRange | undefined;
+      let reverseRightRanges: LineRange | undefined;
+
+      // 需要合并的 range 一定多于两个
+      const length = rawRanges.length;
+      if (length <= 1) {
+        continue;
+      }
+
+      // 计算第二个和倒数第二个的高度
+      const secondRange = rawRanges[1];
+      const secondLastRange = rawRanges[length - 2];
+
+      for (const range of rawRanges) {
+        // const mapping = range.turnDirection === EditorViewType.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight
+
+        if (range.turnDirection === EditorViewType.CURRENT) {
+          let reverse = this.documentMappingTurnLeft.reverse(range);
+          if (!reverse) {
+            continue;
+          }
+
+          if (range.id === secondRange.id) {
+            const calcMargin = rawRanges[0].startLineNumber - secondRange.startLineNumber;
+            reverse = reverse.deltaStart(calcMargin);
+          }
+
+          if (range.id === secondLastRange.id) {
+            const calcMargin = rawRanges[length - 1].startLineNumber - secondLastRange.startLineNumber;
+            reverse = reverse.deltaEnd(calcMargin);
+          }
+
+          if (!reverseLeftRanges) {
+            reverseLeftRanges = reverse;
+          } else {
+            reverseLeftRanges = reverseLeftRanges.merge(reverse);
+          }
+
+          this.documentMappingTurnLeft.computeRangeMap.delete(reverse.id);
+          this.documentMappingTurnLeft.adjacentComputeRangeMap.delete(reverse.id);
+        } else if (range.turnDirection === EditorViewType.INCOMING) {
+          let reverse = this.documentMappingTurnRight.reverse(range);
+          if (!reverse) {
+            continue;
+          }
+
+          if (range.id === secondRange.id) {
+            const calcMargin = rawRanges[0].startLineNumber - secondRange.startLineNumber;
+            reverse = reverse.deltaStart(calcMargin);
+          }
+
+          if (range.id === secondLastRange.id) {
+            const calcMargin = rawRanges[length - 1].startLineNumber - secondLastRange.startLineNumber;
+            reverse = reverse.deltaEnd(calcMargin);
+          }
+
+          if (!reverseRightRanges) {
+            reverseRightRanges = reverse;
+          } else {
+            reverseRightRanges = reverseRightRanges.merge(reverse);
+          }
+
+          this.documentMappingTurnRight.computeRangeMap.delete(reverse.id);
+          this.documentMappingTurnRight.adjacentComputeRangeMap.delete(reverse.id);
+        }
+      }
+
+      if (reverseLeftRanges) {
+        const newLineRange = LineRange.fromPositions(
+          reverseLeftRanges.startLineNumber,
+          reverseLeftRanges.endLineNumberExclusive,
+        )
+          .setType(reverseLeftRanges.type)
+          .setTurnDirection(reverseLeftRanges.turnDirection)
+          .setComplete(reverseLeftRanges.isComplete);
+        this.documentMappingTurnLeft.computeRangeMap.set(newLineRange.id, newLineRange);
+        this.documentMappingTurnLeft.adjacentComputeRangeMap.set(newLineRange.id, mergeRange);
+      }
+
+      if (reverseRightRanges) {
+        const newLineRange = LineRange.fromPositions(
+          reverseRightRanges.startLineNumber,
+          reverseRightRanges.endLineNumberExclusive,
+        )
+          .setType(reverseRightRanges.type)
+          .setTurnDirection(reverseRightRanges.turnDirection)
+          .setComplete(reverseRightRanges.isComplete);
+        this.documentMappingTurnRight.computeRangeMap.set(newLineRange.id, newLineRange);
+        this.documentMappingTurnRight.adjacentComputeRangeMap.set(newLineRange.id, mergeRange);
+      }
+    }
+
+    const changesResult: LineRange[] = this.getAllDiffRanges();
     return [changesResult, innerChangesResult];
   }
 
