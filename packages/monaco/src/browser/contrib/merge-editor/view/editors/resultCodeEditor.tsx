@@ -18,6 +18,7 @@ import {
   IActionsDescription,
   REVOKE_ACTIONS,
   ITimeMachineMetaData,
+  ETurnDirection,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -143,11 +144,18 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   private provideActionsItems(ranges: LineRange[]): IActionsDescription[] {
     return ranges
-      .filter((r) => r.isComplete)
+      .filter((r) => r.isComplete || r.isMerge)
       .map((range) => ({
         range,
         decorationOptions: {
-          firstLineDecorationClassName: CONFLICT_ACTIONS_ICON.REVOKE + ` ${ADDRESSING_TAG_CLASSNAME}${range.id}`,
+          firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(
+            range.isComplete
+              ? CONFLICT_ACTIONS_ICON.REVOKE
+              : range.isAllowCombination
+              ? CONFLICT_ACTIONS_ICON.WAND
+              : '',
+            `${ADDRESSING_TAG_CLASSNAME}${range.id}`,
+          ),
         },
       }));
   }
@@ -232,27 +240,31 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
       for (const range of rawRanges) {
         const mapping =
-          range.turnDirection === EditorViewType.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
+          range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
         let reverse = mapping.reverse(range);
         if (!reverse) {
           continue;
         }
 
         if (range.id === secondRange.id) {
-          reverse = reverse.deltaStart(-rawRanges[0].length);
+          // start 要补齐的差值不会是正数
+          reverse = reverse.deltaStart(Math.min(0, rawRanges[0].startLineNumber - secondRange.startLineNumber));
         }
 
         if (range.id === secondLastRange.id) {
-          reverse = reverse.deltaEnd(rawRanges[length - 1].length);
+          // end 要补齐的差值不会是负数
+          reverse = reverse.deltaEnd(
+            Math.max(0, rawRanges[length - 1].endLineNumberExclusive - secondLastRange.endLineNumberExclusive),
+          );
         }
 
-        if (range.turnDirection === EditorViewType.CURRENT) {
+        if (range.turnDirection === ETurnDirection.CURRENT) {
           if (!mergeRangeTurnLeft) {
             mergeRangeTurnLeft = reverse;
           } else {
             mergeRangeTurnLeft = mergeRangeTurnLeft.merge(reverse);
           }
-        } else if (range.turnDirection === EditorViewType.INCOMING) {
+        } else if (range.turnDirection === ETurnDirection.INCOMING) {
           if (!mergeRangeTurnRight) {
             mergeRangeTurnRight = reverse;
           } else {
@@ -286,7 +298,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
      * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
      * 则需要重新获取一次
      */
-    const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
+    const changesResult: LineRange[] =
+      maybeNeedMergeRanges.length > 0 ? Array.from(new Set(this.getAllDiffRanges())) : diffRanges;
     return [changesResult, innerChangesResult];
   }
 
@@ -298,11 +311,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
       linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
         DECORATIONS_CLASSNAME.stretch_right,
-        range.turnDirection === EditorViewType.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
+        range.turnDirection === ETurnDirection.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
       ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
-        range.turnDirection === EditorViewType.CURRENT
+        range.turnDirection === ETurnDirection.CURRENT
           ? DECORATIONS_CLASSNAME.stretch_left
           : DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.stretch_left, DECORATIONS_CLASSNAME.stretch_right),
       ),

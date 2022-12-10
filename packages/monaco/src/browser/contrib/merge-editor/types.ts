@@ -1,4 +1,4 @@
-import { getIcon } from '@opensumi/ide-core-browser';
+import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
 import { IEditorMouseEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 
 import { IModelDecorationOptions } from '../../monaco-api/editor';
@@ -7,15 +7,18 @@ import { LineRange } from './model/line-range';
 
 export interface IRangeContrast {
   type: LineRangeType;
-  // 是否解决操作完成
+  /**
+   * 是否解决操作完成
+   */
   get isComplete(): boolean;
   setComplete: (b: boolean) => this;
   /**
    * 表示这个 range 区域是倾向于 current editor 还是 incoming editor（如果本身就是在 current editor 则返回 current）
    * 在 result editor 视图里可以通过该字段来判读它是与 current editor 相比较的还是与 incoming 相比较的 diff
+   * 当然也有可能是两者都有，这种情况一般是 merge 合成后的 range
    */
-  get turnDirection(): EditorViewType.CURRENT | EditorViewType.INCOMING;
-  setTurnDirection: (t: EditorViewType.CURRENT | EditorViewType.INCOMING) => this;
+  get turnDirection(): ETurnDirection;
+  setTurnDirection: (t: ETurnDirection) => this;
 }
 
 export interface IBaseCodeEditor {
@@ -23,6 +26,12 @@ export interface IBaseCodeEditor {
 }
 
 export type LineRangeType = 'insert' | 'modify' | 'remove';
+
+export enum ETurnDirection {
+  BOTH = 'both',
+  CURRENT = 'current',
+  INCOMING = 'incoming',
+}
 
 export enum EditorViewType {
   CURRENT = 'current',
@@ -82,6 +91,7 @@ export interface IActionsProvider {
 export namespace CONFLICT_ACTIONS_ICON {
   export const RIGHT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
   export const LEFT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleleft')}`;
+  export const WAND = `conflict-actions ${ACCEPT_COMBINATION_ACTIONS} ${getExternalIcon('wand')}`;
   export const CLOSE = `conflict-actions ${IGNORE_ACTIONS} ${getIcon('close')}`;
   export const REVOKE = `conflict-actions ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
 }

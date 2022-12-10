@@ -3,10 +3,8 @@ import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { MappingManagerService } from '../mapping-manager.service';
-import { LineRange } from '../model/line-range';
 import {
   EditorViewType,
-  IActionsDescription,
   IConflictActionsEvent,
   ACCEPT_CURRENT_ACTIONS,
   IGNORE_ACTIONS,
@@ -15,6 +13,7 @@ import {
   ACCEPT_COMBINATION_ACTIONS,
   REVOKE_ACTIONS,
   IActionsProvider,
+  ETurnDirection,
 } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
@@ -84,11 +83,11 @@ export class ActionsManager extends Disposable {
         const { turnDirection } = range;
 
         const documentMapping =
-          turnDirection === EditorViewType.CURRENT
+          turnDirection === ETurnDirection.CURRENT
             ? this.mappingManagerService.documentMappingTurnLeft
             : this.mappingManagerService.documentMappingTurnRight;
 
-        const viewEditor = turnDirection === EditorViewType.CURRENT ? this.currentView : this.incomingView;
+        const viewEditor = turnDirection === ETurnDirection.CURRENT ? this.currentView : this.incomingView;
 
         /**
          * accept current 或 ignore
@@ -113,9 +112,9 @@ export class ActionsManager extends Disposable {
             ]);
           }
 
-          if (turnDirection === EditorViewType.CURRENT) {
+          if (turnDirection === ETurnDirection.CURRENT) {
             this.mappingManagerService.markCompleteTurnLeft(range);
-          } else if (turnDirection === EditorViewType.INCOMING) {
+          } else if (turnDirection === ETurnDirection.INCOMING) {
             this.mappingManagerService.markCompleteTurnRight(range);
           }
 
@@ -124,9 +123,9 @@ export class ActionsManager extends Disposable {
           /**
            * revoke
            */
-          if (turnDirection === EditorViewType.CURRENT) {
+          if (turnDirection === ETurnDirection.CURRENT) {
             this.mappingManagerService.revokeActionsTurnLeft(range);
-          } else if (turnDirection === EditorViewType.INCOMING) {
+          } else if (turnDirection === ETurnDirection.INCOMING) {
             this.mappingManagerService.revokeActionsTurnRight(range);
           }
 
