@@ -3,7 +3,7 @@ import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { MappingManagerService } from '../mapping-manager.service';
-import { InnerRange } from '../model/inner-range';
+import { LineRange } from '../model/line-range';
 import {
   EditorViewType,
   IConflictActionsEvent,
@@ -54,6 +54,20 @@ export class ActionsManager extends Disposable {
       () => null,
     );
     model.pushStackElement();
+  }
+
+  private markComplete(range: LineRange): void {
+    const { turnDirection } = range;
+
+    if (turnDirection === ETurnDirection.CURRENT) {
+      this.mappingManagerService.markCompleteTurnLeft(range);
+      this.currentView?.updateDecorations();
+    }
+
+    if (turnDirection === ETurnDirection.INCOMING) {
+      this.mappingManagerService.markCompleteTurnRight(range);
+      this.incomingView?.updateDecorations();
+    }
   }
 
   private initListenEvent(): void {
@@ -112,15 +126,9 @@ export class ActionsManager extends Disposable {
             ]);
           }
 
-          if (turnDirection === ETurnDirection.CURRENT) {
-            this.mappingManagerService.markCompleteTurnLeft(range);
-          } else if (turnDirection === ETurnDirection.INCOMING) {
-            this.mappingManagerService.markCompleteTurnRight(range);
-          }
-
-          viewEditor!.updateDecorations();
+          this.markComplete(range);
         } else {
-          if (action === IGNORE_ACTIONS) {
+          if (action === REVOKE_ACTIONS) {
             if (turnDirection === ETurnDirection.CURRENT) {
               this.mappingManagerService.revokeActionsTurnLeft(range);
             } else if (turnDirection === ETurnDirection.INCOMING) {
@@ -192,10 +200,8 @@ export class ActionsManager extends Disposable {
               })),
             );
 
-            this.mappingManagerService.markCompleteTurnLeft(turnLeftReverseRange);
-            this.mappingManagerService.markCompleteTurnRight(turnRightReverseRange);
-            this.currentView!.updateDecorations();
-            this.incomingView!.updateDecorations();
+            this.markComplete(turnLeftReverseRange);
+            this.markComplete(turnRightReverseRange);
           }
         }
 
