@@ -102,11 +102,13 @@ const MarkerItemName: React.FC<{ data: IRenderableMarker }> = observer(({ data }
 });
 
 const MarkerCode: React.FC<{
-  data: string | undefined;
+  data: string;
   href?: URI;
-}> = ({ data, href }) => {
+  matches?: IMatch[] | null;
+  type: string;
+}> = ({ data, href, matches, type }) => {
   const openerService = useInjectable(IOpenerService) as IOpenerService;
-
+  const code = matches ? <HighlightData data={data} matches={matches} className={type} /> : <>{data}</>;
   if (typeof href !== 'undefined') {
     return (
       <>
@@ -122,12 +124,12 @@ const MarkerCode: React.FC<{
           href='javascript:void(0)'
           title={data}
         >
-          {data}
+          {code}
         </a>
       </>
     );
   }
-  return <>{data}</>;
+  return code;
 };
 
 /**
@@ -143,11 +145,7 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
           ? data.source && <HighlightData data={data.source} matches={sourceMatches} className={styles.type} />
           : data.source}
         {data.code && '('}
-        {data.code && codeMatches ? (
-          <HighlightData data={data.code} matches={codeMatches} className={styles.type} />
-        ) : (
-          <MarkerCode data={data.code} href={data.codeHref} />
-        )}
+        {data.code && <MarkerCode data={data.code} href={data.codeHref} matches={codeMatches} type={styles.type} />}
         {data.code && ')'}
       </div>
       <div className={styles.position}>{`[${data.startLineNumber},${data.startColumn}]`}</div>
