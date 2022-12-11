@@ -212,9 +212,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
       mergeRange: LineRange;
     }[],
   ): void {
-    const pickMapping = (range: LineRange) => range.turnDirection === ETurnDirection.CURRENT
-        ? this.documentMappingTurnLeft
-        : this.documentMappingTurnRight;
+    const pickMapping = (range: LineRange) =>
+      range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
     for (const { rawRanges, mergeRange } of needMergeRanges) {
       // 需要合并的 range 一定多于两个
@@ -283,12 +282,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }
 
       if (mergeRangeTurnLeft) {
-        const newLineRange = mergeRangeTurnLeft.born().setTurnDirection(ETurnDirection.CURRENT);
+        const newLineRange = mergeRangeTurnLeft.setTurnDirection(ETurnDirection.CURRENT);
         this.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
       }
 
       if (mergeRangeTurnRight) {
-        const newLineRange = mergeRangeTurnRight.born().setTurnDirection(ETurnDirection.INCOMING);
+        const newLineRange = mergeRangeTurnRight.setTurnDirection(ETurnDirection.INCOMING);
         this.documentMappingTurnRight.addRange(newLineRange, mergeRange);
       }
     }

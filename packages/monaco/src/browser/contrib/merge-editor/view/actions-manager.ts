@@ -3,6 +3,7 @@ import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { MappingManagerService } from '../mapping-manager.service';
+import { DocumentMapping } from '../model/document-mapping';
 import { LineRange } from '../model/line-range';
 import {
   EditorViewType,
@@ -56,6 +57,139 @@ export class ActionsManager extends Disposable {
     model.pushStackElement();
   }
 
+  private pickMapping(range: LineRange): DocumentMapping | undefined {
+    if (range.turnDirection === ETurnDirection.BOTH) {
+      return;
+    }
+
+    return range.turnDirection === ETurnDirection.CURRENT
+      ? this.mappingManagerService.documentMappingTurnLeft
+      : this.mappingManagerService.documentMappingTurnRight;
+  }
+
+  private pickViewEditor(range: LineRange): BaseCodeEditor {
+    const { turnDirection } = range;
+
+    if (turnDirection === ETurnDirection.INCOMING) {
+      return this.incomingView!;
+    }
+
+    if (turnDirection === ETurnDirection.CURRENT) {
+      return this.currentView!;
+    }
+
+    return this.resultView!;
+  }
+
+  /**
+   * 接收 accept current 时覆写文本内容
+   */
+  private handleAcceptCurrent(range: LineRange): void {
+    const mapping = this.pickMapping(range);
+    if (!mapping) {
+      return;
+    }
+
+    const viewEditor = this.pickViewEditor(range);
+
+    const model = viewEditor!.getModel()!;
+    const eol = model.getEOL();
+
+    const applyText = model.getValueInRange(range.toRange());
+    const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
+
+    if (!sameRange) {
+      return;
+    }
+
+    this.applyLineRangeEdits([
+      {
+        range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
+        text: applyText + (sameRange.isEmpty ? eol : ''),
+      },
+    ]);
+
+    this.markComplete(range);
+  }
+
+  /**
+   * 执行 revoke 时恢复文本内容
+   */
+  private handleAcceptRevoke(range: LineRange): void {
+    const { turnDirection } = range;
+
+    const viewEditor = this.pickViewEditor(range);
+    const metaData = this.resultView!.getContentInTimeMachineDocument(range.id);
+    if (!metaData) {
+      return;
+    }
+
+    if (turnDirection === ETurnDirection.CURRENT) {
+      this.mappingManagerService.revokeActionsTurnLeft(range);
+    } else if (turnDirection === ETurnDirection.INCOMING) {
+      this.mappingManagerService.revokeActionsTurnRight(range);
+    }
+
+    const { text } = metaData;
+
+    // 为 null 则说明是删除文本
+    if (text) {
+      this.applyLineRangeEdits([{ range: range.toRange(), text }]);
+    } else {
+      this.applyLineRangeEdits([{ range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER), text: null }]);
+    }
+
+    viewEditor!.updateDecorations();
+  }
+
+  /**
+   * 接受 accept combination 时讲左右文本内容分别写入中间视图
+   * 但这里需要注意的是
+   * 在执行 applyLineRangeEdits 时得用 metaMergeRanges 数组里的 range
+   */
+  private handleAcceptCombination(range: LineRange): void {
+    const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(range);
+    const reverseRightRange = this.mappingManagerService.documentMappingTurnRight.reverse(range);
+
+    if (!reverseLeftRange || !reverseRightRange) {
+      return;
+    }
+
+    const { metaMergeRanges } = range;
+    const editTexts: { text: string | undefined; range: IRange }[] = [];
+
+    const pushEdits = (metaRange: LineRange, viewEditor: BaseCodeEditor, iterable: IterableIterator<LineRange>) => {
+      const { value } = iterable.next();
+      if (value) {
+        const model = viewEditor.getModel()!;
+        const eol = model.getEOL();
+        const range = metaRange.isEmpty
+          ? metaRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER)
+          : metaRange.toRange();
+        const text = (metaRange.isEmpty ? eol : '') + model.getValueInRange(value.toRange());
+
+        editTexts.push({ range, text });
+      }
+    };
+
+    const iterableLeftRange = new Set(reverseLeftRange.metaMergeRanges).values();
+    const iterableRightRange = new Set(reverseRightRange.metaMergeRanges).values();
+
+    for (const metaRange of metaMergeRanges) {
+      if (metaRange.turnDirection === ETurnDirection.CURRENT) {
+        pushEdits(metaRange, this.currentView!, iterableLeftRange);
+      }
+      if (metaRange.turnDirection === ETurnDirection.INCOMING) {
+        pushEdits(metaRange, this.incomingView!, iterableRightRange);
+      }
+    }
+
+    this.applyLineRangeEdits(editTexts.map(({ text, range }) => ({ range, text: text || null })));
+
+    this.markComplete(reverseLeftRange);
+    this.markComplete(reverseRightRange);
+  }
+
   private markComplete(range: LineRange): void {
     const { turnDirection } = range;
 
@@ -94,115 +228,21 @@ export class ActionsManager extends Disposable {
         this.currentView.onDidConflictActions,
         this.resultView.onDidConflictActions,
         this.incomingView.onDidConflictActions,
-      )(({ range, withViewType, action }) => {
-        const { turnDirection } = range;
+      )(({ range, action }) => {
+        if (action === ACCEPT_CURRENT_ACTIONS) {
+          this.handleAcceptCurrent(range);
+        }
 
-        const viewEditor = turnDirection === ETurnDirection.CURRENT ? this.currentView : this.incomingView;
-
-        /**
-         * accept current 或 ignore
-         */
-        if (withViewType !== EditorViewType.RESULT) {
-          if (action === ACCEPT_CURRENT_ACTIONS) {
-            const documentMapping =
-              turnDirection === ETurnDirection.CURRENT
-                ? this.mappingManagerService.documentMappingTurnLeft
-                : this.mappingManagerService.documentMappingTurnRight;
-            const model = viewEditor!.getModel()!;
-            const eol = model.getEOL();
-
-            const applyText = model.getValueInRange(range.toRange());
-            const sameRange = documentMapping.adjacentComputeRangeMap.get(range.id);
-
-            if (!sameRange) {
-              return;
-            }
-
-            this.applyLineRangeEdits([
-              {
-                range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
-                text: applyText + (sameRange.isEmpty ? eol : ''),
-              },
-            ]);
-          }
-
+        if (action === IGNORE_ACTIONS) {
           this.markComplete(range);
-        } else {
-          if (action === REVOKE_ACTIONS) {
-            if (turnDirection === ETurnDirection.CURRENT) {
-              this.mappingManagerService.revokeActionsTurnLeft(range);
-            } else if (turnDirection === ETurnDirection.INCOMING) {
-              this.mappingManagerService.revokeActionsTurnRight(range);
-            }
+        }
 
-            const metaData = this.resultView!.getContentInTimeMachineDocument(range.id);
-            if (!metaData) {
-              return;
-            }
+        if (action === REVOKE_ACTIONS) {
+          this.handleAcceptRevoke(range);
+        }
 
-            const { text } = metaData;
-
-            if (text) {
-              this.applyLineRangeEdits([
-                {
-                  range: range.toRange(),
-                  text,
-                },
-              ]);
-            } else {
-              this.applyLineRangeEdits([
-                {
-                  range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER),
-                  text: null,
-                },
-              ]);
-            }
-
-            viewEditor!.updateDecorations();
-          } else if (action === ACCEPT_COMBINATION_ACTIONS) {
-            const turnLeftReverseRange = this.mappingManagerService.documentMappingTurnLeft.reverse(range);
-            const turnRightReverseRange = this.mappingManagerService.documentMappingTurnRight.reverse(range);
-
-            if (!turnLeftReverseRange || !turnRightReverseRange) {
-              return;
-            }
-
-            const iterableLeftRange = new Set(turnLeftReverseRange.metaMergeRanges).values();
-            const iterableRightRange = new Set(turnRightReverseRange.metaMergeRanges).values();
-
-            const { metaMergeRanges } = range;
-            const editTexts: { text: string | undefined; range: IRange }[] = [];
-
-            for (const metaRange of metaMergeRanges) {
-              if (metaRange.turnDirection === ETurnDirection.CURRENT) {
-                const { value } = iterableLeftRange.next();
-                if (value) {
-                  editTexts.push({
-                    text: this.currentView?.getModel()!.getValueInRange(value.toRange()),
-                    range: metaRange.toRange(),
-                  });
-                }
-              } else if (metaRange.turnDirection === ETurnDirection.INCOMING) {
-                const { value } = iterableRightRange.next();
-                if (value) {
-                  editTexts.push({
-                    text: this.incomingView?.getModel()!.getValueInRange(value.toRange()),
-                    range: metaRange.toRange(),
-                  });
-                }
-              }
-            }
-
-            this.applyLineRangeEdits(
-              editTexts.map(({ text, range }) => ({
-                range,
-                text: text || null,
-              })),
-            );
-
-            this.markComplete(turnLeftReverseRange);
-            this.markComplete(turnRightReverseRange);
-          }
+        if (action === ACCEPT_COMBINATION_ACTIONS) {
+          this.handleAcceptCombination(range);
         }
 
         this.resultView!.updateDecorations();
