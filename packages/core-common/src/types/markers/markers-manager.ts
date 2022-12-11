@@ -204,7 +204,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     let { startLineNumber, startColumn, endLineNumber, endColumn } = data;
 
     // santize data
-    // 这里的 startLineNumber 不是 zero base 的
+    // marker 的 startLineNumber 等是 1-base 的
     startLineNumber = startLineNumber > 0 ? startLineNumber : 1;
     startColumn = startColumn > 0 ? startColumn : 1;
     endLineNumber = endLineNumber >= startLineNumber ? endLineNumber : startLineNumber;

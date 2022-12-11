@@ -164,6 +164,7 @@ export function asMonacoDiagnostic(diagnostic: Diagnostic): editor.IMarkerData {
     severity: asSeverity(diagnostic.severity),
     message: diagnostic.message,
     source: diagnostic.source,
+    // language server range is 0-based, marker is 1-based
     startLineNumber: diagnostic.range.start.line + 1,
     startColumn: diagnostic.range.start.character + 1,
     endLineNumber: diagnostic.range.end.line + 1,
