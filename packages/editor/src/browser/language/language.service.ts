@@ -61,7 +61,7 @@ function reviveRelated(related: IRelatedInformation): DiagnosticRelatedInformati
   };
 }
 
-function reviveMarker(marker: IMarkerData): Diagnostic {
+export function reviveMarker(marker: IMarkerData): Diagnostic {
   const monacoMarker: Diagnostic = {
     code:
       typeof marker.codeHref !== 'undefined'
