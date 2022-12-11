@@ -19,6 +19,7 @@ import {
   REVOKE_ACTIONS,
   ITimeMachineMetaData,
   ETurnDirection,
+  ACCEPT_COMBINATION_ACTIONS,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -211,6 +212,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
       mergeRange: LineRange;
     }[],
   ): void {
+    const pickMapping = (range: LineRange) => range.turnDirection === ETurnDirection.CURRENT
+        ? this.documentMappingTurnLeft
+        : this.documentMappingTurnRight;
+
     for (const { rawRanges, mergeRange } of needMergeRanges) {
       // 需要合并的 range 一定多于两个
       const length = rawRanges.length;
@@ -239,10 +244,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
       let mergeRangeTurnRight: LineRange | undefined;
 
       for (const range of rawRanges) {
-        const mapping =
-          range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
+        const mapping = pickMapping(range);
+        const rawReverse = mapping.reverse(range);
         let reverse = mapping.reverse(range);
-        if (!reverse) {
+        if (!reverse || !rawReverse) {
           continue;
         }
 
@@ -258,30 +263,32 @@ export class ResultCodeEditor extends BaseCodeEditor {
           );
         }
 
+        /**
+         * 调用 merge 函数的时候不要把 reverse 记录到 mergeStateModel 元数据中，需要记录的是 rawReverse
+         * 保证合并前的元数据信息不会被外部改变（比如 deltaStart 或 deltaEnd）
+         */
         if (range.turnDirection === ETurnDirection.CURRENT) {
-          if (!mergeRangeTurnLeft) {
-            mergeRangeTurnLeft = reverse;
-          } else {
-            mergeRangeTurnLeft = mergeRangeTurnLeft.merge(reverse);
-          }
-        } else if (range.turnDirection === ETurnDirection.INCOMING) {
-          if (!mergeRangeTurnRight) {
-            mergeRangeTurnRight = reverse;
-          } else {
-            mergeRangeTurnRight = mergeRangeTurnRight.merge(reverse);
-          }
+          mergeRangeTurnLeft = (
+            !mergeRangeTurnLeft ? reverse : mergeRangeTurnLeft.merge(reverse, false)
+          ).recordMergeRange(rawReverse);
+        }
+
+        if (range.turnDirection === ETurnDirection.INCOMING) {
+          mergeRangeTurnRight = (
+            !mergeRangeTurnRight ? reverse : mergeRangeTurnRight.merge(reverse, false)
+          ).recordMergeRange(rawReverse);
         }
 
         mapping.deleteRange(reverse);
       }
 
       if (mergeRangeTurnLeft) {
-        const newLineRange = mergeRangeTurnLeft.born();
+        const newLineRange = mergeRangeTurnLeft.born().setTurnDirection(ETurnDirection.CURRENT);
         this.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
       }
 
       if (mergeRangeTurnRight) {
-        const newLineRange = mergeRangeTurnRight.born();
+        const newLineRange = mergeRangeTurnRight.born().setTurnDirection(ETurnDirection.INCOMING);
         this.documentMappingTurnRight.addRange(newLineRange, mergeRange);
       }
     }
@@ -298,8 +305,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
      * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
      * 则需要重新获取一次
      */
-    const changesResult: LineRange[] =
-      maybeNeedMergeRanges.length > 0 ? Array.from(new Set(this.getAllDiffRanges())) : diffRanges;
+    let changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
+    changesResult = Array.from(new Set(changesResult));
     return [changesResult, innerChangesResult];
   }
 
@@ -311,7 +318,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
       linesDecorationsClassName: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
         DECORATIONS_CLASSNAME.stretch_right,
-        range.turnDirection === ETurnDirection.CURRENT ? DECORATIONS_CLASSNAME.stretch_left : '',
+        range.turnDirection === ETurnDirection.CURRENT || range.turnDirection === ETurnDirection.BOTH
+          ? DECORATIONS_CLASSNAME.stretch_left
+          : '',
       ),
       className: DECORATIONS_CLASSNAME.combine(
         preDecorations.className || '',
@@ -352,6 +361,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
         onActionsClick: (range: LineRange, actionType: TActionsType) => {
           if (actionType === REVOKE_ACTIONS) {
             this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
+          } else if (actionType === ACCEPT_COMBINATION_ACTIONS) {
+            this._onDidConflictActions.fire({
+              range,
+              withViewType: EditorViewType.RESULT,
+              action: ACCEPT_COMBINATION_ACTIONS,
+            });
           }
         },
       });

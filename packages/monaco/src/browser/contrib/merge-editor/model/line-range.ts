@@ -72,6 +72,10 @@ export class MergeStateModel {
   public has(metaRange: LineRange): boolean {
     return this.metaRanges.some((m) => m.id === metaRange.id);
   }
+
+  public getMetaRanges(): LineRange[] {
+    return this.metaRanges;
+  }
 }
 
 export class LineRange extends MonacoLineRange implements IRangeContrast {
@@ -189,14 +193,26 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.startLineNumber === range.startLineNumber && this.length === range.length;
   }
 
+  public get metaMergeRanges(): LineRange[] {
+    return this.mergeStateModel.getMetaRanges();
+  }
+
+  public recordMergeRange(range: LineRange): this {
+    this.mergeStateModel.add(range);
+    return this;
+  }
+
   /**
    * 与 other range 合并成一个 range
+   * @param isKeep: 是否记录被合并的 range
    */
-  public merge(other: LineRange): LineRange {
-    if (!this.mergeStateModel.has(this)) {
-      this.mergeStateModel.add(this);
+  public merge(other: LineRange, isKeep = true): LineRange {
+    if (isKeep) {
+      if (!this.mergeStateModel.has(this)) {
+        this.recordMergeRange(this);
+      }
+      this.recordMergeRange(other);
     }
-    this.mergeStateModel.add(other);
 
     return this.retainState(
       new LineRange(

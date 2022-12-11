@@ -3,6 +3,7 @@ import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { MappingManagerService } from '../mapping-manager.service';
+import { InnerRange } from '../model/inner-range';
 import {
   EditorViewType,
   IConflictActionsEvent,
@@ -82,11 +83,6 @@ export class ActionsManager extends Disposable {
       )(({ range, withViewType, action }) => {
         const { turnDirection } = range;
 
-        const documentMapping =
-          turnDirection === ETurnDirection.CURRENT
-            ? this.mappingManagerService.documentMappingTurnLeft
-            : this.mappingManagerService.documentMappingTurnRight;
-
         const viewEditor = turnDirection === ETurnDirection.CURRENT ? this.currentView : this.incomingView;
 
         /**
@@ -94,6 +90,10 @@ export class ActionsManager extends Disposable {
          */
         if (withViewType !== EditorViewType.RESULT) {
           if (action === ACCEPT_CURRENT_ACTIONS) {
+            const documentMapping =
+              turnDirection === ETurnDirection.CURRENT
+                ? this.mappingManagerService.documentMappingTurnLeft
+                : this.mappingManagerService.documentMappingTurnRight;
             const model = viewEditor!.getModel()!;
             const eol = model.getEOL();
 
@@ -120,39 +120,83 @@ export class ActionsManager extends Disposable {
 
           viewEditor!.updateDecorations();
         } else {
-          /**
-           * revoke
-           */
-          if (turnDirection === ETurnDirection.CURRENT) {
-            this.mappingManagerService.revokeActionsTurnLeft(range);
-          } else if (turnDirection === ETurnDirection.INCOMING) {
-            this.mappingManagerService.revokeActionsTurnRight(range);
+          if (action === IGNORE_ACTIONS) {
+            if (turnDirection === ETurnDirection.CURRENT) {
+              this.mappingManagerService.revokeActionsTurnLeft(range);
+            } else if (turnDirection === ETurnDirection.INCOMING) {
+              this.mappingManagerService.revokeActionsTurnRight(range);
+            }
+
+            const metaData = this.resultView!.getContentInTimeMachineDocument(range.id);
+            if (!metaData) {
+              return;
+            }
+
+            const { text } = metaData;
+
+            if (text) {
+              this.applyLineRangeEdits([
+                {
+                  range: range.toRange(),
+                  text,
+                },
+              ]);
+            } else {
+              this.applyLineRangeEdits([
+                {
+                  range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER),
+                  text: null,
+                },
+              ]);
+            }
+
+            viewEditor!.updateDecorations();
+          } else if (action === ACCEPT_COMBINATION_ACTIONS) {
+            const turnLeftReverseRange = this.mappingManagerService.documentMappingTurnLeft.reverse(range);
+            const turnRightReverseRange = this.mappingManagerService.documentMappingTurnRight.reverse(range);
+
+            if (!turnLeftReverseRange || !turnRightReverseRange) {
+              return;
+            }
+
+            const iterableLeftRange = new Set(turnLeftReverseRange.metaMergeRanges).values();
+            const iterableRightRange = new Set(turnRightReverseRange.metaMergeRanges).values();
+
+            const { metaMergeRanges } = range;
+            const editTexts: { text: string | undefined; range: IRange }[] = [];
+
+            for (const metaRange of metaMergeRanges) {
+              if (metaRange.turnDirection === ETurnDirection.CURRENT) {
+                const { value } = iterableLeftRange.next();
+                if (value) {
+                  editTexts.push({
+                    text: this.currentView?.getModel()!.getValueInRange(value.toRange()),
+                    range: metaRange.toRange(),
+                  });
+                }
+              } else if (metaRange.turnDirection === ETurnDirection.INCOMING) {
+                const { value } = iterableRightRange.next();
+                if (value) {
+                  editTexts.push({
+                    text: this.incomingView?.getModel()!.getValueInRange(value.toRange()),
+                    range: metaRange.toRange(),
+                  });
+                }
+              }
+            }
+
+            this.applyLineRangeEdits(
+              editTexts.map(({ text, range }) => ({
+                range,
+                text: text || null,
+              })),
+            );
+
+            this.mappingManagerService.markCompleteTurnLeft(turnLeftReverseRange);
+            this.mappingManagerService.markCompleteTurnRight(turnRightReverseRange);
+            this.currentView!.updateDecorations();
+            this.incomingView!.updateDecorations();
           }
-
-          const metaData = this.resultView!.getContentInTimeMachineDocument(range.id);
-          if (!metaData) {
-            return;
-          }
-
-          const { text } = metaData;
-
-          if (text) {
-            this.applyLineRangeEdits([
-              {
-                range: range.toRange(),
-                text,
-              },
-            ]);
-          } else {
-            this.applyLineRangeEdits([
-              {
-                range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER),
-                text: null,
-              },
-            ]);
-          }
-
-          viewEditor!.updateDecorations();
         }
 
         this.resultView!.updateDecorations();
