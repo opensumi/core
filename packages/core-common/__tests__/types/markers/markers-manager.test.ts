@@ -110,21 +110,24 @@ describe('test for types/markers/markers-manager.ts', () => {
       });
       if (uri === editorUri.toString()) {
         expect(markers.length).toEqual(1);
-        expect(markers[0].startLineNumber).toEqual(0);
-        expect(markers[0].endLineNumber).toEqual(0);
-        expect(markers[0].startColumn).toEqual(0);
-        expect(markers[0].endColumn).toEqual(0);
+        expect(markers[0].startLineNumber).toEqual(1);
+        expect(markers[0].endLineNumber).toEqual(1);
+        expect(markers[0].startColumn).toEqual(1);
+        expect(markers[0].endColumn).toEqual(1);
+        triggered++;
       }
       if (uri === editorUri2.toString()) {
-        expect(markers.length).toEqual(0);
+        expect(markers.length).toEqual(1);
+        triggered++;
       }
-      triggered++;
+
       if (triggered === 2) {
         done();
       }
     });
 
     markerManager.updateMarkers('typescript', editorUri.toString(), [rawMarker]);
-    markerManager.updateMarkers('typescript', editorUri2.toString(), [noMessageMarker]);
+    // noMessageMarker 不会触发 markerChanged 事件
+    markerManager.updateMarkers('typescript', editorUri2.toString(), [rawMarker, noMessageMarker]);
   });
 });
