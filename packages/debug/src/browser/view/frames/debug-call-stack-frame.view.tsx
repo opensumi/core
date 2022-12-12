@@ -84,14 +84,6 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       }),
     );
 
-    // if (session) {
-    //   disposable.push(
-    //     session.onDidChangeCallStack(() => {
-    //       updateFrames([...thread.frames]);
-    //     }),
-    //   );
-    // }
-
     return () => {
       disposable.dispose();
     };
