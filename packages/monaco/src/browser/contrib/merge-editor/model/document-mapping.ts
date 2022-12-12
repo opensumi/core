@@ -27,8 +27,12 @@ export class DocumentMapping extends Disposable {
     super();
   }
 
+  private ensureSort(values: IterableIterator<LineRange>): LineRange[] {
+    return Array.from(values).sort((a, b) => a.startLineNumber - b.startLineNumber);
+  }
+
   public getOriginalRange(): LineRange[] {
-    return Array.from(
+    return this.ensureSort(
       this.diffRangeTurn === EDiffRangeTurn.ORIGIN
         ? this.computeRangeMap.values()
         : this.adjacentComputeRangeMap.values(),
@@ -36,7 +40,7 @@ export class DocumentMapping extends Disposable {
   }
 
   public getModifiedRange(): LineRange[] {
-    return Array.from(
+    return this.ensureSort(
       this.diffRangeTurn === EDiffRangeTurn.ORIGIN
         ? this.adjacentComputeRangeMap.values()
         : this.computeRangeMap.values(),
@@ -119,7 +123,7 @@ export class DocumentMapping extends Disposable {
    * @returns 下一个最近的 lineRange
    */
   public findNextSameRange(sameRange: LineRange): LineRange | undefined {
-    const values = this.adjacentComputeRangeMap.values();
+    const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
       if (range.id !== sameRange.id && range.isAfter(sameRange)) {
@@ -134,7 +138,7 @@ export class DocumentMapping extends Disposable {
    * 找出 sameRange 是否被包裹在哪一个 lineRange 里，如果有并返回该 lineRange
    */
   public findIncludeRange(sameRange: LineRange): LineRange | undefined {
-    const values = this.adjacentComputeRangeMap.values();
+    const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
       if (range.isInclude(sameRange)) {
@@ -149,7 +153,7 @@ export class DocumentMapping extends Disposable {
    * 找出 sameRange 是否与哪一个 lineRange 接触
    */
   public findTouchesRange(sameRange: LineRange): LineRange | undefined {
-    const values = this.adjacentComputeRangeMap.values();
+    const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
       if (range.isTouches(sameRange)) {

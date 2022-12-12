@@ -45,6 +45,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
+  private isFirstInputComputeDiff = true;
+
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
@@ -105,17 +107,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
              * 这里需要处理 touch 的情况（也就是 toLineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
              * 那么就要以当前 touch range 的结果作为要 delta 的起点
              */
-            const { [EditorViewType.CURRENT]: touchLeftRanges, [EditorViewType.INCOMING]: touchRightRanges } =
+            const { [EditorViewType.CURRENT]: touchTurnLeftRange, [EditorViewType.INCOMING]: touchTurnRightRange } =
               this.mappingManagerService.findTouchesRanges(toLineRange);
-            const { [EditorViewType.CURRENT]: nextLeftRanges, [EditorViewType.INCOMING]: nextRightRanges } =
+            const { [EditorViewType.CURRENT]: nextTurnLeftRange, [EditorViewType.INCOMING]: nextTurnRightRange } =
               this.mappingManagerService.findNextLineRanges(toLineRange);
 
             if (includeLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
-            } else if (touchLeftRanges && !toLineRange.isAfter(touchLeftRanges)) {
-              this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchLeftRanges, offset);
-            } else if (nextLeftRanges) {
-              const reverse = this.documentMappingTurnLeft.reverse(nextLeftRanges);
+            } else if (touchTurnLeftRange && !toLineRange.isAfter(touchTurnLeftRange)) {
+              this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchTurnLeftRange, offset);
+            } else if (nextTurnLeftRange) {
+              const reverse = this.documentMappingTurnLeft.reverse(nextTurnLeftRange);
               if (reverse) {
                 this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
               }
@@ -123,10 +125,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
             if (includeRightRange) {
               this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
-            } else if (touchRightRanges && !toLineRange.isAfter(touchRightRanges)) {
-              this.documentMappingTurnRight.deltaEndAdjacentQueue(touchRightRanges, offset);
-            } else if (nextRightRanges) {
-              const reverse = this.documentMappingTurnRight.reverse(nextRightRanges);
+            } else if (touchTurnRightRange && !toLineRange.isAfter(touchTurnRightRange)) {
+              this.documentMappingTurnRight.deltaEndAdjacentQueue(touchTurnRightRange, offset);
+            } else if (nextTurnRightRange) {
+              const reverse = this.documentMappingTurnRight.reverse(nextTurnRightRange);
               if (reverse) {
                 this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
               }
@@ -297,15 +299,30 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const diffRanges: LineRange[] = this.getAllDiffRanges().sort((a, b) => a.startLineNumber - b.startLineNumber);
     const innerChangesResult: InnerRange[][] = [];
 
-    const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
-    this.handleNeedMergeRanges(maybeNeedMergeRanges);
+    let maybeNeedMergeRanges: {
+      rawRanges: LineRange[];
+      mergeRange: LineRange;
+    }[] = [];
+
+    if (this.isFirstInputComputeDiff) {
+      maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
+      this.handleNeedMergeRanges(maybeNeedMergeRanges);
+      this.isFirstInputComputeDiff = false;
+    }
 
     /**
      * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
      * 则需要重新获取一次
      */
     let changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
-    changesResult = Array.from(new Set(changesResult));
+
+    const map = new Map();
+    for (const result of changesResult) {
+      if (!map.has(result.id)) {
+        map.set(result.id, result);
+      }
+    }
+    changesResult = [...map.values()];
     return [changesResult, innerChangesResult];
   }
 

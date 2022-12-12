@@ -143,9 +143,8 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
       const sameRange = turnRight[idx];
       const _exec = (type: LineRangeType) => {
         const direction = withBase === 1 ? ETurnDirection.CURRENT : ETurnDirection.INCOMING;
-        // 同时将 sameRange 赋予一样的状态
-        sameRange.setType(type).setTurnDirection(direction);
-        changesResult.push(range.setType(type).setTurnDirection(direction));
+        sameRange.setType(type).setTurnDirection(sameRange.turnDirection ?? direction);
+        changesResult.push(range.setType(type).setTurnDirection(range.turnDirection ?? direction));
         // inner range 先不计算
       };
 

@@ -6,7 +6,6 @@ import { MappingManagerService } from '../mapping-manager.service';
 import { DocumentMapping } from '../model/document-mapping';
 import { LineRange } from '../model/line-range';
 import {
-  EditorViewType,
   IConflictActionsEvent,
   ACCEPT_CURRENT_ACTIONS,
   IGNORE_ACTIONS,
