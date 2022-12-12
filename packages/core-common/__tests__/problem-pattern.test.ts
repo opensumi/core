@@ -37,7 +37,7 @@ describe('problem pattern', () => {
   it('diagnosticAreEquals(code.target) should return true', () => {
     const d1 = {
       code: {
-        target: 'https://antgroup.com',
+        target: 'https://opensumi.com',
         value: 'code',
       },
       message: 'message',
@@ -54,7 +54,7 @@ describe('problem pattern', () => {
     };
     const d2 = {
       code: {
-        target: 'https://antgroup.com',
+        target: 'https://opensumi.com',
         value: 'code',
       },
       message: 'message',
@@ -74,14 +74,14 @@ describe('problem pattern', () => {
   it('diagnosticAreEquals(null range) should return true', () => {
     const d1 = {
       code: {
-        target: 'https://antgroup.com',
+        target: 'https://opensumi.com',
         value: 'code',
       },
       message: 'message',
     };
     const d2 = {
       code: {
-        target: 'https://antgroup.com',
+        target: 'https://opensumi.com',
         value: 'code',
       },
       message: 'message',

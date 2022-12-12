@@ -7,7 +7,7 @@ import { getInjector } from '../../baseInjector';
 
 describe('test for types/markers/markers-manager.ts', () => {
   let injector: MockInjector;
-  const testUri = URI.parse('https://antgroup.com');
+  const testUri = URI.parse('https://opensumi.com');
   const editorUri = URI.parse('file://users/test/index.html');
   const editorUri2 = URI.parse('file://users/test/index2.html');
   const rawMarker = {
