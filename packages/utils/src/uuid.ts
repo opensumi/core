@@ -1,6 +1,6 @@
 // @ts-ignore
 import { nanoid } from 'nanoid';
 
-export function uuid(): string {
-  return nanoid();
+export function uuid(size?: number): string {
+  return nanoid(size);
 }

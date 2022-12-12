@@ -1,7 +1,7 @@
 import { Range as MonacoRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { IPosition } from '../../../monaco-api/types';
-import { EditorViewType, IRangeContrast, LineRangeType } from '../types';
+import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 export class InnerRange extends MonacoRange implements IRangeContrast {
   private _isComplete: boolean;
@@ -9,8 +9,8 @@ export class InnerRange extends MonacoRange implements IRangeContrast {
     return this._isComplete;
   }
 
-  private _turnDirection: EditorViewType.CURRENT | EditorViewType.INCOMING;
-  public get turnDirection(): EditorViewType.CURRENT | EditorViewType.INCOMING {
+  private _turnDirection: ETurnDirection;
+  public get turnDirection(): ETurnDirection {
     return this._turnDirection;
   }
 
@@ -18,7 +18,7 @@ export class InnerRange extends MonacoRange implements IRangeContrast {
     return new InnerRange(start.lineNumber, start.column, end.lineNumber, end.column);
   }
 
-  public setTurnDirection(t: EditorViewType.CURRENT | EditorViewType.INCOMING) {
+  public setTurnDirection(t: ETurnDirection) {
     this._turnDirection = t;
     return this;
   }

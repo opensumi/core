@@ -16,6 +16,7 @@ import { LineRangeMapping } from '../../model/line-range-mapping';
 import {
   EDiffRangeTurn,
   EditorViewType,
+  ETurnDirection,
   IActionsDescription,
   IActionsProvider,
   IBaseCodeEditor,
@@ -141,7 +142,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     turnLeft.forEach((range, idx) => {
       const sameRange = turnRight[idx];
       const _exec = (type: LineRangeType) => {
-        const direction = withBase === 1 ? EditorViewType.CURRENT : EditorViewType.INCOMING;
+        const direction = withBase === 1 ? ETurnDirection.CURRENT : ETurnDirection.INCOMING;
         // 同时将 sameRange 赋予一样的状态
         sameRange.setType(type).setTurnDirection(direction);
         changesResult.push(range.setType(type).setTurnDirection(direction));
