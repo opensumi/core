@@ -1,9 +1,82 @@
+import { uuid } from '@opensumi/ide-core-common';
 import { IRange } from '@opensumi/monaco-editor-core';
 import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
-import { EditorViewType, IRangeContrast, LineRangeType } from '../types';
+import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
 
 import { InnerRange } from './inner-range';
+
+/**
+ * 如果 lineRange 是通过 merge 合并生成的
+ * 则跟 merge 相关的数据状态都在该 model 来处理
+ */
+export class MergeStateModel {
+  /**
+   * 存储合并前的所有 lineRange 元数据
+   */
+  private metaRanges: LineRange[] = [];
+
+  public get isMerge(): boolean {
+    return this.metaRanges.length > 0;
+  }
+
+  /**
+   * 只有当 metaRanges 里的 range 彼此都只是表面接触时才允许 combination 操作
+   * (能被 accept combination 意味着这块 diff 区域，左右两边的代码合并后不会出现被覆盖的情况)
+   * 例如
+   *    左边               中间               右边
+   *    ```               ```               ```
+   * 1. const a = 1       const a = 2       const a = 1
+   * 2. const b = 1       const b = 1       const b = 2
+   * 3. const c = 1       const c = 2       const c = 1
+   *    ```               ```               ```
+   *
+   * 其中第一行中间与两边都有 diff，但不管是接受左边的还是右边的，最终对结果的影响不变（接受左右两边都一样）
+   * 如果这三行都是这样的情况，则被允许 combination
+   */
+  public get isAllowCombination(): boolean {
+    const length = this.metaRanges.length;
+    if (length <= 1) {
+      return false;
+    }
+
+    let slow = 0;
+    for (let fast = 0; fast < length; fast++) {
+      const slowRange = this.metaRanges[slow];
+      const fastRange = this.metaRanges[fast];
+
+      if (slowRange.id === fastRange.id) {
+        continue;
+      }
+
+      if (!fastRange.isContact(slowRange)) {
+        return false;
+      }
+
+      slow += 1;
+    }
+
+    return true;
+  }
+
+  public add(range: LineRange): this {
+    this.metaRanges.push(range);
+    return this;
+  }
+
+  public reset(): this {
+    this.metaRanges = [];
+    return this;
+  }
+
+  public has(metaRange: LineRange): boolean {
+    return this.metaRanges.some((m) => m.id === metaRange.id);
+  }
+
+  public getMetaRanges(): LineRange[] {
+    return this.metaRanges;
+  }
+}
 
 export class LineRange extends MonacoLineRange implements IRangeContrast {
   static fromPositions(startLineNumber: number, endLineNumber: number = startLineNumber): LineRange {
@@ -25,16 +98,27 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this._isComplete;
   }
 
-  private _turnDirection: EditorViewType.CURRENT | EditorViewType.INCOMING;
-  public get turnDirection(): EditorViewType.CURRENT | EditorViewType.INCOMING {
+  private _turnDirection: ETurnDirection;
+  public get turnDirection(): ETurnDirection {
     return this._turnDirection;
   }
+
+  public get isMerge(): boolean {
+    return this.mergeStateModel.isMerge;
+  }
+
+  public get isAllowCombination(): boolean {
+    return this.mergeStateModel.isAllowCombination;
+  }
+
+  private mergeStateModel: MergeStateModel;
 
   constructor(startLineNumber: number, endLineNumberExclusive: number) {
     super(startLineNumber, endLineNumberExclusive);
     this._type = 'insert';
     this._isComplete = false;
-    this._id = `${this.startLineNumber}_${this.endLineNumberExclusive}_${this.length}`;
+    this._id = uuid(6);
+    this.mergeStateModel = new MergeStateModel();
   }
 
   private setId(id: string): this {
@@ -42,7 +126,7 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this;
   }
 
-  public setTurnDirection(t: EditorViewType.CURRENT | EditorViewType.INCOMING) {
+  public setTurnDirection(t: ETurnDirection) {
     this._turnDirection = t;
     return this;
   }
@@ -52,13 +136,14 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this;
   }
 
-  public setType(v: LineRangeType): this {
-    this._type = v;
+  private setMergeStateModel(state: MergeStateModel): this {
+    this.mergeStateModel = state;
     return this;
   }
 
-  public calcMargin(range: LineRange): number {
-    return this.length - range.length;
+  public setType(v: LineRangeType): this {
+    this._type = v;
+    return this;
   }
 
   public isTendencyRight(refer: LineRange): boolean {
@@ -81,6 +166,15 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.endLineNumberExclusive >= range.startLineNumber && range.endLineNumberExclusive >= this.startLineNumber;
   }
 
+  /**
+   * 是否仅仅只是表面接触
+   */
+  public isContact(range: LineRange): boolean {
+    return (
+      this.startLineNumber === range.endLineNumberExclusive || this.endLineNumberExclusive === range.startLineNumber
+    );
+  }
+
   public isInclude(range: LineRange | InnerRange): boolean {
     if (range instanceof LineRange) {
       return (
@@ -99,13 +193,33 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.startLineNumber === range.startLineNumber && this.length === range.length;
   }
 
-  public merge(other: LineRange): LineRange {
+  public get metaMergeRanges(): LineRange[] {
+    return this.mergeStateModel.getMetaRanges();
+  }
+
+  public recordMergeRange(range: LineRange): this {
+    this.mergeStateModel.add(range);
+    return this;
+  }
+
+  /**
+   * 与 other range 合并成一个 range
+   * @param isKeep: 是否记录被合并的 range
+   */
+  public merge(other: LineRange, isKeep = true): LineRange {
+    if (isKeep) {
+      if (!this.mergeStateModel.has(this)) {
+        this.recordMergeRange(this);
+      }
+      this.recordMergeRange(other);
+    }
+
     return this.retainState(
       new LineRange(
         Math.min(this.startLineNumber, other.startLineNumber),
         Math.max(this.endLineNumberExclusive, other.endLineNumberExclusive),
       ),
-    );
+    ).setTurnDirection(ETurnDirection.BOTH);
   }
 
   // 生一个除 id 以外，state 状态都相同的 lineRange
@@ -131,7 +245,8 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
       .setId(this._id)
       .setType(this._type)
       .setTurnDirection(this._turnDirection)
-      .setComplete(this._isComplete);
+      .setComplete(this._isComplete)
+      .setMergeStateModel(this.mergeStateModel);
   }
 
   public override delta(offset: number): LineRange {
