@@ -500,7 +500,7 @@ export class DebugSessionManager implements IDebugSessionManager {
     return this.start(options);
   }
   public updateCurrentSession(session: DebugSession | undefined) {
-    this.currentSession = session || this.sessions[0];
+    this.currentSession = session || this.sessions[this.sessions.length - 1];
   }
 
   get inDebugMode(): boolean {

@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { RecycleList } from '@opensumi/ide-components';
 import {
@@ -21,7 +21,6 @@ import { DebugThread } from '../../model/debug-thread';
 import styles from './debug-call-stack.module.less';
 import { DebugCallStackService } from './debug-call-stack.service';
 
-
 export interface DebugStackSessionViewProps {
   frames: DebugStackFrame[];
   session: DebugSession;
@@ -32,15 +31,15 @@ export interface DebugStackSessionViewProps {
 
 export const DebugStackFramesView = observer((props: DebugStackSessionViewProps) => {
   const { viewState, frames: rawFrames, thread, indent = 0, session } = props;
-  const [selected, setSelected] = React.useState<number | undefined>();
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [frames, setFrames] = React.useState<DebugStackFrame[]>([]);
-  const [framesErrorMessage, setFramesErrorMessage] = React.useState<string>('');
-  const [canLoadMore, setCanLoadMore] = React.useState<boolean>(false);
+  const [selected, setSelected] = useState<number | undefined>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [frames, setFrames] = useState<DebugStackFrame[]>([]);
+  const [framesErrorMessage, setFramesErrorMessage] = useState<string>('');
+  const [canLoadMore, setCanLoadMore] = useState<boolean>(false);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (!thread) {
       return;
     }
@@ -49,8 +48,8 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
         ? thread.stoppedDetails?.totalFrames - thread.frameCount
         : undefined;
     const frames = await thread.fetchFrames(remainingFramesCount);
-    setFrames(frames);
-  };
+    updateFrames(frames);
+  }, [frames]);
 
   const frameOpenSource = (frame: DebugStackFrame) => {
     if (frame && frame.source) {
@@ -58,43 +57,57 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     }
   };
 
-  React.useEffect(() => {
-    setFrames([...rawFrames]);
+  const updateFrames = useCallback(
+    (frames: DebugStackFrame[]) => {
+      setFrames(frames);
+    },
+    [frames],
+  );
+
+  const updateSelected = useCallback(
+    (value: number | undefined) => {
+      setSelected(value);
+    },
+    [selected],
+  );
+
+  useEffect(() => {
+    updateFrames([...rawFrames]);
 
     const disposable = new DisposableCollection();
 
     disposable.push(
       manager.onDidChangeActiveDebugSession(({ previous }) => {
         if (previous && previous !== thread.session) {
-          setSelected(undefined);
+          updateSelected(undefined);
         }
       }),
     );
 
-    if (session) {
-      disposable.push(
-        session.onDidChangeCallStack(() => {
-          setFrames([...thread.frames]);
-        }),
-      );
-    }
+    // if (session) {
+    //   disposable.push(
+    //     session.onDidChangeCallStack(() => {
+    //       updateFrames([...thread.frames]);
+    //     }),
+    //   );
+    // }
 
     return () => {
       disposable.dispose();
     };
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (thread) {
       const hasSourceFrame = thread.frames.find((e: DebugStackFrame) => !!e.source);
       if (hasSourceFrame) {
-        setSelected(hasSourceFrame.raw.id);
+        updateSelected(hasSourceFrame.raw.id);
         frameOpenSource(hasSourceFrame);
       }
     }
   }, [thread.frameCount]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (thread) {
       if (thread.stoppedDetails) {
         const { framesErrorMessage, totalFrames } = thread.stoppedDetails;
@@ -116,16 +129,16 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     const frame: DebugStackFrame = data;
     const isLabel = frame.raw.presentationHint === 'label';
     const isSubtle = frame.raw.presentationHint === 'subtle';
-    const clickHandler = () => {
+    const clickHandler = useCallback(() => {
       if (isLabel || isSubtle) {
         return;
       }
       manager.updateCurrentSession(frame.session);
 
       frame.session.currentThread = frame.thread;
-      setSelected(frame.raw.id);
+      updateSelected(frame.raw.id);
       frameOpenSource(frame);
-    };
+    }, [data]);
 
     const restartFrame = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
       event.preventDefault();
@@ -217,6 +230,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       template={template}
       itemHeight={22}
       width={viewState.width}
+      paddingBottomSize={0}
       height={isLoading || canLoadMore ? (frames.length + 1) * 22 : frames.length * 22}
       footer={isLoading || canLoadMore ? footer : undefined}
     />
