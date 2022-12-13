@@ -39,9 +39,12 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    model.pushStackElement();
-    model.pushEditOperations(
-      null,
+    /**
+     * 暂时先不处理 undo 和 redo 的情况
+     * 可放在第二期来实现
+     * 到时再采用 pushEditOperations 来处理
+     */
+    model.applyEdits(
       edits.map((edit) => {
         const { range, text } = edit;
 
@@ -51,9 +54,8 @@ export class ActionsManager extends Disposable {
           text,
         };
       }),
-      () => null,
+      false,
     );
-    model.pushStackElement();
   }
 
   private pickMapping(range: LineRange): DocumentMapping | undefined {
@@ -129,11 +131,13 @@ export class ActionsManager extends Disposable {
       this.mappingManagerService.revokeActionsTurnRight(range);
     }
 
+    const model = viewEditor.getModel()!;
+    const eol = model.getEOL();
     const { text } = metaData;
 
     // 为 null 则说明是删除文本
     if (text) {
-      this.applyLineRangeEdits([{ range: range.toRange(), text }]);
+      this.applyLineRangeEdits([{ range: range.toRange(), text: text + (range.isEmpty ? eol : '') }]);
     } else {
       this.applyLineRangeEdits([{ range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER), text: null }]);
     }

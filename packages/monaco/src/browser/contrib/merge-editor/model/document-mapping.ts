@@ -151,12 +151,13 @@ export class DocumentMapping extends Disposable {
 
   /**
    * 找出 sameRange 是否与哪一个 lineRange 接触
+   * @param isAllowContact: 是否将表面接触的 range 也认为是 touch
    */
-  public findTouchesRange(sameRange: LineRange): LineRange | undefined {
+  public findTouchesRange(sameRange: LineRange, isAllowContact = true): LineRange | undefined {
     const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
-      if (range.isTouches(sameRange)) {
+      if (range.isTouches(sameRange) && (isAllowContact ? true : !range.isContact(sameRange))) {
         return range;
       }
     }

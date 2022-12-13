@@ -90,11 +90,14 @@ export class MappingManagerService extends Disposable {
     };
   }
 
-  public findTouchesRanges(target: LineRange): {
+  public findTouchesRanges(
+    target: LineRange,
+    isAllowContact = true,
+  ): {
     [key in EditorViewType.CURRENT | EditorViewType.INCOMING]: LineRange | undefined;
   } {
     const [turnLeftRange, turnRightRange] = [this.documentMappingTurnLeft, this.documentMappingTurnRight].map(
-      (mapping) => mapping.findTouchesRange(target),
+      (mapping) => mapping.findTouchesRange(target, isAllowContact),
     );
     return {
       [EditorViewType.CURRENT]: turnLeftRange,

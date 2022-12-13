@@ -67,6 +67,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     this.addDispose(
       this.editor.onDidChangeModelContent((e) => {
+        // console.log('onDidChangeModelContent:::>>> e', e);
+
         const model = this.editor.getModel();
         if (model && model.getLineCount() !== preLineCount) {
           preLineCount = model.getLineCount();
@@ -97,6 +99,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
             });
           });
 
+          // console.log('onDidChangeModelContent:::>>> deltaEdits', deltaEdits);
+
           deltaEdits.forEach((edits) => {
             const { startLineNumber, endLineNumber, offset } = edits;
 
@@ -108,9 +112,13 @@ export class ResultCodeEditor extends BaseCodeEditor {
              * 那么就要以当前 touch range 的结果作为要 delta 的起点
              */
             const { [EditorViewType.CURRENT]: touchTurnLeftRange, [EditorViewType.INCOMING]: touchTurnRightRange } =
-              this.mappingManagerService.findTouchesRanges(toLineRange);
+              this.mappingManagerService.findTouchesRanges(toLineRange, false);
             const { [EditorViewType.CURRENT]: nextTurnLeftRange, [EditorViewType.INCOMING]: nextTurnRightRange } =
               this.mappingManagerService.findNextLineRanges(toLineRange);
+
+            // console.log('onDidChangeModelContent:::>>> include ', includeLeftRange, includeRightRange);
+            // console.log('onDidChangeModelContent:::>>> touch ', touchTurnLeftRange, touchTurnRightRange);
+            // console.log('onDidChangeModelContent:::>>> next ', nextTurnLeftRange, nextTurnRightRange);
 
             if (includeLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
@@ -284,12 +292,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }
 
       if (mergeRangeTurnLeft) {
-        const newLineRange = mergeRangeTurnLeft.setTurnDirection(ETurnDirection.CURRENT);
+        const newLineRange = mergeRangeTurnLeft.setTurnDirection(ETurnDirection.CURRENT).setType('modify');
         this.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
       }
 
       if (mergeRangeTurnRight) {
-        const newLineRange = mergeRangeTurnRight.setTurnDirection(ETurnDirection.INCOMING);
+        const newLineRange = mergeRangeTurnRight.setTurnDirection(ETurnDirection.INCOMING).setType('modify');
         this.documentMappingTurnRight.addRange(newLineRange, mergeRange);
       }
     }

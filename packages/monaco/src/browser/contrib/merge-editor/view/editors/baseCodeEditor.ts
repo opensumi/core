@@ -149,7 +149,10 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
       };
 
       if (sameRange) {
-        _exec(range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify');
+        _exec(
+          range.type ??
+            (range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify'),
+        );
       }
     });
 
