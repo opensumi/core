@@ -61,9 +61,15 @@ function reviveRelated(related: IRelatedInformation): DiagnosticRelatedInformati
   };
 }
 
-function reviveMarker(marker: IMarkerData): Diagnostic {
+export function reviveMarker(marker: IMarkerData): Diagnostic {
   const monacoMarker: Diagnostic = {
-    code: marker.code,
+    code:
+      typeof marker.codeHref !== 'undefined'
+        ? {
+            value: String(marker.code),
+            target: marker.codeHref.codeUri,
+          }
+        : marker.code,
     severity: reviveSeverity(marker.severity) as any,
     range: reviveRange(marker.startLineNumber, marker.startColumn, marker.endLineNumber, marker.endColumn),
     message: marker.message,

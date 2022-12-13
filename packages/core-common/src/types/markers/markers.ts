@@ -1,4 +1,4 @@
-import { isEmptyObject } from '@opensumi/ide-utils';
+import { isEmptyObject, URI } from '@opensumi/ide-utils';
 
 export interface MapMap<V> {
   [key: string]: { [key: string]: V };
@@ -97,6 +97,7 @@ export interface IRelatedInformation {
  */
 export interface IMarkerData {
   code?: string;
+  codeHref?: URI;
   severity: MarkerSeverity;
   message: string;
   source?: string;

@@ -15,7 +15,7 @@ const getExtensionDir = () => {
 };
 
 const electronApp = new ElectronMainApp({
-  browserNodeIntegrated: false,
+  browserNodeIntegrated: true,
   browserUrl: URI.file(join(__dirname, '../browser/index.html')).toString(),
   modules: [WebviewElectronMainModule],
   nodeEntry: join(__dirname, '../node/index.js'),

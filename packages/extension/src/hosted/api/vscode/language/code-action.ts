@@ -84,6 +84,7 @@ export class CodeActionAdapter {
           } else {
             if (codeActionContext.only) {
               if (!candidate.kind) {
+                // TODO: 当 kind 是 Empty 时， kind === ''，此时似乎不应该提示这个 warning
                 // eslint-disable-next-line no-console
                 console.warn(
                   `Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`,
@@ -100,7 +101,7 @@ export class CodeActionAdapter {
               cacheId: [cacheId, i],
               title: candidate.title,
               command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
-              diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData),
+              diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.Diagnostic.toMarker),
               edit: candidate.edit && (Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit),
               kind: candidate.kind && candidate.kind.value,
               isPreferred: candidate.isPreferred,

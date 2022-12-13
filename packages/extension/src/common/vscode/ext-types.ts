@@ -405,7 +405,21 @@ export class Diagnostic {
   message: string;
   severity: DiagnosticSeverity;
   source?: string;
-  code?: string | number;
+  code?:
+    | string
+    | number
+    | {
+        /**
+         * A code or identifier for this diagnostic.
+         * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.
+         */
+        value: string | number;
+
+        /**
+         * A target URI to open with more information about the diagnostic error.
+         */
+        target: Uri;
+      };
   relatedInformation?: DiagnosticRelatedInformation[];
   tags?: DiagnosticTag[];
 

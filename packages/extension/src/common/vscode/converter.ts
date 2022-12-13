@@ -546,82 +546,91 @@ export function fromDocumentHighlightKind(
   return model.DocumentHighlightKind.Text;
 }
 
-export function convertDiagnosticToMarkerData(diagnostic: vscode.Diagnostic): IMarkerData {
-  return {
-    code: convertCode(diagnostic.code),
-    severity: convertSeverity(diagnostic.severity),
-    message: diagnostic.message,
-    source: diagnostic.source,
-    startLineNumber: diagnostic.range.start.line + 1,
-    startColumn: diagnostic.range.start.character + 1,
-    endLineNumber: diagnostic.range.end.line + 1,
-    endColumn: diagnostic.range.end.character + 1,
-    relatedInformation: convertRelatedInformation(diagnostic.relatedInformation),
-    tags: convertTags(diagnostic.tags),
-  };
-}
-
-function convertCode(code: string | number | undefined | { target: URI; value: string }): string | undefined {
-  if (typeof code === 'number') {
-    return String(code);
-  } else if (typeof code === 'object') {
-    return code.value;
-  } else {
-    return code;
-  }
-}
-
-function convertSeverity(severity: types.DiagnosticSeverity): MarkerSeverity {
-  switch (severity) {
-    case types.DiagnosticSeverity.Error:
-      return MarkerSeverity.Error;
-    case types.DiagnosticSeverity.Warning:
-      return MarkerSeverity.Warning;
-    case types.DiagnosticSeverity.Information:
-      return MarkerSeverity.Info;
-    case types.DiagnosticSeverity.Hint:
-      return MarkerSeverity.Hint;
-  }
-}
-
-function convertRelatedInformation(
-  diagnosticsRelatedInformation: vscode.DiagnosticRelatedInformation[] | undefined,
-): IRelatedInformation[] | undefined {
-  if (!diagnosticsRelatedInformation) {
-    return undefined;
-  }
-
-  const relatedInformation: IRelatedInformation[] = [];
-  for (const item of diagnosticsRelatedInformation) {
-    relatedInformation.push({
-      resource: item.location.uri.toString(),
-      message: item.message,
-      startLineNumber: item.location.range.start.line + 1,
-      startColumn: item.location.range.start.character + 1,
-      endLineNumber: item.location.range.end.line + 1,
-      endColumn: item.location.range.end.character + 1,
-    });
-  }
-  return relatedInformation;
-}
-
-function convertTags(tags: types.DiagnosticTag[] | undefined): MarkerTag[] | undefined {
-  if (!tags) {
-    return undefined;
-  }
-
-  const markerTags: MarkerTag[] = [];
-  for (const tag of tags) {
-    switch (tag) {
-      case types.DiagnosticTag.Unnecessary:
-        markerTags.push(MarkerTag.Unnecessary);
-        break;
-      case types.DiagnosticTag.Deprecated:
-        markerTags.push(MarkerTag.Deprecated);
-        break;
+export namespace Diagnostic {
+  export function convertCode(
+    code?:
+      | string
+      | number
+      | {
+          value: string | number;
+          target: Uri;
+        },
+  ): string | undefined {
+    if (typeof code === 'number') {
+      return String(code);
+    } else if (typeof code === 'object') {
+      return String(code.value);
+    } else {
+      return code;
     }
   }
-  return markerTags;
+
+  export function toMarker(diagnostic: vscode.Diagnostic): IMarkerData {
+    return {
+      code: convertCode(diagnostic.code),
+      codeHref: typeof diagnostic.code === 'object' ? new URI(diagnostic.code.target) : undefined,
+      severity: convertSeverity(diagnostic.severity),
+      message: diagnostic.message,
+      source: diagnostic.source,
+      startLineNumber: diagnostic.range.start.line + 1,
+      startColumn: diagnostic.range.start.character + 1,
+      endLineNumber: diagnostic.range.end.line + 1,
+      endColumn: diagnostic.range.end.character + 1,
+      relatedInformation: convertRelatedInformation(diagnostic.relatedInformation),
+      tags: convertTags(diagnostic.tags),
+    };
+  }
+  export function convertSeverity(severity: types.DiagnosticSeverity): MarkerSeverity {
+    switch (severity) {
+      case types.DiagnosticSeverity.Error:
+        return MarkerSeverity.Error;
+      case types.DiagnosticSeverity.Warning:
+        return MarkerSeverity.Warning;
+      case types.DiagnosticSeverity.Information:
+        return MarkerSeverity.Info;
+      case types.DiagnosticSeverity.Hint:
+        return MarkerSeverity.Hint;
+    }
+  }
+
+  export function convertRelatedInformation(
+    diagnosticsRelatedInformation: vscode.DiagnosticRelatedInformation[] | undefined,
+  ): IRelatedInformation[] | undefined {
+    if (!diagnosticsRelatedInformation) {
+      return undefined;
+    }
+
+    const relatedInformation: IRelatedInformation[] = [];
+    for (const item of diagnosticsRelatedInformation) {
+      relatedInformation.push({
+        resource: item.location.uri.toString(),
+        message: item.message,
+        startLineNumber: item.location.range.start.line + 1,
+        startColumn: item.location.range.start.character + 1,
+        endLineNumber: item.location.range.end.line + 1,
+        endColumn: item.location.range.end.character + 1,
+      });
+    }
+    return relatedInformation;
+  }
+  function convertTags(tags: types.DiagnosticTag[] | undefined): MarkerTag[] | undefined {
+    if (!tags) {
+      return undefined;
+    }
+
+    const markerTags: MarkerTag[] = [];
+    for (const tag of tags) {
+      switch (tag) {
+        case types.DiagnosticTag.Unnecessary:
+          markerTags.push(MarkerTag.Unnecessary);
+          break;
+        case types.DiagnosticTag.Deprecated:
+          markerTags.push(MarkerTag.Deprecated);
+          break;
+      }
+    }
+    return markerTags;
+  }
 }
 
 export function toSelection(selection: model.Selection): types.Selection {
