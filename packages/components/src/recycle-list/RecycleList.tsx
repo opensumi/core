@@ -223,7 +223,7 @@ export const RecycleList: React.FC<IRecycleListProps> = ({
       count++;
     }
     return count;
-  }, [data]);
+  }, [data, Footer, Header]);
 
   const renderItem = ({ index, style }): JSX.Element => {
     let node;
