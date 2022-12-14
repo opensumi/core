@@ -1,12 +1,12 @@
 import { Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { ISingleEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { MappingManagerService } from '../mapping-manager.service';
 import { DocumentMapping } from '../model/document-mapping';
 import { LineRange } from '../model/line-range';
 import {
-  EditorViewType,
   IConflictActionsEvent,
   ACCEPT_CURRENT_ACTIONS,
   IGNORE_ACTIONS,
@@ -16,10 +16,13 @@ import {
   REVOKE_ACTIONS,
   IActionsProvider,
   ETurnDirection,
+  APPEND_ACTIONS,
 } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
+
+// interface IEditsElement =
 
 export class ActionsManager extends Disposable {
   private currentView: BaseCodeEditor | undefined;
@@ -30,7 +33,7 @@ export class ActionsManager extends Disposable {
     super();
   }
 
-  private applyLineRangeEdits(edits: { range: IRange; text: string | null }[]): void {
+  private applyLineRangeEdits(edits: ISingleEditOperation[]): void {
     if (!this.resultView) {
       return;
     }
@@ -40,9 +43,12 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    model.pushStackElement();
-    model.pushEditOperations(
-      null,
+    /**
+     * 暂时先不处理 undo 和 redo 的情况
+     * 可放在第二期来实现
+     * 到时再采用 pushEditOperations 来处理
+     */
+    model.applyEdits(
       edits.map((edit) => {
         const { range, text } = edit;
 
@@ -52,9 +58,8 @@ export class ActionsManager extends Disposable {
           text,
         };
       }),
-      () => null,
+      false,
     );
-    model.pushStackElement();
   }
 
   private pickMapping(range: LineRange): DocumentMapping | undefined {
@@ -82,9 +87,19 @@ export class ActionsManager extends Disposable {
   }
 
   /**
-   * 接收 accept current 时覆写文本内容
+   * 接收 accept current 覆写或 accept append 追加文本内容
    */
-  private handleAcceptCurrent(range: LineRange): void {
+  private handleAcceptChange(
+    range: LineRange,
+    acquireEdits: (
+      range: LineRange,
+      oppositeRange: LineRange,
+      assistData: {
+        applyText: string;
+        eol: string;
+      },
+    ) => ISingleEditOperation[],
+  ): void {
     const mapping = this.pickMapping(range);
     if (!mapping) {
       return;
@@ -96,20 +111,33 @@ export class ActionsManager extends Disposable {
     const eol = model.getEOL();
 
     const applyText = model.getValueInRange(range.toRange());
-    const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
+    const oppositeRange = mapping.adjacentComputeRangeMap.get(range.id);
 
-    if (!sameRange) {
+    if (!oppositeRange) {
       return;
     }
 
-    this.applyLineRangeEdits([
-      {
-        range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
-        text: applyText + (sameRange.isEmpty ? eol : ''),
-      },
-    ]);
+    this.applyLineRangeEdits(
+      acquireEdits(range, oppositeRange, {
+        applyText,
+        eol,
+      }),
+    );
 
     this.markComplete(range);
+
+    /**
+     * 如果 oppositeRange 是 merge range 合成的，则需要更新 current editor 和 incoming editor 的 actions
+     */
+    if (oppositeRange.isMerge) {
+      this.currentView?.updateActions();
+      this.incomingView?.updateActions();
+    }
+
+    /**
+     * accept current 执行完之后都需要更新一遍 result 视图的 actions
+     */
+    this.resultView?.updateActions();
   }
 
   /**
@@ -126,20 +154,36 @@ export class ActionsManager extends Disposable {
 
     if (turnDirection === ETurnDirection.CURRENT) {
       this.mappingManagerService.revokeActionsTurnLeft(range);
-    } else if (turnDirection === ETurnDirection.INCOMING) {
+    }
+
+    if (turnDirection === ETurnDirection.INCOMING) {
       this.mappingManagerService.revokeActionsTurnRight(range);
     }
 
+    if (turnDirection === ETurnDirection.BOTH) {
+      this.mappingManagerService.revokeActionsTurnLeft(range);
+      this.mappingManagerService.revokeActionsTurnRight(range);
+    }
+
+    const model = viewEditor.getModel()!;
+    const eol = model.getEOL();
     const { text } = metaData;
 
     // 为 null 则说明是删除文本
     if (text) {
-      this.applyLineRangeEdits([{ range: range.toRange(), text }]);
+      this.applyLineRangeEdits([{ range: range.toRange(), text: text + (range.isEmpty ? eol : '') }]);
     } else {
       this.applyLineRangeEdits([{ range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER), text: null }]);
     }
 
-    viewEditor!.updateDecorations();
+    this.resultView?.updateActions();
+
+    if (turnDirection === ETurnDirection.BOTH) {
+      this.incomingView?.updateDecorations().updateActions();
+      this.currentView?.updateDecorations().updateActions();
+    } else {
+      viewEditor!.updateDecorations().updateActions();
+    }
   }
 
   /**
@@ -188,6 +232,8 @@ export class ActionsManager extends Disposable {
 
     this.markComplete(reverseLeftRange);
     this.markComplete(reverseRightRange);
+
+    this.resultView?.updateActions();
   }
 
   private markComplete(range: LineRange): void {
@@ -195,12 +241,12 @@ export class ActionsManager extends Disposable {
 
     if (turnDirection === ETurnDirection.CURRENT) {
       this.mappingManagerService.markCompleteTurnLeft(range);
-      this.currentView?.updateDecorations();
+      this.currentView!.updateDecorations().updateActions();
     }
 
     if (turnDirection === ETurnDirection.INCOMING) {
       this.mappingManagerService.markCompleteTurnRight(range);
-      this.incomingView?.updateDecorations();
+      this.incomingView!.updateDecorations().updateActions();
     }
   }
 
@@ -230,11 +276,19 @@ export class ActionsManager extends Disposable {
         this.incomingView.onDidConflictActions,
       )(({ range, action }) => {
         if (action === ACCEPT_CURRENT_ACTIONS) {
-          this.handleAcceptCurrent(range);
+          this.handleAcceptChange(range, (range, oppositeRange, { applyText, eol }) => [
+            {
+              range: range.isEmpty
+                ? oppositeRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER)
+                : oppositeRange.toRange(),
+              text: applyText + (oppositeRange.isEmpty ? eol : ''),
+            },
+          ]);
         }
 
         if (action === IGNORE_ACTIONS) {
           this.markComplete(range);
+          this.resultView?.updateActions();
         }
 
         if (action === REVOKE_ACTIONS) {
@@ -243,6 +297,24 @@ export class ActionsManager extends Disposable {
 
         if (action === ACCEPT_COMBINATION_ACTIONS) {
           this.handleAcceptCombination(range);
+        }
+
+        /**
+         * range 如果是 merge range 合成的，当 accept 某一视图的代码变更时，另一边的 accpet 就变成 append 追加内容，而不是覆盖内容
+         */
+        if (action === APPEND_ACTIONS) {
+          this.handleAcceptChange(range, (_, oppositeRange, { applyText, eol }) => [
+            /**
+             * 在 diff 区域的最后一行追加代码内容
+             */
+            {
+              range: LineRange.fromPositions(
+                oppositeRange.endLineNumberExclusive,
+                oppositeRange.endLineNumberExclusive,
+              ).toRange(),
+              text: applyText + eol,
+            },
+          ]);
         }
 
         this.resultView!.updateDecorations();
@@ -306,6 +378,8 @@ export class ActionsManager extends Disposable {
             type = IGNORE_ACTIONS;
           } else if (classList.contains(REVOKE_ACTIONS)) {
             type = REVOKE_ACTIONS;
+          } else if (classList.contains(APPEND_ACTIONS)) {
+            type = APPEND_ACTIONS;
           }
 
           if (type && action) {

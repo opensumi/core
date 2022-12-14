@@ -16,6 +16,7 @@ import {
   ADDRESSING_TAG_CLASSNAME,
   TActionsType,
   IActionsDescription,
+  APPEND_ACTIONS,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -34,20 +35,25 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return super.prepareRenderDecorations(1);
   }
 
-  private provideActionsItems(): IActionsDescription[] {
+  protected provideActionsItems(): IActionsDescription[] {
     const ranges = this.documentMapping.getOriginalRange();
     return ranges
       .filter((r) => !r.isComplete)
       .map((range) => {
         const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
+        let iconActions = CONFLICT_ACTIONS_ICON.RIGHT;
+
+        if (range.isMerge) {
+          const oppositeRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
+          if (oppositeRange && oppositeRange.isComplete) {
+            iconActions = CONFLICT_ACTIONS_ICON.ROTATE_RIGHT;
+          }
+        }
+
         return {
           range,
           decorationOptions: {
-            glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
-              CONFLICT_ACTIONS_ICON.RIGHT,
-              DECORATIONS_CLASSNAME.offset_left,
-              idMark,
-            ),
+            glyphMarginClassName: DECORATIONS_CLASSNAME.combine(iconActions, DECORATIONS_CLASSNAME.offset_left, idMark),
             marginClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.CLOSE, idMark),
           },
         };
@@ -71,11 +77,6 @@ export class CurrentCodeEditor extends BaseCodeEditor {
 
   public getEditorViewType(): EditorViewType {
     return EditorViewType.CURRENT;
-  }
-
-  public override updateDecorations(): void {
-    super.updateDecorations();
-    this.conflictActions.updateActions(this.provideActionsItems());
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
@@ -107,8 +108,14 @@ export class CurrentCodeEditor extends BaseCodeEditor {
             withViewType: EditorViewType.CURRENT,
             action: ACCEPT_CURRENT_ACTIONS,
           });
-        } else if (actionType === IGNORE_ACTIONS) {
+        }
+
+        if (actionType === IGNORE_ACTIONS) {
           this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE_ACTIONS });
+        }
+
+        if (actionType === APPEND_ACTIONS) {
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: APPEND_ACTIONS });
         }
       },
     });
