@@ -22,8 +22,6 @@ import {
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
 
-// interface IEditsElement =
-
 export class ActionsManager extends Disposable {
   private currentView: BaseCodeEditor | undefined;
   private resultView: ResultCodeEditor | undefined;
@@ -187,9 +185,7 @@ export class ActionsManager extends Disposable {
   }
 
   /**
-   * 接受 accept combination 时讲左右文本内容分别写入中间视图
-   * 但这里需要注意的是
-   * 在执行 applyLineRangeEdits 时得用 metaMergeRanges 数组里的 range
+   * 接受 accept combination 时将左右代码内容交替插入中间视图
    */
   private handleAcceptCombination(range: LineRange): void {
     const reverseLeftRange = this.mappingManagerService.documentMappingTurnLeft.reverse(range);
@@ -199,36 +195,43 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    const { metaMergeRanges } = range;
-    const editTexts: { text: string | undefined; range: IRange }[] = [];
+    const [metaTurnLeftMergeRanges, metaTurnRightMergeRanges] = [
+      reverseLeftRange.metaMergeRanges,
+      reverseRightRange.metaMergeRanges,
+    ];
 
-    const pushEdits = (metaRange: LineRange, viewEditor: BaseCodeEditor, iterable: IterableIterator<LineRange>) => {
-      const { value } = iterable.next();
-      if (value) {
-        const model = viewEditor.getModel()!;
-        const eol = model.getEOL();
-        const range = metaRange.isEmpty
-          ? metaRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER)
-          : metaRange.toRange();
-        const text = (metaRange.isEmpty ? eol : '') + model.getValueInRange(value.toRange());
+    const iterableLeftRange = new Set(metaTurnLeftMergeRanges).values();
+    const iterableRightRange = new Set(metaTurnRightMergeRanges).values();
 
-        editTexts.push({ range, text });
-      }
-    };
+    /**
+     * 0: left, 1: right
+     * 由于 combination 的特性, metaMergeRanges 列表一定是左右交替的
+     * 所以在这里需要判断出 metaMergeRanges 列表里第一个 range 的方向 turnDirection 是左还是右
+     */
+    let flagDirection = metaTurnLeftMergeRanges[0].startLineNumber === reverseLeftRange.startLineNumber ? 0 : 1;
+    const concatLength = metaTurnLeftMergeRanges.length + metaTurnRightMergeRanges.length;
 
-    const iterableLeftRange = new Set(reverseLeftRange.metaMergeRanges).values();
-    const iterableRightRange = new Set(reverseRightRange.metaMergeRanges).values();
+    let text = '';
 
-    for (const metaRange of metaMergeRanges) {
-      if (metaRange.turnDirection === ETurnDirection.CURRENT) {
-        pushEdits(metaRange, this.currentView!, iterableLeftRange);
-      }
-      if (metaRange.turnDirection === ETurnDirection.INCOMING) {
-        pushEdits(metaRange, this.incomingView!, iterableRightRange);
-      }
-    }
+    Array.from({ length: concatLength }).forEach((_, idx) => {
+      const viewEditor = flagDirection === 0 ? this.currentView : this.incomingView;
+      const model = viewEditor!.getModel()!;
+      const eol = idx === concatLength - 1 ? '' : model.getEOL();
 
-    this.applyLineRangeEdits(editTexts.map(({ text, range }) => ({ range, text: text || null })));
+      const { value } = flagDirection === 0 ? iterableLeftRange.next() : iterableRightRange.next();
+
+      text += model.getValueInRange(value.toRange()) + eol;
+
+      // 换方向
+      flagDirection ^= 1;
+    });
+
+    this.applyLineRangeEdits([
+      {
+        text,
+        range: range.toRange(),
+      },
+    ]);
 
     this.markComplete(reverseLeftRange);
     this.markComplete(reverseRightRange);

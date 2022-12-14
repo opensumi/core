@@ -45,7 +45,7 @@ export class MergeEditorService extends Disposable {
   private initListenEvent(): void {
     this.addDispose(
       this.resultView.onDidChangeContent(() => {
-        this.resultView.updateDecorations();
+        this.resultView.updateDecorations().updateActions();
         this.currentView.launchChange();
         this.incomingView.launchChange();
       }),
