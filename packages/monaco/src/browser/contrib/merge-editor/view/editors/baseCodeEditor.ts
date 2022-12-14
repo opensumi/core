@@ -159,9 +159,17 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     return [changesResult, innerChangesResult];
   }
 
-  public updateDecorations(): void {
+  protected abstract provideActionsItems(ranges?: LineRange[]): IActionsDescription[];
+
+  public updateActions(): this {
+    this.conflictActions.updateActions(this.provideActionsItems());
+    return this;
+  }
+
+  public updateDecorations(): this {
     const [r, i] = this.prepareRenderDecorations();
     this.decorations.updateDecorations(r, i);
+    return this;
   }
 
   protected registerActionsProvider(provider: IActionsProvider): void {

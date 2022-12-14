@@ -31,7 +31,13 @@ export class MappingManagerService extends Disposable {
       }
 
       range.setComplete(false);
-      sameRange.setComplete(false);
+      /**
+       * 这里需要从 mapping 的 adjacentComputeRangeMap 集合里获取并修改 complete 状态，否则变量内存就不是指向同一引用
+       */
+      const realSameRange = mapping.adjacentComputeRangeMap.get(range.id);
+      if (realSameRange) {
+        realSameRange.setComplete(false);
+      }
     };
   }
 

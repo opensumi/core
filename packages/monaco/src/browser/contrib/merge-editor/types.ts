@@ -119,6 +119,9 @@ export namespace DECORATIONS_CLASSNAME {
 
   export const offset_right = 'offset-right';
   export const offset_left = 'offset-left';
+
+  export const rotate_turn_left = 'rotate-turn-left';
+  export const rotate_turn_right = 'rotate-turn-right';
 }
 
 export interface IConflictActionsEvent {

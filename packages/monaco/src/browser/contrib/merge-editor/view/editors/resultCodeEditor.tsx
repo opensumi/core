@@ -1,5 +1,6 @@
 import { Injectable, Injector } from '@opensumi/di';
 import { Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
@@ -66,7 +67,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     );
 
     this.addDispose(
-      this.editor.onDidChangeModelContent((e) => {
+      this.editor.onDidChangeModelContent(async (e) => {
         // console.log('onDidChangeModelContent:::>>> e', e);
 
         const model = this.editor.getModel();
@@ -150,11 +151,14 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private getAllDiffRanges(): LineRange[] {
-    return this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange());
+    return distinct(
+      this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
+      (range) => range.id,
+    );
   }
 
-  private provideActionsItems(ranges: LineRange[]): IActionsDescription[] {
-    return ranges
+  protected provideActionsItems(ranges?: LineRange[]): IActionsDescription[] {
+    return (ranges || [])
       .filter((r) => r.isComplete || r.isMerge)
       .map((range) => ({
         range,
@@ -322,15 +326,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
      * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
      * 则需要重新获取一次
      */
-    let changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
-
-    const map = new Map();
-    for (const result of changesResult) {
-      if (!map.has(result.id)) {
-        map.set(result.id, result);
-      }
-    }
-    changesResult = [...map.values()];
+    const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
     return [changesResult, innerChangesResult];
   }
 
@@ -359,10 +355,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return EditorViewType.RESULT;
   }
 
-  public override updateDecorations(): void {
-    super.updateDecorations();
-    // 每次 update decoration 时也需要更新 conflict actions 操作
+  public override updateActions(): this {
     this.conflictActions.updateActions(this.provideActionsItems(this.getAllDiffRanges()));
+    return this;
   }
 
   public getContentInTimeMachineDocument(rangeId: string): ITimeMachineMetaData | undefined {

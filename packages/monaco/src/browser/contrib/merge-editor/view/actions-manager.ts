@@ -111,6 +111,10 @@ export class ActionsManager extends Disposable {
     ]);
 
     this.markComplete(range);
+    /**
+     * 操作完 result 视图的 actions 都需要更新一遍
+     */
+    this.resultView?.updateActions();
   }
 
   /**
@@ -127,7 +131,14 @@ export class ActionsManager extends Disposable {
 
     if (turnDirection === ETurnDirection.CURRENT) {
       this.mappingManagerService.revokeActionsTurnLeft(range);
-    } else if (turnDirection === ETurnDirection.INCOMING) {
+    }
+
+    if (turnDirection === ETurnDirection.INCOMING) {
+      this.mappingManagerService.revokeActionsTurnRight(range);
+    }
+
+    if (turnDirection === ETurnDirection.BOTH) {
+      this.mappingManagerService.revokeActionsTurnLeft(range);
       this.mappingManagerService.revokeActionsTurnRight(range);
     }
 
@@ -142,7 +153,14 @@ export class ActionsManager extends Disposable {
       this.applyLineRangeEdits([{ range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER), text: null }]);
     }
 
-    viewEditor!.updateDecorations();
+    this.resultView?.updateActions();
+
+    if (turnDirection === ETurnDirection.BOTH) {
+      this.incomingView?.updateDecorations().updateActions();
+      this.currentView?.updateDecorations().updateActions();
+    } else {
+      viewEditor!.updateDecorations().updateActions();
+    }
   }
 
   /**
@@ -191,6 +209,8 @@ export class ActionsManager extends Disposable {
 
     this.markComplete(reverseLeftRange);
     this.markComplete(reverseRightRange);
+
+    this.resultView?.updateActions();
   }
 
   private markComplete(range: LineRange): void {
@@ -198,12 +218,12 @@ export class ActionsManager extends Disposable {
 
     if (turnDirection === ETurnDirection.CURRENT) {
       this.mappingManagerService.markCompleteTurnLeft(range);
-      this.currentView?.updateDecorations();
+      this.currentView!.updateDecorations().updateActions();
     }
 
     if (turnDirection === ETurnDirection.INCOMING) {
       this.mappingManagerService.markCompleteTurnRight(range);
-      this.incomingView?.updateDecorations();
+      this.incomingView!.updateDecorations().updateActions();
     }
   }
 
@@ -238,6 +258,7 @@ export class ActionsManager extends Disposable {
 
         if (action === IGNORE_ACTIONS) {
           this.markComplete(range);
+          this.resultView?.updateActions();
         }
 
         if (action === REVOKE_ACTIONS) {

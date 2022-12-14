@@ -28,18 +28,27 @@ export class IncomingCodeEditor extends BaseCodeEditor {
     return { readOnly: true, lineDecorationsWidth: 42 };
   }
 
-  private provideActionsItems(): IActionsDescription[] {
+  protected provideActionsItems(): IActionsDescription[] {
     const ranges = this.documentMapping.getModifiedRange();
     return ranges
       .filter((r) => !r.isComplete)
       .map((range) => {
         const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
+        let rotataClassName = '';
+        if (range.isMerge) {
+          const sameRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
+          if (sameRange && sameRange.isComplete) {
+            rotataClassName = DECORATIONS_CLASSNAME.rotate_turn_right;
+          }
+        }
+
         return {
           range,
           decorationOptions: {
             glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
               CONFLICT_ACTIONS_ICON.CLOSE,
               DECORATIONS_CLASSNAME.offset_right,
+              rotataClassName,
               idMark,
             ),
             firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.LEFT, idMark),
@@ -63,11 +72,6 @@ export class IncomingCodeEditor extends BaseCodeEditor {
 
   public getEditorViewType(): EditorViewType {
     return EditorViewType.INCOMING;
-  }
-
-  public override updateDecorations(): void {
-    super.updateDecorations();
-    this.conflictActions.updateActions(this.provideActionsItems());
   }
 
   public inputDiffComputingResult(changes: LineRangeMapping[]): void {
