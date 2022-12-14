@@ -68,8 +68,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
     this.addDispose(
       this.editor.onDidChangeModelContent(async (e) => {
-        // console.log('onDidChangeModelContent:::>>> e', e);
-
         const model = this.editor.getModel();
         if (model && model.getLineCount() !== preLineCount) {
           preLineCount = model.getLineCount();
@@ -100,8 +98,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
             });
           });
 
-          // console.log('onDidChangeModelContent:::>>> deltaEdits', deltaEdits);
-
           deltaEdits.forEach((edits) => {
             const { startLineNumber, endLineNumber, offset } = edits;
 
@@ -116,10 +112,6 @@ export class ResultCodeEditor extends BaseCodeEditor {
               this.mappingManagerService.findTouchesRanges(toLineRange, false);
             const { [EditorViewType.CURRENT]: nextTurnLeftRange, [EditorViewType.INCOMING]: nextTurnRightRange } =
               this.mappingManagerService.findNextLineRanges(toLineRange);
-
-            // console.log('onDidChangeModelContent:::>>> include ', includeLeftRange, includeRightRange);
-            // console.log('onDidChangeModelContent:::>>> touch ', touchTurnLeftRange, touchTurnRightRange);
-            // console.log('onDidChangeModelContent:::>>> next ', nextTurnLeftRange, nextTurnRightRange);
 
             if (includeLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
