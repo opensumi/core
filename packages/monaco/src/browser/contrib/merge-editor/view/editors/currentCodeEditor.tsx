@@ -42,8 +42,8 @@ export class CurrentCodeEditor extends BaseCodeEditor {
         const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
         let rotataClassName = '';
         if (range.isMerge) {
-          const sameRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
-          if (sameRange && sameRange.isComplete) {
+          const oppositeRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
+          if (oppositeRange && oppositeRange.isComplete) {
             rotataClassName += DECORATIONS_CLASSNAME.rotate_turn_left;
           }
         }

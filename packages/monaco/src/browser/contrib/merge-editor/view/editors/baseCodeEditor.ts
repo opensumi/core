@@ -140,18 +140,22 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     const innerChangesResult: InnerRange[][] = [];
 
     turnLeft.forEach((range, idx) => {
-      const sameRange = turnRight[idx];
+      const oppositeRange = turnRight[idx];
       const _exec = (type: LineRangeType) => {
         const direction = withBase === 1 ? ETurnDirection.CURRENT : ETurnDirection.INCOMING;
-        sameRange.setType(type).setTurnDirection(sameRange.turnDirection ?? direction);
+        oppositeRange.setType(type).setTurnDirection(oppositeRange.turnDirection ?? direction);
         changesResult.push(range.setType(type).setTurnDirection(range.turnDirection ?? direction));
         // inner range 先不计算
       };
 
-      if (sameRange) {
+      if (oppositeRange) {
         _exec(
           range.type ??
-            (range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify'),
+            (range.isTendencyRight(oppositeRange)
+              ? 'remove'
+              : range.isTendencyLeft(oppositeRange)
+              ? 'insert'
+              : 'modify'),
         );
       }
     });

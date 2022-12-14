@@ -249,7 +249,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
        *  3. { startLine: 30，endLine: 40 } // 方向向右
        *
        * 首先这三者的 turn directio 方向一定是左右交替的
-       * 那么第二个 lineRange 的对位关系 sameLineRange 的起点 startLine 就一定会比第一个 lineRange 的起点 startLine 少一个高度
+       * 那么第二个 lineRange 的对位关系 oppositeLineRange 的起点 startLine 就一定会比第一个 lineRange 的起点 startLine 少一个高度
        * 这个高度的差距会影响后续所有的 conflict action 操作（因为缺失的这部分高度会导致 accept 操作后的代码内容丢失）
        *
        * 而我们只需要补齐这第二个和倒数第二个的高度即可，中间部分的所有 lineRange 都会在最终合并到一起

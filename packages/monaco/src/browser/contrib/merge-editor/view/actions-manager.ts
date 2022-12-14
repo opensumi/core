@@ -97,25 +97,25 @@ export class ActionsManager extends Disposable {
     const eol = model.getEOL();
 
     const applyText = model.getValueInRange(range.toRange());
-    const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
+    const oppositeRange = mapping.adjacentComputeRangeMap.get(range.id);
 
-    if (!sameRange) {
+    if (!oppositeRange) {
       return;
     }
 
     this.applyLineRangeEdits([
       {
-        range: range.isEmpty ? sameRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : sameRange.toRange(),
-        text: applyText + (sameRange.isEmpty ? eol : ''),
+        range: range.isEmpty ? oppositeRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : oppositeRange.toRange(),
+        text: applyText + (oppositeRange.isEmpty ? eol : ''),
       },
     ]);
 
     this.markComplete(range);
 
     /**
-     * 如果 sameRange 是 merge range 合成的，则需要更新 current editor 和 incoming editor 的 actions
+     * 如果 oppositeRange 是 merge range 合成的，则需要更新 current editor 和 incoming editor 的 actions
      */
-    if (sameRange.isMerge) {
+    if (oppositeRange.isMerge) {
       this.currentView?.updateActions();
       this.incomingView?.updateActions();
     }

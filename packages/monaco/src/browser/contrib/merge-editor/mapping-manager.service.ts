@@ -21,11 +21,11 @@ export class MappingManagerService extends Disposable {
     this.documentMappingTurnRight = this.injector.get(DocumentMapping, [EDiffRangeTurn.MODIFIED]);
   }
 
-  private revokeActionsFactory(turn: EDiffRangeTurn): (sameRange: LineRange) => void {
+  private revokeActionsFactory(turn: EDiffRangeTurn): (oppositeRange: LineRange) => void {
     const mapping = turn === EDiffRangeTurn.ORIGIN ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
-    return (sameRange: LineRange) => {
-      const range = mapping.reverse(sameRange);
+    return (oppositeRange: LineRange) => {
+      const range = mapping.reverse(oppositeRange);
       if (!range) {
         return;
       }
@@ -34,9 +34,9 @@ export class MappingManagerService extends Disposable {
       /**
        * 这里需要从 mapping 的 adjacentComputeRangeMap 集合里获取并修改 complete 状态，否则变量内存就不是指向同一引用
        */
-      const realSameRange = mapping.adjacentComputeRangeMap.get(range.id);
-      if (realSameRange) {
-        realSameRange.setComplete(false);
+      const realOppositeRange = mapping.adjacentComputeRangeMap.get(range.id);
+      if (realOppositeRange) {
+        realOppositeRange.setComplete(false);
       }
     };
   }
@@ -45,23 +45,23 @@ export class MappingManagerService extends Disposable {
     const mapping = turn === EDiffRangeTurn.ORIGIN ? this.documentMappingTurnLeft : this.documentMappingTurnRight;
 
     return (range: LineRange) => {
-      const sameRange = mapping.adjacentComputeRangeMap.get(range.id);
-      if (!sameRange) {
+      const oppositeRange = mapping.adjacentComputeRangeMap.get(range.id);
+      if (!oppositeRange) {
         return;
       }
 
       // 标记该 range 区域已经解决完成
       range.setComplete(true);
-      sameRange.setComplete(true);
+      oppositeRange.setComplete(true);
 
       /**
        * 如果被标记 complete 的 range 是 merge range 合成的，则需要将另一个 mapping 的对应关系也标记成 complete
        */
-      if (sameRange.turnDirection === ETurnDirection.BOTH) {
+      if (oppositeRange.turnDirection === ETurnDirection.BOTH) {
         const reverseMapping =
           range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnRight : this.documentMappingTurnLeft;
 
-        const reverse = reverseMapping.reverse(sameRange);
+        const reverse = reverseMapping.reverse(oppositeRange);
         if (!reverse) {
           return;
         }
@@ -92,12 +92,12 @@ export class MappingManagerService extends Disposable {
     this.markCompleteFactory(EDiffRangeTurn.MODIFIED)(range);
   }
 
-  public revokeActionsTurnLeft(sameRange: LineRange): void {
-    this.revokeActionsFactory(EDiffRangeTurn.ORIGIN)(sameRange);
+  public revokeActionsTurnLeft(oppositeRange: LineRange): void {
+    this.revokeActionsFactory(EDiffRangeTurn.ORIGIN)(oppositeRange);
   }
 
-  public revokeActionsTurnRight(sameRange: LineRange): void {
-    this.revokeActionsFactory(EDiffRangeTurn.MODIFIED)(sameRange);
+  public revokeActionsTurnRight(oppositeRange: LineRange): void {
+    this.revokeActionsFactory(EDiffRangeTurn.MODIFIED)(oppositeRange);
   }
 
   /**
@@ -108,7 +108,7 @@ export class MappingManagerService extends Disposable {
     [key in EditorViewType.CURRENT | EditorViewType.INCOMING]: LineRange | undefined;
   } {
     const [turnLeftRange, turnRightRange] = [this.documentMappingTurnLeft, this.documentMappingTurnRight].map(
-      (mapping) => mapping.findNextSameRange(target),
+      (mapping) => mapping.findNextOppositeRange(target),
     );
     return {
       [EditorViewType.CURRENT]: turnLeftRange,
