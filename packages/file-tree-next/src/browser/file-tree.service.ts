@@ -54,8 +54,6 @@ export interface ISortNode {
 
 @Injectable()
 export class FileTreeService extends Tree implements IFileTreeService {
-  private static DEFAULT_REFRESH_DELAY = 100;
-
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
 
@@ -108,8 +106,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
 
   private _isCompactMode: boolean;
 
-  private willRefreshDeferred: Deferred<void> | null;
-
   private effectedNodes: Directory[] = [];
 
   private readonly onWorkspaceChangeEmitter = new Emitter<Directory>();
@@ -157,16 +153,8 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return this.onFilterModeChangeEmitter.event;
   }
 
-  get willRefreshPromise() {
-    return this.willRefreshDeferred?.promise;
-  }
-
   get isCompactMode(): boolean {
     return this._isCompactMode;
-  }
-
-  set isCompactMode(value: boolean) {
-    this._isCompactMode = value;
   }
 
   get contextKey() {
@@ -528,7 +516,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     const node = this.getNodeByPathOrUri(path);
     if (node && node.parent) {
       // 压缩节点情况下，刷新父节点目录即可
-      if (node.displayName.indexOf(Path.separator) > 0 && !notRefresh) {
+      if (this.isCompactMode && !notRefresh) {
         this.refresh(node.parent as Directory);
       } else {
         (node.parent as Directory).removeNode(node.path);
@@ -674,11 +662,6 @@ export class FileTreeService extends Tree implements IFileTreeService {
    * 刷新指定下的所有子节点
    */
   async refresh(node: Directory = this.root as Directory) {
-    // 如果正在刷新，就不要创建新的 Defer
-    // 否则会导致下面的 callback 闭包 resolve 的仍然是之前捕获的旧 defer
-    if (!this.willRefreshDeferred) {
-      this.willRefreshDeferred = new Deferred();
-    }
     if (!node) {
       return;
     }
@@ -691,27 +674,18 @@ export class FileTreeService extends Tree implements IFileTreeService {
     return this.doHandleQueueChange();
   }
 
-  private doHandleQueueChange = throttle(
-    async () => {
-      if (!this.refreshable) {
-        return;
-      }
-      try {
-        await this.flushEventQueue();
-      } catch (error) {
-        this.logger.error('flush file change event queue error:', error);
-      } finally {
-        this.onNodeRefreshedEmitter.fire();
-        this.willRefreshDeferred?.resolve();
-        this.willRefreshDeferred = null;
-      }
-    },
-    FileTreeService.DEFAULT_REFRESH_DELAY,
-    {
-      leading: true,
-      trailing: true,
-    },
-  );
+  private async doHandleQueueChange() {
+    if (!this.refreshable) {
+      return;
+    }
+    try {
+      await this.flushEventQueue();
+    } catch (error) {
+      this.logger.error('flush file change event queue error:', error);
+    } finally {
+      this.onNodeRefreshedEmitter.fire();
+    }
+  }
 
   /**
    * 将文件排序并删除多余文件（指已有父文件夹将被删除）

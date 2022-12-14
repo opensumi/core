@@ -1192,11 +1192,15 @@ export class FileTreeModelService {
 
   private proxyPrompt = (promptHandle: RenamePromptHandle | NewPromptHandle) => {
     let isCommit = false;
-    const selectNodeIfNodeExist = async (path: string) => {
+    const selectNodeIfNodeExist = async (pathOrUri: string | URI) => {
       // 文件树更新后尝试定位文件位置
-      const node = await this.fileTreeService.getNodeByPathOrUri(path);
-      if (node && node.path === path) {
-        this.selectFileDecoration(node);
+      const node = await this.fileTreeService.getNodeByPathOrUri(pathOrUri);
+      if (node) {
+        if (Directory.is(node)) {
+          this.selectFileDecoration(node);
+        } else {
+          this.location(node.uri);
+        }
       }
     };
     const commit = async (newName) => {
@@ -1219,6 +1223,7 @@ export class FileTreeModelService {
           from = (target.parent as Directory).uri.resolve(nameFragments.slice(0, index + 1).join(Path.separator));
           to = (target.parent as Directory).uri.resolve(newNameFragments.concat().join(Path.separator));
         }
+        this.fileTreeService.updateRefreshable(true);
         const error = await this.fileTreeAPI.mv(from, to, target.type === TreeNodeType.CompositeTreeNode);
         promptHandle.removeAddonAfter();
         if (error) {
@@ -1227,6 +1232,7 @@ export class FileTreeModelService {
             message: error,
             value: newName,
           };
+          this.fileTreeService.updateRefreshable(false);
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
@@ -1256,24 +1262,28 @@ export class FileTreeModelService {
             tooltip: this.fileTreeAPI.getReadableTooltip(to),
           });
           this.treeModel.dispatchChange();
+          let promise;
           if ((target.parent as Directory).children?.find((child) => target.path.indexOf(child.path) >= 0)) {
             // 当重命名后的压缩节点在父节点中存在子节点时，刷新父节点
             // 如：
             // 压缩节点 001/002 修改为 003/002 时
             // 同时父节点下存在 003 空节点
-            await this.fileTreeService.refresh(target.parent as Directory);
+            promise = this.fileTreeService.refresh(target.parent as Directory);
           } else {
             // 压缩节点重命名时，刷新文件夹更新子文件路径
-            await this.fileTreeService.refresh(target as Directory);
+            promise = this.fileTreeService.refresh(target as Directory);
           }
+          promise.then(() => {
+            selectNodeIfNodeExist(to);
+          });
         }
         promptHandle.removeAddonAfter();
       } else if (promptHandle instanceof NewPromptHandle) {
         const parent = promptHandle.parent as Directory;
         const newUri = parent.uri.resolve(newName);
         let error;
-        const isEmptyDirectory = !parent.children || parent.children.length === 0;
         promptHandle.addAddonAfter('loading_indicator');
+        this.fileTreeService.updateRefreshable(true);
         if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
           error = await this.fileTreeAPI.createDirectory(newUri);
         } else {
@@ -1286,48 +1296,21 @@ export class FileTreeModelService {
             message: error,
             value: newName,
           };
+          this.fileTreeService.updateRefreshable(false);
           promptHandle.addValidateMessage(this.validateMessage);
           return false;
         }
-        if (this.fileTreeService.isCompactMode && newName.indexOf(Path.separator) > 0 && !Directory.isRoot(parent)) {
-          // 压缩模式下，检查是否有同名父目录存在，有则不需要生成临时目录，刷新对应父节点并定位节点
-          const parentPath = new Path(parent.path).join(Path.splitPath(newName)[0]).toString();
-          const parentNode = this.fileTreeService.getNodeByPathOrUri(parentPath) as Directory;
-          if (parentNode) {
-            if (!parentNode.expanded && !parentNode.children) {
-              await parentNode.setExpanded(true);
-              // 使用uri作为定位是不可靠的，需要检查一下该节点是否处于软链接目录内进行对应转换
-              selectNodeIfNodeExist(new Path(parent.path).join(newName).toString());
-            } else {
-              await this.fileTreeService.refresh(parentNode as Directory);
-              selectNodeIfNodeExist(new Path(parent.path).join(newName).toString());
-            }
-          } else {
-            // 不存在同名目录的情况下
-            if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
-              if (isEmptyDirectory) {
-                const newNodeName = [parent.name].concat(newName).join(Path.separator);
-                parent.updateMetaData({
-                  name: newNodeName,
-                  uri: parent.uri.resolve(newName),
-                  fileStat: {
-                    ...parent.filestat,
-                    uri: parent.uri.resolve(newName).toString(),
-                  },
-                  tooltip: this.fileTreeAPI.getReadableTooltip(parent.uri.resolve(newName)),
-                });
-                selectNodeIfNodeExist(parent.path);
-              } else {
-                const addNode = await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-                // 文件夹首次创建需要将焦点设到新建的文件夹上
-                selectNodeIfNodeExist(addNode.path);
-              }
-            } else if (promptHandle.type === TreeNodeType.TreeNode) {
-              const namePieces = Path.splitPath(newName);
-              const parentAddonPath = namePieces.slice(0, namePieces.length - 1).join(Path.separator);
-              const fileName = namePieces.slice(-1)[0];
-              const parentUri = parent.uri.resolve(parentAddonPath);
-              const newNodeName = [parent.name].concat(parentAddonPath).join(Path.separator);
+        if (newName.includes(Path.separator)) {
+          this.fileTreeService.refresh(parent as Directory).then(() => {
+            selectNodeIfNodeExist(parent.uri.resolve(newName));
+          });
+        }
+        if (this.fileTreeService.isCompactMode) {
+          if (promptHandle.type === TreeNodeType.CompositeTreeNode) {
+            const isEmptyDirectory = !parent.children || parent.children.length === 0;
+            if (isEmptyDirectory) {
+              const parentUri = parent.uri.resolve(newName);
+              const newNodeName = [parent.name].concat(newName).join(Path.separator);
               parent.updateMetaData({
                 name: newNodeName,
                 uri: parentUri,
@@ -1337,33 +1320,18 @@ export class FileTreeModelService {
                 },
                 tooltip: this.fileTreeAPI.getReadableTooltip(parentUri),
               });
-              const addNode = (await this.fileTreeService.addNode(parent, fileName, TreeNodeType.TreeNode)) as File;
-              selectNodeIfNodeExist(addNode.path);
+              selectNodeIfNodeExist(parentUri);
+            } else {
+              await this.fileTreeService.addNode(parent, newName, promptHandle.type);
+              selectNodeIfNodeExist(parent.uri.resolve(newName));
             }
-          }
-        } else {
-          if (
-            this.fileTreeService.isCompactMode &&
-            promptHandle.type === TreeNodeType.CompositeTreeNode &&
-            isEmptyDirectory &&
-            !Directory.isRoot(parent)
-          ) {
-            const parentUri = parent.uri.resolve(newName);
-            const newNodeName = [parent.name].concat(newName).join(Path.separator);
-            parent.updateMetaData({
-              name: newNodeName,
-              uri: parentUri,
-              fileStat: {
-                ...parent.filestat,
-                uri: parentUri.toString(),
-              },
-              tooltip: this.fileTreeAPI.getReadableTooltip(parentUri),
-            });
-            selectNodeIfNodeExist(parent.path);
           } else {
             await this.fileTreeService.addNode(parent, newName, promptHandle.type);
-            selectNodeIfNodeExist(new Path(parent!.path).join(newName).toString());
+            selectNodeIfNodeExist(parent.uri.resolve(newName));
           }
+        } else {
+          await this.fileTreeService.addNode(parent, newName, promptHandle.type);
+          selectNodeIfNodeExist(parent.uri.resolve(newName));
         }
       }
       this.contextKey?.filesExplorerInputFocused.set(false);

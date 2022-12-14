@@ -74,7 +74,6 @@ export class BrowserClipboardService implements IClipboardService {
       }
       return localStorgeUriList.map((str) => URI.parse(str));
     } catch (e) {
-      this.logger.error(e);
       return [];
     }
   }
@@ -90,7 +89,6 @@ export class BrowserClipboardService implements IClipboardService {
       }
       return true;
     } catch (e) {
-      this.logger.error(e);
       return false;
     }
   }

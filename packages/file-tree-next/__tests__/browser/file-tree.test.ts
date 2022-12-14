@@ -676,7 +676,7 @@ describe('FileTree should be work while on single workspace model', () => {
         }
         return true;
       });
-      fileTreeService.isCompactMode = true;
+      (fileTreeService as any)._isCompactMode = true;
       expect(directoryNode.expanded).toBeTruthy();
       fs.ensureDirSync(testFile);
       const dispose = fileTreeService.onNodeRefreshed(() => {
