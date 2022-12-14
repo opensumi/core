@@ -200,8 +200,10 @@ export class ActionsManager extends Disposable {
       reverseRightRange.metaMergeRanges,
     ];
 
-    const iterableLeftRange = new Set(metaTurnLeftMergeRanges).values();
-    const iterableRightRange = new Set(metaTurnRightMergeRanges).values();
+    const [iterableLeftRange, iterableRightRange] = [
+      new Set(metaTurnLeftMergeRanges).values(),
+      new Set(metaTurnRightMergeRanges).values(),
+    ];
 
     /**
      * 0: left, 1: right
