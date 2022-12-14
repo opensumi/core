@@ -114,9 +114,9 @@ export class StickinessConnectManager extends Disposable {
     const { marginWidth, lineHeight } = editorLayoutInfo;
 
     origin.forEach((range, idx) => {
-      const sameModify = modify[idx];
-      const minTop = Math.min(range.startLineNumber, sameModify.startLineNumber);
-      const maxBottom = Math.max(range.endLineNumberExclusive, sameModify.endLineNumberExclusive);
+      const oppositeModify = modify[idx];
+      const minTop = Math.min(range.startLineNumber, oppositeModify.startLineNumber);
+      const maxBottom = Math.max(range.endLineNumberExclusive, oppositeModify.endLineNumberExclusive);
       const width = marginWidth;
       const height = lineHeight * (maxBottom - minTop);
       const position = {
@@ -124,9 +124,9 @@ export class StickinessConnectManager extends Disposable {
       };
       const path = {
         leftTop: Math.abs(minTop - range.startLineNumber) * lineHeight,
-        rightTop: Math.abs(minTop - sameModify.startLineNumber) * lineHeight,
+        rightTop: Math.abs(minTop - oppositeModify.startLineNumber) * lineHeight,
         leftBottom: (range.endLineNumberExclusive - minTop) * lineHeight,
-        rightBottom: (sameModify.endLineNumberExclusive - minTop) * lineHeight,
+        rightBottom: (oppositeModify.endLineNumberExclusive - minTop) * lineHeight,
       };
 
       result.push(
@@ -136,7 +136,7 @@ export class StickinessConnectManager extends Disposable {
           path,
           position,
           range.type,
-          withBase === 0 ? range.isComplete : sameModify.isComplete,
+          withBase === 0 ? range.isComplete : oppositeModify.isComplete,
         ),
       );
     });

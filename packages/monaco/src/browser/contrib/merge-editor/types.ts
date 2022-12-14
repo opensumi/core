@@ -68,37 +68,6 @@ export interface IActionsDescription {
   decorationOptions: Omit<IModelDecorationOptions, 'description'>;
 }
 
-export const ACCEPT_CURRENT_ACTIONS = 'accpet_current';
-export const ACCEPT_COMBINATION_ACTIONS = 'accpet_combination';
-export const IGNORE_ACTIONS = 'ignore';
-export const REVOKE_ACTIONS = 'revoke';
-
-export type TActionsType =
-  | typeof ACCEPT_CURRENT_ACTIONS
-  | typeof ACCEPT_COMBINATION_ACTIONS
-  | typeof IGNORE_ACTIONS
-  | typeof REVOKE_ACTIONS;
-
-export interface IActionsProvider {
-  onActionsClick?: (range: LineRange, actionType: TActionsType) => void;
-  mouseDownGuard?: (e: IEditorMouseEvent) => boolean;
-  /**
-   * 提供 actions 操作项
-   */
-  provideActionsItems: () => IActionsDescription[];
-}
-
-export namespace CONFLICT_ACTIONS_ICON {
-  export const RIGHT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
-  export const LEFT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleleft')}`;
-  export const WAND = `conflict-actions ${ACCEPT_COMBINATION_ACTIONS} ${getExternalIcon('wand')}`;
-  export const CLOSE = `conflict-actions ${IGNORE_ACTIONS} ${getIcon('close')}`;
-  export const REVOKE = `conflict-actions ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
-}
-
-// 用来寻址点击事件时的标记
-export const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
-
 /**
  * 绘制 decoration 和 line widget 线的样式类名集合
  */
@@ -119,15 +88,55 @@ export namespace DECORATIONS_CLASSNAME {
 
   export const offset_right = 'offset-right';
   export const offset_left = 'offset-left';
+
+  export const rotate_turn_left = 'rotate-turn-left';
+  export const rotate_turn_right = 'rotate-turn-right';
 }
+
+export const ACCEPT_CURRENT_ACTIONS = 'accpet_current';
+export const ACCEPT_COMBINATION_ACTIONS = 'accpet_combination';
+export const IGNORE_ACTIONS = 'ignore';
+export const REVOKE_ACTIONS = 'revoke';
+export const APPEND_ACTIONS = 'append';
+
+export type TActionsType =
+  | typeof ACCEPT_CURRENT_ACTIONS
+  | typeof ACCEPT_COMBINATION_ACTIONS
+  | typeof IGNORE_ACTIONS
+  | typeof REVOKE_ACTIONS
+  | typeof APPEND_ACTIONS;
+
+export interface IActionsProvider {
+  onActionsClick?: (range: LineRange, actionType: TActionsType) => void;
+  mouseDownGuard?: (e: IEditorMouseEvent) => boolean;
+  /**
+   * 提供 actions 操作项
+   */
+  provideActionsItems: () => IActionsDescription[];
+}
+
+export namespace CONFLICT_ACTIONS_ICON {
+  const ACTIONS = 'conflict-actions';
+
+  export const RIGHT = `${ACTIONS} ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
+  export const ROTATE_RIGHT = `${ACTIONS} ${APPEND_ACTIONS} ${DECORATIONS_CLASSNAME.rotate_turn_right}  ${getIcon(
+    'doubleright',
+  )}`;
+  export const LEFT = `${ACTIONS} ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleleft')}`;
+  export const ROTATE_LEFT = `${ACTIONS} ${APPEND_ACTIONS} ${DECORATIONS_CLASSNAME.rotate_turn_left}  ${getIcon(
+    'doubleleft',
+  )}`;
+  export const WAND = `${ACTIONS} ${ACCEPT_COMBINATION_ACTIONS} ${getExternalIcon('wand')}`;
+  export const CLOSE = `${ACTIONS} ${IGNORE_ACTIONS} ${getIcon('close')}`;
+  export const REVOKE = `${ACTIONS} ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
+}
+
+// 用来寻址点击事件时的标记
+export const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
 
 export interface IConflictActionsEvent {
   range: LineRange;
-  action:
-    | typeof ACCEPT_CURRENT_ACTIONS
-    | typeof ACCEPT_COMBINATION_ACTIONS
-    | typeof IGNORE_ACTIONS
-    | typeof REVOKE_ACTIONS;
+  action: TActionsType;
   withViewType: EditorViewType;
 }
 

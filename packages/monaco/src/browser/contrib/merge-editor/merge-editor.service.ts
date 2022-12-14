@@ -105,7 +105,7 @@ export class MergeEditorService extends Disposable {
     this.incomingView.inputDiffComputingResult(changes2);
     this.resultView.inputDiffComputingResult(changes2, EDiffRangeTurn.ORIGIN);
 
-    this.currentView.updateDecorations();
-    this.incomingView.updateDecorations();
+    this.currentView.updateDecorations().updateActions();
+    this.incomingView.updateDecorations().updateActions();
   }
 }

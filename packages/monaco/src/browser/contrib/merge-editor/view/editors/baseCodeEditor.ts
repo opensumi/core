@@ -140,26 +140,40 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
     const innerChangesResult: InnerRange[][] = [];
 
     turnLeft.forEach((range, idx) => {
-      const sameRange = turnRight[idx];
+      const oppositeRange = turnRight[idx];
       const _exec = (type: LineRangeType) => {
         const direction = withBase === 1 ? ETurnDirection.CURRENT : ETurnDirection.INCOMING;
-        // 同时将 sameRange 赋予一样的状态
-        sameRange.setType(type).setTurnDirection(direction);
-        changesResult.push(range.setType(type).setTurnDirection(direction));
+        oppositeRange.setType(type).setTurnDirection(oppositeRange.turnDirection ?? direction);
+        changesResult.push(range.setType(type).setTurnDirection(range.turnDirection ?? direction));
         // inner range 先不计算
       };
 
-      if (sameRange) {
-        _exec(range.isTendencyRight(sameRange) ? 'remove' : range.isTendencyLeft(sameRange) ? 'insert' : 'modify');
+      if (oppositeRange) {
+        _exec(
+          range.type ??
+            (range.isTendencyRight(oppositeRange)
+              ? 'remove'
+              : range.isTendencyLeft(oppositeRange)
+              ? 'insert'
+              : 'modify'),
+        );
       }
     });
 
     return [changesResult, innerChangesResult];
   }
 
-  public updateDecorations(): void {
+  protected abstract provideActionsItems(ranges?: LineRange[]): IActionsDescription[];
+
+  public updateActions(): this {
+    this.conflictActions.updateActions(this.provideActionsItems());
+    return this;
+  }
+
+  public updateDecorations(): this {
     const [r, i] = this.prepareRenderDecorations();
     this.decorations.updateDecorations(r, i);
+    return this;
   }
 
   protected registerActionsProvider(provider: IActionsProvider): void {

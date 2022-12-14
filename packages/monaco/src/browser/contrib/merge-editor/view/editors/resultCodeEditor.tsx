@@ -1,5 +1,6 @@
 import { Injectable, Injector } from '@opensumi/di';
 import { Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import { distinct } from '@opensumi/monaco-editor-core/esm/vs/base/common/arrays';
 import { IModelDecorationOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 
@@ -45,6 +46,8 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
+  private isFirstInputComputeDiff = true;
+
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
     this.timeMachineDocument = injector.get(TimeMachineDocument, []);
@@ -64,7 +67,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     );
 
     this.addDispose(
-      this.editor.onDidChangeModelContent((e) => {
+      this.editor.onDidChangeModelContent(async (e) => {
         const model = this.editor.getModel();
         if (model && model.getLineCount() !== preLineCount) {
           preLineCount = model.getLineCount();
@@ -105,17 +108,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
              * 这里需要处理 touch 的情况（也就是 toLineRange 与 documentMapping 里的某一个 lineRange 有重叠的部分）
              * 那么就要以当前 touch range 的结果作为要 delta 的起点
              */
-            const { [EditorViewType.CURRENT]: touchLeftRanges, [EditorViewType.INCOMING]: touchRightRanges } =
-              this.mappingManagerService.findTouchesRanges(toLineRange);
-            const { [EditorViewType.CURRENT]: nextLeftRanges, [EditorViewType.INCOMING]: nextRightRanges } =
+            const { [EditorViewType.CURRENT]: touchTurnLeftRange, [EditorViewType.INCOMING]: touchTurnRightRange } =
+              this.mappingManagerService.findTouchesRanges(toLineRange, false);
+            const { [EditorViewType.CURRENT]: nextTurnLeftRange, [EditorViewType.INCOMING]: nextTurnRightRange } =
               this.mappingManagerService.findNextLineRanges(toLineRange);
 
             if (includeLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
-            } else if (touchLeftRanges && !toLineRange.isAfter(touchLeftRanges)) {
-              this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchLeftRanges, offset);
-            } else if (nextLeftRanges) {
-              const reverse = this.documentMappingTurnLeft.reverse(nextLeftRanges);
+            } else if (touchTurnLeftRange && !toLineRange.isAfter(touchTurnLeftRange)) {
+              this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchTurnLeftRange, offset);
+            } else if (nextTurnLeftRange) {
+              const reverse = this.documentMappingTurnLeft.reverse(nextTurnLeftRange);
               if (reverse) {
                 this.documentMappingTurnLeft.deltaAdjacentQueueAfter(reverse, offset, true);
               }
@@ -123,10 +126,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
             if (includeRightRange) {
               this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
-            } else if (touchRightRanges && !toLineRange.isAfter(touchRightRanges)) {
-              this.documentMappingTurnRight.deltaEndAdjacentQueue(touchRightRanges, offset);
-            } else if (nextRightRanges) {
-              const reverse = this.documentMappingTurnRight.reverse(nextRightRanges);
+            } else if (touchTurnRightRange && !toLineRange.isAfter(touchTurnRightRange)) {
+              this.documentMappingTurnRight.deltaEndAdjacentQueue(touchTurnRightRange, offset);
+            } else if (nextTurnRightRange) {
+              const reverse = this.documentMappingTurnRight.reverse(nextTurnRightRange);
               if (reverse) {
                 this.documentMappingTurnRight.deltaAdjacentQueueAfter(reverse, offset, true);
               }
@@ -140,10 +143,17 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private getAllDiffRanges(): LineRange[] {
-    return this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange());
+    return distinct(
+      this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
+      (range) => range.id,
+    );
   }
 
-  private provideActionsItems(ranges: LineRange[]): IActionsDescription[] {
+  protected provideActionsItems(ranges?: LineRange[]): IActionsDescription[] {
+    if (!Array.isArray(ranges)) {
+      return [];
+    }
+
     return ranges
       .filter((r) => r.isComplete || r.isMerge)
       .map((range) => ({
@@ -231,7 +241,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
        *  3. { startLine: 30，endLine: 40 } // 方向向右
        *
        * 首先这三者的 turn directio 方向一定是左右交替的
-       * 那么第二个 lineRange 的对位关系 sameLineRange 的起点 startLine 就一定会比第一个 lineRange 的起点 startLine 少一个高度
+       * 那么第二个 lineRange 的对位关系 oppositeLineRange 的起点 startLine 就一定会比第一个 lineRange 的起点 startLine 少一个高度
        * 这个高度的差距会影响后续所有的 conflict action 操作（因为缺失的这部分高度会导致 accept 操作后的代码内容丢失）
        *
        * 而我们只需要补齐这第二个和倒数第二个的高度即可，中间部分的所有 lineRange 都会在最终合并到一起
@@ -282,12 +292,12 @@ export class ResultCodeEditor extends BaseCodeEditor {
       }
 
       if (mergeRangeTurnLeft) {
-        const newLineRange = mergeRangeTurnLeft.setTurnDirection(ETurnDirection.CURRENT);
+        const newLineRange = mergeRangeTurnLeft.setTurnDirection(ETurnDirection.CURRENT).setType('modify');
         this.documentMappingTurnLeft.addRange(newLineRange, mergeRange);
       }
 
       if (mergeRangeTurnRight) {
-        const newLineRange = mergeRangeTurnRight.setTurnDirection(ETurnDirection.INCOMING);
+        const newLineRange = mergeRangeTurnRight.setTurnDirection(ETurnDirection.INCOMING).setType('modify');
         this.documentMappingTurnRight.addRange(newLineRange, mergeRange);
       }
     }
@@ -297,15 +307,22 @@ export class ResultCodeEditor extends BaseCodeEditor {
     const diffRanges: LineRange[] = this.getAllDiffRanges().sort((a, b) => a.startLineNumber - b.startLineNumber);
     const innerChangesResult: InnerRange[][] = [];
 
-    const maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
-    this.handleNeedMergeRanges(maybeNeedMergeRanges);
+    let maybeNeedMergeRanges: {
+      rawRanges: LineRange[];
+      mergeRange: LineRange;
+    }[] = [];
+
+    if (this.isFirstInputComputeDiff) {
+      maybeNeedMergeRanges = this.distillNeedMergeRanges(diffRanges);
+      this.handleNeedMergeRanges(maybeNeedMergeRanges);
+      this.isFirstInputComputeDiff = false;
+    }
 
     /**
      * 如果 maybeNeedMergeRanges 大于 0，说明数据源 document mapping 的对应关系被改变
      * 则需要重新获取一次
      */
-    let changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
-    changesResult = Array.from(new Set(changesResult));
+    const changesResult: LineRange[] = maybeNeedMergeRanges.length > 0 ? this.getAllDiffRanges() : diffRanges;
     return [changesResult, innerChangesResult];
   }
 
@@ -334,10 +351,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return EditorViewType.RESULT;
   }
 
-  public override updateDecorations(): void {
-    super.updateDecorations();
-    // 每次 update decoration 时也需要更新 conflict actions 操作
+  public override updateActions(): this {
     this.conflictActions.updateActions(this.provideActionsItems(this.getAllDiffRanges()));
+    return this;
   }
 
   public getContentInTimeMachineDocument(rangeId: string): ITimeMachineMetaData | undefined {
@@ -360,7 +376,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
         onActionsClick: (range: LineRange, actionType: TActionsType) => {
           if (actionType === REVOKE_ACTIONS) {
             this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
-          } else if (actionType === ACCEPT_COMBINATION_ACTIONS) {
+          }
+
+          if (actionType === ACCEPT_COMBINATION_ACTIONS) {
             this._onDidConflictActions.fire({
               range,
               withViewType: EditorViewType.RESULT,
