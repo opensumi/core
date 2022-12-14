@@ -34,11 +34,12 @@ export class IncomingCodeEditor extends BaseCodeEditor {
       .filter((r) => !r.isComplete)
       .map((range) => {
         const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
-        let rotataClassName = '';
+        let iconActions = CONFLICT_ACTIONS_ICON.LEFT;
+
         if (range.isMerge) {
           const oppositeRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
           if (oppositeRange && oppositeRange.isComplete) {
-            rotataClassName += DECORATIONS_CLASSNAME.rotate_turn_right;
+            iconActions = CONFLICT_ACTIONS_ICON.ROTATE_LEFT;
           }
         }
 
@@ -52,7 +53,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
             ),
             firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(
               CONFLICT_ACTIONS_ICON.LEFT,
-              rotataClassName,
+              iconActions,
               idMark,
             ),
           },

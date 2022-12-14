@@ -40,23 +40,19 @@ export class CurrentCodeEditor extends BaseCodeEditor {
       .filter((r) => !r.isComplete)
       .map((range) => {
         const idMark = `${ADDRESSING_TAG_CLASSNAME}${range.id}`;
-        let rotataClassName = '';
+        let iconActions = CONFLICT_ACTIONS_ICON.RIGHT;
+
         if (range.isMerge) {
           const oppositeRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
           if (oppositeRange && oppositeRange.isComplete) {
-            rotataClassName += DECORATIONS_CLASSNAME.rotate_turn_left;
+            iconActions = CONFLICT_ACTIONS_ICON.ROTATE_RIGHT;
           }
         }
 
         return {
           range,
           decorationOptions: {
-            glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
-              CONFLICT_ACTIONS_ICON.RIGHT,
-              DECORATIONS_CLASSNAME.offset_left,
-              rotataClassName,
-              idMark,
-            ),
+            glyphMarginClassName: DECORATIONS_CLASSNAME.combine(iconActions, DECORATIONS_CLASSNAME.offset_left, idMark),
             marginClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.CLOSE, idMark),
           },
         };
