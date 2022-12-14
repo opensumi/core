@@ -27,8 +27,12 @@ export class DocumentMapping extends Disposable {
     super();
   }
 
+  private ensureSort(values: IterableIterator<LineRange>): LineRange[] {
+    return Array.from(values).sort((a, b) => a.startLineNumber - b.startLineNumber);
+  }
+
   public getOriginalRange(): LineRange[] {
-    return Array.from(
+    return this.ensureSort(
       this.diffRangeTurn === EDiffRangeTurn.ORIGIN
         ? this.computeRangeMap.values()
         : this.adjacentComputeRangeMap.values(),
@@ -36,7 +40,7 @@ export class DocumentMapping extends Disposable {
   }
 
   public getModifiedRange(): LineRange[] {
-    return Array.from(
+    return this.ensureSort(
       this.diffRangeTurn === EDiffRangeTurn.ORIGIN
         ? this.adjacentComputeRangeMap.values()
         : this.computeRangeMap.values(),
@@ -78,26 +82,26 @@ export class DocumentMapping extends Disposable {
    * @returns
    */
   public deltaAdjacentQueueAfter(range: LineRange, offset: number, isContainSelf = false): void {
-    const sameRange = this.adjacentComputeRangeMap.get(range.id);
-    if (!sameRange) {
+    const oppositeRange = this.adjacentComputeRangeMap.get(range.id);
+    if (!oppositeRange) {
       return;
     }
 
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
-      if (pick.isAfter(sameRange)) {
+      if (pick.isAfter(oppositeRange)) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
-      } else if (isContainSelf && pick.id === sameRange.id) {
+      } else if (isContainSelf && pick.id === oppositeRange.id) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
   }
 
-  public deltaEndAdjacentQueue(sameRange: LineRange, offset: number): void {
+  public deltaEndAdjacentQueue(oppositeRange: LineRange, offset: number): void {
     for (const [key, pick] of this.adjacentComputeRangeMap.entries()) {
-      if (pick.id === sameRange.id) {
-        this.adjacentComputeRangeMap.set(key, sameRange.deltaEnd(offset));
-        // 将在 sameRange 之后的 range offset 都增加
-      } else if (pick.isAfter(sameRange)) {
+      if (pick.id === oppositeRange.id) {
+        this.adjacentComputeRangeMap.set(key, oppositeRange.deltaEnd(offset));
+        // 将在 oppositeRange 之后的 range offset 都增加
+      } else if (pick.isAfter(oppositeRange)) {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
@@ -114,15 +118,15 @@ export class DocumentMapping extends Disposable {
   }
 
   /**
-   * 寻找下一个离 sameRange 最近的 sameRange 点
-   * @param sameRange 对位 lineRange，不一定存在于 map 中
+   * 寻找下一个离 oppositeRange 最近的 oppositeRange 点
+   * @param oppositeRange 对位 lineRange，不一定存在于 map 中
    * @returns 下一个最近的 lineRange
    */
-  public findNextSameRange(sameRange: LineRange): LineRange | undefined {
-    const values = this.adjacentComputeRangeMap.values();
+  public findNextOppositeRange(oppositeRange: LineRange): LineRange | undefined {
+    const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
-      if (range.id !== sameRange.id && range.isAfter(sameRange)) {
+      if (range.id !== oppositeRange.id && range.isAfter(oppositeRange)) {
         return range;
       }
     }
@@ -131,13 +135,13 @@ export class DocumentMapping extends Disposable {
   }
 
   /**
-   * 找出 sameRange 是否被包裹在哪一个 lineRange 里，如果有并返回该 lineRange
+   * 找出 oppositeRange 是否被包裹在哪一个 lineRange 里，如果有并返回该 lineRange
    */
-  public findIncludeRange(sameRange: LineRange): LineRange | undefined {
-    const values = this.adjacentComputeRangeMap.values();
+  public findIncludeRange(oppositeRange: LineRange): LineRange | undefined {
+    const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
-      if (range.isInclude(sameRange)) {
+      if (range.isInclude(oppositeRange)) {
         return range;
       }
     }
@@ -146,13 +150,14 @@ export class DocumentMapping extends Disposable {
   }
 
   /**
-   * 找出 sameRange 是否与哪一个 lineRange 接触
+   * 找出 oppositeRange 是否与哪一个 lineRange 接触
+   * @param isAllowContact: 是否将表面接触的 range 也认为是 touch
    */
-  public findTouchesRange(sameRange: LineRange): LineRange | undefined {
-    const values = this.adjacentComputeRangeMap.values();
+  public findTouchesRange(oppositeRange: LineRange, isAllowContact = true): LineRange | undefined {
+    const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
-      if (range.isTouches(sameRange)) {
+      if (range.isTouches(oppositeRange) && (isAllowContact ? true : !range.isContact(oppositeRange))) {
         return range;
       }
     }

@@ -115,7 +115,6 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
 
   constructor(startLineNumber: number, endLineNumberExclusive: number) {
     super(startLineNumber, endLineNumberExclusive);
-    this._type = 'insert';
     this._isComplete = false;
     this._id = uuid(6);
     this.mergeStateModel = new MergeStateModel();

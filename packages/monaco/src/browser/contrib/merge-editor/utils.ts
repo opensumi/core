@@ -1,7 +1,6 @@
 import { InnerRange } from './model/inner-range';
 import { LineRange } from './model/line-range';
 import { LineRangeMapping } from './model/line-range-mapping';
-import { EditorViewType } from './types';
 
 export const flatOriginal = (changes: LineRangeMapping[]): LineRange[] =>
   changes.map((c) => c.originalRange as LineRange);

@@ -86,6 +86,8 @@
   .conflict-actions {
     cursor: pointer;
     z-index: 1;
+    // 默认图标宽度
+    width: 16px !important;
 
     &.offset-left {
       left: 18px !important;
@@ -96,6 +98,14 @@
       left: initial !important;
       right: 8px !important;
       z-index: 2;
+    }
+
+    &.rotate-turn-left {
+      transform: rotate(-50deg);
+    }
+
+    &.rotate-turn-right {
+      transform: rotate(50deg);
     }
   }
 
