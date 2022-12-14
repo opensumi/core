@@ -111,8 +111,17 @@ export class ActionsManager extends Disposable {
     ]);
 
     this.markComplete(range);
+
     /**
-     * 操作完 result 视图的 actions 都需要更新一遍
+     * 如果 sameRange 是 merge range 合成的，则需要更新 current editor 和 incoming editor 的 actions
+     */
+    if (sameRange.isMerge) {
+      this.currentView?.updateActions();
+      this.incomingView?.updateActions();
+    }
+
+    /**
+     * accept current 执行完之后都需要更新一遍 result 视图的 actions
      */
     this.resultView?.updateActions();
   }

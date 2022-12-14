@@ -4,7 +4,7 @@ import { Disposable } from '@opensumi/ide-core-common';
 import { DocumentMapping } from './model/document-mapping';
 import { LineRange } from './model/line-range';
 import { LineRangeMapping } from './model/line-range-mapping';
-import { EDiffRangeTurn, EditorViewType } from './types';
+import { EDiffRangeTurn, EditorViewType, ETurnDirection } from './types';
 
 @Injectable()
 export class MappingManagerService extends Disposable {
@@ -53,6 +53,26 @@ export class MappingManagerService extends Disposable {
       // 标记该 range 区域已经解决完成
       range.setComplete(true);
       sameRange.setComplete(true);
+
+      /**
+       * 如果被标记 complete 的 range 是 merge range 合成的，则需要将另一个 mapping 的对应关系也标记成 complete
+       */
+      if (sameRange.turnDirection === ETurnDirection.BOTH) {
+        const reverseMapping =
+          range.turnDirection === ETurnDirection.CURRENT ? this.documentMappingTurnRight : this.documentMappingTurnLeft;
+
+        const reverse = reverseMapping.reverse(sameRange);
+        if (!reverse) {
+          return;
+        }
+
+        const adjacentRange = reverseMapping.adjacentComputeRangeMap.get(reverse.id);
+        if (!adjacentRange) {
+          return;
+        }
+
+        adjacentRange.setComplete(true);
+      }
     };
   }
 

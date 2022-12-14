@@ -38,7 +38,7 @@ export class IncomingCodeEditor extends BaseCodeEditor {
         if (range.isMerge) {
           const sameRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
           if (sameRange && sameRange.isComplete) {
-            rotataClassName = DECORATIONS_CLASSNAME.rotate_turn_right;
+            rotataClassName += DECORATIONS_CLASSNAME.rotate_turn_right;
           }
         }
 
@@ -48,10 +48,13 @@ export class IncomingCodeEditor extends BaseCodeEditor {
             glyphMarginClassName: DECORATIONS_CLASSNAME.combine(
               CONFLICT_ACTIONS_ICON.CLOSE,
               DECORATIONS_CLASSNAME.offset_right,
+              idMark,
+            ),
+            firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(
+              CONFLICT_ACTIONS_ICON.LEFT,
               rotataClassName,
               idMark,
             ),
-            firstLineDecorationClassName: DECORATIONS_CLASSNAME.combine(CONFLICT_ACTIONS_ICON.LEFT, idMark),
           },
         };
       });

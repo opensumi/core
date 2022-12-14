@@ -44,7 +44,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
         if (range.isMerge) {
           const sameRange = this.documentMapping.adjacentComputeRangeMap.get(range.id);
           if (sameRange && sameRange.isComplete) {
-            rotataClassName = DECORATIONS_CLASSNAME.rotate_turn_left;
+            rotataClassName += DECORATIONS_CLASSNAME.rotate_turn_left;
           }
         }
 

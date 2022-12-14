@@ -158,7 +158,11 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   protected provideActionsItems(ranges?: LineRange[]): IActionsDescription[] {
-    return (ranges || [])
+    if (!Array.isArray(ranges)) {
+      return [];
+    }
+
+    return ranges
       .filter((r) => r.isComplete || r.isMerge)
       .map((range) => ({
         range,
