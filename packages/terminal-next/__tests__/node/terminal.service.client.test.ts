@@ -3,9 +3,9 @@ import os from 'os';
 import { Injector } from '@opensumi/di';
 import { createNodeInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 
-import { PtyService } from '../../lib/node/pty';
 import { ITerminalServiceClient, ITerminalNodeService } from '../../src/common';
 import { TerminalNodePtyModule } from '../../src/node';
+import { PtyService } from '../../src/node/pty';
 
 describe('TerminalServiceClientImpl', () => {
   let terminalServiceClient: ITerminalServiceClient;

@@ -7,7 +7,6 @@ import * as fs from 'fs-extra';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { INodeLogger, AppConfig, Schemes } from '@opensumi/ide-core-node';
 import {
   URI,
   Emitter,
@@ -21,6 +20,13 @@ import {
   parseGlob,
   ParsedPattern,
   match,
+  getEncodingInfo,
+  iconvDecode,
+  iconvEncode,
+  UTF8,
+  INodeLogger,
+  AppConfig,
+  Schemes,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeEvent, EXT_LIST_IMAGE, TextDocumentContentChangeEvent } from '../common';
@@ -40,7 +46,6 @@ import {
   IDiskFileProvider,
 } from '../common';
 
-import { getEncodingInfo, decode, encode, UTF8 } from './encoding';
 import { FileSystemManage } from './file-system-manage';
 
 export abstract class FileSystemNodeOptions {
@@ -178,7 +183,7 @@ export class FileService implements IFileService {
     }
     const encoding = await this.doGetEncoding(options);
     const buffer = await provider.readFile(_uri.codeUri);
-    return { stat, content: decode(this.getNodeBuffer(buffer), encoding) };
+    return { stat, content: iconvDecode(this.getNodeBuffer(buffer), encoding) };
   }
 
   async setContent(file: FileStat, content: string, options?: FileSetContentOptions): Promise<FileStat> {
@@ -195,7 +200,7 @@ export class FileService implements IFileService {
       throw this.createOutOfSyncError(file, stat);
     }
     const encoding = await this.doGetEncoding(options);
-    const buffer = encode(content, encoding);
+    const buffer = iconvEncode(content, encoding);
     await provider.writeFile(_uri.codeUri, buffer, { create: false, overwrite: true, encoding });
     const newStat = await provider.stat(_uri.codeUri);
     if (!newStat) {
@@ -227,9 +232,9 @@ export class FileService implements IFileService {
     const encoding = await this.doGetEncoding(options);
     // const content = await fs.readFile(FileUri.fsPath(_uri), { encoding });
     const buffer = await this.getNodeBuffer(await provider.readFile(_uri.codeUri));
-    const content = decode(buffer, encoding);
+    const content = iconvDecode(buffer, encoding);
     const newContent = this.applyContentChanges(content, contentChanges);
-    const newBuffer = encode(newContent, encoding);
+    const newBuffer = iconvEncode(newContent, encoding);
     await provider.writeFile(_uri.codeUri, newBuffer, { create: false, overwrite: true, encoding });
     const newStat = await provider.stat(_uri.codeUri);
     if (!newStat) {
@@ -281,7 +286,7 @@ export class FileService implements IFileService {
 
     const content = await this.doGetContent(options);
     const encoding = await this.doGetEncoding(options);
-    const buffer = encode(content, encoding);
+    const buffer = iconvEncode(content, encoding);
     let newStat: any = await provider.writeFile(_uri.codeUri, buffer, {
       create: true,
       overwrite: (options && options.overwrite) || false,

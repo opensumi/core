@@ -140,7 +140,7 @@ export class ResourceTextEditTask {
         newEOL = edit.textEdit.eol;
       }
       edits.push({
-        forceMoveMarkers: true,
+        forceMoveMarkers: false,
         range: Range.lift(edit.textEdit.range),
         text: edit.textEdit.text,
       });
@@ -148,7 +148,7 @@ export class ResourceTextEditTask {
 
     if (edits.length > 0) {
       monacoModel.pushStackElement();
-      monacoModel.pushEditOperations([], edits, () => []);
+      monacoModel.pushEditOperations(null, edits, () => null);
       monacoModel.pushStackElement();
     }
 

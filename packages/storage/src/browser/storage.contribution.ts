@@ -31,31 +31,30 @@ export class DatabaseStorageContribution implements StorageResolverContribution,
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
-
   @Autowired(GlobalBrowserStorageService)
   private globalLocalStorage: GlobalBrowserStorageService;
+
+  @Autowired(ScopedBrowserStorageService)
+  private scopedLocalStorage: ScopedBrowserStorageService;
 
   storage: IStorage;
 
   async resolve(storageId: URI) {
     const storageName = storageId.path.toString();
     let storage: IStorage;
-    await this.workspaceService.whenReady;
     if (storageId.scheme === STORAGE_SCHEMA.SCOPE) {
-      let scopedLocalStorage;
       // 如果是内置的 Storage，在初始化过程中采用 ScopedBrowserStorageService 代理
       if (this.isBuiltinStorage(storageId)) {
-        scopedLocalStorage = this.injector.get(ScopedBrowserStorageService, [this.workspaceService.workspace?.uri]);
+        storage = new Storage(
+          this.workspaceStorage,
+          this.workspaceService,
+          this.appConfig,
+          storageName,
+          this.scopedLocalStorage,
+        );
+      } else {
+        storage = new Storage(this.workspaceStorage, this.workspaceService, this.appConfig, storageName);
       }
-      storage = new Storage(
-        this.workspaceStorage,
-        this.workspaceService,
-        this.appConfig,
-        storageName,
-        scopedLocalStorage,
-      );
     } else if (storageId.scheme === STORAGE_SCHEMA.GLOBAL) {
       if (this.isBuiltinStorage(storageId)) {
         // 如果是内置的 Storage，在初始化过程中采用 GlobalBrowserStorageService 代理

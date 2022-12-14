@@ -2,13 +2,14 @@
   "name": "@opensumi/ide-terminal-next",
   "version": "2.21.8",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.terminal-next.json"
   },
   "repository": {
@@ -42,8 +43,6 @@
     "@opensumi/ide-workspace": "2.21.8",
     "@types/event-kit": "^2.4.0",
     "@types/http-proxy": "^1.17.2",
-    "@types/puppeteer": "^2.0.0",
-    "http-proxy": "^1.18.0",
-    "puppeteer": "^2.0.0"
+    "http-proxy": "^1.18.0"
   }
 }

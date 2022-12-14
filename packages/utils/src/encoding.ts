@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 import iconv from 'iconv-lite';
 
-import { BinaryBuffer } from './buffer';
+import type { BinaryBuffer } from './buffer';
+import { SUPPORTED_ENCODINGS } from './const';
 
 export const UTF8 = 'utf8';
 export const UTF8_with_bom = 'utf8bom';
@@ -155,7 +156,7 @@ const IGNORE_ENCODINGS = ['ascii', 'utf-16', 'utf-32'];
 
 async function guessEncodingByBuffer(buffer: BinaryBuffer): Promise<string | null> {
   // lazy load
-  const jschardet = require('jschardet');
+  const jschardet = await import('jschardet');
 
   // ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
   const limitedBuffer = buffer.slice(0, AUTO_ENCODING_GUESS_MAX_BYTES);
@@ -255,4 +256,23 @@ export function detectEncodingFromBuffer(
   }
 
   return { seemsBinary, encoding };
+}
+
+export interface IEncodingInfo {
+  id: string; // encoding identifier
+  labelLong: string; // long label name
+  labelShort: string; // short label name
+}
+
+export function getEncodingInfo(encoding: string | null): null | IEncodingInfo {
+  if (!encoding) {
+    return null;
+  }
+  const result = SUPPORTED_ENCODINGS[encoding] || {};
+
+  return {
+    id: encoding,
+    labelLong: result.labelLong || encoding,
+    labelShort: result.labelShort || encoding,
+  };
 }

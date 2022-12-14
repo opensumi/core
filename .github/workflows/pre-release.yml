@@ -34,8 +34,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -55,18 +54,27 @@ jobs:
               repo: context.repo.repo,
               body: `🤖 Pre-Release version is publishing ...`
             });
-
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       # 安装依赖并构建
       - name: Install dependencies & Build
         run: |
-          npm i
-          npm run init
+          yarn install --immutable
+          yarn run init
 
       # 生成 Changelog, 会将内容写入到 ./releaselog.md 中
       - name: Create Changelog
         id: release-log
         run: |
-          npm run changelog -- --remote
+          yarn run changelog --remote
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -89,7 +97,13 @@ jobs:
               title: `🤖 OpenSumi Pre-Release ${nextVersion}`,
               body: `## ${nextVersion} Pre-Release Summary \r\n ${releasemd}`
             });
-
+      - name: Setup .yarnrc.yml
+        run: |
+          yarn config set -H npmRegistryServer "https://registry.npmjs.org"
+          yarn config set -H npmAlwaysAuth true
+          yarn config set -H npmAuthToken $NPM_AUTH_TOKEN
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # 发布 next 版本，并在 issue 中回复
       # 使用 lerna publish 命令
       # --preid 指定前缀，确保版本唯一，前缀使用 $(date +%s) 生成类似  2.12.1-1640328423.0
@@ -111,9 +125,7 @@ jobs:
           CURRENT_VERSION=$(node -p 'require("./lerna.json").version')
           echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
 
-      - uses: actions/github-script@v6
+      - uses: opensumi/actions/.github/actions/run-script@main
+        if: success()
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const script = require('./scripts/github/notifyPreReleaseResult.js')
-            await script({github, context, core})
+          script: 'notifyPreReleaseResult'

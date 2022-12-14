@@ -11,7 +11,10 @@ import {
   BinaryBuffer,
   decodeBase64,
   encodeBase64,
+  Event,
 } from '@opensumi/ide-core-common';
+// eslint-disable-next-line import/no-restricted-paths
+import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
 import type { editor } from '@opensumi/monaco-editor-core';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -244,4 +247,26 @@ export class MemoryRegion extends Disposable implements IMemoryRegion {
   private invalidate(fromOffset: number, toOffset: number) {
     this.invalidateEmitter.fire({ fromOffset, toOffset });
   }
+}
+
+export enum DebugModelSupportedEventType {
+  down = 'Down',
+  move = 'Move',
+  leave = 'Leave',
+  contextMenu = 'contextMenu',
+}
+
+export const IDebugModelManager = Symbol('DebugModelManager');
+
+export interface IDebugModelManager {
+  init(session?: IDebugSession): void;
+  model: IDebugModel | undefined;
+  resolve(uri: URI): IDebugModel[] | undefined;
+  handleMouseEvent(
+    uri: URI,
+    type: DebugModelSupportedEventType,
+    event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent,
+    monacoEditor: IMonacoCodeEditor,
+  ): void;
+  onModelChanged: Event<monaco.editor.IModelChangedEvent>;
 }

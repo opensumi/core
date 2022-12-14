@@ -2,13 +2,12 @@ import { Injector } from '@opensumi/di';
 import { URI, IContextKeyService, Disposable } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer, AbstractMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IDebugModel, IDebugSessionManager } from '@opensumi/ide-debug';
-import { DebugBreakpoint, BreakpointManager } from '@opensumi/ide-debug/lib/browser';
+import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import { createMockedMonaco } from '../../../../monaco/__mocks__/monaco';
 import { DebugModel, DebugHoverWidget, DebugBreakpointWidget } from '../../../src/browser/editor';
-
 
 describe('Debug Model', () => {
   const mockInjector = createBrowserInjector([]);

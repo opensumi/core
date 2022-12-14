@@ -18,13 +18,13 @@ import { IFileServiceClient, FileChangeType } from '@opensumi/ide-file-service';
 import { IMainLayoutService, IViewsRegistry } from '@opensumi/ide-main-layout';
 import { ViewsRegistry } from '@opensumi/ide-main-layout/lib/browser/views-registry';
 import { IWindowDialogService, IDialogService, IMessageService } from '@opensumi/ide-overlay';
-import { MockQuickOpenService } from '@opensumi/ide-quick-open/lib/common/mocks/quick-open.service';
 import { IThemeService, IIconService } from '@opensumi/ide-theme';
 import { IWorkspaceService, DEFAULT_WORKSPACE_SUFFIX_NAME } from '@opensumi/ide-workspace';
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { MockQuickOpenService } from '../../../quick-open/src/common/mocks/quick-open.service';
 import { FileTreeContribution } from '../../src/browser/file-tree-contribution';
 import { FileTreeService } from '../../src/browser/file-tree.service';
 import { IFileTreeAPI, IFileTreeService } from '../../src/common';

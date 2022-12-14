@@ -1,13 +1,11 @@
 import { Emitter, IContextKeyService, IReporterService, LabelService } from '@opensumi/ide-core-browser';
-import { Disposable } from '@opensumi/ide-core-common';
-import { IDebugServer, IDebugSessionManager, IDebugProgress } from '@opensumi/ide-debug';
+import { IDebugServer, IDebugSessionManager, IDebugProgress, IDebugModelManager } from '@opensumi/ide-debug';
+import { BreakpointManager } from '@opensumi/ide-debug/lib/browser/breakpoint';
 import {
-  BreakpointManager,
-  DebugModelManager,
   DebugSessionContributionRegistry,
   DebugSessionFactory,
-  DebugSessionManager,
-} from '@opensumi/ide-debug/lib/browser';
+} from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
+import { DebugSessionManager } from '@opensumi/ide-debug/lib/browser/debug-session-manager';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { ITaskService } from '@opensumi/ide-task';
@@ -47,7 +45,7 @@ describe('DebugSessionManager', () => {
   };
 
   const mockTaskService = {
-    getTask: jest.fn(() => ({ task: 'npm run build' })),
+    getTask: jest.fn(() => ({ task: 'yarn run build' })),
     run: jest.fn(() => ({ exitCode: 200 })),
   };
 
@@ -80,7 +78,7 @@ describe('DebugSessionManager', () => {
           useClass: MockContextKeyService,
         },
         {
-          token: DebugModelManager,
+          token: IDebugModelManager,
           useValue: mockDebugModelManager,
         },
         {
@@ -118,10 +116,6 @@ describe('DebugSessionManager', () => {
         {
           token: BreakpointManager,
           useValue: mockBreakpointManager,
-        },
-        {
-          token: DebugModelManager,
-          useValue: {},
         },
         {
           token: ITaskService,

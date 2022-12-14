@@ -1,8 +1,8 @@
 import { Injectable } from '@opensumi/di';
-import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
+import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
 @Injectable()
-export class TaskFolderPreferenceProvider extends FolderPreferenceProvider {
+export class TaskFolderPreferenceProvider extends FolderFilePreferenceProvider {
   protected parse(content: string): any {
     const tasks = super.parse(content);
     if (tasks === undefined) {

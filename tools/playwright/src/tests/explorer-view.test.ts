@@ -8,6 +8,7 @@ import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiFileTreeView } from '../filetree-view';
 import { OpenSumiOpenedEditorView } from '../opened-editor-view';
+import { OpenSumiOutlineView } from '../outline-view';
 import { OpenSumiTerminal } from '../terminal';
 import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
@@ -18,6 +19,7 @@ let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
 let fileTreeView: OpenSumiFileTreeView;
 let openedEditorView: OpenSumiOpenedEditorView;
+let outlineView: OpenSumiOutlineView;
 let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Explorer Panel', () => {
@@ -27,6 +29,7 @@ test.describe('OpenSumi Explorer Panel', () => {
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
     fileTreeView = explorer.fileTreeView;
+    outlineView = explorer.outlineView;
     openedEditorView = explorer.openedEditorView;
   });
 
@@ -187,6 +190,38 @@ console.log(a);`,
     expect(await node?.isDirty()).toBeFalsy();
   });
 
+  test('the open state of the editor should be restored after refreshing', async () => {
+    await openedEditorView.open();
+    const testFilePath_1 = 'editor2.js';
+    const testFilePath_2 = 'editor3.js';
+    // Close All Edtior Tabs
+    const editor = await app.openEditor(OpenSumiTextEditor, explorer, testFilePath_1);
+    await app.page.waitForTimeout(1000);
+    let node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeDefined();
+    const contextMenu = await editor.openTabContextMenu();
+    expect(await contextMenu?.isOpen()).toBeTruthy();
+    const closeAll = await contextMenu?.menuItemByName('Close All');
+    await closeAll?.click();
+    await app.page.waitForTimeout(1000);
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeUndefined();
+    // Open File
+    await app.openEditor(OpenSumiTextEditor, explorer, testFilePath_1, false);
+    await app.openEditor(OpenSumiTextEditor, explorer, testFilePath_2, false);
+    await app.page.waitForTimeout(1000);
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeDefined();
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_2);
+    expect(node).toBeDefined();
+    await app.page.reload();
+    await app.page.waitForTimeout(2000);
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeDefined();
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_2);
+    expect(node).toBeDefined();
+  });
+
   test('split file on the editor should showing on two group', async () => {
     await openedEditorView.open();
     expect(await openedEditorView.isVisible()).toBeTruthy();
@@ -276,5 +311,20 @@ console.log(a);`,
     const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');
     expect(afterDeleteNode).toBeDefined();
     expect(await afterDeleteNode?.label()).toBe('a/d');
+  });
+
+  test('the visible state of outline panel should be restored after refreshing', async () => {
+    if (!(await explorer.isVisible())) {
+      await explorer.open();
+    }
+    await outlineView.open();
+    const menu = await outlineView.openTabContextMenu();
+    await menu?.clickMenuItem(outlineView.name!);
+    await app.page.waitForTimeout(1000);
+    // Default to be visibled
+    expect(await outlineView.isVisible()).toBeFalsy();
+    await app.page.reload();
+    await app.page.waitForTimeout(2000);
+    expect(await outlineView.isVisible()).toBeFalsy();
   });
 });

@@ -336,6 +336,12 @@ export namespace EDITOR_COMMANDS {
     label: '%editor.saveCurrent%',
   };
 
+  export const FOCUS_IF_NOT_ACTIVATE_ELEMENT: Command = {
+    id: 'editor.focusIfNotActivateElement',
+    category: CATEGORY,
+    label: '%editor.saveCurrent%',
+  };
+
   export const COMPARE: Command = {
     id: 'editor.compare',
     category: CATEGORY,

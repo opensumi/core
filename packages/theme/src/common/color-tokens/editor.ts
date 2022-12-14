@@ -5,8 +5,8 @@ import { registerColor, transparent, lighten, darken, lessProminent } from '../u
 
 import { badgeBackground, badgeForeground } from './badge';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
-import { backgroundColor, foregroundColor } from './basic-color';
 import { listInactiveSelectionBackground } from './list-tree';
+
 // TODO COLOR 此处vscode内的editor error warning info颜色都有做修改
 export const editorErrorBackground = registerColor(
   'editorError.background',
@@ -873,4 +873,15 @@ export const editorInlayHintParameterBackground = registerColor(
     hcLight: editorInlayHintBackground,
   },
   localize('editorInlayHintBackgroundParameter', 'Background color of inline hints for parameters'),
+);
+
+export const editorImagePreviewBackground = registerColor(
+  'editorImagePreview.background',
+  {
+    dark: new Color(new RGBA(20, 20, 20)),
+    light: new Color(new RGBA(230, 230, 230)),
+    hcLight: new Color(new RGBA(230, 230, 230)),
+    hcDark: new Color(new RGBA(20, 20, 20)),
+  },
+  localize('editorImagePreviewBackground', 'Background color of image preview editor.'),
 );

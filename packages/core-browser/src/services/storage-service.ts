@@ -2,6 +2,7 @@ import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { isObject, isUndefinedOrNull, runWhenIdle } from '@opensumi/ide-core-common';
 
 import { Logger } from '../logger';
+import { AppConfig } from '../react-providers/index';
 
 export const GLOBAL_BROWSER_STORAGE_PREFIX = 'global';
 export const SCOPED_BROWSER_STORAGE_PREFIX = 'scoped';
@@ -93,7 +94,12 @@ abstract class BaseBrowserStorageService implements StorageService {
     if (isUndefinedOrNull(result)) {
       return defaultValue;
     }
-    return JSON.parse(result);
+    try {
+      return JSON.parse(result);
+    } catch (e) {
+      this.logger.error(`storage getDate error: ${e}, use defaultValue as result.`);
+    }
+    return defaultValue;
   }
 
   public removeData<T>(key: string): void {
@@ -177,11 +183,14 @@ export class GlobalBrowserStorageService extends BaseBrowserStorageService {
  */
 @Injectable()
 export class ScopedBrowserStorageService extends BaseBrowserStorageService {
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   private pathname = 'unknown';
 
   constructor(@Optional() key: string) {
     super();
-    this.pathname = key;
+    this.pathname = key || this.appConfig.workspaceDir;
     // 仅对局部 LocalStorage 设置过期时间
     this.setExpires(true);
   }

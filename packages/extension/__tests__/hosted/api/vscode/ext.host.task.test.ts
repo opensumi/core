@@ -16,7 +16,7 @@ import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/i
 import { ExtensionDocumentDataManagerImpl } from '@opensumi/ide-extension/lib/hosted/api/vscode/doc';
 import { ExtHostMessage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.message';
 import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
-import { MockFileServiceClient } from '@opensumi/ide-file-service/lib/common/mocks';
+import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 import { OutputPreferences } from '@opensumi/ide-output/lib/browser/output-preference';
 import { TaskService } from '@opensumi/ide-task/lib/browser/task.service';
@@ -24,6 +24,7 @@ import { TerminalTaskSystem } from '@opensumi/ide-task/lib/browser/terminal-task
 import { ITaskService, ITaskSystem } from '@opensumi/ide-task/lib/common';
 import {
   ITerminalApiService,
+  ITerminalClientFactory2,
   ITerminalController,
   ITerminalGroupViewService,
   ITerminalInternalService,
@@ -32,7 +33,10 @@ import {
   ITerminalService,
   ITerminalTheme,
 } from '@opensumi/ide-terminal-next';
-import { TerminalClientFactory } from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
+import {
+  createTerminalClientFactory2,
+  TerminalClientFactory,
+} from '@opensumi/ide-terminal-next/lib/browser/terminal.client';
 import { TerminalController } from '@opensumi/ide-terminal-next/lib/browser/terminal.controller';
 import { TerminalEnvironmentService } from '@opensumi/ide-terminal-next/lib/browser/terminal.environment.service';
 import { TerminalInternalService } from '@opensumi/ide-terminal-next/lib/browser/terminal.internal.service';
@@ -42,7 +46,6 @@ import { TerminalGroupViewService } from '@opensumi/ide-terminal-next/lib/browse
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
 import { ITerminalPreference } from '@opensumi/ide-terminal-next/lib/common/preference';
 import { IVariableResolverService } from '@opensumi/ide-variable';
-import { VariableResolverService } from '@opensumi/ide-variable/lib/browser/variable-resolver.service';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { createBrowserInjector } from '../../../../../../tools/dev-tool/src/injector-helper';
@@ -103,6 +106,12 @@ describe('ExtHostTask API', () => {
       }),
     },
     {
+      token: IVariableResolverService,
+      useValue: {
+        resolve: () => '',
+      },
+    },
+    {
       token: ITerminalProfileInternalService,
       useValue: {
         resolveDefaultProfile: jest.fn(() => ({
@@ -144,12 +153,15 @@ describe('ExtHostTask API', () => {
       useClass: TaskService,
     },
     {
-      token: ITaskSystem,
-      useClass: TerminalTaskSystem,
+      token: ITerminalClientFactory2,
+      useFactory:
+        (injector) =>
+        (widget, options = {}) =>
+          createTerminalClientFactory2(injector)(widget, options),
     },
     {
-      token: IVariableResolverService,
-      useClass: VariableResolverService,
+      token: ITaskSystem,
+      useClass: TerminalTaskSystem,
     },
     {
       token: ITerminalGroupViewService,

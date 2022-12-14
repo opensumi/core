@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build && npm run build:dist",
+    "prepublishOnly": "yarn run build && yarn run build:dist",
     "build": "tsc --build ../../configs/ts/references/tsconfig.components.json",
     "build:dist": "webpack --config ./webpack.config.js --color",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -24,7 +24,7 @@
     "raf": "^3.4.1",
     "rc-dialog": "~7.6.0",
     "rc-dropdown": "~2.4.1",
-    "rc-menu": "~9.3.2",
+    "rc-menu": "^9.3.2",
     "rc-notification": "~3.3.1",
     "rc-util": "^4.16.1",
     "react-ctxmenu-trigger": "^1.0.0",
@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "^1.3.1",
-    "@types/marked": "^4.0.7"
+    "@types/marked": "^4.0.7",
+    "prop-types": "^15.8.1"
   }
 }

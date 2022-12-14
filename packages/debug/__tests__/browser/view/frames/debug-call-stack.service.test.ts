@@ -3,7 +3,7 @@ import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI } from '@opensumi/ide-core-common';
 import { Disposable } from '@opensumi/ide-core-common';
-import { DebugStackFrame } from '@opensumi/ide-debug/lib/browser';
+import { DebugStackFrame } from '@opensumi/ide-debug/lib/browser/model';
 import { DebugCallStackService } from '@opensumi/ide-debug/lib/browser/view/frames/debug-call-stack.service';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { ContextKeyService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/browser/contextKeyService';

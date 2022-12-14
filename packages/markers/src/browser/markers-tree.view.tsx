@@ -1,7 +1,7 @@
 import { observer, useComputed } from 'mobx-react-lite';
 import React from 'react';
 
-import { ViewState, useInjectable, IMatch } from '@opensumi/ide-core-browser';
+import { ViewState, useInjectable, IMatch, URI, IOpenerService } from '@opensumi/ide-core-browser';
 import { DeprecatedRecycleTree, TreeNode } from '@opensumi/ide-core-browser/lib/components';
 
 import { IMarkerService, IRenderableMarker, IRenderableMarkerModel } from '../common';
@@ -48,7 +48,7 @@ function buildItemChildId(res: string, index: number): string {
 const MarkerItemTitleName: React.FC<{ model: IRenderableMarkerModel }> = observer(({ model }) => {
   const filenameMatches = model.matches && model.matches.filenameMatches;
   if (filenameMatches) {
-    return <HightlightData data={model.filename} matches={filenameMatches} className={styles.itemTitleName} />;
+    return <HighlightData data={model.filename} matches={filenameMatches} className={styles.itemTitleName} />;
   } else {
     return <div className={styles.itemTitleName}>{model.filename}</div>;
   }
@@ -65,39 +65,72 @@ const MarkerItemTitleDescription: React.FC<{ model: IRenderableMarkerModel }> = 
 /**
  * render highlight info which is filterd
  */
-const HightlightData: React.FC<{ data: string; matches: IMatch[]; className: string }> = observer(
-  ({ data, matches, className }) => {
-    const result: React.ReactNode[] = [];
-    let first = 0;
-    matches.forEach((match) => {
-      if (first < match.start) {
-        result.push(<span key={`hightlight-data-${first}-${match.start}`}>{data.substring(first, match.start)}</span>);
-      }
-      result.push(
-        <span key={`hightlight-data-${match.start}-${match.end}`} className={styles.highlight}>
-          {data.substring(match.start, match.end)}
-        </span>,
-      );
-      first = match.end;
-    });
-    if (first < data.length) {
-      result.push(<span key={`hightlight-data-${first}-${data.length - 1}`}>{data.substring(first)}</span>);
+const HighlightData: React.FC<{
+  data: string;
+  matches: IMatch[];
+  className: string;
+}> = observer(({ data, matches, className }) => {
+  const result: React.ReactNode[] = [];
+  let first = 0;
+  matches.forEach((match) => {
+    if (first < match.start) {
+      result.push(<span key={`highlight-data-${first}-${match.start}`}>{data.substring(first, match.start)}</span>);
     }
-    return <div className={className}>{result}</div>;
-  },
-);
+    result.push(
+      <span key={`highlight-data-${match.start}-${match.end}`} className={styles.highlight}>
+        {data.substring(match.start, match.end)}
+      </span>,
+    );
+    first = match.end;
+  });
+  if (first < data.length) {
+    result.push(<span key={`highlight-data-${first}-${data.length - 1}`}>{data.substring(first)}</span>);
+  }
+  return <div className={className}>{result}</div>;
+});
 
 /**
  * render marker message
  */
 const MarkerItemName: React.FC<{ data: IRenderableMarker }> = observer(({ data }) => {
-  const messageMatchs = data.matches && data.matches.messageMatches;
-  if (messageMatchs) {
-    return <HightlightData data={data.message} matches={messageMatchs} className={styles.itemDetailName} />;
+  const messageMatches = data.matches && data.matches.messageMatches;
+  if (messageMatches) {
+    return <HighlightData data={data.message} matches={messageMatches} className={styles.itemDetailName} />;
   } else {
     return <div className={styles.itemDetailName}>{data.message}</div>;
   }
 });
+
+const MarkerCode: React.FC<{
+  data: string;
+  href?: URI;
+  matches?: IMatch[] | null;
+  type: string;
+}> = ({ data, href, matches, type }) => {
+  const openerService = useInjectable(IOpenerService) as IOpenerService;
+  const code = matches ? <HighlightData data={data} matches={matches} className={type} /> : <>{data}</>;
+  if (typeof href !== 'undefined') {
+    return (
+      <>
+        <a
+          className={styles.codeHref}
+          onClick={() => {
+            // 这里新建一个，mobx 对 target 做了 proxy 导致 openerService 取不到值。
+            const targetUri = new URI(href.codeUri);
+            openerService.open(targetUri);
+          }}
+          rel='noopener'
+          target='_blank'
+          href='javascript:void(0)'
+          title={data}
+        >
+          {code}
+        </a>
+      </>
+    );
+  }
+  return code;
+};
 
 /**
  * render marker source and code
@@ -109,14 +142,10 @@ const MarkerItemDescription: React.FC<{ data: IRenderableMarker }> = observer(({
     <div className={styles.itemDetailDescription}>
       <div className={styles.typeContainer}>
         {sourceMatches
-          ? data.source && <HightlightData data={data.source} matches={sourceMatches} className={styles.type} />
+          ? data.source && <HighlightData data={data.source} matches={sourceMatches} className={styles.type} />
           : data.source}
         {data.code && '('}
-        {data.code && codeMatches ? (
-          <HightlightData data={data.code} matches={codeMatches} className={styles.type} />
-        ) : (
-          data.code
-        )}
+        {data.code && <MarkerCode data={data.code} href={data.codeHref} matches={codeMatches} type={styles.type} />}
         {data.code && ')'}
       </div>
       <div className={styles.position}>{`[${data.startLineNumber},${data.startColumn}]`}</div>

@@ -1,10 +1,10 @@
 import { OpenSumiApp } from './app';
 import { OPENSUMI_VIEW_CONTAINERS } from './constans';
-import { OpenSumiExplorerFileStatNode } from './explorer-view';
+import { OpenSumiTreeNode } from './tree-node';
 import { OpenSumiView } from './view';
 
 export class OpenSumiEditor extends OpenSumiView {
-  constructor(app: OpenSumiApp, private readonly filestatElement?: OpenSumiExplorerFileStatNode) {
+  constructor(app: OpenSumiApp, private readonly filestatElement?: OpenSumiTreeNode) {
     super(app, {
       tabSelector: `#${OPENSUMI_VIEW_CONTAINERS.EDITOR_TABS}`,
       viewSelector: `#${OPENSUMI_VIEW_CONTAINERS.EDITOR}`,

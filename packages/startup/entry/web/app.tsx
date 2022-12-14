@@ -46,5 +46,8 @@ renderApp({
     bottom: '@opensumi/ide-terminal-next',
     right: '',
   },
-  devtools: true, // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
+  // 当 `.sumi` 下不存在配置文件时，默认采用 `.vscode` 下的配置
+  useVSCodeWorkspaceConfiguration: true,
+  // 开启 core-browser 对 OpenSumi DevTools 的支持，默认为关闭
+  devtools: true,
 });

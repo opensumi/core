@@ -1,4 +1,4 @@
-import globToRegExp = require('glob-to-regexp');
+import globToRegExp from 'glob-to-regexp';
 import {
   DocumentSelector,
   CompletionItemProvider,
@@ -182,7 +182,7 @@ export interface IMainThreadLanguages {
 export interface IExtHostLanguages {
   getLanguages(): Promise<string[]>;
 
-  registerHoverProvider(selector, provider): Disposable;
+  registerHoverProvider(selector, provider, extension: IExtensionDescription): Disposable;
   $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
   $provideHoverWithDuration(
     handle: number,
@@ -195,6 +195,7 @@ export interface IExtHostLanguages {
     selector: DocumentSelector,
     provider: CompletionItemProvider,
     triggerCharacters: string[],
+    extension: IExtensionDescription,
   ): Disposable;
   $provideCompletionItems(
     handle: number,
@@ -210,7 +211,11 @@ export interface IExtHostLanguages {
   ): Promise<ISuggestDataDto | undefined>;
   $releaseCompletionItems(handle: number, id: number): void;
 
-  registerInlineCompletionsProvider(selector: DocumentSelector, provider: InlineCompletionItemProvider): Disposable;
+  registerInlineCompletionsProvider(
+    selector: DocumentSelector,
+    provider: InlineCompletionItemProvider,
+    extension: IExtensionDescription,
+  ): Disposable;
   $provideInlineCompletions(
     handle: number,
     resource: UriComponents,
@@ -233,7 +238,11 @@ export interface IExtHostLanguages {
     position: Position,
     token: CancellationToken,
   ): Promise<WithDuration<Definition | DefinitionLink[] | undefined>>;
-  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
+  registerDefinitionProvider(
+    selector: DocumentSelector,
+    provider: DefinitionProvider,
+    extension: IExtensionDescription,
+  ): Disposable;
 
   $provideTypeDefinition(
     handle: number,
@@ -241,9 +250,17 @@ export interface IExtHostLanguages {
     position: Position,
     token: CancellationToken,
   ): Promise<Definition | DefinitionLink[] | undefined>;
-  registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
+  registerTypeDefinitionProvider(
+    selector: DocumentSelector,
+    provider: TypeDefinitionProvider,
+    extension: IExtensionDescription,
+  ): Disposable;
 
-  registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable;
+  registerFoldingRangeProvider(
+    selector: DocumentSelector,
+    provider: FoldingRangeProvider,
+    extension: IExtensionDescription,
+  ): Disposable;
   $provideFoldingRange(
     handle: number,
     resource: UriComponents,
@@ -251,7 +268,11 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<FoldingRange[] | undefined>;
 
-  registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable;
+  registerColorProvider(
+    selector: DocumentSelector,
+    provider: DocumentColorProvider,
+    extension: IExtensionDescription,
+  ): Disposable;
   $provideDocumentColors(handle: number, resource: UriComponents, token: CancellationToken): Promise<RawColorInfo[]>;
   $provideColorPresentations(
     handle: number,
@@ -329,6 +350,7 @@ export interface IExtHostLanguages {
     resource: UriComponents,
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
+    token: CancellationToken,
   ): Promise<ICodeActionListDto | undefined>;
   $resolveCodeAction(
     handle: number,
@@ -404,7 +426,11 @@ export interface IExtHostLanguages {
     token: CancellationToken,
   ): Promise<SelectionRange[][]>;
 
-  registerCallHierarchyProvider(selector: DocumentSelector, provider: CallHierarchyProvider): Disposable;
+  registerCallHierarchyProvider(
+    selector: DocumentSelector,
+    provider: CallHierarchyProvider,
+    extension: IExtensionDescription,
+  ): Disposable;
   $prepareCallHierarchy(
     handle: number,
     resource: UriComponents,
@@ -424,7 +450,11 @@ export interface IExtHostLanguages {
     itemId: string,
     token: CancellationToken,
   ): Promise<IOutgoingCallDto[] | undefined>;
-  registerTypeHierarchyProvider(selector: DocumentSelector, provider: TypeHierarchyProvider): Disposable;
+  registerTypeHierarchyProvider(
+    selector: DocumentSelector,
+    provider: TypeHierarchyProvider,
+    extension: IExtensionDescription,
+  ): Disposable;
   $prepareTypeHierarchy(
     handle: number,
     resource: UriComponents,

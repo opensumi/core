@@ -57,11 +57,17 @@ export const Extension = React.memo(
 
     return (
       <div className={styles.extension_item} onClick={onClickCallback}>
-        <img
-          className={styles.icon}
-          src={extension.iconUrl || `${openVSXRegistry}/default-icon.png`}
-          alt={replaceLocalizePlaceholder(extension.displayName, `${extension.publisher}.${extension.name}`)}
-        />
+        {extension.iconUrl ? (
+          <img
+            className={styles.icon}
+            src={extension.iconUrl}
+            alt={replaceLocalizePlaceholder(extension.displayName, `${extension.publisher}.${extension.name}`)}
+          />
+        ) : (
+          <div className={styles.default_icon}>
+            <Icon iconClass={getIcon('extension')} />
+          </div>
+        )}
         <div className={styles.extension_detail}>
           <div className={styles.base_info}>
             <span className={styles.display_name}>

@@ -1,5 +1,4 @@
 import { CancellationToken } from 'vscode';
-import { DocumentFilter } from 'vscode-languageserver-protocol';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
@@ -71,8 +70,9 @@ import {
   ResourceTextEditDto,
   ResourceFileEditDto,
   ILinkDto,
+  isDocumentFilter,
+  FoldingRangeProvider,
 } from '../../../common/vscode/model.api';
-import { FoldingRangeProvider } from '../../../common/vscode/model.api';
 import { mixin, reviveIndentationRule, reviveOnEnterRules, reviveRegExp } from '../../../common/vscode/utils';
 
 import {
@@ -377,7 +377,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       return selector.some((filter) => this.matchLanguage(filter, languageId));
     }
 
-    if (DocumentFilter.is(selector)) {
+    if (isDocumentFilter(selector)) {
       if (!selector.language && (selector.pattern || selector.scheme)) {
         return true;
       }
@@ -392,7 +392,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     if (Array.isArray(selector)) {
       return selector.some((filter) => this.matchModel(filter, model));
     }
-    if (DocumentFilter.is(selector)) {
+    if (isDocumentFilter(selector)) {
       if (!!selector.language && selector.language !== model.languageId) {
         return false;
       }
@@ -976,7 +976,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     supportsResolve: boolean,
   ): modes.CodeActionProvider {
     const provider: modes.CodeActionProvider = {
-      provideCodeActions: async (model: any, rangeOrSelection, monacoContext) => {
+      provideCodeActions: async (model: any, rangeOrSelection, monacoContext, token: CancellationToken) => {
         if (!this.isLanguageFeatureEnabled(model)) {
           return undefined;
         }
@@ -985,7 +985,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         const timer = this.reporter.time(REPORT_NAME.PROVIDE_CODE_ACTIONS);
         const listDto = await this.proxy
-          .$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext)
+          .$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext, token)
           .then((v) => {
             timer.timeEnd(extname(model.uri.fsPath));
             return v;

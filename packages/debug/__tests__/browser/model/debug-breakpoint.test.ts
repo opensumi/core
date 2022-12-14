@@ -5,10 +5,10 @@ import { IDebugBreakpoint } from '@opensumi/ide-debug';
 import {
   BreakpointManager,
   DebugBreakpoint,
-  isRuntimeBreakpoint,
-  isDebugBreakpoint,
   DebugDecorator,
-} from '@opensumi/ide-debug/lib/browser';
+  isDebugBreakpoint,
+  isRuntimeBreakpoint,
+} from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
 

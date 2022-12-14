@@ -26,6 +26,7 @@ describe('markdown test', () => {
       markdownString,
       element,
       new CancellationTokenSource().token,
+      undefined,
       updateEvent.event,
     );
 

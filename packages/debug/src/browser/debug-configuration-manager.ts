@@ -461,7 +461,7 @@ export class DebugConfigurationManager {
         index: current.index,
       };
     }
-    this.debugConfigurationStorage.set('configurations', data);
+    await this.debugConfigurationStorage.set('configurations', data);
   }
 
   /**

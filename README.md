@@ -30,46 +30,57 @@
 </div>
 <h1 align="center">OpenSumi</h1>
 
-A framework helps you quickly build Cloud or Desktop IDE products.
+<p align="center">A framework helps you quickly build Cloud or Desktop IDE products.</p>
 
 ![perview](https://img.alicdn.com/imgextra/i2/O1CN018JorOL1oWlLmbzGv0_!!6000000005233-2-tps-2844-1796.png)
 
 English | [简体中文](./README-zh_CN.md)
 
-## ⚡️ Quick start
+## ⚡️ Quick Start
 
 ```bash
-$ npm install
-$ npm run init
-$ npm run download-extension  # Optional
-$ npm run start
+$ yarn install
+$ yarn run init
+$ yarn run download-extension  # Optional
+$ yarn run start
 ```
 
 By default, the `tools/workspace` folder in the project would be opened, or you can run the project by specifying the directory in the following way:
 
 ```bash
-$ MY_WORKSPACE={local_path} npm run start
+$ MY_WORKSPACE={local_path} yarn run start
 ```
 
 Usually, you may still encounter some system-level environment dependencies. You can visit [Development Environment Preparation](./CONTRIBUTING.md#development-environment-preparation) to see how to install the corresponding environment dependencies.
+
+## 🌟 Getting Started
+
+Here you can find some of our example projects and templates:
+
+- [Cloud IDE](https://github.com/opensumi/ide-startup)
+- [Desktop IDE - based on the Electron](https://github.com/opensumi/ide-electron)
+- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-electron)
+- [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
 
 ## 📕 Documentation
 
 For complete documentation: [opensumi.com](https://opensumi.com)
 
+## 📍 ReleaseNotes & BreakingChanges
+
+You can see all the releasenotes and breaking changes here: [CHANGELOG.md](./CHANGELOG.md).
+
 ## 🔥 Contributing
 
-Read through our [contributing guidelines](./CONTRIBUTING.md) to learn about our submission process, coding rules and more.
+Read through our [Contributing Guidelines](./CONTRIBUTING.md) to learn about our submission process, coding rules and more.
 
 ## 🙋‍♀️ Want to Help?
 
-Want to report a bug, contribute some code, or improve documentation? Excellent! Read up on our [guidelines](./CONTRIBUTING.md) for contributing and then check out one of our issues labeled as help wanted or good first issue.
+Want to report a bug, contribute some code, or improve documentation? Excellent! Read up on our [Contributing Guidelines](./CONTRIBUTING.md) for contributing and then check out one of our issues labeled as help wanted or good first issue.
 
-## 🧑‍💻 DingTalk Group
+## 🧑‍💻 Needs some help?
 
-use [DingTalk](https://www.dingtalk.com/) APP scan or join the group with the number `34355491`
-
-![dingtalk](https://img.alicdn.com/imgextra/i1/O1CN01k3gCmL1HWPjLchVv7_!!6000000000765-0-tps-200-199.jpg)
+Go to our [issues](https://github.com/opensumi/core/issues) or [discussions](https://github.com/opensumi/core/discussions) to create a topic, it will be resolved as soon as we can.
 
 ## 📃 License
 
@@ -82,5 +93,5 @@ Licensed under the [MIT](LICENSE) license.
 ❤️ Thanks goes to these wonderful people!
 
 <a href="https://github.com/opensumi/core/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=opensumi/core" />
+  <img width="800" src="https://contrib.rocks/image?repo=opensumi/core" />
 </a>

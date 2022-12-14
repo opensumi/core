@@ -8,7 +8,7 @@ import writeFileAtomic from 'write-file-atomic';
 
 import { Injectable, INJECTOR_TOKEN, Autowired, Injector } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { Deferred, ILogService, ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-node';
+import { Deferred, ILogService, ILogServiceManager, SupportLogNamespace, path } from '@opensumi/ide-core-node';
 import {
   isLinux,
   UriComponents,
@@ -19,11 +19,9 @@ import {
   Emitter,
   isUndefined,
   DisposableCollection,
-  isWindows,
   FileUri,
   uuid,
 } from '@opensumi/ide-core-node';
-import { Path } from '@opensumi/ide-utils/lib/path';
 
 import {
   FileChangeEvent,
@@ -43,6 +41,7 @@ import {
 
 import { ParcelWatcherServer } from './file-service-watcher';
 
+const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
 const DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**';
 

@@ -53,6 +53,7 @@ import {
   CONTEXT_IN_DEBUG_MODE_KEY,
   CONTEXT_DEBUG_TYPE_KEY,
   DebugState,
+  IDebugModelManager,
 } from '../common';
 import { IDebugProgress } from '../common/debug-progress';
 
@@ -61,7 +62,6 @@ import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 import { DebugSession } from './debug-session';
 import { DebugSessionContributionRegistry } from './debug-session-contribution';
 import { isRemoteAttach } from './debugUtils';
-import { DebugModelManager } from './editor/debug-model-manager';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugThread } from './model/debug-thread';
 
@@ -151,8 +151,8 @@ export class DebugSessionManager implements IDebugSessionManager {
   @Autowired(BreakpointManager)
   protected readonly breakpoints: BreakpointManager;
 
-  @Autowired(DebugModelManager)
-  protected readonly modelManager: DebugModelManager;
+  @Autowired(IDebugModelManager)
+  protected readonly modelManager: IDebugModelManager;
 
   @Autowired(ITaskService)
   protected readonly taskService: ITaskService;
@@ -500,7 +500,7 @@ export class DebugSessionManager implements IDebugSessionManager {
     return this.start(options);
   }
   public updateCurrentSession(session: DebugSession | undefined) {
-    this.currentSession = session || this.sessions[0];
+    this.currentSession = session || this.sessions[this.sessions.length - 1];
   }
 
   get inDebugMode(): boolean {

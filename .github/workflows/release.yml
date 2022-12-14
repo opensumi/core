@@ -53,15 +53,30 @@ jobs:
           git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/$GITHUB_REPOSITORY
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - name: Get yarn cache directory path
+        id: yarn_cache_dir_path
+        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+      - uses: actions/cache@v3
+        id: yarn_cache
+        with:
+          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
       # 安装依赖并构建
       - name: Install dependencies & Build
         if: steps.checkTag.outputs.exists == 'false'
         run: |
-          npm i
-          npm run init
-          npm run manifest -- -v=${{github.event.inputs.version}}
-
+          yarn install --immutable
+          yarn run init
+          yarn run manifest -v=${{github.event.inputs.version}}
+      - name: Setup .yarnrc.yml
+        run: |
+          yarn config set -H npmRegistryServer "https://registry.npmjs.org"
+          yarn config set -H npmAlwaysAuth true
+          yarn config set -H npmAuthToken $NPM_AUTH_TOKEN
+        env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       # 发布正式版本
       # 当 main 分支进行首次版本发布时不推送 Lerna 更改到 Git
       - name: Publish Prod Version Without Push

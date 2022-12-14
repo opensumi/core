@@ -10,10 +10,10 @@ import {
 import { IUserStorageService, SettingContribution } from '../common';
 
 import {
-  FolderPreferenceProviderFactory,
-  FolderPreferenceProviderOptions,
-  FolderPreferenceProvider,
-} from './folder-preference-provider';
+  FolderFilePreferenceProviderFactory,
+  FolderFilePreferenceProviderOptions,
+  FolderFilePreferenceProvider,
+} from './folder-file-preference-provider';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { PreferenceContribution } from './preference-contribution';
 import { PreferenceSettingsService } from './preference-settings.service';
@@ -25,7 +25,6 @@ import {
   WorkspaceFilePreferenceProvider,
 } from './workspace-file-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
-
 
 @Injectable()
 export class PreferencesModule extends BrowserModule {
@@ -49,14 +48,14 @@ export class PreferencesModule extends BrowserModule {
 
 export function injectFolderPreferenceProvider(inject: Injector): void {
   inject.addProviders({
-    token: FolderPreferenceProviderFactory,
-    useFactory: () => (options: FolderPreferenceProviderOptions) => {
+    token: FolderFilePreferenceProviderFactory,
+    useFactory: () => (options: FolderFilePreferenceProviderOptions) => {
       const configurations = inject.get(PreferenceConfigurations);
       const sectionName = configurations.getName(options.configUri);
       const child = inject.createChild(
         [
           {
-            token: FolderPreferenceProviderOptions,
+            token: FolderFilePreferenceProviderOptions,
             useValue: options,
           },
         ],
@@ -68,15 +67,15 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
       // 当传入为配置文件时，如settings.json, 获取Setting
       if (configurations.isConfigUri(options.configUri)) {
         child.addProviders({
-          token: FolderPreferenceProvider,
-          useClass: FolderPreferenceProvider,
+          token: FolderFilePreferenceProvider,
+          useClass: FolderFilePreferenceProvider,
         });
-        return child.get(FolderPreferenceProvider);
+        return child.get(FolderFilePreferenceProvider);
       }
       // 当传入为其他文件时，如launch.json
-      // 需设置对应的FolderPreferenceProvider 及其对应的 FolderPreferenceProviderOptions 依赖
+      // 需设置对应的FolderPreferenceProvider 及其对应的 FolderFilePreferenceProviderOptions 依赖
       // 这里的FolderPreferenceProvider获取必须为多例，因为工作区模式下可能存在多个配置文件
-      return child.get(FolderPreferenceProvider, { tag: sectionName, multiple: true });
+      return child.get(FolderFilePreferenceProvider, { tag: sectionName, multiple: true });
     },
   });
 }

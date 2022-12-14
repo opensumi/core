@@ -20,7 +20,7 @@ import type vscode from 'vscode';
 import { Emitter, Event, IMarkerData, MarkerSeverity } from '@opensumi/ide-core-common';
 
 import { IMainThreadLanguages } from '../../../../common/vscode';
-import { convertDiagnosticToMarkerData } from '../../../../common/vscode/converter';
+import { Diagnostic } from '../../../../common/vscode/converter';
 import { DiagnosticSeverity, Uri as URI } from '../../../../common/vscode/ext-types';
 
 export class DiagnosticCollection implements vscode.DiagnosticCollection {
@@ -227,10 +227,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
           for (const severity of DiagnosticCollection.DIAGNOSTICS_PRIORITY) {
             for (const diagnostic of uriDiagnostics) {
               if (severity === diagnostic.severity) {
-                if (
-                  uriMarkers.push(convertDiagnosticToMarkerData(diagnostic)) + 1 ===
-                  this.diagnosticsLimitPerResource
-                ) {
+                if (uriMarkers.push(Diagnostic.toMarker(diagnostic)) + 1 === this.diagnosticsLimitPerResource) {
                   const lastMarker = uriMarkers[uriMarkers.length - 1];
                   uriMarkers.push({
                     severity: MarkerSeverity.Info,
@@ -250,7 +247,7 @@ export class DiagnosticCollection implements vscode.DiagnosticCollection {
             }
           }
         } else {
-          uriDiagnostics.forEach((diagnostic) => uriMarkers.push(convertDiagnosticToMarkerData(diagnostic)));
+          uriDiagnostics.forEach((diagnostic) => uriMarkers.push(Diagnostic.toMarker(diagnostic)));
           markers.push([uri.toString(), uriMarkers]);
         }
       } else {

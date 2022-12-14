@@ -46,10 +46,9 @@ import {
 import { DebugConfiguration } from '../common';
 
 import { DebugEditor } from './../common/debug-editor';
-import { IDebugModel, MemoryRegion } from './../common/debug-model';
+import { IDebugModel, IDebugModelManager, MemoryRegion } from './../common/debug-model';
 import { BreakpointManager, DebugBreakpoint } from './breakpoint';
 import { DebugSessionConnection } from './debug-session-connection';
-import { DebugModelManager } from './editor/debug-model-manager';
 import { DebugSource } from './model/debug-source';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thread';
@@ -133,7 +132,7 @@ export class DebugSession implements IDebugSession {
     protected readonly terminalService: ITerminalApiService,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpointManager: BreakpointManager,
-    protected readonly modelManager: DebugModelManager,
+    protected readonly modelManager: IDebugModelManager,
     protected readonly labelProvider: LabelService,
     protected readonly messages: IMessageService,
     protected readonly fileSystem: IFileServiceClient,
@@ -864,8 +863,11 @@ export class DebugSession implements IDebugSession {
         if (model) {
           const uri = URI.parse(model.uri.toString());
           const curFram = frames.filter((f: DebugStackFrame) => f.source!.uri.toString() === uri.toString());
-          if (Array.isArray(curFram)) {
+          if (curFram.length > 0) {
             focus(curFram[0]);
+          } else {
+            // 说明不是因断点而被 pause, 可能是手动点击暂停按钮
+            focus(frames[0]);
           }
         }
       } else {

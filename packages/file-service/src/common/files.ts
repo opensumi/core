@@ -16,7 +16,7 @@
 
 // Some code copied and modified from https://github.com/eclipse-theia/theia/tree/v1.14.0/packages/filesystem/src/common/filesystem.ts
 
-import { Range } from 'vscode-languageserver-types';
+import type { Range } from 'vscode-languageserver-types';
 
 import { IFileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
 import {
@@ -37,6 +37,7 @@ export {
   FileType,
   FileStat,
 } from '@opensumi/ide-core-common/lib/types/file';
+
 export * from '@opensumi/ide-core-common/lib/types/file-watch';
 
 export const IDiskFileProvider = Symbol('IDiskFileProvider');

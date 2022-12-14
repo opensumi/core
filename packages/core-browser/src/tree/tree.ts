@@ -19,7 +19,7 @@ export interface FileDecorationsProvider {
 }
 
 export interface ThemeProvider {
-  getColor: ({ id: themeColorId }) => string;
+  getColor: ({ id }) => string;
 }
 
 export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {

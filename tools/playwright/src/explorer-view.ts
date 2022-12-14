@@ -1,6 +1,7 @@
 import { OpenSumiApp } from './app';
 import { OpenSumiFileTreeView } from './filetree-view';
 import { OpenSumiOpenedEditorView } from './opened-editor-view';
+import { OpenSumiOutlineView } from './outline-view';
 import { OpenSumiPanel } from './panel';
 import { OpenSumiTreeNode } from './tree-node';
 
@@ -46,6 +47,10 @@ export class OpenSumiExplorerOpenedEditorNode extends OpenSumiTreeNode {
     return await (await this.elementHandle.$('[class*="opened_editor_node_description__"]'))?.textContent();
   }
 
+  async getFsPath() {
+    return await this.elementHandle.getAttribute('title');
+  }
+
   async isGroup() {
     const icon = await this.elementHandle.waitForSelector("[class*='file_icon___']");
     const className = await icon.getAttribute('class');
@@ -66,10 +71,12 @@ export class OpenSumiExplorerOpenedEditorNode extends OpenSumiTreeNode {
 export class OpenSumiExplorerView extends OpenSumiPanel {
   private _fileTreeView: OpenSumiFileTreeView;
   private _openedEditorView: OpenSumiOpenedEditorView;
+  private _outlineView: OpenSumiOutlineView;
 
   constructor(app: OpenSumiApp) {
-    super(app, 'explorer');
-    this._openedEditorView = new OpenSumiOpenedEditorView(this.app, 'OPENED EDITORS');
+    super(app, 'EXPLORER');
+    this._openedEditorView = new OpenSumiOpenedEditorView(this.app);
+    this._outlineView = new OpenSumiOutlineView(this.app);
   }
 
   initFileTreeView(name: string) {
@@ -84,6 +91,10 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
     return this._openedEditorView;
   }
 
+  get outlineView() {
+    return this._outlineView;
+  }
+
   async getFileStatTreeNodeByPath(path: string) {
     const treeItems = await (await this.fileTreeView.getViewElement())?.$$('[class*="file_tree_node__"]');
     if (!treeItems) {
@@ -92,9 +103,17 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
     let node;
     for (const item of treeItems) {
       const title = await item.getAttribute('title');
-      if (title?.includes(path)) {
-        node = item;
-        break;
+      if (title?.startsWith('Group')) {
+        if (title === path) {
+          node = item;
+          break;
+        }
+      } else {
+        // The title maybe `~/a.js • Untracked`
+        if (title?.split(' ')[0]?.endsWith(path)) {
+          node = item;
+          break;
+        }
       }
     }
     if (node) {
@@ -110,9 +129,17 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
     let node;
     for (const item of treeItems) {
       const title = await item.getAttribute('title');
-      if (title?.includes(path)) {
-        node = item;
-        break;
+      if (title?.startsWith('Group')) {
+        if (title === path) {
+          node = item;
+          break;
+        }
+      } else {
+        // The title maybe `~/a.js • Untracked`
+        if (title?.split(' ')[0]?.endsWith(path)) {
+          node = item;
+          break;
+        }
       }
     }
     if (node) {

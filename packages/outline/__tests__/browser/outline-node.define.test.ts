@@ -1,11 +1,7 @@
 import { INormalizedDocumentSymbol } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { SymbolKind } from '@opensumi/ide-extension/lib/hosted/api/worker/worker.ext-types';
-import {
-  OutlineRoot,
-  OutlineCompositeTreeNode,
-  OutlineTreeNode,
-} from '@opensumi/ide-outline/lib/browser/outline-node.define';
-import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '../../src/browser/outline-node.define';
+import { OutlineTreeService } from '../../src/browser/services/outline-tree.service';
 
 describe('OutlineCompositeTreeNode', () => {
   let rootNode: OutlineRoot;
@@ -24,7 +20,8 @@ describe('OutlineCompositeTreeNode', () => {
     name: 'test',
     id: 'id',
     detail: '',
-    kind: SymbolKind.Boolean,
+    // kind: SymbolKind.Boolean,
+    kind: 16,
     range: {
       startColumn: 0,
       endColumn: 10,
@@ -67,7 +64,8 @@ describe('OutlineTreeNode', () => {
     name: 'test',
     id: 'id',
     detail: '',
-    kind: SymbolKind.Boolean,
+    // kind: SymbolKind.Boolean,
+    kind: 16,
     range: {
       startColumn: 0,
       endColumn: 10,

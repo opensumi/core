@@ -243,6 +243,7 @@ export const localizationBundle = {
     'scm.diff.change.next': '下一个变化',
     'scm.diff.change.previous': '上一个变化',
     'scm.diff.toggle.renderSideBySide': '切换内联视图',
+    'scm.dirtyDiff.changes': '第 {0} 个更改 (共 {1} 个)',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
@@ -500,6 +501,8 @@ export const localizationBundle = {
     'preference.item.notValid': '{0} 不是有效选项',
 
     'editor.saveAll': '保存全部',
+    'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
+    'editor.saveCodeActions.saving': '保存 "{0}"',
 
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
@@ -1045,6 +1048,11 @@ export const localizationBundle = {
     'task.contribute': '贡献',
     'task.cannotFindTask': '未找到 {0} 的任务，按回车键返回',
     // extension contribute
+
+    // #region walkthrough
+    'walkthroughs.welcome': '欢迎使用',
+    'walkthroughs.get.started': '打开 `入门` 演示',
+    // #endregion walkthrough
     ...browserViews,
   },
 };

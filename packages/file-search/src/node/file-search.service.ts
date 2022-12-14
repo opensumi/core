@@ -10,7 +10,7 @@ import { rgPath } from '@opensumi/vscode-ripgrep';
 
 import { IFileSearchService } from '../common';
 
-const { replaceAsarInPath } = path;
+const { replaceAsarInPath, Path, dirname } = path;
 
 @Injectable()
 export class FileSearchService implements IFileSearchService {
@@ -101,7 +101,19 @@ export class FileSearchService implements IFileSearchService {
         }
       }),
     );
-    return [...exactMatches, ...fuzzyMatches];
+    const sortedExactMatches = Array.from(exactMatches).sort((a, b) => {
+      const depthA = Path.pathDepth(a);
+      const depthB = Path.pathDepth(a);
+      if (depthA === depthB) {
+        const dirA = dirname(a);
+        const dirB = dirname(b);
+        return dirB.localeCompare(dirA, 'en', { numeric: true });
+      } else {
+        return depthB - depthA;
+      }
+    });
+
+    return [...sortedExactMatches, ...fuzzyMatches];
   }
 
   private doFind(

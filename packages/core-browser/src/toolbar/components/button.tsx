@@ -226,7 +226,7 @@ const PopOverComponentWrapper: React.FC<{ delegate: IToolbarActionBtnDelegate }>
     React.isValidElement(child)
       ? React.cloneElement(child, {
           context,
-        })
+        } as any)
       : null,
   );
   return <>{childrenWithProps}</>;

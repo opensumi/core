@@ -2,11 +2,11 @@ import { OpenSumiApp } from './app';
 import { OpenSumiView } from './view';
 
 export class OpenSumiOpenedEditorView extends OpenSumiView {
-  constructor(app: OpenSumiApp, workspaceName: string) {
+  constructor(app: OpenSumiApp) {
     super(app, {
-      viewSelector: '#file-opened-editor',
-      tabSelector: '#file-opened-editor [tabindex="0"]',
-      name: workspaceName,
+      viewSelector: '[data-view-id="file-opened-editor"]',
+      tabSelector: '[data-view-id="file-opened-editor"] [tabindex="0"]',
+      name: 'OPENED EDITORS',
     });
   }
 

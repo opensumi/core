@@ -44,6 +44,11 @@ export interface IIconService {
    * */
   applyTheme(themeId: string): Promise<void>;
   /**
+   * 将 Base64 路径进行转义，便于在 `background: url("${iconPath}")` 结构中使用
+   * @param iconPath Base64 路径
+   */
+  encodeBase64Path(iconPath: string): string;
+  /**
    * 将 codicon 的 id 转换为 codicon 的 class
    * @param str codicon id eg. $(add), $(add~sync)
    */
@@ -63,6 +68,11 @@ export interface IIconService {
     fromExtension?: boolean,
   ): string | undefined;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: URI): void;
+
+  /**
+   * 注册来自插件的字体图标
+   */
+  registerFontIcons(definitions: FontIconDefinition[], iconFontFamilies: IconFontFamily[]): void;
   getAvailableThemeInfos(): IconThemeInfo[];
 }
 
@@ -74,6 +84,19 @@ export interface IThemeData extends IStandaloneThemeData {
   settings: IRawThemeSetting[];
   initializeFromData(data): void;
   initializeThemeData(id, name, base, themeLocation: URI): Promise<void>;
+}
+
+export interface FontIconDefinition {
+  id: string;
+  content: string;
+  fontFamily: string;
+}
+
+export interface IconFontFamily {
+  source: string;
+  fontFamily: string;
+  format: string;
+  display: string;
 }
 
 export interface IThemeService {

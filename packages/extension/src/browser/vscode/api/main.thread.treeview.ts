@@ -19,6 +19,7 @@ import {
   Disposable,
   CancellationToken,
   BinaryBuffer,
+  isString,
 } from '@opensumi/ide-core-browser';
 import {
   AbstractMenuService,
@@ -33,7 +34,7 @@ import { IMainLayoutService, ViewCollapseChangedEvent } from '@opensumi/ide-main
 import { IIconService, IconType, IThemeService } from '@opensumi/ide-theme';
 
 import { ExtensionHostType } from '../../../common';
-import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions } from '../../../common/vscode';
+import { TreeViewItem, TreeViewBaseOptions, ITreeViewRevealOptions, IconUrl } from '../../../common/vscode';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { DataTransfer } from '../../../common/vscode/converter';
 import { createStringDataTransferItem, VSDataTransfer } from '../../../common/vscode/data-transfer';
@@ -426,9 +427,27 @@ export class TreeViewDataProvider extends Tree {
     return node;
   }
 
+  private isBase64Icon(iconPath?: IconUrl | string) {
+    const isBase64Regx = /^data:image\//;
+    if (iconPath) {
+      if (isString(iconPath)) {
+        return isBase64Regx.test(iconPath);
+      } else {
+        return isBase64Regx.test(iconPath.dark);
+      }
+    }
+    return false;
+  }
+
   async toIconClass(item: TreeViewItem): Promise<string | undefined> {
     if (item.iconUrl || item.icon) {
-      return this.iconService.fromIcon('', item.iconUrl || item.icon, IconType.Background, undefined, true);
+      return this.iconService.fromIcon(
+        '',
+        item.iconUrl || item.icon,
+        this.isBase64Icon(item.iconUrl || item.icon) ? IconType.Base64 : IconType.Background,
+        undefined,
+        true,
+      );
     } else if (item.themeIcon) {
       let themeIconClass = getExternalIcon(item.themeIcon.id);
       if (item.resourceUri) {

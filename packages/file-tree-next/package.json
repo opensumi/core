@@ -2,13 +2,14 @@
   "name": "@opensumi/ide-file-tree-next",
   "version": "2.21.8",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.file-tree-next.json"
   },
   "repository": {
@@ -16,7 +17,6 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "dependencies": {
-    "@opensumi/ide-core-node": "2.21.8",
     "@opensumi/ide-file-service": "2.21.8"
   },
   "devDependencies": {
@@ -29,7 +29,6 @@
     "@opensumi/ide-explorer": "2.21.8",
     "@opensumi/ide-main-layout": "2.21.8",
     "@opensumi/ide-overlay": "2.21.8",
-    "@opensumi/ide-terminal-next": "2.21.8",
     "@opensumi/ide-theme": "2.21.8",
     "@opensumi/ide-workspace": "2.21.8",
     "@opensumi/ide-workspace-edit": "2.21.8"

@@ -1,8 +1,9 @@
 {
+  "baseUrl": "./",
   "compilerOptions": {
     "module": "commonjs",
     "target": "es2017",
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "strict": true,
     "strictPropertyInitialization": false,
     "declaration": true,
@@ -23,14 +24,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
-    "lib": [
-      "dom",
-      "esnext",
-      "webworker"
-    ],
-    "typeRoots": [
-      "../../node_modules/@types",
-      "../../typings",
-    ]
+    "lib": ["dom", "esnext", "webworker"],
+    "typeRoots": ["../../node_modules/@types", "../../typings"]
   }
 }

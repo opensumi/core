@@ -38,10 +38,9 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model';
 import { DebugVariable, DebugWatchNode, DebugWatchRoot } from '../tree';
 
-import { DebugState, IDebugExceptionInfo, IDebugSession, IDebugSessionManager } from './../../common';
+import { DebugState, IDebugExceptionInfo, IDebugModelManager, IDebugSessionManager } from './../../common';
 import { InlineValueContext } from './../../common/inline-values';
 import { DEFAULT_WORD_REGEXP } from './../debugUtils';
-import { DebugModelManager } from './debug-model-manager';
 
 const INLINE_VALUE_DECORATION_KEY = 'inlinevaluedecoration';
 const MAX_NUM_INLINE_VALUES = 100;
@@ -190,8 +189,8 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
   @Autowired(IContextKeyService)
   protected readonly contextKeyService: IContextKeyService;
 
-  @Autowired(DebugModelManager)
-  protected readonly debugModelManager: DebugModelManager;
+  @Autowired(IDebugModelManager)
+  protected readonly debugModelManager: IDebugModelManager;
 
   @Autowired(IDebugSessionManager)
   protected readonly debugSessionManager: DebugSessionManager;

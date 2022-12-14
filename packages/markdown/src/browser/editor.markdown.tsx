@@ -36,7 +36,13 @@ export const MarkdownEditorComponent: ReactEditorComponent<any> = ({ resource })
         if (container) {
           // container可能已不存在
           markdownService
-            .previewMarkdownInContainer(documentRef.instance.getText(), container!, cancellation.token, onUpdate.event)
+            .previewMarkdownInContainer(
+              documentRef.instance.getText(),
+              container!,
+              cancellation.token,
+              undefined,
+              onUpdate.event,
+            )
             .then((r) => {
               disposer.addDispose(r);
             });

@@ -405,7 +405,21 @@ export class Diagnostic {
   message: string;
   severity: DiagnosticSeverity;
   source?: string;
-  code?: string | number;
+  code?:
+    | string
+    | number
+    | {
+        /**
+         * A code or identifier for this diagnostic.
+         * Should be used for later processing, e.g. when providing {@link CodeActionContext code actions}.
+         */
+        value: string | number;
+
+        /**
+         * A target URI to open with more information about the diagnostic error.
+         */
+        target: Uri;
+      };
   relatedInformation?: DiagnosticRelatedInformation[];
   tags?: DiagnosticTag[];
 
@@ -1074,7 +1088,7 @@ export class CodeActionKind {
   public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
   public static readonly Source = CodeActionKind.Empty.append('source');
   public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
-  public static readonly SourceFixAll = CodeActionKind.Source.append('sourceFixAll');
+  public static readonly SourceFixAll = CodeActionKind.Source.append('fixAll');
 
   constructor(public readonly value: string) {}
 

@@ -98,6 +98,8 @@ export const localizationBundle = {
     'editor.redo': 'Redo',
     'editor.saveAll': 'Save All',
     'editor.saveCurrent': 'Save Current File',
+    'editor.saveCodeActions.getting': 'Getting code actions from {0}.',
+    'editor.saveCodeActions.saving': 'Saving "{0}"',
     'editor.title.context.close': 'Close',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
@@ -278,6 +280,7 @@ export const localizationBundle = {
     'scm.diff.change.next': 'Next Change',
     'scm.diff.change.previous': 'Previous Change',
     'scm.diff.toggle.renderSideBySide': 'Toggle Inline View',
+    'scm.dirtyDiff.changes': '{0} of {1} changes',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',
@@ -1003,6 +1006,11 @@ export const localizationBundle = {
     'task.cannotFindTask': 'Cannot find task for {0}. Press Enter key to return.',
 
     // extension contribute
+
+    // #region walkthrough
+    'walkthroughs.welcome': 'Welcome',
+    'walkthroughs.get.started': "Open the 'Getting Started' walkthrough",
+    // #endregion walkthrough
     ...browserViews,
   },
 };

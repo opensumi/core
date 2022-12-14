@@ -3,13 +3,14 @@
   "version": "2.21.8",
   "description": "@opensumi/ide-main-layout",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.main-layout.json"
   },
   "repository": {

@@ -9,6 +9,7 @@ import {
   DisposableCollection,
   ProblemMatch,
   ProblemMatchData,
+  rangeAreEqual,
 } from '@opensumi/ide-core-common';
 import {
   ITerminalController,
@@ -31,14 +32,6 @@ export enum TaskStatus {
   PROCESS_RUNNING,
   PROCESS_EXITED,
 }
-function rangeAreEqual(a, b) {
-  return (
-    a.start.line === b.start.line &&
-    a.start.character === b.start.character &&
-    a.end.line === b.end.line &&
-    a.end.character === b.end.character
-  );
-}
 
 function problemAreEquals(a: ProblemMatchData | ProblemMatch, b: ProblemMatchData | ProblemMatch) {
   return (
@@ -46,10 +39,10 @@ function problemAreEquals(a: ProblemMatchData | ProblemMatch, b: ProblemMatchDat
     a.description.owner === b.description.owner &&
     a.description.severity === b.description.severity &&
     a.description.source === b.description.source &&
-    (a as ProblemMatchData)?.marker.code === (b as ProblemMatchData)?.marker.code &&
-    (a as ProblemMatchData)?.marker.message === (b as ProblemMatchData)?.marker.message &&
-    (a as ProblemMatchData)?.marker.source === (b as ProblemMatchData)?.marker.source &&
-    rangeAreEqual((a as ProblemMatchData).marker.range, (b as ProblemMatchData).marker.range)
+    (a as ProblemMatchData)?.marker?.code === (b as ProblemMatchData)?.marker?.code &&
+    (a as ProblemMatchData)?.marker?.message === (b as ProblemMatchData)?.marker?.message &&
+    (a as ProblemMatchData)?.marker?.source === (b as ProblemMatchData)?.marker?.source &&
+    rangeAreEqual((a as ProblemMatchData)?.marker?.range, (b as ProblemMatchData)?.marker?.range)
   );
 }
 

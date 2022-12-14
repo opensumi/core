@@ -2,8 +2,8 @@ import { PreferenceService, FILES_DEFAULTS, IClientApp, IWindowService } from '@
 import { MockedStorageProvider } from '@opensumi/ide-core-browser/__mocks__/storage';
 import { URI, StorageProvider, Disposable } from '@opensumi/ide-core-common';
 import { FileStat, DiskFileServicePath } from '@opensumi/ide-file-service';
+import { MockFsProvider } from '@opensumi/ide-file-service/__mocks__/file-system-provider';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
-import { MockFsProvider } from '@opensumi/ide-file-service/lib/common/mocks';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceService } from '@opensumi/ide-workspace/lib/browser/workspace-service';
 

@@ -1,12 +1,13 @@
 import { Injectable, Injector, Provider } from '@opensumi/di';
 import { BrowserModule, IContextKeyService } from '@opensumi/ide-core-browser';
-import { FolderPreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-preference-provider';
+import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 
 import {
   DebugEditor,
   DebugModelFactory,
+  IDebugConsoleModelService,
+  IDebugModelManager,
   IDebugProgress,
-  IDebugServer,
   IDebugService,
   IDebugSessionManager,
 } from '../common';
@@ -30,6 +31,7 @@ import { EvaluatableExpressionServiceImpl, IEvaluatableExpressionService } from 
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
 import { DebugToolbarOverlayWidget } from './view/configuration/debug-toolbar.view';
+import { DebugConsoleModelService } from './view/console/debug-console-tree.model.service';
 import { DebugConsoleContribution } from './view/console/debug-console.contribution';
 import { DebugCallStackContribution } from './view/frames/debug-call-stack.contribution';
 import { VariablesPanelContribution } from './view/variables/debug-variables.contribution';
@@ -49,7 +51,7 @@ export class DebugModule extends BrowserModule {
       useClass: DebugExpressionProvider,
     },
     {
-      token: DebugModelManager,
+      token: IDebugModelManager,
       useClass: DebugModelManager,
     },
     {
@@ -69,7 +71,7 @@ export class DebugModule extends BrowserModule {
       useClass: EvaluatableExpressionServiceImpl,
     },
     {
-      token: FolderPreferenceProvider,
+      token: FolderFilePreferenceProvider,
       useClass: LaunchFolderPreferenceProvider,
       dropdownForTag: true,
       tag: 'launch',
@@ -86,16 +88,13 @@ export class DebugModule extends BrowserModule {
       token: IDebugService,
       useClass: DebugService,
     },
-    // 这里原本的实现意图就是Debug作为单独模块执行时使用Node作为调试进程的启动及连接逻辑
-    // 在当前调试依赖插件进程的前提下，没必要引入这块冗余代码带来混淆
-    // packages/extension/src/browser/index.ts#L30
-    {
-      token: IDebugServer,
-      useValue: {},
-    },
     {
       token: IDebugProgress,
       useClass: DebugProgressService,
+    },
+    {
+      token: IDebugConsoleModelService,
+      useClass: DebugConsoleModelService,
     },
     // contributions
     LaunchPreferencesContribution,
@@ -118,18 +117,3 @@ export class DebugModule extends BrowserModule {
   isOverlay = true;
   component = DebugToolbarOverlayWidget;
 }
-
-export * from './breakpoint';
-export * from './contextkeys';
-export * from './debug-configuration-manager';
-export * from './debug-configuration-model';
-export * from './debug-contribution';
-export * from './debug-preferences';
-export * from './debug-schema-updater';
-export * from './debug-session';
-export * from './debug-session-connection';
-export * from './debug-session-contribution';
-export * from './debug-session-manager';
-export * from './editor/debug-model-manager';
-export * from './markers';
-export * from './model';

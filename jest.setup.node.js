@@ -101,3 +101,6 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: jest.fn(),
   })),
 });
+
+// https://stackoverflow.com/a/44143119/9443819
+process.setMaxListeners(0);

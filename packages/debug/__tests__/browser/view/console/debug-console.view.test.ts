@@ -1,8 +1,7 @@
 import { WSChannel } from '@opensumi/ide-connection';
 import { WSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { IContextKeyService } from '@opensumi/ide-core-browser/src';
+import { IFileServiceClient, IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
-import { IFileServiceClient } from '@opensumi/ide-core-node';
 import {
   DebugModelFactory,
   IDebugServer,
@@ -10,7 +9,9 @@ import {
   IDebugSession,
   DebugSessionOptions,
 } from '@opensumi/ide-debug';
-import { DebugPreferences, DebugSessionContributionRegistry, DebugSession } from '@opensumi/ide-debug/lib/browser';
+import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
+import { DebugSession } from '@opensumi/ide-debug/lib/browser/debug-session';
+import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { DebugConsoleFilterService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-filter.service';
 import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';

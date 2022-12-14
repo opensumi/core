@@ -2,13 +2,14 @@
   "name": "@opensumi/ide-file-service",
   "version": "2.21.8",
   "files": [
-    "lib"
+    "lib",
+    "src"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.file-service.json"
   },
   "repository": {
@@ -19,12 +20,9 @@
     "@opensumi/ide-connection": "2.21.8",
     "@opensumi/ide-core-common": "2.21.8",
     "@opensumi/ide-core-node": "2.21.8",
-    "@opensumi/ide-logs": "2.21.8",
     "@parcel/watcher": "2.0.6",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
-    "iconv-lite": "^0.6.3",
-    "jschardet": "3.0.0",
     "trash": "^5.2.0",
     "vscode-languageserver-types": "^3.16.0",
     "write-file-atomic": "^4.0.1"

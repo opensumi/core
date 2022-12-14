@@ -3,7 +3,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 
 import { Injector } from '@opensumi/di';
-import { ClientApp, IClientAppOpts, DEFAULT_WORKSPACE_STORAGE_DIR_NAME, Uri } from '@opensumi/ide-core-browser';
+import { IClientAppOpts, DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME } from '@opensumi/ide-core-browser';
+import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { ensureDir } from '@opensumi/ide-core-common/lib/browser-fs/ensure-dir';
 import { IDiskFileProvider } from '@opensumi/ide-file-service/lib/common';
 
@@ -45,7 +46,7 @@ export async function renderApp(opts: IClientAppOpts) {
     async function (e) {
       await ensureDir(opts.workspaceDir!);
       await ensureDir(BROWSER_HOME_DIR.codeUri.fsPath);
-      await ensureDir(BROWSER_HOME_DIR.path.join(DEFAULT_WORKSPACE_STORAGE_DIR_NAME).toString());
+      await ensureDir(BROWSER_HOME_DIR.path.join(DEFAULT_WORKSPACE_CONFIGURATION_DIR_NAME).toString());
       const app = new ClientApp(opts);
       app.fireOnReload = (forcedReload: boolean) => {
         window.location.reload();

@@ -24,7 +24,11 @@ import {
 } from '@opensumi/ide-testing/lib/common/testCollection';
 
 export interface IExtHostTests {
-  createTestController(controllerId: string, label: string): vscode.TestController;
+  createTestController(
+    controllerId: string,
+    label: string,
+    refreshHandler?: ((token: CancellationToken) => Thenable<void> | void) | undefined,
+  ): vscode.TestController;
 
   // #region API for main thread
   $runControllerTests(req: RunTestForControllerRequest, token: CancellationToken): Promise<void>;
@@ -49,16 +53,23 @@ export interface IExtHostTests {
   ): Promise<CoverageDetails[]>;
   /** Configures a test run config. */
   $configureRunProfile(controllerId: string, configId: number): void;
+  /** Asks the controller to refresh its tests */
+  $refreshTests(controllerId: string, token: CancellationToken): Promise<void>;
   // #endregion
+}
+
+export interface ITestControllerPatch {
+  label?: string;
+  canRefresh?: boolean;
 }
 
 export interface IMainThreadTesting {
   // --- test lifecycle:
 
   /** Registers that there's a test controller with the given ID */
-  $registerTestController(controllerId: string, label: string): void;
+  $registerTestController(controllerId: string, label: string, canRefresh: boolean): void;
   /** Updates the label of an existing test controller. */
-  $updateControllerLabel(controllerId: string, label: string): void;
+  $updateController(controllerId: string, patch: ITestControllerPatch): void;
   /** Disposes of the test controller with the given ID */
   $unregisterTestController(controllerId: string): void;
   /** Requests tests published to VS Code. */

@@ -180,6 +180,20 @@ declare module "vscode" {
      * requested, or `undefined` to resolve the controller's initial {@link items}.
      */
     resolveHandler?: (item: TestItem | undefined) => Thenable<void> | void;
+
+    /**
+     * If this method is present, a refresh button will be present in the
+     * UI, and this method will be invoked when it's clicked. When called,
+     * the extension should scan the workspace for any new, changed, or
+     * removed tests.
+     *
+     * It's recommended that extensions try to update tests in realtime, using
+     * a {@link FileSystemWatcher} for example, and use this method as a fallback.
+     *
+     * @returns A thenable that resolves when tests have been refreshed.
+     */
+    refreshHandler: ((token: CancellationToken) => Thenable<void> | void) | undefined;
+
     /**
      * Creates a {@link TestRun}. This should be called by the
      * {@link TestRunProfile} when a request is made to execute tests, and may
@@ -471,6 +485,12 @@ declare module "vscode" {
      */
     description?: string;
     /**
+     * A string that should be used when comparing this item
+     * with other items. When `falsy` the {@link TestItem.label label}
+     * is used.
+     */
+    sortText?: string | undefined;
+    /**
      * Location of the test item in its {@link uri}.
      *
      * This is only meaningful if the `uri` points to a file.
@@ -571,24 +591,6 @@ declare module "vscode" {
      */
     readonly removed: ReadonlyArray<TestItem>;
   }
-
-  /**
-   * A test item is an item shown in the "test explorer" view. It encompasses
-   * both a suite and a test, since they have almost or identical capabilities.
-   */
-  export interface TestItem {
-    /**
-     * Marks the test as outdated. This can happen as a result of file changes,
-     * for example. In "auto run" mode, tests that are outdated will be
-     * automatically rerun after a short delay. Invoking this on a
-     * test with children will mark the entire subtree as outdated.
-     *
-     * Extensions should generally not override this method.
-     */
-    // todo@api still unsure about this
-    invalidateResults(): void;
-  }
-
 
   /**
    * TestResults can be provided to the editor in {@link tests.publishTestResult},

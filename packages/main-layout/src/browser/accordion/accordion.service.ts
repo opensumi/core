@@ -274,7 +274,7 @@ export class AccordionService extends WithEventBus {
       this.menuRegistry.registerMenuItem(this.menuId, {
         command: {
           id: this.registerVisibleToggleCommand(view.id, disposables),
-          label: view.name || view.id,
+          label: (view.name || view.id).toUpperCase(),
         },
         group: '1_widgets',
         // TODO order计算

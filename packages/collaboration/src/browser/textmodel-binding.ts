@@ -1,6 +1,16 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createMutex } from 'lib0/mutex';
 import { Awareness } from 'y-protocols/awareness';
-import * as Y from 'yjs';
+import {
+  Text as YText,
+  Doc as YDoc,
+  UndoManager,
+  createAbsolutePositionFromRelativePosition,
+  YTextEvent,
+  createRelativePositionFromTypeIndex,
+  RelativePosition,
+  // @ts-ignore
+} from 'yjs';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { ITextModel, ICodeEditor, Position } from '@opensumi/ide-monaco';
@@ -26,7 +36,7 @@ export class TextModelBinding implements ITextModelBinding {
 
   private mutex = createMutex();
 
-  private doc: Y.Doc;
+  private doc: YDoc;
 
   private disposableContentChangeHandler: IDisposable;
 
@@ -36,14 +46,9 @@ export class TextModelBinding implements ITextModelBinding {
 
   private disposables: Map<ICodeEditor, IDisposable> = new Map();
 
-  private undoManger: Y.UndoManager;
+  private undoManger: UndoManager;
 
-  constructor(
-    private yText: Y.Text,
-    private textModel: ITextModel,
-    private awareness: Awareness,
-    editor?: ICodeEditor,
-  ) {
+  constructor(private yText: YText, private textModel: ITextModel, private awareness: Awareness, editor?: ICodeEditor) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.doc = yText.doc!;
     this.editors = new Set();
@@ -75,13 +80,13 @@ export class TextModelBinding implements ITextModelBinding {
             state.selection.anchor != null &&
             state.selection.head != null
           ) {
-            const anchorAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.anchor, this.doc);
-            const headAbs = Y.createAbsolutePositionFromRelativePosition(state.selection.head, this.doc);
+            const anchorAbs = createAbsolutePositionFromRelativePosition(state.selection.anchor, this.doc);
+            const headAbs = createAbsolutePositionFromRelativePosition(state.selection.head, this.doc);
 
             if (
               anchorAbs !== null &&
               headAbs !== null &&
-              // ensure that the client is in the same Y.Text with mine
+              // ensure that the client is in the same YText with mine
               anchorAbs.type === this.yText &&
               headAbs.type === this.yText
             ) {
@@ -131,7 +136,7 @@ export class TextModelBinding implements ITextModelBinding {
     });
   };
 
-  private yTextObserver = (event: Y.YTextEvent) => {
+  private yTextObserver = (event: YTextEvent) => {
     this.mutex(() => {
       // fixme line seq issue
       let index = 0;
@@ -184,8 +189,8 @@ export class TextModelBinding implements ITextModelBinding {
     if (sel !== null) {
       const startPos = sel.getStartPosition();
       const endPos = sel.getEndPosition();
-      const start = Y.createRelativePositionFromTypeIndex(type, monacoModel.getOffsetAt(startPos));
-      const end = Y.createRelativePositionFromTypeIndex(type, monacoModel.getOffsetAt(endPos));
+      const start = createRelativePositionFromTypeIndex(type, monacoModel.getOffsetAt(startPos));
+      const end = createRelativePositionFromTypeIndex(type, monacoModel.getOffsetAt(endPos));
       return new RelativeSelection(start, end, sel.getDirection());
     }
     return null;
@@ -193,8 +198,8 @@ export class TextModelBinding implements ITextModelBinding {
 
   private createMonacoSelectionFromRelativeSelection(relSel: RelativeSelection) {
     const doc = this.doc;
-    const start = Y.createAbsolutePositionFromRelativePosition(relSel.start, doc);
-    const end = Y.createAbsolutePositionFromRelativePosition(relSel.end, doc);
+    const start = createAbsolutePositionFromRelativePosition(relSel.start, doc);
+    const end = createAbsolutePositionFromRelativePosition(relSel.end, doc);
     const type = this.yText;
     const model = this.textModel;
     if (start !== null && end !== null && start.type === type && end.type === type) {
@@ -240,8 +245,8 @@ export class TextModelBinding implements ITextModelBinding {
         head = tmp;
       }
       this.awareness.setLocalStateField('selection', {
-        anchor: Y.createRelativePositionFromTypeIndex(this.yText, anchor),
-        head: Y.createRelativePositionFromTypeIndex(this.yText, head),
+        anchor: createRelativePositionFromTypeIndex(this.yText, anchor),
+        head: createRelativePositionFromTypeIndex(this.yText, head),
       });
     }
   };
@@ -254,7 +259,7 @@ export class TextModelBinding implements ITextModelBinding {
   }
 
   initialize() {
-    this.undoManger = new Y.UndoManager(this.yText, {
+    this.undoManger = new UndoManager(this.yText, {
       trackedOrigins: new Set([this]),
     });
 
@@ -277,7 +282,7 @@ export class TextModelBinding implements ITextModelBinding {
     this.awareness.on('change', this.renderDecorations);
   }
 
-  changeYText(newText: Y.Text) {
+  changeYText(newText: YText) {
     this.destroy();
     this.yText = newText;
     this.initialize();
@@ -312,9 +317,11 @@ export class TextModelBinding implements ITextModelBinding {
    * Stop listening to all events
    */
   destroy() {
+    // @ts-ignore
     this.undoManger.destroy();
     this.disposables.forEach((disposable) => disposable.dispose());
     this.disposableContentChangeHandler.dispose();
+    // @ts-ignore
     this.doc.off('beforeAllTransactions', this.beforeAllTransactionsHandler);
     this.yText.unobserve(this.yTextObserver);
     this.awareness.off('change', this.renderDecorations);
@@ -322,11 +329,11 @@ export class TextModelBinding implements ITextModelBinding {
 }
 
 class RelativeSelection {
-  public start: Y.RelativePosition;
-  public end: Y.RelativePosition;
+  public start: RelativePosition;
+  public end: RelativePosition;
   public direction: SelectionDirection;
 
-  constructor(start: Y.RelativePosition, end: Y.RelativePosition, direction: SelectionDirection) {
+  constructor(start: RelativePosition, end: RelativePosition, direction: SelectionDirection) {
     this.start = start;
     this.end = end;
     this.direction = direction;

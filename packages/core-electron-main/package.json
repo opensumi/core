@@ -9,7 +9,7 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-electron-main.json"
   },
   "repository": {
@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@opensumi/ide-core-common": "2.21.8",
+    "semver": "^6.3.0",
     "tree-kill": "^1.2.2"
   },
   "peerDependencies": {

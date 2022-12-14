@@ -9,8 +9,8 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "npm run build",
-    "build": "npm run build:pkg && npm run build:ext-host && npm run compile:worker",
+    "prepublishOnly": "yarn run build",
+    "build": "yarn run build:pkg && yarn run build:ext-host && yarn run compile:worker",
     "build:pkg": "tsc --build ../../configs/ts/references/tsconfig.extension.json",
     "compile:worker": "webpack --config webpack.config.worker.js",
     "watch:worker": "webpack -w --config webpack.config.worker.js",
@@ -37,6 +37,7 @@
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "picomatch": "^2.2.1",
+    "semver": "^6.3.0",
     "tree-kill": "^1.2.2",
     "v8-inspect-profiler": "^0.0.20"
   },
@@ -52,6 +53,7 @@
     "@opensumi/ide-file-tree-next": "2.21.8",
     "@opensumi/ide-i18n": "2.21.8",
     "@opensumi/ide-main-layout": "2.21.8",
+    "@opensumi/ide-markdown": "2.21.8",
     "@opensumi/ide-monaco": "2.21.8",
     "@opensumi/ide-output": "2.21.8",
     "@opensumi/ide-overlay": "2.21.8",
@@ -60,6 +62,7 @@
     "@opensumi/ide-testing": "2.21.8",
     "@opensumi/ide-theme": "2.21.8",
     "@opensumi/ide-toolbar": "2.21.8",
+    "@opensumi/ide-utils": "2.21.8",
     "@opensumi/ide-workspace": "2.21.8",
     "@opensumi/ide-workspace-edit": "2.21.8"
   }

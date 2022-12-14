@@ -55,19 +55,16 @@ export const ExtensionOverview: ReactEditorComponent<
     }
   }, []);
 
-  const getExtensionMetadata = useCallback(
-    ({ readme, changelog }: { [prop: string]: string | undefined }) =>
-      [
-        readme && fetch(readme).then((res) => res.text()),
-        changelog && fetch(changelog).then((res) => res.text()),
-      ].filter(Boolean),
-    [],
-  );
-
   const initExtensionMetadata = useCallback(async () => {
     const extension = await vsxExtensionService.getRemoteRawExtension(resource.metadata?.extensionId);
+
     if (extension) {
-      const tasks = getExtensionMetadata({ readme: extension.files.readme, changelog: extension.files.changelog });
+      const tasks = ['readme', 'changelog'].map((key) => {
+        const file = extension.files?.[key];
+
+        return file ? fetch(file).then((res) => res.text()) : extension[key] ?? '';
+      });
+
       const [readme, changelog] = await Promise.all(tasks);
       setMetadata({ readme, changelog, downloadCount: extension.downloadCount });
     }
@@ -185,10 +182,16 @@ export const ExtensionOverview: ReactEditorComponent<
     <div className={styles.extension_overview_container}>
       <ProgressBar loading={loading} />
       <div className={styles.extension_overview_header}>
-        <img
-          src={resource.metadata?.iconUrl || `${resource.metadata?.openVSXRegistry}/default-icon.png`}
-          alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
-        />
+        {resource.metadata?.iconUrl ? (
+          <img
+            src={resource.metadata?.iconUrl}
+            alt={replaceLocalizePlaceholder(resource.metadata?.displayName, resource.metadata?.extensionId)}
+          />
+        ) : (
+          <div className={styles.default_icon}>
+            <Icon iconClass={getIcon('extension')} />
+          </div>
+        )}
         <div className={styles.extension_detail}>
           <div className={styles.extension_name}>
             <h1>

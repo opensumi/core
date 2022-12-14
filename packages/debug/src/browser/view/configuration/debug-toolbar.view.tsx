@@ -202,9 +202,9 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
 
   return (
     <React.Fragment>
-      <div className={styles.kt_debug_action_bar}>
+      <div className={styles.debug_action_bar}>
         {renderSelections(sessions.filter((s: DebugSession) => !s.parentSession))}
-        <div className={styles.kt_debug_actions}>
+        <div className={styles.debug_actions}>
           {renderContinue(state)}
           <DebugAction
             run={doStepOver}
