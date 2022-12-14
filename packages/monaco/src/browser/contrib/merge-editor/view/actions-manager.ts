@@ -1,5 +1,6 @@
 import { Disposable, Event } from '@opensumi/ide-core-common';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { ISingleEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
 import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
 import { MappingManagerService } from '../mapping-manager.service';
@@ -15,10 +16,13 @@ import {
   REVOKE_ACTIONS,
   IActionsProvider,
   ETurnDirection,
+  APPEND_ACTIONS,
 } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
+
+// interface IEditsElement =
 
 export class ActionsManager extends Disposable {
   private currentView: BaseCodeEditor | undefined;
@@ -29,7 +33,7 @@ export class ActionsManager extends Disposable {
     super();
   }
 
-  private applyLineRangeEdits(edits: { range: IRange; text: string | null }[]): void {
+  private applyLineRangeEdits(edits: ISingleEditOperation[]): void {
     if (!this.resultView) {
       return;
     }
@@ -83,9 +87,19 @@ export class ActionsManager extends Disposable {
   }
 
   /**
-   * 接收 accept current 时覆写文本内容
+   * 接收 accept current 覆写或 accept append 追加文本内容
    */
-  private handleAcceptCurrent(range: LineRange): void {
+  private handleAcceptChange(
+    range: LineRange,
+    acquireEdits: (
+      range: LineRange,
+      oppositeRange: LineRange,
+      assistData: {
+        applyText: string;
+        eol: string;
+      },
+    ) => ISingleEditOperation[],
+  ): void {
     const mapping = this.pickMapping(range);
     if (!mapping) {
       return;
@@ -103,12 +117,12 @@ export class ActionsManager extends Disposable {
       return;
     }
 
-    this.applyLineRangeEdits([
-      {
-        range: range.isEmpty ? oppositeRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER) : oppositeRange.toRange(),
-        text: applyText + (oppositeRange.isEmpty ? eol : ''),
-      },
-    ]);
+    this.applyLineRangeEdits(
+      acquireEdits(range, oppositeRange, {
+        applyText,
+        eol,
+      }),
+    );
 
     this.markComplete(range);
 
@@ -262,7 +276,14 @@ export class ActionsManager extends Disposable {
         this.incomingView.onDidConflictActions,
       )(({ range, action }) => {
         if (action === ACCEPT_CURRENT_ACTIONS) {
-          this.handleAcceptCurrent(range);
+          this.handleAcceptChange(range, (range, oppositeRange, { applyText, eol }) => [
+            {
+              range: range.isEmpty
+                ? oppositeRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER)
+                : oppositeRange.toRange(),
+              text: applyText + (oppositeRange.isEmpty ? eol : ''),
+            },
+          ]);
         }
 
         if (action === IGNORE_ACTIONS) {
@@ -276,6 +297,24 @@ export class ActionsManager extends Disposable {
 
         if (action === ACCEPT_COMBINATION_ACTIONS) {
           this.handleAcceptCombination(range);
+        }
+
+        /**
+         * range 如果是 merge range 合成的，当 accept 某一视图的代码变更时，另一边的 accpet 就变成 append 追加内容，而不是覆盖内容
+         */
+        if (action === APPEND_ACTIONS) {
+          this.handleAcceptChange(range, (_, oppositeRange, { applyText, eol }) => [
+            /**
+             * 在 diff 区域的最后一行追加代码内容
+             */
+            {
+              range: LineRange.fromPositions(
+                oppositeRange.endLineNumberExclusive,
+                oppositeRange.endLineNumberExclusive,
+              ).toRange(),
+              text: applyText + eol,
+            },
+          ]);
         }
 
         this.resultView!.updateDecorations();
@@ -339,6 +378,8 @@ export class ActionsManager extends Disposable {
             type = IGNORE_ACTIONS;
           } else if (classList.contains(REVOKE_ACTIONS)) {
             type = REVOKE_ACTIONS;
+          } else if (classList.contains(APPEND_ACTIONS)) {
+            type = APPEND_ACTIONS;
           }
 
           if (type && action) {

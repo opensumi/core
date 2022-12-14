@@ -384,7 +384,9 @@ export class ResultCodeEditor extends BaseCodeEditor {
         onActionsClick: (range: LineRange, actionType: TActionsType) => {
           if (actionType === REVOKE_ACTIONS) {
             this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
-          } else if (actionType === ACCEPT_COMBINATION_ACTIONS) {
+          }
+
+          if (actionType === ACCEPT_COMBINATION_ACTIONS) {
             this._onDidConflictActions.fire({
               range,
               withViewType: EditorViewType.RESULT,

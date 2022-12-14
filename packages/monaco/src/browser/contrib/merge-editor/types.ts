@@ -116,17 +116,19 @@ export interface IActionsProvider {
 }
 
 export namespace CONFLICT_ACTIONS_ICON {
-  export const RIGHT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
-  export const ROTATE_RIGHT = `conflict-actions ${APPEND_ACTIONS} ${DECORATIONS_CLASSNAME.rotate_turn_right}  ${getIcon(
+  const ACTIONS = 'conflict-actions';
+
+  export const RIGHT = `${ACTIONS} ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
+  export const ROTATE_RIGHT = `${ACTIONS} ${APPEND_ACTIONS} ${DECORATIONS_CLASSNAME.rotate_turn_right}  ${getIcon(
     'doubleright',
   )}`;
-  export const LEFT = `conflict-actions ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleleft')}`;
-  export const ROTATE_LEFT = `conflict-actions ${APPEND_ACTIONS} ${DECORATIONS_CLASSNAME.rotate_turn_left}  ${getIcon(
+  export const LEFT = `${ACTIONS} ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleleft')}`;
+  export const ROTATE_LEFT = `${ACTIONS} ${APPEND_ACTIONS} ${DECORATIONS_CLASSNAME.rotate_turn_left}  ${getIcon(
     'doubleleft',
   )}`;
-  export const WAND = `conflict-actions ${ACCEPT_COMBINATION_ACTIONS} ${getExternalIcon('wand')}`;
-  export const CLOSE = `conflict-actions ${IGNORE_ACTIONS} ${getIcon('close')}`;
-  export const REVOKE = `conflict-actions ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
+  export const WAND = `${ACTIONS} ${ACCEPT_COMBINATION_ACTIONS} ${getExternalIcon('wand')}`;
+  export const CLOSE = `${ACTIONS} ${IGNORE_ACTIONS} ${getIcon('close')}`;
+  export const REVOKE = `${ACTIONS} ${REVOKE_ACTIONS} ${getIcon('revoke')}`;
 }
 
 // 用来寻址点击事件时的标记
@@ -134,11 +136,7 @@ export const ADDRESSING_TAG_CLASSNAME = 'ADDRESSING_TAG_CLASSNAME_';
 
 export interface IConflictActionsEvent {
   range: LineRange;
-  action:
-    | typeof ACCEPT_CURRENT_ACTIONS
-    | typeof ACCEPT_COMBINATION_ACTIONS
-    | typeof IGNORE_ACTIONS
-    | typeof REVOKE_ACTIONS;
+  action: TActionsType;
   withViewType: EditorViewType;
 }
 

@@ -16,6 +16,7 @@ import {
   ADDRESSING_TAG_CLASSNAME,
   TActionsType,
   IActionsDescription,
+  APPEND_ACTIONS,
 } from '../../types';
 
 import { BaseCodeEditor } from './baseCodeEditor';
@@ -107,8 +108,14 @@ export class CurrentCodeEditor extends BaseCodeEditor {
             withViewType: EditorViewType.CURRENT,
             action: ACCEPT_CURRENT_ACTIONS,
           });
-        } else if (actionType === IGNORE_ACTIONS) {
+        }
+
+        if (actionType === IGNORE_ACTIONS) {
           this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: IGNORE_ACTIONS });
+        }
+
+        if (actionType === APPEND_ACTIONS) {
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.CURRENT, action: APPEND_ACTIONS });
         }
       },
     });
