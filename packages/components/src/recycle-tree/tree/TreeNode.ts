@@ -539,7 +539,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   private getRoot() {
     let root = this.parent;
-    while (root && root?.parent) {
+    while (root && root.parent) {
       root = root.parent;
     }
     return root;
@@ -626,6 +626,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
+  private isCompactNode(node: ICompositeTreeNode) {
+    return CompositeTreeNode.is(node) && node.name.includes(Path.separator);
+  }
+
   // 获取当前节点下所有展开的节点路径
   private getAllExpandedNodePath() {
     let paths: string[] = [];
@@ -633,7 +637,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       for (let i = 0; i < this.children.length; i++) {
         const child = this.children[i];
         if (CompositeTreeNode.is(child) && (child as CompositeTreeNode).expanded) {
-          if (child.name.includes(Path.separator) && child.parent?.path) {
+          if (this.isCompactNode(child) && child.parent?.path) {
+            // 当获取到的节点为压缩节点时，仅需要存储其根路径，便于后续展开更新节点状态
             paths.push(new Path(child.parent.path).join(child.name.split(Path.separator)[0]).toString());
           } else {
             paths.push(child.path);
@@ -701,7 +706,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       flatTree[i] = this._children[i].id;
     }
     const expandedChilds: CompositeTreeNode[] = [];
-    for (let i = 0; i < (this.children || []).length; i++) {
+    for (let i = 0, len = this.children?.length || 0; i < len; i++) {
       const subChild = this.children?.[i];
       if (CompositeTreeNode.is(subChild) && subChild.expanded) {
         const paths = await (subChild as CompositeTreeNode).resolveChildrens(token);
@@ -1176,7 +1181,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (!this._children) {
       return;
     }
-    const idx = this._children?.indexOf(item);
+    const idx = this._children.indexOf(item);
     if (idx === -1) {
       return;
     }
