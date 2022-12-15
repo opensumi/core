@@ -28,7 +28,7 @@ import {
   DisposableCollection,
   Event,
 } from '@opensumi/ide-core-browser';
-import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
+import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -494,12 +494,11 @@ export const EditorActions = forwardRef<HTMLDivElement, IEditorActionsProps>(
         className={classnames(styles.editor_actions, className)}
         style={{ height: LAYOUT_VIEW_SIZE.EDITOR_TABS_HEIGHT }}
       >
-        <InlineActionBar<URI, IEditorGroup, MaybeNull<URI>>
+        <InlineMenuBar<URI, IEditorGroup, MaybeNull<URI>>
           menus={menu}
-          context={args as any /* 这个推断过不去.. */}
+          context={args as any}
           // 不 focus 的时候只展示 more 菜单
           regroup={(nav, more) => (hasFocus ? [nav, more] : [[], more])}
-          debounce={{ delay: 100, maxWait: 300 }}
         />
       </div>
     );
