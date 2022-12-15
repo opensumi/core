@@ -4,6 +4,7 @@ import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { MappingManagerService } from './mapping-manager.service';
+import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
 import { EDiffRangeTurn } from './types';
 import { ActionsManager } from './view/actions-manager';
@@ -88,18 +89,24 @@ export class MergeEditorService extends Disposable {
     return this.incomingView.getEditor();
   }
 
+  public updateOptions(newOptions: IMergeEditorEditorConstructionOptions): void {
+    this.currentView.updateOptions(newOptions);
+    this.incomingView.updateOptions(newOptions);
+    this.resultView.updateOptions(newOptions);
+  }
+
   public async compare(): Promise<void> {
     this.resultView.clearDecorations();
 
-    const result = await this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!);
-    const { changes } = result;
+    const [result1, result2] = await Promise.all([
+      this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!),
+      this.computerDiffModel.computeDiff(this.resultView.getModel()!, this.incomingView.getModel()!),
+    ]);
+
+    const { changes } = result1;
     this.currentView.inputDiffComputingResult(changes);
     this.resultView.inputDiffComputingResult(changes, EDiffRangeTurn.MODIFIED);
 
-    const result2 = await this.computerDiffModel.computeDiff(
-      this.resultView.getModel()!,
-      this.incomingView.getModel()!,
-    );
     const { changes: changes2 } = result2;
 
     this.incomingView.inputDiffComputingResult(changes2);
