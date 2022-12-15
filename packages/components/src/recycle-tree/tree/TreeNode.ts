@@ -1139,9 +1139,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     if (!this._children) {
       return;
     }
-    let relativeInsertionIndex = this._children?.indexOf(item);
+    let relativeInsertionIndex = this._children.indexOf(item);
     let absInsertionIndex;
-    const leadingSibling = this._children?.[relativeInsertionIndex - 1];
+    const leadingSibling = this._children[relativeInsertionIndex - 1];
     if (leadingSibling) {
       const siblingIdx = master._flattenedBranch.indexOf(leadingSibling.id);
       relativeInsertionIndex =
