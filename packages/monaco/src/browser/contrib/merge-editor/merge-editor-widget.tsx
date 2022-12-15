@@ -17,7 +17,7 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 import { IModelDecorationsChangeAccessor, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
-import { ICodeEditor, IEditorOptions, IModelDeltaDecoration } from '../../monaco-api/editor';
+import { ICodeEditor, IDiffEditorOptions, IEditorOptions, IModelDeltaDecoration } from '../../monaco-api/editor';
 import { IPosition, Position } from '../../monaco-api/types';
 
 import { MergeEditorService } from './merge-editor.service';
@@ -30,7 +30,7 @@ export interface IMergeEditorModel {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IMergeEditorEditorConstructionOptions {}
+export interface IMergeEditorEditorConstructionOptions extends IDiffEditorOptions {}
 
 let MERGE_EDITOR_ID = 0;
 
@@ -49,7 +49,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
 
   constructor(
     private readonly rootHtmlElement: HTMLElement,
-    options: IMergeEditorEditorConstructionOptions,
+    private readonly options: IMergeEditorEditorConstructionOptions,
     overrides: { [key in string]: any },
   ) {
     super();
@@ -68,6 +68,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
 
     this.compare();
 
+    this.mergeEditorService.updateOptions(this.options);
     return Promise.resolve();
   }
 
