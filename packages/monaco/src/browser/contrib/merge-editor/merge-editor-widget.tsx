@@ -60,10 +60,6 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   }
 
   open(oursTextModel: ITextModel, resultTextModel: ITextModel, theirsTextModel: ITextModel): Promise<void> {
-    this.getOursEditor().updateOptions(this.options);
-    this.getTheirsEditor().updateOptions(this.options);
-    this.getResultEditor().updateOptions(this.options);
-
     this.setModel({
       ours: oursTextModel,
       result: resultTextModel,
@@ -72,6 +68,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
 
     this.compare();
 
+    this.mergeEditorService.updateOptions(this.options);
     return Promise.resolve();
   }
 

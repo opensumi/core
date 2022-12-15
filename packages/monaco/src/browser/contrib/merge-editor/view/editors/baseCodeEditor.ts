@@ -5,8 +5,10 @@ import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/
 import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
+import { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import { MappingManagerService } from '../../mapping-manager.service';
+import { IMergeEditorEditorConstructionOptions } from '../../merge-editor-widget';
 import { ConflictActions } from '../../model/conflict-actions';
 import { MergeEditorDecorations } from '../../model/decorations';
 import { DocumentMapping } from '../../model/document-mapping';
@@ -56,18 +58,9 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   }
 
   public mount(): void {
-    this.editor = this.monacoService.createCodeEditor(this.container, {
-      automaticLayout: true,
-      wordBasedSuggestions: true,
-      renderLineHighlight: 'all',
-      folding: false,
-      lineNumbersMinChars: 0,
-      minimap: {
-        enabled: false,
-      },
-      scrollBeyondLastLine: false,
-      ...this.getMonacoEditorOptions(),
-    });
+    this.editor = this.monacoService.createCodeEditor(this.container);
+
+    this.updateOptions({});
 
     this.decorations = this.injector.get(MergeEditorDecorations, [this, this.getEditorViewType()]);
     this.#conflictActions = this.injector.get(ConflictActions, [this]);
@@ -164,6 +157,23 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
   }
 
   protected abstract provideActionsItems(ranges?: LineRange[]): IActionsDescription[];
+
+  public updateOptions(newOptions: IMergeEditorEditorConstructionOptions): void {
+    this.editor.updateOptions({
+      ...newOptions,
+      // 以下配置优先级更高
+      automaticLayout: true,
+      wordBasedSuggestions: true,
+      renderLineHighlight: 'all',
+      folding: false,
+      lineNumbersMinChars: 0,
+      minimap: {
+        enabled: false,
+      },
+      scrollBeyondLastLine: false,
+      ...this.getMonacoEditorOptions(),
+    });
+  }
 
   public updateActions(): this {
     this.conflictActions.updateActions(this.provideActionsItems());

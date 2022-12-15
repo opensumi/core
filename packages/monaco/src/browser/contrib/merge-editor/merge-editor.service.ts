@@ -4,6 +4,7 @@ import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { MappingManagerService } from './mapping-manager.service';
+import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
 import { EDiffRangeTurn } from './types';
 import { ActionsManager } from './view/actions-manager';
@@ -86,6 +87,12 @@ export class MergeEditorService extends Disposable {
   }
   public getIncomingEditor(): ICodeEditor {
     return this.incomingView.getEditor();
+  }
+
+  public updateOptions(newOptions: IMergeEditorEditorConstructionOptions): void {
+    this.currentView.updateOptions(newOptions);
+    this.incomingView.updateOptions(newOptions);
+    this.resultView.updateOptions(newOptions);
   }
 
   public async compare(): Promise<void> {
