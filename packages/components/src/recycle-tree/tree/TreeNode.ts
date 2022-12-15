@@ -1533,7 +1533,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
     }
     this.toRefreshPathQueue.add((target || this).path);
-    await this.refreshThrottler.trigger(async () => await this.doRefresh(token));
+    await this.refreshThrottler.trigger(() => this.doRefresh(token));
     TreeNode.setGlobalTreeState(this.path, {
       isRefreshing: false,
     });

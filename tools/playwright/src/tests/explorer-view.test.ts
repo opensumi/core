@@ -235,7 +235,7 @@ console.log(a);`,
     expect(group2).toBeDefined();
   });
 
-  test('can filter files on the filetree', async () => {
+  test('create file with path', async () => {
     await fileTreeView.open();
     const node = await explorer.getFileStatTreeNodeByPath('test');
     await node?.expand();
@@ -307,7 +307,7 @@ console.log(a);`,
     await app.page.waitForTimeout(200);
     const confirmed = await app.getDialogButton('Move to trash');
     await confirmed?.click();
-    await app.page.waitForTimeout(1000);
+    await app.page.waitForTimeout(2000);
     const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');
     expect(afterDeleteNode).toBeDefined();
     expect(await afterDeleteNode?.label()).toBe('a/d');

@@ -301,6 +301,7 @@ describe('FileTree should be work while on single workspace model', () => {
         done();
       });
       fileTreeService.refresh();
+      jest.runAllTimers();
     });
 
     it('Style decoration should be right while click the item', async () => {
@@ -686,6 +687,7 @@ describe('FileTree should be work while on single workspace model', () => {
         done();
       });
       fileTreeService.refresh();
+      jest.runAllTimers();
     });
   });
 });
