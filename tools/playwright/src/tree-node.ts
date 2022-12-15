@@ -24,7 +24,7 @@ export abstract class OpenSumiTreeNode {
       toggleClass: "[class*='expansion_toggle__']",
       selectedClass: "[class*='mod_selected__']",
       focusedClass: "[class*='mod_focused__']",
-      collapsedClass: "[class*='mode_collapsed__']",
+      collapsedClass: "[class*='mod_collapsed__']",
     },
   ) {}
 

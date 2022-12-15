@@ -235,6 +235,83 @@ console.log(a);`,
     expect(group2).toBeDefined();
   });
 
+  test('create file with path', async () => {
+    await fileTreeView.open();
+    const node = await explorer.getFileStatTreeNodeByPath('test');
+    await node?.expand();
+    expect(await node?.isCollapsed()).toBeFalsy();
+    let menu = await node?.openContextMenu();
+    expect(await menu?.isOpen()).toBeTruthy();
+    let newFileMenu = await menu?.menuItemByName('New File');
+    await newFileMenu?.click();
+    // type `index.ts` as the file name
+    let newFileName = 'index.ts';
+    let input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(200);
+    const newFile = await explorer.getFileStatTreeNodeByPath(`test/${newFileName}`);
+    expect(newFile).toBeDefined();
+    expect(await newFile?.isFolder()).toBeFalsy();
+    // new compress node by path
+    menu = await node?.openContextMenu();
+    newFileMenu = await menu?.menuItemByName('New File');
+    await newFileMenu?.click();
+    // type `a/b/c.js` as the file name
+    newFileName = 'a/b/c.js';
+    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(1000);
+    // |- test
+    // |----a/b
+    const nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
+    await nodeA?.expand();
+    await app.page.waitForTimeout(2000);
+    expect(await nodeA?.isCollapsed()).toBeFalsy();
+    const compressNode = await explorer.getFileStatTreeNodeByPath('test/a/b');
+    expect(compressNode).toBeDefined();
+    expect(await compressNode?.label()).toBe('a/b');
+    menu = await node?.openContextMenu();
+    newFileMenu = await menu?.menuItemByName('New File');
+    await newFileMenu?.click();
+    // type `a/d/c.js` as the file name
+    newFileName = 'a/d/c.js';
+    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(1000);
+    // |- test
+    // |----a
+    // |------b
+    // |------d
+    const uncompressNode = await explorer.getFileStatTreeNodeByPath('test/a/b');
+    expect(uncompressNode).toBeDefined();
+    expect(await uncompressNode?.label()).toBe('b');
+    // After delete `test/a/b` folder
+    // |- test
+    // |----a/d
+    menu = await uncompressNode?.openContextMenu();
+    const deleteMenu = await menu?.menuItemByName('Delete');
+    await deleteMenu?.click();
+    await app.page.waitForTimeout(200);
+    const confirmed = await app.getDialogButton('Move to trash');
+    await confirmed?.click();
+    await app.page.waitForTimeout(2000);
+    const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');
+    expect(afterDeleteNode).toBeDefined();
+    expect(await afterDeleteNode?.label()).toBe('a/d');
+  });
+
   test('the visible state of outline panel should be restored after refreshing', async () => {
     if (!(await explorer.isVisible())) {
       await explorer.open();

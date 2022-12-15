@@ -301,6 +301,7 @@ describe('FileTree should be work while on single workspace model', () => {
         done();
       });
       fileTreeService.refresh();
+      jest.runAllTimers();
     });
 
     it('Style decoration should be right while click the item', async () => {
@@ -673,7 +674,7 @@ describe('FileTree should be work while on single workspace model', () => {
         }
         return true;
       });
-      fileTreeService.isCompactMode = true;
+      (fileTreeService as any)._isCompactMode = true;
       expect(directoryNode.expanded).toBeTruthy();
       fs.ensureDirSync(testFile);
       const dispose = fileTreeService.onNodeRefreshed(() => {
@@ -686,6 +687,7 @@ describe('FileTree should be work while on single workspace model', () => {
         done();
       });
       fileTreeService.refresh();
+      jest.runAllTimers();
     });
   });
 });
