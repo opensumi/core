@@ -2,8 +2,8 @@ import {
   ISettingGroup,
   ISettingSection,
   IDisposable,
-  IPreferenceViewDesc,
   PreferenceScope,
+  IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
 
 export const SettingContribution = Symbol('SettingContribution');
@@ -13,7 +13,7 @@ export interface SettingContribution {
    * 注册 Setting
    * @param registry
    */
-  registerSetting?(registy: {
+  registerSetting?(registry: {
     registerSettingGroup: (settingGroup: ISettingGroup) => IDisposable;
     registerSettingSection: (key: string, section: ISettingSection) => IDisposable;
   }): void;
@@ -41,5 +41,12 @@ export interface ISectionItemData {
   scope: PreferenceScope;
   title?: string;
   component?: any;
-  preference?: string | IPreferenceViewDesc;
+  preference?: IResolvedPreferenceViewDesc;
+
+  /**
+   * 用来标注该 Item 是属于哪个 Section 的
+   *
+   * 一般为 section 的 title
+   */
+  _path?: string;
 }
