@@ -300,7 +300,6 @@ console.log(a);`,
     // After delete `test/a/b` folder
     // |- test
     // |----a/d
-    await uncompressNode?.openContextMenu();
     menu = await uncompressNode?.openContextMenu();
     const deleteMenu = await menu?.menuItemByName('Delete');
     await deleteMenu?.click();
