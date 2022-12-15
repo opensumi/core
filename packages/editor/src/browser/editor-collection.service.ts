@@ -1,6 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRange, MonacoService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { IRange, IContextKeyService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
+import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
   ILineChange,
   URI,
@@ -142,7 +143,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
-  // @ts-ignore
   public createMergeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
     const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
     const mergedOptions = { ...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options };
