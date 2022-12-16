@@ -87,37 +87,37 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   }, []);
 
   useEffect(() => {
-    ensureLoaded();
     const disposable = treeService.current.onDidUpdateTreeModel(async (model?: BasicTreeModel) => {
-      await model?.ensureReady;
-      setModel(model);
+      ensureLoaded(model);
     });
     const handleBlur = () => {
-      treeService.current?.enactiveFocusedDecoration();
+      treeService.current.enactiveFocusedDecoration();
     };
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
 
     return () => {
       wrapperRef.current?.removeEventListener('blur', handleBlur, true);
       disposable.dispose();
-      treeService.current?.dispose();
+      treeService.current.dispose();
     };
   }, []);
 
   useEffect(() => {
-    treeService.current?.updateTreeData(treeData);
+    treeService.current.updateTreeData(treeData);
   }, [treeData]);
 
-  const ensureLoaded = async () => {
-    const model = treeService.current.model;
-    if (model) {
-      await model.ensureReady;
-    }
-    setModel(model);
-  };
+  const ensureLoaded = useCallback(
+    async (model?: BasicTreeModel) => {
+      if (model) {
+        await model.ensureReady;
+      }
+      setModel(model);
+    },
+    [model],
+  );
 
   const selectItem = async (item: BasicCompositeTreeNode | BasicTreeNode) => {
-    treeService.current?.activeFocusedDecoration(item);
+    treeService.current.activeFocusedDecoration(item);
     if (BasicCompositeTreeNode.is(item)) {
       toggleDirectory(item);
     }
@@ -162,9 +162,9 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   const handleContextMenu = useCallback(
     (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
       if (item) {
-        treeService.current?.activeContextMenuDecoration(item);
+        treeService.current.activeContextMenuDecoration(item);
       } else {
-        treeService.current?.enactiveFocusedDecoration();
+        treeService.current.enactiveFocusedDecoration();
       }
       if (onContextMenu) {
         onContextMenu(event, item);
@@ -223,7 +223,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   );
 
   const handleOuterClick = useCallback(() => {
-    treeService.current?.enactiveFocusedDecoration();
+    treeService.current.enactiveFocusedDecoration();
   }, []);
 
   const handleOuterContextMenu = useCallback(
