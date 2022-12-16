@@ -17,7 +17,6 @@ import {
   ILogger,
   ExtensionActivateEvent,
   getDebugLogger,
-  MonacoService,
   electronEnv,
   AppConfig,
 } from '@opensumi/ide-core-browser';
@@ -57,7 +56,7 @@ import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/s
 import { IEditorDocumentModelService } from '../../doc-model/types';
 
 import { TextmateRegistry } from './textmate-registry';
-import { createTextmateTokenizer, TokenizerOption } from './textmate-tokenizer';
+import { TextMateTokenizer, TokenizerOption } from './textmate-tokenizer';
 
 let wasmLoaded = false;
 
@@ -108,9 +107,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   @Autowired(ILogger)
   private logger: ILogger;
 
-  @Autowired()
-  private readonly monacoService: MonacoService;
-
   @Autowired(IEditorDocumentModelService)
   editorDocumentModelService: IEditorDocumentModelService;
 
@@ -124,6 +120,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   private injections = new Map<string, string[]>();
 
   private activatedLanguage = new Set<string>();
+
+  private languageConfigLocation: Map<string, URI> = new Map();
+  private languageConfiguration: Map<string, LanguagesContribution> = new Map();
 
   public initialized = false;
 
@@ -197,15 +196,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
      * ModesRegistry.registerLanguage 性能很差
      */
     this.monacoLanguageService['_registry']['_registerLanguages'](newLanguages);
-
-    const languageMap: Map<string, LanguagesContribution> = new Map();
     languages.forEach(async (language) => {
-      // embeddedLanguage 不会单独作为一个文件，而是被嵌入在其他语言中
-      // 不会发出独立的 onLanguage 事件，需要第一时间激活
-      if (this.isEmbeddedLanguageOnly(language)) {
-        await this.loadLanguageConfiguration(language, baseUri);
-        this.activateLanguage(language.id);
-      }
+      this.languageConfigLocation.set(language.id, baseUri);
       this.addDispose(
         monaco.languages.onLanguage(language.id, async () => {
           await this.loadLanguageConfiguration(language, baseUri);
@@ -213,7 +205,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         }),
       );
 
-      languageMap.set(language.id, language);
+      this.languageConfiguration.set(language.id, language);
     });
 
     if (this.initialized) {
@@ -222,8 +214,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         const model = this.editorDocumentModelService.getModelReference(URI.parse(uri.codeUri.toString()));
         if (model && model.instance) {
           const langId = model.instance.getMonacoModel().getLanguageId();
-          if (languageMap.has(langId)) {
-            await this.loadLanguageConfiguration(languageMap.get(langId)!, baseUri);
+          if (this.languageConfiguration.has(langId)) {
+            await this.loadLanguageConfiguration(this.languageConfiguration.get(langId)!, baseUri);
             this.activateLanguage(langId);
           }
         }
@@ -370,9 +362,24 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
         configuration,
       );
       const options = configuration.tokenizerOption ? configuration.tokenizerOption : tokenizerOption;
+      const containsEmbeddedLanguages =
+        configuration.embeddedLanguages && Object.keys(configuration.embeddedLanguages).length > 0;
+
       // 要保证grammar把所有的languageID关联的语法都注册好了
       if (grammar) {
-        monaco.languages.setTokensProvider(languageId, createTextmateTokenizer(grammar, options));
+        const tokenizer = new TextMateTokenizer(grammar, options, containsEmbeddedLanguages);
+        this.addDispose(
+          tokenizer.onDidEncounterLanguage(async (language) => {
+            // https://github.com/microsoft/vscode/blob/301f450d9260d6e1c900e7e93b85aae5151bf11c/src/vs/editor/common/services/languagesRegistry.ts#L140
+            const languageId = this.monacoLanguageService['_registry']['languageIdCodec']['decodeLanguageId'](language);
+            const location = this.languageConfigLocation.get(languageId);
+            if (location && this.languageConfiguration.has(languageId)) {
+              await this.loadLanguageConfiguration(this.languageConfiguration.get(languageId)!, location);
+              this.activateLanguage(languageId);
+            }
+          }),
+        );
+        monaco.languages.setTokensProvider(languageId, tokenizer);
       }
     } catch (error) {
       this.logger.warn('No grammar for this language id', languageId, error);

@@ -1,6 +1,10 @@
 import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
 
-import { MetadataConsts } from '@opensumi/monaco-editor-core/esm/vs/editor/common/encodedTokenAttributes';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-common/lib/utils';
+import {
+  MetadataConsts,
+  TokenMetadata,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/common/encodedTokenAttributes';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 /** ******************************************************************************
@@ -45,45 +49,72 @@ export interface TokenizerOption {
   readonly lineLimit?: number;
 }
 
-export function createTextmateTokenizer(
-  grammar: IGrammar,
-  options: TokenizerOption,
-): monaco.languages.EncodedTokensProvider {
-  if (options.lineLimit !== undefined && (options.lineLimit <= 0 || !Number.isInteger(options.lineLimit))) {
-    throw new Error(`The 'lineLimit' must be a positive integer. It was ${options.lineLimit}.`);
+export class TextMateTokenizer extends Disposable implements monaco.languages.EncodedTokensProvider {
+  private readonly seenLanguages: boolean[];
+
+  private readonly onDidEncounterLanguageEmitter: Emitter<number> = new Emitter<number>();
+  public readonly onDidEncounterLanguage: Event<number> = this.onDidEncounterLanguageEmitter.event;
+
+  constructor(
+    private readonly grammar: IGrammar,
+    private readonly options: TokenizerOption,
+    private readonly conatinsEmbeddedLanguages?: boolean,
+  ) {
+    super();
+    this.seenLanguages = [];
   }
-  return {
-    getInitialState: () => new TokenizerState(INITIAL),
-    tokenizeEncoded(line: string, state: TokenizerState) {
-      // copied from vscode/src/vs/editor/common/modes/nullMode.ts
-      if (options.lineLimit !== undefined && line.length > options.lineLimit) {
-        const tokens = new Uint32Array(2);
-        tokens[0] = 0;
-        tokens[1] =
-          (1 << MetadataConsts.LANGUAGEID_OFFSET) |
-          (0 << MetadataConsts.TOKEN_TYPE_OFFSET) |
-          (0 << MetadataConsts.FONT_STYLE_OFFSET) |
-          (1 << MetadataConsts.FOREGROUND_OFFSET) |
-          (2 << MetadataConsts.BACKGROUND_OFFSET) |
-          (MetadataConsts.BALANCED_BRACKETS_MASK >>> 0);
-        // Line is too long to be tokenized
-        return {
-          endState: new TokenizerState(INITIAL),
-          tokens,
-        };
+
+  getInitialState(): monaco.languages.IState {
+    return new TokenizerState(INITIAL);
+  }
+
+  tokenizeEncoded(line: string, state: TokenizerState): monaco.languages.IEncodedLineTokens {
+    // copied from vscode/src/vs/editor/common/modes/nullMode.ts
+    if (this.options.lineLimit !== undefined && line.length > this.options.lineLimit) {
+      const tokens = new Uint32Array(2);
+      tokens[0] = 0;
+      tokens[1] =
+        (1 << MetadataConsts.LANGUAGEID_OFFSET) |
+        (0 << MetadataConsts.TOKEN_TYPE_OFFSET) |
+        (0 << MetadataConsts.FONT_STYLE_OFFSET) |
+        (1 << MetadataConsts.FOREGROUND_OFFSET) |
+        (2 << MetadataConsts.BACKGROUND_OFFSET) |
+        (MetadataConsts.BALANCED_BRACKETS_MASK >>> 0);
+      // Line is too long to be tokenized
+      return {
+        endState: new TokenizerState(INITIAL),
+        tokens,
+      };
+    }
+
+    const result = this.grammar.tokenizeLine2(line, state.ruleStack, 500);
+
+    if (this.conatinsEmbeddedLanguages) {
+      const seenLanguages = this.seenLanguages;
+      const tokens = result.tokens;
+
+      // Must check if any of the embedded languages was hit
+      for (let i = 0, len = tokens.length >>> 1; i < len; i++) {
+        const metadata = tokens[(i << 1) + 1];
+        const languageId = TokenMetadata.getLanguageId(metadata);
+        if (!seenLanguages[languageId]) {
+          seenLanguages[languageId] = true;
+          this.onDidEncounterLanguageEmitter.fire(languageId);
+        }
       }
-      const result = grammar.tokenizeLine2(line, state.ruleStack, 500);
-      return {
-        endState: new TokenizerState(result.ruleStack),
-        tokens: result.tokens,
-      };
-    },
-    tokenize(line: string, state: TokenizerState) {
-      const result = grammar.tokenizeLine(line, state.ruleStack);
-      return {
-        endState: new TokenizerState(result.ruleStack),
-        tokens: result.tokens.map((t) => ({ ...t, scopes: t.scopes.join('\r\n') })),
-      };
-    },
-  };
+    }
+
+    return {
+      endState: new TokenizerState(result.ruleStack),
+      tokens: result.tokens,
+    };
+  }
+
+  tokenize?(line: string, state: TokenizerState): monaco.languages.ILineTokens {
+    const result = this.grammar.tokenizeLine(line, state.ruleStack);
+    return {
+      endState: new TokenizerState(result.ruleStack),
+      tokens: result.tokens.map((t) => ({ ...t, scopes: t.scopes.join('\r\n') })),
+    };
+  }
 }
