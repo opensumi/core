@@ -1016,6 +1016,10 @@ export const localizationBundle = {
     'walkthroughs.welcome': 'Welcome',
     'walkthroughs.get.started': "Open the 'Getting Started' walkthrough",
     // #endregion walkthrough
+
+    // #region merge editor
+    'mergeEditor.workbench.tab.name': 'Merging: {0}',
+    // #endregion merge editor
     ...browserViews,
   },
 };

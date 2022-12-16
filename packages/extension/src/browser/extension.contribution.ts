@@ -404,12 +404,6 @@ export class ExtensionCommandContribution implements CommandContribution {
       },
     );
 
-    registry.registerCommand(VSCodeBuiltinCommands.OPEN_MERGEEDITOR, {
-      execute: (args: unknown[]) => {
-        // 这里拦截 vscode 内置的 _open.mergeEditor 命令
-      },
-    });
-
     [
       // layout builtin commands
       VSCodeBuiltinCommands.LAYOUT_COMMAND_MAXIMIZE_EDITOR,

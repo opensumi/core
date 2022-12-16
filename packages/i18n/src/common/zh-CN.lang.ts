@@ -1058,6 +1058,10 @@ export const localizationBundle = {
     'walkthroughs.welcome': '欢迎使用',
     'walkthroughs.get.started': '打开 `入门` 演示',
     // #endregion walkthrough
+
+    // #region merge editor
+    'mergeEditor.workbench.tab.name': '正在合并: {0}',
+    // #endregion merge editor
     ...browserViews,
   },
 };
