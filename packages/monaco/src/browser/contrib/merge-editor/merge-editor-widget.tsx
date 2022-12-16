@@ -1,9 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
-import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { IMergeEditorEditor, IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { Disposable, IRange, ISelection } from '@opensumi/ide-core-common';
 import { Selection } from '@opensumi/monaco-editor-core';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
@@ -36,9 +36,6 @@ let MERGE_EDITOR_ID = 0;
 
 @Injectable({ multiple: true })
 export class MergeEditorWidget extends Disposable implements IMergeEditorEditor {
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
-
   @Autowired(AppConfig)
   private readonly configContext: AppConfig;
 
@@ -59,11 +56,11 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     this.layout();
   }
 
-  open(oursTextModel: ITextModel, resultTextModel: ITextModel, theirsTextModel: ITextModel): Promise<void> {
+  open({ ancestor, input1, input2 }: IOpenMergeEditorArgs): Promise<void> {
     this.setModel({
-      ours: oursTextModel,
-      result: resultTextModel,
-      theirs: theirsTextModel,
+      ours: input1.textModel as ITextModel,
+      result: ancestor.textModel as ITextModel,
+      theirs: input2.textModel as ITextModel,
     });
 
     this.compare();
