@@ -37,7 +37,6 @@ export class BasicTreeService extends Tree {
     private treeOptions = {} as IBasicTreeServiceOptions,
   ) {
     super();
-    this.setUpTreeModel();
     this.disposableCollection.push(this.onDidUpdateTreeModelEmitter);
   }
 
