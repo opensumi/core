@@ -138,5 +138,10 @@ export enum AskSaveResult {
 }
 
 // #region merge editor
-export type IMergeEditorResource = IResource<{ current: URI; result: URI; incoming: URI }>;
+export type IMergeEditorResource = IResource<{
+  ancestor: string;
+  input1: string;
+  input2: string;
+  output: string;
+}>;
 // #endregion merge editor
