@@ -16,7 +16,7 @@ import {
   toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { IMergeEditorEditor, MergeEditorInputData } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { isUndefinedOrNull, Schemes, REPORT_NAME, match, localize, MessageType } from '@opensumi/ide-core-common';
 import {
   CommandService,
@@ -1636,18 +1636,31 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if (!metadata) {
           return;
         }
-        const [current, result, incoming] = await Promise.all([
-          this.getDocumentModelRef(metadata.current),
-          this.getDocumentModelRef(metadata.result),
-          this.getDocumentModelRef(metadata.incoming),
+
+        const { ancestor, input1, input2, output } = metadata;
+        const input1Data = MergeEditorInputData.from(input1);
+        const input2Data = MergeEditorInputData.from(input2);
+
+        const [ancestorRef, input1Ref, outputRef, input2Ref] = await Promise.all([
+          this.getDocumentModelRef(URI.parse(ancestor)),
+          this.getDocumentModelRef(input1Data.uri),
+          this.getDocumentModelRef(URI.parse(output)),
+          this.getDocumentModelRef(input2Data.uri),
         ]);
 
         await this.mergeEditorReady.onceReady(async () => {
-          await this.mergeEditor.open(
-            current.instance.getMonacoModel(),
-            result.instance.getMonacoModel(),
-            incoming.instance.getMonacoModel(),
-          );
+          await this.mergeEditor.open({
+            ancestor: {
+              uri: URI.parse(metadata.ancestor),
+              textModel: ancestorRef.instance.getMonacoModel(),
+            },
+            input1: input1Data.setTextModel(input1Ref.instance.getMonacoModel()),
+            input2: input2Data.setTextModel(input2Ref.instance.getMonacoModel()),
+            output: {
+              uri: URI.parse(metadata.output),
+              textModel: outputRef.instance.getMonacoModel(),
+            },
+          });
         });
       } else {
         return; // other type not handled
