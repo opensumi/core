@@ -89,7 +89,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     treeService.current = new BasicTreeService(treeData, resolveChildren, sortComparator, {
       treeName,
     });
-    const disposable = treeService.current?.onDidUpdateTreeModel(async (model?: BasicTreeModel) => {
+    const disposable = treeService.current?.onDidUpdateTreeModel((model?: BasicTreeModel) => {
       ensureLoaded(model);
     });
     const handleBlur = () => {
@@ -108,15 +108,12 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     treeService.current?.updateTreeData(treeData);
   }, [treeData]);
 
-  const ensureLoaded = useCallback(
-    async (model?: BasicTreeModel) => {
-      if (model) {
-        await model.ensureReady;
-      }
-      setModel(model);
-    },
-    [model],
-  );
+  const ensureLoaded = async (model?: BasicTreeModel) => {
+    if (model) {
+      await model.ensureReady;
+    }
+    setModel(model);
+  };
 
   const selectItem = async (item: BasicCompositeTreeNode | BasicTreeNode) => {
     treeService.current?.activeFocusedDecoration(item);
