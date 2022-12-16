@@ -222,7 +222,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
           });
         }
         if (innerItems.length > 0 && section.title) {
-          innerItems.unshift({ title: section.title, scope: currentScope, _path: currentItemPath });
+          // title 的 _path 不要和 item 的一样
+          // 否则会出现：关闭某一个分类时 => 右侧刷新 => 触发左侧刷新 => 取第一个值是 title 的路径，然后选中左侧
+          innerItems.unshift({ title: section.title, scope: currentScope, _path: prefix });
         }
 
         return innerItems;
@@ -265,7 +267,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
       const item1 = items[range.startIndex + 1];
       if (item1 && item1._path) {
-        await preferenceService.basicTreeHandler?.selectItemByPath(`/${TREE_NAME}/${item1._path}`);
+        await preferenceService.basicTreeHandler?.selectItemByPath(`${item1._path}`);
       }
     },
     300,
@@ -349,9 +351,13 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                   treeData={treeData}
                   onClick={(_e, node) => {
                     const treeData = node && ((node as any)._raw as IPreferenceTreeData);
+                    // 如果左侧面板展示的 section 不是选中的 section
+                    // 那就不关闭
                     if (treeData) {
                       if (treeData.section) {
-                        setCurrentSelectSection(treeData.section);
+                        if (treeData.section !== currentSelectSection) {
+                          setCurrentSelectSection(treeData.section);
+                        }
                       } else {
                         setCurrentSelectSection(null);
                       }

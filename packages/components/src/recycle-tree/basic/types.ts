@@ -3,6 +3,8 @@ import { ClasslistComposite } from '../tree/decoration';
 import { INodeRendererProps } from '../TreeNodeRendererWrap';
 import { ITreeNodeOrCompositeTreeNode } from '../types';
 
+import type { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
+
 export enum IBasicInlineMenuPosition {
   TREE_NODE = 1,
   TREE_CONTAINER,
@@ -91,6 +93,7 @@ export interface IBasicTreeData {
 }
 
 export interface IBasicRecycleTreeHandle {
+  selectItem: (item: BasicCompositeTreeNode | BasicTreeNode) => Promise<void>;
   selectItemByPath(path: string): Promise<void>;
 }
 

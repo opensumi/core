@@ -64,6 +64,9 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private currentScope: PreferenceScope;
 
   public setCurrentGroup(groupId: string) {
+    if (groupId === this.currentGroup) {
+      return;
+    }
     if (this.settingsGroups.find((n) => n.id === groupId)) {
       this.currentGroup = groupId;
       return;

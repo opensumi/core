@@ -1,3 +1,4 @@
+import throttle from 'lodash/throttle';
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 
@@ -126,12 +127,20 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     (handle: IRecycleTreeHandle) => {
       if (onReady) {
         onReady(handle, {
-          selectItemByPath: async (path: string) => {
-            const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as BasicCompositeTreeNode;
-            if (node && node.path !== treeService.current?.focusedNode?.path) {
-              selectItem(node);
-            }
-          },
+          selectItem,
+          selectItemByPath: throttle(
+            async (_path: string) => {
+              const path = `/${treeName}/${_path}`;
+              const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as BasicCompositeTreeNode;
+              if (node && node.path !== treeService.current?.focusedNode?.path) {
+                selectItem(node);
+              }
+            },
+            200,
+            {
+              trailing: true,
+            },
+          ) as (path: string) => Promise<void>,
         });
       }
       treeHandle.current = handle;
