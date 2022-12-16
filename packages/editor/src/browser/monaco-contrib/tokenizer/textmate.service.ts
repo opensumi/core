@@ -169,6 +169,17 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     return StandaloneServices.get(ILanguageService);
   }
 
+  private isEmbeddedLanguageOnly(language: LanguagesContribution): boolean {
+    return (
+      !language.filenames &&
+      !language.extensions &&
+      !language.filenamePatterns &&
+      !language.firstLine &&
+      !language.mimetypes &&
+      (!language.aliases || language.aliases.length === 0)
+    );
+  }
+
   async registerLanguages(languages: LanguagesContribution[], baseUri: URI) {
     const newLanguages = languages.map((language) => ({
       id: language.id,
@@ -179,7 +190,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       firstLine: language.firstLine,
       mimetypes: language.mimetypes,
     }));
-    this.dynamicLanguages.push(...newLanguages);
+
+    this.dynamicLanguages.push(...newLanguages.filter((lang) => !this.isEmbeddedLanguageOnly(lang)));
 
     /**
      * ModesRegistry.registerLanguage 性能很差
@@ -187,12 +199,17 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     this.monacoLanguageService['_registry']['_registerLanguages'](newLanguages);
 
     const languageMap: Map<string, LanguagesContribution> = new Map();
-
     languages.forEach(async (language) => {
+      // embeddedLanguage 不会单独作为一个文件，而是被嵌入在其他语言中
+      // 不会发出独立的 onLanguage 事件，需要第一时间激活
+      if (this.isEmbeddedLanguageOnly(language)) {
+        await this.loadLanguageConfiguration(language, baseUri);
+        this.activateLanguage(language.id);
+      }
       this.addDispose(
         monaco.languages.onLanguage(language.id, async () => {
-          this.activateLanguage(language.id);
           await this.loadLanguageConfiguration(language, baseUri);
+          this.activateLanguage(language.id);
         }),
       );
 
