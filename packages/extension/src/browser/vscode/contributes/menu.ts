@@ -280,7 +280,6 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             }
 
             const [group, order] = parseMenuGroup(item.group);
-
             this.addDispose(
               this.menuRegistry.registerMenuItem(menuId, {
                 submenu: item.submenu,
