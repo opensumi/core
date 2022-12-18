@@ -4,11 +4,12 @@ import ReactDOM from 'react-dom';
 import { Injectable, Autowired } from '@opensumi/di';
 import { AppConfig, ConfigProvider } from '@opensumi/ide-core-browser';
 import { IMergeEditorEditor, IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { Disposable, IRange, ISelection } from '@opensumi/ide-core-common';
+import { Disposable, IRange, ISelection, URI } from '@opensumi/ide-core-common';
 import { Selection } from '@opensumi/monaco-editor-core';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IDimension } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/dimension';
 import {
+  ICodeEditorViewState,
   IEditorAction,
   IEditorDecorationsCollection,
   IEditorModel,
@@ -21,6 +22,7 @@ import { ICodeEditor, IDiffEditorOptions, IEditorOptions, IModelDeltaDecoration 
 import { IPosition, Position } from '../../monaco-api/types';
 
 import { MergeEditorService } from './merge-editor.service';
+import { EDiffRangeTurn, EditorViewType, IMergeEditorViewState } from './types';
 import { Grid } from './view/grid';
 
 export interface IMergeEditorModel {
@@ -43,6 +45,8 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
   private readonly mergeEditorService: MergeEditorService;
 
   private readonly _id: number;
+  private readonly viewStateMap: Map<string, IMergeEditorViewState> = new Map();
+  private resultUri: URI | undefined;
 
   constructor(
     private readonly rootHtmlElement: HTMLElement,
@@ -56,21 +60,33 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     this.layout();
   }
 
-  open({ ancestor, input1, input2 }: IOpenMergeEditorArgs): Promise<void> {
+  async open(args: IOpenMergeEditorArgs): Promise<void> {
+    const { ancestor, input1, input2, output } = args;
+    this.mergeEditorService.launchNutrition(args);
+
+    // 保存上一次状态
+    this.saveViewState(this.resultUri);
+
+    this.resultUri = output.uri;
+    const uniqueKey = this.resultUri.toString();
+
     this.setModel({
       ours: input1.textModel as ITextModel,
       result: ancestor.textModel as ITextModel,
       theirs: input2.textModel as ITextModel,
     });
 
-    this.compare();
+    if (this.viewStateMap.has(uniqueKey)) {
+      const state = this.viewStateMap.get(uniqueKey)!;
+      this.restoreViewState(state);
+      const { turnLeft, turnRight } = state;
+      await this.mergeEditorService.compare(turnLeft, turnRight);
+    } else {
+      await this.mergeEditorService.compare();
+    }
 
-    this.mergeEditorService.updateOptions(this.options);
+    this.updateOptions(this.options);
     return Promise.resolve();
-  }
-
-  compare(): Promise<void> {
-    return this.mergeEditorService.compare();
   }
 
   getOursEditor(): ICodeEditor {
@@ -101,7 +117,9 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     return 'MERGE_EDITOR_DIFF';
   }
 
-  updateOptions(newOptions: IEditorOptions): void {}
+  updateOptions(newOptions: IEditorOptions): void {
+    this.mergeEditorService.updateOptions(newOptions);
+  }
 
   onVisible(): void {}
 
@@ -126,11 +144,23 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     return [];
   }
 
-  saveViewState(): IEditorViewState | null {
+  saveViewState(uri?: URI): IEditorViewState | null {
+    if (!uri) {
+      return null;
+    }
+
+    const key = uri.toString();
+    this.viewStateMap.set(key, {
+      [EditorViewType.CURRENT]: this.getOursEditor().saveViewState(),
+      [EditorViewType.RESULT]: this.getResultEditor().saveViewState(),
+      [EditorViewType.INCOMING]: this.getTheirsEditor().saveViewState(),
+      turnLeft: this.mergeEditorService.getTurnLeftRangeMapping(),
+      turnRight: this.mergeEditorService.getTurnRightRangeMapping(),
+    });
     return null;
   }
 
-  restoreViewState(state: IEditorViewState | null): void {}
+  restoreViewState(state: IMergeEditorViewState | IEditorViewState | null): void {}
 
   getVisibleColumnFromPosition(position: IPosition): number {
     return 1;

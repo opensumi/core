@@ -1,11 +1,13 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
+import { LineRangeMapping } from './model/line-range-mapping';
 import { EDiffRangeTurn } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
@@ -35,6 +37,9 @@ export class MergeEditorService extends Disposable {
   public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
 
+  private readonly _onDidInputNutrition = new Emitter<IOpenMergeEditorArgs>();
+  public readonly onDidInputNutrition: Event<IOpenMergeEditorArgs> = this._onDidInputNutrition.event;
+
   constructor() {
     super();
     this.computerDiffModel = new ComputerDiffModel();
@@ -51,6 +56,10 @@ export class MergeEditorService extends Disposable {
         this.incomingView.launchChange();
       }),
     );
+  }
+
+  public launchNutrition(data: IOpenMergeEditorArgs): void {
+    this._onDidInputNutrition.fire(data);
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
@@ -89,28 +98,44 @@ export class MergeEditorService extends Disposable {
     return this.incomingView.getEditor();
   }
 
+  public getTurnLeftRangeMapping(): LineRangeMapping[] {
+    return this.mappingManagerService.documentMappingTurnLeft.getMetaLineRangeMapping();
+  }
+
+  public getTurnRightRangeMapping(): LineRangeMapping[] {
+    return this.mappingManagerService.documentMappingTurnRight.getMetaLineRangeMapping();
+  }
+
   public updateOptions(newOptions: IMergeEditorEditorConstructionOptions): void {
     this.currentView.updateOptions(newOptions);
     this.incomingView.updateOptions(newOptions);
     this.resultView.updateOptions(newOptions);
   }
 
-  public async compare(): Promise<void> {
-    this.resultView.clearDecorations();
+  public async compare(
+    memoryMapping1: LineRangeMapping[] = [],
+    memoryMapping2: LineRangeMapping[] = [],
+  ): Promise<void> {
+    this.mappingManagerService.clearMapping();
 
-    const [result1, result2] = await Promise.all([
-      this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!),
-      this.computerDiffModel.computeDiff(this.resultView.getModel()!, this.incomingView.getModel()!),
-    ]);
+    let turnLeftMapping: LineRangeMapping[] = memoryMapping1;
+    let turnRightMapping: LineRangeMapping[] = memoryMapping2;
 
-    const { changes } = result1;
-    this.currentView.inputDiffComputingResult(changes);
-    this.resultView.inputDiffComputingResult(changes, EDiffRangeTurn.MODIFIED);
+    if (memoryMapping1.length === 0 && memoryMapping2.length === 0) {
+      const [result1, result2] = await Promise.all([
+        this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!),
+        this.computerDiffModel.computeDiff(this.resultView.getModel()!, this.incomingView.getModel()!),
+      ]);
 
-    const { changes: changes2 } = result2;
+      turnLeftMapping = result1.changes;
+      turnRightMapping = result2.changes;
+    }
 
-    this.incomingView.inputDiffComputingResult(changes2);
-    this.resultView.inputDiffComputingResult(changes2, EDiffRangeTurn.ORIGIN);
+    // **** 以下顺序不能变 *****
+    this.currentView.inputDiffComputingResult(turnLeftMapping);
+    this.incomingView.inputDiffComputingResult(turnRightMapping);
+    this.resultView.inputDiffComputingResult();
+    // **** 以上顺序不能变 *****
 
     this.currentView.updateDecorations().updateActions();
     this.incomingView.updateDecorations().updateActions();

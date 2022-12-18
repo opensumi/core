@@ -16,11 +16,7 @@ export class ScrollSynchronizer extends Disposable {
 
   public mount(currentView: BaseCodeEditor, resultView: BaseCodeEditor, incomingView: BaseCodeEditor): void {
     this.addDispose(
-      Event.debounce<{ event: IScrollEvent; editor: BaseCodeEditor }>(
-        this.onScrollChange,
-        (_, e) => e,
-        1,
-      )(({ event, editor }) => {
+      Event.buffer<{ event: IScrollEvent; editor: BaseCodeEditor }>(this.onScrollChange)(({ event, editor }) => {
         if (!event.scrollTopChanged && !event.scrollLeftChanged && !event.scrollHeightChanged) {
           return;
         }
