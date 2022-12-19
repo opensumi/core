@@ -35,7 +35,7 @@ import {
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 
-import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel } from '../common';
+import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel, ESectionItemKind } from '../common';
 
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
@@ -157,13 +157,13 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   @action
   scrollToGroup(groupId: string): void {
     if (groupId) {
-      this.currentSelectId = 'group:' + groupId;
+      this.currentSelectId = ESectionItemKind.Group + groupId;
     }
   }
   @action
   scrollToSection(section: string): void {
     if (section) {
-      this.currentSelectId = 'section:' + section;
+      this.currentSelectId = ESectionItemKind.Section + section;
     }
   }
 

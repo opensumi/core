@@ -57,3 +57,8 @@ export interface ISectionItemData {
    */
   _path?: string;
 }
+
+export const enum ESectionItemKind {
+  Section = 'section:',
+  Group = 'group:',
+}

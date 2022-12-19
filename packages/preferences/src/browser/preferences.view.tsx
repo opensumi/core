@@ -31,7 +31,7 @@ import { SplitPanel } from '@opensumi/ide-core-browser/lib/components/layout/spl
 import useThrottleFn from '@opensumi/ide-core-browser/lib/react-hooks/useThrottleFn';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
-import { ISectionItemData, toNormalCase } from '../common';
+import { ESectionItemKind, ISectionItemData, toNormalCase } from '../common';
 
 import { PreferenceSettingsService } from './preference-settings.service';
 import { NextPreferenceItem } from './preferenceItem.view';
@@ -178,7 +178,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         // 如果该 section 有选项，填入一个 title
         if (innerItems.length > 0 && section.title) {
           innerItems.unshift({
-            id: 'section:' + section.title,
+            id: ESectionItemKind.Section + section.title,
             title: section.title,
             scope: preferenceService.currentScope,
             _path: currentItemPath,
@@ -197,7 +197,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       if (groupItems.length > 0 && group.title) {
         groupItems.unshift({
           title: group.title,
-          id: 'group:' + group.id,
+          id: ESectionItemKind.Group + group.id,
           scope: preferenceService.currentScope,
           _path: group.title,
         });
@@ -350,7 +350,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
 export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index: number }) => {
   if (data.title) {
-    if (data.id?.startsWith('group:')) {
+    if (data.id?.startsWith(ESectionItemKind.Group)) {
       return (
         <div className={styles.group_title} id={`preferenceSection-group-${data.title}`}>
           {data.title}
