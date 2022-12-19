@@ -321,7 +321,7 @@ function InputPreferenceItem({
 
   return (
     <>
-      <div className={styles.key}>
+      <div className={classnames(styles.key, styles.item)}>
         {localizedName}{' '}
         <SettingStatus
           preferenceName={preferenceName}
@@ -374,14 +374,8 @@ function CheckboxPreferenceItem({
 
   return (
     <>
-      <div className={classnames(styles.check, styles.key)}>
-        <CheckBox
-          label={localizedName}
-          checked={value}
-          onChange={(event) => {
-            handleValueChange((event.target as HTMLInputElement).checked);
-          }}
-        />
+      <div className={classnames(styles.key)}>
+        {localizedName}{' '}
         <SettingStatus
           preferenceName={preferenceName}
           scope={scope}
@@ -389,7 +383,15 @@ function CheckboxPreferenceItem({
           showReset={isModified}
         />
       </div>
-      {renderedDescription}
+      <div className={styles.check}>
+        <CheckBox
+          checked={value}
+          onChange={(event) => {
+            handleValueChange((event.target as HTMLInputElement).checked);
+          }}
+        />
+        {renderedDescription}
+      </div>
     </>
   );
 }

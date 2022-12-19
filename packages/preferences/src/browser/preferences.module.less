@@ -1,4 +1,4 @@
-@import '~@opensumi/ide-core-browser/lib/style/variable.less';
+@base-font-size: 14px;
 
 .preferences {
   height: 100%;
@@ -48,9 +48,9 @@
     margin-top: 8px;
     .preferences_indexes {
       .group_item {
-        height: 26px;
+        height: 30px;
         font-size: @base-font-size;
-        line-height: 26px;
+        line-height: 30px;
         padding-left: 9px;
         cursor: pointer;
         white-space: nowrap;
@@ -60,6 +60,9 @@
         &:hover {
           color: var(--list-hoverForeground);
           background-color: var(--list-hoverBackground);
+        }
+        & > .kt-icon {
+          max-height: 20px !important;
         }
       }
 
@@ -105,10 +108,22 @@
         }
       }
       .preference_item {
-        padding: 15px 0px 15px 15px;
-        border-left: 3px solid transparent;
+        padding: 18px;
+        border-left: 4px solid transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-around;
         &.modified {
-          border-left: 3px solid var(--settings-modifiedItemIndicator);
+          position: relative;
+        }
+        &.modified:before {
+          content: '';
+          position: absolute;
+          left: 7px;
+          top: 18px;
+          height: 65%;
+          border-left: 2px solid var(--settings-modifiedItemIndicator);
         }
         &:hover {
           color: var(--kt-tree-hoverForeground);
@@ -126,24 +141,29 @@
         }
       }
       .key {
+        flex: 1;
+        padding: 0 10px 10px 0;
         font-weight: 600;
-        margin-bottom: 5px;
         font-size: @base-font-size;
       }
       .check {
         display: flex;
         align-items: center;
-        > div:first-child {
-          margin-right: 2px;
-          display: flex;
-          align-items: center;
+        :global {
+          .kt-checkbox {
+            margin-right: 2px;
+            display: flex;
+            align-self: flex-start;
+          }
         }
       }
       .desc {
+        flex: 1;
+        padding: 0 10px 10px 0;
         font-size: @base-font-size;
         opacity: 0.75;
         color: var(--descriptionForeground);
-        margin-bottom: 5px;
+        margin-bottom: 0px;
         ul {
           list-style: none;
         }
@@ -156,6 +176,9 @@
           display: inline-block;
           width: 1em;
           margin-left: -1em;
+        }
+        p {
+          margin-bottom: auto;
         }
       }
       .control_wrap {
@@ -226,11 +249,13 @@
         cursor: pointer;
       }
       .text_control {
+        min-width: 300px;
         max-width: 500px;
         width: 100%;
       }
       .select_control {
-        max-width: 300px;
+        min-width: 300px;
+        max-width: 500px;
         width: 100%;
 
         .select_option {
@@ -251,7 +276,8 @@
         }
       }
       .number_control {
-        max-width: 300px;
+        min-width: 300px;
+        max-width: 500px;
         width: 100%;
       }
     }
