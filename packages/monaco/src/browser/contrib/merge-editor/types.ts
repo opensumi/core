@@ -1,9 +1,11 @@
 import { getExternalIcon, getIcon } from '@opensumi/ide-core-browser';
 import { IEditorMouseEvent } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
+import { ICodeEditorViewState } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
 
 import { IModelDecorationOptions } from '../../monaco-api/editor';
 
 import { LineRange } from './model/line-range';
+import { LineRangeMapping } from './model/line-range-mapping';
 
 export interface IRangeContrast {
   type: LineRangeType;
@@ -146,4 +148,15 @@ export interface IConflictActionsEvent {
 export interface ITimeMachineMetaData {
   range: LineRange;
   text: string | null;
+}
+
+/**
+ * View State
+ */
+export interface IMergeEditorViewState {
+  [EditorViewType.CURRENT]: ICodeEditorViewState | null;
+  [EditorViewType.RESULT]: ICodeEditorViewState | null;
+  [EditorViewType.INCOMING]: ICodeEditorViewState | null;
+  turnLeft: LineRangeMapping[];
+  turnRight: LineRangeMapping[];
 }

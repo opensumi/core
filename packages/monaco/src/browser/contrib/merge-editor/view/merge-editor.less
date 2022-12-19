@@ -1,10 +1,16 @@
 .merge-editor-container {
   height: 100%;
   overflow: hidden;
+  position: relative;
 
-  .currentEditorContainer,
-  .resultEditorContainer,
-  .incomingEditorContainer {
+  .merge-actions {
+    position: absolute;
+    right: 50px;
+    bottom: 30px;
+  }
+
+  .editorContainer {
+    display: flex;
     height: inherit;
     width: 100%;
   }
@@ -55,6 +61,8 @@
   .editor-container-arrange {
     height: 100%;
     display: flex;
+    flex-direction: column;
+
     .stickiness-connect-container {
       height: 100%;
       position: relative;
@@ -145,6 +153,57 @@
 
     &.stretch-bottom {
       border-bottom: transparent;
+    }
+  }
+
+  .title-head-container {
+    padding: 0 10px;
+    height: 30px;
+    min-height: 30px;
+    z-index: 2;
+
+    & span {
+      align-self: center;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      padding-right: 6px;
+      white-space: nowrap;
+    }
+
+    .content {
+      display: flex;
+      align-content: center;
+      height: inherit;
+      max-width: calc(100% - 80px);
+      display: flex;
+
+      .title {
+        flex-shrink: 0;
+      }
+
+      .description {
+        display: flex;
+        font-size: 12px;
+        align-items: center;
+        color: var(--descriptionForeground);
+      }
+
+      .detail {
+        margin-left: 0;
+        flex-shrink: 0;
+        font-size: 12px;
+        color: var(--descriptionForeground);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        flex: 1;
+
+        &:before {
+          content: '•';
+          opacity: 0.5;
+          padding-right: 3px;
+        }
+      }
     }
   }
 }

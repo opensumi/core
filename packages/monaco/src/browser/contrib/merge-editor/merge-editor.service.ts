@@ -1,11 +1,23 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Disposable, MonacoService } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  Disposable,
+  EDITOR_COMMANDS,
+  Emitter,
+  Event,
+  localize,
+  MonacoService,
+} from '@opensumi/ide-core-browser';
+import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IDialogService } from '@opensumi/ide-overlay';
 
 import { ICodeEditor } from '../../monaco-api/editor';
 
 import { MappingManagerService } from './mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from './merge-editor-widget';
 import { ComputerDiffModel } from './model/computer-diff';
+import { LineRangeMapping } from './model/line-range-mapping';
 import { EDiffRangeTurn } from './types';
 import { ActionsManager } from './view/actions-manager';
 import { CurrentCodeEditor } from './view/editors/currentCodeEditor';
@@ -23,7 +35,16 @@ export class MergeEditorService extends Disposable {
   private readonly monacoService: MonacoService;
 
   @Autowired(MappingManagerService)
-  protected readonly mappingManagerService: MappingManagerService;
+  private readonly mappingManagerService: MappingManagerService;
+
+  @Autowired(IFileServiceClient)
+  private readonly fileServiceClient: IFileServiceClient;
+
+  @Autowired(IDialogService)
+  private readonly dialogService: IDialogService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private currentView: CurrentCodeEditor;
   private resultView: ResultCodeEditor;
@@ -34,6 +55,10 @@ export class MergeEditorService extends Disposable {
 
   public scrollSynchronizer: ScrollSynchronizer;
   public stickinessConnectManager: StickinessConnectManager;
+
+  private readonly _onDidInputNutrition = new Emitter<IOpenMergeEditorArgs>();
+  public readonly onDidInputNutrition: Event<IOpenMergeEditorArgs> = this._onDidInputNutrition.event;
+  private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor() {
     super();
@@ -51,6 +76,11 @@ export class MergeEditorService extends Disposable {
         this.incomingView.launchChange();
       }),
     );
+  }
+
+  public setNutritionAndLaunch(data: IOpenMergeEditorArgs): void {
+    this.nutrition = data;
+    this._onDidInputNutrition.fire(data);
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
@@ -79,6 +109,53 @@ export class MergeEditorService extends Disposable {
     this.actionsManager.dispose();
   }
 
+  public async accept(): Promise<void> {
+    const continueText = localize('mergeEditor.conflict.action.apply.confirm.continue');
+    const completeText = localize('mergeEditor.conflict.action.apply.confirm.complete');
+
+    const saveApply = async () => {
+      if (!this.nutrition) {
+        return;
+      }
+
+      const { output } = this.nutrition;
+      const { uri } = output;
+
+      const stat = await this.fileServiceClient.getFileStat(uri.toString(), false);
+
+      if (!stat) {
+        return;
+      }
+
+      /**
+       * 将 result view editor 的文本直接覆写 output uri 的磁盘文件
+       */
+      const resultValue = this.resultView.getEditor().getValue();
+      await this.fileServiceClient.setContent(stat, resultValue);
+
+      await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id);
+    };
+
+    const { completeCount, shouldCount } = this.resultView.completeSituation();
+    if (shouldCount !== completeCount) {
+      const result = await this.dialogService.info(localize('mergeEditor.conflict.action.apply.confirm.title'), [
+        continueText,
+        completeText,
+      ]);
+
+      if (result === continueText) {
+        return;
+      }
+
+      if (result === completeText) {
+        await saveApply();
+      }
+      return;
+    } else {
+      await saveApply();
+    }
+  }
+
   public getCurrentEditor(): ICodeEditor {
     return this.currentView.getEditor();
   }
@@ -89,30 +166,49 @@ export class MergeEditorService extends Disposable {
     return this.incomingView.getEditor();
   }
 
+  public getTurnLeftRangeMapping(): LineRangeMapping[] {
+    return this.mappingManagerService.documentMappingTurnLeft.getMetaLineRangeMapping();
+  }
+
+  public getTurnRightRangeMapping(): LineRangeMapping[] {
+    return this.mappingManagerService.documentMappingTurnRight.getMetaLineRangeMapping();
+  }
+
   public updateOptions(newOptions: IMergeEditorEditorConstructionOptions): void {
     this.currentView.updateOptions(newOptions);
     this.incomingView.updateOptions(newOptions);
     this.resultView.updateOptions(newOptions);
   }
 
-  public async compare(): Promise<void> {
-    this.resultView.clearDecorations();
+  public async compare(
+    memoryMapping1: LineRangeMapping[] = [],
+    memoryMapping2: LineRangeMapping[] = [],
+  ): Promise<void> {
+    this.mappingManagerService.clearMapping();
 
-    const [result1, result2] = await Promise.all([
-      this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!),
-      this.computerDiffModel.computeDiff(this.resultView.getModel()!, this.incomingView.getModel()!),
-    ]);
+    let turnLeftMapping: LineRangeMapping[] = memoryMapping1;
+    let turnRightMapping: LineRangeMapping[] = memoryMapping2;
 
-    const { changes } = result1;
-    this.currentView.inputDiffComputingResult(changes);
-    this.resultView.inputDiffComputingResult(changes, EDiffRangeTurn.MODIFIED);
+    if (memoryMapping1.length === 0 && memoryMapping2.length === 0) {
+      this.resultView.reset();
 
-    const { changes: changes2 } = result2;
+      const [result1, result2] = await Promise.all([
+        this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!),
+        this.computerDiffModel.computeDiff(this.resultView.getModel()!, this.incomingView.getModel()!),
+      ]);
 
-    this.incomingView.inputDiffComputingResult(changes2);
-    this.resultView.inputDiffComputingResult(changes2, EDiffRangeTurn.ORIGIN);
+      turnLeftMapping = result1.changes;
+      turnRightMapping = result2.changes;
+    }
+
+    // **** 以下顺序不能变 *****
+    this.currentView.inputDiffComputingResult(turnLeftMapping);
+    this.incomingView.inputDiffComputingResult(turnRightMapping);
+    this.resultView.inputDiffComputingResult();
 
     this.currentView.updateDecorations().updateActions();
     this.incomingView.updateDecorations().updateActions();
+    this.resultView.updateDecorations().updateActions();
+    // **** 以上顺序不能变 *****
   }
 }

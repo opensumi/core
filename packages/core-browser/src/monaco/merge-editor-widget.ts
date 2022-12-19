@@ -8,14 +8,20 @@ export interface IMergeEditorEditor extends IEditor {
   getResultEditor(): ICodeEditor;
   getTheirsEditor(): ICodeEditor;
   open(openMergeEditorArgs: IOpenMergeEditorArgs): Promise<void>;
-  compare(): Promise<void>;
 }
 
-export class MergeEditorInputData {
+export interface IMergeEditorInputData {
+  uri: URI;
+  title?: string;
+  detail?: string; // 分支名
+  description?: string; // commit
+}
+
+export class MergeEditorInputData implements IMergeEditorInputData {
   static from(data: string): MergeEditorInputData {
     try {
       const obj: MergeEditorInputData = JSON.parse(data);
-      return new MergeEditorInputData(obj.uri, obj.detail, obj.description);
+      return new MergeEditorInputData(obj.uri, obj.title, obj.detail, obj.description);
     } catch (error) {
       throw Error('invalid MergeEditorInputData parse');
     }
@@ -26,11 +32,26 @@ export class MergeEditorInputData {
     return this._textModel;
   }
 
-  constructor(readonly uri: URI, readonly detail?: string | undefined, readonly description?: string | undefined) {}
+  constructor(
+    readonly uri: URI,
+    readonly title?: string,
+    readonly detail?: string | undefined,
+    readonly description?: string | undefined,
+  ) {}
+
+  public getRaw(): IMergeEditorInputData {
+    return {
+      uri: this.uri,
+      title: this.title,
+      detail: this.detail,
+      description: this.description,
+    };
+  }
 
   public toString(): string {
     return JSON.stringify({
       uri: this.uri.toString(),
+      title: this.title,
       detail: this.detail,
       description: this.description,
     });
@@ -71,8 +92,14 @@ export namespace IRelaxedOpenMergeEditorArgs {
     const obj = args as IValidateOpenArgs;
     const ancestor = toUri(obj.ancestor);
     const output = toUri(obj.output);
-    const input1 = toInputData(obj.input1);
-    const input2 = toInputData(obj.input2);
+    const input1 = toInputData({
+      ...obj.input1,
+      title: obj.input1.title ?? 'Current',
+    });
+    const input2 = toInputData({
+      ...obj.input2,
+      title: obj.input2.title ?? 'Incoming',
+    });
     return { ancestor, input1, input2, output };
   };
 
@@ -89,21 +116,22 @@ export namespace IRelaxedOpenMergeEditorArgs {
 
   const toInputData = (args: unknown): MergeEditorInputData => {
     if (typeof args === 'string') {
-      return new MergeEditorInputData(URI.parse(args), undefined, undefined);
+      return new MergeEditorInputData(URI.parse(args));
     }
     if (!args || typeof args !== 'object') {
       throw new TypeError('invalid argument');
     }
 
     if (isUriComponents(args)) {
-      return new MergeEditorInputData(URI.from(args), undefined, undefined);
+      return new MergeEditorInputData(URI.from(args));
     }
 
     const obj = args as MergeEditorInputData;
     const uri = toUri(obj.uri);
+    const title = obj.title;
     const detail = obj.detail;
     const description = obj.description;
-    return new MergeEditorInputData(uri, detail, description);
+    return new MergeEditorInputData(uri, title, detail, description);
   };
 
   const toUri = (args: unknown): URI => {

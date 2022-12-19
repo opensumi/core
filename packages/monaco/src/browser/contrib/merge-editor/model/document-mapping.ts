@@ -31,6 +31,19 @@ export class DocumentMapping extends Disposable {
     return Array.from(values).sort((a, b) => a.startLineNumber - b.startLineNumber);
   }
 
+  public getMetaLineRangeMapping(): LineRangeMapping[] {
+    const result: LineRangeMapping[] = [];
+
+    this.computeRangeMap.forEach((range) => {
+      if (this.diffRangeTurn === EDiffRangeTurn.ORIGIN) {
+        result.push(new LineRangeMapping(range, this.adjacentComputeRangeMap.get(range.id)!, []));
+      } else if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {
+        result.push(new LineRangeMapping(this.adjacentComputeRangeMap.get(range.id)!, range, []));
+      }
+    });
+    return result;
+  }
+
   public getOriginalRange(): LineRange[] {
     return this.ensureSort(
       this.diffRangeTurn === EDiffRangeTurn.ORIGIN
@@ -105,6 +118,11 @@ export class DocumentMapping extends Disposable {
         this.adjacentComputeRangeMap.set(key, pick.delta(offset));
       }
     }
+  }
+
+  public clear(): void {
+    this.computeRangeMap.clear();
+    this.adjacentComputeRangeMap.clear();
   }
 
   public deleteRange(range: LineRange): void {

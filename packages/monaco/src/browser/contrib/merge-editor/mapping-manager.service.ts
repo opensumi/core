@@ -100,6 +100,11 @@ export class MappingManagerService extends Disposable {
     this.revokeActionsFactory(EDiffRangeTurn.MODIFIED)(oppositeRange);
   }
 
+  public clearMapping(): void {
+    this.documentMappingTurnLeft.clear();
+    this.documentMappingTurnRight.clear();
+  }
+
   /**
    * 分别找出离目标 lineRange 最近的 documentMappingTurnLeft 和 documentMappingTurnRight 里的 lineRange
    * 其中 target 只能是 result view 视图中的 range

@@ -13,7 +13,9 @@ export class TimeMachineDocument {
   }
 
   public record(rangeId: string, data: ITimeMachineMetaData): void {
-    this.collectMap.set(rangeId, data);
+    if (!this.collectMap.has(rangeId)) {
+      this.collectMap.set(rangeId, data);
+    }
   }
 
   public getMetaData(rangeId: string): ITimeMachineMetaData | undefined {
