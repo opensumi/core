@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useInjectable } from '@opensumi/ide-core-browser';
+import { localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Button, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import {
   IMergeEditorInputData,
@@ -116,7 +116,7 @@ export const Grid = () => {
       </SplitPanel>
       <div className={'merge-actions'}>
         <Button size='large' onClick={handleApply}>
-          Apply
+          {localize('mergeEditor.button.apply')}
         </Button>
       </div>
     </div>

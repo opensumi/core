@@ -1018,6 +1018,7 @@ export const localizationBundle = {
       'The file has unresolved conflicts or changes, whether to apply and save the changes?',
     'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
     'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
+    'mergeEditor.button.apply': 'Apply',
     // #endregion merge editor
     ...browserViews,
   },
