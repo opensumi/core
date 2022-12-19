@@ -53,6 +53,10 @@ export interface ITreeNode {
    * 设置是否可见，这里的可见表示的是否在展示数据内，并不是代表是否在用户视窗范围内
    */
   setVisible: (b: boolean) => this;
+  /**
+   * 清理节点
+   */
+  dispose: () => void;
 }
 
 export interface ICompositeTreeNode extends ITreeNode {
