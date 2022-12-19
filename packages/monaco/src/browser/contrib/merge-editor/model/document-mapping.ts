@@ -38,11 +38,7 @@ export class DocumentMapping extends Disposable {
       if (this.diffRangeTurn === EDiffRangeTurn.ORIGIN) {
         result.push(new LineRangeMapping(range, this.adjacentComputeRangeMap.get(range.id)!, []));
       } else if (this.diffRangeTurn === EDiffRangeTurn.MODIFIED) {
-        const adjacentRange = this.adjacentComputeRangeMap.get(range.id)!;
-        const reverse = this.reverse(adjacentRange);
-        if (reverse) {
-          result.push(new LineRangeMapping(adjacentRange, range, []));
-        }
+        result.push(new LineRangeMapping(this.adjacentComputeRangeMap.get(range.id)!, range, []));
       }
     });
     return result;

@@ -44,7 +44,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.mappingManagerService.documentMappingTurnRight;
   }
 
-  public isFirstInputComputeDiff = true;
+  private isFirstInputComputeDiff = true;
 
   constructor(container: HTMLDivElement, monacoService: MonacoService, injector: Injector) {
     super(container, monacoService, injector);
@@ -141,6 +141,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private getAllDiffRanges(): LineRange[] {
+    // 去重相同 id 或位置一样的 line range
     return distinct(
       this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
       (range) => range.id,
@@ -345,6 +346,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
     };
   }
 
+  public reset(): void {
+    this.isFirstInputComputeDiff = true;
+  }
+
   public getEditorViewType(): EditorViewType {
     return EditorViewType.RESULT;
   }
@@ -356,6 +361,16 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
   public getContentInTimeMachineDocument(rangeId: string): ITimeMachineMetaData | undefined {
     return this.timeMachineDocument.getMetaData(rangeId);
+  }
+
+  public completeSituation(): { completeCount: number; shouldCount: number } {
+    const allRanges = this.getAllDiffRanges();
+    const completeCount = allRanges.reduce((pre: number, cur: LineRange) => pre + (cur.isComplete ? 1 : 0), 0);
+
+    return {
+      completeCount,
+      shouldCount: allRanges.length,
+    };
   }
 
   /**

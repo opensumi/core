@@ -1,6 +1,16 @@
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { Disposable, Emitter, Event, MonacoService } from '@opensumi/ide-core-browser';
+import {
+  CommandService,
+  Disposable,
+  EDITOR_COMMANDS,
+  Emitter,
+  Event,
+  localize,
+  MonacoService,
+} from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IDialogService } from '@opensumi/ide-overlay';
 
 import { ICodeEditor } from '../../monaco-api/editor';
 
@@ -25,7 +35,16 @@ export class MergeEditorService extends Disposable {
   private readonly monacoService: MonacoService;
 
   @Autowired(MappingManagerService)
-  protected readonly mappingManagerService: MappingManagerService;
+  private readonly mappingManagerService: MappingManagerService;
+
+  @Autowired(IFileServiceClient)
+  private readonly fileServiceClient: IFileServiceClient;
+
+  @Autowired(IDialogService)
+  private readonly dialogService: IDialogService;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   private currentView: CurrentCodeEditor;
   private resultView: ResultCodeEditor;
@@ -39,6 +58,7 @@ export class MergeEditorService extends Disposable {
 
   private readonly _onDidInputNutrition = new Emitter<IOpenMergeEditorArgs>();
   public readonly onDidInputNutrition: Event<IOpenMergeEditorArgs> = this._onDidInputNutrition.event;
+  private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor() {
     super();
@@ -58,7 +78,8 @@ export class MergeEditorService extends Disposable {
     );
   }
 
-  public launchNutrition(data: IOpenMergeEditorArgs): void {
+  public setNutritionAndLaunch(data: IOpenMergeEditorArgs): void {
+    this.nutrition = data;
     this._onDidInputNutrition.fire(data);
   }
 
@@ -86,6 +107,53 @@ export class MergeEditorService extends Disposable {
     this.scrollSynchronizer.dispose();
     this.stickinessConnectManager.dispose();
     this.actionsManager.dispose();
+  }
+
+  public async accept(): Promise<void> {
+    const continueText = localize('mergeEditor.conflict.action.apply.confirm.continue');
+    const completeText = localize('mergeEditor.conflict.action.apply.confirm.complete');
+
+    const saveApply = async () => {
+      if (!this.nutrition) {
+        return;
+      }
+
+      const { output } = this.nutrition;
+      const { uri } = output;
+
+      const stat = await this.fileServiceClient.getFileStat(uri.toString(), false);
+
+      if (!stat) {
+        return;
+      }
+
+      /**
+       * 将 result view editor 的文本直接覆写 output uri 的磁盘文件
+       */
+      const resultValue = this.resultView.getEditor().getValue();
+      await this.fileServiceClient.setContent(stat, resultValue);
+
+      await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id);
+    };
+
+    const { completeCount, shouldCount } = this.resultView.completeSituation();
+    if (shouldCount !== completeCount) {
+      const result = await this.dialogService.info(localize('mergeEditor.conflict.action.apply.confirm.title'), [
+        continueText,
+        completeText,
+      ]);
+
+      if (result === continueText) {
+        return;
+      }
+
+      if (result === completeText) {
+        await saveApply();
+      }
+      return;
+    } else {
+      await saveApply();
+    }
   }
 
   public getCurrentEditor(): ICodeEditor {
@@ -122,6 +190,8 @@ export class MergeEditorService extends Disposable {
     let turnRightMapping: LineRangeMapping[] = memoryMapping2;
 
     if (memoryMapping1.length === 0 && memoryMapping2.length === 0) {
+      this.resultView.reset();
+
       const [result1, result2] = await Promise.all([
         this.computerDiffModel.computeDiff(this.currentView.getModel()!, this.resultView.getModel()!),
         this.computerDiffModel.computeDiff(this.resultView.getModel()!, this.incomingView.getModel()!),
@@ -135,9 +205,10 @@ export class MergeEditorService extends Disposable {
     this.currentView.inputDiffComputingResult(turnLeftMapping);
     this.incomingView.inputDiffComputingResult(turnRightMapping);
     this.resultView.inputDiffComputingResult();
-    // **** 以上顺序不能变 *****
 
     this.currentView.updateDecorations().updateActions();
     this.incomingView.updateDecorations().updateActions();
+    this.resultView.updateDecorations().updateActions();
+    // **** 以上顺序不能变 *****
   }
 }

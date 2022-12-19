@@ -13,8 +13,8 @@ export interface IMergeEditorEditor extends IEditor {
 export interface IMergeEditorInputData {
   uri: URI;
   title?: string;
-  detail?: string;
-  description?: string;
+  detail?: string; // 分支名
+  description?: string; // commit
 }
 
 export class MergeEditorInputData implements IMergeEditorInputData {

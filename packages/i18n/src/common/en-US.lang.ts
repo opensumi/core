@@ -1014,6 +1014,10 @@ export const localizationBundle = {
 
     // #region merge editor
     'mergeEditor.workbench.tab.name': 'Merging: {0}',
+    'mergeEditor.conflict.action.apply.confirm.title':
+      'The file has unresolved conflicts or changes, whether to apply and save the changes?',
+    'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
+    'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
     // #endregion merge editor
     ...browserViews,
   },

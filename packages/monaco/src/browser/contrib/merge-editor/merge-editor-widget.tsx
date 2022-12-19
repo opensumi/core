@@ -9,7 +9,6 @@ import { Selection } from '@opensumi/monaco-editor-core';
 import { IDisposable } from '@opensumi/monaco-editor-core/esm/vs/base/common/lifecycle';
 import { IDimension } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/dimension';
 import {
-  ICodeEditorViewState,
   IEditorAction,
   IEditorDecorationsCollection,
   IEditorModel,
@@ -22,7 +21,7 @@ import { ICodeEditor, IDiffEditorOptions, IEditorOptions, IModelDeltaDecoration 
 import { IPosition, Position } from '../../monaco-api/types';
 
 import { MergeEditorService } from './merge-editor.service';
-import { EDiffRangeTurn, EditorViewType, IMergeEditorViewState } from './types';
+import { EditorViewType, IMergeEditorViewState } from './types';
 import { Grid } from './view/grid';
 
 export interface IMergeEditorModel {
@@ -46,7 +45,7 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
 
   private readonly _id: number;
   private readonly viewStateMap: Map<string, IMergeEditorViewState> = new Map();
-  private resultUri: URI | undefined;
+  private outputUri: URI | undefined;
 
   constructor(
     private readonly rootHtmlElement: HTMLElement,
@@ -62,13 +61,13 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
 
   async open(args: IOpenMergeEditorArgs): Promise<void> {
     const { ancestor, input1, input2, output } = args;
-    this.mergeEditorService.launchNutrition(args);
+    this.mergeEditorService.setNutritionAndLaunch(args);
 
     // 保存上一次状态
-    this.saveViewState(this.resultUri);
+    this.saveViewState(this.outputUri);
 
-    this.resultUri = output.uri;
-    const uniqueKey = this.resultUri.toString();
+    this.outputUri = output.uri;
+    const uniqueKey = this.outputUri.toString();
 
     this.setModel({
       ours: input1.textModel as ITextModel,
@@ -160,7 +159,17 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     return null;
   }
 
-  restoreViewState(state: IMergeEditorViewState | IEditorViewState | null): void {}
+  restoreViewState(state: IMergeEditorViewState | IEditorViewState | null): void {
+    const {
+      [EditorViewType.CURRENT]: current,
+      [EditorViewType.RESULT]: result,
+      [EditorViewType.INCOMING]: incoming,
+    } = state as IMergeEditorViewState;
+
+    this.getOursEditor().restoreViewState(current);
+    this.getResultEditor().restoreViewState(result);
+    this.getTheirsEditor().restoreViewState(incoming);
+  }
 
   getVisibleColumnFromPosition(position: IPosition): number {
     return 1;

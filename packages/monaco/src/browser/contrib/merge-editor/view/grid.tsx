@@ -86,6 +86,10 @@ export const Grid = () => {
     mergeEditorService,
   ]);
 
+  const handleApply = () => {
+    mergeEditorService.accept();
+  };
+
   return (
     <div className={'merge-editor-container'}>
       <SplitPanel overflow='hidden' id='merge-editor-container' flex={2}>
@@ -110,6 +114,11 @@ export const Grid = () => {
           <div className={'editorContainer'} ref={incomingEditorContainer}></div>
         </div>
       </SplitPanel>
+      <div className={'merge-actions'}>
+        <Button size='large' onClick={handleApply}>
+          Apply
+        </Button>
+      </div>
     </div>
   );
 };
