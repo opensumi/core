@@ -169,7 +169,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
 
   const renderDisplayName = useCallback((node: MarkerGroupNode | MarkerNode) => {
     if (MarkerGroupNode.is(node)) {
-      <MarkerItemTitleName model={node.model} />;
+      return <MarkerItemTitleName model={node.model} />;
     } else {
       return <MarkerItemName marker={node.marker} />;
     }
