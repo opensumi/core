@@ -50,7 +50,7 @@ export const SCMResourceTree: React.FC<{
         await scmTreeModelService.whenReady;
         if (model) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-          await scmTreeModelService.treeModel.ensureReady;
+          await model.ensureReady;
         }
         setModel(model);
       });
@@ -226,7 +226,6 @@ const TreeView = React.memo(
           itemHeight={SCM_TREE_NODE_HEIGHT}
           onReady={onTreeReady}
           model={model}
-          getItemKey={(node: ISCMTreeNodeProps) => node.item.raw.id}
           overScanCount={100}
         >
           {renderSCMTreeNode}

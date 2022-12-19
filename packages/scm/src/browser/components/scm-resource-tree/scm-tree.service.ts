@@ -42,25 +42,6 @@ export class SCMTreeService extends Tree {
     return this.onDidTreeModeChangeEmitter.event;
   }
 
-  // cache related starts
-  private cachedTreeNodeMap: Map<string, SCMResourceNotRoot> = new Map();
-  private cachedListNodeMap: Map<string, SCMResourceNotRoot> = new Map();
-
-  public getCachedNodeItem(uid: string) {
-    return this.isTreeMode ? this.cachedTreeNodeMap.get(uid) : this.cachedListNodeMap.get(uid);
-  }
-
-  // tslint:disable-next-line:no-unused-variable
-  private clearCachedNodeItem() {
-    this.cachedListNodeMap.clear();
-    this.cachedTreeNodeMap.clear();
-  }
-
-  private cacheNodeItem(uriStr: string, node: SCMResourceNotRoot) {
-    return this.isTreeMode ? this.cachedTreeNodeMap.set(uriStr, node) : this.cachedListNodeMap.set(uriStr, node);
-  }
-  // cache related ends
-
   constructor() {
     super();
     this._isTreeMode = this.preferenceService.get<SCMViewModelMode>('scm.defaultViewMode') === SCMViewModelMode.Tree;
@@ -104,7 +85,6 @@ export class SCMTreeService extends Tree {
           return node;
         }),
       );
-      this.cacheNodes(children as SCMResourceNotRoot[]);
     } else {
       if (parent.raw) {
         // 这里针对 children 做一个排序
@@ -115,17 +95,9 @@ export class SCMTreeService extends Tree {
             return node;
           }),
         );
-        this.cacheNodes(children as SCMResourceNotRoot[]);
       }
     }
     return children;
-  }
-
-  private cacheNodes(nodes: SCMResourceNotRoot[]) {
-    nodes.forEach((node) => {
-      // 利用唯一 Key 进行缓存
-      this.cacheNodeItem(node.raw.id, node);
-    });
   }
 
   private toNode(child: ISCMTreeNodeDescription, parent: SCMResourceNotFile, isTree: boolean) {
