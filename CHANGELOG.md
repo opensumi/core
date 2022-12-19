@@ -25,6 +25,10 @@ We have removed the default export of `bootstrap/app.ts` in `@opensumi/ide-core-
 
 If used, please remove this module, it has no practical effect.
 
+#### 3. The `Scroll` component was removed
+
+Please use `Scollerbars` component instead.
+
 ## v2.21.0
 
 ### What's New Features

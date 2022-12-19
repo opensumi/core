@@ -3,7 +3,14 @@ import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { Input, ComponentContextProvider, Tabs, RecycleList, IIconResourceOptions } from '@opensumi/ide-components';
+import {
+  Scrollbars,
+  Input,
+  ComponentContextProvider,
+  Tabs,
+  RecycleList,
+  IIconResourceOptions,
+} from '@opensumi/ide-components';
 import {
   replaceLocalizePlaceholder,
   useInjectable,
@@ -18,7 +25,6 @@ import {
   URI,
   LabelService,
 } from '@opensumi/ide-core-browser';
-import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
 
 import { ISectionItemData, toNormalCase } from '../common';
@@ -221,7 +227,7 @@ export const PreferencesIndexes = ({
 
   return (
     <div className={styles.preferences_indexes}>
-      <Scroll>
+      <Scrollbars>
         {groups &&
           groups.map(({ id, title, iconClass }) => {
             const sections = preferenceService.getSections(id, scope, searchText);
@@ -251,7 +257,7 @@ export const PreferencesIndexes = ({
               </div>
             );
           })}
-      </Scroll>
+      </Scrollbars>
     </div>
   );
 };

@@ -1,13 +1,13 @@
 import classnames from 'classnames';
 import { observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useCallback, useEffect, useRef, memo } from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { Icon } from '@opensumi/ide-components';
+import { Scrollbars } from '@opensumi/ide-components';
 import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
-import { IScrollDelegate, Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 
 import styles from './navigation.module.less';
 import { IBreadCrumbService, IBreadCrumbPart } from './types';
@@ -57,11 +57,11 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
     </div>
   );
 };
-export const NavigationItem = React.memo(({ part }: { part: IBreadCrumbPart }) => {
+export const NavigationItem = memo(({ part }: { part: IBreadCrumbPart }) => {
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
-  const itemRef = React.useRef<HTMLSpanElement>();
+  const itemRef = useRef<HTMLSpanElement>();
 
-  const onClick = React.useCallback(async () => {
+  const onClick = useCallback(async () => {
     if (part.getSiblings && itemRef.current) {
       const { left, top, height } = itemRef.current.getBoundingClientRect();
       const siblings = await part.getSiblings!();
@@ -91,14 +91,22 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
     top = window.innerHeight - 20 - maxHeight;
   }
 
+  const scrollerContainer = useRef<HTMLDivElement | null>();
+
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
 
-  const onSetScrollDelegate = (delegate: IScrollDelegate) => {
-    delegate.scrollTo({
-      top: 22 * model.initialIndex - Math.min(maxHeight, height) * 0.5,
-      left: 0,
-    });
-  };
+  const scrollToCurrent = useCallback(() => {
+    if (scrollerContainer.current) {
+      try {
+        const current = scrollerContainer.current.querySelector(`.${styles.navigation_menu_item_current}`);
+        if (current) {
+          current.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
+      } catch (e) {
+        // noop
+      }
+    }
+  }, [scrollerContainer.current]);
 
   return (
     <div
@@ -110,7 +118,13 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
         height: height + 'px',
       }}
     >
-      <Scroll className={styles.navigation_menu_items} delegate={onSetScrollDelegate}>
+      <Scrollbars
+        className={styles.navigation_menu_items}
+        forwardedRef={(el) => {
+          scrollerContainer.current = el;
+          scrollToCurrent();
+        }}
+      >
         {model.parts.map((p, i) => {
           let itemRef: HTMLDivElement | null;
           const clickToGetChild = p.getChildren
@@ -137,7 +151,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
             <div
               onClick={clickToNavigate || clickToGetChild}
               ref={(el) => (itemRef = el)}
-              className={classnames({
+              className={classnames(styles.navigation_menu_item, {
                 [styles.navigation_menu_item_current]: i === model.initialIndex,
               })}
               key={'menu-' + p.name}
@@ -163,7 +177,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
             </div>
           );
         })}
-      </Scroll>
+      </Scrollbars>
       {model.subMenu && <NavigationMenu model={model.subMenu} />}
     </div>
   );
@@ -171,9 +185,9 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
 
 export const NavigationMenuContainer = observer(() => {
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
-  const menuRef = React.useRef<HTMLDivElement>();
+  const menuRef = useRef<HTMLDivElement>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (menuRef.current) {
       const disposer = new Disposable();
       disposer.addDispose(
