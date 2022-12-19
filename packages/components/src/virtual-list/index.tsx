@@ -27,7 +27,7 @@ export const VirtualList = ({
         rangeChanged={(range) => {
           onRangeChanged?.(range);
         }}
-        overscan={5}
+        overscan={20}
         ref={virtuoso}
         style={{ height: '100%' }}
         className={className}

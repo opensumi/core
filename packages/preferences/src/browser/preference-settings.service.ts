@@ -1,4 +1,5 @@
-import { observable, action } from 'mobx';
+import debounce from 'lodash/debounce';
+import { observable, action, computed, autorun, trace } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { IBasicRecycleTreeHandle, IRecycleTreeHandle } from '@opensumi/ide-components';
@@ -27,6 +28,9 @@ import {
   TerminalSettingsId,
   IResolvedPreferenceViewDesc,
   IResolvedSettingSection,
+  Disposable,
+  UserScope,
+  WorkspaceScope,
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -36,8 +40,9 @@ import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel }
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
 const { addElement } = arrays;
+
 @Injectable()
-export class PreferenceSettingsService implements IPreferenceSettingsService {
+export class PreferenceSettingsService extends Disposable implements IPreferenceSettingsService {
   private static DEFAULT_CHANGE_DELAY = 500;
 
   @Autowired(PreferenceService)
@@ -56,24 +61,21 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   protected readonly commandService: CommandService;
 
   @observable
-  public currentGroup = '';
-
-  @observable
   public currentSearch = '';
 
-  private currentScope: PreferenceScope;
+  @observable
+  public currentPath = '';
 
-  public setCurrentGroup(groupId: string) {
-    if (groupId === this.currentGroup) {
-      return;
-    }
-    if (this.settingsGroups.find((n) => n.id === groupId)) {
-      this.currentGroup = groupId;
-      return;
-    }
-    getDebugLogger('Preference').warn('PreferenceService#setCurrentGroup is called with an invalid groupId:', groupId);
+  @observable
+  tabIndex = 0;
+
+  @computed
+  get currentScope() {
+    const scope = this.tabList[this.tabIndex];
+    return scope.id;
   }
 
+  @observable
   private settingsGroups: ISettingGroup[] = [];
 
   private settingsSections: Map<string, ISettingSection[]> = new Map();
@@ -85,12 +87,28 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private _listHandler: IVirtualListHandle;
   private _treeHandler: IRecycleTreeHandle;
   private _basicTreeHandler: IBasicRecycleTreeHandle;
-  private onDidEnumLabelsChangeEmitter: Emitter<void> = new Emitter();
-  private enumLabelsChangeDelayer = new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY);
+  private onDidEnumLabelsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
+  private enumLabelsChangeDelayer = this.registerDispose(
+    new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY),
+  );
 
-  private onDidSettingsChangeEmitter: Emitter<void> = new Emitter();
+  private onDidSettingsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
+
+  @observable
+  private userBeforeWorkspace = false;
+
+  @computed
+  get tabList() {
+    return this.userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
+  }
+
+  @computed
+  get groups() {
+    return this.getSettingGroups(this.currentScope, this.currentSearch);
+  }
 
   constructor() {
+    super();
     this.setEnumLabels(
       'general.language',
       new Proxy(
@@ -105,6 +123,48 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
       '\r\n': 'CRLF',
       auto: 'auto',
     });
+    this.userBeforeWorkspace = this.preferenceService.get<boolean>('settings.userBeforeWorkspace', false);
+
+    this.registerDispose(
+      this.preferenceService.onSpecificPreferenceChange('settings.userBeforeWorkspace', (e) => {
+        this.userBeforeWorkspace = e.newValue;
+      }),
+    );
+    this.registerDispose(
+      this.onDidSettingsChange(
+        debounce(
+          action(() => {
+            // 利用副作用强制刷新一下
+            let index = this.tabList.findIndex((v) => v.id === this.currentScope);
+            if (index === -1) {
+              index = 0;
+            }
+
+            this.tabIndex = index;
+          }),
+          300,
+          {
+            maxWait: 1000,
+          },
+        ),
+      ),
+    );
+  }
+
+  @observable
+  currentSelectId = '';
+
+  @action
+  scrollToGroup(groupId: string): void {
+    if (groupId) {
+      this.currentSelectId = 'group:' + groupId;
+    }
+  }
+  @action
+  scrollToSection(section: string): void {
+    if (section) {
+      this.currentSelectId = 'section:' + section;
+    }
   }
 
   get onDidEnumLabelsChange() {
@@ -179,7 +239,6 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
    * @param search 搜索值
    */
   getSettingGroups(scope: PreferenceScope, search?: string | undefined): ISettingGroup[] {
-    this.currentScope = scope;
     const groups = this.settingsGroups.slice();
     return groups.filter((g) => this.getResolvedSections(g.id, scope, search).length > 0);
   }

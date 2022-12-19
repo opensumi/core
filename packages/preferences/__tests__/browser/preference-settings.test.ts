@@ -96,9 +96,7 @@ describe('PreferenceSettingService should be work', () => {
 
   describe('01 #Init', () => {
     it('should have enough API', async () => {
-      expect(typeof preferenceSettingsService.currentGroup).toBe('string');
       expect(typeof preferenceSettingsService.currentSearch).toBe('string');
-      expect(typeof preferenceSettingsService.setCurrentGroup).toBe('function');
       expect(typeof preferenceSettingsService.openJSON).toBe('function');
       expect(typeof preferenceSettingsService.setPreference).toBe('function');
       expect(typeof preferenceSettingsService.handleListHandler).toBe('function');

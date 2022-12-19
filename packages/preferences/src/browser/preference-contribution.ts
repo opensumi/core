@@ -195,7 +195,7 @@ export class PreferenceContribution
     commands.registerCommand(COMMON_COMMANDS.LOCATE_PREFERENCES, {
       execute: async (groupId: string) => {
         await this.openPreferences();
-        return await this.preferenceService.setCurrentGroup(groupId);
+        return await this.preferenceService.scrollToGroup(groupId);
       },
     });
 

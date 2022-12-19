@@ -38,7 +38,14 @@ export interface IPreferenceTask {
 }
 
 export interface ISectionItemData {
+  /**
+   * 有两种：
+   * - section:${sectionTitle}
+   * - group:${groupId}
+   */
+  id?: string;
   scope: PreferenceScope;
+
   title?: string;
   component?: any;
   preference?: IResolvedPreferenceViewDesc;

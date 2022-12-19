@@ -1,8 +1,11 @@
-import { IDisposable } from '@opensumi/ide-core-common';
+import { IDisposable, PreferenceScopeWithLabel } from '@opensumi/ide-core-common';
 
 import { PreferenceScope } from './preference-scope';
 
+export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');
 export interface IPreferenceSettingsService {
+  tabList: PreferenceScopeWithLabel[];
+
   setPreference(key: string, value: any, scope: PreferenceScope);
 
   getSettingGroups(scope: PreferenceScope, search?: string): ISettingGroup[];
@@ -17,10 +20,9 @@ export interface IPreferenceSettingsService {
 
   setEnumLabels(preferenceName: string, labels: { [key: string]: string }): void;
 
-  setCurrentGroup(groupId: string): void;
+  scrollToGroup(groupId: string): void;
+  scrollToSection(section: string): void;
 }
-
-export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');
 
 export interface ISettingGroup {
   // 唯一
