@@ -156,6 +156,7 @@ export const NextPreferenceItem = ({
           markdownDescription: preference.markdownDescription,
         },
         renderedDescription: renderDescription({
+          name: localizedName,
           description: preference.description,
           markdownDescription: preference.markdownDescription,
         }),
@@ -235,10 +236,10 @@ const renderDescriptionExpression = (description: string) => {
   }
 };
 
-const renderDescription = (data: { description?: string; markdownDescription?: string }) => {
+const renderDescription = (data: { name?: string; description?: string; markdownDescription?: string }) => {
   const description = replaceLocalizePlaceholder(data.description ?? data.markdownDescription);
   if (!description) {
-    return null;
+    return <div className={styles.desc}>{data.name}</div>;
   }
   const openerService: IOpenerService = useInjectable(IOpenerService);
 
