@@ -116,14 +116,14 @@ export namespace IRelaxedOpenMergeEditorArgs {
 
   const toInputData = (args: unknown): MergeEditorInputData => {
     if (typeof args === 'string') {
-      return new MergeEditorInputData(URI.parse(args), undefined, undefined, undefined);
+      return new MergeEditorInputData(URI.parse(args));
     }
     if (!args || typeof args !== 'object') {
       throw new TypeError('invalid argument');
     }
 
     if (isUriComponents(args)) {
-      return new MergeEditorInputData(URI.from(args), undefined, undefined, undefined);
+      return new MergeEditorInputData(URI.from(args));
     }
 
     const obj = args as MergeEditorInputData;
