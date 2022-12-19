@@ -24,6 +24,11 @@ export class GuidelineWidget extends ZoneWidget {
     });
   }
 
+  // 覆写 revealLine 函数，使其在 show 的时候编辑器不会定位到对应位置
+  protected override revealLine(lineNumber: number, isLastLine: boolean): void {
+    // not implement
+  }
+
   public getRecordLine(): number {
     return this.recordLine;
   }

@@ -7,7 +7,6 @@ import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-co
 import { DocumentMapping } from '../../model/document-mapping';
 import { InnerRange } from '../../model/inner-range';
 import { LineRange } from '../../model/line-range';
-import { LineRangeMapping } from '../../model/line-range-mapping';
 import { TimeMachineDocument } from '../../model/time-machine';
 import {
   EditorViewType,
@@ -15,7 +14,6 @@ import {
   TActionsType,
   ADDRESSING_TAG_CLASSNAME,
   CONFLICT_ACTIONS_ICON,
-  EDiffRangeTurn,
   IActionsDescription,
   REVOKE_ACTIONS,
   ITimeMachineMetaData,
@@ -143,6 +141,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
   }
 
   private getAllDiffRanges(): LineRange[] {
+    // 去重相同 id 或位置一样的 line range
     return distinct(
       this.documentMappingTurnLeft.getModifiedRange().concat(this.documentMappingTurnRight.getOriginalRange()),
       (range) => range.id,
@@ -347,6 +346,10 @@ export class ResultCodeEditor extends BaseCodeEditor {
     };
   }
 
+  public reset(): void {
+    this.isFirstInputComputeDiff = true;
+  }
+
   public getEditorViewType(): EditorViewType {
     return EditorViewType.RESULT;
   }
@@ -360,40 +363,45 @@ export class ResultCodeEditor extends BaseCodeEditor {
     return this.timeMachineDocument.getMetaData(rangeId);
   }
 
-  public inputDiffComputingResult(changes: LineRangeMapping[], turnType: EDiffRangeTurn): void {
-    if (turnType === EDiffRangeTurn.MODIFIED) {
-      this.mappingManagerService.inputComputeResultRangeMappingTurnLeft(changes);
-    } else if (turnType === EDiffRangeTurn.ORIGIN) {
-      this.mappingManagerService.inputComputeResultRangeMappingTurnRight(changes);
-    }
+  public completeSituation(): { completeCount: number; shouldCount: number } {
+    const allRanges = this.getAllDiffRanges();
+    const completeCount = allRanges.reduce((pre: number, cur: LineRange) => pre + (cur.isComplete ? 1 : 0), 0);
 
-    if (turnType === EDiffRangeTurn.ORIGIN) {
-      this.updateDecorations();
-      const diffRanges = this.getAllDiffRanges();
+    return {
+      completeCount,
+      shouldCount: allRanges.length,
+    };
+  }
 
-      this.registerActionsProvider({
-        provideActionsItems: () => this.provideActionsItems(diffRanges),
-        onActionsClick: (range: LineRange, actionType: TActionsType) => {
-          if (actionType === REVOKE_ACTIONS) {
-            this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
-          }
+  /**
+   * 由于 compute diff 的源数据都由 document mapping 来处理，所以 result 视图不用单独计算 compute 计算出的 diff changes
+   */
+  public inputDiffComputingResult(): void {
+    this.updateDecorations();
+    const diffRanges = this.getAllDiffRanges();
 
-          if (actionType === ACCEPT_COMBINATION_ACTIONS) {
-            this._onDidConflictActions.fire({
-              range,
-              withViewType: EditorViewType.RESULT,
-              action: ACCEPT_COMBINATION_ACTIONS,
-            });
-          }
-        },
+    this.registerActionsProvider({
+      provideActionsItems: () => this.provideActionsItems(diffRanges),
+      onActionsClick: (range: LineRange, actionType: TActionsType) => {
+        if (actionType === REVOKE_ACTIONS) {
+          this._onDidConflictActions.fire({ range, withViewType: EditorViewType.RESULT, action: REVOKE_ACTIONS });
+        }
+
+        if (actionType === ACCEPT_COMBINATION_ACTIONS) {
+          this._onDidConflictActions.fire({
+            range,
+            withViewType: EditorViewType.RESULT,
+            action: ACCEPT_COMBINATION_ACTIONS,
+          });
+        }
+      },
+    });
+
+    diffRanges.forEach((range) => {
+      this.timeMachineDocument.record(range.id, {
+        range,
+        text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toRange()),
       });
-
-      diffRanges.forEach((range) => {
-        this.timeMachineDocument.record(range.id, {
-          range,
-          text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toRange()),
-        });
-      });
-    }
+    });
   }
 }
