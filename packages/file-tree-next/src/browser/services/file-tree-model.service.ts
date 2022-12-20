@@ -30,11 +30,9 @@ import {
   Emitter,
   Deferred,
   CommandService,
-  IApplicationService,
   FILE_COMMANDS,
   path,
   IClipboardService,
-  AppConfig,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -860,7 +858,7 @@ export class FileTreeModelService {
     }
   };
 
-  handleItemDoubleClick = (item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
+  handleItemDoubleClick = (item: File | Directory, type: TreeNodeType) => {
     // 双击事件触发前，会先触发 handleItemClick 方法装饰文件
     if (type === TreeNodeType.TreeNode) {
       // 双击的时候，不管 workbench.list.openMode 为单击还是双击，都以非预览模式打开文件

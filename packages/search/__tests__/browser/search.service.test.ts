@@ -68,10 +68,6 @@ describe('search.service.ts', () => {
 
     injector.addProviders(
       {
-        token: ContentSearchClientService,
-        useClass: ContentSearchClientService,
-      },
-      {
         token: IWorkspaceService,
         useClass: MockWorkspaceService,
       },
@@ -112,7 +108,7 @@ describe('search.service.ts', () => {
       },
     );
 
-    searchService = injector.get(ContentSearchClientService);
+    searchService = injector.get(IContentSearchClientService);
     (searchService as any).searchAllFromDocModel = () => ({
       result: null,
     });

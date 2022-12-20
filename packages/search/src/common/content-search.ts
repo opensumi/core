@@ -1,5 +1,6 @@
+import type { ITree } from '@opensumi/ide-components';
 import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
-import { Command } from '@opensumi/ide-core-common';
+import { Command, Event } from '@opensumi/ide-core-common';
 import { parseGlob, ParsedPattern, URI, strings } from '@opensumi/ide-core-common';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
@@ -64,23 +65,45 @@ export interface IContentSearchClientService {
   replaceValue: string;
   searchValue: string;
   searchError: string;
+  includeValue: string;
+  excludeValue: string;
   searchState: SEARCH_STATE;
   UIState: IUIState;
   searchResults: Map<string, ContentSearchResult[]>;
   resultTotal: ResultTotal;
+  isReplacing: boolean;
+  isSearching: boolean;
+  isShowValidateMessage: boolean;
+
   docModelSearchedList: string[];
   currentSearchId: number;
   searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
-  replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
-
-  isSearchDoing: boolean;
-
-  isShowValidateMessage: boolean;
-
   validateMessage: ValidateMessage | undefined;
 
   updateUIState(obj: Record<string, any>, e?: React.KeyboardEvent): void;
+  doReplaceAll(): void;
   searchDebounce(): void;
+  search(): void;
+  onSearchInputChange(text: string): void;
+  onReplaceInputChange(text: string): void;
+  onSearchExcludeChange(text: string): void;
+  onSearchIncludeChange(text: string): void;
+
+  openPreference(): void;
+  blur(): void;
+  searchEditorSelection(): void;
+  clean(): void;
+  refresh(): void;
+
+  onDidChange: Event<void>;
+}
+
+export const ISearchTreeService = Symbol('ISearchTreeService');
+
+export interface ISearchTreeService extends ITree {
+  replaceValue: string;
+  resultTotal: ResultTotal;
+  initContextKey(dom: HTMLDivElement): void;
 }
 
 export interface IUIState {
@@ -207,7 +230,6 @@ export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
  * 裁剪处理过长的结果，计算出 renderLineText、renderStart
  * @param insertResult
  */
-
 export function cutShortSearchResult(insertResult: ContentSearchResult): ContentSearchResult {
   const result = Object.assign({}, insertResult);
   const { lineText, matchLength, matchStart } = result;

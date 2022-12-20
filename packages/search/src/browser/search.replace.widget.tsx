@@ -10,7 +10,6 @@ interface SearchReplaceWidgetProps {
   replaceValue: string;
   onSearch(): void;
   onReplaceRuleChange(e: React.FormEvent<HTMLInputElement>): void;
-  replaceInputEl: RefObject<HTMLInputElement>;
   doReplaceAll(): void;
   resultTotal: {
     resultNum: number;
@@ -25,7 +24,6 @@ export const SearchReplaceWidget = React.memo(
       resultTotal = { resultNum: 0, fileNum: 0 },
       onSearch,
       onReplaceRuleChange,
-      replaceInputEl,
       doReplaceAll,
     }: SearchReplaceWidgetProps) => (
       <div className={styles.search_and_replace_container}>
@@ -39,7 +37,6 @@ export const SearchReplaceWidget = React.memo(
               placeholder={localize('search.replace.title')}
               onKeyUp={onSearch}
               onChange={onReplaceRuleChange}
-              ref={replaceInputEl}
             />
             <div
               className={`${styles.replace_all_button} ${resultTotal.resultNum > 0 ? '' : styles.disabled}`}

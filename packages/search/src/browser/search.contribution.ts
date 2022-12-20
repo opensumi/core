@@ -10,6 +10,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 import { SEARCH_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
+import { SearchInputBoxFocusedKey } from '@opensumi/ide-core-browser/lib/contextkey/search';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
 import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
@@ -17,13 +18,12 @@ import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 
-import { ContentSearchResult, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
+import { ContentSearchResult, IContentSearchClientService, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
 
-import { SearchContextKey, SearchInputFocused } from './search-contextkey';
+import { SearchContextKey } from './search-contextkey';
 import { searchPreferenceSchema } from './search-preferences';
-import { SearchTreeService } from './search-tree.service';
-import { ContentSearchClientService } from './search.service';
 import { Search } from './search.view';
+import { SearchTreeService } from './tree/search-tree.service';
 
 @Domain(
   ClientAppContribution,
@@ -50,8 +50,8 @@ export class SearchContribution
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
-  @Autowired(ContentSearchClientService)
-  searchBrowserService: ContentSearchClientService;
+  @Autowired(IContentSearchClientService)
+  searchBrowserService: IContentSearchClientService;
 
   @Autowired(SearchTreeService)
   searchTreeService: SearchTreeService;
@@ -65,22 +65,6 @@ export class SearchContribution
   schema: PreferenceSchema = searchPreferenceSchema;
 
   private readonly toDispose = new DisposableCollection();
-
-  constructor() {}
-
-  onStart() {
-    this.toDispose.push(
-      this.searchBrowserService.onTitleStateChange(() => {
-        const bar = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
-        if (!bar) {
-          return;
-        }
-
-        this.searchContextKey.canClearSearchResult.set(this.searchBrowserService.cleanIsEnable());
-        this.searchContextKey.canRefreshSearchResult.set(this.searchBrowserService.foldIsEnable());
-      }),
-    );
-  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(SEARCH_COMMANDS.OPEN_SEARCH, {
@@ -96,14 +80,14 @@ export class SearchContribution
           this.searchBrowserService.search();
           return;
         }
-        this.searchBrowserService.setSearchValueFromActivatedEditor();
-        this.searchBrowserService.focus();
+        this.searchBrowserService.searchEditorSelection();
+        // this.searchBrowserService.focus();
         this.searchBrowserService.search();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.REFRESH, {
       execute: (...args: any[]) => {
-        this.searchBrowserService.refresh();
+        this.searchBrowserService.search();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.CLEAN, {
@@ -113,39 +97,39 @@ export class SearchContribution
     });
     commands.registerCommand(SEARCH_COMMANDS.FOLD, {
       execute: (...args: any[]) => {
-        this.searchTreeService.foldTree();
+        // this.searchTreeService.foldTree();
       },
       isVisible: () => true,
-      isEnabled: () => this.searchBrowserService.foldIsEnable(),
+      // isEnabled: () => this.searchBrowserService.foldIsEnable(),
     });
     commands.registerCommand(SEARCH_COMMANDS.GET_RECENT_SEARCH_WORD, {
       execute: (e) => {
-        this.searchBrowserService.searchHistory.setRecentSearchWord();
+        // this.searchBrowserService.searchHistory.setRecentSearchWord();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.GET_BACK_RECENT_SEARCH_WORD, {
       execute: (e) => {
-        this.searchBrowserService.searchHistory.setBackRecentSearchWord();
+        // this.searchBrowserService.searchHistory.setBackRecentSearchWord();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY, {
       execute: (e) => {
-        this.searchTreeService.commandActuator('replaceResult', e.id);
+        // this.searchTreeService.commandActuator('replaceResult', e.id);
       },
       isVisible: () => !this.searchTreeService.isContextmenuOnFile,
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_REPLACE_ALL, {
       execute: (e) => {
-        this.searchTreeService.commandActuator('replaceResults', e.id);
+        // this.searchTreeService.commandActuator('replaceResults', e.id);
       },
-      isVisible: () => this.searchTreeService.isContextmenuOnFile,
+      // isVisible: () => this.searchTreeService.isContextmenuOnFile,
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_HIDE, {
       execute: (e) => {
-        if (this.searchTreeService.isContextmenuOnFile) {
-          return this.searchTreeService.commandActuator('closeResults', e.id);
-        }
-        this.searchTreeService.commandActuator('closeResult', e.id);
+        // if (this.searchTreeService.isContextmenuOnFile) {
+        //   return this.searchTreeService.commandActuator('closeResults', e.id);
+        // }
+        // this.searchTreeService.commandActuator('closeResult', e.id);
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY, {
@@ -169,23 +153,20 @@ export class SearchContribution
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY_ALL, {
       execute: (e) => {
-        const nodes = this.searchTreeService._nodes;
-        let copyText = '';
-
-        nodes.forEach((node: ISearchTreeItem) => {
-          if (!node.children) {
-            return;
-          }
-          let text = `\n ${node.uri!.path.toString()} \n`;
-
-          node.children.forEach((child: ISearchTreeItem) => {
-            const result = child.searchResult!;
-            text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
-          });
-          copyText = copyText + text;
-        });
-
-        this.clipboardService.writeText(copyText);
+        // const nodes = this.searchTreeService._nodes;
+        // let copyText = '';
+        // nodes.forEach((node: ISearchTreeItem) => {
+        //   if (!node.children) {
+        //     return;
+        //   }
+        //   let text = `\n ${node.uri!.path.toString()} \n`;
+        //   node.children.forEach((child: ISearchTreeItem) => {
+        //     const result = child.searchResult!;
+        //     text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
+        //   });
+        //   copyText = copyText + text;
+        // });
+        // this.clipboardService.writeText(copyText);
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY_PATH, {
@@ -194,7 +175,7 @@ export class SearchContribution
           this.clipboardService.writeText(e.path);
         }
       },
-      isVisible: () => this.searchTreeService.isContextmenuOnFile,
+      // isVisible: () => this.searchTreeService.isContextmenuOnFile,
     });
   }
 
@@ -240,12 +221,12 @@ export class SearchContribution
     keybindings.registerKeybinding({
       command: SEARCH_COMMANDS.GET_BACK_RECENT_SEARCH_WORD.id,
       keybinding: 'down',
-      when: SearchInputFocused.raw,
+      when: SearchInputBoxFocusedKey.raw,
     });
     keybindings.registerKeybinding({
       command: SEARCH_COMMANDS.GET_RECENT_SEARCH_WORD.id,
       keybinding: 'up',
-      when: SearchInputFocused.raw,
+      when: SearchInputBoxFocusedKey.raw,
     });
   }
 
@@ -280,8 +261,8 @@ export class SearchContribution
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
       handler.onActivate(() => {
-        this.searchBrowserService.searchHistory.initSearchHistory();
-        this.searchBrowserService.focus();
+        // this.searchBrowserService.searchHistory.initSearchHistory();
+        // this.searchBrowserService.focus();
       });
       handler.onInActivate(() => {
         this.searchTreeService.removeHighlightRange();

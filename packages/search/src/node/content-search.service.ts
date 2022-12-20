@@ -105,12 +105,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     this.processMap.delete(searchId);
   }
 
-  async search(
-    what: string,
-    rootUris: string[],
-    opts?: ContentSearchOptions,
-    cb?: (data: any) => any,
-  ): Promise<number> {
+  async search(what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number> {
     const args = this.getSearchArgs(opts);
 
     if (opts && opts.matchWholeWord && !opts.useRegExp) {

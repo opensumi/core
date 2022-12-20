@@ -137,10 +137,6 @@ describe('search.service.ts', () => {
 
     injector.overrideProviders(
       {
-        token: ContentSearchClientService,
-        useClass: ContentSearchClientService,
-      },
-      {
         token: ResourceService,
         useClass: ResourceServiceImpl,
       },
@@ -190,7 +186,7 @@ describe('search.service.ts', () => {
       },
     );
 
-    searchService = injector.get(ContentSearchClientService);
+    searchService = injector.get(IContentSearchClientService);
     searchTreeService = injector.get(SearchTreeService);
 
     searchService.searchResults = searchResults;
