@@ -65,7 +65,10 @@ export class MergeEditorDecorations extends Disposable {
 
     const options = ModelDecorationOptions.register({
       description: range.id,
-      className: DECORATIONS_CLASSNAME.combine(DECORATIONS_CLASSNAME.diff_line_background, range.type),
+      className: DECORATIONS_CLASSNAME.combine(
+        DECORATIONS_CLASSNAME.diff_line_background,
+        DECORATIONS_CLASSNAME.range_type[range.type],
+      ),
       isWholeLine: true,
       stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
     });
@@ -130,9 +133,11 @@ export class MergeEditorDecorations extends Disposable {
     const guidelineWidget = new GuidelineWidget(this.editor);
     guidelineWidget.create();
     if (range.isComplete) {
-      guidelineWidget.addClassName('dashed');
+      guidelineWidget.addClassName(DECORATIONS_CLASSNAME.dashed);
     }
-    guidelineWidget.addClassName(range.type).showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
+    guidelineWidget
+      .addClassName(DECORATIONS_CLASSNAME.range_type[range.type])
+      .showByLine(Math.max(0, Math.max(0, range.startLineNumber - 1)));
     return guidelineWidget;
   }
 

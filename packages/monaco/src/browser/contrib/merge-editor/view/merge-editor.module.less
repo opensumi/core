@@ -1,21 +1,21 @@
-.merge-editor-container {
+.merge_editor_container {
   height: 100%;
   overflow: hidden;
   position: relative;
 
-  .merge-actions {
+  .merge_actions {
     position: absolute;
     right: 50px;
     bottom: 30px;
   }
 
-  .editorContainer {
+  .editor_container {
     display: flex;
     height: inherit;
     width: 100%;
   }
 
-  .merge-editor-guide-underline-widget {
+  .merge_editor_guide_underline_widget {
     border-style: solid;
     border-top-width: 2px !important;
     &.dashed {
@@ -32,9 +32,9 @@
     }
   }
 
-  .merge-editor-margin-className,
-  .merge-editor-diff-inner-char-background,
-  .merge-editor-diff-line-background {
+  .merge_editor_margin_className,
+  .merge_editor_diff_inner_char_background,
+  .merge_editor_diff_line_background {
     &.insert {
       background-color: var(--mergeEditor-insertedBackground);
     }
@@ -46,7 +46,7 @@
     }
   }
 
-  .merge-editor-diff-inner-char-background {
+  .merge_editor_diff_inner_char_background {
     &.insert {
       background-color: var(--mergeEditor-insertedInnerCharColor);
     }
@@ -58,15 +58,15 @@
     }
   }
 
-  .editor-container-arrange {
+  .editor_container_arrange {
     height: 100%;
     display: flex;
     flex-direction: column;
 
-    .stickiness-connect-container {
+    .stickiness_connect_container {
       height: 100%;
       position: relative;
-      .piece-view-lines {
+      .piece_view_lines {
         position: absolute;
         z-index: 1;
         & svg {
@@ -91,39 +91,39 @@
     }
   }
 
-  .conflict-actions {
+  .conflict_actions {
     cursor: pointer;
     z-index: 1;
     // 默认图标宽度
     width: 16px !important;
 
-    &.offset-left {
+    &.offset_left {
       left: 18px !important;
       z-index: 2;
     }
 
-    &.offset-right {
+    &.offset_right {
       left: initial !important;
       right: 8px !important;
       z-index: 2;
     }
 
-    &.rotate-turn-left {
+    &.rotate_turn_left {
       transform: rotate(-50deg);
     }
 
-    &.rotate-turn-right {
+    &.rotate_turn_right {
       transform: rotate(50deg);
     }
   }
 
   // conflict action 完成后的虚线框效果
-  .merge-editor-margin-className,
-  .merge-editor-diff-line-background {
+  .merge_editor_margin_className,
+  .merge_editor_diff_line_background {
     border-width: 2px;
     border-style: solid;
 
-    &.conflict-wrap {
+    &.conflict_wrap {
       border-width: 2px;
       border-style: dashed;
       background-color: transparent;
@@ -139,24 +139,24 @@
       border-color: var(--mergeEditor-removedBackground);
     }
 
-    &.stretch-left {
+    &.stretch_left {
       border-left: transparent;
     }
 
-    &.stretch-right {
+    &.stretch_right {
       border-right: transparent;
     }
 
-    &.stretch-top {
+    &.stretch_top {
       border-top: transparent;
     }
 
-    &.stretch-bottom {
+    &.stretch_bottom {
       border-bottom: transparent;
     }
   }
 
-  .title-head-container {
+  .title_head_container {
     padding: 0 10px;
     height: 30px;
     min-height: 30px;
