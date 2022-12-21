@@ -14,7 +14,7 @@ import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
-import { IContentSearchClientService, ISearchTreeService } from '../../common/content-search';
+import { IContentSearchClientService, ISearchTreeService, IUIState } from '../../common/content-search';
 import { SearchPreferences } from '../search-preferences';
 
 import {
@@ -137,9 +137,21 @@ export class SearchModelService extends Disposable {
 
     this.initDecorations(root);
 
-    this.addDispose(
+    this.disposables.push(
       this.searchService.onDidChange(() => {
+        if (this.searchService.searchResults.size > 0) {
+          this.searchTreeService.contextKey.hasSearchResults.set(true);
+        } else {
+          this.searchTreeService.contextKey.hasSearchResults.set(false);
+        }
         this.refresh();
+      }),
+      this.searchService.onDidUIStateChange((state: IUIState) => {
+        if (state.isSearchFocus) {
+          this.searchTreeService.contextKey.searchInputBoxFocusedKey.set(true);
+        } else {
+          this.searchTreeService.contextKey.searchInputBoxFocusedKey.set(false);
+        }
       }),
     );
 

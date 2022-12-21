@@ -99,6 +99,7 @@ export interface IContentSearchClientService {
 
   onDidChange: Event<void>;
   onDidTitleChange: Event<void>;
+  onDidUIStateChange: Event<IUIState>;
   fireTitleChange(): void;
 }
 

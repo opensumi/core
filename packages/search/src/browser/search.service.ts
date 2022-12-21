@@ -129,6 +129,8 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   private onDidChangeEmitter: Emitter<void> = new Emitter();
   private onDidTitleChangeEmitter: Emitter<void> = new Emitter();
+  private onDidUIStateChangeEmitter: Emitter<IUIState> = new Emitter();
+
   protected eventBusDisposer: IDisposable;
 
   get onDidChange() {
@@ -137,6 +139,10 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   get onDidTitleChange() {
     return this.onDidTitleChangeEmitter.event;
+  }
+
+  get onDidUIStateChange() {
+    return this.onDidUIStateChangeEmitter.event;
   }
 
   public UIState: IUIState = {
@@ -611,6 +617,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     }
 
     this.UIState = newUIState;
+    this.onDidUIStateChangeEmitter.fire(newUIState);
     this.browserStorageService.setData('search.UIState', newUIState);
   };
 
