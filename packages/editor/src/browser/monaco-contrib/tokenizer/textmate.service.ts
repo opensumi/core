@@ -51,6 +51,7 @@ import { ThemeChangedEvent } from '@opensumi/ide-theme/lib/common/event';
 import { asStringArray } from '@opensumi/ide-utils/lib/arrays';
 import { ILanguageExtensionPoint } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
 import { ILanguageService } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/language';
+import { ModesRegistry } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages/modesRegistry';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 
 import { IEditorDocumentModelService } from '../../doc-model/types';
@@ -195,7 +196,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
     /**
      * ModesRegistry.registerLanguage 性能很差
      */
-    this.monacoLanguageService['_registry']['_registerLanguages'](newLanguages);
+    for (const lang of newLanguages) {
+      ModesRegistry.registerLanguage(lang);
+    }
+
     languages.forEach(async (language) => {
       this.languageConfigLocation.set(language.id, baseUri);
       this.addDispose(
@@ -844,7 +848,9 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   }
 
   getLanguages(): ILanguageExtensionPoint[] {
-    return [...monaco.languages.getLanguages(), ...this.dynamicLanguages];
+    return [...monaco.languages.getLanguages(), ...this.dynamicLanguages].filter(
+      (lang) => !this.isEmbeddedLanguageOnly(lang),
+    );
   }
 
   private activateLanguages() {
