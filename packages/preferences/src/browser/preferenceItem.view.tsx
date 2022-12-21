@@ -265,10 +265,26 @@ const SettingStatus = ({
   return (
     <span className={styles.preference_status}>
       {effectingScope === PreferenceScope.Workspace && scope === PreferenceScope.User ? (
-        <span className={styles.preference_overwritten}>{localize('preference.overwrittenInWorkspace')}</span>
+        <span
+          onClick={() => {
+            settingsService.selectScope(PreferenceScope.Workspace);
+            settingsService.scrollToPreference(preferenceName);
+          }}
+          className={styles.preference_overwritten}
+        >
+          {localize('preference.overwrittenInWorkspace')}
+        </span>
       ) : undefined}
       {effectingScope === PreferenceScope.User && scope === PreferenceScope.Workspace ? (
-        <span className={styles.preference_overwritten}>{localize('preference.overwrittenInUser')}</span>
+        <span
+          onClick={() => {
+            settingsService.selectScope(PreferenceScope.User);
+            settingsService.scrollToPreference(preferenceName);
+          }}
+          className={styles.preference_overwritten}
+        >
+          {localize('preference.overwrittenInUser')}
+        </span>
       ) : undefined}
       {showReset ? (
         <span

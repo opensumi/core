@@ -163,6 +163,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         } else if (section.preferences) {
           innerItems.push(
             ...section.preferences.map((pre) => ({
+              id: ESectionItemKind.Preference + pre.id,
               preference: pre,
               scope: preferenceService.currentScope,
               _path: currentItemPath,

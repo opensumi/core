@@ -61,4 +61,5 @@ export interface ISectionItemData {
 export const enum ESectionItemKind {
   Section = 'section:',
   Group = 'group:',
+  Preference = 'preference:',
 }

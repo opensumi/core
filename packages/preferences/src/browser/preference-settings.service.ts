@@ -135,12 +135,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
         debounce(
           action(() => {
             // 利用副作用强制刷新一下
-            let index = this.tabList.findIndex((v) => v.id === this.currentScope);
-            if (index === -1) {
-              index = 0;
-            }
-
-            this.tabIndex = index;
+            this.selectScope(this.currentScope);
           }),
           300,
           {
@@ -165,6 +160,22 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     if (section) {
       this.currentSelectId = ESectionItemKind.Section + section;
     }
+  }
+  @action
+  scrollToPreference(preferenceId: string): void {
+    if (preferenceId) {
+      this.currentSelectId = ESectionItemKind.Preference + preferenceId;
+    }
+  }
+
+  @action.bound
+  selectScope(scope: PreferenceScope) {
+    // 利用副作用强制刷新一下
+    let index = this.tabList.findIndex((v) => v.id === scope);
+    if (index === -1) {
+      index = 0;
+    }
+    this.tabIndex = index;
   }
 
   get onDidEnumLabelsChange() {
