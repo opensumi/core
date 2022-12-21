@@ -130,7 +130,7 @@ export const localizationBundle = {
       "Controls whether bracket pair colorization is enabled or not. Use 'workbench.colorCustomizations' to override the bracket highlight colors.",
     'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
     'editor.configuration.mouseBackForwardToNavigate':
-      "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
+      "Enables the use of mouse buttons four and five for k' and 'Go Forward'.",
     'editor.lineHeight': 'Line Height',
     'editor.lineHeight.description':
       'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
@@ -209,7 +209,7 @@ export const localizationBundle = {
     'search.includes.description': 'Enter the file name or folder name, multiple separated by ","',
     'search.excludes': 'Files to exclude',
     'search.excludes.default.enable': 'Enable default exclusions',
-    'search.replaceAll.label': 'Replace all',
+    'search.replaceAll.label': 'Replace All',
     'search.replace.label': 'Replace',
     'search.files.result': '{0} results found in {1} files',
     'search.CollapseDeepestExpandedLevelAction.label': 'Collapse All',

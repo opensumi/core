@@ -681,13 +681,6 @@ export namespace SEARCH_COMMANDS {
     category: CATEGORY,
   };
 
-  export const FOLD: Command = {
-    id: 'file-search.fold',
-    label: 'fold search',
-    iconClass: getIcon('collapse-all'),
-    category: CATEGORY,
-  };
-
   export const GET_RECENT_SEARCH_WORD: Command = {
     id: 'search.getRecentSearchWordCmd',
     category: CATEGORY,
@@ -732,6 +725,16 @@ export namespace SEARCH_COMMANDS {
     id: 'search.menu.copyPath',
     category: CATEGORY,
     label: '%file.copy.path%',
+  };
+
+  export const REPLACE: Command = {
+    id: 'search.replace',
+    category: CATEGORY,
+  };
+
+  export const CLOSE: Command = {
+    id: 'search.close',
+    category: CATEGORY,
   };
 }
 

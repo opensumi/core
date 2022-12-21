@@ -27,7 +27,7 @@ export class SearchFileNode extends CompositeTreeNode {
     public resource: URI,
     parent: SearchRoot,
   ) {
-    super(tree as ITree, parent, undefined, { name: resource.path.base });
+    super(tree as ITree, parent);
     this.isExpanded = true;
   }
 
@@ -54,7 +54,7 @@ export class SearchContentNode extends TreeNode {
     public resource: URI,
     parent: SearchFileNode | undefined,
   ) {
-    super(tree as ITree, parent, undefined);
+    super(tree as ITree, parent);
   }
 
   get displayName() {

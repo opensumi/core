@@ -79,7 +79,6 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
   @Autowired(IProcessFactory)
   protected processFactory: IProcessFactory;
 
-  private searchId: number = new Date().getTime();
   private processMap: Map<number, IProcess> = new Map();
 
   @Autowired(ILogServiceManager)
@@ -105,7 +104,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     this.processMap.delete(searchId);
   }
 
-  async search(what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number> {
+  async search(searchId: number, what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number> {
     const args = this.getSearchArgs(opts);
 
     if (opts && opts.matchWholeWord && !opts.useRegExp) {
@@ -119,7 +118,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     }
 
     const searchInfo: SearchInfo = {
-      searchId: this.searchId++,
+      searchId,
       resultLength: 0,
       dataBuf: '',
     };

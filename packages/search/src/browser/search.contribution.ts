@@ -13,17 +13,28 @@ import { SEARCH_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/conta
 import { SearchInputBoxFocusedKey } from '@opensumi/ide-core-browser/lib/contextkey/search';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuId, MenuContribution, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { CommandContribution, CommandRegistry, DisposableCollection } from '@opensumi/ide-core-common';
+import {
+  CommandContribution,
+  CommandRegistry,
+  DisposableCollection,
+  formatLocalize,
+  MessageType,
+} from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser/index';
 import { MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
+import { IDialogService } from '@opensumi/ide-overlay';
+import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 
-import { ContentSearchResult, IContentSearchClientService, ISearchTreeItem, OpenSearchCmdOptions } from '../common';
+import { ContentSearchResult, IContentSearchClientService, OpenSearchCmdOptions } from '../common';
 
-import { SearchContextKey } from './search-contextkey';
+import { replaceAll } from './replace';
 import { searchPreferenceSchema } from './search-preferences';
 import { Search } from './search.view';
 import { SearchTreeService } from './tree/search-tree.service';
+import { SearchModelService } from './tree/tree-model.service';
+import { SearchContentNode, SearchFileNode } from './tree/tree-node.defined';
 
 @Domain(
   ClientAppContribution,
@@ -48,16 +59,25 @@ export class SearchContribution
     ClientAppContribution
 {
   @Autowired(IMainLayoutService)
-  mainLayoutService: IMainLayoutService;
+  private readonly mainLayoutService: IMainLayoutService;
 
   @Autowired(IContentSearchClientService)
-  searchBrowserService: IContentSearchClientService;
+  private readonly searchBrowserService: IContentSearchClientService;
 
   @Autowired(SearchTreeService)
-  searchTreeService: SearchTreeService;
+  private readonly searchTreeService: SearchTreeService;
 
-  @Autowired(SearchContextKey)
-  private readonly searchContextKey: SearchContextKey;
+  @Autowired(IEditorDocumentModelService)
+  private readonly documentModelManager: IEditorDocumentModelService;
+
+  @Autowired(IWorkspaceEditService)
+  private readonly workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(IDialogService)
+  private readonly dialogService: IDialogService;
+
+  @Autowired(SearchModelService)
+  private readonly searchModelService: SearchModelService;
 
   @Autowired(IClipboardService)
   private readonly clipboardService: IClipboardService;
@@ -86,96 +106,134 @@ export class SearchContribution
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.REFRESH, {
-      execute: (...args: any[]) => {
+      execute: () => {
         this.searchBrowserService.search();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.CLEAN, {
-      execute: (...args: any[]) => {
+      execute: () => {
         this.searchBrowserService.clean();
       },
     });
-    commands.registerCommand(SEARCH_COMMANDS.FOLD, {
-      execute: (...args: any[]) => {
-        // this.searchTreeService.foldTree();
-      },
-      isVisible: () => true,
-      // isEnabled: () => this.searchBrowserService.foldIsEnable(),
-    });
     commands.registerCommand(SEARCH_COMMANDS.GET_RECENT_SEARCH_WORD, {
       execute: (e) => {
-        // this.searchBrowserService.searchHistory.setRecentSearchWord();
+        this.searchBrowserService.setRecentSearchWord();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.GET_BACK_RECENT_SEARCH_WORD, {
-      execute: (e) => {
-        // this.searchBrowserService.searchHistory.setBackRecentSearchWord();
+      execute: () => {
+        this.searchBrowserService.setBackRecentSearchWord();
       },
     });
-    commands.registerCommand(SEARCH_COMMANDS.MENU_COPY, {
-      execute: (e) => {
-        // this.searchTreeService.commandActuator('replaceResult', e.id);
+    commands.registerCommand(SEARCH_COMMANDS.MENU_REPLACE, {
+      execute: async (node: SearchFileNode | SearchContentNode) => {
+        if (!SearchFileNode.is(node)) {
+          const resultMap: Map<string, ContentSearchResult[]> = new Map();
+          resultMap.set(node.resource.toString(), [node.contentResult]);
+          await replaceAll(
+            this.documentModelManager,
+            this.workspaceEditService,
+            resultMap,
+            this.searchTreeService.replaceValue,
+          );
+        }
       },
-      isVisible: () => !this.searchTreeService.isContextmenuOnFile,
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_REPLACE_ALL, {
-      execute: (e) => {
-        // this.searchTreeService.commandActuator('replaceResults', e.id);
+      execute: async (node: SearchFileNode | SearchContentNode) => {
+        if (!SearchFileNode.is(node)) {
+          return;
+        }
+        const resultMap: Map<string, ContentSearchResult[]> = new Map();
+        if (!node.children) {
+          return;
+        }
+        const contentSearchResult: ContentSearchResult[] = node.children.map(
+          (child: SearchContentNode) => child.contentResult,
+        );
+        const buttons = {
+          [localize('search.replace.buttonCancel')]: false,
+          [localize('search.replace.buttonOK')]: true,
+        };
+        const selection = await this.dialogService.open(
+          formatLocalize('search.removeAll.occurrences.file.confirmation.message', String(contentSearchResult.length)),
+          MessageType.Warning,
+          Object.keys(buttons),
+        );
+        if (selection && !buttons[selection]) {
+          return buttons[selection];
+        }
+        resultMap.set(node.resource.toString(), contentSearchResult);
+        await replaceAll(
+          this.documentModelManager,
+          this.workspaceEditService,
+          resultMap,
+          this.searchTreeService.replaceValue,
+        );
       },
-      // isVisible: () => this.searchTreeService.isContextmenuOnFile,
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_HIDE, {
-      execute: (e) => {
-        // if (this.searchTreeService.isContextmenuOnFile) {
-        //   return this.searchTreeService.commandActuator('closeResults', e.id);
-        // }
-        // this.searchTreeService.commandActuator('closeResult', e.id);
+      execute: (node: SearchFileNode | SearchContentNode) => {
+        if (SearchFileNode.is(node)) {
+          this.searchBrowserService.resultTotal.fileNum -= 1;
+          this.searchBrowserService.resultTotal.resultNum -= node.branchSize;
+          this.searchModelService.treeModel.root.unlinkItem(node);
+        } else {
+          this.searchBrowserService.resultTotal.resultNum -= 1;
+          if (node.parent?.children?.length === 1) {
+            this.searchBrowserService.resultTotal.fileNum -= 1;
+            this.searchModelService.treeModel.root.unlinkItem(node.parent);
+          }
+          (node.parent as SearchFileNode).unlinkItem(node);
+        }
+        this.searchBrowserService.fireTitleChange();
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY, {
-      execute: (e) => {
-        const data: ISearchTreeItem = e.file;
-        const result: ContentSearchResult | undefined = data.searchResult;
-
-        if (result) {
-          this.clipboardService.writeText(`  ${result.line},${result.matchStart}:  ${result.lineText}`);
+      execute: (node: SearchFileNode | SearchContentNode) => {
+        if (!SearchFileNode.is(node)) {
+          const result = node.contentResult;
+          this.clipboardService.writeText(`${result.line},${result.matchStart}:  ${result.lineText}`);
         } else {
-          let text = `\n ${data.uri!.path.toString()} \n`;
+          const uri = node.resource;
+          let text = `${uri.codeUri.fsPath.toString()}\n`;
 
-          data.children!.forEach((child: ISearchTreeItem) => {
-            const result = child.searchResult!;
-            text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
+          node.children?.forEach((node: SearchContentNode) => {
+            const result = node.contentResult;
+            text = text + `${result.line},${result.matchStart}: ${result.lineText} \n`;
           });
-
           this.clipboardService.writeText(text);
         }
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY_ALL, {
-      execute: (e) => {
-        // const nodes = this.searchTreeService._nodes;
-        // let copyText = '';
-        // nodes.forEach((node: ISearchTreeItem) => {
-        //   if (!node.children) {
-        //     return;
-        //   }
-        //   let text = `\n ${node.uri!.path.toString()} \n`;
-        //   node.children.forEach((child: ISearchTreeItem) => {
-        //     const result = child.searchResult!;
-        //     text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
-        //   });
-        //   copyText = copyText + text;
-        // });
-        // this.clipboardService.writeText(copyText);
+      execute: () => {
+        const nodes = this.searchModelService.treeModel.root.children as SearchFileNode[];
+        if (!nodes) {
+          return;
+        }
+        let copyText = '';
+
+        for (let i = 0, len = nodes.length; i < len; i++) {
+          const uri = nodes[i].resource;
+          let text = `${uri.codeUri.fsPath.toString()}\n`;
+
+          nodes[i].children?.forEach((node: SearchContentNode) => {
+            const result = node.contentResult;
+            text = text + `${result.line},${result.matchStart}: ${result.lineText} \n`;
+          });
+          copyText += text;
+          if (i < len) {
+            copyText += '\n';
+          }
+        }
+        this.clipboardService.writeText(copyText);
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY_PATH, {
-      execute: (e) => {
-        if (e.path) {
-          this.clipboardService.writeText(e.path);
-        }
+      execute: (node: SearchFileNode | SearchContentNode) => {
+        this.clipboardService.writeText(node.resource.codeUri.fsPath.toString());
       },
-      // isVisible: () => this.searchTreeService.isContextmenuOnFile,
     });
   }
 
@@ -261,8 +319,8 @@ export class SearchContribution
     const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
     if (handler) {
       handler.onActivate(() => {
-        // this.searchBrowserService.searchHistory.initSearchHistory();
-        // this.searchBrowserService.focus();
+        this.searchBrowserService.initSearchHistory();
+        this.searchBrowserService.focus();
       });
       handler.onInActivate(() => {
         this.searchTreeService.removeHighlightRange();

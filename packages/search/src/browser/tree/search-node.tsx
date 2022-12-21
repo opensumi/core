@@ -8,8 +8,9 @@ import {
   ClasslistComposite,
   TreeNodeType,
   Badge,
+  Button,
 } from '@opensumi/ide-components';
-import { URI, getIcon } from '@opensumi/ide-core-browser';
+import { URI, getIcon, CommandService, SEARCH_COMMANDS, localize, getExternalIcon } from '@opensumi/ide-core-browser';
 
 import { SearchContentNode, SearchFileNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -22,6 +23,13 @@ export interface ISearchNodeProps {
   leftPadding?: number;
   decorations?: ClasslistComposite;
   onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
+  onContextMenu: (
+    ev: React.MouseEvent,
+    item: TreeNode | CompositeTreeNode,
+    type: TreeNodeType,
+    activeUri?: URI,
+  ) => void;
+  commandService: CommandService;
 }
 
 export type ISearchNodeRenderedProps = ISearchNodeProps & INodeRendererProps;
@@ -35,14 +43,21 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   itemType,
   decorations,
   onClick,
+  onContextMenu,
+  commandService,
 }: ISearchNodeRenderedProps) => {
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
-      if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
-        onClick(ev, item as SearchContentNode, itemType);
-      }
+      onClick(ev, item as SearchContentNode, itemType);
     },
     [onClick],
+  );
+
+  const handleContextMenu = useCallback(
+    (ev: React.MouseEvent) => {
+      onContextMenu(ev, item as SearchContentNode, itemType);
+    },
+    [onContextMenu],
   );
 
   const paddingLeft = `${
@@ -82,14 +97,17 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
       return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
     } else {
       const index = node.description.indexOf(search);
-      return (
-        <div className={cls(styles.segment_grow, styles.description)}>
-          {node.description.slice(0, index)}
-          <span className={cls(styles.match, replace && styles.replace)}>{search}</span>
-          {replace && <span className={styles.replace}>{replace}</span>}
-          {node.description.slice(index + search.length)}
-        </div>
-      );
+      if (index >= 0) {
+        return (
+          <div className={cls(styles.segment_grow, styles.description)}>
+            {node.description.slice(0, index)}
+            <span className={cls(styles.match, replace && styles.replace)}>{search}</span>
+            {replace && <span className={styles.replace}>{replace}</span>}
+            {node.description.slice(index + search.length)}
+          </div>
+        );
+      }
+      return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
     }
   }, []);
 
@@ -125,10 +143,69 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
 
   const getItemTooltip = useCallback(() => item.tooltip, [item]);
 
+  const renderActionBar = useCallback((node: SearchFileNode | SearchContentNode) => {
+    let actions;
+    if (SearchFileNode.is(item)) {
+      actions = [
+        {
+          icon: getExternalIcon('replace-all'),
+          title: localize('search.replace.title'),
+          command: SEARCH_COMMANDS.MENU_REPLACE_ALL.id,
+        },
+        {
+          icon: getIcon('eye-close'),
+          title: localize('search.result.hide'),
+          command: SEARCH_COMMANDS.MENU_HIDE.id,
+        },
+      ];
+    } else {
+      actions = [
+        {
+          icon: getExternalIcon('replace-all'),
+          title: localize('search.replace.title'),
+          command: SEARCH_COMMANDS.MENU_REPLACE.id,
+        },
+        {
+          icon: getIcon('eye-close'),
+          title: localize('search.result.hide'),
+          command: SEARCH_COMMANDS.MENU_HIDE.id,
+        },
+      ];
+    }
+
+    return (
+      <div
+        className={styles.action_bar}
+        style={{
+          height: SEARCH_TREE_NODE_HEIGHT,
+          lineHeight: `${SEARCH_TREE_NODE_HEIGHT}px`,
+        }}
+      >
+        {actions.map((action) => {
+          const clickHandler = (event: React.MouseEvent) => {
+            event.stopPropagation();
+            event.preventDefault();
+            commandService.executeCommand(action.command, node);
+          };
+          return (
+            <Button
+              type='icon'
+              key={`${node.id}-${action.command}`}
+              iconClass={cls(styles.action_icon, action.icon)}
+              title={action.title}
+              onClick={clickHandler}
+            />
+          );
+        })}
+      </div>
+    );
+  }, []);
+
   return (
     <div
       key={item.id}
       onClick={handleClick}
+      onContextMenu={handleContextMenu}
       title={getItemTooltip()}
       className={cls(styles.search_node, decorations ? decorations.classlist : null)}
       style={renderedNodeStyle}
@@ -141,6 +218,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
           {renderDisplayName(item)}
           {renderDescription(item)}
         </div>
+        {renderActionBar(item)}
         {renderStatusTail(item)}
       </div>
     </div>

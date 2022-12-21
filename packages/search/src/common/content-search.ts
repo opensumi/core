@@ -49,7 +49,7 @@ export interface IContentSearchServer {
   /**
    * Start a search for WHAT in directories ROOTURIS.  Return a unique search id.
    */
-  search(what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number>;
+  search(searchId: number, what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number>;
 
   /**
    * Cancel an ongoing search.
@@ -74,15 +74,11 @@ export interface IContentSearchClientService {
   isReplacing: boolean;
   isSearching: boolean;
   isShowValidateMessage: boolean;
-
-  docModelSearchedList: string[];
-  currentSearchId: number;
   searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
   validateMessage: ValidateMessage | undefined;
 
   updateUIState(obj: Record<string, any>, e?: React.KeyboardEvent): void;
-  doReplaceAll(): void;
-  searchDebounce(): void;
+  replaceAll(): void;
   search(): void;
   onSearchInputChange(text: string): void;
   onReplaceInputChange(text: string): void;
@@ -91,11 +87,18 @@ export interface IContentSearchClientService {
 
   openPreference(): void;
   blur(): void;
+  focus(): void;
   searchEditorSelection(): void;
   clean(): void;
   refresh(): void;
+  setBackRecentSearchWord(): void;
+  setRecentSearchWord(): void;
+  initSearchHistory(): void;
+  refreshIsEnable(): boolean;
 
   onDidChange: Event<void>;
+  onDidTitleChange: Event<void>;
+  fireTitleChange(): void;
 }
 
 export const ISearchTreeService = Symbol('ISearchTreeService');

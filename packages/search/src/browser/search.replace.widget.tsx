@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import React, { RefObject } from 'react';
+import React from 'react';
 
 import { Input } from '@opensumi/ide-components';
 import { localize } from '@opensumi/ide-core-common/lib/localize';
@@ -10,7 +10,7 @@ interface SearchReplaceWidgetProps {
   replaceValue: string;
   onSearch(): void;
   onReplaceRuleChange(e: React.FormEvent<HTMLInputElement>): void;
-  doReplaceAll(): void;
+  replaceAll(): void;
   resultTotal: {
     resultNum: number;
     fileNum: number;
@@ -24,7 +24,7 @@ export const SearchReplaceWidget = React.memo(
       resultTotal = { resultNum: 0, fileNum: 0 },
       onSearch,
       onReplaceRuleChange,
-      doReplaceAll,
+      replaceAll,
     }: SearchReplaceWidgetProps) => (
       <div className={styles.search_and_replace_container}>
         <div className={styles.search_and_replace_fields}>
@@ -40,7 +40,7 @@ export const SearchReplaceWidget = React.memo(
             />
             <div
               className={`${styles.replace_all_button} ${resultTotal.resultNum > 0 ? '' : styles.disabled}`}
-              onClick={doReplaceAll}
+              onClick={replaceAll}
             >
               <span>{localize('search.replaceAll.label')}</span>
             </div>

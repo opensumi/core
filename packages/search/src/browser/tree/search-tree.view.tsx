@@ -1,8 +1,8 @@
 import cls from 'classnames';
 import React, { useEffect, useState, RefObject, useRef, useCallback, memo } from 'react';
 
-import { IRecycleTreeHandle, RecycleTree, Button } from '@opensumi/ide-components';
-import { localize, formatLocalize, useInjectable } from '@opensumi/ide-core-browser';
+import { IRecycleTreeHandle, RecycleTree, Button, TreeNodeEvent } from '@opensumi/ide-components';
+import { localize, formatLocalize, useInjectable, CommandService } from '@opensumi/ide-core-browser';
 import { ViewState } from '@opensumi/ide-core-browser';
 
 import { ResultTotal, SEARCH_STATE } from '../../common/content-search';
@@ -23,21 +23,56 @@ export interface ISearchTreeProp {
 export interface ISearchResultTotalContent {
   total: ResultTotal;
   state: SEARCH_STATE;
+  model?: SearchTreeModel;
 }
 
-const ResultTotalContent = memo(({ total, state }: ISearchResultTotalContent) => {
+const ResultTotalContent = ({ total, state, model }: ISearchResultTotalContent) => {
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const searchModelService = useInjectable<SearchModelService>(SearchModelService);
+  const handleFold = useCallback(() => {
+    const toCollapsed = !collapsed;
+    setCollapsed(toCollapsed);
+    if (toCollapsed) {
+      searchModelService.collapsedAll();
+    } else {
+      searchModelService.expandAll();
+    }
+  }, [collapsed, searchModelService]);
+
+  const handleRefresh = useCallback(() => {
+    searchModelService.refresh();
+  }, [searchModelService]);
+
+  useEffect(() => {
+    if (!model) {
+      return;
+    }
+    const dispose = model.root.watcher.on(TreeNodeEvent.DidChangeExpansionState, () => {
+      if (collapsed) {
+        setCollapsed(!collapsed);
+      }
+    });
+    return () => {
+      dispose.dispose();
+    };
+  }, [model, collapsed]);
 
   if (total.resultNum > 0) {
     return (
       <p className={styles.result_describe}>
-        {formatLocalize('search.files.result', String(total.resultNum), String(total.fileNum))}
+        <span className={styles.text}>
+          {formatLocalize('search.files.result', String(total.resultNum), String(total.fileNum))}
+        </span>
         <Button
-          className={cls(
-            styles.result_fold,
-            { [styles.result_fold_enabled]: total.fileNum > 0 },
-            { [styles.result_fold_disabled]: state === SEARCH_STATE.doing },
-          )}
+          className={cls(styles.result_fresh, { [styles.disabled]: state === SEARCH_STATE.doing })}
+          onClick={handleRefresh}
+          type='icon'
+          icon='refresh'
+          title={localize('search.RefreshAction.label')}
+        ></Button>
+        <Button
+          className={cls(styles.result_fold, { [styles.disabled]: state === SEARCH_STATE.doing })}
+          onClick={handleFold}
           type='icon'
           icon={!collapsed ? 'collapse-all' : 'expand-all'}
           title={localize(
@@ -46,31 +81,22 @@ const ResultTotalContent = memo(({ total, state }: ISearchResultTotalContent) =>
               : 'search.ExpandDeepestExpandedLevelAction.label',
           )}
         ></Button>
-        <Button
-          className={styles.result_fresh}
-          type='icon'
-          icon='refresh'
-          title={localize('search.RefreshAction.label')}
-        ></Button>
       </p>
     );
   }
   return null;
-});
+};
 
 export const SearchTree = ({ offsetTop, total, state, replace, search, viewState }: ISearchTreeProp) => {
   const [model, setModel] = useState<SearchTreeModel | undefined>();
-  const searchModelService: SearchModelService = useInjectable(SearchModelService);
+  const searchModelService = useInjectable<SearchModelService>(SearchModelService);
+  const commandService = useInjectable<CommandService>(CommandService);
   const wrapperRef: RefObject<HTMLDivElement> = useRef(null);
+  const totalRef: RefObject<HTMLDivElement> = useRef(null);
+
+  const [totalHeight, setTotalHeight] = useState<number>(0);
 
   const { handleTreeBlur, handleTreeFocus } = searchModelService;
-
-  const handleTreeReady = useCallback(
-    (handle: IRecycleTreeHandle) => {
-      searchModelService.handleTreeHandler(handle);
-    },
-    [searchModelService],
-  );
 
   useEffect(() => {
     setModel(searchModelService.treeModel);
@@ -82,10 +108,27 @@ export const SearchTree = ({ offsetTop, total, state, replace, search, viewState
     };
   }, []);
 
+  useEffect(() => {
+    if (totalRef.current) {
+      setTotalHeight(totalRef.current.clientHeight);
+    }
+  }, [totalRef.current]);
+
+  const handleTreeReady = useCallback(
+    (handle: IRecycleTreeHandle) => {
+      searchModelService.handleTreeHandler(handle);
+    },
+    [searchModelService],
+  );
+
   const renderTreeNode = useCallback(
     (props: ISearchNodeRenderedProps) => {
       const handleClick = useCallback(() => {
         searchModelService.handleItemClick(props.item);
+      }, [searchModelService, props]);
+
+      const handleContextMenu = useCallback(() => {
+        searchModelService.handleContextMenu(props.item);
       }, [searchModelService, props]);
 
       return (
@@ -97,7 +140,9 @@ export const SearchTree = ({ offsetTop, total, state, replace, search, viewState
           search={search}
           replace={replace}
           onClick={handleClick}
+          onContextMenu={handleContextMenu}
           leftPadding={8}
+          commandService={commandService}
         />
       );
     },
@@ -108,7 +153,7 @@ export const SearchTree = ({ offsetTop, total, state, replace, search, viewState
     if (model) {
       return (
         <RecycleTree
-          height={viewState.height - offsetTop - 50}
+          height={viewState.height - offsetTop - totalHeight}
           itemHeight={SEARCH_TREE_NODE_HEIGHT}
           onReady={handleTreeReady}
           model={model}
@@ -117,11 +162,13 @@ export const SearchTree = ({ offsetTop, total, state, replace, search, viewState
         </RecycleTree>
       );
     }
-  }, [model, search, replace]);
+  }, [model, totalHeight, offsetTop, search, replace]);
 
   return (
     <div className={styles.tree} tabIndex={-1} onBlur={handleTreeBlur} onFocus={handleTreeFocus} ref={wrapperRef}>
-      <ResultTotalContent total={total} state={state} />
+      <div ref={totalRef}>
+        <ResultTotalContent total={total} state={state} model={model} />
+      </div>
       {renderSearchTree()}
     </div>
   );

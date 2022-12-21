@@ -69,6 +69,19 @@
     }
   }
 
+  .action_bar {
+    flex-grow: 0;
+    white-space: nowrap;
+    color: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+    .action_icon {
+      margin: 0 3px;
+    }
+  }
+
   .segment_grow {
     flex-grow: 1 !important;
     text-align: left;
@@ -116,7 +129,7 @@
   &:hover {
     color: var(--kt-tree-hoverForeground);
     background: var(--kt-tree-hoverBackground);
-    .outline_action_bar {
+    .action_bar {
       display: block;
     }
     &::before {

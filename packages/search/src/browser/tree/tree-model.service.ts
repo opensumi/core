@@ -294,6 +294,14 @@ export class SearchModelService extends Disposable {
     this.treeModel.root.refresh();
   }
 
+  collapsedAll() {
+    return this.treeModel.root.collapsedAll();
+  }
+
+  expandAll() {
+    return this.treeModel.root.expandedAll();
+  }
+
   private toReplaceResource(fileResource: URI) {
     const REPLACE_PREVIEW = 'replacePreview';
     return fileResource

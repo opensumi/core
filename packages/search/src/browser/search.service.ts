@@ -1,18 +1,9 @@
 import debounce from 'lodash/debounce';
-import { observable, transaction, action } from 'mobx';
-import React from 'react';
 import { createRef } from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
-import {
-  Key,
-  Schemes,
-  CommandService,
-  COMMON_COMMANDS,
-  RecentStorage,
-  PreferenceService,
-} from '@opensumi/ide-core-browser';
+import { Schemes, CommandService, COMMON_COMMANDS, RecentStorage, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   isUndefined,
   strings,
@@ -34,6 +25,7 @@ import {
   Disposable,
   CancellationTokenSource,
   CancellationToken,
+  uuid,
 } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -64,11 +56,9 @@ import {
   cutShortSearchResult,
   FilterFileWithGlobRelativePath,
   DEFAULT_SEARCH_IN_WORKSPACE_LIMIT,
-  ISearchTreeService,
 } from '../common';
 
 import { replaceAll } from './replace';
-import { SearchContextKey } from './search-contextkey';
 import { SearchHistory } from './search-history';
 import { SearchPreferences } from './search-preferences';
 import { SearchResultCollection } from './search-result-collection';
@@ -138,25 +128,21 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   private readonly resourceService: ResourceService;
 
   private onDidChangeEmitter: Emitter<void> = new Emitter();
+  private onDidTitleChangeEmitter: Emitter<void> = new Emitter();
   protected eventBusDisposer: IDisposable;
 
   get onDidChange() {
     return this.onDidChangeEmitter.event;
   }
 
-  replaceValue = '';
-  searchValue = '';
+  get onDidTitleChange() {
+    return this.onDidTitleChangeEmitter.event;
+  }
 
-  @observable
-  includeValue = '';
-  @observable
-  excludeValue = '';
-  @observable
-  UIState: IUIState = {
+  public UIState: IUIState = {
     isSearchFocus: false,
     isToggleOpen: true,
     isDetailOpen: false,
-
     // Search Options
     isMatchCase: false,
     isWholeWord: false,
@@ -172,23 +158,23 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   public isReplacing = false;
   public isSearching = false;
   public isShowValidateMessage = true;
+  public replaceValue = '';
+  public searchValue = '';
+  public includeValue = '';
+  public excludeValue = '';
 
   private _searchHistory: SearchHistory;
-
-  private docModelSearchedList: string[] = [];
-  private currentSearchId = -1;
+  private _docModelSearchedList: string[] = [];
+  private _currentSearchId = -1;
 
   searchInputEl = createRef<HTMLInputElement>();
-
   searchResultCollection: SearchResultCollection = new SearchResultCollection();
 
   private reporter: { timer: IReporterTimer; value: string } | null = null;
 
-  searchDebounce: () => void;
-
-  private searchOnType: boolean;
-
   private searchCancelToken: CancellationTokenSource;
+  private searchOnType: boolean;
+  private searchDebounce: () => void;
 
   constructor() {
     super();
@@ -208,14 +194,15 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     );
   }
 
-  searchOnTyping() {
+  private searchId: number = new Date().getTime();
+
+  public searchOnTyping() {
     if (this.searchOnType) {
       this.searchDebounce();
     }
   }
 
   async search(insertUIState?: IUIState) {
-    this.cleanSearchResults();
     const value = this.searchValue;
     if (!value) {
       this.onDidChangeEmitter.fire();
@@ -224,6 +211,8 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     if (this.searchCancelToken && !this.searchCancelToken.token.isCancellationRequested) {
       this.searchCancelToken.cancel();
     }
+    this.cleanSearchResults();
+
     this.searchCancelToken = new CancellationTokenSource();
 
     const state = insertUIState || this.UIState;
@@ -252,9 +241,9 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
     // Stop old search
     this.isSearching = true;
-    if (this.currentSearchId > -1) {
-      this.contentSearchServer.cancel(this.currentSearchId);
-      this.currentSearchId = this.currentSearchId + 1;
+    if (this._currentSearchId > -1) {
+      this.contentSearchServer.cancel(this._currentSearchId);
+      this._currentSearchId = this._currentSearchId + 1;
       this.reporter = null;
     }
 
@@ -327,14 +316,14 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       this.isSearching = false;
       return;
     }
+    this._currentSearchId = this.searchId++;
 
     // 从服务端搜索
     this.reporter = { timer: this.reporterService.time(REPORT_NAME.SEARCH_MEASURE), value };
-    this.contentSearchServer.search(value, rootDirs, searchOptions).then((id) => {
+    this.contentSearchServer.search(this._currentSearchId, value, rootDirs, searchOptions).then((id) => {
       if (token.isCancellationRequested) {
         return;
       }
-      this.currentSearchId = id;
       this._onSearchResult({
         id,
         data: searchFromDocModelInfo.result,
@@ -424,7 +413,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
         this.resultTotal.fileNum = this.resultTotal.fileNum - 1;
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults.length;
         return;
-      } else if (resultData.result.length !== oldResults!.length) {
+      } else if (resultData.result.length !== oldResults?.length) {
         // 搜索结果变多了，更新数据
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults!.length + resultData.result.length;
       }
@@ -438,7 +427,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   }
 
   cleanSearchResults() {
-    this.docModelSearchedList = [];
+    this._docModelSearchedList = [];
     this.searchResults.clear();
     this.resultTotal = { resultNum: 0, fileNum: 0 };
     this.clearEditorSelections(true);
@@ -462,13 +451,13 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       return;
     }
 
-    if (id > this.currentSearchId) {
+    if (id > this._currentSearchId) {
       this.isSearching = true;
-      this.currentSearchId = id;
+      this._currentSearchId = id;
       this.cleanSearchResults();
     }
 
-    if (this.currentSearchId && this.currentSearchId > id) {
+    if (this._currentSearchId && this._currentSearchId > id) {
       // 若存在异步发送的上次搜索结果，丢弃上次搜索的结果
       return;
     }
@@ -478,7 +467,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
         // 搜索结束清理ID
         this.isSearching = false;
-        this.currentSearchId = -1;
+        this._currentSearchId = -1;
       }
 
       if (searchState === SEARCH_STATE.done && this.reporter) {
@@ -497,11 +486,11 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       this.reporter = null;
     }
 
-    this.mergeSameUriResult(data, this.searchResults, this.docModelSearchedList, this.resultTotal);
+    this.mergeSameUriResult(data, this.searchResults, this._docModelSearchedList, this.resultTotal);
 
     if (docModelSearchedList) {
       // 记录通 docModel 搜索过的文件，用于过滤服务端搜索的重复内容
-      this.docModelSearchedList = docModelSearchedList;
+      this._docModelSearchedList = docModelSearchedList;
     }
     this.onDidChangeEmitter.fire();
   }
@@ -525,6 +514,18 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   refreshIsEnable() {
     return !!(this.searchState !== SEARCH_STATE.doing && this.searchValue);
+  }
+
+  initSearchHistory() {
+    return this.searchHistory.initSearchHistory();
+  }
+
+  setBackRecentSearchWord() {
+    return this.searchHistory.setBackRecentSearchWord();
+  }
+
+  setRecentSearchWord() {
+    return this.searchHistory.setRecentSearchWord();
   }
 
   clean() {
@@ -645,7 +646,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     }
   }
 
-  doReplaceAll = () => {
+  replaceAll = () => {
     if (this.isReplacing) {
       return;
     }
@@ -861,6 +862,10 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       result,
       searchedList,
     };
+  }
+
+  fireTitleChange() {
+    this.onDidTitleChangeEmitter.fire();
   }
 
   refresh() {
