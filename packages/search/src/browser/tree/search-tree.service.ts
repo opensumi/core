@@ -239,7 +239,9 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
     this.rangeHighlightDecorations.removeHighlightRange();
   }
 
-  async resolveChildren(parent?: SearchRoot | SearchFileNode) {
+  async resolveChildren(
+    parent?: SearchRoot | SearchFileNode,
+  ): Promise<(SearchRoot | SearchFileNode | SearchContentNode)[]> {
     if (!parent) {
       const root = new SearchRoot(this);
       return [root];
@@ -288,6 +290,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
         });
       }
     }
+    return [];
   }
 
   @memoize

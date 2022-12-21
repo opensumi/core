@@ -1,5 +1,5 @@
 import type { ITree } from '@opensumi/ide-components';
-import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
+import type { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
 import { Command, Event } from '@opensumi/ide-core-common';
 import { parseGlob, ParsedPattern, URI, strings } from '@opensumi/ide-core-common';
 

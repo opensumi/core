@@ -82,11 +82,13 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
   private processMap: Map<number, IProcess> = new Map();
 
   @Autowired(ILogServiceManager)
-  loggerManager!: ILogServiceManager;
-  logger: ILogService = this.loggerManager.getLogger(SupportLogNamespace.Node);
+  private loggerManager!: ILogServiceManager;
+
+  private logger: ILogService;
 
   constructor() {
     super();
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
   private searchStart(searchId: number, searchProcess) {
