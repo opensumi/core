@@ -174,7 +174,8 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   private searchCancelToken: CancellationTokenSource;
   private searchOnType: boolean;
-  private searchDebounce: () => void;
+
+  public searchDebounce: () => void;
 
   constructor() {
     super();

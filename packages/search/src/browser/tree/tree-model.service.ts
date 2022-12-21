@@ -158,10 +158,11 @@ export class SearchModelService extends Disposable {
     this._searchTreeHandle = handle;
   }
 
-  activeNodeDecoration = (target: SearchFileNode | SearchContentNode, dispatch = true) => {
+  applyFocusedDecoration = (target: SearchFileNode | SearchContentNode, dispatch = true) => {
     if (this.contextMenuNode) {
       this.focusedDecoration.removeTarget(this.contextMenuNode);
       this.selectedDecoration.removeTarget(this.contextMenuNode);
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
       this._contextMenuNode = null;
     }
     if (target) {
@@ -180,7 +181,20 @@ export class SearchModelService extends Disposable {
     }
   };
 
-  enactiveNodeDecoration = () => {
+  applyContextMenuDecoration = (target: SearchFileNode | SearchContentNode) => {
+    if (this.contextMenuNode) {
+      this.contextMenuDecoration.removeTarget(this.contextMenuNode);
+    }
+    if (this.focusedNode) {
+      this.focusedDecoration.removeTarget(this.focusedNode);
+      this._focusedNode = null;
+    }
+    this.contextMenuDecoration.addTarget(target);
+    this._contextMenuNode = target;
+    this.treeModel.dispatchChange();
+  };
+
+  removeFocusedDecoration = () => {
     if (this.focusedNode) {
       this.focusedDecoration.removeTarget(this.focusedNode);
       this.treeModel?.dispatchChange();
@@ -190,17 +204,20 @@ export class SearchModelService extends Disposable {
 
   handleTreeBlur = () => {
     this.searchTreeService.contextKey.searchViewFocusedKey.set(false);
-    this.enactiveNodeDecoration();
+    this.removeFocusedDecoration();
   };
 
   handleTreeFocus = () => {
     this.searchTreeService.contextKey.searchViewFocusedKey.set(true);
   };
 
-  handleContextMenu = (ev: React.MouseEvent, node?: SearchFileNode | SearchContentNode, activeUri?: URI) => {
-    ev.stopPropagation();
-    ev.preventDefault();
+  handleContextMenu = (ev: React.MouseEvent, node?: SearchFileNode | SearchContentNode) => {
+    if (!node) {
+      this.removeFocusedDecoration();
+      return;
+    }
 
+    this.applyContextMenuDecoration(node);
     const menus = this.contextMenuService.createMenu({
       id: MenuId.SearchContext,
       contextKeyService: this.searchTreeService.contextKey.service,
@@ -217,12 +234,12 @@ export class SearchModelService extends Disposable {
     });
   };
 
-  handleItemClick = async (item: SearchFileNode | SearchContentNode, preview = true) => {
-    this.activeNodeDecoration(item);
-    if (SearchFileNode.is(item)) {
-      this.toggleDirectory(item);
-    } else if (item.contentResult) {
-      const result = item.contentResult;
+  handleItemClick = async (ev: React.MouseEvent, node: SearchFileNode | SearchContentNode, preview = true) => {
+    this.applyFocusedDecoration(node);
+    if (SearchFileNode.is(node)) {
+      this.toggleDirectory(node);
+    } else if (node.contentResult) {
+      const result = node.contentResult;
       const isReplaceView = this.searchPreferences[SearchSettingId.UseReplacePreview];
       if (isReplaceView && this.searchTreeService.replaceValue) {
         // Open diff editor
@@ -275,9 +292,9 @@ export class SearchModelService extends Disposable {
     }
   };
 
-  handleItemDoubleClick = (item: SearchFileNode | SearchContentNode, type: TreeNodeType) => {
-    if (type === TreeNodeType.TreeNode) {
-      this.handleItemClick(item, false);
+  handleItemDoubleClick = (ev: React.MouseEvent, node: SearchFileNode | SearchContentNode) => {
+    if (!SearchFileNode.is(node)) {
+      this.handleItemClick(ev, node, false);
     }
   };
 

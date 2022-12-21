@@ -4,14 +4,13 @@ import { Injector, Injectable } from '@opensumi/di';
 import { CorePreferences } from '@opensumi/ide-core-browser';
 import { Uri } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IEditorDocumentModelService, ResourceService } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { SearchModule } from '../../src/browser/';
 import { SearchPreferences } from '../../src/browser/search-preferences';
-import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
   IContentSearchClientService,
   ContentSearchServerPath,

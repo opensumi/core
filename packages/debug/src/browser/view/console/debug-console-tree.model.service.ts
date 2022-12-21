@@ -235,18 +235,21 @@ export class DebugConsoleModelService {
 
   listenTreeViewChange() {
     this.disposeTreeModel();
+    if (!this.treeModel) {
+      return;
+    }
     this.treeModelDisposableCollection.push(
-      this.treeModel?.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
+      this.treeModel.root.watcher.on(TreeNodeEvent.WillResolveChildren, (target) => {
         this.loadingDecoration.addTarget(target);
       }),
     );
     this.treeModelDisposableCollection.push(
-      this.treeModel?.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
+      this.treeModel.root.watcher.on(TreeNodeEvent.DidResolveChildren, (target) => {
         this.loadingDecoration.removeTarget(target);
       }),
     );
     this.treeModelDisposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
+      this.treeModel.onWillUpdate(() => {
         // 更新树前更新下选中节点
         if (this.selectedNodes.length !== 0) {
           // 仅处理一下单选情况

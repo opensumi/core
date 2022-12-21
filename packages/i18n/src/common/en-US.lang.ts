@@ -219,7 +219,7 @@ export const localizationBundle = {
     'search.removeAll.occurrences.files.confirmation.message': 'Are you sure to replace {0} of the {1} files',
     'search.removeAll.occurrences.file.confirmation.message': 'Are you sure to replace the {0} results in this file?',
     'search.result.hide': 'Hide',
-    'search.menu.copyAll': 'Copy all',
+    'search.menu.copyAll': 'Copy All',
     'search.help.showIncludeRule': 'View syntax rules',
     'search.help.supportRule': 'Support the following syntax rules:',
     'search.help.excludeList': 'Excluded items include:',

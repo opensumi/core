@@ -122,30 +122,21 @@ export const SearchTree = ({ offsetTop, total, state, replace, search, viewState
   );
 
   const renderTreeNode = useCallback(
-    (props: ISearchNodeRenderedProps) => {
-      const handleClick = useCallback(() => {
-        searchModelService.handleItemClick(props.item);
-      }, [searchModelService, props]);
-
-      const handleContextMenu = useCallback(() => {
-        searchModelService.handleContextMenu(props.item);
-      }, [searchModelService, props]);
-
-      return (
-        <SearchNodeRendered
-          item={props.item}
-          itemType={props.itemType}
-          decorations={searchModelService.decorations.getDecorations(props.item as any)}
-          defaultLeftPadding={8}
-          search={search}
-          replace={replace}
-          onClick={handleClick}
-          onContextMenu={handleContextMenu}
-          leftPadding={8}
-          commandService={commandService}
-        />
-      );
-    },
+    (props: ISearchNodeRenderedProps) => (
+      <SearchNodeRendered
+        item={props.item}
+        itemType={props.itemType}
+        decorations={searchModelService.decorations.getDecorations(props.item as any)}
+        defaultLeftPadding={8}
+        search={search}
+        replace={replace}
+        onClick={searchModelService.handleItemClick}
+        onDoubleClick={searchModelService.handleItemDoubleClick}
+        onContextMenu={searchModelService.handleContextMenu}
+        leftPadding={8}
+        commandService={commandService}
+      />
+    ),
     [model, search, replace],
   );
 

@@ -1,16 +1,8 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import {
-  TreeNode,
-  CompositeTreeNode,
-  INodeRendererProps,
-  ClasslistComposite,
-  TreeNodeType,
-  Badge,
-  Button,
-} from '@opensumi/ide-components';
-import { URI, getIcon, CommandService, SEARCH_COMMANDS, localize, getExternalIcon } from '@opensumi/ide-core-browser';
+import { INodeRendererProps, ClasslistComposite, Badge, Button } from '@opensumi/ide-components';
+import { getIcon, CommandService, SEARCH_COMMANDS, localize, getExternalIcon } from '@opensumi/ide-core-browser';
 
 import { SearchContentNode, SearchFileNode } from './tree-node.defined';
 import styles from './tree-node.module.less';
@@ -22,13 +14,9 @@ export interface ISearchNodeProps {
   defaultLeftPadding?: number;
   leftPadding?: number;
   decorations?: ClasslistComposite;
-  onClick: (ev: React.MouseEvent, item: TreeNode | CompositeTreeNode, type: TreeNodeType, activeUri?: URI) => void;
-  onContextMenu: (
-    ev: React.MouseEvent,
-    item: TreeNode | CompositeTreeNode,
-    type: TreeNodeType,
-    activeUri?: URI,
-  ) => void;
+  onClick: (ev: React.MouseEvent, item: SearchContentNode | SearchFileNode) => void;
+  onDoubleClick: (ev: React.MouseEvent, item: SearchContentNode | SearchFileNode) => void;
+  onContextMenu: (ev: React.MouseEvent, item: SearchContentNode | SearchFileNode) => void;
   commandService: CommandService;
 }
 
@@ -40,22 +28,31 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   replace,
   defaultLeftPadding = 8,
   leftPadding = 8,
-  itemType,
   decorations,
   onClick,
+  onDoubleClick,
   onContextMenu,
   commandService,
 }: ISearchNodeRenderedProps) => {
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
-      onClick(ev, item as SearchContentNode, itemType);
+      onClick(ev, item as SearchContentNode);
     },
     [onClick],
   );
 
+  const handleDoubleClick = useCallback(
+    (ev: React.MouseEvent) => {
+      onDoubleClick(ev, item as SearchContentNode);
+    },
+    [onDoubleClick],
+  );
+
   const handleContextMenu = useCallback(
     (ev: React.MouseEvent) => {
-      onContextMenu(ev, item as SearchContentNode, itemType);
+      ev.stopPropagation();
+      ev.preventDefault();
+      onContextMenu(ev, item as SearchContentNode);
     },
     [onContextMenu],
   );
@@ -205,6 +202,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
     <div
       key={item.id}
       onClick={handleClick}
+      onDoubleClick={handleDoubleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
       className={cls(styles.search_node, decorations ? decorations.classlist : null)}

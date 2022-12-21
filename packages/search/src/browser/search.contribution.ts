@@ -45,7 +45,6 @@ import { SearchContentNode, SearchFileNode } from './tree/tree-node.defined';
   PreferenceContribution,
   MainLayoutContribution,
   MenuContribution,
-  ClientAppContribution,
 )
 export class SearchContribution
   implements
@@ -55,8 +54,7 @@ export class SearchContribution
     TabBarToolbarContribution,
     PreferenceContribution,
     MainLayoutContribution,
-    MenuContribution,
-    ClientAppContribution
+    MenuContribution
 {
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
@@ -138,6 +136,7 @@ export class SearchContribution
           );
         }
       },
+      isVisible: () => !SearchFileNode.is(this.searchModelService.contextMenuNode),
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_REPLACE_ALL, {
       execute: async (node: SearchFileNode | SearchContentNode) => {
@@ -171,6 +170,7 @@ export class SearchContribution
           this.searchTreeService.replaceValue,
         );
       },
+      isVisible: () => !SearchFileNode.is(this.searchModelService.contextMenuNode),
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_HIDE, {
       execute: (node: SearchFileNode | SearchContentNode) => {
@@ -193,22 +193,31 @@ export class SearchContribution
       execute: (node: SearchFileNode | SearchContentNode) => {
         if (!SearchFileNode.is(node)) {
           const result = node.contentResult;
-          this.clipboardService.writeText(`${result.line},${result.matchStart}:  ${result.lineText}`);
+          this.clipboardService.writeText(`${result.line},${result.matchStart}:  ${result.renderLineText}`);
         } else {
           const uri = node.resource;
           let text = `${uri.codeUri.fsPath.toString()}\n`;
 
           node.children?.forEach((node: SearchContentNode) => {
             const result = node.contentResult;
-            text = text + `${result.line},${result.matchStart}: ${result.lineText} \n`;
+            text = text + `${result.line},${result.matchStart}: ${result.renderLineText} \n`;
           });
           this.clipboardService.writeText(text);
         }
       },
     });
     commands.registerCommand(SEARCH_COMMANDS.MENU_COPY_ALL, {
-      execute: () => {
-        const nodes = this.searchModelService.treeModel.root.children as SearchFileNode[];
+      execute: (node: SearchFileNode | SearchContentNode) => {
+        let nodes: SearchFileNode[];
+        if (!node) {
+          nodes = this.searchModelService.treeModel.root.children as SearchFileNode[];
+        } else {
+          if (SearchFileNode.is(node)) {
+            nodes = [node];
+          } else {
+            nodes = [node.parent as SearchFileNode];
+          }
+        }
         if (!nodes) {
           return;
         }
@@ -217,10 +226,9 @@ export class SearchContribution
         for (let i = 0, len = nodes.length; i < len; i++) {
           const uri = nodes[i].resource;
           let text = `${uri.codeUri.fsPath.toString()}\n`;
-
           nodes[i].children?.forEach((node: SearchContentNode) => {
             const result = node.contentResult;
-            text = text + `${result.line},${result.matchStart}: ${result.lineText} \n`;
+            text = text + `${result.line},${result.matchStart}: ${result.renderLineText} \n`;
           });
           copyText += text;
           if (i < len) {
@@ -241,32 +249,32 @@ export class SearchContribution
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
       command: SEARCH_COMMANDS.MENU_REPLACE.id,
       order: 1,
-      group: '0_0',
+      group: '0_operator',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
       command: SEARCH_COMMANDS.MENU_REPLACE_ALL.id,
       order: 2,
-      group: '0_0',
+      group: '0_operator',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
       command: SEARCH_COMMANDS.MENU_HIDE.id,
       order: 3,
-      group: '0_0',
+      group: '0_operator',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
       command: SEARCH_COMMANDS.MENU_COPY.id,
       order: 1,
-      group: '1_1',
+      group: '1_copy',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
       command: SEARCH_COMMANDS.MENU_COPY_PATH.id,
       order: 2,
-      group: '1_1',
+      group: '1_copy',
     });
     menuRegistry.registerMenuItem(MenuId.SearchContext, {
       command: SEARCH_COMMANDS.MENU_COPY_ALL.id,
       order: 3,
-      group: '1_1',
+      group: '1_copy',
     });
   }
 

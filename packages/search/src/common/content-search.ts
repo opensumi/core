@@ -89,6 +89,7 @@ export interface IContentSearchClientService {
   blur(): void;
   focus(): void;
   searchEditorSelection(): void;
+  searchDebounce(): void;
   clean(): void;
   refresh(): void;
   setBackRecentSearchWord(): void;
