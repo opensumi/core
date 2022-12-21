@@ -67,7 +67,7 @@ export class CurrentCodeEditor extends BaseCodeEditor {
     return {
       marginClassName: DECORATIONS_CLASSNAME.combine(
         DECORATIONS_CLASSNAME.margin_className,
-        range.type,
+        DECORATIONS_CLASSNAME.range_type[range.type],
         DECORATIONS_CLASSNAME.stretch_right,
         DECORATIONS_CLASSNAME.stretch_left,
       ),

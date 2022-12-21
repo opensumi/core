@@ -6,6 +6,7 @@ import { IModelDecorationOptions } from '../../monaco-api/editor';
 
 import { LineRange } from './model/line-range';
 import { LineRangeMapping } from './model/line-range-mapping';
+import styles from './view/merge-editor.module.less';
 
 export interface IRangeContrast {
   type: LineRangeType;
@@ -76,23 +77,31 @@ export interface IActionsDescription {
 export namespace DECORATIONS_CLASSNAME {
   export const combine = (...args: string[]) => args.reduce((pre, cur) => pre + ' ' + cur, ' ');
   // conflict 操作后虚线框的主类名
-  export const conflict_wrap = 'conflict-wrap';
+  export const conflict_wrap = styles.conflict_wrap;
   // 用于处理每条 decoration 的虚线框的哪个方向需要不闭合
-  export const stretch_top = 'stretch-top';
-  export const stretch_bottom = 'stretch-bottom';
-  export const stretch_left = 'stretch-left';
-  export const stretch_right = 'stretch-right';
+  export const stretch_top = styles.stretch_top;
+  export const stretch_bottom = styles.stretch_bottom;
+  export const stretch_left = styles.stretch_left;
+  export const stretch_right = styles.stretch_right;
 
-  export const margin_className = 'merge-editor-margin-className';
-  export const diff_line_background = 'merge-editor-diff-line-background';
-  export const diff_inner_char_background = 'merge-editor-diff-inner-char-background';
-  export const guide_underline_widget = 'merge-editor-guide-underline-widget';
+  export const margin_className = styles.merge_editor_margin_className;
+  export const diff_line_background = styles.merge_editor_diff_line_background;
+  export const diff_inner_char_background = styles.merge_editor_diff_inner_char_background;
+  export const guide_underline_widget = styles.merge_editor_guide_underline_widget;
 
-  export const offset_right = 'offset-right';
-  export const offset_left = 'offset-left';
+  export const offset_right = styles.offset_right;
+  export const offset_left = styles.offset_left;
 
-  export const rotate_turn_left = 'rotate-turn-left';
-  export const rotate_turn_right = 'rotate-turn-right';
+  export const rotate_turn_left = styles.rotate_turn_left;
+  export const rotate_turn_right = styles.rotate_turn_right;
+
+  export const range_type: { [key in LineRangeType]: string } = {
+    insert: styles.insert,
+    modify: styles.modify,
+    remove: styles.remove,
+  };
+
+  export const dashed = styles.dashed;
 }
 
 export const ACCEPT_CURRENT_ACTIONS = 'accpet_current';
@@ -118,7 +127,7 @@ export interface IActionsProvider {
 }
 
 export namespace CONFLICT_ACTIONS_ICON {
-  const ACTIONS = 'conflict-actions';
+  const ACTIONS = styles.conflict_actions;
 
   export const RIGHT = `${ACTIONS} ${ACCEPT_CURRENT_ACTIONS} ${getIcon('doubleright')}`;
   export const ROTATE_RIGHT = `${ACTIONS} ${APPEND_ACTIONS} ${DECORATIONS_CLASSNAME.rotate_turn_right}  ${getIcon(

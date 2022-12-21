@@ -18,7 +18,7 @@ import MonacoServiceImpl from './monaco.service';
 import { MonacoOverrideServiceRegistryImpl } from './override.service.registry';
 import { SchemaStore, SchemaRegistry } from './schema-registry';
 
-import './contrib/merge-editor/view/merge-editor.less';
+import './contrib/merge-editor/view/merge-editor.module.less';
 
 @Injectable()
 export class MonacoModule extends BrowserModule {

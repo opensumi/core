@@ -11,7 +11,9 @@ import {
 import { MergeEditorService } from '../merge-editor.service';
 import { EditorViewType } from '../types';
 
+import styles from './merge-editor.module.less';
 import { WithViewStickinessConnectComponent } from './stickiness-connect-manager';
+
 
 const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
@@ -40,16 +42,16 @@ const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType })
   }, [mergeEditorService]);
 
   return (
-    <div className='title-head-container'>
+    <div className={styles.title_head_container}>
       {head && (
-        <div className='content'>
-          <span className='title' title={head.title}>
+        <div className={styles.content}>
+          <span className={styles.title} title={head.title}>
             {head.title}
           </span>
-          <span className='description' title={head.description}>
+          <span className={styles.description} title={head.description}>
             {head.description}
           </span>
-          <span className='detail' title={head.detail}>
+          <span className={styles.detail} title={head.detail}>
             {head.detail}
           </span>
         </div>
@@ -91,30 +93,30 @@ export const Grid = () => {
   };
 
   return (
-    <div className={'merge-editor-container'}>
-      <SplitPanel overflow='hidden' id='merge-editor-container' flex={2}>
-        <div className={'editor-container-arrange'}>
+    <div className={styles.merge_editor_container}>
+      <SplitPanel overflow='hidden' id='merge_editor_container' flex={2}>
+        <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.CURRENT}></TitleHead>
-          <div className={'editorContainer'} ref={currentEditorContainer}></div>
+          <div className={styles.editor_container} ref={currentEditorContainer}></div>
         </div>
-        <div className={'editor-container-arrange'}>
+        <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.RESULT}></TitleHead>
-          <div className={'editorContainer'}>
+          <div className={styles.editor_container}>
             <WithViewStickinessConnectComponent
               contrastType={EditorViewType.CURRENT}
             ></WithViewStickinessConnectComponent>
-            <div className={'editorContainer'} ref={resultEditorContainer}></div>
+            <div className={styles.editor_container} ref={resultEditorContainer}></div>
             <WithViewStickinessConnectComponent
               contrastType={EditorViewType.INCOMING}
             ></WithViewStickinessConnectComponent>
           </div>
         </div>
-        <div className={'editor-container-arrange'}>
+        <div className={styles.editor_container_arrange}>
           <TitleHead contrastType={EditorViewType.INCOMING}></TitleHead>
-          <div className={'editorContainer'} ref={incomingEditorContainer}></div>
+          <div className={styles.editor_container} ref={incomingEditorContainer}></div>
         </div>
       </SplitPanel>
-      <div className={'merge-actions'}>
+      <div className={styles.merge_actions}>
         <Button size='large' onClick={handleApply}>
           {localize('mergeEditor.button.apply')}
         </Button>

@@ -5,7 +5,6 @@ import { ICodeEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/
 import { EditorLayoutInfo, EditorOption } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import { IModelDecorationOptions, ITextModel } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 import { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
-import { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/platform/editor/common/editor';
 
 import { MappingManagerService } from '../../mapping-manager.service';
 import { IMergeEditorEditorConstructionOptions } from '../../merge-editor-widget';

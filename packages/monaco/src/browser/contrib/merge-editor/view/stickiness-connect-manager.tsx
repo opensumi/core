@@ -11,6 +11,7 @@ import { StickyPieceModel } from '../model/sticky-piece';
 import { EditorViewType } from '../types';
 
 import { BaseCodeEditor } from './editors/baseCodeEditor';
+import styles from './merge-editor.module.less';
 
 const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   const { leftTop, rightTop, leftBottom, rightBottom } = piece.path;
@@ -44,7 +45,7 @@ const PieceSVG: React.FC<{ piece: StickyPieceModel }> = ({ piece }) => {
   );
 
   return (
-    <div className={'piece-view-lines'} style={{ top: piece.position.top, width: piece.width }}>
+    <div className={styles.piece_view_lines} style={{ top: piece.position.top, width: piece.width }}>
       <svg viewBox={`0 0 ${piece.width} ${piece.height}`} style={{ height: piece.height }}>
         {piece.isComplete ? drawDashedPath() : drawSolidPath()}
       </svg>
@@ -83,7 +84,7 @@ export const WithViewStickinessConnectComponent: React.FC<{ contrastType: Editor
   }, [mergeEditorService, pieces]);
 
   return (
-    <div className={'stickiness-connect-container'}>
+    <div className={styles.stickiness_connect_container}>
       {pieces.map((p, i) => (
         <PieceSVG key={i} piece={p}></PieceSVG>
       ))}
@@ -135,7 +136,7 @@ export class StickinessConnectManager extends Disposable {
           height,
           path,
           position,
-          range.type,
+          styles[range.type],
           withBase === 0 ? range.isComplete : oppositeModify.isComplete,
         ),
       );
