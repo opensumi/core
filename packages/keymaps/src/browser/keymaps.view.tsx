@@ -34,6 +34,7 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
     clearCovert,
     fixed,
     onDidKeymapChanges,
+    updateKeybindings,
   }: KeymapService = useInjectable(IKeymapService);
   const [activeKeyboardSearch, setActiveKeyboardSearch] = React.useState<boolean>(false);
 
@@ -402,6 +403,7 @@ export const KeymapsView: ReactEditorComponent<null> = () => {
     const dispose = onDidKeymapChanges((kbs) => {
       setKeybindings(kbs);
     });
+    updateKeybindings();
     return () => {
       dispose.dispose();
     };

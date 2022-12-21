@@ -221,7 +221,6 @@ export class KeymapService implements IKeymapService {
       kb.command = kb.command.slice(1);
       this.unregisterDefaultKeybinding(kb, true);
     });
-    this.updateKeybindings();
   }
 
   private unregisterUserKeybinding(kb: Keybinding) {
@@ -288,7 +287,7 @@ export class KeymapService implements IKeymapService {
   /**
    * 更新keybindings列表
    */
-  private updateKeybindings() {
+  public updateKeybindings = () => {
     if (this.currentSearchValue) {
       this.doSearchKeybindings(this.currentSearchValue);
     } else {
@@ -297,7 +296,7 @@ export class KeymapService implements IKeymapService {
         this.keymapChangeEmitter.fire(this.keybindings);
       });
     }
-  }
+  };
 
   /**
    * 解析快捷键数据
