@@ -58,8 +58,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     (value: string) => {
       preferenceService.search(value);
     },
-    300,
-    { maxWait: 1000 },
+    100,
+    { maxWait: 300 },
   );
 
   React.useEffect(() => {
