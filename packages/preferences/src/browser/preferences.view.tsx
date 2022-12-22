@@ -228,7 +228,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
       const item1 = items[range.startIndex + 1];
       if (item1 && item1._path) {
-        await preferenceService.basicTreeHandler?.focusItem(`${item1._path}`);
+        await preferenceService.treeHandler?.focusItem(`${item1._path}`);
       }
     },
     16 * 3,
@@ -245,9 +245,8 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     onRangeChanged.cancel();
   }, [items, preferenceService.currentSelectId]);
 
-  const onTreeReady = (handle: IRecycleTreeHandle, basicTreeHandle: IBasicRecycleTreeHandle) => {
-    preferenceService.handleTreeHandler(handle);
-    preferenceService.handleBasicTreeHandler(basicTreeHandle);
+  const onTreeReady = (basicTreeHandle: IBasicRecycleTreeHandle) => {
+    preferenceService.handleTreeHandler(basicTreeHandle);
   };
 
   return (

@@ -126,21 +126,16 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   const handleTreeReady = useCallback(
     (handle: IRecycleTreeHandle) => {
       if (onReady) {
-        onReady(handle, {
+        onReady({
+          ...handle,
           selectItem,
-          focusItem: throttle(
-            async (_path: string) => {
-              const path = `/${treeName}/${_path}`;
-              const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as BasicCompositeTreeNode;
-              if (node && node.path !== treeService.current?.focusedNode?.path) {
-                treeService.current?.activeFocusedDecoration(node);
-              }
-            },
-            200,
-            {
-              trailing: true,
-            },
-          ) as (path: string) => Promise<void>,
+          focusItem: async (_path: string) => {
+            const path = `/${treeName}/${_path}`;
+            const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as BasicCompositeTreeNode;
+            if (node && node.path !== treeService.current?.focusedNode?.path) {
+              treeService.current?.activeFocusedDecoration(node);
+            }
+          },
         });
       }
       treeHandle.current = handle;

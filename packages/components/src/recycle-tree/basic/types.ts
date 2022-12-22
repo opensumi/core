@@ -92,7 +92,7 @@ export interface IBasicTreeData {
   [key: string]: any;
 }
 
-export interface IBasicRecycleTreeHandle {
+export interface IBasicRecycleTreeHandle extends IRecycleTreeHandle {
   selectItem: (item: BasicCompositeTreeNode | BasicTreeNode) => Promise<void>;
   focusItem(path: string): Promise<void>;
 }
@@ -175,7 +175,7 @@ export interface IBasicRecycleTreeProps {
    * 用于挂载 Tree 上的一些操作方法
    * 如：ensureVisible 等
    */
-  onReady?: (treeHandler: IRecycleTreeHandle, basicTreeHandler: IBasicRecycleTreeHandle) => void;
+  onReady?: (treeHandler: IBasicRecycleTreeHandle) => void;
 
   /**
    * 指定 RecycleTree 的名字

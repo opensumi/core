@@ -98,8 +98,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   private cachedGroupSection: Map<string, IResolvedSettingSection[]> = new Map();
 
   private _listHandler: IVirtualListHandle;
-  private _treeHandler: IRecycleTreeHandle;
-  private _basicTreeHandler: IBasicRecycleTreeHandle;
+  private _treeHandler: IBasicRecycleTreeHandle;
   private onDidEnumLabelsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
   private enumLabelsChangeDelayer = this.registerDispose(
     new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY),
@@ -230,15 +229,8 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   get treeHandler() {
     return this._treeHandler;
   }
-  handleTreeHandler = (handler: any) => {
+  handleTreeHandler = (handler: IBasicRecycleTreeHandle) => {
     this._treeHandler = handler;
-  };
-
-  get basicTreeHandler() {
-    return this._basicTreeHandler;
-  }
-  handleBasicTreeHandler = (handler: any) => {
-    this._basicTreeHandler = handler;
   };
 
   /**
