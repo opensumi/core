@@ -1,4 +1,13 @@
-import React from 'react';
+import React, {
+  PropsWithChildren,
+  useCallback,
+  RefObject,
+  MouseEvent,
+  useState,
+  createRef,
+  useEffect,
+  memo,
+} from 'react';
 
 import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
@@ -11,16 +20,16 @@ import styles from './outline.module.less';
 import { OutlineTreeModel } from './services/outline-model';
 import { OutlineModelService } from './services/outline-model.service';
 
-export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
-  const [model, setModel] = React.useState<OutlineTreeModel | undefined>();
+export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
+  const [model, setModel] = useState<OutlineTreeModel | undefined>();
 
   const { height } = viewState;
 
-  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const wrapperRef: RefObject<HTMLDivElement> = createRef();
 
   const outlineModelService = useInjectable<OutlineModelService>(OutlineModelService);
 
-  const handleTreeReady = React.useCallback(
+  const handleTreeReady = useCallback(
     (handle: IRecycleTreeHandle) => {
       outlineModelService.handleTreeHandler({
         ...handle,
@@ -31,8 +40,8 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
     [outlineModelService, wrapperRef.current],
   );
 
-  const handleItemClicked = React.useCallback(
-    (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType) => {
+  const handleItemClicked = useCallback(
+    (ev: MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType) => {
       // 阻止点击事件冒泡
       ev.stopPropagation();
 
@@ -45,8 +54,8 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
     [outlineModelService],
   );
 
-  const handleTwistierClicked = React.useCallback(
-    (ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode) => {
+  const handleTwistierClicked = useCallback(
+    (ev: MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode) => {
       // 阻止点击事件冒泡
       ev.stopPropagation();
 
@@ -59,13 +68,13 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
     [outlineModelService],
   );
 
-  const handleOuterClick = React.useCallback(() => {
+  const handleOuterClick = useCallback(() => {
     // 空白区域点击，取消焦点状态
     const { enactiveNodeDecoration } = outlineModelService;
     enactiveNodeDecoration();
   }, [outlineModelService]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setModel(outlineModelService.treeModel);
     const disposable = outlineModelService.onDidUpdateTreeModel((model?: OutlineTreeModel) => {
       setModel(model);
@@ -75,7 +84,7 @@ export const OutlinePanel = ({ viewState }: React.PropsWithChildren<{ viewState:
     };
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleBlur = () => {
       outlineModelService.handleTreeBlur();
     };
@@ -103,16 +112,16 @@ interface IOutlineTreeViewProps {
   height: number;
   model?: OutlineTreeModel;
   onDidTreeReady(handle: IRecycleTreeHandle): void;
-  onItemClick(ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType): void;
-  onTwistierClick(ev: React.MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode): void;
+  onItemClick(ev: MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType): void;
+  onTwistierClick(ev: MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode): void;
 }
 
-export const OutlineTreeView = React.memo(
+export const OutlineTreeView = memo(
   ({ height, model, onItemClick, onTwistierClick, onDidTreeReady }: IOutlineTreeViewProps) => {
     const outlineModelService = useInjectable<OutlineModelService>(OutlineModelService);
     const { decorationService, commandService } = outlineModelService;
 
-    const renderTreeNode = React.useCallback(
+    const renderTreeNode = useCallback(
       (props: INodeRendererWrapProps) => (
         <OutlineNode
           item={props.item}

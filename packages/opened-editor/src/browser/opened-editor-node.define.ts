@@ -13,15 +13,10 @@ export class EditorFileRoot extends CompositeTreeNode {
 
   constructor(tree: OpenedEditorService) {
     super(tree as ITree, undefined);
-    // 根节点默认展开节点
   }
 
   get expanded() {
     return true;
-  }
-
-  dispose() {
-    super.dispose();
   }
 }
 

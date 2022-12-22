@@ -20,10 +20,6 @@
   &.mod_selected {
     color: var(--kt-tree-inactiveSelectionForeground) !important;
     background: var(--kt-tree-inactiveSelectionBackground);
-    .expansion_toggle,
-    .opened_editor_node_description {
-      color: var(--kt-tree-inactiveSelectionForeground) !important;
-    }
   }
 
   &.mod_focused {
@@ -31,18 +27,11 @@
     outline-offset: -1px;
     color: var(--kt-tree-activeSelectionForeground) !important;
     background: var(--kt-tree-activeSelectionBackground);
-    .expansion_toggle,
-    .opened_editor_node_description {
-      color: var(--kt-tree-activeSelectionForeground) !important;
-    }
   }
 
   &.mod_actived {
     outline: 1px solid var(--list-focusOutline);
     outline-offset: -1px;
-    .expansion_toggle {
-      color: var(--kt-tree-activeSelectionForeground) !important;
-    }
   }
 
   &.mod_dirty {

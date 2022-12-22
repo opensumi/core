@@ -1,23 +1,11 @@
-@import '~@opensumi/ide-core-browser/lib/style/variable.less';
-
-@markers-inline-color: gray;
-@markers-item-margin: 0 5px 0 5px;
-
-.highlight {
-  background-color: rgba(255, 0, 0, 0.3);
-  font-weight: bold;
-}
-
 .markersContent {
-  font-size: @base-font-size;
   width: 100%;
   height: 100%;
   overflow: auto;
   box-sizing: border-box;
 
-  // 空内容
   .empty {
-    color: @markers-inline-color;
+    color: var(--descriptionForeground);
     margin: 10px 0 0 10px;
     display: flex;
     flex-direction: row;
@@ -29,85 +17,5 @@
         cursor: pointer;
       }
     }
-  }
-  // 临时样式
-  [class^='treenode_flex_wrap__'] {
-    flex: 1;
-    overflow: hidden;
-  }
-  // 列表
-  .itemTitleName {
-    // 标题
-    color: var(--foreground);
-    margin: @markers-item-margin;
-    max-width: 300px;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .itemTitleDescription {
-    // 文件名称
-    color: @markers-inline-color;
-    margin: @markers-item-margin;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-  }
-
-  .itemDetailName {
-    // 详细信息标题
-    color: var(--foreground);
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  .itemDetailDescription {
-    // 详细信息描述
-    display: flex;
-    flex-direction: row;
-    margin-left: 5px;
-
-    .typeContainer {
-      // 详细信息中的错误码
-      color: @markers-inline-color;
-      display: flex;
-      flex-direction: row;
-      white-space: nowrap;
-
-      .type {
-        color: @markers-inline-color;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-    }
-    .codeHref {
-      color: @markers-inline-color;
-      text-decoration: underline;
-      border-bottom: 1px solid transparent;
-      text-underline-position: under;
-      background-color: transparent;
-      outline: none;
-      cursor: pointer;
-      transition: color 0.3s;
-      -webkit-text-decoration-skip: objects;
-      :global(a) {
-        color: inherit;
-      }
-    }
-
-    .position {
-      // 错误位置信息
-      color: @markers-inline-color;
-      margin: @markers-item-margin;
-    }
-  }
-}
-
-.markerFilterContent {
-  input {
-    font-size: 12px;
   }
 }
