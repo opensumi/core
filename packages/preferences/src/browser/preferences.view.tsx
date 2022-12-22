@@ -287,12 +287,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             className={styles.preferences_body}
             direction='left-to-right'
           >
-            <AutoSizer
-              className={styles.preferences_indexes}
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore [SplitPanel 需要 defaultSize 属性]
-              defaultSize={180}
-            >
+            <AutoSizer className={styles.preferences_indexes} data-sp-defaultSize={180} data-sp-minResize={160}>
               {({ width, height }) => (
                 <BasicRecycleTree
                   treeName={TREE_NAME}

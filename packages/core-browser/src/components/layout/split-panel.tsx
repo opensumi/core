@@ -33,6 +33,18 @@ export const PanelContext = React.createContext<ResizeHandle>({
 
 type ChildComponent = React.ReactElement<SplitChildProps>;
 
+/**
+ * 推荐使用 `data-sp` 方式来传递该参数: `data-sp-`
+ *
+ * 如：
+ *
+ * ```tsx
+ * <SplitPanel>
+ *   <div data-sp-id="div1"></div>
+ *   <div></div>
+ * </SplitPanel>
+ * ```
+ */
 interface SplitChildProps {
   id: string;
   minSize?: number;
@@ -64,7 +76,8 @@ export interface SplitPanelProps extends SplitChildProps {
   resizeHandleClassName?: string;
 }
 
-const getProp = (child: React.ReactNode, prop: string) => child && child['props'] && child['props'][prop];
+const getProp = (child: React.ReactNode, prop: string) =>
+  child && child['props'] && (child['props'][prop] || child['props'][`data-sp-${prop}`]);
 
 export const SplitPanel: React.FC<SplitPanelProps> = ({
   id,
