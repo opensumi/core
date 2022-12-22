@@ -77,7 +77,7 @@ export interface SplitPanelProps extends SplitChildProps {
 }
 
 const getProp = (child: React.ReactNode, prop: string) =>
-  child && child['props'] && (child['props'][prop] || child['props'][`data-sp-${prop}`]);
+  child && child['props'] && (child['props'][prop] ?? child['props'][`data-sp-${prop}`]);
 
 export const SplitPanel: React.FC<SplitPanelProps> = ({
   id,

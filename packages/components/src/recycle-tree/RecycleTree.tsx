@@ -107,14 +107,13 @@ export interface IRecycleTreeProps<T = TreeModel> {
   /**
    * 声明Tree加载时预加载的节点内容
    * 主要用于避免快速滚动时出现空白区域的情况
-   * 设置的太高会影响性能，导致快速滚动时来不及计算
    * 默认值为：Recycle.DEFAULT_OVER_SCAN_COUNT = 50
    * @type {number}
    * @memberof IRecycleTreeProps
    */
   overScanCount?: number;
   /**
-   * 是否保留 Tree 底部空白，大小为 itemHeight
+   * 是否保留 Tree 底部空白，大小为 22 px
    * 默认值为：false
    */
   leaveBottomBlank?: boolean;
@@ -240,25 +239,22 @@ interface IFilterNodeRendererProps {
   template?: React.JSXElementConstructor<any>;
 }
 
-export const getInnerElementType = (itemHeight: number) => {
-  const InnerElementType = React.forwardRef((props, ref) => {
-    const { style, ...rest } = props as any;
-    return (
-      <div
-        className='tree-element'
-        ref={ref!}
-        style={{
-          ...style,
-          height: `${parseFloat(style.height) + itemHeight}px`,
-        }}
-        {...rest}
-      />
-    );
-  });
-  return InnerElementType;
-};
+const InnerElementType = React.forwardRef((props, ref) => {
+  const { style, ...rest } = props as any;
+  return (
+    <div
+      ref={ref!}
+      style={{
+        ...style,
+        height: `${parseFloat(style.height) + RecycleTree.PADDING_BOTTOM_SIZE}px`,
+      }}
+      {...rest}
+    />
+  );
+});
 
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
+  public static PADDING_BOTTOM_SIZE = 22;
   private static DEFAULT_ITEM_HEIGHT = 22;
   private static TRY_ENSURE_VISIBLE_MAX_TIMES = 5;
   private static FILTER_FUZZY_OPTIONS = {
@@ -922,7 +918,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
         : { ...style, width: 'auto', minWidth: '100%', height: `${calcDynamicHeight()}px` };
 
     return (
-      <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeitem'} {...ariaInfo}>
+      <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
         <NodeRendererWrap
           item={item}
           depth={item.depth}
@@ -942,7 +938,8 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       return;
     }
 
-    if (this.listRef && this.listRef.current && '_getRangeToRender' in this.listRef.current) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
+    if (this.listRef && this.listRef?.current && '_getRangeToRender' in this.listRef?.current) {
       // _getRangeToRender 是 react-window 的内部方法，用于获取可视区域的下标范围
       // @ts-ignore
       const range = this.listRef?.current._getRangeToRender();
@@ -995,7 +992,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       outerElementType: ScrollbarsVirtualList,
     };
     if (leaveBottomBlank) {
-      addonProps.innerElementType = getInnerElementType(itemHeight ?? RecycleTree.DEFAULT_ITEM_HEIGHT);
+      addonProps.innerElementType = InnerElementType;
     }
 
     return supportDynamicHeights ? (
