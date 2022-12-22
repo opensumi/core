@@ -310,6 +310,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
           model={model}
           onReady={handleTreeReady}
           className={containerClassname}
+          leaveBottomBlank
         >
           {renderTreeNode}
         </RecycleTree>

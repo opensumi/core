@@ -114,7 +114,7 @@ export interface IRecycleTreeProps<T = TreeModel> {
    */
   overScanCount?: number;
   /**
-   * 是否保留 Tree 底部空白，大小为 22 px
+   * 是否保留 Tree 底部空白，大小为 itemHeight
    * 默认值为：false
    */
   leaveBottomBlank?: boolean;
@@ -240,22 +240,25 @@ interface IFilterNodeRendererProps {
   template?: React.JSXElementConstructor<any>;
 }
 
-const InnerElementType = React.forwardRef((props, ref) => {
-  const { style, ...rest } = props as any;
-  return (
-    <div
-      ref={ref!}
-      style={{
-        ...style,
-        height: `${parseFloat(style.height) + RecycleTree.PADDING_BOTTOM_SIZE}px`,
-      }}
-      {...rest}
-    />
-  );
-});
+export const getInnerElementType = (itemHeight: number) => {
+  const InnerElementType = React.forwardRef((props, ref) => {
+    const { style, ...rest } = props as any;
+    return (
+      <div
+        className='tree-element'
+        ref={ref!}
+        style={{
+          ...style,
+          height: `${parseFloat(style.height) + itemHeight}px`,
+        }}
+        {...rest}
+      />
+    );
+  });
+  return InnerElementType;
+};
 
 export class RecycleTree extends React.Component<IRecycleTreeProps> {
-  public static PADDING_BOTTOM_SIZE = 22;
   private static DEFAULT_ITEM_HEIGHT = 22;
   private static TRY_ENSURE_VISIBLE_MAX_TIMES = 5;
   private static FILTER_FUZZY_OPTIONS = {
@@ -992,7 +995,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       outerElementType: ScrollbarsVirtualList,
     };
     if (leaveBottomBlank) {
-      addonProps.innerElementType = InnerElementType;
+      addonProps.innerElementType = getInnerElementType(itemHeight ?? RecycleTree.DEFAULT_ITEM_HEIGHT);
     }
 
     return supportDynamicHeights ? (
