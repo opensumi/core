@@ -99,7 +99,7 @@ export class SearchContribution
           return;
         }
         this.searchBrowserService.searchEditorSelection();
-        // this.searchBrowserService.focus();
+        this.searchBrowserService.focus();
         this.searchBrowserService.search();
       },
     });
