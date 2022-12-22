@@ -1,4 +1,9 @@
 import { Injector } from '@opensumi/di';
+import {
+  CommentContentNode,
+  CommentFileNode,
+  CommentRoot,
+} from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { URI, positionToRange, Disposable } from '@opensumi/ide-core-common';
 import { IEditor, EditorCollectionService, ResourceService } from '@opensumi/ide-editor';
@@ -102,41 +107,38 @@ describe('comment service test', () => {
     expect(threads[1].id).toBe(thread2.id);
   });
 
-  it('commentsTreeNodes', () => {
+  it('resolveChildrens', async () => {
     const uri = URI.file('/test');
-    const [thread, thread2] = createTestThreads(uri);
+    const [thread] = createTestThreads(uri);
     thread.addComment({
       mode: CommentMode.Preview,
       author: {
-        name: '何幻',
+        name: 'OpenSumi',
       },
-      body: '这是一条回复',
+      body: 'This is a reply',
     });
-    const nodes = commentsService.commentsTreeNodes;
-    // 根节点，两个子节点
-    expect(nodes.length).toBe(4);
-    // 默认第一个为根节点
-    expect(nodes[0].parent).toBeUndefined();
-    // 默认根节点为第一个 thread
-    expect(nodes[0].thread).toBe(thread);
-    // 根节点名称为 url 名称
-    expect(nodes[0].name).toBe('test');
-    // 第一个节点名称为用户名
-    expect(nodes[1].name).toBe('蛋总');
-    // 第一个节点描述为评论内容
-    expect(nodes[1].description).toBe('评论内容1');
-    expect(nodes[1].thread).toBe(thread);
-    // 第一个节点对应的评论是第一条评论
-    expect(nodes[1].comment).toBe(thread.comments[0]);
-    // 第二个节点为第一个 thread 第一条回复
-    expect(nodes[2].name).toBe('何幻');
-    expect(nodes[2].description).toBe('这是一条回复');
-    expect(nodes[2].comment).toBe(thread.comments[1]);
-    // 第二个节点的 parent 为第一个节点
-    expect(nodes[2].parent?.comment).toBe(thread.comments[0]);
-    // 第三个节点为第二个 thread
-    expect(nodes[3].description).toBe('评论内容2');
-    expect(nodes[3].thread.id).toBe(thread2.id);
+    const roots = await commentsService.resolveChildren();
+    expect(roots?.length).toBe(1);
+    if (!roots || roots.length < 1) {
+      return;
+    }
+    const root = roots[0];
+    expect(root).toBeDefined();
+    const comments = await commentsService.resolveChildren(root as CommentRoot);
+    expect(comments?.length).toBe(1);
+    if (!comments || comments.length < 1) {
+      return;
+    }
+    const comment = comments[0];
+    expect(comment.displayName).toBe('test');
+    expect((comment as CommentContentNode).description).toBe('test');
+    const replys = await commentsService.resolveChildren(comment as CommentFileNode);
+    if (!replys) {
+      return;
+    }
+    const reply = replys[0];
+    expect(reply).toBeDefined();
+    expect(reply.displayName).toBeDefined();
   });
 
   it('onThreadsCreated', () => {
@@ -148,7 +150,7 @@ describe('comment service test', () => {
         {
           mode: CommentMode.Editor,
           author: {
-            name: '蛋总',
+            name: 'User',
           },
           body: '评论内容1',
         },
@@ -167,7 +169,7 @@ describe('comment service test', () => {
         {
           mode: CommentMode.Editor,
           author: {
-            name: '蛋总',
+            name: 'User',
           },
           body: '评论内容1',
         },
@@ -176,7 +178,7 @@ describe('comment service test', () => {
     expect(threadsChangedListener.mock.calls.length).toBe(1);
   });
 
-  it('调用 showWidgetsIfShowed 时已经被隐藏的 widget 不会被调用 show 方法', async () => {
+  it('unvisible widget not to be called with showWidgetsIfShowed method', async () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
@@ -194,7 +196,7 @@ describe('comment service test', () => {
     expect(widget?.isShow).toBeFalsy();
   });
 
-  it('如果 isShow 为 true 才会调用 show 方法', async () => {
+  it('show widget when isShow is true', async () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
@@ -210,7 +212,7 @@ describe('comment service test', () => {
     expect(onShow).toBeCalled();
   });
 
-  it('通过 dispose 的方式隐藏 widget，不会影响 isShow', async () => {
+  it('dispose should not effect isShow state', async () => {
     const uri = URI.file('/test');
     const [thread] = createTestThreads(uri);
     currentEditor.currentUri = uri;
@@ -241,7 +243,7 @@ describe('comment service test', () => {
           {
             mode: CommentMode.Editor,
             author: {
-              name: '蛋总',
+              name: 'User',
             },
             body: '评论内容1',
           },
@@ -252,7 +254,7 @@ describe('comment service test', () => {
           {
             mode: CommentMode.Editor,
             author: {
-              name: '蛋总',
+              name: 'User',
             },
             body: '评论内容2',
           },

@@ -6,8 +6,7 @@ import { CommentsContribution, ICommentsService, ICommentsFeatureRegistry } from
 import { CommentsFeatureRegistry } from './comments-feature.registry';
 import { CommentsBrowserContribution } from './comments.contribution';
 import { CommentsService } from './comments.service';
-
-import './comments.module.less';
+import { CommentModelService } from './tree/tree-model.service';
 
 @Injectable()
 export class CommentsModule extends BrowserModule {
@@ -16,6 +15,10 @@ export class CommentsModule extends BrowserModule {
     {
       token: ICommentsService,
       useClass: CommentsService,
+    },
+    {
+      token: CommentModelService,
+      useClass: CommentModelService,
     },
     {
       token: ICommentsFeatureRegistry,

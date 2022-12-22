@@ -1,7 +1,7 @@
 import { observable, computed, autorun } from 'mobx';
 
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRange, Disposable, URI, IContextKeyService, uuid, localize } from '@opensumi/ide-core-browser';
+import { IRange, Disposable, URI, IContextKeyService, uuid, localize, Emitter } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { IEditor, EditorCollectionService } from '@opensumi/ide-editor';
 
@@ -15,7 +15,6 @@ import {
 } from '../common';
 
 import { CommentsZoneWidget } from './comments-zone.view';
-
 
 @Injectable({ multiple: true })
 export class CommentsThread extends Disposable implements ICommentsThread {
@@ -33,11 +32,18 @@ export class CommentsThread extends Disposable implements ICommentsThread {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  // FIXME: update by https://github.com/opensumi/core/blob/82ab63b916c8fe90cf5898d55c0fe335dd852b91/packages/extension/src/browser/vscode/api/main.thread.comments.ts#L319
   @observable
   public comments: IThreadComment[];
 
   @observable
   public label: string | undefined;
+
+  @observable
+  private _readOnly = false;
+
+  @observable
+  public isCollapsed: boolean;
 
   public data: any;
 
@@ -53,11 +59,11 @@ export class CommentsThread extends Disposable implements ICommentsThread {
 
   private _id = `thread_${uuid()}`;
 
-  @observable
-  private _readOnly = false;
+  private onDidChangeEmitter: Emitter<void> = new Emitter();
 
-  @observable
-  public isCollapsed: boolean;
+  get onDidChange() {
+    return this.onDidChangeEmitter.event;
+  }
 
   constructor(
     public uri: URI,
@@ -118,6 +124,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
         this.comments = [];
       },
     });
+    this.onDidChangeEmitter.fire();
   }
   getWidgetByEditor(editor: IEditor): ICommentsZoneWidget | undefined {
     return this.widgets.get(editor);
@@ -285,6 +292,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
         id: uuid(),
       })),
     );
+    this.onDidChangeEmitter.fire();
   }
 
   public removeComment(comment: IComment) {
@@ -292,6 +300,7 @@ export class CommentsThread extends Disposable implements ICommentsThread {
     if (index !== -1) {
       this.comments.splice(index, 1);
     }
+    this.onDidChangeEmitter.fire();
   }
 
   public isEqual(thread: ICommentsThread): boolean {
