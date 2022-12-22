@@ -108,7 +108,7 @@ export interface IRecycleTreeProps<T = TreeModel> {
    * 声明Tree加载时预加载的节点内容
    * 主要用于避免快速滚动时出现空白区域的情况
    * 设置的太高会影响性能，导致快速滚动时来不及计算
-   * 默认值为：Recycle.DEFAULT_OVER_SCAN_COUNT = 10
+   * 默认值为：Recycle.DEFAULT_OVER_SCAN_COUNT = 50
    * @type {number}
    * @memberof IRecycleTreeProps
    */
@@ -266,7 +266,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     post: '</match>',
     extract: (node: TreeNode) => node?.name || '',
   };
-  private static DEFAULT_OVER_SCAN_COUNT = 10;
+  private static DEFAULT_OVER_SCAN_COUNT = 50;
 
   private _promptHandle: NewPromptHandle | RenamePromptHandle;
 
