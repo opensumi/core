@@ -4,6 +4,8 @@ import {
   PreferenceService,
   PreferenceSchemaProvider,
   URI,
+  IPreferenceSettingsService,
+  Disposable,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { PreferenceSettingId } from '@opensumi/ide-preferences';
@@ -38,6 +40,12 @@ describe('PreferenceSettingService should be work', () => {
 
     mockPreferenceService = {
       set: jest.fn(),
+      get: (key) => {
+        if (key === 'settings.userBeforeWorkspace') {
+          return true;
+        }
+      },
+      onSpecificPreferenceChange: () => Disposable.NULL,
       resolve: jest.fn(() => ({
         value: '',
         effectingScope: PreferenceScope.Default,
@@ -82,12 +90,12 @@ describe('PreferenceSettingService should be work', () => {
         useValue: mockFileServiceClient,
       },
       {
-        token: PreferenceSettingsService,
+        token: IPreferenceSettingsService,
         useClass: PreferenceSettingsService,
       },
     );
 
-    preferenceSettingsService = injector.get(PreferenceSettingsService);
+    preferenceSettingsService = injector.get(IPreferenceSettingsService);
   });
 
   afterAll(async () => {
@@ -187,7 +195,7 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('getCurrentPreferenceUrl', async () => {
-      const uri = await preferenceSettingsService.getCurrentPreferenceUrl();
+      const uri = await preferenceSettingsService.getCurrentPreferenceUrl(PreferenceScope.User);
       expect(uri).toBe(mockResource.uri);
       expect(mockFileServiceClient.access).toBeCalledTimes(1);
       expect(mockFileServiceClient.createFile).toBeCalledTimes(1);
