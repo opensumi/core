@@ -17,6 +17,7 @@ import { SearchModule } from '../../src/node';
 
 // Allow creating temporary files, but remove them when we are done.
 const track = temp.track();
+let searchId = new Date().getTime();
 
 // The root dirs we'll use to test searching.
 let rootDirA: string;
@@ -258,7 +259,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   it('should return 1 result when searching for "pasta", respecting the trailing whitespace', (done) => {
@@ -272,7 +273,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   // Try some simple patterns with different case.
@@ -293,7 +294,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   it('should return 5 results when searching for "carrot" case sensitive', (done) => {
@@ -312,7 +313,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], {
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], {
       matchCase: true,
     });
   });
@@ -332,7 +333,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], {
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], {
       matchWholeWord: true,
     });
   });
@@ -350,7 +351,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], {
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], {
       matchWholeWord: true,
       matchCase: true,
     });
@@ -366,7 +367,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search('Carrot', [rootDirAUri], { matchCase: true });
+    contentSearchServer.search(searchId++, 'Carrot', [rootDirAUri], { matchCase: true });
   });
 
   it('should return 0 result when searching for "CarroT"', (done) => {
@@ -377,7 +378,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { matchCase: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { matchCase: true });
   });
 
   // Try something that we know isn't there.
@@ -389,7 +390,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   // Try a pattern with a space.
@@ -405,7 +406,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   // Try with an output size that exceeds the default node buffer size
@@ -433,7 +434,7 @@ describe('ripgrep-search-in-workspace-server', () => {
     });
 
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   // Try limiting the number of returned results.
@@ -458,7 +459,7 @@ describe('ripgrep-search-in-workspace-server', () => {
     });
 
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], {
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], {
       maxResults: 1000,
     });
   });
@@ -480,7 +481,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], {
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], {
       useRegExp: true,
     });
   });
@@ -498,7 +499,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], {
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], {
       useRegExp: false,
     });
   });
@@ -520,7 +521,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { useRegExp: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { useRegExp: true });
   });
 
   // Try with a pattern starting with --, and in filenames containing colons and spaces.
@@ -540,7 +541,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { useRegExp: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { useRegExp: true });
   });
 
   it('should search a pattern starting with a dash w/o regex', (done) => {
@@ -559,7 +560,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   it('should search a pattern starting with two dashes w/o regex', (done) => {
@@ -578,7 +579,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   it('should search a whole pattern starting with - w/o regex', (done) => {
@@ -594,7 +595,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { matchWholeWord: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { matchWholeWord: true });
   });
 
   it('should search a whole pattern starting with -- w/o regex', (done) => {
@@ -609,7 +610,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { matchWholeWord: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { matchWholeWord: true });
   });
 
   it('should search a pattern in .txt file', (done) => {
@@ -624,7 +625,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { include: ['*.txt'] });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { include: ['*.txt'] });
   });
 
   it('should search a whole pattern in .txt file', (done) => {
@@ -639,7 +640,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { include: ['*.txt'], matchWholeWord: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { include: ['*.txt'], matchWholeWord: true });
   });
 
   // Try searching in an UTF-8 file.
@@ -656,7 +657,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri]);
   });
 
   // Try searching a pattern that contains unicode matchStarts.
@@ -674,7 +675,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { useRegExp: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { useRegExp: true });
   });
 
   // A regex that may match an empty string should not return zero-length
@@ -690,7 +691,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri + '/small']);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri + '/small']);
   });
 
   it('should search a pattern with special matchStarts ', (done) => {
@@ -705,7 +706,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri], { useRegExp: true });
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri], { useRegExp: true });
   });
 
   it('should find patterns across all directories', (done) => {
@@ -727,7 +728,7 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri, rootDirBUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri, rootDirBUri]);
   });
 
   it('should only find patterns from the folder closest to the file', (done) => {
@@ -745,10 +746,10 @@ describe('ripgrep-search-in-workspace-server', () => {
       done();
     });
     (contentSearchServer as any).rpcClient = [client];
-    contentSearchServer.search(pattern, [rootDirAUri, rootSubdirAUri]);
+    contentSearchServer.search(searchId++, pattern, [rootDirAUri, rootSubdirAUri]);
   });
 
-  it('出错时可以正常抛出', (done) => {
+  it('should throw error', (done) => {
     const errorMessage = 'A error!';
     const id = 9;
 
