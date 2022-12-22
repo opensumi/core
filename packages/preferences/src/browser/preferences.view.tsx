@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import {
@@ -10,7 +10,6 @@ import {
   IIconResourceOptions,
   BasicRecycleTree,
   IBasicTreeData,
-  IBasicRecycleTreeHandle,
 } from '@opensumi/ide-components';
 import { VirtualList } from '@opensumi/ide-components/lib/virtual-list';
 import { IVirtualListRange } from '@opensumi/ide-components/lib/virtual-list/types';
@@ -74,15 +73,10 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     };
   }, []);
 
-  const prepareVisualEffect = useCallback(() => {
+  React.useEffect(() => {
     if (focusItem && preferenceService.treeHandler?.focusItem) {
-      // console.log(`🚀 ~ file: preferences.view.tsx:79 ~ prepareVisualEffect ~ focusItem`, focusItem);
       preferenceService.treeHandler.focusItem(focusItem);
     }
-  }, [focusItem, preferenceService.treeHandler]);
-
-  React.useEffect(() => {
-    prepareVisualEffect();
   }, [preferenceService.tabIndex, preferenceService.treeHandler, focusItem]);
 
   const treeData = React.useMemo(() => {
@@ -237,10 +231,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const onRangeChanged = useThrottleFn(
     (range: IVirtualListRange) => {
-      // console.log(
-      //   `🚀 ~ file: preferences.view.tsx:345 ~ constPreferenceView:ReactEditorComponent<null>=observer ~ range`,
-      //   range,
-      // );
       // 我们通过第一个 item 来变更左侧文件树的选择状态
       // 当我们点击左侧的 section 的时候，我们的设计是让每一个 section 的 title 滚到顶部
       // 此时仍然会触发该事件，但有时可能因为计算取整等原因，它上报的 startIndex 是 title 的上一个 index。
@@ -262,12 +252,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       navigateTo(preferenceService.currentSelectId);
     }
   }, [items, preferenceService.currentSelectId]);
-
-  const onTreeReady = (basicTreeHandle: IBasicRecycleTreeHandle) => {
-    preferenceService.handleTreeHandler(basicTreeHandle);
-    // console.log('tree ready');
-    prepareVisualEffect();
-  };
 
   return (
     <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
@@ -321,10 +305,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                   baseIndent={8}
                   treeData={treeData}
                   onClick={(_e, node) => {
-                    // console.log(
-                    //   `🚀 ~ file: preferences.view.tsx:332 ~ constPreferenceView:ReactEditorComponent<null>=observer ~ _e`,
-                    //   node,
-                    // );
                     const treeData = node && ((node as any)._raw as IPreferenceTreeData);
                     if (treeData) {
                       if (treeData.section) {
@@ -334,7 +314,9 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                       }
                     }
                   }}
-                  onReady={onTreeReady}
+                  onReady={(handler) => {
+                    preferenceService.handleTreeHandler(handler);
+                  }}
                 />
               )}
             </AutoSizer>
