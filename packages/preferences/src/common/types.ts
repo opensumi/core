@@ -51,9 +51,7 @@ export interface ISectionItemData {
   preference?: IResolvedPreferenceViewDesc;
 
   /**
-   * 用来标注该 Item 是属于哪个 Section 的
-   *
-   * 一般为 section 的 title
+   * 该 item 在左侧文件树的路径信息
    */
   _path?: string;
 }

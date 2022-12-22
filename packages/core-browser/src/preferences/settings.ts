@@ -36,7 +36,7 @@ export interface ISettingGroup {
 export interface IPreferenceViewDesc {
   id: string;
   /**
-   * 对于名字要进行本地化的 key
+   * 该设置项名字的本地化的 key
    *
    * 为空会根据 id 来生成展示的名字
    * 如：`enablePreview` -> `Enable Preview`

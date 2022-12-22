@@ -50,8 +50,6 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
       const sections = [] as ISettingSection[];
 
-      // 当前函数里只创建声明这一次变量，然后后面给这个函数赋值
-
       for (const configuration of configurations) {
         if (configuration && configuration.properties) {
           const tmpProperties = {};

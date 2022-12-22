@@ -64,10 +64,23 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   public currentSearch = '';
 
   @observable
-  public currentPath = '';
+  currentSelectId = '';
+
+  @observable
+  private userBeforeWorkspace = false;
 
   @observable
   tabIndex = 0;
+
+  @computed
+  get tabList() {
+    return this.userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
+  }
+
+  @computed
+  get groups() {
+    return this.getSettingGroups(this.currentScope, this.currentSearch);
+  }
 
   @computed
   get currentScope() {
@@ -93,19 +106,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   );
 
   private onDidSettingsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
-
-  @observable
-  private userBeforeWorkspace = false;
-
-  @computed
-  get tabList() {
-    return this.userBeforeWorkspace ? [UserScope, WorkspaceScope] : [WorkspaceScope, UserScope];
-  }
-
-  @computed
-  get groups() {
-    return this.getSettingGroups(this.currentScope, this.currentSearch);
-  }
 
   constructor() {
     super();
@@ -145,9 +145,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       ),
     );
   }
-
-  @observable
-  currentSelectId = '';
 
   @action
   scrollToGroup(groupId: string): void {
