@@ -53,13 +53,10 @@
         white-space: nowrap;
         user-select: none;
         margin-bottom: 2px;
-
-        &:hover {
-          color: var(--list-hoverForeground);
-          background-color: var(--list-hoverBackground);
-        }
-        & > .kt-icon {
-          max-height: 20px !important;
+        :global {
+          .kt-icon {
+            max-height: 20px !important;
+          }
         }
       }
 
