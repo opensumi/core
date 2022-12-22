@@ -1,7 +1,9 @@
 import classnames from 'classnames';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
+import { Injectable, Autowired } from '@opensumi/di';
 import { Button, CheckBox, Input, Option, Select, ValidateInput, ValidateMessage } from '@opensumi/ide-components';
+import { DefaultMarkedRenderer, linkify, Markdown } from '@opensumi/ide-components/lib/markdown/index';
 import {
   DisposableCollection,
   getIcon,
@@ -17,7 +19,6 @@ import {
   formatLocalize,
   ILogger,
   IOpenerService,
-  toMarkdown,
   IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
 
@@ -236,16 +237,57 @@ const renderDescriptionExpression = (description: string) => {
   }
 };
 
+@Injectable()
+class PreferenceMarkedRender extends DefaultMarkedRenderer {
+  static openerScheme = 'prefTitle://';
+  @Autowired(IPreferenceSettingsService)
+  preferenceSettingService: PreferenceSettingsService;
+
+  codespan(text: string): string {
+    if (text.startsWith('#') && text.endsWith('#')) {
+      const prefId = text.slice(1, text.length - 1);
+      const preference = this.preferenceSettingService.getSectionByPreferenceId(prefId);
+      if (preference) {
+        const preferenceTitle = getPreferenceItemLabel(preference);
+        return linkify(`${PreferenceMarkedRender.openerScheme}${preferenceTitle}`, prefId, preferenceTitle);
+      }
+    }
+    return super.codespan(text);
+  }
+}
+
+const renderMarkdownDescription = (message: string) => {
+  const openerService: IOpenerService = useInjectable(IOpenerService);
+  const renderer = useInjectable(PreferenceMarkedRender) as PreferenceMarkedRender;
+  const preferenceSettingService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+
+  return (
+    <Markdown
+      opener={{
+        open(uri: string) {
+          if (uri.startsWith(PreferenceMarkedRender.openerScheme)) {
+            const prefTitle = uri.slice(PreferenceMarkedRender.openerScheme.length);
+            preferenceSettingService.search(prefTitle);
+            return true;
+          }
+          return openerService.open(uri);
+        },
+      }}
+      value={message}
+      renderer={renderer}
+    />
+  );
+};
+
 const renderDescription = (data: { name?: string; description?: string; markdownDescription?: string }) => {
   const description = replaceLocalizePlaceholder(data.description ?? data.markdownDescription);
   if (!description) {
     return <div className={styles.desc}>{data.name}</div>;
   }
-  const openerService: IOpenerService = useInjectable(IOpenerService);
 
   return (
     <div className={styles.desc}>
-      {data.markdownDescription ? toMarkdown(description, openerService) : renderDescriptionExpression(description)}
+      {data.markdownDescription ? renderMarkdownDescription(description) : renderDescriptionExpression(description)}
     </div>
   );
 };

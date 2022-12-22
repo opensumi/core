@@ -319,13 +319,16 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     const groups = this.settingsSections.values();
     for (const sections of groups) {
       for (const section of sections) {
-        return this.visitSection(section, (preference) => {
+        const pref = this.visitSection(section, (preference) => {
           if (!isString(preference)) {
             if (preference.id === preferenceId) {
               return true;
             }
           }
         });
+        if (pref) {
+          return pref;
+        }
       }
     }
   }
