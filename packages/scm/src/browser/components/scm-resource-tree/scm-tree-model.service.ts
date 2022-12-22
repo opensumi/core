@@ -8,9 +8,8 @@ import {
   PreferenceService,
   EDITOR_COMMANDS,
   ILogger,
-  pSeries,
 } from '@opensumi/ide-core-browser';
-import { path, DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
+import { DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -32,8 +31,6 @@ import {
 } from './scm-tree-node';
 import styles from './scm-tree-node.module.less';
 import { SCMTreeService } from './scm-tree.service';
-
-const { Path } = path;
 
 export interface IEditorTreeHandle extends IRecycleTreeHandle {
   hasDirectFocus: () => boolean;
@@ -139,7 +136,7 @@ export class SCMTreeModelService {
 
     this.disposableCollection.push(
       this.viewModel.onDidSelectedRepoChange((repo: ISCMRepository) => {
-        this.initTreeModel(this.scmTreeService.isTreeMode, repo.provider.rootUri?.toString());
+        this._whenReady = this.initTreeModel(this.scmTreeService.isTreeMode, repo.provider.rootUri?.toString());
       }),
     );
 
@@ -254,7 +251,6 @@ export class SCMTreeModelService {
 
   async initTreeModel(isTree?: boolean, workspace?: string) {
     const type = isTree ? SCMTreeTypes.Tree : SCMTreeTypes.List;
-    const preType = !isTree ? SCMTreeTypes.Tree : SCMTreeTypes.List;
     const cacheKey = await this.getCacheKey(type, workspace);
     if (this.treeModelCache.has(cacheKey)) {
       const { treeModel, decorations, selectedDecoration, focusedDecoration } = this.treeModelCache.get(cacheKey)!;
@@ -262,8 +258,6 @@ export class SCMTreeModelService {
       this._activeDecorations = decorations;
       this._selectedDecoration = selectedDecoration;
       this._focusedDecoration = focusedDecoration;
-
-      await this.persistFileSelection(preType);
     } else {
       // 根据是否为多工作区创建不同根节点
       const root = (await this.scmTreeService.resolveChildren())[0] as SCMResourceRoot;
@@ -282,13 +276,7 @@ export class SCMTreeModelService {
         selectedDecoration: this._selectedDecoration,
         focusedDecoration: this._focusedDecoration,
       });
-
-      // 切换时需要同步decoration状态，应该length始终为1？
-      this.treeModel.onWillUpdate(async () => {
-        await this.persistFileSelection(preType);
-      });
     }
-
     this.onDidTreeModelChangeEmitter.fire(this._activeTreeModel);
   }
 
@@ -444,28 +432,6 @@ export class SCMTreeModelService {
     // 通知视图更新
     this.treeModel.dispatchChange();
   };
-
-  private async persistFileSelection(preType: SCMTreeTypes) {
-    const cacheKey = await this.getCacheKey(preType);
-    const treeModelCache = this.treeModelCache.get(cacheKey);
-    if (!treeModelCache) {
-      return;
-    }
-    const { selectedDecoration: preSelectedDecoration, focusedDecoration: preFocusedDecoration } = treeModelCache;
-
-    const selectedFiles: Array<SCMResourceNotRoot> = [];
-    for (const file of this.selectedFiles) {
-      preSelectedDecoration.removeTarget(file);
-      preFocusedDecoration.removeTarget(file);
-
-      const targetFile = this.scmTreeService.getCachedNodeItem(file.raw.id);
-      if (targetFile) {
-        selectedFiles.push(targetFile);
-      }
-    }
-
-    this.activeFileDecoration(selectedFiles, this.focusedFile);
-  }
 
   // 取消选中节点焦点
   private enactiveFileDecoration = () => {

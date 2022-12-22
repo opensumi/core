@@ -861,7 +861,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
             for (let i = 0; i < originChildren.length; i++) {
               const child = originChildren[i];
-              (child as any).dispose();
+              child?.dispose();
             }
           }
           const expandedChilds: CompositeTreeNode[] = [];
@@ -896,7 +896,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           this.shrinkBranch(this, true);
           for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
-            (child as any).dispose();
+            child?.dispose();
           }
         }
         const expandedChilds: CompositeTreeNode[] = [];
@@ -1368,7 +1368,6 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     const tempChildren = new Array(rawItems.length);
     for (let i = 0; i < rawItems.length; i++) {
       const child = rawItems[i];
-      // 如果存在上一次缓存的节点，则使用缓存节点的 ID
       (child as TreeNode).id = TreeNode.getIdByPath(child.path) || (child as TreeNode).id;
       tempChildren[i] = child;
       TreeNode.setIdByPath(child.path, child.id);
@@ -1390,13 +1389,13 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
 
     if (this.children) {
-      // 重置节点分支
       this.shrinkBranch(this);
     }
     if (this.children) {
       for (let i = 0; i < this.children.length; i++) {
         const child = this.children[i];
-        (child as any).dispose();
+        // The Child maybe `undefined`.
+        child?.dispose();
       }
     }
 
@@ -1545,7 +1544,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   }
 
   private async doRefresh(token?: CancellationToken) {
-    const target = this.getRefreshNode() as CompositeTreeNode;
+    const target = (this.getRefreshNode() as CompositeTreeNode) || this;
     const paths = target.getAllExpandedNodePath();
     await target.refreshTreeNodeByPaths(paths, token, target);
   }

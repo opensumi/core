@@ -203,7 +203,7 @@ describe('KeymapsService should be work', () => {
       ];
       await keymapsService.reconcile(keybindings);
       runWhenIdle(() => {
-        expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(2);
+        expect(mockKeybindingRegistry.getKeybindingsForCommand).toBeCalledTimes(1);
         expect(mockKeybindingRegistry.unregisterKeybinding).toBeCalledTimes(1);
         expect(mockKeybindingRegistry.registerKeybinding).toBeCalledTimes(1);
       });

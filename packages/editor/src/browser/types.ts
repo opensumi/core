@@ -8,7 +8,7 @@ import {
   URI,
   Event,
 } from '@opensumi/ide-core-browser';
-import { IMenu } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IContextMenu } from '@opensumi/ide-core-browser/lib/menu/next';
 import { IThemeColor } from '@opensumi/ide-core-common';
 import { editor } from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -340,7 +340,7 @@ export interface IEditorActionRegistry {
    */
   registerEditorAction(action: IEditorActionItem): IDisposable;
 
-  getMenu(group: IEditorGroup): IMenu;
+  getMenu(group: IEditorGroup): IContextMenu;
 }
 
 export interface IEditorActionItem {

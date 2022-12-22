@@ -4,6 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import ReactIs from 'react-is';
 
+import { Scrollbars } from '@opensumi/ide-components';
 import {
   AppConfig,
   ComponentRegistry,
@@ -23,11 +24,10 @@ import {
   ResizeHandleHorizontal,
   ResizeHandleVertical,
 } from '@opensumi/ide-core-browser/lib/components';
-import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
-import { IEditorOpenType, IResource, WorkbenchEditorService } from '../common';
+import { IResource, WorkbenchEditorService } from '../common';
 
 import { EditorComponentRegistryImpl } from './component';
 import styles from './editor.module.less';
@@ -534,7 +534,7 @@ export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
         [styles.kt_hidden]: hidden,
       })}
     >
-      <Scroll>
+      <Scrollbars>
         <ErrorBoundary>
           <div
             ref={(el) => {
@@ -545,7 +545,7 @@ export const ComponentWrapper = ({ component, resource, hidden, ...other }) => {
             {componentNode}
           </div>
         </ErrorBoundary>
-      </Scroll>
+      </Scrollbars>
     </div>
   );
 };

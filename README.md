@@ -59,7 +59,7 @@ Here you can find some of our example projects and templates:
 
 - [Cloud IDE](https://github.com/opensumi/ide-startup)
 - [Desktop IDE - based on the Electron](https://github.com/opensumi/ide-electron)
-- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-electron)
+- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-startup-lite)
 - [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
 
 ## 📕 Documentation

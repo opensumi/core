@@ -265,7 +265,7 @@ export function injectInnerProviders(injector: Injector) {
   injector.addProviders(...providers);
 
   const appConfig: AppConfig = injector.get(AppConfig);
-  // 为electron添加独特的api服务，主要是向electron-main进行调用的服务
+  // Add special API services for Electron, mainly services that make calls to `Electron Main` process.
   if (appConfig.isElectronRenderer) {
     injector.addProviders(
       {

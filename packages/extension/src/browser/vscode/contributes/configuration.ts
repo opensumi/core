@@ -21,7 +21,7 @@ export interface ConfigurationSnippets {
 
 @Injectable()
 @Contributes('configuration')
-@LifeCycle(LifeCyclePhase.Starting)
+@LifeCycle(LifeCyclePhase.Initialize)
 export class ConfigurationContributionPoint extends VSCodeContributePoint<PreferenceSchema[] | PreferenceSchema> {
   @Autowired(PreferenceSchemaProvider)
   protected preferenceSchemaProvider: PreferenceSchemaProvider;

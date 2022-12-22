@@ -3,7 +3,6 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import { URI, localize, getIcon, IReporterService, strings } from '@opensumi/ide-core-browser';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from '@opensumi/ide-core-browser/lib/components';
 import { EditorComponentRenderMode } from '@opensumi/ide-editor/lib/browser';
-import { Scroll } from '@opensumi/ide-editor/lib/browser/component/scroll/scroll';
 import { IThemeService, getColorRegistry } from '@opensumi/ide-theme';
 import { ToolBarPosition } from '@opensumi/ide-toolbar';
 import { PlainWebview } from '@opensumi/ide-webview';
@@ -29,7 +28,6 @@ export function createBrowserApi(injector: Injector, extension: IExtension, rpcP
   return {
     ...components,
     commands,
-    Scroll,
     ResizeHandleHorizontal,
     ResizeHandleVertical,
     PlainWebview,
