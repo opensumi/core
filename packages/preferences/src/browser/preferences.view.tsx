@@ -276,6 +276,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
               placeholder={localize('preference.searchPlaceholder')}
               onValueChange={debouncedSearch}
               ref={inputRef}
+              hasClear
             />
           </div>
         </div>
