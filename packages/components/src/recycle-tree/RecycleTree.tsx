@@ -867,13 +867,13 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     );
   };
 
-  private renderItem = ({ index, style }): JSX.Element | null => {
+  private renderItem = ({ index, style }): JSX.Element => {
     this.shouldComponentUpdate = shouldComponentUpdate.bind(this);
     const { children, overflow = 'ellipsis', supportDynamicHeights } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
     const wrapRef = React.useRef(null);
     if (!node) {
-      return null;
+      return <></>;
     }
     const { item, itemType: type, template } = node;
     if (!item) {
