@@ -228,7 +228,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
       const item1 = items[range.startIndex + 1];
       if (item1 && item1._path) {
-        await preferenceService.basicTreeHandler?.selectItemByPath(`${item1._path}`);
+        await preferenceService.basicTreeHandler?.focusItem(`${item1._path}`);
       }
     },
     300,
@@ -287,7 +287,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             className={styles.preferences_body}
             direction='left-to-right'
           >
-            <AutoSizer className={styles.preferences_indexes} data-sp-defaultSize={180} data-sp-minResize={160}>
+            <AutoSizer className={styles.preferences_indexes} data-sp-defaultSize={180} data-sp-minSize={150}>
               {({ width, height }) => (
                 <BasicRecycleTree
                   treeName={TREE_NAME}

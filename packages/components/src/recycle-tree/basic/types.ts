@@ -94,7 +94,7 @@ export interface IBasicTreeData {
 
 export interface IBasicRecycleTreeHandle {
   selectItem: (item: BasicCompositeTreeNode | BasicTreeNode) => Promise<void>;
-  selectItemByPath(path: string): Promise<void>;
+  focusItem(path: string): Promise<void>;
 }
 
 export interface IBasicRecycleTreeProps {
@@ -120,7 +120,7 @@ export interface IBasicRecycleTreeProps {
    */
   indent?: number;
   /**
-   * 第一层距离左边的距离，默认为 8
+   * 基础缩进。即第一层距离左边的距离，默认为 8
    */
   baseIndent?: number;
   /**

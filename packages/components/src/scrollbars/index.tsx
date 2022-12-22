@@ -146,7 +146,7 @@ export const Scrollbars = ({
         />
       )}
       renderThumbVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, width: thumbSize }} className={cls('scrollbar-thumb-vertical')} />
+        <div {...props} style={{ ...style, width: thumbSize }} className={'scrollbar-thumb-vertical'} />
       )}
       renderThumbHorizontal={({ style, ...props }) => (
         <div {...props} style={{ ...style, height: thumbSize }} className={'scrollbar-thumb-horizontal'} />

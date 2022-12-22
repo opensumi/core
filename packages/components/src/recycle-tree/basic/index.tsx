@@ -128,7 +128,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
       if (onReady) {
         onReady(handle, {
           selectItem,
-          selectItemByPath: throttle(
+          focusItem: throttle(
             async (_path: string) => {
               const path = `/${treeName}/${_path}`;
               const node = (await treeHandle.current?.ensureVisible(path, 'auto', true)) as BasicCompositeTreeNode;
