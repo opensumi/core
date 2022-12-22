@@ -222,7 +222,11 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
   const onRangeChanged = useThrottleFn(
     async (range: IVirtualListRange) => {
-      const item1 = items[range.startIndex];
+      // 我们通过第一个 item 来变更左侧文件树的选择状态
+      // 当我们点击左侧的 section 的时候，我们的设计是让每一个 section 的 title 滚到顶部
+      // 此时仍然会触发该事件，但有时可能因为计算取整等原因，它上报的 startIndex 是 title 的上一个 index。
+      // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
+      const item1 = items[range.startIndex + 1];
       if (item1 && item1._path) {
         await preferenceService.basicTreeHandler?.focusItem(`${item1._path}`);
       }
