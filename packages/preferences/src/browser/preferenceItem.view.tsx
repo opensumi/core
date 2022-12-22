@@ -22,7 +22,7 @@ import {
   IResolvedPreferenceViewDesc,
 } from '@opensumi/ide-core-browser';
 
-import { getPreferenceItemLabel } from '../common';
+import { getPreferenceItemLabel, knownPrefIdMappings } from '../common';
 
 import { PreferenceSettingsService } from './preference-settings.service';
 import styles from './preferences.module.less';
@@ -211,30 +211,40 @@ const renderDescriptionExpression = (description: string) => {
   if (!description) {
     return null;
   }
-  const match = DESCRIPTION_EXPRESSION_REGEXP.exec(description);
+  const match = description.match(DESCRIPTION_EXPRESSION_REGEXP);
   if (!match) {
     return description;
   }
-  const { 0: expression, 1: preferenceId } = match;
-  const preference = preferenceSettingService.getSectionByPreferenceId(preferenceId);
-  if (preference) {
-    const preferenceTitle = getPreferenceItemLabel(preference);
-    const others: JSX.Element[] = description
-      .split(expression)
-      .map((des: string, index: number) => <span key={`${preferenceId}-${index}`}>{des}</span>);
-    const search = () => {
-      preferenceSettingService.search(preferenceTitle);
-    };
-    const link = (
-      <a onClick={search} key={preferenceId}>
-        {preferenceTitle}
-      </a>
-    );
-    others.splice(1, 0, link);
-    return others;
-  } else {
-    return description;
+  let tmp = description;
+  const result = [] as JSX.Element[];
+  for (const expression of match) {
+    if (!tmp) {
+      continue;
+    }
+    const _preferenceId = expression.slice(2, expression.length - 2);
+    const preferenceId = knownPrefIdMappings[_preferenceId] ?? _preferenceId;
+
+    const preference = preferenceSettingService.getSectionByPreferenceId(preferenceId);
+    if (preference) {
+      const preferenceTitle = getPreferenceItemLabel(preference);
+      const [prev, next] = tmp.split(expression, 2);
+      prev && result.push(<span>{prev}</span>);
+      tmp = next;
+      const link = (
+        <a
+          onClick={() => {
+            preferenceSettingService.search(preferenceTitle);
+          }}
+          key={preferenceId}
+        >
+          {preferenceTitle}
+        </a>
+      );
+      result.push(link);
+    }
   }
+  tmp && result.push(<span>{tmp}</span>);
+  return result;
 };
 
 @Injectable()
@@ -245,12 +255,14 @@ class PreferenceMarkedRender extends DefaultMarkedRenderer {
 
   codespan(text: string): string {
     if (text.startsWith('#') && text.endsWith('#')) {
-      const prefId = text.slice(1, text.length - 1);
+      const _prefId = text.slice(1, text.length - 1);
+      const prefId = knownPrefIdMappings[_prefId] ?? _prefId;
       const preference = this.preferenceSettingService.getSectionByPreferenceId(prefId);
       if (preference) {
         const preferenceTitle = getPreferenceItemLabel(preference);
         return linkify(`${PreferenceMarkedRender.openerScheme}${preferenceTitle}`, prefId, preferenceTitle);
       }
+      return super.codespan(prefId);
     }
     return super.codespan(text);
   }
@@ -705,7 +717,7 @@ function StringArrayPreferenceItem({
     const commit = () => {
       const newValue = value.slice(0);
       if (editValue) {
-        newValue[currentEditIndex] = editValue!;
+        newValue[currentEditIndex] = editValue;
       } else {
         newValue.splice(currentEditIndex, 1);
       }
