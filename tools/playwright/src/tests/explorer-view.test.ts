@@ -289,7 +289,7 @@ console.log(a);`,
       await input.type(newFileName, { delay: 200 });
       await app.page.keyboard.press('Enter');
     }
-    await app.page.waitForTimeout(1000);
+    await app.page.waitForTimeout(2000);
     // |- test
     // |----a
     // |------b
