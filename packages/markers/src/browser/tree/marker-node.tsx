@@ -120,7 +120,7 @@ const MarkerItemDescription: FC<{ marker: IRenderableMarker }> = memo(({ marker 
 const MarkerItemTitleName: FC<{ model: IRenderableMarkerModel }> = memo(({ model }) => {
   const filenameMatches = model.matches && model.matches.filenameMatches;
   if (filenameMatches) {
-    return <HighlightData data={model.filename} matches={filenameMatches} className={styles.itemTitleName} />;
+    return <HighlightData data={model.filename} matches={filenameMatches} className={styles.title} />;
   } else {
     return <div className={styles.title}>{model.filename}</div>;
   }
