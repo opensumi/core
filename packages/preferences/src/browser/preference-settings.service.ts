@@ -315,7 +315,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
    * 通过配置项ID获取配置项展示信息
    * @param preferenceId 配置项ID
    */
-  getSectionByPreferenceId(preferenceId: string) {
+  getPreferenceViewDesc(preferenceId: string) {
     const groups = this.settingsSections.values();
     for (const sections of groups) {
       for (const section of sections) {

@@ -224,7 +224,7 @@ const renderDescriptionExpression = (description: string) => {
     const _preferenceId = expression.slice(2, expression.length - 2);
     const preferenceId = knownPrefIdMappings[_preferenceId] ?? _preferenceId;
 
-    const preference = preferenceSettingService.getSectionByPreferenceId(preferenceId);
+    const preference = preferenceSettingService.getPreferenceViewDesc(preferenceId);
     if (preference) {
       const preferenceTitle = getPreferenceItemLabel(preference);
       const [prev, next] = tmp.split(expression, 2);
@@ -257,7 +257,7 @@ class PreferenceMarkedRender extends DefaultMarkedRenderer {
     if (text.startsWith('#') && text.endsWith('#')) {
       const _prefId = text.slice(1, text.length - 1);
       const prefId = knownPrefIdMappings[_prefId] ?? _prefId;
-      const preference = this.preferenceSettingService.getSectionByPreferenceId(prefId);
+      const preference = this.preferenceSettingService.getPreferenceViewDesc(prefId);
       if (preference) {
         const preferenceTitle = getPreferenceItemLabel(preference);
         return linkify(`${PreferenceMarkedRender.openerScheme}${preferenceTitle}`, prefId, preferenceTitle);

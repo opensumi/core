@@ -103,7 +103,7 @@ describe('PreferenceSettingService should be work', () => {
       expect(typeof preferenceSettingsService.getSettingGroups).toBe('function');
       expect(typeof preferenceSettingsService.registerSettingGroup).toBe('function');
       expect(typeof preferenceSettingsService.registerSettingSection).toBe('function');
-      expect(typeof preferenceSettingsService.getSectionByPreferenceId).toBe('function');
+      expect(typeof preferenceSettingsService.getPreferenceViewDesc).toBe('function');
       expect(typeof preferenceSettingsService.getResolvedSections).toBe('function');
       expect(typeof preferenceSettingsService.getPreference).toBe('function');
       expect(typeof preferenceSettingsService.getEnumLabels).toBe('function');
@@ -155,8 +155,8 @@ describe('PreferenceSettingService should be work', () => {
       expect(sectionGroup.length).toBe(5);
     });
 
-    it('getSectionByPreferenceId', () => {
-      const section = preferenceSettingsService.getSectionByPreferenceId('general.theme');
+    it('getPreferenceViewDesc', () => {
+      const section = preferenceSettingsService.getPreferenceViewDesc('general.theme');
       expect(section?.id).toBe('general.theme');
     });
 

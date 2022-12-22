@@ -15,7 +15,7 @@ export interface IPreferenceSettingsService {
   registerSettingSection(groupId: string, section: ISettingSection): IDisposable;
 
   getResolvedSections(groupId: string, scope: PreferenceScope, search?: string): IResolvedSettingSection[];
-  getSectionByPreferenceId(preferenceId: string): IPreferenceViewDesc | undefined;
+  getPreferenceViewDesc(preferenceId: string): IPreferenceViewDesc | undefined;
   getPreference(preferenceName: string, scope: PreferenceScope): { value: any; effectingScope: PreferenceScope };
 
   setEnumLabels(preferenceName: string, labels: { [key: string]: string }): void;
