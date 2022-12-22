@@ -1,6 +1,6 @@
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import {
@@ -10,7 +10,6 @@ import {
   IIconResourceOptions,
   BasicRecycleTree,
   IBasicTreeData,
-  IRecycleTreeHandle,
   IBasicRecycleTreeHandle,
 } from '@opensumi/ide-components';
 import { VirtualList } from '@opensumi/ide-components/lib/virtual-list';
@@ -54,6 +53,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   );
 
   const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const [focusItem, setFocusItem] = useState<string | undefined>(undefined);
 
   const debouncedSearch = debounce(
     (value: string) => {
@@ -73,6 +73,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       focusDispose.dispose();
     };
   }, []);
+
+  const prepareVisualEffect = useCallback(() => {
+    if (focusItem && preferenceService.treeHandler?.focusItem) {
+      // console.log(`🚀 ~ file: preferences.view.tsx:79 ~ prepareVisualEffect ~ focusItem`, focusItem);
+      preferenceService.treeHandler.focusItem(focusItem);
+    }
+  }, [focusItem, preferenceService.treeHandler]);
+
+  React.useEffect(() => {
+    prepareVisualEffect();
+  }, [preferenceService.tabIndex, preferenceService.treeHandler, focusItem]);
 
   const treeData = React.useMemo(() => {
     if (!preferenceService.groups) {
@@ -152,7 +163,11 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
       );
 
       const collectItem = (section: IResolvedSettingSection, prefix = '') => {
-        const currentItemPath = prefix + '/' + section.title;
+        let currentItemPath = prefix;
+        if (section.title) {
+          currentItemPath = prefix + '/' + section.title;
+        }
+
         const innerItems = [] as ISectionItemData[];
 
         if (section.component) {
@@ -221,14 +236,18 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   };
 
   const onRangeChanged = useThrottleFn(
-    async (range: IVirtualListRange) => {
+    (range: IVirtualListRange) => {
+      // console.log(
+      //   `🚀 ~ file: preferences.view.tsx:345 ~ constPreferenceView:ReactEditorComponent<null>=observer ~ range`,
+      //   range,
+      // );
       // 我们通过第一个 item 来变更左侧文件树的选择状态
       // 当我们点击左侧的 section 的时候，我们的设计是让每一个 section 的 title 滚到顶部
       // 此时仍然会触发该事件，但有时可能因为计算取整等原因，它上报的 startIndex 是 title 的上一个 index。
       // 我们在这里 +1 就是防止因为计算错误而取到上一个章节的 _path 的情况。
-      const item1 = items[range.startIndex + 1];
-      if (item1 && item1._path) {
-        await preferenceService.treeHandler?.focusItem(`${item1._path}`);
+      const item = items[range.startIndex + 1];
+      if (item && item._path) {
+        setFocusItem(item._path);
       }
     },
     16 * 3,
@@ -242,11 +261,12 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     if (preferenceService.currentSelectId) {
       navigateTo(preferenceService.currentSelectId);
     }
-    onRangeChanged.cancel();
   }, [items, preferenceService.currentSelectId]);
 
   const onTreeReady = (basicTreeHandle: IBasicRecycleTreeHandle) => {
     preferenceService.handleTreeHandler(basicTreeHandle);
+    // console.log('tree ready');
+    prepareVisualEffect();
   };
 
   return (
@@ -301,6 +321,10 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                   baseIndent={8}
                   treeData={treeData}
                   onClick={(_e, node) => {
+                    // console.log(
+                    //   `🚀 ~ file: preferences.view.tsx:332 ~ constPreferenceView:ReactEditorComponent<null>=observer ~ _e`,
+                    //   node,
+                    // );
                     const treeData = node && ((node as any)._raw as IPreferenceTreeData);
                     if (treeData) {
                       if (treeData.section) {
