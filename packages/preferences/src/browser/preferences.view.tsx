@@ -231,7 +231,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
         await preferenceService.basicTreeHandler?.focusItem(`${item1._path}`);
       }
     },
-    300,
+    16 * 3,
     {
       leading: true,
       trailing: true,
@@ -315,10 +315,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
                 />
               )}
             </AutoSizer>
-
-            {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-            {/* @ts-ignore [SplitPanel 需要 flex 属性] */}
-            <div className={styles.preferences_items} flex={1}>
+            <div className={styles.preferences_items} data-sp-flex={1}>
               <PreferenceBody
                 items={items}
                 onReady={preferenceService.handleListHandler}

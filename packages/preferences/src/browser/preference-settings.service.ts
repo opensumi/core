@@ -137,9 +137,9 @@ export class PreferenceSettingsService extends Disposable implements IPreference
             // 利用副作用强制刷新一下
             this.selectScope(this.currentScope);
           }),
-          300,
+          100,
           {
-            maxWait: 1000,
+            maxWait: 300,
           },
         ),
       ),
