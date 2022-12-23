@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@opensumi/ide-core-common": "2.21.9",
-    "@opensumi/vscode-jsonrpc": "^8.0.0-beta.7",
+    "@opensumi/vscode-jsonrpc": "^8.0.0-next.7",
     "path-match": "^1.2.4",
     "reconnecting-websocket": "^4.2.0",
     "ws": "^8.9.0"
