@@ -193,7 +193,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
           ) {
             defaultContainer = componentInfo.options!.containerId;
           } else {
-            this.logger.warn(`[defaultPanels] 没有找到${restorePanel}对应的视图!`);
+            this.logger.warn(`[defaultPanels] No \`${restorePanel}\` view found!`);
           }
         }
       } else {
@@ -228,7 +228,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   toggleSlot(location: string, show?: boolean | undefined, size?: number | undefined): void {
     const tabbarService = this.getTabbarService(location);
     if (!tabbarService) {
-      this.debug.error(`没有找到${location}对应位置的TabbarService，无法切换面板`);
+      this.debug.error(`Unable to switch panels because no TabbarService corresponding to \`${location}\` was found.`);
       return;
     }
     if (show === true) {
@@ -437,7 +437,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   replaceViewComponent(view: View, props?: any) {
     const containerId = this.viewToContainerMap.get(view.id);
     if (!containerId) {
-      this.debug.warn(`没有找到${view.id}对应的容器，请检查传入参数!`);
+      this.debug.warn(
+        `The container corresponding to \`${view.id}\` was not found, please check the incoming parameters!`,
+      );
       return;
     }
     const contributedView = this.customViews.get(view.id);
@@ -459,7 +461,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
 
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
-      this.debug.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
+      this.debug.warn(
+        `The container corresponding to \`${viewId}\` was not found, please check the incoming parameters!`,
+      );
       return;
     }
 
@@ -471,7 +475,9 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
   revealView(viewId: string) {
     const containerId = this.viewToContainerMap.get(viewId);
     if (!containerId) {
-      this.debug.warn(`没有找到${viewId}对应的容器，请检查传入参数!`);
+      this.debug.warn(
+        `The container corresponding to \`${viewId}\` was not found, please check the incoming parameters!`,
+      );
       return;
     }
     const accordionService: AccordionService = this.getAccordionService(containerId);
@@ -490,7 +496,7 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
       const tabbarService = this.getTabbarService(location);
       tabbarService.disposeContainer(containerId);
     } else {
-      this.debug.warn('没有找到containerId所属Tabbar!');
+      this.debug.warn(`The Tabbar to the \`${containerId}\` was not found.`);
     }
   }
 
