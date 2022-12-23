@@ -43,6 +43,7 @@ import {
   CommentPanelId,
   ICommentRangeProvider,
   ICommentsThreadOptions,
+  IWriteableCommentsTreeNode,
 } from '../common';
 
 import { CommentsPanel } from './comments-panel.view';
@@ -326,7 +327,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   }
 
   async resolveChildren(parent?: CommentRoot | CommentFileNode | CommentContentNode) {
-    const childs: (CommentRoot | CommentFileNode | CommentContentNode | CommentReplyNode)[] = [];
+    let childs: (CommentRoot | CommentFileNode | CommentContentNode | CommentReplyNode)[] = [];
     if (!parent) {
       childs.push(new CommentRoot(this));
     } else {
@@ -382,11 +383,24 @@ export class CommentsService extends Disposable implements ICommentsService {
             thread,
             formatLocalize('comment.reply.count', others?.length || 0),
             formatLocalize('comment.reply.lastReply', lastReply),
-            getExternalIcon('indent'),
+            '',
             parent.resource,
             parent,
           ),
         );
+      }
+    }
+    if (childs.length === 1 && CommentRoot.isRoot(childs[0])) {
+      return childs;
+    }
+    const handlers = this.commentsFeatureRegistry.getCommentsPanelTreeNodeHandlers();
+    if (handlers.length > 0) {
+      for (const handler of handlers) {
+        childs = handler(childs as IWriteableCommentsTreeNode[]) as (
+          | CommentFileNode
+          | CommentContentNode
+          | CommentReplyNode
+        )[];
       }
     }
     return childs;

@@ -12,7 +12,6 @@ export * from './keyboard';
 export * from './application';
 export * from './layout';
 export * from './fs';
-export * from './tree';
 export * from './toolbar';
 export * from './terminal';
 
