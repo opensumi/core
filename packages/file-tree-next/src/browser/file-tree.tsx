@@ -116,19 +116,16 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     [],
   );
 
-  const handleItemDoubleClicked = useCallback(
-    (event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
-      // 阻止点击事件冒泡
-      event.stopPropagation();
+  const handleItemDoubleClicked = useCallback((event: MouseEvent, item: File | Directory, type: TreeNodeType) => {
+    // 阻止点击事件冒泡
+    event.stopPropagation();
 
-      const { handleItemDoubleClick } = fileTreeModelService;
-      if (!item) {
-        return;
-      }
-      handleItemDoubleClick(item, type, activeUri);
-    },
-    [],
-  );
+    const { handleItemDoubleClick } = fileTreeModelService;
+    if (!item) {
+      return;
+    }
+    handleItemDoubleClick(item, type);
+  }, []);
 
   const handleTwistierClick = useCallback((ev: MouseEvent, item: Directory) => {
     // 阻止点击事件冒泡

@@ -93,8 +93,6 @@ export class OutlineModelService {
   // 选中态的节点
   private _selectedNodes: (OutlineCompositeTreeNode | OutlineTreeNode)[] = [];
 
-  private preContextMenuFocusedNode: OutlineCompositeTreeNode | OutlineTreeNode | null;
-
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
@@ -354,11 +352,6 @@ export class OutlineModelService {
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
   activeNodeDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode, dispatch = true) => {
-    if (this.preContextMenuFocusedNode) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
-      this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
-      this.preContextMenuFocusedNode = null;
-    }
     if (target) {
       for (const target of this.selectedDecoration.appliedTargets.keys()) {
         this.selectedDecoration.removeTarget(target);
@@ -378,9 +371,6 @@ export class OutlineModelService {
 
   // 清空其他选中/焦点态节点，更新当前选中节点
   selectNodeDecoration = (target: OutlineCompositeTreeNode | OutlineTreeNode, dispatch = true) => {
-    if (this.preContextMenuFocusedNode) {
-      this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
-    }
     if (target) {
       if (this.selectedNodes.length > 0) {
         this.selectedNodes.forEach((node) => {
@@ -407,16 +397,11 @@ export class OutlineModelService {
     if (this.focusedNode !== target) {
       if (removePreFocusedDecoration) {
         // 当存在上一次右键菜单激活的文件时，需要把焦点态的文件节点的装饰器全部移除
-        if (this.preContextMenuFocusedNode) {
-          this.focusedDecoration.removeTarget(this.preContextMenuFocusedNode);
-          this.selectedDecoration.removeTarget(this.preContextMenuFocusedNode);
-        } else if (this.focusedNode) {
+        if (this.focusedNode) {
           // 多选情况下第一次切换焦点文件
           this.focusedDecoration.removeTarget(this.focusedNode);
         }
-        this.preContextMenuFocusedNode = target;
       } else if (this.focusedNode) {
-        this.preContextMenuFocusedNode = null;
         this.focusedDecoration.removeTarget(this.focusedNode);
       }
       if (target) {

@@ -1,24 +1,30 @@
-import { Optional, Injectable, Autowired } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { IContextKeyService, IContextKey } from '@opensumi/ide-core-browser';
-import { RawContextKey } from '@opensumi/ide-core-browser/lib/raw-context-key';
-
-export const CanClearSearchResult = new RawContextKey<boolean>('canClearSearchResult', false);
-export const CanRefreshSearchResult = new RawContextKey<boolean>('canRefreshSearchResult', false);
-export const SearchInputFocused = new RawContextKey<boolean>('searchInputFocused', false);
+import {
+  HasSearchResults,
+  SearchInputBoxFocusedKey,
+  SearchViewFocusedKey,
+} from '@opensumi/ide-core-browser/lib/contextkey/search';
 
 @Injectable()
 export class SearchContextKey {
   @Autowired(IContextKeyService)
   private readonly globalContextkeyService: IContextKeyService;
 
-  public readonly canClearSearchResult: IContextKey<boolean>;
-  public readonly canRefreshSearchResult: IContextKey<boolean>;
-  public readonly searchInputFocused: IContextKey<boolean>;
+  public hasSearchResults: IContextKey<boolean>;
+  public searchViewFocusedKey: IContextKey<boolean>;
+  public searchInputBoxFocusedKey: IContextKey<boolean>;
 
-  constructor(@Optional() contextKeyService: IContextKeyService) {
-    contextKeyService = contextKeyService || this.globalContextkeyService;
-    this.canClearSearchResult = CanClearSearchResult.bind(contextKeyService);
-    this.canRefreshSearchResult = CanRefreshSearchResult.bind(contextKeyService);
-    this.searchInputFocused = SearchInputFocused.bind(contextKeyService);
+  private _contextKeyService: IContextKeyService;
+
+  initScopedContext(dom: HTMLDivElement) {
+    this._contextKeyService = this.globalContextkeyService.createScoped(dom);
+    this.searchViewFocusedKey = SearchViewFocusedKey.bind(this._contextKeyService);
+    this.searchInputBoxFocusedKey = SearchInputBoxFocusedKey.bind(this._contextKeyService);
+    this.hasSearchResults = HasSearchResults.bind(this._contextKeyService);
+  }
+
+  get service() {
+    return this._contextKeyService;
   }
 }

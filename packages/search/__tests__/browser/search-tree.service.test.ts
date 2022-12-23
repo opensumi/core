@@ -2,7 +2,7 @@ import path from 'path';
 
 import { Injector, Injectable } from '@opensumi/di';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { Uri, URI } from '@opensumi/ide-core-common';
+import { Disposable, Uri, URI } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -16,30 +16,34 @@ import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.s
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { OverlayModule } from '@opensumi/ide-overlay/lib/browser';
+import { SearchFileNode, SearchRoot } from '@opensumi/ide-search/lib/browser/tree/tree-node.defined';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 
+import { MockContentSearchServer } from '../../__mocks__/content-search.service';
 import { SearchModule } from '../../src/browser/';
 import { SearchPreferences } from '../../src/browser/search-preferences';
-import { SearchTreeService } from '../../src/browser/search-tree.service';
-import { ContentSearchClientService } from '../../src/browser/search.service';
+import { SearchTreeService } from '../../src/browser/tree/search-tree.service';
 import {
   IContentSearchClientService,
   ContentSearchServerPath,
-  ContentSearchOptions,
   ContentSearchResult,
+  ISearchTreeService,
 } from '../../src/common';
 
-const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString();
+const root = new URI('root');
 
 @Injectable()
 class MockWorkspaceService {
   tryGetRoots() {
     return [
       {
-        uri: rootUri,
+        uri: root,
       },
     ];
+  }
+  asRelativePath() {
+    return '';
   }
 
   setMostRecentlySearchWord() {}
@@ -48,23 +52,6 @@ class MockWorkspaceService {
 @Injectable()
 class MockMainLayoutService {
   getTabbarHandler() {}
-}
-
-@Injectable()
-class MockSearchContentService {
-  catchSearchValue: string;
-  catchSearchRootDirs: string[];
-  catchSearchOptions: ContentSearchOptions;
-
-  async search(value, rootDirs, searchOptions) {
-    this.catchSearchValue = value;
-    this.catchSearchRootDirs = rootDirs;
-    this.catchSearchOptions = searchOptions;
-
-    return 1;
-  }
-
-  cancel() {}
 }
 
 @Injectable()
@@ -80,7 +67,9 @@ class MockWorkspaceEditorService {
 
 @Injectable()
 class MockEditorDocumentModelContentRegistry {
-  registerEditorDocumentModelContentProvider() {}
+  registerEditorDocumentModelContentProvider() {
+    return Disposable.create(() => {});
+  }
 }
 
 @Injectable()
@@ -107,39 +96,29 @@ class MockContextKeyService {
   }
 }
 
-describe('search.service.ts', () => {
+describe('search-tree.service.ts', () => {
   let injector: Injector;
   let searchService: IContentSearchClientService;
   let searchTreeService: SearchTreeService;
-  const parent: any = {
-    expanded: false,
-    id: 'p-1',
-    name: '',
-    uri: new URI('file://root'),
-    children: [],
-  };
 
-  const searchResult1 = {
-    fileUri: 'file://root',
+  const searchFileUri = root.resolve('test.js');
+  const searchResult = {
+    fileUri: searchFileUri.toString(),
     line: 1,
     matchStart: 11,
     matchLength: 12,
-    renderLineText: '',
+    renderLineText: 'text',
     renderStart: 2,
   };
-  const searchResult2 = Object.assign({}, searchResult1, { line: 2 });
+  const searchResult_2 = Object.assign({}, searchResult, { line: 2 });
   const searchResults: Map<string, ContentSearchResult[]> = new Map();
 
-  searchResults.set('file://root', [searchResult1, searchResult2]);
+  searchResults.set(searchFileUri.toString(), [searchResult, searchResult_2]);
 
   beforeAll(() => {
     injector = createBrowserInjector([OverlayModule, SearchModule]);
 
     injector.overrideProviders(
-      {
-        token: ContentSearchClientService,
-        useClass: ContentSearchClientService,
-      },
       {
         token: ResourceService,
         useClass: ResourceServiceImpl,
@@ -150,7 +129,7 @@ describe('search.service.ts', () => {
       },
       {
         token: ContentSearchServerPath,
-        useClass: MockSearchContentService,
+        useClass: MockContentSearchServer,
       },
       {
         token: IEditorDocumentModelService,
@@ -190,8 +169,8 @@ describe('search.service.ts', () => {
       },
     );
 
-    searchService = injector.get(ContentSearchClientService);
-    searchTreeService = injector.get(SearchTreeService);
+    searchService = injector.get(IContentSearchClientService);
+    searchTreeService = injector.get(ISearchTreeService);
 
     searchService.searchResults = searchResults;
     searchService.resultTotal = { resultNum: 2, fileNum: 1 };
@@ -202,34 +181,31 @@ describe('search.service.ts', () => {
     });
   });
 
-  test('service can be work', () => {
-    expect(searchTreeService._nodes).toBeDefined();
+  afterAll(() => {
+    injector.disposeAll();
   });
 
-  test('initialize', () => {
-    const childList = (searchTreeService as any).getChildrenNodes(searchService.searchResults, parent);
-    parent.children.push(childList);
-    const nodeList = [parent, ...childList];
-    searchTreeService.nodes = nodeList;
-
-    expect(searchTreeService._nodes).toEqual(nodeList);
+  test('get SearchTreeNode from tree service', async () => {
+    const root = (await searchTreeService.resolveChildren())[0] as SearchRoot;
+    expect(root).toBeDefined();
+    expect(SearchRoot.is(root)).toBeTruthy();
+    const childs = await searchTreeService.resolveChildren(root);
+    expect(childs.length).toBe(1);
+    const fileNode = childs[0] as SearchFileNode;
+    expect(SearchFileNode.is(fileNode)).toBeTruthy();
+    const contents = await searchTreeService.resolveChildren(fileNode);
+    expect(contents.length).toBe(2);
   });
 
-  test('method: onSelect', () => {
-    searchTreeService.onSelect([parent]);
-
-    expect(searchTreeService.nodes[0].expanded).toEqual(true);
-  });
-
-  test('method: commandActuator closeResult', () => {
-    searchTreeService.commandActuator('closeResult', 'file://root?index=0');
-
-    expect(searchService.searchResults.get('file://root')!.length).toEqual(1);
-  });
-
-  test('method: commandActuator closeResults', () => {
-    searchTreeService.commandActuator('closeResults', 'file://root');
-
-    expect(searchService.searchResults.size).toEqual(0);
+  test('init contextKey with dom', () => {
+    const dom = document.createElement('div');
+    expect(searchTreeService.contextKey).toBeTruthy();
+    expect(searchTreeService.contextKey.searchViewFocusedKey).toBeUndefined();
+    expect(searchTreeService.contextKey.searchInputBoxFocusedKey).toBeUndefined();
+    expect(searchTreeService.contextKey.hasSearchResults).toBeUndefined();
+    searchTreeService.initContextKey(dom);
+    expect(searchTreeService.contextKey.searchViewFocusedKey).toBeDefined();
+    expect(searchTreeService.contextKey.searchInputBoxFocusedKey).toBeDefined();
+    expect(searchTreeService.contextKey.hasSearchResults).toBeDefined();
   });
 });
