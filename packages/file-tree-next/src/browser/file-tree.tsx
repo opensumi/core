@@ -28,7 +28,7 @@ import {
   CancellationToken,
   CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
 import { FILE_EXPLORER_WELCOME_ID, IFileTreeService } from '../common';
@@ -452,7 +452,7 @@ const FileTreeView = memo(
 
     if (isReady) {
       if (isLoading) {
-        return <ProgressBar loading />;
+        return <Progress loading />;
       } else if (model) {
         return (
           <FilterableRecycleTree
@@ -472,7 +472,7 @@ const FileTreeView = memo(
         return <WelcomeView viewId={FILE_EXPLORER_WELCOME_ID} />;
       }
     } else {
-      return <ProgressBar loading />;
+      return <Progress loading />;
     }
   },
 );

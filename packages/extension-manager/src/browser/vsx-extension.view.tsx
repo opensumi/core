@@ -5,7 +5,7 @@ import { useState, useCallback } from 'react';
 
 import { Tabs } from '@opensumi/ide-components';
 import { useInjectable } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { localize } from '@opensumi/ide-core-common';
 import { AutoFocusedInput } from '@opensumi/ide-main-layout/lib/browser/input';
 
@@ -70,7 +70,7 @@ export const VSXExtensionView = observer(() => {
       </div>
       {activeKey === TabActiveKey.MARKETPLACE && (
         <div className={styles.extensions_view}>
-          <ProgressBar loading={loading} />
+          <Progress loading={loading} />
           {vsxExtensionService.extensions.map((e) => (
             <Extension
               onClick={onClick}

@@ -8,7 +8,7 @@ import {
   TreeModel,
 } from '@opensumi/ide-components';
 import { ViewState, CancellationToken, localize, CancellationTokenSource } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import styles from './index.module.less';
@@ -138,7 +138,7 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
       return <span className={styles.opened_editor_empty_text}>{localize('opened.editors.empty')}</span>;
     } else {
       if (isLoading) {
-        return <ProgressBar loading />;
+        return <Progress loading />;
       } else if (model) {
         return (
           <RecycleTree

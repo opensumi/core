@@ -1,7 +1,7 @@
 import React, { useCallback, useState, ReactNode, useEffect, useMemo } from 'react';
 
 import { Icon, getIcon, Button, Tabs } from '@opensumi/ide-components';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks/injectable-hooks';
 import { localize, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
@@ -180,7 +180,7 @@ export const ExtensionOverview: ReactEditorComponent<
 
   return (
     <div className={styles.extension_overview_container}>
-      <ProgressBar loading={loading} />
+      <Progress loading={loading} />
       <div className={styles.extension_overview_header}>
         {resource.metadata?.iconUrl ? (
           <img

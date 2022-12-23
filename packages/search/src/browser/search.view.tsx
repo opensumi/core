@@ -14,7 +14,7 @@ import React, {
 import { ValidateMessage } from '@opensumi/ide-components';
 import { DisposableCollection, Key, ViewState } from '@opensumi/ide-core-browser';
 import { localize, useInjectable } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 import {
   ContentSearchResult,
@@ -104,7 +104,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
   const SearchProcess = useMemo(
     () => (
       <div className={styles['loading-wrap']}>
-        <ProgressBar loading={searchContent.isSearching} />
+        <Progress loading={searchContent.isSearching} />
       </div>
     ),
     [searchContent],
