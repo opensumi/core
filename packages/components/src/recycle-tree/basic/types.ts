@@ -3,6 +3,8 @@ import { ClasslistComposite } from '../tree/decoration';
 import { INodeRendererProps } from '../TreeNodeRendererWrap';
 import { ITreeNodeOrCompositeTreeNode } from '../types';
 
+import type { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
+
 export enum IBasicInlineMenuPosition {
   TREE_NODE = 1,
   TREE_CONTAINER,
@@ -60,7 +62,7 @@ export interface IBasicTreeData {
   /**
    * 图标
    */
-  icon: string;
+  icon?: string;
   iconClassName?: string;
   /**
    * 描述
@@ -68,6 +70,8 @@ export interface IBasicTreeData {
   description?: string;
   /**
    * 子节点
+   *
+   * 传入一个空数组可让本节点视为文件夹，同时可以通过 expandable 属性来设置是否展示收起图标
    */
   children?: IBasicTreeData[] | null;
   /**
@@ -86,6 +90,11 @@ export interface IBasicTreeData {
    * 其他属性
    */
   [key: string]: any;
+}
+
+export interface IBasicRecycleTreeHandle extends IRecycleTreeHandle {
+  selectItem: (item: BasicCompositeTreeNode | BasicTreeNode) => Promise<void>;
+  focusItem(path: string): Promise<void>;
 }
 
 export interface IBasicRecycleTreeProps {
@@ -107,9 +116,13 @@ export interface IBasicRecycleTreeProps {
    */
   itemHeight?: number;
   /**
-   * 节点缩进，默认值为 8
+   * 每层的节点缩进长度，默认值为 8
    */
   indent?: number;
+  /**
+   * 基础缩进。即第一层距离左边的距离，默认为 8
+   */
+  baseIndent?: number;
   /**
    * 追加的容器样式名，用于自定义更多样式
    */
@@ -125,7 +138,7 @@ export interface IBasicRecycleTreeProps {
   /**
    * 排序函数
    */
-  sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number;
+  sortComparator?: (a: IBasicTreeData, b: IBasicTreeData) => number | undefined;
   /**
    * 单击事件
    */
@@ -162,7 +175,14 @@ export interface IBasicRecycleTreeProps {
    * 用于挂载 Tree 上的一些操作方法
    * 如：ensureVisible 等
    */
-  onReady?: (api: IRecycleTreeHandle) => void;
+  onReady?: (treeHandler: IBasicRecycleTreeHandle) => void;
+
+  /**
+   * 指定 RecycleTree 的名字
+   */
+  treeName?: string;
+
+  getItemClassName?: (item?: ITreeNodeOrCompositeTreeNode) => string | undefined;
 }
 
 export interface IBasicNodeProps {
@@ -175,7 +195,7 @@ export interface IBasicNodeProps {
    */
   className?: string;
   /**
-   * 节点缩进
+   * 每层的节点缩进长度
    */
   indent?: number;
   /**

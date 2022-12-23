@@ -33,6 +33,18 @@ export const PanelContext = React.createContext<ResizeHandle>({
 
 type ChildComponent = React.ReactElement<SplitChildProps>;
 
+/**
+ * 推荐使用 `data-sp-` 方式来传递这些参数。
+ *
+ * 如：
+ *
+ * ```tsx
+ * <SplitPanel>
+ *   <div data-sp-id="div1" data-sp-minResize={100}></div>
+ *   <div></div>
+ * </SplitPanel>
+ * ```
+ */
 interface SplitChildProps {
   id: string;
   minSize?: number;
@@ -58,13 +70,19 @@ export interface SplitPanelProps extends SplitChildProps {
   dynamicTarget?: boolean;
   // 控制使用传入尺寸之和作为总尺寸或使用dom尺寸
   useDomSize?: boolean;
+  /**
+   * ResizeHandle 的 className，用以展示分割线等
+   */
+  resizeHandleClassName?: string;
 }
 
-const getProp = (child: React.ReactNode, prop: string) => child && child['props'] && child['props'][prop];
+const getProp = (child: React.ReactNode, prop: string) =>
+  child && child['props'] && (child['props'][prop] ?? child['props'][`data-sp-${prop}`]);
 
 export const SplitPanel: React.FC<SplitPanelProps> = ({
   id,
   className,
+  resizeHandleClassName,
   style,
   children = [],
   direction = 'left-to-right',
@@ -79,7 +97,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
   // convert children to list
   const childList = React.Children.toArray(children);
   const totalFlexNum = childList.reduce(
-    (accumulator, item) => accumulator + (getProp(item, 'flex') !== undefined ? item['props'].flex : 1),
+    (accumulator, item) => accumulator + (getProp(item, 'flex') !== undefined ? getProp(item, 'flex') : 1),
     0,
   );
   const elements: React.ReactNodeArray = [];
@@ -183,6 +201,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       if (!noResize) {
         elements.push(
           <ResizeHandle
+            className={resizeHandleClassName}
             onResize={(prev, next) => {
               const prevLocation = getProp(childList[index - 1], 'slot') || getProp(childList[index - 1], 'id');
               const nextLocation = getProp(childList[index], 'slot') || getProp(childList[index], 'id');
@@ -232,21 +251,21 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
           id={getProp(element, 'id') /* @deprecated: query by data-view-id */}
           style={{
             // 手风琴场景，固定尺寸和flex尺寸混合布局；需要在resize flex模式下禁用
-            ...(element['props'].flex &&
-            !element['props'].savedSize &&
-            !childList.find((item) => item!['props'].flexGrow)
-              ? { flex: element['props'].flex }
+            ...(getProp(element, 'flex') &&
+            !getProp(element, 'savedSize') &&
+            !childList.find((item) => getProp(item, 'flexGrow'))
+              ? { flex: getProp(element, 'flex') }
               : { [Layout.getSizeProperty(direction)]: getElementSize(element) }),
             // 相对尺寸带来的问题，必须限制最小最大尺寸
             [Layout.getMinSizeProperty(direction)]: getProp(element, 'minSize')
-              ? element['props'].minSize + 'px'
+              ? getProp(element, 'minSize') + 'px'
               : '-1px',
             [Layout.getMaxSizeProperty(direction)]:
-              maxLocks[index] && getProp(element, 'maxSize') ? element['props'].maxSize + 'px' : 'unset',
+              maxLocks[index] && getProp(element, 'maxSize') ? getProp(element, 'maxSize') + 'px' : 'unset',
             // resize flex模式下应用flexGrow
-            ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: element['props'].flexGrow } : {}),
+            ...(getProp(element, 'flexGrow') !== undefined ? { flexGrow: getProp(element, 'flexGrow') } : {}),
             display: hides[index] ? 'none' : 'block',
-            backgroundColor: element['props'].backgroundColor,
+            backgroundColor: getProp(element, 'backgroundColor'),
           }}
         >
           {element}
@@ -256,12 +275,12 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
   });
 
   function getElementSize(element: any) {
-    if (element.props.savedSize) {
-      return element.props.savedSize + 'px';
-    } else if (element.props.defaultSize !== undefined) {
-      return element.props.defaultSize + 'px';
-    } else if (element.props.flex) {
-      return (element.props.flex / totalFlexNum) * 100 + '%';
+    if (getProp(element, 'savedSize')) {
+      return getProp(element, 'savedSize') + 'px';
+    } else if (getProp(element, 'defaultSize') !== undefined) {
+      return getProp(element, 'defaultSize') + 'px';
+    } else if (getProp(element, 'flex')) {
+      return (getProp(element, 'flex') / totalFlexNum) * 100 + '%';
     } else {
       return (1 / totalFlexNum) * 100 + '%';
     }
