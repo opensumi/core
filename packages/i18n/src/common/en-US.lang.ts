@@ -130,7 +130,7 @@ export const localizationBundle = {
       "Controls whether bracket pair colorization is enabled or not. Use 'workbench.colorCustomizations' to override the bracket highlight colors.",
     'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
     'editor.configuration.mouseBackForwardToNavigate':
-      "Enables the use of mouse buttons four and five for k' and 'Go Forward'.",
+      "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
     'editor.lineHeight': 'Line Height',
     'editor.lineHeight.description':
       'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
