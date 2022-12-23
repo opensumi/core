@@ -84,7 +84,7 @@ export class MarkersContribution
         alignment: StatusBarAlignment.LEFT,
         text: [
           `$(kticon/close-circle) ${normalize(stats.errors)}`,
-          `$(kticon/warning-circle) ${normalize(stats.warnings)}`,
+          `$(kticon/error) ${normalize(stats.warnings)}`,
           `$(kticon/info-circle) ${normalize(stats.infos)}`,
         ].join(' '),
         priority: 1,
