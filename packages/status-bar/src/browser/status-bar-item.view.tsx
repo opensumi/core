@@ -127,7 +127,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
                   key={key}
                   className={cls(
                     styles.icon,
-                    getExternalIcon(item.name),
+                    getExternalIcon(item.name, item.owner),
                     `${item.animation ? 'iconfont-anim-' + item.animation : ''}`,
                   )}
                 ></span>
@@ -135,12 +135,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
             } else {
               // 22px高度限制用于解决文本超长时文本折叠问题
               return (
-                <span
-                  style={{ marginLeft: iconClass || hasIcon ? '2px' : 0, height: '22px', lineHeight: '22px' }}
-                  key={key}
-                  aria-label={ariaLabel}
-                  role={role}
-                >
+                <span style={{ height: '22px', lineHeight: '22px' }} key={key} aria-label={ariaLabel} role={role}>
                   {replaceLocalizePlaceholder(item)}
                 </span>
               );

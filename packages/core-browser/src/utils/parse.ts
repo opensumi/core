@@ -17,6 +17,7 @@
 
 export interface LabelIcon {
   name: string;
+  owner?: string;
   animation?: string;
 }
 
@@ -52,10 +53,19 @@ export function parseLabel(text: string): LabelPart[] {
     } else {
       if (char === ')') {
         const iconClassArr = potentialIcon.substring(2, potentialIcon.length).split('~');
+        let name = iconClassArr[0];
+        let owner: string | undefined;
+        if (name) {
+          const index = name.indexOf('/');
+          if (index !== -1) {
+            owner = name.substring(0, index);
+            name = name.substring(index + 1);
+          }
+        }
         if (parserArray[arrPointer] !== '') {
           arrPointer++;
         }
-        parserArray[arrPointer] = { name: iconClassArr[0], animation: iconClassArr[1] };
+        parserArray[arrPointer] = { name, owner, animation: iconClassArr[1] };
         arrPointer++;
         potentialIcon = '';
       } else {
