@@ -845,6 +845,7 @@ export const localizationBundle = {
     'markers.filter.placeholder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
     'markers.filter.content.empty': 'No results found with provided filter criteria.',
     'markers.filter.reset': 'Clear Filter.',
+    'markers.status.no.problems': 'No Problems',
 
     'app.quit': 'Quit',
     'view.zoomReset': 'Zoom Reset',

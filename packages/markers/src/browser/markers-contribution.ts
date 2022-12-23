@@ -21,6 +21,15 @@ import { MarkerService } from './markers-service';
 import { MarkerPanel } from './markers-tree.view';
 import Messages from './messages';
 
+function normalize(num: number) {
+  const limit = 100;
+  const msg = `${limit - 1}+`;
+  if (num >= limit) {
+    return msg;
+  }
+  return num.toString();
+}
+
 @Domain(CommandContribution, ComponentContribution, MainLayoutContribution)
 export class MarkersContribution
   extends Disposable
@@ -54,27 +63,32 @@ export class MarkersContribution
       }),
     );
   }
+
   statusBarId = 'markers-status';
   updateStatusBar() {
     const markerManager = this.markerService.getManager();
     const stats = markerManager.getStats();
     if (stats) {
       const tooltipString = [] as string[];
-      if (stats.errors) {
+      if (stats.errors > 0) {
         tooltipString.push(`Errors(${stats.errors})`);
       }
-      if (stats.warnings) {
+      if (stats.warnings > 0) {
         tooltipString.push(`Warnings(${stats.warnings})`);
       }
-      if (stats.infos) {
+      if (stats.infos > 0) {
         tooltipString.push(`Infos(${stats.infos})`);
       }
       this.statusBar.addElement(this.statusBarId, {
         name: localize('status-bar.editor-langStatus'),
         alignment: StatusBarAlignment.LEFT,
-        text: `$(kticon/close-circle) ${stats.errors} $(kticon/warning-circle) ${stats.warnings} $(kticon/info-circle) ${stats.infos}`,
+        text: [
+          `$(kticon/close-circle) ${normalize(stats.errors)}`,
+          `$(kticon/warning-circle) ${normalize(stats.warnings)}`,
+          `$(kticon/info-circle) ${normalize(stats.infos)}`,
+        ].join(' '),
         priority: 1,
-        tooltip: tooltipString.length > 0 ? tooltipString.join(', ') : 'All Clear',
+        tooltip: tooltipString.length > 0 ? tooltipString.join(', ') : localize('markers.status.no.problems'),
         onClick: () => {
           this.toggleMarkerTabbar();
         },
