@@ -78,6 +78,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
   private logger: ILogService;
 
+  private ignoreNextChangesEvent: Set<string> = new Set();
+
   constructor() {
     super();
     this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
@@ -232,10 +234,13 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
 
     try {
+      this.ignoreNextChangesEvent.add(_uri.toString());
       await writeFileAtomic(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
-      this.logger.warn('writeFileAtomicSync 出错，使用 fs', e);
       await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
+      this.logger.warn('writeFileAtomicSync 出错，使用 fs', e);
+    } finally {
+      this.ignoreNextChangesEvent.delete(_uri.toString());
     }
   }
 
@@ -356,11 +361,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         if (events.changes.length > 0) {
-          this.fileChangeEmitter.fire(events.changes);
+          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
+          this.fileChangeEmitter.fire(changes);
           if (Array.isArray(this.rpcClient)) {
             this.rpcClient.forEach((client) => {
               client.onDidFilesChanged({
-                changes: events.changes,
+                changes,
               });
             });
           }
