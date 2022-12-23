@@ -1,3 +1,4 @@
+import type { ITree } from '@opensumi/ide-components';
 import {
   IRange,
   URI,
@@ -393,11 +394,6 @@ export interface ICommentsFeatureRegistry {
    */
   registerPanelOptions(options: CommentsPanelOptions): void;
   /**
-   * 注册底部面板评论树的处理函数，可以在渲染前重新再定义一次树的数据结构
-   * @param handler
-   */
-  registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void;
-  /**
    * 注册提及相关功能的能力
    * @param options
    */
@@ -420,10 +416,6 @@ export interface ICommentsFeatureRegistry {
    * 获取底部面板参数
    */
   getCommentsPanelOptions(): CommentsPanelOptions;
-  /**
-   * 获取底部面板评论树的处理函数
-   */
-  getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
   /**
    * 获取文件上传处理函数
    */
@@ -615,15 +607,11 @@ export interface ICommentsThreadOptions {
 }
 
 export const ICommentsService = Symbol('ICommentsService');
-export interface ICommentsService {
+export interface ICommentsService extends ITree {
   /**
    * 评论节点
    */
   commentsThreads: ICommentsThread[];
-  /**
-   * 评论树节点
-   */
-  commentsTreeNodes: ICommentsTreeNode[];
   /**
    * 初始化函数
    */
@@ -655,17 +643,21 @@ export interface ICommentsService {
    */
   onThreadsCreated: Event<ICommentsThread>;
   /**
-   * 强制更新 tree node，再走一次 TreeNodeHandler 逻辑
+   * thread 下评论更新
    */
-  forceUpdateTreeNodes(): void;
-  /**
-   * 触发 左侧 decoration 的渲染
-   */
-  forceUpdateDecoration(): void;
+  onThreadsCommentChange: Event<ICommentsThread>;
   /**
    * 注册插件底部面板
    */
   registerCommentPanel(): void;
+  /**
+   * 通知对应 thread 下评论内容更新
+   */
+  fireThreadCommentChange(thread: ICommentsThread): void;
+  /**
+   * 触发左侧 decoration 的渲染
+   */
+  forceUpdateDecoration(): void;
   /**
    * 外部注册可评论的行号提供者
    */

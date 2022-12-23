@@ -1005,6 +1005,9 @@ export const localizationBundle = {
     'task.contribute': 'Contribute',
     'task.cannotFindTask': 'Cannot find task for {0}. Press Enter key to return.',
 
+    'comment.reply.count': '{0} comments',
+    'comment.reply.lastReply': 'Last reply from {0}',
+
     // extension contribute
 
     // #region walkthrough

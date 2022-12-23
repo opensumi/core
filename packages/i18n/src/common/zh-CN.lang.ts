@@ -1047,6 +1047,9 @@ export const localizationBundle = {
 
     'task.contribute': '贡献',
     'task.cannotFindTask': '未找到 {0} 的任务，按回车键返回',
+
+    'comment.reply.count': '{0} 个评论',
+    'comment.reply.lastReply': '最后由 {0} 评论',
     // extension contribute
 
     // #region walkthrough

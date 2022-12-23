@@ -222,7 +222,7 @@ export class MainthreadComments implements IDisposable, IMainThreadComments {
 }
 
 @Injectable({ multiple: true })
-export class MainThreadCommentThread implements CommentThread {
+export class MainThreadCommentThread extends Disposable implements CommentThread {
   @Autowired(ICommentsService)
   private commentsService: ICommentsService;
 
@@ -384,6 +384,7 @@ export class MainThreadCommentThread implements CommentThread {
     _range: IRange,
     _canReply: boolean,
   ) {
+    super();
     // 查找当前位置 的 threads
     // 框架支持同一个位置多个 thread
     const threads = this.commentsService.commentsThreads.filter(
@@ -408,11 +409,23 @@ export class MainThreadCommentThread implements CommentThread {
         readOnly: !_canReply,
       });
     }
+    this.disposables.push(
+      this.onDidChangeComments(() => {
+        this.commentsService.fireThreadCommentChange(this._thread);
+      }),
+      this._onDidChangeCollasibleState,
+      this._onDidChangeComments,
+      this._onDidChangeInput,
+      this._onDidChangeLabel,
+      this._onDidChangeRange,
+    );
     this._isDisposed = false;
   }
+
   isDocumentCommentThread(): this is CommentThread<IRange> {
     throw new Error('Method not implemented.');
   }
+
   // FIXME: 实现新增的属性
   state?: CommentThreadState | undefined;
   onDidChangeCollapsibleState: Event<CommentThreadCollapsibleState | undefined>;
@@ -445,12 +458,8 @@ export class MainThreadCommentThread implements CommentThread {
 
   dispose() {
     this._isDisposed = true;
-    this._onDidChangeCollasibleState.dispose();
-    this._onDidChangeComments.dispose();
-    this._onDidChangeInput.dispose();
-    this._onDidChangeLabel.dispose();
-    this._onDidChangeRange.dispose();
     this._thread.dispose();
+    super.dispose();
   }
 
   toJSON(): any {
