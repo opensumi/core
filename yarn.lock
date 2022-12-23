@@ -2650,7 +2650,6 @@ __metadata:
     react-ctxmenu-trigger: ^1.0.0
     react-custom-scrollbars: ^4.2.1
     react-is: ^16.8.6
-    react-perfect-scrollbar: ^1.5.2
     react-sticky: ^6.0.3
     react-window: ^1.8.5
     resize-observer-polyfill: 1.5.1
@@ -16596,13 +16595,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"perfect-scrollbar@npm:^1.5.0":
-  version: 1.5.5
-  resolution: "perfect-scrollbar@npm:1.5.5"
-  checksum: 7a8d3097e91df1dd112f28ee9539c1a36ae7a836d986798af2e0d1e32c3ef21380215b3c06bc12434d89547d7f763637ac19b877549049b6c2166da85956c9dc
-  languageName: node
-  linkType: hard
-
 "performance-now@npm:^2.1.0":
   version: 2.1.0
   resolution: "performance-now@npm:2.1.0"
@@ -17362,7 +17354,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.6, prop-types@npm:^15.5.8, prop-types@npm:^15.6.1, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
+"prop-types@npm:15.x, prop-types@npm:^15.5.10, prop-types@npm:^15.5.6, prop-types@npm:^15.5.8, prop-types@npm:^15.6.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -17957,19 +17949,6 @@ __metadata:
     react: 16.x
     react-dom: 16.x
   checksum: 69590a6b6c9b42b5a6c2b6d574c73c1e3dcf69a2cbe50c888e6ca0bab22adf25aeb0dc4a2ad5ca5f6c22c828d0167827941bb033b9adc9cfae6177e421d97380
-  languageName: node
-  linkType: hard
-
-"react-perfect-scrollbar@npm:^1.5.2":
-  version: 1.5.8
-  resolution: "react-perfect-scrollbar@npm:1.5.8"
-  dependencies:
-    perfect-scrollbar: ^1.5.0
-    prop-types: ^15.6.1
-  peerDependencies:
-    react: ">=16.3.3"
-    react-dom: ">=16.3.3"
-  checksum: d0bb4713ccab648d25ea13b4ee9fb19b2b075c03bd11e81a6bb02e1da9b4920e3124d87142a7a2a3201c8b7fa5cb6183069acff01f19a0cb5b536331ae7182f4
   languageName: node
   linkType: hard
 

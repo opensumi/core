@@ -39,7 +39,6 @@
     "react-ctxmenu-trigger": "^1.0.0",
     "react-custom-scrollbars": "^4.2.1",
     "react-is": "^16.8.6",
-    "react-perfect-scrollbar": "^1.5.2",
     "react-sticky": "^6.0.3",
     "react-window": "^1.8.5",
     "resize-observer-polyfill": "1.5.1",

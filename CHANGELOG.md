@@ -29,6 +29,10 @@ If used, please remove this module, it has no practical effect.
 
 Please use `Scollerbars` component instead.
 
+#### 4. The `DeprecatedRecycleTree` component was removed
+
+Please use `RecycleTree` or `BasicRecycleTree` component instead.
+
 ## v2.21.0
 
 ### What's New Features

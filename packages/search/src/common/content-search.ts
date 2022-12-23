@@ -1,7 +1,5 @@
-import type { ITree } from '@opensumi/ide-components';
-import type { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
-import { Command, Event } from '@opensumi/ide-core-common';
-import { parseGlob, ParsedPattern, URI, strings } from '@opensumi/ide-core-common';
+import type { ITree, ValidateMessage } from '@opensumi/ide-components';
+import { parseGlob, ParsedPattern, URI, strings, Event } from '@opensumi/ide-core-common';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 
@@ -224,13 +222,6 @@ export function getRoot(rootUris?: string[], uri?: string): string {
   return result;
 }
 
-export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
-  children?: ISearchTreeItem[];
-  badge?: number;
-  searchResult?: ContentSearchResult;
-  [key: string]: any;
-}
-
 /**
  * 裁剪处理过长的结果，计算出 renderLineText、renderStart
  * @param insertResult
@@ -268,12 +259,6 @@ export function cutShortSearchResult(insertResult: ContentSearchResult): Content
 export interface OpenSearchCmdOptions {
   includeValue: string;
 }
-
-export const openSearchCmd: Command = {
-  id: 'content-search.openSearch',
-  category: 'search',
-  label: 'Open search sidebar',
-};
 
 /**
  * 用于排除 通过贪婪匹配后的，相对路径的glob 匹配到的所有路径的结果

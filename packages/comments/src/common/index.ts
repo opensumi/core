@@ -11,7 +11,6 @@ import {
   IContextKeyService,
   IMarkdownString,
 } from '@opensumi/ide-core-browser';
-import { RecycleTreeProps } from '@opensumi/ide-core-browser/lib/components';
 import { IEditor } from '@opensumi/ide-editor';
 // eslint-disable-next-line import/no-restricted-paths
 import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
@@ -312,10 +311,6 @@ export interface CommentsPanelOptions {
    * 是否默认显示 底部 panel
    */
   defaultShow?: boolean;
-  /**
-   * 评论列表默认设置
-   */
-  recycleTreeProps?: Partial<RecycleTreeProps>;
 }
 
 export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
