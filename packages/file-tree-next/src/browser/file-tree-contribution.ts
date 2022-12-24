@@ -41,6 +41,7 @@ import {
   MenuId,
   ExplorerContextCallback,
 } from '@opensumi/ide-core-browser/lib/menu/next';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { IEditorOpenType, WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -83,6 +84,9 @@ export class FileTreeContribution
 
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
+
+  @Autowired(IProgressService)
+  private progressService: IProgressService;
 
   @Autowired(IWorkspaceService)
   private readonly workspaceService: IWorkspaceService;
@@ -135,6 +139,7 @@ export class FileTreeContribution
       await this.fileTreeService.init();
       this.fileTreeModelService.initTreeModel();
     });
+    this.progressService.registerProgressIndicator(EXPLORER_CONTAINER_ID);
   }
 
   async onStart() {

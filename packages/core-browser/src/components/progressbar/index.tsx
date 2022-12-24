@@ -1,16 +1,3 @@
-import React from 'react';
+import { Progress } from '../../progress/progress-bar';
 
-import styles from './styles.module.less';
-
-export const ProgressBar: React.FC<{
-  loading: boolean;
-}> = React.memo(({ loading }) => {
-  if (!loading) {
-    return null;
-  }
-  return (
-    <div className={styles.progressbar}>
-      <div className={styles.barblock} />
-    </div>
-  );
-});
+export const ProgressBar = Progress;

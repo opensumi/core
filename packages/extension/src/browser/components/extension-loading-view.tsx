@@ -1,13 +1,13 @@
 import React from 'react';
 
 import { formatLocalize } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 
 import styles from './extension-tree-view.module.less';
 
 export const ExtensionLoadingView = ({ style }: { style?: React.CSSProperties }) => (
   <div style={style || {}} className={styles.kt_extension_view}>
-    <ProgressBar loading />
+    <Progress loading />
   </div>
 );
 

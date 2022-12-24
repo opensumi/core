@@ -16,7 +16,7 @@ import { Injector } from '@opensumi/di';
 import { RecycleTree, INodeRendererProps, IRecycleTreeHandle, TreeNodeType } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { isOSX, useInjectable } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { IDecorationsService } from '@opensumi/ide-decoration';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
@@ -317,7 +317,7 @@ const TreeView = memo(
     );
 
     if (!isReady) {
-      return <ProgressBar loading />;
+      return <Progress loading />;
     } else if (isEmpty) {
       return <WelcomeView viewId={treeViewId} />;
     } else {

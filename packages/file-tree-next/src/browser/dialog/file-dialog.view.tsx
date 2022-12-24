@@ -11,7 +11,7 @@ import {
   TreeNodeType,
 } from '@opensumi/ide-components';
 import { useInjectable, localize, isMacintosh, path } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { IDialogService, ISaveDialogOptions, IOpenDialogOptions } from '@opensumi/ide-overlay';
 
 import { Directory, File } from '../../common/file-tree-node.define';
@@ -178,7 +178,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
 
   const renderDialogTree = () => {
     if (!isReady) {
-      return <ProgressBar loading />;
+      return <Progress loading />;
     } else if (model.treeModel) {
       return (
         <RecycleTree
