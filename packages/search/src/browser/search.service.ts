@@ -1,4 +1,5 @@
 import debounce from 'lodash/debounce';
+import { observable } from 'mobx';
 import { createRef } from 'react';
 
 import { Injectable, Autowired } from '@opensumi/di';
@@ -25,7 +26,6 @@ import {
   Disposable,
   CancellationTokenSource,
   CancellationToken,
-  uuid,
 } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -145,6 +145,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     return this.onDidUIStateChangeEmitter.event;
   }
 
+  @observable
   public UIState: IUIState = {
     isSearchFocus: false,
     isToggleOpen: true,

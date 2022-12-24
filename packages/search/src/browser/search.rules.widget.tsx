@@ -9,7 +9,6 @@ import { localize } from '@opensumi/ide-core-common/lib/localize';
 import { IContentSearchClientService } from '../common/content-search';
 
 import styles from './search.module.less';
-import { ContentSearchClientService } from './search.service';
 
 const IncludeRuleContent = () => (
   <div className={cls(styles.include_rule_content)}>
