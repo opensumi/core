@@ -55,7 +55,7 @@ export class QuickOpenFeatureContribution
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN, {
-      execute: (prefix = '>') => this.prefixQuickOpenService.open(prefix),
+      execute: () => this.prefixQuickOpenService.open('>'),
     });
     commands.registerCommand(QUICK_OPEN_COMMANDS.OPEN_OUTLINE, {
       execute: () => this.prefixQuickOpenService.open('@'),
