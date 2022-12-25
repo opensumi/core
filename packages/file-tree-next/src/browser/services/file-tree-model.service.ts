@@ -870,6 +870,24 @@ export class FileTreeModelService {
     }
   };
 
+  public toggleOrOpenCurrentFile() {
+    let node;
+    if (this.focusedFile) {
+      node = this.focusedFile;
+    } else if (this.contextMenuFile) {
+      node = this.contextMenuFile;
+    }
+    if (!node) {
+      return;
+    }
+    this.activeFileDecoration(node);
+    if (Directory.is(node)) {
+      this.toggleDirectory(node as Directory);
+    } else {
+      this.fileTreeService.openFile(node.uri);
+    }
+  }
+
   public moveToNext() {
     let node;
     if (this.focusedFile) {
