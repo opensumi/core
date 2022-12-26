@@ -988,4 +988,7 @@ export namespace QUICK_OPEN_COMMANDS {
   export const OPEN_OUTLINE: Command = {
     id: 'editor.action.quickOutline',
   };
+  export const OPEN_VIEW: Command = {
+    id: 'editor.action.quickView',
+  };
 }
