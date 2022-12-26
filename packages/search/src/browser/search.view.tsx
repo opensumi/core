@@ -20,6 +20,7 @@ import {
   ContentSearchResult,
   IContentSearchClientService,
   ISearchTreeService,
+  IUIState,
   ResultTotal,
   SEARCH_STATE,
 } from '../common/';
@@ -56,9 +57,14 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
   });
   const [replace, setReplace] = useState<string>('');
   const [search, setSearch] = useState<string>('');
-  const { replaceAll, updateUIState, UIState } = searchBrowserService;
+  const [UIState, setUIState] = useState<IUIState>(searchBrowserService.UIState);
+  const { replaceAll, updateUIState } = searchBrowserService;
 
   const disposable = useRef<DisposableCollection>(new DisposableCollection());
+
+  const updateSearchUIState = useCallback(() => {
+    setUIState(searchBrowserService.UIState);
+  }, [UIState, searchBrowserService]);
 
   const onDetailToggle = useCallback(() => {
     updateUIState({ isDetailOpen: !UIState.isDetailOpen });
@@ -165,6 +171,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
   useEffect(() => {
     disposable.current.push(searchBrowserService.onDidChange(updateSearchContent));
     disposable.current.push(searchBrowserService.onDidTitleChange(updateSearchContent));
+    disposable.current.push(searchBrowserService.onDidUIStateChange(updateSearchUIState));
     return () => {
       disposable.current.dispose();
     };
