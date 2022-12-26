@@ -99,7 +99,7 @@ export class ExtHostWebview implements Webview {
   public get cspSource() {
     let cspSource = this.cspResourceRoots.join(' ');
     if (this.extensionLocation) {
-      cspSource += ` ${this.asWebviewUri(this.extensionLocation).toString()}`;
+      cspSource += `'self' vscode-resource:/${this.extensionLocation.path}/`.toLowerCase();
     }
     return cspSource;
   }
