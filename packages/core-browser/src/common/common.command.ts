@@ -189,6 +189,11 @@ export namespace FILE_COMMANDS {
     id: 'filetree.revealInExplorer',
     category: CATEGORY,
   };
+
+  export const TOGGLE_OR_OPEN: Command = {
+    id: 'filetree.toggleOrOpen',
+    category: CATEGORY,
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {

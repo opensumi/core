@@ -1006,6 +1006,12 @@ export class FileTreeContribution
       },
     });
 
+    commands.registerCommand(FILE_COMMANDS.TOGGLE_OR_OPEN, {
+      execute: () => {
+        this.fileTreeModelService.toggleOrOpenCurrentFile();
+      },
+    });
+
     commands.registerCommand(WORKSPACE_COMMANDS.REMOVE_WORKSPACE_FOLDER, {
       execute: async (_: URI, uris: URI[]) => {
         exitFilterMode();
@@ -1096,6 +1102,12 @@ export class FileTreeContribution
     bindings.registerKeybinding({
       command: FILE_COMMANDS.COLLAPSE.id,
       keybinding: 'left',
+      when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
+    });
+
+    bindings.registerKeybinding({
+      command: FILE_COMMANDS.TOGGLE_OR_OPEN.id,
+      keybinding: 'space',
       when: `${FilesExplorerFocusedContext.raw} && !${FilesExplorerInputFocusedContext.raw}`,
     });
 
