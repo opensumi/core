@@ -19,6 +19,9 @@ export enum PopoverPosition {
 
 function noop() {}
 
+// style 里设置的是 7, 但是在 top 模式下会有一部分与元素遮挡
+const arrowSizeWrap = 8;
+
 export const Popover: React.FC<{
   id: string;
   insertClass?: string;
@@ -87,7 +90,7 @@ export const Popover: React.FC<{
         contentRect.right - window.innerWidth > 0
           ? window.innerWidth - contentRect.width
           : left - contentRect.width / 2 + width / 2;
-      const contentTop = top - contentRect.height - 7;
+      const contentTop = top - contentRect.height - arrowSizeWrap;
       contentEl.current.style.left = (contentLeft < 0 ? 0 : contentLeft) + 'px';
       contentEl.current.style.top = (contentTop < 0 ? 0 : contentTop) + 'px';
       contentEl.current.style.visibility = 'visible';

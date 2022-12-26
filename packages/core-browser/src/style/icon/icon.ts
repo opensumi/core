@@ -12,6 +12,7 @@ export function getOctIcon(iconKey: string) {
 }
 
 export const CODICON_OWNER = 'codicon';
+export const KTICON_OWNER = 'kticon';
 
 const codIconId = [
   'add',
@@ -501,6 +502,9 @@ const codIconId = [
 export function getExternalIcon(iconKey: string, iconOwner = CODICON_OWNER, fallback = iconOwner === CODICON_OWNER) {
   if (fallback && iconOwner === CODICON_OWNER && !codIconId.includes(iconKey)) {
     return getOctIcon(iconKey);
+  }
+  if (iconOwner === KTICON_OWNER) {
+    return `kaitian-icon ${iconOwner}-${iconKey}`;
   }
   return `${iconOwner} ${iconOwner}-${iconKey}`;
 }

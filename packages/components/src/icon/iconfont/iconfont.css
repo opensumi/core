@@ -8,6 +8,19 @@
        url('iconfont.svg?t=1667290291241#kaitian-icon') format('svg');
 }
 
+.kaitian-icon[class*='kticon-'] {
+  font: normal normal normal 16px/1 "kaitian-icon";
+  display: block;
+  text-decoration: none;
+  text-rendering: auto;
+  text-align: center;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
 .kaitian-icon {
   font-family: "kaitian-icon" !important;
   font-size: 16px;
@@ -719,4 +732,3 @@
 .kticon-folder-fill:before {
   content: "\e85e";
 }
-

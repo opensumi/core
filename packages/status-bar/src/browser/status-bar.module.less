@@ -27,17 +27,6 @@
   padding-right: calc(@base-ui-spacing*2);
 }
 
-.element {
-  color: var(--statusBar-foreground);
-  display: flex;
-  align-items: center;
-  padding: 0 4px;
-  font-size: @statusBar-font-size;
-  &:first-child {
-    padding: 0px 10px;
-  }
-}
-
 .element.hasCommand:hover {
   background-color: var(--statusBarItem-hoverBackground);
   cursor: pointer;
@@ -55,22 +44,20 @@
   margin-left: @base-ui-spacing;
 }
 
-// .element {
-//   /* https://css-tricks.com/os-specific-fonts-css/#article-header-id-0 */
-//   /* https://github.com/Microsoft/vscode/blob/5dbdc8d19c8cf6dd10d558eabcc48bba962ea45f/src/vs/workbench/browser/media/style.css#L8-L24 */
-//   font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif;
-//   font-size: 12px;
-//   text-rendering: auto;
-//   text-decoration: none;
-//   -webkit-font-smoothing: antialiased;
-//   -moz-osx-font-smoothing: grayscale;
-// }
-
 .element {
+  color: var(--statusBar-foreground);
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+  font-size: @statusBar-font-size;
+  &:first-child {
+    padding: 0px 10px;
+  }
   span.icon {
     display: flex;
     align-items: center;
     font-size: 1em;
+    margin: 0 2px;
 
     &::before {
       vertical-align: middle;
