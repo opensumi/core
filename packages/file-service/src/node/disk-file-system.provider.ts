@@ -238,7 +238,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       await writeFileAtomic(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
       await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
-      this.logger.warn('writeFileAtomicSync 出错，使用 fs', e);
+      this.logger.warn('Error using writeFileAtomicSync, using fs instead.', e);
     } finally {
       this.ignoreNextChangesEvent.delete(_uri.toString());
     }
