@@ -228,7 +228,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
 
           if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
             // 达到设置上限，停止搜索
-            this.logger.debug('达到设置上限，停止搜索');
+            this.logger.debug('Reached the set upper limit, stop searching.');
             this.cancel(searchInfo.searchId);
             return true;
           }

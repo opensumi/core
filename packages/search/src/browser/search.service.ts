@@ -759,9 +759,15 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   } {
     let matcherList: ParsedPattern[] = [];
     const uriString = docModel.uri.toString();
+
     const result: ContentSearchResult[] = [];
     const searchedList: string[] = [];
-
+    if (!rootDirs.some((root) => uriString.startsWith(root))) {
+      return {
+        result,
+        searchedList,
+      };
+    }
     if (searchOptions.include && searchOptions.include.length > 0) {
       // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
