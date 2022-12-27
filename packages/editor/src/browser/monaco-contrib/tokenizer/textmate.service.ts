@@ -128,6 +128,8 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
 
   private dynamicLanguages: ILanguageExtensionPoint[] = [];
 
+  private editorTheme?: IThemeData;
+
   /**
    * start contribution 做初始化
    */
@@ -141,7 +143,10 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
   listenThemeChange() {
     this.eventBus.on(ThemeChangedEvent, (e) => {
       const themeData = e.payload.theme.themeData;
-      this.setTheme(themeData);
+      if (themeData !== this.editorTheme) {
+        this.editorTheme = themeData;
+        this.setTheme(themeData);
+      }
     });
   }
 
