@@ -1716,7 +1716,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.minimap': {
     type: 'boolean',
-    default: false,
+    default: true,
   },
   'editor.forceReadOnly': {
     type: 'boolean',
