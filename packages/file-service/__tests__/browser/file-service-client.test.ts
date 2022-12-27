@@ -125,7 +125,6 @@ describe('FileServiceClient should be work', () => {
   });
 
   it('watch file change', async () => {
-    expect.assertions(1);
     const newTempDir = FileUri.create(fs.realpathSync(track.mkdirSync('watch-file-change')));
 
     const watcher = await fileServiceClient.watchFileChanges(newTempDir);
@@ -152,8 +151,6 @@ describe('FileServiceClient should be work', () => {
   });
 
   it('set watchExcludes', async () => {
-    expect.assertions(2);
-
     const targetDir = tempDir.resolve('watch-exclude-temp-dir');
     await fs.ensureDir(targetDir.codeUri.fsPath);
 
