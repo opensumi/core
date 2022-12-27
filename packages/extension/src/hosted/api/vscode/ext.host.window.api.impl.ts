@@ -200,7 +200,7 @@ export function createWindowApiFactory(
       options?: IWebviewPanelOptions & IWebviewOptions,
     ): WebviewPanel {
       return extHostWebviews.createWebview(
-        Uri.parse('not-implemented://'),
+        extension.extensionLocation,
         viewType,
         title,
         showOptions,
