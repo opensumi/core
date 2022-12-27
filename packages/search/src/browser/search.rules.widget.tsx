@@ -92,6 +92,7 @@ const IncludeInput = React.memo(
         placeholder={localize('search.includes.description')}
         onKeyUp={onSearch}
         onChange={onChangeInclude}
+        id='include-input-field'
         addonAfter={[
           <span
             key='onlyOpenEditors'
@@ -151,6 +152,7 @@ const ExcludeInput = React.memo(
         placeholder={localize('search.includes.description')}
         onKeyUp={onSearch}
         onChange={onChangeExclude}
+        id='exclude-input-field'
       />
     </div>
   ),
