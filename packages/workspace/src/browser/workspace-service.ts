@@ -762,13 +762,17 @@ export class WorkspaceService implements IWorkspaceService {
   async asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean) {
     // path 为 uri.path 非 uri.toString()
     let path: string | undefined;
+    let root: string | undefined;
     if (typeof pathOrUri === 'string') {
       path = pathOrUri;
     } else if (typeof pathOrUri !== 'undefined') {
       path = pathOrUri.codeUri.fsPath;
     }
     if (!path) {
-      return path;
+      return {
+        path,
+        root,
+      };
     }
     const roots = await this.roots;
     if (includeWorkspaceFolder && this.isMultiRootWorkspaceOpened) {
@@ -777,20 +781,26 @@ export class WorkspaceService implements IWorkspaceService {
         roots.push(workspace);
       }
     }
-    for (const root of roots) {
-      const rootPath = new URI(root.uri).codeUri.fsPath;
+    for (const r of roots) {
+      const rootPath = new URI(r.uri).codeUri.fsPath;
       const isRelative = path && path.indexOf(rootPath) >= 0;
       if (isRelative) {
+        root = rootPath;
         if (path === rootPath) {
-          return '';
+          path = '';
         }
         if (rootPath.slice(-1) === '/') {
-          return decodeURI(path.replace(rootPath, ''));
+          path = path.replace(rootPath, '');
+        } else {
+          path = path.replace(rootPath + '/', '');
         }
-        return decodeURI(path.replace(rootPath + '/', ''));
+        break;
       }
     }
-    return decodeURI(path);
+    return {
+      path: decodeURI(path),
+      root,
+    };
   }
 
   dispose() {

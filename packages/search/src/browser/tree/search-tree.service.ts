@@ -256,7 +256,7 @@ export class SearchTreeService extends Disposable implements ISearchTreeService 
           const uri = filesArray[0];
           const resultList = filesArray[1];
           const _uri = new URI(uri);
-          const description = await this.workspaceService.asRelativePath(_uri.parent);
+          const description = (await this.workspaceService.asRelativePath(_uri.parent))?.path;
           if (!resultList || resultList.length < 1) {
             continue;
           }

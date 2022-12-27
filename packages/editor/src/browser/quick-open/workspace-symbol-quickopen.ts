@@ -137,14 +137,13 @@ export class WorkspaceSymbolQuickOpenHandler implements QuickOpenHandler {
             if (symbols && symbols.length && !newCancellationSource.token.isCancellationRequested) {
               const quickOpenItems = await Promise.all(
                 symbols.map(async (symbol) => {
-                  const relativePath =
-                    (await this.workspaceService.asRelativePath(new URI(symbol.location.uri).parent)) || '';
+                  const relative = await this.workspaceService.asRelativePath(new URI(symbol.location.uri).parent);
                   return new SymbolInformationQuickOpenItem(
                     symbol,
                     provider,
                     this.workbenchEditorService,
                     newCancellationSource.token,
-                    relativePath,
+                    relative?.path || '',
                   );
                 }),
               );
