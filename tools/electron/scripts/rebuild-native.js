@@ -51,7 +51,7 @@ function rebuildModule(modulePath, type, version, arch) {
       if (process.platform === 'linux') {
         execSync(`cp -r ${cache} ${join(modulePath, 'build')}`);
       } else {
-        copySync(cache, join(modulePath, 'build'), { dereference: true });
+        copySync(cache, join(modulePath, 'build'), { dereference: true, recursive: true });
       }
 
       return;
@@ -66,7 +66,7 @@ function rebuildModule(modulePath, type, version, arch) {
     stdio: 'inherit',
   });
   removeSync(cache);
-  copySync(join(modulePath, 'build'), cache, { dereference: true });
+  copySync(join(modulePath, 'build'), cache, { dereference: true, recursive: true });
 }
 
 function getBuildCacheDir(modulePath, type, version, arch) {
