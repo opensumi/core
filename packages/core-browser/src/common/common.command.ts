@@ -877,59 +877,71 @@ export namespace TERMINAL_COMMANDS {
   export const CLEAR_ALL_CONTENT = {
     id: 'terminal.clearAllContent',
     label: '%terminal.menu.clearAllContents%',
+    category: CATEGORY,
   };
 
   export const TAB_RENAME = {
     id: 'terminal.tabRename',
+    category: CATEGORY,
   };
 
   export const SELECT_ALL_CONTENT = {
     id: 'terminal.selectAllContent',
     label: '%terminal.menu.selectAllContent%',
+    category: CATEGORY,
   };
 
   export const MORE_SETTINGS = {
     id: 'terminal.moreSettings',
     label: '%terminal.menu.moreSettings%',
+    category: CATEGORY,
   };
 
   export const SELECT_TYPE = {
     id: 'terminal.selectType',
+    category: CATEGORY,
   };
 
   export const SELECT_ZSH = {
     id: 'terminal.selectTypeZsh',
     label: 'zsh',
+    category: CATEGORY,
   };
 
   export const SELECT_BASH = {
     id: 'terminal.selectTypeBash',
     label: 'bash',
+    category: CATEGORY,
   };
 
   export const SELECT_SH = {
     id: 'terminal.selectTypeSh',
     label: 'sh',
+    category: CATEGORY,
   };
 
   export const SELECT_CMD = {
     id: 'terminal.selectTypeCMD',
     label: 'cmd',
+    category: CATEGORY,
   };
 
   export const SELECT_POWERSHELL = {
     id: 'terminal.selectTypePowerShell',
     label: 'powershell',
+    category: CATEGORY,
   };
 
   export const COPY = {
     id: 'terminal.copy',
     label: '%edit.copy%',
+    category: CATEGORY,
   };
 
   export const PASTE = {
     id: 'terminal.paste',
     label: '%edit.paste%',
+    category: CATEGORY,
   };
 
   export const SELECT_ALL = {
@@ -940,6 +952,13 @@ export namespace TERMINAL_COMMANDS {
 
   export const RE_LAUNCH = {
     id: 'terminal.relaunch',
+    category: CATEGORY,
+  };
+
+  export const TOGGLE_TERMINAL = {
+    id: 'terminal.toggleTerminal',
+    label: '%terminal.toggleTerminal%',
+    category: CATEGORY,
   };
 }
 

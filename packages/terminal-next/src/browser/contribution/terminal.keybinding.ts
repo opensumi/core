@@ -71,5 +71,10 @@ export class TerminalKeybindingContribution implements KeybindingContribution {
       keybinding: 'ctrlcmd+alt+up',
       when: IsTerminalFocused.raw,
     });
+
+    registry.registerKeybinding({
+      command: TERMINAL_COMMANDS.TOGGLE_TERMINAL.id,
+      keybinding: 'ctrl+`',
+    });
   }
 }
