@@ -677,6 +677,7 @@ export const localizationBundle = {
     'terminal.focusFolder': 'Focus folder in explorer',
     'terminal.openFolder': 'Open folder in new window',
     'terminal.relaunch': 'Relaunch Terminal',
+    'terminal.toggleTerminal': 'Toggle Terminal',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',

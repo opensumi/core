@@ -135,32 +135,30 @@
   height: 24px;
   margin-left: 5px;
   text-align: center;
+  .item_more {
+    height: 24px;
+    width: 20px;
+    padding: 0 2px;
+    line-height: 24px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 12px;
+    &:hover {
+      border-radius: 4px;
+      background-color: var(--kt-icon-hoverBackground);
+    }
+  }
+  .item_add {
+    height: 24px;
+    width: 24px;
+    padding-right: 2px;
+    line-height: 24px;
+    cursor: pointer;
+    user-select: none;
+    text-align: right;
+  }
   &:hover {
     color: var(--kt-icon-hoverForeground);
-    border-radius: 4px;
-    background-color: var(--kt-icon-hoverBackground);
-  }
-}
-
-.item_add {
-  height: 24px;
-  width: 24px;
-  padding-right: 2px;
-  line-height: 24px;
-  cursor: pointer;
-  user-select: none;
-  text-align: right;
-}
-
-.item_more {
-  height: 24px;
-  width: 20px;
-  padding: 0 2px;
-  line-height: 24px;
-  cursor: pointer;
-  user-select: none;
-  font-size: 12px !important;
-  &:hover {
     border-radius: 4px;
     background-color: var(--kt-icon-hoverBackground);
   }
