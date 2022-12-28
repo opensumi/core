@@ -279,7 +279,6 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
   }
 
   private async onDidChangeModel() {
-    const now = Date.now();
     this._editorOptionsFromContribution = {};
     const uri = this.currentUri;
     if (uri) {

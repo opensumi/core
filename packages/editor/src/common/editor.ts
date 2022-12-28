@@ -123,7 +123,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
    * 打开一个 document
    * @param uri
    */
-  open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void>;
+  open(documentModelRef: IEditorDocumentModelRef, range?: IRange): void;
 
   focus(): void;
 
