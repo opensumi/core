@@ -25,7 +25,6 @@ import {
   Disposable,
   CancellationTokenSource,
   CancellationToken,
-  uuid,
 } from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -189,14 +188,15 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     this.recoverUIState();
 
     this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
-
+    const timeout = this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300;
     this.searchDebounce = debounce(
       () => {
         this.search();
       },
-      this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300,
+      timeout,
       {
         trailing: true,
+        maxWait: timeout * 5,
       },
     );
   }
@@ -211,6 +211,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   async search(insertUIState?: IUIState) {
     const value = this.searchValue;
+    this.cleanSearchResults();
     if (!value) {
       this.onDidChangeEmitter.fire();
       return;
@@ -218,7 +219,6 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     if (this.searchCancelToken && !this.searchCancelToken.token.isCancellationRequested) {
       this.searchCancelToken.cancel();
     }
-    this.cleanSearchResults();
 
     this.searchCancelToken = new CancellationTokenSource();
 
