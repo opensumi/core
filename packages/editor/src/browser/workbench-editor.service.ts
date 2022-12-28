@@ -731,12 +731,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private resourceOpenHistory: URI[] = [];
 
   private _domNode: MaybeNull<HTMLElement> = null;
+  private _diffEditorDomNode: MaybeNull<HTMLElement> = null;
+  private _diffEditorDomNodeAttached = false;
+  private _mergeEditorDomNode: MaybeNull<HTMLElement> = null;
+  private _mergeEditorDomNodeAttached = false;
 
   private codeEditorReady = new ReadyEvent();
 
   private diffEditorReady = new ReadyEvent();
+  private diffEditorDomReady = new ReadyEvent();
 
   private mergeEditorReady = new ReadyEvent();
+  private mergeEditorDomReady = new ReadyEvent();
 
   private _restoringState = false;
 
@@ -774,6 +780,22 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }),
     );
+  }
+
+  attachDiffEditorDom(domNode: HTMLElement | null | undefined) {
+    if (!this._diffEditorDomNodeAttached) {
+      this._diffEditorDomNode = domNode;
+      this.diffEditorDomReady.ready();
+      this._diffEditorDomNodeAttached = true;
+    }
+  }
+
+  attachMergeEditorDom(domNode: HTMLElement | null | undefined) {
+    if (!this._mergeEditorDomNodeAttached) {
+      this._mergeEditorDomNode = domNode;
+      this.mergeEditorDomReady.ready();
+      this._mergeEditorDomNodeAttached = true;
+    }
   }
 
   attachToDom(domNode: HTMLElement | null | undefined) {
@@ -1551,6 +1573,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this.pinPreviewed(resource.uri);
         }
       } else if (activeOpenType.type === 'diff') {
+        if (!this.diffEditor) {
+          await this.diffEditorDomReady.onceReady(() => {
+            const container = document.createElement('div');
+            this._diffEditorDomNode?.appendChild(container);
+            this.createDiffEditor(container);
+          });
+        }
+
         const diffResource = resource as IDiffResource;
         const [original, modified] = await Promise.all([
           this.getDocumentModelRef(diffResource.metadata!.original),
@@ -1622,6 +1652,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         const { metadata } = resource as IMergeEditorResource;
         if (!metadata) {
           return;
+        }
+
+        if (!this.mergeEditor) {
+          await this.mergeEditorDomReady.onceReady(() => {
+            const container = document.createElement('div');
+            this._mergeEditorDomNode?.appendChild(container);
+            this.createMergeEditor(container);
+          });
         }
 
         const { ancestor, input1, input2, output } = metadata;

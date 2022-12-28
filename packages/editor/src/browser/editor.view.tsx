@@ -213,8 +213,6 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 };
 
 const cachedEditor: { [key: string]: HTMLDivElement } = {};
-const cachedDiffEditor: { [key: string]: HTMLDivElement } = {};
-const cachedMergeEditor: { [key: string]: HTMLDivElement } = {};
 
 /**
  * 默认的 editor empty component
@@ -343,27 +341,12 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         group.createEditor(container);
       }
     }
+
     if (diffEditorRef.current) {
-      if (cachedDiffEditor[group.name]) {
-        cachedDiffEditor[group.name].remove();
-        diffEditorRef.current.appendChild(cachedDiffEditor[group.name]);
-      } else {
-        const container = document.createElement('div');
-        diffEditorRef.current.appendChild(container);
-        cachedDiffEditor[group.name] = container;
-        group.createDiffEditor(container);
-      }
+      group.attachDiffEditorDom(diffEditorRef.current);
     }
     if (mergeEditorRef.current) {
-      if (cachedMergeEditor[group.name]) {
-        cachedMergeEditor[group.name].remove();
-        mergeEditorRef.current.appendChild(cachedMergeEditor[group.name]);
-      } else {
-        const container = document.createElement('div');
-        mergeEditorRef.current.appendChild(container);
-        cachedMergeEditor[group.name] = container;
-        group.createMergeEditor(container);
-      }
+      group.attachMergeEditorDom(mergeEditorRef.current);
     }
   }, [codeEditorRef.current, diffEditorRef.current, mergeEditorRef.current]);
 
