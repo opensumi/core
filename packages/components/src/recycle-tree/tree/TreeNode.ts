@@ -1545,6 +1545,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
 
   private async doRefresh(token?: CancellationToken) {
     const target = (this.getRefreshNode() as CompositeTreeNode) || this;
+    if (!CompositeTreeNode.is(target)) {
+      return;
+    }
     const paths = target.getAllExpandedNodePath();
     await target.refreshTreeNodeByPaths(paths, token, target);
   }

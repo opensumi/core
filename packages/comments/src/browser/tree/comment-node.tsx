@@ -26,6 +26,9 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
 }: ICommentNodeRenderedProps) => {
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
+      if (item.onSelect) {
+        item.onSelect(item);
+      }
       onClick(ev, item as CommentContentNode);
     },
     [onClick],
@@ -34,7 +37,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   const paddingLeft = `${
     defaultLeftPadding +
     (item.depth || 0) * (leftPadding || 0) +
-    (CommentContentNode.is(item) ? 16 : CommentReplyNode.is(item) ? 28 : 0)
+    (CommentContentNode.is(item) ? 16 : CommentFileNode.is(item) ? 0 : 28)
   }px`;
 
   const renderedNodeStyle = {
@@ -44,37 +47,42 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   } as React.CSSProperties;
 
   const renderIcon = useCallback((node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
-    if (CommentReplyNode.is(node)) {
-      return null;
+    if (CommentContentNode.is(node) || CommentFileNode.is(node)) {
+      return (
+        <div
+          className={cls(styles.icon, node.icon)}
+          style={{
+            height: COMMENT_TREE_NODE_HEIGHT,
+            lineHeight: `${COMMENT_TREE_NODE_HEIGHT}px`,
+          }}
+        ></div>
+      );
     }
-    return (
-      <div
-        className={cls(styles.icon, !CommentReplyNode.is(node) ? node.icon : '')}
-        style={{
-          height: COMMENT_TREE_NODE_HEIGHT,
-          lineHeight: `${COMMENT_TREE_NODE_HEIGHT}px`,
-        }}
-      ></div>
-    );
   }, []);
 
   const renderDisplayName = useCallback((node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
     if (CommentContentNode.is(node)) {
       return (
         <div className={cls(styles.segment, styles.displayname)}>
-          {node.comment}
-          <span className={styles.separator}>·</span>
-          {node.author.name}
+          {node.renderedLabel ? (
+            node.renderedLabel
+          ) : (
+            <>
+              {node.comment}
+              <span className={styles.separator}>·</span>
+              {node.author.name}
+            </>
+          )}
         </div>
       );
     } else {
-      return <div className={cls(styles.segment, styles.displayname)}>{node.displayName}</div>;
+      return <div className={cls(styles.segment, styles.displayname)}>{node.renderedLabel}</div>;
     }
   }, []);
 
   const renderDescription = useCallback(
     (node: CommentFileNode | CommentContentNode | CommentReplyNode) => (
-      <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>
+      <div className={cls(styles.segment_grow, styles.description)}>{node.renderedDescription}</div>
     ),
     [],
   );

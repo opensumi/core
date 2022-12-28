@@ -2,6 +2,7 @@ import { Injector } from '@opensumi/di';
 import {
   CommentContentNode,
   CommentFileNode,
+  CommentReplyNode,
   CommentRoot,
 } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
 import { IContextKeyService } from '@opensumi/ide-core-browser';
@@ -130,15 +131,14 @@ describe('comment service test', () => {
       return;
     }
     const comment = comments[0];
-    expect(comment.displayName).toBe('test');
-    expect((comment as CommentContentNode).description).toBe('test');
+    expect((comment as CommentContentNode).renderedLabel).toBe('test');
+    expect((comment as CommentContentNode).renderedDescription).toBe('test');
     const replys = await commentsService.resolveChildren(comment as CommentFileNode);
     if (!replys) {
       return;
     }
     const reply = replys[0];
     expect(reply).toBeDefined();
-    expect(reply.displayName).toBeDefined();
   });
 
   it('onThreadsCreated', () => {

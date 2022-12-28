@@ -17,6 +17,8 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
 
   private options: CommentsPanelOptions = {};
 
+  private panelTreeNodeHandlers: PanelTreeNodeHandler[] = [];
+
   private fileUploadHandler: FileUploadHandler;
 
   private mentionsOptions: MentionsOptions = {};
@@ -30,6 +32,10 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
       ...this.config,
       ...config,
     };
+  }
+
+  registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void {
+    this.panelTreeNodeHandlers.push(handler);
   }
 
   registerPanelOptions(options: CommentsPanelOptions): void {
@@ -57,6 +63,10 @@ export class CommentsFeatureRegistry implements ICommentsFeatureRegistry {
 
   getCommentsPanelOptions(): CommentsPanelOptions {
     return this.options;
+  }
+
+  getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[] {
+    return this.panelTreeNodeHandlers;
   }
 
   getFileUploadHandler() {

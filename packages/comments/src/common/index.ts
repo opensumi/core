@@ -1,22 +1,22 @@
-import type { ITree } from '@opensumi/ide-components';
+import React from 'react';
+
+import type { ITree, ITreeNode } from '@opensumi/ide-components';
 import {
   IRange,
   URI,
   IDisposable,
   MaybePromise,
-  TreeNode,
   Event,
   BasicEvent,
   positionToRange,
   IContextKeyService,
   IMarkdownString,
 } from '@opensumi/ide-core-browser';
-import { RecycleTreeProps } from '@opensumi/ide-core-browser/lib/components';
 import { IEditor } from '@opensumi/ide-editor';
 // eslint-disable-next-line import/no-restricted-paths
-import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
+import type { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser/doc-model/types';
 
-type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+export type Writable<T> = { -readonly [P in keyof T]: T[P] };
 
 /**
  * @deprecated please use `positionToRange` from '@opensumi/ide-core-common`
@@ -33,27 +33,30 @@ interface ICommentsMenuContext {
   menuId: string;
 }
 
-/**
- * 评论树的节点
- */
-export interface ICommentsTreeNode extends Writeable<TreeNode<ICommentsTreeNode>> {
-  /**
-   * 子节点
-   */
-  children?: ICommentsTreeNode[];
-  /**
-   * 是否折叠
-   */
-  expanded?: boolean;
+export interface ICommentsTreeNode extends ITreeNode {
   /**
    * 子节点对应的 thread
    */
-  thread: ICommentsThread;
+  readonly thread: ICommentsThread;
   /**
-   * 子节点对应的 comment
-   * 如果是根节点则为 undefined
+   * 子节点 `CommentContentNode` 及 `CommentReplyNode` 对应的 comment
+   * 如果是 CommentFileNode 则为 undefined
    */
   comment?: IComment;
+}
+
+/**
+ * 评论树的节点
+ */
+export interface IWriteableCommentsTreeNode extends Writable<ICommentsTreeNode> {
+  /**
+   * 修改节点 name 区域展示内容
+   */
+  label: string | React.ReactNode;
+  /**
+   * 修改节点 description 区域展示内容
+   */
+  description: string | React.ReactNode;
   /**
    * 点击事件
    */
@@ -312,13 +315,9 @@ export interface CommentsPanelOptions {
    * 是否默认显示 底部 panel
    */
   defaultShow?: boolean;
-  /**
-   * 评论列表默认设置
-   */
-  recycleTreeProps?: Partial<RecycleTreeProps>;
 }
 
-export type PanelTreeNodeHandler = (nodes: ICommentsTreeNode[]) => ICommentsTreeNode[];
+export type PanelTreeNodeHandler = (nodes: IWriteableCommentsTreeNode[]) => ICommentsTreeNode[];
 
 export type FileUploadHandler = (text: string | IMarkdownString, files: FileList) => MaybePromise<string>;
 
@@ -394,6 +393,11 @@ export interface ICommentsFeatureRegistry {
    */
   registerPanelOptions(options: CommentsPanelOptions): void;
   /**
+   * 注册底部面板评论树的处理函数，可以在渲染前重新再定义一次树的数据结构
+   * @param handler
+   */
+  registerPanelTreeNodeHandler(handler: PanelTreeNodeHandler): void;
+  /**
    * 注册提及相关功能的能力
    * @param options
    */
@@ -411,11 +415,18 @@ export interface ICommentsFeatureRegistry {
    * @param feature
    */
   registerProviderFeature(providerId: string, feature: ICommentProviderFeature): void;
-
   /**
    * 获取底部面板参数
    */
   getCommentsPanelOptions(): CommentsPanelOptions;
+  /**
+   * 获取底部面板评论树的处理函数
+   */
+  getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
+  /**
+   * 获取底部面板评论树的处理函数
+   */
+  getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
   /**
    * 获取文件上传处理函数
    */
