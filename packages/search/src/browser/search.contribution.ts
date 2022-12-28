@@ -132,7 +132,9 @@ export class SearchContribution
             this.documentModelManager,
             this.workspaceEditService,
             resultMap,
-            this.searchTreeService.replaceValue,
+            this.searchBrowserService.replaceValue,
+            this.searchBrowserService.searchValue,
+            this.searchBrowserService.UIState.isUseRegexp,
           );
         }
       },
@@ -167,7 +169,9 @@ export class SearchContribution
           this.documentModelManager,
           this.workspaceEditService,
           resultMap,
-          this.searchTreeService.replaceValue,
+          this.searchBrowserService.replaceValue,
+          this.searchBrowserService.searchValue,
+          this.searchBrowserService.UIState.isUseRegexp,
         );
       },
       isVisible: () => !SearchFileNode.is(this.searchModelService.contextMenuNode),

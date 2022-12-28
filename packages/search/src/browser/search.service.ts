@@ -536,7 +536,6 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   }
 
   clean() {
-    this.searchValue = '';
     this.searchResults.clear();
     this.resultTotal = { resultNum: 0, fileNum: 0 };
     this.searchState = SEARCH_STATE.todo;
@@ -663,7 +662,9 @@ export class ContentSearchClientService extends Disposable implements IContentSe
       this.documentModelManager,
       this.workspaceEditService,
       this.searchResults,
-      this.replaceValue || '',
+      this.replaceValue,
+      this.searchValue,
+      this.UIState.isUseRegexp,
       this.dialogService,
       this.messageService,
       this.resultTotal,

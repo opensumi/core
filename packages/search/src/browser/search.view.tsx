@@ -193,6 +193,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
           total={searchContent.total}
           search={search}
           replace={replace}
+          isUseRegexp={searchBrowserService.UIState.isUseRegexp}
         />
       );
     } else {
@@ -209,7 +210,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
     } else {
       return renderSearchTreeView();
     }
-  }, [searchContent, offsetTop]);
+  }, [searchContent, searchBrowserService, offsetTop, search, replace]);
 
   return (
     <div className={styles.search_container} style={collapsePanelContainerStyle} ref={wrapperRef}>
