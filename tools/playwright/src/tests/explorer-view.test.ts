@@ -229,8 +229,8 @@ console.log(a);`,
     const editor = await app.openEditor(OpenSumiTextEditor, explorer, testFilePath);
     await editor.triggerTitleMenuById('editor.splitToRight');
     await app.page.waitForTimeout(2000);
-    const group1 = await explorer.getOpenedEditorTreeNodeByPath('Group 1');
-    const group2 = await explorer.getOpenedEditorTreeNodeByPath('Group 2');
+    const group1 = await explorer.getOpenedEditorTreeNodeByPath('GROUP 1');
+    const group2 = await explorer.getOpenedEditorTreeNodeByPath('GROUP 2');
     expect(group1).toBeDefined();
     expect(group2).toBeDefined();
   });

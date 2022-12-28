@@ -624,7 +624,7 @@ export const localizationBundle = {
     'opened.editors.close.byGroup': 'Close files in the group',
     'opened.editors.save.byGroup': 'Save files in the group',
     'opened.editors.empty': 'No file is open in the editor',
-    'opened.editors.group.title': 'Group {0}',
+    'opened.editors.group.title': 'GROUP {0}',
     'opened.editors.open': 'Open',
     'opened.editors.openToTheSide': 'Open To The Side',
     'opened.editors.compare': 'Compare With Current File',

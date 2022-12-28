@@ -129,7 +129,7 @@ export class OpenSumiExplorerView extends OpenSumiPanel {
     let node;
     for (const item of treeItems) {
       const title = await item.getAttribute('title');
-      if (title?.startsWith('Group')) {
+      if (title?.startsWith('GROUP')) {
         if (title === path) {
           node = item;
           break;
