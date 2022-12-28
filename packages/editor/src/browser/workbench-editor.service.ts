@@ -17,7 +17,15 @@ import {
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { IMergeEditorEditor, MergeEditorInputData } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
-import { isUndefinedOrNull, Schemes, REPORT_NAME, match, localize, MessageType } from '@opensumi/ide-core-common';
+import {
+  isUndefinedOrNull,
+  Schemes,
+  REPORT_NAME,
+  match,
+  localize,
+  MessageType,
+  debounce,
+} from '@opensumi/ide-core-common';
 import {
   CommandService,
   URI,
@@ -788,6 +796,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  @debounce(100)
   doLayoutEditors() {
     if (this.codeEditor) {
       if (this.currentOpenType && this.currentOpenType.type === 'code') {
@@ -815,28 +824,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  // get currentState() {
-  //   return this._currentState;
-  // }
-
-  // set currentState(value: IEditorCurrentState | null) {
-  //   const oldResource = this.currentResource;
-  //   const oldOpenType = this.currentOpenType;
-  //   this._currentState = value;
-  //   this._pendingState = null;
-  //   if (oldResource && this.resourceOpenHistory[this.resourceOpenHistory.length - 1] !== oldResource.uri) {
-  //     this.resourceOpenHistory.push(oldResource.uri);
-  //   }
-  //   this.eventBus.fire(new EditorGroupChangeEvent({
-  //     group: this,
-  //     newOpenType: this.currentOpenType,
-  //     newResource: this.currentResource,
-  //     oldOpenType,
-  //     oldResource,
-  //   }));
-  //   this.setContextKeys();
-  // }
-
   setContextKeys() {
     if (!this._resourceContext) {
       const getLanguageFromModel = (uri: URI) => {
@@ -853,7 +840,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this._resourceContext = new ResourceContextKey(this.contextKeyService, (uri: URI) => {
         const res = getLanguageFromModel(uri);
         if (res) {
-          return res!;
+          return res;
         } else {
           return getLanguageFromModel(uri);
         }
@@ -863,7 +850,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         (uri: URI) => {
           const res = getLanguageFromModel(uri);
           if (res) {
-            return res!;
+            return res;
           } else {
             return getLanguageFromModel(uri);
           }
@@ -1502,7 +1489,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         const documentRef = await this.getDocumentModelRef(resource.uri);
         this.resolveTabChanged(_resource, this.currentResource);
         await this.codeEditorReady.onceReady(async () => {
-          await this.codeEditor.open(documentRef);
+          this.codeEditor.open(documentRef);
 
           if (options.range) {
             const range = new monaco.Range(
