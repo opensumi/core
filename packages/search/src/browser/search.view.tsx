@@ -56,45 +56,51 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
   });
   const [replace, setReplace] = useState<string>('');
   const [search, setSearch] = useState<string>('');
+
   const { replaceAll, updateUIState, UIState } = searchBrowserService;
+  const [showDetail, setShowDetail] = useState<boolean>(UIState.isDetailOpen);
 
   const disposable = useRef<DisposableCollection>(new DisposableCollection());
 
+  const updateSearchUIState = useCallback(() => {
+    setShowDetail(searchBrowserService.UIState.isDetailOpen);
+  }, [showDetail, searchBrowserService]);
+
   const onDetailToggle = useCallback(() => {
-    updateUIState({ isDetailOpen: !UIState.isDetailOpen });
-  }, [UIState]);
+    updateUIState({ isDetailOpen: !searchBrowserService.UIState.isDetailOpen });
+  }, [searchBrowserService]);
 
   const onSearchFocus = useCallback(() => {
     updateUIState({ isSearchFocus: true });
-  }, []);
+  }, [searchBrowserService]);
 
   const onSearchBlur = useCallback(() => {
     updateUIState({ isSearchFocus: false });
-  }, []);
+  }, [searchBrowserService]);
 
   const onMatchCaseToggle = useCallback(() => {
-    updateUIState({ isMatchCase: !UIState.isMatchCase });
-  }, [UIState]);
+    updateUIState({ isMatchCase: !searchBrowserService.UIState.isMatchCase });
+  }, [searchBrowserService]);
 
   const onRegexToggle = useCallback(() => {
-    updateUIState({ isUseRegexp: !UIState.isUseRegexp });
-  }, [UIState]);
+    updateUIState({ isUseRegexp: !searchBrowserService.UIState.isUseRegexp });
+  }, [searchBrowserService]);
 
   const onWholeWordToggle = useCallback(() => {
-    updateUIState({ isWholeWord: !UIState.isWholeWord });
-  }, [UIState]);
+    updateUIState({ isWholeWord: !searchBrowserService.UIState.isWholeWord });
+  }, [searchBrowserService]);
 
   const onOnlyOpenEditorsToggle = useCallback(() => {
-    updateUIState({ isOnlyOpenEditors: !UIState.isOnlyOpenEditors });
-  }, [UIState]);
+    updateUIState({ isOnlyOpenEditors: !searchBrowserService.UIState.isOnlyOpenEditors });
+  }, [searchBrowserService]);
 
   const onIncludeIgnoredToggle = useCallback(() => {
-    updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored });
-  }, [UIState]);
+    updateUIState({ isIncludeIgnored: !searchBrowserService.UIState.isIncludeIgnored });
+  }, [searchBrowserService]);
 
   useEffect(() => {
     setOffsetTop((searchOptionRef.current && searchOptionRef.current.clientHeight) || 0);
-  }, [offsetTop, searchOptionRef.current, searchContent, UIState]);
+  }, [offsetTop, searchOptionRef.current, searchContent, searchBrowserService]);
 
   const collapsePanelContainerStyle = {
     width: viewState.width || '100%',
@@ -147,7 +153,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
       searchBrowserService.onReplaceInputChange(e.currentTarget.value || '');
       setReplace(e.currentTarget.value);
     },
-    [searchBrowserService],
+    [replace, searchBrowserService],
   );
 
   const updateSearchContent = useCallback(() => {
@@ -165,6 +171,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
   useEffect(() => {
     disposable.current.push(searchBrowserService.onDidChange(updateSearchContent));
     disposable.current.push(searchBrowserService.onDidTitleChange(updateSearchContent));
+    disposable.current.push(searchBrowserService.onDidUIStateChange(updateSearchUIState));
     return () => {
       disposable.current.dispose();
     };
@@ -202,7 +209,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
     } else {
       return renderSearchTreeView();
     }
-  }, [searchContent, offsetTop, search, replace]);
+  }, [searchContent, offsetTop]);
 
   return (
     <div className={styles.search_container} style={collapsePanelContainerStyle} ref={wrapperRef}>
@@ -233,11 +240,11 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
           onSearch={onSearch}
           onReplaceRuleChange={onReplaceInputChange}
           replaceAll={replaceAll}
-          resultTotal={searchContent.total}
+          disabled={searchContent.total.fileNum <= 0}
         />
 
         <div className={cls(styles.search_details)}>
-          {UIState.isDetailOpen && (
+          {showDetail && (
             <SearchRulesWidget
               includeValue={searchBrowserService.includeValue}
               excludeValue={searchBrowserService.excludeValue}

@@ -14,6 +14,14 @@ export class OpenSumiSearchView extends OpenSumiPanel {
     return '#replace-input-field';
   }
 
+  get includeInputSelector() {
+    return '#include-input-field';
+  }
+
+  get excludeInputSelector() {
+    return '#exclude-input-field';
+  }
+
   async getSearchResult() {
     let results;
     let files;
@@ -40,5 +48,31 @@ export class OpenSumiSearchView extends OpenSumiPanel {
     }
     const $searchInput = await this.app.page.$(this.searchInputSelector);
     await $searchInput?.focus();
+  }
+
+  async getSearchInput() {
+    return await this.view?.$(this.searchInputSelector);
+  }
+
+  async getReplaceInput() {
+    return await this.view?.$(this.replaceInputSelector);
+  }
+
+  async getExcludeInput() {
+    return await this.view?.$(this.excludeInputSelector);
+  }
+
+  async getIncludeInput() {
+    return await this.view?.$(this.includeInputSelector);
+  }
+
+  async toggleDisplaySearchRules() {
+    const visible = await this.isVisible();
+    if (!visible) {
+      await this.open();
+    }
+    const titleBar = await this.view?.$('[class*="search_input_title_"]');
+    const checkbox = await titleBar?.$('.kt-checkbox');
+    await checkbox?.click();
   }
 }

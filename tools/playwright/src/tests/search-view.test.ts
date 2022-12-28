@@ -29,4 +29,15 @@ test.describe('OpenSumi Search Panel', () => {
     expect(results).toBe(1);
     expect(files).toBe(1);
   });
+
+  test('Open search rules view', async () => {
+    expect(await search.isVisible()).toBeTruthy();
+    await search.toggleDisplaySearchRules();
+    // Include input and Exclude input should be shown.
+    expect((await search.getIncludeInput())?.isVisible()).toBeTruthy();
+    expect((await search.getExcludeInput())?.isVisible()).toBeTruthy();
+    await search.toggleDisplaySearchRules();
+    expect((await search.getIncludeInput())?.isVisible()).toBeFalsy();
+    expect((await search.getExcludeInput())?.isVisible()).toBeFalsy();
+  });
 });
