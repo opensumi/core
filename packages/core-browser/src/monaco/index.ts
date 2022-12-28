@@ -1,5 +1,4 @@
 import { IJSONSchema, Event, IDisposable, BasicEvent } from '@opensumi/ide-core-common';
-import type { IEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/config/editorConfiguration';
 import type { ICodeEditor, IDiffEditor } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IDiffEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import type { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
@@ -13,7 +12,10 @@ import type {
   ISelectedSuggestion,
   SuggestWidget,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/suggest/browser/suggestWidget';
+import type { IStandaloneEditorConstructionOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneCodeEditor';
 import type { BrandedService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
+
+import { IMergeEditorEditor } from './merge-editor-widget';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
@@ -28,7 +30,7 @@ export enum ServiceNames {
 export abstract class MonacoService {
   public abstract createCodeEditor(
     monacoContainer: HTMLElement,
-    options?: IEditorConstructionOptions,
+    options?: IStandaloneEditorConstructionOptions,
     overrides?: { [key: string]: any },
   ): ICodeEditor;
 
@@ -37,6 +39,12 @@ export abstract class MonacoService {
     options?: IDiffEditorConstructionOptions,
     overrides?: { [key: string]: any },
   ): IDiffEditor;
+
+  public abstract createMergeEditor(
+    monacoContainer: HTMLElement,
+    options?: IDiffEditorConstructionOptions,
+    overrides?: { [key: string]: any },
+  ): IMergeEditorEditor;
 
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 

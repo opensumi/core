@@ -16,6 +16,7 @@ import {
   toMarkdown,
 } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
+import { IMergeEditorEditor, MergeEditorInputData } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { isUndefinedOrNull, Schemes, REPORT_NAME, match, localize, MessageType } from '@opensumi/ide-core-common';
 import {
   CommandService,
@@ -89,6 +90,7 @@ import {
   CodeEditorDidVisibleEvent,
   RegisterEditorComponentEvent,
   AskSaveResult,
+  IMergeEditorResource,
 } from './types';
 import { UntitledDocumentIdCounter } from './untitled-resource';
 
@@ -630,6 +632,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   diffEditor!: IDiffEditor;
 
+  mergeEditor!: IMergeEditorEditor;
+
   private openingPromise: Map<string, Promise<IOpenResourceResult>> = new Map();
 
   _onDidEditorFocusChange = this.registerDispose(new EventEmitter<void>());
@@ -710,6 +714,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private _codeEditorPendingLayout = false;
   private _diffEditorPendingLayout = false;
+  private _mergeEditorPendingLayout = false;
 
   // 当前为EditorComponent，且monaco光标变化时触发
   private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
@@ -722,6 +727,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private codeEditorReady = new ReadyEvent();
 
   private diffEditorReady = new ReadyEvent();
+
+  private mergeEditorReady = new ReadyEvent();
 
   private _restoringState = false;
 
@@ -796,6 +803,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this._diffEditorPendingLayout = false;
       } else {
         this._diffEditorPendingLayout = true;
+      }
+    }
+    if (this.mergeEditor) {
+      if (this.currentOpenType && this.currentOpenType.type === 'mergeEditor') {
+        // this.mergeEditor.layout();
+        this._mergeEditorPendingLayout = false;
+      } else {
+        this._mergeEditorPendingLayout = true;
       }
     }
   }
@@ -1121,12 +1136,23 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.codeEditorReady.ready();
   }
 
+  createMergeEditor(dom: HTMLElement) {
+    this.mergeEditor = this.collectionService.createMergeEditor(
+      dom,
+      {},
+      {
+        [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
+      },
+    );
+    this.mergeEditorReady.ready();
+  }
+
   createDiffEditor(dom: HTMLElement) {
     this.diffEditor = this.collectionService.createDiffEditor(
       dom,
       {},
       {
-        [ServiceNames.CONTEXT_KEY_SERVICE]: (this.contextKeyService as any).contextKeyService,
+        [ServiceNames.CONTEXT_KEY_SERVICE]: this.contextKeyService.contextKeyService,
       },
     );
     setTimeout(() => {
@@ -1605,6 +1631,37 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           position: null,
           selectionLength: 0,
         });
+      } else if (activeOpenType.type === 'mergeEditor') {
+        const { metadata } = resource as IMergeEditorResource;
+        if (!metadata) {
+          return;
+        }
+
+        const { ancestor, input1, input2, output } = metadata;
+        const input1Data = MergeEditorInputData.from(input1);
+        const input2Data = MergeEditorInputData.from(input2);
+
+        const [ancestorRef, input1Ref, outputRef, input2Ref] = await Promise.all([
+          this.getDocumentModelRef(URI.parse(ancestor)),
+          this.getDocumentModelRef(input1Data.uri),
+          this.getDocumentModelRef(URI.parse(output)),
+          this.getDocumentModelRef(input2Data.uri),
+        ]);
+
+        await this.mergeEditorReady.onceReady(async () => {
+          await this.mergeEditor.open({
+            ancestor: {
+              uri: URI.parse(metadata.ancestor),
+              textModel: ancestorRef.instance.getMonacoModel(),
+            },
+            input1: input1Data.setTextModel(input1Ref.instance.getMonacoModel()),
+            input2: input2Data.setTextModel(input2Ref.instance.getMonacoModel()),
+            output: {
+              uri: URI.parse(metadata.output),
+              textModel: outputRef.instance.getMonacoModel(),
+            },
+          });
+        });
       } else {
         return; // other type not handled
       }
@@ -1615,7 +1672,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       if (
         (this._codeEditorPendingLayout && activeOpenType.type === 'code') ||
-        (this._diffEditorPendingLayout && activeOpenType.type === 'diff')
+        (this._diffEditorPendingLayout && activeOpenType.type === 'diff') ||
+        (this._mergeEditorPendingLayout && activeOpenType.type === 'mergeEditor')
       ) {
         this.doLayoutEditors();
       }

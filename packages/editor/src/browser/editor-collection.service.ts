@@ -1,6 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRange, MonacoService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { IRange, IContextKeyService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
+import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
   ILineChange,
   URI,
@@ -139,6 +140,13 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     const monacoDiffEditor = this.monacoService.createDiffEditor(dom, mergedOptions, overrides);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor, options]);
     this._onDiffEditorCreate.fire(editor);
+    return editor;
+  }
+
+  public createMergeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
+    const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
+    const mergedOptions = { ...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options };
+    const editor = this.monacoService.createMergeEditor(dom, mergedOptions, overrides);
     return editor;
   }
 
@@ -684,7 +692,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       change.originalEndLineNumber,
       change.modifiedStartLineNumber,
       change.modifiedEndLineNumber,
-      change.charChanges?.map((charChange) => ([
+      change.charChanges?.map((charChange) => [
         charChange.originalStartLineNumber,
         charChange.originalStartColumn,
         charChange.originalEndLineNumber,
@@ -693,7 +701,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         charChange.modifiedStartColumn,
         charChange.modifiedEndLineNumber,
         charChange.modifiedEndColumn,
-      ])),
+      ]),
     ]);
   }
 

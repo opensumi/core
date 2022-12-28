@@ -1016,6 +1016,15 @@ export const localizationBundle = {
     'walkthroughs.welcome': 'Welcome',
     'walkthroughs.get.started': "Open the 'Getting Started' walkthrough",
     // #endregion walkthrough
+
+    // #region merge editor
+    'mergeEditor.workbench.tab.name': 'Merging: {0}',
+    'mergeEditor.conflict.action.apply.confirm.title':
+      'The file has unresolved conflicts or changes, whether to apply and save the changes?',
+    'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
+    'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
+    'mergeEditor.button.apply': 'Apply',
+    // #endregion merge editor
     ...browserViews,
   },
 };

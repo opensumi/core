@@ -473,6 +473,8 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_GLOBAL_SETTINGS,
       VSCodeBuiltinCommands.SETTINGS_COMMAND_OPEN_SETTINGS_JSON,
       VSCodeBuiltinCommands.THEME_COMMAND_QUICK_SELECT,
+      // merge editor
+      VSCodeBuiltinCommands.OPEN_MERGEEDITOR,
     ].forEach((command) => {
       registry.registerCommand(command);
     });

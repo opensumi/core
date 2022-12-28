@@ -3088,6 +3088,7 @@ __metadata:
     "@opensumi/ide-core-common": 2.21.10
     "@opensumi/ide-dev-tool": ^1.3.1
     "@opensumi/ide-file-service": 2.21.10
+    "@opensumi/ide-overlay": 2.21.10
     "@opensumi/ide-theme": 2.21.10
     "@opensumi/ide-workspace": 2.21.10
     "@opensumi/monaco-editor-core": 0.35.0-patch.3
@@ -4086,9 +4087,9 @@ __metadata:
   linkType: hard
 
 "@types/lodash@npm:^4.14.182":
-  version: 4.14.189
-  resolution: "@types/lodash@npm:4.14.189"
-  checksum: 096d1e0954794fb76bd6a0ea443067f02004b53e3c59ac6e3fed88817a1468fc2e6614abdf44341f5e0fdff5f9a3c94a934cc9ff7126e07efbcd94355a21fe45
+  version: 4.14.190
+  resolution: "@types/lodash@npm:4.14.190"
+  checksum: 353a55a1222a57224ead8bd3379fabb2e3e3f6685f599c48b1b66f099d8e9e015e6c6352c6e2275954004c3bb510377804c63117233c6f187700b6ab78adfa02
   languageName: node
   linkType: hard
 
@@ -4166,9 +4167,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^16.11.26":
-  version: 16.18.3
-  resolution: "@types/node@npm:16.18.3"
-  checksum: 6b8ba2ea5d842f7986e366cb9184c54d273d492784dc62e08fd5afeae938d9b61aec6e4222d2541cd18f9b1412ba361bbcb3f4204fb003608af80a2a6af959f9
+  version: 16.18.10
+  resolution: "@types/node@npm:16.18.10"
+  checksum: 1b138616923e9a1c6d3806edf75714b605d2ec689357cdc675bc73816c508ff11b3c68df054b02a496c76654d8ed53add2e90816af39423431c73aa6eec06f29
   languageName: node
   linkType: hard
 
@@ -4375,11 +4376,11 @@ __metadata:
   linkType: hard
 
 "@types/yargs@npm:^17.0.8":
-  version: 17.0.13
-  resolution: "@types/yargs@npm:17.0.13"
+  version: 17.0.14
+  resolution: "@types/yargs@npm:17.0.14"
   dependencies:
     "@types/yargs-parser": "*"
-  checksum: 0ab269abc2da2223cf0a8c16d578850fbe327d40fb85724b5c3f9f6cf38d03656ef699518c05d4df3bc337339ec6d0aad7df01682a9dca4783ad1ccc7336cf12
+  checksum: 7c571560434e1295b31dfd7f8d3b4a88dbb8bfe8db0054cea35f829f86b1251f67e41eaa0cb5990f17e5ed9b1a508c686b2b9f15c3bafc467ba58989ac9223e8
   languageName: node
   linkType: hard
 
@@ -5064,23 +5065,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"allure-js-commons@npm:2.0.0-beta.19":
-  version: 2.0.0-beta.19
-  resolution: "allure-js-commons@npm:2.0.0-beta.19"
+"allure-js-commons@npm:2.0.0-beta.20":
+  version: 2.0.0-beta.20
+  resolution: "allure-js-commons@npm:2.0.0-beta.20"
   dependencies:
     mkdirp: ^1.0.4
     properties: ^1.2.1
     uuid: ^8.3.0
-  checksum: 853550424ca4ff818365033efb0043d5eca78a2857a8e5e2319c0359a57520811b5098d28175460f735dc0345076ac8c9d625d2821a0689ec3ad118869aed029
+  checksum: a89bd1da224857d1752dab63d89bbb553ec6b1c8d595309342757c6ebcb83646c22cba5a06a179e555a2efef972374da6de81726ccad8541da09bb8cbcc2c39c
   languageName: node
   linkType: hard
 
 "allure-playwright@npm:^2.0.0-beta.14":
-  version: 2.0.0-beta.19
-  resolution: "allure-playwright@npm:2.0.0-beta.19"
+  version: 2.0.0-beta.20
+  resolution: "allure-playwright@npm:2.0.0-beta.20"
   dependencies:
-    allure-js-commons: 2.0.0-beta.19
-  checksum: 08600523b6509b99c4f2c17e7cb481889fc9296d7bf30a45413bedbaff09535bd1d033f44bccebfc2f9ed50ac59fd0180e55847a8ecc6e43f49002d8628534b8
+    allure-js-commons: 2.0.0-beta.20
+  checksum: eb6da981748b337c03df7a570d75219731265cb517ce2de494726076156d3cb27a88549e428d4209f87392e62f6bc359c64cb03fe6c5ac58a29e1fc2ded81aad
   languageName: node
   linkType: hard
 
@@ -6602,9 +6603,9 @@ __metadata:
   linkType: hard
 
 "ci-info@npm:^3.2.0":
-  version: 3.6.2
-  resolution: "ci-info@npm:3.6.2"
-  checksum: fd8fc172f925208d17ca8473e05e9e5709c796d31ee23fa0b53f418bc449c237e9c031a55c161102afb4e69ef34ce6f6a5d421886ce087478b222a5c7b9ae1f3
+  version: 3.7.0
+  resolution: "ci-info@npm:3.7.0"
+  checksum: 6e5df0250382ff3732703b36b958d2d892dd3c481f9671666f96c2ab7888be744bc4dca81395be958dcb828502d94f18fa9aa8901c5a3c9923cda212df02724c
   languageName: node
   linkType: hard
 
@@ -8769,12 +8770,12 @@ __metadata:
   linkType: hard
 
 "enhanced-resolve@npm:^5.7.0":
-  version: 5.11.0
-  resolution: "enhanced-resolve@npm:5.11.0"
+  version: 5.12.0
+  resolution: "enhanced-resolve@npm:5.12.0"
   dependencies:
     graceful-fs: ^4.2.9
     tapable: ^2.2.0
-  checksum: ed5169b49adc0bc89b3532f2fae6abd01e8f3bdb9c3b60194a7ead386c9e307727aab5efe756183dda9ad05f0d301e8994e818da6b987dd223392ced2d3f6aff
+  checksum: bf3f787facaf4ce3439bef59d148646344e372bef5557f0d37ea8aa02c51f50a925cd1f07b8d338f18992c29f544ec235a8c64bcdb56030196c48832a5494174
   languageName: node
   linkType: hard
 
@@ -9950,9 +9951,9 @@ __metadata:
   linkType: hard
 
 "form-data-encoder@npm:^2.1.2":
-  version: 2.1.3
-  resolution: "form-data-encoder@npm:2.1.3"
-  checksum: f2db77767f2c0f45fcbab717f4c8ec1a952fba372440b841bd0f9f3f7b867e3a26bbe8bf72598127ebcfee5d493caee87942b30e9dff219898a4c12dad1dcedc
+  version: 2.1.4
+  resolution: "form-data-encoder@npm:2.1.4"
+  checksum: e0b3e5950fb69b3f32c273944620f9861f1933df9d3e42066e038e26dfb343d0f4465de9f27e0ead1a09d9df20bc2eed06a63c2ca2f8f00949e7202bae9e29dd
   languageName: node
   linkType: hard
 
@@ -11380,9 +11381,9 @@ __metadata:
   linkType: hard
 
 "ignore@npm:^5.0.4, ignore@npm:^5.1.8, ignore@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "ignore@npm:5.2.0"
-  checksum: 6b1f926792d614f64c6c83da3a1f9c83f6196c2839aa41e1e32dd7b8d174cef2e329d75caabb62cb61ce9dc432f75e67d07d122a037312db7caa73166a1bdb77
+  version: 5.2.1
+  resolution: "ignore@npm:5.2.1"
+  checksum: 7251d00cba49fe88c4f3565fadeb4aa726ba38294a9a79ffed542edc47bafd989d4b2ccf65700c5b1b26a1e91dfc7218fb23017937c79216025d5caeec0ee9d5
   languageName: node
   linkType: hard
 
@@ -14774,11 +14775,11 @@ __metadata:
   linkType: hard
 
 "minipass@npm:^3.0.0, minipass@npm:^3.1.1, minipass@npm:^3.1.6":
-  version: 3.3.5
-  resolution: "minipass@npm:3.3.5"
+  version: 3.3.6
+  resolution: "minipass@npm:3.3.6"
   dependencies:
     yallist: ^4.0.0
-  checksum: f89f02bcaa0e0e4bb4c44ec796008e69fbca62db0aba6ead1bc57d25bdaefdf42102130f4f9ecb7d9c6b6cd35ff7b0c7b97d001d3435da8e629fb68af3aea57e
+  checksum: a30d083c8054cee83cdcdc97f97e4641a3f58ae743970457b1489ce38ee1167b3aaf7d815cd39ec7a99b9c40397fd4f686e83750e73e652b21cb516f6d845e48
   languageName: node
   linkType: hard
 
@@ -17228,11 +17229,11 @@ __metadata:
   linkType: hard
 
 "prettier@npm:^2.5.1":
-  version: 2.7.1
-  resolution: "prettier@npm:2.7.1"
+  version: 2.8.0
+  resolution: "prettier@npm:2.8.0"
   bin:
     prettier: bin-prettier.js
-  checksum: 55a4409182260866ab31284d929b3cb961e5fdb91fe0d2e099dac92eaecec890f36e524b4c19e6ceae839c99c6d7195817579cdffc8e2c80da0cb794463a748b
+  checksum: 72004ce0cc9bb097daf3e3833f62495768724392c1d5b178dd47372337616e9e50ecbb0804f236596223f7b5eb1bbe69cefc8957dca21112c5777e77ef73a564
   languageName: node
   linkType: hard
 
@@ -17805,8 +17806,8 @@ __metadata:
   linkType: hard
 
 "rc-trigger@npm:^5.1.2":
-  version: 5.3.3
-  resolution: "rc-trigger@npm:5.3.3"
+  version: 5.3.4
+  resolution: "rc-trigger@npm:5.3.4"
   dependencies:
     "@babel/runtime": ^7.18.3
     classnames: ^2.2.6
@@ -17816,7 +17817,7 @@ __metadata:
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: 92134e35b25c20d906c1655d8b6bef9805710a0916e22799adda7404cbfaa4b7fdf57040280bcf53ff4e31c4aef15ea8dfb0bf2e9d74c65abd7575199931feda
+  checksum: 6ca7694a4cf064040b5e0fd9b4629b0e0a19ebb29c4eb5614ee9eb22b4193e21909171fd95e48be73a94e44f249cb9616d7670b696164620b722d3de6f280017
   languageName: node
   linkType: hard
 
@@ -17834,8 +17835,8 @@ __metadata:
   linkType: hard
 
 "rc-util@npm:^5.12.0, rc-util@npm:^5.15.0, rc-util@npm:^5.19.2, rc-util@npm:^5.21.0, rc-util@npm:^5.3.0, rc-util@npm:^5.9.4":
-  version: 5.24.5
-  resolution: "rc-util@npm:5.24.5"
+  version: 5.24.6
+  resolution: "rc-util@npm:5.24.6"
   dependencies:
     "@babel/runtime": ^7.18.3
     react-is: ^16.12.0
@@ -17843,7 +17844,7 @@ __metadata:
   peerDependencies:
     react: ">=16.9.0"
     react-dom: ">=16.9.0"
-  checksum: ef5e69dae3f77349f9a2e70ba13612843c73ca05fac6ee11576d72b2ddab4c276b7c8415c52209d125ef724769ff6aa8fa92b2e1a596387e45b259e26a0ae66f
+  checksum: 978276161e726f20b0300566ec46305038a0fed7b29daafca1523030917e9fc67063f3f984367bb50c40be35fb3ff1130cd47c95867007904a87aa7425ca47e4
   languageName: node
   linkType: hard
 
@@ -19159,11 +19160,11 @@ __metadata:
   linkType: hard
 
 "simple-update-notifier@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "simple-update-notifier@npm:1.0.7"
+  version: 1.1.0
+  resolution: "simple-update-notifier@npm:1.1.0"
   dependencies:
     semver: ~7.0.0
-  checksum: aaadc1f158ad5101b363d1c7aed1f30fc1cac59a760aa31702633e0e6fe423348f07d0e78185aef0aad29130a7b7f0f188c21c7bc7353f897a0ea3682e051a70
+  checksum: 1012e9b6c504e559a948078177b3eedbb9d7e4d15878e2bda56314d08db609ca5da485be4ac9f838759faae8057935ee0246fcdf63f1233c86bd9fecb2a5544b
   languageName: node
   linkType: hard
 

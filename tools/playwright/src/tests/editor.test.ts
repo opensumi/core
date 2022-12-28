@@ -102,7 +102,7 @@ console.log(a);`,
     let paste = await editorMenu?.menuItemByName('Paste');
     await paste?.click();
     await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(2);
+    expect(await editor.numberOfLines()).toBe(5);
     expect(
       await editor.textContentOfLineContainingText(
         `File Path: ${workspace.workspace.resolve('editor3.js').codeUri.fsPath.toString()}`,
@@ -118,7 +118,7 @@ console.log(a);`,
     paste = await editorMenu?.menuItemByName('Paste');
     await paste?.click();
     await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(3);
+    expect(await editor.numberOfLines()).toBe(6);
     expect(await editor.textContentOfLineContainingText('File Relative Path: editor3.js')).toBeTruthy();
   });
 
