@@ -422,7 +422,15 @@ export class FileSearchQuickCommandHandler {
     for (const [index, strUri] of uriList.entries()) {
       const uri = new URI(strUri);
       const icon = `file-icon ${await this.labelService.getIcon(uri.withoutFragment())}`;
-      const description = await this.workspaceService.asRelativePath(uri.parent.withoutFragment());
+      let description = '';
+      const relative = await this.workspaceService.asRelativePath(uri.parent);
+      if (relative) {
+        if (this.workspaceService.isMultiRootWorkspaceOpened) {
+          description = `${new URI(relative.root).displayName}${relative.path ? ` ・ ${relative.path}` : ''}`;
+        } else {
+          description = relative.path || '';
+        }
+      }
       const item = new QuickOpenItem({
         uri,
         label: uri.displayName,
