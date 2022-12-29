@@ -72,7 +72,6 @@ export interface IContentSearchClientService {
   isReplacing: boolean;
   isSearching: boolean;
   isShowValidateMessage: boolean;
-  searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
   validateMessage: ValidateMessage | undefined;
 
   updateUIState(obj: Record<string, any>, e?: React.KeyboardEvent): void;
@@ -98,6 +97,7 @@ export interface IContentSearchClientService {
   onDidChange: Event<void>;
   onDidTitleChange: Event<void>;
   onDidUIStateChange: Event<IUIState>;
+  onDidSearchStateChange: Event<string>;
   fireTitleChange(): void;
 }
 

@@ -103,7 +103,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
       if (SearchFileNode.is(node)) {
         return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
       } else {
-        if (isUseRegexp && replace) {
+        if (isUseRegexp) {
           let regexp;
           try {
             regexp = new RegExp(search);

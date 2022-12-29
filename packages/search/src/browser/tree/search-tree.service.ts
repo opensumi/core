@@ -167,6 +167,8 @@ export class ReplaceDocumentModelContentProvider implements IEditorDocumentModel
       this.workspaceEditService,
       searchResults,
       this.searchBrowserService.replaceValue,
+      this.searchBrowserService.searchValue,
+      this.searchBrowserService.UIState.isUseRegexp,
     );
 
     this.contentMap.set(uri.toString(), replaceViewDocModel.getText());

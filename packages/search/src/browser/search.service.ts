@@ -129,6 +129,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   private onDidChangeEmitter: Emitter<void> = new Emitter();
   private onDidTitleChangeEmitter: Emitter<void> = new Emitter();
   private onDidUIStateChangeEmitter: Emitter<IUIState> = new Emitter();
+  private onDidSearchStateChangeEmitter: Emitter<string> = new Emitter();
 
   protected eventBusDisposer: IDisposable;
 
@@ -142,6 +143,10 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   get onDidUIStateChange() {
     return this.onDidUIStateChangeEmitter.event;
+  }
+
+  get onDidSearchStateChange() {
+    return this.onDidSearchStateChangeEmitter.event;
   }
 
   public UIState: IUIState = {
@@ -172,7 +177,6 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   private _docModelSearchedList: string[] = [];
   private _currentSearchId = -1;
 
-  searchInputEl = createRef<HTMLInputElement>();
   searchResultCollection: SearchResultCollection = new SearchResultCollection();
 
   private reporter: { timer: IReporterTimer; value: string } | null = null;
@@ -504,13 +508,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   focus() {
     window.requestAnimationFrame(() => {
-      if (!this.searchInputEl || !this.searchInputEl.current) {
-        return;
-      }
-      this.searchInputEl.current.focus();
-      if (this.searchValue !== '') {
-        this.searchInputEl.current.select();
-      }
+      this.onDidSearchStateChangeEmitter.fire(this.searchValue);
       this.applyEditorSelections();
     });
   }
