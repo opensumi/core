@@ -20,6 +20,7 @@ import {
   EditorComponentRenderMode,
   EditorPreferences,
   EditorGroupChangeEvent,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import { LIGHT, DARK, HIGH_CONTRAST_DARK, HIGH_CONTRAST_LIGHT, ITheme } from '@opensumi/ide-theme';
 import { getColorRegistry } from '@opensumi/ide-theme/lib/common/color-registry';
@@ -431,7 +432,7 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview>
         (resource, results) => {
           if (resource.uri.path.toString() === this.id) {
             results.push({
-              type: 'component',
+              type: EditorOpenType.component,
               componentId,
             });
           }

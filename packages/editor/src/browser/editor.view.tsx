@@ -44,6 +44,7 @@ import {
   EditorSide,
   IEditorComponent,
   CodeEditorDidVisibleEvent,
+  EditorOpenType,
 } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
@@ -384,19 +385,19 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   );
 
   React.useEffect(() => {
-    if (group.currentOpenType?.type === 'code') {
+    if (group.currentOpenType?.type === EditorOpenType.code) {
       eventBus.fire(
         new CodeEditorDidVisibleEvent({
           groupName: group.name,
-          type: 'code',
+          type: EditorOpenType.code,
           editorId: group.codeEditor.getId(),
         }),
       );
-    } else if (group.currentOpenType?.type === 'diff') {
+    } else if (group.currentOpenType?.type === EditorOpenType.diff) {
       eventBus.fire(
         new CodeEditorDidVisibleEvent({
           groupName: group.name,
-          type: 'diff',
+          type: EditorOpenType.diff,
           editorId: group.diffEditor.modifiedEditor.getId(),
         }),
       );
@@ -448,7 +449,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         <div
           className={classnames({
             [styles.kt_editor_component]: true,
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
           })}
         >
           {components}
@@ -457,19 +458,19 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
           className={classnames({
             [styles.kt_editor_code_editor]: true,
             [styles.kt_editor_component]: true,
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'code',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
           })}
           ref={codeEditorRef}
         />
         <div
           className={classnames(styles.kt_editor_diff_editor, styles.kt_editor_component, {
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
           })}
           ref={diffEditorRef}
         />
         <div
           className={classnames(styles.kt_editor_diff_3_editor, styles.kt_editor_component, {
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'mergeEditor',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
           })}
           ref={mergeEditorRef}
         />

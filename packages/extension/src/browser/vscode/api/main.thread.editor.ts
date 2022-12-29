@@ -24,6 +24,7 @@ import {
   EditorConfigurationChangedEvent,
   EditorGroupIndexChangedEvent,
   IDiffResource,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import {
   IMonacoImplEditor,
@@ -202,14 +203,14 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         return group.currentEditor as IMonacoImplEditor;
       }
       if (
-        group.currentOpenType?.type === 'diff' &&
+        group.currentOpenType?.type === EditorOpenType.diff &&
         id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.original, 'original')
       ) {
         return group.diffEditor.originalEditor;
       }
 
       if (
-        group.currentOpenType?.type === 'diff' &&
+        group.currentOpenType?.type === EditorOpenType.diff &&
         id === getTextEditorId(group, (currentResource as IDiffResource).metadata!.modified, 'modified')
       ) {
         return group.diffEditor.modifiedEditor;
@@ -232,7 +233,10 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           !openTypeEquals(payload.newOpenType, payload.oldOpenType)
         ) {
           const change: IEditorChangeDTO = {};
-          if (payload.newOpenType && (payload.newOpenType.type === 'code' || payload.newOpenType.type === 'diff')) {
+          if (
+            payload.newOpenType &&
+            (payload.newOpenType.type === EditorOpenType.code || payload.newOpenType.type === EditorOpenType.diff)
+          ) {
             const editor = payload.group.currentEditor as IMonacoImplEditor;
             if (!editor.currentDocumentModel) {
               // noop
@@ -240,7 +244,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
               // noop
             } else {
               change.created = [];
-              if (payload.newOpenType.type === 'diff') {
+              if (payload.newOpenType.type === EditorOpenType.diff) {
                 const diffOriginalEditor = payload.group.diffEditor.originalEditor;
                 const diffMorifidedEditor = payload.group.diffEditor.modifiedEditor;
 
@@ -291,9 +295,12 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
               change.actived = getTextEditorId(payload.group, payload.newResource!.uri);
             }
           }
-          if (payload.oldOpenType && (payload.oldOpenType.type === 'code' || payload.oldOpenType.type === 'diff')) {
+          if (
+            payload.oldOpenType &&
+            (payload.oldOpenType.type === EditorOpenType.code || payload.oldOpenType.type === EditorOpenType.diff)
+          ) {
             change.removed = [];
-            if (payload.oldOpenType.type === 'diff') {
+            if (payload.oldOpenType.type === EditorOpenType.diff) {
               change.removed.push(
                 getTextEditorId(payload.group, (payload.oldResource as IDiffResource).metadata!.original, 'original'),
               );
@@ -320,11 +327,11 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           let side: string | undefined;
 
           const isDiffOriginal =
-            this.editorService.currentEditorGroup.currentOpenType?.type === 'diff' &&
+            this.editorService.currentEditorGroup.currentOpenType?.type === EditorOpenType.diff &&
             this.editorService.currentEditorGroup.diffEditor.originalEditor.currentUri?.isEqual(uri);
 
           const isDiffMorified =
-            this.editorService.currentEditorGroup.currentOpenType?.type === 'diff' &&
+            this.editorService.currentEditorGroup.currentOpenType?.type === EditorOpenType.diff &&
             this.editorService.currentEditorGroup.diffEditor.modifiedEditor.currentUri?.isEqual(uri);
 
           if (isDiffOriginal) {
@@ -465,7 +472,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   }
 
   async $openResource(uri: string, options: IResourceOpenOptions): Promise<string> {
-    options.forceOpenType = { type: 'code' };
+    options.forceOpenType = { type: EditorOpenType.code };
     options.focus = true;
     options = {
       ...options,
@@ -543,22 +550,24 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       if (!diffChanges) {
         return Promise.resolve([]);
       }
-      return Promise.resolve(diffChanges.map((change) => [
-        change.originalStartLineNumber,
-        change.originalEndLineNumber,
-        change.modifiedStartLineNumber,
-        change.modifiedEndLineNumber,
-        change.charChanges?.map((charChange) => ([
-          charChange.originalStartLineNumber,
-          charChange.originalStartColumn,
-          charChange.originalEndLineNumber,
-          charChange.originalEndColumn,
-          charChange.modifiedStartLineNumber,
-          charChange.modifiedStartColumn,
-          charChange.modifiedEndLineNumber,
-          charChange.modifiedEndColumn,
-        ])),
-      ]));
+      return Promise.resolve(
+        diffChanges.map((change) => [
+          change.originalStartLineNumber,
+          change.originalEndLineNumber,
+          change.modifiedStartLineNumber,
+          change.modifiedEndLineNumber,
+          change.charChanges?.map((charChange) => [
+            charChange.originalStartLineNumber,
+            charChange.originalStartColumn,
+            charChange.originalEndLineNumber,
+            charChange.originalEndColumn,
+            charChange.modifiedStartLineNumber,
+            charChange.modifiedStartColumn,
+            charChange.modifiedEndLineNumber,
+            charChange.modifiedEndColumn,
+          ]),
+        ]),
+      );
     }
 
     const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');
@@ -636,7 +645,7 @@ function isEditor(openType: MaybeNull<IEditorOpenType>): boolean {
   if (!openType) {
     return false;
   }
-  return openType.type === 'code' || openType.type === 'diff';
+  return openType.type === EditorOpenType.code || openType.type === EditorOpenType.diff;
 }
 
 function isGroupEditorState(group: IEditorGroup) {

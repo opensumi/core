@@ -4,6 +4,7 @@ import { Domain, localize, replaceLocalizePlaceholder, URI } from '@opensumi/ide
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
+  EditorOpenType,
   IResource,
   ResourceService,
 } from '@opensumi/ide-editor/lib/browser';
@@ -81,7 +82,7 @@ export class VSXExtensionContribution
     editorComponentRegistry.registerEditorComponentResolver(EXTENSION_SCHEME, (_, __, resolve) => {
       resolve?.([
         {
-          type: 'component',
+          type: EditorOpenType.component,
           componentId: EXTENSIONS_DETAIL_COMPONENT_ID,
         },
       ]);

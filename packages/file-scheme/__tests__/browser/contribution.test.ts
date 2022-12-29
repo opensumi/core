@@ -2,6 +2,7 @@ import { PreferenceService, URI } from '@opensumi/ide-core-browser';
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
+  EditorOpenType,
   IEditorOpenType,
   IResource,
 } from '@opensumi/ide-editor/lib/browser';
@@ -67,20 +68,20 @@ describe('contribution test', () => {
     // plain text
     let openTypes: IEditorOpenType[];
     openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/1.txt'));
-    expect(openTypes[0].type).toBe('code');
+    expect(openTypes[0].type).toBe(EditorOpenType.code);
     // known custom language
     openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/1.js'));
-    expect(openTypes[0].type).toBe('code');
+    expect(openTypes[0].type).toBe(EditorOpenType.code);
     // unknown language but with text type
     mockFileService.getFileType.mockReturnValueOnce('text');
     openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/1.rs'));
-    expect(openTypes[0].type).toBe('code');
+    expect(openTypes[0].type).toBe(EditorOpenType.code);
   });
 
   it('should fallback to LARGE_FILE_PREVENT_COMPONENT_ID if file is too large', async () => {
     mockFileService.getFileStat.mockReturnValueOnce({ size: 114514 });
     const openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/2.js'));
-    expect(openTypes[0].type).toBe('component');
+    expect(openTypes[0].type).toBe(EditorOpenType.component);
     expect(openTypes[0].componentId).toBe('large-file-prevent');
   });
 
@@ -88,10 +89,10 @@ describe('contribution test', () => {
     mockFileService.getFileType.mockReturnValueOnce('video').mockReturnValueOnce('image');
     let openTypes: IEditorOpenType[];
     openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/video.mp4'));
-    expect(openTypes[0].type).toBe('component');
+    expect(openTypes[0].type).toBe(EditorOpenType.component);
     expect(openTypes[0].componentId).toBe('video-preview');
     openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/image.jpg'));
-    expect(openTypes[0].type).toBe('component');
+    expect(openTypes[0].type).toBe(EditorOpenType.component);
     expect(openTypes[0].componentId).toBe('image-preview');
   });
 });

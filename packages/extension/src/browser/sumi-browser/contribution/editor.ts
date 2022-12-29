@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IDisposable, Disposable, URI, Schemes } from '@opensumi/ide-core-common';
 import { ResourceService } from '@opensumi/ide-editor';
-import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IIconService, IconType } from '@opensumi/ide-theme';
 
@@ -76,7 +76,7 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
           }
           if (shouldShow) {
             results.push({
-              type: 'component',
+              type: EditorOpenType.component,
               componentId: viewContribution.id,
               title: viewContribution.title || '预览',
               weight: viewContribution.priority || 10,
@@ -93,7 +93,7 @@ export class EditorBrowserContributionRunner extends AbstractSumiBrowserContribu
             }
           }
           results.push({
-            type: 'component',
+            type: EditorOpenType.component,
             componentId: viewContribution.id,
             title: viewContribution.title || viewContribution.id,
             weight: viewContribution.priority || 10,

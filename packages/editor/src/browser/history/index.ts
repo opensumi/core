@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-core-browser';
 
 import { WorkbenchEditorService } from '../../common';
-import { EditorSelectionChangeEvent, EditorGroupChangeEvent, EditorGroupCloseEvent } from '../types';
+import { EditorSelectionChangeEvent, EditorGroupChangeEvent, EditorGroupCloseEvent, EditorOpenType } from '../types';
 
 const HistoryPositionLineThreshold = 7;
 const HardMaxStateLength = 200; // 超过200个过后，会缩减至100个, 防止反复缩减
@@ -89,7 +89,10 @@ export class EditorHistoryService extends WithEventBus {
 
   @OnEvent(EditorGroupChangeEvent)
   onEditorGroupChangeEvent(e: EditorGroupChangeEvent) {
-    if (e.payload.newOpenType && (e.payload.newOpenType.type === 'code' || e.payload.newOpenType.type === 'diff')) {
+    if (
+      e.payload.newOpenType &&
+      (e.payload.newOpenType.type === EditorOpenType.code || e.payload.newOpenType.type === EditorOpenType.diff)
+    ) {
       const selections = e.payload.group.currentEditor!.getSelections();
       if (selections && selections.length > 0) {
         this.onNewState(

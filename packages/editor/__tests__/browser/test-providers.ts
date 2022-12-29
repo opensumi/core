@@ -4,6 +4,7 @@ import {
   IEditorDocumentModelContentProvider,
   IEditorComponentResolver,
   IEditorComponent,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 
 export const doNotClose: string[] = [];
@@ -39,7 +40,7 @@ export const TestEditorDocumentProvider: IEditorDocumentModelContentProvider = {
 
 export const TestResourceResolver: IEditorComponentResolver = (resource: IResource, results) => {
   results.push({
-    type: 'code',
+    type: EditorOpenType.code,
   });
 };
 
@@ -47,7 +48,7 @@ export const TestResourceResolver2: IEditorComponentResolver = (resource: IResou
   if (resource.uri.authority === 'component') {
     results.push({
       componentId: 'test-v-component',
-      type: 'component',
+      type: EditorOpenType.component,
       weight: 100,
     });
     return;
@@ -55,7 +56,7 @@ export const TestResourceResolver2: IEditorComponentResolver = (resource: IResou
   if (resource.uri.authority === 'diff') {
     results.push({
       componentId: 'test-v-component',
-      type: 'diff',
+      type: EditorOpenType.diff,
     });
     return;
   }

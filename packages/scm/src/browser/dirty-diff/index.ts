@@ -8,7 +8,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { IEventBus, CommandService, positionToRange } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
-import { EditorGroupChangeEvent, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
+import { EditorGroupChangeEvent, EditorOpenType, IEditorFeatureRegistry } from '@opensumi/ide-editor/lib/browser';
 import { IEditorDocumentModel } from '@opensumi/ide-editor/lib/browser';
 import { IMonacoImplEditor } from '@opensumi/ide-editor/lib/browser/editor-collection.service';
 import type { ICodeEditor as IMonacoCodeEditor, ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -158,7 +158,7 @@ export class DirtyDiffWorkbenchController extends Disposable implements IDirtyDi
     const models = this.editorService.editorGroups
 
       // only interested in code editor widgets
-      .filter((editorGroup) => editorGroup.currentOpenType && editorGroup.currentOpenType.type === 'code')
+      .filter((editorGroup) => editorGroup.currentOpenType && editorGroup.currentOpenType.type === EditorOpenType.code)
       // set model registry and map to models
       .map((editorGroup) => {
         const currentEditor = editorGroup.currentEditor as IMonacoImplEditor;

@@ -668,9 +668,16 @@ export enum IEditorPriority {
   default = 'default',
 }
 
+export enum EditorOpenType {
+  code = 'code',
+  diff = 'diff',
+  mergeEditor = 'mergeEditor',
+  component = 'component',
+}
+
 // 定义一个resource如何被打开
 export interface IEditorOpenType {
-  type: 'code' | 'diff' | 'mergeEditor' | 'component';
+  type: EditorOpenType;
 
   componentId?: string;
 

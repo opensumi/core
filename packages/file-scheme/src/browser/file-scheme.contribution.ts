@@ -6,6 +6,7 @@ import {
   EditorComponentRegistry,
   BrowserEditorContribution,
   IEditorDocumentModelContentRegistry,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import {
   UntitledSchemeResourceProvider,
@@ -107,7 +108,7 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
       (resource: IResource<any>, results: IEditorOpenType[]) => {
         if (results.length === 0) {
           results.push({
-            type: 'component',
+            type: EditorOpenType.component,
             componentId: EXTERNAL_OPEN_COMPONENT_ID,
           });
         }
@@ -122,14 +123,14 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
 
         if (type === 'image') {
           results.push({
-            type: 'component',
+            type: EditorOpenType.component,
             componentId: IMAGE_PREVIEW_COMPONENT_ID,
           });
         }
 
         if (type === 'video') {
           results.push({
-            type: 'component',
+            type: EditorOpenType.component,
             componentId: VIDEO_PREVIEW_COMPONENT_ID,
           });
         }
@@ -141,12 +142,12 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
 
           if (stat && (stat.size || 0) > maxSize && !(metadata || {}).noPrevent) {
             results.push({
-              type: 'component',
+              type: EditorOpenType.component,
               componentId: LARGE_FILE_PREVENT_COMPONENT_ID,
             });
           } else {
             results.push({
-              type: 'code',
+              type: EditorOpenType.code,
               title: localize('editorOpenType.code'),
             });
           }
@@ -160,7 +161,7 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
       (_resource: IResource<any>, _results: IEditorOpenType[], resolve: (results: IEditorOpenType[]) => void) => {
         resolve([
           {
-            type: 'code',
+            type: EditorOpenType.code,
             priority: 'default',
           },
         ]);

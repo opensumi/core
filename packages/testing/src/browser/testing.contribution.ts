@@ -30,6 +30,7 @@ import {
   EditorComponentRegistry,
   ResourceService,
   IResource,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import { IEditor } from '@opensumi/ide-editor/lib/common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -450,7 +451,7 @@ export class TestingContribution
 
     componentRegistry.registerEditorComponentResolver(TEST_DATA_SCHEME, (_, results) => {
       results.push({
-        type: 'component',
+        type: EditorOpenType.component,
         componentId: MARKDOWN_EDITOR_COMPONENT_ID,
         weight: 10,
       });
