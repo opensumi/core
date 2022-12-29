@@ -10,7 +10,6 @@
   border-top-width: 1px;
   border-bottom-width: 1px;
   overflow: hidden;
-  align-items: center;
   background: var(--editor-background);
 }
 
@@ -18,13 +17,13 @@
   padding: 0 10px;
   flex: 1;
   min-width: 120px;
+  margin: auto;
 }
 
 .debug_breakpoint_input {
   width: 100%;
-  height: 28px;
-  // (36 - 21) / 2 = 7.5
-  margin-top: 7.5px;
+  height: inherit;
+  margin-top: 7px;
   .input_placeholder {
     position: relative;
   }
