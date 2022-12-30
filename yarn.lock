@@ -2513,7 +2513,7 @@ __metadata:
     simple-git: ^3.3.0
     temp: ^0.9.4
     ts-jest: ^29.0.3
-    ts-loader: ^6.0.1
+    ts-loader: ^8.2.0
     ts-node: ^10.9.1
     tslib: ^2.4.0
     typescript: 4.9.3
@@ -6501,7 +6501,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^2.0.0, chalk@npm:^2.3.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
+"chalk@npm:^2.0.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -20589,21 +20589,6 @@ __metadata:
   bin:
     ts-jest: cli.js
   checksum: 541e51776d367fa2279af47f75af94b03e0538f1839ea9983de0f4ad7f188002f6eb1fc72440651d96daa62d25a7bc679a129c14e6ef291277eea9346751d56b
-  languageName: node
-  linkType: hard
-
-"ts-loader@npm:^6.0.1":
-  version: 6.2.2
-  resolution: "ts-loader@npm:6.2.2"
-  dependencies:
-    chalk: ^2.3.0
-    enhanced-resolve: ^4.0.0
-    loader-utils: ^1.0.2
-    micromatch: ^4.0.0
-    semver: ^6.0.0
-  peerDependencies:
-    typescript: "*"
-  checksum: b984b911848f5397e1cddf8b046a693caaf5556ff1ccc91611b40a20824b20232a3d1d28da326e4cf9bb20c23dce2886b1a5a5868634b44384a528bf462c81f4
   languageName: node
   linkType: hard
 
