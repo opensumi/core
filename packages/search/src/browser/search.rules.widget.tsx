@@ -123,7 +123,7 @@ const ExcludeInput = React.memo(
     <div className={cls(styles.glob_field, styles.search_excludes)}>
       <div className={styles.label}>
         <span className={styles.limit}>{localize('search.excludes')}</span>
-        <div className={styles.checkbox_wrap}>
+        <div className={styles.use_default_excludes_wrapper}>
           <CheckBox
             className={cls(styles.checkbox)}
             label={localize('search.excludes.default.enable')}

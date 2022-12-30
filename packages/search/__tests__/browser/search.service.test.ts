@@ -143,7 +143,6 @@ describe('search.service.ts', () => {
     const service: any = searchService;
     searchService.searchValue = 'value';
     (service.UIState as IUIState) = {
-      isSearchFocus: false,
       isToggleOpen: true,
       isDetailOpen: false,
 

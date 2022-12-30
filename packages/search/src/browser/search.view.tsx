@@ -28,6 +28,7 @@ import { SearchInputWidget } from './search.input.widget';
 import styles from './search.module.less';
 import { SearchReplaceWidget } from './search.replace.widget';
 import { SearchRulesWidget } from './search.rules.widget';
+import { SearchTreeService } from './tree/search-tree.service';
 import { SearchTree } from './tree/search-tree.view';
 
 export interface ISearchContentResult {
@@ -43,7 +44,7 @@ export interface ISearchContentResult {
 export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
   const searchOptionRef = createRef<HTMLDivElement>();
   const wrapperRef = createRef<HTMLDivElement>();
-  const searchTreeService = useInjectable<ISearchTreeService>(ISearchTreeService);
+  const searchTreeService = useInjectable<SearchTreeService>(ISearchTreeService);
   const searchBrowserService = useInjectable<IContentSearchClientService>(IContentSearchClientService);
   const [offsetTop, setOffsetTop] = useState<number>(0);
   const [searchContent, setSearchContent] = useState<ISearchContentResult>({
@@ -72,11 +73,11 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
   }, [searchBrowserService]);
 
   const onSearchFocus = useCallback(() => {
-    updateUIState({ isSearchFocus: true });
-  }, [searchBrowserService]);
+    searchTreeService.contextKey.searchInputBoxFocusedKey.set(true);
+  }, [searchTreeService]);
 
   const onSearchBlur = useCallback(() => {
-    updateUIState({ isSearchFocus: false });
+    searchTreeService.contextKey.searchInputBoxFocusedKey.set(false);
   }, [searchBrowserService]);
 
   const onMatchCaseToggle = useCallback(() => {
@@ -235,7 +236,6 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
           onRegexToggle={onRegexToggle}
           isWholeWord={UIState.isWholeWord}
           onWholeWordToggle={onWholeWordToggle}
-          isSearchFocus={UIState.isSearchFocus}
           isShowValidateMessage={searchContent.isShowValidateMessage}
           validateMessage={searchContent.validateMessage}
           onSearchFocus={onSearchFocus}
