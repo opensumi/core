@@ -1,23 +1,29 @@
+import type { ITree } from '@opensumi/ide-components';
 import { Event, IBaseMarkerManager, IMarker, IMatch } from '@opensumi/ide-core-common';
+import { ThemeType } from '@opensumi/ide-theme';
 
 export { MARKER_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 
 export const IMarkerService = Symbol('IMarkerService');
-export interface IMarkerService {
+export interface IMarkerService extends ITree {
   /**
-   * 获得Manager
+   * 获得 Manager
    */
   getManager(): IBaseMarkerManager;
 
   /**
-   * 获取badge数量
+   * 获取问题数量
    */
   getBadge(): string | undefined;
 
   /**
-   * filter内容变化时触发事件
+   * filter 内容变化时触发事件
    */
   onMarkerFilterChanged: Event<IFilterOptions | undefined>;
+  /**
+   * 获取主题类型
+   */
+  getThemeType(): ThemeType;
 }
 
 /**

@@ -1,6 +1,6 @@
 import type vscode from 'vscode';
 
-import { Uri as URI, Cache } from '@opensumi/ide-core-common';
+import { Uri as URI, Cache, CancellationToken } from '@opensumi/ide-core-common';
 import { DisposableStore } from '@opensumi/ide-core-common';
 import type { CodeActionContext, WorkspaceEdit } from '@opensumi/monaco-editor-core/esm/vs/editor/common/languages';
 
@@ -14,6 +14,8 @@ import { Diagnostics } from './diagnostics';
 import { createToken } from './util';
 
 export class CodeActionAdapter {
+  private static readonly _maxCodeActionsPerFile: number = 1000;
+
   private readonly _cache = new Cache<vscode.CodeAction | vscode.Command>('CodeAction');
   private readonly _disposables = new Map<number, DisposableStore>();
 
@@ -28,6 +30,7 @@ export class CodeActionAdapter {
     rangeOrSelection: Range | Selection,
     context: CodeActionContext,
     commandConverter: CommandsConverter,
+    token: CancellationToken,
   ): Promise<ICodeActionListDto | undefined> {
     const document = this.document.getDocumentData(resource);
     if (!document) {
@@ -36,13 +39,17 @@ export class CodeActionAdapter {
 
     const doc = document.document;
     const ran = CodeActionAdapter._isSelection(rangeOrSelection)
-      ? (Converter.toSelection(rangeOrSelection) as vscode.Selection)
-      : (Converter.toRange(rangeOrSelection) as vscode.Range);
+      ? (Converter.Selection.to(rangeOrSelection) as vscode.Selection)
+      : (Converter.Range.to(rangeOrSelection) as vscode.Range);
+
     const allDiagnostics: vscode.Diagnostic[] = [];
 
     for (const diagnostic of this.diagnostics.getDiagnostics(resource)) {
       if (ran.intersection(diagnostic.range)) {
-        allDiagnostics.push(diagnostic);
+        const newLen = allDiagnostics.push(diagnostic);
+        if (newLen > CodeActionAdapter._maxCodeActionsPerFile) {
+          break;
+        }
       }
     }
 
@@ -52,58 +59,60 @@ export class CodeActionAdapter {
       triggerKind: Converter.CodeActionTriggerKind.to(context.trigger),
     };
     let cacheId: number | undefined;
-    const actions = await Promise.resolve(
-      this.provider.provideCodeActions(doc, ran, codeActionContext, createToken()),
-    ).then((commandsOrActions) => {
-      if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
-        return undefined;
-      }
 
-      cacheId = this._cache.add(commandsOrActions);
-      const disposables = new DisposableStore();
-      this._disposables.set(cacheId, disposables);
-
-      const actions: ICodeActionDto[] = [];
-      for (let i = 0; i < commandsOrActions.length; i++) {
-        const candidate = commandsOrActions[i];
-        if (!candidate) {
-          continue;
+    const actions = await Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, token)).then(
+      (commandsOrActions) => {
+        if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
+          return undefined;
         }
-        if (CodeActionAdapter._isCommand(candidate)) {
-          actions.push({
-            title: candidate.title || '',
-            command: commandConverter.toInternal(candidate, disposables),
-          });
-        } else {
-          if (codeActionContext.only) {
-            if (!candidate.kind) {
-              // eslint-disable-next-line no-console
-              console.warn(
-                `Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`,
-              );
-            } else if (!codeActionContext.only.contains(candidate.kind)) {
-              // eslint-disable-next-line no-console
-              console.warn(
-                `Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`,
-              );
-            }
+
+        cacheId = this._cache.add(commandsOrActions);
+        const disposables = new DisposableStore();
+        this._disposables.set(cacheId, disposables);
+
+        const actions: ICodeActionDto[] = [];
+        for (let i = 0; i < commandsOrActions.length; i++) {
+          const candidate = commandsOrActions[i];
+          if (!candidate) {
+            continue;
           }
+          if (CodeActionAdapter._isCommand(candidate)) {
+            actions.push({
+              title: candidate.title || '',
+              command: commandConverter.toInternal(candidate, disposables),
+            });
+          } else {
+            if (codeActionContext.only) {
+              if (!candidate.kind) {
+                // TODO: 当 kind 是 Empty 时， kind === ''，此时似乎不应该提示这个 warning
+                // eslint-disable-next-line no-console
+                console.warn(
+                  `Code actions of kind '${codeActionContext.only.value}' requested but returned code action does not have a 'kind'. Code action will be dropped. Please set 'CodeAction.kind'.`,
+                );
+              } else if (!codeActionContext.only.contains(candidate.kind)) {
+                // eslint-disable-next-line no-console
+                console.warn(
+                  `Code actions of kind '${codeActionContext.only.value}' requested but returned code action is of kind '${candidate.kind.value}'. Code action will be dropped. Please check 'CodeActionContext.only' to only return requested code action.`,
+                );
+              }
+            }
 
-          actions.push({
-            cacheId: [cacheId, i],
-            title: candidate.title,
-            command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
-            diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData),
-            edit: candidate.edit && (Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit),
-            kind: candidate.kind && candidate.kind.value,
-            isPreferred: candidate.isPreferred,
-            disabled: candidate.disabled?.reason,
-          });
+            actions.push({
+              cacheId: [cacheId, i],
+              title: candidate.title,
+              command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
+              diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.Diagnostic.toMarker),
+              edit: candidate.edit && (Converter.WorkspaceEdit.from(candidate.edit) as WorkspaceEdit),
+              kind: candidate.kind && candidate.kind.value,
+              isPreferred: candidate.isPreferred,
+              disabled: candidate.disabled?.reason,
+            });
+          }
         }
-      }
 
-      return actions;
-    });
+        return actions;
+      },
+    );
 
     if (actions) {
       return {

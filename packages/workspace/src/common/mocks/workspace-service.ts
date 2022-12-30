@@ -116,7 +116,10 @@ export class MockWorkspaceService implements IWorkspaceService {
     this.deferredRoots.resolve(this._roots);
     return rootsToAdd;
   }
-  asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean | undefined): Promise<string | undefined> {
+  asRelativePath(
+    pathOrUri: string | URI,
+    includeWorkspaceFolder?: boolean | undefined,
+  ): Promise<{ path?: string; root?: string } | undefined> {
     throw new Error('Method not implemented.');
   }
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined {

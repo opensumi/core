@@ -3,6 +3,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { quickEvent, quickFireEvent, partialMock } from './common/util';
 import { MockedStandaloneCodeEditor } from './editor/code-editor';
 import { MockedDiffEditor, MockedDiffNavigator } from './editor/diff-editor';
+import { MockedMergeEditor } from './editor/merge-editor';
 import { MockedMonacoModel } from './editor/model';
 
 enum TrackedRangeStickiness {
@@ -44,6 +45,13 @@ export function createMockedMonacoEditorApi(): any {
       const editor = new MockedDiffEditor(dom, options, override);
       quickFireEvent('onDidCreateEditor', editor.getOriginalEditor());
       quickFireEvent('onDidCreateEditor', editor.getModifiedEditor());
+      return editor;
+    },
+    createMergeEditor: (dom, options, override) => {
+      const editor = new MockedMergeEditor(dom, options, override);
+      quickFireEvent('onDidCreateEditor', editor.getOursEditor());
+      quickFireEvent('onDidCreateEditor', editor.getResultEditor());
+      quickFireEvent('onDidCreateEditor', editor.getTheirsEditor());
       return editor;
     },
     createDiffNavigator: (diffEditor, opts) => new MockedDiffNavigator(diffEditor, opts),

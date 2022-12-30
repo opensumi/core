@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import { CharacterClassifier } from '../lib/character-classifier';
-import { CharCode } from '../lib/charCode';
+import { CharacterClassifier } from '../src/character-classifier';
+import { CharCode } from '../src/charCode';
 
 describe('CharacterClassifier', () => {
   test('works', () => {

@@ -739,6 +739,17 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     }
   }
 
+  toggleTerminalPanel() {
+    if (!this._tabBarHandler) {
+      return;
+    }
+    if (this._tabBarHandler.isActivated()) {
+      this._tabBarHandler.deactivate();
+    } else {
+      this._tabBarHandler.activate();
+    }
+  }
+
   requestStartExtensionTerminal(
     proxy: ITerminalProcessExtHostProxy,
     cols: number,

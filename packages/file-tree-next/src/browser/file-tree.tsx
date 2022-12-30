@@ -28,7 +28,7 @@ import {
   CancellationToken,
   CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
-import { ProgressBar } from '@opensumi/ide-core-browser/lib/components/progressbar';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { WelcomeView } from '@opensumi/ide-main-layout/lib/browser/welcome.view';
 
 import { FILE_EXPLORER_WELCOME_ID, IFileTreeService } from '../common';
@@ -116,19 +116,16 @@ export const FileTree = ({ viewState }: PropsWithChildren<{ viewState: ViewState
     [],
   );
 
-  const handleItemDoubleClicked = useCallback(
-    (event: MouseEvent, item: File | Directory, type: TreeNodeType, activeUri?: URI) => {
-      // 阻止点击事件冒泡
-      event.stopPropagation();
+  const handleItemDoubleClicked = useCallback((event: MouseEvent, item: File | Directory, type: TreeNodeType) => {
+    // 阻止点击事件冒泡
+    event.stopPropagation();
 
-      const { handleItemDoubleClick } = fileTreeModelService;
-      if (!item) {
-        return;
-      }
-      handleItemDoubleClick(item, type, activeUri);
-    },
-    [],
-  );
+    const { handleItemDoubleClick } = fileTreeModelService;
+    if (!item) {
+      return;
+    }
+    handleItemDoubleClick(item, type);
+  }, []);
 
   const handleTwistierClick = useCallback((ev: MouseEvent, item: Directory) => {
     // 阻止点击事件冒泡
@@ -455,7 +452,7 @@ const FileTreeView = memo(
 
     if (isReady) {
       if (isLoading) {
-        return <ProgressBar loading />;
+        return <Progress loading />;
       } else if (model) {
         return (
           <FilterableRecycleTree
@@ -475,7 +472,7 @@ const FileTreeView = memo(
         return <WelcomeView viewId={FILE_EXPLORER_WELCOME_ID} />;
       }
     } else {
-      return <ProgressBar loading />;
+      return <Progress loading />;
     }
   },
 );

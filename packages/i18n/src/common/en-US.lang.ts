@@ -98,6 +98,8 @@ export const localizationBundle = {
     'editor.redo': 'Redo',
     'editor.saveAll': 'Save All',
     'editor.saveCurrent': 'Save Current File',
+    'editor.saveCodeActions.getting': 'Getting code actions from {0}.',
+    'editor.saveCodeActions.saving': 'Saving "{0}"',
     'editor.title.context.close': 'Close',
     'editor.closeCurrent': 'Close Current Editor',
     'editor.openExternal': 'Open Externally',
@@ -207,7 +209,7 @@ export const localizationBundle = {
     'search.includes.description': 'Enter the file name or folder name, multiple separated by ","',
     'search.excludes': 'Files to exclude',
     'search.excludes.default.enable': 'Enable default exclusions',
-    'search.replaceAll.label': 'Replace all',
+    'search.replaceAll.label': 'Replace All',
     'search.replace.label': 'Replace',
     'search.files.result': '{0} results found in {1} files',
     'search.CollapseDeepestExpandedLevelAction.label': 'Collapse All',
@@ -217,7 +219,7 @@ export const localizationBundle = {
     'search.removeAll.occurrences.files.confirmation.message': 'Are you sure to replace {0} of the {1} files',
     'search.removeAll.occurrences.file.confirmation.message': 'Are you sure to replace the {0} results in this file?',
     'search.result.hide': 'Hide',
-    'search.menu.copyAll': 'Copy all',
+    'search.menu.copyAll': 'Copy All',
     'search.help.showIncludeRule': 'View syntax rules',
     'search.help.supportRule': 'Support the following syntax rules:',
     'search.help.excludeList': 'Excluded items include:',
@@ -445,21 +447,21 @@ export const localizationBundle = {
     // Terminal
     'preference.terminal.type': 'Default Shell Type',
     'preference.terminal.typeDesc': 'To change the default type of create a new terminal',
-    'preference.terminal.fontFamily': 'Terminal Font Family',
-    'preference.terminal.fontSize': 'Terminal Font Size',
-    'preference.terminal.fontWeight': 'Terminal Font Weight',
-    'preference.terminal.lineHeight': 'Terminal Line Height',
-    'preference.terminal.cursorBlink': 'Terminal Cursor Link',
-    'preference.terminal.scrollback': 'Terminal Cursor Scrollback',
-    'preference.terminal.integrated.shellArgs.linux': 'Terminal Shell Args Linux',
+    'preference.terminal.fontFamily': 'Terminal > Font Family',
+    'preference.terminal.fontSize': 'Terminal > Font Size',
+    'preference.terminal.fontWeight': 'Terminal > Font Weight',
+    'preference.terminal.lineHeight': 'Terminal > Line Height',
+    'preference.terminal.cursorBlink': 'Terminal > Cursor Blink',
+    'preference.terminal.scrollback': 'Terminal > Cursor Scrollback',
+    'preference.terminal.integrated.shellArgs.linux': 'Terminal > Shell Args Linux',
     'preference.terminal.integrated.shellArgs.linuxDesc':
       'The command line arguments to use when on the Linux terminal. ',
 
-    'preference.terminal.integrated.copyOnSelection': 'Terminal Copy On Selection',
+    'preference.terminal.integrated.copyOnSelection': 'Terminal > Copy On Selection',
     'preference.terminal.integrated.copyOnSelectionDesc':
       'Controls whether text selected in the terminal will be copied to the clipboard.',
     // Local Echo
-    'preference.terminal.integrated.localEchoEnabled': 'Terminal Local Echo',
+    'preference.terminal.integrated.localEchoEnabled': 'Terminal > Local Echo',
     'preference.terminal.integrated.localEchoDesc': 'When local echo should be enabled.',
     'preference.terminal.integrated.localEchoLatencyThreshold': 'Local Echo Latency Threshold',
     'preference.terminal.integrated.localEchoLatencyThresholdDesc':
@@ -470,7 +472,7 @@ export const localizationBundle = {
     'preference.terminal.integrated.localEchoStyle': 'Local Echo Style',
     'preference.terminal.integrated.localEchoStyleDesc':
       'Terminal style of locally echoed text; either a font style or an RGB color.',
-    'preference.terminal.integrated.cursorStyle': 'Cursor Style',
+    'preference.terminal.integrated.cursorStyle': 'Terminal > Cursor Style',
     'preference.terminal.integrated.cursorStyleDesc': 'Control the style of terminal cursor',
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
@@ -531,8 +533,8 @@ export const localizationBundle = {
     'preference.empty': 'Loading Settings...',
     'preference.editSettingsJson': 'Edit in settings.json',
     'preference.overwritten': '(Overwritten by next scope)',
-    'preference.overwrittenInUser': '（Set in User Settings）',
-    'preference.overwrittenInWorkspace': '（Set in Workspace Settings）',
+    'preference.overwrittenInUser': '(Modified in User Settings)',
+    'preference.overwrittenInWorkspace': '(Modified in Workspace Settings)',
     'preference.searchPlaceholder': 'Search settings...',
     'preference.editor.formatOnSave': 'Enable format on manual save.',
     'preference.editor.formatOnSaveTimeout':
@@ -622,7 +624,7 @@ export const localizationBundle = {
     'opened.editors.close.byGroup': 'Close files in the group',
     'opened.editors.save.byGroup': 'Save files in the group',
     'opened.editors.empty': 'No file is open in the editor',
-    'opened.editors.group.title': 'Group {0}',
+    'opened.editors.group.title': 'GROUP {0}',
     'opened.editors.open': 'Open',
     'opened.editors.openToTheSide': 'Open To The Side',
     'opened.editors.compare': 'Compare With Current File',
@@ -675,6 +677,7 @@ export const localizationBundle = {
     'terminal.focusFolder': 'Focus folder in explorer',
     'terminal.openFolder': 'Open folder in new window',
     'terminal.relaunch': 'Relaunch Terminal',
+    'terminal.toggleTerminal': 'Toggle Terminal',
 
     'terminal.focusNext.inTerminalGroup': 'Terminal: Focus Next Terminal in Terminal Group',
     'terminal.focusPrevious.inTerminalGroup': 'Terminal: Focus Previous Terminal in Terminal Group',
@@ -843,6 +846,7 @@ export const localizationBundle = {
     'markers.filter.placeholder': 'Filter. E.g.: text, **/*.ts, !**/node_modules/**',
     'markers.filter.content.empty': 'No results found with provided filter criteria.',
     'markers.filter.reset': 'Clear Filter.',
+    'markers.status.no.problems': 'No Problems',
 
     'app.quit': 'Quit',
     'view.zoomReset': 'Zoom Reset',
@@ -1003,7 +1007,24 @@ export const localizationBundle = {
     'task.contribute': 'Contribute',
     'task.cannotFindTask': 'Cannot find task for {0}. Press Enter key to return.',
 
+    'comment.reply.count': '{0} comments',
+    'comment.reply.lastReply': 'Last reply from {0}',
+
     // extension contribute
+
+    // #region walkthrough
+    'walkthroughs.welcome': 'Welcome',
+    'walkthroughs.get.started': "Open the 'Getting Started' walkthrough",
+    // #endregion walkthrough
+
+    // #region merge editor
+    'mergeEditor.workbench.tab.name': 'Merging: {0}',
+    'mergeEditor.conflict.action.apply.confirm.title':
+      'The file has unresolved conflicts or changes, whether to apply and save the changes?',
+    'mergeEditor.conflict.action.apply.confirm.continue': 'Continue Merge',
+    'mergeEditor.conflict.action.apply.confirm.complete': 'Apply Changes',
+    'mergeEditor.button.apply': 'Apply',
+    // #endregion merge editor
     ...browserViews,
   },
 };

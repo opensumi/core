@@ -1,0 +1,161 @@
+.getting_started_container {
+  box-sizing: border-box;
+  line-height: 22px;
+  position: relative;
+  overflow: hidden;
+  height: inherit;
+  width: 100%;
+  user-select: initial;
+  outline: none;
+  font-size: 13px;
+  p {
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+  }
+
+  .getting_started_detailsContent {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr 8fr;
+    grid-template-rows: calc(25% - 100px) auto auto 1fr auto;
+    grid-template-areas:
+      '. back . media .'
+      '. title . media .'
+      '. steps . media .'
+      '. . . media .';
+
+    // 左侧顶部标题和简介
+    .category_container {
+      grid-area: title;
+      align-self: flex-end;
+      display: flex;
+      padding: 10px 0 20px 12px;
+      margin: 0;
+      min-height: auto;
+      width: calc(100% - 16px);
+      font-size: 13px;
+      left: -3px;
+      text-align: left;
+
+      .category_icon {
+        img {
+          margin-right: 10px;
+          margin-left: 10px;
+          max-width: 32px;
+          max-height: 32px;
+        }
+      }
+
+      .category_description_container {
+        .category_title {
+          display: -webkit-box;
+          font-weight: 400;
+          line-height: 26px;
+          margin: 0 0 4px;
+          overflow: hidden;
+          color: var(--foreground);
+        }
+
+        .category_description {
+          color: var(--descriptionForeground);
+        }
+      }
+    }
+
+    .steps_container {
+      height: 100%;
+      grid-area: steps;
+      overflow: hidden;
+      position: relative;
+
+      .getting_started_detail_container {
+        overflow: hidden;
+        height: inherit;
+        color: var(--foreground);
+
+        // step 列表
+        .step_list_container {
+          overflow-y: auto;
+          height: 100%;
+
+          .getting_started_step {
+            display: flex;
+            width: 100%;
+            margin: 4px 0;
+            overflow: hidden;
+            cursor: pointer;
+            border: none;
+            color: inherit;
+            text-align: left;
+            padding: 16px;
+            font-size: 13px;
+            font-family: inherit;
+
+            &:not(.expanded) {
+              background: none;
+              opacity: 0.8;
+              height: 54px;
+            }
+
+            &.expanded {
+              cursor: default !important;
+              background-color: var(--editorWidget-background);
+              outline: 1px solid -webkit-focus-ring-color;
+              outline-offset: 0px;
+            }
+
+            .checkbox {
+              margin-right: 8px;
+            }
+
+            .step_container {
+              width: 100%;
+
+              .step_title {
+                font-size: 13px;
+                font-weight: 700;
+                margin: 0;
+                overflow: hidden;
+                color: inherit;
+                margin-bottom: 4px;
+              }
+            }
+
+            .step_description_container {
+              button {
+                width: 100%;
+
+                &:not(:last-of-type) {
+                  margin-bottom: 6px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // media
+    .getting_started_media {
+      grid-area: title-start / media-start / steps-end / media-end;
+      align-self: unset;
+
+      .media_svg_container {
+        position: relative;
+        height: 100%;
+        width: 100%;
+
+        svg {
+          position: absolute;
+          height: 100%;
+          width: 80%;
+          left: 50%;
+          top: 50%;
+          max-width: 530px;
+          min-width: 350px;
+          transform: translate(-50%, -50%);
+        }
+      }
+    }
+  }
+}

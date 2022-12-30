@@ -1,5 +1,6 @@
 import { Injectable } from '@opensumi/di';
 import { IScopedContextKeyService } from '@opensumi/ide-core-browser';
+import { IMergeEditorEditor } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import {
   URI,
   Event,
@@ -15,6 +16,7 @@ import {
 } from '@opensumi/ide-core-common';
 // eslint-disable-next-line import/no-restricted-paths
 import type { ICodeEditor as IMonacoCodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+// eslint-disable-next-line import/no-restricted-paths
 import type { IEditorOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/config/editorOptions';
 import type { ITextModelUpdateOptions } from '@opensumi/monaco-editor-core/esm/vs/editor/common/model';
 
@@ -41,6 +43,10 @@ export enum EditorType {
    * 修改对比编辑器(右侧)
    */
   MODIFIED_DIFF,
+  /**
+   * 3-way 编辑器
+   */
+  MERGE_EDITOR_DIFF = 'MERGE_EDITOR_DIFF',
 }
 
 /**
@@ -123,7 +129,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
    * 打开一个 document
    * @param uri
    */
-  open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void>;
+  open(documentModelRef: IEditorDocumentModelRef, range?: IRange): void;
 
   focus(): void;
 
@@ -176,6 +182,12 @@ export abstract class EditorCollectionService {
    * @param overrides
    */
   public abstract createDiffEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }): IDiffEditor;
+
+  public abstract createMergeEditor(
+    dom: HTMLElement,
+    options?: any,
+    overrides?: { [key: string]: any },
+  ): IMergeEditorEditor;
 
   public abstract listEditors(): IEditor[];
   public abstract listDiffEditors(): IDiffEditor[];
@@ -658,7 +670,7 @@ export enum IEditorPriority {
 
 // 定义一个resource如何被打开
 export interface IEditorOpenType {
-  type: 'code' | 'diff' | 'component';
+  type: 'code' | 'diff' | 'mergeEditor' | 'component';
 
   componentId?: string;
 

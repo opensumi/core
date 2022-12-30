@@ -7,6 +7,32 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+## v2.22.0 [Pre-release]
+
+<a name="breaking_changes_2.22.0">[Breaking Changes:](#breaking_changes_2.22.0)</a>
+
+#### 1. The `ClientApp` is no longer exported by `@opensumi/ide-core-browser`
+
+We have removed the default export of `bootstrap/app.ts` in `@opensumi/ide-core-browser`. The `@opensumi/monaco-editor-core` in app.ts will cause a lot of memory leaks in the test code.
+
+```diff
+- import { ClientApp } from '@opensumi/ide-core-browser';
+// Change to
++ import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
+```
+
+#### 2. The `@opensumi/ide-userstorage` module has been permanently removed
+
+If used, please remove this module, it has no practical effect.
+
+#### 3. The `Scroll` component was removed
+
+Please use `Scollerbars` component instead.
+
+#### 4. The `DeprecatedRecycleTree` component was removed
+
+Please use `RecycleTree` or `BasicRecycleTree` component instead.
+
 ## v2.21.0
 
 ### What's New Features

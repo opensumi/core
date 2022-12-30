@@ -151,10 +151,10 @@ export function createWindowApiFactory(
       );
     },
     registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
-      return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
+      return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider as any);
     },
     createTreeView<T>(viewId: string, options: vscode.TreeViewOptions<T>) {
-      return extHostTreeView.createTreeView(viewId, options);
+      return extHostTreeView.createTreeView(viewId, options as any) as vscode.TreeView<T>;
     },
     get activeTextEditor() {
       return extHostEditors.activeEditor && extHostEditors.activeEditor.textEditor;
@@ -200,7 +200,7 @@ export function createWindowApiFactory(
       options?: IWebviewPanelOptions & IWebviewOptions,
     ): WebviewPanel {
       return extHostWebviews.createWebview(
-        Uri.parse('not-implemented://'),
+        extension.extensionLocation,
         viewType,
         title,
         showOptions,

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-components",
-  "version": "2.21.5",
+  "version": "2.21.11",
   "description": "@opensumi/ide-components",
   "license": "MIT",
   "main": "lib/index.js",
@@ -31,10 +31,12 @@
     "react-custom-scrollbars": "^4.2.1",
     "react-lifecycles-compat": "^3.0.4",
     "react-virtualized-auto-sizer": "^1.0.2",
+    "react-virtuoso": "^3.1.5",
     "react-window": "^1.8.5"
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",
-    "@types/marked": "^4.0.7"
+    "@types/marked": "^4.0.7",
+    "prop-types": "^15.8.1"
   }
 }

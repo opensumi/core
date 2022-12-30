@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-main-layout",
-  "version": "2.21.5",
+  "version": "2.21.11",
   "description": "@opensumi/ide-main-layout",
   "files": [
     "lib",

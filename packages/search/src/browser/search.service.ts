@@ -1,18 +1,9 @@
 import debounce from 'lodash/debounce';
-import { observable, transaction, action } from 'mobx';
-import React from 'react';
 import { createRef } from 'react';
 
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import { VALIDATE_TYPE, ValidateMessage } from '@opensumi/ide-components';
-import {
-  Key,
-  Schemes,
-  CommandService,
-  COMMON_COMMANDS,
-  RecentStorage,
-  PreferenceService,
-} from '@opensumi/ide-core-browser';
+import { Schemes, CommandService, COMMON_COMMANDS, RecentStorage, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   isUndefined,
   strings,
@@ -25,7 +16,16 @@ import {
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { GlobalBrowserStorageService } from '@opensumi/ide-core-browser/lib/services/storage-service';
-import { IEventBus, localize, IReporterService, IReporterTimer, REPORT_NAME } from '@opensumi/ide-core-common';
+import {
+  IEventBus,
+  localize,
+  IReporterService,
+  IReporterTimer,
+  REPORT_NAME,
+  Disposable,
+  CancellationTokenSource,
+  CancellationToken,
+} from '@opensumi/ide-core-common';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -58,7 +58,6 @@ import {
 } from '../common';
 
 import { replaceAll } from './replace';
-import { SearchContextKey } from './search-contextkey';
 import { SearchHistory } from './search-history';
 import { SearchPreferences } from './search-preferences';
 import { SearchResultCollection } from './search-result-collection';
@@ -74,16 +73,11 @@ function splitOnComma(patterns: string): string[] {
   return patterns.length > 0 ? patterns.split(',').map((s) => s.trim()) : [];
 }
 
-const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0 });
-
 /**
  * 用于文件内容搜索
  */
 @Injectable()
-export class ContentSearchClientService implements IContentSearchClientService {
-  protected titleStateEmitter: Emitter<void> = new Emitter();
-  protected eventBusDisposer: IDisposable;
-
+export class ContentSearchClientService extends Disposable implements IContentSearchClientService {
   @Autowired(IEventBus)
   private readonly eventBus: IEventBus;
 
@@ -92,9 +86,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   @Autowired(CorePreferences)
   private readonly corePreferences: CorePreferences;
-
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
 
   @Autowired(ContentSearchServerPath)
   private readonly contentSearchServer: IContentSearchServer;
@@ -123,9 +114,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @Autowired(IWorkspaceEditService)
   private readonly workspaceEditService: IWorkspaceEditService;
 
-  @Autowired(SearchContextKey)
-  private readonly searchContextKey: SearchContextKey;
-
   @Autowired(IReporterService)
   private reporterService: IReporterService;
 
@@ -138,24 +126,33 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @Autowired()
   private readonly resourceService: ResourceService;
 
-  @observable
-  replaceValue = '';
-  @observable
-  searchValue = '';
-  @observable
-  includeValue = '';
-  @observable
-  excludeValue = '';
-  @observable
-  searchError = '';
-  @observable
-  searchState: SEARCH_STATE;
-  @observable
-  UIState: IUIState = {
+  private onDidChangeEmitter: Emitter<void> = new Emitter();
+  private onDidTitleChangeEmitter: Emitter<void> = new Emitter();
+  private onDidUIStateChangeEmitter: Emitter<IUIState> = new Emitter();
+  private onDidSearchStateChangeEmitter: Emitter<string> = new Emitter();
+
+  protected eventBusDisposer: IDisposable;
+
+  get onDidChange() {
+    return this.onDidChangeEmitter.event;
+  }
+
+  get onDidTitleChange() {
+    return this.onDidTitleChangeEmitter.event;
+  }
+
+  get onDidUIStateChange() {
+    return this.onDidUIStateChangeEmitter.event;
+  }
+
+  get onDidSearchStateChange() {
+    return this.onDidSearchStateChangeEmitter.event;
+  }
+
+  public UIState: IUIState = {
     isSearchFocus: false,
     isToggleOpen: true,
     isDetailOpen: false,
-
     // Search Options
     isMatchCase: false,
     isWholeWord: false,
@@ -163,78 +160,78 @@ export class ContentSearchClientService implements IContentSearchClientService {
     isIncludeIgnored: false,
     isOnlyOpenEditors: false,
   };
-  @observable
-  searchResults: Map<string, ContentSearchResult[]> = observable.map();
-  @observable
-  resultTotal: ResultTotal = resultTotalDefaultValue;
-  // Replace state
-  @observable
-  isReplaceDoing = false;
 
-  @observable
-  isSearchDoing = false;
+  public searchResults: Map<string, ContentSearchResult[]> = new Map();
+  public searchError = '';
+  public searchState: SEARCH_STATE;
+  public resultTotal: ResultTotal = { resultNum: 0, fileNum: 0 };
+  public isReplacing = false;
+  public isSearching = false;
+  public isShowValidateMessage = true;
+  public replaceValue = '';
+  public searchValue = '';
+  public includeValue = '';
+  public excludeValue = '';
 
-  @observable
-  isShowValidateMessage = true;
-
-  @observable
-  isExpandAllResult = true;
-
-  _searchHistory: SearchHistory;
-
-  docModelSearchedList: string[] = [];
-  currentSearchId = -1;
-
-  searchInputEl = createRef<HTMLInputElement>();
-  replaceInputEl = createRef<HTMLInputElement>();
+  private _searchHistory: SearchHistory;
+  private _docModelSearchedList: string[] = [];
+  private _currentSearchId = -1;
 
   searchResultCollection: SearchResultCollection = new SearchResultCollection();
 
   private reporter: { timer: IReporterTimer; value: string } | null = null;
 
-  searchDebounce: () => void;
-
+  private searchCancelToken: CancellationTokenSource;
   private searchOnType: boolean;
 
+  public searchDebounce: () => void;
+
   constructor() {
+    super();
     this.setDefaultIncludeValue();
     this.recoverUIState();
 
     this.searchOnType = this.searchPreferences[SearchSettingId.SearchOnType] || true;
-
+    const timeout = this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300;
     this.searchDebounce = debounce(
       () => {
         this.search();
       },
-      this.searchPreferences[SearchSettingId.SearchOnTypeDebouncePeriod] || 300,
+      timeout,
       {
         trailing: true,
+        maxWait: timeout * 5,
       },
     );
   }
 
-  searchOnTyping() {
+  private searchId: number = new Date().getTime();
+
+  public searchOnTyping() {
     if (this.searchOnType) {
       this.searchDebounce();
     }
   }
 
-  search = async (e?: React.KeyboardEvent, insertUIState?: IUIState) => {
-    if (e && e.keyCode !== Key.ENTER.keyCode) {
-      return;
-    }
-    this.cleanOldSearch();
+  async search(insertUIState?: IUIState) {
     const value = this.searchValue;
+    this.cleanSearchResults();
     if (!value) {
+      this.onDidChangeEmitter.fire();
       return;
     }
+    if (this.searchCancelToken && !this.searchCancelToken.token.isCancellationRequested) {
+      this.searchCancelToken.cancel();
+    }
+
+    this.searchCancelToken = new CancellationTokenSource();
 
     const state = insertUIState || this.UIState;
 
-    await this.doSearch(value, state);
-  };
+    await this.doSearch(value, state, this.searchCancelToken.token);
+  }
 
-  async doSearch(value: string, state: IUIState) {
+  async doSearch(value: string, state: IUIState, token: CancellationToken) {
     const searchOptions: ContentSearchOptions = {
       maxResults: 2000,
       matchCase: state.isMatchCase,
@@ -253,13 +250,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     this.isShowValidateMessage = true;
 
-    this.isExpandAllResult = true;
-
     // Stop old search
-    this.isSearchDoing = true;
-    if (this.currentSearchId > -1) {
-      this.contentSearchServer.cancel(this.currentSearchId);
-      this.currentSearchId = this.currentSearchId + 1;
+    this.isSearching = true;
+    if (this._currentSearchId > -1) {
+      this.contentSearchServer.cancel(this._currentSearchId);
+      this._currentSearchId = this._currentSearchId + 1;
       this.reporter = null;
     }
 
@@ -279,7 +274,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       rootDirSet.values().next()?.value,
     );
 
-    // FIXME: 当前无法在不同根目录内根据各自 include 搜素，因此如果多 workspaceFolders，此处可能返回比实际要多的结果
+    // FIXME: 当前无法在不同根目录内根据各自 include 搜索，因此如果多 workspaceFolders，此处返回的结果仅为一部分
     // 同时 searchId 设计原因只能针对单服务，多个 search 服务无法对同一个 searchId 返回结果
     // 长期看需要改造，以支持 registerFileSearchProvider
     if (state.isOnlyOpenEditors) {
@@ -328,11 +323,18 @@ export class ContentSearchClientService implements IContentSearchClientService {
       documentModelManager: this.documentModelManager,
       rootDirs,
     });
+    if (token.isCancellationRequested) {
+      this.isSearching = false;
+      return;
+    }
+    this._currentSearchId = this.searchId++;
 
     // 从服务端搜索
     this.reporter = { timer: this.reporterService.time(REPORT_NAME.SEARCH_MEASURE), value };
-    this.contentSearchServer.search(value, rootDirs, searchOptions).then((id) => {
-      this.currentSearchId = id;
+    this.contentSearchServer.search(this._currentSearchId, value, rootDirs, searchOptions).then((id) => {
+      if (token.isCancellationRequested) {
+        return;
+      }
       this._onSearchResult({
         id,
         data: searchFromDocModelInfo.result,
@@ -341,9 +343,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
       });
     });
 
-    transaction(() => {
-      this.watchDocModelContentChange(searchOptions, rootDirs);
-    });
+    this.watchDocModelContentChange(searchOptions, rootDirs);
   }
 
   // #region 操作对当前打开的文档的搜索内容的 selection
@@ -393,7 +393,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.eventBusDisposer = this.eventBus.on(EditorDocumentModelContentChangedEvent, (data) => {
       const event: IEditorDocumentModelContentChangedEventPayload = data.payload;
 
-      if (!this.searchResults || this.isReplaceDoing) {
+      if (!this.searchResults || this.isReplacing) {
         return;
       }
 
@@ -424,7 +424,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
         this.resultTotal.fileNum = this.resultTotal.fileNum - 1;
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults.length;
         return;
-      } else if (resultData.result.length !== oldResults!.length) {
+      } else if (resultData.result.length !== oldResults?.length) {
         // 搜索结果变多了，更新数据
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults!.length + resultData.result.length;
       }
@@ -432,14 +432,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
         // 更新结果树
         this.searchResults.set(uriString, resultData.result);
       }
+      this.onDidChangeEmitter.fire();
       docModel.dispose();
     });
   }
 
-  cleanOldSearch() {
-    this.docModelSearchedList = [];
+  cleanSearchResults() {
+    this._docModelSearchedList = [];
     this.searchResults.clear();
-    this.resultTotal = resultTotalDefaultValue;
+    this.resultTotal = { resultNum: 0, fileNum: 0 };
     this.clearEditorSelections(true);
   }
 
@@ -449,27 +450,25 @@ export class ContentSearchClientService implements IContentSearchClientService {
    */
   onSearchResult(sendClientResult: SendClientResult) {
     const resultList = this.searchResultCollection.pushAndGetResultList(sendClientResult);
-
     resultList.forEach((result) => {
       this._onSearchResult(result);
     });
   }
 
-  _onSearchResult(sendClientResult: SendClientResult) {
+  private _onSearchResult(sendClientResult: SendClientResult) {
     const { id, data, searchState, error, docModelSearchedList } = sendClientResult;
 
     if (!data) {
       return;
     }
 
-    if (id > this.currentSearchId) {
-      // 新的搜索开始了
-      this.isSearchDoing = true;
-      this.currentSearchId = id;
-      this.cleanOldSearch();
+    if (id > this._currentSearchId) {
+      this.isSearching = true;
+      this._currentSearchId = id;
+      this.cleanSearchResults();
     }
 
-    if (this.currentSearchId && this.currentSearchId > id) {
+    if (this._currentSearchId && this._currentSearchId > id) {
       // 若存在异步发送的上次搜索结果，丢弃上次搜索的结果
       return;
     }
@@ -478,8 +477,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this.searchState = searchState;
       if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
         // 搜索结束清理ID
-        this.isSearchDoing = false;
-        this.currentSearchId = -1;
+        this.isSearching = false;
+        this._currentSearchId = -1;
       }
 
       if (searchState === SEARCH_STATE.done && this.reporter) {
@@ -493,31 +492,23 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
     if (error) {
       // 搜索出错
-      this.isSearchDoing = false;
+      this.isSearching = false;
       this.searchError = error.toString();
       this.reporter = null;
     }
 
-    transaction(() => {
-      this.mergeSameUriResult(data, this.searchResults!, this.docModelSearchedList, this.resultTotal);
-    });
+    this.mergeSameUriResult(data, this.searchResults, this._docModelSearchedList, this.resultTotal);
 
     if (docModelSearchedList) {
       // 记录通 docModel 搜索过的文件，用于过滤服务端搜索的重复内容
-      this.docModelSearchedList = docModelSearchedList;
+      this._docModelSearchedList = docModelSearchedList;
     }
-    this.titleStateEmitter.fire();
+    this.onDidChangeEmitter.fire();
   }
 
   focus() {
     window.requestAnimationFrame(() => {
-      if (!this.searchInputEl || !this.searchInputEl.current) {
-        return;
-      }
-      this.searchInputEl.current.focus();
-      if (this.searchValue !== '') {
-        this.searchInputEl.current.select();
-      }
+      this.onDidSearchStateChangeEmitter.fire(this.searchValue);
       this.applyEditorSelections();
     });
   }
@@ -526,24 +517,30 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.clearEditorSelections();
   }
 
-  refresh() {
-    this.search();
-  }
-
   refreshIsEnable() {
     return !!(this.searchState !== SEARCH_STATE.doing && this.searchValue);
   }
 
+  initSearchHistory() {
+    return this.searchHistory.initSearchHistory();
+  }
+
+  setBackRecentSearchWord() {
+    return this.searchHistory.setBackRecentSearchWord();
+  }
+
+  setRecentSearchWord() {
+    return this.searchHistory.setRecentSearchWord();
+  }
+
   clean() {
-    this.searchValue = '';
     this.searchResults.clear();
-    this.resultTotal = { fileNum: 0, resultNum: 0 };
+    this.resultTotal = { resultNum: 0, fileNum: 0 };
     this.searchState = SEARCH_STATE.todo;
     this.searchValue = '';
     this.replaceValue = '';
     this.excludeValue = '';
     this.includeValue = '';
-    this.titleStateEmitter.fire();
     this.searchError = '';
   }
 
@@ -562,31 +559,27 @@ export class ContentSearchClientService implements IContentSearchClientService {
     return !!(this.searchResults && this.searchResults.size > 0);
   }
 
-  onSearchInputChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.searchValue = e.currentTarget.value || '';
-    this.titleStateEmitter.fire();
+  onSearchInputChange = (text: string) => {
+    this.searchValue = text;
     this.isShowValidateMessage = false;
     this.searchOnTyping();
   };
 
-  onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.replaceValue = e.currentTarget.value || '';
-    this.titleStateEmitter.fire();
+  onReplaceInputChange = (text: string) => {
+    this.replaceValue = text;
   };
 
-  onSearchExcludeChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.excludeValue = e.currentTarget.value || '';
-    this.titleStateEmitter.fire();
+  onSearchExcludeChange = (text: string) => {
+    this.excludeValue = text;
     this.searchOnTyping();
   };
 
-  onSearchIncludeChange = (e: React.FormEvent<HTMLInputElement>) => {
-    this.includeValue = e.currentTarget.value || '';
-    this.titleStateEmitter.fire();
+  onSearchIncludeChange = (text: string) => {
+    this.includeValue = text;
     this.searchOnTyping();
   };
 
-  setSearchValueFromActivatedEditor = () => {
+  searchEditorSelection = () => {
     const currentEditor = this.workbenchEditorService.currentEditor;
     if (currentEditor) {
       const selections = currentEditor.getSelections();
@@ -602,18 +595,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
   };
 
-  get onTitleStateChange() {
-    return this.titleStateEmitter.event;
-  }
-
   private shouldSearch = (uiState: Partial<typeof this.UIState>) =>
     ['isWholeWord', 'isMatchCase', 'isUseRegexp', 'isIncludeIgnored', 'isOnlyOpenEditors'].some(
       (v) => uiState[v] !== undefined && uiState[v] !== this.UIState[v],
     );
 
-  updateUIState = (obj: Partial<typeof this.UIState>, e?: React.KeyboardEvent) => {
+  updateUIState = (obj: Partial<typeof this.UIState>) => {
     if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
-      this.searchContextKey.searchInputFocused.set(obj.isSearchFocus);
       // 搜索框状态发现变化，重置搜索历史的当前位置
       this.searchHistory.reset();
       this.isShowValidateMessage = false;
@@ -622,10 +610,11 @@ export class ContentSearchClientService implements IContentSearchClientService {
     const newUIState = Object.assign({}, this.UIState, obj);
 
     if (this.shouldSearch(obj)) {
-      this.search(e, newUIState);
+      this.search(newUIState);
     }
 
     this.UIState = newUIState;
+    this.onDidUIStateChangeEmitter.fire(newUIState);
     this.browserStorageService.setData('search.UIState', newUIState);
   };
 
@@ -642,7 +631,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
     return excludes;
   }
 
-  @action.bound
   openPreference() {
     this.commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, 'files.watcherExclude');
   }
@@ -663,21 +651,23 @@ export class ContentSearchClientService implements IContentSearchClientService {
     }
   }
 
-  doReplaceAll = () => {
-    if (this.isReplaceDoing) {
+  replaceAll = () => {
+    if (this.isReplacing) {
       return;
     }
-    this.isReplaceDoing = true;
+    this.isReplacing = true;
     replaceAll(
       this.documentModelManager,
       this.workspaceEditService,
       this.searchResults,
-      this.replaceValue || '',
+      this.replaceValue,
+      this.searchValue,
+      this.UIState.isUseRegexp,
       this.dialogService,
       this.messageService,
       this.resultTotal,
     ).then((isDone) => {
-      this.isReplaceDoing = false;
+      this.isReplacing = false;
       if (!isDone) {
         return;
       }
@@ -685,16 +675,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
     });
   };
 
-  dispose() {
-    this.blur();
-    this.titleStateEmitter.dispose();
-    this.eventBusDisposer?.dispose();
-  }
-
   private async recoverUIState() {
     const UIState = (await this.browserStorageService.getData('search.UIState')) as IUIState | undefined;
-    // 上次关闭时搜索框若处于focus状态会导致本次启动恢复现场后UI与Service不一致 (#1203)
-    // 这里一个非根本性解决方法是在updateUIState前将isSearchFocus置为false
+    // 上次关闭时搜索框若处于 focus 状态会导致本次启动恢复现场后 UI 与 Service 不一致 (#1203)
+    // 这里一个非根本性解决方法是在 updateUIState 前将 isSearchFocus 置为 false
     if (UIState) {
       UIState.isSearchFocus = false;
     }
@@ -774,9 +758,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
   } {
     let matcherList: ParsedPattern[] = [];
     const uriString = docModel.uri.toString();
+
     const result: ContentSearchResult[] = [];
     const searchedList: string[] = [];
-
+    if (!rootDirs.some((root) => uriString.startsWith(root))) {
+      return {
+        result,
+        searchedList,
+      };
+    }
     if (searchOptions.include && searchOptions.include.length > 0) {
       // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
@@ -885,5 +875,19 @@ export class ContentSearchClientService implements IContentSearchClientService {
       result,
       searchedList,
     };
+  }
+
+  fireTitleChange() {
+    this.onDidTitleChangeEmitter.fire();
+  }
+
+  refresh() {
+    this.search();
+  }
+
+  dispose() {
+    super.dispose();
+    this.eventBusDisposer.dispose();
+    this.blur();
   }
 }

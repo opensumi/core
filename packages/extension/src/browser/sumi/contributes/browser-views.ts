@@ -111,7 +111,7 @@ export class BrowserViewContributionPoint extends VSCodeContributePoint<KtViewsC
                     },
                   });
                 }
-                return;
+                continue;
               }
             }
             for (const view of views) {

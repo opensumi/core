@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ITerminalOptions, ITheme, Terminal } from 'xterm';
 import type { CanvasAddon as CanvasAddonType } from 'xterm-addon-canvas';
 import { FitAddon } from 'xterm-addon-fit';
@@ -25,20 +26,6 @@ import {
   TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR,
   TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
 } from './terminal.color';
-
-const enum Constants {
-  /**
-   * The maximum amount of milliseconds to wait for a container before starting to create the
-   * terminal process. This period helps ensure the terminal has good initial dimensions to work
-   * with if it's going to be a foreground terminal.
-   */
-  WaitForContainerThreshold = 100,
-
-  DefaultCols = 80,
-  DefaultRows = 30,
-  MaxSupportedCols = 5000,
-  MaxCanvasWidth = 8000,
-}
 
 export interface XTermOptions {
   cwd?: string;
@@ -96,6 +83,7 @@ export class XTerm extends Disposable implements IXTerm {
   private async enableCanvasRenderer() {
     try {
       if (!this._canvasAddon) {
+        // @ts-ignore
         this._canvasAddon = new (await import('xterm-addon-canvas')).CanvasAddon();
       }
 
@@ -114,6 +102,7 @@ export class XTerm extends Disposable implements IXTerm {
   private async enableWebglRenderer() {
     try {
       if (!this._webglAddon) {
+        // @ts-ignore
         this._webglAddon = new (await import('xterm-addon-webgl')).WebglAddon();
       }
 
@@ -200,7 +189,6 @@ export class XTerm extends Disposable implements IXTerm {
 
   open() {
     this.raw.open(this.container);
-
     if (this.loadWebGLAddon()) {
       this.enableWebglRenderer();
     }

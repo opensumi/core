@@ -501,6 +501,8 @@ export const localizationBundle = {
     'preference.item.notValid': '{0} 不是有效选项',
 
     'editor.saveAll': '保存全部',
+    'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
+    'editor.saveCodeActions.saving': '保存 "{0}"',
 
     'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
@@ -580,7 +582,7 @@ export const localizationBundle = {
     'preference.editSettingsJson': '在 settings.json 中编辑',
     'preference.overwritten': '（已被下一级设置覆盖）',
     'preference.overwrittenInUser': '（已在全局设置中设置）',
-    'preference.overwrittenInWorkspace': '（已在工作区设置中被覆盖）',
+    'preference.overwrittenInWorkspace': '（已在工作区设置中设置）',
     'preference.searchPlaceholder': '搜索设置...',
     'keymaps.tab.name': '快捷键设置',
 
@@ -706,6 +708,7 @@ export const localizationBundle = {
     'terminal.openFile': '打开文件',
     'terminal.focusFolder': '聚焦资源管理器中的文件夹',
     'terminal.openFolder': '在新窗口中打开文件夹',
+    'terminal.toggleTerminal': '切换终端面板',
 
     'view.command.show': '打开 {0}',
 
@@ -818,6 +821,7 @@ export const localizationBundle = {
     'markers.filter.placeholder': '筛选器，例如：text、**/*.ts、!**/node_modules/**',
     'markers.filter.content.empty': '在给定的筛选条件下，没有找到结果。',
     'markers.filter.reset': '清除筛选器',
+    'markers.status.no.problems': '没有问题',
 
     'output.channel.clear': '清除输出面板的内容',
 
@@ -1045,7 +1049,23 @@ export const localizationBundle = {
 
     'task.contribute': '贡献',
     'task.cannotFindTask': '未找到 {0} 的任务，按回车键返回',
+
+    'comment.reply.count': '{0} 个评论',
+    'comment.reply.lastReply': '最后由 {0} 评论',
     // extension contribute
+
+    // #region walkthrough
+    'walkthroughs.welcome': '欢迎使用',
+    'walkthroughs.get.started': '打开 `入门` 演示',
+    // #endregion walkthrough
+
+    // #region merge editor
+    'mergeEditor.workbench.tab.name': '正在合并: {0}',
+    'mergeEditor.conflict.action.apply.confirm.title': '当前文件还有未处理的冲突或变更，是否应用并保存更改？',
+    'mergeEditor.conflict.action.apply.confirm.continue': '继续合并',
+    'mergeEditor.conflict.action.apply.confirm.complete': '确认保存并更改',
+    'mergeEditor.button.apply': '应用更改',
+    // #endregion merge editor
     ...browserViews,
   },
 };

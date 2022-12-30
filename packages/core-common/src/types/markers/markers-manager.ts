@@ -195,7 +195,7 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
    * @param data marker数据
    */
   private convertToMarker(type: string, resource: string, data: IMarkerData): IMarker | undefined {
-    const { code, severity, message, source, relatedInformation, tags } = data;
+    const { message } = data;
 
     if (!message) {
       return undefined;
@@ -204,24 +204,21 @@ export class MarkerManager extends WithEventBus implements IBaseMarkerManager {
     let { startLineNumber, startColumn, endLineNumber, endColumn } = data;
 
     // santize data
+    // marker 的 startLineNumber 等是 1-base 的
     startLineNumber = startLineNumber > 0 ? startLineNumber : 1;
     startColumn = startColumn > 0 ? startColumn : 1;
     endLineNumber = endLineNumber >= startLineNumber ? endLineNumber : startLineNumber;
     endColumn = endColumn > 0 ? endColumn : startColumn;
 
     return {
+      ...data,
       resource,
       type,
-      code,
-      severity,
       message,
-      source,
       startLineNumber,
       startColumn,
       endLineNumber,
       endColumn,
-      relatedInformation,
-      tags,
     };
   }
 

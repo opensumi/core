@@ -16,6 +16,7 @@ import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IWindowDialogService, IOpenDialogOptions, IDialogService, ISaveDialogOptions } from '@opensumi/ide-overlay';
 
 import { FileTreeDialogModel } from './file-dialog-model.service';
+import styles from './file-dialog.module.less';
 import { FileTreeDialogService } from './file-dialog.service';
 import { FileDialog } from './file-dialog.view';
 
@@ -112,7 +113,7 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       });
       if (res && res.length > 0) {
         const files = res.map((r) => URI.file(r));
-        this.updateRecentDefaultUri(files[0]);
+        this.updateRecentDefaultUri(files[0].parent);
         return files;
       } else {
         return undefined;
@@ -132,11 +133,15 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       const res = await this.dialogService.open<string[]>(
         <FileDialog model={model} options={{ ...defaultOptions, ...options }} isOpenDialog={true} />,
         MessageType.Empty,
+        undefined,
+        true,
+        undefined,
+        { className: styles.file_dialog_wrapper },
       );
       this.dialogService.reset();
       if (res && res.length > 0) {
         const files = res.map((r) => URI.file(r));
-        this.updateRecentDefaultUri(files[0]);
+        this.updateRecentDefaultUri(files[0].parent);
         return files;
       } else {
         return undefined;
@@ -178,6 +183,10 @@ export class WindowDialogServiceImpl implements IWindowDialogService {
       const res = await this.dialogService.open<string[]>(
         <FileDialog model={model} options={options} isOpenDialog={false} />,
         MessageType.Empty,
+        undefined,
+        true,
+        undefined,
+        { className: styles.file_dialog_wrapper },
       );
       this.dialogService.reset();
       if (res && res.length > 0) {

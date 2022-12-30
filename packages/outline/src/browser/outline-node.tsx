@@ -144,7 +144,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
       style={editorNodeStyle}
       data-id={item.id}
     >
-      <div className={cls(styles.outline_node_content)}>
+      <div className={styles.outline_node_content}>
         {renderTwice(item)}
         {renderIcon(item)}
         <div className={styles.outline_node_overflow_wrap}>

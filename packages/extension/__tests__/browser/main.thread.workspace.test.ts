@@ -92,7 +92,7 @@ import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/w
 import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockInjector, mockService } from '../../../../tools/dev-tool/src/mock-injector';
+import { mockService } from '../../../../tools/dev-tool/src/mock-injector';
 import { mockExtensions } from '../../__mocks__/extensions';
 import { MainThreadFileSystemEvent } from '../../lib/browser/vscode/api/main.thread.file-system-event';
 import { MainThreadWebview } from '../../src/browser/vscode/api/main.thread.api.webview';

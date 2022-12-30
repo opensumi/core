@@ -113,7 +113,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          target_commitish: v${{ github.event.inputs.version }}
           generate_release_notes: true
           # 发布 Release 后请手动到该 Release 页面查看是否内容正确，然后点击编辑 -> 点击转为 Release
           draft: true

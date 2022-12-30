@@ -1,7 +1,6 @@
 import debounce from 'lodash/debounce';
 import flattenDeep from 'lodash/flattenDeep';
 import groupBy from 'lodash/groupBy';
-import { observable, computed, action } from 'mobx';
 
 import { INJECTOR_TOKEN, Injector, Injectable, Autowired } from '@opensumi/di';
 import {
@@ -19,6 +18,10 @@ import {
   Deferred,
   path,
   LRUCache,
+  MaybePromise,
+  LabelService,
+  formatLocalize,
+  getExternalIcon,
 } from '@opensumi/ide-core-browser';
 import { IEditor } from '@opensumi/ide-editor';
 import {
@@ -36,17 +39,16 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import {
   ICommentsService,
   ICommentsThread,
-  ICommentsTreeNode,
   ICommentsFeatureRegistry,
   CommentPanelId,
   ICommentRangeProvider,
   ICommentsThreadOptions,
+  IWriteableCommentsTreeNode,
 } from '../common';
 
 import { CommentsPanel } from './comments-panel.view';
 import { CommentsThread } from './comments-thread';
-
-const { dirname } = path;
+import { CommentContentNode, CommentFileNode, CommentReplyNode, CommentRoot } from './tree/tree-node.defined';
 
 @Injectable()
 export class CommentsService extends Disposable implements ICommentsService {
@@ -61,6 +63,9 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   @Autowired(IIconService)
   private readonly iconService: IIconService;
+
+  @Autowired(LabelService)
+  private readonly labelService: LabelService;
 
   @Autowired(ICommentsFeatureRegistry)
   private readonly commentsFeatureRegistry: ICommentsFeatureRegistry;
@@ -79,10 +84,11 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private decorationChangeEmitter = new Emitter<URI>();
 
-  @observable
   private threads = new Map<string, ICommentsThread>();
 
   private threadsChangeEmitter = new Emitter<ICommentsThread>();
+
+  private threadsCommentChangeEmitter = new Emitter<ICommentsThread>();
 
   private threadsCreatedEmitter = new Emitter<ICommentsThread>();
 
@@ -97,10 +103,6 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   private decorationProviderDisposer = Disposable.NULL;
 
-  @observable
-  private forceUpdateCount = 0;
-
-  @computed
   get commentsThreads() {
     return [...this.threads.values()];
   }
@@ -122,6 +124,10 @@ export class CommentsService extends Disposable implements ICommentsService {
 
   get onThreadsChanged(): Event<ICommentsThread> {
     return this.threadsChangeEmitter.event;
+  }
+
+  get onThreadsCommentChange(): Event<ICommentsThread> {
+    return this.threadsCommentChangeEmitter.event;
   }
 
   get onThreadsCreated(): Event<ICommentsThread> {
@@ -153,7 +159,7 @@ export class CommentsService extends Disposable implements ICommentsService {
   private createHoverDecoration(): model.IModelDecorationOptions {
     const decorationOptions: model.IModelDecorationOptions = {
       description: 'comments-hover-decoration',
-      linesDecorationsClassName: ['comments-decoration', 'comments-add', getIcon('message')].join(' '),
+      linesDecorationsClassName: ['comments-decoration', 'comments-add', getIcon('add-comments')].join(' '),
     };
     return textModel.ModelDecorationOptions.createDynamic(decorationOptions);
   }
@@ -300,6 +306,9 @@ export class CommentsService extends Disposable implements ICommentsService {
       this.threadsChangeEmitter.fire(thread);
       this.decorationChangeEmitter.fire(uri);
     });
+    thread.onDidChange(() => {
+      this.threadsChangeEmitter.fire(thread);
+    });
     this.threads.set(thread.id, thread);
     this.addDispose(thread);
     this.threadsChangeEmitter.fire(thread);
@@ -317,91 +326,84 @@ export class CommentsService extends Disposable implements ICommentsService {
     );
   }
 
-  @action
-  public forceUpdateTreeNodes() {
-    this.forceUpdateCount++;
-  }
-
-  @computed
-  get commentsTreeNodes(): ICommentsTreeNode[] {
-    let treeNodes: ICommentsTreeNode[] = [];
-    const commentThreads = [...this.threads.values()].filter((thread) => thread.comments.length);
-    const threadUris = groupBy(commentThreads, (thread: ICommentsThread) => thread.uri);
-    Object.keys(threadUris).forEach((uri) => {
-      const threads: ICommentsThread[] = threadUris[uri];
-      if (threads.length === 0) {
-        return;
-      }
-      const firstThread = threads[0];
-      const firstThreadUri = firstThread.uri;
-      const filePath = dirname(firstThreadUri.path.toString().replace(this.appConfig.workspaceDir, ''));
-      const rootNode: ICommentsTreeNode = {
-        id: uri,
-        name: firstThreadUri.displayName,
-        uri: firstThreadUri,
-        description: filePath.replace(/^\//, ''),
-        parent: undefined,
-        thread: firstThread,
-        ...(threads.length && {
-          expanded: true,
-          children: [],
-        }),
-        // 跳过 mobx computed， 强制在走一次 getCommentsPanelTreeNodeHandlers 逻辑
-        _forceUpdateCount: this.forceUpdateCount,
-      };
-      treeNodes.push(rootNode);
-      threads.forEach((thread) => {
-        if (thread.comments.length === 0) {
-          return;
-        }
-        const [firstComment, ...otherComments] = thread.comments;
-        const firstCommentNode: ICommentsTreeNode = {
-          id: firstComment.id,
-          name: firstComment.author.name,
-          iconStyle: {
-            marginRight: 5,
-            backgroundSize: '14px 14px',
-          },
-          icon: this.iconService.fromIcon('', firstComment.author.iconPath?.toString(), IconType.Background),
-          description: typeof firstComment.body === 'string' ? firstComment.body : firstComment.body.value,
-          uri: thread.uri,
-          parent: rootNode,
-          depth: 1,
-          thread,
-          ...(otherComments.length && {
-            expanded: true,
-            children: [],
-          }),
-          comment: firstComment,
-        };
-        const firstCommentChildren = otherComments.map((comment) => {
-          const otherCommentNode: ICommentsTreeNode = {
-            id: comment.id,
-            name: comment.author.name,
-            description: typeof comment.body === 'string' ? comment.body : comment.body.value,
-            uri: thread.uri,
-            iconStyle: {
-              marginRight: 5,
-              backgroundSize: '14px 14px',
-            },
-            icon: this.iconService.fromIcon('', comment.author.iconPath?.toString(), IconType.Background),
-            parent: firstCommentNode,
-            depth: 2,
-            thread,
-            comment,
-          };
-          return otherCommentNode;
+  async resolveChildren(parent?: CommentRoot | CommentFileNode | CommentContentNode) {
+    let childs: (CommentRoot | CommentFileNode | CommentContentNode | CommentReplyNode)[] = [];
+    if (!parent) {
+      childs.push(new CommentRoot(this));
+    } else {
+      if (CommentRoot.isRoot(parent)) {
+        const commentThreads = [...this.threads.values()].filter((thread) => thread.comments.length);
+        const threadUris = groupBy(commentThreads, (thread: ICommentsThread) => thread.uri);
+        Object.keys(threadUris).map((uri) => {
+          const threads: ICommentsThread[] = threadUris[uri];
+          if (threads.length === 0) {
+            return;
+          }
+          const workspaceDir = new URI(this.appConfig.workspaceDir);
+          const resource = new URI(uri);
+          const description = workspaceDir.relative(resource)?.toString();
+          childs.push(
+            new CommentFileNode(
+              this,
+              threads,
+              description,
+              resource.codeUri.fsPath,
+              this.labelService.getIcon(resource),
+              resource,
+              parent,
+            ),
+          );
         });
-        treeNodes.push(firstCommentNode);
-        treeNodes.push(...firstCommentChildren);
-      });
-    });
-
-    for (const handler of this.commentsFeatureRegistry.getCommentsPanelTreeNodeHandlers()) {
-      treeNodes = handler(treeNodes);
+      } else if (CommentFileNode.is(parent)) {
+        for (const thread of (parent as CommentFileNode).threads) {
+          const [first] = thread.comments;
+          const comment = typeof first.body === 'string' ? first.body : first.body.value;
+          childs.push(
+            new CommentContentNode(
+              this,
+              thread,
+              comment,
+              `[Ln ${thread.range.startLineNumber}]`,
+              first.author.iconPath
+                ? (this.iconService.fromIcon('', first.author.iconPath.toString(), IconType.Background) as string)
+                : getIcon('message'),
+              first.author,
+              parent.resource,
+              parent as CommentFileNode,
+            ),
+          );
+        }
+      } else if (CommentContentNode.is(parent)) {
+        const thread = parent.thread;
+        const [_, ...others] = thread.comments;
+        const lastReply = others[others.length - 1].author.name;
+        childs.push(
+          new CommentReplyNode(
+            this,
+            thread,
+            formatLocalize('comment.reply.count', others?.length || 0),
+            formatLocalize('comment.reply.lastReply', lastReply),
+            '',
+            parent.resource,
+            parent,
+          ),
+        );
+      }
     }
-
-    return treeNodes;
+    if (childs.length === 1 && CommentRoot.isRoot(childs[0])) {
+      return childs;
+    }
+    const handlers = this.commentsFeatureRegistry.getCommentsPanelTreeNodeHandlers();
+    if (handlers.length > 0) {
+      for (const handler of handlers) {
+        childs = handler(childs as IWriteableCommentsTreeNode[]) as (
+          | CommentFileNode
+          | CommentContentNode
+          | CommentReplyNode
+        )[];
+      }
+    }
+    return childs;
   }
 
   public async getContributionRanges(uri: URI): Promise<IRange[]> {
@@ -436,6 +438,10 @@ export class CommentsService extends Disposable implements ICommentsService {
     const flattenRange: IRange[] = flattenDeep(res).filter(Boolean) as IRange[];
     deferredRes.resolve(flattenRange);
     return flattenRange;
+  }
+
+  public fireThreadCommentChange(thread: ICommentsThread) {
+    this.threadsCommentChangeEmitter.fire(thread);
   }
 
   private registerDecorationProvider() {

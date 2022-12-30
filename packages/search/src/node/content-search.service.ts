@@ -79,15 +79,16 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
   @Autowired(IProcessFactory)
   protected processFactory: IProcessFactory;
 
-  private searchId: number = new Date().getTime();
   private processMap: Map<number, IProcess> = new Map();
 
   @Autowired(ILogServiceManager)
-  loggerManager!: ILogServiceManager;
-  logger: ILogService = this.loggerManager.getLogger(SupportLogNamespace.Node);
+  private loggerManager!: ILogServiceManager;
+
+  private logger: ILogService;
 
   constructor() {
     super();
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.Node);
   }
 
   private searchStart(searchId: number, searchProcess) {
@@ -105,12 +106,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     this.processMap.delete(searchId);
   }
 
-  async search(
-    what: string,
-    rootUris: string[],
-    opts?: ContentSearchOptions,
-    cb?: (data: any) => any,
-  ): Promise<number> {
+  async search(searchId: number, what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number> {
     const args = this.getSearchArgs(opts);
 
     if (opts && opts.matchWholeWord && !opts.useRegExp) {
@@ -124,7 +120,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
     }
 
     const searchInfo: SearchInfo = {
-      searchId: this.searchId++,
+      searchId,
       resultLength: 0,
       dataBuf: '',
     };
@@ -232,7 +228,7 @@ export class ContentSearchService extends RPCService<IRPCContentSearchService> i
 
           if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
             // 达到设置上限，停止搜索
-            this.logger.debug('达到设置上限，停止搜索');
+            this.logger.debug('Reached the set upper limit, stop searching.');
             this.cancel(searchInfo.searchId);
             return true;
           }

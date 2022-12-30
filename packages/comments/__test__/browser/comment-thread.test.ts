@@ -47,7 +47,7 @@ describe('comment service test', () => {
         {
           mode: CommentMode.Editor,
           author: {
-            name: '蛋总',
+            name: 'User',
           },
           body: '评论内容1',
         },
@@ -64,7 +64,7 @@ describe('comment service test', () => {
         {
           mode: CommentMode.Editor,
           author: {
-            name: '蛋总',
+            name: 'User',
           },
           body: '评论内容1',
           data: {
@@ -87,14 +87,14 @@ describe('comment service test', () => {
       {
         mode: CommentMode.Preview,
         author: {
-          name: '蛋总',
+          name: 'User',
         },
         body: '评论内容1',
       },
       {
         mode: CommentMode.Editor,
         author: {
-          name: '蛋总',
+          name: 'User',
         },
         body: '评论内容2',
       },
@@ -110,14 +110,14 @@ describe('comment service test', () => {
       {
         mode: CommentMode.Preview,
         author: {
-          name: '蛋总',
+          name: 'User',
         },
         body: '评论内容1',
       },
       {
         mode: CommentMode.Editor,
         author: {
-          name: '蛋总',
+          name: 'User',
         },
         body: '评论内容2',
       },

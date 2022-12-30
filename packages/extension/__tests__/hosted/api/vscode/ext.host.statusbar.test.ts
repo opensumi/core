@@ -134,13 +134,13 @@ describe('vscode MainThreadStatusBar Test', () => {
 
     const statusbar = extHost.createStatusBarItem(mockExtensionDescription);
     statusbar.accessibilityInformation = {
-      label: '蛋总',
+      label: 'User',
       role: 'danzong',
     };
     statusbar.show();
     // statusbar host 调用 main 有一个 定时器
     setTimeout(() => {
-      expect($setMessage.mock.calls[0][9]).toStrictEqual({ label: '蛋总', role: 'danzong' });
+      expect($setMessage.mock.calls[0][9]).toStrictEqual({ label: 'User', role: 'danzong' });
       done();
     }, 100);
   });

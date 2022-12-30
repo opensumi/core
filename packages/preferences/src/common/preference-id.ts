@@ -5,3 +5,7 @@ export enum PreferenceSettingId {
   Feature = 'feature',
   View = 'view',
 }
+
+export const knownPrefIdMappings = {
+  'workbench.editor.enablePreview': 'editor.previewMode',
+};

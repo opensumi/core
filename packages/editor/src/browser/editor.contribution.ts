@@ -10,6 +10,7 @@ import {
   URI,
   Domain,
   localize,
+  formatLocalize,
   MonacoService,
   ServiceNames,
   MonacoContribution,
@@ -40,6 +41,7 @@ import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-bro
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { AbstractContextMenuService } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
+import { IRelaxedOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
 import { isWindows, isOSX, PreferenceScope, ILogger, OnEvent, WithEventBus } from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';
@@ -545,6 +547,21 @@ export class EditorContribution
             }),
           }),
           options,
+        );
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_MERGEEDITOR, {
+      execute: (args: unknown) => {
+        const validatedArgs = IRelaxedOpenMergeEditorArgs.validate(args);
+        this.workbenchEditorService.open(
+          URI.from({
+            scheme: 'mergeEditor',
+            query: URI.stringifyQuery({
+              name: formatLocalize('mergeEditor.workbench.tab.name', validatedArgs.output.displayName),
+              openMetadata: IRelaxedOpenMergeEditorArgs.toString(validatedArgs),
+            }),
+          }),
         );
       },
     });

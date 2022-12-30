@@ -54,7 +54,10 @@ export interface IWorkspaceService {
   // 从工作区中移除目录
   removeRoots(roots: URI[]): Promise<void>;
   // 获取相对于工作区的路径
-  asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean): Promise<string | undefined>;
+  asRelativePath(
+    pathOrUri: string | URI,
+    includeWorkspaceFolder?: boolean,
+  ): Promise<{ path?: string; root?: string } | undefined>;
   // 根据给定的uri获取其根节点
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined;
   // 获取工作区名称

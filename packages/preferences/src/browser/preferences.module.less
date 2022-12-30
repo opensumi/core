@@ -1,4 +1,4 @@
-@import '~@opensumi/ide-core-browser/lib/style/variable.less';
+@base-font-size: 14px;
 
 .preferences {
   height: 100%;
@@ -45,60 +45,35 @@
 
   .preferences_body {
     height: calc(100% - 40px);
-    position: relative;
-    padding-left: 155px;
+    margin-top: 8px;
     .preferences_indexes {
-      position: absolute;
-      width: 155px;
-      padding-top: 16px;
-      height: 100%;
-      left: 0;
-      .index_item_wrapper {
-        margin-bottom: 2px;
-      }
-      .index_item {
-        height: 26px;
+      .group_item {
         font-size: @base-font-size;
-        line-height: 26px;
-        padding-left: 9px;
         cursor: pointer;
         white-space: nowrap;
         user-select: none;
-
-        > span {
-          margin-right: 5px;
-          display: inline-block;
-          font-size: 1em;
-        }
-        &:hover {
-          color: var(--list-hoverForeground);
-          background-color: var(--list-hoverBackground);
-        }
-        &.activated {
-          color: var(--list-activeSelectionForeground);
-          background: var(--list-activeSelectionBackground);
-        }
-      }
-      .preference_section_link {
-        > div {
-          padding: 5px 5px 5px 20px;
-          padding-left: 25px;
-          color: var(--titleBar-inactiveForeground);
-          overflow: hidden;
-          white-space: nowrap;
-          text-overflow: ellipsis;
-          cursor: pointer;
-          &:hover {
-            color: var(--list-hoverForeground);
-            background-color: var(--list-hoverBackground);
+        margin-bottom: 2px;
+        :global {
+          .kt-icon {
+            max-height: 20px !important;
           }
         }
       }
+
+      .index_item {
+        color: var(--titleBar-inactiveForeground);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        cursor: pointer;
+      }
     }
+
     .preferences_items {
       height: 100%;
+      width: 100%;
+      flex: 1;
       user-select: text;
-      padding: 16px 0 0 10px;
     }
     .preference_section {
       :global(.kt-checkbox-icon) {
@@ -108,20 +83,40 @@
       :global(.kt-checkbox) {
         font-size: @base-font-size;
       }
+      .group_title {
+        font-size: 24px;
+        font-weight: 400;
+        padding: 10px 18px;
+        &:hover {
+          color: var(--kt-tree-hoverForeground);
+          background: var(--kt-tree-hoverBackground);
+        }
+      }
       .section_title {
-        font-size: 14px;
-        font-weight: bold;
-        padding: 10px 15px;
+        font-size: 20px;
+        font-weight: 500;
+        padding: 10px 18px;
         &:hover {
           color: var(--kt-tree-hoverForeground);
           background: var(--kt-tree-hoverBackground);
         }
       }
       .preference_item {
-        padding: 15px 0px 15px 15px;
-        border-left: 3px solid transparent;
+        padding: 18px;
+        border-left: 4px solid transparent;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-around;
         &.modified {
-          border-left: 3px solid var(--settings-modifiedItemIndicator);
+          position: relative;
+        }
+        &.modified:before {
+          content: '';
+          position: absolute;
+          left: 7px;
+          height: 75%;
+          border-left: 2px solid var(--settings-modifiedItemIndicator);
         }
         &:hover {
           color: var(--kt-tree-hoverForeground);
@@ -139,23 +134,32 @@
         }
       }
       .key {
-        margin-bottom: 5px;
+        flex: 1;
+        padding: 0 10px 10px 0;
+        font-weight: 600;
         font-size: @base-font-size;
       }
       .check {
         display: flex;
         align-items: center;
-        > div:first-child {
-          margin-right: 2px;
-          display: flex;
-          align-items: center;
+        :global {
+          .kt-checkbox {
+            margin-right: 2px;
+            display: flex;
+            align-self: flex-start;
+          }
+        }
+        & .desc {
+          padding: 0;
         }
       }
       .desc {
+        flex: 1;
+        padding: 0 10px 10px 0;
         font-size: @base-font-size;
         opacity: 0.75;
         color: var(--descriptionForeground);
-        margin-bottom: 5px;
+        margin-bottom: 0px;
         ul {
           list-style: none;
         }
@@ -168,6 +172,9 @@
           display: inline-block;
           width: 1em;
           margin-left: -1em;
+        }
+        p {
+          margin-bottom: auto;
         }
       }
       .control_wrap {
@@ -185,7 +192,6 @@
         padding: 0 8px !important;
       }
       .array_items_wrapper {
-        width: 550px;
         padding-left: 0;
         position: relative;
         .array_edit_wrapper {
@@ -239,11 +245,13 @@
         cursor: pointer;
       }
       .text_control {
+        min-width: 300px;
         max-width: 500px;
         width: 100%;
       }
       .select_control {
-        max-width: 300px;
+        min-width: 300px;
+        max-width: 500px;
         width: 100%;
 
         .select_option {
@@ -264,7 +272,8 @@
         }
       }
       .number_control {
-        max-width: 300px;
+        min-width: 300px;
+        max-width: 500px;
         width: 100%;
       }
     }
@@ -293,6 +302,11 @@
   .preference_overwritten {
     font-size: 12px;
     opacity: 0.75;
+    text-decoration: underline;
+    text-decoration-color: black;
+    text-underline-position: under;
+    cursor: pointer;
+    opacity: 0.75;
   }
   .preference_reset {
     font-size: @base-font-size;
@@ -301,5 +315,33 @@
     &:hover {
       transform: scale(1.1);
     }
+  }
+}
+
+.devider {
+  box-sizing: border-box;
+  font-size: 14px;
+  font-variant: tabular-nums;
+  list-style: none;
+  font-feature-settings: 'tnum';
+  position: relative;
+  margin: 0 3px;
+  display: inline-block;
+  vertical-align: middle;
+  &:after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    border-top: 0;
+    border-left: 1px solid var(--editorGroup-border);
+    pointer-events: none;
+    transform: translateX(1.5px);
+  }
+  &:hover:after {
+    border-color: transparent;
   }
 }

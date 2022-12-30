@@ -41,7 +41,13 @@ export class ExtHostWebview implements Webview {
   public readonly _onMessageEmitter = new Emitter<any>();
   public readonly onDidReceiveMessage: Event<any> = this._onMessageEmitter.event;
 
-  constructor(handle: string, proxy: IMainThreadWebview, options: IWebviewOptions, private cspResourceRoots: string[]) {
+  constructor(
+    handle: string,
+    proxy: IMainThreadWebview,
+    options: IWebviewOptions,
+    private cspResourceRoots: string[],
+    private extensionLocation?: Uri,
+  ) {
     this._handle = handle;
     this._proxy = proxy;
     this._options = options;
@@ -91,7 +97,11 @@ export class ExtHostWebview implements Webview {
   }
 
   public get cspSource() {
-    return this.cspResourceRoots.join(' ');
+    let cspSource = this.cspResourceRoots.join(' ');
+    if (this.extensionLocation) {
+      cspSource += `'self' vscode-resource:/${this.extensionLocation.path}/`.toLowerCase();
+    }
+    return cspSource;
   }
 
   public toWebviewResource(resource: Uri): Uri {
@@ -315,7 +325,7 @@ export class ExtHostWebviewService implements IExtHostWebview {
     const handle = this.getNextHandle();
     this._proxy.$createWebviewPanel(handle, viewType, title, webviewShowOptions, options, extension);
 
-    const webview = new ExtHostWebview(handle, this._proxy, options, this.resourceRoots);
+    const webview = new ExtHostWebview(handle, this._proxy, options, this.resourceRoots, extensionLocation);
     const panel = new ExtHostWebviewPanel(handle, this._proxy, viewType, title, viewColumn, options, webview);
     this._webviewPanels.set(handle, panel);
     return panel;

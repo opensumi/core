@@ -18,6 +18,10 @@ export interface ICustomScrollbarProps {
    * 这种模式下，左右滚动和上下滚动都会被视为左右滚动
    */
   tabBarMode?: boolean;
+  /**
+   * 滚动条滑块大小，默认 5px
+   */
+  thumbSize?: number;
 }
 
 export const Scrollbars = ({
@@ -29,15 +33,24 @@ export const Scrollbars = ({
   className,
   onReachBottom,
   tabBarMode,
+  thumbSize = 5,
 }: ICustomScrollbarProps) => {
   const disposableCollection = useRef<DisposableCollection>(new DisposableCollection());
   const scrollerRef = useRef<HTMLDivElement>();
   const refSetter = useCallback((scrollbarsRef) => {
     if (scrollbarsRef) {
       scrollerRef.current = scrollbarsRef.view;
-      forwardedRef && forwardedRef(scrollbarsRef.view);
+      if (forwardedRef) {
+        if (typeof forwardedRef === 'function') {
+          forwardedRef(scrollbarsRef.view);
+        } else {
+          forwardedRef.current = scrollbarsRef.view;
+        }
+      }
     } else {
-      forwardedRef && forwardedRef(null);
+      if (forwardedRef && typeof forwardedRef === 'function') {
+        forwardedRef(null);
+      }
     }
   }, []);
   const verticalShadowRef = useRef<HTMLDivElement | null>();
@@ -45,6 +58,9 @@ export const Scrollbars = ({
 
   const handleReachBottom = useCallback(
     (values) => {
+      if (!values) {
+        return;
+      }
       const { scrollTop, scrollHeight, clientHeight } = values;
 
       if (scrollHeight === 0 && clientHeight === 0) {
@@ -62,6 +78,9 @@ export const Scrollbars = ({
 
   const handleUpdate = useCallback(
     throttle((values) => {
+      if (!values) {
+        return;
+      }
       const { scrollTop, scrollLeft } = values;
       const shadowTopOpacity = (1 / 20) * Math.min(scrollTop, 20);
       const shadowLeftOpacity = (1 / 20) * Math.min(scrollLeft, 20);
@@ -113,16 +132,24 @@ export const Scrollbars = ({
       onUpdate={handleUpdate}
       onScroll={onScroll}
       renderTrackHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style, left: 0, right: 0, bottom: 0 }} />
+        <div
+          {...props}
+          style={{ ...style, height: thumbSize, left: 0, right: 0, bottom: 0 }}
+          className={'scrollbar-track'}
+        />
       )}
       renderTrackVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, top: 0, right: 0, bottom: 0 }} />
+        <div
+          {...props}
+          style={{ ...style, width: thumbSize, top: 0, right: 0, bottom: 0 }}
+          className={'scrollbar-track'}
+        />
       )}
       renderThumbVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style }} className={'scrollbar-thumb-vertical'} />
+        <div {...props} style={{ ...style, width: thumbSize }} className={'scrollbar-thumb-vertical'} />
       )}
       renderThumbHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style }} className={'scrollbar-thumb-horizontal'} />
+        <div {...props} style={{ ...style, height: thumbSize }} className={'scrollbar-thumb-horizontal'} />
       )}
     >
       <div
@@ -141,5 +168,9 @@ export const Scrollbars = ({
     </CustomScrollbars>
   );
 };
+Scrollbars.displayName = 'CustomScrollbars';
 
-export const ScrollbarsVirtualList = React.forwardRef((props, ref) => <Scrollbars {...props} forwardedRef={ref} />);
+export const ScrollbarsVirtualList = React.forwardRef((props, ref) => (
+  <Scrollbars {...props} thumbSize={6} forwardedRef={ref} />
+));
+ScrollbarsVirtualList.displayName = 'ScrollbarsVirtualList';

@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react-lite';
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 
+import { Scrollbars } from '@opensumi/ide-components';
 import { KeybindingRegistry, useInjectable } from '@opensumi/ide-core-browser';
-import { Scroll } from '@opensumi/ide-core-browser/lib/components/scroll';
 import { IThemeService, ThemeType } from '@opensumi/ide-theme';
 
 import { ITerminalGroupViewService, ITerminalRenderProvider, ItemType } from '../../common';
@@ -38,7 +38,7 @@ export default observer(() => {
   return (
     <div className={styles.view_container}>
       <div className={styles.tabs}>
-        <Scroll ref={(el) => (el ? (tabContainer.current = el.ref) : null)}>
+        <Scrollbars forwardedRef={(el) => (el ? (tabContainer.current = el.ref) : null)}>
           <div className={styles.tab_contents}>
             {view.groups.map((group, index) => {
               if (!group) {
@@ -84,7 +84,7 @@ export default observer(() => {
               />
             </div>
           </div>
-        </Scroll>
+        </Scrollbars>
       </div>
     </div>
   );

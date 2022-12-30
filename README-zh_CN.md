@@ -42,7 +42,7 @@
 由于国内网络访问的问题，部分包的下载安装都会比较缓慢，建议在开始前将你的 npm 镜像切换至国内 taobao 镜像地址，或安装一个 npm 镜像切换工具用于快速切换，如 [nrm](https://www.npmjs.com/package/nrm), 手动设置方式如下：
 
 ```bash
-$ npm config set registry https://registry.npmmirror.com
+$ yarn config set npmRegistryServer https://registry.npmmirror.com
 ```
 
 ```bash
@@ -66,7 +66,7 @@ $ MY_WORKSPACE={local_path} yarn run start
 
 - [Cloud IDE](https://github.com/opensumi/ide-startup)
 - [Desktop IDE - based on the Electron](https://github.com/opensumi/ide-electron)
-- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-electron)
+- [Lite Web IDE - pure web IDE based on the Browser](https://github.com/opensumi/ide-startup-lite)
 - [The Mini-App liked IDE](https://github.com/opensumi/app-desktop)
 
 ## 📕 文档

@@ -1,7 +1,7 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 
-import { ViewState, getIcon, useInjectable, DisposableCollection } from '@opensumi/ide-core-browser';
+import { ViewState, getIcon, useInjectable, DisposableCollection, localize } from '@opensumi/ide-core-browser';
 
 import { DebugState, IDebugSessionManager } from '../../../common';
 import { DebugSession } from '../../debug-session';
@@ -20,16 +20,16 @@ export interface DebugStackSessionViewProps {
 }
 
 export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
-  const { session, viewState, indent } = props;
+  const { session, viewState } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
-  const [threads, setThreads] = React.useState<DebugThread[]>([]);
-  const [otherThreads, setOtherThreads] = React.useState<DebugThread[]>([]);
-  const [multipleThreadPaused, setMultipleThreadPaused] = React.useState<DebugThread[]>([]);
-  const [subSession, setSubSession] = React.useState<DebugSession[]>([]);
-  const [unfold, setUnfold] = React.useState<boolean>(true);
-  const [hover, setHover] = React.useState<boolean>(false);
-  const [loading, setLoading] = React.useState<boolean>(true);
+  const [threads, setThreads] = useState<DebugThread[]>([]);
+  const [otherThreads, setOtherThreads] = useState<DebugThread[]>([]);
+  const [multipleThreadPaused, setMultipleThreadPaused] = useState<DebugThread[]>([]);
+  const [subSession, setSubSession] = useState<DebugSession[]>([]);
+  const [unfold, setUnfold] = useState<boolean>(true);
+  const [hover, setHover] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   // 多 session 调试
   const mutipleSession = manager.sessions.length > 1;
   const supportsThreadIdCorrespond = session.supportsThreadIdCorrespond;
@@ -56,7 +56,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     setOtherThreads(_threads);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const createDispose = manager.onDidCreateDebugSession(() => {
       const sub = findSubSessions();
       setSubSession(sub);
@@ -74,14 +74,28 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     };
   }, []);
 
-  React.useEffect(() => {
-    setThreads(Array.from(session.threads));
+  const updateThreads = useCallback(
+    (threads: DebugThread[]) => {
+      setThreads(threads);
+    },
+    [threads],
+  );
+
+  const updateMultipleThreadPaused = useCallback(
+    (threads: DebugThread[]) => {
+      setMultipleThreadPaused(threads);
+    },
+    [multipleThreadPaused],
+  );
+
+  useEffect(() => {
+    updateThreads(Array.from(session.threads));
 
     const disposable = new DisposableCollection();
 
     disposable.push(
       session.onDidChange(() => {
-        setThreads([...session.threads]);
+        updateThreads([...session.threads]);
       }),
     );
 
@@ -104,7 +118,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         }
 
         const multipleThreads = Array.from(session.multipleThreadPaused.values());
-        setMultipleThreadPaused(multipleThreads);
+        updateMultipleThreadPaused(multipleThreads);
 
         await fetchOtherThreads();
       }),
@@ -117,7 +131,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         }
 
         const multipleThreads = Array.from(session.multipleThreadPaused.values());
-        setMultipleThreadPaused(multipleThreads);
+        updateMultipleThreadPaused(multipleThreads);
       }),
     );
 
@@ -135,7 +149,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     if (supportsThreadIdCorrespond && unfold) {
       return loading ? (
         <div className={styles.debug_stack_item_loading}>
-          <span>正在加载线程...</span>
+          <span>{localize('debug.stack.loading')}</span>
         </div>
       ) : (
         otherThreads.map(
@@ -195,11 +209,13 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
         >
-          {(supportsThreadIdCorrespond || threads.length > 0) && (
+          {supportsThreadIdCorrespond || threads.length > 0 ? (
             <>
               <div className={unfold ? getIcon('down') : getIcon('right')} onClick={() => setUnfold(!unfold)}></div>
               <div className={cls([getIcon('debug'), styles.debug_session_icon])}></div>
             </>
+          ) : (
+            <div style={{ width: 30 }}></div>
           )}
           <div className={styles.debug_stack_item_label_title}>{session.label}</div>
           {hover && <DebugStackOperationView session={session} />}

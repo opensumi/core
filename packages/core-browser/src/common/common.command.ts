@@ -189,6 +189,11 @@ export namespace FILE_COMMANDS {
     id: 'filetree.revealInExplorer',
     category: CATEGORY,
   };
+
+  export const TOGGLE_OR_OPEN: Command = {
+    id: 'filetree.toggleOrOpen',
+    category: CATEGORY,
+  };
 }
 
 export namespace OPEN_EDITORS_COMMANDS {
@@ -344,6 +349,11 @@ export namespace EDITOR_COMMANDS {
 
   export const COMPARE: Command = {
     id: 'editor.compare',
+    category: CATEGORY,
+  };
+
+  export const OPEN_MERGEEDITOR: Command = {
+    id: 'editor.open.mergeEditor',
     category: CATEGORY,
   };
 
@@ -681,13 +691,6 @@ export namespace SEARCH_COMMANDS {
     category: CATEGORY,
   };
 
-  export const FOLD: Command = {
-    id: 'file-search.fold',
-    label: 'fold search',
-    iconClass: getIcon('collapse-all'),
-    category: CATEGORY,
-  };
-
   export const GET_RECENT_SEARCH_WORD: Command = {
     id: 'search.getRecentSearchWordCmd',
     category: CATEGORY,
@@ -732,6 +735,16 @@ export namespace SEARCH_COMMANDS {
     id: 'search.menu.copyPath',
     category: CATEGORY,
     label: '%file.copy.path%',
+  };
+
+  export const REPLACE: Command = {
+    id: 'search.replace',
+    category: CATEGORY,
+  };
+
+  export const CLOSE: Command = {
+    id: 'search.close',
+    category: CATEGORY,
   };
 }
 
@@ -869,59 +882,71 @@ export namespace TERMINAL_COMMANDS {
   export const CLEAR_ALL_CONTENT = {
     id: 'terminal.clearAllContent',
     label: '%terminal.menu.clearAllContents%',
+    category: CATEGORY,
   };
 
   export const TAB_RENAME = {
     id: 'terminal.tabRename',
+    category: CATEGORY,
   };
 
   export const SELECT_ALL_CONTENT = {
     id: 'terminal.selectAllContent',
     label: '%terminal.menu.selectAllContent%',
+    category: CATEGORY,
   };
 
   export const MORE_SETTINGS = {
     id: 'terminal.moreSettings',
     label: '%terminal.menu.moreSettings%',
+    category: CATEGORY,
   };
 
   export const SELECT_TYPE = {
     id: 'terminal.selectType',
+    category: CATEGORY,
   };
 
   export const SELECT_ZSH = {
     id: 'terminal.selectTypeZsh',
     label: 'zsh',
+    category: CATEGORY,
   };
 
   export const SELECT_BASH = {
     id: 'terminal.selectTypeBash',
     label: 'bash',
+    category: CATEGORY,
   };
 
   export const SELECT_SH = {
     id: 'terminal.selectTypeSh',
     label: 'sh',
+    category: CATEGORY,
   };
 
   export const SELECT_CMD = {
     id: 'terminal.selectTypeCMD',
     label: 'cmd',
+    category: CATEGORY,
   };
 
   export const SELECT_POWERSHELL = {
     id: 'terminal.selectTypePowerShell',
     label: 'powershell',
+    category: CATEGORY,
   };
 
   export const COPY = {
     id: 'terminal.copy',
     label: '%edit.copy%',
+    category: CATEGORY,
   };
 
   export const PASTE = {
     id: 'terminal.paste',
     label: '%edit.paste%',
+    category: CATEGORY,
   };
 
   export const SELECT_ALL = {
@@ -932,6 +957,13 @@ export namespace TERMINAL_COMMANDS {
 
   export const RE_LAUNCH = {
     id: 'terminal.relaunch',
+    category: CATEGORY,
+  };
+
+  export const TOGGLE_TERMINAL = {
+    id: 'terminal.toggleTerminal',
+    label: '%terminal.toggleTerminal%',
+    category: CATEGORY,
   };
 }
 
@@ -979,5 +1011,8 @@ export namespace QUICK_OPEN_COMMANDS {
   };
   export const OPEN_OUTLINE: Command = {
     id: 'editor.action.quickOutline',
+  };
+  export const OPEN_VIEW: Command = {
+    id: 'editor.action.quickView',
   };
 }

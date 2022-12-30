@@ -1,6 +1,5 @@
-import { TreeNode, ValidateMessage } from '@opensumi/ide-core-browser/lib/components';
-import { Command } from '@opensumi/ide-core-common';
-import { parseGlob, ParsedPattern, URI, strings } from '@opensumi/ide-core-common';
+import type { ITree, ValidateMessage } from '@opensumi/ide-components';
+import { parseGlob, ParsedPattern, URI, strings, Event } from '@opensumi/ide-core-common';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 
@@ -48,7 +47,7 @@ export interface IContentSearchServer {
   /**
    * Start a search for WHAT in directories ROOTURIS.  Return a unique search id.
    */
-  search(what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number>;
+  search(searchId: number, what: string, rootUris: string[], opts?: ContentSearchOptions): Promise<number>;
 
   /**
    * Cancel an ongoing search.
@@ -64,23 +63,50 @@ export interface IContentSearchClientService {
   replaceValue: string;
   searchValue: string;
   searchError: string;
+  includeValue: string;
+  excludeValue: string;
   searchState: SEARCH_STATE;
   UIState: IUIState;
   searchResults: Map<string, ContentSearchResult[]>;
   resultTotal: ResultTotal;
-  docModelSearchedList: string[];
-  currentSearchId: number;
-  searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
-  replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
-
-  isSearchDoing: boolean;
-
+  isReplacing: boolean;
+  isSearching: boolean;
   isShowValidateMessage: boolean;
-
   validateMessage: ValidateMessage | undefined;
 
   updateUIState(obj: Record<string, any>, e?: React.KeyboardEvent): void;
+  replaceAll(): void;
+  search(): void;
+  onSearchInputChange(text: string): void;
+  onReplaceInputChange(text: string): void;
+  onSearchExcludeChange(text: string): void;
+  onSearchIncludeChange(text: string): void;
+
+  openPreference(): void;
+  blur(): void;
+  focus(): void;
+  searchEditorSelection(): void;
   searchDebounce(): void;
+  clean(): void;
+  refresh(): void;
+  setBackRecentSearchWord(): void;
+  setRecentSearchWord(): void;
+  initSearchHistory(): void;
+  refreshIsEnable(): boolean;
+
+  onDidChange: Event<void>;
+  onDidTitleChange: Event<void>;
+  onDidUIStateChange: Event<IUIState>;
+  onDidSearchStateChange: Event<string>;
+  fireTitleChange(): void;
+}
+
+export const ISearchTreeService = Symbol('ISearchTreeService');
+
+export interface ISearchTreeService extends ITree {
+  replaceValue: string;
+  resultTotal: ResultTotal;
+  initContextKey(dom: HTMLDivElement): void;
 }
 
 export interface IUIState {
@@ -196,18 +222,10 @@ export function getRoot(rootUris?: string[], uri?: string): string {
   return result;
 }
 
-export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
-  children?: ISearchTreeItem[];
-  badge?: number;
-  searchResult?: ContentSearchResult;
-  [key: string]: any;
-}
-
 /**
  * 裁剪处理过长的结果，计算出 renderLineText、renderStart
  * @param insertResult
  */
-
 export function cutShortSearchResult(insertResult: ContentSearchResult): ContentSearchResult {
   const result = Object.assign({}, insertResult);
   const { lineText, matchLength, matchStart } = result;
@@ -241,12 +259,6 @@ export function cutShortSearchResult(insertResult: ContentSearchResult): Content
 export interface OpenSearchCmdOptions {
   includeValue: string;
 }
-
-export const openSearchCmd: Command = {
-  id: 'content-search.openSearch',
-  category: 'search',
-  label: 'Open search sidebar',
-};
 
 /**
  * 用于排除 通过贪婪匹配后的，相对路径的glob 匹配到的所有路径的结果

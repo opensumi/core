@@ -1,6 +1,7 @@
 import { EventEmitter } from 'events';
 
 import { Injector } from '@opensumi/di';
+import { isWindows } from '@opensumi/ide-core-common';
 
 import { mockService } from '../../../tools/dev-tool/src/mock-injector';
 
@@ -32,7 +33,6 @@ jest.mock('electron', () => ({
 // eslint-disable-next-line import/order
 import { BrowserWindow, Menu } from 'electron';
 
-import { isWindows } from '../../core-node/lib';
 import { ElectronMainMenuService } from '../src/bootstrap/services/menu';
 
 async function delay(ms: number) {

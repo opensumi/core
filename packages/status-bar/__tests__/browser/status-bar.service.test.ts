@@ -5,7 +5,8 @@ import { IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next'
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@opensumi/ide-core-browser/lib/services';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { MockInjector, mockService } from '@opensumi/ide-dev-tool/src/mock-injector';
-import { StatusBarModule } from '@opensumi/ide-status-bar/lib/browser';
+
+import { StatusBarModule } from '../../src/browser';
 
 describe('template test', () => {
   const EN_CODING_ENTRY_ID = 'encoding';

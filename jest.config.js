@@ -29,10 +29,13 @@ const baseConfig = {
   },
   testPathIgnorePatterns: [
     '/dist/',
+    '/node_modules/',
     '/tools/workspace/',
+    '/tools/template/',
     '/tools/extensions/',
     '/packages/status-bar/entry',
     '/packages/startup/entry',
+    '/__mocks__/',
     '/packages/quick-open/entry',
     // 终端渲染测试暂时不跟随单元测试
     '/packages/terminal-next/__tests__/browser/render.test.ts',

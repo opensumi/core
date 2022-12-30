@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-connection",
-  "version": "2.21.5",
+  "version": "2.21.11",
   "files": [
     "lib",
     "src"
@@ -20,6 +20,7 @@
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/vscode-jsonrpc": "^8.0.0-next.2",
     "path-match": "^1.2.4",
+    "reconnecting-websocket": "^4.2.0",
     "ws": "^8.9.0"
   },
   "devDependencies": {

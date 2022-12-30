@@ -5,6 +5,21 @@ export enum PreferenceScope {
   Folder,
 }
 
+export interface PreferenceScopeWithLabel {
+  id: PreferenceScope;
+  label: string;
+}
+
+export const WorkspaceScope: PreferenceScopeWithLabel = {
+  id: PreferenceScope.Workspace,
+  label: 'preference.tab.workspace',
+};
+
+export const UserScope: PreferenceScopeWithLabel = {
+  id: PreferenceScope.User,
+  label: 'preference.tab.user',
+};
+
 export namespace PreferenceScope {
   export function is(scope: any): scope is PreferenceScope {
     return typeof scope === 'number' && getScopes().findIndex((s) => s === scope) >= 0;

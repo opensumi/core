@@ -11,6 +11,29 @@
   font-size: 14px;
   align-items: center;
   justify-content: center;
+
+  .default_icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 128px;
+    width: 128px;
+    flex-shrink: 0;
+    object-fit: contain;
+    background-color: #f1f2f2;
+    border-radius: 50%;
+
+    :global {
+      .kaitian-icon {
+        font-size: 80px;
+      }
+
+      .kt-icon {
+        color: #d8d9d9;
+      }
+    }
+  }
+
   img {
     height: 128px;
     width: 128px;

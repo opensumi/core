@@ -89,6 +89,7 @@ export interface ITerminalController extends Disposable {
   clearAllGroups(): void;
   showTerminalPanel(): void;
   hideTerminalPanel(): void;
+  toggleTerminalPanel(): void;
   toJSON(): ITerminalBrowserHistory;
   convertTerminalOptionsToLaunchConfig(options: TerminalOptions): IShellLaunchConfig;
   convertProfileToLaunchConfig(

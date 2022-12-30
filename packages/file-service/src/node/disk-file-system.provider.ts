@@ -8,7 +8,7 @@ import writeFileAtomic from 'write-file-atomic';
 
 import { Injectable, INJECTOR_TOKEN, Autowired, Injector } from '@opensumi/di';
 import { RPCService } from '@opensumi/ide-connection';
-import { Deferred, ILogService, ILogServiceManager, SupportLogNamespace } from '@opensumi/ide-core-node';
+import { Deferred, ILogService, ILogServiceManager, SupportLogNamespace, path } from '@opensumi/ide-core-node';
 import {
   isLinux,
   UriComponents,
@@ -22,7 +22,6 @@ import {
   FileUri,
   uuid,
 } from '@opensumi/ide-core-node';
-import { Path } from '@opensumi/ide-utils/lib/path';
 
 import {
   FileChangeEvent,
@@ -42,6 +41,7 @@ import {
 
 import { ParcelWatcherServer } from './file-service-watcher';
 
+const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
 const DEFAULT_NODE_MODULES_EXCLUDE = '**/node_modules/**';
 
@@ -77,6 +77,8 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   private readonly loggerManager: ILogServiceManager;
 
   private logger: ILogService;
+
+  private ignoreNextChangesEvent: Set<string> = new Set();
 
   constructor() {
     super();
@@ -232,10 +234,13 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     }
 
     try {
+      this.ignoreNextChangesEvent.add(_uri.toString());
       await writeFileAtomic(FileUri.fsPath(new URI(_uri)), buffer);
     } catch (e) {
-      this.logger.warn('writeFileAtomicSync 出错，使用 fs', e);
       await fse.writeFile(FileUri.fsPath(new URI(_uri)), buffer);
+      this.logger.warn('Error using writeFileAtomicSync, using fs instead.', e);
+    } finally {
+      this.ignoreNextChangesEvent.delete(_uri.toString());
     }
   }
 
@@ -356,11 +361,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         if (events.changes.length > 0) {
-          this.fileChangeEmitter.fire(events.changes);
+          const changes = events.changes.filter((c) => !this.ignoreNextChangesEvent.has(c.uri));
+          this.fileChangeEmitter.fire(changes);
           if (Array.isArray(this.rpcClient)) {
             this.rpcClient.forEach((client) => {
               client.onDidFilesChanged({
-                changes: events.changes,
+                changes,
               });
             });
           }

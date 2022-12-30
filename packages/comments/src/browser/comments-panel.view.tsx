@@ -1,127 +1,90 @@
 import clx from 'classnames';
-import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { FC, RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { useInjectable, isUndefined, ViewState, IEventBus, localize } from '@opensumi/ide-core-browser';
-import { DeprecatedRecycleTree } from '@opensumi/ide-core-browser/lib/components';
-import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components';
+import { useInjectable, ViewState, localize } from '@opensumi/ide-core-browser';
 
-import { ICommentsService, ICommentsTreeNode, CommentPanelCollapse, ICommentsFeatureRegistry } from '../common';
+import { ICommentsFeatureRegistry } from '../common';
 
 import styles from './comments.module.less';
+import { CommentNodeRendered, COMMENT_TREE_NODE_HEIGHT, ICommentNodeRenderedProps } from './tree/comment-node';
+import { CommentModelService, CommentTreeModel } from './tree/tree-model.service';
 
-export const CommentsPanel = observer<{ viewState: ViewState; className?: string }>((props) => {
-  const commentsService = useInjectable<ICommentsService>(ICommentsService);
-  const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
+export const CommentsPanel: FC<{ viewState: ViewState }> = ({ viewState }) => {
+  const commentModelService = useInjectable<CommentModelService>(CommentModelService);
+  const [model, setModel] = useState<CommentTreeModel | undefined>();
+  const wrapperRef: RefObject<HTMLDivElement> = useRef(null);
+
   const commentsFeatureRegistry = useInjectable<ICommentsFeatureRegistry>(ICommentsFeatureRegistry);
-  const [treeNodes, setTreeNodes] = React.useState<ICommentsTreeNode[]>([]);
-  const eventBus: IEventBus = useInjectable(IEventBus);
 
-  React.useEffect(() => {
-    eventBus.on(CommentPanelCollapse, () => {
-      setTreeNodes((nodes) =>
-        nodes.map((node) => {
-          if (!isUndefined(node.expanded)) {
-            node.expanded = false;
-          }
-          return node;
-        }),
-      );
+  const { handleTreeBlur } = commentModelService;
+
+  useEffect(() => {
+    setModel(commentModelService.treeModel);
+    const disposable = commentModelService.onDidUpdateTreeModel((model?: CommentTreeModel) => {
+      setModel(model);
     });
+    return () => {
+      disposable.dispose();
+    };
   }, []);
 
-  const getRenderTree = React.useCallback(
-    (nodes: ICommentsTreeNode[]) =>
-      nodes.filter((node) => {
-        if (node && node.parent) {
-          if (node.parent.expanded === false || node.parent.parent?.expanded === false) {
-            return false;
-          }
-        }
-        return true;
-      }),
-    [],
-  );
-
-  React.useEffect(() => {
-    setTreeNodes(commentsService.commentsTreeNodes);
-  }, [commentsService.commentsTreeNodes]);
-
-  const handleSelect = React.useCallback(
-    ([item]: [ICommentsTreeNode]) => {
-      // 可能点击到空白位置
-      if (!item) {
-        return;
-      }
-
-      if (!isUndefined(item.expanded)) {
-        const newNodes = treeNodes.map((node) => {
-          if (node.id === item.id) {
-            node.expanded = !node.expanded;
-          }
-          node.selected = node.id === item.id;
-          return node;
-        });
-        setTreeNodes(newNodes);
-      } else {
-        const newNodes = treeNodes.map((node) => {
-          node.selected = node.id === item.id;
-          return node;
-        });
-        setTreeNodes(newNodes);
-      }
-
-      if (item.onSelect) {
-        item.onSelect(item);
-      } else {
-        workbenchEditorService.open(item.uri!, {
-          range: item.thread.range,
-        });
-      }
+  const handleTreeReady = useCallback(
+    (handle: IRecycleTreeHandle) => {
+      commentModelService.handleTreeHandler(handle);
     },
-    [workbenchEditorService, treeNodes],
+    [commentModelService],
   );
 
-  const commentsPanelOptions = React.useMemo(() => commentsFeatureRegistry.getCommentsPanelOptions(), []);
-
-  const headerComponent = React.useMemo(() => commentsPanelOptions.header, [commentsPanelOptions]);
-
-  const treeHeight = React.useMemo(
-    () => props.viewState.height - (headerComponent?.height || 0),
-    [props.viewState.height],
+  const renderTreeNode = useCallback(
+    (props: ICommentNodeRenderedProps) => (
+      <CommentNodeRendered
+        item={props.item}
+        itemType={props.itemType}
+        decorations={commentModelService.decorations.getDecorations(props.item as any)}
+        defaultLeftPadding={8}
+        onClick={commentModelService.handleItemClick}
+        leftPadding={8}
+      />
+    ),
+    [model],
   );
 
-  const scrollContainerStyle = React.useMemo(
-    () => ({
-      width: '100%',
-      height: treeHeight,
-    }),
-    [treeHeight],
+  const commentsPanelOptions = useMemo(() => commentsFeatureRegistry.getCommentsPanelOptions(), []);
+
+  const headerComponent = useMemo(() => commentsPanelOptions.header, [commentsPanelOptions]);
+
+  const defaultPlaceholder = useMemo(
+    () => (
+      <div className={styles.panel_placeholder}>
+        {commentsPanelOptions.defaultPlaceholder || localize('comments.panel.placeholder')}
+      </div>
+    ),
+    [commentsPanelOptions],
   );
 
-  const defaultPlaceholder = React.useMemo(() => commentsPanelOptions.defaultPlaceholder, [commentsPanelOptions]);
-
-  const nodes = getRenderTree(treeNodes);
+  const renderSearchTree = useCallback(() => {
+    if (model) {
+      return (
+        <RecycleTree
+          height={viewState.height - (headerComponent?.height || 0)}
+          itemHeight={COMMENT_TREE_NODE_HEIGHT}
+          onReady={handleTreeReady}
+          model={model}
+          placeholder={() => defaultPlaceholder}
+        >
+          {renderTreeNode}
+        </RecycleTree>
+      );
+    } else {
+      return defaultPlaceholder;
+    }
+  }, [model, headerComponent, viewState.height]);
 
   return (
-    <div className={clx(props.className, styles.comment_panel)}>
+    <div className={styles.comment_panel} tabIndex={-1} onBlur={handleTreeBlur} ref={wrapperRef}>
       {headerComponent?.component}
-      {nodes.length ? (
-        <DeprecatedRecycleTree
-          containerHeight={treeHeight}
-          scrollContainerStyle={scrollContainerStyle}
-          nodes={nodes}
-          foldable={true}
-          outline={false}
-          onSelect={(item) => handleSelect(item)}
-          leftPadding={20}
-          {...commentsPanelOptions.recycleTreeProps}
-        />
-      ) : !defaultPlaceholder || typeof defaultPlaceholder === 'string' ? (
-        <div className={styles.panel_placeholder}>{defaultPlaceholder || localize('comments.panel.placeholder')}</div>
-      ) : (
-        defaultPlaceholder
-      )}
+      {renderSearchTree()}
     </div>
   );
-});
+};

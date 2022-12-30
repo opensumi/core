@@ -72,23 +72,35 @@ test.describe('OpenSumi Shortcuts', () => {
       "[class*='preferences___']",
     );
     expect(await editor.isVisible()).toBeTruthy();
-    // Settings => Feature => Search > Include
-    const tabs = (await (await editor.getContainer())?.$$('[class*="index_item_wrapper__"]')) || [];
-    let featrueTab;
+    const editorContainer = await editor.getContainer();
+    // Settings => View => Search => Search > Include
+    const tabs = (await editorContainer?.$$('[class*="group_item__"]')) || [];
+    let viewTab;
     for (const tab of tabs) {
       const title = await tab.textContent();
-      if (title === 'Feature') {
-        featrueTab = tab;
+      if (title === 'View') {
+        viewTab = tab;
         break;
       }
     }
-    await featrueTab.click();
+    await viewTab.click();
+    await app.page.waitForTimeout(50);
+    const subTabs = (await editorContainer?.$$('[class*="index_item__"]')) || [];
+    let searchSetting;
+    for (const tab of subTabs) {
+      const title = await tab.textContent();
+      if (title === 'Search') {
+        searchSetting = tab;
+        break;
+      }
+    }
+    await searchSetting.click();
     await app.page.waitForTimeout(1000);
-    const items = (await (await editor.getContainer())?.$$('[class*="preference_item___"]')) || [];
+    const items = (await editorContainer?.$$('[class*="preference_item___"]')) || [];
     let searchIncludeItem;
     for (const item of items) {
       const key = await (await item.$('[class*="key___"]'))?.textContent();
-      if (key === 'Search > Include ') {
+      if (key?.trim() === 'Search > Include') {
         searchIncludeItem = item;
         break;
       }

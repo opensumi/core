@@ -49,7 +49,7 @@ async function createUpdateShellPathPromise(): Promise<void> {
     shellPath = await new Promise((resolve, reject) => {
       const buf: Buffer[] = [];
       const proc = spawn(
-        process.env.SHELL || '/bin/bash',
+        '/bin/bash',
         ['-ilc', 'echo -n "_SHELL_ENV_DELIMITER_"; env; echo -n "_SHELL_ENV_DELIMITER_"; exit;'],
         {
           stdio: ['ignore', 'pipe', 'pipe'],

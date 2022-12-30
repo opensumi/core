@@ -1,6 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { IRange, MonacoService, IContextKeyService } from '@opensumi/ide-core-browser';
+import { IRange, IContextKeyService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey';
+import { MonacoService } from '@opensumi/ide-core-browser/lib/monaco';
 import {
   ILineChange,
   URI,
@@ -10,6 +11,7 @@ import {
   ISelection,
   Disposable,
   objects,
+  isEmptyObject,
 } from '@opensumi/ide-core-common';
 import { Emitter } from '@opensumi/ide-core-common';
 import type {
@@ -142,6 +144,13 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
+  public createMergeEditor(dom: HTMLElement, options?: any, overrides?: { [key: string]: any }) {
+    const preferenceOptions = getConvertedMonacoOptions(this.configurationService);
+    const mergedOptions = { ...preferenceOptions.editorOptions, ...preferenceOptions.diffOptions, ...options };
+    const editor = this.monacoService.createMergeEditor(dom, mergedOptions, overrides);
+    return editor;
+  }
+
   public listDiffEditors(): IDiffEditor[] {
     return Array.from(this._diffEditors.values());
   }
@@ -261,24 +270,7 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
   constructor(public readonly monacoEditor: IMonacoCodeEditor, private type: EditorType) {
     super();
     this.decorationApplier = this.injector.get(MonacoEditorDecorationApplier, [this.monacoEditor]);
-    this.addDispose(
-      this.monacoEditor.onDidChangeModel(() => {
-        this._editorOptionsFromContribution = {};
-        const uri = this.currentUri;
-        if (uri) {
-          Promise.resolve(this.editorFeatureRegistry.runProvideEditorOptionsForUri(uri)).then((option) => {
-            if (!this.currentUri || !uri.isEqual(this.currentUri)) {
-              return; // uri可能已经变了
-            }
-            if (option && Object.keys(option).length > 0) {
-              this._editorOptionsFromContribution = option;
-              this._doUpdateOptions();
-            }
-          });
-        }
-        this._doUpdateOptions();
-      }),
-    );
+    this.addDispose(this.monacoEditor.onDidChangeModel(this.onDidChangeModel.bind(this)));
     this.addDispose(
       this.monacoEditor.onDidChangeModelLanguage(() => {
         this._doUpdateOptions();
@@ -292,6 +284,25 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
         }
       }),
     );
+  }
+
+  private async onDidChangeModel() {
+    this._editorOptionsFromContribution = {};
+    const uri = this.currentUri;
+    if (uri) {
+      Promise.resolve(this.editorFeatureRegistry.runProvideEditorOptionsForUri(uri)).then((options) => {
+        if (!this.currentUri || !uri.isEqual(this.currentUri)) {
+          return; // uri可能已经变了
+        }
+
+        if (options && Object.keys(options).length > 0) {
+          this._editorOptionsFromContribution = options;
+          if (!isEmptyObject(this._editorOptionsFromContribution)) {
+            this._doUpdateOptions();
+          }
+        }
+      });
+    }
   }
 
   public getType() {
@@ -490,7 +501,7 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
     }
   }
 
-  async open(documentModelRef: IEditorDocumentModelRef): Promise<void> {
+  open(documentModelRef: IEditorDocumentModelRef): void {
     this.saveCurrentState();
     this._currentDocumentModelRef = documentModelRef;
     const model = this.currentDocumentModel!.getMonacoModel();
@@ -684,7 +695,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       change.originalEndLineNumber,
       change.modifiedStartLineNumber,
       change.modifiedEndLineNumber,
-      change.charChanges?.map((charChange) => ([
+      change.charChanges?.map((charChange) => [
         charChange.originalStartLineNumber,
         charChange.originalStartColumn,
         charChange.originalEndLineNumber,
@@ -693,7 +704,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
         charChange.modifiedStartColumn,
         charChange.modifiedEndLineNumber,
         charChange.modifiedEndColumn,
-      ])),
+      ]),
     ]);
   }
 

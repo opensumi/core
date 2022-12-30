@@ -12,9 +12,9 @@ export * from './keyboard';
 export * from './application';
 export * from './layout';
 export * from './fs';
-export * from './tree';
 export * from './toolbar';
 export * from './terminal';
+export * from './file-decoration';
 
 // 前端工具方法
 export * from './logger';

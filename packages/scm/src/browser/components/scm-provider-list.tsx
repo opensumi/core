@@ -86,7 +86,6 @@ export const SCMProviderList: React.FC<{
     },
     [],
   );
-
   return (
     <div className={styles.scmSelect}>
       {repositoryList.map((currentRepo) => (

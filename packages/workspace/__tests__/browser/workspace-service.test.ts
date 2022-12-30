@@ -259,9 +259,9 @@ describe('WorkspaceService should be work while workspace was a single directory
       },
     ]);
     const result = await workspaceService.asRelativePath(newWorkspaceUri);
-    expect(result).toBe('new_folder');
-    expect(await workspaceService.asRelativePath(newWorkspaceUri.codeUri.fsPath)).toBe('new_folder');
+    expect(result?.path).toBe('new_folder');
+    expect(await (await workspaceService.asRelativePath(newWorkspaceUri.codeUri.fsPath)).path).toBe('new_folder');
     const outWorkspacePath = '/other/test.js';
-    expect(await workspaceService.asRelativePath(outWorkspacePath)).toBe(outWorkspacePath);
+    expect(await (await workspaceService.asRelativePath(outWorkspacePath)).path).toBe(outWorkspacePath);
   });
 });

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-terminal-next",
-  "version": "2.21.5",
+  "version": "2.21.11",
   "files": [
     "lib",
     "src"
@@ -43,8 +43,6 @@
     "@opensumi/ide-workspace": "workspace:*",
     "@types/event-kit": "^2.4.0",
     "@types/http-proxy": "^1.17.2",
-    "@types/puppeteer": "^2.0.0",
-    "http-proxy": "^1.18.0",
-    "puppeteer": "^2.0.0"
+    "http-proxy": "^1.18.0"
   }
 }

@@ -43,6 +43,11 @@
         top: 4px;
         background-color: var(--kt-primaryButton-foreground);
       }
+      &:disabled {
+        &::before {
+          background-color: var(--kt-primaryButton-disableForeground);
+        }
+      }
     }
   }
 }

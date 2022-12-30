@@ -1,6 +1,6 @@
 import { Injector } from '@opensumi/di';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
-import { URI, positionToRange } from '@opensumi/ide-core-common';
+import { CommentContentNode, CommentRoot } from '@opensumi/ide-comments/lib/browser/tree/tree-node.defined';
+import { IContextKeyService, positionToRange, URI } from '@opensumi/ide-core-browser';
 import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser';
 
@@ -9,12 +9,12 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import { MockContextKeyService } from '../../../monaco/__mocks__/monaco.context-key.service';
 import { CommentsModule } from '../../src/browser';
-import { ICommentsService, CommentMode, ICommentsFeatureRegistry } from '../../src/common';
+import { ICommentsService, ICommentsFeatureRegistry, CommentMode } from '../../src/common';
 
 describe('comment service test', () => {
   let injector: MockInjector;
-  let commentsService: ICommentsService;
   let commentsFeatureRegistry: ICommentsFeatureRegistry;
+  let commentsService: ICommentsService;
   beforeAll(() => {
     (global as any).monaco = createMockedMonaco() as any;
     injector = createBrowserInjector(
@@ -68,29 +68,45 @@ describe('comment service test', () => {
     expect(registryOptions).toEqual(options);
   });
 
-  it('registerPanelTreeNodeHandler', () => {
+  it('registerPanelTreeNodeHandler', async () => {
+    const override = {
+      label: 'test',
+      description: 'This is a description',
+    };
     // 先绑定 node 节点处理函数
     commentsFeatureRegistry.registerPanelTreeNodeHandler((nodes) =>
       nodes.map((node) => {
-        node.name = '111';
+        node.label = override.label;
+        node.description = override.description;
+        node.onSelect = () => {};
         return node;
       }),
     );
-    const uri = URI.file('/test');
+    const uri = new URI('/root/test.js');
     commentsService.createThread(uri, positionToRange(1), {
       comments: [
         {
           mode: CommentMode.Editor,
           author: {
-            name: '蛋总',
+            name: 'OpenSumi',
           },
-          body: '评论内容1',
+          body: 'This is a comment',
         },
       ],
     });
-    const nodes = commentsService.commentsTreeNodes;
-    // name 不会是 test，而是被 handler 处理过的 111
-    expect(nodes[0].name).toBe('111');
-    expect(nodes[1].name).toBe('111');
+    const roots = await commentsService.resolveChildren();
+    const root = roots?.[0];
+    // The root should not be effected.
+    if (!root) {
+      return;
+    }
+    const nodes = await commentsService.resolveChildren(root as CommentRoot);
+    const node = nodes?.[0];
+    if (!node) {
+      return;
+    }
+    expect((node as CommentContentNode).renderedLabel).toBe(override.label);
+    expect((node as CommentContentNode).renderedDescription).toBe(override.description);
+    expect(typeof (node as CommentContentNode).onSelect === 'function').toBeTruthy();
   });
 });

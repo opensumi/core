@@ -1,28 +1,25 @@
-import path from 'path';
-
 import { Injector, Injectable } from '@opensumi/di';
 import { CorePreferences } from '@opensumi/ide-core-browser';
-import { Uri } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
-import { IEditorDocumentModelService, ResourceService } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { EditorDocumentModelServiceImpl } from '@opensumi/ide-editor/lib/browser/doc-model/main';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
+import { MockContentSearchServer } from '../../__mocks__/content-search.service';
 import { SearchModule } from '../../src/browser/';
 import { SearchPreferences } from '../../src/browser/search-preferences';
-import { ContentSearchClientService } from '../../src/browser/search.service';
 import {
   IContentSearchClientService,
   ContentSearchServerPath,
-  ContentSearchOptions,
   SendClientResult,
   SEARCH_STATE,
   ContentSearchResult,
   IUIState,
 } from '../../src/common';
 
-const rootUri = Uri.file(path.resolve(__dirname, '../test-resources/')).toString();
+const rootUri = new URI('root');
 
 @Injectable()
 class MockWorkspaceService {
@@ -43,41 +40,30 @@ class MockMainLayoutService {
 }
 
 @Injectable()
-class MockSearchContentService {
-  catchSearchValue: string;
-  catchSearchRootDirs: string[];
-  catchSearchOptions: ContentSearchOptions;
-
-  async search(value: string, rootDirs: string[], searchOptions: ContentSearchOptions) {
-    this.catchSearchValue = value;
-    this.catchSearchRootDirs = rootDirs;
-    this.catchSearchOptions = searchOptions;
-
-    return 1;
+class MockWorkbenchEditorService {
+  open() {}
+  apply() {}
+  get editorGroups() {
+    return [];
   }
-
-  cancel() {}
 }
 
 describe('search.service.ts', () => {
   let injector: Injector;
   let searchService: IContentSearchClientService;
+  let contentSearchServer: MockContentSearchServer;
 
   beforeAll(() => {
     injector = createBrowserInjector([SearchModule]);
 
     injector.addProviders(
       {
-        token: ContentSearchClientService,
-        useClass: ContentSearchClientService,
-      },
-      {
         token: IWorkspaceService,
         useClass: MockWorkspaceService,
       },
       {
         token: ContentSearchServerPath,
-        useClass: MockSearchContentService,
+        useClass: MockContentSearchServer,
       },
       {
         token: IEditorDocumentModelService,
@@ -86,6 +72,10 @@ describe('search.service.ts', () => {
       {
         token: IMainLayoutService,
         useClass: MockMainLayoutService,
+      },
+      {
+        token: WorkbenchEditorService,
+        useClass: MockWorkbenchEditorService,
       },
     );
 
@@ -112,40 +102,44 @@ describe('search.service.ts', () => {
       },
     );
 
-    searchService = injector.get(ContentSearchClientService);
+    searchService = injector.get(IContentSearchClientService);
+    contentSearchServer = injector.get(ContentSearchServerPath);
     (searchService as any).searchAllFromDocModel = () => ({
       result: null,
     });
   });
 
-  test('可以加载正常service', () => {
+  afterAll(() => {
+    injector.disposeAll();
+  });
+
+  test('initialize', () => {
     expect(searchService.UIState).toBeDefined();
     expect((searchService as any).includeValue).toBe('*.java,*.ts');
   });
 
-  test('method:updateUIState', () => {
+  test('method: updateUIState', () => {
     searchService.updateUIState({ isMatchCase: true, isOnlyOpenEditors: true });
     expect(searchService.UIState.isMatchCase).toBe(true);
     expect(searchService.UIState.isOnlyOpenEditors).toBe(true);
     expect(searchService.UIState.isUseRegexp).toBe(false);
   });
 
-  test('method:search without docModel', () => {
-    const service: any = searchService;
+  test('method: search without docModel', async () => {
+    searchService.updateUIState({ isMatchCase: true, isOnlyOpenEditors: false });
     searchService.searchValue = 'value';
-    service.search();
-    expect(service.contentSearchServer.catchSearchValue).toBe('value');
-    expect(service.contentSearchServer.catchSearchRootDirs).toEqual([rootUri]);
-
-    expect(service.contentSearchServer.catchSearchOptions.maxResults).toBe(2000);
-    expect(service.contentSearchServer.catchSearchOptions.matchWholeWord).toBe(false);
-    expect(service.contentSearchServer.catchSearchOptions.useRegExp).toBe(false);
-    expect(service.contentSearchServer.catchSearchOptions.includeIgnored).toBe(false);
-    expect(service.contentSearchServer.catchSearchOptions.include).toEqual([]);
-    expect(service.contentSearchServer.catchSearchOptions.exclude).toEqual(['**/node_modules', '**/bower_components']);
+    await searchService.search();
+    expect(contentSearchServer.catchSearchValue).toBe('value');
+    expect(contentSearchServer.catchSearchRootDirs).toEqual([rootUri.toString()]);
+    expect(contentSearchServer.catchSearchOptions.maxResults).toBe(2000);
+    expect(contentSearchServer.catchSearchOptions.matchWholeWord).toBe(false);
+    expect(contentSearchServer.catchSearchOptions.useRegExp).toBe(false);
+    expect(contentSearchServer.catchSearchOptions.includeIgnored).toBe(false);
+    expect(contentSearchServer.catchSearchOptions.include).toEqual(['*.java', '*.ts']);
+    expect(contentSearchServer.catchSearchOptions.exclude).toEqual(['**/node_modules', '**/bower_components']);
   });
 
-  test.only('method:search options', async () => {
+  test('method: search options', async () => {
     const service: any = searchService;
     searchService.searchValue = 'value';
     (service.UIState as IUIState) = {
@@ -165,7 +159,7 @@ describe('search.service.ts', () => {
 
     await service.search();
     expect(service.contentSearchServer.catchSearchValue).toBe('value');
-    expect(service.contentSearchServer.catchSearchRootDirs).toEqual([rootUri]);
+    expect(service.contentSearchServer.catchSearchRootDirs).toEqual([rootUri.toString()]);
 
     expect(service.contentSearchServer.catchSearchOptions.maxResults).toBe(2000);
     expect(service.contentSearchServer.catchSearchOptions.matchCase).toBe(false);
@@ -180,11 +174,11 @@ describe('search.service.ts', () => {
     ]);
   });
 
-  test('method:onSearchResult', () => {
+  test('method: onSearchResult', () => {
     const service: any = searchService;
 
     const sendResult: ContentSearchResult = {
-      fileUri: 'file://user.txt',
+      fileUri: rootUri.resolve('test.js').toString(),
       line: 1,
       matchStart: 2,
       matchLength: 2,
@@ -194,17 +188,17 @@ describe('search.service.ts', () => {
     const sendResults: SendClientResult[] = [
       {
         data: [],
-        id: 2,
+        id: service._currentSearchId,
         searchState: SEARCH_STATE.doing,
       },
       {
         data: [sendResult],
-        id: 2,
+        id: service._currentSearchId,
         searchState: SEARCH_STATE.doing,
       },
       {
         data: [],
-        id: 2,
+        id: service._currentSearchId,
         searchState: SEARCH_STATE.done,
       },
     ];

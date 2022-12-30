@@ -1,5 +1,10 @@
 {
-  "version": "2.21.5",
-  "npmClient": "yarn",
-  "useWorkspaces": true
+  "version": "2.21.11",
+  "npmClient": "npm",
+  "packages": ["packages/*", "tools/dev-tool", "tools/playwright"],
+  "command": {
+    "bootstrap": {
+      "npmClientArgs": ["--no-package-lock"]
+    }
+  }
 }

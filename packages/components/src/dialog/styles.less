@@ -47,7 +47,7 @@
 }
 
 .@{prefix}-dialog-icon {
-  margin-right: 10px;
+  margin-right: 6px;
   border: none;
   outline: none;
   display: flex;
@@ -68,10 +68,11 @@
   padding: 0px;
   cursor: pointer;
   margin-left: 6px;
-  height: 20px;
+  height: 30px;
+  line-height: 30px;
   width: 20px;
   align-items: center;
-  line-height: 20px;
+  justify-content: center;
   &:hover {
     transform: scale(1.1);
   }
@@ -90,7 +91,7 @@
 
 .@{prefix}-dialog-message {
   color: var(--kt-modal-foreground);
-  line-height: 22px;
+  line-height: 30px;
   font-size: 14px;
   word-break: break-all;
   overflow: hidden;
@@ -98,4 +99,5 @@
   align-items: center;
   display: inline-flex;
   user-select: text;
+  flex-direction: column;
 }

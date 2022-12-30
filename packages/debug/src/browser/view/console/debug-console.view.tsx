@@ -18,7 +18,9 @@ import { Loading } from '@opensumi/ide-components';
 import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
 import { PreferenceService, PreferenceChange, CoreConfiguration } from '@opensumi/ide-core-browser';
 import { Disposable } from '@opensumi/ide-core-common';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
+import { DEBUG_CONSOLE_CONTAINER_ID } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
 import { CharWidthReader } from '../../debugUtils';
 import { DebugConsoleNode, AnsiConsoleNode, DebugVariableContainer, TreeWithLinkWrapper } from '../../tree';
@@ -43,9 +45,18 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
   const [isWordWrap, setIsWordWrap] = React.useState<boolean>(true);
   const disposer = new Disposable();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
   React.useEffect(() => {
-    debugConsoleService.init(debugInputRef.current);
+    const handler = layoutService.getTabbarHandler(DEBUG_CONSOLE_CONTAINER_ID);
+    if (handler?.isActivated()) {
+      debugConsoleService.init(debugInputRef.current);
+    } else {
+      const dispose = handler?.onActivate(() => {
+        debugConsoleService.init(debugInputRef.current);
+        dispose?.dispose();
+      });
+    }
   }, [debugInputRef.current]);
 
   React.useEffect(() => {

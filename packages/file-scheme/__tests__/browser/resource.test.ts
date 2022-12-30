@@ -33,11 +33,11 @@ describe('file scheme tests', () => {
       useClass: HashCalculateServiceImpl,
     },
     {
-      token: IDialogService,
+      token: IEditorDocumentModelService,
       useValue: {},
     },
     {
-      token: IEditorDocumentModelService,
+      token: IDialogService,
       useValue: {},
     },
     {

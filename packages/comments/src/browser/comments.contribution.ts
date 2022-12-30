@@ -33,6 +33,8 @@ import {
   CommentReactionClick,
 } from '../common';
 
+import { CommentModelService } from './tree/tree-model.service';
+
 @Domain(
   ClientAppContribution,
   BrowserEditorContribution,
@@ -64,6 +66,9 @@ export class CommentsBrowserContribution
   @Autowired(IEventBus)
   private readonly eventBus: IEventBus;
 
+  @Autowired(CommentModelService)
+  private commentModelService: CommentModelService;
+
   onStart() {
     this.registerCommentsFeature();
     this.listenToCreateCommentsPanel();
@@ -84,7 +89,7 @@ export class CommentsBrowserContribution
       },
       {
         execute: () => {
-          this.eventBus.fire(new CommentPanelCollapse());
+          this.commentModelService.collapsedAll();
         },
       },
     );

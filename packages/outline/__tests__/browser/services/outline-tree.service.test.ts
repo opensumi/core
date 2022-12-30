@@ -4,13 +4,10 @@ import { StorageProvider } from '@opensumi/ide-core-common';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
 import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { DocumentSymbolStore } from '@opensumi/ide-editor/lib/browser/breadcrumb/document-symbol';
-import { OutlineSortOrder } from '@opensumi/ide-outline';
-import {
-  OutlineRoot,
-  OutlineCompositeTreeNode,
-  OutlineTreeNode,
-} from '@opensumi/ide-outline/lib/browser/outline-node.define';
-import { OutlineTreeService } from '@opensumi/ide-outline/lib/browser/services/outline-tree.service';
+
+import { OutlineRoot, OutlineCompositeTreeNode, OutlineTreeNode } from '../../../src/browser/outline-node.define';
+import { OutlineTreeService } from '../../../src/browser/services/outline-tree.service';
+import { OutlineSortOrder } from '../../../src/common';
 
 describe('OutlineTreeService', () => {
   let outlineTreeService: OutlineTreeService;

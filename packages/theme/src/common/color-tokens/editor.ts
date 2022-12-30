@@ -5,8 +5,8 @@ import { registerColor, transparent, lighten, darken, lessProminent } from '../u
 
 import { badgeBackground, badgeForeground } from './badge';
 import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
-import { backgroundColor, foregroundColor } from './basic-color';
 import { listInactiveSelectionBackground } from './list-tree';
+
 // TODO COLOR 此处vscode内的editor error warning info颜色都有做修改
 export const editorErrorBackground = registerColor(
   'editorError.background',
@@ -410,6 +410,64 @@ export const diffDiagonalFill = registerColor(
     'diffDiagonalFill',
     "Color of the diff editor's diagonal fill. The diagonal fill is used in side-by-side diff views.",
   ),
+);
+
+/**
+ * Merge Editor Colors
+ */
+export const defaultMergeEditorInsertColor = new Color(new RGBA(122, 255, 31, 0.12));
+export const defaultMergeEditorRemoveColor = new Color(new RGBA(255, 21, 33, 0.12));
+export const defaultMergeEditorModifyColor = new Color(new RGBA(255, 186, 29, 0.12));
+export const mergeEditorInserted = registerColor(
+  'mergeEditor.insertedBackground',
+  { dark: defaultMergeEditorInsertColor, light: defaultMergeEditorInsertColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+export const mergeEditorRemoved = registerColor(
+  'mergeEditor.removedBackground',
+  { dark: defaultMergeEditorRemoveColor, light: defaultMergeEditorRemoveColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+export const mergeEditorModify = registerColor(
+  'mergeEditor.modifyBackground',
+  { dark: defaultMergeEditorModifyColor, light: defaultMergeEditorModifyColor, hcDark: null, hcLight: null },
+  '',
+  true,
+);
+export const mergeEditorInnerCharInserted = registerColor(
+  'mergeEditor.insertedInnerCharColor',
+  {
+    dark: transparent(defaultMergeEditorInsertColor, 1),
+    light: transparent(defaultMergeEditorInsertColor, 1),
+    hcDark: null,
+    hcLight: null,
+  },
+  '',
+  true,
+);
+export const mergeEditorInnerCharRemoved = registerColor(
+  'mergeEditor.removedInnerCharColor',
+  {
+    dark: transparent(defaultMergeEditorRemoveColor, 1),
+    light: transparent(defaultMergeEditorRemoveColor, 1),
+    hcDark: null,
+    hcLight: null,
+  },
+  '',
+  true,
+);
+export const mergeEditorInnerCharModify = registerColor(
+  'mergeEditor.modifyInnerCharColor',
+  {
+    dark: transparent(defaultMergeEditorModifyColor, 1),
+    light: transparent(defaultMergeEditorModifyColor, 1),
+    hcDark: null,
+    hcLight: null,
+  },
+  '',
+  true,
 );
 
 /**
@@ -873,4 +931,15 @@ export const editorInlayHintParameterBackground = registerColor(
     hcLight: editorInlayHintBackground,
   },
   localize('editorInlayHintBackgroundParameter', 'Background color of inline hints for parameters'),
+);
+
+export const editorImagePreviewBackground = registerColor(
+  'editorImagePreview.background',
+  {
+    dark: new Color(new RGBA(20, 20, 20)),
+    light: new Color(new RGBA(230, 230, 230)),
+    hcLight: new Color(new RGBA(230, 230, 230)),
+    hcDark: new Color(new RGBA(20, 20, 20)),
+  },
+  localize('editorImagePreviewBackground', 'Background color of image preview editor.'),
 );

@@ -123,6 +123,10 @@ export class OutputService extends WithEventBus {
       },
     });
 
+    if (this.selectedChannel) {
+      this.updateSelectedChannel(this.selectedChannel);
+    }
+
     this.addDispose(
       this.outputEditor.monacoEditor.onMouseUp((e) => {
         /**

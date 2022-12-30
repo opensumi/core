@@ -1,4 +1,4 @@
-import btoa = require('btoa');
+import btoa from 'btoa';
 
 import { URI } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';

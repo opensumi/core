@@ -31,9 +31,11 @@ describe('clipboard service test', () => {
     expect(await clipboardService.readResources()).toEqual([]);
 
     await clipboardService.writeResources([new URI('test')]);
-    await clipboardService.writeResources([undefined] as any);
-    const resources = await clipboardService.readResources();
-
+    let resources = await clipboardService.readResources();
     expect(resources?.[0].codeUri.path).toEqual('/test');
+
+    await clipboardService.writeResources([undefined] as any);
+    resources = await clipboardService.readResources();
+    expect(resources.length).toBe(0);
   });
 });

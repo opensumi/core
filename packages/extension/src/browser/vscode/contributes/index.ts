@@ -30,6 +30,7 @@ import { ThemesSchema, ThemesContributionPoint } from './theme';
 import { ViewContainersSchema, ViewContainersContributionPoint } from './view-containers';
 import { ViewsSchema, ViewsContributionPoint } from './views';
 import { ViewsWelcomeContributionPoint } from './views-welcome';
+import { WalkthroughsContributionPoint } from './walkthroughs';
 
 export interface ContributesSchema {
   commands?: CommandsSchema;
@@ -82,6 +83,7 @@ export class VSCodeContributesService extends ExtensionContributesService {
     ProblemPatternsContributionPoint,
     ProblemMatchersContributionPoint,
     CustomEditorContributionPoint,
+    WalkthroughsContributionPoint,
     SemanticTokenTypesContributionPoint,
     SemanticTokenModifiersContributionPoint,
     SemanticTokenScopesContributionPoint,

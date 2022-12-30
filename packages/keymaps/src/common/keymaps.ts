@@ -110,4 +110,9 @@ export interface IKeymapService {
    * @memberof IKeymapService
    */
   onDidKeymapChanges(listener: () => any): IDisposable;
+
+  /**
+   * 更新快捷键列表
+   */
+  updateKeybindings(): void;
 }

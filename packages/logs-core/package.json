@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-logs",
-  "version": "2.21.5",
+  "version": "2.21.11",
   "files": [
     "lib",
     "src"
@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
-    "@opensumi/ide-dev-tool": "workspace:*"
+    "@opensumi/ide-dev-tool": "workspace:*",
+    "@types/debug": "^4.1.5"
   }
 }

@@ -4,6 +4,8 @@ import {
   PreferenceService,
   PreferenceSchemaProvider,
   URI,
+  IPreferenceSettingsService,
+  Disposable,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { PreferenceSettingId } from '@opensumi/ide-preferences';
@@ -30,10 +32,20 @@ describe('PreferenceSettingService should be work', () => {
   beforeAll(async () => {
     injector = createBrowserInjector([]);
 
-    mockPreferenceSchemaProvider = {};
+    mockPreferenceSchemaProvider = {
+      getPreferenceProperty() {
+        return {};
+      },
+    };
 
     mockPreferenceService = {
       set: jest.fn(),
+      get: (key) => {
+        if (key === 'settings.userBeforeWorkspace') {
+          return true;
+        }
+      },
+      onSpecificPreferenceChange: () => Disposable.NULL,
       resolve: jest.fn(() => ({
         value: '',
         effectingScope: PreferenceScope.Default,
@@ -78,12 +90,12 @@ describe('PreferenceSettingService should be work', () => {
         useValue: mockFileServiceClient,
       },
       {
-        token: PreferenceSettingsService,
+        token: IPreferenceSettingsService,
         useClass: PreferenceSettingsService,
       },
     );
 
-    preferenceSettingsService = injector.get(PreferenceSettingsService);
+    preferenceSettingsService = injector.get(IPreferenceSettingsService);
   });
 
   afterAll(async () => {
@@ -92,17 +104,15 @@ describe('PreferenceSettingService should be work', () => {
 
   describe('01 #Init', () => {
     it('should have enough API', async () => {
-      expect(typeof preferenceSettingsService.currentGroup).toBe('string');
       expect(typeof preferenceSettingsService.currentSearch).toBe('string');
-      expect(typeof preferenceSettingsService.setCurrentGroup).toBe('function');
       expect(typeof preferenceSettingsService.openJSON).toBe('function');
       expect(typeof preferenceSettingsService.setPreference).toBe('function');
       expect(typeof preferenceSettingsService.handleListHandler).toBe('function');
       expect(typeof preferenceSettingsService.getSettingGroups).toBe('function');
       expect(typeof preferenceSettingsService.registerSettingGroup).toBe('function');
       expect(typeof preferenceSettingsService.registerSettingSection).toBe('function');
-      expect(typeof preferenceSettingsService.getSectionByPreferenceId).toBe('function');
-      expect(typeof preferenceSettingsService.getSections).toBe('function');
+      expect(typeof preferenceSettingsService.getPreferenceViewDesc).toBe('function');
+      expect(typeof preferenceSettingsService.getResolvedSections).toBe('function');
       expect(typeof preferenceSettingsService.getPreference).toBe('function');
       expect(typeof preferenceSettingsService.getEnumLabels).toBe('function');
       expect(typeof preferenceSettingsService.setEnumLabels).toBe('function');
@@ -143,8 +153,8 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('handleListHandler', () => {
-      const handler = { open: () => {} };
-      preferenceSettingsService.handleListHandler(handler);
+      const handler = { scrollToIndex: () => {}, autoscrollToBottom: () => {} };
+      preferenceSettingsService.handleListHandler(handler as any);
       expect(preferenceSettingsService.listHandler).toEqual(handler);
     });
 
@@ -153,13 +163,13 @@ describe('PreferenceSettingService should be work', () => {
       expect(sectionGroup.length).toBe(5);
     });
 
-    it('getSectionByPreferenceId', () => {
-      const section = preferenceSettingsService.getSectionByPreferenceId('general.theme');
+    it('getPreferenceViewDesc', () => {
+      const section = preferenceSettingsService.getPreferenceViewDesc('general.theme');
       expect(section?.id).toBe('general.theme');
     });
 
     it('getSections', () => {
-      const sections = preferenceSettingsService.getSections(PreferenceSettingId.General, PreferenceScope.User);
+      const sections = preferenceSettingsService.getResolvedSections(PreferenceSettingId.General, PreferenceScope.User);
       expect(sections.length).toBe(1);
     });
 
@@ -185,7 +195,7 @@ describe('PreferenceSettingService should be work', () => {
     });
 
     it('getCurrentPreferenceUrl', async () => {
-      const uri = await preferenceSettingsService.getCurrentPreferenceUrl();
+      const uri = await preferenceSettingsService.getCurrentPreferenceUrl(PreferenceScope.User);
       expect(uri).toBe(mockResource.uri);
       expect(mockFileServiceClient.access).toBeCalledTimes(1);
       expect(mockFileServiceClient.createFile).toBeCalledTimes(1);

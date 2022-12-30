@@ -4,7 +4,9 @@ import { useEffect, createRef } from 'react';
 
 import { Select, Option } from '@opensumi/ide-components';
 import { useInjectable, isElectronRenderer, ViewState } from '@opensumi/ide-core-browser';
+import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
 import styles from './output.module.less';
 import { OutputService } from './output.service';
@@ -12,6 +14,7 @@ import { OutputService } from './output.service';
 export const Output = observer(({ viewState }: { viewState: ViewState }) => {
   const outputService = useInjectable<OutputService>(OutputService);
   const outputRef = createRef<HTMLDivElement>();
+  const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
 
   useEffect(() => {
     outputService.viewHeight = String(viewState.height);
@@ -19,9 +22,17 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
 
   useEffect(() => {
     if (outputRef.current) {
-      outputService.initOutputMonacoInstance(outputRef.current);
+      const handler = layoutService.getTabbarHandler(OUTPUT_CONTAINER_ID);
+      if (handler?.isActivated()) {
+        outputService.initOutputMonacoInstance(outputRef.current);
+      } else {
+        const dispose = handler?.onActivate(() => {
+          outputService.initOutputMonacoInstance(outputRef.current!);
+          dispose?.dispose();
+        });
+      }
     }
-  }, []);
+  }, [outputRef.current]);
 
   return (
     <React.Fragment>

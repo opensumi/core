@@ -1,15 +1,14 @@
 {
   "name": "@opensumi/ide-userstorage",
-  "version": "2.21.5",
+  "version": "2.21.11",
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "prepublishOnly": "yarn run build",
+    "prepublishOnly": "npm run build",
     "build": "tsc --build ../../configs/ts/references/tsconfig.userstorage.json"
   },
   "repository": {

@@ -147,6 +147,9 @@ describe('editor collection service test', () => {
 
     open(new URI('file:///test/test.js'));
 
+    setPref('editor.fontSize', 20);
+    setPref('editor.readOnly', false);
+
     expect(options['fontSize']).toBe(20);
 
     testEditor.updateOptions({ fontSize: 40 });
@@ -158,7 +161,7 @@ describe('editor collection service test', () => {
 
     // 切换后仍然有这个option
     expect(options['fontSize']).toBe(40);
-
+    setPref('editor.readOnly', true);
     expect(options['readOnly']).toBeTruthy();
 
     testEditor.updateOptions({ fontSize: undefined });
@@ -170,6 +173,7 @@ describe('editor collection service test', () => {
     expect(options['fontSize']).toBe(35);
 
     open(new URI('file:///test/test3.js'));
+    setPref('editor.readOnly', false);
     expect(options['readOnly']).toBeFalsy();
 
     setPref('editor.forceReadOnly', true);

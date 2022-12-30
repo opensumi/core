@@ -8,6 +8,7 @@ import { OpenSumiApp } from '../app';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiFileTreeView } from '../filetree-view';
 import { OpenSumiOpenedEditorView } from '../opened-editor-view';
+import { OpenSumiOutlineView } from '../outline-view';
 import { OpenSumiTerminal } from '../terminal';
 import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
@@ -18,6 +19,7 @@ let app: OpenSumiApp;
 let explorer: OpenSumiExplorerView;
 let fileTreeView: OpenSumiFileTreeView;
 let openedEditorView: OpenSumiOpenedEditorView;
+let outlineView: OpenSumiOutlineView;
 let workspace: OpenSumiWorkspace;
 
 test.describe('OpenSumi Explorer Panel', () => {
@@ -27,6 +29,7 @@ test.describe('OpenSumi Explorer Panel', () => {
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
     fileTreeView = explorer.fileTreeView;
+    outlineView = explorer.outlineView;
     openedEditorView = explorer.openedEditorView;
   });
 
@@ -187,6 +190,38 @@ console.log(a);`,
     expect(await node?.isDirty()).toBeFalsy();
   });
 
+  test('the open state of the editor should be restored after refreshing', async () => {
+    await openedEditorView.open();
+    const testFilePath_1 = 'editor2.js';
+    const testFilePath_2 = 'editor3.js';
+    // Close All Edtior Tabs
+    const editor = await app.openEditor(OpenSumiTextEditor, explorer, testFilePath_1);
+    await app.page.waitForTimeout(1000);
+    let node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeDefined();
+    const contextMenu = await editor.openTabContextMenu();
+    expect(await contextMenu?.isOpen()).toBeTruthy();
+    const closeAll = await contextMenu?.menuItemByName('Close All');
+    await closeAll?.click();
+    await app.page.waitForTimeout(1000);
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeUndefined();
+    // Open File
+    await app.openEditor(OpenSumiTextEditor, explorer, testFilePath_1, false);
+    await app.openEditor(OpenSumiTextEditor, explorer, testFilePath_2, false);
+    await app.page.waitForTimeout(1000);
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeDefined();
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_2);
+    expect(node).toBeDefined();
+    await app.page.reload();
+    await app.page.waitForTimeout(2000);
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_1);
+    expect(node).toBeDefined();
+    node = await explorer.getOpenedEditorTreeNodeByPath(testFilePath_2);
+    expect(node).toBeDefined();
+  });
+
   test('split file on the editor should showing on two group', async () => {
     await openedEditorView.open();
     expect(await openedEditorView.isVisible()).toBeTruthy();
@@ -194,9 +229,101 @@ console.log(a);`,
     const editor = await app.openEditor(OpenSumiTextEditor, explorer, testFilePath);
     await editor.triggerTitleMenuById('editor.splitToRight');
     await app.page.waitForTimeout(2000);
-    const group1 = await explorer.getOpenedEditorTreeNodeByPath('Group 1');
-    const group2 = await explorer.getOpenedEditorTreeNodeByPath('Group 2');
+    const group1 = await explorer.getOpenedEditorTreeNodeByPath('GROUP 1');
+    const group2 = await explorer.getOpenedEditorTreeNodeByPath('GROUP 2');
     expect(group1).toBeDefined();
     expect(group2).toBeDefined();
+  });
+
+  test('create file with path', async () => {
+    await fileTreeView.open();
+    const node = await explorer.getFileStatTreeNodeByPath('test');
+    await node?.expand();
+    expect(await node?.isCollapsed()).toBeFalsy();
+    let menu = await node?.openContextMenu();
+    expect(await menu?.isOpen()).toBeTruthy();
+    let newFileMenu = await menu?.menuItemByName('New File');
+    await newFileMenu?.click();
+    // type `index.ts` as the file name
+    let newFileName = 'index.ts';
+    let input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(200);
+    const newFile = await explorer.getFileStatTreeNodeByPath(`test/${newFileName}`);
+    expect(newFile).toBeDefined();
+    expect(await newFile?.isFolder()).toBeFalsy();
+    // new compress node by path
+    menu = await node?.openContextMenu();
+    newFileMenu = await menu?.menuItemByName('New File');
+    await newFileMenu?.click();
+    // type `a/b/c.js` as the file name
+    newFileName = 'a/b/c.js';
+    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(1000);
+    // |- test
+    // |----a/b
+    const nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
+    await nodeA?.expand();
+    await app.page.waitForTimeout(2000);
+    expect(await nodeA?.isCollapsed()).toBeFalsy();
+    const compressNode = await explorer.getFileStatTreeNodeByPath('test/a/b');
+    expect(compressNode).toBeDefined();
+    expect(await compressNode?.label()).toBe('a/b');
+    menu = await node?.openContextMenu();
+    newFileMenu = await menu?.menuItemByName('New File');
+    await newFileMenu?.click();
+    // type `a/d/c.js` as the file name
+    newFileName = 'a/d/c.js';
+    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(2000);
+    // |- test
+    // |----a
+    // |------b
+    // |------d
+    const uncompressNode = await explorer.getFileStatTreeNodeByPath('test/a/b');
+    expect(uncompressNode).toBeDefined();
+    expect(await uncompressNode?.label()).toBe('b');
+    // After delete `test/a/b` folder
+    // |- test
+    // |----a/d
+    menu = await uncompressNode?.openContextMenu();
+    const deleteMenu = await menu?.menuItemByName('Delete');
+    await deleteMenu?.click();
+    await app.page.waitForTimeout(200);
+    const confirmed = await app.getDialogButton('Move to trash');
+    await confirmed?.click();
+    await app.page.waitForTimeout(2000);
+    const afterDeleteNode = await explorer.getFileStatTreeNodeByPath('test/a/d');
+    expect(afterDeleteNode).toBeDefined();
+    expect(await afterDeleteNode?.label()).toBe('a/d');
+  });
+
+  test('the visible state of outline panel should be restored after refreshing', async () => {
+    if (!(await explorer.isVisible())) {
+      await explorer.open();
+    }
+    await outlineView.open();
+    const menu = await outlineView.openTabContextMenu();
+    await menu?.clickMenuItem(outlineView.name!);
+    await app.page.waitForTimeout(1000);
+    // Default to be visibled
+    expect(await outlineView.isVisible()).toBeFalsy();
+    await app.page.reload();
+    await app.page.waitForTimeout(2000);
+    expect(await outlineView.isVisible()).toBeFalsy();
   });
 });

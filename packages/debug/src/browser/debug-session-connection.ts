@@ -1,5 +1,3 @@
-import { DebugConfiguration } from 'vscode';
-
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IWebSocket } from '@opensumi/ide-connection';
 import {
@@ -16,6 +14,7 @@ import { OutputChannel } from '@opensumi/ide-output/lib/browser/output.channel';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import {
+  DebugConfiguration,
   DebugEventTypes,
   DebugExitEvent,
   DebugRequestTypes,
@@ -23,7 +22,6 @@ import {
   getSequenceId,
   IDebugSessionManager,
 } from '../common';
-
 
 import { DebugSessionManager } from './debug-session-manager';
 

@@ -125,6 +125,12 @@ export class TerminalCommandContribution implements CommandContribution {
       },
     });
 
+    registry.registerCommand(TERMINAL_COMMANDS.TOGGLE_TERMINAL, {
+      execute: () => {
+        this.terminalController.toggleTerminalPanel();
+      },
+    });
+
     registry.registerCommand(TERMINAL_COMMANDS.SEARCH_NEXT, {
       execute: () => {
         if (this.search.show) {
