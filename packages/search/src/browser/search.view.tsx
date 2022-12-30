@@ -60,6 +60,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
   const { replaceAll, updateUIState, UIState } = searchBrowserService;
   const [showDetail, setShowDetail] = useState<boolean>(UIState.isDetailOpen);
 
+  const searchInputRef = useRef<HTMLInputElement>();
   const disposable = useRef<DisposableCollection>(new DisposableCollection());
 
   const updateSearchUIState = useCallback(() => {
@@ -168,10 +169,19 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
     });
   }, [searchContent, searchBrowserService]);
 
+  const focusSearchInput = useCallback(
+    (value: string) => {
+      searchInputRef.current?.focus();
+      setSearch(value);
+    },
+    [searchInputRef.current, search],
+  );
+
   useEffect(() => {
     disposable.current.push(searchBrowserService.onDidChange(updateSearchContent));
     disposable.current.push(searchBrowserService.onDidTitleChange(updateSearchContent));
     disposable.current.push(searchBrowserService.onDidUIStateChange(updateSearchUIState));
+    disposable.current.push(searchBrowserService.onDidSearchStateChange(focusSearchInput));
     return () => {
       disposable.current.dispose();
     };
@@ -193,6 +203,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
           total={searchContent.total}
           search={search}
           replace={replace}
+          isUseRegexp={searchBrowserService.UIState.isUseRegexp}
         />
       );
     } else {
@@ -209,7 +220,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
     } else {
       return renderSearchTreeView();
     }
-  }, [searchContent, offsetTop]);
+  }, [searchContent, searchBrowserService, offsetTop, search, replace]);
 
   return (
     <div className={styles.search_container} style={collapsePanelContainerStyle} ref={wrapperRef}>
@@ -229,7 +240,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
           validateMessage={searchContent.validateMessage}
           onSearchFocus={onSearchFocus}
           onSearchBlur={onSearchBlur}
-          searchInputEl={searchBrowserService.searchInputEl}
+          ref={(el) => el && (searchInputRef.current = el)}
           searchValue={searchBrowserService.searchValue}
           onSearchInputChange={onSearchInputChange}
           onSearch={onSearch}
