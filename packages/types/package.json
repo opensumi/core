@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@opensumi/ide-components": "workspace:*",
-    "@types/react": "^16.9.33",
     "vscode-uri": "3.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.33"
   }
 }

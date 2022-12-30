@@ -25,7 +25,6 @@
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
-    "@opensumi/ide-dev-tool": "workspace:*",
-    "@types/debug": "^4.1.5"
+    "@opensumi/ide-dev-tool": "workspace:*"
   }
 }
