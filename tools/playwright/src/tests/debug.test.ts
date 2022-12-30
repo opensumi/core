@@ -5,6 +5,7 @@ import { expect } from '@playwright/test';
 import { OpenSumiApp } from '../app';
 import { OpenSumiDebugView } from '../debug-view';
 import { OpenSumiExplorerView } from '../explorer-view';
+import { OpenSumiTerminal } from '../terminal';
 import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
 
@@ -47,7 +48,11 @@ test.describe('OpenSumi Debug', () => {
     debugView = await app.open(OpenSumiDebugView);
     const glyphMarginModel = await editor.getGlyphMarginModel();
     let glyphOverlay = await glyphMarginModel.getOverlay(6);
-    const isClicked = await glyphMarginModel.hasBreakpoint(glyphOverlay!);
+    expect(glyphOverlay).toBeDefined();
+    if (!glyphOverlay) {
+      return;
+    }
+    const isClicked = await glyphMarginModel.hasBreakpoint(glyphOverlay);
     if (!isClicked) {
       await glyphOverlay?.click({ position: { x: 9, y: 9 }, force: true });
       await app.page.waitForTimeout(1000);
@@ -57,12 +62,57 @@ test.describe('OpenSumi Debug', () => {
     await app.page.waitForTimeout(2000);
 
     glyphOverlay = await glyphMarginModel.getOverlay(6);
-
-    expect(await glyphMarginModel.hasTopStackFrame(glyphOverlay!)).toBeTruthy();
+    expect(glyphOverlay).toBeDefined();
+    if (!glyphOverlay) {
+      return;
+    }
+    expect(await glyphMarginModel.hasTopStackFrame(glyphOverlay)).toBeTruthy();
 
     const overlaysModel = await editor.getOverlaysModel();
     const viewOverlay = await overlaysModel.getOverlay(6);
-    expect(await glyphMarginModel.hasTopStackFrameLine(viewOverlay!)).toBeTruthy();
+    expect(viewOverlay).toBeDefined();
+    if (!viewOverlay) {
+      return;
+    }
+    expect(await glyphMarginModel.hasTopStackFrameLine(viewOverlay)).toBeTruthy();
     await editor.close();
+    await debugView.stop();
+  });
+
+  test('Run Debug by Javascript Debug Terminal', async () => {
+    await explorer.open();
+    editor = await app.openEditor(OpenSumiTextEditor, explorer, 'index.js', false);
+
+    const terminal = await app.open(OpenSumiTerminal);
+    await terminal.createTerminalByType('Javascript Debug Terminal');
+    await terminal.sendText('node index.js');
+    await app.page.waitForTimeout(1000);
+
+    const glyphMarginModel = await editor.getGlyphMarginModel();
+    let glyphOverlay = await glyphMarginModel.getOverlay(6);
+    expect(glyphOverlay).toBeDefined();
+    if (!glyphOverlay) {
+      return;
+    }
+    const isClicked = await glyphMarginModel.hasBreakpoint(glyphOverlay);
+    if (!isClicked) {
+      await glyphOverlay?.click({ position: { x: 9, y: 9 }, force: true });
+      await app.page.waitForTimeout(1000);
+    }
+
+    glyphOverlay = await glyphMarginModel.getOverlay(6);
+    expect(glyphOverlay).toBeDefined();
+    if (!glyphOverlay) {
+      return;
+    }
+    expect(await glyphMarginModel.hasTopStackFrame(glyphOverlay)).toBeTruthy();
+
+    const overlaysModel = await editor.getOverlaysModel();
+    const viewOverlay = await overlaysModel.getOverlay(6);
+    expect(viewOverlay).toBeDefined();
+    if (!viewOverlay) {
+      return;
+    }
+    expect(await glyphMarginModel.hasTopStackFrameLine(viewOverlay)).toBeTruthy();
   });
 });
