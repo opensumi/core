@@ -371,7 +371,7 @@ export class FileSearchQuickCommandHandler {
         limit: DEFAULT_FILE_SEARCH_LIMIT,
         useGitIgnore: true,
         noIgnoreParent: true,
-        excludePatterns: ['*.git*', ...this.getPreferenceSearchExcludes()],
+        excludePatterns: this.getPreferenceSearchExcludes(),
       },
       token,
     );
