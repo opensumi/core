@@ -11,6 +11,7 @@ import {
   ISelection,
   Disposable,
   objects,
+  isEmptyObject,
 } from '@opensumi/ide-core-common';
 import { Emitter } from '@opensumi/ide-core-common';
 import type {
@@ -269,24 +270,7 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
   constructor(public readonly monacoEditor: IMonacoCodeEditor, private type: EditorType) {
     super();
     this.decorationApplier = this.injector.get(MonacoEditorDecorationApplier, [this.monacoEditor]);
-    this.addDispose(
-      this.monacoEditor.onDidChangeModel(() => {
-        this._editorOptionsFromContribution = {};
-        const uri = this.currentUri;
-        if (uri) {
-          Promise.resolve(this.editorFeatureRegistry.runProvideEditorOptionsForUri(uri)).then((option) => {
-            if (!this.currentUri || !uri.isEqual(this.currentUri)) {
-              return; // uri可能已经变了
-            }
-            if (option && Object.keys(option).length > 0) {
-              this._editorOptionsFromContribution = option;
-              this._doUpdateOptions();
-            }
-          });
-        }
-        this._doUpdateOptions();
-      }),
-    );
+    this.addDispose(this.monacoEditor.onDidChangeModel(this.onDidChangeModel.bind(this)));
     this.addDispose(
       this.monacoEditor.onDidChangeModelLanguage(() => {
         this._doUpdateOptions();
@@ -300,6 +284,25 @@ export abstract class BaseMonacoEditorWrapper extends Disposable implements IEdi
         }
       }),
     );
+  }
+
+  private async onDidChangeModel() {
+    this._editorOptionsFromContribution = {};
+    const uri = this.currentUri;
+    if (uri) {
+      Promise.resolve(this.editorFeatureRegistry.runProvideEditorOptionsForUri(uri)).then((options) => {
+        if (!this.currentUri || !uri.isEqual(this.currentUri)) {
+          return; // uri可能已经变了
+        }
+
+        if (options && Object.keys(options).length > 0) {
+          this._editorOptionsFromContribution = options;
+          if (!isEmptyObject(this._editorOptionsFromContribution)) {
+            this._doUpdateOptions();
+          }
+        }
+      });
+    }
   }
 
   public getType() {
@@ -498,7 +501,7 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
     }
   }
 
-  async open(documentModelRef: IEditorDocumentModelRef): Promise<void> {
+  open(documentModelRef: IEditorDocumentModelRef): void {
     this.saveCurrentState();
     this._currentDocumentModelRef = documentModelRef;
     const model = this.currentDocumentModel!.getMonacoModel();
