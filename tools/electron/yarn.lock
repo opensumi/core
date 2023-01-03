@@ -167,9 +167,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opensumi/ide-dev-tool@file:../dev-tool::locator=%40opensumi%2Fide-electron%40workspace%3A.":
-  version: 1.3.1
-  resolution: "@opensumi/ide-dev-tool@file:../dev-tool#../dev-tool::hash=835efb&locator=%40opensumi%2Fide-electron%40workspace%3A."
+"@opensumi/ide-dev-tool@portal:../dev-tool::locator=%40opensumi%2Fide-electron%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "@opensumi/ide-dev-tool@portal:../dev-tool::locator=%40opensumi%2Fide-electron%40workspace%3A."
   dependencies:
     "@types/koa": ^2.13.4
     "@types/koa-bodyparser": ^4.3.7
@@ -206,15 +206,14 @@ __metadata:
     webpack-merge: ^4.2.2
   bin:
     sumi: ./cli/index.js
-  checksum: 288ff2c853694686d4b3d165ba8506a2163bb1bec091c60ffd9dfbec8e194423420f0f114bcd8a6a981bad89c2444deaaf3e550f89250d6312d7b408c1d0a33a
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "@opensumi/ide-electron@workspace:.":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-electron@workspace:."
   dependencies:
-    "@opensumi/ide-dev-tool": "file:../dev-tool"
+    "@opensumi/ide-dev-tool": "portal:../dev-tool"
     "@opensumi/vscode-ripgrep": ^1.4.0
     "@parcel/watcher": 2.0.6
     clean-webpack-plugin: ^3.0.0

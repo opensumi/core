@@ -71,7 +71,8 @@ module.exports.rebuild = (argv) => {
   function getBuildCacheDir(modulePath, type, version, arch) {
     const info = require(join(modulePath, './package.json'));
     return join(
-      require('os').tmpdir(),
+      require('os').homedir(),
+      '.sumi-dev',
       'opensumi_build_cache',
       `${type}-${version}-${arch}`,
       info.name + '-' + info.version,

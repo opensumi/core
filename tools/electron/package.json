@@ -44,7 +44,7 @@
     "vscode-oniguruma": "1.6.1"
   },
   "devDependencies": {
-    "@opensumi/ide-dev-tool": "file:../dev-tool",
+    "@opensumi/ide-dev-tool": "portal:../dev-tool",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.3",
     "css-loader": "^2.1.1",
