@@ -4,9 +4,9 @@ import { OpenSumiPanel } from './panel';
 
 type TerminalType = 'bash' | 'zsh' | 'Javascript Debug Terminal';
 
-export class OpenSumiTerminal extends OpenSumiPanel {
+export class OpenSumiTerminalView extends OpenSumiPanel {
   constructor(app: OpenSumiApp) {
-    super(app, 'terminal');
+    super(app, 'TERMINAL');
   }
 
   async sendText(text: string) {

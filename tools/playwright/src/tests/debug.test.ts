@@ -5,7 +5,7 @@ import { expect } from '@playwright/test';
 import { OpenSumiApp } from '../app';
 import { OpenSumiDebugView } from '../debug-view';
 import { OpenSumiExplorerView } from '../explorer-view';
-import { OpenSumiTerminal } from '../terminal';
+import { OpenSumiTerminalView } from '../terminal-view';
 import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
 
@@ -83,7 +83,7 @@ test.describe('OpenSumi Debug', () => {
     await explorer.open();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'index.js', false);
 
-    const terminal = await app.open(OpenSumiTerminal);
+    const terminal = await app.open(OpenSumiTerminalView);
     await terminal.createTerminalByType('Javascript Debug Terminal');
     await terminal.sendText('node index.js');
     await app.page.waitForTimeout(1000);

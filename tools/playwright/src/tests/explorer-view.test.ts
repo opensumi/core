@@ -9,7 +9,7 @@ import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiFileTreeView } from '../filetree-view';
 import { OpenSumiOpenedEditorView } from '../opened-editor-view';
 import { OpenSumiOutlineView } from '../outline-view';
-import { OpenSumiTerminal } from '../terminal';
+import { OpenSumiTerminalView } from '../terminal-view';
 import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
 
@@ -38,7 +38,7 @@ test.describe('OpenSumi Explorer Panel', () => {
   });
 
   test('should show file explorer', async () => {
-    expect(explorer.isVisible()).toBeTruthy();
+    expect(await explorer.isVisible()).toBeTruthy();
     await fileTreeView.open();
     expect(await fileTreeView.isVisible()).toBeTruthy();
   });
@@ -127,7 +127,7 @@ test.describe('OpenSumi Explorer Panel', () => {
 
   (isWindows ? test.skip : test)('fileTree should be updated while create directory from terminal', async () => {
     const dirname = 'dir_from_terminal';
-    const terminal = await app.open(OpenSumiTerminal);
+    const terminal = await app.open(OpenSumiTerminalView);
     await terminal.sendText(`cd ${workspace.workspace.codeUri.fsPath}`);
     await terminal.sendText(`mkdir ${dirname}`);
     await app.page.waitForTimeout(2000);
