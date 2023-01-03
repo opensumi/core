@@ -19,17 +19,19 @@ class Commander {
       return;
     }
 
-    console.log(`Usage:
-${this.renderSubCommand()}
-
-Good bye~`);
-  }
-  renderSubCommand() {
     const result = [];
     for (const [name, options] of this.commandMap.entries()) {
       result.push(`  - ${name}: ${options.help}`);
     }
-    return result.join('\n');
+
+    console.log(
+      `
+Usage:
+${result.join('\n')}
+
+Good bye~
+`.trim(),
+    );
   }
 }
 
