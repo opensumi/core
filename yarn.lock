@@ -2775,6 +2775,8 @@ __metadata:
     webpack: ^4.39.3
     webpack-cli: ^3.3.1
     webpack-merge: ^4.2.2
+  bin:
+    sumi: ./cli/index.js
   languageName: unknown
   linkType: soft
 

@@ -34,7 +34,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "yarn run lint --fix",
     "format": "yarn run lint:fix && prettier \"**/*.{js,jsx,ts,tsx,html,css,less}\" --write",
-    "rebuild:node": "node ./scripts/rebuild-native.js",
+    "rebuild:node": "sumi rebuild",
     "test:module": "cross-env NODE_OPTIONS=--max_old_space_size=5120 node -r ts-node/register ./scripts/module-jest",
     "test:ui": "node -r ts-node/register ./scripts/run-ui-tests",
     "test:ui-ci": "node -r ts-node/register ./scripts/run-ui-tests --ci=true",
