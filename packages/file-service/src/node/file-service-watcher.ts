@@ -37,13 +37,18 @@ export interface NsfwFileSystemWatcherOption {
   error?: (message: string, ...args: any[]) => void;
 }
 
+/**
+ * @deprecated
+ */
+type INsfwSubscribeCallback = (events: INsfw.ChangeEvent[]) => unknown;
+
 @Injectable({ multiple: true })
 export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private static WATCHER_HANDLERS = new Map<
     number,
-    { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
+    { path: string; handlers: Array<ParcelWatcher.SubscribeCallback | INsfwSubscribeCallback>; disposable: IDisposable }
   >();
   private static WATCHER_SEQUENCE = 1;
 
