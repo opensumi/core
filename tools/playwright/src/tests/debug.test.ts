@@ -5,7 +5,7 @@ import { expect } from '@playwright/test';
 import { OpenSumiApp } from '../app';
 import { OpenSumiDebugView } from '../debug-view';
 import { OpenSumiExplorerView } from '../explorer-view';
-import { OpenSumiTerminal } from '../terminal';
+import { OpenSumiTerminalView } from '../terminal-view';
 import { OpenSumiTextEditor } from '../text-editor';
 import { OpenSumiWorkspace } from '../workspace';
 
@@ -77,13 +77,14 @@ test.describe('OpenSumi Debug', () => {
     expect(await glyphMarginModel.hasTopStackFrameLine(viewOverlay)).toBeTruthy();
     await editor.close();
     await debugView.stop();
+    await page.waitForTimeout(1000);
   });
 
   test('Run Debug by Javascript Debug Terminal', async () => {
     await explorer.open();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'index.js', false);
 
-    const terminal = await app.open(OpenSumiTerminal);
+    const terminal = await app.open(OpenSumiTerminalView);
     await terminal.createTerminalByType('Javascript Debug Terminal');
     await terminal.sendText('node index.js');
     await app.page.waitForTimeout(1000);
@@ -114,5 +115,7 @@ test.describe('OpenSumi Debug', () => {
       return;
     }
     expect(await glyphMarginModel.hasTopStackFrameLine(viewOverlay)).toBeTruthy();
+    await debugView.stop();
+    await page.waitForTimeout(1000);
   });
 });

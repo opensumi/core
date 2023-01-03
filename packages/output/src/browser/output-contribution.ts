@@ -67,8 +67,7 @@ export class OutputContribution
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(OUTPUT_CLEAR, {
-      execute: () => this.outputService.selectedChannel.clear(),
-      isEnabled: () => !!this.outputService.selectedChannel,
+      execute: () => this.outputService.selectedChannel?.clear(),
     });
   }
 

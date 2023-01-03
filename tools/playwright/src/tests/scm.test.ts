@@ -7,7 +7,7 @@ import { OpenSumiDiffEditor } from '../diff-editor';
 import { OpenSumiExplorerView } from '../explorer-view';
 import { OpenSumiFileTreeView } from '../filetree-view';
 import { OpenSumiSCMView } from '../scm-view';
-import { OpenSumiTerminal } from '../terminal';
+import { OpenSumiTerminalView } from '../terminal-view';
 import { OpenSumiWorkspace } from '../workspace';
 
 import test, { page } from './hooks';
@@ -25,7 +25,7 @@ test.describe('OpenSumi SCM Panel', () => {
     explorer = await app.open(OpenSumiExplorerView);
     explorer.initFileTreeView(workspace.workspace.displayName);
     fileTreeView = explorer.fileTreeView;
-    const terminal = await app.open(OpenSumiTerminal);
+    const terminal = await app.open(OpenSumiTerminalView);
     // There should have GIT on the PATH
     await terminal.sendText('git init');
   });
