@@ -204,6 +204,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
           search={search}
           replace={replace}
           isUseRegexp={searchBrowserService.UIState.isUseRegexp}
+          isMatchCase={searchBrowserService.UIState.isMatchCase}
         />
       );
     } else {

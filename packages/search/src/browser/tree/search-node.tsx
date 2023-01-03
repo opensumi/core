@@ -26,6 +26,7 @@ export interface ISearchNodeProps {
   onContextMenu: (ev: React.MouseEvent, item: SearchContentNode | SearchFileNode) => void;
   commandService: CommandService;
   isUseRegexp: boolean;
+  isMatchCase: boolean;
 }
 
 export type ISearchNodeRenderedProps = ISearchNodeProps & INodeRendererProps;
@@ -42,6 +43,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
   onContextMenu,
   commandService,
   isUseRegexp,
+  isMatchCase,
 }: ISearchNodeRenderedProps) => {
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
@@ -106,7 +108,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
         if (isUseRegexp) {
           let regexp;
           try {
-            regexp = new RegExp(search);
+            regexp = new RegExp(search, isMatchCase ? '' : 'i');
           } catch (e) {
             regexp = null;
           }
@@ -130,12 +132,19 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
             }
           }
         } else {
-          const index = node.description.indexOf(search);
+          let index = -1;
+          if (isMatchCase) {
+            index = node.description.indexOf(search);
+          } else {
+            index = node.description.toLocaleLowerCase().indexOf(search.toLocaleLowerCase());
+          }
           if (index >= 0) {
             return (
               <div className={cls(styles.segment_grow, styles.description)}>
                 {node.description.slice(0, index)}
-                <span className={cls(styles.match, replace && styles.replace)}>{search}</span>
+                <span className={cls(styles.match, replace && styles.replace)}>
+                  {node.description.slice(index, index + search.length)}
+                </span>
                 {replace && <span className={styles.replace}>{replace}</span>}
                 {node.description.slice(index + search.length)}
               </div>
@@ -145,7 +154,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
         }
       }
     },
-    [replace, search, isUseRegexp],
+    [replace, search, isUseRegexp, isMatchCase],
   );
 
   const renderStatusTail = useCallback(
