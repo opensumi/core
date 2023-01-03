@@ -77,6 +77,7 @@ test.describe('OpenSumi Debug', () => {
     expect(await glyphMarginModel.hasTopStackFrameLine(viewOverlay)).toBeTruthy();
     await editor.close();
     await debugView.stop();
+    await page.waitForTimeout(1000);
   });
 
   test('Run Debug by Javascript Debug Terminal', async () => {
@@ -114,5 +115,7 @@ test.describe('OpenSumi Debug', () => {
       return;
     }
     expect(await glyphMarginModel.hasTopStackFrameLine(viewOverlay)).toBeTruthy();
+    await debugView.stop();
+    await page.waitForTimeout(1000);
   });
 });
