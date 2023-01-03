@@ -10,7 +10,6 @@ import styles from './search.module.less';
 export interface SearchInputWidgetProps {
   isDetailOpen: boolean;
   onDetailToggle: () => void;
-  isSearchFocus: boolean;
   onSearchFocus: () => void;
   onSearchBlur: () => void;
   isMatchCase: boolean;
@@ -45,7 +44,6 @@ const SearchRuleCheckout = memo(
 function isSearchInputPropsEqual(prevProps: SearchInputWidgetProps, nextProps: SearchInputWidgetProps) {
   return (
     prevProps.isDetailOpen === nextProps.isDetailOpen &&
-    prevProps.isSearchFocus === nextProps.isSearchFocus &&
     prevProps.isMatchCase === nextProps.isMatchCase &&
     prevProps.isWholeWord === nextProps.isWholeWord &&
     prevProps.isRegex === nextProps.isRegex &&
@@ -61,7 +59,6 @@ export const SearchInputWidget = memo(
       {
         isDetailOpen,
         onDetailToggle,
-        isSearchFocus,
         onSearchFocus,
         onSearchBlur,
         isMatchCase,
@@ -82,7 +79,7 @@ export const SearchInputWidget = memo(
         <div className={styles.search_and_replace_fields}>
           <div className={styles.search_field_container}>
             <SearchRuleCheckout isDetailOpen={isDetailOpen} onDetailToggle={onDetailToggle} />
-            <div className={cls(styles.search_field, { [styles.focus]: isSearchFocus })}>
+            <div className={styles.search_field}>
               <ValidateInput
                 id='search-input-field'
                 title={localize('search.input.placeholder')}

@@ -1,5 +1,4 @@
 import { OpenSumiApp } from './app';
-import { OpenSumiFileTreeView } from './filetree-view';
 import { OpenSumiOpenedEditorView } from './opened-editor-view';
 import { OpenSumiPanel } from './panel';
 import { OpenSumiSourceControlView } from './source-control-view';

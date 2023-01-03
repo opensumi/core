@@ -150,7 +150,6 @@ export class ContentSearchClientService extends Disposable implements IContentSe
   }
 
   public UIState: IUIState = {
-    isSearchFocus: false,
     isToggleOpen: true,
     isDetailOpen: false,
     // Search Options
@@ -601,12 +600,6 @@ export class ContentSearchClientService extends Disposable implements IContentSe
     );
 
   updateUIState = (obj: Partial<typeof this.UIState>) => {
-    if (!isUndefined(obj.isSearchFocus) && obj.isSearchFocus !== this.UIState.isSearchFocus) {
-      // 搜索框状态发现变化，重置搜索历史的当前位置
-      this.searchHistory.reset();
-      this.isShowValidateMessage = false;
-    }
-
     const newUIState = Object.assign({}, this.UIState, obj);
 
     if (this.shouldSearch(obj)) {
@@ -677,11 +670,6 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   private async recoverUIState() {
     const UIState = (await this.browserStorageService.getData('search.UIState')) as IUIState | undefined;
-    // 上次关闭时搜索框若处于 focus 状态会导致本次启动恢复现场后 UI 与 Service 不一致 (#1203)
-    // 这里一个非根本性解决方法是在 updateUIState 前将 isSearchFocus 置为 false
-    if (UIState) {
-      UIState.isSearchFocus = false;
-    }
     this.updateUIState(UIState || {});
   }
 

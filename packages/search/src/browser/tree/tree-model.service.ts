@@ -146,13 +146,6 @@ export class SearchModelService extends Disposable {
         }
         this.refresh();
       }),
-      this.searchService.onDidUIStateChange((state: IUIState) => {
-        if (state.isSearchFocus) {
-          this.searchTreeService.contextKey.searchInputBoxFocusedKey.set(true);
-        } else {
-          this.searchTreeService.contextKey.searchInputBoxFocusedKey.set(false);
-        }
-      }),
     );
 
     this.onDidUpdateTreeModelEmitter.fire(this._treeModel);

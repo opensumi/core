@@ -110,7 +110,6 @@ export interface ISearchTreeService extends ITree {
 }
 
 export interface IUIState {
-  isSearchFocus: boolean;
   isToggleOpen: boolean;
   isDetailOpen: boolean;
   isMatchCase: boolean;
