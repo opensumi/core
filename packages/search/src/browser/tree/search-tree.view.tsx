@@ -19,6 +19,7 @@ export interface ISearchTreeProp {
   viewState: ViewState;
   state: SEARCH_STATE;
   isUseRegexp: boolean;
+  isMatchCase: boolean;
 }
 
 export interface ISearchResultTotalContent {
@@ -88,7 +89,16 @@ const ResultTotalContent = ({ total, state, model }: ISearchResultTotalContent) 
   return null;
 };
 
-export const SearchTree = ({ offsetTop, total, state, replace, search, viewState, isUseRegexp }: ISearchTreeProp) => {
+export const SearchTree = ({
+  offsetTop,
+  total,
+  state,
+  replace,
+  search,
+  viewState,
+  isUseRegexp,
+  isMatchCase,
+}: ISearchTreeProp) => {
   const [model, setModel] = useState<SearchTreeModel | undefined>();
   const searchModelService = useInjectable<SearchModelService>(SearchModelService);
   const commandService = useInjectable<CommandService>(CommandService);
@@ -136,10 +146,11 @@ export const SearchTree = ({ offsetTop, total, state, replace, search, viewState
         onContextMenu={searchModelService.handleContextMenu}
         leftPadding={8}
         isUseRegexp={isUseRegexp}
+        isMatchCase={isMatchCase}
         commandService={commandService}
       />
     ),
-    [model, search, replace, isUseRegexp],
+    [model, search, replace, isUseRegexp, isMatchCase],
   );
 
   const renderSearchTree = useCallback(() => {
@@ -155,7 +166,7 @@ export const SearchTree = ({ offsetTop, total, state, replace, search, viewState
         </RecycleTree>
       );
     }
-  }, [model, totalHeight, offsetTop, search, replace, isUseRegexp, viewState]);
+  }, [model, totalHeight, offsetTop, search, replace, isUseRegexp, isMatchCase, viewState]);
 
   return (
     <div className={styles.tree} tabIndex={-1} onBlur={handleTreeBlur} onFocus={handleTreeFocus} ref={wrapperRef}>
