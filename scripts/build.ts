@@ -5,10 +5,11 @@ import * as fs from 'fs-extra';
 
 (async () => {
   await run('yarn run clean');
-  await run('npx tsc --build configs/ts/tsconfig.build.json');
+  await run('yarn tsc --build configs/ts/tsconfig.build.json');
 
   const filePatten = '*/src/**/!(*.ts|*.tsx)';
   console.log(`[COPY]: ${filePatten}`);
+  // 拷贝非 ts/js 文件
   const cwd = path.join(__dirname, '../packages');
   const files = glob.sync(filePatten, { cwd, nodir: true });
   for (const file of files) {
@@ -17,11 +18,7 @@ import * as fs from 'fs-extra';
     await fs.mkdirp(path.dirname(to));
     await fs.copyFile(from, to);
   }
-
-  const configFile = path.join(__dirname, 'test/jest.config.js');
-  const testFile = path.join(__dirname, 'test/build.js');
-
-  // await run(`npx jest ${testFile} -c ${configFile}`);
+  await run('yarn workspace @opensumi/sumi build');
 })().catch((e) => {
   console.trace(e);
   process.exit(128);

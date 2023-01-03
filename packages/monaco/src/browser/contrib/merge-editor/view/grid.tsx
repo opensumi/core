@@ -14,7 +14,6 @@ import { EditorViewType } from '../types';
 import styles from './merge-editor.module.less';
 import { WithViewStickinessConnectComponent } from './stickiness-connect-manager';
 
-
 const TitleHead: React.FC<{ contrastType: EditorViewType }> = ({ contrastType }) => {
   const mergeEditorService = useInjectable<MergeEditorService>(MergeEditorService);
   const [head, setHead] = useState<IMergeEditorInputData>();
