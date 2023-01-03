@@ -7,7 +7,7 @@ import { FileUri } from '@opensumi/ide-core-node';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
-import { ParcelWatcherServer } from '../../src/node/file-service-watcher';
+import { FileSystemWatcherServer } from '../../src/node/file-service-watcher';
 
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -18,14 +18,14 @@ function sleep(time: number) {
   const sleepTime = 500;
   let injector: MockInjector;
   let root: URI;
-  let watcherServer: ParcelWatcherServer;
+  let watcherServer: FileSystemWatcherServer;
   let watcherId: number;
   jest.setTimeout(10000);
 
   beforeEach(async () => {
     injector = createBrowserInjector([]);
     root = FileUri.create(await fse.realpath(await temp.mkdir('node-fs-root')));
-    watcherServer = injector.get(ParcelWatcherServer);
+    watcherServer = injector.get(FileSystemWatcherServer);
     watcherId = await watcherServer.watchFileChanges(root.toString());
   });
 
@@ -140,7 +140,7 @@ function sleep(time: number) {
   const track = temp.track();
   const sleepTime = 500;
   let root: URI;
-  let watcherServer: ParcelWatcherServer;
+  let watcherServer: FileSystemWatcherServer;
   let injector: MockInjector;
   jest.setTimeout(10000);
 
@@ -149,7 +149,7 @@ function sleep(time: number) {
     root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
-    watcherServer = injector.get(ParcelWatcherServer);
+    watcherServer = injector.get(FileSystemWatcherServer);
     await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
   });

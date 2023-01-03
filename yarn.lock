@@ -2971,6 +2971,7 @@ __metadata:
     "@parcel/watcher": 2.1.0
     drivelist: ^6.4.3
     file-type: ^12.0.0
+    nsfw: 2.2.0
     trash: ^5.2.0
     vscode-languageserver-types: ^3.16.0
     write-file-atomic: ^4.0.1
@@ -15202,6 +15203,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-addon-api@npm:*":
+  version: 5.0.0
+  resolution: "node-addon-api@npm:5.0.0"
+  dependencies:
+    node-gyp: latest
+  checksum: 7c5e2043ac37f6108784d94ed73a44ae6d3e68eb968de60680922fc6bc3d17fa69448c0feb4e0c9d3f4c74a0324822e566a8340a56916d9d6f23cb3e85620334
+  languageName: node
+  linkType: hard
+
 "node-addon-api@npm:^3.2.1":
   version: 3.2.1
   resolution: "node-addon-api@npm:3.2.1"
@@ -15726,6 +15736,16 @@ __metadata:
     gauge: ^4.0.3
     set-blocking: ^2.0.0
   checksum: ae238cd264a1c3f22091cdd9e2b106f684297d3c184f1146984ecbe18aaa86343953f26b9520dedd1b1372bc0316905b736c1932d778dbeb1fcf5a1001390e2a
+  languageName: node
+  linkType: hard
+
+"nsfw@npm:2.2.0":
+  version: 2.2.0
+  resolution: "nsfw@npm:2.2.0"
+  dependencies:
+    node-addon-api: "*"
+    node-gyp: latest
+  checksum: 084ec08bebca99745dc6deecb5b6d7120653fe8bfb0ba56a80f5eb720367b5b7089192a5e954be4bdc16b238431cfbc7d447f3709073ff211921a82c6bad256f
   languageName: node
   linkType: hard
 

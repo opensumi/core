@@ -19,7 +19,7 @@ import {
   ILogServiceManager,
 } from '@opensumi/ide-core-node';
 
-import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, WatchOptions } from '../common';
+import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../common';
 
 import { FileChangeCollection } from './file-change-collection';
 
@@ -28,13 +28,27 @@ export interface WatcherOptions {
   excludes: string[];
 }
 
+/**
+ * @deprecated
+ */
+export interface NsfwFileSystemWatcherOption {
+  verbose?: boolean;
+  info?: (message: string, ...args: any[]) => void;
+  error?: (message: string, ...args: any[]) => void;
+}
+
+/**
+ * @deprecated
+ */
+type INsfwSubscribeCallback = (events: INsfw.ChangeEvent[]) => unknown;
+
 @Injectable({ multiple: true })
-export class ParcelWatcherServer implements IFileSystemWatcherServer {
+export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
   private static WATCHER_HANDLERS = new Map<
     number,
-    { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
+    { path: string; handlers: Array<ParcelWatcher.SubscribeCallback | INsfwSubscribeCallback>; disposable: IDisposable }
   >();
   private static WATCHER_SEQUENCE = 1;
 
@@ -55,7 +69,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
 
   dispose(): void {
     this.toDispose.dispose();
-    ParcelWatcherServer.WATCHER_HANDLERS.clear();
+    FileSystemWatcherServer.WATCHER_HANDLERS.clear();
   }
 
   /**
@@ -63,7 +77,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
    * @param watcherPath
    */
   checkIsAlreadyWatched(watcherPath: string): number | undefined {
-    for (const [watcherId, watcher] of ParcelWatcherServer.WATCHER_HANDLERS) {
+    for (const [watcherId, watcher] of FileSystemWatcherServer.WATCHER_HANDLERS) {
       if (watcherPath.indexOf(watcher.path) === 0) {
         return watcherId;
       }
@@ -84,7 +98,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     if (watcherId) {
       return watcherId;
     }
-    watcherId = ParcelWatcherServer.WATCHER_SEQUENCE++;
+    watcherId = FileSystemWatcherServer.WATCHER_SEQUENCE++;
     const toDisposeWatcher = new DisposableCollection();
     let watchPath;
     if (exist) {
@@ -116,12 +130,15 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
         }
       }
     };
-    ParcelWatcherServer.WATCHER_HANDLERS.set(watcherId, {
+
+    FileSystemWatcherServer.WATCHER_HANDLERS.set(watcherId, {
       path: watchPath,
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
-    toDisposeWatcher.push(Disposable.create(() => ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId as number)));
+    toDisposeWatcher.push(
+      Disposable.create(() => FileSystemWatcherServer.WATCHER_HANDLERS.delete(watcherId as number)),
+    );
     toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
     this.toDispose.push(toDisposeWatcher);
     return watcherId;
@@ -192,21 +209,21 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
                 // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
                 return;
               }
-              const handlers = ParcelWatcherServer.WATCHER_HANDLERS.get(watcherId)?.handlers;
+              const handlers = FileSystemWatcherServer.WATCHER_HANDLERS.get(watcherId)?.handlers;
               if (!handlers) {
                 return;
               }
               for (const handler of handlers) {
-                handler(err, events);
+                (handler as ParcelWatcher.SubscribeCallback)(err, events);
               }
             },
             {
-              backend: ParcelWatcherServer.PARCEL_WATCHER_BACKEND,
+              backend: FileSystemWatcherServer.PARCEL_WATCHER_BACKEND,
               ignore: this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
             },
           );
         } catch (e) {
-          // Parcel Watcher 启动失败，尝试重试
+          // Watcher 启动失败，尝试重试
           this.logger.error('watcher subscribe failed ', e, ' try times ', times);
           await new Promise((resolve) => {
             setTimeout(resolve, retryDelay);
@@ -219,26 +236,82 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
       return undefined; // watch 失败则返回 undefined
     };
 
-    const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
+    /**
+     * 由于 parcel/watcher 在 Linux 下存在内存越界访问问题触发了 sigsegv 导致 crash，所以在 Linux 下仍旧使用 nsfw
+     * 社区相关 issue: https://github.com/parcel-bundler/watcher/issues/49
+     * 后续这里的 watcher 模块需要重构掉，先暂时这样处理
+     *
+     * 代码来自 issue: https://github.com/opensumi/core/pull/1437/files?diff=split&w=0#diff-9de963117a88a70d7c58974bf2b092c61a196d6eef719846d78ca5c9d100b796 的旧代码处理
+     */
+    if (isLinux) {
+      const nsfw = (await import('nsfw')).default;
+      const watcher: INsfw.NSFW = await nsfw(
+        realPath,
+        (events: INsfw.ChangeEvent[]) => {
+          if (events.length > 5000) {
+            return;
+          }
 
-    if (hanlder) {
-      // watch 成功才加入 disposables，否则也就无需 dispose
+          for (const event of events) {
+            if (event.action === INsfw.actions.CREATED) {
+              this.pushAdded(this.resolvePath(event.directory, event.file!));
+            }
+            if (event.action === INsfw.actions.DELETED) {
+              this.pushDeleted(this.resolvePath(event.directory, event.file!));
+            }
+            if (event.action === INsfw.actions.MODIFIED) {
+              this.pushUpdated(this.resolvePath(event.directory, event.file!));
+            }
+            if (event.action === INsfw.actions.RENAMED) {
+              if (event.newDirectory) {
+                this.pushDeleted(this.resolvePath(event.directory, event.oldFile!));
+                this.pushAdded(this.resolvePath(event.newDirectory, event.newFile!));
+              } else {
+                this.pushDeleted(this.resolvePath(event.directory, event.oldFile!));
+                this.pushAdded(this.resolvePath(event.directory, event.newFile!));
+              }
+            }
+          }
+        },
+        {
+          errorCallback: (error: any) => {
+            // see https://github.com/atom/github/issues/342
+            // eslint-disable-next-line no-console
+            console.warn(`Failed to watch "${basePath}":`, error);
+            this.unwatchFileChanges(watcherId);
+          },
+        },
+      );
+
+      await watcher.start();
+
       disposables.push(
         Disposable.create(async () => {
-          if (hanlder) {
-            await hanlder.unsubscribe();
-          }
+          await watcher.stop();
         }),
       );
+    } else {
+      const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
+
+      if (hanlder) {
+        // watch 成功才加入 disposables，否则也就无需 dispose
+        disposables.push(
+          Disposable.create(async () => {
+            if (hanlder) {
+              await hanlder.unsubscribe();
+            }
+          }),
+        );
+      }
     }
 
     return disposables;
   }
 
   unwatchFileChanges(watcherId: number): Promise<void> {
-    const watcher = ParcelWatcherServer.WATCHER_HANDLERS.get(watcherId);
+    const watcher = FileSystemWatcherServer.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
-      ParcelWatcherServer.WATCHER_HANDLERS.delete(watcherId);
+      FileSystemWatcherServer.WATCHER_HANDLERS.delete(watcherId);
       watcher.disposable.dispose();
     }
     return Promise.resolve();
