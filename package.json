@@ -89,6 +89,7 @@
     "url": "git@github.com:opensumi/core.git"
   },
   "devDependencies": {
+    "@opensumi/ide-dev-tool": "workspace:*",
     "@types/debug": "^4.1.5",
     "@types/fs-extra": "^9.0.13",
     "@types/glob": "^7.1.1",

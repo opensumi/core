@@ -2455,6 +2455,7 @@ __metadata:
   dependencies:
     "@commitlint/cli": ^15.0.0
     "@commitlint/config-conventional": ^7.1.2
+    "@opensumi/ide-dev-tool": "workspace:*"
     "@types/debug": ^4.1.5
     "@types/fs-extra": ^9.0.13
     "@types/glob": ^7.1.1
