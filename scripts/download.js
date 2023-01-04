@@ -130,7 +130,7 @@ const installExtension = async (namespace, name, version) => {
   let downloadUrl = '';
 
   if (marketplaceType === 'opentrs') {
-    downloadUrl = `https://marketplace.opentrs.com/openapi/ide/download/${namespace}.${name}?version=${version}`;
+    downloadUrl = `https://marketplace.opentrs.cn/openapi/ide/download/${namespace}.${name}?version=${version}`;
   } else {
     const path = version ? `${namespace}/${name}/${version}` : `${namespace}/${name}`;
     const getDetailApi = `https://open-vsx.org/api/${path}`;
