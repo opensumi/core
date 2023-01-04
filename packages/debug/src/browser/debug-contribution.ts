@@ -25,7 +25,7 @@ import {
 import { browserViews } from '@opensumi/ide-core-browser/lib/extensions/schema/browserViews';
 import { ToolbarRegistry, TabBarToolbarContribution } from '@opensumi/ide-core-browser/lib/layout';
 import { MenuContribution, MenuId, IMenuRegistry } from '@opensumi/ide-core-browser/lib/menu/next';
-import { IExtensionsSchemaService, URI } from '@opensumi/ide-core-common';
+import { IExtensionsSchemaService, runWhenIdle, URI } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
   IEditorFeatureRegistry,
@@ -742,10 +742,9 @@ export class DebugContribution
         return debugEditorContribution.contribute(editor);
       },
     });
-    // 这里是为了通过 MonacoOverrideServiceRegistry 来获取 codeEditorService ，但由于存在时序问题，所以加个 setTimeout 0
-    setTimeout(() => {
+    runWhenIdle(() => {
       debugEditorContribution?.registerDecorationType();
-    }, 0);
+    });
     this.preferenceSettings.setEnumLabels(
       'debug.console.filter.mode' as keyof CoreConfiguration,
       {
