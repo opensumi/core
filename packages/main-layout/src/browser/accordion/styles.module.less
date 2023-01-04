@@ -180,7 +180,7 @@ i.arrow_icon {
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 0 20px 1em;
+  padding: 0 10px 1em;
   box-sizing: border-box;
   align-items: center;
   & > * {
@@ -199,7 +199,6 @@ i.arrow_icon {
     transition: max-width 0.2s ease-out;
     :global(.kt-button) {
       box-sizing: border-box;
-      display: flex;
       width: 100%;
       padding: 4px;
       text-align: center;
@@ -207,6 +206,9 @@ i.arrow_icon {
       justify-content: center;
       align-items: center;
       max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-block;
     }
   }
 }
