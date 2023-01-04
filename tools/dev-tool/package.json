@@ -10,6 +10,9 @@
   "resolutions": {
     "terser": "^5.13.1"
   },
+  "bin": {
+    "sumi": "./cli/index.js"
+  },
   "dependencies": {
     "@types/koa": "^2.13.4",
     "@types/koa-bodyparser": "^4.3.7",
