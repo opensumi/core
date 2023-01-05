@@ -1,5 +1,6 @@
 import { Constants, uuid } from '@opensumi/ide-core-common';
-import { IRange, Position } from '@opensumi/monaco-editor-core';
+import { IRange } from '@opensumi/monaco-editor-core';
+import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
 import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';

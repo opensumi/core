@@ -1,9 +1,7 @@
 import { Disposable, Event } from '@opensumi/ide-core-common';
-import { Position } from '@opensumi/monaco-editor-core';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
-import { ISingleEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
+import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 
-import { ITextModel } from '../../../monaco-api/types';
 import { MappingManagerService } from '../mapping-manager.service';
 import { DocumentMapping } from '../model/document-mapping';
 import { InnerRange } from '../model/inner-range';
@@ -300,7 +298,9 @@ export class ActionsManager extends Disposable {
         this.incomingView.onDidConflictActions,
       )(({ range, action }) => {
         if (action === ACCEPT_CURRENT_ACTIONS) {
-          this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [{ range: oppositeRange, text: applyText }]);
+          this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [
+            { range: oppositeRange, text: applyText },
+          ]);
         }
 
         if (action === IGNORE_ACTIONS) {
