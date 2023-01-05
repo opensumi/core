@@ -394,9 +394,11 @@ export abstract class ExtensionContributesService extends WithEventBus {
 
     runContributes();
 
-    this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
-      runContributes(newPhase);
-    });
+    this.addDispose(
+      this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
+        runContributes(newPhase);
+      }),
+    );
   }
 }
 
