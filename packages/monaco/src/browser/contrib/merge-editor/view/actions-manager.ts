@@ -1,10 +1,12 @@
 import { Disposable, Event } from '@opensumi/ide-core-common';
+import { Position } from '@opensumi/monaco-editor-core';
 import { IEditorMouseEvent, MouseTargetType } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorBrowser';
 import { ISingleEditOperation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/editOperation';
-import { IRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 
+import { ITextModel } from '../../../monaco-api/types';
 import { MappingManagerService } from '../mapping-manager.service';
 import { DocumentMapping } from '../model/document-mapping';
+import { InnerRange } from '../model/inner-range';
 import { LineRange } from '../model/line-range';
 import {
   IConflictActionsEvent,
@@ -22,6 +24,8 @@ import {
 import { BaseCodeEditor } from './editors/baseCodeEditor';
 import { ResultCodeEditor } from './editors/resultCodeEditor';
 
+type TLineRangeEdit = Array<{ range: LineRange; text: string | null }>;
+
 export class ActionsManager extends Disposable {
   private currentView: BaseCodeEditor | undefined;
   private resultView: ResultCodeEditor | undefined;
@@ -31,15 +35,18 @@ export class ActionsManager extends Disposable {
     super();
   }
 
-  private applyLineRangeEdits(edits: ISingleEditOperation[]): void {
+  private applyLineRangeEdits(edits: TLineRangeEdit): void {
     if (!this.resultView) {
       return;
     }
     const model = this.resultView.getModel();
+    const eol = model!.getEOL();
 
     if (!model) {
       return;
     }
+
+    const modelLineCount = model.getLineCount();
 
     /**
      * 暂时先不处理 undo 和 redo 的情况
@@ -50,10 +57,26 @@ export class ActionsManager extends Disposable {
       edits.map((edit) => {
         const { range, text } = edit;
 
+        if (range.endLineNumberExclusive <= modelLineCount) {
+          return {
+            range: range.toRange(),
+            text: text ? text + eol : null,
+          };
+        }
+
+        if (range.startLineNumber === 1) {
+          return {
+            range: InnerRange.fromPositions(new Position(1, 1), new Position(modelLineCount, Number.MAX_SAFE_INTEGER)),
+            text: text ? text + eol : null,
+          };
+        }
+
         return {
-          range,
-          isAutoWhitespaceEdit: false,
-          text,
+          range: InnerRange.fromPositions(
+            new Position(range.startLineNumber - 1, Number.MAX_SAFE_INTEGER),
+            new Position(modelLineCount, Number.MAX_SAFE_INTEGER),
+          ),
+          text: text ? eol + text : null,
         };
       }),
       false,
@@ -96,7 +119,7 @@ export class ActionsManager extends Disposable {
         applyText: string;
         eol: string;
       },
-    ) => ISingleEditOperation[],
+    ) => TLineRangeEdit,
   ): void {
     const mapping = this.pickMapping(range);
     if (!mapping) {
@@ -108,7 +131,7 @@ export class ActionsManager extends Disposable {
     const model = viewEditor!.getModel()!;
     const eol = model.getEOL();
 
-    const applyText = model.getValueInRange(range.toRange());
+    const applyText = model.getValueInRange(range.toInclusiveRange());
     const oppositeRange = mapping.adjacentComputeRangeMap.get(range.id);
 
     if (!oppositeRange) {
@@ -168,11 +191,7 @@ export class ActionsManager extends Disposable {
     const { text } = metaData;
 
     // 为 null 则说明是删除文本
-    if (text) {
-      this.applyLineRangeEdits([{ range: range.toRange(), text: text + (range.isEmpty ? eol : '') }]);
-    } else {
-      this.applyLineRangeEdits([{ range: range.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER), text: null }]);
-    }
+    this.applyLineRangeEdits([{ range, text }]);
 
     this.resultView?.updateActions();
 
@@ -231,7 +250,7 @@ export class ActionsManager extends Disposable {
     this.applyLineRangeEdits([
       {
         text,
-        range: range.toRange(),
+        range,
       },
     ]);
 
@@ -281,14 +300,7 @@ export class ActionsManager extends Disposable {
         this.incomingView.onDidConflictActions,
       )(({ range, action }) => {
         if (action === ACCEPT_CURRENT_ACTIONS) {
-          this.handleAcceptChange(range, (range, oppositeRange, { applyText, eol }) => [
-            {
-              range: range.isEmpty
-                ? oppositeRange.deltaStart(-1).toRange(Number.MAX_SAFE_INTEGER)
-                : oppositeRange.toRange(),
-              text: applyText + (oppositeRange.isEmpty ? eol : ''),
-            },
-          ]);
+          this.handleAcceptChange(range, (_range, oppositeRange, { applyText }) => [{ range: oppositeRange, text: applyText }]);
         }
 
         if (action === IGNORE_ACTIONS) {
@@ -316,8 +328,8 @@ export class ActionsManager extends Disposable {
               range: LineRange.fromPositions(
                 oppositeRange.endLineNumberExclusive,
                 oppositeRange.endLineNumberExclusive,
-              ).toRange(),
-              text: applyText + eol,
+              ),
+              text: applyText,
             },
           ]);
         }

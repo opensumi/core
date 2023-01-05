@@ -99,7 +99,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
           deltaEdits.forEach((edits) => {
             const { startLineNumber, endLineNumber, offset } = edits;
 
-            const toLineRange = LineRange.fromPositions(startLineNumber, endLineNumber);
+            const toLineRange = LineRange.fromPositions(startLineNumber, endLineNumber + Math.max(0, offset));
             const { [EditorViewType.CURRENT]: includeLeftRange, [EditorViewType.INCOMING]: includeRightRange } =
               this.mappingManagerService.findIncludeRanges(toLineRange);
             /**
@@ -107,13 +107,13 @@ export class ResultCodeEditor extends BaseCodeEditor {
              * 那么就要以当前 touch range 的结果作为要 delta 的起点
              */
             const { [EditorViewType.CURRENT]: touchTurnLeftRange, [EditorViewType.INCOMING]: touchTurnRightRange } =
-              this.mappingManagerService.findTouchesRanges(toLineRange, false);
+              this.mappingManagerService.findTouchesRanges(toLineRange);
             const { [EditorViewType.CURRENT]: nextTurnLeftRange, [EditorViewType.INCOMING]: nextTurnRightRange } =
               this.mappingManagerService.findNextLineRanges(toLineRange);
 
             if (includeLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(includeLeftRange, offset);
-            } else if (touchTurnLeftRange && !toLineRange.isAfter(touchTurnLeftRange)) {
+            } else if (touchTurnLeftRange) {
               this.documentMappingTurnLeft.deltaEndAdjacentQueue(touchTurnLeftRange, offset);
             } else if (nextTurnLeftRange) {
               const reverse = this.documentMappingTurnLeft.reverse(nextTurnLeftRange);
@@ -124,7 +124,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
 
             if (includeRightRange) {
               this.documentMappingTurnRight.deltaEndAdjacentQueue(includeRightRange, offset);
-            } else if (touchTurnRightRange && !toLineRange.isAfter(touchTurnRightRange)) {
+            } else if (touchTurnRightRange) {
               this.documentMappingTurnRight.deltaEndAdjacentQueue(touchTurnRightRange, offset);
             } else if (nextTurnRightRange) {
               const reverse = this.documentMappingTurnRight.reverse(nextTurnRightRange);
@@ -400,7 +400,7 @@ export class ResultCodeEditor extends BaseCodeEditor {
     diffRanges.forEach((range) => {
       this.timeMachineDocument.record(range.id, {
         range,
-        text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toRange()),
+        text: range.isEmpty ? null : this.editor.getModel()!.getValueInRange(range.toInclusiveRange()),
       });
     });
   }

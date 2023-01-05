@@ -175,7 +175,14 @@ export class DocumentMapping extends Disposable {
     const values = this.ensureSort(this.adjacentComputeRangeMap.values());
 
     for (const range of values) {
-      if (range.isTouches(oppositeRange) && (isAllowContact ? true : !range.isContact(oppositeRange))) {
+      const condition = () => {
+        if (isAllowContact) {
+          return range.isTouches(oppositeRange) || range.isContact(oppositeRange);
+        }
+        return range.isTouches(oppositeRange) && !range.isContact(oppositeRange);
+      };
+
+      if (condition()) {
         return range;
       }
     }
