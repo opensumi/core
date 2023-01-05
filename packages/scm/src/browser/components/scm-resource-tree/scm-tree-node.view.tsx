@@ -1,5 +1,5 @@
 import clx from 'classnames';
-import React from 'react';
+import React, { memo } from 'react';
 
 import {
   Badge,
@@ -331,10 +331,10 @@ export const SCMResourceNode: React.FC<ISCMResourceRenderProps> = ({
   );
 };
 
-export const SCMTreeNode: React.FC<ISCMTreeNodeProps> = (props) => {
-  const { item, decorationService, labelService, ...restProps } = props;
+export const SCMTreeNode: React.FC<ISCMTreeNodeProps> = memo((props) => {
+  const { item, ...restProps } = props;
   if (SCMResourceGroup.is(item)) {
     return <SCMResourceGroupNode item={item} {...restProps} />;
   }
   return <SCMResourceNode {...props} item={item} />;
-};
+});

@@ -8,6 +8,7 @@ import {
   PreferenceService,
   EDITOR_COMMANDS,
   ILogger,
+  CancellationTokenSource,
 } from '@opensumi/ide-core-browser';
 import { DisposableCollection, Emitter, Event, URI } from '@opensumi/ide-core-browser';
 import { ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
@@ -22,13 +23,7 @@ import { ViewModelContext } from '../../scm-model';
 
 import { SCMTreeDecorationService } from './scm-tree-decoration.service';
 import { SCMTreeModel } from './scm-tree-model';
-import {
-  SCMResourceFolder,
-  SCMResourceFile,
-  SCMResourceGroup,
-  SCMResourceRoot,
-  SCMResourceNotRoot,
-} from './scm-tree-node';
+import { SCMResourceFolder, SCMResourceFile, SCMResourceGroup, SCMResourceRoot } from './scm-tree-node';
 import styles from './scm-tree-node.module.less';
 import { SCMTreeService } from './scm-tree.service';
 
@@ -97,7 +92,7 @@ export class SCMTreeModelService {
   private _activeDecorations: DecorationsManager;
   private _scmTreeHandle: IEditorTreeHandle;
 
-  private _changeEventDispatchQueue: string[] = [];
+  private refreshCancelToken: CancellationTokenSource | null;
 
   // 装饰器
   private _selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
@@ -643,6 +638,11 @@ export class SCMTreeModelService {
    * 备注: 由于 SCM 默认都是 List，Tree 只是转出来的，每次都要重新触发计算
    */
   async refresh(node: SCMResourceFolder = this.treeModel?.root as SCMResourceFolder) {
-    node?.refresh();
+    if (this.refreshCancelToken && !this.refreshCancelToken.token.isCancellationRequested) {
+      this.refreshCancelToken.cancel();
+    }
+    this.refreshCancelToken = new CancellationTokenSource();
+    await node?.refresh(this.refreshCancelToken);
+    this.refreshCancelToken = null;
   }
 }

@@ -12,7 +12,6 @@ import {
   SCMResourceGroup,
   SCMResourceFile,
   SCMResourceFolder,
-  SCMResourceNotRoot,
   SCMResourceNotFile,
   SCMResourceItem,
 } from './scm-tree-node';

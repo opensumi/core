@@ -50,7 +50,7 @@ export const SCMResourcesView: FC<{
       // @ts-ignore
       $that.current.ctx.createKey('scmRepository', repository);
     }
-
+    registerActionButton();
     const disposable = repository.provider.onDidChange(() => {
       registerActionButton();
     });
@@ -150,7 +150,6 @@ SCMResourcesViewWrapper.displayName = 'SCMResourcesViewWrapper';
 export const SCMProvidersView: FC<{ viewState: ViewState }> = observer((props) => {
   const viewModel = useInjectable<ViewModelContext>(ViewModelContext);
   const selectedRepo = viewModel.selectedRepos[0];
-
   return (
     <div className={styles.view}>
       {viewModel.repoList.length > 1 && (
