@@ -78,7 +78,7 @@ describe('contribution test', () => {
   });
 
   it('should fallback to LARGE_FILE_PREVENT_COMPONENT_ID if file is too large', async () => {
-    mockFileService.getFileStat.mockReturnValueOnce({ size: 114514 });
+    mockFileService.getFileStat.mockReturnValueOnce({ size: 4 * 1024 * 1024 * 1024 + 1 });
     const openTypes = await registry.resolveEditorComponent(createMockResource('file:///foo/2.js'));
     expect(openTypes[0].type).toBe('component');
     expect(openTypes[0].componentId).toBe('large-file-prevent');
