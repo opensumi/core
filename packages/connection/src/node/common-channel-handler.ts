@@ -184,7 +184,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           clearTimeout(this.heartbeatMap.get(connectionId) as NodeJS.Timeout);
           this.heartbeatMap.delete(connectionId);
 
-          this.logger.verbose(`clear heartbeat ${connectionId}`);
+          this.logger.verbose(`Clear heartbeat from channel ${connectionId}`);
         }
 
         Array.from(this.channelMap.values())
@@ -192,7 +192,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           .forEach((channel) => {
             channel.close(1, 'close');
             this.channelMap.delete(channel.id);
-            this.logger.verbose(`remove channel ${channel.id}`);
+            this.logger.verbose(`Remove connection channel ${channel.id}`);
           });
       });
     });

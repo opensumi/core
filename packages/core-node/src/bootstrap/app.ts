@@ -78,6 +78,7 @@ export class ServerApp implements IServerApp {
       blockPatterns: opts.blockPatterns,
       extHostIPCSockPath: opts.extHostIPCSockPath,
       extHostForkOptions: opts.extHostForkOptions,
+      killExtensionHostProcessWhenDisconnected: opts.killExtensionHostProcessWhenDisconnected ?? true,
     };
     this.bindProcessHandler();
     this.initBaseProvider();

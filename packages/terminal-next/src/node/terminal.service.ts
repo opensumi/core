@@ -62,7 +62,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     const sessionCheckResArray = await Promise.all(
       sessionIdArray.map((sessionId) => this.ptyServiceManager.checkSession(sessionId)),
     );
-    this.logger.log(`ensureClientTerminal ${clientId} ${terminalIdArr} ${sessionCheckResArray}`);
+    this.logger.log(`Ensure terminal client ${clientId} ${terminalIdArr} ${sessionCheckResArray}`);
 
     // 有一个存活就true，所以为了准确使用，每次调用terminalIdArr只传入一个东西
     for (const sessionCheckRes of sessionCheckResArray) {
@@ -78,7 +78,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
     const closeTimer = global.setTimeout(
       () => {
         this.disposeClient(clientId);
-        this.logger.debug(`删除 clientId ${clientId} 窗口的 pty 进程`);
+        this.logger.debug(`Remove pty process from ${clientId} client`);
       },
       isDevelopment() ? 0 : this.appConfig.terminalPtyCloseThreshold || TerminalServiceImpl.TerminalPtyCloseThreshold,
     );
@@ -187,7 +187,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
       });
 
       ptyService.onExit(({ exitCode, signal }) => {
-        this.logger.debug(`Terminal process exit (instanceId: ${sessionId}) with code ${exitCode}`);
+        this.logger.debug(`Terminal process ${sessionId} exit with code ${exitCode}`);
         if (this.serviceClientMap.has(clientId)) {
           this.flushPtyData(clientId, sessionId);
           const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
@@ -196,7 +196,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
             signal,
           });
         } else {
-          this.logger.warn(`terminal: pty ${clientId} on data not found`);
+          this.logger.warn(`The pty process ${clientId} not found`);
         }
       });
 
@@ -206,13 +206,13 @@ export class TerminalServiceImpl implements ITerminalNodeService {
           const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
           serviceClient.processChange(sessionId, processName);
         } else {
-          this.logger.warn(`terminal: pty ${clientId} on data not found`);
+          this.logger.warn(`The pty process ${clientId} not found`);
         }
       });
 
       const error = await ptyService.start();
       if (error) {
-        this.logger.error(`Terminal process start error (instanceId: ${sessionId})`, error);
+        this.logger.error(`Terminal process ${sessionId} start error\n`, error);
         throw error;
       }
 
@@ -242,7 +242,7 @@ export class TerminalServiceImpl implements ITerminalNodeService {
   public onMessage(id: string, msg: string) {
     const terminal = this.getTerminal(id);
     if (!terminal) {
-      this.logger.warn(`terminal ${id} onMessage not found`, terminal);
+      this.logger.warn(`The terminal ${id} not found`);
       return;
     }
     terminal.onMessage(msg);

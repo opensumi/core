@@ -37,7 +37,7 @@ export function createServerConnection2(
   // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
     handler: (connection: WSChannel, clientId: string) => {
-      logger.log(`set rpc connection ${clientId}`);
+      logger.log(`New RPC connection ${clientId}`);
 
       const serviceCenter = new RPCServiceCenter(undefined, logger);
       const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
@@ -50,10 +50,10 @@ export function createServerConnection2(
         serviceCenter.removeConnection(serverConnection);
         serviceChildInjector.disposeAll();
 
-        logger.log(`remove rpc connection ${clientId} `);
+        logger.log(`Remove RPC connection ${clientId}`);
       });
     },
-    dispose: (connection: ws, connectionClientId: string) => {},
+    dispose: () => {},
   });
 
   socketRoute.registerHandler(channelHandler);
@@ -76,15 +76,12 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
   );
 
   server.on('connection', (connection) => {
-    logger.log('set net rpc connection');
     const serverConnection = createSocketConnection(connection);
     serviceCenter.setConnection(serverConnection);
 
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);
       serviceChildInjector.disposeAll();
-
-      logger.log('remove net rpc connection');
     });
   });
 
@@ -97,7 +94,6 @@ export function bindModuleBackService(
   serviceCenter: RPCServiceCenter,
   clientId?: string,
 ) {
-  const logger = injector.get(INodeLogger);
   const { createRPCService } = initRPCService(serviceCenter);
 
   const childInjector = injector.createChild();
@@ -105,7 +101,6 @@ export function bindModuleBackService(
     if (module.backServices) {
       for (const service of module.backServices) {
         if (service.token) {
-          logger.log('back service', service.token);
           const serviceToken = service.token;
 
           if (!injector.creatorMap.has(serviceToken)) {
