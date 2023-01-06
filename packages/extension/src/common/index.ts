@@ -383,18 +383,27 @@ export abstract class ExtensionContributesService extends WithEventBus {
   }
 
   public initialize() {
-    if (this.lifecycleService.phase) {
-      this.runContributesByPhase(this.lifecycleService.phase);
-    }
+    const runContributes = (phase = this.lifecycleService.phase) => {
+      if (!phase) {
+        return;
+      }
 
-    this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
-      this.runContributesByPhase(newPhase);
       // 所有 contributionPoint 运行完后清空
       // 确保后续安装/启用插件后可以正常激活
-      if (newPhase === LifeCyclePhase.Ready) {
+      if (phase === LifeCyclePhase.Ready) {
         this.contributedSet.clear();
       }
-    });
+
+      this.runContributesByPhase(phase);
+    };
+
+    runContributes();
+
+    this.addDispose(
+      this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
+        runContributes(newPhase);
+      }),
+    );
   }
 }
 
