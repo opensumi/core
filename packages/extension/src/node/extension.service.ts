@@ -49,6 +49,7 @@ import {
   ICreateProcessOptions,
   KT_PROCESS_SOCK_OPTION_KEY,
   IExtensionNodeClientService,
+  CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
 } from '../common';
 
 import { ExtensionScanner } from './extension.scanner';
@@ -497,7 +498,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
         this.logger.log(`Electron mainThread listen on ${mainThreadListenPath}`);
       });
     } else {
-      commonChannelPathHandler.register('ExtMainThreadConnection', {
+      commonChannelPathHandler.register(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD, {
         handler: (connection: WSChannel, connectionClientId: string) => {
           const reader = new WebSocketMessageReader(connection);
           const writer = new WebSocketMessageWriter(connection);
@@ -527,11 +528,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
             this.closeExtProcessWhenConnectionClose(connectionClientId);
           });
         },
-        dispose: (_connection, connectionClientId: string) => {
-          if (this.appConfig.killExtensionHostProcessWhenDisconnected) {
-            this.disposeClientExtProcess(connectionClientId);
-          }
-        },
+        dispose: () => {},
       });
     }
   }
@@ -605,7 +602,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.clientExtProcessMap.delete(clientId);
 
       if (killProcess) {
-        await this.extensionHostManager.treeKill(extProcessId);
         await this.extensionHostManager.disposeProcess(extProcessId);
       }
       if (info) {

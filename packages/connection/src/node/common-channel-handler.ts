@@ -121,11 +121,10 @@ export class CommonChannelHandler extends WebSocketHandler {
 
           // 心跳消息
           if (msgObj.kind === 'heartbeat') {
-            // console.log(`heartbeat msg ${msgObj.clientId}`)
             connection.send(stringify(`heartbeat ${msgObj.clientId}`));
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
-            this.logger.log('new connection clientId', clientId);
+            this.logger.log(`New connection with id ${clientId}`);
             connectionId = clientId;
             this.connectionMap.set(clientId, connection);
             this.hearbeat(connectionId, connection);
@@ -133,7 +132,7 @@ export class CommonChannelHandler extends WebSocketHandler {
           } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
             const { path } = msgObj;
-            this.logger.log('new open channelId', channelId, 'channelPath', path);
+            this.logger.log(`Open a new connection channel ${channelId} with path ${path}`);
 
             // 生成 channel 对象
             const connectionSend = this.channelConnectionSend(connection);
@@ -162,14 +161,12 @@ export class CommonChannelHandler extends WebSocketHandler {
 
             channel.ready();
           } else {
-            // console.log('connection message', msgObj.id, msgObj.kind, this.channelMap.get(msgObj.id));
-
             const { id } = msgObj;
             const channel = this.channelMap.get(id);
             if (channel) {
               channel.handleMessage(msgObj);
             } else {
-              this.logger.warn(`channel ${id} not found`);
+              this.logger.warn(`The channel(${id}) was not found`);
             }
           }
         } catch (e) {

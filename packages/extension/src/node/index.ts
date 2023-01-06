@@ -58,11 +58,11 @@ export class ExtensionContribution implements ServerAppContribution {
 
   async initialize() {
     await this.extensionNodeService.initialize();
-    this.logger.verbose('extension initialized');
+    this.logger.verbose('Extension server initialized');
   }
 
   async onStop() {
     await this.extensionNodeService.disposeAllClientExtProcess();
-    this.logger.warn('extension exit by server stop');
+    this.logger.warn('All extension process exit by server stop');
   }
 }

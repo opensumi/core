@@ -108,10 +108,6 @@ interface Config {
    * 配置关闭 keytar 校验能力，默认开启
    */
   disableKeytar?: boolean;
-  /**
-   * 是否在通信断连后尝试杀死插件进程，默认开启
-   */
-  killExtensionHostProcessWhenDisconnected?: boolean;
 }
 
 export interface AppConfig extends Partial<Config> {
