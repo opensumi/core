@@ -313,6 +313,9 @@ export class PreferenceServiceImpl implements PreferenceService {
   public getValid<T>(preferenceName: string, defaultValue?: T) {
     const { value, scope } = this.resolve<T>(preferenceName, defaultValue);
     const property = this.schema.getPreferenceProperty(preferenceName);
+    if (!property) {
+      return value;
+    }
     let highPriorityValue: T;
     if (scope === PreferenceScope.Default) {
       // 当返回的是默认值时，校验合法性，优先采用传入的 `defaultValue`
@@ -323,8 +326,14 @@ export class PreferenceServiceImpl implements PreferenceService {
       highPriorityValue = value as T;
       defaultValue = defaultValue ?? property?.default;
     }
+    // 当配置的类型数组存在 PREFERENCE_PROPERTY_TYPE.NULL 时，默认采用 PREFERENCE_PROPERTY_TYPE.NULL 类型
+    const type = isArray(property.type)
+      ? property.type.includes(PREFERENCE_PROPERTY_TYPE.NULL)
+        ? PREFERENCE_PROPERTY_TYPE.NULL
+        : property.type[0]
+      : property.type;
     if (scope === PreferenceScope.Default) {
-      switch (property?.type) {
+      switch (type) {
         case PREFERENCE_PROPERTY_TYPE.STRING:
           return isString(highPriorityValue) ? highPriorityValue : isString(defaultValue) ? defaultValue : '';
         case PREFERENCE_PROPERTY_TYPE.INT:

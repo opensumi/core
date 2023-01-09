@@ -193,7 +193,12 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     if (property.default !== undefined) {
       return property.default;
     }
-    const type = Array.isArray(property.type) ? property.type[0] : property.type;
+    // 当配置的类型数组存在 PREFERENCE_PROPERTY_TYPE.NULL 时，默认采用 PREFERENCE_PROPERTY_TYPE.NULL 类型
+    const type = Array.isArray(property.type)
+      ? property.type.includes(PREFERENCE_PROPERTY_TYPE.NULL)
+        ? PREFERENCE_PROPERTY_TYPE.NULL
+        : property.type[0]
+      : property.type;
     switch (type) {
       case PREFERENCE_PROPERTY_TYPE.BOOLEAN:
         return false;

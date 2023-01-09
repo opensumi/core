@@ -28,7 +28,7 @@ export class ToolbarCustomizeViewService {
   }
 
   async toggleActionVisibility(location: string, actionId: string, visible: boolean) {
-    const prev: { [key: string]: string[] } = this.preferenceService.getValid('toolbar.ignoreActions');
+    const prev: { [key: string]: string[] } = this.preferenceService.getValid('toolbar.ignoreActions', {});
     if (!prev[location]) {
       prev[location] = [];
     }

@@ -166,7 +166,7 @@ export class FileTreeService extends Tree implements IFileTreeService {
     await this.preferenceService.ready;
     this._baseIndent = this.preferenceService.getValid('explorer.fileTree.baseIndent', 8);
     this._indent = this.preferenceService.getValid('explorer.fileTree.indent', 8);
-    this._isCompactMode = this.preferenceService.getValid('explorer.compactFolders');
+    this._isCompactMode = this.preferenceService.getValid('explorer.compactFolders', true);
 
     this.toDispose.push(
       this.workspaceService.onWorkspaceChanged((roots) => {

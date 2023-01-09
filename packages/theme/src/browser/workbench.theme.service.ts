@@ -312,11 +312,11 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   private get colorCustomizations(): IColorCustomizations {
-    return this.preferenceService.getValid(CUSTOM_WORKBENCH_COLORS_SETTING);
+    return this.preferenceService.getValid(CUSTOM_WORKBENCH_COLORS_SETTING, {});
   }
 
   private get tokenColorCustomizations(): ITokenColorCustomizations {
-    return this.preferenceService.getValid<ITokenColorCustomizations>(CUSTOM_EDITOR_COLORS_SETTING);
+    return this.preferenceService.getValid<ITokenColorCustomizations>(CUSTOM_EDITOR_COLORS_SETTING, {});
   }
 
   private listen() {

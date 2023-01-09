@@ -60,7 +60,7 @@ export interface PreferenceDataSchema {
 }
 
 export interface PreferenceItem {
-  type?: PreferencePropertyType;
+  type?: PreferencePropertyType | PreferencePropertyType[];
   minimum?: number;
   /**
    * content assist (UI) default value
