@@ -137,7 +137,7 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
         if (type === 'text') {
           const { metadata, uri } = resource as { uri: URI; metadata: any };
           const stat = await this.fileServiceClient.getFileStat(uri.toString());
-          const maxSize = this.preference.get<number>('editor.largeFile') || 20000;
+          const maxSize = this.preference.get<number>('editor.largeFile') || 4 * 1024 * 1024 * 1024;
 
           if (stat && (stat.size || 0) > maxSize && !(metadata || {}).noPrevent) {
             results.push({

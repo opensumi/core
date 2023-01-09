@@ -1601,7 +1601,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.maxTokenizationLineLength': {
     type: 'integer',
-    default: 20_000,
+    default: 20000,
     description: localize(
       'maxTokenizationLineLength',
       'Lines above this length will not be tokenized for performance reasons',
@@ -1723,16 +1723,16 @@ const customEditorSchema: PreferenceSchemaProperties = {
     default: false,
     description: '%editor.configuration.forceReadOnly%',
   },
-  // 会启用languageFeature的最大文件尺寸
+  // 会启用 languageFeature 的最大文件尺寸
   'editor.languageFeatureEnabledMaxSize': {
     type: 'number',
-    default: 2 * 1024 * 1024, // 2M
+    default: 4 * 1024 * 1024 * 1024, // 4096 MB
     description: '%editor.configuration.languageFeatureEnabledMaxSize%',
   },
-  // 会同步到extHost的最大文件尺寸, 必须大于等于 languageFeatureEnabledMaxSize
+  // 会同步到插件进程的最大文件尺寸, 必须大于等于 languageFeatureEnabledMaxSize
   'editor.docExtHostSyncMaxSize': {
     type: 'number',
-    default: 2 * 1024 * 1024, // 2M
+    default: 4 * 1024 * 1024 * 1024, // 4096 MB
     description: '%editor.configuration.docExtHostSyncMaxSize%',
   },
   'editor.renderLineHighlight': {
@@ -1811,7 +1811,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.maxTokenizationLineLength': {
     type: 'integer',
-    default: 10000,
+    default: 20000,
     description: '%editor.configuration.maxTokenizationLineLength%',
   },
   'editor.semanticHighlighting.enabled': {
@@ -1837,7 +1837,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'editor.largeFile': {
     type: 'number',
-    default: 2 * 1024 * 1024,
+    default: 4 * 1024 * 1024 * 1024,
     description: '%editor.configuration.largeFileSize%',
   },
   'editor.quickSuggestionsDelay': {

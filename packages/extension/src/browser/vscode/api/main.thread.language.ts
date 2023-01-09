@@ -171,7 +171,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       this.languageFeatureEnabled.set(
         uriString,
         model.getValueLength() <
-          (this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 2 * 1024 * 1024),
+          (this.preference.get<number>('editor.languageFeatureEnabledMaxSize') || 4 * 1024 * 1024 * 1024),
       );
     }
     return this.languageFeatureEnabled.get(uriString);
