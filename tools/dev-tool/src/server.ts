@@ -71,8 +71,8 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
      */
     extHost:
       path.join(__dirname, '../../../packages/extension/lib/hosted/ext.process.js') || process.env.EXTENSION_HOST_ENTRY,
-    onDidCreateExtensionHostProcess: (extProcess) => {
-      console.log('onDidCreateExtensionHostProcess extProcess.pid', extProcess.pid);
+    onDidCreateExtensionHostProcess: (extHostProcess) => {
+      console.log(`Extension host process ${extHostProcess.pid} created`);
     },
   };
   if (Array.isArray(arg1)) {

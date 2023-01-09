@@ -20,6 +20,7 @@ import {
 } from '@opensumi/ide-core-browser';
 
 import {
+  CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD,
   ExtensionNodeServiceServerPath,
   IExtension,
   IExtensionHostService,
@@ -172,7 +173,7 @@ export class NodeExtProcessService implements AbstractNodeExtProcessService<IExt
       mainThreadCenter.setConnection(createElectronClientConnection(connectPath));
     } else {
       const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      const channel = await WSChannelHandler.openChannel('ExtMainThreadConnection');
+      const channel = await WSChannelHandler.openChannel(CONNECTION_HANDLE_BETWEEN_EXTENSION_AND_MAIN_THREAD);
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 

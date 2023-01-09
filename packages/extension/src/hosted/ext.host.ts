@@ -3,7 +3,6 @@ import path from 'path';
 import { Injector } from '@opensumi/di';
 import { RPCProtocol, ProxyIdentifier } from '@opensumi/ide-connection';
 import {
-  getDebugLogger,
   Emitter,
   IReporterService,
   REPORT_HOST,
@@ -375,8 +374,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async activateExtension(id: string) {
-    this.logger.debug('exthost $activateExtension', id);
-
     const extension: IExtensionDescription | undefined = this.extensions.find((ext) => ext.id === id);
 
     if (!extension) {
@@ -394,7 +391,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const modulePath: string = extension.path;
     this.logger.debug(`${extension.name} - ${modulePath}`);
 
-    this.logger.debug('exthost $activateExtension path', modulePath);
+    this.logger.debug(`active extension host process by ${modulePath}`);
     const extendProxy = this.getExtendModuleProxy(extension, isSumiContributes);
 
     const context = await this.loadExtensionContext(extension, modulePath, this.storage, this.secret, extendProxy);
@@ -411,10 +408,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       try {
         extensionModule = getNodeRequire()(modulePath);
         reportTimer.timeEnd(extension.id);
-      } catch (err) {
+      } catch (error) {
         activationFailed = true;
-        activationFailedError = err;
-        this.logger.error(`[Extension-Host][Activate Exception] ${extension.id}: `, err);
+        activationFailedError = error;
+        this.logger.error(`active extension ${extension.id} failure by\n${error}`);
       }
 
       if (extensionModule.activate) {
@@ -427,10 +424,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
             version: extension.packageJSON.version,
           });
           exportsData = extensionExports;
-        } catch (e) {
+        } catch (error) {
           activationFailed = true;
-          activationFailedError = e;
-          this.logger.error(`[Extension-Host][Activate Exception] ${extension.id}: `, e);
+          activationFailedError = error;
+          this.logger.error(`active extension ${extension.id} failure by\n${error}`);
         }
       }
     }
@@ -442,11 +439,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         reportTimer.timeEnd(extension.id, {
           version: extension.packageJSON.version,
         });
-      } catch (err) {
+      } catch (error) {
         activationFailed = true;
-        activationFailedError = err;
-        this.reportRuntimeError(err, extension, err.stack);
-        this.logger.error(`[Extension-Host][Activate Exception] ${extension.id}: `, err);
+        activationFailedError = error;
+        this.reportRuntimeError(error, extension, error.stack);
+        this.logger.error(`active extension ${extension.id} failure by\n${error}`);
       }
     } else if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
       extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
@@ -459,14 +456,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       try {
         const extendModuleExportsData = await extendModule.activate(context);
         extendExports = extendModuleExportsData;
-      } catch (e) {
+      } catch (error) {
         activationFailed = true;
-        activationFailedError = e;
-        this.reportRuntimeError(e, extension, e.stack);
-        this.logger.log('activateExtension extension.extendConfig error ');
-        this.logger.log(e);
-        getDebugLogger().error(`${extension.id}`);
-        getDebugLogger().error(e);
+        activationFailedError = error;
+        this.reportRuntimeError(error, extension, error.stack);
+        this.logger.error(`active extension extend module failure by\n${error}`);
       }
     }
     this.extensionsActivator.set(
@@ -534,6 +528,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private registerExtendModuleService(exportsData, extension: IExtensionDescription) {
     const service = {};
     for (const key in exportsData) {
+      // eslint-disable-next-line no-prototype-builtins
       if (exportsData.hasOwnProperty(key)) {
         if (typeof exportsData[key] === 'function') {
           service[`$${key}`] = exportsData[key];

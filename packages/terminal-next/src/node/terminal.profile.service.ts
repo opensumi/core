@@ -279,7 +279,7 @@ export class TerminalProfileServiceNode {
         validatedProfile.color = profile.color;
         resultProfiles.push(validatedProfile);
       } else {
-        this.logger.log('profile not validated', profileName, originalPaths);
+        this.logger.log(`Profile \`${profileName}\` not validated with originalPaths ${originalPaths}`);
       }
     }
     return resultProfiles;
