@@ -97,6 +97,13 @@ export function isUndefinedOrNull(obj: any): obj is undefined | null {
   return isUndefined(obj) || obj === null;
 }
 
+/**
+ * @returns whether the provided parameter is null.
+ */
+export function isNull(obj: any): obj is null {
+  return obj === null;
+}
+
 const hasOwnProperty = Object.prototype.hasOwnProperty;
 
 export function hasProperty<X extends {}, Y extends PropertyKey>(obj: X, prop: Y): obj is X & Record<Y, unknown> {

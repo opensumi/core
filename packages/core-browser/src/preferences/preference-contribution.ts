@@ -12,12 +12,10 @@ import {
 } from '@opensumi/ide-core-common';
 import {
   PreferenceSchema,
-  PreferenceSchemaProperties,
   PreferenceDataSchema,
   PreferenceItem,
-  PreferenceSchemaProperty,
   PreferenceDataProperty,
-  JsonType,
+  PREFERENCE_PROPERTY_TYPE,
 } from '@opensumi/ide-core-common/lib/preferences/preference-schema';
 
 import { AppConfig } from '../react-providers/config-provider';
@@ -25,16 +23,6 @@ import { AppConfig } from '../react-providers/config-provider';
 import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
 import { PreferenceProvider, PreferenceProviderDataChange, IResolvedPreferences } from './preference-provider';
 import { PreferenceScope } from './preference-scope';
-
-export {
-  PreferenceSchema,
-  PreferenceSchemaProperties,
-  PreferenceDataSchema,
-  PreferenceItem,
-  PreferenceSchemaProperty,
-  PreferenceDataProperty,
-  JsonType,
-};
 
 export const PreferenceContribution = Symbol('PreferenceContribution');
 export interface PreferenceContribution {
@@ -98,7 +86,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     if (!this._validateFunction) {
       this.doUpdateValidate();
     }
-    return this._validateFunction!;
+    return this._validateFunction as Ajv.ValidateFunction;
   }
 
   constructor() {
@@ -207,16 +195,17 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     }
     const type = Array.isArray(property.type) ? property.type[0] : property.type;
     switch (type) {
-      case 'boolean':
+      case PREFERENCE_PROPERTY_TYPE.BOOLEAN:
         return false;
-      case 'integer':
-      case 'number':
+      case PREFERENCE_PROPERTY_TYPE.INT:
+      case PREFERENCE_PROPERTY_TYPE.NUMBER:
         return 0;
-      case 'string':
+      case PREFERENCE_PROPERTY_TYPE.STRING:
         return '';
-      case 'array':
+      case PREFERENCE_PROPERTY_TYPE.STRING_ARRAY:
+      case PREFERENCE_PROPERTY_TYPE.ARRAY:
         return [];
-      case 'object':
+      case PREFERENCE_PROPERTY_TYPE.OBJECT:
         return {};
     }
     return null;

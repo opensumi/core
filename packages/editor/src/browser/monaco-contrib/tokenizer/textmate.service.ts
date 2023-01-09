@@ -355,7 +355,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       return;
     }
     const tokenizerOption: TokenizerOption = {
-      lineLimit: this.preferenceService.get('editor.maxTokenizationLineLength') || 20000,
+      lineLimit: this.preferenceService.getValid('editor.maxTokenizationLineLength', 20000),
     };
     const configuration = this.textmateRegistry.getGrammarConfiguration(languageId)();
     const initialLanguage = getEncodedLanguageId(languageId);

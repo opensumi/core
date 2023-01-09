@@ -3,12 +3,18 @@ import {
   Deferred,
   Emitter,
   DisposableCollection,
-  Disposable,
   URI,
   isUndefined,
   isEmptyObject,
   objects,
   LRUMap,
+  PREFERENCE_PROPERTY_TYPE,
+  isString,
+  isArray,
+  isNumber,
+  isBoolean,
+  isNull,
+  isObject,
 } from '@opensumi/ide-core-common';
 
 import { PreferenceConfigurations } from './preference-configurations';
@@ -304,6 +310,41 @@ export class PreferenceServiceImpl implements PreferenceService {
     return this.resolve<T>(preferenceName, defaultValue, resourceUri, language).value;
   }
 
+  public getValid<T>(preferenceName: string, defaultValue?: T) {
+    const { value, scope } = this.resolve<T>(preferenceName, defaultValue);
+    const property = this.schema.getPreferenceProperty(preferenceName);
+    let highPriorityValue: T;
+    if (scope === PreferenceScope.Default) {
+      // 当返回的是默认值时，校验合法性，优先采用传入的 `defaultValue`
+      highPriorityValue = defaultValue ?? (value as T);
+      defaultValue = defaultValue ?? property?.default;
+    } else {
+      // 当返回的非默认值时，校验合法性，优先采用获取到的 `value`
+      highPriorityValue = value as T;
+      defaultValue = defaultValue ?? property?.default;
+    }
+    if (scope === PreferenceScope.Default) {
+      switch (property?.type) {
+        case PREFERENCE_PROPERTY_TYPE.STRING:
+          return isString(highPriorityValue) ? highPriorityValue : isString(defaultValue) ? defaultValue : '';
+        case PREFERENCE_PROPERTY_TYPE.INT:
+        case PREFERENCE_PROPERTY_TYPE.NUMBER:
+          return isNumber(highPriorityValue) ? highPriorityValue : isNumber(defaultValue) ? defaultValue : 0;
+        case PREFERENCE_PROPERTY_TYPE.STRING_ARRAY:
+        case PREFERENCE_PROPERTY_TYPE.ARRAY:
+          return isArray(highPriorityValue) ? highPriorityValue : isArray(defaultValue) ? defaultValue : [];
+        case PREFERENCE_PROPERTY_TYPE.BOOLEAN:
+          return isBoolean(highPriorityValue) ? highPriorityValue : isBoolean(defaultValue) ? defaultValue : false;
+        case PREFERENCE_PROPERTY_TYPE.NULL:
+          return isNull(highPriorityValue) ? highPriorityValue : isNull(defaultValue) ? defaultValue : null;
+        case PREFERENCE_PROPERTY_TYPE.OBJECT:
+          return isObject(highPriorityValue) ? highPriorityValue : isObject(defaultValue) ? defaultValue : {};
+        default:
+          return null;
+      }
+    }
+  }
+
   public lookUp<T>(key: string): PreferenceResolveResult<T> {
     let value;
     let reset;
@@ -357,7 +398,6 @@ export class PreferenceServiceImpl implements PreferenceService {
       : !resourceUri
       ? PreferenceScope.Workspace
       : PreferenceScope.Folder;
-    // TODO: 错误日志错误码机制
     if (resolvedScope === PreferenceScope.User && this.configurations.isSectionName(preferenceName.split('.', 1)[0])) {
       throw new Error(`Unable to write to User Settings because ${preferenceName} does not support for global scope.`);
     }
@@ -495,15 +535,18 @@ export class PreferenceServiceImpl implements PreferenceService {
     untilScope?: PreferenceScope,
     language?: string,
   ): PreferenceResolveResult<T> {
+    let cache;
     if (!this.cachedPreference.has(preferenceName)) {
-      this.cachedPreference.set(preferenceName, new LRUMap(500, 200));
+      cache = new LRUMap(500, 200);
+      this.cachedPreference.set(preferenceName, cache);
+    } else {
+      cache = this.cachedPreference.get(preferenceName);
     }
-    const cache = this.cachedPreference.get(preferenceName)!;
     const cacheKey = cacheHash(language, untilScope, resourceUri);
     if (!cache.has(cacheKey)) {
       cache.set(cacheKey, this.doResolveWithOutCache<T>(preferenceName, resourceUri, untilScope, language));
     }
-    const result = cache.get(cacheKey)!;
+    const result = cache.get(cacheKey);
     if (result.value === undefined) {
       result.value = defaultValue;
     }

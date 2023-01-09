@@ -37,6 +37,14 @@ export interface PreferenceService extends IDisposable {
   get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, overrideIdentifier?: string): T | undefined;
 
   /**
+   * 简单通过 `preferenceName` 获取到有效的配置值，防止异常数据导致逻辑问题
+   * @param preferenceName 配置名称
+   * @param defaultValue 默认值
+   */
+  getValid<T>(preferenceName: string, defaultValue?: T): T;
+  getValid<T>(preferenceName: string, defaultValue?: T): T | undefined;
+
+  /**
    * 是否一个配置在指定 scope 存在针对语言的配置
    * @param preferenceName 配置名称
    * @param overrideIdentifier 语言
