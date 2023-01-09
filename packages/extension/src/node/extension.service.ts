@@ -407,7 +407,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     const initHandler = (msg) => {
       if (msg === 'ready') {
         const duration = forkTimer.timeEnd();
-        this.logger.log(`Client ${clientId} fork extension host process cost ${duration}ms`);
+        this.logger.log(`Starting extension host with pid ${extProcessId} (fork() took ${duration} ms).`);
         this.clientExtProcessInitDeferredMap.get(clientId)?.resolve();
         this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
       } else if (msg === 'finish') {
