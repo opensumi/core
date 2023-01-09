@@ -13,6 +13,7 @@ import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-brow
 import { CommandService, CUSTOM_EDITOR_SCHEME, IExtensionProps, URI } from '@opensumi/ide-core-common';
 import {
   BrowserEditorContribution,
+  EditorOpenType,
   IResource,
   ResourceService,
   WorkbenchEditorService,
@@ -156,7 +157,7 @@ export class VariablesPanelContribution implements BrowserEditorContribution, Me
               disableNavigate: true,
               preview: true,
               forceOpenType: {
-                type: 'component',
+                type: EditorOpenType.component,
                 componentId: HEX_EDITOR_EDITOR_ID,
               },
             },

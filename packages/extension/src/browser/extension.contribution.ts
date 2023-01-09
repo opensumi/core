@@ -36,7 +36,7 @@ import {
   StatusBarEntryAccessor,
 } from '@opensumi/ide-core-browser/lib/services/status-bar-service';
 import { IResourceOpenOptions, WorkbenchEditorService } from '@opensumi/ide-editor';
-import { IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
+import { EditorOpenType, IEditorOpenType } from '@opensumi/ide-editor/lib/common/editor';
 import { IWindowDialogService } from '@opensumi/ide-overlay';
 import { IWebviewService } from '@opensumi/ide-webview';
 
@@ -348,7 +348,7 @@ export class ExtensionCommandContribution implements CommandContribution {
           id === 'default'
             ? undefined
             : {
-                type: 'component',
+                type: EditorOpenType.component,
                 componentId: `${CUSTOM_EDITOR_SCHEME}-${id}`,
               };
         return this.doOpenWith(uri, columnAndOptions, undefined, openType);

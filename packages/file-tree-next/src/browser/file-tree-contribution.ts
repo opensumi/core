@@ -44,7 +44,7 @@ import {
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
 import { IDecorationsService } from '@opensumi/ide-decoration';
-import { IEditorOpenType, WorkbenchEditorService } from '@opensumi/ide-editor';
+import { EditorOpenType, IEditorOpenType, WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService, IViewsRegistry, MainLayoutContribution } from '@opensumi/ide-main-layout';
 import { ViewContentGroups } from '@opensumi/ide-main-layout/lib/browser/views-registry';
@@ -598,10 +598,10 @@ export class FileTreeContribution
       const items: QuickOpenItem[] = [];
 
       const compareType = (o: IEditorOpenType, t: IEditorOpenType) => {
-        if (t.type === 'code') {
-          return o.type === 'code';
+        if (t.type === EditorOpenType.code) {
+          return o.type === EditorOpenType.code;
         }
-        if (t.type === 'component' && o.type === 'component') {
+        if (t.type === EditorOpenType.component && o.type === EditorOpenType.component) {
           return o.componentId === t.componentId;
         }
         return false;

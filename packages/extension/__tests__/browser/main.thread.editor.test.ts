@@ -38,7 +38,7 @@ import { BaseFileSystemEditorDocumentProvider } from '@opensumi/ide-editor/lib/b
 import { FileSystemResourceProvider } from '@opensumi/ide-editor/lib/browser/fs-resource/fs-resource';
 import { LanguageService } from '@opensumi/ide-editor/lib/browser/language/language.service';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser/types';
+import { EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser/types';
 import {
   EditorGroupChangeEvent,
   EditorVisibleChangeEvent,
@@ -293,9 +293,9 @@ describe('MainThreadEditor Test Suites', () => {
     const ref = await editorDocModelService.createModelReference(
       URI.file(path.join(__dirname, 'main.thread.output.test.ts')),
     );
-    await group.codeEditor.open(ref);
+    group.codeEditor.open(ref);
     const openType: IEditorOpenType = {
-      type: 'code',
+      type: EditorOpenType.code,
       componentId: 'test-v-component',
       title: 'test-file',
     };

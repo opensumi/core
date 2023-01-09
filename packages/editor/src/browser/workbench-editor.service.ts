@@ -99,6 +99,7 @@ import {
   RegisterEditorComponentEvent,
   AskSaveResult,
   IMergeEditorResource,
+  EditorOpenType,
 } from './types';
 import { UntitledDocumentIdCounter } from './untitled-resource';
 
@@ -821,7 +822,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @debounce(100)
   doLayoutEditors() {
     if (this.codeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === 'code') {
+      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
         this.codeEditor.layout();
         this._codeEditorPendingLayout = false;
       } else {
@@ -829,7 +830,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     if (this.diffEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
         this.diffEditor.layout();
         this._diffEditorPendingLayout = false;
       } else {
@@ -837,7 +838,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
     }
     if (this.mergeEditor) {
-      if (this.currentOpenType && this.currentOpenType.type === 'mergeEditor') {
+      if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.mergeEditor) {
         // this.mergeEditor.layout();
         this._mergeEditorPendingLayout = false;
       } else {
@@ -1027,9 +1028,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   get currentEditor(): IEditor | null {
     if (this.currentOpenType) {
-      if (this.currentOpenType.type === 'code') {
+      if (this.currentOpenType.type === EditorOpenType.code) {
         return this.codeEditor;
-      } else if (this.currentOpenType.type === 'diff') {
+      } else if (this.currentOpenType.type === EditorOpenType.diff) {
         return this.diffEditor.modifiedEditor;
       } else {
         return null;
@@ -1045,11 +1046,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   get currentFocusedEditor() {
     if (this.currentOpenType) {
-      if (this.currentOpenType.type === 'code') {
+      if (this.currentOpenType.type === EditorOpenType.code) {
         if (this.codeEditor.monacoEditor.hasWidgetFocus()) {
           return this.codeEditor;
         }
-      } else if (this.currentOpenType.type === 'diff') {
+      } else if (this.currentOpenType.type === EditorOpenType.diff) {
         if (this.diffEditor.modifiedEditor.monacoEditor.hasTextFocus()) {
           return this.diffEditor.modifiedEditor;
         } else if (this.diffEditor.originalEditor.monacoEditor.hasTextFocus()) {
@@ -1067,7 +1068,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   get currentCodeEditor(): ICodeEditor | null {
     if (this.currentOpenType) {
-      if (this.currentOpenType.type === 'code') {
+      if (this.currentOpenType.type === EditorOpenType.code) {
         return this.codeEditor;
       } else {
         return null;
@@ -1095,7 +1096,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     );
     this.toDispose.push(
       this.codeEditor.onSelectionsChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'code') {
+        if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
           this.eventBus.fire(
             new EditorSelectionChangeEvent({
               group: this,
@@ -1110,7 +1111,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     );
     this.toDispose.push(
       this.codeEditor.onVisibleRangesChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'code') {
+        if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
           this.eventBus.fire(
             new EditorVisibleChangeEvent({
               group: this,
@@ -1124,7 +1125,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     );
     this.toDispose.push(
       this.codeEditor.onConfigurationChanged(() => {
-        if (this.currentOpenType && this.currentOpenType.type === 'code') {
+        if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
           this.eventBus.fire(
             new EditorConfigurationChangedEvent({
               group: this,
@@ -1138,7 +1139,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.eventBus.fire(
       new CodeEditorDidVisibleEvent({
         groupName: this.name,
-        type: 'code',
+        type: EditorOpenType.code,
         editorId: this.codeEditor.getId(),
       }),
     );
@@ -1174,7 +1175,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.eventBus.fire(
       new CodeEditorDidVisibleEvent({
         groupName: this.name,
-        type: 'diff',
+        type: EditorOpenType.diff,
         editorId: this.diffEditor.modifiedEditor.getId(),
       }),
     );
@@ -1182,7 +1183,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.eventBus.fire(
       new CodeEditorDidVisibleEvent({
         groupName: this.name,
-        type: 'diff',
+        type: EditorOpenType.diff,
         editorId: this.diffEditor.originalEditor.getId(),
       }),
     );
@@ -1192,7 +1193,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private addDiffEditorEventListeners(editor: IEditor, side?: 'modified' | 'original') {
     this.toDispose.push(
       editor.onSelectionsChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+        if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
           this.eventBus.fire(
             new EditorSelectionChangeEvent({
               group: this,
@@ -1209,7 +1210,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
     this.toDispose.push(
       editor.onVisibleRangesChanged((e) => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+        if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
           this.eventBus.fire(
             new EditorVisibleChangeEvent({
               group: this,
@@ -1224,7 +1225,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
     this.toDispose.push(
       editor.onConfigurationChanged(() => {
-        if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+        if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
           this.eventBus.fire(
             new EditorConfigurationChangedEvent({
               group: this,
@@ -1491,6 +1492,195 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  private async openCodeEditor(resource: IResource, options: IResourceOpenOptions) {
+    const documentRef = await this.getDocumentModelRef(resource.uri);
+    this.resolveTabChanged(resource, this.currentResource);
+    await this.codeEditorReady.onceReady(async () => {
+      await this.codeEditor.open(documentRef);
+
+      if (options.range) {
+        const range = new monaco.Range(
+          options.range.startLineNumber!,
+          options.range.startColumn!,
+          options.range.endLineNumber!,
+          options.range.endColumn!,
+        );
+        // 这里使用 setTimeout 在下一次事件循环时将编辑器滚动到指定位置
+        // 原因是在打开新文件的情况下
+        // setModel 后立即调用 revealRangeInCenter 编辑器无法获取到 viewport 宽高
+        // 导致无法正确计算滚动位置
+        this.codeEditor.monacoEditor.setSelection(range);
+        if (options.revealRangeInCenter) {
+          setTimeout(() => {
+            this.codeEditor.monacoEditor.revealRangeInCenter(range, 1);
+          });
+        }
+      }
+
+      // 同上
+      queueMicrotask(() => {
+        if (options.scrollTop) {
+          this.codeEditor.monacoEditor.setScrollTop(options.scrollTop!);
+        }
+        if (options.scrollLeft) {
+          this.codeEditor.monacoEditor.setScrollLeft(options.scrollLeft!);
+        }
+      });
+
+      if (options.focus) {
+        this._domNode?.focus();
+        // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
+        // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
+        // 需要等待真正 append 之后再
+        const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
+          if (e.payload.groupName === this.name && e.payload.type === EditorOpenType.code) {
+            disposer.dispose();
+            // 此处必须多做一些检查以免不必要的 focus
+            if (this.disposed) {
+              return;
+            }
+            if (this !== this.workbenchEditorService.currentEditorGroup) {
+              return;
+            }
+            if (this.currentEditor === this.codeEditor && this.codeEditor.currentUri?.isEqual(resource.uri)) {
+              try {
+                this.codeEditor.focus();
+              } catch (e) {
+                // noop
+              }
+            }
+          }
+        });
+      }
+    });
+
+    // 可能在diff Editor中修改导致为脏
+    if (documentRef.instance!.dirty) {
+      this.pinPreviewed(resource.uri);
+    }
+  }
+
+  private async openDiffEditor(resource: IResource, options: IResourceOpenOptions) {
+    if (!this.diffEditor) {
+      await this.diffEditorDomReady.onceReady(() => {
+        const container = document.createElement('div');
+        this._diffEditorDomNode?.appendChild(container);
+        this.createDiffEditor(container);
+      });
+    }
+
+    const diffResource = resource as IDiffResource;
+    const [original, modified] = await Promise.all([
+      this.getDocumentModelRef(diffResource.metadata!.original),
+      this.getDocumentModelRef(diffResource.metadata!.modified),
+    ]);
+    await this.diffEditorReady.onceReady(async () => {
+      await this.diffEditor.compare(original, modified, options, resource.uri);
+      if (options.focus) {
+        this._domNode?.focus();
+        // 理由见上方 codeEditor.focus 部分
+
+        const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
+          if (e.payload.groupName === this.name && e.payload.type === EditorOpenType.diff) {
+            disposer.dispose();
+            if (this.disposed) {
+              return;
+            }
+            if (this !== this.workbenchEditorService.currentEditorGroup) {
+              return;
+            }
+            if (this.currentEditor === this.diffEditor.modifiedEditor) {
+              try {
+                this.diffEditor.focus();
+              } catch (e) {
+                // noop
+              }
+            }
+          }
+        });
+      }
+    });
+  }
+
+  private async openMergeEditor(resource: IResource) {
+    const { metadata } = resource as IMergeEditorResource;
+    if (!metadata) {
+      return;
+    }
+
+    if (!this.mergeEditor) {
+      await this.mergeEditorDomReady.onceReady(() => {
+        const container = document.createElement('div');
+        this._mergeEditorDomNode?.appendChild(container);
+        this.createMergeEditor(container);
+      });
+    }
+
+    const { ancestor, input1, input2, output } = metadata;
+    const input1Data = MergeEditorInputData.from(input1);
+    const input2Data = MergeEditorInputData.from(input2);
+
+    const [ancestorRef, input1Ref, outputRef, input2Ref] = await Promise.all([
+      this.getDocumentModelRef(URI.parse(ancestor)),
+      this.getDocumentModelRef(input1Data.uri),
+      this.getDocumentModelRef(URI.parse(output)),
+      this.getDocumentModelRef(input2Data.uri),
+    ]);
+
+    await this.mergeEditorReady.onceReady(async () => {
+      await this.mergeEditor.open({
+        ancestor: {
+          uri: URI.parse(metadata.ancestor),
+          textModel: ancestorRef.instance.getMonacoModel(),
+        },
+        input1: input1Data.setTextModel(input1Ref.instance.getMonacoModel()),
+        input2: input2Data.setTextModel(input2Ref.instance.getMonacoModel()),
+        output: {
+          uri: URI.parse(metadata.output),
+          textModel: outputRef.instance.getMonacoModel(),
+        },
+      });
+    });
+  }
+
+  private async openCustomEditor(resource: IResource, componentId?: string) {
+    const component = this.editorComponentRegistry.getEditorComponent(componentId as string);
+    const initialProps = this.editorComponentRegistry.getEditorInitialProps(componentId as string);
+    if (!component) {
+      throw new Error('Cannot find Editor Component with id: ' + componentId);
+    } else {
+      this.activateComponentsProps.set(component, initialProps);
+      if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE) {
+        const openedResources = this.activeComponents.get(component) || [];
+        const index = openedResources.findIndex((r) => r.uri.toString() === resource.uri.toString());
+        if (index === -1) {
+          openedResources.push(resource);
+        }
+        this.activeComponents.set(component, openedResources);
+      } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_GROUP) {
+        this.activeComponents.set(component, [resource]);
+      } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_WORKBENCH) {
+        const promises: Promise<any>[] = [];
+        this.workbenchEditorService.editorGroups.forEach((g) => {
+          if (g === this) {
+            return;
+          }
+          const r = g.resources.find((r) => r.uri.isEqual(resource.uri));
+          if (r) {
+            promises.push(g.close(r.uri));
+          }
+        });
+        await Promise.all(promises).catch(getDebugLogger().error);
+        this.activeComponents.set(component, [resource]);
+      }
+    }
+    // 打开非编辑器的component时需要手动触发
+    this._onCurrentEditorCursorChange.fire({
+      position: null,
+      selectionLength: 0,
+    });
+  }
+
   private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions) {
     if (options.revealRangeInCenter === undefined) {
       options.revealRangeInCenter = true;
@@ -1500,195 +1690,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const result = await this.resolveOpenType(resource, options);
     if (result) {
       const { activeOpenType, openTypes } = result;
-
       this.availableOpenTypes = openTypes;
 
       if (options.preserveFocus) {
         options.focus = false;
       }
 
-      if (activeOpenType.type === 'code') {
-        const documentRef = await this.getDocumentModelRef(resource.uri);
-        this.resolveTabChanged(_resource, this.currentResource);
-        await this.codeEditorReady.onceReady(async () => {
-          this.codeEditor.open(documentRef);
-
-          if (options.range) {
-            const range = new monaco.Range(
-              options.range.startLineNumber!,
-              options.range.startColumn!,
-              options.range.endLineNumber!,
-              options.range.endColumn!,
-            );
-            // 这里使用 setTimeout 在下一次事件循环时将编辑器滚动到指定位置
-            // 原因是在打开新文件的情况下
-            // setModel 后立即调用 revealRangeInCenter 编辑器无法获取到 viewport 宽高
-            // 导致无法正确计算滚动位置
-            this.codeEditor.monacoEditor.setSelection(range);
-            if (options.revealRangeInCenter) {
-              setTimeout(() => {
-                this.codeEditor.monacoEditor.revealRangeInCenter(range, 1);
-              });
-            }
-          }
-
-          // 同上
-          queueMicrotask(() => {
-            if (options.scrollTop) {
-              this.codeEditor.monacoEditor.setScrollTop(options.scrollTop!);
-            }
-            if (options.scrollLeft) {
-              this.codeEditor.monacoEditor.setScrollLeft(options.scrollLeft!);
-            }
-          });
-
-          if (options.focus) {
-            this._domNode?.focus();
-            // monaco 编辑器的 focus 多了一步检查，由于此时其实对应编辑器的 dom 的 display 为 none （需要等 React 下一次渲染才会改变为 block）,
-            // 会引起 document.activeElement !== editor.textArea.domNode，进而会导致focus失败
-            // 需要等待真正 append 之后再
-            const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
-              if (e.payload.groupName === this.name && e.payload.type === 'code') {
-                disposer.dispose();
-                // 此处必须多做一些检查以免不必要的 focus
-                if (this.disposed) {
-                  return;
-                }
-                if (this !== this.workbenchEditorService.currentEditorGroup) {
-                  return;
-                }
-                if (this.currentEditor === this.codeEditor && this.codeEditor.currentUri?.isEqual(resource.uri)) {
-                  try {
-                    this.codeEditor.focus();
-                  } catch (e) {
-                    // noop
-                  }
-                }
-              }
-            });
-          }
-        });
-        // 可能在diff Editor中修改导致为脏
-        if (documentRef.instance!.dirty) {
-          this.pinPreviewed(resource.uri);
-        }
-      } else if (activeOpenType.type === 'diff') {
-        if (!this.diffEditor) {
-          await this.diffEditorDomReady.onceReady(() => {
-            const container = document.createElement('div');
-            this._diffEditorDomNode?.appendChild(container);
-            this.createDiffEditor(container);
-          });
-        }
-
-        const diffResource = resource as IDiffResource;
-        const [original, modified] = await Promise.all([
-          this.getDocumentModelRef(diffResource.metadata!.original),
-          this.getDocumentModelRef(diffResource.metadata!.modified),
-        ]);
-        await this.diffEditorReady.onceReady(async () => {
-          await this.diffEditor.compare(original, modified, options, resource.uri);
-          if (options.focus) {
-            this._domNode?.focus();
-            // 理由见上方 codeEditor.focus 部分
-
-            const disposer = this.eventBus.on(CodeEditorDidVisibleEvent, (e) => {
-              if (e.payload.groupName === this.name && e.payload.type === 'diff') {
-                disposer.dispose();
-                if (this.disposed) {
-                  return;
-                }
-                if (this !== this.workbenchEditorService.currentEditorGroup) {
-                  return;
-                }
-                if (this.currentEditor === this.diffEditor.modifiedEditor) {
-                  try {
-                    this.diffEditor.focus();
-                  } catch (e) {
-                    // noop
-                  }
-                }
-              }
-            });
-          }
-        });
-      } else if (activeOpenType.type === 'component') {
-        const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
-        const initialProps = this.editorComponentRegistry.getEditorInitialProps(activeOpenType.componentId as string);
-        if (!component) {
-          throw new Error('Cannot find Editor Component with id: ' + activeOpenType.componentId);
-        } else {
-          this.activateComponentsProps.set(component, initialProps);
-          if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE) {
-            const openedResources = this.activeComponents.get(component) || [];
-            const index = openedResources.findIndex((r) => r.uri.toString() === resource.uri.toString());
-            if (index === -1) {
-              openedResources.push(resource);
-            }
-            this.activeComponents.set(component, openedResources);
-          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_GROUP) {
-            this.activeComponents.set(component, [resource]);
-          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_WORKBENCH) {
-            const promises: Promise<any>[] = [];
-            this.workbenchEditorService.editorGroups.forEach((g) => {
-              if (g === this) {
-                return;
-              }
-              const r = g.resources.find((r) => r.uri.isEqual(resource.uri));
-              if (r) {
-                promises.push(g.close(r.uri));
-              }
-            });
-            await Promise.all(promises).catch(getDebugLogger().error);
-            this.activeComponents.set(component, [resource]);
-          }
-        }
-        // 打开非编辑器的component时需要手动触发
-        this._onCurrentEditorCursorChange.fire({
-          position: null,
-          selectionLength: 0,
-        });
-      } else if (activeOpenType.type === 'mergeEditor') {
-        const { metadata } = resource as IMergeEditorResource;
-        if (!metadata) {
+      switch (activeOpenType.type) {
+        case EditorOpenType.code:
+          this.openCodeEditor(resource, options);
+          break;
+        case EditorOpenType.diff:
+          this.openDiffEditor(resource, options);
+          break;
+        case EditorOpenType.mergeEditor:
+          this.openMergeEditor(resource);
+          break;
+        case EditorOpenType.component:
+          this.openCustomEditor(resource, activeOpenType.componentId);
+          break;
+        default:
           return;
-        }
-
-        if (!this.mergeEditor) {
-          await this.mergeEditorDomReady.onceReady(() => {
-            const container = document.createElement('div');
-            this._mergeEditorDomNode?.appendChild(container);
-            this.createMergeEditor(container);
-          });
-        }
-
-        const { ancestor, input1, input2, output } = metadata;
-        const input1Data = MergeEditorInputData.from(input1);
-        const input2Data = MergeEditorInputData.from(input2);
-
-        const [ancestorRef, input1Ref, outputRef, input2Ref] = await Promise.all([
-          this.getDocumentModelRef(URI.parse(ancestor)),
-          this.getDocumentModelRef(input1Data.uri),
-          this.getDocumentModelRef(URI.parse(output)),
-          this.getDocumentModelRef(input2Data.uri),
-        ]);
-
-        await this.mergeEditorReady.onceReady(async () => {
-          await this.mergeEditor.open({
-            ancestor: {
-              uri: URI.parse(metadata.ancestor),
-              textModel: ancestorRef.instance.getMonacoModel(),
-            },
-            input1: input1Data.setTextModel(input1Ref.instance.getMonacoModel()),
-            input2: input2Data.setTextModel(input2Ref.instance.getMonacoModel()),
-            output: {
-              uri: URI.parse(metadata.output),
-              textModel: outputRef.instance.getMonacoModel(),
-            },
-          });
-        });
-      } else {
-        return; // other type not handled
       }
 
       this.resolveTabChanged(_resource, this.currentResource);
@@ -1696,9 +1718,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.notifyBodyChanged();
 
       if (
-        (this._codeEditorPendingLayout && activeOpenType.type === 'code') ||
-        (this._diffEditorPendingLayout && activeOpenType.type === 'diff') ||
-        (this._mergeEditorPendingLayout && activeOpenType.type === 'mergeEditor')
+        (!this._codeEditorPendingLayout && activeOpenType.type === EditorOpenType.code) ||
+        (!this._diffEditorPendingLayout && activeOpenType.type === EditorOpenType.diff) ||
+        (!this._mergeEditorPendingLayout && activeOpenType.type === EditorOpenType.mergeEditor)
       ) {
         this.doLayoutEditors();
       }
@@ -2040,10 +2062,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   focus() {
     this.gainFocus();
-    if (this.currentOpenType && this.currentOpenType.type === 'code') {
+    if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.code) {
       this.codeEditor.focus();
     }
-    if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+    if (this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff) {
       this.diffEditor.focus();
     }
   }
@@ -2073,15 +2095,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   isCodeEditorMode() {
-    return !!this.currentOpenType && this.currentOpenType.type === 'code';
+    return !!this.currentOpenType && this.currentOpenType.type === EditorOpenType.code;
   }
 
   isDiffEditorMode() {
-    return !!this.currentOpenType && this.currentOpenType.type === 'diff';
+    return !!this.currentOpenType && this.currentOpenType.type === EditorOpenType.diff;
   }
 
   isComponentMode() {
-    return !!this.currentOpenType && this.currentOpenType.type === 'component';
+    return !!this.currentOpenType && this.currentOpenType.type === EditorOpenType.component;
   }
 
   async restoreState(state: IEditorGroupState) {
@@ -2265,5 +2287,5 @@ function findSuitableOpenType(
 }
 
 function openTypeSimilar(a: IEditorOpenType, b: IEditorOpenType) {
-  return a.type === b.type && (a.type !== 'component' || a.componentId === b.componentId);
+  return a.type === b.type && (a.type !== EditorOpenType.component || a.componentId === b.componentId);
 }

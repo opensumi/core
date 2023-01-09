@@ -10,6 +10,7 @@ import {
   BrowserEditorContribution,
   EditorGroupChangeEvent,
   CodeEditorDidVisibleEvent,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { isEditStack, isEOLStack } from '@opensumi/ide-editor/lib/browser/doc-model/editor-is-fn';
@@ -247,14 +248,14 @@ describe('workbench editor service tests', () => {
 
     await editorService.open(testComponentUri);
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
-    expect(editorService.editorGroups[0].currentOpenType!.type).toBe('component');
+    expect(editorService.editorGroups[0].currentOpenType!.type).toBe(EditorOpenType.component);
     expect(listener).toBeCalled();
 
     await editorService.closeAll();
 
-    await editorService.open(testComponentUri, { preview: false, forceOpenType: { type: 'code' } });
+    await editorService.open(testComponentUri, { preview: false, forceOpenType: { type: EditorOpenType.code } });
     expect(editorService.editorGroups[0].currentOpenType).toBeDefined();
-    expect(editorService.editorGroups[0].currentOpenType!.type).toBe('code');
+    expect(editorService.editorGroups[0].currentOpenType!.type).toBe(EditorOpenType.code);
 
     // 测试 getState 方法
     expect(editorService.editorGroups[0].getState()).toEqual({
@@ -287,7 +288,7 @@ describe('workbench editor service tests', () => {
       new CodeEditorDidVisibleEvent({
         groupName: editorService.currentEditorGroup.name,
         editorId: editorService.currentEditorGroup.codeEditor.getId(),
-        type: 'code',
+        type: EditorOpenType.code,
       }),
     );
 

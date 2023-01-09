@@ -13,6 +13,7 @@ import {
   IEditorGroup,
   EditorGroupChangeEvent,
   EditorGroupCloseEvent,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import { EditorFeatureRegistryImpl } from '@opensumi/ide-editor/lib/browser/feature';
 import { FormattingSelector } from '@opensumi/ide-editor/lib/browser/format/formatterSelect';
@@ -199,7 +200,7 @@ describe('editor history test', () => {
       new EditorGroupChangeEvent({
         group: testEditorGroup,
         newOpenType: {
-          type: 'code',
+          type: EditorOpenType.code,
         },
         oldOpenType: null,
         newResource: {
@@ -305,10 +306,10 @@ describe('editor history test', () => {
       new EditorGroupChangeEvent({
         group: testEditorGroup,
         newOpenType: {
-          type: 'code',
+          type: EditorOpenType.code,
         },
         oldOpenType: {
-          type: 'code',
+          type: EditorOpenType.code,
         },
         newResource: {
           uri: testUri2,
@@ -355,10 +356,10 @@ describe('editor history test', () => {
       new EditorGroupChangeEvent({
         group: testEditorGroup,
         newOpenType: {
-          type: 'code',
+          type: EditorOpenType.code,
         },
         oldOpenType: {
-          type: 'code',
+          type: EditorOpenType.code,
         },
         newResource: {
           uri: testUri3,
