@@ -42,7 +42,7 @@ export interface PreferenceService extends IDisposable {
    * @param defaultValue 默认值
    */
   getValid<T>(preferenceName: string, defaultValue: T): T;
-  getValid<T>(preferenceName: string, defaultValue: T): T | undefined;
+  getValid<T>(preferenceName: string, defaultValue?: T): T | undefined;
 
   /**
    * 是否一个配置在指定 scope 存在针对语言的配置
