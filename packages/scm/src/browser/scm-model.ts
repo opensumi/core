@@ -2,7 +2,7 @@ import { action, observable } from 'mobx';
 
 import { Autowired, Injectable } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
-import { Disposable, Emitter, Event, getDebugLogger, Uri, ISplice } from '@opensumi/ide-core-common';
+import { Disposable, Emitter, Event, Uri, ISplice, ILogger } from '@opensumi/ide-core-common';
 import { combinedDisposable, dispose, DisposableStore, IDisposable, toDisposable } from '@opensumi/ide-core-common';
 
 import { ISCMMenus, ISCMRepository, ISCMResource, ISCMResourceGroup, SCMService } from '../common';
@@ -196,6 +196,9 @@ export class ViewModelContext extends Disposable {
   @Autowired(PreferenceService)
   private readonly preferenceService: PreferenceService;
 
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   private onDidSelectedRepoChangeEmitter: Emitter<ISCMRepository> = new Emitter();
 
   get onDidSelectedRepoChange() {
@@ -206,12 +209,26 @@ export class ViewModelContext extends Disposable {
     return this._menus;
   }
 
-  private logger = getDebugLogger();
-
   private toDisposableListener: IDisposable | null;
 
-  private _onDidSCMListChangeEmitter: Emitter<void> = new Emitter();
-  public onDidSCMListChange = this._onDidSCMListChangeEmitter.event;
+  private onDidSCMListChangeEmitter: Emitter<void> = new Emitter();
+  public onDidSCMListChange = this.onDidSCMListChangeEmitter.event;
+
+  private onDidSCMRepoListChangeEmitter: Emitter<ISCMRepository[]> = new Emitter();
+  public onDidSCMRepoListChange = this.onDidSCMRepoListChangeEmitter.event;
+
+  public repoList: ISCMRepository[] = [];
+  public selectedRepo: ISCMRepository | undefined;
+
+  public scmList = new Array<ISCMDataItem>();
+
+  private _currentWorkspace: Uri;
+
+  @observable
+  public selectedRepos = observable.array<ISCMRepository>([]);
+
+  @observable
+  public alwaysShowActions: boolean;
 
   constructor() {
     super();
@@ -262,17 +279,15 @@ export class ViewModelContext extends Disposable {
   private initTreeAlwaysShowActions() {
     this.alwaysShowActions = !!this.preferenceService.get<boolean>('scm.alwaysShowActions');
     this.disposables.push(
-      this.preferenceService.onSpecificPreferenceChange(
-        'scm.alwaysShowActions',
-        (changes) => (this.alwaysShowActions = changes.newValue),
-      ),
+      this.preferenceService.onSpecificPreferenceChange('scm.alwaysShowActions', (changes) => {
+        if (this.alwaysShowActions !== changes.newValue) {
+          this.updateAlwaysShowActions(changes.newValue);
+        }
+      }),
     );
   }
 
-  @observable
-  public alwaysShowActions: boolean;
-
-  start() {
+  private start() {
     this.scmService.onDidAddRepository(
       (repo: ISCMRepository) => {
         this.addRepo(repo);
@@ -302,18 +317,10 @@ export class ViewModelContext extends Disposable {
     });
   }
 
-  @observable
-  public repoList = observable.array<ISCMRepository>([]);
-
-  @observable
-  public selectedRepos = observable.array<ISCMRepository>([]);
-
-  @observable
-  public selectedRepo: ISCMRepository | undefined;
-
-  public scmList = new Array<ISCMDataItem>();
-
-  private _currentWorkspace: Uri;
+  @action
+  private updateAlwaysShowActions(value: boolean) {
+    this.alwaysShowActions = value;
+  }
 
   private spliceSCMList = (workspace: Uri, start: number, deleteCount: number, ...toInsert: ISCMDataItem[]) => {
     if (!this._currentWorkspace || this._currentWorkspace.toString() === workspace.toString()) {
@@ -322,10 +329,9 @@ export class ViewModelContext extends Disposable {
       this.scmList = [...toInsert];
     }
     this._currentWorkspace = workspace;
-    this._onDidSCMListChangeEmitter.fire();
+    this.onDidSCMListChangeEmitter.fire();
   };
 
-  @action
   private addRepo(repo: ISCMRepository) {
     // 因为这里每个传入的 repo 均为新实例，这里需要通过 Uri.toString() 去判断
     if (
@@ -342,9 +348,9 @@ export class ViewModelContext extends Disposable {
     if (repo.selected && this.repoList.length === 1) {
       this.changeSelectedRepos([repo]);
     }
+    this.onDidSCMRepoListChangeEmitter.fire(this.repoList);
   }
 
-  @action
   private deleteRepo(repo: ISCMRepository) {
     const index = this.repoList.indexOf(repo);
     if (index < 0) {
@@ -352,6 +358,7 @@ export class ViewModelContext extends Disposable {
       return;
     }
     this.repoList.splice(index, 1);
+    this.onDidSCMRepoListChangeEmitter.fire(this.repoList);
   }
 
   @action
