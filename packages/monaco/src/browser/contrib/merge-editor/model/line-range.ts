@@ -1,5 +1,6 @@
-import { uuid } from '@opensumi/ide-core-common';
+import { Constants, uuid } from '@opensumi/ide-core-common';
 import { IRange } from '@opensumi/monaco-editor-core';
+import { Position } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/position';
 import { LineRange as MonacoLineRange } from '@opensumi/monaco-editor-core/esm/vs/editor/common/diff/linesDiffComputer';
 
 import { ETurnDirection, IRangeContrast, LineRangeType } from '../types';
@@ -228,14 +229,23 @@ export class LineRange extends MonacoLineRange implements IRangeContrast {
     return this.retainState(child).setId(preId);
   }
 
-  public toRange(startColumn = 0, endColumn: number = Number.MAX_SAFE_INTEGER): IRange {
-    if (this.isEmpty) {
-      return InnerRange.fromPositions({ lineNumber: this.startLineNumber, column: startColumn }).setType(this._type);
-    }
-
+  public toRange(): IRange {
     return InnerRange.fromPositions(
-      { lineNumber: this.startLineNumber, column: startColumn },
-      { lineNumber: this.endLineNumberExclusive - 1, column: endColumn },
+      new Position(this.startLineNumber, 1),
+      new Position(this.endLineNumberExclusive, 1),
+    ).setType(this._type);
+  }
+
+  public toInclusiveRange(startColumn?: number, endColumn?: number): IRange {
+    if (this.isEmpty) {
+      return InnerRange.fromPositions(
+        new Position(this.startLineNumber, startColumn ?? 1),
+        new Position(this.startLineNumber, endColumn ?? 1),
+      ).setType(this._type);
+    }
+    return InnerRange.fromPositions(
+      new Position(this.startLineNumber, startColumn ?? 1),
+      new Position(this.endLineNumberExclusive - 1, endColumn ?? Constants.MAX_SAFE_SMALL_INTEGER),
     ).setType(this._type);
   }
 
