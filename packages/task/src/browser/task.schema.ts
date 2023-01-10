@@ -1,6 +1,10 @@
 import { CodeSchemaId, IJSONSchema, localize } from '@opensumi/ide-core-browser';
 export const taskSchemaUri = CodeSchemaId.tasks;
 
+const osSpecificTaskRunnerConfiguration = {
+  $ref: '#/definitions/taskRunnerConfiguration',
+};
+
 export const schema: IJSONSchema = {
   $id: taskSchemaUri,
   type: 'object',
@@ -359,5 +363,6 @@ export const schema: IJSONSchema = {
         },
       },
     },
+    osSpecificTaskRunnerConfiguration,
   },
 };
