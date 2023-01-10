@@ -17,6 +17,7 @@ import {
   IStorage,
   ThrottledDelayer,
   Deferred,
+  CommonLanguageId,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService, IOpenResourceResult } from '@opensumi/ide-editor';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -473,7 +474,7 @@ export class DebugConfigurationManager {
       return false;
     }
     const modeId = model.getLanguageId();
-    if (!modeId || modeId === 'jsonc' || modeId === 'log') {
+    if (!modeId || modeId === CommonLanguageId.JSONC || modeId === CommonLanguageId.Log) {
       // 不允许在JSONC类型文件及log文件中断点
       return false;
     }

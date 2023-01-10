@@ -13,6 +13,7 @@ import {
   Schemes,
   CancellationToken,
   MaybePromise,
+  CommonLanguageId,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
@@ -52,10 +53,8 @@ export class FileSchemeDocumentProvider
   }
 
   preferLanguageForUri(uri: URI): MaybePromise<string | undefined> {
-    if (uri.path.ext === '.json') {
-      if (['settings.json'].includes(uri.path.base)) {
-        return 'jsonc';
-      }
+    if (['settings.json'].includes(uri.path.base)) {
+      return CommonLanguageId.JSONC;
     }
   }
 
