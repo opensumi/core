@@ -1,1 +1,3 @@
-export const launchSchemaUri = 'vscode://schemas/launch';
+import { CodeSchemaId } from '@opensumi/ide-core-common';
+
+export const launchSchemaUri = CodeSchemaId.launch;

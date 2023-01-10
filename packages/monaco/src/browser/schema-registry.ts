@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import { Emitter, Event, IJSONSchemaRegistry, ISchemaContributions, IJSONSchema } from '@opensumi/ide-core-browser';
-import { IDisposable, Disposable } from '@opensumi/ide-core-common';
+import { IDisposable, Disposable, replaceLocalizePlaceholder } from '@opensumi/ide-core-common';
 
 import { ISchemaStore, JsonSchemaConfiguration } from '../common';
 
@@ -63,8 +63,23 @@ export class SchemaRegistry implements IJSONSchemaRegistry {
     this.schemasById = {};
   }
 
+  private doResolveSchema(unresolvedSchemaContent: IJSONSchema) {
+    const fields = [
+      'description',
+      'markdownDescription',
+      'markdownEnumDescriptions',
+      'deprecationMessage',
+    ] as (keyof IJSONSchema)[];
+    fields.forEach((k) => {
+      if (unresolvedSchemaContent[k]) {
+        unresolvedSchemaContent[k] = replaceLocalizePlaceholder(unresolvedSchemaContent[k]);
+      }
+    });
+    return unresolvedSchemaContent;
+  }
+
   public registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): IDisposable {
-    this.schemasById[normalizeId(uri)] = unresolvedSchemaContent;
+    this.schemasById[normalizeId(uri)] = this.doResolveSchema(unresolvedSchemaContent);
     const disposable = this.schemaStore.register({
       fileMatch,
       url: uri,

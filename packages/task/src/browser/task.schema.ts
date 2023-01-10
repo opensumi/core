@@ -1,5 +1,5 @@
-import { IJSONSchema, localize } from '@opensumi/ide-core-browser';
-export const taskSchemaUri = 'vscode://schemas/task';
+import { CodeSchemaId, IJSONSchema, localize } from '@opensumi/ide-core-browser';
+export const taskSchemaUri = CodeSchemaId.tasks;
 
 export const schema: IJSONSchema = {
   $id: taskSchemaUri,

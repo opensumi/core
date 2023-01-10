@@ -9,7 +9,6 @@ import {
   IDisposable,
   Disposable,
   IJSONSchemaRegistry,
-  replaceLocalizePlaceholder,
   PreferenceService,
   Schemes,
   CancellationToken,
@@ -125,9 +124,9 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
     return scheme === 'vscode';
   }
 
-  async provideEditorDocumentModelContent(uri: URI, encoding) {
+  async provideEditorDocumentModelContent(uri: URI) {
     const content = this.getSchemaContent(uri);
-    return replaceLocalizePlaceholder(content)!;
+    return content;
   }
 
   protected getSchemaContent(uri: URI): string {
