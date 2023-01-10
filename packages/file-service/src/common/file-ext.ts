@@ -22,4 +22,6 @@ export const EXT_LIST_IMAGE = [
   'rw2',
   'tif',
   'orf',
+  'webp',
+  'apng',
 ];
