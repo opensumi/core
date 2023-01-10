@@ -12,7 +12,6 @@ import { IMenuRegistry, MenuRegistryImpl } from '@opensumi/ide-core-browser/lib/
 import {
   IEventBus,
   CommandService,
-  IFileServiceClient,
   Disposable,
   OperatingSystem,
   CommandRegistry,
@@ -23,6 +22,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { IMessageService } from '@opensumi/ide-overlay';
 import { EnvironmentVariableServiceToken } from '@opensumi/ide-terminal-next/lib/common/environmentVariable';
