@@ -1,7 +1,13 @@
 import { Injector } from '@opensumi/di';
-import { localize, getAvailableLanguages, SUPPORTED_ENCODINGS, GeneralSettingsId } from '@opensumi/ide-core-common';
+import {
+  localize,
+  getAvailableLanguages,
+  SUPPORTED_ENCODINGS,
+  GeneralSettingsId,
+  PreferenceSchema,
+} from '@opensumi/ide-core-common';
 
-import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
+import { createPreferenceProxy, PreferenceProxy, PreferenceService } from './preferences';
 
 const EXPLORER_DEFAULTS = {
   confirmDelete: true,

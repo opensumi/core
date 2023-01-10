@@ -18,6 +18,13 @@ import {
   injectPreferenceConfigurations,
   injectPreferenceSchemaProvider,
   IEventBus,
+  PreferenceItem,
+  isString,
+  isArray,
+  isNumber,
+  isBoolean,
+  isNull,
+  isObject,
 } from '@opensumi/ide-core-browser';
 import { IFileServiceClient, IDiskFileProvider } from '@opensumi/ide-file-service';
 import { FileServiceClientModule } from '@opensumi/ide-file-service/lib/browser';
@@ -34,6 +41,33 @@ import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 export class AddonModule extends BrowserModule {
   providers: Provider[] = [EditorPreferenceContribution, UserStorageContribution];
 }
+
+const VALID_TEST_SCHEME: { [key: string]: PreferenceItem } = {
+  'test.string': {
+    type: 'string',
+  },
+  'test.array': {
+    type: 'array',
+  },
+  'test.int': {
+    type: 'integer',
+  },
+  'test.number': {
+    type: 'number',
+  },
+  'test.string_array': {
+    type: 'string[]',
+  },
+  'test.boolean': {
+    type: 'boolean',
+  },
+  'test.null': {
+    type: 'null',
+  },
+  'test.object': {
+    type: 'object',
+  },
+};
 
 @Domain(PreferenceContribution)
 export class EditorPreferenceContribution implements PreferenceContribution {
@@ -53,6 +87,7 @@ export class EditorPreferenceContribution implements PreferenceContribution {
         type: 'boolean',
         description: '',
       },
+      ...VALID_TEST_SCHEME,
     },
   } as any;
 }
@@ -229,6 +264,7 @@ describe('PreferenceService should be work', () => {
 
       preferenceService.set(testPreferenceName, 30, PreferenceScope.Workspace);
     });
+
     it('onSpecificPreferenceChange event should be worked', (done) => {
       const testPreferenceName = 'editor.fontSize';
       const dispose2 = preferenceService.onSpecificPreferenceChange(testPreferenceName, (change) => {
@@ -240,6 +276,7 @@ describe('PreferenceService should be work', () => {
       });
       preferenceService.set(testPreferenceName, 60, PreferenceScope.Workspace);
     });
+
     it('setting multiple value once should be worked', async () => {
       const preferences = {
         'java.config.xxx': false,
@@ -274,6 +311,60 @@ describe('PreferenceService should be work', () => {
       expect(preferenceService.resolve(testPreferenceName).value).toBe(20);
       expect(preferenceService.resolve(unknownPreferenceName).value).toBeUndefined();
       expect(preferenceService.resolve(unknownPreferenceName, 'default').value).toBe('default');
+    });
+
+    it('get valid value from preference service', async () => {
+      let value: any = preferenceService.getValid('test.string', 10);
+      expect(isString(value)).toBeTruthy();
+      let defaultValue: any = 'test';
+      preferenceService['cachedPreference'].delete('test.string'); // clean cache
+      value = preferenceService.getValid('test.string', defaultValue);
+      expect(value).toBe(defaultValue);
+
+      value = preferenceService.getValid('test.array', 10);
+      expect(isArray(value)).toBeTruthy();
+      defaultValue = [0, 1, 2];
+      preferenceService['cachedPreference'].delete('test.array'); // clean cache
+      value = preferenceService.getValid('test.array', defaultValue);
+      expect(defaultValue).toBe(defaultValue);
+
+      value = preferenceService.getValid('test.int', '10');
+      expect(isNumber(value)).toBeTruthy();
+      defaultValue = 100;
+      preferenceService['cachedPreference'].delete('test.int'); // clean cache
+      value = preferenceService.getValid('test.int', defaultValue);
+      expect(defaultValue).toBe(defaultValue);
+
+      value = preferenceService.getValid('test.number', '10');
+      expect(isNumber(value)).toBeTruthy();
+      defaultValue = 100;
+      preferenceService['cachedPreference'].delete('test.number'); // clean cache
+      value = preferenceService.getValid('test.number', defaultValue);
+      expect(defaultValue).toBe(defaultValue);
+
+      value = preferenceService.getValid('test.string_array', '10');
+      expect(isArray(value)).toBeTruthy();
+      defaultValue = ['hello', 'world'];
+      preferenceService['cachedPreference'].delete('test.string_array'); // clean cache
+      value = preferenceService.getValid('test.string_array', defaultValue);
+      expect(defaultValue).toBe(defaultValue);
+
+      value = preferenceService.getValid('test.boolean', '10');
+      expect(isBoolean(value)).toBeTruthy();
+      defaultValue = true;
+      preferenceService['cachedPreference'].delete('test.boolean'); // clean cache
+      value = preferenceService.getValid('test.boolean', defaultValue);
+      expect(defaultValue).toBe(defaultValue);
+
+      value = preferenceService.getValid('test.null', '10');
+      expect(isNull(value)).toBeTruthy();
+
+      value = preferenceService.getValid('test.object', '10');
+      expect(isObject(value)).toBeTruthy();
+      defaultValue = { test: 'test' };
+      preferenceService['cachedPreference'].delete('test.object'); // clean cache
+      value = preferenceService.getValid('test.object', defaultValue);
+      expect(defaultValue).toBe(defaultValue);
     });
   });
 });

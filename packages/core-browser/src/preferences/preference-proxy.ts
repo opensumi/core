@@ -1,6 +1,5 @@
-import { Disposable, Event, isObject, isUndefined, PreferenceScope } from '@opensumi/ide-core-common';
+import { Disposable, Event, isObject, isUndefined, PreferenceSchema, PreferenceScope } from '@opensumi/ide-core-common';
 
-import { PreferenceSchema } from './preference-contribution';
 import { PreferenceService } from './types';
 
 export interface PreferenceChangeEvent<T> {

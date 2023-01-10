@@ -280,9 +280,11 @@ export class MockTerminalThemeService {
 /** Mock Preference Service */
 export class MockPreferenceService implements PreferenceService {
   ready: Promise<void> = Promise.resolve();
+
   hasLanguageSpecific(preferenceName: any, overrideIdentifier: string, resourceUri: string): boolean {
     return false;
   }
+
   async set(
     preferenceName: string,
     value: any,
@@ -296,9 +298,11 @@ export class MockPreferenceService implements PreferenceService {
   onPreferencesChanged() {
     return Disposable.NULL;
   }
+
   onLanguagePreferencesChanged() {
     return Disposable.NULL;
   }
+
   inspect<T>(
     preferenceName: string,
     resourceUri?: string,
@@ -314,9 +318,11 @@ export class MockPreferenceService implements PreferenceService {
     | undefined {
     return;
   }
+
   getProvider(scope: PreferenceScope): PreferenceProvider | undefined {
     return;
   }
+
   resolve<T>(
     preferenceName: string,
     defaultValue?: T,
@@ -326,13 +332,21 @@ export class MockPreferenceService implements PreferenceService {
   ): PreferenceResolveResult<T> {
     throw new Error('Method not implemented.');
   }
+
   onSpecificPreferenceChange() {
     return Disposable.NULL;
   }
+
   dispose(): void {}
+
   get(key: string, defaultValue?: any) {
     return defaultValue;
   }
+
+  getValid(key: string, defaultValue?: any) {
+    return defaultValue;
+  }
+
   onPreferenceChanged() {
     return new Disposable();
   }
