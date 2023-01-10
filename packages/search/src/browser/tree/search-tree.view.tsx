@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useEffect, useState, RefObject, useRef, useCallback, memo } from 'react';
+import React, { useEffect, useState, RefObject, useRef, useCallback } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree, Button, TreeNodeEvent } from '@opensumi/ide-components';
 import { localize, formatLocalize, useInjectable, CommandService } from '@opensumi/ide-core-browser';

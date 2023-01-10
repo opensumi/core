@@ -94,27 +94,27 @@ export const SearchInputWidget = memo(
                 validateMessage={isShowValidateMessage ? validateMessage : undefined}
                 addonAfter={[
                   <span
-                    key={localize('caseDescription')}
+                    key={localize('search.caseDescription')}
                     className={cls(getIcon('ab'), styles['match-case'], styles.search_option, {
                       [styles.select]: isMatchCase,
                     })}
-                    title={localize('caseDescription')}
+                    title={localize('search.caseDescription')}
                     onClick={onMatchCaseToggle}
                   ></span>,
                   <span
-                    key={localize('wordsDescription')}
+                    key={localize('search.wordsDescription')}
                     className={cls(getIcon('abl'), styles['whole-word'], styles.search_option, {
                       [styles.select]: isWholeWord,
                     })}
-                    title={localize('wordsDescription')}
+                    title={localize('search.wordsDescription')}
                     onClick={onWholeWordToggle}
                   ></span>,
                   <span
-                    key={localize('regexDescription')}
+                    key={localize('search.regexDescription')}
                     className={cls(getIcon('regex'), styles['use-regexp'], styles.search_option, {
                       [styles.select]: isRegex,
                     })}
-                    title={localize('regexDescription')}
+                    title={localize('search.regexDescription')}
                     onClick={onRegexToggle}
                   ></span>,
                 ]}

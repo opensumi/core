@@ -48,7 +48,7 @@ export async function replaceAll(
   if (messageService && resultTotal) {
     messageService.info(
       formatLocalize(
-        'replaceAll.occurrences.files.message',
+        'search.replaceAll.occurrencesMessage',
         String(resultTotal.resultNum),
         String(resultTotal.fileNum),
         replaceText,

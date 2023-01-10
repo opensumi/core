@@ -123,9 +123,13 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
       if (e && e.key !== Key.ENTER.code) {
         return;
       }
+      setSearchContent({
+        ...searchContent,
+        results: new Map(),
+      });
       searchBrowserService.search();
     },
-    [searchBrowserService],
+    [searchBrowserService, searchContent],
   );
 
   const onSearchInputChange = useCallback(
@@ -210,7 +214,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
       );
     } else {
       if (searchContent.state === SEARCH_STATE.done) {
-        <div className={styles.result_describe}>{search && localize('noResultsFound')}</div>;
+        <div className={styles.result_describe}>{search && localize('search.noResultsFound')}</div>;
       }
       return null;
     }

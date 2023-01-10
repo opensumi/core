@@ -232,7 +232,9 @@ export class FileSearchQuickCommandHandler {
       },
       getPlaceholderItem: (lookFor: string) =>
         new QuickOpenItem({
-          label: localize(lookFor.indexOf('@') > -1 ? 'fileSymbolResults.notfound' : 'fileResults.notfound'),
+          label: localize(
+            lookFor.indexOf('@') > -1 ? 'search.fileSymbolResults.notfound' : 'search.fileResults.notfound',
+          ),
           run: () => false,
         }),
     };
@@ -319,7 +321,7 @@ export class FileSearchQuickCommandHandler {
                 iconClass: getSymbolIcon(symbol.kind),
                 description: (symbol.parent as INormalizedDocumentSymbol)?.name,
                 labelHighlights: (symbol as any).labelHighlights,
-                groupLabel: index === 0 ? formatLocalize('fileSymbolResults', flatSymbols.length) : '',
+                groupLabel: index === 0 ? formatLocalize('search.fileSymbolResults', flatSymbols.length) : '',
                 showBorder: false,
                 run: (mode: Mode) => {
                   if (mode === Mode.PREVIEW) {
@@ -343,7 +345,7 @@ export class FileSearchQuickCommandHandler {
       // 排序后设置第一个元素的样式
       if (results[0]) {
         const newItems = await this.getItems([results[0].getUri()!.toString()], {
-          groupLabel: localize('fileResults'),
+          groupLabel: localize('search.fileResults'),
           showBorder: true,
         });
         results[0] = newItems[0];
@@ -411,7 +413,7 @@ export class FileSearchQuickCommandHandler {
         return true;
       }),
       {
-        groupLabel: localize('historyMatches'),
+        groupLabel: localize('search.historyMatches'),
       },
     );
   }
