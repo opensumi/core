@@ -112,24 +112,23 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
           } catch (e) {
             regexp = null;
           }
-          if (!regexp) {
+
+          const match = node.description.match(regexp);
+          if (!regexp || !match) {
             return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
           }
-          const match = node.description.match(regexp);
-          if (match) {
-            const matchText = match[0];
-            const index = match.index;
-            if (matchText && isDefined(index)) {
-              const replaceResult = matchText.replace(regexp, replace);
-              return (
-                <div className={cls(styles.segment_grow, styles.description)}>
-                  {node.description.slice(0, index)}
-                  <span className={cls(styles.match, replace && styles.replace)}>{matchText}</span>
-                  {replaceResult && <span className={styles.replace}>{replaceResult}</span>}
-                  {node.description.slice(index + matchText.length)}
-                </div>
-              );
-            }
+          const matchText = match[0];
+          const index = match.index;
+          if (matchText && isDefined(index)) {
+            const replaceResult = matchText.replace(regexp, replace);
+            return (
+              <div className={cls(styles.segment_grow, styles.description)}>
+                {node.description.slice(0, index)}
+                <span className={cls(styles.match, replace && styles.replace)}>{matchText}</span>
+                {replaceResult && <span className={styles.replace}>{replaceResult}</span>}
+                {node.description.slice(index + matchText.length)}
+              </div>
+            );
           }
         } else {
           let index = -1;

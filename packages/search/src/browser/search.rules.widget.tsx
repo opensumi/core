@@ -97,7 +97,7 @@ const IncludeInput = React.memo(
           <span
             key='onlyOpenEditors'
             className={cls(getExternalIcon('book'), styles.search_option, { [styles.select]: isOnlyOpenEditors })}
-            title={localize('onlyOpenEditors')}
+            title={localize('search.onlyOpenEditors')}
             onClick={onOnlyOpenEditorsToggle}
           />,
         ]}
