@@ -52,6 +52,14 @@ export class FileSchemeDocumentProvider
     return super.provideEncoding(uri);
   }
 
+  preferLanguageForUri(uri: URI): MaybePromise<string | undefined> {
+    if (uri.path.ext === '.json') {
+      if (['settings.json'].includes(uri.path.base)) {
+        return 'jsonc';
+      }
+    }
+  }
+
   async saveDocumentModel(
     uri: URI,
     content: string,
