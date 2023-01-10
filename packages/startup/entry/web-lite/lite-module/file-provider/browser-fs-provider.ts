@@ -447,7 +447,7 @@ export class BrowserFsProvider implements IDiskFileProvider {
   private _getFileType(ext: string) {
     let type = 'text';
 
-    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) > -1) {
+    if (['png', 'gif', 'jpg', 'jpeg', 'svg', 'webp'].indexOf(ext) > -1) {
       type = 'image';
     } else if (BrowserFsProvider.H5VideoExtList.indexOf(ext) > -1) {
       type = 'video';

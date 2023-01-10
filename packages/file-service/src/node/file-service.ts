@@ -592,7 +592,7 @@ export class FileService implements IFileService {
   private _getFileType(ext) {
     let type = 'text';
 
-    if (['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1) {
+    if (['png', 'gif', 'jpg', 'jpeg', 'svg', 'webp'].indexOf(ext) !== -1) {
       type = 'image';
     } else if (ext && ['xml'].indexOf(ext) === -1) {
       type = 'binary';
