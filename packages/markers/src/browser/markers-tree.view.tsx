@@ -95,8 +95,30 @@ const Empty: FC = () => {
 /**
  * marker panel
  */
-export const MarkerPanel = ({ viewState }: { viewState: ViewState }) => (
-  <div className={styles.markersContent}>
-    <MarkerList viewState={viewState} />
-  </div>
-);
+export const MarkerPanel = ({ viewState }: { viewState: ViewState }) => {
+  const markerModelService = useInjectable(MarkerModelService);
+  const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
+
+  const handleOuterClick = useCallback(() => {
+    // 空白区域点击，取消焦点状态
+    const { enactiveFileDecoration } = markerModelService;
+    enactiveFileDecoration();
+  }, []);
+
+  useEffect(() => {
+    const handleBlur = () => {
+      markerModelService.handleTreeBlur();
+    };
+    wrapperRef.current?.addEventListener('blur', handleBlur, true);
+    return () => {
+      wrapperRef.current?.removeEventListener('blur', handleBlur, true);
+      markerModelService.handleTreeBlur();
+    };
+  }, [wrapperRef.current]);
+
+  return (
+    <div className={styles.markersContent} tabIndex={-1} ref={wrapperRef} onClick={handleOuterClick}>
+      <MarkerList viewState={viewState} />
+    </div>
+  );
+};

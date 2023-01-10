@@ -142,7 +142,7 @@ export const SCMResourceTree: FC<{
       ref={wrapperRef}
       data-name={TREE_FIELD_NAME}
     >
-      <TreeView
+      <SCMTreeView
         isReady={isReady}
         model={model}
         height={height}
@@ -177,7 +177,7 @@ function isTreeViewPropsEqual(prevProps: TreeViewProps, nextProps: TreeViewProps
   );
 }
 
-const TreeView = memo(
+const SCMTreeView = memo(
   ({
     isReady,
     model,
@@ -190,7 +190,6 @@ const TreeView = memo(
   }: TreeViewProps) => {
     const scmTreeModelService = useInjectable<SCMTreeModelService>(SCMTreeModelService);
     const scmTreeService = useInjectable<SCMTreeService>(SCMTreeService);
-
     const renderSCMTreeNode = useCallback(
       (props: ISCMTreeNodeProps) => (
         <SCMTreeNode
@@ -230,4 +229,4 @@ const TreeView = memo(
   isTreeViewPropsEqual,
 );
 
-TreeView.displayName = 'SCMResourceTreeView';
+SCMTreeView.displayName = 'SCMResourceTreeView';

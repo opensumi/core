@@ -87,7 +87,6 @@ export class OutlineModelService {
   // 装饰器
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
-  private dirtyDecoration: Decoration = new Decoration(styles.mod_dirty); // 修改态
   // 即使选中态也是焦点态的节点
   private _focusedNode: OutlineCompositeTreeNode | OutlineTreeNode | undefined;
   // 选中态的节点
@@ -276,7 +275,6 @@ export class OutlineModelService {
     this._decorations = new DecorationsManager(root as any);
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
-    this._decorations.addDecoration(this.dirtyDecoration);
     return this._decorations;
   }
 
