@@ -3,6 +3,7 @@ import paths from 'path';
 import ParcelWatcher from '@parcel/watcher';
 import * as fs from 'fs-extra';
 import debounce from 'lodash/debounce';
+import nsfw from 'nsfw';
 
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import {
@@ -239,7 +240,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
      * 代码来自 issue: https://github.com/opensumi/core/pull/1437/files?diff=split&w=0#diff-9de963117a88a70d7c58974bf2b092c61a196d6eef719846d78ca5c9d100b796 的旧代码处理
      */
     if (isLinux) {
-      const nsfw = (await import('nsfw')).default;
+      // const nsfw = (await import('nsfw')).default;
       const watcher: INsfw.NSFW = await nsfw(
         realPath,
         (events: INsfw.ChangeEvent[]) => {
