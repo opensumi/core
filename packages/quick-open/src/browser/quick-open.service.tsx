@@ -331,7 +331,7 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     const originLookFor = lookFor;
 
     if (this.options.skipPrefix) {
-      lookFor = lookFor.substr(this.options.skipPrefix);
+      lookFor = lookFor.substring(this.options.skipPrefix).trim();
     }
 
     if (actionProvider && actionProvider.getValidateInput) {
