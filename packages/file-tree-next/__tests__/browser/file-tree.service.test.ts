@@ -168,6 +168,7 @@ describe('FileTree Service should be work alone', () => {
         useValue: {
           get: () => {},
           ready: Promise.resolve(),
+          getValid: (_preferenceName: string, defaultValue: any) => defaultValue,
         },
       },
       {

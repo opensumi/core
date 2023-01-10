@@ -1,5 +1,3 @@
-import throttle from 'lodash/throttle';
-
 import { Injectable, Autowired } from '@opensumi/di';
 import { Tree, ITree, ITreeNodeOrCompositeTreeNode, TreeNodeType } from '@opensumi/ide-components';
 import {
@@ -10,7 +8,6 @@ import {
   Disposable,
   FILE_COMMANDS,
   PreferenceService,
-  Deferred,
   Emitter,
   ILogger,
   path,
