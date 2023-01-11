@@ -11,7 +11,7 @@ import { INodeLogger } from '@opensumi/ide-core-node';
 import { FileChangeType, IFileService } from '@opensumi/ide-file-service';
 import { FileService } from '@opensumi/ide-file-service/lib/node';
 
-import { IYWebsocketServer, ROOM_NAME } from '../common';
+import { COLLABORATION_PORT, IYWebsocketServer, ROOM_NAME } from '../common';
 
 @Injectable()
 export class YWebsocketServerImpl implements IYWebsocketServer {
@@ -52,8 +52,8 @@ export class YWebsocketServerImpl implements IYWebsocketServer {
       this.websocketServer.handleUpgrade(req, socket, head, handleAuth);
     });
 
-    this.server.listen(12345, () => {
-      this.logger.log('y-websocket server listening on port 12345');
+    this.server.listen(COLLABORATION_PORT, () => {
+      this.logger.log(`y-websocket server listening on port ${COLLABORATION_PORT}`);
     });
 
     // init
