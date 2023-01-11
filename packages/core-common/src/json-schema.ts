@@ -68,3 +68,13 @@ export interface IJSONSchemaSnippet {
   body?: any; // a object that will be JSON stringified
   bodyText?: string; // an already stringified JSON object that can contain new lines (\n) and tabs (\t)
 }
+
+export const enum CodeSchemaId {
+  defaultSettings = 'vscode://schemas/settings/default',
+  userSettings = 'vscode://schemas/settings/user',
+  machineSettings = 'vscode://schemas/settings/machine',
+  workspaceSettings = 'vscode://schemas/settings/workspace',
+  folderSettings = 'vscode://schemas/settings/folder',
+  launch = 'vscode://schemas/launch',
+  tasks = 'vscode://schemas/tasks',
+}

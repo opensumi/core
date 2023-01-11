@@ -1,5 +1,9 @@
-import { IJSONSchema, localize } from '@opensumi/ide-core-browser';
-export const taskSchemaUri = 'vscode://schemas/task';
+import { CodeSchemaId, IJSONSchema, localize } from '@opensumi/ide-core-browser';
+export const taskSchemaUri = CodeSchemaId.tasks;
+
+const osSpecificTaskRunnerConfiguration = {
+  $ref: '#/definitions/taskRunnerConfiguration',
+};
 
 export const schema: IJSONSchema = {
   $id: taskSchemaUri,
@@ -359,5 +363,6 @@ export const schema: IJSONSchema = {
         },
       },
     },
+    osSpecificTaskRunnerConfiguration,
   },
 };

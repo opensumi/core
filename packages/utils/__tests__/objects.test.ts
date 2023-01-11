@@ -54,4 +54,17 @@ describe('Objects', () => {
       o1,
     });
   });
+
+  test('cloneAndChangeByKV', () => {
+    // 将 property key 为 hello 的时候，值返回为 opensumi
+    const o1 = { hello: 'world', complex: { hello: 'code' }, array: [{ hello: 'theia' }] };
+    expect(
+      objects.cloneAndChangeByKV(o1, (k, v) => {
+        if (k === 'hello' && typeof v === 'string') {
+          return 'opensumi';
+        }
+      }),
+    ).toEqual({ hello: 'opensumi', complex: { hello: 'opensumi' }, array: [{ hello: 'opensumi' }] });
+    expect(o1).toEqual({ hello: 'world', complex: { hello: 'code' }, array: [{ hello: 'theia' }] });
+  });
 });
