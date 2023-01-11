@@ -380,11 +380,12 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     }
     const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText(), force);
     this.savingTasks.push(task);
-    if (this.savingTasks.length === 1) {
+    if (this.savingTasks.length > 0) {
       this.initSave();
     }
     const res = await task.finished;
     if (res.state === SaveTaskResponseState.SUCCESS) {
+      this.monacoModel.pushStackElement();
       return true;
     } else if (res.state === SaveTaskResponseState.ERROR) {
       if (res.errorMessage !== SaveTaskErrorCause.CANCEL) {
