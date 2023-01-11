@@ -87,7 +87,7 @@ export class MarkersContribution
       this.statusBar.addElement(this.statusBarId, {
         name: localize('status-bar.editor-langStatus'),
         alignment: StatusBarAlignment.LEFT,
-        text: iconTexts.filter(Boolean).join(' '),
+        text: iconTexts.join(' '),
         priority: 1,
         tooltip: tooltipString.length > 0 ? tooltipString.join(', ') : localize('markers.status.no.problems'),
         onClick: () => {
