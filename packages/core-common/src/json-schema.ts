@@ -69,12 +69,12 @@ export interface IJSONSchemaSnippet {
   bodyText?: string; // an already stringified JSON object that can contain new lines (\n) and tabs (\t)
 }
 
-export namespace CodeSchemaId {
-  export const defaultSettings = 'vscode://schemas/settings/default';
-  export const userSettings = 'vscode://schemas/settings/user';
-  export const machineSettings = 'vscode://schemas/settings/machine';
-  export const workspaceSettings = 'vscode://schemas/settings/workspace';
-  export const folderSettings = 'vscode://schemas/settings/folder';
-  export const launch = 'vscode://schemas/launch';
-  export const tasks = 'vscode://schemas/tasks';
+export const enum CodeSchemaId {
+  defaultSettings = 'vscode://schemas/settings/default',
+  userSettings = 'vscode://schemas/settings/user',
+  machineSettings = 'vscode://schemas/settings/machine',
+  workspaceSettings = 'vscode://schemas/settings/workspace',
+  folderSettings = 'vscode://schemas/settings/folder',
+  launch = 'vscode://schemas/launch',
+  tasks = 'vscode://schemas/tasks',
 }
