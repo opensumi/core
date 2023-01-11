@@ -3,7 +3,6 @@ import paths from 'path';
 import ParcelWatcher from '@parcel/watcher';
 import * as fs from 'fs-extra';
 import debounce from 'lodash/debounce';
-import nsfw from 'nsfw';
 
 import { Injectable, Autowired, Optional } from '@opensumi/di';
 import {
@@ -241,66 +240,11 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
      *
      * 代码来自 issue: https://github.com/opensumi/core/pull/1437/files?diff=split&w=0#diff-9de963117a88a70d7c58974bf2b092c61a196d6eef719846d78ca5c9d100b796 的旧代码处理
      */
-    if (isLinux) {
-      const isIgnored = (watcherId: number, path: string): boolean => {
-        const options = this.watcherOptions.get(watcherId);
-
-        if (!options || !options.excludes || options.excludes.length < 1) {
-          return false;
-        }
-        return options.excludesPattern.some((match) => match(path));
-      };
-
-      // const nsfw = (await import('nsfw')).default;
+    if (this.isEnableNSFW()) {
+      const nsfw = await this.withNSFWModule();
       const watcher: INsfw.NSFW = await nsfw(
         realPath,
-        (events: INsfw.ChangeEvent[]) => {
-          if (events.length > 5000) {
-            return;
-          }
-
-          for (const event of events) {
-            if (event.action === INsfw.actions.RENAMED) {
-              const deletedPath = this.resolvePath(event.directory, event.oldFile!);
-              if (isIgnored(watcherId, deletedPath)) {
-                return;
-              }
-
-              this.pushDeleted(deletedPath);
-
-              if (event.newDirectory) {
-                const path = this.resolvePath(event.newDirectory, event.newFile!);
-                if (isIgnored(watcherId, path)) {
-                  return;
-                }
-
-                this.pushAdded(path);
-              } else {
-                const path = this.resolvePath(event.directory, event.newFile!);
-                if (isIgnored(watcherId, path)) {
-                  return;
-                }
-
-                this.pushAdded(path);
-              }
-            } else {
-              const path = this.resolvePath(event.directory, event.file!);
-              if (isIgnored(watcherId, path)) {
-                return;
-              }
-
-              if (event.action === INsfw.actions.CREATED) {
-                this.pushAdded(path);
-              }
-              if (event.action === INsfw.actions.DELETED) {
-                this.pushDeleted(path);
-              }
-              if (event.action === INsfw.actions.MODIFIED) {
-                this.pushUpdated(path);
-              }
-            }
-          }
-        },
+        (events: INsfw.ChangeEvent[]) => this.handleNSFWEvents(events, watcherId),
         {
           errorCallback: (error: any) => {
             // see https://github.com/atom/github/issues/342
@@ -320,9 +264,11 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         }),
       );
 
+      const excludes = this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude());
+
       this.watcherOptions.set(watcherId, {
-        excludesPattern: this.excludes.map((pattern) => parseGlob(pattern)),
-        excludes: this.excludes,
+        excludesPattern: excludes.map((pattern) => parseGlob(pattern)),
+        excludes,
       });
     } else {
       const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
@@ -356,6 +302,74 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       return;
     }
     this.client = client;
+  }
+
+  /**
+   * @deprecated
+   * 主要是用来跳过 jest 测试
+   */
+  private isEnableNSFW(): boolean {
+    return isLinux;
+  }
+
+  private async handleNSFWEvents(events: INsfw.ChangeEvent[], watcherId: number): Promise<void> {
+    const isIgnored = (watcherId: number, path: string): boolean => {
+      const options = this.watcherOptions.get(watcherId);
+      if (!options || !options.excludes || options.excludes.length < 1) {
+        return false;
+      }
+      return options.excludesPattern.some((match) => match(path));
+    };
+
+    if (events.length > 5000) {
+      return;
+    }
+
+    for (const event of events) {
+      if (event.action === INsfw.actions.RENAMED) {
+        const deletedPath = this.resolvePath(event.directory, event.oldFile!);
+        if (isIgnored(watcherId, deletedPath)) {
+          return;
+        }
+
+        this.pushDeleted(deletedPath);
+
+        if (event.newDirectory) {
+          const path = this.resolvePath(event.newDirectory, event.newFile!);
+          if (isIgnored(watcherId, path)) {
+            return;
+          }
+
+          this.pushAdded(path);
+        } else {
+          const path = this.resolvePath(event.directory, event.newFile!);
+          if (isIgnored(watcherId, path)) {
+            return;
+          }
+
+          this.pushAdded(path);
+        }
+      } else {
+        const path = this.resolvePath(event.directory, event.file!);
+        if (isIgnored(watcherId, path)) {
+          return;
+        }
+
+        if (event.action === INsfw.actions.CREATED) {
+          this.pushAdded(path);
+        }
+        if (event.action === INsfw.actions.DELETED) {
+          this.pushDeleted(path);
+        }
+        if (event.action === INsfw.actions.MODIFIED) {
+          this.pushUpdated(path);
+        }
+      }
+    }
+  }
+
+  private async withNSFWModule(): Promise<typeof import('nsfw')> {
+    return (await import('nsfw')).default;
   }
 
   protected pushAdded(path: string): void {

@@ -36,8 +36,8 @@ import {
   FileSystemProviderCapabilities,
 } from '../common/';
 
-import { getFileType } from './shared/file-type';
 import { FileSystemWatcherServer } from './file-service-watcher';
+import { getFileType } from './shared/file-type';
 
 const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';

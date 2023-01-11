@@ -1,4 +1,5 @@
 import * as fse from 'fs-extra';
+import nsfw from 'nsfw';
 import temp from 'temp';
 
 import { URI, isMacintosh } from '@opensumi/ide-core-common';
@@ -6,7 +7,7 @@ import { FileUri } from '@opensumi/ide-core-node';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DidFilesChangedParams, FileChangeType } from '../../src/common';
+import { DidFilesChangedParams, FileChangeType, INsfw } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/file-service-watcher';
 
 function sleep(time: number) {
@@ -25,6 +26,8 @@ function sleep(time: number) {
   beforeEach(async () => {
     injector = createBrowserInjector([]);
     root = FileUri.create(await fse.realpath(await temp.mkdir('node-fs-root')));
+    // @ts-ignore
+    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     watcherServer = injector.get(FileSystemWatcherServer);
     watcherId = await watcherServer.watchFileChanges(root.toString());
   });
@@ -149,6 +152,8 @@ function sleep(time: number) {
     root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
+    // @ts-ignore
+    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     watcherServer = injector.get(FileSystemWatcherServer);
     await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
