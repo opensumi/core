@@ -123,7 +123,7 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
     return scheme === 'vscode';
   }
 
-  async provideEditorDocumentModelContent(uri: URI) {
+  async provideEditorDocumentModelContent(uri: URI, encoding) {
     const content = this.getSchemaContent(uri);
     return content;
   }
@@ -164,7 +164,7 @@ export class WalkThroughSnippetSchemeDocumentProvider implements IEditorDocument
     return scheme === Schemes.walkThroughSnippet;
   }
 
-  provideEditorDocumentModelContent(uri: URI): MaybePromise<string> {
+  provideEditorDocumentModelContent(uri: URI, encoding): MaybePromise<string> {
     if (!this.documentContentMaps.has(uri.toString())) {
       this.documentContentMaps.set(uri.toString(), '');
     }
