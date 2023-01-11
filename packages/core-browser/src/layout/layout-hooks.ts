@@ -60,7 +60,9 @@ export const useViewState = (
       const resizeObserver = new ResizeObserver(doUpdate);
       resizeObserver.observe(containerRef.current);
       return () => {
-        resizeObserver.unobserve(containerRef.current);
+        if (containerRef.current) {
+          resizeObserver.unobserve(containerRef.current);
+        }
       };
     }
   }, []);
