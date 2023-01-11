@@ -26,6 +26,10 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
   private prevSetAskIfDiff: boolean;
   private prevSetAutoChange: string;
 
+  initialize() {
+    this.collaborationService.initialize();
+  }
+
   onDidStart() {
     if (this.preferenceService.get('editor.askIfDiff') === true) {
       this.prevSetAskIfDiff = true;
@@ -43,7 +47,7 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
       this.collaborationService.registerContribution(provider);
     }
 
-    this.collaborationService.initialize();
+    this.collaborationService.registerUserInfo();
   }
 
   onStop() {

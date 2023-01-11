@@ -118,6 +118,10 @@ export class CollaborationService extends WithEventBus implements ICollaboration
 
     this.yTextMap.observe(this.yMapObserver);
 
+    this.yWebSocketProvider.awareness.on('update', this.updateCSSManagerWhenAwarenessUpdated);
+  }
+
+  registerUserInfo() {
     if (this.userInfo === undefined) {
       // fallback
       this.userInfo = {
@@ -127,8 +131,6 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     }
     // add userInfo to awareness field
     this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
-
-    this.yWebSocketProvider.awareness.on('update', this.updateCSSManagerWhenAwarenessUpdated);
   }
 
   destroy() {
