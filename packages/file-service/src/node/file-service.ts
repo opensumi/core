@@ -47,6 +47,7 @@ import {
 } from '../common';
 
 import { FileSystemManage } from './file-system-manage';
+import { getFileType } from './shared/file-type';
 
 export abstract class FileSystemNodeOptions {
   public static DEFAULT: FileSystemNodeOptions = {
@@ -405,37 +406,7 @@ export class FileService implements IFileService {
   }
 
   async getFileType(uri: string): Promise<string | undefined> {
-    try {
-      if (!uri.startsWith('file:/')) {
-        return this._getFileType('');
-      }
-      // const lstat = await fs.lstat(FileUri.fsPath(uri));
-      const stat = await fs.stat(FileUri.fsPath(uri));
-
-      let ext = '';
-      if (!stat.isDirectory()) {
-        // if(lstat.isSymbolicLink){
-
-        // }else {
-        if (stat.size) {
-          const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)));
-          // 可以拿到 type.fileType 说明为二进制文件
-          if (type.fileType) {
-            ext = type.fileType.ext;
-          }
-        }
-        return this._getFileType(ext);
-        // }
-      } else {
-        return 'directory';
-      }
-    } catch (error) {
-      if (isErrnoException(error)) {
-        if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
-          return undefined;
-        }
-      }
-    }
+    return getFileType(uri);
   }
 
   getUri(uri: string | Uri): URI {
@@ -594,18 +565,6 @@ export class FileService implements IFileService {
     return true;
   }
 
-  private _getFileType(ext: string) {
-    let type = 'text';
-
-    if (EXT_LIST_IMAGE.indexOf(ext) !== -1) {
-      type = 'image';
-    } else if (ext && ['xml'].indexOf(ext) === -1) {
-      type = 'binary';
-    }
-
-    return type;
-  }
-
   protected async doGetEncoding(option?: { encoding?: string }): Promise<string> {
     return option && typeof option.encoding !== 'undefined' ? option.encoding : this.options.encoding;
   }
@@ -655,11 +614,6 @@ export function getSafeFileservice(injector: Injector) {
   );
   safeFsInstanceMap.set(injector, fileService);
   return fileService;
-}
-
-// tslint:disable-next-line:no-any
-function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.ErrnoException {
-  return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
 }
 
 // 对于首个参数为uri的方法进行安全拦截
