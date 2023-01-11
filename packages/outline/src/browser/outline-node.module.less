@@ -20,35 +20,16 @@
   &.mod_selected {
     color: var(--kt-tree-inactiveSelectionForeground) !important;
     background: var(--kt-tree-inactiveSelectionBackground);
-    .expansion_toggle,
-    .outline_node_description {
-      color: var(--kt-tree-inactiveSelectionForeground) !important;
-    }
   }
 
   &.mod_focused {
     outline: 1px solid var(--list-focusOutline);
     outline-offset: -1px;
-    color: var(--kt-tree-activeSelectionForeground) !important;
-    background: var(--kt-tree-activeSelectionBackground);
-    .expansion_toggle,
-    .outline_node_description {
-      color: var(--kt-tree-activeSelectionForeground) !important;
-    }
   }
 
-  &.mod_dirty {
-    &::before {
-      content: '';
-      display: block;
-      width: 8px;
-      height: 8px;
-      border-radius: 4px;
-      margin: 7px 5px;
-      background: var(--kt-dirtyDot-foreground);
-      position: absolute;
-      left: 18px;
-    }
+  &.mod_actived {
+    outline: 1px solid var(--list-focusOutline);
+    outline-offset: -1px;
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 import {
   RecycleTree,
@@ -36,51 +36,60 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
     });
   };
 
-  const handleItemClicked = (ev: React.MouseEvent, item: EditorFile | EditorFileGroup, type: TreeNodeType) => {
-    // 阻止点击事件冒泡
-    ev.stopPropagation();
+  const handleItemClicked = useCallback(
+    (ev: React.MouseEvent, item: EditorFile | EditorFileGroup, type: TreeNodeType) => {
+      // 阻止点击事件冒泡
+      ev.stopPropagation();
 
-    const { handleItemClick } = openedEditorModelService;
-    if (!item) {
-      return;
-    }
-    handleItemClick(item, type);
-  };
+      const { handleItemClick } = openedEditorModelService;
+      if (!item) {
+        return;
+      }
+      handleItemClick(item, type);
+    },
+    [openedEditorModelService],
+  );
 
-  const handlerContextMenu = (ev: React.MouseEvent, node: EditorFile | EditorFileGroup) => {
+  const handlerContextMenu = useCallback((ev: React.MouseEvent, node: EditorFile | EditorFileGroup) => {
     const { handleContextMenu } = openedEditorModelService;
     handleContextMenu(ev, node);
-  };
+  }, []);
 
-  const handleOuterContextMenu = (ev: React.MouseEvent) => {
-    const { handleContextMenu } = openedEditorModelService;
-    // 空白区域右键菜单
-    handleContextMenu(ev);
-  };
+  const handleOuterContextMenu = useCallback(
+    (ev: React.MouseEvent) => {
+      const { handleContextMenu } = openedEditorModelService;
+      // 空白区域右键菜单
+      handleContextMenu(ev);
+    },
+    [openedEditorModelService],
+  );
 
-  const handleOuterClick = (ev: React.MouseEvent) => {
+  const handleOuterClick = useCallback(() => {
     // 空白区域点击，取消焦点状态
     const { enactiveFileDecoration } = openedEditorModelService;
     enactiveFileDecoration();
-  };
+  }, []);
 
-  const ensureIsReady = async (token: CancellationToken) => {
-    await openedEditorModelService.whenReady;
-    if (token.isCancellationRequested) {
-      return;
-    }
-    if (openedEditorModelService.treeModel) {
-      setModel(openedEditorModelService.treeModel);
-      // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
-      // 这里需要重新取一下treeModel的值确保为最新的TreeModel
-      await openedEditorModelService.treeModel.ensureReady;
+  const ensureIsReady = useCallback(
+    async (token: CancellationToken) => {
+      await openedEditorModelService.whenReady;
       if (token.isCancellationRequested) {
         return;
       }
-    }
-    setIsLoading(false);
-    setIsReady(true);
-  };
+      if (openedEditorModelService.treeModel) {
+        setModel(openedEditorModelService.treeModel);
+        // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
+        // 这里需要重新取一下treeModel的值确保为最新的TreeModel
+        await openedEditorModelService.treeModel.ensureReady;
+        if (token.isCancellationRequested) {
+          return;
+        }
+      }
+      setIsLoading(false);
+      setIsReady(true);
+    },
+    [isLoading, isReady, openedEditorModelService],
+  );
 
   useEffect(() => {
     if (isReady) {
@@ -96,7 +105,7 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
     }
   }, [isReady]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const tokenSource = new CancellationTokenSource();
     ensureIsReady(tokenSource.token);
     return () => {
@@ -104,7 +113,7 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
     };
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleBlur = () => {
       openedEditorModelService.handleTreeBlur();
     };
@@ -115,7 +124,7 @@ export const ExplorerOpenEditorPanel = ({ viewState }: React.PropsWithChildren<{
     };
   }, [wrapperRef.current]);
 
-  const renderTreeNode = React.useCallback(
+  const renderTreeNode = useCallback(
     (props: INodeRendererWrapProps) => (
       <EditorTreeNode
         item={props.item}

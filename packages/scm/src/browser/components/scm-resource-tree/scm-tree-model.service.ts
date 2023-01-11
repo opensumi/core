@@ -42,6 +42,8 @@ const defaultIconThemeDesc = {
   hidesExplorerArrows: true,
 };
 
+type SCMTreeNodeType = SCMResourceGroup | SCMResourceFile | SCMResourceFolder;
+
 @Injectable()
 export class SCMTreeModelService {
   @Autowired(LabelService)
@@ -95,17 +97,18 @@ export class SCMTreeModelService {
   private refreshCancelToken: CancellationTokenSource | null;
 
   // 装饰器
-  private _selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
-  private _focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
-  private _contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 右键菜单激活态
+  private _selectedDecoration: Decoration;
+  private _focusedDecoration: Decoration;
+  private _contextMenuDecoration: Decoration;
   // 即使选中态也是焦点态的节点
   private _focusedFile: SCMResourceGroup | SCMResourceFile | undefined;
   // 选中态的节点
   private _selectedFiles: (SCMResourceGroup | SCMResourceFile)[] = [];
   // 右键菜单选择的节点
-  private _contextMenuFile: SCMResourceGroup | SCMResourceFile | SCMResourceFolder | undefined;
+  private _contextMenuFile: SCMTreeNodeType | undefined;
 
   private disposableCollection: DisposableCollection = new DisposableCollection();
+  private treeModelDisposableCollection: DisposableCollection;
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
   private onDidTreeModelChangeEmitter: Emitter<SCMTreeModel> = new Emitter();
@@ -117,6 +120,7 @@ export class SCMTreeModelService {
       decorations: DecorationsManager;
       selectedDecoration: Decoration;
       focusedDecoration: Decoration;
+      contextMenuDecoration: Decoration;
     }
   > = new Map();
 
@@ -245,14 +249,19 @@ export class SCMTreeModelService {
   }
 
   async initTreeModel(isTree?: boolean, workspace?: string) {
+    if (this.treeModelDisposableCollection) {
+      this.treeModelDisposableCollection.dispose();
+    }
     const type = isTree ? SCMTreeTypes.Tree : SCMTreeTypes.List;
     const cacheKey = await this.getCacheKey(type, workspace);
     if (this.treeModelCache.has(cacheKey)) {
-      const { treeModel, decorations, selectedDecoration, focusedDecoration } = this.treeModelCache.get(cacheKey)!;
+      const { treeModel, decorations, selectedDecoration, focusedDecoration, contextMenuDecoration } =
+        this.treeModelCache.get(cacheKey)!;
       this._activeTreeModel = treeModel;
       this._activeDecorations = decorations;
       this._selectedDecoration = selectedDecoration;
       this._focusedDecoration = focusedDecoration;
+      this._contextMenuDecoration = contextMenuDecoration;
     } else {
       // 根据是否为多工作区创建不同根节点
       const root = (await this.scmTreeService.resolveChildren())[0] as SCMResourceRoot;
@@ -270,8 +279,10 @@ export class SCMTreeModelService {
         decorations: this._activeDecorations,
         selectedDecoration: this._selectedDecoration,
         focusedDecoration: this._focusedDecoration,
+        contextMenuDecoration: this._contextMenuDecoration,
       });
     }
+    this.treeModelDisposableCollection = new DisposableCollection();
     this.onDidTreeModelChangeEmitter.fire(this._activeTreeModel);
   }
 
@@ -283,6 +294,7 @@ export class SCMTreeModelService {
     this._activeDecorations = new DecorationsManager(root);
     this._selectedDecoration = new Decoration(styles.mod_selected); // 选中态
     this._focusedDecoration = new Decoration(styles.mod_focused); // 焦点态
+    this._contextMenuDecoration = new Decoration(styles.mod_actived); // 右键态
     this._activeDecorations.addDecoration(this.selectedDecoration);
     this._activeDecorations.addDecoration(this.focusedDecoration);
     this._activeDecorations.addDecoration(this.contextMenuDecoration);
@@ -298,41 +310,24 @@ export class SCMTreeModelService {
   };
 
   // 清空其他选中/焦点态节点，更新当前焦点节点
-  activeFileDecoration = (
-    targetFiles: Array<SCMResourceGroup | SCMResourceFile | SCMResourceFolder>,
-    focusFile?: SCMResourceGroup | SCMResourceFile | SCMResourceFolder,
-  ) => {
+  activeFileDecoration = (target: SCMTreeNodeType) => {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
       this._contextMenuFile = undefined;
     }
-
-    for (const target of this.focusedDecoration.appliedTargets.keys()) {
-      // 清理多余的焦点状态
-      this.focusedDecoration.removeTarget(target);
-    }
-
-    let shouldUpdate = false;
-    if (Array.isArray(targetFiles) && targetFiles.length) {
+    if (target) {
       if (this.selectedFiles.length > 0) {
-        this.selectedFiles.forEach((file) => {
-          this.selectedDecoration.removeTarget(file);
-        });
+        for (const target of this.selectedFiles) {
+          this.selectedDecoration.removeTarget(target);
+        }
       }
-      for (const targetFile of targetFiles) {
-        this.selectedDecoration.addTarget(targetFile);
+      if (this.focusedFile) {
+        this.focusedDecoration.removeTarget(this.focusedFile);
       }
-      this._selectedFiles = targetFiles;
-      shouldUpdate = true;
-    }
-
-    if (focusFile) {
-      this.focusedDecoration.addTarget(focusFile);
-      this._focusedFile = focusFile;
-      shouldUpdate = true;
-    }
-
-    if (shouldUpdate) {
+      this.selectedDecoration.addTarget(target);
+      this.focusedDecoration.addTarget(target);
+      this._focusedFile = target;
+      this._selectedFiles = [target];
       // 通知视图更新
       this.treeModel.dispatchChange();
     }
@@ -441,7 +436,7 @@ export class SCMTreeModelService {
   };
 
   // 右键菜单焦点态切换
-  activeFileActivedDecoration = (target: SCMResourceGroup | SCMResourceFile | SCMResourceFolder) => {
+  activeFileActivedDecoration = (target: SCMTreeNodeType) => {
     if (this.contextMenuFile) {
       this.contextMenuDecoration.removeTarget(this.contextMenuFile);
     }
@@ -479,7 +474,7 @@ export class SCMTreeModelService {
     }
   };
 
-  handleItemToggleClick = (item: SCMResourceGroup | SCMResourceFile | SCMResourceFolder, type: TreeNodeType) => {
+  handleItemToggleClick = (item: SCMTreeNodeType, type: TreeNodeType) => {
     this._isMutiSelected = true;
     if (type !== TreeNodeType.CompositeTreeNode && type !== TreeNodeType.TreeNode) {
       return;
@@ -596,7 +591,7 @@ export class SCMTreeModelService {
     this._isMutiSelected = false;
 
     // 单选操作默认先更新选中状态
-    this.activeFileDecoration([item], item);
+    this.activeFileDecoration(item);
 
     // 如果为文件夹需展开
     // 如果为文件，则需要打开文件

@@ -12,17 +12,9 @@ export class SCMTreeModel extends TreeModel {
   @Autowired(SCMTreeDecorationService)
   public readonly decorationService: SCMTreeDecorationService;
 
-  private onWillUpdateEmitter: Emitter<void> = new Emitter();
-
-  private flushDispatchChangeDelayer = new ThrottledDelayer<void>(SCMTreeModel.DEFAULT_FLUSH_DELAY);
-
   constructor(@Optional() root: SCMResourceFolder | SCMResourceRoot) {
     super();
     this.init(root);
-  }
-
-  get onWillUpdate(): Event<void> {
-    return this.onWillUpdateEmitter.event;
   }
 
   init(root: CompositeTreeNode) {
