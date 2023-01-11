@@ -13,7 +13,7 @@ let explorer: OpenSumiExplorerView;
 let editor: OpenSumiTextEditor;
 let workspace: OpenSumiWorkspace;
 
-test.describe.only('OpenSumi Editor Undo Redo', () => {
+test.describe('OpenSumi Editor Undo Redo', () => {
   test.beforeAll(async () => {
     workspace = new OpenSumiWorkspace([path.resolve('./src/tests/workspaces/default')]);
     app = await OpenSumiApp.load(page, workspace);
