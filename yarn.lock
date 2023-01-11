@@ -3470,7 +3470,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@opensumi/ide-utils@2.21.13, @opensumi/ide-utils@workspace:*, @opensumi/ide-utils@workspace:packages/utils":
+"@opensumi/ide-utils@workspace:*, @opensumi/ide-utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@opensumi/ide-utils@workspace:packages/utils"
   dependencies:
@@ -3550,7 +3550,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@opensumi/playwright@workspace:tools/playwright"
   dependencies:
-    "@opensumi/ide-utils": 2.21.13
+    "@opensumi/ide-utils": "workspace:*"
     "@playwright/test": 1.29.1
     allure-commandline: ^2.13.8
     allure-playwright: ^2.0.0-beta.14
