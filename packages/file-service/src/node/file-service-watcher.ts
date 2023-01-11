@@ -18,6 +18,7 @@ import {
   ILogService,
   SupportLogNamespace,
   ILogServiceManager,
+  parseGlob,
 } from '@opensumi/ide-core-node';
 
 import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, INsfw, WatchOptions } from '../common';
@@ -47,6 +48,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
     { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
   >();
   private static WATCHER_SEQUENCE = 1;
+  protected watcherOptions = new Map<number, WatcherOptions>();
 
   protected client: FileSystemWatcherClient | undefined;
 
@@ -240,6 +242,15 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
      * 代码来自 issue: https://github.com/opensumi/core/pull/1437/files?diff=split&w=0#diff-9de963117a88a70d7c58974bf2b092c61a196d6eef719846d78ca5c9d100b796 的旧代码处理
      */
     if (isLinux) {
+      const isIgnored = (watcherId: number, path: string): boolean => {
+        const options = this.watcherOptions.get(watcherId);
+
+        if (!options || !options.excludes || options.excludes.length < 1) {
+          return false;
+        }
+        return options.excludesPattern.some((match) => match(path));
+      };
+
       // const nsfw = (await import('nsfw')).default;
       const watcher: INsfw.NSFW = await nsfw(
         realPath,
@@ -249,22 +260,43 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
           }
 
           for (const event of events) {
-            if (event.action === INsfw.actions.CREATED) {
-              this.pushAdded(this.resolvePath(event.directory, event.file!));
-            }
-            if (event.action === INsfw.actions.DELETED) {
-              this.pushDeleted(this.resolvePath(event.directory, event.file!));
-            }
-            if (event.action === INsfw.actions.MODIFIED) {
-              this.pushUpdated(this.resolvePath(event.directory, event.file!));
-            }
             if (event.action === INsfw.actions.RENAMED) {
+              const deletedPath = this.resolvePath(event.directory, event.oldFile!);
+              if (isIgnored(watcherId, deletedPath)) {
+                return;
+              }
+
+              this.pushDeleted(deletedPath);
+
               if (event.newDirectory) {
-                this.pushDeleted(this.resolvePath(event.directory, event.oldFile!));
-                this.pushAdded(this.resolvePath(event.newDirectory, event.newFile!));
+                const path = this.resolvePath(event.newDirectory, event.newFile!);
+                if (isIgnored(watcherId, path)) {
+                  return;
+                }
+
+                this.pushAdded(path);
               } else {
-                this.pushDeleted(this.resolvePath(event.directory, event.oldFile!));
-                this.pushAdded(this.resolvePath(event.directory, event.newFile!));
+                const path = this.resolvePath(event.directory, event.newFile!);
+                if (isIgnored(watcherId, path)) {
+                  return;
+                }
+
+                this.pushAdded(path);
+              }
+            } else {
+              const path = this.resolvePath(event.directory, event.file!);
+              if (isIgnored(watcherId, path)) {
+                return;
+              }
+
+              if (event.action === INsfw.actions.CREATED) {
+                this.pushAdded(path);
+              }
+              if (event.action === INsfw.actions.DELETED) {
+                this.pushDeleted(path);
+              }
+              if (event.action === INsfw.actions.MODIFIED) {
+                this.pushUpdated(path);
               }
             }
           }
@@ -283,9 +315,15 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
       disposables.push(
         Disposable.create(async () => {
+          this.watcherOptions.delete(watcherId);
           await watcher.stop();
         }),
       );
+
+      this.watcherOptions.set(watcherId, {
+        excludesPattern: this.excludes.map((pattern) => parseGlob(pattern)),
+        excludes: this.excludes,
+      });
     } else {
       const hanlder: ParcelWatcher.AsyncSubscription | undefined = await tryWatchDir();
 
