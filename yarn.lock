@@ -2968,7 +2968,7 @@ __metadata:
     "@opensumi/ide-core-node": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-logs": "workspace:*"
-    "@parcel/watcher": 2.0.6
+    "@parcel/watcher": 2.1.0
     drivelist: ^6.4.3
     file-type: ^12.0.0
     trash: ^5.2.0
@@ -3623,14 +3623,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@parcel/watcher@npm:2.0.6":
-  version: 2.0.6
-  resolution: "@parcel/watcher@npm:2.0.6"
+"@parcel/watcher@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@parcel/watcher@npm:2.1.0"
   dependencies:
+    is-glob: ^4.0.3
+    micromatch: ^4.0.5
     node-addon-api: ^3.2.1
     node-gyp: latest
     node-gyp-build: ^4.3.0
-  checksum: 5bcd03804cdacabcc4dfbe47c3893ecfc045578dd9077d0c84bf3fd314becc429c10a8d0afcf5e262dd7a181054f331c48b13856738df8b93e8e49381dd7c4e3
+  checksum: 17f512ad6d5dbb40053ceea7091f8af754afc63786b8f050b225b89a8ba24900468aad8bc4edb25c0349b4c0c8d061f50aa19242c0af52cbc30e6ebf50c7bf4c
   languageName: node
   linkType: hard
 

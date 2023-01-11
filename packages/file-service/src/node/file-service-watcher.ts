@@ -1,4 +1,4 @@
-import paths, { isAbsolute } from 'path';
+import paths from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
 import * as fs from 'fs-extra';
@@ -14,8 +14,6 @@ import {
   isWindows,
   URI,
   isLinux,
-  strings,
-  path,
   ILogService,
   SupportLogNamespace,
   ILogServiceManager,
@@ -25,9 +23,6 @@ import { FileChangeType, FileSystemWatcherClient, IFileSystemWatcherServer, Watc
 
 import { FileChangeCollection } from './file-change-collection';
 
-const { rtrim } = strings;
-const { Path } = path;
-
 export interface WatcherOptions {
   excludesPattern: ParsedPattern[];
   excludes: string[];
@@ -36,18 +31,6 @@ export interface WatcherOptions {
 @Injectable({ multiple: true })
 export class ParcelWatcherServer implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
-
-  private static readonly GLOB_MARKERS = {
-    Star: '*',
-    GlobStar: '**',
-    GlobStarPosix: '**/**',
-    GlobStarWindows: '**\\**',
-    GlobStarPathStartPosix: '**/',
-    GlobStarPathEndPosix: '/**',
-    StarPathEndPosix: '/*',
-    GlobStarPathStartWindows: '**\\',
-    GlobStarPathEndWindows: '\\**',
-  };
 
   private static WATCHER_HANDLERS = new Map<
     number,
@@ -184,113 +167,8 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
     return events;
   }
 
-  // ref: https://github.com/microsoft/vscode/blob/2a63d7baf2db7eabf141f876581ea4c808a6b8e4/src/vs/platform/files/node/watcher/parcel/parcelWatcher.ts#L170
-  protected toExcludePaths(path: string, excludes: string[] | undefined): string[] | undefined {
-    if (!Array.isArray(excludes)) {
-      return undefined;
-    }
-
-    const excludePaths = new Set<string>();
-
-    // Parcel watcher currently does not support glob patterns
-    // for native exclusions. As long as that is the case, try
-    // to convert exclude patterns into absolute paths that the
-    // watcher supports natively to reduce the overhead at the
-    // level of the file watcher as much as possible.
-    // Refs: https://github.com/parcel-bundler/watcher/issues/64
-    for (const exclude of excludes) {
-      const isGlob = exclude.includes(ParcelWatcherServer.GLOB_MARKERS.Star);
-
-      // Glob pattern: check for typical patterns and convert
-      let normalizedExclude: string | undefined;
-      if (isGlob) {
-        // Examples: **, **/**, **\**
-        if (
-          exclude === ParcelWatcherServer.GLOB_MARKERS.GlobStar ||
-          exclude === ParcelWatcherServer.GLOB_MARKERS.GlobStarPosix ||
-          exclude === ParcelWatcherServer.GLOB_MARKERS.GlobStarWindows
-        ) {
-          normalizedExclude = path;
-        }
-
-        // Examples:
-        // - **/node_modules/**
-        // - **/.git/objects/**
-        // - **/build-folder
-        // - output/**
-        else {
-          const startsWithGlobStar =
-            exclude.startsWith(ParcelWatcherServer.GLOB_MARKERS.GlobStarPathStartPosix) ||
-            exclude.startsWith(ParcelWatcherServer.GLOB_MARKERS.GlobStarPathStartWindows);
-          const endsWithGlobStar =
-            exclude.endsWith(ParcelWatcherServer.GLOB_MARKERS.GlobStarPathEndPosix) ||
-            exclude.endsWith(ParcelWatcherServer.GLOB_MARKERS.GlobStarPathEndWindows);
-          if (startsWithGlobStar || endsWithGlobStar) {
-            if (startsWithGlobStar && endsWithGlobStar) {
-              normalizedExclude = exclude.substring(
-                ParcelWatcherServer.GLOB_MARKERS.GlobStarPathStartPosix.length,
-                exclude.length - ParcelWatcherServer.GLOB_MARKERS.GlobStarPathEndPosix.length,
-              );
-            } else if (startsWithGlobStar) {
-              normalizedExclude = exclude.substring(ParcelWatcherServer.GLOB_MARKERS.GlobStarPathStartPosix.length);
-            } else {
-              normalizedExclude = exclude.substring(
-                0,
-                exclude.length - ParcelWatcherServer.GLOB_MARKERS.GlobStarPathEndPosix.length,
-              );
-            }
-          }
-
-          // Support even more glob patterns on Linux where we know
-          // that each folder requires a file handle to watch.
-          // Examples:
-          // - node_modules/* (full form: **/node_modules/*/**)
-          if (isLinux && normalizedExclude) {
-            const endsWithStar = normalizedExclude?.endsWith(ParcelWatcherServer.GLOB_MARKERS.StarPathEndPosix);
-            if (endsWithStar) {
-              normalizedExclude = normalizedExclude.substring(
-                0,
-                normalizedExclude.length - ParcelWatcherServer.GLOB_MARKERS.StarPathEndPosix.length,
-              );
-            }
-          }
-        }
-      }
-
-      // Not a glob pattern, take as is
-      else {
-        normalizedExclude = exclude;
-      }
-
-      if (!normalizedExclude || normalizedExclude.includes(ParcelWatcherServer.GLOB_MARKERS.Star)) {
-        continue; // skip for parcel (will be applied later by our glob matching)
-      }
-
-      // Absolute path: normalize to watched path and
-      // exclude if not a parent of it otherwise.
-      if (isAbsolute(normalizedExclude)) {
-        const base = new Path(normalizedExclude);
-        if (!base.isEqualOrParent(new Path(path))) {
-          continue; // exclude points to path outside of watched folder, ignore
-        }
-        // convert to relative path to ensure we
-        // get the correct path casing going forward
-        normalizedExclude = normalizedExclude.substr(path.length);
-      }
-
-      // Finally take as relative path joined to watched path
-      excludePaths.add(rtrim(new Path(path).join(normalizedExclude).toString(), Path.separator));
-    }
-
-    if (excludePaths.size > 0) {
-      return Array.from(excludePaths);
-    }
-
-    return undefined;
-  }
-
   private getDefaultWatchExclude() {
-    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**', '**/.hg/store/**'];
+    return ['**/.git/objects/**', '**/.git/subtree-cache/**', '**/node_modules/**/*', '**/.hg/store/**'];
   }
 
   protected async start(
@@ -303,18 +181,13 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
       return disposables;
     }
     const realPath = await fs.realpath(basePath);
-    const ignore = this.toExcludePaths(
-      realPath,
-      this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
-    );
-
     const tryWatchDir = async (maxRetries = 3, retryDelay = 1000) => {
       for (let times = 0; times < maxRetries; times++) {
         try {
           return await ParcelWatcher.subscribe(
             realPath,
             (err, events: ParcelWatcher.Event[]) => {
-              // 对于超过5000数量的 events 做屏蔽优化，避免潜在的卡死问题
+              // 对于超过 5000 数量的 events 做屏蔽优化，避免潜在的卡死问题
               if (events.length > 5000) {
                 // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
                 return;
@@ -329,7 +202,7 @@ export class ParcelWatcherServer implements IFileSystemWatcherServer {
             },
             {
               backend: ParcelWatcherServer.PARCEL_WATCHER_BACKEND,
-              ignore,
+              ignore: this.excludes.concat(rawOptions?.excludes || this.getDefaultWatchExclude()),
             },
           );
         } catch (e) {
