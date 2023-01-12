@@ -11,7 +11,7 @@ import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/edi
 import { ContextViewService } from '@opensumi/monaco-editor-core/esm/vs/platform/contextview/browser/contextViewService';
 
 /* istanbul ignore file */
-import { WorkbenchEditorService } from '../common';
+import { EditorOpenType, WorkbenchEditorService } from '../common';
 
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
@@ -60,12 +60,12 @@ export class MonacoCodeService extends AbstractCodeEditorService {
       !new URI(source.getModel()?.uri).isEqual(input.resource)
     ) {
       for (const visibleGroup of this.workbenchEditorService.editorGroups) {
-        if (visibleGroup.currentOpenType?.type === 'code') {
+        if (visibleGroup.currentOpenType?.type === EditorOpenType.code) {
           if (visibleGroup.currentEditor?.monacoEditor === source) {
             visibleGroup.pinPreviewed(visibleGroup.currentResource?.uri);
             break;
           }
-        } else if (visibleGroup.currentOpenType?.type === 'diff') {
+        } else if (visibleGroup.currentOpenType?.type === EditorOpenType.diff) {
           if (
             visibleGroup.diffEditor!.modifiedEditor.monacoEditor === source ||
             visibleGroup.diffEditor!.originalEditor.monacoEditor === source

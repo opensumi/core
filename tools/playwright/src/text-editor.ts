@@ -220,7 +220,6 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     if (!lineNode) {
       throw new Error(`Couldn't retrieve lines of text editor ${this.tabSelector}`);
     }
-
     return lineNode.asElement();
   }
 

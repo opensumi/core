@@ -1,7 +1,7 @@
 import { Autowired } from '@opensumi/di';
 import { PreferenceService } from '@opensumi/ide-core-browser';
 import { Domain, localize, Schemes } from '@opensumi/ide-core-common';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
 
 import { IMarkdownService } from '../common';
 
@@ -27,7 +27,7 @@ export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribu
     componentRegistry.registerEditorComponentResolver(Schemes.file, (resource, results) => {
       if (resource.uri.path.ext === '.md') {
         results.push({
-          type: 'component',
+          type: EditorOpenType.component,
           componentId: MARKDOWN_EDITOR_COMPONENT_ID,
           title: localize('editorOpenType.preview'),
           weight: this.preferenceService.get<boolean>('application.preferMarkdownPreview') ? 10 : -1,

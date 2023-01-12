@@ -3,7 +3,7 @@ import { URI, Domain, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 
 import { IResourceProvider, IDiffResource, ResourceService, ResourceDecorationChangeEvent } from '../../common';
-import { BrowserEditorContribution, EditorComponentRegistry } from '../types';
+import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
 
 // diff URI:
 // diff://?name=tabName&original=uri1&modified=uri2
@@ -74,7 +74,7 @@ export class DefaultDiffEditorContribution implements BrowserEditorContribution 
   registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorComponentResolver('diff', (resource: IDiffResource, results) => {
       results.push({
-        type: 'diff',
+        type: EditorOpenType.diff,
       });
     });
   }

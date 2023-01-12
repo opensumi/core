@@ -44,6 +44,7 @@ import {
   EditorSide,
   IEditorComponent,
   CodeEditorDidVisibleEvent,
+  EditorOpenType,
 } from './types';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 
@@ -213,8 +214,6 @@ export const EditorGridView = ({ grid }: { grid: EditorGrid }) => {
 };
 
 const cachedEditor: { [key: string]: HTMLDivElement } = {};
-const cachedDiffEditor: { [key: string]: HTMLDivElement } = {};
-const cachedMergeEditor: { [key: string]: HTMLDivElement } = {};
 
 /**
  * 默认的 editor empty component
@@ -343,27 +342,12 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         group.createEditor(container);
       }
     }
+
     if (diffEditorRef.current) {
-      if (cachedDiffEditor[group.name]) {
-        cachedDiffEditor[group.name].remove();
-        diffEditorRef.current.appendChild(cachedDiffEditor[group.name]);
-      } else {
-        const container = document.createElement('div');
-        diffEditorRef.current.appendChild(container);
-        cachedDiffEditor[group.name] = container;
-        group.createDiffEditor(container);
-      }
+      group.attachDiffEditorDom(diffEditorRef.current);
     }
     if (mergeEditorRef.current) {
-      if (cachedMergeEditor[group.name]) {
-        cachedMergeEditor[group.name].remove();
-        mergeEditorRef.current.appendChild(cachedMergeEditor[group.name]);
-      } else {
-        const container = document.createElement('div');
-        mergeEditorRef.current.appendChild(container);
-        cachedMergeEditor[group.name] = container;
-        group.createMergeEditor(container);
-      }
+      group.attachMergeEditorDom(mergeEditorRef.current);
     }
   }, [codeEditorRef.current, diffEditorRef.current, mergeEditorRef.current]);
 
@@ -401,19 +385,19 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
   );
 
   React.useEffect(() => {
-    if (group.currentOpenType?.type === 'code') {
+    if (group.currentOpenType?.type === EditorOpenType.code) {
       eventBus.fire(
         new CodeEditorDidVisibleEvent({
           groupName: group.name,
-          type: 'code',
+          type: EditorOpenType.code,
           editorId: group.codeEditor.getId(),
         }),
       );
-    } else if (group.currentOpenType?.type === 'diff') {
+    } else if (group.currentOpenType?.type === EditorOpenType.diff) {
       eventBus.fire(
         new CodeEditorDidVisibleEvent({
           groupName: group.name,
-          type: 'diff',
+          type: EditorOpenType.diff,
           editorId: group.diffEditor.modifiedEditor.getId(),
         }),
       );
@@ -465,7 +449,7 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
         <div
           className={classnames({
             [styles.kt_editor_component]: true,
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.component,
           })}
         >
           {components}
@@ -474,19 +458,19 @@ export const EditorGroupBody = observer(({ group }: { group: EditorGroup }) => {
           className={classnames({
             [styles.kt_editor_code_editor]: true,
             [styles.kt_editor_component]: true,
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'code',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.code,
           })}
           ref={codeEditorRef}
         />
         <div
           className={classnames(styles.kt_editor_diff_editor, styles.kt_editor_component, {
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.diff,
           })}
           ref={diffEditorRef}
         />
         <div
           className={classnames(styles.kt_editor_diff_3_editor, styles.kt_editor_component, {
-            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'mergeEditor',
+            [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== EditorOpenType.mergeEditor,
           })}
           ref={mergeEditorRef}
         />

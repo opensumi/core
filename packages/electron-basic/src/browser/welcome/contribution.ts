@@ -5,6 +5,7 @@ import {
   BrowserEditorContribution,
   EditorComponentRegistry,
   EditorComponentRenderMode,
+  EditorOpenType,
 } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
@@ -31,7 +32,7 @@ export class WelcomeContribution implements BrowserEditorContribution, ClientApp
     });
     registry.registerEditorComponentResolver('welcome', (resource, results) => {
       results.push({
-        type: 'component',
+        type: EditorOpenType.component,
         componentId: 'welcome',
       });
     });

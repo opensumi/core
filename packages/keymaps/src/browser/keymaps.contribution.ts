@@ -21,7 +21,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
-import { BrowserEditorContribution, EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { QuickPickItem, QuickPickService } from '@opensumi/ide-quick-open';
 
@@ -163,7 +163,7 @@ export class KeymapsContribution
     editorComponentRegistry.registerEditorComponentResolver(KEYMAPS_SCHEME, (_, __, resolve) => {
       resolve!([
         {
-          type: 'component',
+          type: EditorOpenType.component,
           componentId: KEYMAPS_PREVIEW_COMPONENT_ID,
         },
       ]);

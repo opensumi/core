@@ -11,7 +11,7 @@ import {
 } from '@opensumi/ide-core-common';
 import { ResourceService } from '@opensumi/ide-editor';
 import { IResource } from '@opensumi/ide-editor';
-import { EditorComponentRegistry } from '@opensumi/ide-editor/lib/browser';
+import { EditorComponentRegistry, EditorOpenType } from '@opensumi/ide-editor/lib/browser';
 
 import { Contributes, IWalkthrough, LifeCycle, VSCodeContributePoint } from '../../../common';
 import { IExtensionWalkthrough } from '../../../common/vscode';
@@ -105,7 +105,7 @@ export class WalkthroughsContributionPoint extends VSCodeContributePoint<IExtens
       this.editorComponentRegistry.registerEditorComponentResolver(Schemes.walkThrough, (_, __, resolve) => {
         resolve([
           {
-            type: 'component',
+            type: EditorOpenType.component,
             componentId: this.toComponentId(description.id),
           },
         ]);

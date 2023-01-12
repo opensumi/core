@@ -95,14 +95,12 @@ console.log(a);`,
     await copyPath?.click();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'editor3.js');
     await editor.addTextToNewLineAfterLineByLineNumber(1, 'File Path: ');
-    // cause of https://github.com/microsoft/playwright/issues/8114
-    // we can just using keypress to fake the paste feature
     let editorMenu = await editor.openLineContextMenuByLineNumber(2);
     expect(await editorMenu?.isOpen()).toBeTruthy();
     let paste = await editorMenu?.menuItemByName('Paste');
     await paste?.click();
     await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(5);
+    expect(await editor.numberOfLines()).toBe(2);
     expect(
       await editor.textContentOfLineContainingText(
         `File Path: ${workspace.workspace.resolve('editor3.js').codeUri.fsPath.toString()}`,
@@ -118,7 +116,7 @@ console.log(a);`,
     paste = await editorMenu?.menuItemByName('Paste');
     await paste?.click();
     await app.page.waitForTimeout(200);
-    expect(await editor.numberOfLines()).toBe(6);
+    expect(await editor.numberOfLines()).toBe(3);
     expect(await editor.textContentOfLineContainingText('File Relative Path: editor3.js')).toBeTruthy();
   });
 

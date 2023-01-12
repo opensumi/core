@@ -10,7 +10,12 @@ import {
   ILogger,
   match,
 } from '@opensumi/ide-core-common';
-import { EditorComponentRegistry, IEditorPriority, ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import {
+  EditorComponentRegistry,
+  EditorOpenType,
+  IEditorPriority,
+  ReactEditorComponent,
+} from '@opensumi/ide-editor/lib/browser';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { WebviewMounter } from '@opensumi/ide-webview/lib/browser/editor-webview';
 
@@ -94,7 +99,7 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
               ) {
                 results.push({
                   componentId,
-                  type: 'component',
+                  type: EditorOpenType.component,
                   title: customEditor.displayName
                     ? this.getLocalizeFromNlsJSON(customEditor.displayName, extensionId)
                     : customEditor.viewType,

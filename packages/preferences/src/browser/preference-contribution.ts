@@ -36,6 +36,7 @@ import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-edi
 import {
   BrowserEditorContribution,
   EditorComponentRegistry,
+  EditorOpenType,
   IEditor,
   IEditorFeatureRegistry,
   IResourceOpenResult,
@@ -416,7 +417,7 @@ export class PreferenceContribution
     editorComponentRegistry.registerEditorComponentResolver(PREF_SCHEME, (_, __, resolve) => {
       resolve([
         {
-          type: 'component',
+          type: EditorOpenType.component,
           componentId: PREF_PREVIEW_COMPONENT_ID,
         },
       ]);
