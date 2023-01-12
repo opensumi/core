@@ -136,6 +136,7 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
 }: IMarkerNodeRenderedProps) => {
   const handleClick = useCallback(
     (ev: React.MouseEvent) => {
+      ev.stopPropagation();
       if (itemType === TreeNodeType.TreeNode || itemType === TreeNodeType.CompositeTreeNode) {
         onClick(ev, item as MarkerNode, itemType);
       }
