@@ -90,7 +90,7 @@ export const Extension = React.memo(
             {type === ExtensionViewType.MARKETPLACE &&
               (isInstalled ? (
                 shouldUpdate ? (
-                  <Button type='link' size='small' onClick={onInstallCallback} disabled={installing}>
+                  <Button type='ghost' size='small' onClick={onInstallCallback} disabled={installing}>
                     {localize(installing ? 'marketplace.extension.updating' : 'marketplace.extension.update')}
                   </Button>
                 ) : (
@@ -98,7 +98,7 @@ export const Extension = React.memo(
                 )
               ) : (
                 <>
-                  <Button type='link' size='small' onClick={onInstallCallback} disabled={installing}>
+                  <Button type='ghost' size='small' onClick={onInstallCallback} disabled={installing}>
                     {localize(installing ? 'marketplace.extension.installing' : 'marketplace.extension.install')}
                   </Button>
                 </>

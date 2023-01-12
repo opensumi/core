@@ -5,7 +5,7 @@
   font-size: 12px;
   display: flex;
   box-sizing: border-box;
-  padding: 0 0 0 16px;
+  padding-left: 10px;
   overflow: hidden;
   align-items: center;
   max-width: 100%;
@@ -17,11 +17,11 @@
 
   .icon {
     position: relative;
-    height: 42px;
-    width: 42px;
+    height: 36px;
+    width: 36px;
     flex-shrink: 0;
     object-fit: contain;
-    padding-right: 14px;
+    margin-right: 10px;
   }
 
   .default_icon {
@@ -29,8 +29,8 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    height: 26px;
-    width: 26px;
+    height: 36px;
+    width: 36px;
     flex-shrink: 0;
     object-fit: contain;
     margin-right: 14px;
@@ -39,10 +39,7 @@
 
     :global {
       .kaitian-icon {
-        font-size: 14px;
-      }
-
-      .kt-icon {
+        font-size: 22px;
         color: #d8d9d9;
       }
     }
@@ -55,7 +52,8 @@
     max-width: calc(100% - 42px);
 
     .base_info {
-      line-height: 19px;
+      line-height: 20px;
+      height: 20px;
       display: flex;
       overflow: hidden;
       justify-content: space-between;
@@ -87,16 +85,19 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       display: block;
+      color: var(--descriptionForeground);
       max-width: calc(100% - 42px);
     }
 
     .footer {
       display: flex;
-      height: 19px;
-
+      height: 20px;
+      line-height: 20px;
+      margin-top: 5px;
       .namespace {
         font-weight: bold;
         flex: 1;
+        color: var(--descriptionForeground);
       }
 
       button {
