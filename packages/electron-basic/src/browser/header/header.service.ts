@@ -6,6 +6,7 @@ import {
   Emitter,
   DisposableCollection,
   isMacintosh,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';
@@ -28,13 +29,13 @@ export class ElectronHeaderService implements IElectronHeaderService {
   disposableCollection = new DisposableCollection();
 
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
+  private readonly editorService: WorkbenchEditorService;
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(AppConfig)
-  appConfig: AppConfig;
+  private readonly appConfig: AppConfig;
 
   private _onTitleChanged = new Emitter<string>();
   onTitleChanged = this._onTitleChanged.event;
@@ -45,7 +46,7 @@ export class ElectronHeaderService implements IElectronHeaderService {
 
   private _titleTemplate = DEFAULT_TEMPLATE;
   get titleTemplate() {
-    return this._titleTemplate;
+    return this.preferenceService.get('window.title', this._titleTemplate);
   }
 
   set titleTemplate(value: string) {
