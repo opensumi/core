@@ -332,25 +332,23 @@ export class PreferenceServiceImpl implements PreferenceService {
         ? PREFERENCE_PROPERTY_TYPE.NULL
         : property.type[0]
       : property.type;
-    if (scope === PreferenceScope.Default) {
-      switch (type) {
-        case PREFERENCE_PROPERTY_TYPE.STRING:
-          return isString(highPriorityValue) ? highPriorityValue : isString(defaultValue) ? defaultValue : '';
-        case PREFERENCE_PROPERTY_TYPE.INT:
-        case PREFERENCE_PROPERTY_TYPE.NUMBER:
-          return isNumber(highPriorityValue) ? highPriorityValue : isNumber(defaultValue) ? defaultValue : 0;
-        case PREFERENCE_PROPERTY_TYPE.STRING_ARRAY:
-        case PREFERENCE_PROPERTY_TYPE.ARRAY:
-          return isArray(highPriorityValue) ? highPriorityValue : isArray(defaultValue) ? defaultValue : [];
-        case PREFERENCE_PROPERTY_TYPE.BOOLEAN:
-          return isBoolean(highPriorityValue) ? highPriorityValue : isBoolean(defaultValue) ? defaultValue : false;
-        case PREFERENCE_PROPERTY_TYPE.NULL:
-          return isNull(highPriorityValue) ? highPriorityValue : isNull(defaultValue) ? defaultValue : null;
-        case PREFERENCE_PROPERTY_TYPE.OBJECT:
-          return isObject(highPriorityValue) ? highPriorityValue : isObject(defaultValue) ? defaultValue : {};
-        default:
-          return null;
-      }
+    switch (type) {
+      case PREFERENCE_PROPERTY_TYPE.STRING:
+        return isString(highPriorityValue) ? highPriorityValue : isString(defaultValue) ? defaultValue : '';
+      case PREFERENCE_PROPERTY_TYPE.INT:
+      case PREFERENCE_PROPERTY_TYPE.NUMBER:
+        return isNumber(highPriorityValue) ? highPriorityValue : isNumber(defaultValue) ? defaultValue : 0;
+      case PREFERENCE_PROPERTY_TYPE.STRING_ARRAY:
+      case PREFERENCE_PROPERTY_TYPE.ARRAY:
+        return isArray(highPriorityValue) ? highPriorityValue : isArray(defaultValue) ? defaultValue : [];
+      case PREFERENCE_PROPERTY_TYPE.BOOLEAN:
+        return isBoolean(highPriorityValue) ? highPriorityValue : isBoolean(defaultValue) ? defaultValue : false;
+      case PREFERENCE_PROPERTY_TYPE.NULL:
+        return isNull(highPriorityValue) ? highPriorityValue : isNull(defaultValue) ? defaultValue : null;
+      case PREFERENCE_PROPERTY_TYPE.OBJECT:
+        return isObject(highPriorityValue) ? highPriorityValue : isObject(defaultValue) ? defaultValue : {};
+      default:
+        return null;
     }
   }
 
