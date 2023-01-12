@@ -1698,16 +1698,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       switch (activeOpenType.type) {
         case EditorOpenType.code:
-          this.openCodeEditor(resource, options);
+          await this.openCodeEditor(resource, options);
           break;
         case EditorOpenType.diff:
-          this.openDiffEditor(resource, options);
+          await this.openDiffEditor(resource, options);
           break;
         case EditorOpenType.mergeEditor:
-          this.openMergeEditor(resource);
+          await this.openMergeEditor(resource);
           break;
         case EditorOpenType.component:
-          this.openCustomEditor(resource, activeOpenType.componentId);
+          await this.openCustomEditor(resource, activeOpenType.componentId);
           break;
         default:
           return;
