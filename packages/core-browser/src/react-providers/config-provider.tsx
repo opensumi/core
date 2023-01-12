@@ -237,6 +237,11 @@ export interface AppConfig {
    * 该配置默认值仅在首次启动时进行同步，后续的更改将不会带来任何效果，即框架本身将不监听 `.vscode` 内的文件变化
    */
   useVSCodeWorkspaceConfiguration?: boolean;
+  /*
+   * 定义协同模块的通信路径
+   * 需要带端口号, 默认是 12345，可使用 COLLABORATION_PORT 字段来指定
+   */
+  collaborationWsPath?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
