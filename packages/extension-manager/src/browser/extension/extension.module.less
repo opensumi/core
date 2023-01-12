@@ -33,7 +33,7 @@
     width: 36px;
     flex-shrink: 0;
     object-fit: contain;
-    margin-right: 14px;
+    margin-right: 10px;
     background-color: #f1f2f2;
     border-radius: 50%;
 
@@ -49,8 +49,8 @@
     flex: 1;
     padding: 4px 0;
     padding-right: 10px;
-    max-width: calc(100% - 42px);
-
+    max-width: calc(100% - 40px);
+    overflow: hidden;
     .base_info {
       line-height: 20px;
       height: 20px;
@@ -64,13 +64,13 @@
         font-weight: bold;
         overflow: hidden;
         white-space: nowrap;
+        flex: 1;
         text-overflow: ellipsis;
       }
 
       .version {
         margin-left: 6px;
         font-size: 12px;
-        flex: 1;
         color: var(--descriptionForeground);
       }
 
@@ -101,13 +101,9 @@
       }
 
       button {
-        height: 19px;
-        line-height: 19px;
+        height: 20px;
+        line-height: 20px;
       }
-    }
-
-    .state_text {
-      margin-right: 8px;
     }
   }
 }

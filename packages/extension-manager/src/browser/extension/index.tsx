@@ -90,21 +90,21 @@ export const Extension = React.memo(
             {type === ExtensionViewType.MARKETPLACE &&
               (isInstalled ? (
                 shouldUpdate ? (
-                  <Button type='ghost' size='small' onClick={onInstallCallback} disabled={installing}>
+                  <Button type='primary' size='small' onClick={onInstallCallback} disabled={installing}>
                     {localize(installing ? 'marketplace.extension.updating' : 'marketplace.extension.update')}
                   </Button>
                 ) : (
                   <span className={styles.state_text}>{localize('marketplace.extension.installed')}</span>
                 )
               ) : (
-                <>
-                  <Button type='ghost' size='small' onClick={onInstallCallback} disabled={installing}>
-                    {localize(installing ? 'marketplace.extension.installing' : 'marketplace.extension.install')}
-                  </Button>
-                </>
+                <Button type='primary' size='small' onClick={onInstallCallback} disabled={installing}>
+                  {localize(installing ? 'marketplace.extension.installing' : 'marketplace.extension.install')}
+                </Button>
               ))}
             {type === ExtensionViewType.INSTALLED && (
-              <span className={styles.state_text}>{localize('marketplace.extension.installed')}</span>
+              <Button type='primary' size='small' onClick={onInstallCallback} disabled={true}>
+                {localize('marketplace.extension.installed')}
+              </Button>
             )}
           </div>
         </div>
