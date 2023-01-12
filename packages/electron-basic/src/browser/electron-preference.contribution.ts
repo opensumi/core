@@ -7,7 +7,6 @@ export const electronPreferencesSchema: PreferenceSchema = {
   properties: {
     'window.title': {
       type: 'string',
-      default: DEFAULT_TEMPLATE,
       description: localize('window.title'),
     },
   },
