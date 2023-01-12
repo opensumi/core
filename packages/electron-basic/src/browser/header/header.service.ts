@@ -8,7 +8,6 @@ import {
   isMacintosh,
   PreferenceService,
 } from '@opensumi/ide-core-browser';
-import { Event } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';
 import { template } from '@opensumi/ide-utils/lib/strings';
@@ -24,8 +23,6 @@ export let DEFAULT_TEMPLATE = '${dirty}${activeEditorShort}${separator}${rootNam
 if (isMacintosh) {
   DEFAULT_TEMPLATE = '${activeEditorShort}${separator}${rootName}';
 }
-
-const PREFERENCE_CHANGED_EVENT_DELAY = 100;
 
 @Injectable()
 export class ElectronHeaderService implements IElectronHeaderService {
@@ -69,16 +66,9 @@ export class ElectronHeaderService implements IElectronHeaderService {
       }),
     );
 
-    const onPreferenceChangedEvent = Event.debounce(
-      this.preferenceService.onPreferenceChanged,
-      (_, e) => e,
-      PREFERENCE_CHANGED_EVENT_DELAY,
-    );
     this.disposableCollection.push(
-      onPreferenceChangedEvent(async (e) => {
-        if (e.preferenceName === 'window.title') {
-          this.titleTemplate = e.newValue;
-        }
+      this.preferenceService.onSpecificPreferenceChange('window.title', async (e) => {
+        this.titleTemplate = e.newValue;
       }),
     );
   }

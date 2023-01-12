@@ -110,9 +110,8 @@ export interface PreferenceService extends IDisposable {
   /**
    * 都走 onPreferenceChanged 再用if判断性能太差了
    * TODO: 将只监听一个偏好的使用这个方法
-   * @param preferenceName
    */
-  onSpecificPreferenceChange(preferenceName, listener: (change: PreferenceChange) => void): IDisposable;
+  onSpecificPreferenceChange(preferenceName: string, listener: (change: PreferenceChange) => void): IDisposable;
 }
 
 export const PreferenceProviderProvider = Symbol('PreferenceProviderProvider');
