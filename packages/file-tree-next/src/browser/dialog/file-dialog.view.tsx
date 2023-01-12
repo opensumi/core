@@ -209,7 +209,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
 
   if (isOpenDialog) {
     return (
-      <React.Fragment>
+      <div className={styles.file_dialog_wrapper}>
         <div className={styles.file_dialog_directory_title}>{options.title || localize('dialog.file.openLabel')}</div>
         <div className={styles.file_dialog_directory}>{renderDirectorySelection()}</div>
         <div className={styles.file_dialog_content} ref={wrapperRef}>
@@ -223,11 +223,11 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
             {(options as IOpenDialogOptions).openLabel || localize('dialog.file.ok')}
           </Button>
         </div>
-      </React.Fragment>
+      </div>
     );
   } else {
     return (
-      <React.Fragment>
+      <div className={styles.file_dialog_wrapper}>
         <div className={styles.file_dialog_directory_title}>
           {(options as ISaveDialogOptions).saveLabel || localize('dialog.file.saveLabel')}
         </div>
@@ -258,7 +258,7 @@ export const FileDialog = ({ options, model, isOpenDialog }: React.PropsWithChil
             {localize('dialog.file.ok')}
           </Button>
         </div>
-      </React.Fragment>
+      </div>
     );
   }
 };

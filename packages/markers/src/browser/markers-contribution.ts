@@ -70,6 +70,10 @@ export class MarkersContribution
     const stats = markerManager.getStats();
     if (stats) {
       const tooltipString = [] as string[];
+      const iconTexts = [
+        `$(kticon/close-circle) ${normalize(stats.errors)}`,
+        `$(kticon/error) ${normalize(stats.warnings)}`,
+      ];
       if (stats.errors > 0) {
         tooltipString.push(`Errors(${stats.errors})`);
       }
@@ -78,15 +82,12 @@ export class MarkersContribution
       }
       if (stats.infos > 0) {
         tooltipString.push(`Infos(${stats.infos})`);
+        iconTexts.push(`$(kticon/info-circle) ${normalize(stats.infos)}`);
       }
       this.statusBar.addElement(this.statusBarId, {
         name: localize('status-bar.editor-langStatus'),
         alignment: StatusBarAlignment.LEFT,
-        text: [
-          `$(kticon/close-circle) ${normalize(stats.errors)}`,
-          `$(kticon/error) ${normalize(stats.warnings)}`,
-          `$(kticon/info-circle) ${normalize(stats.infos)}`,
-        ].join(' '),
+        text: iconTexts.join(' '),
         priority: 1,
         tooltip: tooltipString.length > 0 ? tooltipString.join(', ') : localize('markers.status.no.problems'),
         onClick: () => {

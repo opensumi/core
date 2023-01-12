@@ -9,11 +9,11 @@ import {
   IDisposable,
   Disposable,
   IJSONSchemaRegistry,
-  replaceLocalizePlaceholder,
   PreferenceService,
   Schemes,
   CancellationToken,
   MaybePromise,
+  CommonLanguageId,
 } from '@opensumi/ide-core-browser';
 import { IHashCalculateService } from '@opensumi/ide-core-common/lib/hash-calculate/hash-calculate';
 import { IEditorDocumentModelContentProvider } from '@opensumi/ide-editor/lib/browser';
@@ -50,6 +50,12 @@ export class FileSchemeDocumentProvider
 
   provideEncoding(uri: URI) {
     return super.provideEncoding(uri);
+  }
+
+  preferLanguageForUri(uri: URI): MaybePromise<string | undefined> {
+    if (['settings.json'].includes(uri.path.base)) {
+      return CommonLanguageId.JSONC;
+    }
   }
 
   async saveDocumentModel(
@@ -119,7 +125,7 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {
     const content = this.getSchemaContent(uri);
-    return replaceLocalizePlaceholder(content)!;
+    return content;
   }
 
   protected getSchemaContent(uri: URI): string {
@@ -158,7 +164,7 @@ export class WalkThroughSnippetSchemeDocumentProvider implements IEditorDocument
     return scheme === Schemes.walkThroughSnippet;
   }
 
-  provideEditorDocumentModelContent(uri: URI): MaybePromise<string> {
+  provideEditorDocumentModelContent(uri: URI, encoding): MaybePromise<string> {
     if (!this.documentContentMaps.has(uri.toString())) {
       this.documentContentMaps.set(uri.toString(), '');
     }

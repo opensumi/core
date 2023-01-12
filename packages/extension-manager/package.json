@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-extension-manager",
-  "version": "2.21.12",
+  "version": "2.21.13",
   "files": [
     "lib",
     "src"

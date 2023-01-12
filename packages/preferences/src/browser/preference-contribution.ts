@@ -29,6 +29,7 @@ import {
   getIcon,
   isString,
   ISettingSection,
+  CodeSchemaId,
 } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { ResourceService, IResourceProvider, IResource } from '@opensumi/ide-editor';
@@ -396,7 +397,7 @@ export class PreferenceContribution
   }
 
   registerSchema(registry: IJSONSchemaRegistry) {
-    registry.registerSchema('vscode://schemas/settings/user', this.schemaProvider.getCombinedSchema(), [
+    registry.registerSchema(CodeSchemaId.userSettings, this.schemaProvider.getCombinedSchema(), [
       'settings.json',
       USER_PREFERENCE_URI.toString(),
     ]);

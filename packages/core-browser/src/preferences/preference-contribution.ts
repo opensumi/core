@@ -56,6 +56,8 @@ export namespace OverridePreferenceName {
 const OVERRIDE_PROPERTY = '\\[(.*)\\]$';
 export const OVERRIDE_PROPERTY_PATTERN = new RegExp(OVERRIDE_PROPERTY);
 
+const getDefaultSchema = () => ({ type: 'object', properties: {}, patternProperties: {} });
+
 @Injectable()
 export class PreferenceSchemaProvider extends PreferenceProvider {
   @Autowired(PreferenceContribution)
@@ -72,7 +74,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   protected readonly appConfig: AppConfig;
 
   protected preferences: { [name: string]: any } = {};
-  protected combinedSchema: PreferenceDataSchema = { properties: {}, patternProperties: {} };
+  protected combinedSchema: PreferenceDataSchema = getDefaultSchema();
   protected readonly onDidPreferenceSchemaChangedEmitter = new Emitter<void>();
   public readonly onDidPreferenceSchemaChanged: Event<void> = this.onDidPreferenceSchemaChangedEmitter.event;
 
@@ -97,7 +99,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
       Disposable.create(() => {
         this.preferences = {};
         this.validationFunctions.clear();
-        this.combinedSchema = { properties: {}, patternProperties: {} };
+        this.combinedSchema = getDefaultSchema();
       }),
     );
 

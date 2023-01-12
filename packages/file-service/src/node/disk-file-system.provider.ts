@@ -1,7 +1,6 @@
 import os from 'os';
 import paths from 'path';
 
-import fileType from 'file-type';
 import * as fse from 'fs-extra';
 import trash from 'trash';
 import writeFileAtomic from 'write-file-atomic';
@@ -35,11 +34,10 @@ import {
   IDiskFileProvider,
   FileAccess,
   FileSystemProviderCapabilities,
-  EXT_LIST_VIDEO,
-  EXT_LIST_IMAGE,
 } from '../common/';
 
 import { ParcelWatcherServer } from './file-service-watcher';
+import { getFileType } from './shared/file-type';
 
 const { Path } = path;
 const UNSUPPORTED_NODE_MODULES_EXCLUDE = '**/node_modules/*/**';
@@ -632,51 +630,6 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
   }
 
   async getFileType(uri: string): Promise<string | undefined> {
-    try {
-      // 兼容性处理，本质 disk-file 不支持非 file 协议的文件头嗅探
-      if (!uri.startsWith('file:/')) {
-        return this._getFileType('');
-      }
-      // const lstat = await fs.lstat(FileUri.fsPath(uri));
-      const stat = await fse.stat(FileUri.fsPath(uri));
-
-      let ext = '';
-      if (!stat.isDirectory()) {
-        // if(lstat.isSymbolicLink){
-
-        // }else {
-        if (stat.size) {
-          const type = await fileType.stream(fse.createReadStream(FileUri.fsPath(uri)));
-          // 可以拿到 type.fileType 说明为二进制文件
-          if (type.fileType) {
-            ext = type.fileType.ext;
-          }
-        }
-        return this._getFileType(ext);
-        // }
-      } else {
-        return 'directory';
-      }
-    } catch (error) {
-      if (isErrnoException(error)) {
-        if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
-          return undefined;
-        }
-      }
-    }
-  }
-
-  private _getFileType(ext: string) {
-    let type = 'text';
-
-    if (EXT_LIST_IMAGE.indexOf(ext) !== -1) {
-      type = 'image';
-    } else if (EXT_LIST_VIDEO.indexOf(ext) !== -1) {
-      type = 'video';
-    } else if (ext && ['xml'].indexOf(ext) === -1) {
-      type = 'binary';
-    }
-
-    return type;
+    return await getFileType(uri);
   }
 }

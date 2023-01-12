@@ -4,7 +4,7 @@ import { OpenSumiApp } from './app';
 import { OpenSumiContextMenu } from './context-menu';
 import { OpenSumiEditor } from './editor';
 import { OpenSumiTreeNode } from './tree-node';
-import { keypressWithCmdCtrl } from './utils';
+import { keypressWithCmdCtrl, keypressWithCmdCtrlAndShift } from './utils';
 
 abstract class ViewsModel {
   constructor(readonly page: Page) {}
@@ -130,6 +130,22 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
   protected async typeTextAndHitEnter(text: string): Promise<void> {
     await this.page.keyboard.type(text);
     await this.page.keyboard.press('Enter');
+  }
+
+  async typeText(text: string): Promise<void> {
+    await this.page.keyboard.type(text);
+  }
+  async saveByKeyboard(): Promise<void> {
+    await this.page.keyboard.press(keypressWithCmdCtrl('s'));
+    await this.waitForEditorDone();
+  }
+  async undoByKeyboard(): Promise<void> {
+    await this.page.keyboard.press(keypressWithCmdCtrl('z'));
+    await this.waitForEditorDone();
+  }
+  async redoByKeyboard(): Promise<void> {
+    await this.page.keyboard.press(keypressWithCmdCtrlAndShift('z'));
+    await this.waitForEditorDone();
   }
 
   async selectLineWithLineNumber(lineNumber: number): Promise<ElementHandle<SVGElement | HTMLElement> | undefined> {
@@ -271,7 +287,7 @@ export class OpenSumiTextEditor extends OpenSumiEditor {
     await lineElement?.click({ clickCount: 3 });
   }
 
-  protected async placeCursorInLine(
+  async placeCursorInLine(
     lineElement: ElementHandle<SVGElement | HTMLElement> | undefined,
     point: 'start' | 'end' = 'end',
   ): Promise<void> {

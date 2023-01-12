@@ -97,13 +97,24 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   }
 
   initialize() {
+    /**
+     * 优先使用 appConfig.collaborationWsPath 配置
+     * 如果没有该配置才根据 wsPath 去转换端口
+     */
+    const { collaborationWsPath, wsPath } = this.appConfig;
+    let serverUrl: string | undefined = collaborationWsPath;
+
+    if (!serverUrl) {
+      const path = new URL(wsPath.toString());
+      path.port = String(COLLABORATION_PORT);
+
+      serverUrl = path.toString();
+    }
+
     this.yDoc = new YDoc();
     this.yTextMap = this.yDoc.getMap();
 
-    // transform url
-    const wsPath = new URL(this.appConfig.wsPath.toString());
-    wsPath.port = String(COLLABORATION_PORT);
-    this.yWebSocketProvider = new WebsocketProvider(wsPath.toString(), ROOM_NAME, this.yDoc);
+    this.yWebSocketProvider = new WebsocketProvider(serverUrl.toString(), ROOM_NAME, this.yDoc);
 
     this.yTextMap.observe(this.yMapObserver);
 

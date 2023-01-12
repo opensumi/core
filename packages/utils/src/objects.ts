@@ -103,3 +103,43 @@ export function removeUndefined<T extends object = any>(obj: T): T {
   });
   return obj;
 }
+
+export function cloneAndChangeByKV(obj: any, changer: (key: string, orig: any) => any): any {
+  return _cloneAndChangeByKV(obj, changer, new Set());
+}
+
+function _cloneAndChangeByKV(obj: any, changer: (key: string, orig: any) => any, seen: Set<any>): any {
+  if (isUndefinedOrNull(obj)) {
+    return obj;
+  }
+
+  if (isArray(obj)) {
+    const r1: any[] = [];
+    for (const e of obj) {
+      r1.push(_cloneAndChangeByKV(e, changer, seen));
+    }
+    return r1;
+  }
+
+  if (isObject(obj)) {
+    if (seen.has(obj)) {
+      throw new Error('Cannot clone recursive data-structure');
+    }
+    seen.add(obj);
+    const r2 = {};
+    for (const i2 in obj) {
+      if (_hasOwnProperty.call(obj, i2)) {
+        const changed = changer(i2, obj[i2]);
+        if (typeof changed !== 'undefined') {
+          (r2 as any)[i2] = changed;
+        } else {
+          (r2 as any)[i2] = _cloneAndChangeByKV(obj[i2], changer, seen);
+        }
+      }
+    }
+    seen.delete(obj);
+    return r2;
+  }
+
+  return obj;
+}
