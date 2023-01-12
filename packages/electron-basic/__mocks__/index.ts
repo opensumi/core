@@ -5,7 +5,7 @@ import { IMessageService } from '@opensumi/ide-overlay/lib/common';
 
 import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../tools/dev-tool/src/mock-injector';
-import { IElectronHeaderService } from '../src/common/header';
+// import { IElectronHeaderService } from '../src/common/header';
 
 import { mockService } from './utils';
 
