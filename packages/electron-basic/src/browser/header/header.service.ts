@@ -60,7 +60,7 @@ export class ElectronHeaderService implements IElectronHeaderService {
   }
 
   constructor() {
-    this._titleTemplate = this.preferenceService.get('window.title', this._titleTemplate);
+    this._titleTemplate = this.preferenceService.getValid('window.title', this._titleTemplate);
 
     this.disposableCollection.push(
       this.editorService.onActiveResourceChange(() => {
@@ -70,7 +70,13 @@ export class ElectronHeaderService implements IElectronHeaderService {
 
     this.disposableCollection.push(
       this.preferenceService.onSpecificPreferenceChange('window.title', async (e) => {
-        this.titleTemplate = e.newValue;
+        if (e.newValue) {
+          this.titleTemplate = e.newValue;
+        }
+        // window.title is deteled
+        if (!e.newValue && this.titleTemplate !== DEFAULT_TEMPLATE) {
+          this.titleTemplate = DEFAULT_TEMPLATE;
+        }
       }),
     );
   }

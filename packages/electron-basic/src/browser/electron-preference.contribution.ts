@@ -1,7 +1,5 @@
 import { PreferenceSchema, PreferenceContribution, localize, Domain } from '@opensumi/ide-core-browser';
 
-import { DEFAULT_TEMPLATE } from './header/header.service';
-
 export const electronPreferencesSchema: PreferenceSchema = {
   type: 'object',
   properties: {
