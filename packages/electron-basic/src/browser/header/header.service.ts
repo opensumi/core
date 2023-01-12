@@ -73,7 +73,7 @@ export class ElectronHeaderService implements IElectronHeaderService {
         if (e.newValue) {
           this.titleTemplate = e.newValue;
         }
-        // window.title is deteled
+        // window.title is deleted
         if (!e.newValue && this.titleTemplate !== DEFAULT_TEMPLATE) {
           this.titleTemplate = DEFAULT_TEMPLATE;
         }
