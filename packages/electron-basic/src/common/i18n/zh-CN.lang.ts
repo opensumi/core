@@ -4,7 +4,7 @@ export const localizationBundle = {
   localizedLanguageName: '中文(中国)',
   contents: {
     'window.title': [
-      '基于活动文件控制窗口标题。变量根据上下文替换：',
+      '基于活跃文件控制窗口标题。变量根据上下文替换：',
       '`${activeEditorShort}`: 活跃文件标题 (例如: myFile.txt).',
       '`${activeEditorMedium}`: 活跃文件相对工作区的路径 (例如: myFolder/myFileFolder/myFile.txt).',
       '`${activeEditorLong}`: 活跃文件的绝对路径 (例如: /Users/Development/myFolder/myFileFolder/myFile.txt).',
