@@ -46,7 +46,7 @@ export class ElectronHeaderService implements IElectronHeaderService {
 
   private _titleTemplate = DEFAULT_TEMPLATE;
   get titleTemplate() {
-    return this.preferenceService.get('window.title', this._titleTemplate);
+    return this._titleTemplate;
   }
 
   set titleTemplate(value: string) {
@@ -60,6 +60,8 @@ export class ElectronHeaderService implements IElectronHeaderService {
   }
 
   constructor() {
+    this._titleTemplate = this.preferenceService.get('window.title', this._titleTemplate);
+
     this.disposableCollection.push(
       this.editorService.onActiveResourceChange(() => {
         this.updateAppTitle();
