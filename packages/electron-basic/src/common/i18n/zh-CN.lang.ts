@@ -17,7 +17,7 @@ export const localizationBundle = {
       '`${rootPath}`: 工作区绝对路径 (例如: /Users/Development/myWorkspace).',
       '`${appName}`: 例如: OpenSumi.',
       '`${remoteName}`: 例如: SSH',
-      '`${dirty}`: 有文件被修改的',
+      '`${dirty}`: 有文件被修改的标记',
       '`${separator}`: 分隔符只在两边都有值的变量中出现',
     ].join('\n- '),
   },
