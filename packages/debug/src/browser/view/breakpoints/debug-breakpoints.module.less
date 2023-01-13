@@ -15,6 +15,11 @@
   align-items: center;
   cursor: pointer;
   flex-direction: row;
+  .debug_remove_breakpoints_icon {
+    color: #c5c5c5;
+    display: none;
+    pointer-events: none;
+  }
   &:hover {
     background: var(--list-hoverBackground);
     color: var(--list-hoverForeground);
@@ -37,12 +42,6 @@
   width: 19px;
   height: 19px;
   min-width: 19px;
-}
-
-.debug_remove_breakpoints_icon {
-  color: #c5c5c5;
-  display: none;
-  pointer-events: none;
 }
 
 .debug_breakpoints_badge {
