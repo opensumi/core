@@ -188,7 +188,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     const proxy = request.proxy;
     this._terminalProcessProxies.set(proxy.terminalId, proxy);
 
-    // Note that onReisze is not being listened to here as it needs to fire when max dimensions
+    // Note that onResize is not being listened to here as it needs to fire when max dimensions
     // change, excluding the dimension override
     const initialDimensions: ITerminalDimensionsDto | undefined =
       request.cols && request.rows

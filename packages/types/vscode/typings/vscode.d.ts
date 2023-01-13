@@ -577,6 +577,18 @@ declare module 'vscode' {
      * recommended for the best contrast and consistency across themes.
      */
     color?: ThemeColor;
+
+		/**
+     * TODO: Not Implement
+		 * The {@link TerminalLocation} or {@link TerminalEditorLocationOptions} or {@link TerminalSplitLocationOptions} for the terminal.
+		 */
+		location?: TerminalLocation | TerminalEditorLocationOptions | TerminalSplitLocationOptions;
+
+		/**
+		 * Opt-out of the default terminal persistence on restart and reload.
+		 * This will only take effect when `terminal.integrated.enablePersistentSessions` is enabled.
+		 */
+		isTransient?: boolean;
   }
 
   /**
