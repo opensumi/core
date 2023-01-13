@@ -183,8 +183,6 @@ export class PreferenceContribution
      */
     this.registerSettings();
     this.registerSettingSections();
-
-    this.preferenceService.fireDidSettingsChange();
   }
 
   registerCommands(commands: CommandRegistry) {

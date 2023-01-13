@@ -91,6 +91,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   @observable
   private settingsGroups: ISettingGroup[] = [];
 
+  @observable
   private settingsSections: Map<string, ISettingSection[]> = new Map();
 
   private enumLabels: Map<string, { [key: string]: string }> = new Map();
@@ -103,8 +104,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   private enumLabelsChangeDelayer = this.registerDispose(
     new ThrottledDelayer<void>(PreferenceSettingsService.DEFAULT_CHANGE_DELAY),
   );
-
-  private onDidSettingsChangeEmitter: Emitter<void> = this.registerDispose(new Emitter());
 
   constructor() {
     super();
@@ -128,20 +127,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       this.preferenceService.onSpecificPreferenceChange('settings.userBeforeWorkspace', (e) => {
         this.userBeforeWorkspace = e.newValue;
       }),
-    );
-    this.registerDispose(
-      this.onDidSettingsChange(
-        debounce(
-          action(() => {
-            // 利用副作用强制刷新一下
-            this.selectScope(this.currentScope);
-          }),
-          100,
-          {
-            maxWait: 300,
-          },
-        ),
-      ),
     );
   }
 
@@ -176,14 +161,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
 
   get onDidEnumLabelsChange() {
     return this.onDidEnumLabelsChangeEmitter.event;
-  }
-
-  get onDidSettingsChange() {
-    return this.onDidSettingsChangeEmitter.event;
-  }
-
-  fireDidSettingsChange() {
-    this.onDidSettingsChangeEmitter.fire();
   }
 
   private isContainSearchValue(value: string, search: string) {
@@ -262,7 +239,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
       ...group,
       title: replaceLocalizePlaceholder(group.title) || group.title,
     });
-    this.fireDidSettingsChange();
     return disposable;
   }
 
@@ -277,7 +253,6 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     }
     this.cachedGroupSection.clear();
     const disposable = addElement(this.settingsSections.get(groupId)!, section);
-    this.fireDidSettingsChange();
     return disposable;
   }
 
