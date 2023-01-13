@@ -47,6 +47,17 @@
   flex-direction: row;
   flex-shrink: 1;
   overflow: hidden;
+  i.arrow_icon {
+    display: flex;
+    align-items: center;
+    justify-items: center;
+    font-size: 16px;
+    margin: 0 4px;
+    color: var(--descriptionForeground);
+    &.kt_mod_collapsed {
+      transform: rotate(-90deg);
+    }
+  }
 }
 
 .kt_split_panel_body {
@@ -134,15 +145,6 @@
   :global(.kt-icon),
   :global(.codicon) {
     font-size: 14px !important;
-  }
-}
-
-i.arrow_icon {
-  font-size: 16px;
-  margin: 0 4px;
-  color: var(--descriptionForeground);
-  &.kt_mod_collapsed {
-    transform: rotate(-90deg);
   }
 }
 
