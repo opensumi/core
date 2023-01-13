@@ -24,10 +24,6 @@ export class SearchModule extends BrowserModule {
       token: ISearchTreeService,
       useClass: SearchTreeService,
     },
-    {
-      token: SearchContextKey,
-      useClass: SearchContextKey,
-    },
     SearchContribution,
   ];
 

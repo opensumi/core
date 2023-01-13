@@ -875,7 +875,7 @@ export class ContentSearchClientService extends Disposable implements IContentSe
 
   dispose() {
     super.dispose();
-    this.eventBusDisposer.dispose();
+    this.eventBusDisposer?.dispose();
     this.blur();
   }
 }
