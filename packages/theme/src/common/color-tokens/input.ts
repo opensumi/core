@@ -4,11 +4,10 @@ import { Color } from '../../common/color';
 import { registerColor, transparent } from '../utils';
 
 import { contrastBorder, focusBorder, foreground } from './base';
-import { secondaryForegroundColor } from './basic-color';
 
 export const inputBorder = registerColor(
   'input.border',
-  { dark: '#00000000', light: '#00000000', hcDark: contrastBorder, hcLight: contrastBorder },
+  { dark: '#00000000', light: '#00000040', hcDark: contrastBorder, hcLight: contrastBorder },
   localize('inputBoxBorder', 'Input box border.'),
 );
 export const inputBackground = registerColor(
