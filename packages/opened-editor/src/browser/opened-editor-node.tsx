@@ -66,7 +66,9 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   };
 
   const paddingLeft = `${
-    defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!EditorFileGroup.is(item) ? 16 : 0)
+    defaultLeftPadding +
+    (item.depth || 0) * (leftPadding || 0) +
+    (!EditorFileGroup.is(item) && !EditorFileGroup.isRoot(item.parent) ? 16 : 0)
   }px`;
 
   const editorNodeStyle = {
