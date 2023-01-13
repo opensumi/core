@@ -279,9 +279,13 @@ export interface TerminalOptions {
   beforeCreate?: (terminalId: string) => void;
 
   /**
-   * 终端是否保活
+   * Opt-out of the default terminal persistence on restart and reload.
    */
   isTransient?: boolean;
+  /**
+   * The {@link TerminalLocation} or {@link TerminalEditorLocationOptions} or {@link TerminalSplitLocationOptions} for the terminal.
+   */
+  location?: TerminalLocation | vscode.TerminalEditorLocationOptions | vscode.TerminalSplitLocationOptions;
 }
 
 export const ITerminalNodeService = Symbol('ITerminalNodeService');
@@ -557,6 +561,8 @@ export interface IShellLaunchConfig {
    * 禁用保持 Shell 历史的特性
    */
   disablePreserveHistory?: boolean;
+
+  location?: TerminalLocation;
 
   __fromTerminalOptions?: TerminalOptions;
 }
