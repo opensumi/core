@@ -6,7 +6,7 @@ import { Disposable } from '@opensumi/ide-core-common';
 import { ConfigContext } from '../react-providers/config-provider';
 
 function isDisposable(target: any): target is Disposable {
-  return target && (target as any).dispose;
+  return target && (target as any).dispose && !target.disposed;
 }
 
 export function useInjectable<T = any>(Constructor: Token, args?: any): T {
