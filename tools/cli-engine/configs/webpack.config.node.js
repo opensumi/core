@@ -1,5 +1,6 @@
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const path = require('path');
+
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const srcDir = path.join(__dirname, '../src/node');
@@ -36,17 +37,9 @@ module.exports = {
     ],
   },
   externals: [
-    function(context, request, callback) {
-      if (
-        [
-          'node-pty',
-          'nsfw',
-          'spdlog',
-          '@opensumi/vscode-ripgrep',
-          'canvas',
-        ].indexOf(request) !== -1
-      ) {
-        return callback(null,  `commonjs ${request}`);
+    function (context, request, callback) {
+      if (['node-pty', 'nsfw', 'spdlog', '@opensumi/vscode-ripgrep', 'canvas'].indexOf(request) !== -1) {
+        return callback(null, `commonjs ${request}`);
       }
       callback();
     },

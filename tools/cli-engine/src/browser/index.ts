@@ -1,16 +1,13 @@
 import '@opensumi/ide-i18n';
-import { CommonBrowserModules } from '@opensumi/ide-startup/lib/browser/common-modules';
 import { BrowserModule, ConstructorOf, SlotLocation, IClientAppOpts } from '@opensumi/ide-core-browser';
 import { ExpressFileServerModule } from '@opensumi/ide-express-file-server/lib/browser';
+import { CommonBrowserModules } from '@opensumi/ide-startup/lib/browser/common-modules';
 import '@opensumi/ide-core-browser/lib/style/index.less';
 
 import { renderApp } from './app';
 import './style.less';
 
-export const modules: ConstructorOf<BrowserModule>[] = [
-  ...CommonBrowserModules,
-  ExpressFileServerModule,
-];
+export const modules: ConstructorOf<BrowserModule>[] = [...CommonBrowserModules, ExpressFileServerModule];
 
 const layoutConfig = {
   [SlotLocation.top]: {

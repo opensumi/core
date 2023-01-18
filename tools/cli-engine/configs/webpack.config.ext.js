@@ -1,13 +1,12 @@
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const path = require('path');
+
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const distDir = path.join(__dirname, '../lib/hosted');
 
 module.exports = {
-  entry: require.resolve(
-    '@opensumi/ide-extension/lib/hosted/ext.process.js',
-  ),
+  entry: require.resolve('@opensumi/ide-extension/lib/hosted/ext.process.js'),
   target: 'node',
   output: {
     filename: 'ext.process.js',
@@ -38,12 +37,8 @@ module.exports = {
     ],
   },
   externals: [
-    function(context, request, callback) {
-      if (
-        ['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(
-          request,
-        ) !== -1
-      ) {
+    function (context, request, callback) {
+      if (['node-pty', 'nsfw', 'spdlog', 'getmac'].indexOf(request) !== -1) {
         return callback(null, `commonjs ${request}`);
       }
       callback();

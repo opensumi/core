@@ -1,14 +1,11 @@
+/* eslint-disable no-console */
+import { Injector } from '@opensumi/di';
 import { IClientAppOpts } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
-import { Injector } from '@opensumi/di';
 
 export async function renderApp(opts: IClientAppOpts) {
   const { hostname } = window.location;
-  const specificIp = [
-    '0.0.0.0',
-    '127.0.0.1',
-    'localhost',
-  ].every((n) => n !== hostname);
+  const specificIp = ['0.0.0.0', '127.0.0.1', 'localhost'].every((n) => n !== hostname);
 
   const guessedConfig = {} as any;
   if (!specificIp) {
@@ -43,8 +40,7 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.injector = injector;
   const app = new ClientApp(opts);
 
-  console.log(opts, 'clientAppOpts');
-
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   await app.start(document.getElementById('main')!, 'web');
 
   const watchServerPath = (window as any).KAITIAN_SDK_CONFIG.watchServerPath;

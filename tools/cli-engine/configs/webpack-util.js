@@ -3,7 +3,7 @@ exports.lessLoader = (mergeOptions = {}) => ({
   options: {
     lessOptions: {
       javascriptEnabled: true,
-    }
+    },
   },
   ...mergeOptions,
 });

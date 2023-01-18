@@ -1,11 +1,12 @@
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-const CopyPlugin = require('copy-webpack-plugin');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const path = require('path');
+
+const AssetsPlugin = require('assets-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
-const AssetsPlugin = require('assets-webpack-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const { lessLoader } = require('./webpack-util');
 
@@ -18,7 +19,7 @@ module.exports = {
   entry: `${dir}/index.ts`,
   node: {
     net: 'empty',
-    'child_process': 'empty',
+    child_process: 'empty',
     path: 'empty',
     url: false,
     fs: 'empty',
@@ -103,7 +104,7 @@ module.exports = {
             options: {
               name: '[name].[ext]',
               outputPath: 'fonts/',
-              publicPath: "http://localhost:8080/fonts"
+              publicPath: 'http://localhost:8080/fonts',
             },
           },
         ],

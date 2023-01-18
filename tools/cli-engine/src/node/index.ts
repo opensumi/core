@@ -1,19 +1,12 @@
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
 import { modules } from './modules';
 import { startServer } from './server';
 
 const argv = require('yargs-parser')(process.argv.slice(2));
 
-const {
-  serverPort,
-  workspaceDir,
-  extensionCandidate,
-  isDev,
-  extHostPath,
-  watchServerPort,
-} = argv;
+const { serverPort, workspaceDir, extensionCandidate, isDev, extHostPath, watchServerPort } = argv;
 
 let serverAppOpts = {
   modules,
@@ -38,17 +31,20 @@ if (fs.existsSync(opensumiDevConfigPath)) {
   clientAppOpts = { ...opensumiDevConfig.clientAppOpts };
 }
 
-startServer({
-  port: Number(serverPort as string),
-  isDev: !!isDev,
-  workspaceDir: workspaceDir as string,
-  extensionCandidate: extensionCandidate ? strToArray(extensionCandidate as string | string[]) : undefined,
-  extHostPath: extHostPath as string,
-  watchServerPort,
-}, {
-  serverAppOpts,
-  clientAppOpts,
-});
+startServer(
+  {
+    port: Number(serverPort as string),
+    isDev: !!isDev,
+    workspaceDir: workspaceDir as string,
+    extensionCandidate: extensionCandidate ? strToArray(extensionCandidate as string | string[]) : undefined,
+    extHostPath: extHostPath as string,
+    watchServerPort,
+  },
+  {
+    serverAppOpts,
+    clientAppOpts,
+  },
+);
 
 function strToArray(item: string | string[]): string[] {
   return Array.isArray(item) ? item : [item];

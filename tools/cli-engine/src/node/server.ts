@@ -1,15 +1,18 @@
-import path from 'path';
-import http from 'http';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* eslint-disable no-console */
 import fs from 'fs';
+import http from 'http';
+import path from 'path';
 import { promisify } from 'util';
 
-import Koa from 'koa';
-import mount from 'koa-mount';
 import cors from '@koa/cors';
 import ejs from 'ejs';
-import { Deferred, LogLevel } from '@opensumi/ide-core-common';
-import { IServerAppOpts, ServerApp, NodeModule } from '@opensumi/ide-core-node';
+import Koa from 'koa';
+import mount from 'koa-mount';
+
 import { IClientAppOpts } from '@opensumi/ide-core-browser';
+import { Deferred, LogLevel } from '@opensumi/ide-core-common';
+import { IServerAppOpts, ServerApp } from '@opensumi/ide-core-node';
 
 import * as env from './env';
 import { openBrowser } from './openBrowser';
@@ -69,7 +72,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
   } = serverParams;
   console.log(extensionCandidate);
 
-  if (!!isDev) {
+  if (isDev) {
     process.env.IS_DEV = '1';
   }
 
@@ -109,7 +112,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
   await serverApp.start(server);
 
   app.use(
-    mount<{}>('/', async (ctx, next) => {
+    mount<{}>('/', async (ctx) => {
       console.log('REQUEST URL:', ctx.url);
       let staticPath;
       let _path = ctx.url;
@@ -133,7 +136,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
       let content = fs.readFileSync(staticPath).toString();
 
       if (_path === '/index.html') {
-        const assets = fs.readFileSync(path.join(__dirname, `../browser/assets.json`)).toString();
+        const assets = fs.readFileSync(path.join(__dirname, '../browser/assets.json')).toString();
 
         const config = {
           ideWorkspaceDir: workspaceDir,
@@ -154,7 +157,10 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
           engineVersion: pkg.version,
         };
 
-        content = ejs.compile(content, {})({
+        content = ejs.compile(
+          content,
+          {},
+        )({
           config,
           meta,
           assets: JSON.parse(assets),

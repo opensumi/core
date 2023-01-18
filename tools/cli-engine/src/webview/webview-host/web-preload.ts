@@ -1,14 +1,13 @@
+/* eslint-disable no-console */
 import { IWebviewChannel } from './common';
 import { WebviewPanelManager } from './webview-manager';
 
 class WebIframeChannel implements IWebviewChannel {
-
   private handlers = new Map();
   focusIframeOnCreate?: boolean | undefined;
   ready?: Promise<void> | undefined;
-  fakeLoad: boolean = false;
-  private isInDevelopmentMode = false;
-  private id = document!.location!.search!.match(/\bid=([\w-]+)/)![1];
+  fakeLoad = false;
+  private id = document?.location?.search?.match(/\bid=([\w-]+)/)?.[1];
 
   constructor() {
     window.addEventListener('message', (e) => {
@@ -27,13 +26,12 @@ class WebIframeChannel implements IWebviewChannel {
       }
     });
 
+    // eslint-disable-next-line no-async-promise-executor
     this.ready = new Promise<void>(async (resolve) => {
       resolve();
     });
 
-    this.onMessage('devtools-opened', () => {
-      this.isInDevelopmentMode = true;
-    });
+    this.onMessage('devtools-opened', () => {});
   }
 
   postMessage(channel, data?) {
@@ -46,6 +44,7 @@ class WebIframeChannel implements IWebviewChannel {
     this.handlers.set(channel, handler);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onIframeLoaded(newFrame) {
     // newFrame.contentWindow.onbeforeunload = () => {
     //   if (this.isInDevelopmentMode) { // Allow reloads while developing a webview
