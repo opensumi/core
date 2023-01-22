@@ -1,11 +1,9 @@
-@import '~@opensumi/ide-core-browser/lib/style/variable.less';
-
 .extension_item {
   height: 62px;
   font-size: 12px;
   display: flex;
   box-sizing: border-box;
-  padding: 0 0 0 16px;
+  padding-left: 10px;
   overflow: hidden;
   align-items: center;
   max-width: 100%;
@@ -17,11 +15,11 @@
 
   .icon {
     position: relative;
-    height: 42px;
-    width: 42px;
+    height: 36px;
+    width: 36px;
     flex-shrink: 0;
     object-fit: contain;
-    padding-right: 14px;
+    margin-right: 10px;
   }
 
   .default_icon {
@@ -29,20 +27,17 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    height: 26px;
-    width: 26px;
+    height: 36px;
+    width: 36px;
     flex-shrink: 0;
     object-fit: contain;
-    margin-right: 14px;
+    margin-right: 10px;
     background-color: #f1f2f2;
     border-radius: 50%;
 
     :global {
       .kaitian-icon {
-        font-size: 14px;
-      }
-
-      .kt-icon {
+        font-size: 22px;
         color: #d8d9d9;
       }
     }
@@ -52,27 +47,28 @@
     flex: 1;
     padding: 4px 0;
     padding-right: 10px;
-    max-width: calc(100% - 42px);
-
+    max-width: calc(100% - 40px);
+    overflow: hidden;
     .base_info {
-      line-height: 19px;
+      line-height: 20px;
+      height: 20px;
       display: flex;
       overflow: hidden;
       justify-content: space-between;
       white-space: nowrap;
 
       .display_name {
-        font-size: @base-font-size;
+        font-size: 13px;
         font-weight: bold;
         overflow: hidden;
         white-space: nowrap;
+        flex: 1;
         text-overflow: ellipsis;
       }
 
       .version {
         margin-left: 6px;
         font-size: 12px;
-        flex: 1;
         color: var(--descriptionForeground);
       }
 
@@ -87,26 +83,25 @@
       white-space: nowrap;
       text-overflow: ellipsis;
       display: block;
+      color: var(--descriptionForeground);
       max-width: calc(100% - 42px);
     }
 
     .footer {
       display: flex;
-      height: 19px;
-
+      height: 20px;
+      line-height: 20px;
+      margin-top: 5px;
       .namespace {
         font-weight: bold;
         flex: 1;
+        color: var(--descriptionForeground);
       }
 
       button {
-        height: 19px;
-        line-height: 19px;
+        height: 20px;
+        line-height: 20px;
       }
-    }
-
-    .state_text {
-      margin-right: 8px;
     }
   }
 }
