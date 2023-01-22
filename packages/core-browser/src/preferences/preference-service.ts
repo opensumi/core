@@ -112,7 +112,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     this.toDispose.dispose();
   }
 
-  public onSpecificPreferenceChange(preferenceName, listener) {
+  public onSpecificPreferenceChange(preferenceName: string, listener: (change: PreferenceChange) => void) {
     if (!this.specificEmitters.has(preferenceName)) {
       this.specificEmitters.set(preferenceName, new Emitter());
     }

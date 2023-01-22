@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   AppConfig,
   localize,
@@ -6,6 +6,7 @@ import {
   Emitter,
   DisposableCollection,
   isMacintosh,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';
@@ -28,13 +29,13 @@ export class ElectronHeaderService implements IElectronHeaderService {
   disposableCollection = new DisposableCollection();
 
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
+  private readonly editorService: WorkbenchEditorService;
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(AppConfig)
-  appConfig: AppConfig;
+  private readonly appConfig: AppConfig;
 
   private _onTitleChanged = new Emitter<string>();
   onTitleChanged = this._onTitleChanged.event;
@@ -59,9 +60,23 @@ export class ElectronHeaderService implements IElectronHeaderService {
   }
 
   constructor() {
+    this._titleTemplate = this.preferenceService.getValid('window.title', this._titleTemplate);
+
     this.disposableCollection.push(
       this.editorService.onActiveResourceChange(() => {
         this.updateAppTitle();
+      }),
+    );
+
+    this.disposableCollection.push(
+      this.preferenceService.onSpecificPreferenceChange('window.title', async (e) => {
+        if (e.newValue) {
+          this.titleTemplate = e.newValue;
+        }
+        // window.title is deleted
+        if (!e.newValue && this.titleTemplate !== DEFAULT_TEMPLATE) {
+          this.titleTemplate = DEFAULT_TEMPLATE;
+        }
       }),
     );
   }
