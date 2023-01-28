@@ -28,5 +28,10 @@ export class BrowserRequireInterceptorContribution implements RequireInterceptor
       moduleName: 'kaitian-browser',
       load: (request) => createBrowserApi(request.injector, request.extension, request.rpcProtocol),
     });
+
+    registry.registerRequireInterceptor({
+      moduleName: 'sumi-browser',
+      load: (request) => createBrowserApi(request.injector, request.extension, request.rpcProtocol),
+    });
   }
 }
