@@ -5,6 +5,8 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const distDir = path.join(__dirname, '../lib/hosted');
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+
 module.exports = {
   entry: require.resolve('@opensumi/ide-extension/lib/hosted/ext.process.js'),
   target: 'node',
@@ -12,7 +14,7 @@ module.exports = {
     filename: 'ext.process.js',
     path: distDir,
   },
-  devtool: 'source-map',
+  devtool: 'false',
   node: false,
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
@@ -22,7 +24,7 @@ module.exports = {
       }),
     ],
   },
-  mode: 'development',
+  mode: nodeEnv,
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,

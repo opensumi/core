@@ -6,6 +6,8 @@ const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const srcDir = path.join(__dirname, '../src/node');
 const distDir = path.join(__dirname, '../lib/node');
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+
 module.exports = {
   entry: path.join(srcDir, './index.ts'),
   target: 'node',
@@ -14,7 +16,7 @@ module.exports = {
     path: distDir,
   },
   node: false,
-  mode: 'development',
+  mode: nodeEnv,
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     plugins: [

@@ -7,7 +7,7 @@
     "lib"
   ],
   "scripts": {
-    "build": "run-p build:node build:browser build:exthost build:webview build:ext-worker-host",
+    "build": "cross-env NODE_ENV=production run-p build:node build:browser build:exthost build:webview build:ext-worker-host",
     "build1": "npm run build:node && npm run build:browser && npm run build:exthost && npm run build:webview && npm run build:ext-worker-host",
     "build:browser": "webpack --config ./configs/webpack.config.browser.js --progress",
     "build:ext-worker-host": "webpack --config ./configs/webpack.config.ext-worker.js --progress",
@@ -18,7 +18,7 @@
     "lint": "eslint --cache --ext .js ./",
     "lint:fix": "tnpm run lint -- --fix",
     "prepublishOnly": "npm run build",
-    "watch": "run-p watch:node watch:browser watch:exthost watch:webview watch:ext-worker-host",
+    "watch": "cross-env NODE_ENV=development run-p watch:node watch:browser watch:exthost watch:webview watch:ext-worker-host",
     "watch:browser": "npm run build:browser -- --watch",
     "watch:exthost": "npm run build:exthost -- --watch",
     "watch:node": "tsc -w -p configs/tsconfig.node.json || echo 0",
@@ -38,11 +38,13 @@
     "@opensumi/ide-startup": "2.22.0",
     "chalk": "^4.0.0",
     "ejs": "^2.7.4",
+    "ip": "^1.1.8",
     "koa": "^2.7.0",
     "koa-mount": "^4.0.0",
     "open": "^7.0.3",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
+    "tslib": "^2.5.0",
     "yargs-parser": "^18.1.2"
   },
   "devDependencies": {
@@ -56,6 +58,7 @@
     "assets-webpack-plugin": "^3.9.12",
     "cache-loader": "^4.1.0",
     "copy-webpack-plugin": "^5.1.1",
+    "cross-env": "^7.0.3",
     "css-loader": "^2.1.1",
     "eslint": "^6.5.1",
     "file-loader": "^3.0.1",

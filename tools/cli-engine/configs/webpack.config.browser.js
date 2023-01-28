@@ -14,6 +14,7 @@ const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const dir = path.join(__dirname, '../src/browser');
 const distDir = path.join(__dirname, '../lib/browser');
 const port = 8080;
+const nodeEnv = process.env.NODE_ENV || 'development';
 
 module.exports = {
   entry: `${dir}/index.ts`,
@@ -38,7 +39,7 @@ module.exports = {
     ],
   },
   bail: true,
-  mode: 'development',
+  mode: nodeEnv,
   devtool: 'null',
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
@@ -118,7 +119,7 @@ module.exports = {
     moduleExtensions: ['-loader'],
   },
   optimization: {
-    nodeEnv: process.env.NODE_ENV,
+    nodeEnv,
     minimizer: [new TerserJSPlugin({}), new OptimizeCSSAssetsPlugin({})],
   },
   plugins: [
