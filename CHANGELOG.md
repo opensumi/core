@@ -7,7 +7,134 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
-## v2.22.0 [Pre-release]
+## v2.22.0
+
+### What's New Features
+
+- feat: implement TestController refreshHandler API by @Ricbet in https://github.com/opensumi/core/pull/1865
+- feat: implement test item sort text api by @Ricbet in https://github.com/opensumi/core/pull/1877
+- feat: support icons contribution point by @Aaaaash in https://github.com/opensumi/core/pull/1880
+- feat: improve file search results order by @erha19 in https://github.com/opensumi/core/pull/1895
+- feat: trigger editor find widget when no actived element by @Aaaaash in https://github.com/opensumi/core/pull/1980
+- feat: support opentrs extension marketplace by @bk1012 in https://github.com/opensumi/core/pull/1933
+- feat: support useVSCodeWorkspaceConfiguration config by @erha19 in https://github.com/opensumi/core/pull/1974
+- feat: support more ActionButton icon expression by @erha19 in https://github.com/opensumi/core/pull/1986
+- feat: support detect configuration change from the parent directory by @erha19 in https://github.com/opensumi/core/pull/1976
+- feat: improve dirty diff by @Aaaaash in https://github.com/opensumi/core/pull/1978
+- feat: support base64 icon on editor glyphMargin and treeview by @erha19 in https://github.com/opensumi/core/pull/2010
+- feat: implement walkthroughs contribution API by @Ricbet in https://github.com/opensumi/core/pull/1902
+- feat: diagnostic support display code href by @bytemain in https://github.com/opensumi/core/pull/2056
+- feat: support submenus on editor/title by @erha19 in https://github.com/opensumi/core/pull/2088
+- feat: optimize editor update content logic by @life2015 in https://github.com/opensumi/core/pull/2097
+- feat: improve preference panel by @bytemain in https://github.com/opensumi/core/pull/2089
+- feat: support markers status by @bytemain in https://github.com/opensumi/core/pull/2112
+- feat: support space keybinding on file tree by @erha19 in https://github.com/opensumi/core/pull/2119
+- feat: support toggle terminal keybinding by @erha19 in https://github.com/opensumi/core/pull/2130
+- feat: improve file search path on workspace folders by @erha19 in https://github.com/opensumi/core/pull/2129
+- feat: enable editor minimap by default by @Aaaaash in https://github.com/opensumi/core/pull/2127
+- feat: implement 3-way prototyping code by @Ricbet in https://github.com/opensumi/core/pull/1960
+- feat: support search and replace value by regexp by @erha19 in https://github.com/opensumi/core/pull/2138
+- feat: update marketplace address by @bk1012 in https://github.com/opensumi/core/pull/2157
+- feat: register debug editor decoration type when the browser is idle by @erha19 in https://github.com/opensumi/core/pull/2160
+- feat: support get valid preference from service by @erha19 in https://github.com/opensumi/core/pull/2176
+- feat: add more image types by @bytemain in https://github.com/opensumi/core/pull/2177
+- feat: upgrade @parcel/watcher to support glob expression by @erha19 in https://github.com/opensumi/core/pull/2180
+- feat(status-bar): do not display info icon if there is no info by @bytemain in https://github.com/opensumi/core/pull/2182
+- feat: get file type by mime by @bytemain in https://github.com/opensumi/core/pull/2189
+
+### Refactor
+
+- refactor: remove package vscode-languageserver-protocol by @yantze in https://github.com/opensumi/core/pull/1988
+- refactor: optimize scoped storage bootstrap speed by @erha19 in https://github.com/opensumi/core/pull/1997
+- refactor: optimize bundle size of lite web ide by @erha19 in https://github.com/opensumi/core/pull/1953
+- refactor: upgrade typescript version to 4.9.+ by @erha19 in https://github.com/opensumi/core/pull/1996
+- refactor: remove scroll components by @erha19 in https://github.com/opensumi/core/pull/2093
+- refactor: replace DeprecatedRecycleTree on the markers module by @erha19 in https://github.com/opensumi/core/pull/2099
+- refactor: replace DeprecatedRecycleTree on Search view by @erha19 in https://github.com/opensumi/core/pull/2102
+- refactor: remove DeprecatedRecycleTree on comment module by @erha19 in https://github.com/opensumi/core/pull/2109
+- refactor: progressbar component by @Aaaaash in https://github.com/opensumi/core/pull/2114
+- refactor: remove DeprecatedRecycleTree component by @erha19 in https://github.com/opensumi/core/pull/2111
+
+### Style Changes
+
+- style: improve debug toolbar z-index style by @erha19 in https://github.com/opensumi/core/pull/1965
+- style: improve SCM delete decoration style by @erha19 in https://github.com/opensumi/core/pull/1963
+- chore: improve image preview editor style by @Aaaaash in https://github.com/opensumi/core/pull/2020
+- style: improve empty editor component style by @erha19 in https://github.com/opensumi/core/pull/2121
+- fix: debug condition breakpoint style by @Ricbet in https://github.com/opensumi/core/pull/2141
+- style: improve button overflow style by @erha19 in https://github.com/opensumi/core/pull/2161
+- style: update the padding at the top/bottom of the popover component by @yantze in https://github.com/opensumi/core/pull/2175
+- style: remove some useless tree style by @erha19 in https://github.com/opensumi/core/pull/2186
+
+### Other Changes
+
+- fix: code snippets prefix supports array by @shilin8805 in https://github.com/opensumi/core/pull/1891
+- chore: use stable extension marketplace registry by @erha19 in https://github.com/opensumi/core/pull/1886
+- chore: fix issue labeled by @erha19 in https://github.com/opensumi/core/pull/1905
+- chore: update README and add CHANGELOG file by @erha19 in https://github.com/opensumi/core/pull/1904
+- chore: fix issue labeled syntax error by @erha19 in https://github.com/opensumi/core/pull/1907
+- chore: fix issue labeled config by @erha19 in https://github.com/opensumi/core/pull/1916
+- test: add settings view test by @erha19 in https://github.com/opensumi/core/pull/1911
+- test: add SCM e2e test by @erha19 in https://github.com/opensumi/core/pull/1934
+- chore: add iconfont page deploy workflow by @erha19 in https://github.com/opensumi/core/pull/1944
+- ci: use opensumi/actions by @bytemain in https://github.com/opensumi/core/pull/1946
+- chore: add src into package files by @erha19 in https://github.com/opensumi/core/pull/1949
+- fix: auto save opened file after replace all by @AEPKILL in https://github.com/opensumi/core/pull/1948
+- chore: update iconfont page resources by @erha19 in https://github.com/opensumi/core/pull/1950
+- build: use yarn workspace by @bytemain in https://github.com/opensumi/core/pull/1954
+- chore: update lock file by @erha19 in https://github.com/opensumi/core/pull/2005
+- fix: support onSaveCodeActions with ESLint extension by @erha19 in https://github.com/opensumi/core/pull/2023
+- fix: use bash resolve shellpath by @Aaaaash in https://github.com/opensumi/core/pull/2021
+- fix: progress codeAction when codeActionOnSave existed by @erha19 in https://github.com/opensumi/core/pull/2027
+- fix: pause debug will not open stackframe source file by @Ricbet in https://github.com/opensumi/core/pull/2028
+- chore: optimize default extension icon by @bk1012 in https://github.com/opensumi/core/pull/2030
+- test: add layout e2e test by @erha19 in https://github.com/opensumi/core/pull/2044
+- chore: fix web-lite and electron entry by @erha19 in https://github.com/opensumi/core/pull/2053
+- chore: fail to start electron by @yantze in https://github.com/opensumi/core/pull/2057
+- fix: electron cannot work by @bytemain in https://github.com/opensumi/core/pull/2060
+- chore: remove errors from clipboard service by @erha19 in https://github.com/opensumi/core/pull/2054
+- fix(extension): windows get globalStorageUri error by @bytemain in https://github.com/opensumi/core/pull/2068
+- fix: debug on multiple processes by @erha19 in https://github.com/opensumi/core/pull/2080
+- fix: new file with path on compress tree node by @erha19 in https://github.com/opensumi/core/pull/2084
+- chore: update defualt theme by @Aaaaash in https://github.com/opensumi/core/pull/2087
+- chore: update web lite sample link by @erha19 in https://github.com/opensumi/core/pull/2090
+- fix: the tree node child maybe undefined by @erha19 in https://github.com/opensumi/core/pull/2096
+- fix: create output editor when panel visible by @Aaaaash in https://github.com/opensumi/core/pull/2105
+- fix: create debug console editor when panel visible by @Aaaaash in https://github.com/opensumi/core/pull/2106
+- fix: update keybindings when keymap view rendered by @Aaaaash in https://github.com/opensumi/core/pull/2104
+- fix: quick open argument by @Aaaaash in https://github.com/opensumi/core/pull/2117
+- chore: fix unstable fileServiceClient unit test by @erha19 in https://github.com/opensumi/core/pull/2116
+- fix: copy dir with recursive in rebuild-native script by @yantze in https://github.com/opensumi/core/pull/2122
+- fix: webview cspSource by @Aaaaash in https://github.com/opensumi/core/pull/2120
+- fix: save file diff error by @Aaaaash in https://github.com/opensumi/core/pull/2113
+- fix: unnecessary re-tokenizer by @Aaaaash in https://github.com/opensumi/core/pull/2125
+- chore: update opened editor group name by @erha19 in https://github.com/opensumi/core/pull/2118
+- fix: search rules display logic by @erha19 in https://github.com/opensumi/core/pull/2124
+- fix: disable some keybindings on file tree filter mode by @erha19 in https://github.com/opensumi/core/pull/2132
+- fix: duplicate search results by @erha19 in https://github.com/opensumi/core/pull/2123
+- fix: debounce editor layout by @Aaaaash in https://github.com/opensumi/core/pull/2134
+- fix: unnecessary editor update options by @Aaaaash in https://github.com/opensumi/core/pull/2133
+- fix: do not exclude .gitignore by @Aaaaash in https://github.com/opensumi/core/pull/2142
+- chore: yarn lock by @Ricbet in https://github.com/opensumi/core/pull/2147
+- build: update deps by @bytemain in https://github.com/opensumi/core/pull/2148
+- test: add Javascript Debug Terminal test case by @erha19 in https://github.com/opensumi/core/pull/2150
+- test: add search e2e test case by @erha19 in https://github.com/opensumi/core/pull/2149
+- fix: highlight search content when ignoring case by @erha19 in https://github.com/opensumi/core/pull/2151
+- test: add output panel e2e test case by @erha19 in https://github.com/opensumi/core/pull/2152
+- chore(devtools): add sumi bin by @bytemain in https://github.com/opensumi/core/pull/2153
+- chore: yarn lock by @Ricbet in https://github.com/opensumi/core/pull/2171
+- fix: improve SCM experience on the workspace project by @erha19 in https://github.com/opensumi/core/pull/2168
+- fix: merge editor conflict action error by @Ricbet in https://github.com/opensumi/core/pull/2163
+- chore: update large file size limit by @erha19 in https://github.com/opensumi/core/pull/2162
+- chore: update some logs on extension host process service by @erha19 in https://github.com/opensumi/core/pull/2173
+- fix: prefix quick open should trim input by @bytemain in https://github.com/opensumi/core/pull/2172
+- fix: improve regexp search ux by @erha19 in https://github.com/opensumi/core/pull/2185
+- fix(editor): add missing edit stack when save by @bytemain in https://github.com/opensumi/core/pull/2192
+- fix: settings.json should be JSONC by @bytemain in https://github.com/opensumi/core/pull/2181
+- fix: support collaborationWsPath config by @Ricbet in https://github.com/opensumi/core/pull/2193
+- fix: fix the marker outer area click error by @erha19 in https://github.com/opensumi/core/pull/2195
+- fix: get valid preference value from the user scope by @erha19 in https://github.com/opensumi/core/pull/2196
+- fix: create diff and merge editor as needed by @Aaaaash in https://github.com/opensumi/core/pull/2135
 
 <a name="breaking_changes_2.22.0">[Breaking Changes:](#breaking_changes_2.22.0)</a>
 
