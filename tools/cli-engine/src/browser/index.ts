@@ -42,7 +42,7 @@ const layoutConfig = {
   },
 };
 
-const customClientOpts = ((window as any).KAITIAN_CLIENT_OPTS || {}) as IClientAppOpts;
+const customClientOpts = ((window as any).SUMI_CLIENT_OPTS || {}) as IClientAppOpts;
 
 renderApp({
   layoutConfig,

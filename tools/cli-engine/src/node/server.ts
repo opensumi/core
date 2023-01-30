@@ -12,6 +12,7 @@ import mount from 'koa-mount';
 
 import { IClientAppOpts } from '@opensumi/ide-core-browser';
 import { Deferred, LogLevel } from '@opensumi/ide-core-common';
+import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 import { IServerAppOpts, ServerApp } from '@opensumi/ide-core-node';
 
 import * as env from './env';
@@ -31,10 +32,10 @@ const ALLOW_MIME = {
   css: 'text/css',
 };
 
-const DEV_PATH = env.DEV_PATH;
+const CLI_DEVELOPMENT_PATH = env.CLI_DEVELOPMENT_PATH;
 const deviceIp = env.CLIENT_IP;
 
-const extensionDir = path.join(DEV_PATH, 'extensions');
+const extensionDir = path.join(CLI_DEVELOPMENT_PATH, 'extensions');
 
 interface IDEServerParams {
   serverAppOpts?: Partial<IServerAppOpts>;
@@ -70,7 +71,6 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
     extHostPath,
     watchServerPort,
   } = serverParams;
-  console.log(extensionCandidate);
 
   if (isDev) {
     process.env.IS_DEV = '1';
@@ -78,7 +78,6 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
 
   process.env.EXT_MODE = 'js';
   process.env.KTLOG_SHOW_DEBUG = '1';
-  // process.env.EXTENSION_HOST_ENTRY = extHostPath;
 
   const app = new Koa();
   const deferred = new Deferred<http.Server>();
@@ -89,13 +88,14 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
     webSocketHandler: [],
     use: app.use.bind(app),
     marketplace: {
+      endpoint: DEFAULT_TRS_REGISTRY.ENDPOINT,
       showBuiltinExtensions: true,
-      accountId: 'Eb0Ejh96qukCy_NzKNxztjzY',
-      masterKey: 'FWPUOR6NAH3mntLqKtNOvqKt',
-      extensionDir: path.join(DEV_PATH, 'extensions'),
+      accountId: DEFAULT_TRS_REGISTRY.ACCOUNT_ID,
+      masterKey: DEFAULT_TRS_REGISTRY.MASTER_KEY,
+      extensionDir: path.join(CLI_DEVELOPMENT_PATH, 'extensions'),
     },
     extHost: extHostPath || path.join(__dirname, '../hosted/ext.process.js'),
-    logDir: path.join(DEV_PATH, 'logs'),
+    logDir: path.join(CLI_DEVELOPMENT_PATH, 'logs'),
     logLevel: LogLevel.Verbose,
     staticAllowPath: [extensionDir, ...extensionCandidate],
   };
@@ -149,7 +149,6 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
           watchServerPath: `ws://${deviceIp}:${watchServerPort}`,
         };
 
-        // todo: 手动读取外层 `package.json`
         const pkg = await readPkgUp();
 
         const meta = {
@@ -183,7 +182,7 @@ export async function startServer(serverParams: ServerParams, ideAppOpts: IDESer
     openBrowser(`http://${deviceIp}:${port}`);
 
     console.log(`
-      服务启动成功，请点击 http://${deviceIp}:${port} 访问 OpenSumi IDE.
+      The service started successfully, please click http://${deviceIp}:${port} to access the OpenSumi IDE.
     `);
 
     deferred.resolve(server);

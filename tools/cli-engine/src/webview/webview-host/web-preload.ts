@@ -43,19 +43,6 @@ class WebIframeChannel implements IWebviewChannel {
   onMessage(channel, handler) {
     this.handlers.set(channel, handler);
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  onIframeLoaded(newFrame) {
-    // newFrame.contentWindow.onbeforeunload = () => {
-    //   if (this.isInDevelopmentMode) { // Allow reloads while developing a webview
-    //     this.postMessage('do-reload');
-    //     return false;
-    //   }
-    //   // Block navigation when not in development mode
-    //   console.log('prevented webview navigation');
-    //   return false;
-    // };
-  }
 }
 
 /* tslint:disable */

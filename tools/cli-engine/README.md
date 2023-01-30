@@ -1,5 +1,4 @@
-# @opensumi/opensumi-cli-engine
-
+# @opensumi/cli-engine
 
 ## Development
 

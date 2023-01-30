@@ -3,5 +3,7 @@ import path from 'path';
 
 import * as ip from 'ip';
 
-export const DEV_PATH = path.join(os.homedir(), '.opensumi-dev');
+import { StoragePaths } from '@opensumi/ide-core-common';
+
+export const CLI_DEVELOPMENT_PATH = path.join(os.homedir(), `${StoragePaths.DEFAULT_STORAGE_DIR_NAME}-dev`);
 export const CLIENT_IP = ip.address();
