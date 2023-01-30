@@ -46,10 +46,10 @@ export function getPreferenceIconThemeId(): string {
  * 因为集成方可能会在集成后自己设置后调用 `setLanguageId` 来更新默认语言，所以统一收口到 `getLanguageId`。
  */
 export function getPreferenceLanguageId(defaultPreferences?: IPreferences): string {
-  // 因为语言加载的时机比较早，因此会优先从 defaultPreferences 里面读取
+  // 默认从配置项中获取语言选项，其次从默认配置项中获取 `general.language`, 默认为 `en-US`
   const langFromDefaultPreferences = defaultPreferences && defaultPreferences[GeneralSettingsId.Language];
   return (
-    langFromDefaultPreferences || getExternalPreference<string>(GeneralSettingsId.Language).value || getLanguageId()
+    getExternalPreference<string>(GeneralSettingsId.Language).value || langFromDefaultPreferences || getLanguageId()
   );
 }
 
