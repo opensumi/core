@@ -122,15 +122,6 @@ export const localizationBundle = {
     'editor.changeEol': 'Select End Of Line Sequence',
     'editor.failToOpen': 'Failed to open {0}. Error message: {1}',
     'editor.changeLanguageId': 'Select Language Mode',
-    'editor.configuration.preferredFormatter': 'Preferred formatter for files',
-    'editor.configuration.maxTokenizationLineLength':
-      'Lines above this length will not be tokenized for performance reasons',
-    'editor.configuration.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 100 (ms)',
-    'editor.configuration.bracketPairColorization.enabled':
-      "Controls whether bracket pair colorization is enabled or not. Use 'workbench.colorCustomizations' to override the bracket highlight colors.",
-    'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
-    'editor.configuration.mouseBackForwardToNavigate':
-      "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
     'editor.lineHeight': 'Line Height',
     'editor.lineHeight.description':
       'Controls the line height.\r\nUse 0 to automatically compute the line height from the font size.\r\nValues between 0 and 8 will be used as a multiplier with the font size.\r\nValues greater than or equal to 8 will be used as effective values.',
@@ -501,7 +492,6 @@ export const localizationBundle = {
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
     'preference.workbench.colorCustomizations': 'Overwrite colors of current color theme',
-    'preference.editor.tokenColorCustomizations': 'Overwrite token colors of current color theme',
     'preference.general.language': 'Language',
     'preference.general.language.change.refresh.info':
       'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
@@ -525,9 +515,6 @@ export const localizationBundle = {
     'preference.workbench.refactoringChanges.showPreviewStrategy':
       'Show preview confirm when triggering some refactoring changes',
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': 'Refactor Confirm',
-    'preference.workbench.editorAssociations':
-      'Configure glob patterns to editors (e.g. `"*.hex": "hexEditor.hexEdit"`). These have precedence over the default behavior.',
-
     'preference.tab.name': 'Settings',
     'preference.noResults': "No Setting Found Containing '{0}'",
     'preference.empty': 'Loading Settings...',
@@ -544,13 +531,15 @@ export const localizationBundle = {
     'preference.editor.quickSuggestionsDelay': 'Quick suggestions show delay (in ms) Defaults to 10 (ms)',
     'preference.editor.largeFile': 'Large File Size',
     'preference.editor.formatOnPaste': 'Format On Paste',
-    'preference.files.eol': 'Files EOL',
+    'preference.files.eol': 'EOL',
+    'preference.files.trimFinalNewlines': 'Trim Final Newlines',
+    'preference.files.trimTrailingWhitespace': 'Trim Trailing Whitespace',
+    'preference.editor.lineHeight': 'Line Height',
 
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
     'preference.editor.wrapTab': 'Wrap Editor Tabs',
     'preference.editor.preferredFormatter': 'Default Formatter',
-    'editor.configuration.previewMode': 'Enable Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.editor.minimap': 'minimap',
     'preference.editor.forceReadOnly': 'readOnly',
@@ -567,9 +556,9 @@ export const localizationBundle = {
 
     'preference.item.notValid': '{0} is not a valid option',
 
+    // Editor Configurations
     'editor.configuration.formatOnSaveTimeout':
       'Control the timeout time of formatting (ms). Effective Only when `#editor.formatOnSave#` enables.',
-    'editor.configuration.renderLineHighlight': "Control the highlight of the editor's current line",
     'editor.configuration.enablePreviewFromCodeNavigation':
       'Controls whether editors remain in preview when a code navigation is started from them. Preview editors do not keep open and are reused until explicitly set to be kept open (e.g. via double click or editing). This value is ignored when `#workbench.editor.enablePreview#` is disabled.',
     'editor.configuration.wrapTab':
@@ -579,17 +568,361 @@ export const localizationBundle = {
     'editor.configuration.autoSaveDelay':
       "Controls the delay in ms after which a dirty file is saved automatically. Only applies when `#editor.formatOnSave#` is set to 'Save After Delay'.",
     'editor.configuration.forceReadOnly': 'If Enable readOnly',
-    'editor.configuration.tabSize':
-      'The number of spaces a tab is equal to. This setting is overridden based on the file contents when Detect Indentation is on.',
     'editor.configuration.largeFileSize': 'Custom size of the large file',
+    'editor.configuration.fontFamily': 'Controls the font family.',
+    'editor.configuration.fontWeight':
+      'Controls the font weight. Accepts "normal" and "bold" keywords or numbers between 1 and 1000.',
+    'editor.configuration.lineDecorationsWidth':
+      'The width reserved for line decorations (in px). Line decorations are placed between line numbers and the editor content. You can pass in a string in the format floating point followed by "ch". e.g. 1.3ch. Defaults to 10.',
+    'editor.configuration.lineNumbersMinChars':
+      'Control the width of line numbers, by reserving horizontal space for rendering at least an amount of digits. Defaults to 5.',
+    'editor.configuration.wordWrapBreakBeforeCharacters':
+      "Configure word wrapping characters. A break will be introduced before these characters. Defaults to '([{‘“〈《「『【〔（［｛｢£¥＄￡￥+＋'.",
+    'editor.configuration.wrappingStrategy': 'Controls the algorithm that computes wrapping points.',
+    'editor.configuration.wordWrapBreakAfterCharacters':
+      "Configure word wrapping characters. A break will be introduced after these characters. Defaults to ' \t})]?|/&.,;¢°′″‰℃、。｡､￠，．：；？！％・･ゝゞヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻ｧｨｩｪｫｬｭｮｯｰ”〉》」』】〕）］｝｣'.",
+    'editor.configuration.wordWrapMinified':
+      'Force word wrapping when the text appears to be of a minified/generated file. Defaults to true.',
+    'editor.configuration.selectOnLineNumbers':
+      'Should the corresponding line be selected when clicking on the line number? Defaults to true.',
+    'editor.configuration.revealHorizontalRightPadding':
+      'When revealing the cursor, a virtual padding (px) is added to the cursor, turning it into a rectangle. This virtual padding ensures that the cursor gets revealed before hitting the edge of the viewport. Defaults to 30 (px).',
+    'editor.configuration.fixedOverflowWidgets': 'Display overflow widgets as fixed.',
+    'editor.configuration.extraEditorClassName': 'Class name to be added to the editor.',
+    'editor.configuration.ariaLabel': "The aria label for the editor's textarea (when it is focused).",
+    'editor.configuration.suggest.insertMode':
+      'Controls whether words are overwritten when accepting completions. Note that this depends on extensions opting into this feature.',
+    'editor.configuration.suggest.filterGraceful':
+      'Controls whether filtering and sorting suggestions accounts for small typos.',
+    'editor.configuration.suggest.localityBonus':
+      'Controls whether sorting favours words that appear close to the cursor.',
+    'editor.configuration.suggest.shareSuggestSelections':
+      'Controls whether remembered suggestion selections are shared between multiple workspaces and windows (needs `#editor.suggestSelection#`).',
+    'editor.configuration.suggest.snippetsPreventQuickSuggestions':
+      'Controls whether an active snippet prevents quick suggestions.',
+    'editor.configuration.suggest.showIcons': 'Controls whether to show or hide icons in suggestions.',
+    'editor.configuration.suggest.maxVisibleSuggestions':
+      'Controls how many suggestions IntelliSense will show before showing a scrollbar (maximum 15).',
+    'editor.configuration.suggest.showMethods': 'When enabled IntelliSense shows `method`-suggestions.',
+    'editor.configuration.suggest.showFunctions': 'When enabled IntelliSense shows `function`-suggestions.',
+    'editor.configuration.suggest.showConstructors': 'When enabled IntelliSense shows `constructor`-suggestions.',
+    'editor.configuration.suggest.showFields': 'When enabled IntelliSense shows `field`-suggestions.',
+    'editor.configuration.suggest.showVariables': 'When enabled IntelliSense shows `variable`-suggestions.',
+    'editor.configuration.suggest.showClasss': 'When enabled IntelliSense shows `class`-suggestions.',
+    'editor.configuration.suggest.showStructs': 'When enabled IntelliSense shows `struct`-suggestions.',
+    'editor.configuration.suggest.showInterfaces': 'When enabled IntelliSense shows `interface`-suggestions.',
+    'editor.configuration.suggest.showModules': 'When enabled IntelliSense shows `module`-suggestions.',
+    'editor.configuration.suggest.showPropertys': 'When enabled IntelliSense shows `property`-suggestions.',
+    'editor.configuration.suggest.showEvents': 'When enabled IntelliSense shows `event`-suggestions.',
+    'editor.configuration.suggest.showOperators': 'When enabled IntelliSense shows `operator`-suggestions.',
+    'editor.configuration.suggest.showUnits': 'When enabled IntelliSense shows `unit`-suggestions.',
+    'editor.configuration.suggest.showValues': 'When enabled IntelliSense shows `value`-suggestions.',
+    'editor.configuration.suggest.showConstants': 'When enabled IntelliSense shows `constant`-suggestions.',
+    'editor.configuration.suggest.showEnums': 'When enabled IntelliSense shows `enum`-suggestions.',
+    'editor.configuration.suggest.showEnumMembers': 'When enabled IntelliSense shows `enumMember`-suggestions.',
+    'editor.configuration.suggest.showKeywords': 'When enabled IntelliSense shows `keyword`-suggestions.',
+    'editor.configuration.suggest.showTexts': 'When enabled IntelliSense shows `text`-suggestions.',
+    'editor.configuration.suggest.showColors': 'When enabled IntelliSense shows `color`-suggestions.',
+    'editor.configuration.suggest.showFiles': 'When enabled IntelliSense shows `file`-suggestions.',
+    'editor.configuration.suggest.showReferences': 'When enabled IntelliSense shows `reference`-suggestions.',
+    'editor.configuration.suggest.showCustomcolors': 'When enabled IntelliSense shows `customcolor`-suggestions.',
+    'editor.configuration.suggest.showFolders': 'When enabled IntelliSense shows `folder`-suggestions.',
+    'editor.configuration.suggest.showTypeParameters': 'When enabled IntelliSense shows `typeParameter`-suggestions.',
+    'editor.configuration.suggest.showSnippets': 'When enabled IntelliSense shows `snippet`-suggestions.',
+    'editor.configuration.suggest.showUsers': 'When enabled IntelliSense shows `user`-suggestions.',
+    'editor.configuration.suggest.showIssues': 'When enabled IntelliSense shows `issues`-suggestions.',
+    'editor.configuration.suggest.statusBar.visible':
+      'Controls the visibility of the status bar at the bottom of the suggest widget.',
+    'editor.configuration.suggest.preview': 'Enable or disable the rendering of the suggestion preview.',
+    'editor.configuration.suggest.details.visible':
+      'Controls whether editor code completion expands details by default',
+    'editor.configuration.inlineSuggest.enabled': 'Enable or disable the rendering of automatic inline completions.',
+    'editor.configuration.experimental.stickyScroll':
+      'Shows the nested current scopes during the scroll at the top of the editor.',
+    'editor.configuration.customCodeActionMenu.showHeaders':
+      'Enabling this will show the code action menu with group headers, if the custom code action menu is enabled.',
+    'editor.configuration.useCustomCodeActionMenu': 'Enabling this adjusts how the code action menu is rendered.',
+    'editor.configuration.letterSpacing': 'Controls the letter spacing in pixels.',
+    'editor.configuration.lineNumbers': 'Controls the display of line numbers.',
+    'editor.configuration.lineNumbers.off': 'Line numbers are not rendered.',
+    'editor.configuration.lineNumbers.on': 'Line numbers are rendered as absolute number.',
+    'editor.configuration.lineNumbers.relative': 'Line numbers are rendered as distance in lines to cursor position.',
+    'editor.configuration.lineNumbers.interval': 'Line numbers are rendered every 10 lines.',
+    'editor.configuration.renderFinalNewline': 'Render last line number when the file ends with a newline.',
+    'editor.configuration.rulers':
+      'Render vertical rulers after a certain number of monospace characters. Use multiple values for multiple rulers. No rulers are drawn if array is empty.',
+    'editor.configuration.wordSeparators':
+      'Characters that will be used as word separators when doing word related navigations or operations.',
+    'editor.configuration.tabSize':
+      'The number of spaces a tab is equal to. This setting is overridden based on the file contents when `#editor.detectIndentation#` is on.',
+    'editor.configuration.insertSpaces':
+      'Insert spaces when pressing `Tab`. This setting is overridden based on the file contents when `#editor.detectIndentation#` is on.',
+    'editor.configuration.detectIndentation':
+      'Controls whether `#editor.tabSize#` and `#editor.insertSpaces#` will be automatically detected when a file is opened based on the file contents.',
+    'editor.configuration.roundedSelection': 'Controls whether selections should have rounded corners.',
+    'editor.configuration.scrollBeyondLastLine': 'Controls whether the editor will scroll beyond the last line.',
+    'editor.configuration.scrollBeyondLastColumn':
+      'Controls the number of extra characters beyond which the editor will scroll horizontally.',
+    'editor.configuration.smoothScrolling': 'Controls whether the editor will scroll using an animation.',
+    'editor.configuration.minimap.enabled': 'Controls whether the minimap is shown.',
+    'editor.configuration.minimap.side': 'Controls the side where to render the minimap.',
+    'editor.configuration.minimap.showSlider': 'Controls whether the minimap slider is automatically hidden.',
+    'editor.configuration.minimap.renderCharacters':
+      'Render the actual characters on a line as opposed to color blocks.',
+    'editor.configuration.minimap.maxColumn':
+      'Limit the width of the minimap to render at most a certain number of columns.',
+    'editor.configuration.hover.enabled': 'Controls whether the hover is shown.',
+    'editor.configuration.hover.sticky':
+      'Controls whether the hover should remain visible when mouse is moved over it.',
+    'editor.configuration.find.seedSearchStringFromSelection':
+      'Controls whether the search string in the Find Widget is seeded from the editor selection.',
+    'editor.configuration.find.autoFindInSelection':
+      'Controls whether the find operation is carried out on selected text or the entire file in the editor.',
+    'editor.configuration.find.globalFindClipboard':
+      'Controls whether the Find Widget should read or modify the shared find clipboard on macOS.',
+    'editor.configuration.find.addExtraSpaceOnTop':
+      'Controls whether the Find Widget should add extra lines on top of the editor. When true, you can scroll beyond the first line when the Find Widget is visible.',
+    'editor.configuration.wordWrap.off': 'Lines will never wrap.',
+    'editor.configuration.wordWrap.on': 'Lines will wrap at the viewport width.',
+    'editor.configuration.wordWrap.wordWrapColumn': 'Lines will wrap at `#editor.wordWrapColumn#`.',
+    'editor.configuration.wordWrap.bounded':
+      'Lines will wrap at the minimum of viewport and `#editor.wordWrapColumn#`.',
+    'editor.configuration.wordWrap': 'Controls how lines should wrap.',
+    'editor.configuration.wordWrapColumn':
+      'Controls the wrapping column of the editor when `#editor.wordWrap#` is `wordWrapColumn` or `bounded`.',
+    'editor.configuration.wrappingIndent.none': 'No indentation. Wrapped lines begin at column 1.',
+    'editor.configuration.wrappingIndent.same': 'Wrapped lines get the same indentation as the parent.',
+    'editor.configuration.wrappingIndent.indent': 'Wrapped lines get +1 indentation toward the parent.',
+    'editor.configuration.wrappingIndent.deepIndent': 'Wrapped lines get +2 indentation toward the parent.',
+    'editor.configuration.wrappingIndent': 'Controls the indentation of wrapped lines.',
+    'editor.configuration.mouseWheelScrollSensitivity':
+      'A multiplier to be used on the `deltaX` and `deltaY` of mouse wheel scroll events.',
+    'editor.configuration.fastScrollSensitivity': 'Scrolling speed multiplier when pressing `Alt`.',
+    'editor.configuration.multiCursorModifier.ctrlCmd':
+      'Maps to `Control` on Windows and Linux and to `Command` on macOS.',
+    'editor.configuration.multiCursorModifier.alt': 'Maps to `Alt` on Windows and Linux and to `Option` on macOS.',
+    'editor.configuration.multiCursorMergeOverlapping': 'Merge multiple cursors when they are overlapping.',
+    'editor.configuration.quickSuggestions.strings': 'Enable quick suggestions inside strings.',
+    'editor.configuration.quickSuggestions.comments': 'Enable quick suggestions inside comments.',
+    'editor.configuration.quickSuggestions.other': 'Enable quick suggestions outside of strings and comments.',
+    'editor.configuration.quickSuggestions': 'Controls whether suggestions should automatically show up while typing.',
+    'editor.configuration.quickSuggestionsDelay':
+      'Controls the delay in milliseconds after which quick suggestions will show up.',
+    'editor.configuration.parameterHints.enabled':
+      'Enables a pop-up that shows parameter documentation and type information as you type.',
+    'editor.configuration.parameterHints.cycle':
+      'Controls whether the parameter hints menu cycles or closes when reaching the end of the list.',
+    'editor.configuration.autoClosingBrackets.languageDefined':
+      'Use language configurations to determine when to autoclose brackets.',
+    'editor.configuration.autoClosingBrackets.beforeWhitespace':
+      'Autoclose brackets only when the cursor is to the left of whitespace.',
+    'editor.configuration.autoClosingBrackets':
+      'Controls whether the editor should automatically close brackets after the user adds an opening bracket.',
+    'editor.configuration.autoClosingQuotes.languageDefined':
+      'Use language configurations to determine when to autoclose quotes.',
+    'editor.configuration.autoClosingQuotes.beforeWhitespace':
+      'Autoclose quotes only when the cursor is to the left of whitespace.',
+    'editor.configuration.autoClosingQuotes':
+      'Controls whether the editor should automatically close quotes after the user adds an opening quote.',
+    'editor.configuration.autoSurround.languageDefined':
+      'Use language configurations to determine when to automatically surround selections.',
+    'editor.configuration.autoSurround.brackets': 'Surround with brackets but not quotes.',
+    'editor.configuration.autoSurround.quotes': 'Surround with quotes but not brackets.',
+    'editor.configuration.autoSurround': 'Controls whether the editor should automatically surround selections.',
+    'editor.configuration.formatOnType':
+      'Controls whether the editor should automatically format the line after typing.',
+    'editor.configuration.formatOnPaste':
+      'Controls whether the editor should automatically format the pasted content. A formatter must be available and the formatter should be able to format a range in a document.',
+    'editor.configuration.autoIndent':
+      'Controls whether the editor should automatically adjust the indentation when users type, paste or move lines. Extensions with indentation rules of the language must be available.',
+    'editor.configuration.suggestOnTriggerCharacters':
+      'Controls whether suggestions should automatically show up when typing trigger characters.',
+    'editor.configuration.acceptSuggestionOnEnterSmart':
+      'Only accept a suggestion with `Enter` when it makes a textual change.',
+    'editor.configuration.acceptSuggestionOnEnter':
+      'Controls whether suggestions should be accepted on `Enter`, in addition to `Tab`. Helps to avoid ambiguity between inserting new lines or accepting suggestions.',
+    'editor.configuration.acceptSuggestionOnCommitCharacter':
+      'Controls whether suggestions should be accepted on commit characters. For example, in JavaScript, the semi-colon (`;`) can be a commit character that accepts a suggestion and types that character.',
+    'editor.configuration.snippetSuggestions.top': 'Show snippet suggestions on top of other suggestions.',
+    'editor.configuration.snippetSuggestions.bottom': 'Show snippet suggestions below other suggestions.',
+    'editor.configuration.snippetSuggestions.inline': 'Show snippets suggestions with other suggestions.',
+    'editor.configuration.snippetSuggestions.none': 'Do not show snippet suggestions.',
+    'editor.configuration.snippetSuggestions':
+      'Controls whether snippets are shown with other suggestions and how they are sorted.',
+    'editor.configuration.emptySelectionClipboard':
+      'Controls whether copying without a selection copies the current line.',
+    'editor.configuration.copyWithSyntaxHighlighting':
+      'Controls whether syntax highlighting should be copied into the clipboard.',
+    'editor.configuration.wordBasedSuggestions':
+      'Controls whether completions should be computed based on words in the document.',
+    'editor.configuration.suggestSelection.first': 'Always select the first suggestion.',
+    'editor.configuration.suggestSelection.recentlyUsed':
+      'Select recent suggestions unless further typing selects one, e.g. `console.| -> console.log` because `log` has been completed recently.',
+    'editor.configuration.suggestSelection.recentlyUsedByPrefix':
+      'Select suggestions based on previous prefixes that have completed those suggestions, e.g. `co -> console` and `con -> const`.',
+    'editor.configuration.suggestSelection': 'Controls how suggestions are pre-selected when showing the suggest list.',
+    'editor.configuration.suggestFontSize':
+      'Font size for the suggest widget. When set to `0`, the value of `#editor.fontSize#` is used.',
+    'editor.configuration.suggestLineHeight':
+      'Line height for the suggest widget. When set to `0`, the value of `#editor.lineHeight#` is used.',
+    'editor.configuration.tabCompletion.on': 'Tab complete will insert the best matching suggestion when pressing tab.',
+    'editor.configuration.tabCompletion.off': 'Disable tab completions.',
+    'editor.configuration.tabCompletion.onlySnippets':
+      "Tab complete snippets when their prefix match. Works best when 'quickSuggestions' aren't enabled.",
+    'editor.configuration.tabCompletion': 'Enables tab completions.',
+    'editor.configuration.suggest.filtered':
+      'Controls whether some suggestion types should be filtered from IntelliSense. A list of suggestion types can be found here: https://code.visualstudio.com/docs/editor/intellisense#_types-of-completions.',
+    'editor.configuration.suggest.filtered.method':
+      'When set to `false` IntelliSense never shows `method` suggestions.',
+    'editor.configuration.suggest.filtered.function':
+      'When set to `false` IntelliSense never shows `function` suggestions.',
+    'editor.configuration.suggest.filtered.constructor':
+      'When set to `false` IntelliSense never shows `constructor` suggestions.',
+    'editor.configuration.suggest.filtered.field': 'When set to `false` IntelliSense never shows `field` suggestions.',
+    'editor.configuration.suggest.filtered.variable':
+      'When set to `false` IntelliSense never shows `variable` suggestions.',
+    'editor.configuration.suggest.filtered.class': 'When set to `false` IntelliSense never shows `class` suggestions.',
+    'editor.configuration.suggest.filtered.struct':
+      'When set to `false` IntelliSense never shows `struct` suggestions.',
+    'editor.configuration.suggest.filtered.interface':
+      'When set to `false` IntelliSense never shows `interface` suggestions.',
+    'editor.configuration.suggest.filtered.module':
+      'When set to `false` IntelliSense never shows `module` suggestions.',
+    'editor.configuration.suggest.filtered.property':
+      'When set to `false` IntelliSense never shows `property` suggestions.',
+    'editor.configuration.suggest.filtered.event': 'When set to `false` IntelliSense never shows `event` suggestions.',
+    'editor.configuration.suggest.filtered.operator':
+      'When set to `false` IntelliSense never shows `operator` suggestions.',
+    'editor.configuration.suggest.filtered.unit': 'When set to `false` IntelliSense never shows `unit` suggestions.',
+    'editor.configuration.suggest.filtered.value': 'When set to `false` IntelliSense never shows `value` suggestions.',
+    'editor.configuration.suggest.filtered.constant':
+      'When set to `false` IntelliSense never shows `constant` suggestions.',
+    'editor.configuration.suggest.filtered.enum': 'When set to `false` IntelliSense never shows `enum` suggestions.',
+    'editor.configuration.suggest.filtered.enumMember':
+      'When set to `false` IntelliSense never shows `enumMember` suggestions.',
+    'editor.configuration.suggest.filtered.keyword':
+      'When set to `false` IntelliSense never shows `keyword` suggestions.',
+    'editor.configuration.suggest.filtered.text': 'When set to `false` IntelliSense never shows `text` suggestions.',
+    'editor.configuration.suggest.filtered.color': 'When set to `false` IntelliSense never shows `color` suggestions.',
+    'editor.configuration.suggest.filtered.file': 'When set to `false` IntelliSense never shows `file` suggestions.',
+    'editor.configuration.suggest.filtered.reference':
+      'When set to `false` IntelliSense never shows `reference` suggestions.',
+    'editor.configuration.suggest.filtered.customcolor':
+      'When set to `false` IntelliSense never shows `customcolor` suggestions.',
+    'editor.configuration.suggest.filtered.folder':
+      'When set to `false` IntelliSense never shows `folder` suggestions.',
+    'editor.configuration.suggest.filtered.typeParameter':
+      'When set to `false` IntelliSense never shows `typeParameter` suggestions.',
+    'editor.configuration.suggest.filtered.snippet':
+      'When set to `false` IntelliSense never shows `snippet` suggestions.',
+    'editor.configuration.editor.gotoLocation.multiple':
+      "Controls the behavior of 'Go To' commands, like Go To Definition, when multiple target locations exist.",
+    'editor.configuration.gotoLocation.multiple.peek': 'Show peek view of the results (default)',
+    'editor.configuration.gotoLocation.multiple.gotoAndPeek': 'Go to the primary result and show a peek view',
+    'editor.configuration.gotoLocation.multiple.goto':
+      'Go to the primary result and enable peek-less navigation to others',
+    'editor.configuration.selectionHighlight':
+      'Controls whether the editor should highlight matches similar to the selection.',
+    'editor.configuration.occurrencesHighlight':
+      'Controls whether the editor should highlight semantic symbol occurrences.',
+    'editor.configuration.overviewRulerLanes':
+      'Controls the number of decorations that can show up at the same position in the overview ruler.',
+    'editor.configuration.overviewRulerBorder': 'Controls whether a border should be drawn around the overview ruler.',
+    'editor.configuration.cursorBlinking': 'Control the cursor animation style.',
+    'editor.configuration.mouseWheelZoom': 'Zoom the font of the editor when using mouse wheel and holding `Ctrl`.',
+    'editor.configuration.cursorSmoothCaretAnimation': 'Controls whether the smooth caret animation should be enabled.',
+    'editor.configuration.cursorStyle': 'Controls the cursor style.',
+    'editor.configuration.cursorWidth':
+      'Controls the width of the cursor when `#editor.cursorStyle#` is set to `line`.',
+    'editor.configuration.fontLigatures': 'Enables/Disables font ligatures.',
+    'editor.configuration.hideCursorInOverviewRuler':
+      'Controls whether the cursor should be hidden in the overview ruler.',
+    'editor.configuration.renderWhitespace.boundary':
+      'Render whitespace characters except for single spaces between words.',
+    'editor.configuration.renderWhitespace.selection': 'Render whitespace characters only on selected text.',
+    'editor.configuration.renderWhitespace': 'Controls how the editor should render whitespace characters.',
+    'editor.configuration.rename.enablePreview': 'Enable/disable the ability to preview changes before renaming',
+    'editor.configuration.renderControlCharacters': 'Controls whether the editor should render control characters.',
+    'editor.configuration.guides.indentation': 'Controls whether the editor should render indent guides.',
+    'editor.configuration.guides.highlightActiveIndentation':
+      'Controls whether the editor should highlight the active indent guide.',
+    'editor.configuration.guides.bracketPairs': 'Controls whether bracket pair guides are enabled or not.',
+    'editor.configuration.renderLineHighlight.all': 'Highlights both the gutter and the current line.',
+    'editor.configuration.renderLineHighlight': 'Controls how the editor should render the current line highlight.',
+    'editor.configuration.codeLens': 'Controls whether the editor shows CodeLens.',
+    'editor.configuration.folding': 'Controls whether the editor has code folding enabled.',
+    'editor.configuration.foldingStrategy':
+      'Controls the strategy for computing folding ranges. `auto` uses a language specific folding strategy, if available. `indentation` uses the indentation based folding strategy.',
+    'editor.configuration.showFoldingControls':
+      'Controls whether the fold controls on the gutter are automatically hidden.',
+    'editor.configuration.matchBrackets': 'Highlight matching brackets when one of them is selected.',
+    'editor.configuration.glyphMargin':
+      'Controls whether the editor should render the vertical glyph margin. Glyph margin is mostly used for debugging.',
+    'editor.configuration.useTabStops': 'Inserting and deleting whitespace follows tab stops.',
+    'editor.configuration.trimAutoWhitespace': 'Remove trailing auto inserted whitespace.',
+    'editor.configuration.stablePeek':
+      'Keep peek editors open even when double clicking their content or when hitting `Escape`.',
+    'editor.configuration.dragAndDrop': 'Controls whether the editor should allow moving selections via drag and drop.',
+    'editor.configuration.accessibilitySupport.auto':
+      'The editor will use platform APIs to detect when a Screen Reader is attached.',
+    'editor.configuration.accessibilitySupport.on':
+      'The editor will be permanently optimized for usage with a Screen Reader.',
+    'editor.configuration.accessibilitySupport.off':
+      'The editor will never be optimized for usage with a Screen Reader.',
+    'editor.configuration.accessibilitySupport':
+      'Controls whether the editor should run in a mode where it is optimized for screen readers.',
+    'editor.configuration.showUnused': 'Controls fading out of unused code.',
+    'editor.configuration.comments.insertSpace':
+      'Insert a space after the line comment token and inside the block comments tokens.',
+    'editor.configuration.comments.ignoreEmptyLines': 'Ignore empty lines when inserting line comments.',
+    'editor.configuration.links': 'Controls whether the editor should detect links and make them clickable.',
+    'editor.configuration.colorDecorators':
+      'Controls whether the editor should render the inline color decorators and color picker.',
+    'editor.configuration.lightbulb.enabled': 'Enables the code action lightbulb in the editor.',
+    'editor.configuration.maxTokenizationLineLength':
+      'Lines above this length will not be tokenized for performance reasons',
+    'editor.configuration.codeActionsOnSave.organizeImports':
+      'Controls whether organize imports action should be run on file save.',
+    'editor.configuration.codeActionsOnSave.fixAll': 'Controls whether auto fix action should be run on file save.',
+    'editor.configuration.codeActionsOnSave': 'Code action kinds to be run on save.',
+    'editor.configuration.codeActionsOnSaveTimeout':
+      'Timeout in milliseconds after which the code actions that are run on save are cancelled.',
+    'editor.configuration.selectionClipboard': 'Controls whether the Linux primary clipboard should be supported.',
+    'editor.configuration.largeFileOptimizations':
+      'Special handling for large files to disable certain memory intensive features.',
+    'editor.configuration.renderIndicators':
+      'Controls whether the diff editor shows +/- indicators for added/removed changes.',
+    'editor.configuration.defaultFormatter': 'Default code formatter',
+    'editor.configuration.tokenColorCustomizations': 'Overwrite token colors of current color theme',
+    'editor.configuration.semanticHighlighting.enabled':
+      'Controls whether the semanticHighlighting is shown for the languages that support it.',
+    'editor.configuration.semanticHighlighting.true': 'Semantic highlighting enabled for all color themes.',
+    'editor.configuration.semanticHighlighting.false': 'Semantic highlighting disabled for all color themes.',
+    'editor.configuration.semanticHighlighting.configuredByTheme':
+      "Semantic highlighting is configured by the current color theme's `semanticHighlighting` setting.",
+    'editor.configuration.experimental.stickyScroll.enabled':
+      'Shows the nested current scopes during the scroll at the top of the editor.',
+    'editor.configuration.previewMode': 'Enable Preview Mode',
+    'editor.configuration.workbench.editorAssociations':
+      'Configure glob patterns to editors (e.g. `"*.hex": "hexEditor.hexEdit"`). These have precedence over the default behavior.',
+    'editor.configuration.preferredFormatter': 'Preferred formatter for files',
+    'editor.configuration.bracketPairColorization.enabled':
+      "Controls whether bracket pair colorization is enabled or not. Use 'workbench.colorCustomizations' to override the bracket highlight colors.",
+    'editor.configuration.mouseBackForwardToNavigate':
+      "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
+    'editor.configuration.suggest.insertMode.insert': 'Insert suggestion without overwriting text right of the cursor.',
+    'editor.configuration.suggest.insertMode.replace': 'Insert suggestion and overwrite text right of the cursor.',
+
+    'diffEditor.configuration.renderSideBySide':
+      'Controls whether the diff editor shows the diff side by side or inline.',
+    'diffEditor.configuration.ignoreTrimWhitespace':
+      'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
+
+    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
     'editor.autoSave.enum.off': 'OFF',
     'editor.autoSave.enum.editorFocusChange': 'When editor focus changed',
     'editor.autoSave.enum.afterDelay': 'Save after delay',
     'editor.autoSave.enum.windowLostFocus': 'When window lost focus',
-    'editor.configuration.fontWeight':
-      'Controls the font weight. Accepts "normal" and "bold" keywords or numbers between 1 and 1000.',
-
-    'editor.largeFile.prevent': 'The file is too large, continuing to open it may cause it to jam or crash.',
     'editor.largeFile.prevent.stillOpen': 'Still open it.',
 
     'editor.workspaceSymbol.quickopen': 'Search Workspace Symbol',
@@ -600,16 +933,8 @@ export const localizationBundle = {
     'editor.workspaceSymbol.notfound': 'No symbols matching',
     'editor.workspaceSymbolClass.notfound': 'No class symbols matching',
 
-    'editor.experimental.stickyScroll.enabled.description':
-      'Shows the nested current scopes during the scroll at the top of the editor.',
-
     'preference.diffEditor.renderSideBySide': 'Render Side By Side',
     'preference.diffEditor.ignoreTrimWhitespace': 'Ignore Trim Whitespace',
-    'diffEditor.configuration.renderSideBySide':
-      'Controls whether the diff editor shows the diff side by side or inline.',
-    'diffEditor.configuration.ignoreTrimWhitespace':
-      'Controls whether the diff editor shows changes in leading or trailing whitespace as diffs.',
-
     'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
     'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
     'validate.tree.fileNameFollowOrStartWithSpaceWarning': 'Leading or trailing spaces detected in file or folder name',
@@ -893,8 +1218,7 @@ export const localizationBundle = {
     'TaskService.pickRunTask': 'Select the task to run',
     'TerminalTaskSystem.terminalName': 'Task - {0}',
     'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
-    // reuseTerminal: "Terminal will be reused by tasks, press 'r' to rerun task. press any other key to close it.",
-    reuseTerminal: 'Terminal will be reused by tasks, press any key to close it.',
+    'terminal.reuseTerminal': 'Terminal will be reused by tasks, press any key to close it.',
 
     'toolbar-customize.buttonDisplay.description': 'Button Style',
     'toolbar-customize.buttonDisplay.icon': 'Icon Only',

@@ -107,11 +107,10 @@ class LocalizationRegistry implements ILocalizationRegistry {
 }
 
 /**
- * 获取当前语言别名，默认为中文
- * TODO 临时通过 href 获取
- * @returns 当前语言别名
+ * 获取当前语言 ID，默认为中文
+ * @returns 当前语言 ID
  */
-export function getLanguageId(scope = 'host'): string {
+export function getLanguageId(): string {
   return _currentLanguageId;
 }
 
