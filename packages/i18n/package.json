@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-i18n",
-  "version": "2.22.0",
+  "version": "2.22.1",
   "files": [
     "lib",
     "src"
