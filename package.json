@@ -145,7 +145,8 @@
   "workspaces": [
     "packages/*",
     "tools/dev-tool",
-    "tools/playwright"
+    "tools/playwright",
+    "tools/cli-engine"
   ],
   "resolutions": {
     "@types/react": "^16.9.23",
