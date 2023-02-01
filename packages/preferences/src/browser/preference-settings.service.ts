@@ -1,8 +1,7 @@
-import debounce from 'lodash/debounce';
-import { observable, action, computed, autorun, trace } from 'mobx';
+import { observable, action, computed } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { IBasicRecycleTreeHandle, IRecycleTreeHandle } from '@opensumi/ide-components';
+import { IBasicRecycleTreeHandle } from '@opensumi/ide-components';
 import { IVirtualListHandle } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
   IPreferenceViewDesc,
@@ -13,7 +12,6 @@ import {
   Emitter,
   Event,
   CommandService,
-  getDebugLogger,
   isString,
   getIcon,
   PreferenceScope,
@@ -40,6 +38,17 @@ import { toPreferenceReadableName, PreferenceSettingId, getPreferenceItemLabel, 
 import { PREFERENCE_COMMANDS } from './preference-contribution';
 
 const { addElement } = arrays;
+
+class Versionizer<K> {
+  private readonly version = new Map<K, number>();
+
+  get(key: K) {
+    return this.version.get(key) || 0;
+  }
+  increase(key: K) {
+    this.version.set(key, (this.version.get(key) || 0) + 1);
+  }
+}
 
 @Injectable()
 export class PreferenceSettingsService extends Disposable implements IPreferenceSettingsService {
@@ -93,6 +102,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
 
   @observable
   private settingsSections: Map<string, ISettingSection[]> = new Map();
+  private settingsSectionsVersioned: Versionizer<string> = new Versionizer();
 
   private enumLabels: Map<string, { [key: string]: string }> = new Map();
 
@@ -253,7 +263,13 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     }
     this.cachedGroupSection.clear();
     const disposable = addElement(this.settingsSections.get(groupId)!, section);
-    return disposable;
+    this.settingsSectionsVersioned.increase(groupId);
+    return {
+      dispose: () => {
+        disposable.dispose();
+        this.settingsSectionsVersioned.increase(groupId);
+      },
+    };
   }
 
   visitSection(
@@ -304,7 +320,8 @@ export class PreferenceSettingsService extends Disposable implements IPreference
    * @param search 搜索条件
    */
   getResolvedSections(groupId: string, scope: PreferenceScope, search?: string): IResolvedSettingSection[] {
-    const key = [groupId, scope, search || ''].join('-');
+    const groupVersion = this.settingsSectionsVersioned.get(groupId);
+    const key = [groupId, scope, search || '', groupVersion].join('-');
     if (this.cachedGroupSection.has(key)) {
       return this.cachedGroupSection.get(key)!;
     }
