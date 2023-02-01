@@ -60,6 +60,10 @@ const usePreferenceGroups = () => {
 
   useEffect(() => {
     updateGroup.run();
+  }, []);
+
+  useEffect(() => {
+    updateGroup.run();
   }, [
     preferenceService.settingsGroups.length,
     preferenceService.getSettingGroups,
