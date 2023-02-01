@@ -1,6 +1,7 @@
 import debounce from 'lodash/debounce';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AutoSizer from 'react-virtualized-auto-sizer';
 
 import {
@@ -44,8 +45,35 @@ interface IPreferenceTreeData extends IBasicTreeData {
 
 const TREE_NAME = 'preferenceViewIndexTree';
 
+const usePreferenceGroups = () => {
+  const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const [groups, setGroups] = useState<ISettingGroup[]>([]);
+
+  const updateGroup = useThrottleFn(() => {
+    const _groups = preferenceService.getSettingGroups(preferenceService.currentScope, preferenceService.currentSearch);
+    const oldGroupKey = groups.map((n) => n.id).join(',');
+    const newGroupKey = _groups.map((n) => n.id).join(',');
+    if (oldGroupKey !== newGroupKey) {
+      setGroups(toJS(_groups, { recurseEverything: true }));
+    }
+  }, 16);
+
+  useEffect(() => {
+    updateGroup.run();
+  }, [
+    preferenceService.settingsGroups.length,
+    preferenceService.getSettingGroups,
+    preferenceService.currentScope,
+    preferenceService.currentSearch,
+    preferenceService.settingsSections,
+  ]);
+
+  return groups;
+};
+
 export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const groups = usePreferenceGroups();
   const labelService = useInjectable<LabelService>(LabelService);
   const getResourceIcon = React.useCallback(
     (uri: string, options: IIconResourceOptions) => labelService.getIcon(URI.parse(uri), options),
@@ -96,7 +124,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             />
           </div>
         </div>
-        {preferenceService.groups.length > 0 ? (
+        {groups.length > 0 ? (
           <SplitPanel
             id='preference-panel'
             resizeHandleClassName={styles.devider}
@@ -147,41 +175,42 @@ export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index:
   }
 };
 
+const parseTreeData = (id: string, section: ISettingSection, i: number) => {
+  let innerTreeData: IPreferenceTreeData | undefined;
+  if (section.title) {
+    innerTreeData = {
+      label: section.title,
+      section: section.title,
+      groupId: id,
+      order: i,
+    } as IPreferenceTreeData;
+  }
+  const subTreeData = [] as IPreferenceTreeData[];
+  if (section.subSections) {
+    section.subSections.forEach((v, _i) => {
+      const _treeData = parseTreeData(id, v, _i);
+      _treeData && subTreeData.push(_treeData);
+    });
+  }
+  if (innerTreeData && subTreeData && subTreeData.length > 0) {
+    innerTreeData.children = subTreeData;
+    innerTreeData.expandable = true;
+  }
+  return innerTreeData;
+};
+
 const PreferenceIndexes = observer(() => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const groups = usePreferenceGroups();
 
   const treeData = React.useMemo(() => {
-    if (!preferenceService.groups) {
+    if (!groups || groups.length === 0) {
       return [];
     }
 
-    const parseTreeData = (id: string, section: ISettingSection, i: number) => {
-      let innerTreeData: IPreferenceTreeData | undefined;
-      if (section.title) {
-        innerTreeData = {
-          label: section.title,
-          section: section.title,
-          groupId: id,
-          order: i,
-        } as IPreferenceTreeData;
-      }
-      const subTreeData = [] as IPreferenceTreeData[];
-      if (section.subSections) {
-        section.subSections.forEach((v, _i) => {
-          const _treeData = parseTreeData(id, v, _i);
-          _treeData && subTreeData.push(_treeData);
-        });
-      }
-      if (innerTreeData && subTreeData && subTreeData.length > 0) {
-        innerTreeData.children = subTreeData;
-        innerTreeData.expandable = true;
-      }
-      return innerTreeData;
-    };
-
     const basicTreeData = [] as IPreferenceTreeData[];
-    for (let index = 0; index < preferenceService.groups.length; index++) {
-      const { id, title, iconClass } = preferenceService.groups[index];
+    for (let index = 0; index < groups.length; index++) {
+      const { id, title, iconClass } = groups[index];
       const data = {
         label: toNormalCase(title),
         iconClassName: iconClass,
@@ -205,12 +234,7 @@ const PreferenceIndexes = observer(() => {
     }
 
     return basicTreeData;
-  }, [
-    preferenceService.groups,
-    preferenceService.getResolvedSections,
-    preferenceService.currentScope,
-    preferenceService.currentSearch,
-  ]);
+  }, [groups, preferenceService.getResolvedSections, preferenceService.currentScope, preferenceService.currentSearch]);
 
   return (
     <AutoSizer className={styles.preferences_indexes}>
@@ -255,7 +279,9 @@ const PreferenceIndexes = observer(() => {
 
 export const PreferenceBody = observer(() => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const groups = usePreferenceGroups();
   const [focusItem, setFocusItem] = useState<string | undefined>(undefined);
+
   React.useEffect(() => {
     if (focusItem && preferenceService.treeHandler?.focusItem) {
       preferenceService.treeHandler.focusItem(focusItem);
@@ -265,7 +291,7 @@ export const PreferenceBody = observer(() => {
   const items = React.useMemo(() => {
     // 如果是搜索模式，是只展示用户左侧选择的组的内容
     const result: ISectionItemData[] = [];
-    preferenceService.groups.forEach((v) => {
+    groups.forEach((v) => {
       result.push(...collectGroup(v));
     });
     return result;
@@ -332,12 +358,7 @@ export const PreferenceBody = observer(() => {
       }
       return groupItems;
     }
-  }, [
-    preferenceService.groups,
-    preferenceService.getResolvedSections,
-    preferenceService.currentScope,
-    preferenceService.currentSearch,
-  ]);
+  }, [groups, preferenceService.getResolvedSections, preferenceService.currentScope, preferenceService.currentSearch]);
 
   const navigateTo = (id: string) => {
     if (id) {

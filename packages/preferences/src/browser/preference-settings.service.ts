@@ -87,21 +87,16 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   }
 
   @computed
-  get groups() {
-    return this.getSettingGroups(this.currentScope, this.currentSearch);
-  }
-
-  @computed
   get currentScope() {
     const scope = this.tabList[this.tabIndex];
     return scope.id;
   }
 
   @observable
-  private settingsGroups: ISettingGroup[] = [];
+  settingsGroups: ISettingGroup[] = [];
 
   @observable
-  private settingsSections: Map<string, ISettingSection[]> = new Map();
+  settingsSections: Map<string, ISettingSection[]> = new Map();
   private settingsSectionsVersioned: Versionizer<string> = new Versionizer();
 
   private enumLabels: Map<string, { [key: string]: string }> = new Map();
@@ -187,7 +182,7 @@ export class PreferenceSettingsService extends Disposable implements IPreference
   }
 
   @action
-  private doSearch(value) {
+  private doSearch(value?: string) {
     if (value) {
       this.currentSearch = value;
     } else {

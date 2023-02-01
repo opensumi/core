@@ -590,7 +590,6 @@ function SelectPreferenceItem({
 function EditInSettingsJsonPreferenceItem({
   preferenceName,
   localizedName,
-  schema,
   renderedDescription,
   effectingScope,
   scope,
