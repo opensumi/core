@@ -132,24 +132,20 @@ export const Scrollbars = ({
       onUpdate={handleUpdate}
       onScroll={onScroll}
       renderTrackHorizontal={({ style, ...props }) => (
-        <div
-          {...props}
-          style={{ ...style, height: thumbSize, left: 0, right: 0, bottom: 0 }}
-          className={'scrollbar-track'}
-        />
+        <div {...props} style={{ ...style, height: thumbSize, left: 0, right: 0, bottom: 1 }} />
       )}
       renderTrackVertical={({ style, ...props }) => (
+        <div {...props} style={{ ...style, width: thumbSize, top: 0, right: 1, bottom: 0 }} />
+      )}
+      renderThumbVertical={({ style, className, ...props }) => (
+        <div {...props} style={{ ...style, width: thumbSize }} className={cls(className, 'scrollbar-thumb-vertical')} />
+      )}
+      renderThumbHorizontal={({ style, className, ...props }) => (
         <div
           {...props}
-          style={{ ...style, width: thumbSize, top: 0, right: 0, bottom: 0 }}
-          className={'scrollbar-track'}
+          style={{ ...style, height: thumbSize }}
+          className={cls(className, 'scrollbar-thumb-horizontal')}
         />
-      )}
-      renderThumbVertical={({ style, ...props }) => (
-        <div {...props} style={{ ...style, width: thumbSize }} className={'scrollbar-thumb-vertical'} />
-      )}
-      renderThumbHorizontal={({ style, ...props }) => (
-        <div {...props} style={{ ...style, height: thumbSize }} className={'scrollbar-thumb-horizontal'} />
       )}
     >
       <div
@@ -171,6 +167,6 @@ export const Scrollbars = ({
 Scrollbars.displayName = 'CustomScrollbars';
 
 export const ScrollbarsVirtualList = React.forwardRef((props, ref) => (
-  <Scrollbars {...props} thumbSize={6} forwardedRef={ref} />
+  <Scrollbars {...props} thumbSize={10} forwardedRef={ref} />
 ));
 ScrollbarsVirtualList.displayName = 'ScrollbarsVirtualList';
