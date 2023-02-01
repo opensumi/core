@@ -148,7 +148,7 @@ export class TerminalTaskExecutor extends Disposable implements ITaskExecutor {
     const { id, term } = this.terminalClient;
     term.options.disableStdin = true;
     term.writeln(`\r\n${formatLocalize('terminal.integrated.exitedWithCode', code)}`);
-    term.writeln(`\r\n\x1b[1m${formatLocalize('reuseTerminal')}\x1b[0m\r\n`);
+    term.writeln(`\r\n\x1b[1m${formatLocalize('terminal.reuseTerminal')}\x1b[0m\r\n`);
     this._onDidTaskProcessExit.fire(code);
 
     // 按任意键退出

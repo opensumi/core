@@ -1,8 +1,7 @@
-import debounce from 'lodash/debounce';
-import { observable, action, computed, autorun, trace } from 'mobx';
+import { observable, action, computed } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { IBasicRecycleTreeHandle, IRecycleTreeHandle } from '@opensumi/ide-components';
+import { IBasicRecycleTreeHandle } from '@opensumi/ide-components';
 import { IVirtualListHandle } from '@opensumi/ide-components/lib/virtual-list/types';
 import {
   IPreferenceViewDesc,
@@ -13,7 +12,6 @@ import {
   Emitter,
   Event,
   CommandService,
-  getDebugLogger,
   isString,
   getIcon,
   PreferenceScope,
@@ -660,10 +658,10 @@ export const defaultSettingSections: {
       preferences: [
         { id: 'files.autoGuessEncoding', localized: 'preference.files.autoGuessEncoding.title' },
         { id: 'files.encoding', localized: 'preference.files.encoding.title' },
-        { id: 'files.eol' },
-        { id: 'files.trimFinalNewlines' },
-        { id: 'files.trimTrailingWhitespace' },
-        { id: 'files.insertFinalNewline' },
+        { id: 'files.eol', localized: 'preference.files.eol' },
+        { id: 'files.trimFinalNewlines', localized: 'preference.files.trimFinalNewlines' },
+        { id: 'files.trimTrailingWhitespace', localized: 'preference.files.trimTrailingWhitespace' },
+        { id: 'files.insertFinalNewline', localized: 'preference.files.trimFinalNewlines' },
         { id: 'files.exclude', localized: 'preference.files.exclude.title' },
         { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
         { id: 'files.associations', localized: 'preference.files.associations.title' },

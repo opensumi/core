@@ -115,8 +115,6 @@ export class ClientApp implements IClientApp, IDisposable {
   constructor(opts: IClientAppOpts) {
     const {
       modules,
-      contributions,
-      modulesInstances,
       connectionPath,
       connectionProtocols,
       iconStyleSheets,
