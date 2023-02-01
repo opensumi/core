@@ -177,8 +177,13 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     return value.toLocaleLowerCase().indexOf(search.toLocaleLowerCase()) > -1;
   }
 
-  private filterPreferences(preference: IPreferenceViewDesc, scope: PreferenceScope): boolean {
-    return Array.isArray(preference.hiddenInScope) && preference.hiddenInScope.includes(scope);
+  private shouldHiddenInScope(
+    v: {
+      hiddenInScope?: PreferenceScope[];
+    },
+    scope: PreferenceScope,
+  ): boolean {
+    return Array.isArray(v.hiddenInScope) && v.hiddenInScope.includes(scope);
   }
 
   @action
@@ -329,23 +334,11 @@ export class PreferenceSettingsService extends Disposable implements IPreference
     if (this.cachedGroupSection.has(key)) {
       return this.cachedGroupSection.get(key)!;
     }
-    const res = (this.settingsSections.get(groupId) || []).filter((section) => {
-      if (section.hiddenInScope && section.hiddenInScope.indexOf(scope) >= 0) {
-        return false;
-      } else {
-        return true;
-      }
-    });
 
     const result: IResolvedSettingSection[] = [];
     const processSection = (section: Required<Pick<ISettingSection, 'preferences'>>) => {
       const preferences = section.preferences
-        .filter((pref) => {
-          if (this.filterPreferences(pref, scope)) {
-            return false;
-          }
-          return true;
-        })
+        .filter((pref) => !this.shouldHiddenInScope(pref, scope))
         .map((pref) => {
           const prefId = typeof pref === 'string' ? pref : pref.id;
           const schema = this.schemaProvider.getPreferenceProperty(prefId);
@@ -376,29 +369,32 @@ export class PreferenceSettingsService extends Disposable implements IPreference
         preferences,
       };
     };
-    res.forEach((section) => {
-      const sec = { ...section } as IResolvedSettingSection;
 
-      if (section.preferences) {
-        const { preferences } = processSection(section as Required<Pick<ISettingSection, 'preferences'>>);
-        sec.preferences = preferences;
-      }
-      if (section.subSections) {
-        const subSections = section.subSections
-          .map((v) => {
-            const { preferences } = processSection(v as Required<Pick<ISettingSection, 'preferences'>>);
-            if (preferences.length > 0) {
-              return { ...v, preferences };
-            }
-          })
-          .filter(Boolean) as IResolvedSettingSection[];
-        sec.subSections = subSections;
-      }
+    (this.settingsSections.get(groupId) || [])
+      .filter((section) => !this.shouldHiddenInScope(section, scope))
+      .forEach((section) => {
+        const sec = { ...section } as IResolvedSettingSection;
 
-      if ((sec.preferences && sec.preferences.length > 0) || (sec.subSections && sec.subSections.length > 0)) {
-        result.push(sec);
-      }
-    });
+        if (section.preferences) {
+          const { preferences } = processSection(section as Required<Pick<ISettingSection, 'preferences'>>);
+          sec.preferences = preferences;
+        }
+        if (section.subSections) {
+          const subSections = section.subSections
+            .map((v) => {
+              const { preferences } = processSection(v as Required<Pick<ISettingSection, 'preferences'>>);
+              if (preferences.length > 0) {
+                return { ...v, preferences };
+              }
+            })
+            .filter(Boolean) as IResolvedSettingSection[];
+          sec.subSections = subSections;
+        }
+
+        if ((sec.preferences && sec.preferences.length > 0) || (sec.subSections && sec.subSections.length > 0)) {
+          result.push(sec);
+        }
+      });
 
     this.cachedGroupSection.set(key.toLocaleLowerCase(), result);
     return result;
