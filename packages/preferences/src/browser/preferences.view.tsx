@@ -52,7 +52,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   );
 
   const inputRef = React.useRef<HTMLInputElement | null>(null);
-  const [focusItem, setFocusItem] = useState<string | undefined>(undefined);
 
   const debouncedSearch = debounce(
     (value: string) => {
@@ -73,11 +72,82 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     };
   }, []);
 
-  React.useEffect(() => {
-    if (focusItem && preferenceService.treeHandler?.focusItem) {
-      preferenceService.treeHandler.focusItem(focusItem);
+  return (
+    <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
+      <div className={styles.preferences}>
+        <div className={styles.preferences_header}>
+          <Tabs
+            className={styles.tabs}
+            value={preferenceService.tabIndex}
+            onChange={(index: number) => {
+              preferenceService.tabIndex = index;
+            }}
+            tabs={preferenceService.tabList.map((n) => localize(n.label))}
+          />
+          <div className={styles.search_pref}>
+            <Input
+              autoFocus
+              value={preferenceService.currentSearch}
+              placeholder={localize('preference.searchPlaceholder')}
+              onValueChange={debouncedSearch}
+              ref={inputRef}
+              hasClear
+            />
+          </div>
+        </div>
+        {preferenceService.groups.length > 0 ? (
+          <SplitPanel
+            id='preference-panel'
+            resizeHandleClassName={styles.devider}
+            className={styles.preferences_body}
+            direction='left-to-right'
+          >
+            <PreferenceIndexes data-sp-defaultSize={180} data-sp-minSize={150} />
+            <PreferenceBody data-sp-flex={1} />
+          </SplitPanel>
+        ) : (
+          <div className={styles.preference_noResults}>
+            {preferenceService.currentSearch
+              ? formatLocalize('preference.noResults', preferenceService.currentSearch)
+              : formatLocalize('preference.empty')}
+          </div>
+        )}
+      </div>
+    </ComponentContextProvider>
+  );
+});
+
+export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index: number }) => {
+  if (data.title) {
+    if (data.id?.startsWith(ESectionItemKind.Group)) {
+      return (
+        <div className={styles.group_title} id={data.id}>
+          {data.title}
+        </div>
+      );
     }
-  }, [preferenceService.tabIndex, preferenceService.treeHandler, focusItem]);
+    return (
+      <div className={styles.section_title} id={data.id}>
+        {data.title}
+      </div>
+    );
+  } else if (data.component) {
+    return <data.component scope={data.scope} />;
+  } else if (data.preference) {
+    return (
+      <NextPreferenceItem
+        key={`${index} - ${data.preference.id} - ${data.scope}`}
+        preference={data.preference}
+        preferenceId={data.preference.id}
+        localizedName={data.preference.label}
+        scope={data.scope}
+      />
+    );
+  }
+};
+
+const PreferenceIndexes = observer(() => {
+  const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
 
   const treeData = React.useMemo(() => {
     if (!preferenceService.groups) {
@@ -139,6 +209,56 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
 
     return basicTreeData;
   }, [preferenceService.groups, preferenceService.getResolvedSections]);
+
+  return (
+    <AutoSizer className={styles.preferences_indexes}>
+      {({ width, height }) => (
+        <BasicRecycleTree
+          treeName={TREE_NAME}
+          sortComparator={(a: IPreferenceTreeData, b: IPreferenceTreeData) => {
+            if (typeof a.order !== 'undefined' && typeof b.order !== 'undefined') {
+              return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
+            }
+            return undefined;
+          }}
+          height={height}
+          width={width}
+          itemHeight={26}
+          getItemClassName={(item) => {
+            if (item?.depth === 1) {
+              return styles.group_item;
+            }
+            return styles.index_item;
+          }}
+          baseIndent={8}
+          treeData={treeData}
+          onClick={(_e, node) => {
+            const treeData = node && ((node as any)._raw as IPreferenceTreeData);
+            if (treeData) {
+              if (treeData.section) {
+                preferenceService.scrollToSection(treeData.section);
+              } else if (treeData.groupId) {
+                preferenceService.scrollToGroup(treeData.groupId);
+              }
+            }
+          }}
+          onReady={(handler) => {
+            preferenceService.handleTreeHandler(handler);
+          }}
+        />
+      )}
+    </AutoSizer>
+  );
+});
+
+export const PreferenceBody = observer(() => {
+  const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
+  const [focusItem, setFocusItem] = useState<string | undefined>(undefined);
+  React.useEffect(() => {
+    if (focusItem && preferenceService.treeHandler?.focusItem) {
+      preferenceService.treeHandler.focusItem(focusItem);
+    }
+  }, [preferenceService.tabIndex, preferenceService.treeHandler, focusItem]);
 
   const items = React.useMemo(() => {
     // 如果是搜索模式，是只展示用户左侧选择的组的内容
@@ -254,135 +374,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
   }, [items, preferenceService.currentSelectId]);
 
   return (
-    <ComponentContextProvider value={{ getIcon, localize, getResourceIcon }}>
-      <div className={styles.preferences}>
-        <div className={styles.preferences_header}>
-          <Tabs
-            className={styles.tabs}
-            value={preferenceService.tabIndex}
-            onChange={(index: number) => {
-              preferenceService.tabIndex = index;
-            }}
-            tabs={preferenceService.tabList.map((n) => localize(n.label))}
-          />
-          <div className={styles.search_pref}>
-            <Input
-              autoFocus
-              value={preferenceService.currentSearch}
-              placeholder={localize('preference.searchPlaceholder')}
-              onValueChange={debouncedSearch}
-              ref={inputRef}
-              hasClear
-            />
-          </div>
-        </div>
-        {preferenceService.groups.length > 0 ? (
-          <SplitPanel
-            id='preference-panel'
-            resizeHandleClassName={styles.devider}
-            className={styles.preferences_body}
-            direction='left-to-right'
-          >
-            <AutoSizer className={styles.preferences_indexes} data-sp-defaultSize={180} data-sp-minSize={150}>
-              {({ width, height }) => (
-                <BasicRecycleTree
-                  treeName={TREE_NAME}
-                  sortComparator={(a: IPreferenceTreeData, b: IPreferenceTreeData) => {
-                    if (typeof a.order !== 'undefined' && typeof b.order !== 'undefined') {
-                      return a.order > b.order ? 1 : a.order < b.order ? -1 : 0;
-                    }
-                    return undefined;
-                  }}
-                  height={height}
-                  width={width}
-                  itemHeight={26}
-                  getItemClassName={(item) => {
-                    if (item?.depth === 1) {
-                      return styles.group_item;
-                    }
-                    return styles.index_item;
-                  }}
-                  baseIndent={8}
-                  treeData={treeData}
-                  onClick={(_e, node) => {
-                    const treeData = node && ((node as any)._raw as IPreferenceTreeData);
-                    if (treeData) {
-                      if (treeData.section) {
-                        preferenceService.scrollToSection(treeData.section);
-                      } else if (treeData.groupId) {
-                        preferenceService.scrollToGroup(treeData.groupId);
-                      }
-                    }
-                  }}
-                  onReady={(handler) => {
-                    preferenceService.handleTreeHandler(handler);
-                  }}
-                />
-              )}
-            </AutoSizer>
-            <div className={styles.preferences_items} data-sp-flex={1}>
-              <PreferenceBody
-                items={items}
-                onReady={preferenceService.handleListHandler}
-                onRangeChanged={onRangeChanged.run}
-              />
-            </div>
-          </SplitPanel>
-        ) : (
-          <div className={styles.preference_noResults}>
-            {preferenceService.currentSearch
-              ? formatLocalize('preference.noResults', preferenceService.currentSearch)
-              : formatLocalize('preference.empty')}
-          </div>
-        )}
-      </div>
-    </ComponentContextProvider>
+    <div className={styles.preferences_items}>
+      <VirtualList
+        data={items}
+        template={PreferenceItem as React.FunctionComponent<{ data: ISectionItemData; index: number }>}
+        className={styles.preference_section}
+        refSetter={preferenceService.handleListHandler}
+        onRangeChanged={onRangeChanged.run}
+      />
+    </div>
   );
 });
-
-export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index: number }) => {
-  if (data.title) {
-    if (data.id?.startsWith(ESectionItemKind.Group)) {
-      return (
-        <div className={styles.group_title} id={data.id}>
-          {data.title}
-        </div>
-      );
-    }
-    return (
-      <div className={styles.section_title} id={data.id}>
-        {data.title}
-      </div>
-    );
-  } else if (data.component) {
-    return <data.component scope={data.scope} />;
-  } else if (data.preference) {
-    return (
-      <NextPreferenceItem
-        key={`${index} - ${data.preference.id} - ${data.scope}`}
-        preference={data.preference}
-        preferenceId={data.preference.id}
-        localizedName={data.preference.label}
-        scope={data.scope}
-      />
-    );
-  }
-};
-
-export const PreferenceBody = ({
-  items,
-  onReady,
-  onRangeChanged,
-}: {
-  items: ISectionItemData[];
-  onReady: (handler: any) => void;
-  onRangeChanged: (props: IVirtualListRange) => any;
-}) => (
-  <VirtualList
-    data={items}
-    template={PreferenceItem as React.FunctionComponent<{ data: ISectionItemData; index: number }>}
-    className={styles.preference_section}
-    refSetter={onReady}
-    onRangeChanged={onRangeChanged}
-  />
-);
