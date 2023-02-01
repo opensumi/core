@@ -311,9 +311,15 @@ export class FileTreeService extends Tree implements IFileTreeService {
           !Directory.isRoot(parent)
         ) {
           const parentURI = new URI(childrenParentStat.uri);
-          if (parent && parent.parent) {
-            const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
-            if (parentName && parentName !== parent.name) {
+          const nearestParentDirectory = parent.parent as Directory;
+          if (parent && nearestParentDirectory) {
+            let parentName;
+            if (nearestParentDirectory.filestat.isSymbolicLink) {
+              parentName = new URI(nearestParentDirectory.filestat.realUri).relative(parentURI)?.toString();
+            } else {
+              parentName = nearestParentDirectory.uri.relative(parentURI)?.toString();
+            }
+            if (parentName !== parent.name) {
               parent.updateMetaData({
                 name: parentName,
                 uri: parentURI,
