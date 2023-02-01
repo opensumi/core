@@ -46,18 +46,6 @@ export class FileTreeAPI implements IFileTreeAPI {
 
     if (file) {
       if (file.children?.length === 1 && file.children[0].isDirectory && compact) {
-        const parentURI = new URI(file.children[0].uri);
-        if (!!parent && parent.parent) {
-          const parentName = (parent.parent as Directory).uri.relative(parentURI)?.toString();
-          if (parentName && parentName !== parent.name) {
-            parent.updateMetaData({
-              name: parentName,
-              uri: parentURI,
-              fileStat: file.children[0],
-              tooltip: this.getReadableTooltip(parentURI),
-            });
-          }
-        }
         return await this.resolveChildren(tree, file.children[0].uri, parent, compact);
       } else {
         // 为文件树节点新增isInSymbolicDirectory属性，用于探测节点是否处于软链接文件中
