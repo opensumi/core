@@ -37,8 +37,8 @@ import {
 } from '../common';
 
 import { AccordionService } from './accordion/accordion.service';
-import { TabBarHandler } from './tabbar-handler';
 import { TabbarService } from './tabbar/tabbar.service';
+import { TabBarHandler } from './tabbar-handler';
 
 @Injectable()
 export class LayoutService extends WithEventBus implements IMainLayoutService {

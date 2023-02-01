@@ -75,7 +75,7 @@ export class MergeEditorDecorations extends Disposable {
 
     return Array.from({ length }).map((_, idx) => {
       let borderClassName = ' ';
-      let wrapClassName = ` ${DECORATIONS_CLASSNAME.conflict_wrap} `;
+      const wrapClassName = ` ${DECORATIONS_CLASSNAME.conflict_wrap} `;
 
       if (length !== 1) {
         borderClassName +=
