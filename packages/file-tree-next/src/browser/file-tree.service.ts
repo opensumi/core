@@ -300,21 +300,18 @@ export class FileTreeService extends Tree implements IFileTreeService {
           this.isCompactMode && !Directory.isRoot(parent),
         );
         children = data.children;
-        // 有概率获取不到Filestat，易发生在外部删除多文件情况下
+        // 有概率获取不到 Filestat，易发生在外部删除多文件情况下
         const childrenParentStat = data.filestat;
-        // 需要排除软连接下的直接空目录折叠，否则会导致路径计算错误
-        // 但软连接目录下的其他目录不受影响
-        if (
-          !!childrenParentStat &&
-          this.isCompactMode &&
-          !parent.filestat.isSymbolicLink &&
-          !Directory.isRoot(parent)
-        ) {
+        if (!!childrenParentStat && this.isCompactMode && !Directory.isRoot(parent)) {
           const parentURI = new URI(childrenParentStat.uri);
           const nearestParentDirectory = parent.parent as Directory;
           if (parent && nearestParentDirectory) {
             let parentName;
-            if (nearestParentDirectory.filestat.isSymbolicLink) {
+            if (parent.filestat.isSymbolicLink) {
+              // 当软链目录本身发生折叠时
+              parentName = new URI(parent.filestat.realUri).relative(parentURI)?.toString();
+              parentName = [parent.uri.displayName].concat(parentName.split(Path.separator)).join(Path.separator);
+            } else if (nearestParentDirectory.filestat.isSymbolicLink) {
               parentName = new URI(nearestParentDirectory.filestat.realUri).relative(parentURI)?.toString();
             } else {
               parentName = nearestParentDirectory.uri.relative(parentURI)?.toString();
