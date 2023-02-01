@@ -4,7 +4,7 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const srcDir = path.join(__dirname, '../src/node');
-const distDir = path.join(__dirname, '../lib/node');
+const distDir = path.join(__dirname, '../dist/node');
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 

@@ -14,13 +14,8 @@
     "suppressImplicitAnyIndexErrors": true,
     "declaration": true,
     "baseUrl": "../src/node",
-    "outDir": "../lib/node"
+    "outDir": "../dist/node"
   },
-  "include": [
-    "../src/node"
-  ],
-  "exclude": [
-    "node_modules",
-    "../lib"
-  ]
+  "include": ["../src/node"],
+  "exclude": ["node_modules", "../lib", "../dist"]
 }

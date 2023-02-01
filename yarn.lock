@@ -2513,8 +2513,8 @@ __metadata:
     style-resources-loader: ^1.2.1
     terser-webpack-plugin: ^2.3.1
     thread-loader: ^2.1.3
-    ts-loader: ^6.0.1
-    ts-node: 8.0.2
+    ts-loader: 8.2.0
+    ts-node: 10.9.1
     tsconfig-paths: ^3.8.0
     tsconfig-paths-webpack-plugin: ^3.2.0
     tslib: ^2.5.0
@@ -6680,7 +6680,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chalk@npm:^2.0.0, chalk@npm:^2.1.0, chalk@npm:^2.3.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
+"chalk@npm:^2.0.0, chalk@npm:^2.1.0, chalk@npm:^2.4.1, chalk@npm:^2.4.2":
   version: 2.4.2
   resolution: "chalk@npm:2.4.2"
   dependencies:
@@ -8587,13 +8587,6 @@ __metadata:
   version: 29.3.1
   resolution: "diff-sequences@npm:29.3.1"
   checksum: 8edab8c383355022e470779a099852d595dd856f9f5bd7af24f177e74138a668932268b4c4fd54096eed643861575c3652d4ecbbb1a9d710488286aed3ffa443
-  languageName: node
-  linkType: hard
-
-"diff@npm:^3.1.0":
-  version: 3.5.0
-  resolution: "diff@npm:3.5.0"
-  checksum: 00842950a6551e26ce495bdbce11047e31667deea546527902661f25cc2e73358967ebc78cf86b1a9736ec3e14286433225f9970678155753a6291c3bca5227b
   languageName: node
   linkType: hard
 
@@ -20092,7 +20085,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-support@npm:^0.5.17, source-map-support@npm:^0.5.6, source-map-support@npm:~0.5.12":
+"source-map-support@npm:^0.5.17, source-map-support@npm:~0.5.12":
   version: 0.5.21
   resolution: "source-map-support@npm:0.5.21"
   dependencies:
@@ -21312,18 +21305,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-loader@npm:^6.0.1":
-  version: 6.2.2
-  resolution: "ts-loader@npm:6.2.2"
+"ts-loader@npm:8.2.0":
+  version: 8.2.0
+  resolution: "ts-loader@npm:8.2.0"
   dependencies:
-    chalk: ^2.3.0
+    chalk: ^4.1.0
     enhanced-resolve: ^4.0.0
-    loader-utils: ^1.0.2
+    loader-utils: ^2.0.0
     micromatch: ^4.0.0
-    semver: ^6.0.0
+    semver: ^7.3.4
   peerDependencies:
     typescript: "*"
-  checksum: b984b911848f5397e1cddf8b046a693caaf5556ff1ccc91611b40a20824b20232a3d1d28da326e4cf9bb20c23dce2886b1a5a5868634b44384a528bf462c81f4
+    webpack: "*"
+  checksum: 976504f95f2e4568fc04a596dad7b57d943b23199011c4cb30eba42e7ba12489f9b310839964f5f16b356e4e3f6d28faf7a46d8c62d3934a07db0b23768ea434
   languageName: node
   linkType: hard
 
@@ -21343,24 +21337,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-node@npm:8.0.2":
-  version: 8.0.2
-  resolution: "ts-node@npm:8.0.2"
-  dependencies:
-    arg: ^4.1.0
-    diff: ^3.1.0
-    make-error: ^1.1.1
-    source-map-support: ^0.5.6
-    yn: ^3.0.0
-  peerDependencies:
-    typescript: ">=2.0"
-  bin:
-    ts-node: dist/bin.js
-  checksum: f83c2d433b0955c7f78070b5db1aea4a0529f87adb44ede597466ac2bc784a2a01f3b46e4d98ec39989b76ce84a16b6f9e5779b2816025a6cae7d4cbfc3c1939
-  languageName: node
-  linkType: hard
-
-"ts-node@npm:^10.8.1, ts-node@npm:^10.9.1":
+"ts-node@npm:10.9.1, ts-node@npm:^10.8.1, ts-node@npm:^10.9.1":
   version: 10.9.1
   resolution: "ts-node@npm:10.9.1"
   dependencies:
@@ -23112,7 +23089,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yn@npm:3.1.1, yn@npm:^3.0.0":
+"yn@npm:3.1.1":
   version: 3.1.1
   resolution: "yn@npm:3.1.1"
   checksum: 2c487b0e149e746ef48cda9f8bad10fc83693cd69d7f9dcd8be4214e985de33a29c9e24f3c0d6bcf2288427040a8947406ab27f7af67ee9456e6b84854f02dd6

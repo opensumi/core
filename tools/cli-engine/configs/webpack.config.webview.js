@@ -3,7 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
-const distDir = path.join(__dirname, '../lib/node/webview');
+const distDir = path.join(__dirname, '../dist/node/webview');
 
 module.exports = {
   entry: path.join(__dirname, '../src/webview/webview-host/web-preload.ts'),
@@ -31,15 +31,20 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        loader: 'ts-loader',
+        loader: require.resolve('ts-loader'),
         options: {
+          happyPackMode: true,
+          transpileOnly: true,
           configFile: tsConfigPath,
+          compilerOptions: {
+            target: 'es2015',
+          },
         },
       },
     ],
   },
   resolveLoader: {
-    modules: [path.join(__dirname, '../node_modules'), path.resolve('node_modules')],
+    modules: [path.join(__dirname, '../node_modules')],
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     mainFields: ['loader', 'main'],
     moduleExtensions: ['-loader'],
