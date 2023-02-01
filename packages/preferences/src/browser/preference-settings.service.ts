@@ -319,7 +319,11 @@ export class PreferenceSettingsService extends Disposable implements IPreference
    * @param scope 作用域
    * @param search 搜索条件
    */
-  getResolvedSections(groupId: string, scope: PreferenceScope, search?: string): IResolvedSettingSection[] {
+  getResolvedSections(
+    groupId: string,
+    scope: PreferenceScope = this.currentScope,
+    search: string = this.currentSearch,
+  ): IResolvedSettingSection[] {
     const groupVersion = this.settingsSectionsVersioned.get(groupId);
     const key = [groupId, scope, search || '', groupVersion].join('-');
     if (this.cachedGroupSection.has(key)) {

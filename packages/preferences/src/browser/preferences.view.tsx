@@ -25,6 +25,7 @@ import {
   LabelService,
   IResolvedSettingSection,
 } from '@opensumi/ide-core-browser';
+import { EDirection } from '@opensumi/ide-core-browser/lib/components/index';
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components/layout/split-panel';
 import useThrottleFn from '@opensumi/ide-core-browser/lib/react-hooks/useThrottleFn';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
@@ -100,7 +101,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
             id='preference-panel'
             resizeHandleClassName={styles.devider}
             className={styles.preferences_body}
-            direction='left-to-right'
+            direction={EDirection.LeftToRight}
           >
             <PreferenceIndexes data-sp-defaultSize={180} data-sp-minSize={150} />
             <PreferenceBody data-sp-flex={1} />
@@ -188,11 +189,7 @@ const PreferenceIndexes = observer(() => {
         order: index,
       } as IPreferenceTreeData;
       const children = [] as IPreferenceTreeData[];
-      const sections = preferenceService.getResolvedSections(
-        id,
-        preferenceService.currentScope,
-        preferenceService.currentSearch,
-      );
+      const sections = preferenceService.getResolvedSections(id);
       sections.forEach((sec, i) => {
         const _treeData = parseTreeData(id, sec, i);
         if (_treeData) {
@@ -208,7 +205,12 @@ const PreferenceIndexes = observer(() => {
     }
 
     return basicTreeData;
-  }, [preferenceService.groups, preferenceService.getResolvedSections]);
+  }, [
+    preferenceService.groups,
+    preferenceService.getResolvedSections,
+    preferenceService.currentScope,
+    preferenceService.currentSearch,
+  ]);
 
   return (
     <AutoSizer className={styles.preferences_indexes}>
@@ -270,11 +272,7 @@ export const PreferenceBody = observer(() => {
 
     function collectGroup(group: ISettingGroup) {
       const groupItems = [] as ISectionItemData[];
-      const sections = preferenceService.getResolvedSections(
-        group.id,
-        preferenceService.currentScope,
-        preferenceService.currentSearch,
-      );
+      const sections = preferenceService.getResolvedSections(group.id);
 
       const collectItem = (section: IResolvedSettingSection, prefix = '') => {
         let currentItemPath = prefix;
@@ -334,7 +332,12 @@ export const PreferenceBody = observer(() => {
       }
       return groupItems;
     }
-  }, [preferenceService.groups, preferenceService.currentScope, preferenceService.currentSearch]);
+  }, [
+    preferenceService.groups,
+    preferenceService.getResolvedSections,
+    preferenceService.currentScope,
+    preferenceService.currentSearch,
+  ]);
 
   const navigateTo = (id: string) => {
     if (id) {
