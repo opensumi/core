@@ -5,6 +5,7 @@
 <div align="center">
  
 [![CI][ci-image]][ci-url]
+[![E2E][e2e-image]][e2e-url]
 [![NPM Version][npm-image]][npm-url]
 [![NPM downloads][download-image]][download-url]
 [![Test Coverage][test-image]][test-url]
@@ -14,6 +15,8 @@
 
 [ci-image]: https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg
 [ci-url]: https://github.com/opensumi/core/actions/workflows/ci.yml
+[e2e-image]: https://github.com/opensumi/core/actions/workflows/e2e.yml/badge.svg
+[e2e-url]: https://github.com/opensumi/core/actions/workflows/e2e.yml
 [discussions-image]: https://img.shields.io/badge/discussions-on%20github-blue
 [discussions-url]: https://github.com/opensumi/core/discussions
 [npm-image]: https://img.shields.io/npm/v/@opensumi/ide-core-common.svg
