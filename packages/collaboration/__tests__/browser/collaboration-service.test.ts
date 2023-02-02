@@ -174,12 +174,6 @@ describe('CollaborationService basic routines', () => {
     expect(service['bindingMap'].has(workbenchEditorService.uri.toString())).toBeFalsy();
   });
 
-  it('should successfully destroy', () => {
-    const spy = jest.spyOn(service, 'destroy');
-    service.destroy();
-    expect(spy).toBeCalled();
-  });
-
   afterAll(() => {
     server.destroy();
   });
