@@ -3,7 +3,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
-const distDir = path.join(__dirname, '../dist/node/webview');
+const distDir = path.join(__dirname, '../lib/node/webview');
 
 module.exports = {
   entry: path.join(__dirname, '../src/webview/webview-host/web-preload.ts'),

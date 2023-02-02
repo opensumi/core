@@ -12,7 +12,7 @@ const { lessLoader } = require('./webpack-util');
 
 const tsConfigPath = path.join(__dirname, './tsconfig.json');
 const dir = path.join(__dirname, '../src/browser');
-const distDir = path.join(__dirname, '../dist/browser');
+const distDir = path.join(__dirname, '../lib/browser');
 const port = 8080;
 const nodeEnv = process.env.NODE_ENV || 'development';
 
