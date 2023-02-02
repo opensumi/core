@@ -3,5 +3,5 @@
 ## Development
 
 ```bash
-DEBUG_ENGINE_PATH=~/your-_folder/ide-framework/tools/cli-engine/lib opensumi dev
+DEBUG_ENGINE_PATH=~/{project folder path}/tools/cli-engine/lib sumi dev
 ```
