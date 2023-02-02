@@ -17,6 +17,7 @@ export class OpenSumiOutputView extends OpenSumiPanel {
       await select.click();
       const wrapper = await titleBar?.$('.kt-select-options');
       const options = await wrapper?.$$('span');
+
       if (!options) {
         return;
       }
