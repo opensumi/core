@@ -32,6 +32,7 @@
     "@opensumi/ide-express-file-server": "workspace:*",
     "@opensumi/ide-extension": "workspace:*",
     "@opensumi/ide-i18n": "workspace:*",
+    "@opensumi/ide-main-layout": "workspace:*",
     "@opensumi/ide-startup": "workspace:*",
     "chalk": "^4.0.0",
     "ejs": "^2.7.4",
