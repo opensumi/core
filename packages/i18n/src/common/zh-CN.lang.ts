@@ -153,7 +153,7 @@ export const localizationBundle = {
     'quickopen.tab.goToLine': '转到行',
     'quickopen.tab.tip.prefix': '按',
     'quickopen.tab.tip.suffix': '切换搜索类别',
-    'quickOpen.openSide': '在侧边打开',
+    'quickOpen.openOnTheRightSide': '在侧边打开',
 
     'explorer.title': '资源管理器',
 
@@ -196,8 +196,6 @@ export const localizationBundle = {
     'search.replace.buttonOK': '替换',
     'search.replace.buttonCancel': '取消',
     'search.too.many.results': '由于您的搜索条件过于疏松，我们仅展示了部分搜索结果',
-    'file-search.quickOpen.leftRight': '在侧边打开',
-    'file-search.quickOpen.upDown': '在底部打开',
     'search.fileReplaceChanges': '{0} ↔ {1} (替换预览)',
     'search.fileResults': '文件结果',
     'search.fileResults.notfound': '没有匹配的文件',
