@@ -182,7 +182,7 @@ export const localizationBundle = {
     'quickopen.tab.goToLine': 'Go To Line',
     'quickopen.tab.tip.prefix': 'Press',
     'quickopen.tab.tip.suffix': 'to switch',
-    'quickOpen.openSide': 'Open on the side',
+    'quickOpen.openOnTheRightSide': 'Open on the side',
 
     'explorer.title': 'Explorer',
     'explorer.electron.revealInFinder': 'Reveal In Explorer',
@@ -224,8 +224,6 @@ export const localizationBundle = {
     'search.replace.buttonOK': 'Replace',
     'search.replace.buttonCancel': 'Cancel',
     'search.too.many.results': 'Because your search terms are too loose, we only show some search results',
-    'file-search.quickOpen.leftRight': 'Open on the side',
-    'file-search.quickOpen.upDown': 'Open at the bottom',
     'search.fileReplaceChanges': '{0} ↔ {1} (Replace Preview)',
     'search.fileResults': 'File results',
     'search.fileResults.notfound': 'No files matching',
