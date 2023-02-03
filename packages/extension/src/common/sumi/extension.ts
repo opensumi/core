@@ -3,9 +3,9 @@ import { ISumiMenuExtendInfo } from '@opensumi/ide-core-common';
 import { ThemeType } from '@opensumi/ide-theme';
 
 // eslint-disable-next-line import/no-restricted-paths
-import type { ITabBarViewContribution } from '../../browser/sumi-browser/types';
-// eslint-disable-next-line import/no-restricted-paths
 import type { IToolbarButtonContribution, IToolbarSelectContribution } from '../../browser/sumi/types';
+// eslint-disable-next-line import/no-restricted-paths
+import type { ITabBarViewContribution } from '../../browser/sumi-browser/types';
 import { IExtensionContributions } from '../vscode/extension';
 
 export interface IContributeMenubarItem extends Omit<IMenubarItem, 'label'> {

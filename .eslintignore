@@ -6,6 +6,7 @@ node_modules
 **/tools/electron/app/dist/**
 **/tools/playwright/src/tests/workspaces/**
 **/tools/playwright/lib/**
+**/tools/cli-engine/lib/**
 tools/cli-engine/src/browser/worker-host.js
 
 **/typings/**

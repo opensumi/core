@@ -50,7 +50,6 @@ import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.s
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
 import { IDocPersistentCacheProvider, ResourceService } from '@opensumi/ide-editor/lib/common';
 import { ExtensionService } from '@opensumi/ide-extension';
-import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
 import { MainThreadExtensionDocumentData } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.doc';
 import { MainThreadFileSystem } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.file-system';
@@ -65,6 +64,7 @@ import { ExtHostPreference } from '@opensumi/ide-extension/lib/hosted/api/vscode
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import { ExtHostTasks } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
+import { ExtensionStorageModule } from '@opensumi/ide-extension-storage/lib/browser';
 import { FileSchemeDocumentProvider } from '@opensumi/ide-file-scheme/lib/browser/file-doc';
 import {
   FileServicePath,
@@ -86,10 +86,10 @@ import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser
 import { StaticResourceServiceImpl } from '@opensumi/ide-static-resource/lib/browser/static.service';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { IWorkspaceEditService, IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
 import { WorkspaceEditServiceImpl } from '@opensumi/ide-workspace-edit/lib/browser/workspace-edit.service';
 import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../tools/dev-tool/src/mock-injector';

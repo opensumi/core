@@ -34,9 +34,9 @@ import { Extension } from './extension';
 import { createProxiedWindow, createProxiedDocument } from './proxies';
 import { retargetEvents } from './retargetEvents';
 import { getShadowRoot } from './shadowRoot';
+import { KtViewLocation } from './sumi/contributes/browser-views';
 import { SumiBrowserContributionRunner } from './sumi-browser/contribution';
 import { ISumiBrowserContributions } from './sumi-browser/types';
-import { KtViewLocation } from './sumi/contributes/browser-views';
 
 const { Path, posix } = path;
 const LOAD_FAILED_CODE = 'load';

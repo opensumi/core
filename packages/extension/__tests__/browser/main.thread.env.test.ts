@@ -8,7 +8,6 @@ import {
   LogLevel,
   getLanguageId,
 } from '@opensumi/ide-core-common';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { MainThreadEnv } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.env';
 import { MainThreadStorage } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.storage';
 import {
@@ -22,6 +21,7 @@ import { ExtHostEnv } from '@opensumi/ide-extension/lib/hosted/api/vscode/env/ex
 import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.storage';
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import ExtensionHostServiceImpl from '@opensumi/ide-extension/lib/hosted/ext.host';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockExtensionStorageService } from '../hosted/__mocks__/extensionStorageService';

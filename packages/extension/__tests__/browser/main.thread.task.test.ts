@@ -4,7 +4,6 @@ import { RPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 import { Emitter, FileUri, ITaskDefinitionRegistry, TaskDefinitionRegistryImpl } from '@opensumi/ide-core-common';
 import { addEditorProviders } from '@opensumi/ide-dev-tool/src/injector-editor';
 import { ExtensionService } from '@opensumi/ide-extension';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
 import { ExtensionServiceImpl } from '@opensumi/ide-extension/lib/browser/extension.service';
 import { MainthreadTasks } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.tasks';
 import { MainThreadWorkspace } from '@opensumi/ide-extension/lib/browser/vscode/api/main.thread.workspace';
@@ -16,6 +15,7 @@ import { ExtHostStorage } from '@opensumi/ide-extension/lib/hosted/api/vscode/ex
 import { ExtHostTerminal } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.terminal';
 import { ExtHostWorkspace } from '@opensumi/ide-extension/lib/hosted/api/vscode/ext.host.workspace';
 import { ExtHostTasks, createTaskApiFactory } from '@opensumi/ide-extension/lib/hosted/api/vscode/tasks/ext.host.tasks';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage/lib/common';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 import { LayoutService } from '@opensumi/ide-main-layout/lib/browser/layout.service';
 import { MonacoService } from '@opensumi/ide-monaco';

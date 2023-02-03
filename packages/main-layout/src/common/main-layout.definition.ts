@@ -7,9 +7,9 @@ import { IContextKeyExpression } from '@opensumi/monaco-editor-core/esm/vs/platf
 // eslint-disable-next-line import/no-restricted-paths
 import type { AccordionService } from '../browser/accordion/accordion.service';
 // eslint-disable-next-line import/no-restricted-paths
-import type { TabBarHandler } from '../browser/tabbar-handler';
-// eslint-disable-next-line import/no-restricted-paths
 import type { TabbarService } from '../browser/tabbar/tabbar.service';
+// eslint-disable-next-line import/no-restricted-paths
+import type { TabBarHandler } from '../browser/tabbar-handler';
 
 export interface ComponentCollection {
   views?: View[];
