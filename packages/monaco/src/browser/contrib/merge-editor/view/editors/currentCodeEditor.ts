@@ -120,7 +120,9 @@ export class CurrentCodeEditor extends BaseCodeEditor {
       },
     });
 
-    this.layout();
+    requestAnimationFrame(() => {
+      this.layout();
+    });
   }
 
   /**
