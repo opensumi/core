@@ -67,6 +67,7 @@ export interface IOpenMergeEditorArgs {
   ancestor: {
     uri: URI;
     textModel: IEditorModel;
+    baseContent: string;
   };
   input1: MergeEditorInputData;
   input2: MergeEditorInputData;
