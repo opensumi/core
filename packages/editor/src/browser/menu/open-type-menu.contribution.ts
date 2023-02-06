@@ -1,5 +1,3 @@
-import { tail } from 'lodash';
-
 import { Autowired } from '@opensumi/di';
 import { getIcon } from '@opensumi/ide-core-browser';
 import {
@@ -10,16 +8,8 @@ import {
   IMenuItem,
   MenuCommandDesc,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import {
-  Command,
-  CommandContribution,
-  CommandRegistry,
-  Disposable,
-  LifeCyclePhase,
-  localize,
-} from '@opensumi/ide-core-common';
+import { Command, CommandContribution, CommandRegistry, Disposable, localize } from '@opensumi/ide-core-common';
 import { Domain } from '@opensumi/ide-core-common/lib/di-helper';
-import { LifeCycle } from '@opensumi/ide-extension';
 
 import { WorkbenchEditorService } from '../types';
 
