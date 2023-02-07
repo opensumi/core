@@ -52,6 +52,12 @@ a += 1;
 a += 1;
 a += 1;
 a += 1;`),
+        baseContent: `let a = 123456789;
+a += 1;
+a += 1;
+a += 1;
+a += 1;
+a += 1;`,
       },
       input1: new MergeEditorInputData(URI.parse('b')).setTextModel(
         monaco.editor.createModel(`let a = 123456789;
