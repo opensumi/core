@@ -137,7 +137,7 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
           },
         ),
       );
-      // 先注册resolvers 再注册component
+
       this.addDispose(
         this.editorComponentRegistry.registerEditorComponent({
           uid: componentId,
