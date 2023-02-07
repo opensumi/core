@@ -74,6 +74,7 @@ import {
   getSplitActionFromDragDrop,
 } from '../common';
 
+import { EditorDocumentModel } from './doc-model/editor-document-model';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { EditorTabChangedError, isEditorError } from './error';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
@@ -1632,6 +1633,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         ancestor: {
           uri: URI.parse(metadata.ancestor),
           textModel: ancestorRef.instance.getMonacoModel(),
+          baseContent: (ancestorRef.instance as EditorDocumentModel).baseContent || '',
         },
         input1: input1Data.setTextModel(input1Ref.instance.getMonacoModel()),
         input2: input2Data.setTextModel(input2Ref.instance.getMonacoModel()),
