@@ -26,7 +26,8 @@ describe('FileService', () => {
     root = FileUri.create(testDir);
 
     injector = createNodeInjector([FileServiceModule]);
-    injector.mock(IFileService, 'isEnableNSFW', () => false);
+    // @ts-ignore
+    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     fileService = injector.get(IFileService);
   });
 
