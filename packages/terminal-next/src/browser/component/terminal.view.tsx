@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { useInjectable, getIcon } from '@opensumi/ide-core-browser';
+import { useInjectable, getIcon, localize } from '@opensumi/ide-core-browser';
 
 import {
   ITerminalController,
@@ -98,7 +98,7 @@ export default observer(() => {
           <input
             autoFocus
             ref={inputRef}
-            placeholder='查找'
+            placeholder={localize('common.find')}
             value={searchService.input}
             onChange={searchInput}
             onKeyDown={searchKeyDown}
