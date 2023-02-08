@@ -1,5 +1,4 @@
 import * as fse from 'fs-extra';
-import nsfw from 'nsfw';
 import temp from 'temp';
 
 import { URI, isMacintosh } from '@opensumi/ide-core-common';
