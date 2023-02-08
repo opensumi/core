@@ -10,13 +10,17 @@ import {
   IWindowService,
 } from '@opensumi/ide-core-browser';
 import { ReactEditorComponent } from '@opensumi/ide-editor/lib/browser';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
+import { IMessageService } from '@opensumi/ide-overlay';
 
 import { IWelcomeMetaData } from './common';
 import styles from './welcome.module.less';
 
 export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({ resource }) => {
-  const commandService: CommandService = useInjectable(CommandService);
-  const windowService: IWindowService = useInjectable(IWindowService);
+  const commandService: CommandService = useInjectable<CommandService>(CommandService);
+  const windowService: IWindowService = useInjectable<IWindowService>(IWindowService);
+  const fileService: IFileServiceClient = useInjectable<IFileServiceClient>(IFileServiceClient);
+  const messageService: IMessageService = useInjectable<IMessageService>(IMessageService);
 
   return (
     <div className={styles.welcome}>
@@ -34,7 +38,7 @@ export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({
       </div>
       <div>
         <h1>{localize('welcome.recent.workspace')}</h1>
-        {resource.metadata!.recentWorkspaces.map((workspace) => {
+        {resource.metadata?.recentWorkspaces.map((workspace) => {
           let workspacePath = workspace;
           if (workspace.startsWith('file://')) {
             workspacePath = FileUri.fsPath(workspace);
@@ -42,8 +46,14 @@ export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({
           return (
             <div key={workspace} className={styles.recentRow}>
               <a
-                onClick={() => {
-                  windowService.openWorkspace(new URI(workspace), { newWindow: false });
+                onClick={async () => {
+                  const uri = new URI(workspace);
+                  const exist = await fileService.getFileStat(uri.toString());
+                  if (exist) {
+                    windowService.openWorkspace(uri, { newWindow: false });
+                  } else {
+                    messageService.error('welcome.workspace.noExist');
+                  }
                 }}
               >
                 {workspacePath}
