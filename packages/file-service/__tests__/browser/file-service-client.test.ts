@@ -28,6 +28,7 @@ describe('FileServiceClient should be work', () => {
 
   beforeAll(() => {
     jest.setTimeout(10000);
+    injector.mock(IFileServiceClient, 'isEnableNSFW', () => false);
     fileServiceClient = injector.get(IFileServiceClient);
     fileServiceClient.registerProvider('file', injector.get(IDiskFileProvider));
   });
