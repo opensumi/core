@@ -369,7 +369,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   }
 
   private async withNSFWModule(): Promise<typeof import('nsfw')> {
-    return (await import('nsfw')).default;
+    return require('nsfw');
   }
 
   protected pushAdded(path: string): void {
