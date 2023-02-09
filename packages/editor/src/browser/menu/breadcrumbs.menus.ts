@@ -18,21 +18,11 @@ export class BreadCrumbsMenuService {
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
-  private _breadcrumbsTitleContextKey;
-
-  private get breadcrumbsTitleContextKey() {
-    if (!this._breadcrumbsTitleContextKey) {
-      this._breadcrumbsTitleContextKey = this.contextKeyService.createKey('breadcrumbsTitleContext', false);
-    }
-    return this._breadcrumbsTitleContextKey;
-  }
-
-  show(x: number, y: number, uri: URI, group: IEditorGroup) {
+  show(x: number, y: number, uri: URI, group: EditorGroup, domTarget) {
     // 设置resourceScheme
-    const titleContext = (group as EditorGroup).contextKeyService.createScoped();
+    const titleContext = group.contextKeyService.createScoped(domTarget);
     const resourceContext = new ResourceContextKey(titleContext);
     resourceContext.set(uri);
-    this.breadcrumbsTitleContextKey.set(true);
 
     const menus = this.ctxMenuService.createMenu({
       id: MenuId.BreadcrumbsTitleContext,
@@ -46,9 +36,6 @@ export class BreadCrumbsMenuService {
       anchor: { x, y },
       menuNodes,
       args: [{ uri, group }],
-      onHide: () => {
-        this.breadcrumbsTitleContextKey.set(false);
-      },
     });
   }
 }

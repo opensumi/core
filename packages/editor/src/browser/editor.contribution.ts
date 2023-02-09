@@ -1203,12 +1203,12 @@ export class EditorContribution
 
     menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
       command: EDITOR_COMMANDS.COPY_PATH.id,
-      group: '0_tab',
+      group: '0_path',
       order: 1,
     });
     menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
       command: EDITOR_COMMANDS.COPY_RELATIVE_PATH.id,
-      group: '0_tab',
+      group: '0_path',
       order: 2,
     });
 

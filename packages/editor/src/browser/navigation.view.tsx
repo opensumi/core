@@ -48,7 +48,12 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
     return null;
   }
   return parts.length === 0 ? null : (
-    <div className={styles.navigation_container}>
+    <div
+      className={styles.navigation_container}
+      onContextMenu={(event) => {
+        event.preventDefault();
+      }}
+    >
       {parts.map((p, i) => (
         <React.Fragment key={i + '-crumb:' + p.name}>
           {i > 0 && <Icon icon={'right'} size='small' className={styles.navigation_icon} />}
@@ -80,14 +85,14 @@ export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPa
     <span
       onClick={onClick}
       onContextMenu={(event) => {
-        breadcrumbsMenuService.show(event.nativeEvent.x, event.nativeEvent.y, part.uri, viewService.editorGroup);
+        breadcrumbsMenuService.show(event.nativeEvent.x, event.nativeEvent.y, part.uri, editorGroup, event.target);
         event.preventDefault();
       }}
       className={styles['navigation-part']}
       ref={itemRef as any}
     >
       {part.icon && <span className={part.icon}></span>}
-      <span>1_{part.name}</span>
+      <span>{part.name}</span>
     </span>
   );
 });
