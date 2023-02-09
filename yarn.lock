@@ -2882,6 +2882,7 @@ __metadata:
     "@opensumi/ide-core-node": "workspace:*"
     "@opensumi/ide-dev-tool": "workspace:*"
     "@opensumi/ide-editor": "workspace:*"
+    "@opensumi/ide-file-service": "workspace:*"
     "@opensumi/ide-overlay": "workspace:*"
     "@opensumi/ide-utils": "workspace:*"
     "@opensumi/ide-workspace": "workspace:*"

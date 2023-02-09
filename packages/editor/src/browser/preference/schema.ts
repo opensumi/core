@@ -109,7 +109,7 @@ export const EDITOR_DEFAULTS = {
   readOnly: false,
   mouseStyle: 'text',
   disableLayerHinting: false,
-  automaticLayout: true, // 开天修改
+  automaticLayout: true, // Modified
   wordWrap: 'off',
   wordWrapColumn: 80,
   wordWrapMinified: true,
@@ -159,7 +159,7 @@ export const EDITOR_DEFAULTS = {
     renderWhitespace: 'none',
     renderControlCharacters: false,
     fontLigatures: false,
-    renderLineHighlight: 'none', // 开天修改
+    renderLineHighlight: 'none', // Modified
     scrollbar: {
       vertical: 1, // ScrollbarVisibility.Auto,
       horizontal: 1, // ScrollbarVisibility.Auto,
@@ -210,7 +210,7 @@ export const EDITOR_DEFAULTS = {
     suggestOnTriggerCharacters: true,
     acceptSuggestionOnEnter: 'on',
     acceptSuggestionOnCommitCharacter: true,
-    wordBasedSuggestions: false, // 开天修改
+    wordBasedSuggestions: false, // Modified
     suggestSelection: 'recentlyUsed',
     suggestFontSize: 0,
     suggestLineHeight: 0,
@@ -242,86 +242,65 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.ariaLabel': {
     type: 'string',
     default: EDITOR_DEFAULTS.viewInfo.ariaLabel,
-    description: localize('ariaLabel', "The aria label for the editor's textarea (when it is focused)."),
+    description: '%editor.configuration.ariaLabel%',
   },
   'editor.extraEditorClassName': {
     type: 'string',
-    description: localize('extraEditorClassName', 'Class name to be added to the editor.'),
+    description: '%editor.configuration.extraEditorClassName%',
   },
   'editor.fixedOverflowWidgets': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.fixedOverflowWidgets,
-    description: localize('fixedOverflowWidgets', 'Display overflow widgets as fixed.'),
+    description: '%editor.configuration.fixedOverflowWidgets%',
   },
   'editor.revealHorizontalRightPadding': {
     type: 'number',
-    description: localize(
-      'revealHorizontalRightPadding',
-      'When revealing the cursor, a virtual padding (px) is added to the cursor, turning it into a rectangle. This virtual padding ensures that the cursor gets revealed before hitting the edge of the viewport. Defaults to 30 (px).',
-    ),
+    description: '%editor.configuration.revealHorizontalRightPadding%',
   },
   'editor.selectOnLineNumbers': {
     type: 'boolean',
-    description: localize(
-      'selectOnLineNumbers',
-      'Should the corresponding line be selected when clicking on the line number? Defaults to true.',
-    ),
+    description: '%editor.configuration.selectOnLineNumbers%',
   },
   'editor.wordWrapMinified': {
     type: 'boolean',
-    description: localize(
-      'wordWrapMinified',
-      'Force word wrapping when the text appears to be of a minified/generated file. Defaults to true.',
-    ),
+    description: '%editor.configuration.wordWrapMinified%',
   },
   'editor.wordWrapBreakAfterCharacters': {
     type: 'string',
     default:
       ' \t})]?|/&.,;¢°′″‰℃、。｡､￠，．：；？！％・･ゝゞヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻ｧｨｩｪｫｬｭｮｯｰ”〉》」』】〕）］｝｣',
-    description: localize(
-      'wordWrapBreakAfterCharacters',
-      "Configure word wrapping characters. A break will be introduced after these characters. Defaults to ' \t})]?|/&.,;¢°′″‰℃、。｡､￠，．：；？！％・･ゝゞヽヾーァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻ｧｨｩｪｫｬｭｮｯｰ”〉》」』】〕）］｝｣'.",
-    ),
+    description: '%editor.configuration.wordWrapBreakAfterCharacters%',
   },
   'editor.wrappingStrategy': {
     type: 'string',
     enum: ['advanced', 'simple'],
     default: 'simple',
-    description: localize('wrappingStrategy', 'Controls the algorithm that computes wrapping points.'),
+    description: '%editor.configuration.wrappingStrategy%',
   },
   'editor.wordWrapBreakBeforeCharacters': {
     type: 'string',
     default: '([{‘“〈《「『【〔（［｛｢£¥＄￡￥+＋',
-    description: localize(
-      'wordWrapBreakBeforeCharacters',
-      "Configure word wrapping characters. A break will be introduced before these characters. Defaults to '([{‘“〈《「『【〔（［｛｢£¥＄￡￥+＋'.",
-    ),
+    description: '%editor.configuration.wordWrapBreakBeforeCharacters%',
   },
   'editor.lineNumbersMinChars': {
     type: 'number',
     default: EDITOR_DEFAULTS.lineNumbersMinChars,
-    description: localize(
-      'lineNumbersMinChars',
-      'Control the width of line numbers, by reserving horizontal space for rendering at least an amount of digits. Defaults to 5.',
-    ),
+    description: '%editor.configuration.lineNumbersMinChars%',
   },
   'editor.lineDecorationsWidth': {
     type: 'number',
     default: EDITOR_DEFAULTS.lineDecorationsWidth,
-    description: localize(
-      'lineDecorationsWidth',
-      'The width reserved for line decorations (in px). Line decorations are placed between line numbers and the editor content. You can pass in a string in the format floating point followed by "ch". e.g. 1.3ch. Defaults to 10.',
-    ),
+    description: '%editor.configuration.lineDecorationsWidth%',
   },
   'editor.fontFamily': {
     type: 'string',
     default: EDITOR_FONT_DEFAULTS.fontFamily,
-    description: localize('fontFamily', 'Controls the font family.'),
+    description: '%editor.configuration.fontFamily%',
   },
   'editor.fontWeight': {
     type: 'string',
     default: EDITOR_FONT_DEFAULTS.fontWeight,
-    description: localize('editor.configuration.fontWeight'),
+    description: '%editor.configuration.fontWeight%',
   },
   'editor.fontSize': {
     type: 'number',
@@ -340,282 +319,249 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'string',
     enum: ['insert', 'replace'],
     enumDescriptions: [
-      localize('suggest.insertMode.insert', 'Insert suggestion without overwriting text right of the cursor.'),
-      localize('suggest.insertMode.replace', 'Insert suggestion and overwrite text right of the cursor.'),
+      localize(
+        'editor.configuration.suggest.insertMode.insert',
+        'Insert suggestion without overwriting text right of the cursor.',
+      ),
+      localize(
+        'editor.configuration.suggest.insertMode.replace',
+        'Insert suggestion and overwrite text right of the cursor.',
+      ),
     ],
     default: 'insert',
-    description: localize(
-      'suggest.insertMode',
-      'Controls whether words are overwritten when accepting completions. Note that this depends on extensions opting into this feature.',
-    ),
+    description: '%editor.configuration.suggest.insertMode%',
   },
   'editor.suggest.filterGraceful': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.filterGraceful,
-    description: localize(
-      'suggest.filterGraceful',
-      'Controls whether filtering and sorting suggestions accounts for small typos.',
-    ),
+    description: '%editor.configuration.suggest.filterGraceful%',
   },
   'editor.suggest.localityBonus': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.localityBonus,
-    description: localize(
-      'suggest.localityBonus',
-      'Controls whether sorting favours words that appear close to the cursor.',
-    ),
+    description: '%editor.configuration.suggest.localityBonus%',
   },
   'editor.suggest.shareSuggestSelections': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.shareSuggestSelections,
-    description: localize(
-      'suggest.shareSuggestSelections',
-      'Controls whether remembered suggestion selections are shared between multiple workspaces and windows (needs `#editor.suggestSelection#`).',
-    ),
+    description: '%editor.configuration.suggest.shareSuggestSelections%',
   },
   'editor.suggest.snippetsPreventQuickSuggestions': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.snippetsPreventQuickSuggestions,
-    description: localize(
-      'suggest.snippetsPreventQuickSuggestions',
-      'Controls whether an active snippet prevents quick suggestions.',
-    ),
+    description: '%editor.configuration.suggest.snippetsPreventQuickSuggestions%',
   },
   'editor.suggest.showIcons': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.showIcons,
-    description: localize('suggest.showIcons', 'Controls whether to show or hide icons in suggestions.'),
+    description: '%editor.configuration.suggest.showIcons%',
   },
   'editor.suggest.maxVisibleSuggestions': {
     type: 'number',
     default: EDITOR_SUGGEST_DEFAULTS.maxVisibleSuggestions,
     minimum: 1,
     maximum: 15,
-    description: localize(
-      'editor.suggest.maxVisibleSuggestions',
-      'Controls how many suggestions IntelliSense will show before showing a scrollbar (maximum 15).',
-    ),
+    description: '%editor.configuration.suggest.maxVisibleSuggestions%',
   },
   'editor.suggest.showMethods': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showMethods', 'When enabled IntelliSense shows `method`-suggestions.'),
+    description: '%editor.configuration.suggest.showMethods%',
   },
   'editor.suggest.showFunctions': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showFunctions', 'When enabled IntelliSense shows `function`-suggestions.'),
+    description: '%editor.configuration.suggest.showFunctions%',
   },
   'editor.suggest.showConstructors': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'editor.suggest.showConstructors',
-      'When enabled IntelliSense shows `constructor`-suggestions.',
-    ),
+    description: '%editor.configuration.suggest.showConstructors%',
   },
   'editor.suggest.showFields': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showFields', 'When enabled IntelliSense shows `field`-suggestions.'),
+    description: '%editor.configuration.suggest.showFields%',
   },
   'editor.suggest.showVariables': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showVariables', 'When enabled IntelliSense shows `variable`-suggestions.'),
+    description: '%editor.configuration.suggest.showVariables%',
   },
   'editor.suggest.showClasses': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showClasss', 'When enabled IntelliSense shows `class`-suggestions.'),
+    description: '%editor.configuration.suggest.showClasss%',
   },
   'editor.suggest.showStructs': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showStructs', 'When enabled IntelliSense shows `struct`-suggestions.'),
+    description: '%editor.configuration.suggest.showStructs%',
   },
   'editor.suggest.showInterfaces': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showInterfaces', 'When enabled IntelliSense shows `interface`-suggestions.'),
+    description: '%editor.configuration.suggest.showInterfaces%',
   },
   'editor.suggest.showModules': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showModules', 'When enabled IntelliSense shows `module`-suggestions.'),
+    description: '%editor.configuration.suggest.showModules%',
   },
   'editor.suggest.showProperties': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showPropertys', 'When enabled IntelliSense shows `property`-suggestions.'),
+    description: '%editor.configuration.suggest.showPropertys%',
   },
   'editor.suggest.showEvents': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showEvents', 'When enabled IntelliSense shows `event`-suggestions.'),
+    description: '%editor.configuration.suggest.showEvents%',
   },
   'editor.suggest.showOperators': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showOperators', 'When enabled IntelliSense shows `operator`-suggestions.'),
+    description: '%editor.configuration.suggest.showOperators%',
   },
   'editor.suggest.showUnits': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showUnits', 'When enabled IntelliSense shows `unit`-suggestions.'),
+    description: '%editor.configuration.suggest.showUnits%',
   },
   'editor.suggest.showValues': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showValues', 'When enabled IntelliSense shows `value`-suggestions.'),
+    description: '%editor.configuration.suggest.showValues%',
   },
   'editor.suggest.showConstants': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showConstants', 'When enabled IntelliSense shows `constant`-suggestions.'),
+    description: '%editor.configuration.suggest.showConstants%',
   },
   'editor.suggest.showEnums': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showEnums', 'When enabled IntelliSense shows `enum`-suggestions.'),
+    description: '%editor.configuration.suggest.showEnums%',
   },
   'editor.suggest.showEnumMembers': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'editor.suggest.showEnumMembers',
-      'When enabled IntelliSense shows `enumMember`-suggestions.',
-    ),
+    description: '%editor.configuration.suggest.showEnumMembers%',
   },
   'editor.suggest.showKeywords': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showKeywords', 'When enabled IntelliSense shows `keyword`-suggestions.'),
+    description: '%editor.configuration.suggest.showKeywords%',
   },
   'editor.suggest.showWords': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showTexts', 'When enabled IntelliSense shows `text`-suggestions.'),
+    description: '%editor.configuration.suggest.showTexts%',
   },
   'editor.suggest.showColors': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showColors', 'When enabled IntelliSense shows `color`-suggestions.'),
+    description: '%editor.configuration.suggest.showColors%',
   },
   'editor.suggest.showFiles': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showFiles', 'When enabled IntelliSense shows `file`-suggestions.'),
+    description: '%editor.configuration.suggest.showFiles%',
   },
   'editor.suggest.showReferences': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showReferences', 'When enabled IntelliSense shows `reference`-suggestions.'),
+    description: '%editor.configuration.suggest.showReferences%',
   },
   'editor.suggest.showCustomcolors': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'editor.suggest.showCustomcolors',
-      'When enabled IntelliSense shows `customcolor`-suggestions.',
-    ),
+    description: '%editor.configuration.suggest.showCustomcolors%',
   },
   'editor.suggest.showFolders': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showFolders', 'When enabled IntelliSense shows `folder`-suggestions.'),
+    description: '%editor.configuration.suggest.showFolders%',
   },
   'editor.suggest.showTypeParameters': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'editor.suggest.showTypeParameters',
-      'When enabled IntelliSense shows `typeParameter`-suggestions.',
-    ),
+    description: '%editor.configuration.suggest.showTypeParameters%',
   },
   'editor.suggest.showSnippets': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showSnippets', 'When enabled IntelliSense shows `snippet`-suggestions.'),
+    description: '%editor.configuration.suggest.showSnippets%',
   },
   'editor.suggest.showUsers': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showUsers', 'When enabled IntelliSense shows `user`-suggestions.'),
+    description: '%editor.configuration.suggest.showUsers%',
   },
   'editor.suggest.showIssues': {
     type: 'boolean',
     default: true,
-    description: localize('editor.suggest.showIssues', 'When enabled IntelliSense shows `issues`-suggestions.'),
+    description: '%editor.configuration.suggest.showIssues%',
   },
   'editor.suggest.statusBar.visible': {
     type: 'boolean',
     default: false,
-    description: localize(
-      'editor.suggest.statusBar.visible',
-      'Controls the visibility of the status bar at the bottom of the suggest widget.',
-    ),
+    description: '%editor.configuration.suggest.statusBar.visible%',
   },
   'editor.suggest.preview': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.preview,
-    description: localize('editor.suggest.preview', 'Enable or disable the rendering of the suggestion preview.'),
+    description: '%editor.configuration.suggest.preview%',
   },
   'editor.suggest.details.visible': {
     type: 'boolean',
     default: EDITOR_SUGGEST_DEFAULTS.detailsVisible,
-    description: localize('editor.suggest.details.visible'),
+    description: '%editor.configuration.suggest.details.visible%',
   },
   'editor.inlineSuggest.enabled': {
     type: 'boolean',
     default: EDITOR_INLINE_SUGGEST_DEFAULTS.enabled,
-    description: localize('inlineSuggest.enabled', 'Enable or disable the rendering of automatic inline completions.'),
+    description: '%editor.configuration.inlineSuggest.enabled%',
   },
   'editor.experimental.stickyScroll.enabled': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'editor.experimental.stickyScroll',
-      'Shows the nested current scopes during the scroll at the top of the editor.',
-    ),
+    description: '%editor.configuration.experimental.stickyScroll%',
   },
   'editor.customCodeActionMenu.showHeaders': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'editor.customCodeActionMenu.showHeaders',
-      'Enabling this will show the code action menu with group headers, if the custom code action menu is enabled.',
-    ),
+    description: '%editor.configuration.customCodeActionMenu.showHeaders',
   },
   'editor.useCustomCodeActionMenu': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'editor.useCustomCodeActionMenu',
-      'Enabling this adjusts how the code action menu is rendered.',
-    ),
+    description: '%editor.configuration.useCustomCodeActionMenu%',
   },
   'editor.letterSpacing': {
     type: 'number',
     default: EDITOR_FONT_DEFAULTS.letterSpacing,
-    description: localize('letterSpacing', 'Controls the letter spacing in pixels.'),
+    description: '%editor.configuration.letterSpacing%',
   },
   'editor.lineNumbers': {
     type: 'string',
     enum: ['off', 'on', 'relative', 'interval'],
     enumDescriptions: [
-      localize('lineNumbers.off', 'Line numbers are not rendered.'),
-      localize('lineNumbers.on', 'Line numbers are rendered as absolute number.'),
-      localize('lineNumbers.relative', 'Line numbers are rendered as distance in lines to cursor position.'),
-      localize('lineNumbers.interval', 'Line numbers are rendered every 10 lines.'),
+      localize('editor.configuration.lineNumbers.off', 'Line numbers are not rendered.'),
+      localize('editor.configuration.lineNumbers.on', 'Line numbers are rendered as absolute number.'),
+      localize(
+        'editor.configuration.lineNumbers.relative',
+        'Line numbers are rendered as distance in lines to cursor position.',
+      ),
+      localize('editor.configuration.lineNumbers.interval', 'Line numbers are rendered every 10 lines.'),
     ],
     default: 'on',
-    description: localize('lineNumbers', 'Controls the display of line numbers.'),
+    description: '%editor.configuration.lineNumbers%',
   },
   'editor.renderFinalNewline': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.renderFinalNewline,
-    description: localize('renderFinalNewline', 'Render last line number when the file ends with a newline.'),
+    description: '%editor.configuration.renderFinalNewline%',
   },
   'editor.rulers': {
     type: 'array',
@@ -623,27 +569,18 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
       type: 'number',
     },
     default: EDITOR_DEFAULTS.viewInfo.rulers,
-    description: localize(
-      'rulers',
-      'Render vertical rulers after a certain number of monospace characters. Use multiple values for multiple rulers. No rulers are drawn if array is empty.',
-    ),
+    description: '%editor.configuration.rulers%',
   },
   'editor.wordSeparators': {
     type: 'string',
     default: EDITOR_DEFAULTS.wordSeparators,
-    description: localize(
-      'wordSeparators',
-      'Characters that will be used as word separators when doing word related navigations or operations.',
-    ),
+    description: '%editor.configuration.wordSeparators%',
   },
   'editor.tabSize': {
     type: 'number',
     default: EDITOR_MODEL_DEFAULTS.tabSize,
     minimum: 1,
-    markdownDescription: localize(
-      'tabSize',
-      'The number of spaces a tab is equal to. This setting is overridden based on the file contents when `#editor.detectIndentation#` is on.',
-    ),
+    markdownDescription: '%editor.configuration.tabSize%',
   },
   // 'editor.indentSize': {
   // 	'anyOf': [
@@ -662,79 +599,64 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.insertSpaces': {
     type: 'boolean',
     default: EDITOR_MODEL_DEFAULTS.insertSpaces,
-    markdownDescription: localize(
-      'insertSpaces',
-      'Insert spaces when pressing `Tab`. This setting is overridden based on the file contents when `#editor.detectIndentation#` is on.',
-    ),
+    markdownDescription: '%editor.configuration.insertSpaces%',
   },
   'editor.detectIndentation': {
     type: 'boolean',
     default: EDITOR_MODEL_DEFAULTS.detectIndentation,
-    markdownDescription: localize(
-      'detectIndentation',
-      'Controls whether `#editor.tabSize#` and `#editor.insertSpaces#` will be automatically detected when a file is opened based on the file contents.',
-    ),
+    markdownDescription: '%editor.configuration.detectIndentation%',
   },
   'editor.roundedSelection': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.roundedSelection,
-    description: localize('roundedSelection', 'Controls whether selections should have rounded corners.'),
+    description: '%editor.configuration.roundedSelection%',
   },
   'editor.scrollBeyondLastLine': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.scrollBeyondLastLine,
-    description: localize('scrollBeyondLastLine', 'Controls whether the editor will scroll beyond the last line.'),
+    description: '%editor.configuration.scrollBeyondLastLine%',
   },
   'editor.scrollBeyondLastColumn': {
     type: 'number',
     default: EDITOR_DEFAULTS.viewInfo.scrollBeyondLastColumn,
-    description: localize(
-      'scrollBeyondLastColumn',
-      'Controls the number of extra characters beyond which the editor will scroll horizontally.',
-    ),
+    description: '%editor.configuration.scrollBeyondLastColumn%',
   },
   'editor.smoothScrolling': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.smoothScrolling,
-    description: localize('smoothScrolling', 'Controls whether the editor will scroll using an animation.'),
+    description: '%editor.configuration.smoothScrolling%',
   },
   'editor.minimap.enabled': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.minimap.enabled,
-    description: localize('minimap.enabled', 'Controls whether the minimap is shown.'),
+    description: '%editor.configuration.minimap.enabled%',
   },
   'editor.minimap.side': {
     type: 'string',
     enum: ['left', 'right'],
     default: EDITOR_DEFAULTS.viewInfo.minimap.side,
-    description: localize('minimap.side', 'Controls the side where to render the minimap.'),
+    description: '%editor.configuration.minimap.side%',
   },
   'editor.minimap.showSlider': {
     type: 'string',
     enum: ['always', 'mouseover'],
     default: EDITOR_DEFAULTS.viewInfo.minimap.showSlider,
-    description: localize('minimap.showSlider', 'Controls whether the minimap slider is automatically hidden.'),
+    description: '%editor.configuration.minimap.showSlider%',
   },
   'editor.minimap.renderCharacters': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.minimap.renderCharacters,
-    description: localize(
-      'minimap.renderCharacters',
-      'Render the actual characters on a line as opposed to color blocks.',
-    ),
+    description: '%editor.configuration.minimap.renderCharacters%',
   },
   'editor.minimap.maxColumn': {
     type: 'number',
     default: EDITOR_DEFAULTS.viewInfo.minimap.maxColumn,
-    description: localize(
-      'minimap.maxColumn',
-      'Limit the width of the minimap to render at most a certain number of columns.',
-    ),
+    description: '%editor.configuration.minimap.maxColumn%',
   },
   'editor.hover.enabled': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.hover.enabled,
-    description: localize('hover.enabled', 'Controls whether the hover is shown.'),
+    description: '%editor.configuration.hover.enabled%',
   },
   'editor.hover.delay': {
     type: 'number',
@@ -744,96 +666,84 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.hover.sticky': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.hover.sticky,
-    description: localize(
-      'hover.sticky',
-      'Controls whether the hover should remain visible when mouse is moved over it.',
-    ),
+    description: '%editor.configuration.hover.sticky%',
   },
   'editor.find.seedSearchStringFromSelection': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.find.seedSearchStringFromSelection,
-    description: localize(
-      'find.seedSearchStringFromSelection',
-      'Controls whether the search string in the Find Widget is seeded from the editor selection.',
-    ),
+    description: '%editor.configuration.find.seedSearchStringFromSelection%',
   },
   'editor.find.autoFindInSelection': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.find.autoFindInSelection,
-    description: localize(
-      'find.autoFindInSelection',
-      'Controls whether the find operation is carried out on selected text or the entire file in the editor.',
-    ),
+    description: '%editor.configuration.find.autoFindInSelection%',
   },
   'editor.find.globalFindClipboard': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.find.globalFindClipboard,
-    description: localize(
-      'find.globalFindClipboard',
-      'Controls whether the Find Widget should read or modify the shared find clipboard on macOS.',
-    ),
+    description: '%editor.configuration.find.globalFindClipboard%',
     included: isOSX,
   },
   'editor.find.addExtraSpaceOnTop': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'find.addExtraSpaceOnTop',
-      'Controls whether the Find Widget should add extra lines on top of the editor. When true, you can scroll beyond the first line when the Find Widget is visible.',
-    ),
+    description: '%editor.configuration.find.addExtraSpaceOnTop%',
   },
   'editor.wordWrap': {
     type: 'string',
     enum: ['off', 'on', 'wordWrapColumn', 'bounded'],
     markdownEnumDescriptions: [
-      localize('wordWrap.off', 'Lines will never wrap.'),
-      localize('wordWrap.on', 'Lines will wrap at the viewport width.'),
-      localize('wordWrap.wordWrapColumn', 'Lines will wrap at `#editor.wordWrapColumn#`.'),
-      localize('wordWrap.bounded', 'Lines will wrap at the minimum of viewport and `#editor.wordWrapColumn#`.'),
+      localize('editor.configuration.wordWrap.off', 'Lines will never wrap.'),
+      localize('editor.configuration.wordWrap.on', 'Lines will wrap at the viewport width.'),
+      localize('editor.configuration.wordWrap.wordWrapColumn', 'Lines will wrap at `#editor.wordWrapColumn#`.'),
+      localize(
+        'editor.configuration.wordWrap.bounded',
+        'Lines will wrap at the minimum of viewport and `#editor.wordWrapColumn#`.',
+      ),
     ],
     default: EDITOR_DEFAULTS.wordWrap,
-    description: localize('wordWrap', 'Controls how lines should wrap.'),
+    description: '%editor.configuration.wordWrap%',
   },
   'editor.wordWrapColumn': {
     type: 'integer',
     default: EDITOR_DEFAULTS.wordWrapColumn,
     minimum: 1,
-    markdownDescription: localize(
-      'wordWrapColumn',
-      'Controls the wrapping column of the editor when `#editor.wordWrap#` is `wordWrapColumn` or `bounded`.',
-    ),
+    markdownDescription: '%editor.configuration.wordWrapColumn%',
   },
   'editor.wrappingIndent': {
     type: 'string',
     enum: ['none', 'same', 'indent', 'deepIndent'],
     enumDescriptions: [
-      localize('wrappingIndent.none', 'No indentation. Wrapped lines begin at column 1.'),
-      localize('wrappingIndent.same', 'Wrapped lines get the same indentation as the parent.'),
-      localize('wrappingIndent.indent', 'Wrapped lines get +1 indentation toward the parent.'),
-      localize('wrappingIndent.deepIndent', 'Wrapped lines get +2 indentation toward the parent.'),
+      localize('editor.configuration.wrappingIndent.none', 'No indentation. Wrapped lines begin at column 1.'),
+      localize('editor.configuration.wrappingIndent.same', 'Wrapped lines get the same indentation as the parent.'),
+      localize('editor.configuration.wrappingIndent.indent', 'Wrapped lines get +1 indentation toward the parent.'),
+      localize('editor.configuration.wrappingIndent.deepIndent', 'Wrapped lines get +2 indentation toward the parent.'),
     ],
     default: 'same',
-    description: localize('wrappingIndent', 'Controls the indentation of wrapped lines.'),
+    description: '%editor.configuration.wrappingIndent%',
   },
   'editor.mouseWheelScrollSensitivity': {
     type: 'number',
     default: EDITOR_DEFAULTS.viewInfo.scrollbar.mouseWheelScrollSensitivity,
-    markdownDescription: localize(
-      'mouseWheelScrollSensitivity',
-      'A multiplier to be used on the `deltaX` and `deltaY` of mouse wheel scroll events.',
-    ),
+    markdownDescription: '%editor.configuration.mouseWheelScrollSensitivity%',
   },
   'editor.fastScrollSensitivity': {
     type: 'number',
     default: EDITOR_DEFAULTS.viewInfo.scrollbar.fastScrollSensitivity,
-    markdownDescription: localize('fastScrollSensitivity', 'Scrolling speed multiplier when pressing `Alt`.'),
+    markdownDescription: '%editor.configuration.fastScrollSensitivity%',
   },
   'editor.multiCursorModifier': {
     type: 'string',
     enum: ['ctrlCmd', 'alt'],
     markdownEnumDescriptions: [
-      localize('multiCursorModifier.ctrlCmd', 'Maps to `Control` on Windows and Linux and to `Command` on macOS.'),
-      localize('multiCursorModifier.alt', 'Maps to `Alt` on Windows and Linux and to `Option` on macOS.'),
+      localize(
+        'editor.configuration.multiCursorModifier.ctrlCmd',
+        'Maps to `Control` on Windows and Linux and to `Command` on macOS.',
+      ),
+      localize(
+        'editor.configuration.multiCursorModifier.alt',
+        'Maps to `Alt` on Windows and Linux and to `Option` on macOS.',
+      ),
     ],
     default: 'alt',
     markdownDescription: localize(
@@ -844,7 +754,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.multiCursorMergeOverlapping': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.multiCursorMergeOverlapping,
-    description: localize('multiCursorMergeOverlapping', 'Merge multiple cursors when they are overlapping.'),
+    description: '%editor.configuration.multiCursorMergeOverlapping%',
   },
   'editor.quickSuggestions': {
     anyOf: [
@@ -857,54 +767,45 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
           strings: {
             type: 'boolean',
             default: false,
-            description: localize('quickSuggestions.strings', 'Enable quick suggestions inside strings.'),
+            description: localize(
+              'editor.configuration.quickSuggestions.strings',
+              'Enable quick suggestions inside strings.',
+            ),
           },
           comments: {
             type: 'boolean',
             default: false,
-            description: localize('quickSuggestions.comments', 'Enable quick suggestions inside comments.'),
+            description: localize(
+              'editor.configuration.quickSuggestions.comments',
+              'Enable quick suggestions inside comments.',
+            ),
           },
           other: {
             type: 'boolean',
             default: true,
-            description: localize(
-              'quickSuggestions.other',
-              'Enable quick suggestions outside of strings and comments.',
-            ),
+            description: '%editor.configuration.quickSuggestions.other%',
           },
         },
       },
     ],
     default: EDITOR_DEFAULTS.contribInfo.quickSuggestions,
-    description: localize(
-      'quickSuggestions',
-      'Controls whether suggestions should automatically show up while typing.',
-    ),
+    description: '%editor.configuration.quickSuggestions%',
   },
   'editor.quickSuggestionsDelay': {
     type: 'integer',
     default: EDITOR_DEFAULTS.contribInfo.quickSuggestionsDelay,
     minimum: 0,
-    description: localize(
-      'quickSuggestionsDelay',
-      'Controls the delay in milliseconds after which quick suggestions will show up.',
-    ),
+    description: '%editor.configuration.quickSuggestionsDelay%',
   },
   'editor.parameterHints.enabled': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.parameterHints.enabled,
-    description: localize(
-      'parameterHints.enabled',
-      'Enables a pop-up that shows parameter documentation and type information as you type.',
-    ),
+    description: '%editor.configuration.parameterHints.enabled%',
   },
   'editor.parameterHints.cycle': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.parameterHints.cycle,
-    description: localize(
-      'parameterHints.cycle',
-      'Controls whether the parameter hints menu cycles or closes when reaching the end of the list.',
-    ),
+    description: '%editor.configuration.parameterHints.cycle%',
   },
   'editor.autoClosingBrackets': {
     type: 'string',
@@ -912,20 +813,17 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     enumDescriptions: [
       '',
       localize(
-        'editor.autoClosingBrackets.languageDefined',
+        'editor.configuration.autoClosingBrackets.languageDefined',
         'Use language configurations to determine when to autoclose brackets.',
       ),
       localize(
-        'editor.autoClosingBrackets.beforeWhitespace',
+        'editor.configuration.autoClosingBrackets.beforeWhitespace',
         'Autoclose brackets only when the cursor is to the left of whitespace.',
       ),
       '',
     ],
     default: EDITOR_DEFAULTS.autoClosingBrackets,
-    description: localize(
-      'autoClosingBrackets',
-      'Controls whether the editor should automatically close brackets after the user adds an opening bracket.',
-    ),
+    description: '%editor.configuration.autoClosingBrackets%',
   },
   'editor.autoClosingQuotes': {
     type: 'string',
@@ -933,67 +831,52 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     enumDescriptions: [
       '',
       localize(
-        'editor.autoClosingQuotes.languageDefined',
+        'editor.configuration.autoClosingQuotes.languageDefined',
         'Use language configurations to determine when to autoclose quotes.',
       ),
       localize(
-        'editor.autoClosingQuotes.beforeWhitespace',
+        'editor.configuration.autoClosingQuotes.beforeWhitespace',
         'Autoclose quotes only when the cursor is to the left of whitespace.',
       ),
       '',
     ],
     default: EDITOR_DEFAULTS.autoClosingQuotes,
-    description: localize(
-      'autoClosingQuotes',
-      'Controls whether the editor should automatically close quotes after the user adds an opening quote.',
-    ),
+    description: '%editor.configuration.autoClosingQuotes%',
   },
   'editor.autoSurround': {
     type: 'string',
     enum: ['languageDefined', 'brackets', 'quotes', 'never'],
     enumDescriptions: [
       localize(
-        'editor.autoSurround.languageDefined',
+        'editor.configuration.autoSurround.languageDefined',
         'Use language configurations to determine when to automatically surround selections.',
       ),
-      localize('editor.autoSurround.brackets', 'Surround with brackets but not quotes.'),
-      localize('editor.autoSurround.quotes', 'Surround with quotes but not brackets.'),
+      localize('editor.configuration.autoSurround.brackets', 'Surround with brackets but not quotes.'),
+      localize('editor.configuration.autoSurround.quotes', 'Surround with quotes but not brackets.'),
       '',
     ],
     default: EDITOR_DEFAULTS.autoSurround,
-    description: localize('autoSurround', 'Controls whether the editor should automatically surround selections.'),
+    description: '%editor.configuration.autoSurround%',
   },
   'editor.formatOnType': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.formatOnType,
-    description: localize(
-      'formatOnType',
-      'Controls whether the editor should automatically format the line after typing.',
-    ),
+    description: '%editor.configuration.formatOnType%',
   },
   'editor.formatOnPaste': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.formatOnPaste,
-    description: localize(
-      'formatOnPaste',
-      'Controls whether the editor should automatically format the pasted content. A formatter must be available and the formatter should be able to format a range in a document.',
-    ),
+    description: '%editor.configuration.formatOnPaste%',
   },
   'editor.autoIndent': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.autoIndent,
-    description: localize(
-      'autoIndent',
-      'Controls whether the editor should automatically adjust the indentation when users type, paste or move lines. Extensions with indentation rules of the language must be available.',
-    ),
+    description: '%editor.configuration.autoIndent%',
   },
   'editor.suggestOnTriggerCharacters': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.suggestOnTriggerCharacters,
-    description: localize(
-      'suggestOnTriggerCharacters',
-      'Controls whether suggestions should automatically show up when typing trigger characters.',
-    ),
+    description: '%editor.configuration.suggestOnTriggerCharacters%',
   },
   'editor.acceptSuggestionOnEnter': {
     type: 'string',
@@ -1001,11 +884,14 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_DEFAULTS.contribInfo.acceptSuggestionOnEnter,
     markdownEnumDescriptions: [
       '',
-      localize('acceptSuggestionOnEnterSmart', 'Only accept a suggestion with `Enter` when it makes a textual change.'),
+      localize(
+        'editor.configuration.acceptSuggestionOnEnterSmart',
+        'Only accept a suggestion with `Enter` when it makes a textual change.',
+      ),
       '',
     ],
     markdownDescription: localize(
-      'acceptSuggestionOnEnter',
+      'editor.configuration.acceptSuggestionOnEnter',
       'Controls whether suggestions should be accepted on `Enter`, in addition to `Tab`. Helps to avoid ambiguity between inserting new lines or accepting suggestions.',
     ),
   },
@@ -1013,7 +899,7 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.acceptSuggestionOnCommitCharacter,
     markdownDescription: localize(
-      'acceptSuggestionOnCommitCharacter',
+      'editor.configuration.acceptSuggestionOnCommitCharacter',
       'Controls whether suggestions should be accepted on commit characters. For example, in JavaScript, the semi-colon (`;`) can be a commit character that accepts a suggestion and types that character.',
     ),
   },
@@ -1021,324 +907,228 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'string',
     enum: ['top', 'bottom', 'inline', 'none'],
     enumDescriptions: [
-      localize('snippetSuggestions.top', 'Show snippet suggestions on top of other suggestions.'),
-      localize('snippetSuggestions.bottom', 'Show snippet suggestions below other suggestions.'),
-      localize('snippetSuggestions.inline', 'Show snippets suggestions with other suggestions.'),
-      localize('snippetSuggestions.none', 'Do not show snippet suggestions.'),
+      localize('editor.configuration.snippetSuggestions.top', 'Show snippet suggestions on top of other suggestions.'),
+      localize('editor.configuration.snippetSuggestions.bottom', 'Show snippet suggestions below other suggestions.'),
+      localize('editor.configuration.snippetSuggestions.inline', 'Show snippets suggestions with other suggestions.'),
+      localize('editor.configuration.snippetSuggestions.none', 'Do not show snippet suggestions.'),
     ],
     default: 'inline',
-    description: localize(
-      'snippetSuggestions',
-      'Controls whether snippets are shown with other suggestions and how they are sorted.',
-    ),
+    description: '%editor.configuration.snippetSuggestions%',
   },
   'editor.emptySelectionClipboard': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.emptySelectionClipboard,
-    description: localize(
-      'emptySelectionClipboard',
-      'Controls whether copying without a selection copies the current line.',
-    ),
+    description: '%editor.configuration.emptySelectionClipboard%',
   },
   'editor.copyWithSyntaxHighlighting': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.copyWithSyntaxHighlighting,
-    description: localize(
-      'copyWithSyntaxHighlighting',
-      'Controls whether syntax highlighting should be copied into the clipboard.',
-    ),
+    description: '%editor.configuration.copyWithSyntaxHighlighting%',
   },
   'editor.wordBasedSuggestions': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.wordBasedSuggestions,
-    description: localize(
-      'wordBasedSuggestions',
-      'Controls whether completions should be computed based on words in the document.',
-    ),
+    description: '%editor.configuration.wordBasedSuggestions%',
   },
   'editor.suggestSelection': {
     type: 'string',
     enum: ['first', 'recentlyUsed', 'recentlyUsedByPrefix'],
     markdownEnumDescriptions: [
-      localize('suggestSelection.first', 'Always select the first suggestion.'),
+      localize('editor.configuration.suggestSelection.first', 'Always select the first suggestion.'),
       localize(
-        'suggestSelection.recentlyUsed',
+        'editor.configuration.suggestSelection.recentlyUsed',
         'Select recent suggestions unless further typing selects one, e.g. `console.| -> console.log` because `log` has been completed recently.',
       ),
       localize(
-        'suggestSelection.recentlyUsedByPrefix',
+        'editor.configuration.suggestSelection.recentlyUsedByPrefix',
         'Select suggestions based on previous prefixes that have completed those suggestions, e.g. `co -> console` and `con -> const`.',
       ),
     ],
     default: 'recentlyUsed',
-    description: localize(
-      'suggestSelection',
-      'Controls how suggestions are pre-selected when showing the suggest list.',
-    ),
+    description: '%editor.configuration.suggestSelection%',
   },
   'editor.suggestFontSize': {
     type: 'integer',
     default: 0,
     minimum: 0,
-    markdownDescription: localize(
-      'suggestFontSize',
-      'Font size for the suggest widget. When set to `0`, the value of `#editor.fontSize#` is used.',
-    ),
+    markdownDescription: '%editor.configuration.suggestFontSize%',
   },
   'editor.suggestLineHeight': {
     type: 'integer',
     default: 0,
     minimum: 0,
-    markdownDescription: localize(
-      'suggestLineHeight',
-      'Line height for the suggest widget. When set to `0`, the value of `#editor.lineHeight#` is used.',
-    ),
+    markdownDescription: '%editor.configuration.suggestLineHeight%',
   },
   'editor.tabCompletion': {
     type: 'string',
     default: 'off',
     enum: ['on', 'off', 'onlySnippets'],
     enumDescriptions: [
-      localize('tabCompletion.on', 'Tab complete will insert the best matching suggestion when pressing tab.'),
-      localize('tabCompletion.off', 'Disable tab completions.'),
       localize(
-        'tabCompletion.onlySnippets',
+        'editor.configuration.tabCompletion.on',
+        'Tab complete will insert the best matching suggestion when pressing tab.',
+      ),
+      localize('editor.configuration.tabCompletion.off', 'Disable tab completions.'),
+      localize(
+        'editor.configuration.tabCompletion.onlySnippets',
         "Tab complete snippets when their prefix match. Works best when 'quickSuggestions' aren't enabled.",
       ),
     ],
-    description: localize('tabCompletion', 'Enables tab completions.'),
+    description: '%editor.configuration.tabCompletion%',
   },
   'editor.suggest.filteredTypes': {
     type: 'object',
     default: { keyword: true, snippet: true },
-    markdownDescription: localize(
-      'suggest.filtered',
-      'Controls whether some suggestion types should be filtered from IntelliSense. A list of suggestion types can be found here: https://code.visualstudio.com/docs/editor/intellisense#_types-of-completions.',
-    ),
+    markdownDescription: '%editor.configuration.suggest.filtered%',
     properties: {
       method: {
         type: 'boolean',
         default: true,
         markdownDescription: localize(
-          'suggest.filtered.method',
+          'editor.configuration.suggest.filtered.method',
           'When set to `false` IntelliSense never shows `method` suggestions.',
         ),
       },
       function: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.function',
-          'When set to `false` IntelliSense never shows `function` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.function%',
       },
       constructor: {
         type: 'boolean' as const,
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.constructor',
-          'When set to `false` IntelliSense never shows `constructor` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.constructor%',
       },
       field: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.field',
-          'When set to `false` IntelliSense never shows `field` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.field%',
       },
       variable: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.variable',
-          'When set to `false` IntelliSense never shows `variable` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.variable%',
       },
       class: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.class',
-          'When set to `false` IntelliSense never shows `class` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.class%',
       },
       struct: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.struct',
-          'When set to `false` IntelliSense never shows `struct` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.struct%',
       },
       interface: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.interface',
-          'When set to `false` IntelliSense never shows `interface` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.interface%',
       },
       module: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.module',
-          'When set to `false` IntelliSense never shows `module` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.module%',
       },
       property: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.property',
-          'When set to `false` IntelliSense never shows `property` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.property%',
       },
       event: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.event',
-          'When set to `false` IntelliSense never shows `event` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.event%',
       },
       operator: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.operator',
-          'When set to `false` IntelliSense never shows `operator` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.operator%',
       },
       unit: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.unit',
-          'When set to `false` IntelliSense never shows `unit` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.unit%',
       },
       value: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.value',
-          'When set to `false` IntelliSense never shows `value` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.value',
       },
       constant: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.constant',
-          'When set to `false` IntelliSense never shows `constant` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.constant%',
       },
       enum: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.enum',
-          'When set to `false` IntelliSense never shows `enum` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.enum%',
       },
       enumMember: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.enumMember',
-          'When set to `false` IntelliSense never shows `enumMember` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.enumMember%',
       },
       keyword: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.keyword',
-          'When set to `false` IntelliSense never shows `keyword` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.keyword%',
       },
       text: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.text',
-          'When set to `false` IntelliSense never shows `text` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.text%',
       },
       color: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.color',
-          'When set to `false` IntelliSense never shows `color` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.color%',
       },
       file: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.file',
-          'When set to `false` IntelliSense never shows `file` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.file%',
       },
       reference: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.reference',
-          'When set to `false` IntelliSense never shows `reference` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.reference%',
       },
       customcolor: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.customcolor',
-          'When set to `false` IntelliSense never shows `customcolor` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.customcolor%',
       },
       folder: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.folder',
-          'When set to `false` IntelliSense never shows `folder` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.folder%',
       },
       typeParameter: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.typeParameter',
-          'When set to `false` IntelliSense never shows `typeParameter` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.typeParameter%',
       },
       snippet: {
         type: 'boolean',
         default: true,
-        markdownDescription: localize(
-          'suggest.filtered.snippet',
-          'When set to `false` IntelliSense never shows `snippet` suggestions.',
-        ),
+        markdownDescription: '%editor.configuration.suggest.filtered.snippet%',
       },
     },
   },
   'editor.gotoLocation.multiple': {
-    description: localize(
-      'editor.gotoLocation.multiple',
-      "Controls the behavior of 'Go To' commands, like Go To Definition, when multiple target locations exist.",
-    ),
+    description: '%editor.configuration.editor.gotoLocation.multiple%',
     type: 'string',
     enum: ['peek', 'gotoAndPeek', 'goto'],
     default: EDITOR_DEFAULTS.contribInfo.gotoLocation.multiple,
     enumDescriptions: [
-      localize('editor.gotoLocation.multiple.peek', 'Show peek view of the results (default)'),
-      localize('editor.gotoLocation.multiple.gotoAndPeek', 'Go to the primary result and show a peek view'),
+      localize('editor.configuration.gotoLocation.multiple.peek', 'Show peek view of the results (default)'),
       localize(
-        'editor.gotoLocation.multiple.goto',
+        'editor.configuration.gotoLocation.multiple.gotoAndPeek',
+        'Go to the primary result and show a peek view',
+      ),
+      localize(
+        'editor.configuration.gotoLocation.multiple.goto',
         'Go to the primary result and enable peek-less navigation to others',
       ),
     ],
@@ -1346,126 +1136,102 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.selectionHighlight': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.selectionHighlight,
-    description: localize(
-      'selectionHighlight',
-      'Controls whether the editor should highlight matches similar to the selection.',
-    ),
+    description: '%editor.configuration.selectionHighlight%',
   },
   'editor.occurrencesHighlight': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.occurrencesHighlight,
-    description: localize(
-      'occurrencesHighlight',
-      'Controls whether the editor should highlight semantic symbol occurrences.',
-    ),
+    description: '%editor.configuration.occurrencesHighlight%',
   },
   'editor.overviewRulerLanes': {
     type: 'integer',
     default: 3,
-    description: localize(
-      'overviewRulerLanes',
-      'Controls the number of decorations that can show up at the same position in the overview ruler.',
-    ),
+    description: '%editor.configuration.overviewRulerLanes%',
   },
   'editor.overviewRulerBorder': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.overviewRulerBorder,
-    description: localize(
-      'overviewRulerBorder',
-      'Controls whether a border should be drawn around the overview ruler.',
-    ),
+    description: '%editor.configuration.overviewRulerBorder%',
   },
   'editor.cursorBlinking': {
     type: 'string',
     enum: ['blink', 'smooth', 'phase', 'expand', 'solid'],
     default: 'blink',
-    description: localize('cursorBlinking', 'Control the cursor animation style.'),
+    description: '%editor.configuration.cursorBlinking%',
   },
   'editor.mouseWheelZoom': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.mouseWheelZoom,
-    markdownDescription: localize(
-      'mouseWheelZoom',
-      'Zoom the font of the editor when using mouse wheel and holding `Ctrl`.',
-    ),
+    markdownDescription: '%editor.configuration.mouseWheelZoom%',
   },
   'editor.cursorSmoothCaretAnimation': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.cursorSmoothCaretAnimation,
-    description: localize(
-      'cursorSmoothCaretAnimation',
-      'Controls whether the smooth caret animation should be enabled.',
-    ),
+    description: '%editor.configuration.cursorSmoothCaretAnimation%',
   },
   'editor.cursorStyle': {
     type: 'string',
     enum: ['block', 'block-outline', 'line', 'line-thin', 'underline', 'underline-thin'],
     default: EDITOR_FONT_DEFAULTS.cursorStyle,
-    description: localize('cursorStyle', 'Controls the cursor style.'),
+    description: '%editor.configuration.cursorStyle%',
   },
   'editor.cursorWidth': {
     type: 'integer',
     default: EDITOR_DEFAULTS.viewInfo.cursorWidth,
-    markdownDescription: localize(
-      'cursorWidth',
-      'Controls the width of the cursor when `#editor.cursorStyle#` is set to `line`.',
-    ),
+    markdownDescription: '%editor.configuration.cursorWidth%',
   },
   'editor.fontLigatures': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.fontLigatures,
-    description: localize('fontLigatures', 'Enables/Disables font ligatures.'),
+    description: '%editor.configuration.fontLigatures%',
   },
   'editor.hideCursorInOverviewRuler': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.hideCursorInOverviewRuler,
-    description: localize(
-      'hideCursorInOverviewRuler',
-      'Controls whether the cursor should be hidden in the overview ruler.',
-    ),
+    description: '%editor.configuration.hideCursorInOverviewRuler%',
   },
   'editor.renderWhitespace': {
     type: 'string',
     enum: ['none', 'boundary', 'selection', 'all'],
     enumDescriptions: [
       '',
-      localize('renderWhitespace.boundary', 'Render whitespace characters except for single spaces between words.'),
-      localize('renderWhitespace.selection', 'Render whitespace characters only on selected text.'),
+      localize(
+        'editor.configuration.renderWhitespace.boundary',
+        'Render whitespace characters except for single spaces between words.',
+      ),
+      localize(
+        'editor.configuration.renderWhitespace.selection',
+        'Render whitespace characters only on selected text.',
+      ),
       '',
     ],
     default: EDITOR_DEFAULTS.viewInfo.renderWhitespace,
-    description: localize('renderWhitespace', 'Controls how the editor should render whitespace characters.'),
+    description: '%editor.configuration.renderWhitespace%',
   },
   'editor.rename.enablePreview': {
     type: 'boolean',
     default: true,
-    description: 'Enable/disable the ability to preview changes before renaming',
+    description: '%editor.configuration.rename.enablePreview%',
   },
   'editor.renderControlCharacters': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.renderControlCharacters,
-    description: localize('renderControlCharacters', 'Controls whether the editor should render control characters.'),
+    description: '%editor.configuration.renderControlCharacters%',
   },
   'editor.guides.indentation': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.guides.indentation,
-    description: localize('editor.guides.indentation', 'Controls whether the editor should render indent guides.'),
+    description: '%editor.configuration.guides.indentation%',
   },
   'editor.guides.highlightActiveIndentation': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.guides.highlightActiveIndentGuide,
-    description: localize(
-      'editor.guides.highlightActiveIndentation',
-      'Controls whether the editor should highlight the active indent guide.',
-    ),
+    description: '%editor.configuration.guides.highlightActiveIndentation%',
   },
   'editor.guides.bracketPairs': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.guides.bracketPairs,
-    description: localize(
-      'editor.configuration.guides.bracketPairs',
-      'Controls whether bracket pair guides are enabled or not.',
-    ),
+    description: '%editor.configuration.guides.bracketPairs%',
   },
   'editor.renderLineHighlight': {
     type: 'string',
@@ -1474,88 +1240,79 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
       '',
       '',
       '',
-      localize('renderLineHighlight.all', 'Highlights both the gutter and the current line.'),
+      localize('editor.configuration.renderLineHighlight.all', 'Highlights both the gutter and the current line.'),
     ],
     default: EDITOR_DEFAULTS.viewInfo.renderLineHighlight,
-    description: localize('renderLineHighlight', 'Controls how the editor should render the current line highlight.'),
+    description: '%editor.configuration.renderLineHighlight%',
   },
   'editor.codeLens': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.codeLens,
-    description: localize('codeLens', 'Controls whether the editor shows CodeLens.'),
+    description: '%editor.configuration.codeLens%',
   },
   'editor.folding': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.folding,
-    description: localize('folding', 'Controls whether the editor has code folding enabled.'),
+    description: '%editor.configuration.folding%',
   },
   'editor.foldingStrategy': {
     type: 'string',
     enum: ['auto', 'indentation'],
     default: EDITOR_DEFAULTS.contribInfo.foldingStrategy,
-    markdownDescription: localize(
-      'foldingStrategy',
-      'Controls the strategy for computing folding ranges. `auto` uses a language specific folding strategy, if available. `indentation` uses the indentation based folding strategy.',
-    ),
+    markdownDescription: '%editor.configuration.foldingStrategy%',
   },
   'editor.showFoldingControls': {
     type: 'string',
     enum: ['always', 'mouseover'],
     default: EDITOR_DEFAULTS.contribInfo.showFoldingControls,
-    description: localize(
-      'showFoldingControls',
-      'Controls whether the fold controls on the gutter are automatically hidden.',
-    ),
+    description: '%editor.configuration.showFoldingControls%',
   },
   'editor.matchBrackets': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.matchBrackets,
-    description: localize('matchBrackets', 'Highlight matching brackets when one of them is selected.'),
+    description: '%editor.configuration.matchBrackets%',
   },
   'editor.glyphMargin': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.viewInfo.glyphMargin,
-    description: localize(
-      'glyphMargin',
-      'Controls whether the editor should render the vertical glyph margin. Glyph margin is mostly used for debugging.',
-    ),
+    description: '%editor.configuration.glyphMargin%',
   },
   'editor.useTabStops': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.useTabStops,
-    description: localize('useTabStops', 'Inserting and deleting whitespace follows tab stops.'),
+    description: '%editor.configuration.useTabStops%',
   },
   'editor.trimAutoWhitespace': {
     type: 'boolean',
     default: EDITOR_MODEL_DEFAULTS.trimAutoWhitespace,
-    description: localize('trimAutoWhitespace', 'Remove trailing auto inserted whitespace.'),
+    description: '%editor.configuration.trimAutoWhitespace%',
   },
   'editor.stablePeek': {
     type: 'boolean',
     default: false,
-    markdownDescription: localize(
-      'stablePeek',
-      'Keep peek editors open even when double clicking their content or when hitting `Escape`.',
-    ),
+    markdownDescription: '%editor.configuration.stablePeek%',
   },
   'editor.dragAndDrop': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.dragAndDrop,
-    description: localize(
-      'dragAndDrop',
-      'Controls whether the editor should allow moving selections via drag and drop.',
-    ),
+    description: '%editor.configuration.dragAndDrop%',
   },
   'editor.accessibilitySupport': {
     type: 'string',
     enum: ['auto', 'on', 'off'],
     enumDescriptions: [
       localize(
-        'accessibilitySupport.auto',
+        'editor.configuration.accessibilitySupport.auto',
         'The editor will use platform APIs to detect when a Screen Reader is attached.',
       ),
-      localize('accessibilitySupport.on', 'The editor will be permanently optimized for usage with a Screen Reader.'),
-      localize('accessibilitySupport.off', 'The editor will never be optimized for usage with a Screen Reader.'),
+      localize(
+        'editor.configuration.accessibilitySupport.on',
+        'The editor will be permanently optimized for usage with a Screen Reader.',
+      ),
+      localize(
+        'editor.configuration.accessibilitySupport.off',
+        'The editor will never be optimized for usage with a Screen Reader.',
+      ),
     ],
     default: EDITOR_DEFAULTS.accessibilitySupport,
     description: localize(
@@ -1566,111 +1323,87 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.showUnused': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.showUnused,
-    description: localize('showUnused', 'Controls fading out of unused code.'),
+    description: '%editor.configuration.showUnused%',
   },
   'editor.comments.insertSpace': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'insertSpace',
-      'Insert a space after the line comment token and inside the block comments tokens.',
-    ),
+    description: '%editor.configuration.comments.insertSpace%',
   },
   'editor.comments.ignoreEmptyLines': {
     type: 'boolean',
     default: true,
-    description: localize('insertSpace', 'Ignore empty lines when inserting line comments.'),
+    description: '%editor.configuration.comments.ignoreEmptyLines%',
   },
   'editor.links': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.links,
-    description: localize('links', 'Controls whether the editor should detect links and make them clickable.'),
+    description: '%editor.configuration.links%',
   },
   'editor.colorDecorators': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.colorDecorators,
-    description: localize(
-      'colorDecorators',
-      'Controls whether the editor should render the inline color decorators and color picker.',
-    ),
+    description: '%editor.configuration.colorDecorators%',
   },
   'editor.lightbulb.enabled': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.lightbulbEnabled,
-    description: localize('codeActions', 'Enables the code action lightbulb in the editor.'),
+    description: '%editor.configuration.lightbulb.enabled%',
   },
   'editor.maxTokenizationLineLength': {
     type: 'integer',
     default: 20000,
-    description: localize(
-      'maxTokenizationLineLength',
-      'Lines above this length will not be tokenized for performance reasons',
-    ),
+    description: '%editor.configuration.maxTokenizationLineLength%',
   },
   'editor.codeActionsOnSave': {
     type: 'object',
     properties: {
       'source.organizeImports': {
         type: 'boolean',
-        description: localize(
-          'codeActionsOnSave.organizeImports',
-          'Controls whether organize imports action should be run on file save.',
-        ),
+        description: '%editor.configuration.codeActionsOnSave.organizeImports%',
       },
       'source.fixAll': {
         type: 'boolean',
-        description: localize(
-          'codeActionsOnSave.fixAll',
-          'Controls whether auto fix action should be run on file save.',
-        ),
+        description: '%editor.configuration.codeActionsOnSave.fixAll%',
       },
     },
     additionalProperties: {
       type: 'boolean',
     },
     default: EDITOR_DEFAULTS.contribInfo.codeActionsOnSave,
-    description: localize('codeActionsOnSave', 'Code action kinds to be run on save.'),
+    description: '%editor.configuration.codeActionsOnSave%',
   },
   'editor.codeActionsOnSaveTimeout': {
     type: 'number',
     default: EDITOR_DEFAULTS.contribInfo.codeActionsOnSaveTimeout,
-    description: localize(
-      'codeActionsOnSaveTimeout',
-      'Timeout in milliseconds after which the code actions that are run on save are cancelled.',
-    ),
+    description: '%editor.configuration.codeActionsOnSaveTimeout%',
   },
   'editor.selectionClipboard': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.selectionClipboard,
-    description: localize('selectionClipboard', 'Controls whether the Linux primary clipboard should be supported.'),
+    description: '%editor.configuration.selectionClipboard%',
     included: isLinux,
   },
   'editor.largeFileOptimizations': {
     type: 'boolean',
     default: EDITOR_MODEL_DEFAULTS.largeFileOptimizations,
-    description: localize(
-      'largeFileOptimizations',
-      'Special handling for large files to disable certain memory intensive features.',
-    ),
+    description: '%editor.configuration.largeFileOptimizations%',
   },
   'diffEditor.renderIndicators': {
     type: 'boolean',
     default: true,
-    description: localize(
-      'renderIndicators',
-      'Controls whether the diff editor shows +/- indicators for added/removed changes.',
-    ),
+    description: '%editor.configuration.renderIndicators%',
   },
   'editor.defaultFormatter': {
     type: 'string',
-    description: localize('defaultFormatter', 'Default code formatter'),
+    description: '%editor.configuration.defaultFormatter%',
   },
 };
 
 const customEditorSchema: PreferenceSchemaProperties = {
   'editor.tokenColorCustomizations': {
     type: 'object',
-    description: '%preference.editor.tokenColorCustomizations%',
+    description: '%editor.configuration.tokenColorCustomizations%',
     default: {},
   },
   'editor.askIfDiff': {
@@ -1797,7 +1530,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.formatOnSave': {
     type: 'boolean',
     default: false,
-    description: '%preference.editor.formatOnSave%',
+    description: '%editor.configuration.formatOnSave%',
   },
   'editor.formatOnSaveTimeout': {
     type: 'number',
@@ -1817,18 +1550,18 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.semanticHighlighting.enabled': {
     enum: [true, false, 'configuredByTheme'],
     enumDescriptions: [
-      localize('semanticHighlighting.true', 'Semantic highlighting enabled for all color themes.'),
-      localize('semanticHighlighting.false', 'Semantic highlighting disabled for all color themes.'),
+      localize('editor.configuration.semanticHighlighting.true', 'Semantic highlighting enabled for all color themes.'),
       localize(
-        'semanticHighlighting.configuredByTheme',
+        'editor.configuration.semanticHighlighting.false',
+        'Semantic highlighting disabled for all color themes.',
+      ),
+      localize(
+        'editor.configuration.semanticHighlighting.configuredByTheme',
         "Semantic highlighting is configured by the current color theme's `semanticHighlighting` setting.",
       ),
     ],
     default: true,
-    description: localize(
-      'semanticHighlighting.enabled',
-      'Controls whether the semanticHighlighting is shown for the languages that support it.',
-    ),
+    description: '%editor.configuration.semanticHighlighting.enabled%',
   },
   'editor.bracketPairColorization.enabled': {
     type: 'boolean',
@@ -1851,7 +1584,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   },
   'workbench.editorAssociations': {
     type: 'object',
-    markdownDescription: '%preference.workbench.editorAssociations%',
+    markdownDescription: '%editor.configuration.workbench.editorAssociations%',
     default: {},
     additionalProperties: {
       type: 'string',
@@ -1870,7 +1603,7 @@ const customEditorSchema: PreferenceSchemaProperties = {
   'editor.experimental.stickyScroll.enabled': {
     type: 'boolean',
     default: false,
-    description: '%editor.experimental.stickyScroll.enabled.description%',
+    description: '%editor.configuration.experimental.stickyScroll.enabled%',
   },
   'editor.mouseBackForwardToNavigate': {
     type: 'boolean',

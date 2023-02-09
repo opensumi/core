@@ -560,6 +560,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
 
         return {
           ...realStatData,
+          realUri: realStatData.uri,
           type: FileType.SymbolicLink,
           isSymbolicLink: true,
           uri: uri.toString(),

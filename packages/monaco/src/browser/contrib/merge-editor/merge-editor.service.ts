@@ -9,6 +9,7 @@ import {
   MonacoService,
 } from '@opensumi/ide-core-browser';
 import { IOpenMergeEditorArgs } from '@opensumi/ide-core-browser/lib/monaco/merge-editor-widget';
+import { URI } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IDialogService } from '@opensumi/ide-overlay';
 
@@ -57,6 +58,10 @@ export class MergeEditorService extends Disposable {
 
   private readonly _onDidInputNutrition = new Emitter<IOpenMergeEditorArgs>();
   public readonly onDidInputNutrition: Event<IOpenMergeEditorArgs> = this._onDidInputNutrition.event;
+
+  private readonly _onRestoreState = new Emitter<URI>();
+  public readonly onRestoreState: Event<URI> = this._onRestoreState.event;
+
   private nutrition: IOpenMergeEditorArgs | undefined;
 
   constructor() {
@@ -80,6 +85,10 @@ export class MergeEditorService extends Disposable {
   public setNutritionAndLaunch(data: IOpenMergeEditorArgs): void {
     this.nutrition = data;
     this._onDidInputNutrition.fire(data);
+  }
+
+  public getNutrition(): IOpenMergeEditorArgs | undefined {
+    return this.nutrition;
   }
 
   public instantiationCodeEditor(current: HTMLDivElement, result: HTMLDivElement, incoming: HTMLDivElement): void {
@@ -131,6 +140,7 @@ export class MergeEditorService extends Disposable {
        */
       const resultValue = this.resultView.getEditor().getValue();
       await this.fileServiceClient.setContent(stat, resultValue);
+      this.fireRestoreState(uri);
 
       await this.commandService.executeCommand(EDITOR_COMMANDS.CLOSE.id);
     };
@@ -153,6 +163,10 @@ export class MergeEditorService extends Disposable {
     } else {
       await saveApply();
     }
+  }
+
+  public fireRestoreState(uri: URI): void {
+    this._onRestoreState.fire(uri);
   }
 
   public getCurrentEditor(): ICodeEditor {

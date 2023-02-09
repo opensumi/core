@@ -1,5 +1,6 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, WithEventBus, MaybePromise, LabelService } from '@opensumi/ide-core-browser';
+import { MergeEditorService } from '@opensumi/ide-monaco/lib/browser/contrib/merge-editor/merge-editor.service';
 
 import { IResourceProvider, IResource } from '../../common';
 
@@ -9,6 +10,9 @@ export class MergeEditorResourceProvider extends WithEventBus implements IResour
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
+
+  @Autowired(MergeEditorService)
+  private readonly mergeEditorService: MergeEditorService;
 
   public provideResource(uri: URI): MaybePromise<IResource<any>> {
     const { openMetadata, name } = uri.getParsedQuery();
@@ -29,6 +33,20 @@ export class MergeEditorResourceProvider extends WithEventBus implements IResour
           output,
         },
       };
+    } catch (error) {
+      throw Error('invalid merge editor resource parse');
+    }
+  }
+
+  public shouldCloseResource(resource: IResource<any>, openedResources: IResource<any>[][]): MaybePromise<boolean> {
+    const { openMetadata } = resource.uri.getParsedQuery();
+
+    try {
+      const parseMetaData = JSON.parse(openMetadata);
+      const { output } = parseMetaData;
+      const outputUri = new URI(output);
+      this.mergeEditorService.fireRestoreState(outputUri);
+      return true;
     } catch (error) {
       throw Error('invalid merge editor resource parse');
     }

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-webview",
-  "version": "2.22.1",
+  "version": "2.22.2",
   "files": [
     "lib",
     "src"

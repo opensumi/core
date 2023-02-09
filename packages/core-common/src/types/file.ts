@@ -61,6 +61,11 @@ export interface FileStat {
    * 当前文件是否为只读
    */
   readonly?: boolean;
+
+  /**
+   * 真实资源路径
+   */
+  realUri?: string;
 }
 
 export namespace FileStat {

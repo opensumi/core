@@ -105,7 +105,7 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
   constructor() {
     super({
       id: 'file-search:splitToRight',
-      tooltip: localize('file-search.quickOpen.leftRight'),
+      tooltip: localize('quickOpen.openOnTheRightSide'),
       class: getIcon('embed'),
     });
   }

@@ -58,8 +58,8 @@ describe('external preference tests', () => {
     registerLocalStorageProvider('general.icon', mockWorkspace);
     registerLocalStorageProvider('general.language');
 
-    getExternalPreferenceProvider('general.theme')!.set('testTheme', PreferenceScope.Workspace);
-    expect(getPreferenceThemeId()).toBe('testTheme');
+    getExternalPreferenceProvider('general.theme')?.set('test-theme', PreferenceScope.Workspace);
+    expect(getPreferenceThemeId()).toBe('test-theme');
 
     // mock localStorage
     const store = new Map();
@@ -69,31 +69,32 @@ describe('external preference tests', () => {
       },
       getItem: (key: string) => store.get(key),
     };
+    const unique_languageId = 'zh-Hans';
 
     // 默认值为 zh-CN
     expect(getPreferenceLanguageId()).toBe('zh-CN');
     // 工作空间级别不生效
-    getExternalPreferenceProvider('general.language')!.set('testLanguage', PreferenceScope.Workspace);
+    getExternalPreferenceProvider('general.language')?.set(unique_languageId, PreferenceScope.Workspace);
     expect(getPreferenceLanguageId()).toBe('zh-CN');
     // 全局级别可生效
-    getExternalPreferenceProvider('general.language')!.set('testLanguage', PreferenceScope.Default);
-    expect(getPreferenceLanguageId()).toBe('testLanguage');
+    getExternalPreferenceProvider('general.language')?.set(unique_languageId, PreferenceScope.Default);
+    expect(getPreferenceLanguageId()).toBe(unique_languageId);
 
-    // getPreferenceLanguageId 可传参 defaultPreference
+    // 传入默认配置的情况下，如果可以通过 `getExternalPreference` 获取配置值，优先采用获取到的配置值
     expect(
       getPreferenceLanguageId({
         'general.language': 'en-US',
       } as IPreferences),
-    ).toBe('en-US');
+    ).toBe(unique_languageId);
 
     // 采用 getExternalPreference 中的值兜底
     expect(
       getPreferenceLanguageId({
         'general.theme': 'vscode-icon',
       } as IPreferences),
-    ).toBe('testLanguage');
+    ).toBe(unique_languageId);
 
-    getExternalPreferenceProvider('general.icon')!.set('testIcon', PreferenceScope.Workspace);
-    expect(getPreferenceIconThemeId()).toBe('testIcon');
+    getExternalPreferenceProvider('general.icon')?.set('test-icon', PreferenceScope.Workspace);
+    expect(getPreferenceIconThemeId()).toBe('test-icon');
   });
 });

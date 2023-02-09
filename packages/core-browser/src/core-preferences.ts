@@ -96,7 +96,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       enum: ['singleClick', 'doubleClick'],
       default: 'singleClick',
-      description: localize('preference.workbench.list.openMode'),
+      description: '%preference.workbench.list.openMode%',
     },
     'workbench.commandPalette.history': {
       type: 'number',

@@ -22,7 +22,7 @@ export const VirtualList = ({
     // 暂时还无法应用这个 Scrollbars 上下边界样式（阴影效果）
     // 因为 Virtuoso 的 scroll 事件没有传给 Scrollbars
     // 此处用于展示虚拟的滑动条而不是浏览器绘制的滑动条
-    <Scrollbars>
+    <Scrollbars thumbSize={0}>
       <Virtuoso
         rangeChanged={(range) => {
           onRangeChanged?.(range);
