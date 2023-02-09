@@ -19,8 +19,8 @@
   "dependencies": {
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
-    "@opensumi/ide-utils": "workspace:*",
-    "@opensumi/ide-file-service": "workspace:*"
+    "@opensumi/ide-file-service": "workspace:*",
+    "@opensumi/ide-utils": "workspace:*"
   },
   "devDependencies": {
     "@opensumi/ide-core-browser": "workspace:*",
