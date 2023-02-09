@@ -1160,6 +1160,7 @@ export const localizationBundle = {
     'welcome.title': 'Welcome',
     'welcome.quickStart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
+    'welcome.workspace.noExist': 'Workspace path not exist',
 
     'markers.title': 'Problems',
     'markers.panel.content.empty': 'No problems have been detected in the workspace so far.',

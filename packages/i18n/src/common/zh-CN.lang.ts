@@ -781,6 +781,7 @@ export const localizationBundle = {
     'welcome.title': '开始使用',
     'welcome.quickStart': '开始使用',
     'welcome.recent.workspace': '最近打开的工作区',
+    'welcome.workspace.noExist': '工作区路径不存在',
 
     'markers.title': '问题',
     'markers.panel.content.empty': '目前尚未在工作区检测到问题。',
