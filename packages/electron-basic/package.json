@@ -19,6 +19,7 @@
   "dependencies": {
     "@opensumi/ide-core-common": "workspace:*",
     "@opensumi/ide-core-node": "workspace:*",
+    "@opensumi/ide-file-service": "workspace:*",
     "@opensumi/ide-utils": "workspace:*"
   },
   "devDependencies": {

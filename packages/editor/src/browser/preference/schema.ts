@@ -109,7 +109,7 @@ export const EDITOR_DEFAULTS = {
   readOnly: false,
   mouseStyle: 'text',
   disableLayerHinting: false,
-  automaticLayout: true, // 开天修改
+  automaticLayout: true, // Modified
   wordWrap: 'off',
   wordWrapColumn: 80,
   wordWrapMinified: true,
@@ -159,7 +159,7 @@ export const EDITOR_DEFAULTS = {
     renderWhitespace: 'none',
     renderControlCharacters: false,
     fontLigatures: false,
-    renderLineHighlight: 'none', // 开天修改
+    renderLineHighlight: 'none', // Modified
     scrollbar: {
       vertical: 1, // ScrollbarVisibility.Auto,
       horizontal: 1, // ScrollbarVisibility.Auto,
@@ -210,7 +210,7 @@ export const EDITOR_DEFAULTS = {
     suggestOnTriggerCharacters: true,
     acceptSuggestionOnEnter: 'on',
     acceptSuggestionOnCommitCharacter: true,
-    wordBasedSuggestions: false, // 开天修改
+    wordBasedSuggestions: false, // Modified
     suggestSelection: 'recentlyUsed',
     suggestFontSize: 0,
     suggestLineHeight: 0,
