@@ -10,13 +10,10 @@ import { EditorGroup } from '../workbench-editor.service';
 @Injectable()
 export class BreadCrumbsMenuService {
   @Autowired(AbstractContextMenuService)
-  ctxMenuService: AbstractContextMenuService;
+  private readonly ctxMenuService: AbstractContextMenuService;
 
   @Autowired(ICtxMenuRenderer)
-  ctxMenuRenderer: ICtxMenuRenderer;
-
-  @Autowired(IContextKeyService)
-  contextKeyService: IContextKeyService;
+  private readonly ctxMenuRenderer: ICtxMenuRenderer;
 
   show(x: number, y: number, uri: URI, group: EditorGroup, domTarget) {
     // 设置resourceScheme
