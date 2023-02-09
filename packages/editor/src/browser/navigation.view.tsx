@@ -9,6 +9,7 @@ import { Scrollbars } from '@opensumi/ide-components';
 import { useInjectable, DomListener, Disposable, useUpdateOnEvent } from '@opensumi/ide-core-browser';
 import { getIcon } from '@opensumi/ide-core-browser';
 
+import { BreadCrumbsMenuService } from './menu/breadcrumbs.menus';
 import styles from './navigation.module.less';
 import { IBreadCrumbService, IBreadCrumbPart } from './types';
 import { useUpdateOnGroupTabChange } from './view/react-hook';
@@ -51,14 +52,15 @@ export const NavigationBar = ({ editorGroup }: { editorGroup: EditorGroup }) => 
       {parts.map((p, i) => (
         <React.Fragment key={i + '-crumb:' + p.name}>
           {i > 0 && <Icon icon={'right'} size='small' className={styles.navigation_icon} />}
-          <NavigationItem part={p} />
+          <NavigationItem part={p} editorGroup={editorGroup} />
         </React.Fragment>
       ))}
     </div>
   );
 };
-export const NavigationItem = memo(({ part }: { part: IBreadCrumbPart }) => {
+export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPart; editorGroup: EditorGroup }) => {
   const viewService = useInjectable(NavigationBarViewService) as NavigationBarViewService;
+  const breadcrumbsMenuService = useInjectable(BreadCrumbsMenuService) as BreadCrumbsMenuService;
   const itemRef = useRef<HTMLSpanElement>();
 
   const onClick = useCallback(async () => {
@@ -70,14 +72,22 @@ export const NavigationItem = memo(({ part }: { part: IBreadCrumbPart }) => {
         // 放左边
         leftPos = window.innerWidth - 200 - 5;
       }
-      viewService.showMenu(siblings.parts, leftPos, top + height + 5, siblings.currentIndex);
+      viewService.showMenu(siblings.parts, leftPos, top + height + 5, siblings.currentIndex, part.uri, editorGroup);
     }
   }, [itemRef.current, part]);
 
   return (
-    <span onClick={onClick} className={styles['navigation-part']} ref={itemRef as any}>
+    <span
+      onClick={onClick}
+      onContextMenu={(event) => {
+        breadcrumbsMenuService.show(event.nativeEvent.x, event.nativeEvent.y, part.uri, viewService.editorGroup);
+        event.preventDefault();
+      }}
+      className={styles['navigation-part']}
+      ref={itemRef as any}
+    >
       {part.icon && <span className={part.icon}></span>}
-      <span>{part.name}</span>
+      <span>1_{part.name}</span>
     </span>
   );
 });
@@ -136,7 +146,7 @@ export const NavigationMenu = observer(({ model }: { model: NavigationMenuModel 
                     // 放左边
                     nextLeft = left - width - 5;
                   }
-                  model.showSubMenu(await p.getChildren!(), nextLeft, top);
+                  model.showSubMenu(await p.getChildren!(), nextLeft, top, model);
                 }
               }
             : undefined;
@@ -218,9 +228,11 @@ export const NavigationMenuContainer = observer(() => {
 @Injectable()
 export class NavigationBarViewService {
   @observable.ref current: NavigationMenuModel | undefined;
+  @observable.ref editorGroup: EditorGroup;
 
-  showMenu(parts: IBreadCrumbPart[], x, y, currentIndex) {
-    this.current = new NavigationMenuModel(parts, x, y, currentIndex);
+  showMenu(parts: IBreadCrumbPart[], x, y, currentIndex, uri, editorGroup) {
+    this.current = new NavigationMenuModel(parts, x, y, currentIndex, uri);
+    this.editorGroup = editorGroup;
   }
 
   dispose() {
@@ -239,10 +251,11 @@ export class NavigationMenuModel {
     public readonly x,
     public readonly y,
     public readonly initialIndex: number = -1,
+    public readonly uri,
   ) {}
 
-  showSubMenu(parts: IBreadCrumbPart[], x, y) {
-    this.subMenu = new NavigationMenuModel(parts, x, y);
+  showSubMenu(parts: IBreadCrumbPart[], x, y, uri) {
+    this.subMenu = new NavigationMenuModel(parts, x, y, -1, uri);
   }
 
   dispose() {

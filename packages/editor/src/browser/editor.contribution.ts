@@ -1201,6 +1201,17 @@ export class EditorContribution
       order: 2,
     });
 
+    menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
+      command: EDITOR_COMMANDS.COPY_PATH.id,
+      group: '0_tab',
+      order: 1,
+    });
+    menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
+      command: EDITOR_COMMANDS.COPY_RELATIVE_PATH.id,
+      group: '0_tab',
+      order: 2,
+    });
+
     menus.registerMenuItem(MenuId.EditorTitleContext, {
       command: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
       group: '9_split',
