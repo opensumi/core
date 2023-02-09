@@ -52,7 +52,7 @@ export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({
                   if (exist) {
                     windowService.openWorkspace(uri, { newWindow: false });
                   } else {
-                    messageService.error('welcome.workspace.noExist');
+                    messageService.error(localize('welcome.workspace.noExist'));
                   }
                 }}
               >
