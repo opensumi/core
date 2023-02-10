@@ -51,9 +51,6 @@
     "iteration": "ts-node -P scripts/tsconfig.scripts.json scripts/iteration-plan.ts",
     "manifest": "ts-node ./scripts/generate-manifest-json"
   },
-  "engines": {
-    "node": ">=12 <=14"
-  },
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^7.1.2",
