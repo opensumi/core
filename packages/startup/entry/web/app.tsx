@@ -1,3 +1,10 @@
+// eslint-disable-next-line import/order
+import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
+// 请注意，集成方在这里需要自己传一个正确的 locale 进去
+// FIXME: 如果不传则首次访问默认为 'zh-CN' 语言，后续才会根据 PreferenceScope 的优先级从 LocalStorage 取值
+// 见 https://github.com/opensumi/monaco-editor-core/blob/478a796f4a04fe3a436d3e30c39e1693d3e7d686/src/vs/nls.mock.ts#L37
+setLocale('en-US');
+
 import '@opensumi/ide-i18n';
 import '@opensumi/ide-core-browser/lib/style/index.less';
 import { SlotLocation } from '@opensumi/ide-core-browser';
