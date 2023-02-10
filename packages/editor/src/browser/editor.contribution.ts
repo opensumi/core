@@ -1211,6 +1211,14 @@ export class EditorContribution
       group: '0_path',
       order: 2,
     });
+    menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
+      command: {
+        id: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
+        label: localize('file.revealInExplorer'),
+      },
+      group: '0_path',
+      order: 3,
+    });
 
     menus.registerMenuItem(MenuId.EditorTitleContext, {
       command: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
