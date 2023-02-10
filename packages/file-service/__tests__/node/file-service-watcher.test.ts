@@ -6,8 +6,8 @@ import { FileUri } from '@opensumi/ide-core-node';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DidFilesChangedParams, FileChangeType, INsfw } from '../../src/common';
-import { FileSystemWatcherServer } from '../../src/node/file-service-watcher';
+import { DidFilesChangedParams, FileChangeType } from '../../src/common';
+import { ParcelWatcherServer } from '../../src/node/file-service-watcher';
 
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
@@ -18,16 +18,14 @@ function sleep(time: number) {
   const sleepTime = 500;
   let injector: MockInjector;
   let root: URI;
-  let watcherServer: FileSystemWatcherServer;
+  let watcherServer: ParcelWatcherServer;
   let watcherId: number;
   jest.setTimeout(10000);
 
   beforeEach(async () => {
     injector = createBrowserInjector([]);
     root = FileUri.create(await fse.realpath(await temp.mkdir('node-fs-root')));
-    // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
-    watcherServer = injector.get(FileSystemWatcherServer);
+    watcherServer = injector.get(ParcelWatcherServer);
     watcherId = await watcherServer.watchFileChanges(root.toString());
   });
 
@@ -142,7 +140,7 @@ function sleep(time: number) {
   const track = temp.track();
   const sleepTime = 500;
   let root: URI;
-  let watcherServer: FileSystemWatcherServer;
+  let watcherServer: ParcelWatcherServer;
   let injector: MockInjector;
   jest.setTimeout(10000);
 
@@ -151,9 +149,7 @@ function sleep(time: number) {
     root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
-    // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
-    watcherServer = injector.get(FileSystemWatcherServer);
+    watcherServer = injector.get(ParcelWatcherServer);
     await watcherServer.watchFileChanges(root.toString());
     await sleep(sleepTime);
   });

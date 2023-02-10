@@ -36,7 +36,7 @@ import {
   FileSystemProviderCapabilities,
 } from '../common/';
 
-import { FileSystemWatcherServer } from './file-service-watcher';
+import { ParcelWatcherServer } from './file-service-watcher';
 import { getFileType } from './shared/file-type';
 
 const { Path } = path;
@@ -58,7 +58,7 @@ export interface IWatcher {
 @Injectable({ multiple: true })
 export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvider> implements IDiskFileProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
-  private watcherServer: FileSystemWatcherServer;
+  private watcherServer: ParcelWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
   protected watcherServerDisposeCollection: DisposableCollection;
 
@@ -355,7 +355,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
       this.watcherServerDisposeCollection.dispose();
     }
     this.watcherServerDisposeCollection = new DisposableCollection();
-    this.watcherServer = this.injector.get(FileSystemWatcherServer, [excludes]);
+    this.watcherServer = this.injector.get(ParcelWatcherServer, [excludes]);
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         if (events.changes.length > 0) {

@@ -3,13 +3,12 @@ import path from 'path';
 
 import * as fse from 'fs-extra';
 
+import { Injector } from '@opensumi/di';
 import { isWindows } from '@opensumi/ide-core-common';
 import { URI, FileUri, AppConfig } from '@opensumi/ide-core-node';
 import { expectThrowsAsync } from '@opensumi/ide-core-node/__tests__/helper';
-import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { FileSystemWatcherServer } from '../../lib/node/file-service-watcher';
 import { IFileService, FileChangeType } from '../../src/common';
 import { FileServiceModule, FileService } from '../../src/node';
 
@@ -17,7 +16,7 @@ import { FileServiceModule, FileService } from '../../src/node';
 describe('FileService', () => {
   let root: URI;
   let fileService: IFileService;
-  let injector: MockInjector;
+  let injector: Injector;
   let counter = 1;
 
   beforeEach(async () => {
@@ -27,8 +26,7 @@ describe('FileService', () => {
     root = FileUri.create(testDir);
 
     injector = createNodeInjector([FileServiceModule]);
-    // @ts-ignore
-    injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
+
     fileService = injector.get(IFileService);
   });
 
