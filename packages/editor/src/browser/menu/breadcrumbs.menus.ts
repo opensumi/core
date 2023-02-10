@@ -1,10 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI } from '@opensumi/ide-core-common';
 
-import { IEditorGroup } from '../../common';
 import { EditorGroup } from '../workbench-editor.service';
 
 @Injectable()

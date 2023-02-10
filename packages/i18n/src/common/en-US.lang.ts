@@ -73,6 +73,7 @@ export const localizationBundle = {
     'file.filetree.openTerminalWithPath': 'Open In Integrated Terminal',
     'file.tooltip.symbolicLink': 'Symbolic Link',
     'file.resource-deleted': '(Deleted)',
+    'file.revealInExplorer': 'Reveal in file tree',
 
     'menu-bar.title.file': 'File',
     'menu-bar.title.edit': 'Edit',
