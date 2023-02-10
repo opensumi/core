@@ -85,7 +85,9 @@ export const NavigationItem = memo(({ part, editorGroup }: { part: IBreadCrumbPa
     <span
       onClick={onClick}
       onContextMenu={(event) => {
-        breadcrumbsMenuService.show(event.nativeEvent.x, event.nativeEvent.y, part.uri, editorGroup, event.target);
+        if (!part.isSymbol) {
+          breadcrumbsMenuService.show(event.nativeEvent.x, event.nativeEvent.y, part.uri, editorGroup, event.target);
+        }
         event.preventDefault();
       }}
       className={styles['navigation-part']}

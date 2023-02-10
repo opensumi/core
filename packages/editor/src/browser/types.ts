@@ -411,6 +411,8 @@ export interface IBreadCrumbPart {
 
   uri: URI;
 
+  isSymbol?: Boolean;
+
   getSiblings?(): MaybePromise<{ parts: IBreadCrumbPart[]; currentIndex: number }>;
 
   // getChildren和onClick只能存在一个，如果同时存在,getChildren生效

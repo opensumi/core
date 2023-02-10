@@ -174,6 +174,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     const res: IBreadCrumbPart = {
       name: symbol.name,
       icon: getSymbolIcon(symbol.kind),
+      isSymbol: true,
       onClick: () => {
         editor.setSelection({
           startColumn: symbol.range.startColumn,
