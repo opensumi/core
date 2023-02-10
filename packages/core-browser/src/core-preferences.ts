@@ -6,6 +6,7 @@ import {
   GeneralSettingsId,
   PreferenceSchema,
 } from '@opensumi/ide-core-common';
+import { LOCALE_TYPES } from '@opensumi/ide-i18n/lib/common/types';
 
 import { createPreferenceProxy, PreferenceProxy, PreferenceService } from './preferences';
 
@@ -41,7 +42,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     'general.language': {
       type: 'string',
       enum: getAvailableLanguages().map((l) => l.languageId),
-      default: 'en-US',
+      default: LOCALE_TYPES.EN_US,
     },
     'general.theme': {
       type: 'string',

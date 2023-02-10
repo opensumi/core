@@ -1,7 +1,8 @@
 import { browserViews } from './contributes/zh-CN.lang';
+import { LOCALE_TYPES } from './types';
 
 export const localizationBundle = {
-  languageId: 'zh-CN',
+  languageId: LOCALE_TYPES.ZH_CN,
   languageName: 'Chinese',
   localizedLanguageName: '中文(中国)',
   contents: {

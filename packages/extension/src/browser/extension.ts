@@ -9,6 +9,7 @@ import {
   Deferred,
   URI,
 } from '@opensumi/ide-core-browser';
+import { LOCALE_TYPES } from '@opensumi/ide-i18n/lib/common/types';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {
@@ -167,7 +168,7 @@ export class Extension extends WithEventBus implements IExtension {
         registerLocalizationBundle(
           {
             languageId: 'default',
-            languageName: 'en-US',
+            languageName: LOCALE_TYPES.EN_US,
             localizedLanguageName: 'English',
             contents: this.defaultPkgNlsJSON as any,
           },

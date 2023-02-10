@@ -44,6 +44,7 @@ import {
   DEFAULT_URI_SCHEME,
 } from '@opensumi/ide-core-common/lib/const/application';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
+import { LocaleType, setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
 
 import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';
@@ -83,34 +84,21 @@ export class ClientApp implements IClientApp, IDisposable {
   /**
    * 应用是否完成初始化
    */
-  appInitialized: Deferred<void> = new Deferred();
+  public appInitialized: Deferred<void> = new Deferred();
+  public browserModules: BrowserModule[] = [];
+  public injector: Injector;
+  public config: AppConfig;
+  public commandRegistry: CommandRegistry;
 
-  browserModules: BrowserModule[] = [];
-
-  modules: ModuleConstructor[];
-
-  injector: Injector;
-
-  logger: ILogServiceClient;
-
-  connectionPath: UrlProvider;
-
-  connectionProtocols?: string[];
-
-  keybindingRegistry: KeybindingRegistry;
-
-  keybindingService: KeybindingService;
-
-  config: AppConfig;
-
-  contributionsProvider: ContributionProvider<ClientAppContribution>;
-
-  commandRegistry: CommandRegistry;
-
-  // 这里将 onStart contribution 方法放到 MenuRegistryImpl 上了
-  nextMenuRegistry: MenuRegistryImpl;
-
-  stateService: ClientAppStateService;
+  private logger: ILogServiceClient;
+  private connectionPath: UrlProvider;
+  private connectionProtocols?: string[];
+  private keybindingRegistry: KeybindingRegistry;
+  private keybindingService: KeybindingService;
+  private modules: ModuleConstructor[];
+  private contributionsProvider: ContributionProvider<ClientAppContribution>;
+  private nextMenuRegistry: MenuRegistryImpl;
+  private stateService: ClientAppStateService;
 
   constructor(opts: IClientAppOpts) {
     const {
@@ -123,15 +111,16 @@ export class ClientApp implements IClientApp, IDisposable {
       defaultPreferences,
       allowSetDocumentTitleFollowWorkspaceDir = true,
       devtools = false, // if not set, disable devtools support as default
-      ...restOpts // rest part 为 AppConfig
+      ...restOpts
     } = opts;
 
     this.initEarlyPreference(opts.workspaceDir || '');
-    setLanguageId(getPreferenceLanguageId(defaultPreferences));
+    const defaultLanguage = getPreferenceLanguageId(defaultPreferences);
+    setLanguageId(defaultLanguage);
     this.injector = opts.injector || new Injector();
     this.modules = modules;
     this.modules.forEach((m) => this.resolveModuleDeps(m));
-    // moduleInstance必须第一个是layout模块
+    // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
     const isDesktop = opts.isElectronRenderer || isElectronRenderer();
     this.config = {
@@ -174,7 +163,7 @@ export class ClientApp implements IClientApp, IDisposable {
       this.config.extensionDevelopmentHost = !!opts.extensionDevelopmentPath;
     }
 
-    // 旧方案兼容, 把electron.metadata.extensionCandidate提前注入appConfig的对应配置中
+    // 旧方案兼容, 把 `electron.metadata.extensionCandidate` 提前注入 `AppConfig` 的对应配置中
     if (this.config.isElectronRenderer && electronEnv.metadata?.extensionCandidate) {
       this.config.extensionCandidate = (this.config.extensionCandidate || []).concat(
         electronEnv.metadata.extensionCandidate || [],
@@ -244,7 +233,7 @@ export class ClientApp implements IClientApp, IDisposable {
         );
 
         this.logger = this.getLogger();
-        // 回写需要用到打点的 Logger 的地方
+        // Replace Logger
         this.injector.get(WSChannelHandler).replaceLogger(this.logger);
       }
     }
@@ -292,9 +281,6 @@ export class ClientApp implements IClientApp, IDisposable {
     injectInnerProviders(this.injector);
   }
 
-  /**
-   * 从 injector 里获得实例
-   */
   private initFields() {
     this.contributionsProvider = this.injector.get(ClientAppContribution);
     this.commandRegistry = this.injector.get(CommandRegistry);
@@ -322,10 +308,10 @@ export class ClientApp implements IClientApp, IDisposable {
 
     injectCorePreferences(this.injector);
 
-    // 注册PreferenceService
+    // Register PreferenceService
     this.injectPreferenceService(this.injector, defaultPreferences);
 
-    // 注册存储服务
+    // Register StorageService
     this.injectStorageProvider(this.injector);
 
     for (const instance of this.browserModules) {
@@ -346,16 +332,16 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   protected async startContributions(container) {
-    // 先渲染 layout，模块视图的时序由layout控制
+    // Rendering layout
     await this.measure('RenderApp.render', () => this.renderApp(container));
 
     this.lifeCycleService.phase = LifeCyclePhase.Initialize;
     await this.measure('Contributions.initialize', () => this.initializeContributions());
 
-    // 初始化命令、快捷键与菜单
+    // Initialize Command, Keybinding, Menus
     await this.initializeCoreRegistry();
 
-    // 核心模块初始化完毕
+    // Core modules initializeed ready
     this.stateService.state = 'core_module_initialized';
 
     this.lifeCycleService.phase = LifeCyclePhase.Starting;
@@ -364,18 +350,12 @@ export class ClientApp implements IClientApp, IDisposable {
     await this.runContributionsPhase(this.contributions, 'onDidStart');
   }
 
-  /**
-   * 初始化核心模板
-   */
   private async initializeCoreRegistry() {
     this.commandRegistry.initialize();
     await this.keybindingRegistry.initialize();
     this.nextMenuRegistry.initialize();
   }
 
-  /**
-   * run contribution#initialize
-   */
   private async initializeContributions() {
     await this.runContributionsPhase(this.contributions, 'initialize');
     this.appInitialized.resolve();
@@ -383,9 +363,6 @@ export class ClientApp implements IClientApp, IDisposable {
     this.logger.verbose('contributions.initialize done');
   }
 
-  /**
-   * run contribution#onStart
-   */
   private async onStartContributions() {
     await this.runContributionsPhase(this.contributions, 'onStart');
   }
@@ -427,7 +404,7 @@ export class ClientApp implements IClientApp, IDisposable {
    * `beforeunload` listener implementation
    */
   protected preventStop(): boolean {
-    // 获取corePreferences配置判断是否弹出确认框
+    // 获取配置判断是否弹出确认框
     const corePreferences = this.injector.get(CorePreferences);
     const confirmExit = corePreferences['application.confirmExit'];
     if (confirmExit === 'never') {
@@ -449,10 +426,10 @@ export class ClientApp implements IClientApp, IDisposable {
   }
 
   /**
-   * electron 退出询问
+   * Before Electron quit handler
    */
   protected async preventStopElectron(): Promise<boolean> {
-    // 获取corePreferences配置判断是否弹出确认框
+    // 获取配置判断是否弹出确认框
     const corePreferences = this.injector.get(CorePreferences);
     const confirmExit = corePreferences['application.confirmExit'];
     if (confirmExit === 'never') {

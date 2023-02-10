@@ -1,7 +1,8 @@
 import { browserViews } from './contributes/en-US.lang';
+import { LOCALE_TYPES } from './types';
 
 export const localizationBundle = {
-  languageId: 'en-US',
+  languageId: LOCALE_TYPES.EN_US,
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
