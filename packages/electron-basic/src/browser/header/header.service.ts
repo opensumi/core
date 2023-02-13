@@ -60,10 +60,6 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
     this._templateVariables[key] = value;
   }
 
-  constructor() {
-    super();
-  }
-
   @OnEvent(ResourceDidUpdateEvent)
   onResourceDidUpdateEvent(e: ResourceDidUpdateEvent) {
     this.updateAppTitle();
