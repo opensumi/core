@@ -17,10 +17,10 @@ import {
   KeybindingRegistry,
   IOpenerService,
   MonacoOverrideServiceRegistry,
-  Keybinding,
   KeybindingScope,
   IContextKeyService,
   KeyCode,
+  KeySequence,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuRegistry,
@@ -30,7 +30,7 @@ import {
   ISubmenuItem,
 } from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI, ILogger, DisposableCollection, isString, CommandService, isOSX } from '@opensumi/ide-core-common';
-import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import {
   ISemanticTokenRegistry,
@@ -38,12 +38,10 @@ import {
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import * as monaco from '@opensumi/monaco-editor-core';
-import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
-import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { registerPlatformLanguageAssociation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/languagesAssociations';
 import {
   FormattingConflicts,
@@ -56,12 +54,8 @@ import {
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
-import {
-  ContextKeyExpr,
-  ContextKeyExprType,
-} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
-import { IKeybindingService } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybinding';
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
 
 import {
@@ -292,18 +286,18 @@ export class MonacoClientContribution
   }
 
   protected updateMonacoKeybindings() {
-    const monacoKeybindingRegistry = StandaloneServices.get(IKeybindingService);
-    if (monacoKeybindingRegistry instanceof StandaloneKeybindingService) {
+    const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
+    if (monacoKeybindingsRegistry instanceof StandaloneKeybindingService) {
       // Keybindings only support `KeybindingScope.USER` scope now
       const userKeybindings = this.keybindings.getKeybindingByScope(KeybindingScope.USER);
       this.toDisposeOnKeybindingChange.dispose();
       for (const binding of userKeybindings) {
         const resolved = this.keybindings.resolveKeybinding(binding);
-        const command = binding.command;
         const when = isString(binding.when) ? ContextKeyExpr.deserialize(binding.when) : binding.when;
+        const command = binding.command;
         this.toDisposeOnKeybindingChange.push(
-          monacoKeybindingRegistry.addDynamicKeybinding(
-            binding.command,
+          monacoKeybindingsRegistry.addDynamicKeybinding(
+            command,
             this.toMonacoKeybindingNumber(resolved),
             (_, ...args) => this.commandService.executeCommand(command, ...args),
             when,
@@ -438,60 +432,27 @@ export class MonacoClientContribution
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
-    const editorFocus = EditorContextKeys.focus;
-
     const defaultItems = monacoKeybindingsRegistry.getDefaultKeybindings();
-
-    // 将 Monaco 的 Keybinding 同步
     for (const item of defaultItems) {
       const command = this.monacoCommandRegistry.validate(item.command);
       if (command) {
-        const raw = item.keybinding;
-
-        // 当不存在 when 条件或不包含 `editorFocus` 时，追加 editorFocus 条件
-        let when = item.when;
-        if (!when) {
-          when = editorFocus;
-        } else {
-          // when 中没有 editorFocus 时再做追加
-          if (!when.keys().includes('editorFocus')) {
-            // 当其内部为 or 时，避免出现 a && (b || c) 报错
-            // 因此改成 (a && b) || (a && c) 这样不会报错
-            // serialize 之后的结果类似 a && b || a && c
-            // monaco-editor contextkey 的计算规则中 && 优先级高于 ||
-            if (when.type === ContextKeyExprType.Or) {
-              const exprs = when.expr;
-              when = ContextKeyExpr.or(...exprs.map((expr) => ContextKeyExpr.and(expr, editorFocus)));
-            } else {
-              when = ContextKeyExpr.and(when, editorFocus);
-            }
-          }
-        }
-        const keybindingStr = raw
-          .map((key) => {
-            if (key instanceof SimpleKeybinding) {
-              return key
-                .toChord()
-                .parts.map((part) => MonacoResolvedKeybinding.keyCode(part))
-                .join(' ');
-            } else {
-              // 目前 monaco 内的 key 没有 ScanCodeBinding 的情况，暂时没有处理
-              // eslint-disable-next-line no-console
-              console.warn('No handler ScanCodeBinding:', key);
-            }
-            return '';
-          })
-          .join(' ');
-
-        // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
+        const rawKeybinding = MonacoResolvedKeybinding.toKeybinding(item.keybinding);
         const keybinding = {
           command,
           args: item.commandArgs,
-          keybinding: keybindingStr,
-          when,
+          keybinding: rawKeybinding,
+          when: (item.when && item.when.serialize()) ?? undefined,
+          // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
           priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
-        } as Keybinding;
-
+        };
+        // 注册快捷键前先卸载 Monaco 内对应命令的快捷键实现
+        monacoKeybindingsRegistry.registerKeybindingRule({
+          id: `-${command}`,
+          weight: item.weight1,
+          primary: this.toMonacoKeybindingNumber(KeySequence.parse(rawKeybinding)),
+          when: item.when,
+        });
+        // 将 Monaco 内默认快捷键注册进 OpenSumi 中
         keybindings.registerKeybinding(keybinding);
       }
     }

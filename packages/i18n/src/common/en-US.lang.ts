@@ -1,7 +1,9 @@
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
 import { browserViews } from './contributes/en-US.lang';
 
 export const localizationBundle = {
-  languageId: 'en-US',
+  languageId: LOCALE_TYPES.EN_US,
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {

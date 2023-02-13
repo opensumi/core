@@ -4,27 +4,30 @@ import temp from 'temp';
 import { URI, isMacintosh } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { DidFilesChangedParams, FileChangeType, INsfw } from '../../src/common';
+import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/file-service-watcher';
 
 function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+jest.setTimeout(10000);
+
+let seed = 1;
+
 (isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
   const track = temp.track();
-  const sleepTime = 500;
+  const sleepTime = 1000;
   let injector: MockInjector;
   let root: URI;
   let watcherServer: FileSystemWatcherServer;
   let watcherId: number;
-  jest.setTimeout(10000);
 
   beforeEach(async () => {
-    injector = createBrowserInjector([]);
-    root = FileUri.create(await fse.realpath(await temp.mkdir('node-fs-root')));
+    injector = createNodeInjector([]);
+    root = FileUri.create(fse.realpathSync(await temp.mkdir('parce-watcher-test')));
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     watcherServer = injector.get(FileSystemWatcherServer);
@@ -97,7 +100,8 @@ function sleep(time: number) {
   });
 
   it('Merge common events on one watcher', async () => {
-    const newFolder = FileUri.fsPath(root.resolve('test'));
+    const folderName = `folder_${seed++}`;
+    const newFolder = FileUri.fsPath(root.resolve(folderName));
     expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder);
     const newWatcherId = await watcherServer.watchFileChanges(newFolder);
@@ -105,11 +109,12 @@ function sleep(time: number) {
   });
 
   it('Can receive events while watch file is not existed', async () => {
-    const newFolder = FileUri.fsPath(root.resolve('test'));
+    const folderName = `folder_${seed++}`;
+    const newFolder = FileUri.fsPath(root.resolve(folderName));
     expect(watcherId).toBeDefined();
     fse.mkdirSync(newFolder);
     const parentId = await watcherServer.watchFileChanges(newFolder);
-    const childFile = FileUri.fsPath(root.resolve('test').resolve('index.js'));
+    const childFile = FileUri.fsPath(root.resolve(folderName).resolve('index.js'));
     const childId = await watcherServer.watchFileChanges(childFile);
     expect(parentId === childId).toBeTruthy();
   });
@@ -119,18 +124,19 @@ function sleep(time: number) {
       onDidFilesChanged: jest.fn(),
     };
     watcherServer.setClient(watcherClient);
-    const folder1 = FileUri.fsPath(root.resolve('folder1'));
-    const fileA = FileUri.fsPath(root.resolve('folder1').resolve('a'));
-    const fileB = FileUri.fsPath(root.resolve('folder1').resolve('b'));
-    fse.mkdirSync(folder1);
+    const folderName = `folder_${seed++}`;
+    const newFolder = FileUri.fsPath(root.resolve(folderName));
+    const fileA = FileUri.fsPath(root.resolve(folderName).resolve('a'));
+    const fileB = FileUri.fsPath(root.resolve(folderName).resolve('b'));
+    fse.mkdirSync(newFolder);
     await sleep(sleepTime);
     watcherClient.onDidFilesChanged.mockClear();
-    let id = await watcherServer.watchFileChanges(folder1, { excludes: [] });
+    let id = await watcherServer.watchFileChanges(newFolder, { excludes: [] });
     await fse.ensureFile(fileA);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
     await watcherServer.unwatchFileChanges(id);
-    id = await watcherServer.watchFileChanges(folder1, { excludes: ['**/b/**'] });
+    id = await watcherServer.watchFileChanges(newFolder, { excludes: ['**/b/**'] });
     await fse.ensureFile(fileB);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
@@ -139,16 +145,17 @@ function sleep(time: number) {
 });
 
 (isMacintosh ? describe.skip : describe)('Watch file rename/move/new', () => {
+  jest.setTimeout(10000);
+
   const track = temp.track();
-  const sleepTime = 500;
+  const sleepTime = 1000;
   let root: URI;
   let watcherServer: FileSystemWatcherServer;
   let injector: MockInjector;
-  jest.setTimeout(10000);
 
   beforeEach(async () => {
-    injector = createBrowserInjector([]);
-    root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
+    injector = createNodeInjector([]);
+    root = FileUri.create(fse.realpathSync(temp.mkdirSync('nsfw-test')));
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     // @ts-ignore
