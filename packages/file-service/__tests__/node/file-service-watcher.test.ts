@@ -1,10 +1,10 @@
 import * as fse from 'fs-extra';
 import temp from 'temp';
 
-import { URI, isMacintosh } from '@opensumi/ide-core-common';
+import { URI } from '@opensumi/ide-core-common';
 import { FileUri } from '@opensumi/ide-core-node';
 
-import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
 import { DidFilesChangedParams, FileChangeType } from '../../src/common';
 import { FileSystemWatcherServer } from '../../src/node/file-service-watcher';
@@ -13,20 +13,21 @@ function sleep(time: number) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
 
+jest.setTimeout(10000);
+
 let seed = 1;
 
-(isMacintosh ? describe.skip : describe)('ParceWatcher Test', () => {
+describe('ParceWatcher Test', () => {
   const track = temp.track();
-  const sleepTime = 500;
+  const sleepTime = 1000;
   let injector: MockInjector;
   let root: URI;
   let watcherServer: FileSystemWatcherServer;
   let watcherId: number;
-  jest.setTimeout(10000);
 
   beforeEach(async () => {
-    injector = createBrowserInjector([]);
-    root = FileUri.create(await temp.mkdir('node-fs-root'));
+    injector = createNodeInjector([]);
+    root = FileUri.create(fse.realpathSync(await temp.mkdir('parce-watcher-test')));
     // @ts-ignore
     injector.mock(FileSystemWatcherServer, 'isEnableNSFW', () => false);
     watcherServer = injector.get(FileSystemWatcherServer);
@@ -143,17 +144,18 @@ let seed = 1;
   });
 });
 
-(isMacintosh ? describe.skip : describe)('Watch file rename/move/new', () => {
+describe('Watch file rename/move/new', () => {
+  jest.setTimeout(10000);
+
   const track = temp.track();
-  const sleepTime = 500;
+  const sleepTime = 1000;
   let root: URI;
   let watcherServer: FileSystemWatcherServer;
   let injector: MockInjector;
-  jest.setTimeout(10000);
 
   beforeEach(async () => {
-    injector = createBrowserInjector([]);
-    root = FileUri.create(fse.realpathSync(temp.mkdirSync('node-fs-root')));
+    injector = createNodeInjector([]);
+    root = FileUri.create(fse.realpathSync(temp.mkdirSync('nsfw-test')));
     fse.mkdirpSync(FileUri.fsPath(root.resolve('for_rename_folder')));
     fse.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     // @ts-ignore
