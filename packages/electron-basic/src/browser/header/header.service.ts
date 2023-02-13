@@ -6,8 +6,10 @@ import {
   Emitter,
   DisposableCollection,
   isMacintosh,
+  WithEventBus,
+  OnEvent,
 } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { ResourceDidUpdateEvent, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';
 import { template } from '@opensumi/ide-utils/lib/strings';
 
@@ -24,7 +26,7 @@ if (isMacintosh) {
 }
 
 @Injectable()
-export class ElectronHeaderService implements IElectronHeaderService {
+export class ElectronHeaderService extends WithEventBus implements IElectronHeaderService {
   disposableCollection = new DisposableCollection();
 
   @Autowired(WorkbenchEditorService)
@@ -59,11 +61,12 @@ export class ElectronHeaderService implements IElectronHeaderService {
   }
 
   constructor() {
-    this.disposableCollection.push(
-      this.editorService.onActiveResourceChange(() => {
-        this.updateAppTitle();
-      }),
-    );
+    super();
+  }
+
+  @OnEvent(ResourceDidUpdateEvent)
+  onResourceDidUpdateEvent(e: ResourceDidUpdateEvent) {
+    this.updateAppTitle();
   }
 
   updateAppTitle() {
