@@ -15,7 +15,6 @@ import {
   formatLocalize,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
-import { MonacoCodeService } from '@opensumi/ide-editor/lib/browser/editor.override';
 import { ResourceEdit } from '@opensumi/ide-monaco/lib/browser/monaco-api';
 import { languageFeaturesService } from '@opensumi/ide-monaco/lib/browser/monaco-api/languages';
 import { ITextModel } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
@@ -36,6 +35,7 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/codeAction/browser/types';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
+import { MonacoCodeService } from '../editor.override';
 import { SaveReason } from '../types';
 
 import { EditorDocumentModelWillSaveEvent, IEditorDocumentModelService } from './types';
