@@ -2,6 +2,7 @@ import '@opensumi/ide-i18n/lib/browser';
 import * as React from 'react';
 
 import { SlotLocation } from '@opensumi/ide-core-browser';
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { SampleModule } from '../sample-modules';
 
@@ -53,7 +54,7 @@ renderApp({
     'editor.quickSuggestionsDelay': 100,
     'editor.quickSuggestionsMaxCount': 50,
     'editor.scrollBeyondLastLine': false,
-    'general.language': 'en-US',
+    'general.language': LOCALE_TYPES.EN_US,
   },
   workspaceDir: '/test',
   extraContextProvider: (props) => (

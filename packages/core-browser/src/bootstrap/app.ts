@@ -44,7 +44,6 @@ import {
   DEFAULT_URI_SCHEME,
 } from '@opensumi/ide-core-common/lib/const/application';
 import { IElectronMainLifeCycleService } from '@opensumi/ide-core-common/lib/electron';
-import { LocaleType, setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
 
 import { createElectronClientConnection } from '..';
 import { ClientAppStateService } from '../application';

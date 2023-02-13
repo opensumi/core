@@ -9,7 +9,7 @@ import {
   Deferred,
   URI,
 } from '@opensumi/ide-core-browser';
-import { LOCALE_TYPES } from '@opensumi/ide-i18n/lib/common/types';
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 import { StaticResourceService } from '@opensumi/ide-static-resource/lib/browser';
 
 import {

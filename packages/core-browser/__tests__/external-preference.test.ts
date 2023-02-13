@@ -1,4 +1,4 @@
-import { LOCALE_TYPES } from '@opensumi/ide-i18n/lib/common/types';
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { IPreferences } from '../src';
 import {

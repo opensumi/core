@@ -1,4 +1,7 @@
-const defaultLanguage = 'en-US';
+// eslint-disable-next-line import/order
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
+const defaultLanguage = LOCALE_TYPES.EN_US;
 // eslint-disable-next-line import/order
 import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
 // 请注意，集成方在这里需要自己传一个正确的 locale 进去
