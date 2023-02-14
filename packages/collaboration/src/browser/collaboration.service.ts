@@ -5,7 +5,7 @@ import { WebsocketProvider } from 'y-websocket';
 import { Doc as YDoc, Map as YMap, YMapEvent, Text as YText } from 'yjs';
 
 import { Injectable, Autowired, Inject, INJECTOR_TOKEN, Injector } from '@opensumi/di';
-import { AppConfig } from '@opensumi/ide-core-browser';
+import { AppConfig, DisposableCollection } from '@opensumi/ide-core-browser';
 import { Deferred, ILogger, OnEvent, uuid, WithEventBus } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import {
@@ -16,6 +16,7 @@ import {
   IEditorDocumentModelService,
 } from '@opensumi/ide-editor/lib/browser';
 import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/workbench-editor.service';
+import { IFileServiceClient, FileChangeEvent, FileChangeType } from '@opensumi/ide-file-service/lib/common';
 import { ITextModel, ICodeEditor } from '@opensumi/ide-monaco';
 import { ICSSStyleService } from '@opensumi/ide-theme';
 
@@ -54,6 +55,9 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   @Autowired(IEditorDocumentModelService)
   private docModelManager: IEditorDocumentModelService;
 
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
+
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -74,6 +78,8 @@ export class CollaborationService extends WithEventBus implements ICollaboration
   private yMapReadyMap: Map<string, Deferred<void>> = new Map();
 
   private bindingReadyMap: Map<string, Deferred<void>> = new Map();
+
+  protected readonly toDisposableCollection: DisposableCollection = new DisposableCollection();
 
   private yMapObserver = (event: YMapEvent<YText>) => {
     const changes = event.changes.keys;
@@ -133,6 +139,14 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yWebSocketProvider.awareness.setLocalStateField('user-info', this.userInfo);
   }
 
+  initFileWatch() {
+    this.toDisposableCollection.push(
+      this.fileServiceClient.onFilesChanged((e) => {
+        this.handleFileChange(e);
+      }),
+    );
+  }
+
   destroy() {
     this.yWebSocketProvider.awareness.off('update', this.updateCSSManagerWhenAwarenessUpdated);
     this.clientIDStyleAddedSet.forEach((clientID) => {
@@ -143,6 +157,7 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     this.yTextMap.unobserve(this.yMapObserver);
     this.yWebSocketProvider.disconnect();
     this.bindingMap.forEach((binding) => binding.destroy());
+    this.toDisposableCollection.dispose();
   }
 
   registerContribution(contribution: CollaborationModuleContribution) {
@@ -267,6 +282,16 @@ export class CollaborationService extends WithEventBus implements ICollaboration
       });
     }
   };
+
+  private handleFileChange(e: FileChangeEvent) {
+    e.forEach((change) => {
+      // 只有从文件系统更新，并且窗口未打开情况，才重置 yTextMap
+      if (change.type === FileChangeType.UPDATED && !this.bindingMap.get(change.uri) && this.yTextMap.get(change.uri)) {
+        this.yTextMap.delete(change.uri);
+        this.resetDeferredYMapKey(change.uri);
+      }
+    });
+  }
 
   @OnEvent(EditorDocumentModelCreationEvent)
   private async editorDocumentModelCreationHandler(e: EditorDocumentModelCreationEvent) {
