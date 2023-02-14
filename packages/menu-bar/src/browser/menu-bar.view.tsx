@@ -82,6 +82,21 @@ export const MenuBar = observer(() => {
   const menubarStore = useInjectable<MenubarStore>(MenubarStore);
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
   const [focusMode, setFocusMode] = React.useState(false);
+  const relatedTarget = React.useRef<HTMLElement>();
+
+  const handleMenubarFocusIn = React.useCallback((e: React.FocusEvent<HTMLDivElement>) => {
+    if (!relatedTarget.current && e.relatedTarget) {
+      relatedTarget.current = e.relatedTarget as HTMLElement;
+    }
+  }, []);
+
+  const handleMenuItemClick = React.useCallback(() => {
+    if (relatedTarget.current) {
+      relatedTarget.current.focus();
+      relatedTarget.current = undefined;
+    }
+    setFocusMode(false);
+  }, []);
 
   const handleMouseLeave = React.useCallback(() => {
     // 只有 focus 为 true 的时候, mouse leave 才会将其置为 false
@@ -95,6 +110,8 @@ export const MenuBar = observer(() => {
       className={styles.menubars}
       style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}
       mouseEvents={['click', 'contextmenu']}
+      tabIndex={-1} // make focus event implement
+      onFocus={handleMenubarFocusIn}
       onOutsideClick={handleMouseLeave}
     >
       {LogoIcon ? <LogoIcon /> : <div className={styles.logoIconEmpty}></div>}
@@ -104,7 +121,7 @@ export const MenuBar = observer(() => {
           id={id}
           label={label}
           focusMode={focusMode}
-          afterMenuClick={() => setFocusMode(false)}
+          afterMenuClick={handleMenuItemClick}
           afterMenubarClick={() => setFocusMode((r) => !r)}
         />
       ))}
