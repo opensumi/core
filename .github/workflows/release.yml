@@ -89,7 +89,7 @@ jobs:
 
       # 非 main 分支发布时，需要更新 `manifest.json` 文件后提交
       - name: Commit Files Before Push Release Branch
-        if: github.event.ref != 'refs/heads/main' && github.event.inputs.release_branch != ''
+        if: github.event.ref != 'refs/heads/main' && github.event.inputs.release_branch == ''
         run: |
           git add -A
           git commit -m 'chore: update manifest.json to v${{github.event.inputs.version}}'
