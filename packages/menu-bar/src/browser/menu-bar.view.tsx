@@ -96,7 +96,7 @@ export const MenuBar = observer(() => {
       relatedTarget.current = undefined;
     }
     setFocusMode(false);
-  }, []);
+  }, [focusMode]);
 
   const handleMouseLeave = React.useCallback(() => {
     // 只有 focus 为 true 的时候, mouse leave 才会将其置为 false
