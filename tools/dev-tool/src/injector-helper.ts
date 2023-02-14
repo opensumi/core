@@ -1,7 +1,8 @@
 import { Injector, Injectable } from '@opensumi/di';
-import { IContextKeyService, RecentFilesManager } from '@opensumi/ide-core-browser';
 import { ClientApp } from '@opensumi/ide-core-browser/lib/bootstrap/app';
 import { BrowserModule } from '@opensumi/ide-core-browser/lib/browser-module';
+import { IContextKeyService } from '@opensumi/ide-core-browser/lib/context-key';
+import { RecentFilesManager } from '@opensumi/ide-core-browser/lib/quick-open';
 import {
   CommonServerPath,
   ConstructorOf,

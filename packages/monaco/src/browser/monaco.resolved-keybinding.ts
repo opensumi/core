@@ -16,6 +16,7 @@ import {
   ResolvedKeybindingPart,
   SimpleKeybinding,
   Modifiers,
+  ScanCodeBinding,
 } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
 import * as platform from '@opensumi/monaco-editor-core/esm/vs/base/common/platform';
 import { USLayoutResolvedKeybinding } from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/usLayoutResolvedKeybinding';
@@ -107,27 +108,30 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
     return keybinding.key;
   }
 
-  static keyCode(keybinding: SimpleKeybinding): KeyCode {
-    const keyCode = keybinding.keyCode;
+  static keyCode(keybinding: SimpleKeybinding | ScanCodeBinding): KeyCode {
+    const keyCode =
+      keybinding instanceof SimpleKeybinding
+        ? keybinding.keyCode
+        : USLayoutResolvedKeybinding['_scanCodeToKeyCode'](keybinding.scanCode);
     const sequence: Keystroke = {
       first: Key.getKey(this.monaco2BrowserKeyCode(keyCode & 0xff)),
       modifiers: [],
     };
     if (keybinding.ctrlKey) {
       if (isOSX) {
-        sequence.modifiers!.push(KeyModifier.MacCtrl);
+        sequence.modifiers?.push(KeyModifier.MacCtrl);
       } else {
-        sequence.modifiers!.push(KeyModifier.CtrlCmd);
+        sequence.modifiers?.push(KeyModifier.CtrlCmd);
       }
     }
     if (keybinding.shiftKey) {
-      sequence.modifiers!.push(KeyModifier.Shift);
+      sequence.modifiers?.push(KeyModifier.Shift);
     }
     if (keybinding.altKey) {
-      sequence.modifiers!.push(KeyModifier.Alt);
+      sequence.modifiers?.push(KeyModifier.Alt);
     }
-    if (keybinding.metaKey && sequence.modifiers!.indexOf(KeyModifier.CtrlCmd) === -1) {
-      sequence.modifiers!.push(KeyModifier.CtrlCmd);
+    if (keybinding.metaKey && sequence.modifiers?.indexOf(KeyModifier.CtrlCmd) === -1) {
+      sequence.modifiers?.push(KeyModifier.CtrlCmd);
     }
     return KeyCode.createKeyCode(sequence);
   }
@@ -143,5 +147,9 @@ export class MonacoResolvedKeybinding extends ResolvedKeybinding {
       }
     }
     return -1;
+  }
+
+  static toKeybinding(keybindings: Array<SimpleKeybinding | ScanCodeBinding>): string {
+    return keybindings.map((binding) => this.keyCode(binding)).join(' ');
   }
 }

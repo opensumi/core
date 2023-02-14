@@ -1,13 +1,13 @@
 import RightOutlined from '@ant-design/icons/RightOutlined';
 import classNames from 'classnames';
-import RcDropdown from 'rc-dropdown';
+import RCDropdown from 'rc-dropdown';
 import React from 'react';
 
 import { tuple } from '../utils/type';
 import { warning } from '../utils/warning';
 
 const Placements = tuple('topLeft', 'topCenter', 'topRight', 'bottomLeft', 'bottomCenter', 'bottomRight');
-type Placement = typeof Placements[number];
+type Placement = (typeof Placements)[number];
 
 type OverlayFunc = () => React.ReactNode;
 
@@ -124,7 +124,7 @@ export default class Dropdown extends React.Component<DropDownProps, any> {
     }
 
     return (
-      <RcDropdown
+      <RCDropdown
         alignPoint={alignPoint}
         {...this.props}
         prefixCls={prefixCls}
@@ -134,7 +134,7 @@ export default class Dropdown extends React.Component<DropDownProps, any> {
         overlay={() => this.renderOverlay(prefixCls)}
       >
         {dropdownTrigger}
-      </RcDropdown>
+      </RCDropdown>
     );
   };
 

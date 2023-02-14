@@ -89,7 +89,7 @@ jobs:
 
       # 非 main 分支发布时，需要更新 `manifest.json` 文件后提交
       - name: Commit Files Before Push Release Branch
-        if: github.event.ref == 'refs/heads/main' && github.event.inputs.release_branch != ''
+        if: github.event.ref != 'refs/heads/main' && github.event.inputs.release_branch == ''
         run: |
           git add -A
           git commit -m 'chore: update manifest.json to v${{github.event.inputs.version}}'
@@ -114,16 +114,6 @@ jobs:
           github_repo: ${{ github.repository }}
           git_commit_sha: ${{ github.sha }}
           git_tag_prefix: 'v'
-
-      - name: Create Release
-        id: create_release
-        if: steps.checkTag.outputs.exists == 'false'
-        uses: softprops/action-gh-release@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          generate_release_notes: true
-          # 发布 Release 后请手动到该 Release 页面查看是否内容正确，然后点击编辑 -> 点击转为 Release
-          draft: true
 
       # 在 main 分支运行时，自动切下一个 Release 分支
       - name: Create And Push Release Branch

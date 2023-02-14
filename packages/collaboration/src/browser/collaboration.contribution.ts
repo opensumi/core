@@ -1,6 +1,7 @@
 import { Autowired } from '@opensumi/di';
 import {
   ClientAppContribution,
+  FsProviderContribution,
   KeybindingContribution,
   KeybindingRegistry,
   KeybindingWeight,
@@ -10,8 +11,10 @@ import { CommandContribution, CommandRegistry, ContributionProvider, Domain } fr
 import { ICollaborationService, CollaborationModuleContribution } from '../common';
 import { REDO, UNDO } from '../common/commands';
 
-@Domain(ClientAppContribution, KeybindingContribution, CommandContribution)
-export class CollaborationContribution implements ClientAppContribution, KeybindingContribution, CommandContribution {
+@Domain(ClientAppContribution, KeybindingContribution, CommandContribution, FsProviderContribution)
+export class CollaborationContribution
+  implements ClientAppContribution, KeybindingContribution, CommandContribution, FsProviderContribution
+{
   @Autowired(ICollaborationService)
   private collaborationService: ICollaborationService;
 
@@ -63,5 +66,9 @@ export class CollaborationContribution implements ClientAppContribution, Keybind
         this.collaborationService.redoOnFocusedTextModel();
       },
     });
+  }
+
+  onFileServiceReady() {
+    this.collaborationService.initFileWatch();
   }
 }
