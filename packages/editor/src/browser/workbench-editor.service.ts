@@ -1408,9 +1408,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         const delayTimer = setTimeout(() => {
           this.notifyTabLoading(resource!);
         }, 60);
+        this.notifyTabChanged();
         await this.displayResourceComponent(resource, options);
         this._currentOrPreviousFocusedEditor = this.currentEditor;
-        this.notifyTabChanged();
         this.notifyBodyChanged();
 
         clearTimeout(delayTimer);
