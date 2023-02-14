@@ -1494,9 +1494,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private async openCodeEditor(resource: IResource, options: IResourceOpenOptions) {
-    const documentRef = await this.getDocumentModelRef(resource.uri);
     this.resolveTabChanged(resource, this.currentResource);
     await this.codeEditorReady.onceReady(async () => {
+      const documentRef = await this.getDocumentModelRef(resource.uri);
       await this.codeEditor.open(documentRef);
 
       if (options.range) {
@@ -1553,12 +1553,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
         });
       }
-    });
 
-    // 可能在diff Editor中修改导致为脏
-    if (documentRef.instance!.dirty) {
-      this.pinPreviewed(resource.uri);
-    }
+      // 可能在diff Editor中修改导致为脏
+      if (documentRef.instance!.dirty) {
+        this.pinPreviewed(resource.uri);
+      }
+    });
   }
 
   private async openDiffEditor(resource: IResource, options: IResourceOpenOptions) {
