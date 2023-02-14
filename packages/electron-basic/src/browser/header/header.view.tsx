@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -112,13 +113,13 @@ export const HeaderBarRightComponent = () => {
         height: defaultHeight(),
       }}
     >
-      <div className={getIcon('min')} onClick={() => windowService.minimize()} />
+      <div className={cls(styles.icon, getIcon('min'))} onClick={() => windowService.minimize()} />
       {maximized ? (
-        <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
+        <div className={cls(styles.icon, getIcon('max'))} onClick={() => windowService.unmaximize()} />
       ) : (
-        <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
+        <div className={cls(styles.icon, getIcon('unmax'))} onClick={() => windowService.maximize()} />
       )}
-      <div className={getIcon('close1')} onClick={() => windowService.close()} />
+      <div className={cls(styles.icon, getIcon('close1'))} onClick={() => windowService.close()} />
     </div>
   );
 };
