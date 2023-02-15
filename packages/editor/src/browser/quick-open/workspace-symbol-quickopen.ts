@@ -30,7 +30,7 @@ class WorkspaceSymbolOpenSideAction extends QuickOpenBaseAction {
   constructor() {
     super({
       id: 'workspace-symbol:splitToRight',
-      tooltip: localize('quickOpen.openSide'),
+      tooltip: localize('quickOpen.openOnTheRightSide'),
       class: getIcon('embed'),
     });
   }

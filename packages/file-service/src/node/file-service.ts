@@ -2,8 +2,6 @@ import os from 'os';
 import paths from 'path';
 
 import drivelist from 'drivelist';
-import fileType from 'file-type';
-import * as fs from 'fs-extra';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';

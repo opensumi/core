@@ -1,7 +1,9 @@
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
 import { browserViews } from './contributes/zh-CN.lang';
 
 export const localizationBundle = {
-  languageId: 'zh-CN',
+  languageId: LOCALE_TYPES.ZH_CN,
   languageName: 'Chinese',
   localizedLanguageName: '中文(中国)',
   contents: {
@@ -154,7 +156,7 @@ export const localizationBundle = {
     'quickopen.tab.goToLine': '转到行',
     'quickopen.tab.tip.prefix': '按',
     'quickopen.tab.tip.suffix': '切换搜索类别',
-    'quickOpen.openSide': '在侧边打开',
+    'quickOpen.openOnTheRightSide': '在侧边打开',
 
     'explorer.title': '资源管理器',
 
@@ -197,8 +199,6 @@ export const localizationBundle = {
     'search.replace.buttonOK': '替换',
     'search.replace.buttonCancel': '取消',
     'search.too.many.results': '由于您的搜索条件过于疏松，我们仅展示了部分搜索结果',
-    'file-search.quickOpen.leftRight': '在侧边打开',
-    'file-search.quickOpen.upDown': '在底部打开',
     'search.fileReplaceChanges': '{0} ↔ {1} (替换预览)',
     'search.fileResults': '文件结果',
     'search.fileResults.notfound': '没有匹配的文件',
@@ -455,7 +455,6 @@ export const localizationBundle = {
     'preference.general.theme': '主题',
     'preference.general.icon': '图标主题',
     'preference.workbench.colorCustomizations': '覆盖当前所选颜色主题的颜色',
-    'preference.editor.tokenColorCustomizations': '覆盖当前所选颜色主题中的编辑器颜色和字体样式',
     'preference.general.language': '语言',
     'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
     'preference.general.language.change.refresh.now': '立即刷新',
@@ -464,11 +463,7 @@ export const localizationBundle = {
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy': '触发一些重构变更时，是否需要弹窗确认',
     'preference.workbench.refactoringChanges.showPreviewStrategy.title': '重构确认方式',
-    'preference.workbench.editorAssociations':
-      '将 glob 模式配置到编辑器(例如 `"*十六进制": "hexEditor.hexEdit"`)。这些优先顺序高于默认行为。',
-
     'preference.editor.wrapTab': '编辑器 Tab 自动换行',
-    'editor.configuration.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.minimap': '显示 Minimap',
     'preference.editor.forceReadOnly': '只读模式',
@@ -484,8 +479,7 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': '自动换行长度',
     'preference.editor.askIfDiff': '保存文件冲突时提示',
     'preference.editor.readonlyFiles': '只读文件列表',
-    'preference.editor.formatOnSave': '在保存时格式化文件',
-    'preference.editor.formatOnSaveTimeout': '保存时格式化超时',
+    'preference.editor.formatOnSaveTimeout': '格式化超时时间',
     'preference.editor.formatOnSaveTimeoutError': '格式化时间超过 {0} 毫秒，终止格式化',
     'preference.editor.autoSave': '自动保存文件',
     'preference.editor.autoSaveDelay': '自动保存延迟',
@@ -493,10 +487,14 @@ export const localizationBundle = {
     'preference.editor.quickSuggestionsDelay': '智能提示延迟（毫秒）',
     'preference.editor.largeFile': '超大文件尺寸',
     'preference.files.eol': '文件行尾字符',
+    'preference.files.trimFinalNewlines': '移除最后的换行符',
+    'preference.files.trimTrailingWhitespace': '移除结尾空格',
+    'preference.files.insertFinalNewline': '结尾处插入空行',
     'preference.editor.formatOnPaste': '粘贴时自动格式化',
     'preference.editor.preferredFormatter': '默认格式化器',
     'preference.editor.bracketPairColorization.enabled': '括号着色',
     'preference.array.additem': '添加',
+    'preference.editor.lineHeight': '行高',
 
     'preference.item.notValid': '{0} 不是有效选项',
 
@@ -504,20 +502,6 @@ export const localizationBundle = {
     'editor.saveCodeActions.getting': '从 {0} 中获取 CodeAction',
     'editor.saveCodeActions.saving': '保存 "{0}"',
 
-    'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
-    'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
-    'editor.configuration.renderLineHighlight': '控制编辑器的当前行突出显示方式。',
-    'editor.configuration.formatOnSaveTimeout':
-      '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
-    'editor.configuration.autoSave': '控制如何自动保存文件。',
-    'editor.configuration.autoSaveDelay':
-      '控制自动保存的延迟时长（毫秒）。仅当 `#editor.autoSave#` 设置为“编辑后自动保存”时生效。',
-    'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行提示手动解决保存冲突。',
-    'editor.configuration.forceReadOnly': '是否启用 只读模式',
-    'editor.configuration.bracketPairColorization.enabled':
-      '控制是否启用括号对着色。使用 “workbench.colorCustomizations” 替代括号突出显示颜色。',
-    'editor.configuration.guides.bracketPairs': '控制是否启用括号对指南。',
-    'editor.configuration.mouseBackForwardToNavigate': '允许使用鼠标按钮 4 和 5 来执行命令“Go Back”和“Go Forward”。',
     'editor.autoSave.enum.off': '不启用',
     'editor.files.eol': '文件行尾字符',
     'editor.files.eolDesc': '控制文件默认行尾字符。',
@@ -529,18 +513,10 @@ export const localizationBundle = {
     'editor.format.chooseFormatter': '选择要使用的格式化扩展。',
     'editor.formatDocument.label.multiple': '使用...格式化文档',
     'editor.formatSelection.label.multiple': '格式化选定内容的方式...',
-    'editor.configuration.preferredFormatter': '配置优先使用的格式化器。',
     'editor.chooseEncoding': '用编码重新打开(会丢失未保存内容)',
     'editor.guessEncodingFromContent': '通过内容猜测',
     'editor.changeEol': '选择行尾序列',
     'editor.changeLanguageId': '选择语言模式',
-    'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标识。',
-    'editor.configuration.quickSuggestionsDelay': '控制显示智能提示的延迟时长 (毫秒)。',
-    'editor.configuration.tabSize':
-      '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
-    'editor.configuration.fontWeight': '控制字体粗细，接收 "normal" 和 "bold" 关键词或者 1 到 1000 数值。',
-
-    'editor.configuration.largeFileSize': '控制超大文件的自定义体积。',
     'editor.tokenize.test': '获取选中字符串的Tokenize结果(console)',
 
     'editor.largeFile.prevent': '文件过大，继续打开可能会导致卡顿或者崩溃。',
@@ -548,12 +524,9 @@ export const localizationBundle = {
     'editor.closeEditorsInOtherGroups': '关闭其他组中的编辑器',
     'editor.resetEditorGroups': '重置编辑器组大小',
     'editor.revert': '还原文档',
-    'editor.experimental.stickyScroll.enabled.description': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
 
     'preference.diffEditor.renderSideBySide': '显示并排差异编辑器',
     'preference.diffEditor.ignoreTrimWhitespace': '忽略差异编辑器的前导和尾随空白字符',
-    'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
-    'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
 
     'status.editor.chooseLanguage': '选择语言模式',
     'status.editor.goToLineCol': '转到行/列',
@@ -812,6 +785,7 @@ export const localizationBundle = {
     'welcome.title': '开始使用',
     'welcome.quickStart': '开始使用',
     'welcome.recent.workspace': '最近打开的工作区',
+    'welcome.workspace.noExist': '工作区路径不存在',
 
     'markers.title': '问题',
     'markers.panel.content.empty': '目前尚未在工作区检测到问题。',
@@ -865,8 +839,7 @@ export const localizationBundle = {
     'TaskService.pickRunTask': '选择要运行的任务',
     'TerminalTaskSystem.terminalName': '任务 - {0}',
     'terminal.integrated.exitedWithCode': '终端进程已终止，退出代码: {0}',
-    // reuseTerminal: '终端将被任务重用，按 r 键重新执行该任务，按其他任意键关闭。',
-    reuseTerminal: '终端将被任务重用，按任意键关闭。',
+    'terminal.reuseTerminal': '终端将被任务重用，按任意键关闭。',
 
     'toolbar-customize.buttonDisplay.description': '按钮展示形式',
     'toolbar-customize.buttonDisplay.icon': '仅图标',
@@ -950,85 +923,119 @@ export const localizationBundle = {
     'keyboard.autoDetect.description': "（当前：'{0} '）",
     'keyboard.autoDetect.detail': '尝试通过浏览器及按键信息进行布局自动检测',
 
-    // 仅引用部分编辑器国际化文案
+    // Editor Configurations
+    // Only import part of the editor's i18n text, and you can import it according to the needs of the Settings panel
     // ref: https://github.com/microsoft/vscode-loc/blob/main/i18n/vscode-language-pack-zh-hans/translations/main.i18n.json
-    'suggest.filterGraceful': '控制对建议的筛选和排序是否考虑小的拼写错误。',
-    'suggest.insertMode': '控制接受补全时是否覆盖单词。请注意，这取决于扩展选择使用此功能。',
-    'suggest.insertMode.insert': '插入建议而不覆盖光标右侧的文本。',
-    'suggest.insertMode.replace': '插入建议并覆盖光标右侧的文本。',
-    'suggest.localityBonus': '控制排序时是否首选光标附近的字词。',
-    'suggest.maxVisibleSuggestions.dep': '此设置已弃用。现在可以调整建议小组件的大小。',
-    'suggest.preview': '控制是否在编辑器中预览建议结果。',
-    'suggest.shareSuggestSelections':
+    'editor.configuration.suggest.filterGraceful': '控制对建议的筛选和排序是否考虑小的拼写错误。',
+    'editor.configuration.suggest.insertMode': '控制接受补全时是否覆盖单词。请注意，这取决于扩展选择使用此功能。',
+    'editor.configuration.suggest.insertMode.insert': '插入建议而不覆盖光标右侧的文本。',
+    'editor.configuration.suggest.insertMode.replace': '插入建议并覆盖光标右侧的文本。',
+    'editor.configuration.suggest.localityBonus': '控制排序时是否首选光标附近的字词。',
+    'editor.configuration.suggest.maxVisibleSuggestions.dep': '此设置已弃用。现在可以调整建议小组件的大小。',
+    'editor.configuration.suggest.preview': '控制是否在编辑器中预览建议结果。',
+    'editor.configuration.suggest.shareSuggestSelections':
       '控制是否在多个工作区和窗口间共享记忆的建议选项(需要 `#editor.suggestSelection#`)。',
-    'suggest.showIcons': '控制是否在建议中显示或隐藏图标。',
-    'suggest.showInlineDetails': '控制建议详细信息是随标签一起显示还是仅显示在详细信息小组件中',
-    'suggest.showStatusBar': '控制建议小部件底部的状态栏的可见性。',
-    'suggest.snippetsPreventQuickSuggestions': '控制活动代码段是否阻止快速建议。',
-    suggestFontSize: '建议小部件的字号。如果设置为 `0`，则使用 `#editor.fontSize#` 的值。',
-    suggestLineHeight: '建议小部件的行高。如果设置为 `0`，则使用 `#editor.lineHeight#` 的值。最小值为 8。',
-    suggestOnTriggerCharacters: '控制在键入触发字符后是否自动显示建议。',
-    suggestSelection: '控制在建议列表中如何预先选择建议。',
-    'suggestSelection.first': '始终选择第一个建议。',
-    'suggestSelection.recentlyUsed':
+    'editor.configuration.suggest.showIcons': '控制是否在建议中显示或隐藏图标。',
+    'editor.configuration.suggest.showInlineDetails': '控制建议详细信息是随标签一起显示还是仅显示在详细信息小组件中',
+    'editor.configuration.suggest.showStatusBar': '控制建议小部件底部的状态栏的可见性。',
+    'editor.configuration.suggest.snippetsPreventQuickSuggestions': '控制活动代码段是否阻止快速建议。',
+    'editor.configuration.suggestFontSize': '建议小部件的字号。如果设置为 `0`，则使用 `#editor.fontSize#` 的值。',
+    'editor.configuration.suggestLineHeight':
+      '建议小部件的行高。如果设置为 `0`，则使用 `#editor.lineHeight#` 的值。最小值为 8。',
+    'editor.configuration.suggestOnTriggerCharacters': '控制在键入触发字符后是否自动显示建议。',
+    'editor.configuration.suggestSelection': '控制在建议列表中如何预先选择建议。',
+    'editor.configuration.suggestSelection.first': '始终选择第一个建议。',
+    'editor.configuration.suggestSelection.recentlyUsed':
       '选择最近的建议，除非进一步键入选择其他项。例如 `console. -> console.log`，因为最近补全过 `log`。',
-    'suggestSelection.recentlyUsedByPrefix':
+    'editor.configuration.suggestSelection.recentlyUsedByPrefix':
       '根据之前补全过的建议的前缀来进行选择。例如，`co -> console`、`con -> const`。',
-    tabCompletion: '启用 Tab 补全。',
-    'tabCompletion.off': '禁用 Tab 补全。',
-    'tabCompletion.on': '在按下 Tab 键时进行 Tab 补全，将插入最佳匹配建议。',
-    'tabCompletion.onlySnippets': '在前缀匹配时进行 Tab 补全。在 "quickSuggestions" 未启用时体验最好。',
-    'editor.guides.bracketPairs': '控制是否启用括号对指南。',
-    'editor.guides.bracketPairsHorizontal': '控制是否启用水平括号对指南。',
-    renderLineHighlight: '控制编辑器的当前行进行高亮显示的方式。',
-    'renderLineHighlight.all': '同时突出显示导航线和当前行。',
-    renderLineHighlightOnlyWhenFocus: '控制编辑器是否仅在焦点在编辑器时突出显示当前行。',
-    codeLens: '控制是否在编辑器中显示 CodeLens。',
-    'editor.suggest.showClasss': '启用后，IntelliSense 将显示“类”建议。',
-    'editor.suggest.showColors': '启用后，IntelliSense 将显示“颜色”建议。',
-    'editor.suggest.showConstants': '启用后，IntelliSense 将显示“常量”建议。',
-    'editor.suggest.showConstructors': '启用后，IntelliSense 将显示“构造函数”建议。',
-    'editor.suggest.showCustomcolors': '启用后，IntelliSense 将显示“自定义颜色”建议。',
-    'editor.suggest.showDeprecated': '启用后，IntelliSense 将显示“已启用”建议。',
-    'editor.suggest.showEnumMembers': '启用后，IntelliSense 将显示 "enumMember" 建议。',
-    'editor.suggest.showEnums': '启用后，IntelliSense 将显示“枚举”建议。',
-    'editor.suggest.showEvents': '启用后，IntelliSense 将显示“事件”建议。',
-    'editor.suggest.showFields': '启用后，IntelliSense 将显示“字段”建议。',
-    'editor.suggest.showFiles': '启用后，IntelliSense 将显示“文件”建议。',
-    'editor.suggest.showFolders': '启用后，IntelliSense 将显示“文件夹”建议。',
-    'editor.suggest.showFunctions': '启用后，IntelliSense 将显示“函数”建议。',
-    'editor.suggest.showInterfaces': '启用后，IntelliSense 将显示“接口”建议。',
-    'editor.suggest.showIssues': '启用后，IntelliSense 将显示"问题"建议。',
-    'editor.suggest.showKeywords': '启用后，IntelliSense 将显示“关键字”建议。',
-    'editor.suggest.showMethods': '启用后，IntelliSense 将显示“方法”建议。',
-    'editor.suggest.showModules': '启用后，IntelliSense 将显示“模块”建议。',
-    'editor.suggest.showOperators': '启用后，IntelliSense 将显示“操作符”建议。',
-    'editor.suggest.showPropertys': '启用后，IntelliSense 将显示“属性”建议。',
-    'editor.suggest.showReferences': '启用后，IntelliSense 将显示“参考”建议。',
-    'editor.suggest.showSnippets': '启用后，IntelliSense 将显示“片段”建议。',
-    'editor.suggest.showStructs': '启用后，IntelliSense 将显示“结构”建议。',
-    'editor.suggest.showTexts': '启用后，IntelliSense 将显示“文本”建议。',
-    'editor.suggest.showTypeParameters': '启用后，IntelliSense 将显示 "typeParameter" 建议。',
-    'editor.suggest.showUnits': '启用后，IntelliSense 将显示“单位”建议。',
-    'editor.suggest.showUsers': '启用后，IntelliSense 将显示"用户"建议。',
-    'editor.suggest.showValues': '启用后，IntelliSense 将显示“值”建议。',
-    'editor.suggest.showVariables': '启用后，IntelliSense 将显示“变量”建议。',
-    'editor.suggest.maxVisibleSuggestions': '控制 IntelliSense 在显示滚动条之前将显示的建议数量（最多 15 个）。',
-    'editor.suggest.preview': '启用或禁用建议预览的呈现。',
-    'editor.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
-    'editor.guides.indentation': '控制编辑器是否显示缩进参考线。',
-    'editor.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
+    'editor.configuration.tabCompletion': '启用 Tab 补全。',
+    'editor.configuration.tabCompletion.off': '禁用 Tab 补全。',
+    'editor.configuration.tabCompletion.on': '在按下 Tab 键时进行 Tab 补全，将插入最佳匹配建议。',
+    'editor.configuration.tabCompletion.onlySnippets':
+      '在前缀匹配时进行 Tab 补全。在 "quickSuggestions" 未启用时体验最好。',
+    'editor.configuration.editor.guides.bracketPairs': '控制是否启用括号对指南。',
+    'editor.configuration.editor.guides.bracketPairsHorizontal': '控制是否启用水平括号对指南。',
+    'editor.configuration.renderLineHighlight': '控制编辑器的当前行进行高亮显示的方式。',
+    'editor.configuration.renderLineHighlight.all': '同时突出显示导航线和当前行。',
+    'editor.configuration.renderLineHighlightOnlyWhenFocus': '控制编辑器是否仅在焦点在编辑器时突出显示当前行。',
+    'editor.configuration.codeLens': '控制是否在编辑器中显示 CodeLens。',
+    'editor.configuration.suggest.showClasss': '启用后，IntelliSense 将显示“类”建议。',
+    'editor.configuration.suggest.showColors': '启用后，IntelliSense 将显示“颜色”建议。',
+    'editor.configuration.suggest.showConstants': '启用后，IntelliSense 将显示“常量”建议。',
+    'editor.configuration.suggest.showConstructors': '启用后，IntelliSense 将显示“构造函数”建议。',
+    'editor.configuration.suggest.showCustomcolors': '启用后，IntelliSense 将显示“自定义颜色”建议。',
+    'editor.configuration.suggest.showDeprecated': '启用后，IntelliSense 将显示“已启用”建议。',
+    'editor.configuration.suggest.showEnumMembers': '启用后，IntelliSense 将显示 "enumMember" 建议。',
+    'editor.configuration.suggest.showEnums': '启用后，IntelliSense 将显示“枚举”建议。',
+    'editor.configuration.suggest.showEvents': '启用后，IntelliSense 将显示“事件”建议。',
+    'editor.configuration.suggest.showFields': '启用后，IntelliSense 将显示“字段”建议。',
+    'editor.configuration.suggest.showFiles': '启用后，IntelliSense 将显示“文件”建议。',
+    'editor.configuration.suggest.showFolders': '启用后，IntelliSense 将显示“文件夹”建议。',
+    'editor.configuration.suggest.showFunctions': '启用后，IntelliSense 将显示“函数”建议。',
+    'editor.configuration.suggest.showInterfaces': '启用后，IntelliSense 将显示“接口”建议。',
+    'editor.configuration.suggest.showIssues': '启用后，IntelliSense 将显示"问题"建议。',
+    'editor.configuration.suggest.showKeywords': '启用后，IntelliSense 将显示“关键字”建议。',
+    'editor.configuration.suggest.showMethods': '启用后，IntelliSense 将显示“方法”建议。',
+    'editor.configuration.suggest.showModules': '启用后，IntelliSense 将显示“模块”建议。',
+    'editor.configuration.suggest.showOperators': '启用后，IntelliSense 将显示“操作符”建议。',
+    'editor.configuration.suggest.showPropertys': '启用后，IntelliSense 将显示“属性”建议。',
+    'editor.configuration.suggest.showReferences': '启用后，IntelliSense 将显示“参考”建议。',
+    'editor.configuration.suggest.showSnippets': '启用后，IntelliSense 将显示“片段”建议。',
+    'editor.configuration.suggest.showStructs': '启用后，IntelliSense 将显示“结构”建议。',
+    'editor.configuration.suggest.showTexts': '启用后，IntelliSense 将显示“文本”建议。',
+    'editor.configuration.suggest.showTypeParameters': '启用后，IntelliSense 将显示 "typeParameter" 建议。',
+    'editor.configuration.suggest.showUnits': '启用后，IntelliSense 将显示“单位”建议。',
+    'editor.configuration.suggest.showUsers': '启用后，IntelliSense 将显示"用户"建议。',
+    'editor.configuration.suggest.showValues': '启用后，IntelliSense 将显示“值”建议。',
+    'editor.configuration.suggest.showVariables': '启用后，IntelliSense 将显示“变量”建议。',
+    'editor.configuration.suggest.maxVisibleSuggestions':
+      '控制 IntelliSense 在显示滚动条之前将显示的建议数量（最多 15 个）。',
+    'editor.configuration.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
+    'editor.configuration.experimental.stickyScroll.enabled': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
+    'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标识。',
+    'editor.configuration.quickSuggestionsDelay': '控制显示智能提示的延迟时长 (毫秒)。',
+    'editor.configuration.tabSize':
+      '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
+    'editor.configuration.fontWeight': '控制字体粗细，接收 "normal" 和 "bold" 关键词或者 1 到 1000 数值。',
+    'editor.configuration.largeFileSize': '控制超大文件的自定义体积。',
+    'editor.configuration.preferredFormatter': '配置优先使用的格式化器。',
+    'editor.configuration.wrapTab': '控制当编辑器 Tab 超过可用空间时，是否使用换行来代替滚动模式。',
+    'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
+    'editor.configuration.formatOnSaveTimeout':
+      '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
+    'editor.configuration.autoSave': '控制如何自动保存文件。',
+    'editor.configuration.formatOnSave': '在保存时格式化文件',
+    'editor.configuration.autoSaveDelay':
+      '控制自动保存的延迟时长（毫秒）。仅当 `#editor.autoSave#` 设置为“编辑后自动保存”时生效。',
+    'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行提示手动解决保存冲突。',
+    'editor.configuration.forceReadOnly': '是否启用 只读模式',
+    'editor.configuration.bracketPairColorization.enabled':
+      '控制是否启用括号对着色。使用 “workbench.colorCustomizations” 替代括号突出显示颜色。',
+    'editor.configuration.guides.bracketPairs': '控制是否启用括号对指南。',
+    'editor.configuration.mouseBackForwardToNavigate': '允许使用鼠标按钮 4 和 5 来执行命令“Go Back”和“Go Forward”。',
+    'editor.configuration.previewMode': '使用预览模式打开',
+    'editor.configuration.tokenColorCustomizations': '覆盖当前所选颜色主题中的编辑器颜色和字体样式',
+    'editor.configuration.workbench.editorAssociations':
+      '将 glob 模式配置到编辑器(例如 `"*十六进制": "hexEditor.hexEdit"`)。这些优先顺序高于默认行为。',
+    'editor.configuration.guides.indentation': '控制编辑器是否显示缩进参考线。',
+    'editor.configuration.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
+    'editor.configuration.trimAutoWhitespace': '删除自动插入的尾随空白符号。',
+
+    'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
+    'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
+
     'inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
 
     'view.component.renderedError': '视图组件渲染异常',
     'view.component.tryAgain': '重新加载',
 
-    // #region Testing
+    // Testing
     'test.title': '测试管理器',
     'test.result.runFinished': '测试运行完成于 {0}',
     'test.task.unnamed': '未命名任务',
-    // #endregion
 
+    // Menu
     'menu.missing.command': '菜单{0} 要执行的命令不存在：{1}',
     'menu.missing.altCommand': '菜单{0} 要执行的命令(altCommand)不存在：{1}',
     'menu.dupe.command': '菜单{0} command({1}) 和 alt({2}) 注册重复',
@@ -1050,23 +1057,21 @@ export const localizationBundle = {
     'task.contribute': '贡献',
     'task.cannotFindTask': '未找到 {0} 的任务，按回车键返回',
 
+    // Comment
     'comment.reply.count': '{0} 个评论',
     'comment.reply.lastReply': '最后由 {0} 评论',
-    // extension contribute
 
-    // #region walkthrough
+    // Walkthrough
     'walkthroughs.welcome': '欢迎使用',
     'walkthroughs.get.started': '打开 `入门` 演示',
-    // #endregion walkthrough
 
-    // #region merge editor
+    // Merge Editor
     'mergeEditor.workbench.tab.name': '正在合并: {0}',
     'mergeEditor.conflict.action.apply.confirm.title': '当前文件还有未处理的冲突或变更，是否应用并保存更改？',
     'mergeEditor.conflict.action.apply.confirm.continue': '继续合并',
     'mergeEditor.conflict.action.apply.confirm.complete': '确认保存并更改',
     'mergeEditor.button.apply': '应用更改',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
-    // #endregion merge editor
     ...browserViews,
   },
 };

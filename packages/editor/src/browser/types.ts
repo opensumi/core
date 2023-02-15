@@ -23,6 +23,7 @@ import {
   IEditorOpenType,
   IEditor,
   DragOverPosition,
+  EditorOpenType,
 } from '../common';
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
@@ -466,7 +467,7 @@ export class ResourceOpenTypeChangedEvent extends BasicEvent<URI> {}
 export class EditorComponentDisposeEvent extends BasicEvent<IEditorComponent> {}
 
 export class CodeEditorDidVisibleEvent extends BasicEvent<{
-  type: 'code' | 'diff';
+  type: EditorOpenType.code | EditorOpenType.diff;
   groupName: string;
   editorId: string;
 }> {}

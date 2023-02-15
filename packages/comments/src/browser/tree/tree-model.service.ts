@@ -93,7 +93,11 @@ export class CommentModelService extends Disposable {
     this.initDecorations(root);
 
     this.disposables.push(
-      this.commentService.onThreadsCommentChange(() => {
+      Event.any(
+        this.commentService.onThreadsCommentChange,
+        this.commentService.onThreadsChanged,
+        this.commentService.onThreadsCreated,
+      )(() => {
         this.refresh();
       }),
     );

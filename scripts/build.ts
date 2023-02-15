@@ -18,7 +18,6 @@ import * as fs from 'fs-extra';
     await fs.mkdirp(path.dirname(to));
     await fs.copyFile(from, to);
   }
-  await run('yarn workspace @opensumi/sumi build');
 })().catch((e) => {
   console.trace(e);
   process.exit(128);

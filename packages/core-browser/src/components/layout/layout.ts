@@ -1,5 +1,12 @@
 import { ResizeHandleVertical, ResizeHandleHorizontal } from '../resize/resize';
 
+export const enum EDirection {
+  LeftToRight = 'left-to-right',
+  RightToLeft = 'right-to-left',
+  TopToBottom = 'top-to-bottom',
+  BottomToTop = 'bottom-to-top',
+}
+
 const flexDirectionMap: {
   [index: string]: {
     direction: any;
@@ -9,28 +16,28 @@ const flexDirectionMap: {
     maxSize: 'maxWidth' | 'maxHeight';
   };
 } = {
-  'left-to-right': {
+  [EDirection.LeftToRight]: {
     direction: 'row',
     size: 'width',
     domSize: 'clientHeight',
     minSize: 'minWidth',
     maxSize: 'maxWidth',
   },
-  'right-to-left': {
+  [EDirection.RightToLeft]: {
     direction: 'row-reverse',
     size: 'width',
     domSize: 'clientHeight',
     minSize: 'minWidth',
     maxSize: 'maxWidth',
   },
-  'top-to-bottom': {
+  [EDirection.TopToBottom]: {
     direction: 'column',
     size: 'height',
     domSize: 'clientWidth',
     minSize: 'minHeight',
     maxSize: 'maxHeight',
   },
-  'bottom-to-top': {
+  [EDirection.BottomToTop]: {
     direction: 'column-reverse',
     size: 'height',
     domSize: 'clientWidth',
@@ -40,7 +47,7 @@ const flexDirectionMap: {
 };
 
 export namespace Layout {
-  export type direction = 'left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top';
+  export type direction = EDirection | `${EDirection}`;
 
   export type alignment = 'horizontal' | 'vertical';
 
@@ -65,14 +72,14 @@ export namespace Layout {
   }
 
   export function getResizeHandle(direction: Layout.direction) {
-    if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
+    if (direction === EDirection.BottomToTop || direction === EDirection.TopToBottom) {
       return ResizeHandleVertical;
     }
     return ResizeHandleHorizontal;
   }
 
   export function getTabbarDirection(direction: Layout.direction) {
-    if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
+    if (direction === EDirection.BottomToTop || direction === EDirection.TopToBottom) {
       return 'row';
     }
     return 'column';

@@ -67,6 +67,7 @@ export interface IOpenMergeEditorArgs {
   ancestor: {
     uri: URI;
     textModel: IEditorModel;
+    baseContent: string;
   };
   input1: MergeEditorInputData;
   input2: MergeEditorInputData;
@@ -76,11 +77,22 @@ export interface IOpenMergeEditorArgs {
   };
 }
 
-interface IValidateOpenArgs {
-  ancestor: URI;
+interface IBaseValidateOpenArgs {
   input1: MergeEditorInputData;
   input2: MergeEditorInputData;
   output: URI;
+}
+
+interface IValidateOpenArgs extends IBaseValidateOpenArgs {
+  ancestor: URI;
+}
+
+/**
+ * vscode 1.69 + 版本中
+ * `ancestor` 改为了 `base`
+ */
+interface IValidateOpenArgs2 extends IBaseValidateOpenArgs {
+  base: URI;
 }
 
 export namespace IRelaxedOpenMergeEditorArgs {
@@ -89,8 +101,8 @@ export namespace IRelaxedOpenMergeEditorArgs {
       throw new TypeError('invalid argument');
     }
 
-    const obj = args as IValidateOpenArgs;
-    const ancestor = toUri(obj.ancestor);
+    const obj = args as IValidateOpenArgs | IValidateOpenArgs2;
+    const ancestor = toUri((obj as IValidateOpenArgs).ancestor || (obj as IValidateOpenArgs2).base);
     const output = toUri(obj.output);
     const input1 = toInputData({
       ...obj.input1,

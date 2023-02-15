@@ -173,7 +173,6 @@ export class DebugConsoleContribution
       command: DEBUG_COMMANDS.CONSOLE_FILTER_FOCUS.id,
       keybinding: 'ctrlcmd+f',
       when: `${CONTEXT_IN_DEBUG_REPL.raw}`,
-      priority: Number.MAX_SAFE_INTEGER,
     });
   }
 }

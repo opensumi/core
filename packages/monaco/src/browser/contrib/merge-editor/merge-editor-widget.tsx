@@ -57,13 +57,33 @@ export class MergeEditorWidget extends Disposable implements IMergeEditorEditor 
     this._id = ++MERGE_EDITOR_ID;
 
     this.layout();
+
+    this.addDispose(
+      this.mergeEditorService.onRestoreState((uri) => {
+        if (uri) {
+          const key = uri.toString();
+          this.viewStateMap.delete(key);
+          this.outputUri = undefined;
+
+          /**
+           * 解决完成后重置回原来的文档内容
+           */
+          const nutrition = this.mergeEditorService.getNutrition();
+          if (nutrition) {
+            const { ancestor } = nutrition;
+            const { baseContent, textModel } = ancestor!;
+            (textModel as ITextModel).setValue(baseContent);
+          }
+        }
+      }),
+    );
   }
 
   async open(args: IOpenMergeEditorArgs): Promise<void> {
     const { ancestor, input1, input2, output } = args;
     this.mergeEditorService.setNutritionAndLaunch(args);
 
-    // 保存上一次状态
+    // 保存上一个 uri 的状态
     this.saveViewState(this.outputUri);
 
     this.outputUri = output.uri;

@@ -1,4 +1,6 @@
-const languages = ['en-US', 'zh-CN'];
+import { LOCALE_TYPES, LocaleType } from '@opensumi/ide-core-common/lib/const';
+
+const languages = [LOCALE_TYPES.EN_US, LOCALE_TYPES.ZH_CN];
 
 describe.skip('check data validity', () => {
   const i18nMap = new Map<string, Record<string, string>>();
@@ -14,7 +16,7 @@ describe.skip('check data validity', () => {
     const thisLength = Object.keys(data).length;
     if (thisLength > maxNumber) {
       maxNumber = thisLength;
-      maxLengthKey = key;
+      maxLengthKey = key as LocaleType;
     }
   }
 

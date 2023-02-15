@@ -603,9 +603,14 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     this.saveCurrentState(); // 保存上一个状态
     this.originalDocModelRef = originalDocModelRef;
     this.modifiedDocModelRef = modifiedDocModelRef;
+    if (!this.originalDocModel || !this.modifiedDocModel) {
+      return;
+    }
+    const original = this.originalDocModel.getMonacoModel();
+    const modified = this.modifiedDocModel.getMonacoModel();
     this.monacoDiffEditor.setModel({
-      original: this.originalDocModel!.getMonacoModel(),
-      modified: this.modifiedDocModel!.getMonacoModel(),
+      original,
+      modified,
     });
 
     if (rawUri) {

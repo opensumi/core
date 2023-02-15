@@ -677,7 +677,7 @@ export enum EditorOpenType {
 
 // 定义一个resource如何被打开
 export interface IEditorOpenType {
-  type: EditorOpenType;
+  type: EditorOpenType | `${EditorOpenType}`;
 
   componentId?: string;
 

@@ -7,8 +7,10 @@ import {
   DisposableCollection,
   isMacintosh,
   PreferenceService,
+  WithEventBus,
+  OnEvent,
 } from '@opensumi/ide-core-browser';
-import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { ResourceDidUpdateEvent, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { basename, dirname, relative } from '@opensumi/ide-utils/lib/path';
 import { template } from '@opensumi/ide-utils/lib/strings';
 
@@ -25,7 +27,7 @@ if (isMacintosh) {
 }
 
 @Injectable()
-export class ElectronHeaderService implements IElectronHeaderService {
+export class ElectronHeaderService extends WithEventBus implements IElectronHeaderService {
   disposableCollection = new DisposableCollection();
 
   @Autowired(WorkbenchEditorService)
@@ -60,14 +62,8 @@ export class ElectronHeaderService implements IElectronHeaderService {
   }
 
   constructor() {
+    super();
     this._titleTemplate = this.preferenceService.getValid('window.title', this._titleTemplate);
-
-    this.disposableCollection.push(
-      this.editorService.onActiveResourceChange(() => {
-        this.updateAppTitle();
-      }),
-    );
-
     this.disposableCollection.push(
       this.preferenceService.onSpecificPreferenceChange('window.title', async (e) => {
         if (e.newValue) {
@@ -79,6 +75,11 @@ export class ElectronHeaderService implements IElectronHeaderService {
         }
       }),
     );
+  }
+
+  @OnEvent(ResourceDidUpdateEvent)
+  onResourceDidUpdateEvent() {
+    this.updateAppTitle();
   }
 
   updateAppTitle() {

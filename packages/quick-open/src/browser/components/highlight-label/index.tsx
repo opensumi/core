@@ -6,9 +6,10 @@ import { strings } from '@opensumi/ide-core-common';
 
 const { escape } = strings;
 
-const labelWithIcons = (str: string) => parseLabel(escape(str)).reduce((pre: string | LabelPart, cur: LabelPart) => {
+const labelWithIcons = (str: string, iconClassName?: string) =>
+  parseLabel(escape(str)).reduce((pre: string | LabelPart, cur: LabelPart) => {
     if (!(typeof cur === 'string') && LabelIcon.is(cur)) {
-      return pre + `<span class='${getExternalIcon(cur.name)}'></span>`;
+      return pre + `<span class='${getExternalIcon(cur.name)} ${iconClassName || ''}'></span>`;
     }
     return pre + cur;
   }, '');
@@ -18,6 +19,7 @@ export interface HighlightLabelProp {
   highlights?: Highlight[];
   className?: string;
   labelClassName?: string;
+  labelIconClassName?: string;
   hightLightClassName?: string;
   OutElementType?: string;
 }
@@ -27,6 +29,7 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
   highlights = [],
   className = '',
   labelClassName = '',
+  labelIconClassName = '',
   hightLightClassName = '',
   OutElementType = 'span',
 }) => {
@@ -40,17 +43,17 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
       }
       if (pos < highlight.start) {
         const substring = text.substring(pos, highlight.start);
-        children.push(`<span class='${labelClassName}'>${labelWithIcons(substring)}</span>`);
+        children.push(`<span class='${labelClassName}'>${labelWithIcons(substring, labelIconClassName)}</span>`);
         pos = highlight.end;
       }
       const substring = text.substring(highlight.start, highlight.end);
-      children.push(`<span class='${hightLightClassName}'>${labelWithIcons(substring)}</span>`);
+      children.push(`<span class='${hightLightClassName}'>${labelWithIcons(substring, labelIconClassName)}</span>`);
       pos = highlight.end;
     }
 
     if (pos < text.length) {
       const substring = text.substring(pos);
-      children.push(`<span class='${labelClassName}'>${labelWithIcons(substring)}</span>`);
+      children.push(`<span class='${labelClassName}'>${labelWithIcons(substring, labelIconClassName)}</span>`);
     }
     return children.join('');
   }, [text, highlights]);

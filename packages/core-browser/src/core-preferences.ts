@@ -6,6 +6,7 @@ import {
   GeneralSettingsId,
   PreferenceSchema,
 } from '@opensumi/ide-core-common';
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
 import { createPreferenceProxy, PreferenceProxy, PreferenceService } from './preferences';
 
@@ -41,7 +42,7 @@ export const corePreferenceSchema: PreferenceSchema = {
     'general.language': {
       type: 'string',
       enum: getAvailableLanguages().map((l) => l.languageId),
-      default: 'zh-CN',
+      default: LOCALE_TYPES.EN_US,
     },
     'general.theme': {
       type: 'string',
@@ -96,7 +97,7 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'string',
       enum: ['singleClick', 'doubleClick'],
       default: 'singleClick',
-      description: localize('preference.workbench.list.openMode'),
+      description: '%preference.workbench.list.openMode%',
     },
     'workbench.commandPalette.history': {
       type: 'number',
