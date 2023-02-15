@@ -467,16 +467,17 @@ export class EditorContribution
       });
     });
 
+    // The native `undo/redo` capability is retained in the native Input
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.COMPONENT_UNDO.id,
       keybinding: 'ctrlcmd+z',
-      when: 'inEditorComponent',
+      when: 'inEditorComponent && !inputFocus',
     });
 
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.COMPONENT_REDO.id,
       keybinding: 'shift+ctrlcmd+z',
-      when: 'inEditorComponent',
+      when: 'inEditorComponent && !inputFocus',
     });
 
     keybindings.registerKeybinding({
