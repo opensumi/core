@@ -64,6 +64,12 @@ async function downloadExtension(url, namespace, extensionName) {
   const tmpStream = fs.createWriteStream(tmpZipFile);
   const res = await nodeFetch(url, { timeout: 100000, headers });
 
+  if (res.status !== 200) {
+    throw {
+      message: `${res.status} ${res.statusText}`,
+    };
+  }
+
   res.body.pipe(tmpStream);
   await Promise.race([awaitEvent(res.body, 'end'), awaitEvent(res.body, 'error')]);
   tmpStream.close();

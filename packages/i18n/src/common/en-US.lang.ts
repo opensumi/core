@@ -1,7 +1,9 @@
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
 import { browserViews } from './contributes/en-US.lang';
 
 export const localizationBundle = {
-  languageId: 'en-US',
+  languageId: LOCALE_TYPES.EN_US,
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
@@ -532,6 +534,7 @@ export const localizationBundle = {
     'preference.files.eol': 'EOL',
     'preference.files.trimFinalNewlines': 'Trim Final Newlines',
     'preference.files.trimTrailingWhitespace': 'Trim Trailing Whitespace',
+    'preference.files.insertFinalNewline': 'Insert Final Newline',
     'preference.editor.lineHeight': 'Line Height',
 
     'keymaps.tab.name': 'Keyboard Shortcuts',

@@ -40,7 +40,7 @@
     "test:ui-ci": "node -r ts-node/register ./scripts/run-ui-tests --ci=true",
     "test:ui-headful": "node -r ts-node/register ./scripts/run-ui-tests --headful=true",
     "test:ui-report": "node -r ts-node/register ./scripts/run-ui-tests --report=true",
-    "test": "jest --forceExit",
+    "test": "jest --forceExit --detectOpenHandles",
     "prepare:test": "yarn && yarn run compile && yarn run build:worker-host",
     "test:cov": "cross-env NODE_OPTIONS=--max_old_space_size=32768 yarn run test --coverage",
     "ci": "yarn run init && yarn run lint --quiet && yarn run check:dep && yarn run test:cov",
@@ -50,9 +50,6 @@
     "changelog": "ts-node -P scripts/tsconfig.scripts.json scripts/changelog/index.ts",
     "iteration": "ts-node -P scripts/tsconfig.scripts.json scripts/iteration-plan.ts",
     "manifest": "ts-node ./scripts/generate-manifest-json"
-  },
-  "engines": {
-    "node": ">=12 <=14"
   },
   "dependencies": {
     "@commitlint/cli": "^15.0.0",
@@ -121,7 +118,7 @@
     "got": "^12.1.0",
     "handlebars": "^4.7.3",
     "is-git-clean": "^1.1.0",
-    "jest": "^29.3.1",
+    "jest": "^29.4.2",
     "jest-canvas-mock": "^2.4.0",
     "jest-environment-jsdom": "^28.0.2",
     "jest-fetch-mock": "^3.0.3",

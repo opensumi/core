@@ -1,3 +1,4 @@
+import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useState, useEffect, useRef } from 'react';
 
@@ -67,8 +68,14 @@ const useMaximize = () => {
   };
 };
 
-// Big Sur increases title bar height
-const isNewMacHeaderBar = () => isMacintosh && parseFloat(electronEnv.osRelease) >= 20;
+const defaultHeight = () => {
+  if (isMacintosh) {
+    // Big Sur increases title bar height
+    const isNewMacHeaderBar = parseFloat(electronEnv.osRelease) >= 20;
+    return isNewMacHeaderBar ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT;
+  }
+  return LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT;
+};
 
 export const HeaderBarLeftComponent = () => {
   const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
@@ -103,16 +110,16 @@ export const HeaderBarRightComponent = () => {
     <div
       className={styles.windowActions}
       style={{
-        height: isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
+        height: defaultHeight(),
       }}
     >
-      <div className={getIcon('min')} onClick={() => windowService.minimize()} />
+      <div className={cls(styles.icon, getIcon('min'))} onClick={() => windowService.minimize()} />
       {maximized ? (
-        <div className={getIcon('max')} onClick={() => windowService.unmaximize()} />
+        <div className={cls(styles.icon, getIcon('max'))} onClick={() => windowService.unmaximize()} />
       ) : (
-        <div className={getIcon('unmax')} onClick={() => windowService.maximize()} />
+        <div className={cls(styles.icon, getIcon('unmax'))} onClick={() => windowService.maximize()} />
       )}
-      <div className={getIcon('close1')} onClick={() => windowService.close()} />
+      <div className={cls(styles.icon, getIcon('close1'))} onClick={() => windowService.close()} />
     </div>
   );
 };
@@ -135,7 +142,7 @@ export const ElectronHeaderBar = observer(
     RightComponent,
     TitleComponent,
     autoHide = true,
-    height = isNewMacHeaderBar() ? LAYOUT_VIEW_SIZE.BIG_SUR_TITLEBAR_HEIGHT : LAYOUT_VIEW_SIZE.TITLEBAR_HEIGHT,
+    height = defaultHeight(),
   }: React.PropsWithChildren<ElectronHeaderBarPorps>) => {
     const windowService: IWindowService = useInjectable(IWindowService);
 

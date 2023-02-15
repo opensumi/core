@@ -675,7 +675,7 @@ export const defaultSettingSections: {
         { id: 'files.eol', localized: 'preference.files.eol' },
         { id: 'files.trimFinalNewlines', localized: 'preference.files.trimFinalNewlines' },
         { id: 'files.trimTrailingWhitespace', localized: 'preference.files.trimTrailingWhitespace' },
-        { id: 'files.insertFinalNewline', localized: 'preference.files.trimFinalNewlines' },
+        { id: 'files.insertFinalNewline', localized: 'preference.files.insertFinalNewline' },
         { id: 'files.exclude', localized: 'preference.files.exclude.title' },
         { id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title' },
         { id: 'files.associations', localized: 'preference.files.associations.title' },

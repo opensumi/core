@@ -1,3 +1,13 @@
+// eslint-disable-next-line import/order
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
+const defaultLanguage = LOCALE_TYPES.EN_US;
+// eslint-disable-next-line import/order
+import { setLocale } from '@opensumi/ide-monaco/lib/browser/monaco-localize';
+// 请注意，集成方在这里需要自己传一个正确的 locale 进去
+// 如果不传则默认会根据 PreferenceScope 的优先级从 LocalStorage 取值
+setLocale(defaultLanguage);
+
 import '@opensumi/ide-i18n';
 import '@opensumi/ide-core-browser/lib/style/index.less';
 import { SlotLocation } from '@opensumi/ide-core-browser';
@@ -30,7 +40,7 @@ renderApp({
   useCdnIcon: true,
   useExperimentalShadowDom: true,
   defaultPreferences: {
-    'general.language': 'en-US',
+    'general.language': defaultLanguage,
     'general.theme': 'opensumi-dark',
     'general.icon': 'vscode-icons',
     'application.confirmExit': 'never',
