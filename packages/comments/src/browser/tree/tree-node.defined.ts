@@ -95,7 +95,7 @@ export class CommentContentNode extends CompositeTreeNode {
     // 评论节点默认是展开状态
     this.isExpanded = true;
     // 是否允许通过 toggleExpand 来展开收起，可以由上层控制，默认不允许
-    this.setIsAllowToggle(false);
+    this._isAllowToggle = false;
   }
 
   get isAllowToggle(): boolean {
