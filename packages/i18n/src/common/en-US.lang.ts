@@ -534,6 +534,7 @@ export const localizationBundle = {
     'preference.files.eol': 'EOL',
     'preference.files.trimFinalNewlines': 'Trim Final Newlines',
     'preference.files.trimTrailingWhitespace': 'Trim Trailing Whitespace',
+    'preference.files.insertFinalNewline': 'Insert Final Newline',
     'preference.editor.lineHeight': 'Line Height',
 
     'keymaps.tab.name': 'Keyboard Shortcuts',

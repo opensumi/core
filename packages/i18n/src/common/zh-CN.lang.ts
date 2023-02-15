@@ -488,6 +488,7 @@ export const localizationBundle = {
     'preference.files.eol': '文件行尾字符',
     'preference.files.trimFinalNewlines': '移除最后的换行符',
     'preference.files.trimTrailingWhitespace': '移除结尾空格',
+    'preference.files.insertFinalNewline': '结尾处插入空行',
     'preference.editor.formatOnPaste': '粘贴时自动格式化',
     'preference.editor.preferredFormatter': '默认格式化器',
     'preference.editor.bracketPairColorization.enabled': '括号着色',
