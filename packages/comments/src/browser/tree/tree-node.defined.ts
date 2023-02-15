@@ -76,6 +76,7 @@ export class CommentContentNode extends CompositeTreeNode {
 
   private _renderedLabel: string | React.ReactNode;
   private _renderedDescription: string | React.ReactNode;
+  private _isAllowExpand: boolean;
 
   private _onSelectHandler: (node?: CommentContentNode) => void;
 
@@ -91,10 +92,18 @@ export class CommentContentNode extends CompositeTreeNode {
   ) {
     super(tree as ITree, parent);
     this._renderedDescription = description;
+    // 评论节点默认是展开状态
+    this.isExpanded = true;
+    // 是否允许通过 toggleExpand 来展开收起，可以由上层控制，默认不允许
+    this.setIsAllowExpand(false);
   }
 
-  get expanded() {
-    return true;
+  get isAllowExpand(): boolean {
+    return this._isAllowExpand;
+  }
+
+  setIsAllowExpand(v: boolean) {
+    this._isAllowExpand = v;
   }
 
   set label(value: string | React.ReactNode) {

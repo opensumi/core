@@ -99,7 +99,7 @@ export const CommentNodeRendered: React.FC<ICommentNodeRenderedProps> = ({
   );
 
   const renderTwice = useCallback((node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
-    if (CommentFileNode.is(node)) {
+    if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowExpand) {
       return renderFolderToggle(node as CommentFileNode);
     }
   }, []);

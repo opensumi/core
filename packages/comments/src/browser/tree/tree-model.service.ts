@@ -145,11 +145,10 @@ export class CommentModelService extends Disposable {
     this.removeFocusedDecoration();
   };
 
-  handleItemClick = async (ev: React.MouseEvent, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
+  handleItemClick = async (_, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
     this.applyFocusedDecoration(node);
     if (CommentFileNode.is(node)) {
       this.toggleDirectory(node);
-    } else if (node) {
     }
   };
 
