@@ -147,7 +147,7 @@ export class CommentModelService extends Disposable {
 
   handleItemClick = async (_, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
     this.applyFocusedDecoration(node);
-    if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowExpand) {
+    if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowToggle) {
       this.toggleDirectory(node as CommentFileNode | CommentContentNode);
     }
   };
