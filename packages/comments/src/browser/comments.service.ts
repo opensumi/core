@@ -326,68 +326,92 @@ export class CommentsService extends Disposable implements ICommentsService {
     );
   }
 
+  public handleCommentFileNode(parent: CommentRoot): CommentFileNode[] {
+    const childs: CommentFileNode[] = [];
+
+    const commentThreads = [...this.threads.values()].filter((thread) => thread.comments.length);
+    const threadUris = groupBy(commentThreads, (thread: ICommentsThread) => thread.uri);
+    Object.keys(threadUris).map((uri) => {
+      const threads: ICommentsThread[] = threadUris[uri];
+      if (threads.length === 0) {
+        return;
+      }
+      const workspaceDir = new URI(this.appConfig.workspaceDir);
+      const resource = new URI(uri);
+      const description = workspaceDir.relative(resource)?.toString();
+      childs.push(
+        new CommentFileNode(
+          this,
+          threads,
+          description,
+          resource.codeUri.fsPath,
+          this.labelService.getIcon(resource),
+          resource,
+          parent,
+        ),
+      );
+    });
+
+    return childs;
+  }
+
+  public handleCommentContentNode(parent: CommentFileNode): CommentContentNode[] {
+    const childs: CommentContentNode[] = [];
+
+    for (const thread of (parent as CommentFileNode).threads) {
+      const [first] = thread.comments;
+      const comment = typeof first.body === 'string' ? first.body : first.body.value;
+      childs.push(
+        new CommentContentNode(
+          this,
+          thread,
+          comment,
+          `[Ln ${thread.range.startLineNumber}]`,
+          first.author.iconPath
+            ? (this.iconService.fromIcon('', first.author.iconPath.toString(), IconType.Background) as string)
+            : getIcon('message'),
+          first.author,
+          parent.resource,
+          parent as CommentFileNode,
+        ),
+      );
+    }
+
+    return childs;
+  }
+
+  public handleCommentReplyNode(parent: CommentContentNode): CommentReplyNode[] {
+    const childs: CommentReplyNode[] = [];
+
+    const thread = parent.thread;
+    const [_, ...others] = thread.comments;
+    const lastReply = others[others.length - 1].author.name;
+    childs.push(
+      new CommentReplyNode(
+        this,
+        thread,
+        formatLocalize('comment.reply.count', others?.length || 0),
+        formatLocalize('comment.reply.lastReply', lastReply),
+        '',
+        parent.resource,
+        parent,
+      ),
+    );
+
+    return childs;
+  }
+
   async resolveChildren(parent?: CommentRoot | CommentFileNode | CommentContentNode) {
     let childs: (CommentRoot | CommentFileNode | CommentContentNode | CommentReplyNode)[] = [];
     if (!parent) {
       childs.push(new CommentRoot(this));
     } else {
       if (CommentRoot.isRoot(parent)) {
-        const commentThreads = [...this.threads.values()].filter((thread) => thread.comments.length);
-        const threadUris = groupBy(commentThreads, (thread: ICommentsThread) => thread.uri);
-        Object.keys(threadUris).map((uri) => {
-          const threads: ICommentsThread[] = threadUris[uri];
-          if (threads.length === 0) {
-            return;
-          }
-          const workspaceDir = new URI(this.appConfig.workspaceDir);
-          const resource = new URI(uri);
-          const description = workspaceDir.relative(resource)?.toString();
-          childs.push(
-            new CommentFileNode(
-              this,
-              threads,
-              description,
-              resource.codeUri.fsPath,
-              this.labelService.getIcon(resource),
-              resource,
-              parent,
-            ),
-          );
-        });
+        childs = this.handleCommentFileNode(parent);
       } else if (CommentFileNode.is(parent)) {
-        for (const thread of (parent as CommentFileNode).threads) {
-          const [first] = thread.comments;
-          const comment = typeof first.body === 'string' ? first.body : first.body.value;
-          childs.push(
-            new CommentContentNode(
-              this,
-              thread,
-              comment,
-              `[Ln ${thread.range.startLineNumber}]`,
-              first.author.iconPath
-                ? (this.iconService.fromIcon('', first.author.iconPath.toString(), IconType.Background) as string)
-                : getIcon('message'),
-              first.author,
-              parent.resource,
-              parent as CommentFileNode,
-            ),
-          );
-        }
+        childs = this.handleCommentContentNode(parent);
       } else if (CommentContentNode.is(parent)) {
-        const thread = parent.thread;
-        const [_, ...others] = thread.comments;
-        const lastReply = others[others.length - 1].author.name;
-        childs.push(
-          new CommentReplyNode(
-            this,
-            thread,
-            formatLocalize('comment.reply.count', others?.length || 0),
-            formatLocalize('comment.reply.lastReply', lastReply),
-            '',
-            parent.resource,
-            parent,
-          ),
-        );
+        childs = this.handleCommentReplyNode(parent);
       }
     }
     if (childs.length === 1 && CommentRoot.isRoot(childs[0])) {
