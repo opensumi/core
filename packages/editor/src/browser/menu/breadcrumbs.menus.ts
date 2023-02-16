@@ -19,10 +19,10 @@ export class BreadCrumbsMenuService {
 
   private _groupContextKeyService;
 
-  show(x: number, y: number, group: EditorGroup, domTarget: Element, uri?: URI) {
+  show(x: number, y: number, group: EditorGroup, uri: URI) {
     let titleContext;
     if (!this._groupContextKeyService) {
-      titleContext = group.contextKeyService.createScoped(domTarget);
+      titleContext = group.contextKeyService.createScoped();
     }
     const menus = this.ctxMenuService.createMenu({
       id: MenuId.BreadcrumbsTitleContext,
