@@ -676,13 +676,21 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
     await this.doUpdateDiffOptions();
   }
 
+  isReadonly(): boolean {
+    return !!this.modifiedDocModel?.readonly;
+  }
+
   private async doUpdateDiffOptions() {
     const uriStr = this.modifiedEditor.currentUri ? this.modifiedEditor.currentUri.toString() : undefined;
     const languageId = this.modifiedEditor.currentDocumentModel
       ? this.modifiedEditor.currentDocumentModel.languageId
       : undefined;
     const options = getConvertedMonacoOptions(this.configurationService, uriStr, languageId);
-    this.monacoDiffEditor.updateOptions({ ...options.diffOptions, ...this.specialOptions });
+    this.monacoDiffEditor.updateOptions({
+      ...options.diffOptions,
+      ...this.specialOptions,
+      readOnly: this.isReadonly(),
+    });
   }
 
   updateDiffOptions(options: Partial<monaco.editor.IDiffEditorOptions>) {
