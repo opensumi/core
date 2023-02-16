@@ -1,5 +1,5 @@
 {
-  "version": "2.22.3",
+  "version": "2.22.4",
   "npmClient": "npm",
   "packages": ["packages/*", "tools/dev-tool", "tools/playwright", "tools/cli-engine"],
   "command": {
