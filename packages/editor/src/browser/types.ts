@@ -410,7 +410,7 @@ export interface IBreadCrumbPart {
 
   icon?: string;
 
-  uri: URI;
+  uri?: URI;
 
   isSymbol?: Boolean;
 

@@ -1,6 +1,10 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
-import { AbstractContextMenuService, ICtxMenuRenderer, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
+import {
+  AbstractContextMenuService,
+  ICtxMenuRenderer,
+  MenuId,
+  IContextMenu,
+} from '@opensumi/ide-core-browser/lib/menu/next';
 import { URI } from '@opensumi/ide-core-common';
 
 import { EditorGroup } from '../workbench-editor.service';
@@ -13,12 +17,13 @@ export class BreadCrumbsMenuService {
   @Autowired(ICtxMenuRenderer)
   private readonly ctxMenuRenderer: ICtxMenuRenderer;
 
-  show(x: number, y: number, uri: URI, group: EditorGroup, domTarget) {
-    // 设置resourceScheme
-    const titleContext = group.contextKeyService.createScoped(domTarget);
-    const resourceContext = new ResourceContextKey(titleContext);
-    resourceContext.set(uri);
+  private _groupContextKeyService;
 
+  show(x: number, y: number, group: EditorGroup, domTarget: Element, uri?: URI) {
+    let titleContext;
+    if (!this._groupContextKeyService) {
+      titleContext = group.contextKeyService.createScoped(domTarget);
+    }
     const menus = this.ctxMenuService.createMenu({
       id: MenuId.BreadcrumbsTitleContext,
       contextKeyService: titleContext,

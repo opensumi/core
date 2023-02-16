@@ -1203,12 +1203,12 @@ export class EditorContribution
 
     menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
       command: EDITOR_COMMANDS.COPY_PATH.id,
-      group: '0_path',
+      group: '1_file',
       order: 1,
     });
     menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
       command: EDITOR_COMMANDS.COPY_RELATIVE_PATH.id,
-      group: '0_path',
+      group: '1_file',
       order: 2,
     });
     menus.registerMenuItem(MenuId.BreadcrumbsTitleContext, {
@@ -1216,7 +1216,7 @@ export class EditorContribution
         id: FILE_COMMANDS.REVEAL_IN_EXPLORER.id,
         label: localize('file.revealInExplorer'),
       },
-      group: '0_path',
+      group: '1_file',
       order: 3,
     });
 
