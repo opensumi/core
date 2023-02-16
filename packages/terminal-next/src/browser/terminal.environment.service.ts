@@ -154,7 +154,7 @@ export class TerminalEnvironmentService implements IEnvironmentVariableService {
     });
 
     this.statusBarEntryAccessor = this.statusbarService.addElement(ENVIRONMENT_VARIABLE_CHANGED_STATUS, {
-      iconClass: getIcon('warning-circle-fill'),
+      iconClass: getIcon('warning-circle'),
       color: 'orange',
       alignment: StatusBarAlignment.RIGHT,
       tooltip: toMarkdownString(localize('terminal.environment.changed') + '\n\n```\n' + changes.join('\n') + '\n```'),

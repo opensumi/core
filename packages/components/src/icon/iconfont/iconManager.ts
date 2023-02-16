@@ -8,11 +8,9 @@ export { defaultIconfont };
  * key 为 iconName enum, value 为 icon className
  */
 const typoIconMap = {
-  'folder-fill-open': 'folder-fill',
   'search-close': 'close-square',
   'fold': 'collapse-all',
   'setting-general': 'setting',
-  'setting-editor': 'codelibrary-fill',
   'setting-file': 'file-text',
   'setting-extension': 'extension',
   'run-debug': 'start',
