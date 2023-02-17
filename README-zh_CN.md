@@ -106,6 +106,8 @@ Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.
 
 本项目采用 [MIT](LICENSE) 协议。
 
+同时，该项目也包含部分基于其他开源协议下的第三方代码，详细内容请查看 [NOTICE.md](./NOTICE.md) 文件。
+
 ## ✨ 贡献者
 
 ❤️ 感谢你们对项目的贡献!
