@@ -91,6 +91,10 @@ Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.
 
 Licensed under the [MIT](LICENSE) license.
 
+This project contains various third-party code under other open source licenses.
+
+See the [NOTICE.md](./NOTICE.md) file for more information.
+
 ## ✨ Contributors
 
 ❤️ Thanks goes to these wonderful people!
