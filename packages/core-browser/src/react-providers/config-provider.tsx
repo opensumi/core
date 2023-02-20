@@ -181,6 +181,11 @@ export interface AppConfig {
    */
   enableDebugExtensionHost?: boolean;
   /**
+   * 需要开启 enableDebugExtensionHost 配置才生效
+   * 调试插件进程时的 inspect ip 地址
+   */
+  inspectExtensionHost?: string;
+  /**
    * 加载插件前端资源时的 fetch credentials 选项
    * 可选项为 "include" | "omit" | "same-origin"
    */

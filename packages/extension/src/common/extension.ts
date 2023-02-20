@@ -67,6 +67,10 @@ export interface ICreateProcessOptions {
    */
   enableDebugExtensionHost?: boolean;
   /**
+   * 调试插件进程的 ip 地址
+   */
+  inspectExtensionHost?: string;
+  /**
    * 插件进程连接时候一些配置选项
    */
   extensionConnectOption?: ExtensionConnectOption;
@@ -301,7 +305,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 }
 
 export abstract class ExtensionContributesService extends WithEventBus {
-  abstract ContributionPoints: typeof VSCodeContributePoint[];
+  abstract ContributionPoints: (typeof VSCodeContributePoint)[];
 
   @Autowired(ILogger)
   private logger: ILogger;

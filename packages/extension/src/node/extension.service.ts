@@ -345,7 +345,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
       const port = await this.extensionHostManager.findDebugPort(this.inspectPort, 10, 5000);
       forkOptions.execArgv.push('--nolazy');
-      forkOptions.execArgv.push(`--inspect=${port}`);
+      if (options?.inspectExtensionHost) {
+        forkOptions.execArgv.push(`--inspect=${options.inspectExtensionHost}:${port}`);
+      } else {
+        forkOptions.execArgv.push(`--inspect=${port}`);
+      }
       this.clientExtProcessInspectPortMap.set(clientId, port);
     }
 
