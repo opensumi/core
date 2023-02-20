@@ -56,7 +56,7 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
 
   constructor(
     private extHostCommands: IExtHostCommands,
-    private kaitianCommon: ExtHostCommon,
+    private extHostCommon: ExtHostCommon,
     private rpcProtocol: IRPCProtocol,
   ) {
     this.proxy = this.rpcProtocol.getProxy(MainThreadSumiAPIIdentifier.MainThreadToolbar);
@@ -84,7 +84,7 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
     const compositeKey = extensionId + '.' + id;
     if (!this.btnHandles.has(compositeKey)) {
       const promise = new Promise<ToolbarBtnActionHandleController>(async (resolve, reject) => {
-        const h = new ToolbarBtnActionHandleController(compositeKey, this.extHostCommands, this.kaitianCommon);
+        const h = new ToolbarBtnActionHandleController(compositeKey, this.extHostCommands, this.extHostCommon);
         try {
           await h.init();
           resolve(h);
@@ -101,7 +101,7 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
     const compositeKey = extensionId + '.' + id;
     if (!this.selectHandles.has(compositeKey)) {
       const promise = new Promise<ToolbarSelectActionHandleController<T>>(async (resolve, reject) => {
-        const h = new ToolbarSelectActionHandleController<T>(compositeKey, this.extHostCommands, this.kaitianCommon);
+        const h = new ToolbarSelectActionHandleController<T>(compositeKey, this.extHostCommands, this.extHostCommon);
         try {
           await h.init();
           resolve(h);
@@ -124,7 +124,7 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
         const h = new ToolbarDropdownButtonActionHandleController<T>(
           compositeKey,
           this.extHostCommands,
-          this.kaitianCommon,
+          this.extHostCommon,
         );
         try {
           await h.init();
