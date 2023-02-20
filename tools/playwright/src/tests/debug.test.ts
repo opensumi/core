@@ -83,12 +83,10 @@ test.describe('OpenSumi Debug', () => {
   test('Run Debug by Javascript Debug Terminal', async () => {
     await explorer.open();
     editor = await app.openEditor(OpenSumiTextEditor, explorer, 'index.js', false);
-
+    await app.page.waitForTimeout(1000);
+    debugView = await app.open(OpenSumiDebugView);
     const terminal = await app.open(OpenSumiTerminalView);
     await terminal.createTerminalByType('Javascript Debug Terminal');
-    await terminal.sendText('node index.js');
-    await app.page.waitForTimeout(1000);
-
     const glyphMarginModel = await editor.getGlyphMarginModel();
     let glyphOverlay = await glyphMarginModel.getOverlay(6);
     expect(glyphOverlay).toBeDefined();
@@ -100,6 +98,9 @@ test.describe('OpenSumi Debug', () => {
       await glyphOverlay?.click({ position: { x: 9, y: 9 }, force: true });
       await app.page.waitForTimeout(1000);
     }
+
+    await terminal.sendText('node index.js');
+    await app.page.waitForTimeout(2000);
 
     glyphOverlay = await glyphMarginModel.getOverlay(6);
     expect(glyphOverlay).toBeDefined();
