@@ -122,7 +122,6 @@ describe('resource service tests', () => {
         uri: resUri,
         decoration: {
           dirty: true,
-          readOnly: true,
         },
       }),
     );
@@ -138,7 +137,6 @@ describe('resource service tests', () => {
         uri: resUri,
         decoration: {
           dirty: false,
-          readOnly: false,
         },
       }),
     );
