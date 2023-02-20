@@ -517,6 +517,14 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
       position: this.monacoEditor.getPosition(),
       selectionLength: 0,
     });
+
+    /**
+     * 由于通过 monaco model 并不能得到该文档是否 readonly
+     * 所以这里需要对 readonly 单独设置一下
+     */
+    this.monacoEditor.updateOptions({
+      readOnly: documentModelRef.instance.readonly,
+    });
   }
 }
 
