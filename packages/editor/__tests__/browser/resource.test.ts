@@ -122,6 +122,7 @@ describe('resource service tests', () => {
         uri: resUri,
         decoration: {
           dirty: true,
+          readOnly: true,
         },
       }),
     );
@@ -137,6 +138,7 @@ describe('resource service tests', () => {
         uri: resUri,
         decoration: {
           dirty: false,
+          readOnly: false,
         },
       }),
     );
@@ -284,6 +286,7 @@ describe('resource service tests', () => {
         uri: new URI('fileOnDisk://path/to/a.ts'),
         decoration: {
           dirty: true,
+          readOnly: false,
         },
       }),
     );

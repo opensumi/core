@@ -27,6 +27,7 @@ import {
   PreferenceService,
   DisposableCollection,
   Event,
+  getExternalIcon,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { LAYOUT_VIEW_SIZE } from '@opensumi/ide-core-browser/lib/layout/constants';
@@ -385,6 +386,9 @@ export const Tabs = ({ group }: ITabsProps) => {
             </div>
             <div>{resource.name}</div>
             {subname ? <div className={styles.subname}>{subname}</div> : null}
+            {decoration.readOnly ? (
+              <span className={classnames(getExternalIcon('lock'), styles.editor_readonly_icon)}></span>
+            ) : null}
             <div className={styles.tab_right}>
               <div
                 className={classnames({

@@ -193,6 +193,7 @@ describe('OpenedEditorModelService should be work', () => {
           uri: testFileUri,
           decoration: {
             dirty: true,
+            readOnly: false,
           },
         }),
       );

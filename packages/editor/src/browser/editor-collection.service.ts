@@ -185,6 +185,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
         uri: e.payload.uri,
         decoration: {
           dirty: !!e.payload.dirty,
+          readOnly: !!e.payload.readonly,
         },
       }),
     );
@@ -221,7 +222,7 @@ function updateOptionsWithMonacoEditor(
 }
 
 @Injectable({ multiple: true })
-export abstract class BaseMonacoEditorWrapper extends Disposable implements IEditor {
+export abstract class BaseMonacoEditorWrapper extends WithEventBus implements IEditor {
   public abstract readonly currentDocumentModel: IEditorDocumentModel | null;
 
   public get currentUri(): URI | null {
@@ -518,17 +519,28 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
       selectionLength: 0,
     });
 
+    const { instance } = documentModelRef;
+
     /**
      * 由于通过 monaco model 并不能得到该文档是否 readonly
      * 所以这里需要对 readonly 单独设置一下
      */
     this.monacoEditor.updateOptions({
-      readOnly: documentModelRef.instance.readonly,
+      readOnly: instance.readonly,
     });
+
+    this.eventBus.fire(
+      new ResourceDecorationNeedChangeEvent({
+        uri: instance.uri,
+        decoration: {
+          readOnly: instance.readonly,
+        },
+      }),
+    );
   }
 }
 
-export class BrowserDiffEditor extends Disposable implements IDiffEditor {
+export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
@@ -699,6 +711,17 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
       ...this.specialOptions,
       readOnly: this.isReadonly(),
     });
+
+    if (this.currentUri) {
+      this.eventBus.fire(
+        new ResourceDecorationNeedChangeEvent({
+          uri: this.currentUri,
+          decoration: {
+            readOnly: this.isReadonly(),
+          },
+        }),
+      );
+    }
   }
 
   updateDiffOptions(options: Partial<monaco.editor.IDiffEditorOptions>) {
