@@ -25,6 +25,7 @@ import {
   localize,
   MessageType,
   debounce,
+  CUSTOM_EDITOR_SCHEME,
 } from '@opensumi/ide-core-common';
 import {
   CommandService,
@@ -2279,8 +2280,8 @@ function findSuitableOpenType(
       if (!viewType) {
         return false;
       }
-
-      return p.componentId === viewType;
+      const componentId = `${CUSTOM_EDITOR_SCHEME}-${viewType}`;
+      return p.componentId === componentId;
     });
 
     if (matchAvailableType) {
