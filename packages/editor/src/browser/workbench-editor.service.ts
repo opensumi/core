@@ -1409,9 +1409,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this.notifyTabLoading(resource!);
         }, 60);
         this.notifyTabChanged();
+        this.notifyBodyChanged();
         await this.displayResourceComponent(resource, options);
         this._currentOrPreviousFocusedEditor = this.currentEditor;
-        this.notifyBodyChanged();
 
         clearTimeout(delayTimer);
         resourceReady.resolve();
