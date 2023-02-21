@@ -630,6 +630,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       new EditorDocumentModelContentChangedEvent({
         uri: this.uri,
         dirty: this.dirty,
+        readonly: this.readonly,
         changes,
         eol: this.eol,
         isRedoing,

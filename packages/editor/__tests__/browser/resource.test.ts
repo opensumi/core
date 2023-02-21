@@ -284,6 +284,7 @@ describe('resource service tests', () => {
         uri: new URI('fileOnDisk://path/to/a.ts'),
         decoration: {
           dirty: true,
+          readOnly: false,
         },
       }),
     );

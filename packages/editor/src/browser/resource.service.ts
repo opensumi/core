@@ -255,6 +255,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
 
 const DefaultResourceDecoration: IResourceDecoration = {
   dirty: false,
+  readOnly: false,
 };
 
 const GhostResourceProvider: IResourceProvider = {
