@@ -59,10 +59,15 @@ export class EditorFileGroup extends CompositeTreeNode {
 }
 
 export class EditorFile extends TreeNode {
+  public static is(node: any): node is EditorFile {
+    return TreeNode.is(node) && 'uri' in node;
+  }
+
   constructor(
     tree: OpenedEditorService,
     public readonly resource: IResource,
     public tooltip: string,
+    public dirty: boolean = false,
     parent: EditorFileGroup | undefined,
   ) {
     super(tree as ITree, parent, undefined, { name: `${resource.uri.toString()}` });
@@ -74,9 +79,5 @@ export class EditorFile extends TreeNode {
 
   get uri() {
     return this.resource ? this.resource.uri : new URI();
-  }
-
-  dispose() {
-    super.dispose();
   }
 }
