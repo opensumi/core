@@ -109,7 +109,7 @@ export class SCMTreeService extends Tree {
     if (child.type === 'file') {
       return new SCMResourceFile(this, parent, c, c.resource, isTree);
     } else {
-      return new SCMResourceFolder(this, parent, c, c.resource);
+      return new SCMResourceFolder(this, parent, c, c.resource, isTree);
     }
   }
 
