@@ -63,7 +63,7 @@ export const OutlineNode: React.FC<OutlineNodeRenderedProps> = ({
   };
 
   const paddingLeft = `${
-    defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!OutlineCompositeTreeNode.is(item) ? 16 : 0)
+    defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!OutlineCompositeTreeNode.is(item) ? 12 : 0)
   }px`;
 
   const editorNodeStyle = {
