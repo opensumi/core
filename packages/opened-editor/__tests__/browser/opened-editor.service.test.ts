@@ -22,6 +22,8 @@ import { OpenedEditorModelService } from '../../src/browser/services/opened-edit
 import { OpenedEditorService } from '../../src/browser/services/opened-editor-tree.service';
 import styles from '../src/browser/opened-editor-node.module.less';
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 describe('OpenedEditorModelService should be work', () => {
   let openedEditorModelService: OpenedEditorModelService;
   let openedEditorService: OpenedEditorService;
@@ -197,6 +199,7 @@ describe('OpenedEditorModelService should be work', () => {
           },
         }),
       );
+      await sleep(1000);
       const node = openedEditorService.getEditorNodeByUri(testFileUri);
       expect((node as EditorFile).dirty).toBeTruthy();
     });
