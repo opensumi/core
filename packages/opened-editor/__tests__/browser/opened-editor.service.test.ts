@@ -198,9 +198,7 @@ describe('OpenedEditorModelService should be work', () => {
         }),
       );
       const node = openedEditorService.getEditorNodeByUri(testFileUri);
-      expect(openedEditorModelService.decorations.getDecorations(node as any)?.classlist.join(' ')).toBe(
-        styles.mod_dirty,
-      );
+      expect((node as EditorFile).dirty).toBeTruthy();
     });
 
     it('Select file should be work', async () => {
