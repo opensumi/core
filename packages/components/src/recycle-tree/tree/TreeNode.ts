@@ -331,8 +331,8 @@ export class TreeNode implements ITreeNode {
     if (this._disposed) {
       return;
     }
-    this._watcher.notifyDidDispose(this);
     this._disposed = true;
+    this._watcher.notifyDidDispose(this);
   }
 }
 
