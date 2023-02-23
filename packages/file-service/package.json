@@ -22,7 +22,6 @@
     "@opensumi/ide-core-node": "workspace:*",
     "@opensumi/ide-logs": "workspace:*",
     "@parcel/watcher": "2.1.0",
-    "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
     "nsfw": "2.2.0",
     "trash": "^5.2.0",
