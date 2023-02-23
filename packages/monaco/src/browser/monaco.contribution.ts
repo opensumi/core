@@ -42,6 +42,7 @@ import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/
 import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
 import { IEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorCommon';
+import { EditorContextKeys } from '@opensumi/monaco-editor-core/esm/vs/editor/common/editorContextKeys';
 import { registerPlatformLanguageAssociation } from '@opensumi/monaco-editor-core/esm/vs/editor/common/services/languagesAssociations';
 import {
   FormattingConflicts,
@@ -54,9 +55,14 @@ import {
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
-import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
+import {
+  ContextKeyExpr,
+  ContextKeyExprType,
+} from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
+
+import { DELEGATE_COMMANDS } from '../common/command';
 
 import {
   EditorExtensionsRegistry,
@@ -432,11 +438,39 @@ export class MonacoClientContribution
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
+    const editorFocus = EditorContextKeys.focus;
     const defaultItems = monacoKeybindingsRegistry.getDefaultKeybindings();
     for (const item of defaultItems) {
+      if (
+        item.command === DELEGATE_COMMANDS.UNDO ||
+        item.command === DELEGATE_COMMANDS.REDO ||
+        item.command === DELEGATE_COMMANDS.SELECT_ALL
+      ) {
+        // 针对部分被代理命令，跳过快捷键注册
+        continue;
+      }
       const command = this.monacoCommandRegistry.validate(item.command);
       if (command) {
         const rawKeybinding = MonacoResolvedKeybinding.toKeybinding(item.keybinding);
+        // 当不存在 when 条件或不包含 `editorFocus` 时，追加 editorFocus 条件
+        let when = item.when;
+        if (!when) {
+          when = editorFocus;
+        } else {
+          // when 中没有 `EditorContextKeys.focus` 时再做追加
+          if (!when.keys().includes(editorFocus.key)) {
+            // 当其内部为 or 时，避免出现 a && (b || c) 报错
+            // 因此改成 (a && b) || (a && c) 这样不会报错
+            // serialize 之后的结果类似 a && b || a && c
+            // Monaco Editor ContextKey 的计算规则中 && 优先级高于 ||
+            if (when.type === ContextKeyExprType.Or) {
+              const exprs = when.expr;
+              when = ContextKeyExpr.or(...exprs.map((expr) => ContextKeyExpr.and(expr, editorFocus)));
+            } else {
+              when = ContextKeyExpr.and(when, editorFocus);
+            }
+          }
+        }
         const keybinding = {
           command,
           args: item.commandArgs,
@@ -450,7 +484,7 @@ export class MonacoClientContribution
           id: `-${command}`,
           weight: item.weight1,
           primary: this.toMonacoKeybindingNumber(KeySequence.parse(rawKeybinding)),
-          when: item.when,
+          when,
         });
         // 将 Monaco 内默认快捷键注册进 OpenSumi 中
         keybindings.registerKeybinding(keybinding);

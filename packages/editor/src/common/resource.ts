@@ -93,7 +93,8 @@ export class ResourceDecorationNeedChangeEvent extends BasicEvent<IResourceDecor
 export type IResourceUpdateType = 'change' | 'remove';
 
 export interface IResourceDecoration {
-  dirty: boolean;
+  dirty?: boolean;
+  readOnly?: boolean;
 }
 
 export interface IResourceDecorationChangeEventPayload {
