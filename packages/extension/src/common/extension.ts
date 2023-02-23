@@ -67,7 +67,7 @@ export interface ICreateProcessOptions {
    */
   enableDebugExtensionHost?: boolean;
   /**
-   * 调试插件进程的 ip 地址
+   * 调试插件进程的 Host 地址
    */
   inspectExtensionHost?: string;
   /**
