@@ -1,7 +1,6 @@
 import os from 'os';
 import paths from 'path';
 
-import drivelist from 'drivelist';
 import { TextDocument } from 'vscode-languageserver-types';
 
 import { Injectable, Inject, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
@@ -369,28 +368,6 @@ export class FileService implements IFileService {
   async getCurrentUserHome(): Promise<FileStat | undefined> {
     return this.getFileStat(FileUri.create(os.homedir()).toString());
   }
-
-  getDrives(): Promise<string[]> {
-    return new Promise<string[]>((resolve, reject) => {
-      drivelist.list((error: Error, drives: Array<{ readonly mountpoints: Array<{ readonly path: string }> }>) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        const uris = drives
-          .map((drive) => drive.mountpoints)
-          .reduce((prev, curr) => prev.concat(curr), [])
-          .map((mountpoint) => mountpoint.path)
-          .filter(this.filterMountpointPath.bind(this))
-          .map((path) => FileUri.create(path))
-          .map((uri) => uri.toString());
-
-        resolve(uris);
-      });
-    });
-  }
-
   /**
    *
    * Only support scheme `file`
