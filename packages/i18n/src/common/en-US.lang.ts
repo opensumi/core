@@ -1216,7 +1216,7 @@ export const localizationBundle = {
     'treeview.command.action.collapse': 'Collapse ALL',
 
     'task.outputchannel.name': 'Task',
-    'task.label': '{0} : {1}',
+    'task.label': '{0}: {1}',
     'TaskService.pickRunTask': 'Select the task to run',
     'TerminalTaskSystem.terminalName': 'Task - {0}',
     'terminal.integrated.exitedWithCode': 'The terminal process terminated with exit code: {0}',
