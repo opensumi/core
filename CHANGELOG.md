@@ -37,6 +37,12 @@ This version we remove some useless filled icons on the framework and use outlin
 - `anymock`
 - `LinkE`
 
+#### 2. Task label format changed
+
+In order to be compatible with the use of Task commands by some extensions.
+
+The task label format change from `{0} : {1}` to `{0}: {1}`, like `npm : build` -> `npm: build`.
+
 ## v2.22.0
 
 ### What's New Features

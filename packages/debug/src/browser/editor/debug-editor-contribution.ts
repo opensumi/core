@@ -332,7 +332,7 @@ export class DebugEditorContribution implements IEditorFeatureContribution {
     codeEditorService.registerDecorationType('inline-value-decoration', INLINE_VALUE_DECORATION_KEY, {});
   }
 
-  public setHoverEnabled(editor: IEditor, isEnabled = !this.debugContextKey.contextInDdebugMode.get()) {
+  public setHoverEnabled(editor: IEditor, isEnabled = !this.debugContextKey.contextInDebugMode.get()) {
     editor.monacoEditor.updateOptions({
       hover: {
         enabled: isEnabled,

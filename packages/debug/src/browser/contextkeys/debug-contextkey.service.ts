@@ -25,7 +25,7 @@ export class DebugContextKey {
 
   public readonly contextInDebugRepl: IContextKey<boolean>;
   public readonly contextInDebugConsole: IContextKey<boolean>;
-  public readonly contextInDdebugMode: IContextKey<boolean>;
+  public readonly contextInDebugMode: IContextKey<boolean>;
   public readonly contextDebugState: IContextKey<keyof typeof DebugState>;
   public readonly contextVariableEvaluateNamePresent: IContextKey<boolean>;
   public readonly contextSetVariableSupported: IContextKey<boolean>;
@@ -38,7 +38,7 @@ export class DebugContextKey {
     this._contextKeyService = this.globalContextKeyService.createScoped(dom);
     this.contextInDebugRepl = CONTEXT_IN_DEBUG_REPL.bind(this.contextKeyScoped);
     this.contextInDebugConsole = CONTEXT_IN_DEBUG_CONSOLE.bind(this.contextKeyScoped);
-    this.contextInDdebugMode = CONTEXT_IN_DEBUG_MODE.bind(this.contextKeyScoped);
+    this.contextInDebugMode = CONTEXT_IN_DEBUG_MODE.bind(this.contextKeyScoped);
     this.contextDebugState = CONTEXT_DEBUG_STATE.bind(this.contextKeyScoped);
     this.contextVariableEvaluateNamePresent = CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT.bind(this.contextKeyScoped);
     this.contextSetVariableSupported = CONTEXT_SET_VARIABLE_SUPPORTED.bind(this.contextKeyScoped);
