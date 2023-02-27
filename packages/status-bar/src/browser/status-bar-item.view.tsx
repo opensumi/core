@@ -1,9 +1,9 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { ReactNode } from 'react';
 
 import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
 import { getExternalIcon, IOpenerService, toMarkdown } from '@opensumi/ide-core-browser';
-import { parseLabel, LabelPart, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
+import { parseLabel, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
 import {
@@ -12,10 +12,37 @@ import {
   CommandService,
   StatusBarHoverCommand,
   IMarkdownString,
+  isString,
 } from '@opensumi/ide-core-common';
 import { IThemeService } from '@opensumi/ide-theme';
 
 import styles from './status-bar.module.less';
+interface StatusBarItemText {
+  text: string;
+  children: (text: string) => ReactNode;
+}
+
+const StatusBaItemText = React.memo(({ text, children }: StatusBarItemText) => {
+  return <>
+    {parseLabel(text).map((item, key) => {
+    if (!(typeof item === 'string') && LabelIcon.is(item)) {
+      return (
+        <span
+          key={key}
+          className={cls(
+            styles.icon,
+            getExternalIcon(item.name, item.owner),
+            `${item.animation ? 'iconfont-anim-' + item.animation : ''}`,
+          )}
+        ></span>
+      );
+    } else {
+      // 22px高度限制用于解决文本超长时文本折叠问题
+      return children(item);
+    }
+  })}
+  </>;
+});
 
 interface StatusBarPopoverContent {
   contents: StatusBarHoverContent[];
@@ -34,7 +61,10 @@ const StatusBarPopover = React.memo((props: StatusBarPopoverContent) => {
       {contents.map((content) => (
         <div key={content.title} className={styles.popover_content}>
           <span>
-            {content.title}
+            { content.title && <StatusBaItemText text={content.title}>
+              {(item) => item}
+              </StatusBaItemText>
+            }
             {content.name && ` - ${content.name}`}
           </span>
           {content.command && (
@@ -76,7 +106,11 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
     if (tooltip && (tooltip as IMarkdownString).value) {
       return toMarkdown((tooltip as IMarkdownString).value, openerService);
     }
-    return <div className={styles.popover_tooltip}>{tooltip}</div>;
+    return isString(tooltip) && <div className={styles.popover_tooltip}>
+      <StatusBaItemText text={tooltip}>
+      {(item) => item}
+      </StatusBaItemText>
+    </div>
   }, [tooltip]);
 
   const getColor = (color: string | IThemeColor | undefined): string => {
@@ -90,12 +124,6 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
 
     return color;
   };
-
-  let items: LabelPart[] = [];
-  if (text) {
-    items = parseLabel(text);
-  }
-  let hasIcon = false;
   return (
     <div
       id={entryId}
@@ -119,28 +147,15 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
       >
         <div className={styles.popover_item}>
           {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
-          {items.map((item, key) => {
-            if (!(typeof item === 'string') && LabelIcon.is(item)) {
-              hasIcon = true;
-              return (
-                <span
-                  key={key}
-                  className={cls(
-                    styles.icon,
-                    getExternalIcon(item.name, item.owner),
-                    `${item.animation ? 'iconfont-anim-' + item.animation : ''}`,
-                  )}
-                ></span>
-              );
-            } else {
+          { text && <StatusBaItemText text={text}>
+            {(item) => (
               // 22px高度限制用于解决文本超长时文本折叠问题
-              return (
-                <span style={{ height: '22px', lineHeight: '22px' }} key={key} aria-label={ariaLabel} role={role}>
-                  {replaceLocalizePlaceholder(item)}
-                </span>
-              );
-            }
-          })}
+              <span style={{ height: '22px', lineHeight: '22px' }} aria-label={ariaLabel} role={role}>
+                {replaceLocalizePlaceholder(item)}
+              </span>
+            )
+          }
+          </StatusBaItemText>}
         </div>
       </Popover>
     </div>

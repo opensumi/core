@@ -53,20 +53,11 @@
   &:first-child {
     padding: 0px 10px;
   }
-  span.icon {
-    display: flex;
-    align-items: center;
-    font-size: 1em;
-    margin: 0 2px;
-
-    &::before {
-      vertical-align: middle;
-    }
-  }
 }
 
 .popover_tooltip,
 .popover_content {
+  display: flex;
   font-size: @statusBar-font-size;
   white-space: nowrap;
 }
@@ -80,4 +71,18 @@
 .popover_item {
   display: flex;
   align-items: center;
+}
+
+.popover_content,
+.popover_tooltip,
+.element {
+  span.icon {
+    align-items: center;
+    font-size: 1em;
+    margin: 0 2px;
+
+    &::before {
+      vertical-align: middle;
+    }
+  }
 }
