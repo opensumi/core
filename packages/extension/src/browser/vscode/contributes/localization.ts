@@ -73,6 +73,17 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     }
   }
 
+  private _storagePath: string;
+
+  private async getStoragePath(): Promise<string> {
+    if (this._storagePath) {
+      return Promise.resolve(this._storagePath);
+    }
+
+    this._storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
+    return Promise.resolve(this._storagePath);
+  }
+
   async contribute() {
     const promises: Promise<void>[] = [];
     const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
@@ -81,7 +92,6 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
-      const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
       contributes.forEach((localization) => {
         if (localization.translations) {
           const languageId = normalizeLanguageId(localization.languageId);
@@ -107,10 +117,14 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
               })(),
             );
           });
-          promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, storagePath));
+          (async () => {
+            const storagePath = await this.getStoragePath();
+            promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, storagePath));
+          })();
         }
       });
     }
+
     await Promise.all(promises);
   }
 
