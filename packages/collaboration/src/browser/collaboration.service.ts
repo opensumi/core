@@ -257,23 +257,24 @@ export class CollaborationService extends WithEventBus implements ICollaboration
     if (changes.added.length > 0) {
       changes.added.forEach((clientID) => {
         if (!this.clientIDStyleAddedSet.has(clientID)) {
-          const color = getColorByClientID(clientID);
+          const [foregroundColor, backgroundColor] = getColorByClientID(clientID);
           this.cssManager.addClass(`${Y_REMOTE_SELECTION}-${clientID}`, {
-            backgroundColor: color,
+            backgroundColor,
             opacity: '0.25',
+            color: foregroundColor,
           });
           this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}`, {
             position: 'absolute',
-            borderLeft: `${color} solid 2px`,
-            borderBottom: `${color} solid 2px`,
-            borderTop: `${color} solid 2px`,
+            borderLeft: `${backgroundColor} solid 2px`,
+            borderBottom: `${backgroundColor} solid 2px`,
+            borderTop: `${backgroundColor} solid 2px`,
             height: '100%',
             boxSizing: 'border-box',
           });
           this.cssManager.addClass(`${Y_REMOTE_SELECTION_HEAD}-${clientID}::after`, {
             position: 'absolute',
             content: ' ',
-            border: `3px solid ${color}`,
+            border: `3px solid ${backgroundColor}`,
             left: '-4px',
             top: '-5px',
           });
