@@ -122,6 +122,8 @@ export interface IResource<MetaData = any> {
   metadata?: MetaData;
   // 资源已被删除
   deleted?: any;
+  // 资源在编辑器 tab 上显示的标题
+  title?: string;
 }
 
 export type IDiffResource = IResource<{ original: URI; modified: URI }>;

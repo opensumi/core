@@ -48,6 +48,8 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
         original: originalUri,
         modified: modifiedUri,
       },
+      // 默认显示 modified 文件路径
+      title: modifiedUri.codeUri.fsPath,
     };
   }
 
