@@ -74,6 +74,7 @@ export const localizationBundle = {
     'file.filetree.openTerminalWithPath': '在终端中打开',
     'file.tooltip.symbolicLink': '符号链接',
     'file.resource-deleted': '（已删除）',
+    'file.revealInExplorer': '在文件树中定位',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',

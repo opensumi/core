@@ -14,6 +14,7 @@ export enum MenuId {
   EditorTitle = 'editor/title',
   EditorTitleRun = 'editor/title/run',
   EditorTitleContext = 'editor/title/context',
+  BreadcrumbsTitleContext = 'breadcrumbs/title/context',
   EmptyEditorGroupContext = 'empty/editor/group/context',
   ExplorerContext = 'explorer/context',
   MenubarAppearanceMenu = 'menubar/appearance',

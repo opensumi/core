@@ -27,6 +27,7 @@ import {
 } from '../common';
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
+import { EditorGroup } from './workbench-editor.service';
 
 export * from '../common';
 
@@ -387,7 +388,7 @@ export enum CompareResult {
 export interface IBreadCrumbService {
   registerBreadCrumbProvider(provider: IBreadCrumbProvider): IDisposable;
 
-  getBreadCrumbs(uri: URI, editor?: MaybeNull<IEditor>): IBreadCrumbPart[] | undefined;
+  getBreadCrumbs(uri: URI, editor?: MaybeNull<IEditor>, editorGroup?: EditorGroup): IBreadCrumbPart[] | undefined;
 
   disposeCrumb(uri: URI): void;
 
@@ -408,6 +409,10 @@ export interface IBreadCrumbPart {
   name: string;
 
   icon?: string;
+
+  uri?: URI;
+
+  isSymbol?: Boolean;
 
   getSiblings?(): MaybePromise<{ parts: IBreadCrumbPart[]; currentIndex: number }>;
 
