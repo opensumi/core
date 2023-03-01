@@ -1,7 +1,9 @@
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
 import { browserViews } from './contributes/zh-CN.lang';
 
 export const localizationBundle = {
-  languageId: 'zh-CN',
+  languageId: LOCALE_TYPES.ZH_CN,
   languageName: 'Chinese',
   localizedLanguageName: '中文(中国)',
   contents: {
@@ -153,7 +155,7 @@ export const localizationBundle = {
     'quickopen.tab.goToLine': '转到行',
     'quickopen.tab.tip.prefix': '按',
     'quickopen.tab.tip.suffix': '切换搜索类别',
-    'quickOpen.openSide': '在侧边打开',
+    'quickOpen.openOnTheRightSide': '在侧边打开',
 
     'explorer.title': '资源管理器',
 
@@ -196,8 +198,6 @@ export const localizationBundle = {
     'search.replace.buttonOK': '替换',
     'search.replace.buttonCancel': '取消',
     'search.too.many.results': '由于您的搜索条件过于疏松，我们仅展示了部分搜索结果',
-    'file-search.quickOpen.leftRight': '在侧边打开',
-    'file-search.quickOpen.upDown': '在底部打开',
     'search.fileReplaceChanges': '{0} ↔ {1} (替换预览)',
     'search.fileResults': '文件结果',
     'search.fileResults.notfound': '没有匹配的文件',
@@ -783,6 +783,7 @@ export const localizationBundle = {
     'welcome.title': '开始使用',
     'welcome.quickStart': '开始使用',
     'welcome.recent.workspace': '最近打开的工作区',
+    'welcome.workspace.noExist': '工作区路径不存在',
 
     'markers.title': '问题',
     'markers.panel.content.empty': '目前尚未在工作区检测到问题。',

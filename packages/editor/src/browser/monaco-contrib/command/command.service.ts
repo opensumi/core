@@ -15,6 +15,7 @@ import {
   Uri,
   MonacoOverrideServiceRegistry,
 } from '@opensumi/ide-core-browser';
+import { DELEGATE_COMMANDS } from '@opensumi/ide-monaco';
 import {
   CommandsRegistry as MonacoCommandsRegistry,
   EditorExtensionsRegistry,
@@ -230,9 +231,9 @@ export class MonacoCommandRegistry implements IMonacoCommandsRegistry {
 @Injectable()
 export class MonacoActionRegistry implements IMonacoActionRegistry {
   private static COMMON_ACTIONS = new Map<string, string>([
-    ['undo', EDITOR_COMMANDS.UNDO.id],
-    ['redo', EDITOR_COMMANDS.REDO.id],
-    ['editor.action.selectAll', EDITOR_COMMANDS.SELECT_ALL.id],
+    [DELEGATE_COMMANDS.UNDO, EDITOR_COMMANDS.UNDO.id],
+    [DELEGATE_COMMANDS.REDO, EDITOR_COMMANDS.REDO.id],
+    [DELEGATE_COMMANDS.SELECT_ALL, EDITOR_COMMANDS.SELECT_ALL.id],
   ]);
 
   private static CONVERT_MONACO_COMMAND_ARGS = new Map<string, (...args: any[]) => any[]>([

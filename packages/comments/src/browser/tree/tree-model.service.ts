@@ -93,7 +93,11 @@ export class CommentModelService extends Disposable {
     this.initDecorations(root);
 
     this.disposables.push(
-      this.commentService.onThreadsCommentChange(() => {
+      Event.any(
+        this.commentService.onThreadsCommentChange,
+        this.commentService.onThreadsChanged,
+        this.commentService.onThreadsCreated,
+      )(() => {
         this.refresh();
       }),
     );
@@ -141,11 +145,10 @@ export class CommentModelService extends Disposable {
     this.removeFocusedDecoration();
   };
 
-  handleItemClick = async (ev: React.MouseEvent, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
+  handleItemClick = async (_, node: CommentFileNode | CommentContentNode | CommentReplyNode) => {
     this.applyFocusedDecoration(node);
-    if (CommentFileNode.is(node)) {
-      this.toggleDirectory(node);
-    } else if (node) {
+    if (CommentFileNode.is(node) || (node as CommentContentNode)?.isAllowToggle) {
+      this.toggleDirectory(node as CommentFileNode | CommentContentNode);
     }
   };
 

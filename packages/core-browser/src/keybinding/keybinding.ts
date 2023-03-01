@@ -27,7 +27,7 @@ export enum KeybindingScope {
 }
 
 // ref: https://github.com/Microsoft/vscode/blob/97fc588e65bedcb1113baeddd2f67237e52c8c63/src/vs/platform/keybinding/common/keybindingsRegistry.ts#L56
-// 快捷键第一优先级，在开天中将对该值 * 100 作为快捷键的优先级参数 priority
+// 快捷键第一优先级，将对该值 * 100 作为快捷键的优先级参数 priority
 export enum KeybindingWeight {
   Default = 0, // 不传入 priority 则默认为 0
   EditorCore = 1,
@@ -161,6 +161,7 @@ export interface KeybindingRegistry {
   isPseudoCommand(commandId: string): boolean;
   resetKeybindings(): void;
   onKeybindingsChanged: Event<{ affectsCommands: string[] }>;
+  getKeybindingByScope(scope: KeybindingScope): Keybinding[];
 }
 
 export const keybindingServicePath = '/services/keybindings';
@@ -902,6 +903,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry, KeybindingSer
       }
     }
     return false;
+  }
+
+  getKeybindingByScope(scope: KeybindingScope) {
+    return this.keymaps[scope];
   }
 }
 

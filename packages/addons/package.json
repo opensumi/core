@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-addons",
-  "version": "2.22.1",
+  "version": "2.22.5",
   "files": [
     "lib",
     "src"

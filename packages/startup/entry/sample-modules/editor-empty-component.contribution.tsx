@@ -13,6 +13,7 @@ import {
 import { KeybindingRegistry } from '@opensumi/ide-core-browser/lib/keybinding/keybinding';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { localize, registerLocalizationBundle } from '@opensumi/ide-core-common';
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 import { IKeymapService } from '@opensumi/ide-keymaps/lib/common/keymaps';
 import { KeybindingView } from '@opensumi/ide-quick-open/lib/browser/components/keybinding';
 
@@ -21,7 +22,7 @@ import styles from './editor-empty-component.module.less';
 // 集成侧自定义多语言
 export const localizationBundle = {
   'zh-CN': {
-    languageId: 'zh-CN',
+    languageId: LOCALE_TYPES.ZH_CN,
     languageName: 'Chinese',
     localizedLanguageName: '中文(中国)',
     contents: {
@@ -32,7 +33,7 @@ export const localizationBundle = {
     },
   },
   'en-US': {
-    languageId: 'en-US',
+    languageId: LOCALE_TYPES.EN_US,
     languageName: 'English',
     localizedLanguageName: 'English',
     contents: {
@@ -43,8 +44,8 @@ export const localizationBundle = {
     },
   },
 };
-registerLocalizationBundle(localizationBundle['zh-CN']);
-registerLocalizationBundle(localizationBundle['en-US']);
+registerLocalizationBundle(localizationBundle[LOCALE_TYPES.ZH_CN]);
+registerLocalizationBundle(localizationBundle[LOCALE_TYPES.EN_US]);
 
 /**
  * 单行快捷键信息

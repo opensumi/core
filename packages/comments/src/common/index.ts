@@ -424,10 +424,6 @@ export interface ICommentsFeatureRegistry {
    */
   getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
   /**
-   * 获取底部面板评论树的处理函数
-   */
-  getCommentsPanelTreeNodeHandlers(): PanelTreeNodeHandler[];
-  /**
    * 获取文件上传处理函数
    */
   getFileUploadHandler(): FileUploadHandler | undefined;

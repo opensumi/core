@@ -1,7 +1,9 @@
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
 import { browserViews } from './contributes/en-US.lang';
 
 export const localizationBundle = {
-  languageId: 'en-US',
+  languageId: LOCALE_TYPES.EN_US,
   languageName: 'english',
   localizedLanguageName: 'English',
   contents: {
@@ -182,7 +184,7 @@ export const localizationBundle = {
     'quickopen.tab.goToLine': 'Go To Line',
     'quickopen.tab.tip.prefix': 'Press',
     'quickopen.tab.tip.suffix': 'to switch',
-    'quickOpen.openSide': 'Open on the side',
+    'quickOpen.openOnTheRightSide': 'Open on the side',
 
     'explorer.title': 'Explorer',
     'explorer.electron.revealInFinder': 'Reveal In Explorer',
@@ -224,8 +226,6 @@ export const localizationBundle = {
     'search.replace.buttonOK': 'Replace',
     'search.replace.buttonCancel': 'Cancel',
     'search.too.many.results': 'Because your search terms are too loose, we only show some search results',
-    'file-search.quickOpen.leftRight': 'Open on the side',
-    'file-search.quickOpen.upDown': 'Open at the bottom',
     'search.fileReplaceChanges': '{0} ↔ {1} (Replace Preview)',
     'search.fileResults': 'File results',
     'search.fileResults.notfound': 'No files matching',
@@ -1162,6 +1162,7 @@ export const localizationBundle = {
     'welcome.title': 'Welcome',
     'welcome.quickStart': 'Quick Start',
     'welcome.recent.workspace': 'Recent Workspaces',
+    'welcome.workspace.noExist': 'Workspace path not exist',
 
     'markers.title': 'Problems',
     'markers.panel.content.empty': 'No problems have been detected in the workspace so far.',

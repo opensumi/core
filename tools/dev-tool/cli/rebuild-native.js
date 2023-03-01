@@ -6,6 +6,7 @@ const { pathExistsSync, copySync, removeSync } = require('fs-extra');
 
 const nativeModules = [
   join(process.cwd(), './node_modules/node-pty'),
+  join(process.cwd(), './node_modules/nsfw'),
   join(process.cwd(), './node_modules/@parcel/watcher'),
   join(process.cwd(), './node_modules/spdlog'),
   join(process.cwd(), './node_modules/keytar'),

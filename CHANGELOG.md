@@ -160,6 +160,30 @@ Please use `Scollerbars` component instead.
 
 Please use `RecycleTree` or `BasicRecycleTree` component instead.
 
+#### 5. Revert to using `nsfw` watcher library in Linux
+
+Because `parcel/watcher` has memory out-of-bounds access problem under Linux, which triggers sigsegv and causes crash, so `nsfw` is still used under Linux. https://github.com/parcel-bundler/watcher/issues/49
+
+It is recommended to add dependencies globally:
+
+```diff
++ "nsfw": "2.2.0"
+```
+
+At the same time, `nsfw` needs to be added back into the build，e.g `webpack.node.config.ts`
+
+```diff
+externals: [
+  ({ context, request }, callback) => {
+    if (['node-pty', '@parcel/watcher', 'spdlog', '@opensumi/vscode-ripgrep', 'vm2', 'keytar'].indexOf(request || '') !== -1) {
++   if (['node-pty', '@parcel/watcher', 'nsfw', 'spdlog', '@opensumi/vscode-ripgrep', 'vm2', 'keytar'].indexOf(request || '') !== -1) {
+      return callback(undefined, `commonjs ${request}`);
+    }
+    callback();
+  },
+],
+```
+
 ## v2.21.0
 
 ### What's New Features

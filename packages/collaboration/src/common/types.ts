@@ -8,10 +8,12 @@ export const ICollaborationService = Symbol('ICollaborationService');
 
 export interface ICollaborationService {
   initialize(): void;
+  initFileWatch(): void;
   destroy(): void;
   undoOnFocusedTextModel(): void;
   redoOnFocusedTextModel(): void;
   registerContribution(contribution: CollaborationModuleContribution): void;
+  registerUserInfo(): void;
 }
 
 export interface ITextModelBinding {

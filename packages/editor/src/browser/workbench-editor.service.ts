@@ -25,6 +25,7 @@ import {
   localize,
   MessageType,
   debounce,
+  CUSTOM_EDITOR_SCHEME,
 } from '@opensumi/ide-core-common';
 import {
   CommandService,
@@ -74,6 +75,7 @@ import {
   getSplitActionFromDragDrop,
 } from '../common';
 
+import { EditorDocumentModel } from './doc-model/editor-document-model';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { EditorTabChangedError, isEditorError } from './error';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
@@ -1407,10 +1409,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         const delayTimer = setTimeout(() => {
           this.notifyTabLoading(resource!);
         }, 60);
-        await this.displayResourceComponent(resource, options);
-        this._currentOrPreviousFocusedEditor = this.currentEditor;
         this.notifyTabChanged();
         this.notifyBodyChanged();
+        await this.displayResourceComponent(resource, options);
+        this._currentOrPreviousFocusedEditor = this.currentEditor;
 
         clearTimeout(delayTimer);
         resourceReady.resolve();
@@ -1493,9 +1495,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private async openCodeEditor(resource: IResource, options: IResourceOpenOptions) {
-    const documentRef = await this.getDocumentModelRef(resource.uri);
     this.resolveTabChanged(resource, this.currentResource);
     await this.codeEditorReady.onceReady(async () => {
+      const documentRef = await this.getDocumentModelRef(resource.uri);
       await this.codeEditor.open(documentRef);
 
       if (options.range) {
@@ -1552,12 +1554,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
         });
       }
-    });
 
-    // 可能在diff Editor中修改导致为脏
-    if (documentRef.instance!.dirty) {
-      this.pinPreviewed(resource.uri);
-    }
+      // 可能在diff Editor中修改导致为脏
+      if (documentRef.instance!.dirty) {
+        this.pinPreviewed(resource.uri);
+      }
+    });
   }
 
   private async openDiffEditor(resource: IResource, options: IResourceOpenOptions) {
@@ -1575,6 +1577,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.getDocumentModelRef(diffResource.metadata!.modified),
     ]);
     await this.diffEditorReady.onceReady(async () => {
+      if (!original || !modified) {
+        return;
+      }
       await this.diffEditor.compare(original, modified, options, resource.uri);
       if (options.focus) {
         this._domNode?.focus();
@@ -1632,6 +1637,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         ancestor: {
           uri: URI.parse(metadata.ancestor),
           textModel: ancestorRef.instance.getMonacoModel(),
+          baseContent: (ancestorRef.instance as EditorDocumentModel).baseContent || '',
         },
         input1: input1Data.setTextModel(input1Ref.instance.getMonacoModel()),
         input2: input2Data.setTextModel(input2Ref.instance.getMonacoModel()),
@@ -2274,8 +2280,8 @@ function findSuitableOpenType(
       if (!viewType) {
         return false;
       }
-
-      return p.componentId === viewType;
+      const componentId = `${CUSTOM_EDITOR_SCHEME}-${viewType}`;
+      return p.componentId === componentId;
     });
 
     if (matchAvailableType) {

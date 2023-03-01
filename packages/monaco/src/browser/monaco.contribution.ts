@@ -6,20 +6,21 @@ import {
   PreferenceScope,
   IJSONSchemaRegistry,
   Disposable,
-  CommandRegistry,
   CorePreferences,
   ClientAppContribution,
   CommandContribution,
   ContributionProvider,
   Domain,
-  MonacoService,
   MonacoContribution,
   ServiceNames,
   KeybindingContribution,
   KeybindingRegistry,
   IOpenerService,
   MonacoOverrideServiceRegistry,
-  Keybinding,
+  KeybindingScope,
+  IContextKeyService,
+  KeyCode,
+  KeySequence,
 } from '@opensumi/ide-core-browser';
 import {
   IMenuRegistry,
@@ -28,15 +29,15 @@ import {
   IMenuItem,
   ISubmenuItem,
 } from '@opensumi/ide-core-browser/lib/menu/next';
-import { URI, ILogger } from '@opensumi/ide-core-common';
-import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { URI, ILogger, DisposableCollection, isString, CommandService, isOSX } from '@opensumi/ide-core-common';
+import { IIconService } from '@opensumi/ide-theme';
 import { IconService } from '@opensumi/ide-theme/lib/browser/icon.service';
 import {
   ISemanticTokenRegistry,
   parseClassifierString,
   TokenStyle,
 } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
-import { SimpleKeybinding } from '@opensumi/monaco-editor-core/esm/vs/base/common/keybindings';
+import * as monaco from '@opensumi/monaco-editor-core';
 import { registerEditorContribution } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/editorExtensions';
 import { AbstractCodeEditorService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/abstractCodeEditorService';
 import { OpenerService } from '@opensumi/monaco-editor-core/esm/vs/editor/browser/services/openerService';
@@ -47,7 +48,10 @@ import {
   FormattingConflicts,
   IFormattingEditProviderSelector,
 } from '@opensumi/monaco-editor-core/esm/vs/editor/contrib/format/browser/format';
-import { StandaloneCommandService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
+import {
+  StandaloneCommandService,
+  StandaloneKeybindingService,
+} from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { StandaloneServices } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/browser/standaloneServices';
 import { IStandaloneThemeService } from '@opensumi/monaco-editor-core/esm/vs/editor/standalone/common/standaloneTheme';
 import * as monacoActions from '@opensumi/monaco-editor-core/esm/vs/platform/actions/common/actions';
@@ -57,6 +61,8 @@ import {
 } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 import { IInstantiationService } from '@opensumi/monaco-editor-core/esm/vs/platform/instantiation/common/instantiation';
 import * as monacoKeybindings from '@opensumi/monaco-editor-core/esm/vs/platform/keybinding/common/keybindingsRegistry';
+
+import { DELEGATE_COMMANDS } from '../common/command';
 
 import {
   EditorExtensionsRegistry,
@@ -69,53 +75,51 @@ import { ITextmateTokenizer, ITextmateTokenizerService } from './contrib/tokeniz
 import { ICodeEditor } from './monaco-api/editor';
 import { MonacoMenus } from './monaco-menu';
 import { MonacoSnippetSuggestProvider } from './monaco-snippet-suggest-provider';
+import { KEY_CODE_MAP } from './monaco.keycode-map';
 import { MonacoResolvedKeybinding } from './monaco.resolved-keybinding';
 
 @Domain(ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution
   implements ClientAppContribution, CommandContribution, MenuContribution, KeybindingContribution
 {
-  @Autowired()
-  monacoService: MonacoService;
-
   @Autowired(MonacoContribution)
-  monacoContributionProvider: ContributionProvider<MonacoContribution>;
+  private readonly monacoContributionProvider: ContributionProvider<MonacoContribution>;
 
   @Autowired(JsonSchemaContribution)
-  schemaContributionProvider: ContributionProvider<JsonSchemaContribution>;
+  private readonly schemaContributionProvider: ContributionProvider<JsonSchemaContribution>;
 
   @Autowired(ICommandServiceToken)
-  monacoCommandService: IMonacoCommandService;
+  private readonly monacoCommandService: IMonacoCommandService;
 
   @Autowired(IMonacoCommandsRegistry)
-  monacoCommandRegistry: IMonacoCommandsRegistry;
+  private readonly monacoCommandRegistry: IMonacoCommandsRegistry;
+
+  @Autowired(CommandService)
+  private readonly commandService: CommandService;
 
   @Autowired(IMonacoActionRegistry)
-  monacoActionRegistry: IMonacoActionRegistry;
+  private readonly monacoActionRegistry: IMonacoActionRegistry;
 
   @Autowired(ITextmateTokenizer)
-  private textmateService!: ITextmateTokenizerService;
-
-  @Autowired(IThemeService)
-  themeService: IThemeService;
+  private readonly textmateService!: ITextmateTokenizerService;
 
   @Autowired(IIconService)
-  private iconService: IconService;
+  private readonly iconService: IconService;
 
   @Autowired(PreferenceService)
-  preferenceService: PreferenceService;
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(ISchemaStore)
-  schemaStore: ISchemaStore;
+  private readonly schemaStore: ISchemaStore;
 
   @Autowired(IJSONSchemaRegistry)
-  jsonContributionRegistry: IJSONSchemaRegistry;
+  private readonly jsonContributionRegistry: IJSONSchemaRegistry;
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  private readonly injector: Injector;
 
   @Autowired(CorePreferences)
-  corePreferences: CorePreferences;
+  private readonly corePreferences: CorePreferences;
 
   @Autowired(ISemanticTokenRegistry)
   protected readonly semanticTokenRegistry: ISemanticTokenRegistry;
@@ -132,9 +136,17 @@ export class MonacoClientContribution
   @Autowired(MonacoOverrideServiceRegistry)
   private readonly overrideServicesRegistry: MonacoOverrideServiceRegistry;
 
+  @Autowired(KeybindingRegistry)
+  private readonly keybindings: KeybindingRegistry;
+
+  @Autowired(IContextKeyService)
+  private readonly contextKeyService: IContextKeyService;
+
   get editorExtensionsRegistry(): typeof EditorExtensionsRegistry {
     return EditorExtensionsRegistry;
   }
+
+  private toDisposeOnKeybindingChange = new DisposableCollection();
 
   async initialize() {
     // 注册 monaco 模块原有的 override services
@@ -196,6 +208,9 @@ export class MonacoClientContribution
 
     // 在编辑器全部恢复前初始化 textmateService
     this.initTextmateService();
+
+    // 在快捷键被用户修改时，同步更新编辑器内的快捷键展示
+    this.keybindings.onKeybindingsChanged(() => this.updateMonacoKeybindings());
   }
 
   private registerOverrideServices() {
@@ -276,6 +291,56 @@ export class MonacoClientContribution
     (FormattingConflicts as unknown as any)._selectors.unshift(selector);
   }
 
+  protected updateMonacoKeybindings() {
+    const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
+    if (monacoKeybindingsRegistry instanceof StandaloneKeybindingService) {
+      // Keybindings only support `KeybindingScope.USER` scope now
+      const userKeybindings = this.keybindings.getKeybindingByScope(KeybindingScope.USER);
+      this.toDisposeOnKeybindingChange.dispose();
+      for (const binding of userKeybindings) {
+        const resolved = this.keybindings.resolveKeybinding(binding);
+        const when = isString(binding.when) ? ContextKeyExpr.deserialize(binding.when) : binding.when;
+        const command = binding.command;
+        this.toDisposeOnKeybindingChange.push(
+          monacoKeybindingsRegistry.addDynamicKeybinding(
+            command,
+            this.toMonacoKeybindingNumber(resolved),
+            (_, ...args) => this.commandService.executeCommand(command, ...args),
+            when,
+          ),
+        );
+      }
+    }
+  }
+
+  protected toMonacoKeybindingNumber(codes: KeyCode[]): number {
+    const [firstPart, secondPart] = codes;
+    if (codes.length > 2) {
+      this.logger.warn('Key chords should not consist of more than two parts; got ', codes);
+    }
+    const encodedFirstPart = this.toSingleMonacoKeybindingNumber(firstPart);
+    const encodedSecondPart = secondPart ? this.toSingleMonacoKeybindingNumber(secondPart) << 16 : 0;
+    return monaco.KeyMod.chord(encodedFirstPart, encodedSecondPart);
+  }
+
+  protected toSingleMonacoKeybindingNumber(code: KeyCode): number {
+    const keyCode = code.key?.keyCode !== undefined ? KEY_CODE_MAP[code.key.keyCode] : 0;
+    let encoded = (keyCode >>> 0) & 0x000000ff;
+    if (code.alt) {
+      encoded |= monaco.KeyMod.Alt;
+    }
+    if (code.shift) {
+      encoded |= monaco.KeyMod.Shift;
+    }
+    if (code.ctrl) {
+      encoded |= monaco.KeyMod.WinCtrl;
+    }
+    if (code.meta && isOSX) {
+      encoded |= monaco.KeyMod.CtrlCmd;
+    }
+    return encoded;
+  }
+
   protected setPreferencesChangeListener() {
     this.corePreferences.onPreferenceChanged((e) => {
       if (e.preferenceName === 'files.associations') {
@@ -350,7 +415,7 @@ export class MonacoClientContribution
     standaloneThemeService.getFileIconTheme = () => this.iconService.currentTheme;
   }
 
-  registerCommands(commands: CommandRegistry) {
+  registerCommands() {
     // 注册 monaco 所有的 action
     this.monacoActionRegistry.registerMonacoActions();
   }
@@ -374,27 +439,30 @@ export class MonacoClientContribution
   registerKeybindings(keybindings: KeybindingRegistry): void {
     const monacoKeybindingsRegistry = monacoKeybindings.KeybindingsRegistry;
     const editorFocus = EditorContextKeys.focus;
-
     const defaultItems = monacoKeybindingsRegistry.getDefaultKeybindings();
-
-    // 将 Monaco 的 Keybinding 同步到 ide 中
     for (const item of defaultItems) {
+      if (
+        item.command === DELEGATE_COMMANDS.UNDO ||
+        item.command === DELEGATE_COMMANDS.REDO ||
+        item.command === DELEGATE_COMMANDS.SELECT_ALL
+      ) {
+        // 针对部分被代理命令，跳过快捷键注册
+        continue;
+      }
       const command = this.monacoCommandRegistry.validate(item.command);
       if (command) {
-        const raw = item.keybinding;
-
-        // monaco keybindingRegistry中取出的keybinding缺少了editorFocus的when,
-        // 当向开天的keybinding注册时需要加上 textInputFocus ，避免焦点不在编辑器时响应到
+        const rawKeybinding = MonacoResolvedKeybinding.toKeybinding(item.keybinding);
+        // 当不存在 when 条件或不包含 `editorFocus` 时，追加 editorFocus 条件
         let when = item.when;
         if (!when) {
           when = editorFocus;
         } else {
-          // when 中没有 editorFocus 时再做追加
-          if (!when.keys().includes('editorFocus')) {
+          // when 中没有 `EditorContextKeys.focus` 时再做追加
+          if (!when.keys().includes(editorFocus.key)) {
             // 当其内部为 or 时，避免出现 a && (b || c) 报错
             // 因此改成 (a && b) || (a && c) 这样不会报错
             // serialize 之后的结果类似 a && b || a && c
-            // monaco-editor contextkey 的计算规则中 && 优先级高于 ||
+            // Monaco Editor ContextKey 的计算规则中 && 优先级高于 ||
             if (when.type === ContextKeyExprType.Or) {
               const exprs = when.expr;
               when = ContextKeyExpr.or(...exprs.map((expr) => ContextKeyExpr.and(expr, editorFocus)));
@@ -403,31 +471,22 @@ export class MonacoClientContribution
             }
           }
         }
-        const keybindingStr = raw
-          .map((key) => {
-            if (key instanceof SimpleKeybinding) {
-              return key
-                .toChord()
-                .parts.map((part) => MonacoResolvedKeybinding.keyCode(part))
-                .join(' ');
-            } else {
-              // 目前 monaco 内的 key 没有 ScanCodeBinding 的情况，暂时没有处理
-              // eslint-disable-next-line no-console
-              console.warn('No handler ScanCodeBinding:', key);
-            }
-            return '';
-          })
-          .join(' ');
-
-        // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
         const keybinding = {
           command,
           args: item.commandArgs,
-          keybinding: keybindingStr,
-          when,
+          keybinding: rawKeybinding,
+          when: (item.when && item.when.serialize()) ?? undefined,
+          // monaco内优先级计算时为双优先级相加，第一优先级权重 * 100
           priority: (item.weight1 ? item.weight1 * 100 : 0) + (item.weight2 || 0),
-        } as Keybinding;
-
+        };
+        // 注册快捷键前先卸载 Monaco 内对应命令的快捷键实现
+        monacoKeybindingsRegistry.registerKeybindingRule({
+          id: `-${command}`,
+          weight: item.weight1,
+          primary: this.toMonacoKeybindingNumber(KeySequence.parse(rawKeybinding)),
+          when,
+        });
+        // 将 Monaco 内默认快捷键注册进 OpenSumi 中
         keybindings.registerKeybinding(keybinding);
       }
     }

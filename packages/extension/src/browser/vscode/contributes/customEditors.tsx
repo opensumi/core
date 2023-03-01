@@ -34,7 +34,7 @@ import { IActivationEventService } from '../../types';
 
 @Injectable()
 @Contributes('customEditors')
-@LifeCycle(LifeCyclePhase.Ready)
+@LifeCycle(LifeCyclePhase.Initialize)
 export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomEditorScheme[]> {
   @Autowired(EditorComponentRegistry)
   private editorComponentRegistry: EditorComponentRegistry;
@@ -74,12 +74,6 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
       const componentId = `${CUSTOM_EDITOR_SCHEME}-${customEditor.viewType}`;
       const component = createCustomEditorComponent(customEditor.viewType, componentId, () =>
         this.getOptions(customEditor.viewType),
-      );
-      this.addDispose(
-        this.editorComponentRegistry.registerEditorComponent({
-          uid: componentId,
-          component,
-        }),
       );
 
       const patterns = customEditor.selector.map((s) => s.filenamePattern).filter((p) => typeof p === 'string');
@@ -142,6 +136,13 @@ export class CustomEditorContributionPoint extends VSCodeContributePoint<CustomE
             }
           },
         ),
+      );
+
+      this.addDispose(
+        this.editorComponentRegistry.registerEditorComponent({
+          uid: componentId,
+          component,
+        }),
       );
     } catch (e) {
       this.logger.error(e);

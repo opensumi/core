@@ -313,12 +313,14 @@ export class PreferenceContribution
     });
   }
 
-  async openPreferences(search?: string, prefernceId?: string) {
+  async openPreferences(search?: string, preferenceId?: string) {
     await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('/').withScheme(PREF_SCHEME), {
       preview: false,
     });
     if (isString(search)) {
       this.preferenceService.search(search);
+    } else if (isString(preferenceId)) {
+      this.preferenceService.scrollToPreference(preferenceId);
     }
   }
 

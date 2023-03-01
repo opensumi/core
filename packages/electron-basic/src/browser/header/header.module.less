@@ -22,40 +22,42 @@
   }
 
   :global .menubarWrapper {
-    background-color: var(--kt-menubar-background);
+    background-color: var(--menu-background);
   }
-}
 
-.windowActions {
-  display: flex;
-  align-items: center;
-  -webkit-app-region: no-drag;
-  user-select: none;
-
-  > div {
-    font-size: 16px;
-    padding: 0 15px;
-    height: 100%;
-    width: 100%;
+  .windowActions {
     display: flex;
     align-items: center;
+    -webkit-app-region: no-drag;
+    user-select: none;
 
-    &:hover {
-      background-color: hsla(0, 0%, 100%, 0.1);
-    }
+    > .icon {
+      font-size: 16px;
+      padding: 0 15px;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
 
-    &:hover:last-child {
-      background-color: rgba(232, 17, 35, 0.9);
-      color: white;
+      &:hover {
+        background-color: hsla(0, 0%, 100%, 0.1);
+      }
+
+      &:hover:last-child {
+        background-color: rgba(232, 17, 35, 0.9);
+        color: white;
+      }
     }
   }
 }
 
 :global(.vs) {
-  .windowActions {
-    > div:not(:last-child):hover {
-      background-color: rgba(0, 0, 0, 0.1);
-      color: #696767;
+  .header {
+    .windowActions {
+      > .icon:not(:last-child):hover {
+        background-color: rgba(0, 0, 0, 0.1);
+        color: #696767;
+      }
     }
   }
 }

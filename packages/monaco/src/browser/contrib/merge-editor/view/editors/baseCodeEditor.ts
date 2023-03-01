@@ -169,6 +169,7 @@ export abstract class BaseCodeEditor extends Disposable implements IBaseCodeEdit
       minimap: {
         enabled: false,
       },
+      codeLens: false,
       scrollBeyondLastLine: false,
       ...this.getMonacoEditorOptions(),
     });

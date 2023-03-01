@@ -1,3 +1,5 @@
+import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
+
 import { IPreferences } from '../src';
 import {
   registerExternalPreferenceProvider,
@@ -83,7 +85,7 @@ describe('external preference tests', () => {
     // 传入默认配置的情况下，如果可以通过 `getExternalPreference` 获取配置值，优先采用获取到的配置值
     expect(
       getPreferenceLanguageId({
-        'general.language': 'en-US',
+        'general.language': LOCALE_TYPES.EN_US,
       } as IPreferences),
     ).toBe(unique_languageId);
 
