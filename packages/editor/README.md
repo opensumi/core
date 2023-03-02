@@ -492,7 +492,7 @@ export interface IEditorGroup {
   currentEditor: IEditor | null;
 
   /**
-   * 和 currentEditor 不同，对于 DiffEditor 来说会取到上一次 focus 的Editor
+   * 和 currentEditor 不同，对于 DiffEditor 来说会取到上一次 focus 的 Editor
    */
   currentFocusedEditor: IEditor | undefined;
 
