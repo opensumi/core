@@ -2,6 +2,8 @@ import React, { RefObject, useEffect, useRef } from 'react';
 
 import type { MaybePromise } from '@opensumi/ide-utils';
 
+import './styles.less';
+
 export interface IOpenerShape {
   open(uri: string): MaybePromise<boolean>;
 }
@@ -38,7 +40,7 @@ export const RenderWrapper = (props: { html: string; opener?: IOpenerShape }) =>
 
   return (
     <div
-      className='md-renderer-wrap'
+      className='kt-md-renderer-wrap'
       dangerouslySetInnerHTML={{ __html: html }}
       ref={ref as unknown as RefObject<HTMLDivElement>}
     ></div>
