@@ -13,6 +13,7 @@ import { menus } from '@opensumi/ide-core-browser/lib/extensions/schema/menu';
 import { ToolbarRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import { IMenuRegistry, MenuId, IMenuItem, ISubmenuItem } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LifeCyclePhase } from '@opensumi/ide-core-common';
+import { EditorOpenType } from '@opensumi/ide-editor';
 import { IEditorGroup } from '@opensumi/ide-editor';
 import { IEditorActionRegistry } from '@opensumi/ide-editor/lib/browser';
 import { ThemeType, IconType } from '@opensumi/ide-theme';
@@ -200,6 +201,11 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
     return id;
   }
 
+  private getDataFromQuery(query: string, data: string) {
+    const q = new URLSearchParams(query);
+    return q.get(data);
+  }
+
   contribute() {
     const collector = console;
 
@@ -241,9 +247,19 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             const [group, order] = parseMenuGroup(item.group);
             let argsTransformer: ((...args: any[]) => any[]) | undefined;
             if ((menuId as MenuId) === MenuId.EditorTitleContext) {
-              argsTransformer = ({ uri, group }: { uri: URI; group: IEditorGroup }) => [uri.codeUri];
+              argsTransformer = ({ uri }: { uri: URI; group: IEditorGroup }) => [uri.codeUri];
             } else if ((menuId as MenuId) === MenuId.EditorTitle) {
-              argsTransformer = (uri: URI, group: IEditorGroup, editorUri?: URI) => [editorUri?.codeUri || uri.codeUri];
+              argsTransformer = (uri: URI, _group: IEditorGroup, editorUri?: URI) => {
+                if (uri.scheme === EditorOpenType.diff) {
+                  // 对于 DiffEditor 情况时，这里的 `editorUri` 会是上次聚焦的编辑器 Uri
+                  // 需要额外处理 DiffEditor 的来源文件 Uri
+                  const original = this.getDataFromQuery(decodeURIComponent(uri.query), 'original');
+                  if (original) {
+                    return [new URI(original).codeUri];
+                  }
+                }
+                return [editorUri?.codeUri || uri.codeUri];
+              };
             }
 
             this.addDispose(
