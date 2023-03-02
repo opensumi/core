@@ -47,7 +47,6 @@ export const SCMResourceTree: FC<{
     if (isReady) {
       setModel(scmTreeModelService.treeModel);
       scmTreeModelService.onDidTreeModelChange(async (model) => {
-        await scmTreeModelService.whenReady;
         if (model) {
           // 确保数据初始化完毕，减少初始化数据过程中多次刷新视图
           await model.ensureReady;
@@ -203,7 +202,7 @@ const SCMTreeView = memo(
           onDoubleClick={onItemDoubleClick}
           onTwistierClick={onTwistierClick}
           onContextMenu={onContextMenu}
-          defaultLeftPadding={scmTreeService.isTreeMode ? 8 : 4}
+          defaultLeftPadding={scmTreeService.isTreeMode ? -4 : 4}
           leftPadding={scmTreeService.isTreeMode ? 8 : 0}
           iconTheme={scmTreeModelService.iconThemeDesc}
         />

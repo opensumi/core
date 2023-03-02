@@ -62,7 +62,7 @@ export class ExtensionCompositeTreeNode extends CompositeTreeNode {
     expanded?: boolean,
     sourceUri?: UriComponents,
   ) {
-    super(tree, parent, undefined, { name: treeItemId });
+    super(tree, parent, undefined);
     this.isExpanded = expanded || false;
     this.sourceUri = sourceUri;
     this._command = command;
@@ -150,7 +150,7 @@ export class ExtensionTreeNode extends TreeNode {
     private _accessibilityInformation?: IAccessibilityInformation,
     private sourceUri?: UriComponents,
   ) {
-    super(tree as ITree, parent, undefined, { name: treeItemId });
+    super(tree as ITree, parent, undefined);
     if (isString(label)) {
       this._displayName = label;
     } else if (isObject(label)) {

@@ -64,11 +64,6 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       consoleModel.onDidUpdateTreeModel(async (model: IDebugConsoleModel) => {
         if (model) {
           await model.treeModel.ensureReady;
-          disposer.addDispose(
-            model.treeModel.root.watcher.on(TreeNodeEvent.WillChangeExpansionState, () => {
-              consoleModel.treeHandle.layoutItem();
-            }),
-          );
         }
         setModel(model);
       }),
@@ -100,35 +95,6 @@ export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState 
       disposer.dispose();
     };
   }, []);
-
-  React.useEffect(() => {
-    if (wrapperRef.current && isWordWrap) {
-      let animationFrame: number;
-      const layoutDebounce = debounce(() => consoleModel.treeHandle?.layoutItem(), 10);
-      const resizeObserver = new ResizeObserver(() => {
-        animationFrame = window.requestAnimationFrame(() => layoutDebounce());
-      });
-      resizeObserver.observe(wrapperRef.current);
-      return () => {
-        if (wrapperRef.current) {
-          resizeObserver?.unobserve(wrapperRef.current);
-        }
-        if (animationFrame) {
-          window.cancelAnimationFrame(animationFrame);
-        }
-      };
-    }
-  }, [wrapperRef.current]);
-
-  React.useEffect(() => {
-    if (model && isWordWrap) {
-      disposer.addDispose(
-        model.treeModel.state.onChangeScrollOffset(() => {
-          consoleModel.treeHandle.layoutItem();
-        }),
-      );
-    }
-  }, [model, isWordWrap]);
 
   const handleTreeReady = (handle: IRecycleTreeHandle) => {
     consoleModel.handleTreeHandler({

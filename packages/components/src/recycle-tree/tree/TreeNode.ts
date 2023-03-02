@@ -331,8 +331,8 @@ export class TreeNode implements ITreeNode {
     if (this._disposed) {
       return;
     }
-    this._watcher.notifyDidDispose(this);
     this._disposed = true;
+    this._watcher.notifyDidDispose(this);
   }
 }
 
@@ -800,7 +800,9 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           }
           for (let i = 0; i < childrens.length; i++) {
             const child = childrens[i];
-            if (toExpandPath.indexOf(`${child.path}${Path.separator}`) === 0 && CompositeTreeNode.is(child)) {
+            const isInclude = toExpandPath.indexOf(`${child.path}${Path.separator}`) === 0; // 展开路径包含子节点路径
+            const isIncluded = child.path.indexOf(`${toExpandPath}${Path.separator}`) === 0; // 展开路径被子节点路径包含
+            if ((isInclude || isIncluded) && CompositeTreeNode.is(child)) {
               // 包含压缩节点的情况
               if (!CompositeTreeNode.is(child)) {
                 // 说明此节点为非折叠节点时不处理
@@ -815,11 +817,20 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
               if (extraExpandedPaths) {
                 toExpandPaths = toExpandPaths.filter((path) => !extraExpandedPaths.find((a) => a === path));
               }
-              if (child.path !== toExpandPath && !toExpandPath.includes(child.path)) {
-                toExpandPaths.unshift(toExpandPath);
+              if (isInclude) {
+                if (child.path !== toExpandPath && !toExpandPaths.includes(child.path)) {
+                  toExpandPaths.unshift(toExpandPath);
+                }
+              } else {
+                if (child.path !== toExpandPath && toExpandPaths.includes(child.path)) {
+                  toExpandPaths.splice(
+                    toExpandPath.findIndex((path) => path === toExpandPath),
+                    1,
+                  );
+                }
               }
               if (toExpandPaths.length > 0) {
-                // 不需要重新reload压缩节点的子节点内容
+                // 不需要重新加载压缩节点的子节点内容
                 toExpandPaths =
                   (await (child as CompositeTreeNode).refreshTreeNodeByPaths([...toExpandPaths], token, origin)) || [];
                 if (token?.isCancellationRequested) {
@@ -839,7 +850,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
             return;
           }
           if (extraExpandedPaths) {
-            toExpandPaths = toExpandPaths.filter((path) => !extraExpandedPaths.find((a) => a === path));
+            toExpandPaths = toExpandPaths.filter((path) => !extraExpandedPaths.find((a) => a.includes(path)));
           }
           if (toExpandPaths.length > 0 && !token?.isCancellationRequested) {
             toExpandPaths =
