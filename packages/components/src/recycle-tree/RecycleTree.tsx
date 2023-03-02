@@ -864,7 +864,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   };
 
   private renderItem = ({ index, style }): JSX.Element => {
-    const { children, overflow, supportDynamicHeights } = this.props;
+    const { children, overflow = 'ellipsis', supportDynamicHeights } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
     const wrapRef = createRef<HTMLDivElement>();
     if (!node) {
