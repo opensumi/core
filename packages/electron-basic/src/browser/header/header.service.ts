@@ -60,6 +60,15 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
     this._templateVariables[key] = value;
   }
 
+  constructor() {
+    super();
+    this.disposableCollection.push(
+      this.editorService.onActiveResourceChange(() => {
+        this.updateAppTitle();
+      }),
+    );
+  }
+
   @OnEvent(ResourceDidUpdateEvent)
   onResourceDidUpdateEvent(e: ResourceDidUpdateEvent) {
     this.updateAppTitle();
