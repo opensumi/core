@@ -36,7 +36,6 @@ import {
   LifeCyclePhase,
   AppLifeCycleServiceToken,
   IAppLifeCycleService,
-  isBoolean,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
