@@ -105,6 +105,7 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
       if (SearchFileNode.is(node)) {
         return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
       } else {
+        const { start, end } = node.highlight;
         if (isUseRegexp) {
           let regexp;
           try {
@@ -118,15 +119,14 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
             return <div className={cls(styles.segment_grow, styles.description)}>{node.description}</div>;
           }
           const matchText = match[0];
-          const index = match.index;
-          if (matchText && isDefined(index)) {
+          if (matchText && isDefined(start)) {
             const replaceResult = matchText.replace(regexp, replace);
             return (
               <div className={cls(styles.segment_grow, styles.description)}>
-                {node.description.slice(0, index)}
+                {node.description.slice(0, start)}
                 <span className={cls(styles.match, replace && styles.replace)}>{matchText}</span>
                 {replaceResult && <span className={styles.replace}>{replaceResult}</span>}
-                {node.description.slice(index + matchText.length)}
+                {node.description.slice(end)}
               </div>
             );
           }
@@ -140,12 +140,12 @@ export const SearchNodeRendered: React.FC<ISearchNodeRenderedProps> = ({
           if (index >= 0) {
             return (
               <div className={cls(styles.segment_grow, styles.description)}>
-                {node.description.slice(0, index)}
+                {node.description.slice(0, start)}
                 <span className={cls(styles.match, replace && styles.replace)}>
-                  {node.description.slice(index, index + search.length)}
+                  {node.description.slice(start, end)}
                 </span>
                 {replace && <span className={styles.replace}>{replace}</span>}
-                {node.description.slice(index + search.length)}
+                {node.description.slice(end)}
               </div>
             );
           }

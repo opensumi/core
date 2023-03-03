@@ -38,6 +38,10 @@ export class SearchFileNode extends CompositeTreeNode {
   get badge() {
     return this.branchSize;
   }
+
+  get highlight() {
+    return {};
+  }
 }
 
 export interface ISearchHighlightRange {
