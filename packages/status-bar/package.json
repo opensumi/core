@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-status-bar",
-  "version": "2.22.5",
+  "version": "2.22.6",
   "files": [
     "lib",
     "src"

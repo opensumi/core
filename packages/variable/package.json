@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-variable",
-  "version": "2.22.5",
+  "version": "2.22.6",
   "files": [
     "lib",
     "src"
