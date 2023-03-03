@@ -36,6 +36,7 @@ import {
   LifeCyclePhase,
   AppLifeCycleServiceToken,
   IAppLifeCycleService,
+  isBoolean,
 } from '@opensumi/ide-core-common';
 import {
   DEFAULT_APPLICATION_DESKTOP_HOST,
@@ -121,7 +122,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.modules.forEach((m) => this.resolveModuleDeps(m));
     // The main-layout module instance should on the first
     this.browserModules = opts.modulesInstances || [];
-    const isDesktop = typeof opts.isElectronRenderer === 'boolean' ? opts.isElectronRenderer : isElectronRenderer();
+    const isDesktop = isBoolean(opts.isElectronRenderer) ? opts.isElectronRenderer : isElectronRenderer();
     this.config = {
       appName: DEFAULT_APPLICATION_NAME,
       appHost: isDesktop ? DEFAULT_APPLICATION_DESKTOP_HOST : DEFAULT_APPLICATION_WEB_HOST,
