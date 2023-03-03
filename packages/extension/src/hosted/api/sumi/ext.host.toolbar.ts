@@ -75,8 +75,11 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
       case TOOLBAR_ACTION.DROPDOWN_BUTTON:
         await this.proxy.$registerDropdownButtonAction(extensionId, extensionPath, contribution);
         return this.getToolbarDropdownButtonActionHandle(contribution.id, extensionId);
+      case TOOLBAR_ACTION.SELECT:
+          await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution);
+          return this.getToolbarSelectActionHandle(contribution.id, extensionId);
       default:
-        await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution);
+        await this.proxy.$registerToolbarSelectAction(extensionId, extensionPath, contribution as IToolbarSelectContribution<T>);
         return this.getToolbarSelectActionHandle(contribution.id, extensionId);
     }
   }

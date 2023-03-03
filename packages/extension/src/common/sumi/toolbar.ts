@@ -81,6 +81,7 @@ export interface IExtHostToolbar {
 export enum TOOLBAR_ACTION {
   BUTTON = 'button',
   DROPDOWN_BUTTON = 'dropdownButton',
+  SELECT = 'select',
 }
 
 export const BUTTON_SET_STATE_ID = 'sumi-extension.toolbar.btn.setState';
