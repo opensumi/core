@@ -76,11 +76,12 @@
 .popover_content,
 .popover_tooltip,
 .element {
-  span.icon {
+  span:global(.codicon),
+  span:global(.kt-icon) {
     align-items: center;
     font-size: 1em;
     margin: 0 2px;
-
+    color: var(--statusBar-foreground);
     &::before {
       vertical-align: middle;
     }

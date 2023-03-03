@@ -1,9 +1,9 @@
 import cls from 'classnames';
-import React, { ReactNode } from 'react';
+import React from 'react';
 
 import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
-import { getExternalIcon, IOpenerService, toMarkdown } from '@opensumi/ide-core-browser';
-import { parseLabel, LabelIcon, replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
+import { IOpenerService, toMarkdown, transformLabelWithCodicon } from '@opensumi/ide-core-browser';
+import { replaceLocalizePlaceholder } from '@opensumi/ide-core-browser';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 import { StatusBarEntry, StatusBarHoverContent } from '@opensumi/ide-core-browser/lib/services';
 import {
@@ -14,35 +14,9 @@ import {
   IMarkdownString,
   isString,
 } from '@opensumi/ide-core-common';
-import { IThemeService } from '@opensumi/ide-theme';
+import { IIconService, IThemeService } from '@opensumi/ide-theme';
 
 import styles from './status-bar.module.less';
-interface StatusBarItemText {
-  text: string;
-  children: (text: string) => ReactNode;
-}
-
-const StatusBaItemText = React.memo(({ text, children }: StatusBarItemText) => (
-  <>
-    {parseLabel(text).map((item, key) => {
-      if (!(typeof item === 'string') && LabelIcon.is(item)) {
-        return (
-          <span
-            key={key}
-            className={cls(
-              styles.icon,
-              getExternalIcon(item.name, item.owner),
-              `${item.animation ? 'iconfont-anim-' + item.animation : ''}`,
-            )}
-          ></span>
-        );
-      } else {
-        // 22px高度限制用于解决文本超长时文本折叠问题
-        return children(item);
-      }
-    })}
-  </>
-));
 
 interface StatusBarPopoverContent {
   contents: StatusBarHoverContent[];
@@ -50,6 +24,7 @@ interface StatusBarPopoverContent {
 
 const StatusBarPopover = React.memo((props: StatusBarPopoverContent) => {
   const commandService: CommandService = useInjectable(CommandService);
+  const iconService = useInjectable<IIconService>(IIconService);
   const { contents } = props;
 
   const onClickLink = React.useCallback((command: StatusBarHoverCommand) => {
@@ -61,7 +36,7 @@ const StatusBarPopover = React.memo((props: StatusBarPopoverContent) => {
       {contents.map((content) => (
         <div key={content.title} className={styles.popover_content}>
           <span>
-            {content.title && <StatusBaItemText text={content.title}>{(item) => item}</StatusBaItemText>}
+            {content.title && transformLabelWithCodicon(content.title, {}, iconService.fromString.bind(iconService))}
             {content.name && ` - ${content.name}`}
           </span>
           {content.command && (
@@ -93,6 +68,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
 
   const themeService = useInjectable<IThemeService>(IThemeService);
   const openerService = useInjectable<IOpenerService>(IOpenerService);
+  const iconService = useInjectable<IIconService>(IIconService);
 
   const disablePopover = React.useMemo(() => !tooltip && !hoverContents, [tooltip, hoverContents]);
 
@@ -106,7 +82,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
     return (
       isString(tooltip) && (
         <div className={styles.popover_tooltip}>
-          <StatusBaItemText text={tooltip}>{(item) => item}</StatusBaItemText>
+          {transformLabelWithCodicon(tooltip, {}, iconService.fromString.bind(iconService))}
         </div>
       )
     );
@@ -146,16 +122,11 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
       >
         <div className={styles.popover_item}>
           {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
-          {text && (
-            <StatusBaItemText text={text}>
-              {(item) => (
-                // 22px高度限制用于解决文本超长时文本折叠问题
-                <span style={{ height: '22px', lineHeight: '22px' }} aria-label={ariaLabel} role={role}>
-                  {replaceLocalizePlaceholder(item)}
-                </span>
-              )}
-            </StatusBaItemText>
-          )}
+          {text && transformLabelWithCodicon(text, {}, iconService.fromString.bind(iconService), (text) => (
+            <span style={{ height: '22px', lineHeight: '22px' }} aria-label={ariaLabel} role={role}>
+              {replaceLocalizePlaceholder(text)}
+            </span>
+          ))}
         </div>
       </Popover>
     </div>
