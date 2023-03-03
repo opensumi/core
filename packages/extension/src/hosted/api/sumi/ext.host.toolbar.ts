@@ -28,6 +28,7 @@ import {
   SELECT_CONNECT_HANDLE_ID,
   SELECT_ON_SELECT_ID,
   SELECT_STATE_CHANGE_ID,
+  TOOLBAR_ACTION,
 } from '../../../common/sumi/toolbar';
 import { IExtHostCommands, IExtensionDescription } from '../../../common/vscode';
 
@@ -68,10 +69,10 @@ export class ExtHostToolbarActionService implements IExtHostToolbar {
     contribution: IToolbarButtonContribution | IToolbarSelectContribution | IToolbarDropdownButtonContribution,
   ): Promise<IToolbarButtonActionHandle | IToolbarSelectActionHandle<T> | IToolbarDropdownButtonActionHandle<T>> {
     switch (contribution.type) {
-      case 'button':
+      case TOOLBAR_ACTION.BUTTON:
         await this.proxy.$registerToolbarButtonAction(extensionId, extensionPath, contribution);
         return this.getToolbarButtonActionHandle(contribution.id, extensionId);
-      case 'dropdownButton':
+      case TOOLBAR_ACTION.DROPDOWN_BUTTON:
         await this.proxy.$registerDropdownButtonAction(extensionId, extensionPath, contribution);
         return this.getToolbarDropdownButtonActionHandle(contribution.id, extensionId);
       default:

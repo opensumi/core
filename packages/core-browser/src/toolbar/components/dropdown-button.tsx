@@ -1,5 +1,5 @@
 import classnames from 'classnames';
-import React from 'react';
+import React, { useRef, useEffect, useCallback, useMemo } from 'react';
 
 import { DropdownButton, DropDownProps } from '@opensumi/ide-components';
 import { Menu } from '@opensumi/ide-components/lib/menu';
@@ -9,12 +9,12 @@ import { IToolbarActionElementProps, IToolbarActionReactElement, IToolbarActionD
 
 import style from './dropdown-button.module.less';
 
-export function ToolbarActionDropdownButton<T>(
+export const ToolbarActionDropdownButton = <T,>(
   props: IToolbarActionDropdownButtonProps<T> & IToolbarActionElementProps,
-) {
-  const selectEmitter = React.useRef(new Emitter<T>());
+) => {
+  const selectEmitter = useRef(new Emitter<T>());
   const [firstOption, ...otherOptions] = props.options;
-  React.useEffect(() => {
+  useEffect(() => {
     const _onChangeState = new Emitter<{ from: string; to: string }>();
     const delegate = {
       onSelect: selectEmitter.current.event,
@@ -26,13 +26,13 @@ export function ToolbarActionDropdownButton<T>(
     };
   }, []);
 
-  const trigger = React.useMemo(() => props.trigger ?? (['click'] as DropDownProps['trigger']), [props.trigger]);
+  const trigger = useMemo(() => props.trigger ?? (['click'] as DropDownProps['trigger']), [props.trigger]);
 
-  const handleClick = React.useCallback((value) => {
+  const handleClick = useCallback((value) => {
     selectEmitter.current.fire(value);
   }, []);
 
-  const menu = React.useMemo(() => (
+  const menu = useMemo(() => (
       <Menu
         className={classnames('kt-menu', style.menu)}
         selectable={false}
@@ -51,7 +51,7 @@ export function ToolbarActionDropdownButton<T>(
       {firstOption.label}
     </DropdownButton>
   );
-}
+};
 
 export function createToolbarActionDropdownButton<T = string>(
   props: IToolbarActionDropdownButtonProps<T>,

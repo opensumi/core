@@ -78,6 +78,11 @@ export interface IExtHostToolbar {
   getToolbarSelectActionHandle<T = any>(id: string, extensionId: string): Promise<IToolbarSelectActionHandle<T>>;
 }
 
+export enum TOOLBAR_ACTION {
+  BUTTON = 'button',
+  DROPDOWN_BUTTON = 'dropdownButton',
+}
+
 export const BUTTON_SET_STATE_ID = 'sumi-extension.toolbar.btn.setState';
 export const BUTTON_STATE_CHANGE_ID = 'sumi-extension.toolbar.btn.stateChange';
 export const BUTTON_SET_CONTEXT_ID = 'sumi-extension.toolbar.btn.setContext';

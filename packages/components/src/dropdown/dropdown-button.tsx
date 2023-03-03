@@ -2,7 +2,7 @@ import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
 import classNames from 'classnames';
 import * as React from 'react';
 
-import Button from '../button';
+import { Button } from '../button';
 import type { ButtonSize, ButtonType } from '../button';
 import type { ButtonHTMLType } from '../button';
 
