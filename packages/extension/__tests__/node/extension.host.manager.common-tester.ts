@@ -74,7 +74,7 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
 
       const pid = await extensionHostManager.fork(extHostPath);
       extensionHostManager.onExit(pid, async (code, signal) => {
-        expect(signal).toBe('SIGTERM');
+        expect(signal).toBe('SIGKILL');
         expect(await extensionHostManager.isKilled(pid)).toBeTruthy();
         deferred.resolve();
       });
@@ -87,7 +87,7 @@ export const extensionHostManagerTester = (options: IExtensionHostManagerTesterO
 
       const pid = await extensionHostManager.fork(extHostPath);
       extensionHostManager.onExit(pid, async (code, signal) => {
-        expect(signal).toBe('SIGTERM');
+        expect(signal).toBe('SIGKILL');
         // tree-kill 使用 process.kill 不能使用 killed 判断
         expect(await extensionHostManager.isRunning(pid)).toBeFalsy();
         deferred.resolve();
