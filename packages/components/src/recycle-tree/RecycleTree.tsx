@@ -1,5 +1,5 @@
 import fuzzy from 'fuzzy';
-import React from 'react';
+import React, { useEffect, createRef } from 'react';
 import { FixedSizeList, VariableSizeList, shouldComponentUpdate, ListProps } from 'react-window';
 
 import {
@@ -864,10 +864,9 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   };
 
   private renderItem = ({ index, style }): JSX.Element => {
-    this.shouldComponentUpdate = shouldComponentUpdate.bind(this);
     const { children, overflow = 'ellipsis', supportDynamicHeights } = this.props;
     const node = this.getItemAtIndex(index) as IFilterNodeRendererProps;
-    const wrapRef = React.useRef(null);
+    const wrapRef = createRef<HTMLDivElement>();
     if (!node) {
       return <></>;
     }
@@ -895,27 +894,32 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       };
     }
 
-    const calcDynamicHeight = () => {
-      if (!supportDynamicHeights) {
-        return RecycleTree.DEFAULT_ITEM_HEIGHT;
-      }
-
-      let size = 0;
+    useEffect(() => {
       if (wrapRef.current) {
-        const ref = wrapRef.current as unknown as HTMLDivElement;
-        size = Array.from(ref.children).reduce((pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height, 0);
+        setSize();
       }
-      if (size) {
-        this.dynamicSizeMap.set(index, size);
-      }
+    }, []);
 
-      return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
-    };
+    const setSize = supportDynamicHeights
+      ? () => {
+          let size = 0;
+          if (wrapRef.current) {
+            const ref = wrapRef.current;
+            size = Array.from(ref.children).reduce(
+              (pre, cur: HTMLElement) => pre + cur.getBoundingClientRect().height,
+              0,
+            );
+          }
+          if (size) {
+            this.dynamicSizeMap.set(index, size);
+            this.layoutItem();
+          }
 
-    const itemStyle =
-      overflow === 'ellipsis'
-        ? style
-        : { ...style, width: 'auto', minWidth: '100%', height: `${calcDynamicHeight()}px` };
+          return Math.max(size, RecycleTree.DEFAULT_ITEM_HEIGHT);
+        }
+      : () => {};
+
+    const itemStyle = overflow === 'ellipsis' ? style : { ...style, width: 'auto', minWidth: '100%' };
 
     return (
       <div ref={wrapRef} style={itemStyle} role={item.accessibilityInformation?.role || 'treeiem'} {...ariaInfo}>
@@ -926,6 +930,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
           template={template}
           hasPrompt={!!this.promptHandle && !this.promptHandle.destroyed}
           expanded={CompositeTreeNode.is(item) ? (item as CompositeTreeNode).expanded : void 0}
+          setSize={setSize}
         >
           {children as INodeRenderer}
         </NodeRendererWrap>
@@ -937,7 +942,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
     if (!this.props.supportDynamicHeights) {
       return;
     }
-
+    // (this.listRef?.current as VariableSizeList<any>).resetAfterIndex(0);
     // eslint-disable-next-line no-unsafe-optional-chaining
     if (this.listRef && this.listRef?.current && '_getRangeToRender' in this.listRef?.current) {
       // _getRangeToRender 是 react-window 的内部方法，用于获取可视区域的下标范围
@@ -945,10 +950,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
       const range = this.listRef?.current._getRangeToRender();
       if (range) {
         const start = range[0];
-        const end = range[1];
-        Array.from({ length: end - start }).forEach((_, i) => {
-          (this.listRef?.current as VariableSizeList<any>).resetAfterIndex(start + i);
-        });
+        (this.listRef?.current as VariableSizeList<any>).resetAfterIndex(start);
       }
     }
   };

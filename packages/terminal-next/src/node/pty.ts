@@ -13,7 +13,7 @@ import * as pty from 'node-pty';
 import * as osLocale from 'os-locale';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable, Emitter, INodeLogger, isWindows, path } from '@opensumi/ide-core-node';
+import { Disposable, Emitter, INodeLogger, isWindows, path, URI } from '@opensumi/ide-core-node';
 import { getShellPath } from '@opensumi/ide-core-node/lib/bootstrap/shell-path';
 
 import { IShellLaunchConfig, ITerminalLaunchError } from '../common';
@@ -249,7 +249,7 @@ export class PtyService extends Disposable {
     if (this.shellLaunchConfig.cwd) {
       return typeof this.shellLaunchConfig.cwd === 'string'
         ? this.shellLaunchConfig.cwd
-        : this.shellLaunchConfig.cwd.fsPath;
+        : URI.from(this.shellLaunchConfig.cwd).path.toString();
     }
     return os.homedir();
   }

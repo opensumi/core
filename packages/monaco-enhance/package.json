@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-monaco-enhance",
-  "version": "2.22.4",
+  "version": "2.22.6",
   "files": [
     "lib",
     "src"

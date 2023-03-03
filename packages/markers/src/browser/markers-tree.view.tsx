@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useState, useCallback, RefObject, createRef } from 'react';
 
 import { IRecycleTreeHandle, RecycleTree } from '@opensumi/ide-components';
-import { ViewState, useInjectable } from '@opensumi/ide-core-browser';
+import { ViewState, useInjectable, Disposable } from '@opensumi/ide-core-browser';
 
 import { IMarkerService } from '../common';
 
@@ -13,14 +13,17 @@ import { MarkerModelService, MarkerTreeModel } from './tree/tree-model.service';
 
 const MarkerList: FC<{ viewState: ViewState }> = ({ viewState }) => {
   const [model, setModel] = useState<MarkerTreeModel | undefined>();
-  const markerModelService = useInjectable(MarkerModelService);
+  const markerModelService = useInjectable<MarkerModelService>(MarkerModelService);
 
   useEffect(() => {
-    const disposable = markerModelService.onDidUpdateTreeModel((model?: MarkerTreeModel) => {
-      setModel(model);
-    });
+    const disposer = new Disposable();
+    disposer.addDispose(
+      markerModelService.onDidUpdateTreeModel((model?: MarkerTreeModel) => {
+        setModel(model);
+      }),
+    );
     return () => {
-      disposable.dispose();
+      disposer.dispose();
     };
   }, []);
 
@@ -57,6 +60,8 @@ const MarkerList: FC<{ viewState: ViewState }> = ({ viewState }) => {
       <RecycleTree
         height={viewState.height}
         itemHeight={MARKER_TREE_NODE_HEIGHT}
+        supportDynamicHeights={true}
+        overflow={'auto'}
         onReady={handleTreeReady}
         model={model}
         placeholder={() => <Empty />}

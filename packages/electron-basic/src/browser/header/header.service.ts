@@ -63,16 +63,9 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
 
   constructor() {
     super();
-    this._titleTemplate = this.preferenceService.getValid('window.title', this._titleTemplate);
     this.disposableCollection.push(
-      this.preferenceService.onSpecificPreferenceChange('window.title', async (e) => {
-        if (e.newValue) {
-          this.titleTemplate = e.newValue;
-        }
-        // window.title is deleted
-        if (!e.newValue && this.titleTemplate !== DEFAULT_TEMPLATE) {
-          this.titleTemplate = DEFAULT_TEMPLATE;
-        }
+      this.editorService.onActiveResourceChange(() => {
+        this.updateAppTitle();
       }),
     );
   }

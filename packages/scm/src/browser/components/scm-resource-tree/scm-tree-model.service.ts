@@ -144,8 +144,6 @@ export class SCMTreeModelService {
       Event.map(this.labelService.onDidChange, () => {}),
       // 根据 scm list 事件刷新树
       this.viewModel.onDidSCMListChange,
-      // 变更 list/tree 模式时需要刷新
-      Event.map(this.onDidTreeModelChange, () => {}),
       // 当偏好设置改为压缩目录并且此时为 tree 模式
       Event.map(
         Event.filter(
@@ -262,6 +260,7 @@ export class SCMTreeModelService {
       this._selectedDecoration = selectedDecoration;
       this._focusedDecoration = focusedDecoration;
       this._contextMenuDecoration = contextMenuDecoration;
+      await this.refresh();
     } else {
       // 根据是否为多工作区创建不同根节点
       const root = (await this.scmTreeService.resolveChildren())[0] as SCMResourceRoot;
@@ -637,7 +636,7 @@ export class SCMTreeModelService {
       this.refreshCancelToken.cancel();
     }
     this.refreshCancelToken = new CancellationTokenSource();
-    await node?.refresh(this.refreshCancelToken);
+    await node.refresh(this.refreshCancelToken);
     this.refreshCancelToken = null;
   }
 }

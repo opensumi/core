@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-search",
-  "version": "2.22.4",
+  "version": "2.22.6",
   "files": [
     "lib",
     "src"

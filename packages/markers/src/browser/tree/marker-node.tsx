@@ -149,7 +149,6 @@ export const MarkerNodeRendered: React.FC<IMarkerNodeRenderedProps> = ({
   }px`;
 
   const renderedNodeStyle = {
-    height: MARKER_TREE_NODE_HEIGHT,
     lineHeight: `${MARKER_TREE_NODE_HEIGHT}px`,
     paddingLeft,
   } as React.CSSProperties;

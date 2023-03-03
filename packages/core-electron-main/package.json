@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-core-electron-main",
-  "version": "2.22.4",
+  "version": "2.22.6",
   "files": [
     "lib",
     "browser-preload"
