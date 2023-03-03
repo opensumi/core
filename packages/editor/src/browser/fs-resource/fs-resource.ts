@@ -48,6 +48,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   private ready: Promise<void>;
 
+  private userhomePath: URI | null;
+
   constructor() {
     super();
     this.ready = this.init();
@@ -103,6 +105,31 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     return this.cachedFileStat.get(uri);
   }
 
+  private async getCurrentUserHome() {
+    if (!this.userhomePath) {
+      try {
+        const userhome = await this.fileServiceClient.getCurrentUserHome();
+        if (userhome) {
+          this.userhomePath = new URI(userhome.uri);
+        }
+      } catch (err) {}
+    }
+    return this.userhomePath;
+  }
+
+  private async getReadableTooltip(path: URI) {
+    const pathStr = path.toString();
+    const userhomePath = await this.getCurrentUserHome();
+    if (!userhomePath) {
+      return decodeURIComponent(path.withScheme('').toString());
+    }
+    if (userhomePath.isEqualOrParent(path)) {
+      const userhomePathStr = userhomePath && userhomePath.toString();
+      return decodeURIComponent(pathStr.replace(userhomePathStr, '~'));
+    }
+    return decodeURIComponent(path.withScheme('').toString());
+  }
+
   async provideResource(uri: URI): Promise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
     await this.ready;
@@ -111,14 +138,15 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       this.getFileStat(uri.toString()),
       this.labelService.getName(uri),
       this.labelService.getIcon(uri),
-    ] as const).then(([stat, name, icon]) => ({
+      this.getReadableTooltip(uri),
+    ] as const).then(([stat, name, icon, title]) => ({
       name: stat ? name : name + localize('file.resource-deleted', '(已删除)'),
       icon,
       uri,
       metadata: null,
       deleted: !stat,
       supportsRevive: true,
-      title: uri.codeUri.fsPath,
+      title,
     }));
   }
 

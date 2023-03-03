@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { URI, Domain, WithEventBus, OnEvent } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { IResourceProvider, IDiffResource, ResourceService, ResourceDecorationChangeEvent } from '../../common';
 import { BrowserEditorContribution, EditorComponentRegistry, EditorOpenType } from '../types';
@@ -18,9 +19,14 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
   @Autowired(ResourceService)
   resourceService: ResourceService;
 
+  @Autowired(IFileServiceClient)
+  protected fileServiceClient: IFileServiceClient;
+
   scheme = 'diff';
 
   private modifiedToResource = new Map<string, URI>();
+
+  private userhomePath: URI | null;
 
   @OnEvent(ResourceDecorationChangeEvent)
   onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
@@ -34,23 +40,50 @@ export class DiffResourceProvider extends WithEventBus implements IResourceProvi
     }
   }
 
+  private async getCurrentUserHome() {
+    if (!this.userhomePath) {
+      try {
+        const userhome = await this.fileServiceClient.getCurrentUserHome();
+        if (userhome) {
+          this.userhomePath = new URI(userhome.uri);
+        }
+      } catch (err) {}
+    }
+    return this.userhomePath;
+  }
+
+  private async getReadableTooltip(path: URI) {
+    const pathStr = path.toString();
+    const userhomePath = await this.getCurrentUserHome();
+    if (!userhomePath) {
+      return decodeURIComponent(path.withScheme('').toString());
+    }
+    if (userhomePath.isEqualOrParent(path)) {
+      const userhomePathStr = userhomePath && userhomePath.toString();
+      return decodeURIComponent(pathStr.replace(userhomePathStr, '~'));
+    }
+    return decodeURIComponent(path.withScheme('').toString());
+  }
+
   async provideResource(uri: URI): Promise<IDiffResource> {
     const { original, modified, name } = uri.getParsedQuery();
     const originalUri = new URI(original);
     const modifiedUri = new URI(modified);
-    const icon = await this.labelService.getIcon(originalUri);
     this.modifiedToResource.set(modifiedUri.toString(), uri);
-    return {
-      name,
-      icon,
-      uri,
-      metadata: {
-        original: originalUri,
-        modified: modifiedUri,
-      },
+    return Promise.all([
+      this.labelService.getIcon(originalUri),
       // 默认显示 modified 文件路径
-      title: modifiedUri.codeUri.fsPath,
-    };
+      this.getReadableTooltip(modifiedUri),
+    ]).then(([icon, title]) => ({
+        name,
+        icon,
+        uri,
+        metadata: {
+          original: originalUri,
+          modified: modifiedUri,
+        },
+        title,
+      }));
   }
 
   async shouldCloseResource(resource, openedResources): Promise<boolean> {
