@@ -1,6 +1,7 @@
 import { TreeNode, CompositeTreeNode, ITree, ITreeNodeOrCompositeTreeNode } from '@opensumi/ide-components';
 import { MessageType, localize } from '@opensumi/ide-core-browser';
 import { IRange, isDefined } from '@opensumi/ide-core-common';
+import { Path } from '@opensumi/ide-utils/lib/path';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -224,7 +225,10 @@ export class ExpressionContainer extends CompositeTreeNode {
      * 而在调试场景中，为了保证每个节点的唯一性，需要为每个节点指定唯一的 path 值
      * 故这里使用 id 作为 path 值
      */
-    return String(this.id);
+    if (!this.parent) {
+      return String(this.id);
+    }
+    return new Path(this.parent.path).join(String(this.id)).toString();
   }
 }
 

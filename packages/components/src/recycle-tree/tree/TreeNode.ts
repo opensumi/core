@@ -212,14 +212,14 @@ export class TreeNode implements ITreeNode {
 
   /**
    * 由于 Tree 对于唯一路径的 path 的依赖
-   * 在传入 name 值时必须保证其在路径上的唯一性
+   * 在传入 `name` 值时必须保证其在路径上的唯一性
+   * 一般不建议手动管理 `name`，采用默认值即可
    */
   get name() {
-    // 根节点保证路径不重复
     if (!this.parent) {
       return `root_${this.id}`;
     }
-    return this.getMetadata('name');
+    return this.getMetadata('name') || String(this.id);
   }
 
   set name(name: string) {
@@ -448,7 +448,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   // parent 为undefined即表示该节点为根节点
   constructor(
     tree: ITree,
-    parent: ICompositeTreeNode | undefined,
+    parent?: ICompositeTreeNode,
     watcher?: ITreeWatcher,
     optionalMetadata?: { [key: string]: any },
   ) {
@@ -801,11 +801,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           for (let i = 0; i < childrens.length; i++) {
             const child = childrens[i];
             const isInclude = toExpandPath.indexOf(`${child.path}${Path.separator}`) === 0; // 展开路径包含子节点路径
-            const isIncluded = child.path.indexOf(`${toExpandPath}${Path.separator}`) === 0; // 展开路径被子节点路径包含
-            if ((isInclude || isIncluded) && CompositeTreeNode.is(child)) {
+            if (isInclude && CompositeTreeNode.is(child)) {
               // 包含压缩节点的情况
               if (!CompositeTreeNode.is(child)) {
                 // 说明此节点为非折叠节点时不处理
+                continue;
+              }
+              if ((child as CompositeTreeNode).isExpanded) {
+                // 说明该展开路径对应的节点确实已不存在
                 continue;
               }
               (child as CompositeTreeNode).isExpanded = true;
@@ -817,17 +820,8 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
               if (extraExpandedPaths) {
                 toExpandPaths = toExpandPaths.filter((path) => !extraExpandedPaths.find((a) => a === path));
               }
-              if (isInclude) {
-                if (child.path !== toExpandPath && !toExpandPaths.includes(child.path)) {
-                  toExpandPaths.unshift(toExpandPath);
-                }
-              } else {
-                if (child.path !== toExpandPath && toExpandPaths.includes(child.path)) {
-                  toExpandPaths.splice(
-                    toExpandPath.findIndex((path) => path === toExpandPath),
-                    1,
-                  );
-                }
+              if (child.path !== toExpandPath && !toExpandPaths.includes(child.path)) {
+                toExpandPaths.unshift(toExpandPath);
               }
               if (toExpandPaths.length > 0) {
                 // 不需要重新加载压缩节点的子节点内容
