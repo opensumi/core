@@ -3,8 +3,6 @@ import net from 'net';
 import path from 'path';
 import util from 'util';
 
-import * as fs from 'fs-extra';
-
 import { Injectable, Autowired } from '@opensumi/di';
 import { WSChannel } from '@opensumi/ide-connection';
 import { WebSocketMessageReader, WebSocketMessageWriter } from '@opensumi/ide-connection/lib/common/message';
