@@ -323,6 +323,7 @@ export const Tabs = ({ group }: ITabsProps) => {
         return (
           <div
             draggable={true}
+            title={resource.title}
             className={classnames({
               [styles.kt_editor_tab]: true,
               [styles.last_in_row]: tabMap.get(i),

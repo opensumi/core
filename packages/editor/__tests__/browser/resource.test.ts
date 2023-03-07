@@ -5,6 +5,7 @@ import { IEditorDocumentModelService, ICompareService } from '@opensumi/ide-edit
 import { DiffResourceProvider, DefaultDiffEditorContribution } from '@opensumi/ide-editor/lib/browser/diff';
 import { CompareService } from '@opensumi/ide-editor/lib/browser/diff/compare';
 import { UntitledSchemeDocumentProvider } from '@opensumi/ide-editor/lib/browser/untitled-resource';
+import { IFileServiceClient } from '@opensumi/ide-file-service';
 
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import {
@@ -237,6 +238,10 @@ describe('resource service tests', () => {
   it('diff resource tests', async () => {
     injector.mockService(LabelService, {
       getIcon: jest.fn((uri) => uri.toString()),
+    });
+
+    injector.mockService(IFileServiceClient, {
+      getCurrentUserHome: jest.fn(() => new URI('file:///home')),
     });
 
     const provider = injector.get(DiffResourceProvider);
