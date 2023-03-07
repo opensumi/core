@@ -307,7 +307,7 @@ export class DragAndDropService extends WithEventBus {
       }
       if (resources.length > 0) {
         const targetContainerUri = activeUri ? activeUri : (containing && containing.uri)!;
-        const resourcesCanBeMoved = resources.filter(
+        const resourcesCanBeMoved: (File | Directory)[] = resources.filter(
           (resource: File | Directory) =>
             resource &&
             resource.parent &&
@@ -316,7 +316,7 @@ export class DragAndDropService extends WithEventBus {
         if (resourcesCanBeMoved.length > 0) {
           // 最小化移动文件
           const errors = await this.fileTreeAPI.mvFiles(
-            resourcesCanBeMoved.map((res) => res.uri),
+            resourcesCanBeMoved.map((res) => ({ url: res.uri, isDirectory: res.filestat.isDirectory })),
             targetContainerUri,
           );
           if (errors && errors.length > 0) {
@@ -347,12 +347,15 @@ export class DragAndDropService extends WithEventBus {
                   );
                   // 由于节点移动时默认仅更新节点路径
                   // 我们需要自己更新额外的参数，如uri, filestat等
-                  target.updateURI(to);
-                  target.updateFileStat({
-                    ...target.filestat,
-                    uri: to.toString(),
+                  target.updateMetaData({
+                    name: to.displayName,
+                    fileStat: {
+                      ...target.filestat,
+                      uri: to.toString(),
+                    },
+                    uri: to,
+                    tooltip: this.fileTreeAPI.getReadableTooltip(to),
                   });
-                  target.updateToolTip(this.fileTreeAPI.getReadableTooltip(to));
                   // 当重命名文件为文件夹时，刷新文件夹更新子文件路径
                   if (Directory.is(target)) {
                     this.fileTreeService.refresh(target as Directory);

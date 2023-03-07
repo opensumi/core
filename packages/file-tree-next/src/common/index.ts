@@ -12,12 +12,18 @@ export const IFileTreeService = Symbol('IFileTreeService');
 export interface IFileTreeService extends ITree {
   refresh(): Promise<void>;
 }
+
+export interface IMoveFileMetadata {
+  url: URI;
+  isDirectory: boolean;
+}
+
 export interface IFileTreeAPI {
   copyFile(from: URI, to: URI): Promise<FileStat | string | void>;
   createFile(newUri: URI, content?: string): Promise<string | void>;
   createDirectory(newUri: URI): Promise<string | void>;
   delete(uri: URI): Promise<string | void>;
-  mvFiles(oldUri: URI[], newUri: URI, isDirectory?: boolean): Promise<string[] | void>;
+  mvFiles(oldUri: IMoveFileMetadata[], newUri: URI): Promise<string[] | void>;
   mv(oldUri: URI, newUri: URI, isDirectory?: boolean): Promise<string | void>;
   resolveChildren(
     tree: ITree,
