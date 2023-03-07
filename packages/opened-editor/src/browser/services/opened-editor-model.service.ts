@@ -93,7 +93,6 @@ export class OpenedEditorModelService {
   private selectedDecoration: Decoration = new Decoration(styles.mod_selected); // 选中态
   private focusedDecoration: Decoration = new Decoration(styles.mod_focused); // 焦点态
   private contextMenuDecoration: Decoration = new Decoration(styles.mod_actived); // 焦点态
-  private dirtyDecoration: Decoration = new Decoration(styles.mod_dirty); // 修改态
   // 即使选中态也是焦点态的节点
   private _focusedFile: EditorFileGroup | EditorFile | undefined;
   // 选中态的节点
@@ -109,7 +108,8 @@ export class OpenedEditorModelService {
 
   // 右键菜单局部ContextKeyService
   private _contextMenuContextKeyService: IContextKeyService;
-  private _currentDirtyNodes: EditorFile[] = [];
+
+  private _dirtyUris: string[] = [];
 
   constructor() {
     this._whenReady = this.initTreeModel();
@@ -171,48 +171,19 @@ export class OpenedEditorModelService {
     if (!root) {
       return;
     }
-    this._treeModel = this.injector.get<any>(OpenedEditorModel, [root]);
 
     this.initDecorations(root);
 
-    this.disposableCollection.push(
-      this.openedEditorService.onDirtyNodesChange((nodes) => {
-        for (const node of nodes) {
-          if (!this.dirtyDecoration.hasTarget(node as EditorFile)) {
-            this.dirtyDecoration.addTarget(node as EditorFile);
-          }
-        }
-        this._currentDirtyNodes = this._currentDirtyNodes.concat(nodes);
-        this.setExplorerTabBarBadge();
-        this.treeModel?.dispatchChange();
-      }),
-    );
+    this._treeModel = this.injector.get<any>(OpenedEditorModel, [root]);
 
     this.disposableCollection.push(
-      this.labelService.onDidChange(() => {
-        this._currentDirtyNodes = [];
-        // 当labelService注册的对应节点图标变化时，通知视图更新
-        this.refresh();
-      }),
-    );
-
-    this.disposableCollection.push(
-      this.editorService.onActiveResourceChange(() => {
-        this._currentDirtyNodes = [];
-        this.refresh();
-      }),
-    );
-
-    this.disposableCollection.push(
-      this.editorService.onDidEditorGroupsChanged(() => {
-        this._currentDirtyNodes = [];
-        this.refresh();
-      }),
-    );
-
-    this.disposableCollection.push(
-      this.editorService.onDidCurrentEditorGroupChanged(() => {
-        this._currentDirtyNodes = [];
+      Event.any<any>(
+        this.labelService.onDidChange,
+        this.editorService.onActiveResourceChange,
+        this.editorService.onDidEditorGroupsChanged,
+        this.editorService.onDidCurrentEditorGroupChanged,
+        this.openedEditorEventService.onDidChange,
+      )(() => {
         this.refresh();
       }),
     );
@@ -231,9 +202,9 @@ export class OpenedEditorModelService {
           if (!!node && !EditorFileGroup.is(node as EditorFileGroup)) {
             if ((node as EditorFile).uri.isEqual(payload.uri)) {
               if (payload.decoration.dirty) {
-                this.dirtyDecoration.addTarget(node as EditorFile);
+                this.openedEditorService.addDirtyUri((node as EditorFile).uri.toString());
               } else {
-                this.dirtyDecoration.removeTarget(node as EditorFile);
+                this.openedEditorService.removeDirtyUri((node as EditorFile).uri.toString());
               }
               shouldUpdate = true;
             }
@@ -241,7 +212,7 @@ export class OpenedEditorModelService {
         }
         if (shouldUpdate) {
           this.setExplorerTabBarBadge();
-          this.treeModel?.dispatchChange();
+          this.refresh();
         }
       }),
     );
@@ -269,27 +240,6 @@ export class OpenedEditorModelService {
       }),
     );
 
-    this.disposableCollection.push(
-      this.openedEditorEventService.onDidChange(() => {
-        this.refresh();
-      }),
-    );
-
-    this.disposableCollection.push(
-      this.onDidRefreshed(() => {
-        this.dirtyDecoration.appliedTargets.clear();
-        // 更新dirty节点，节点可能已更新
-        for (const target of this._currentDirtyNodes) {
-          this.dirtyDecoration.addTarget(target as TreeNode);
-        }
-        const currentResource = this.editorService.currentResource;
-        const currentGroup = this.editorService.currentEditorGroup;
-        if (currentResource) {
-          this.location(currentResource, currentGroup);
-        }
-        this.setExplorerTabBarBadge();
-      }),
-    );
     this.onTreeModelChangeEmitter.fire(this._treeModel);
   }
 
@@ -298,7 +248,6 @@ export class OpenedEditorModelService {
     this._decorations.addDecoration(this.selectedDecoration);
     this._decorations.addDecoration(this.focusedDecoration);
     this._decorations.addDecoration(this.contextMenuDecoration);
-    this._decorations.addDecoration(this.dirtyDecoration);
   }
 
   // 清空其他选中/焦点态节点，更新当前焦点节点

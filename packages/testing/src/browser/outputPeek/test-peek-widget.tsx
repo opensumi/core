@@ -6,8 +6,8 @@ import { AppConfig, ConfigProvider, IContextKeyService } from '@opensumi/ide-cor
 import { SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { InlineActionBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { AbstractMenuService, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
-import { PeekViewWidget } from '@opensumi/ide-monaco-enhance/lib/browser/peek-view';
 import type { ICodeEditor } from '@opensumi/ide-monaco/lib/browser/monaco-api/types';
+import { PeekViewWidget } from '@opensumi/ide-monaco-enhance/lib/browser/peek-view';
 import { renderMarkdown } from '@opensumi/monaco-editor-core/esm/vs/base/browser/markdownRenderer';
 
 import { TestPeekMessageToken } from '../../common';

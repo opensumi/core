@@ -31,7 +31,7 @@ export interface IElectronHeaderService {
    * - `${folderPath}`: file path of the workspace folder the file is contained in (e.g. /Users/Development/myFolder).
    * - `${rootName}`: name of the opened workspace or folder (e.g. myFolder or myWorkspace).
    * - `${rootPath}`: file path of the opened workspace or folder (e.g. /Users/Development/myWorkspace).
-   * - `${appName}`: e.g. VS Code.
+   * - `${appName}`: e.g. OpenSumi.
    * - `${remoteName}`: e.g. SSH
    * - `${dirty}`: an indicator for when the active editor has unsaved changes.
    * - `${separator}`: a conditional separator (" - ") that only shows when surrounded by variables with values or static text.

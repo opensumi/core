@@ -4,6 +4,9 @@ export function getElectronEnv(): any {
   return (global as any).env || {};
 }
 
+/**
+ * @deprecated useNativeTopMenu will deprecate, please use appConfig#isElectronRenderer instead.
+ */
 export function useNativeTopMenu() {
   if (isElectronRenderer()) {
     if (getElectronEnv().USE_NATIVE_TOP_MENU !== undefined) {
@@ -15,6 +18,9 @@ export function useNativeTopMenu() {
   return false;
 }
 
+/**
+ * @deprecated useNativeContextMenu will deprecate, please use appConfig#isElectronRenderer instead.
+ */
 export function useNativeContextMenu() {
   if (isElectronRenderer()) {
     if (getElectronEnv().USE_NATIVE_CONTEXT_MENU !== undefined) {

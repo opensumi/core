@@ -21,9 +21,9 @@ import { FileTreeModelService } from '@opensumi/ide-file-tree-next/lib/browser/s
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IThemeService } from '@opensumi/ide-theme';
 
+import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
-import { MockContextKeyService } from '../../..//monaco/__mocks__/monaco.context-key.service';
 import { createMockedMonaco } from '../../../monaco/__mocks__/monaco';
 import styles from '../../src/browser/file-tree-node.modules.less';
 import { Directory, File } from '../../src/common/file-tree-node.define';

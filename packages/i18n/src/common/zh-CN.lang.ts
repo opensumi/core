@@ -74,6 +74,7 @@ export const localizationBundle = {
     'file.filetree.openTerminalWithPath': '在终端中打开',
     'file.tooltip.symbolicLink': '符号链接',
     'file.resource-deleted': '（已删除）',
+    'file.revealInExplorer': '在文件树中定位',
 
     'menu-bar.title.file': '文件',
     'menu-bar.title.edit': '编辑',
@@ -488,6 +489,7 @@ export const localizationBundle = {
     'preference.files.eol': '文件行尾字符',
     'preference.files.trimFinalNewlines': '移除最后的换行符',
     'preference.files.trimTrailingWhitespace': '移除结尾空格',
+    'preference.files.insertFinalNewline': '结尾处插入空行',
     'preference.editor.formatOnPaste': '粘贴时自动格式化',
     'preference.editor.preferredFormatter': '默认格式化器',
     'preference.editor.bracketPairColorization.enabled': '括号着色',
@@ -833,7 +835,7 @@ export const localizationBundle = {
     'treeview.command.action.collapse': '全部折叠',
 
     'task.outputchannel.name': '任务',
-    'task.label': '{0} : {1}',
+    'task.label': '{0}: {1}',
     'TaskService.pickRunTask': '选择要运行的任务',
     'TerminalTaskSystem.terminalName': '任务 - {0}',
     'terminal.integrated.exitedWithCode': '终端进程已终止，退出代码: {0}',

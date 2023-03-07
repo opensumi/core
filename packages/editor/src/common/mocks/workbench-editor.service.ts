@@ -49,4 +49,8 @@ export class MockWorkbenchEditorService extends WorkbenchEditorService {
   setEditorContextKeyService() {
     throw new Error('Method not implemented.');
   }
+
+  calcDirtyCount() {
+    return 0;
+  }
 }

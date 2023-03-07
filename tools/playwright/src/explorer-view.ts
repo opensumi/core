@@ -35,7 +35,7 @@ export class OpenSumiExplorerFileStatNode extends OpenSumiTreeNode {
 
   async isDirty() {
     const classname = await this.elementHandle.getAttribute('class');
-    if (classname?.includes('mod_dirty__')) {
+    if (classname?.includes('dirty__')) {
       return true;
     }
     return false;

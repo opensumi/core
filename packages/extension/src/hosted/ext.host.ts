@@ -319,7 +319,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         case EInternalModule.VSCODE:
           return that.vscodeAPIImpl.load(extension);
 
-        case EInternalModule.KAITIAN || EInternalModule.SUMI:
+        case EInternalModule.SUMI:
+        case EInternalModule.KAITIAN:
           return that.openSumiAPIImpl.load(extension, that.vscodeAPIImpl.load(extension));
 
         case EInternalModule.TELEMETRY:

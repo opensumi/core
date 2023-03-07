@@ -14,11 +14,11 @@ import {
   Uri,
 } from '@opensumi/ide-core-common';
 import { TextmateService } from '@opensumi/ide-editor/lib/browser/monaco-contrib/tokenizer/textmate.service';
-import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import {
   AbstractExtInstanceManagementService,
   ExtensionWillContributeEvent,
 } from '@opensumi/ide-extension/lib/browser/types';
+import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IJSONSchemaRegistry } from '@opensumi/ide-monaco';
 import { ITextmateTokenizer, ITextmateTokenizerService } from '@opensumi/ide-monaco/lib/browser/contrib/tokenizer';

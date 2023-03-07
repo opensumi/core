@@ -66,7 +66,9 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   };
 
   const paddingLeft = `${
-    defaultLeftPadding + (item.depth || 0) * (leftPadding || 0) + (!EditorFileGroup.is(item) ? 16 : 0)
+    defaultLeftPadding +
+    (item.depth || 0) * (leftPadding || 0) +
+    (!EditorFileGroup.is(item) && !EditorFileGroup.isRoot(item.parent) ? 18 : 0)
   }px`;
 
   const editorNodeStyle = {
@@ -204,14 +206,17 @@ export const EditorTreeNode: React.FC<EditorNodeRenderedProps> = ({
   };
 
   const renderActionBar = () => <div className={styles.opened_editor_action_bar}>{renderAction()}</div>;
-
   return (
     <div
       key={item.id}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       title={getItemTooltip()}
-      className={cls(styles.opened_editor_node, decorations ? decorations.classlist : null)}
+      className={cls(
+        styles.opened_editor_node,
+        decorations ? decorations.classlist : null,
+        EditorFile.is(item) && item.dirty && styles.dirty,
+      )}
       style={editorNodeStyle}
       data-id={item.id}
     >

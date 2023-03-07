@@ -270,6 +270,7 @@ export class EditorDocumentModelContentChangedEvent extends BasicEvent<IEditorDo
 export interface IEditorDocumentModelContentChangedEventPayload {
   uri: URI;
   dirty: boolean;
+  readonly: boolean;
   changes: IEditorDocumentModelContentChange[];
   eol: string;
   versionId: number;

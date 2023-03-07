@@ -68,7 +68,10 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
       {mutiple && (
         <div style={{ paddingLeft: `${indent}px` }} className={styles.debug_stack_item_label}>
           {thread.frames.length > 0 ? (
-            <div className={expanded ? getIcon('down') : getIcon('right')} onClick={() => setExpanded(!expanded)}></div>
+            <div
+              className={expanded ? getIcon('arrow-down') : getIcon('arrow-right')}
+              onClick={() => setExpanded(!expanded)}
+            ></div>
           ) : (
             <div style={{ width: 14 }}></div>
           )}

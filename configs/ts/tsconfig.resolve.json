@@ -120,7 +120,9 @@
       "@opensumi/ide-workspace-edit": ["../packages/workspace-edit/src/index.ts"],
       "@opensumi/ide-workspace-edit/lib/*": ["../packages/workspace-edit/src/*"],
       "@opensumi/ide-playwright": ["../../../tools/playwright/src/index.ts"],
-      "@opensumi/ide-playwright/lib/*": ["../../../tools/playwright/src/*"]
+      "@opensumi/ide-playwright/lib/*": ["../../../tools/playwright/src/*"],
+      "@opensumi/cli-engine": ["../../../tools/cli-engine/src/index.ts"],
+      "@opensumi/cli-engine/lib/*": ["../../../tools/cli-engine/src/*"]
     }
   }
 }

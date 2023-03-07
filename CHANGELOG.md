@@ -7,6 +7,42 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
+## [Pre-release] v2.23.0
+
+<a name="breaking_changes_2.23.0">[Breaking Changes:](#breaking_changes_2.23.0)</a>
+
+#### 1. Remove some useless built-in icons [#2204](https://github.com/opensumi/core/pull/2204)
+
+This version we remove some useless filled icons on the framework and use outlined icons on the Tree Component.
+
+- `warning-circle-fill`
+- `ubuntu`
+- `time-circle-fill`
+- `minus-circle-fill`
+- `kaitian`
+- `huoban-blue`
+- `huoban`
+- `folder-open-fill`
+- `folder-open`
+- `folder-fill`
+- `execute`
+- `control-fill`
+- `dashboard-fill`
+- `compass-fill`
+- `codelibrary-fill`
+- `check-square-fill`
+- `bulb-fill`
+- `basement-fileicon`
+- `basement`
+- `anymock`
+- `LinkE`
+
+#### 2. Task label format changed
+
+In order to be compatible with the use of Task commands by some extensions.
+
+The task label format change from `{0} : {1}` to `{0}: {1}`, like `npm : build` -> `npm: build`.
+
 ## v2.22.0
 
 ### What's New Features

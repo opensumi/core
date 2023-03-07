@@ -39,9 +39,12 @@ import { IElectronHeaderService } from '../common/header';
 
 import { ElectronClipboardService } from './clipboard';
 import { ElectronNativeDialogService } from './dialog';
+import { ElectronPreferenceContribution } from './electron-preference.contribution';
 import { ElectronHeaderService } from './header/header.service';
 import { ElectronHeaderBar } from './header/header.view';
 import { WelcomeContribution } from './welcome/contribution';
+
+import '../common/i18n/setup';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {
@@ -55,6 +58,7 @@ export class ElectronBasicModule extends BrowserModule {
       useClass: ElectronHeaderService,
     },
     ElectronBasicContribution,
+    ElectronPreferenceContribution,
     WelcomeContribution,
   ];
 }

@@ -5,6 +5,7 @@
 <div align="center">
  
 [![CI][ci-image]][ci-url]
+[![E2E][e2e-image]][e2e-url]
 [![NPM Version][npm-image]][npm-url]
 [![NPM downloads][download-image]][download-url]
 [![Test Coverage][test-image]][test-url]
@@ -14,6 +15,8 @@
 
 [ci-image]: https://github.com/opensumi/core/actions/workflows/ci.yml/badge.svg
 [ci-url]: https://github.com/opensumi/core/actions/workflows/ci.yml
+[e2e-image]: https://github.com/opensumi/core/actions/workflows/e2e.yml/badge.svg
+[e2e-url]: https://github.com/opensumi/core/actions/workflows/e2e.yml
 [discussions-image]: https://img.shields.io/badge/discussions-on%20github-blue
 [discussions-url]: https://github.com/opensumi/core/discussions
 [npm-image]: https://img.shields.io/npm/v/@opensumi/ide-core-common.svg
@@ -102,6 +105,8 @@ $ MY_WORKSPACE={local_path} yarn run start
 Copyright (c) 2019-present Alibaba Group Holding Limited, Ant Group Co. Ltd.
 
 本项目采用 [MIT](LICENSE) 协议。
+
+同时，该项目也包含部分基于其他开源协议下的第三方代码，详细内容请查看 [NOTICE.md](./NOTICE.md) 文件。
 
 ## ✨ 贡献者
 

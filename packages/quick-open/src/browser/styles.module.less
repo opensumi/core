@@ -86,7 +86,7 @@
 
   .item_icon {
     align-self: center;
-    margin-right: 8px;
+    margin-right: 6px;
   }
 
   .item_label_highlight {
@@ -110,8 +110,11 @@
 
   .item_label_name,
   .item_label_description,
-  .item_label_detail {
+  .item_label_detail,
+  .item_label_description_label,
+  .item_label_description_highlight {
     display: flex;
+    white-space: pre;
   }
 
   .item_label_description_label {
@@ -157,9 +160,13 @@
     align-items: center;
   }
 
+  .label_has_icon {
+    vertical-align: middle;
+  }
+
   .input {
     display: flex;
-    margin: 4px 10px;
+    padding: 4px 10px;
   }
 
   .title_bar {

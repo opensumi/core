@@ -98,6 +98,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
 
     const res: IBreadCrumbPart = {
       name: uri.path.base,
+      uri,
       icon: this.labelService.getIcon(uri, { isDirectory }),
       getSiblings: async () => {
         const parentDir = URI.from({
@@ -173,6 +174,7 @@ export class DefaultBreadCrumbProvider extends WithEventBus implements IBreadCru
     const res: IBreadCrumbPart = {
       name: symbol.name,
       icon: getSymbolIcon(symbol.kind),
+      isSymbol: true,
       onClick: () => {
         editor.setSelection({
           startColumn: symbol.range.startColumn,

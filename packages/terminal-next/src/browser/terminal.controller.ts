@@ -53,6 +53,7 @@ import {
   TERMINAL_ID_SEPARATOR,
   ITerminalProfile,
   TerminalCliterFilter,
+  TerminalLocation,
 } from '../common';
 
 import { TerminalContextKey } from './terminal.context-key';
@@ -622,9 +623,8 @@ export class TerminalController extends WithEventBus implements ITerminalControl
       // isFeatureTerminal: withNullAsUndefined(options?.isFeatureTerminal),
       isExtensionOwnedTerminal: options.isExtensionTerminal,
       // useShellEnvironment: withNullAsUndefined(internalOptions?.useShellEnvironment),
-      // location:
-      // internalOptions?.location ||
-      // this._serializeParentTerminal(options.location, internalOptions?.resolvedExtHostIdentifier),
+      // 只支持 Panel
+      location: TerminalLocation.Panel,
       disablePersistence: withNullAsUndefined(options.isTransient),
     };
     shellLaunchConfig.__fromTerminalOptions = options;

@@ -22,6 +22,10 @@ describe('CollaborationContribution test', () => {
   let collaborationService: ICollaborationService;
   let preferenceService: PreferenceService;
 
+  const mockCollaborationService = {
+    initFileWatch: jest.fn(),
+  };
+
   beforeAll(() => {
     injector = createBrowserInjector([]);
     injector.mockService(ILogger);
@@ -31,7 +35,6 @@ describe('CollaborationContribution test', () => {
     injector.mockService(KeybindingRegistry);
     injector.addProviders(
       CollaborationContribution,
-
       {
         token: ICollaborationService,
         useClass: CollaborationService,
@@ -53,6 +56,11 @@ describe('CollaborationContribution test', () => {
     injector.addProviders({
       token: CollaborationModuleContribution,
       useValue: { getContributions: () => [] },
+    });
+
+    injector.overrideProviders({
+      token: ICollaborationService,
+      useValue: mockCollaborationService,
     });
 
     contribution = injector.get(CollaborationContribution);
@@ -81,5 +89,10 @@ describe('CollaborationContribution test', () => {
     contribution.registerCommands(registry);
 
     expect(registry.getCommands()).toEqual([UNDO, REDO]);
+  });
+
+  it('should registry file watcher', () => {
+    contribution.onFileServiceReady();
+    expect(mockCollaborationService.initFileWatch).toBeCalledTimes(1);
   });
 });

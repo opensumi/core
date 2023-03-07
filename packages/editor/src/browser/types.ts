@@ -27,6 +27,7 @@ import {
 } from '../common';
 
 import { IEditorDocumentModelContentRegistry } from './doc-model/types';
+import { EditorGroup } from './workbench-editor.service';
 
 export * from '../common';
 
@@ -81,10 +82,16 @@ export interface IEditorSideWidget<MetaData = any> {
   initialProps?: unknown;
 }
 
+/**
+ * 默认值: ONE_PER_GROUP
+ * ONE_PER_RESOURCE  - 每个资源只初始化一次组件
+ * ONE_PER_GROUP     - 每个资源在同个 Group 下只初始化一次组件
+ * ONE_PER_WORKBENCH - 整个渲染过程复用同一个组件，即组件仅会初始化一次
+ */
 export enum EditorComponentRenderMode {
-  ONE_PER_RESOURCE = 1, // 每个resource渲染一个新的
-  ONE_PER_GROUP = 2, // 每个Group最多存在一个新的
-  ONE_PER_WORKBENCH = 3, // 整个IDE只有一个, 视图会被重用
+  ONE_PER_RESOURCE = 1,
+  ONE_PER_GROUP = 2,
+  ONE_PER_WORKBENCH = 3,
 }
 
 /**
@@ -387,7 +394,7 @@ export enum CompareResult {
 export interface IBreadCrumbService {
   registerBreadCrumbProvider(provider: IBreadCrumbProvider): IDisposable;
 
-  getBreadCrumbs(uri: URI, editor?: MaybeNull<IEditor>): IBreadCrumbPart[] | undefined;
+  getBreadCrumbs(uri: URI, editor?: MaybeNull<IEditor>, editorGroup?: EditorGroup): IBreadCrumbPart[] | undefined;
 
   disposeCrumb(uri: URI): void;
 
@@ -408,6 +415,10 @@ export interface IBreadCrumbPart {
   name: string;
 
   icon?: string;
+
+  uri?: URI;
+
+  isSymbol?: Boolean;
 
   getSiblings?(): MaybePromise<{ parts: IBreadCrumbPart[]; currentIndex: number }>;
 

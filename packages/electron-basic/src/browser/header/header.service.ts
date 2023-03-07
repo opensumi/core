@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@opensumi/di';
+import { Injectable, Autowired } from '@opensumi/di';
 import {
   AppConfig,
   localize,
@@ -6,6 +6,7 @@ import {
   Emitter,
   DisposableCollection,
   isMacintosh,
+  PreferenceService,
   WithEventBus,
   OnEvent,
 } from '@opensumi/ide-core-browser';
@@ -30,13 +31,13 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
   disposableCollection = new DisposableCollection();
 
   @Autowired(WorkbenchEditorService)
-  editorService: WorkbenchEditorService;
+  private readonly editorService: WorkbenchEditorService;
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
 
   @Autowired(AppConfig)
-  appConfig: AppConfig;
+  private readonly appConfig: AppConfig;
 
   private _onTitleChanged = new Emitter<string>();
   onTitleChanged = this._onTitleChanged.event;
@@ -60,8 +61,17 @@ export class ElectronHeaderService extends WithEventBus implements IElectronHead
     this._templateVariables[key] = value;
   }
 
+  constructor() {
+    super();
+    this.disposableCollection.push(
+      this.editorService.onActiveResourceChange(() => {
+        this.updateAppTitle();
+      }),
+    );
+  }
+
   @OnEvent(ResourceDidUpdateEvent)
-  onResourceDidUpdateEvent(e: ResourceDidUpdateEvent) {
+  onResourceDidUpdateEvent() {
     this.updateAppTitle();
   }
 

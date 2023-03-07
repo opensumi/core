@@ -99,24 +99,6 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
 
   public static keySet = new Set([CONTEXT_IN_DEBUG_MODE_KEY]);
 
-  constructor() {
-    this.contextKeyService.onDidChangeContext((e) => {
-      if (e.payload.affectsSome(DebugConsoleService.keySet)) {
-        const inDebugMode = this.contextKeyService.match(CONTEXT_IN_DEBUG_MODE_KEY);
-        if (inDebugMode) {
-          this.updateReadOnly(false);
-          this.updateInputDecoration();
-          this.debugContextKey.contextInDdebugMode.set(true);
-        } else {
-          this.updateReadOnly(true);
-          if (this.debugContextKey) {
-            this.debugContextKey.contextInDdebugMode.set(false);
-          }
-        }
-      }
-    });
-  }
-
   // FIXME: 需要实现新增的属性及事件
   element: HTMLElement;
   onDidFocus: Event<void>;
@@ -166,6 +148,22 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     this.debugContextKey = this.injector.get(DebugContextKey, [
       (this.inputEditor.monacoEditor as any)._contextKeyService,
     ]);
+
+    this.contextKeyService.onDidChangeContext((e) => {
+      if (e.payload.affectsSome(DebugConsoleService.keySet)) {
+        const inDebugMode = this.contextKeyService.match(CONTEXT_IN_DEBUG_MODE_KEY);
+        if (inDebugMode) {
+          this.updateReadOnly(false);
+          this.updateInputDecoration();
+          this.debugContextKey.contextInDebugMode.set(true);
+        } else {
+          this.updateReadOnly(true);
+          if (this.debugContextKey) {
+            this.debugContextKey.contextInDebugMode.set(false);
+          }
+        }
+      }
+    });
 
     this.registerDecorationType();
     await this.createConsoleInput();

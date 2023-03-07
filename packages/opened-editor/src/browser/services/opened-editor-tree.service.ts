@@ -23,13 +23,26 @@ export class OpenedEditorService extends Tree {
   @Autowired(ResourceService)
   private readonly resourceService: ResourceService;
 
+  private _dirtyUri: string[] = [];
+
   // 是否为分组的节点树
-  private isGroupTree = false;
+  private _isGroupTree = false;
 
-  private onDirtyNodesChangeEmitter: Emitter<EditorFile[]> = new Emitter();
+  get isGroupTree() {
+    return this._isGroupTree;
+  }
 
-  get onDirtyNodesChange(): Event<EditorFile[]> {
-    return this.onDirtyNodesChangeEmitter.event;
+  addDirtyUri(uri: string) {
+    if (!this._dirtyUri.includes(uri)) {
+      this._dirtyUri.push(uri);
+    }
+  }
+
+  removeDirtyUri(uri: string) {
+    if (this._dirtyUri.includes(uri)) {
+      const index = this._dirtyUri.findIndex((value) => value === uri);
+      this._dirtyUri.splice(index, 1);
+    }
   }
 
   async resolveChildren(
@@ -40,8 +53,8 @@ export class OpenedEditorService extends Tree {
       this._root = new EditorFileRoot(this);
       children = [this._root as EditorFileRoot];
     } else if (EditorFileRoot.is(parent)) {
-      // 重制isGroupTree状态
-      this.isGroupTree = false;
+      // 重置 `_isGroupTree` 状态
+      this._isGroupTree = false;
       let groupOrResource: OpenedEditorData[] = [];
       if (this.workbenchEditorService.sortedEditorGroups.length <= 1) {
         groupOrResource = this.workbenchEditorService.sortedEditorGroups[0].resources.slice();
@@ -51,9 +64,17 @@ export class OpenedEditorService extends Tree {
       for (const item of groupOrResource) {
         if (!(item as IEditorGroup).resources) {
           const tooltip = await this.getReadableTooltip((item as IResource).uri);
-          children.push(new EditorFile(this, item as IResource, tooltip, parent as EditorFileGroup));
+          children.push(
+            new EditorFile(
+              this,
+              item as IResource,
+              tooltip,
+              this._dirtyUri.includes((item as IResource).uri.toString()),
+              parent as EditorFileGroup,
+            ),
+          );
         } else {
-          this.isGroupTree = true;
+          this._isGroupTree = true;
           const groupItem = new EditorFileGroup(this, item as IEditorGroup, parent);
           children.push(groupItem);
         }
@@ -61,7 +82,9 @@ export class OpenedEditorService extends Tree {
     } else {
       for (const resource of (parent as EditorFileGroup).group.resources) {
         const tooltip = await this.getReadableTooltip(resource.uri);
-        children.push(new EditorFile(this, resource, tooltip, parent));
+        children.push(
+          new EditorFile(this, resource, tooltip, this._dirtyUri.includes(resource.uri.toString()), parent),
+        );
       }
     }
     return children;
@@ -71,7 +94,7 @@ export class OpenedEditorService extends Tree {
     if (a.constructor === b.constructor) {
       if ((a as EditorFile).resource && (b as EditorFile).resource) {
         const parent = (a as EditorFile).parent as EditorFileGroup;
-        if (parent.group) {
+        if (parent && EditorFileGroup.is(parent)) {
           return (
             parent.group.resources.indexOf((a as EditorFile).resource) -
             parent.group.resources.indexOf((b as EditorFile).resource)
@@ -95,7 +118,7 @@ export class OpenedEditorService extends Tree {
   public getEditorNodeByUri(resource?: IResource | URI, group?: IEditorGroup) {
     let path = this.root!.path;
     if (resource) {
-      if (this.isGroupTree) {
+      if (this._isGroupTree) {
         if (!group) {
           return;
         }

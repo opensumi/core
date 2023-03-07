@@ -51,7 +51,7 @@ export class ExtensionHostManager implements IExtensionHostManager {
 
   treeKill(pid: number) {
     return new Promise<void>((resolve, reject) => {
-      treeKill(pid, 'SIGKILL', (err) => {
+      treeKill(pid, (err) => {
         if (err) {
           reject(err);
         } else {

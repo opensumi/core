@@ -43,7 +43,6 @@ import {
 import { EditorComponentRegistryImpl } from '@opensumi/ide-editor/lib/browser/component';
 import { EditorActionRegistryImpl } from '@opensumi/ide-editor/lib/browser/menu/editor.menu';
 import { ResourceServiceImpl } from '@opensumi/ide-editor/lib/browser/resource.service';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { ActivationEventServiceImpl } from '@opensumi/ide-extension/lib/browser/activation.service';
 import { BrowserRequireInterceptorContribution } from '@opensumi/ide-extension/lib/browser/require-interceptor.contribution';
 import {
@@ -51,6 +50,7 @@ import {
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
 import { WalkthroughsService } from '@opensumi/ide-extension/lib/browser/walkthroughs.service';
+import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
@@ -68,9 +68,9 @@ import { IThemeService, IIconService } from '@opensumi/ide-theme/lib/common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IWebviewService } from '@opensumi/ide-webview';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
+import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 import { IWorkspaceFileService } from '@opensumi/ide-workspace-edit';
 import { WorkspaceFileService } from '@opensumi/ide-workspace-edit/lib/browser/workspace-file.service';
-import { MockWorkspaceService } from '@opensumi/ide-workspace/lib/common/mocks';
 
 import { createBrowserInjector } from '../../../../../tools/dev-tool/src/injector-helper';
 import { mockService } from '../../../../../tools/dev-tool/src/mock-injector';
