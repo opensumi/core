@@ -1,6 +1,7 @@
 import React, { CSSProperties } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
+import { isFunction } from '@opensumi/ide-core-common';
 
 const SEPERATOR = ' ';
 
@@ -31,7 +32,7 @@ export function transformLabelWithCodicon(
       const newStr = e.replaceAll(ICON_REGX, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
       return transformLabelWithCodicon(newStr, iconStyles, transformer);
     } else {
-      return typeof renderText === 'function' ? renderText(e) : <span key={`${index}-${e}`}>{e}</span>;
+      return isFunction(renderText) ? renderText(e) : <span key={`${index}-${e}`}>{e}</span>;
     }
   });
 }
