@@ -78,7 +78,7 @@ export interface IExtHostToolbar {
   getToolbarSelectActionHandle<T = any>(id: string, extensionId: string): Promise<IToolbarSelectActionHandle<T>>;
 }
 
-export enum TOOLBAR_ACTION {
+export enum TOOLBAR_ACTION_TYPE {
   BUTTON = 'button',
   DROPDOWN_BUTTON = 'dropdownButton',
   SELECT = 'select',
