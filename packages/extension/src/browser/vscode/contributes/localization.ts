@@ -9,7 +9,7 @@ import {
   path,
   GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-common';
+import { asPromise, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -73,17 +73,6 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     }
   }
 
-  private _storagePath: string;
-
-  private async getStoragePath(): Promise<string> {
-    if (this._storagePath) {
-      return Promise.resolve(this._storagePath);
-    }
-
-    this._storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
-    return Promise.resolve(this._storagePath);
-  }
-
   async contribute() {
     const promises: Promise<void>[] = [];
     const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
@@ -92,7 +81,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
-      contributes.forEach((localization) => {
+      for await (const localization of contributes) {
         if (localization.translations) {
           const languageId = normalizeLanguageId(localization.languageId);
           if (languageId !== getLanguageId()) {
@@ -103,7 +92,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
               return;
             }
             promises.push(
-              (async () => {
+              asPromise(async () => {
                 const contents = await this.registerLanguage(translate, extension!.path);
                 registerLocalizationBundle(
                   {
@@ -114,15 +103,14 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
                   },
                   translate.id,
                 );
-              })(),
+              }),
             );
           });
-          (async () => {
-            const storagePath = await this.getStoragePath();
-            promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, storagePath));
-          })();
+
+          const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
+          promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, storagePath));
         }
-      });
+      }
     }
 
     await Promise.all(promises);
