@@ -1,7 +1,15 @@
 import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { BinaryBuffer, CancellationTokenSource, Emitter, IDisposable, isUTF8, URI } from '@opensumi/ide-core-common';
+import {
+  BinaryBuffer,
+  CancellationTokenSource,
+  Emitter,
+  IDisposable,
+  isUTF8,
+  normalizeFileUrl,
+  URI,
+} from '@opensumi/ide-core-common';
 
 import {
   ExtensionDocumentDataManager,
@@ -85,12 +93,13 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       throw new Error('illegal argument -  uriOrFileNameOrOptions');
     }
 
-    const doc = this._documents.get(uri.toString());
+    const docUrl = normalizeFileUrl(uri.toString());
+    const doc = this._documents.get(docUrl);
     if (doc) {
       return doc.document;
     } else {
-      await this._proxy.$tryOpenDocument(uri.toString());
-      const doc = this._documents.get(uri.toString());
+      await this._proxy.$tryOpenDocument(docUrl);
+      const doc = this._documents.get(docUrl);
       if (doc) {
         return doc.document;
       } else {
@@ -98,11 +107,15 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
           let resolved = false;
           setTimeout(() => {
             if (!resolved) {
-              reject('Open Text Document ' + uri.toString() + ' Timeout. Current Timeout is 5 seconds.');
+              reject(
+                `Open Text Document ${docUrl} Timeout. Current Timeout is ${
+                  OPEN_TEXT_DOCUMENT_TIMEOUT / 1000
+                } seconds.`,
+              );
             }
           }, OPEN_TEXT_DOCUMENT_TIMEOUT);
           const disposer = this.onDidOpenTextDocument((document) => {
-            if (uri.toString() === document.uri.toString()) {
+            if (docUrl === document.uri.toString()) {
               resolve(document);
               disposer.dispose();
               resolved = true;
