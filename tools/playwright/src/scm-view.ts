@@ -32,6 +32,11 @@ export class OpenSumiSCMFileStatNode extends OpenSumiTreeNode {
     const status = await this.elementHandle.$('[class*="scm_tree_node_status___"]');
     return await status?.textContent();
   }
+
+  async getNodeTail() {
+    const tail = await this.elementHandle.$('[class*="scm_tree_node_tail___"]');
+    return await tail?.textContent();
+  }
 }
 
 export class OpenSumiSCMView extends OpenSumiPanel {
@@ -49,6 +54,19 @@ export class OpenSumiSCMView extends OpenSumiPanel {
 
   get openedEditorView() {
     return this._openedEditorView;
+  }
+
+  async getTreeItems() {
+    const treeItems = await (await this.scmView.getViewElement())?.$$('[class*="scm_tree_node___"]');
+    const node: OpenSumiSCMFileStatNode[] = [];
+
+    if (treeItems) {
+      for (const item of treeItems) {
+        node.push(new OpenSumiSCMFileStatNode(item, this.app));
+      }
+    }
+
+    return node;
   }
 
   async getFileStatTreeNodeByPath(path: string) {

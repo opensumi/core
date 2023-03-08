@@ -81,4 +81,21 @@ test.describe('OpenSumi SCM Panel', () => {
       expect(dataUri?.startsWith('diff')).toBeTruthy();
     }
   });
+
+  test('SCM list view mode is work', async () => {
+    scm = await app.open(OpenSumiSCMView);
+    await scm.open();
+    const actionDom = await scm.scmView.getTitleActionById('workbench.scm.action.setListViewMode');
+    await actionDom?.click();
+    const stageAllAction = await scm.scmView.getTreeNodeActionById('git.stageAll');
+    await stageAllAction?.click();
+    await app.page.waitForTimeout(1000);
+    const treeItems = await scm.getTreeItems();
+    if (treeItems) {
+      expect(treeItems.length).toBe(3);
+      const firstTreeNode = treeItems[0];
+      const nodeTail = await firstTreeNode.getNodeTail();
+      expect(nodeTail).toBe('1');
+    }
+  });
 });
