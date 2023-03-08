@@ -1,6 +1,7 @@
 import React, { CSSProperties } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
+import { isFunction } from '@opensumi/ide-core-common';
 
 const SEPERATOR = ' ';
 
@@ -8,6 +9,7 @@ export function transformLabelWithCodicon(
   label: string,
   iconStyles: CSSProperties = {},
   transformer?: (str: string) => string | undefined,
+  renderText?: (str: string) => React.ReactNode,
 ) {
   const ICON_REGX = /\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)/gi;
   const ICON_WITH_ANIMATE_REGX = /\$\(([a-z.]+\/)?([a-z-]+)~([a-z]+)\)/gi;
@@ -30,7 +32,7 @@ export function transformLabelWithCodicon(
       const newStr = e.replaceAll(ICON_REGX, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
       return transformLabelWithCodicon(newStr, iconStyles, transformer);
     } else {
-      return <span key={`${index}-${e}`}>{e}</span>;
+      return isFunction(renderText) ? renderText(e) : <span key={`${index}-${e}`}>{e}</span>;
     }
   });
 }
