@@ -214,6 +214,8 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   tryGetRoots(): FileStat[] {
+    // eslint-disable-next-line no-console
+    console.log('tryGetRoots => ', this._roots);
     return this._roots;
   }
 
