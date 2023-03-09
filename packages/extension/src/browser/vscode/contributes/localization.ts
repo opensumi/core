@@ -9,7 +9,7 @@ import {
   path,
   GeneralSettingsId,
 } from '@opensumi/ide-core-browser';
-import { LifeCyclePhase } from '@opensumi/ide-core-common';
+import { asPromise, LifeCyclePhase } from '@opensumi/ide-core-common';
 import { IExtensionStoragePathServer } from '@opensumi/ide-extension-storage';
 import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 
@@ -81,8 +81,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     for (const contrib of this.contributesMap) {
       const { extensionId, contributes } = contrib;
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
-      const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
-      contributes.forEach((localization) => {
+      for await (const localization of contributes) {
         if (localization.translations) {
           const languageId = normalizeLanguageId(localization.languageId);
           if (languageId !== getLanguageId()) {
@@ -93,7 +92,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
               return;
             }
             promises.push(
-              (async () => {
+              asPromise(async () => {
                 const contents = await this.registerLanguage(translate, extension!.path);
                 registerLocalizationBundle(
                   {
@@ -104,13 +103,16 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
                   },
                   translate.id,
                 );
-              })(),
+              }),
             );
           });
+
+          const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
           promises.push(this.extensionNodeService.updateLanguagePack(currentLanguage, extension!.path, storagePath));
         }
-      });
+      }
     }
+
     await Promise.all(promises);
   }
 
