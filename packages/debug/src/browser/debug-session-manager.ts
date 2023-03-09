@@ -54,7 +54,6 @@ import {
   CONTEXT_DEBUG_TYPE_KEY,
   DebugState,
   IDebugModelManager,
-  DebugOutputCaptureType,
 } from '../common';
 import { IDebugProgress } from '../common/debug-progress';
 
@@ -333,9 +332,6 @@ export class DebugSessionManager implements IDebugSessionManager {
           });
         }
         this.debugProgressService.onDebugServiceStateChange(DebugState.Running);
-      }
-      if (!resolved.outputCapture) {
-        resolved.outputCapture = DebugOutputCaptureType.STD;
       }
       const sessionId = await this.debug.createDebugSession(resolved);
       timeStart(resolved.configuration.type, {

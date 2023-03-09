@@ -18,11 +18,6 @@ export enum DebugState {
   Stopped,
 }
 
-export enum DebugOutputCaptureType {
-  CONSOLE = 'console',
-  STD = 'std',
-}
-
 export type IDebugSessionReplMode = 'separate' | 'mergeWithParent';
 
 export interface IDebugSessionOptions {
@@ -31,7 +26,6 @@ export interface IDebugSessionOptions {
   lifecycleManagedByParent?: boolean;
   repl?: IDebugSessionReplMode;
   compact?: boolean;
-  outputCapture?: DebugOutputCaptureType.STD | DebugOutputCaptureType.CONSOLE;
 }
 
 export const IDebugSession = Symbol('DebugSession');
