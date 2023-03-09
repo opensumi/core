@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-static-resource",
-  "version": "2.22.6",
+  "version": "2.22.7",
   "files": [
     "lib",
     "src"

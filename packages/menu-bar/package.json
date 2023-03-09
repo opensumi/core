@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-menu-bar",
-  "version": "2.22.6",
+  "version": "2.22.7",
   "description": "@opensumi/ide-menu-bar",
   "files": [
     "lib",
