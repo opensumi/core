@@ -42,7 +42,7 @@ export interface NsfwFileSystemWatcherOption {
 export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   private static readonly PARCEL_WATCHER_BACKEND = isWindows ? 'windows' : isLinux ? 'inotify' : 'fs-events';
 
-  private static WATCHER_HANDLERS = new Map<
+  private WATCHER_HANDLERS = new Map<
     number,
     { path: string; handlers: ParcelWatcher.SubscribeCallback[]; disposable: IDisposable }
   >();
@@ -66,7 +66,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
 
   dispose(): void {
     this.toDispose.dispose();
-    FileSystemWatcherServer.WATCHER_HANDLERS.clear();
+    this.WATCHER_HANDLERS.clear();
   }
 
   /**
@@ -74,7 +74,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * @param watcherPath
    */
   checkIsAlreadyWatched(watcherPath: string): number | undefined {
-    for (const [watcherId, watcher] of FileSystemWatcherServer.WATCHER_HANDLERS) {
+    for (const [watcherId, watcher] of this.WATCHER_HANDLERS) {
       if (watcherPath.indexOf(watcher.path) === 0) {
         return watcherId;
       }
@@ -128,14 +128,12 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       }
     };
 
-    FileSystemWatcherServer.WATCHER_HANDLERS.set(watcherId, {
+    this.WATCHER_HANDLERS.set(watcherId, {
       path: watchPath,
       disposable: toDisposeWatcher,
       handlers: [handler],
     });
-    toDisposeWatcher.push(
-      Disposable.create(() => FileSystemWatcherServer.WATCHER_HANDLERS.delete(watcherId as number)),
-    );
+    toDisposeWatcher.push(Disposable.create(() => this.WATCHER_HANDLERS.delete(watcherId as number)));
     toDisposeWatcher.push(await this.start(watcherId, watchPath, options));
     this.toDispose.push(toDisposeWatcher);
     return watcherId;
@@ -206,7 +204,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
                 // FIXME: 研究此处屏蔽的影响，考虑下阈值应该设置多少，或者更加优雅的方式
                 return;
               }
-              const handlers = FileSystemWatcherServer.WATCHER_HANDLERS.get(watcherId)?.handlers;
+              const handlers = this.WATCHER_HANDLERS.get(watcherId)?.handlers;
               if (!handlers) {
                 return;
               }
@@ -289,9 +287,9 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
   }
 
   unwatchFileChanges(watcherId: number): Promise<void> {
-    const watcher = FileSystemWatcherServer.WATCHER_HANDLERS.get(watcherId);
+    const watcher = this.WATCHER_HANDLERS.get(watcherId);
     if (watcher) {
-      FileSystemWatcherServer.WATCHER_HANDLERS.delete(watcherId);
+      this.WATCHER_HANDLERS.delete(watcherId);
       watcher.disposable.dispose();
     }
     return Promise.resolve();
