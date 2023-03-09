@@ -1604,7 +1604,12 @@ export class FileTreeModelService {
         }
       }
       const errors = await this.fileTreeAPI.mvFiles(
-        pasteStore.crossFiles ? pasteStore.crossFiles : pasteStore.files.map((file) => file.uri),
+        pasteStore.crossFiles
+          ? pasteStore.crossFiles.map((url) => ({
+              url,
+              isDirectory: this.fileTreeService.getNodeByPathOrUri(url)?.filestat.isDirectory || false,
+            }))
+          : pasteStore.files.map((file) => ({ url: file.uri, isDirectory: file.filestat.isDirectory })),
         parent.uri,
       );
       if (errors && errors.length > 0) {

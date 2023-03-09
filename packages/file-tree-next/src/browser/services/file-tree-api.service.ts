@@ -7,7 +7,7 @@ import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService } from '@opensumi/ide-overlay';
 import { IWorkspaceEditService } from '@opensumi/ide-workspace-edit';
 
-import { IFileTreeAPI, IFileTreeService } from '../../common';
+import { IFileTreeAPI, IFileTreeService, IMoveFileMetadata } from '../../common';
 import { Directory, File } from '../../common/file-tree-node.define';
 
 @Injectable()
@@ -98,9 +98,6 @@ export class FileTreeAPI implements IFileTreeAPI {
     // labelService可根据uri参数提供不同的展示效果
     const name = presetName ? presetName : uri.displayName;
     let node: Directory | File;
-    if (!this.cacheFileStat.has(filestat.uri)) {
-      this.cacheFileStat.set(filestat.uri, filestat);
-    }
     if (filestat.isDirectory) {
       node = new Directory(tree as any, parent, uri, name, filestat, this.getReadableTooltip(uri));
     } else {
@@ -109,18 +106,18 @@ export class FileTreeAPI implements IFileTreeAPI {
     return node;
   }
 
-  async mvFiles(fromFiles: URI[], targetDir: URI) {
+  async mvFiles(fromFiles: IMoveFileMetadata[], targetDir: URI) {
     const error: string[] = [];
     for (const from of fromFiles) {
-      if (from.isEqualOrParent(targetDir)) {
+      if (from.url.isEqualOrParent(targetDir)) {
         return;
       }
     }
     // 合并具有包含关系的文件移动
     const sortedFiles = fromFiles.sort((a, b) => a.toString().length - b.toString().length);
-    const mergeFiles: URI[] = [];
+    const mergeFiles: IMoveFileMetadata[] = [];
     for (const file of sortedFiles) {
-      if (mergeFiles.length > 0 && mergeFiles.find((exist) => exist.isEqualOrParent(file))) {
+      if (mergeFiles.length > 0 && mergeFiles.find((exist) => exist.url.isEqualOrParent(file.url))) {
         continue;
       }
       mergeFiles.push(file);
@@ -131,7 +128,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       const confirm = await this.dialogService.warning(
         formatLocalize(
           'file.confirm.move',
-          `[ ${mergeFiles.map((uri) => uri.displayName).join(',')} ]`,
+          `[ ${mergeFiles.map((file) => file.url.displayName).join(',')} ]`,
           targetDir.displayName,
         ),
         [cancel, ok],
@@ -141,8 +138,7 @@ export class FileTreeAPI implements IFileTreeAPI {
       }
     }
     for (const from of mergeFiles) {
-      const filestat = this.cacheFileStat.get(from.toString());
-      const res = await this.mv(from, targetDir.resolve(from.displayName), filestat && filestat.isDirectory);
+      const res = await this.mv(from.url, targetDir.resolve(from.url.displayName), from.isDirectory);
       if (res) {
         error.push(res);
       }

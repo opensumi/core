@@ -8,6 +8,12 @@ export interface IRef<T> {
   disposed: boolean;
 }
 
+export function normalizeFileUrl(uri: string) {
+  // 部分情况下可能出现类似 `file:///a//` 的路径，此时需要替换路径中的 `//` 为 `/`
+  // 从 `file:///a//b` 规范为 `file:///a/b`
+  return uri.replace(/\w+\/\/\w+/gi, (match) => match.replace('//', '/'));
+}
+
 export class ReferenceManager<T> {
   protected instances: Map<string, T> = new Map();
 
@@ -25,13 +31,8 @@ export class ReferenceManager<T> {
 
   constructor(private factory: (key: string) => MaybePromise<T>) {}
 
-  private getReferenceKey(uri: string) {
-    // 部分情况下可能出现类似 `file:///a//b.js` 的路径，此时需要替换路径中的 `//` 为 `/`
-    return uri.replace(/\w+\/\/\w+/gi, (match) => match.replace('//', '/'));
-  }
-
   async getReference(uri: string, reason?: string): Promise<IRef<T>> {
-    const key = this.getReferenceKey(uri);
+    const key = normalizeFileUrl(uri);
     if (!this.instances.has(key)) {
       // 由于创建过程可能为异步，此处标注为 creating， 防止重复创建。
       if (!this._creating.has(key)) {
