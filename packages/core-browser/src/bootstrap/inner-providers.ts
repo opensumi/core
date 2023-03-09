@@ -84,7 +84,6 @@ import { IExternalUriService, ExternalUriService } from '../services/external-ur
 import { IToolbarPopoverRegistry, IToolbarRegistry, ToolBarActionContribution } from '../toolbar';
 import { ToolbarPopoverRegistry } from '../toolbar/toolbar.popover.registry';
 import { NextToolbarRegistryImpl, ToolbarClientAppContribution } from '../toolbar/toolbar.registry';
-import { useNativeContextMenu } from '../utils';
 import { createElectronMainApi } from '../utils/electron';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution } from '../variable';
 import { IWindowService } from '../window';
@@ -105,6 +104,8 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, VariableContribution);
   createContributionProvider(injector, TabBarToolbarContribution);
   createContributionProvider(injector, ToolBarActionContribution);
+
+  const appConfig: AppConfig = injector.get(AppConfig);
 
   // 一些内置抽象实现
   const providers: Provider[] = [
@@ -172,7 +173,7 @@ export function injectInnerProviders(injector: Injector) {
     },
     {
       token: ICtxMenuRenderer,
-      useClass: useNativeContextMenu() ? ElectronCtxMenuRenderer : BrowserCtxMenuRenderer,
+      useClass: appConfig.isElectronRenderer ? ElectronCtxMenuRenderer : BrowserCtxMenuRenderer,
     },
     {
       token: AbstractMenubarService,
@@ -264,7 +265,6 @@ export function injectInnerProviders(injector: Injector) {
   ];
   injector.addProviders(...providers);
 
-  const appConfig: AppConfig = injector.get(AppConfig);
   // Add special API services for Electron, mainly services that make calls to `Electron Main` process.
   if (appConfig.isElectronRenderer) {
     injector.addProviders(

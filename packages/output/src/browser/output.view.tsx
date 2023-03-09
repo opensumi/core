@@ -3,7 +3,7 @@ import React from 'react';
 import { useEffect, createRef } from 'react';
 
 import { Select, Option } from '@opensumi/ide-components';
-import { useInjectable, isElectronRenderer, ViewState } from '@opensumi/ide-core-browser';
+import { useInjectable, ViewState, AppConfig } from '@opensumi/ide-core-browser';
 import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
@@ -44,11 +44,12 @@ export const Output = observer(({ viewState }: { viewState: ViewState }) => {
 export const ChannelSelector = observer(() => {
   const NONE = '<no channels>';
 
+  const appConfig = useInjectable<AppConfig>(AppConfig);
   const outputService = useInjectable<OutputService>(OutputService);
   const channelOptionElements: React.ReactNode[] = [];
   outputService.getChannels().forEach((channel, idx) => {
     channelOptionElements.push(
-      isElectronRenderer() ? (
+      appConfig.isElectronRenderer ? (
         <option value={channel.name} key={`${idx} - ${channel.name}`}>
           {channel.name}
         </option>
@@ -61,7 +62,7 @@ export const ChannelSelector = observer(() => {
   });
   if (channelOptionElements.length === 0) {
     channelOptionElements.push(
-      isElectronRenderer() ? (
+      appConfig.isElectronRenderer ? (
         <option key={NONE} value={NONE}>
           {NONE}
         </option>
@@ -86,7 +87,7 @@ export const ChannelSelector = observer(() => {
     }
   }
 
-  return isElectronRenderer() ? (
+  return appConfig.isElectronRenderer ? (
     <NativeSelect
       value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
       onChange={handleChange}

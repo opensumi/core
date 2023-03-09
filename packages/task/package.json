@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-task",
-  "version": "2.22.5",
+  "version": "2.22.7",
   "files": [
     "lib",
     "src"

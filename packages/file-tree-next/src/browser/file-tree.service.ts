@@ -306,17 +306,20 @@ export class FileTreeService extends Tree implements IFileTreeService {
           const parentURI = new URI(childrenParentStat.uri);
           const nearestParentDirectory = parent.parent as Directory;
           if (parent && nearestParentDirectory) {
-            let parentName;
+            let parentName: string | undefined = parent.name;
             if (parent.filestat.isSymbolicLink) {
               // 当软链目录本身发生折叠时
-              parentName = new URI(parent.filestat.realUri).relative(parentURI)?.toString();
-              parentName = [parent.uri.displayName].concat(parentName.split(Path.separator)).join(Path.separator);
+              const relativePath = new URI(parent.filestat.realUri).relative(parentURI)?.toString();
+              if (relativePath) {
+                parentName = relativePath;
+                parentName = [parent.uri.displayName].concat(parentName.split(Path.separator)).join(Path.separator);
+              }
             } else if (nearestParentDirectory.filestat.isSymbolicLink) {
               parentName = new URI(nearestParentDirectory.filestat.realUri).relative(parentURI)?.toString();
             } else {
               parentName = nearestParentDirectory.uri.relative(parentURI)?.toString();
             }
-            if (parentName !== parent.name) {
+            if (parentName && parentName !== parent.name) {
               parent.updateMetaData({
                 name: parentName,
                 uri: parentURI,
