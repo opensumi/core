@@ -72,8 +72,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
       limit: maxResult,
       includePatterns: [includePattern],
     };
-    const result = await this.fileSearchService.find('', fileSearchOptions);
-
+    const result = await this.fileSearchService.find('', fileSearchOptions, token);
     return result;
   }
 

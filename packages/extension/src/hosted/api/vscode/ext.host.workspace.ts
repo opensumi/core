@@ -458,6 +458,6 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
         maxResults,
         token,
       )
-      .then((files) => files.map((file) => Uri.parse(file)));
+      .then((files) => files.map((file) => Uri.file(file)));
   }
 }
