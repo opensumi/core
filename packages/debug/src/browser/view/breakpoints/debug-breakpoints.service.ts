@@ -11,7 +11,6 @@ import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from
 import { DEBUG_REPORT_NAME, CONTEXT_IN_DEBUG_MODE_KEY, IDebugBreakpoint } from '../../../common';
 import { IDebugSessionManager } from '../../../common/debug-session';
 import {
-  DebugBreakpoint,
   DebugExceptionBreakpoint,
   isDebugBreakpoint,
   isDebugExceptionBreakpoint,
@@ -76,9 +75,9 @@ export class DebugBreakpointsService extends WithEventBus {
 
   async init() {
     await this.updateRoots();
-    this.updateBreakpoints();
+    await this.updateBreakpoints();
     this.workspaceService.onWorkspaceChanged(async () => {
-      await this.updateRoots();
+      this.updateRoots();
       this.updateBreakpoints();
     });
     this.breakpoints.onDidChangeBreakpoints(() => {
@@ -166,7 +165,8 @@ export class DebugBreakpointsService extends WithEventBus {
   }
 
   @action
-  private updateBreakpoints() {
+  private async updateBreakpoints() {
+    await this.breakpoints.whenReady;
     this.nodes = this.extractNodes([
       ...this.breakpoints.getExceptionBreakpoints(),
       ...this.breakpoints.getBreakpoints(),
