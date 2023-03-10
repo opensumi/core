@@ -388,7 +388,7 @@ export class DebugSession implements IDebugSession {
 
   protected async configure(): Promise<void> {
     await this.initBreakpoints();
-    // 更新exceptionBreakpoint配置
+    // 更新 exceptionBreakpoint 配置
     this.breakpointManager.setExceptionBreakpoints(this.capabilities.exceptionBreakpointFilters || []);
     if (this.capabilities.supportsConfigurationDoneRequest) {
       await this.sendRequest('configurationDone', {});
@@ -612,13 +612,16 @@ export class DebugSession implements IDebugSession {
     if (!this.initialized) {
       return DebugState.Initializing;
     }
+    if (this.stoppedThreads.next().value) {
+      return DebugState.Stopped;
+    }
     const thread = this.currentThread;
     if (thread) {
       return thread.stopped ? DebugState.Stopped : DebugState.Running;
     } else if (this.supportsThreadIdCorrespond) {
       return DebugState.Running;
     }
-    return this.stoppedThreads.next().value ? DebugState.Stopped : DebugState.Running;
+    return DebugState.Running;
   }
 
   get currentFrame(): DebugStackFrame | undefined {

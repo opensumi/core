@@ -1,7 +1,7 @@
 import cls from 'classnames';
 import { action, observable } from 'mobx';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import { Injectable } from '@opensumi/di';
 import { Option, Select } from '@opensumi/ide-components';
@@ -104,63 +104,80 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
 
   const currentSessionId = currentSession && currentSession.id;
 
-  const renderToolBar = (session: DebugSession | undefined): React.ReactNode => {
-    if (session && session.id && toolBarMenuMap.has(session.id)) {
-      return <InlineMenuBar menus={toolBarMenuMap.get(session.id)!} />;
-    }
-    return null;
-  };
-  const renderStop = (state: DebugState): React.ReactNode => {
-    if (isAttach) {
+  const renderToolBar = useCallback(
+    (session: DebugSession | undefined): React.ReactNode => {
+      if (session && session.id) {
+        const menus = toolBarMenuMap.get(session.id);
+        if (menus) {
+          return <InlineMenuBar menus={menus} />;
+        }
+      }
+      return null;
+    },
+    [toolBarMenuMap],
+  );
+
+  const renderStop = useCallback(
+    (state: DebugState): React.ReactNode => {
+      if (isAttach) {
+        return (
+          <DebugAction
+            run={doStop}
+            enabled={typeof state === 'number' && state !== DebugState.Inactive}
+            icon={'disconnect'}
+            label={localize('debug.action.disattach')}
+          />
+        );
+      }
       return (
         <DebugAction
           run={doStop}
           enabled={typeof state === 'number' && state !== DebugState.Inactive}
-          icon={'disconnect'}
-          label={localize('debug.action.disattach')}
+          icon={'stop'}
+          label={localize('debug.action.stop')}
         />
       );
-    }
-    return (
-      <DebugAction
-        run={doStop}
-        enabled={typeof state === 'number' && state !== DebugState.Inactive}
-        icon={'stop'}
-        label={localize('debug.action.stop')}
-      />
-    );
-  };
-  const renderContinue = (state: DebugState): React.ReactNode => {
-    if (state === DebugState.Stopped) {
-      return <DebugAction run={doContinue} icon={'continue'} label={localize('debug.action.continue')} />;
-    }
-    return (
-      <DebugAction
-        run={doPause}
-        enabled={typeof state === 'number' && state === DebugState.Running}
-        icon={'pause'}
-        label={localize('debug.action.pause')}
-      />
-    );
-  };
+    },
+    [doStop],
+  );
 
-  const renderSessionOptions = (sessions: DebugSession[]) =>
-    sessions.map((session: DebugSession) => {
-      if (isElectronRenderer) {
-        return (
-          <option key={session.id} value={session.id}>
-            {session.label}
-          </option>
-        );
+  const renderContinue = useCallback(
+    (state: DebugState): React.ReactNode => {
+      if (state === DebugState.Stopped) {
+        return <DebugAction run={doContinue} icon={'continue'} label={localize('debug.action.continue')} />;
       }
       return (
-        <Option key={session.id} label={session.label} value={session.id}>
-          {session.label}
-        </Option>
+        <DebugAction
+          run={doPause}
+          enabled={typeof state === 'number' && state === DebugState.Running}
+          icon={'pause'}
+          label={localize('debug.action.pause')}
+        />
       );
-    });
+    },
+    [doPause, doContinue],
+  );
 
-  const renderSelections = (sessions: DebugSession[]) => {
+  const renderSessionOptions = useCallback(
+    (sessions: DebugSession[]) =>
+      sessions.map((session: DebugSession) => {
+        if (isElectronRenderer) {
+          return (
+            <option key={session.id} value={session.id}>
+              {session.label}
+            </option>
+          );
+        }
+        return (
+          <Option key={session.id} label={session.label} value={session.id}>
+            {session.label}
+          </Option>
+        );
+      }),
+    [],
+  );
+
+  const renderSelections = useCallback((sessions: DebugSession[]) => {
     if (sessions.length > 1) {
       return (
         <div className={cls(styles.debug_selection)}>
@@ -182,59 +199,60 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
         </div>
       );
     }
-  };
+  }, []);
 
-  const setCurrentSession = (event: React.ChangeEvent<HTMLSelectElement> | string | number) => {
-    let value = event;
-    if (isElectronRenderer) {
-      value = (event as React.ChangeEvent<HTMLSelectElement>).target.value;
-    }
-
-    if (!sessions) {
-      return;
-    }
-    for (const session of sessions) {
-      if (session.id === value) {
-        updateCurrentSession(session);
+  const setCurrentSession = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement> | string | number) => {
+      let value = event;
+      if (isElectronRenderer) {
+        value = (event as React.ChangeEvent<HTMLSelectElement>).target.value;
       }
-    }
-  };
+
+      if (!sessions) {
+        return;
+      }
+      for (const session of sessions) {
+        if (session.id === value) {
+          updateCurrentSession(session);
+        }
+      }
+    },
+    [updateCurrentSession],
+  );
 
   return (
-    <React.Fragment>
-      <div className={styles.debug_action_bar}>
-        {renderSelections(sessions.filter((s: DebugSession) => !s.parentSession))}
-        <div className={styles.debug_actions}>
-          {renderContinue(state)}
-          <DebugAction
-            run={doStepOver}
-            enabled={typeof state === 'number' && state === DebugState.Stopped}
-            icon={'step'}
-            label={localize('debug.action.step-over')}
-          />
-          <DebugAction
-            run={doStepIn}
-            enabled={typeof state === 'number' && state === DebugState.Stopped}
-            icon={'step-in'}
-            label={localize('debug.action.step-into')}
-          />
-          <DebugAction
-            run={doStepOut}
-            enabled={typeof state === 'number' && state === DebugState.Stopped}
-            icon={'step-out'}
-            label={localize('debug.action.step-out')}
-          />
-          <DebugAction
-            run={doRestart}
-            enabled={typeof state === 'number' && state !== DebugState.Inactive}
-            icon={'reload'}
-            label={localize('debug.action.restart')}
-          />
-          {renderStop(state)}
-          {renderToolBar(currentSession)}
-        </div>
+    <div className={styles.debug_action_bar}>
+      {renderSelections(sessions.filter((s: DebugSession) => !s.parentSession))}
+      <div className={styles.debug_actions}>
+        {renderContinue(state)}
+        <DebugAction
+          run={doStepOver}
+          enabled={typeof state === 'number' && state === DebugState.Stopped}
+          icon={'step'}
+          label={localize('debug.action.step-over')}
+        />
+        <DebugAction
+          run={doStepIn}
+          enabled={typeof state === 'number' && state === DebugState.Stopped}
+          icon={'step-in'}
+          label={localize('debug.action.step-into')}
+        />
+        <DebugAction
+          run={doStepOut}
+          enabled={typeof state === 'number' && state === DebugState.Stopped}
+          icon={'step-out'}
+          label={localize('debug.action.step-out')}
+        />
+        <DebugAction
+          run={doRestart}
+          enabled={typeof state === 'number' && state !== DebugState.Inactive}
+          icon={'reload'}
+          label={localize('debug.action.restart')}
+        />
+        {renderStop(state)}
+        {renderToolBar(currentSession)}
       </div>
-    </React.Fragment>
+    </div>
   );
 });
 

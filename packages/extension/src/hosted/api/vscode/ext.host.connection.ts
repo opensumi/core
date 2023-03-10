@@ -28,8 +28,6 @@ export class ExtHostConnection implements IExtHostConnectionService {
   async $sendMessage(id: string, message: string): Promise<void> {
     if (this.connections.has(id)) {
       this.connections.get(id)?.reader.readMessage(message);
-    } else {
-      this.debug.warn(`connect id[${id}] does exist`);
     }
   }
 
