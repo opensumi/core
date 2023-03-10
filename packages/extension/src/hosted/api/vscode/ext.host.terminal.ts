@@ -6,7 +6,6 @@ import { IRPCProtocol } from '@opensumi/ide-connection';
 import {
   Event,
   Emitter,
-  getDebugLogger,
   isUndefined,
   DisposableStore,
   IDisposable,
@@ -40,8 +39,6 @@ import {
   IExtHostTerminal,
   IExtensionDescription,
 } from '../../../common/vscode';
-
-const debugLog = getDebugLogger();
 
 let nextLinkId = 1;
 
@@ -118,11 +115,11 @@ export class ExtHostTerminal implements IExtHostTerminal {
 
   $onDidChangeActiveTerminal(id: string) {
     const terminal = this.getTerminal(id);
-    if (terminal) {
-      this.activeTerminal = terminal;
-      this.changeActiveTerminalEvent.fire(terminal);
-    } else {
-      debugLog.error('[onDidChangeActiveTerminal] cannot find terminal with id: ' + id);
+    const original = this.activeTerminal;
+    // 当激活的终端为 Task 终端时，同样需要将 activeTerminal 置为 undefined
+    this.activeTerminal = terminal;
+    if (original !== this.activeTerminal) {
+      this.changeActiveTerminalEvent.fire(this.activeTerminal);
     }
   }
 
@@ -134,7 +131,8 @@ export class ExtHostTerminal implements IExtHostTerminal {
     const terminalId = this.getRealTerminalId(e.id);
     const terminal = this.terminalsMap.get(terminalId);
     if (!terminal) {
-      return debugLog.error(`Terminal ${e.id} not found`);
+      // 说明此时收到的可能为 Task 终端关闭事件，直接忽略即可
+      return;
     }
 
     terminal.setExitCode(e.code);
