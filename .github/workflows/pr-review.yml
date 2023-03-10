@@ -1,0 +1,13 @@
+name: Pull Request Review By ChatGPT
+
+on:
+  pull_request:
+
+jobs:
+  code-review:
+    name: Code Review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: opensumi/actions/.github/actions/code-review@main
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
