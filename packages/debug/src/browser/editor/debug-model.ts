@@ -271,7 +271,8 @@ export class DebugModel implements IDebugModel {
    * 渲染断点信息装饰器
    * @memberof DebugModel
    */
-  renderBreakpoints(): void {
+  async renderBreakpoints() {
+    await this.breakpointManager.whenReady;
     this.renderNormalBreakpoints();
     this.renderCurrentBreakpoints();
   }
