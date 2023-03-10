@@ -95,16 +95,7 @@ export class DebugConsoleSession implements IDebugConsoleSession {
         }
       }
     } else if (typeof body.output === 'string') {
-      const previousItem = this.getLastItem();
-      /**
-       * 如果上一条 output 结尾没有换行符则应该与下一条 output 拼接在一起
-       */
-      if (previousItem && !previousItem.description.endsWith('\n') && !previousItem.description.endsWith('\r\n')) {
-        this.treeModel.root.unlinkItem(previousItem);
-        await this.insertItemWithAnsi(previousItem.description + body.output, severity, source, line);
-      } else {
-        await this.insertItemWithAnsi(body.output, severity, source, line);
-      }
+      await this.insertItemWithAnsi(body.output, severity, source, line);
     }
 
     this.fireDidChange();
