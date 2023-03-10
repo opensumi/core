@@ -10,6 +10,22 @@ export class OpenSumiSourceControlView extends OpenSumiView {
     });
   }
 
+  async getTreeNodeActionById(id: string) {
+    const header = await this.page.$('[class*="scm_tree_node_content___"]');
+    if (!header) {
+      return;
+    }
+    await header.hover();
+    const titleAction = await header.waitForSelector('[class*="titleActions___"]');
+    const actions = await titleAction.$$('[class*="iconAction__"]');
+    for (const action of actions) {
+      const title = await action.getAttribute('id');
+      if (id === title) {
+        return action;
+      }
+    }
+  }
+
   async getTitleActionByName(name: string) {
     const header = await this.page.$('.scm [class*="titlebar___"]');
     if (!header) {
