@@ -30,8 +30,6 @@ import { IDebugConsoleModel } from './debug-console-tree.model.service';
 import styles from './debug-console.module.less';
 import { DebugConsoleService } from './debug-console.service';
 
-declare const ResizeObserver: any;
-
 export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState }) => {
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
   const debugConsoleFilterService = useInjectable<DebugConsoleFilterService>(DebugConsoleFilterService);

@@ -27,6 +27,7 @@ import {
 import { DebugSessionManager } from '../../debug-session-manager';
 
 import { DebugContextKey } from './../../contextkeys/debug-contextkey.service';
+import { DebugConsoleModelService } from './debug-console-tree.model.service';
 
 const DECORATION_KEY = 'consoleinputdecoration';
 const HISTORY_STORAGE_KEY = 'debug.console.history';
@@ -48,7 +49,7 @@ const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
 @Injectable()
 export class DebugConsoleService implements IHistoryNavigationWidget {
   @Autowired(IDebugConsoleModelService)
-  protected readonly debugConsoleModelService: IDebugConsoleModelService;
+  protected readonly debugConsoleModelService: DebugConsoleModelService;
 
   @Autowired(IMainLayoutService)
   protected readonly mainLayoutService: IMainLayoutService;
