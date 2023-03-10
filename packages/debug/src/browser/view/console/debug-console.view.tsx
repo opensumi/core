@@ -1,5 +1,4 @@
 import cls from 'classnames';
-import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
@@ -12,7 +11,6 @@ import {
   INodeRendererProps,
   CompositeTreeNode,
   TreeNode,
-  TreeNodeEvent,
 } from '@opensumi/ide-components';
 import { Loading } from '@opensumi/ide-components';
 import { useInjectable, ViewState, getIcon } from '@opensumi/ide-core-browser';
@@ -29,8 +27,6 @@ import { DebugConsoleFilterService } from './debug-console-filter.service';
 import { IDebugConsoleModel } from './debug-console-tree.model.service';
 import styles from './debug-console.module.less';
 import { DebugConsoleService } from './debug-console.service';
-
-declare const ResizeObserver: any;
 
 export const DebugConsoleView = observer(({ viewState }: { viewState: ViewState }) => {
   const debugConsoleService = useInjectable<DebugConsoleService>(DebugConsoleService);
