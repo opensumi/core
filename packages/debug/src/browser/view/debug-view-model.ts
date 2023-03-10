@@ -24,7 +24,6 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugStackFrame } from '../model/debug-stack-frame';
 import { DebugThread } from '../model/debug-thread';
 
-
 @Injectable()
 export class DebugViewModel implements IDisposable {
   @Autowired(IDebugSessionManager)
@@ -43,7 +42,6 @@ export class DebugViewModel implements IDisposable {
   }
 
   protected readonly toDispose = new DisposableCollection(this.onDidChangeEmitter, this.onDidChangeBreakpointsEmitter);
-
   protected readonly _sessions = new Set<DebugSession>();
 
   get sessions(): IterableIterator<DebugSession> {
@@ -77,9 +75,11 @@ export class DebugViewModel implements IDisposable {
   get id(): string {
     return (this.session && this.session.id) || '-1';
   }
+
   get label(): string {
     return (this.session && this.session.label) || 'Unknown Session';
   }
+
   has(session: DebugSession | undefined): session is DebugSession {
     return !!session && this._sessions.has(session);
   }
@@ -120,10 +120,12 @@ export class DebugViewModel implements IDisposable {
       return this.manager.currentSession.getThreads(() => true);
     }
   }
+
   get currentSession(): DebugSession | undefined {
     const { currentSession } = this.manager;
     return (this.has(currentSession) && currentSession) || this.session;
   }
+
   set currentSession(currentSession: DebugSession | undefined) {
     this.manager.updateCurrentSession(currentSession);
   }
@@ -132,10 +134,12 @@ export class DebugViewModel implements IDisposable {
     const { currentSession } = this;
     return (currentSession && currentSession.state) || DebugState.Inactive;
   }
+
   get currentThread(): DebugThread | undefined {
     const { currentSession } = this;
     return currentSession && currentSession.currentThread;
   }
+
   get currentFrame(): DebugStackFrame | undefined {
     const { currentThread } = this;
     return currentThread && currentThread.currentFrame;
