@@ -262,8 +262,8 @@ export class DebugModel implements IDebugModel {
     this.renderFrames();
   }
 
-  render(): void {
-    this.renderBreakpoints();
+  async render() {
+    await this.renderBreakpoints();
     this.renderFrames();
   }
 
