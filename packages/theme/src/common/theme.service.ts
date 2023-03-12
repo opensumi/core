@@ -222,6 +222,7 @@ export interface ThemeContribution {
   // default to be vs
   uiTheme?: BuiltinTheme;
   path: string;
+  extensionId: string;
 }
 
 // base themes
@@ -329,12 +330,14 @@ export interface ThemeInfo {
   name: string;
   base: BuiltinTheme;
   themeId: string;
+  extensionId: string;
   inherit?: boolean;
 }
 
 export interface IconThemeInfo {
   name: string;
   themeId: string;
+  extensionId: string;
 }
 
 export function themeColorFromId(id: ColorIdentifier) {

@@ -377,10 +377,11 @@ export class IconService extends WithEventBus implements IIconService {
   getAvailableThemeInfos(): IconThemeInfo[] {
     const themeInfos: IconThemeInfo[] = [];
     for (const { contribution } of this.iconContributionRegistry.values()) {
-      const { label, id } = contribution;
+      const { label, id, extensionId } = contribution;
       themeInfos.push({
         themeId: id || getThemeId(contribution),
         name: label,
+        extensionId,
       });
     }
     return themeInfos;
