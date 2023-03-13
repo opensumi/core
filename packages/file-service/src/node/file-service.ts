@@ -177,7 +177,7 @@ export class FileService implements IFileService {
       throw FileSystemError.FileNotFound(uri, 'File not found.');
     }
     if (stat.isDirectory) {
-      throw FileSystemError.FileIsDirectory(uri, 'Cannot resolve the content.');
+      throw FileSystemError.FileIsADirectory(uri, 'Cannot resolve the content.');
     }
     const encoding = await this.doGetEncoding(options);
     const buffer = await provider.readFile(_uri.codeUri);
@@ -192,7 +192,7 @@ export class FileService implements IFileService {
       throw FileSystemError.FileNotFound(file.uri, 'File not found.');
     }
     if (stat.isDirectory) {
-      throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
+      throw FileSystemError.FileIsADirectory(file.uri, 'Cannot set the content.');
     }
     if (!(await this.isInSync(file, stat))) {
       throw this.createOutOfSyncError(file, stat);
@@ -219,7 +219,7 @@ export class FileService implements IFileService {
       throw FileSystemError.FileNotFound(file.uri, 'File not found.');
     }
     if (stat.isDirectory) {
-      throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
+      throw FileSystemError.FileIsADirectory(file.uri, 'Cannot set the content.');
     }
     if (!this.checkInSync(file, stat)) {
       throw this.createOutOfSyncError(file, stat);
@@ -357,7 +357,7 @@ export class FileService implements IFileService {
     //   throw FileSystemError.FileNotFound(uri);
     // }
     // if (stat.isDirectory) {
-    //   throw FileSystemError.FileIsDirectory(uri, 'Cannot get the encoding.');
+    //   throw FileSystemError.FileIsADirectory(uri, 'Cannot get the encoding.');
     // }
     // const encoding = detectEncodingByURI(_uri);
     // return encoding || this.options.encoding || UTF8;

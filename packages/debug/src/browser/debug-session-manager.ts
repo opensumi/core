@@ -40,7 +40,6 @@ import { IVariableResolverService } from '@opensumi/ide-variable';
 
 import {
   DebugConfiguration,
-  DebugError,
   IDebugServer,
   DebugServer,
   DebugSessionOptions,
@@ -345,11 +344,6 @@ export class DebugSessionManager implements IDebugSessionManager {
       }
       return this.doStart(sessionId, resolved, extra);
     } catch (e) {
-      if (DebugError.NotFound.is(e)) {
-        this.messageService.error(formatLocalize('debug.launch.typeNotSupported', e.data.type));
-        return;
-      }
-
       this.messageService.error(localize('debug.launch.catchError'));
       throw e;
     }

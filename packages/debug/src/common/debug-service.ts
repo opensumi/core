@@ -1,11 +1,4 @@
-import {
-  IDisposable,
-  IJSONSchema,
-  IJSONSchemaSnippet,
-  ApplicationError,
-  Event,
-  BinaryBuffer,
-} from '@opensumi/ide-core-common';
+import { IDisposable, IJSONSchema, IJSONSchemaSnippet, Event, BinaryBuffer } from '@opensumi/ide-core-common';
 
 import { DebugConfiguration } from './debug-configuration';
 import { IDebugSessionDTO } from './debug-session-options';
@@ -166,11 +159,4 @@ export interface IDebugServiceContributionPoint {
   path: string;
   contributions: IJSONSchema[];
   removed?: boolean;
-}
-
-export namespace DebugError {
-  export const NotFound = ApplicationError.declare(-41000, (type: string) => ({
-    message: `'${type}' debugger type is not supported.`,
-    data: { type },
-  }));
 }

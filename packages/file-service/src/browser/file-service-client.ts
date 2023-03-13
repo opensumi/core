@@ -194,10 +194,10 @@ export class FileServiceClient implements IFileServiceClient {
       throw FileSystemError.FileNotFound(file.uri, 'File not found.');
     }
     if (stat.isDirectory) {
-      throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
+      throw FileSystemError.FileIsADirectory(file.uri, 'Cannot set the content.');
     }
     if (!(await this.isInSync(file, stat))) {
-      throw this.createOutOfSyncError(file, stat);
+      throw this.createOutOfSyncError(file);
     }
     await provider.writeFile(
       _uri.codeUri,
@@ -220,7 +220,7 @@ export class FileServiceClient implements IFileServiceClient {
       throw FileSystemError.FileNotFound(file.uri, 'File not found.');
     }
     if (stat.isDirectory) {
-      throw FileSystemError.FileIsDirectory(file.uri, 'Cannot set the content.');
+      throw FileSystemError.FileIsADirectory(file.uri, 'Cannot set the content.');
     }
     if (!this.checkInSync(file, stat)) {
       throw this.createOutOfSyncError(file, stat);
@@ -629,8 +629,8 @@ export class FileServiceClient implements IFileServiceClient {
     return stat.lastModification === file.lastModification && stat.size === file.size;
   }
 
-  protected createOutOfSyncError(file: FileStat, stat: FileStat): Error {
-    return FileSystemError.FileIsOutOfSync(file, stat);
+  protected createOutOfSyncError(file: FileStat): Error {
+    return FileSystemError.FileIsOutOfSync(file.uri);
   }
 
   protected async doGetEncoding(option?: { encoding?: string }): Promise<string> {

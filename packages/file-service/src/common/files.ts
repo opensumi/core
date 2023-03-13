@@ -20,7 +20,6 @@ import type { Range } from 'vscode-languageserver-types';
 
 import { IFileSystemWatcherServer, DidFilesChangedParams, WatchOptions } from '@opensumi/ide-core-common';
 import {
-  ApplicationError,
   Event,
   IDisposable,
   Uri,
@@ -244,31 +243,39 @@ export interface FileCopyOptions {
   overwrite?: boolean;
 }
 
-export namespace FileSystemError {
-  export const FileNotFound = ApplicationError.declare(-33000, (uri: string, prefix?: string) => ({
-    message: `${prefix ? prefix + ' ' : ''} '${uri}' is not found.`,
-    data: { uri },
-  }));
-  export const FileExists = ApplicationError.declare(-33001, (uri: string, prefix?: string) => ({
-    message: `${prefix ? prefix + ' ' : ''}'${uri}' already exists.`,
-    data: { uri },
-  }));
-  export const FileIsDirectory = ApplicationError.declare(-33002, (uri: string, prefix?: string) => ({
-    message: `${prefix ? prefix + ' ' : ''}'${uri}' is a directory.`,
-    data: { uri },
-  }));
-  export const FileNotDirectory = ApplicationError.declare(-33003, (uri: string, prefix?: string) => ({
-    message: `${prefix ? prefix + ' ' : ''}'${uri}' is not a directory.`,
-    data: { uri },
-  }));
-  export const FileIsOutOfSync = ApplicationError.declare(-33004, (file: FileStat, stat: FileStat) => ({
-    message: `'${file.uri}' is out of sync.`,
-    data: { file, stat },
-  }));
-  export const FileIsNoPermissions = ApplicationError.declare(-33005, (uri: string, prefix?: string) => ({
-    message: `${prefix ? prefix + ' ' : ''}'${uri}' is no permissions.`,
-    data: { uri },
-  }));
+export enum FileSystemProviderErrorCode {
+  FileExists = 'EntryExists',
+  FileNotFound = 'EntryNotFound',
+  FileNotADirectory = 'EntryNotADirectory',
+  FileIsADirectory = 'EntryIsADirectory',
+  FileIsOutOfSync = 'FileIsOutOfSync',
+  FileExceedsMemoryLimit = 'EntryExceedsMemoryLimit',
+  FileTooLarge = 'EntryTooLarge',
+  FileWriteLocked = 'EntryWriteLocked',
+  NoPermissions = 'NoPermissions',
+  Unavailable = 'Unavailable',
+  Unknown = 'Unknown',
+}
+
+export interface IFileSystemProviderError extends Error {
+  readonly name: string;
+  readonly code: FileSystemProviderErrorCode;
+}
+
+export class FileSystemProviderError extends Error implements IFileSystemProviderError {
+  static declare(code: FileSystemProviderErrorCode, factory: (...args: any[]) => string) {
+    return Object.assign((...args: any[]) => createFileSystemProviderError(factory(...args), code), {
+      is: (error: FileSystemProviderError) => error.stack?.startsWith(code),
+    });
+  }
+
+  constructor(message: string, readonly code: FileSystemProviderErrorCode) {
+    super(message);
+  }
+
+  is(error: FileSystemProviderError) {
+    return this.name === error.name;
+  }
 }
 
 export class FileOperationError extends Error {
@@ -279,6 +286,69 @@ export class FileOperationError extends Error {
   static isFileOperationError(obj: unknown): obj is FileOperationError {
     return obj instanceof Error && !isUndefinedOrNull((obj as FileOperationError).fileOperationResult);
   }
+}
+
+export function createFileSystemProviderError(
+  error: Error | string,
+  code: FileSystemProviderErrorCode,
+): FileSystemProviderError {
+  const providerError = new FileSystemProviderError(error.toString(), code);
+  markAsFileSystemProviderError(providerError, code);
+
+  return providerError;
+}
+
+export function markAsFileSystemProviderError(error: Error, code: FileSystemProviderErrorCode): Error {
+  error.name = code ? `${code} (FileSystemError)` : 'FileSystemError';
+
+  return error;
+}
+
+export namespace FileSystemError {
+  export const FileNotFound = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileNotFound,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''} '${uri}' is not found.`,
+  );
+  export const FileExists = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileExists,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' already exists.`,
+  );
+  export const FileNotADirectory = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileNotADirectory,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is not a directory.`,
+  );
+  export const FileIsADirectory = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileIsADirectory,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is a directory.`,
+  );
+  export const FileIsOutOfSync = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileIsOutOfSync,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is out of sync.`,
+  );
+  export const FileExceedsMemoryLimit = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileExceedsMemoryLimit,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is exceeds memory limit.`,
+  );
+  export const FileTooLarge = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileTooLarge,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is too large.`,
+  );
+  export const FileWriteLocked = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.FileWriteLocked,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is locked.`,
+  );
+  export const FileIsNoPermissions = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.NoPermissions,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is no permissions.`,
+  );
+  export const Unavailable = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.Unavailable,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is unavailable.`,
+  );
+  export const Unknown = FileSystemProviderError.declare(
+    FileSystemProviderErrorCode.Unknown,
+    (uri: string, prefix?: string) => `${prefix ? prefix + ' ' : ''}'${uri}' is unkonw.`,
+  );
 }
 
 export const enum FileOperationResult {
@@ -303,10 +373,10 @@ export const enum FileOperationResult {
  * @param source The existing file.
  * @param destination The destination location.
  * @param options Defines if existing files should be overwritten.
- * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `source` doesn't exist.
- * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `destination` doesn't exist, e.g. no mkdirp-logic required.
- * @throws [`FileExists`](#FileSystemError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
- * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+ * @throws [`FileNotFound`](#FileSystemProviderError.FileNotFound) when `source` doesn't exist.
+ * @throws [`FileNotFound`](#FileSystemProviderError.FileNotFound) when parent of `destination` doesn't exist, e.g. no mkdirp-logic required.
+ * @throws [`FileExists`](#FileSystemProviderError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
+ * @throws [`NoPermissions`](#FileSystemProviderError.NoPermissions) when permissions aren't sufficient.
  */
 /* tslint:disable callable-types */
 export type FileCopyFn = (
