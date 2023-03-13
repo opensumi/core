@@ -223,7 +223,7 @@ export class FileServiceClient implements IFileServiceClient {
       throw FileSystemError.FileIsADirectory(file.uri, 'Cannot set the content.');
     }
     if (!this.checkInSync(file, stat)) {
-      throw this.createOutOfSyncError(file, stat);
+      throw this.createOutOfSyncError(file);
     }
     if (contentChanges.length === 0) {
       return stat;
