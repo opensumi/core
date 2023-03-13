@@ -1,7 +1,7 @@
 import throttle from 'lodash/throttle';
 
 import { Autowired, Injectable, Optional } from '@opensumi/di';
-import { DisposableCollection, Emitter, Event, MessageType, ILogger } from '@opensumi/ide-core-common';
+import { DisposableCollection, Emitter, Event, MessageType, ILogger, localize } from '@opensumi/ide-core-common';
 import { IThemeService } from '@opensumi/ide-theme';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -68,6 +68,8 @@ export class DebugConsoleSession implements IDebugConsoleSession {
   }
 
   protected async logOutput(session: DebugSession, event: DebugProtocol.OutputEvent): Promise<void> {
+    // [2J is the ansi escape sequence for clearing the display http://ascii-table.com/ansi-escape-sequences.php
+    const clearAnsiSequence = '\u001b[2J';
     const body = event.body;
     const { category, variablesReference, source, line } = body;
     if (!this.treeModel) {
@@ -76,7 +78,9 @@ export class DebugConsoleSession implements IDebugConsoleSession {
     const severity =
       category === 'stderr'
         ? MessageType.Error
-        : event.body.category === 'console'
+        : category === 'stdout'
+        ? MessageType.Info
+        : category === 'console'
         ? MessageType.Warning
         : MessageType.Info;
     if (category === 'telemetry') {
@@ -95,11 +99,23 @@ export class DebugConsoleSession implements IDebugConsoleSession {
         }
       }
     } else if (typeof body.output === 'string') {
+      let output = body.output;
+      if (output.indexOf(clearAnsiSequence) >= 0) {
+        this.clearConsole();
+        await this.insertItemWithAnsi(localize('debug.console.consoleCleare'), MessageType.Info);
+        output = output.substring(output.lastIndexOf(clearAnsiSequence) + clearAnsiSequence.length);
+      }
       const previousItem = this.getLastItem();
       /**
-       * 如果上一条 output 结尾没有换行符则应该与下一条 output 拼接在一起
+       * 如果上一次输出结尾没有换行符并且输出类型（MessageType）一致
+       * 则将接下来的输出拼接至上一次输出后
        */
-      if (previousItem && !previousItem.description.endsWith('\n') && !previousItem.description.endsWith('\r\n')) {
+      if (
+        previousItem &&
+        !previousItem.description.endsWith('\n') &&
+        !previousItem.description.endsWith('\r\n') &&
+        (previousItem as AnsiConsoleNode).severity === severity
+      ) {
         this.treeModel.root.unlinkItem(previousItem);
         await this.insertItemWithAnsi(previousItem.description + body.output, severity, source, line);
       } else {
@@ -108,6 +124,16 @@ export class DebugConsoleSession implements IDebugConsoleSession {
     }
 
     this.fireDidChange();
+  }
+
+  private async clearConsole() {
+    const items = this.treeModel.root.flattenedBranch?.map((id) => this.treeModel.root.getTreeNodeById(id));
+    if (!items) {
+      return;
+    }
+    for (const item of items) {
+      this.treeModel.root.unlinkItem(item as AnsiConsoleNode);
+    }
   }
 
   private async insertItemWithAnsi(

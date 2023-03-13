@@ -2,7 +2,7 @@
 export const MARKER_CONTAINER_ID = 'markers';
 export const OUTPUT_CONTAINER_ID = 'output';
 export const TERMINAL_CONTAINER_ID = 'terminal';
-export const DEBUG_CONSOLE_CONTAINER_ID = 'debug-console-container';
+export const DEBUG_CONSOLE_CONTAINER_ID = 'debug-console';
 
 // Left Panel 的 Container
 export const DEBUG_CONTAINER_ID = 'debug';
