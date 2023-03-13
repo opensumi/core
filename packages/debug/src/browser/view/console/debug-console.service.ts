@@ -22,6 +22,7 @@ import {
   IDebugSessionManager,
   CONTEXT_IN_DEBUG_MODE_KEY,
   DebugState,
+  IDebugConsoleModelService,
 } from '../../../common';
 import { DebugSessionManager } from '../../debug-session-manager';
 
@@ -47,7 +48,7 @@ const consoleInputMonacoOptions: monaco.editor.IEditorOptions = {
 
 @Injectable()
 export class DebugConsoleService implements IHistoryNavigationWidget {
-  @Autowired(DebugConsoleModelService)
+  @Autowired(IDebugConsoleModelService)
   protected readonly debugConsoleModelService: DebugConsoleModelService;
 
   @Autowired(IMainLayoutService)
@@ -115,7 +116,7 @@ export class DebugConsoleService implements IHistoryNavigationWidget {
     return bottomPanelHandler && bottomPanelHandler.isVisible;
   }
 
-  public get consoleModel(): DebugConsoleModelService {
+  public get consoleModel() {
     return this.debugConsoleModelService;
   }
 

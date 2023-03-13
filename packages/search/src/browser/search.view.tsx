@@ -102,7 +102,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
 
   useEffect(() => {
     setOffsetTop((searchOptionRef.current && searchOptionRef.current.clientHeight) || 0);
-  }, [offsetTop, searchOptionRef.current, searchContent, searchBrowserService]);
+  }, [offsetTop, searchOptionRef.current, searchContent, searchBrowserService, UIState.isDetailOpen]);
 
   const collapsePanelContainerStyle = {
     width: viewState.width || '100%',

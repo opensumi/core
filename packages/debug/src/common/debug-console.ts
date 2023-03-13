@@ -12,9 +12,10 @@ export interface IDebugConsoleSession extends ITree {
 }
 
 export interface IDebugConsoleModelService {
-  debugConsoleSession: IDebugConsoleSession;
+  debugConsoleSession?: IDebugConsoleSession;
   clear(): void;
   copyAll(): void;
   collapseAll(): void;
   copy(node: ITreeNode): void;
+  execute(value: string): Promise<void>;
 }

@@ -23,6 +23,7 @@ import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug
 import { DebugPreferences } from '@opensumi/ide-debug/lib/browser/debug-preferences';
 import { DebugSessionContributionRegistry } from '@opensumi/ide-debug/lib/browser/debug-session-contribution';
 import { DebugSessionManager } from '@opensumi/ide-debug/lib/browser/debug-session-manager';
+import { DebugConsoleModelService } from '@opensumi/ide-debug/lib/browser/view/console/debug-console-tree.model.service';
 import { IDebugService, IDebugServer } from '@opensumi/ide-debug/lib/common/debug-service';
 import { IDebugSessionManager, IDebugSessionOptions } from '@opensumi/ide-debug/lib/common/debug-session';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -98,7 +99,7 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly terminalService: ITerminalApiService;
 
   @Autowired(IDebugConsoleModelService)
-  protected readonly debugConsoleModelService: IDebugConsoleModelService;
+  protected readonly debugConsoleModelService: DebugConsoleModelService;
 
   @Autowired(OutputService)
   protected readonly outputService: OutputService;

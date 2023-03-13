@@ -356,15 +356,7 @@ export class FileSearchQuickCommandHandler {
 
   protected async getQueryFiles(fileQuery: string, alreadyCollected: Set<string>, token: CancellationToken) {
     const roots = await this.workspaceService.roots;
-    const rootUris: string[] = [];
-    roots.forEach((stat) => {
-      const uri = new URI(stat.uri);
-      if (uri.scheme !== Schemes.file) {
-        return;
-      }
-      this.logger.debug('file-search.contribution rootUri', uri.toString());
-      return rootUris.push(uri.toString());
-    });
+    const rootUris: string[] = roots.map((stat) => stat.uri);
     const files = await this.fileSearchService.find(
       fileQuery,
       {
