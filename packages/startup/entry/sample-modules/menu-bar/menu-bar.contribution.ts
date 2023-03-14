@@ -7,7 +7,7 @@ import { MenuBarView } from './menu-bar.view';
 @Domain(ComponentContribution)
 export class MenuBarContribution implements ComponentContribution {
   // Component key
-  static MenuBarContainer = '@opensumi/menu-bar-example';
+  static MenuBarContainer = 'menubar';
 
   registerComponent(registry: ComponentRegistry): void {
     registry.register(MenuBarContribution.MenuBarContainer, {

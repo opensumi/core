@@ -9,7 +9,7 @@ export function transformLabelWithCodicon(
   label: string,
   iconStyles: CSSProperties = {},
   transformer?: (str: string) => string | undefined,
-  renderText?: (str: string) => React.ReactNode,
+  renderText?: (str: string, index: number) => React.ReactNode,
 ) {
   const ICON_REGX = /\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)/gi;
   const ICON_WITH_ANIMATE_REGX = /\$\(([a-z.]+\/)?([a-z-]+)~([a-z]+)\)/gi;
@@ -32,7 +32,7 @@ export function transformLabelWithCodicon(
       const newStr = e.replaceAll(ICON_REGX, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
       return transformLabelWithCodicon(newStr, iconStyles, transformer);
     } else {
-      return isFunction(renderText) ? renderText(e) : <span key={`${index}-${e}`}>{e}</span>;
+      return isFunction(renderText) ? renderText(e, index) : <span key={`${index}-${e}`}>{e}</span>;
     }
   });
 }
