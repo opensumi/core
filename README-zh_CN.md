@@ -96,9 +96,7 @@ $ MY_WORKSPACE={local_path} yarn run start
 
 我们建议你通过 [issues](https://github.com/opensumi/core/issues) 或 [discussions](https://github.com/opensumi/core/discussions) 与我们进行交流。
 
-如果你希望通过即时通讯工具交流，也可以通过钉钉客户端进行扫码，群号：34355491
-
-<img width="200" src="https://img.alicdn.com/imgextra/i1/O1CN01k3gCmL1HWPjLchVv7_!!6000000000765-0-tps-200-199.jpg"/>
+如果你希望通过即时通讯工具（如微信、钉钉）交流，欢迎前往我们的 [中文社区](https://opensumi.com/zh/community) 页面获取最新二维码信息。
 
 ## 📃 协议
 
