@@ -114,7 +114,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     @Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol,
     @Optional(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService,
   ) {
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionBrowser);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
     this.listen();
     this.registerDebugContributions();

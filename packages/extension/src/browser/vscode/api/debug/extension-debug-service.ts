@@ -63,7 +63,7 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   }
 
   protected init(): void {
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionBrowser);
     this.debugSessionManager.onWillStartDebugSession((event) => this.ensureDebugActivation(event));
     this.debugSessionManager.onWillResolveDebugConfiguration((event) =>
       this.ensureDebugActivation(event, 'onDebugResolve', event.debugType),

@@ -22,6 +22,8 @@ export enum SupportLogNamespace {
   Browser = 'browser',
   // 插件进程
   ExtensionHost = 'extHost',
+  // 插件浏览器层
+  ExtensionBrowser = 'extBrowser',
   // 应用层
   App = 'app',
   // 其他未分类

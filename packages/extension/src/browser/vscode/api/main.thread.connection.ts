@@ -25,7 +25,7 @@ export class MainThreadConnection implements IMainThreadConnectionService {
 
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
-    this.logger = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+    this.logger = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionBrowser);
   }
 
   dispose() {

@@ -5,14 +5,13 @@ import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@o
 
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
 
-
 @Injectable()
 export class MainThreadExtensionLog implements IMainThreadExtensionLog {
   @Autowired(ILoggerManagerClient)
   private readonly loggerManager: ILoggerManagerClient;
 
   private get logger(): ILogServiceClient {
-    return this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+    return this.loggerManager.getLogger(SupportLogNamespace.ExtensionBrowser);
   }
 
   $getLevel() {
