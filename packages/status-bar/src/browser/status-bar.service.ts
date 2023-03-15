@@ -130,7 +130,7 @@ export class StatusBarService extends Disposable implements IStatusBarService {
     // 优先读取 storage 数据
     const hidden = this.getStorageState(id)?.hidden ?? entry.hidden;
     entry.hidden = hidden;
-    // 确保相同 id 只注册一次菜单
+    // 确保相同 id 只注册一次菜单me
     // 比如源码管理会注册多个状态栏元素，但菜单只会注册一个
     if (entry.name && this.getEntriesById(id).length === 0) {
       const toggleContextKey = new RawContextKey(`${id}:toggle`, !hidden);

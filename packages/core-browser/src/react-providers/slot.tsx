@@ -122,13 +122,15 @@ export class SlotRendererRegistry {
         <ErrorBoundary>
           {components.map((componentInfo, index: number) => {
             // 默认的只渲染一个
-            const Component = componentInfo.views[0].component!;
-            return (
-              <Component
-                {...(componentInfo.options && componentInfo.options.initialProps)}
-                key={`${Component.name}-${index}`}
-              />
-            );
+            const Component = componentInfo.views[0].component;
+            if (Component) {
+              return (
+                <Component
+                  {...(componentInfo.options && componentInfo.options.initialProps)}
+                  key={`${Component.name || Component.displayName}-${index}`}
+                />
+              );
+            }
           })}
         </ErrorBoundary>
       )

@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React from 'react';
+import React, { useCallback, memo, useMemo } from 'react';
 
 import { Button, Popover, PopoverPosition, PopoverTriggerType } from '@opensumi/ide-components';
 import { IOpenerService, toMarkdown, transformLabelWithCodicon } from '@opensumi/ide-core-browser';
@@ -22,25 +22,28 @@ interface StatusBarPopoverContent {
   contents: StatusBarHoverContent[];
 }
 
-const StatusBarPopover = React.memo((props: StatusBarPopoverContent) => {
+const StatusBarPopover = memo((props: StatusBarPopoverContent) => {
   const commandService: CommandService = useInjectable(CommandService);
   const iconService = useInjectable<IIconService>(IIconService);
   const { contents } = props;
 
-  const onClickLink = React.useCallback((command: StatusBarHoverCommand) => {
+  const onClickLink = useCallback((command?: StatusBarHoverCommand) => {
+    if (!command) {
+      return;
+    }
     commandService.executeCommand(command.id, ...(command.arguments || []));
   }, []);
 
   return (
     <div>
-      {contents.map((content) => (
-        <div key={content.title} className={styles.popover_content}>
+      {contents.map((content: StatusBarHoverContent, index: number) => (
+        <div key={`${content.title}-${index}`} className={styles.popover_content}>
           <span>
             {content.title && transformLabelWithCodicon(content.title, {}, iconService.fromString.bind(iconService))}
             {content.name && ` - ${content.name}`}
           </span>
           {content.command && (
-            <Button type='link' title={content.command.tooltip} onClick={() => onClickLink(content.command!)}>
+            <Button type='link' title={content.command.tooltip} onClick={() => onClickLink(content.command)}>
               {content.command.title}
             </Button>
           )}
@@ -50,7 +53,7 @@ const StatusBarPopover = React.memo((props: StatusBarPopoverContent) => {
   );
 });
 
-export const StatusBarItem = React.memo((props: StatusBarEntry) => {
+export const StatusBarItem = memo((props: StatusBarEntry) => {
   const {
     entryId,
     text,
@@ -70,9 +73,9 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
   const openerService = useInjectable<IOpenerService>(IOpenerService);
   const iconService = useInjectable<IIconService>(IIconService);
 
-  const disablePopover = React.useMemo(() => !tooltip && !hoverContents, [tooltip, hoverContents]);
+  const disablePopover = useMemo(() => !tooltip && !hoverContents, [tooltip, hoverContents]);
 
-  const popoverContent = React.useMemo(() => {
+  const popoverContent = useMemo(() => {
     if (hoverContents) {
       return <StatusBarPopover contents={hoverContents} />;
     }
@@ -99,6 +102,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
 
     return color;
   };
+
   return (
     <div
       id={entryId}
@@ -113,7 +117,7 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
       aria-label={ariaLabel}
     >
       <Popover
-        id={entryId!}
+        id={`${entryId}-popover`}
         content={popoverContent}
         trigger={PopoverTriggerType.hover}
         delay={200}
@@ -122,11 +126,22 @@ export const StatusBarItem = React.memo((props: StatusBarEntry) => {
       >
         <div className={styles.popover_item}>
           {iconClass && <span key={-1} className={cls(styles.icon, iconClass)}></span>}
-          {text && transformLabelWithCodicon(text, {}, iconService.fromString.bind(iconService), (text) => (
-            <span style={{ height: '22px', lineHeight: '22px' }} aria-label={ariaLabel} role={role}>
-              {replaceLocalizePlaceholder(text)}
-            </span>
-          ))}
+          {text &&
+            transformLabelWithCodicon(
+              text,
+              {},
+              iconService.fromString.bind(iconService),
+              (text: string, index: number) => (
+                <span
+                  key={`${text}-${index}`}
+                  style={{ height: '22px', lineHeight: '22px' }}
+                  aria-label={ariaLabel}
+                  role={role}
+                >
+                  {replaceLocalizePlaceholder(text)}
+                </span>
+              ),
+            )}
         </div>
       </Popover>
     </div>

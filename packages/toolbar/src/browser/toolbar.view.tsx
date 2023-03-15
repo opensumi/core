@@ -61,3 +61,5 @@ export const ToolBar = observer<Pick<React.HTMLProps<HTMLElement>, 'className'>>
     </div>
   );
 });
+
+ToolBar.displayName = 'ToolBar';

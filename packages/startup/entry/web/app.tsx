@@ -28,7 +28,7 @@ renderApp({
     ...defaultConfig,
     ...{
       [SlotLocation.top]: {
-        modules: ['@opensumi/menu-bar-example', 'toolbar'],
+        modules: ['menubar', 'toolbar'],
       },
     },
     ...{
