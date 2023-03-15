@@ -21,7 +21,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 
-import { IDebugSessionManager } from '../../../common';
+import { IDebugConsoleModelService, IDebugSessionManager } from '../../../common';
 import { LinkDetector } from '../../debug-link-detector';
 import { DebugSession } from '../../debug-session';
 import { DidChangeActiveDebugSession } from '../../debug-session-manager';
@@ -50,7 +50,7 @@ export interface IDebugConsoleModel {
 }
 
 @Injectable()
-export class DebugConsoleModelService {
+export class DebugConsoleModelService implements IDebugConsoleModelService {
   private static DEFAULT_REFRESH_DELAY = 200;
 
   @Autowired(INJECTOR_TOKEN)
@@ -164,16 +164,16 @@ export class DebugConsoleModelService {
     return this.onDidRefreshedEmitter.event;
   }
 
-  clear = () => {
+  clear() {
     // 重新初始化Console中渲染的TreeModel
     this.initTreeModel(this.manager.currentSession, true);
-  };
+  }
 
-  collapseAll = () => {
+  collapseAll() {
     this.treeModel?.root.collapsedAll();
-  };
+  }
 
-  copyAll = () => {
+  copyAll() {
     let text = '';
     if (!this.treeModel?.root || !this.treeModel.root.children) {
       return;
@@ -182,15 +182,18 @@ export class DebugConsoleModelService {
       text += this.getValidText(child as DebugConsoleNode) + '\n';
     }
     this.clipboardService.writeText(text.slice(0, -'\n'.length));
-  };
+  }
 
-  copy = (node: DebugConsoleNode) => {
+  copy(node: DebugConsoleNode) {
     if (node) {
       this.clipboardService.writeText(this.getValidText(node));
     }
-  };
+  }
 
   private getValidText(node: DebugConsoleNode) {
+    if (node.description.endsWith('\n')) {
+      return node.description.slice(0, -'\n'.length);
+    }
     return node.description;
   }
 

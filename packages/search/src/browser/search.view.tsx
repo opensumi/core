@@ -214,7 +214,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
       );
     } else {
       if (searchContent.state === SEARCH_STATE.done) {
-        <div className={styles.result_describe}>{search && localize('search.noResultsFound')}</div>;
+        return <div className={styles.result_describe}>{search && localize('search.noResultsFound')}</div>;
       }
       return null;
     }

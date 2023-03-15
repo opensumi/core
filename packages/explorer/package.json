@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-explorer",
-  "version": "2.22.7",
+  "version": "2.22.9",
   "files": [
     "lib",
     "src"
