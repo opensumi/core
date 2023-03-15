@@ -249,7 +249,8 @@ describe('workspace edit tests', () => {
         error = err;
       });
 
-    expect(FileSystemError.FileExists.is(error)).toBe(true);
+    expect(error).toBeDefined();
+    expect(FileSystemError.FileExists.is(error as any)).toBe(true);
 
     // 添加 ignoreIfExists 应该正常执行不抛出错误
     const createEdit3: IResourceFileEdit = {

@@ -53,7 +53,6 @@ Code copied from project eclipse-theia/theia
   - https://github.com/opensumi/core/blob/main/packages/core-browser/src/keyboard/keyboard-layout-service.ts
   - https://github.com/opensumi/core/blob/main/packages/core-browser/src/keyboard/keys.ts
   - https://github.com/opensumi/core/blob/main/packages/core-browser/src/utils/parse.ts
-  - https://github.com/opensumi/core/blob/main/packages/core-common/src/application-error.ts
   - https://github.com/opensumi/core/blob/main/packages/core-common/src/problem-matcher.ts
   - https://github.com/opensumi/core/blob/main/packages/core-common/src/problem-pattern.ts
   - https://github.com/opensumi/core/blob/main/packages/core-common/src/keyboard/keyboard-layout-provider.ts

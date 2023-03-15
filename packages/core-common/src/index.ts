@@ -9,7 +9,6 @@ export * from './command';
 export * from './menu';
 export * from './localize';
 export * from './types';
-export * from './application-error';
 export * from './preferences';
 export * from './storage';
 export * from './network';

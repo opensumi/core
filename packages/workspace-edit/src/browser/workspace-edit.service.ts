@@ -297,7 +297,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     } else if (!this.newResource && this.oldResource) {
       // 删除文件
       try {
-        // electron windows下moveToTrash大量文件会导致IDE卡死，如果检测到这个情况就不使用moveToTrash
+        // Electron Windows 下 moveToTrash 大量文件会导致IDE卡死，如果检测到这个情况就不使用 moveToTrash
         await workspaceFS.delete([this.oldResource], {
           useTrash: !(isWindows && this.oldResource.path.name === 'node_modules'),
         });

@@ -36,7 +36,7 @@ export interface IFileServiceClient {
    * @param uri The uri of the file.
    * @return An array of bytes or a thenable that resolves to such.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
-   * @throws [`FileIsDirectory`](#FileSystemError.FileIsDirectory) when `uri` is a directory.
+   * @throws [`FileIsADirectory`](#FileSystemError.FileIsADirectory) when `uri` is a directory.
    * @throws [`FileIsNoPermissions`](#FileSystemError.FileIsNoPermissions) when `uri` has no permissions.
    */
   resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ content: string }>;

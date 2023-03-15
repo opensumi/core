@@ -197,7 +197,7 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
         }
 
         if (error.code === 'EISDIR') {
-          throw FileSystemError.FileIsDirectory(uri.path, 'Error occurred while reading file: path is a directory.');
+          throw FileSystemError.FileIsADirectory(uri.path, 'Error occurred while reading file: path is a directory.');
         }
 
         if (error.code === 'EPERM') {
@@ -472,12 +472,12 @@ export class DiskFileSystemProvider extends RPCService<IRPCDiskFileSystemProvide
     // Different types. Files <-> Directory.
     if (targetStat && sourceStat.isDirectory !== targetStat.isDirectory) {
       if (targetStat.isDirectory) {
-        throw FileSystemError.FileIsDirectory(
+        throw FileSystemError.FileIsADirectory(
           targetStat.uri,
           `Cannot move '${sourceStat.uri}' file to an existing location.`,
         );
       }
-      throw FileSystemError.FileNotDirectory(
+      throw FileSystemError.FileNotADirectory(
         targetStat.uri,
         `Cannot move '${sourceStat.uri}' directory to an existing location.`,
       );
