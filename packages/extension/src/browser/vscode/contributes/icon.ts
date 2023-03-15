@@ -24,6 +24,7 @@ export class IconThemesContributionPoint extends VSCodeContributePoint<ThemesSch
       const themes = contributes.map((t) => ({
         ...t,
         label: this.getLocalizeFromNlsJSON(t.label, extensionId),
+        extensionId,
       }));
       const extension = this.extensionManageService.getExtensionInstanceByExtId(extensionId);
       if (extension) {

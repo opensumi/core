@@ -24,6 +24,8 @@ import {
   getThemeTypeName,
   BuiltinTheme,
   DEFAULT_THEME_ID,
+  IconThemeInfo,
+  ThemeInfo,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 
@@ -224,25 +226,64 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(THEME_TOGGLE_COMMAND, {
-      execute: async () => {
-        const themeInfos = this.themeService.getAvailableThemeInfos();
-        themeInfos.sort((a, b) => BuiltinThemeComparator[a.base] - BuiltinThemeComparator[b.base]);
-        let prevBase: BuiltinTheme;
-        const items = themeInfos.map((themeInfo) => {
-          if (prevBase !== themeInfo.base && !prevBase?.startsWith('hc')) {
-            prevBase = themeInfo.base;
+      execute: async (options: { extensionId?: string } = {}) => {
+        const { extensionId } = options;
+        const getPickItems = (extensionId?: string) => {
+          const themeInfos = this.themeService.getAvailableThemeInfos();
+          if (extensionId) {
+            const items: {
+              label: string;
+              value: string;
+              groupLabel?: string;
+            }[] = [];
+            let currentTheme: ThemeInfo | undefined;
+            for (const themeInfo of themeInfos) {
+              if (themeInfo.themeId === this.themeService.currentThemeId) {
+                currentTheme = themeInfo;
+              } else if (themeInfo.extensionId === extensionId) {
+                items.push({
+                  label: replaceLocalizePlaceholder(themeInfo.name)!,
+                  value: themeInfo.themeId,
+                });
+              }
+            }
+            if (currentTheme) {
+              items.push({
+                label: replaceLocalizePlaceholder(currentTheme.name)!,
+                value: currentTheme?.themeId,
+                groupLabel: localize('theme.current', 'Current'),
+              });
+            }
+            return {
+              items,
+              defaultSelected: 0,
+            };
+          }
+          themeInfos.sort((a, b) => BuiltinThemeComparator[a.base] - BuiltinThemeComparator[b.base]);
+          let prevBase: BuiltinTheme;
+          const items = themeInfos.map((themeInfo) => {
+            if (prevBase !== themeInfo.base && !prevBase?.startsWith('hc')) {
+              prevBase = themeInfo.base;
+              return {
+                label: replaceLocalizePlaceholder(themeInfo.name)!,
+                value: themeInfo.themeId,
+                groupLabel: localize(getThemeTypeName(prevBase)),
+              };
+            }
             return {
               label: replaceLocalizePlaceholder(themeInfo.name)!,
               value: themeInfo.themeId,
-              groupLabel: localize(getThemeTypeName(prevBase)),
             };
-          }
+          });
+          const defaultSelected = items.findIndex((opt) => opt.value === this.themeService.currentThemeId);
           return {
-            label: replaceLocalizePlaceholder(themeInfo.name)!,
-            value: themeInfo.themeId,
+            items,
+            defaultSelected,
           };
-        });
-        const defaultSelected = items.findIndex((opt) => opt.value === this.themeService.currentThemeId);
+        };
+
+        const { items, defaultSelected } = getPickItems(extensionId);
+
         const prevThemeId = this.themeService.currentThemeId;
         const themeId = await this.showPickWithPreview(
           items,
@@ -262,13 +303,52 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
       },
     });
     commands.registerCommand(ICON_THEME_TOGGLE_COMMAND, {
-      execute: async () => {
-        const themeInfos = this.iconService.getAvailableThemeInfos();
-        const items = themeInfos.map((themeInfo) => ({
-          label: themeInfo.name,
-          value: themeInfo.themeId,
-        }));
-        const defaultSelected = items.findIndex((opt) => opt.value === this.iconService.currentThemeId);
+      execute: async (options: { extensionId?: string } = {}) => {
+        const { extensionId } = options;
+        const getPickItems = (extensionId?: string) => {
+          const themeInfos = this.iconService.getAvailableThemeInfos();
+          if (extensionId) {
+            const items: {
+              label: string;
+              value: string;
+              groupLabel?: string;
+            }[] = [];
+
+            let currentTheme: IconThemeInfo | undefined;
+            for (const themeInfo of themeInfos) {
+              if (themeInfo.themeId === this.iconService.currentThemeId) {
+                currentTheme = themeInfo;
+              } else if (themeInfo.extensionId === extensionId) {
+                items.push({
+                  label: themeInfo.name,
+                  value: themeInfo.themeId,
+                });
+              }
+            }
+            if (currentTheme) {
+              items.push({
+                label: currentTheme.name,
+                value: currentTheme.themeId,
+                groupLabel: localize('theme.current', 'Current'),
+              });
+            }
+            return {
+              items,
+              defaultSelected: 0,
+            };
+          }
+          const items = themeInfos.map((themeInfo) => ({
+            label: themeInfo.name,
+            value: themeInfo.themeId,
+          }));
+          const defaultSelected = items.findIndex((opt) => opt.value === this.iconService.currentThemeId);
+          return {
+            items,
+            defaultSelected,
+          };
+        };
+
+        const { items, defaultSelected } = getPickItems(extensionId);
         const prevThemeId = this.iconService.currentThemeId;
         const themeId = await this.showPickWithPreview(
           items,
