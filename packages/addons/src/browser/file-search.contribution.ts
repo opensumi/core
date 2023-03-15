@@ -26,7 +26,6 @@ import {
   CommandRegistry,
   Command,
   CancellationTokenSource,
-  Schemes,
   CancellationToken,
   IRange,
   IReporterService,
@@ -356,7 +355,7 @@ export class FileSearchQuickCommandHandler {
 
   protected async getQueryFiles(fileQuery: string, alreadyCollected: Set<string>, token: CancellationToken) {
     const roots = await this.workspaceService.roots;
-    const rootUris: string[] = roots.map((stat) => stat.uri);
+    const rootUris: string[] = roots.map((stat) => new URI(stat.uri).codeUri.fsPath);
     const files = await this.fileSearchService.find(
       fileQuery,
       {
