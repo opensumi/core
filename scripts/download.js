@@ -1,4 +1,5 @@
 const path = require('path');
+const querystring = require('querystring');
 const rimraf = require('rimraf');
 const fs = require('fs-extra');
 const compressing = require('compressing');
@@ -58,7 +59,9 @@ const parallelRunPromise = (lazyPromises, n) => {
 
 async function downloadExtension(url, namespace, extensionName) {
   const tmpPath = path.join(os.tmpdir(), 'extension');
-  const tmpZipFile = path.join(tmpPath, path.basename(url.replace(/\?.+=/, '-')));
+  const [tempFileName, queryStr] = path.basename(url).split('?');
+  const { version = '' } = querystring.parse(queryStr);
+  const tmpZipFile = path.join(tmpPath, `${tempFileName}-${version}`);
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
