@@ -58,7 +58,7 @@ const parallelRunPromise = (lazyPromises, n) => {
 
 async function downloadExtension(url, namespace, extensionName) {
   const tmpPath = path.join(os.tmpdir(), 'extension');
-  const tmpZipFile = path.join(tmpPath, path.basename(url));
+  const tmpZipFile = path.join(tmpPath, path.basename(url.replace(/\?.+=/, '-')));
   await fs.mkdirp(tmpPath);
 
   const tmpStream = fs.createWriteStream(tmpZipFile);
