@@ -63,7 +63,6 @@ export class OutlineContribution implements MainLayoutContribution, TabBarToolba
       {
         id: OUTLINE_COMMANDS.OUTLINE_FOLLOW_CURSOR.id,
         iconClass: getIcon('follow-cursor'),
-        toogleIconClass: getIcon('follow-cursor', { fill: true }),
         label: localize('outline.follow.cursor'),
       },
       {

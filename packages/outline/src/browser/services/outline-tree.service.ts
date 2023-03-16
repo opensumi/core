@@ -130,7 +130,6 @@ export class OutlineTreeService extends Tree {
         children =
           parent.raw.children
             ?.map((symbol: INormalizedDocumentSymbol) => {
-              const cache = this.cacheOutlineNodes.get(symbol.id);
               if (symbol.children?.length) {
                 return new OutlineCompositeTreeNode(this, parent, symbol, getSymbolIcon(symbol.kind) + ' outline-icon');
               }
