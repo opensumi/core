@@ -15,6 +15,8 @@ import {
   ThrottledDelayer,
   path,
   pSeries,
+  LRUMap,
+  DisposableMap,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
@@ -72,7 +74,11 @@ export class OutlineModelService {
   private readonly mainLayoutService: IMainLayoutService;
 
   private _activeTreeModel: OutlineTreeModel;
-  private _allTreeModels: Map<string, { treeModel: OutlineTreeModel; decoration: DecorationsManager }> = new Map();
+  private _allTreeModels: LRUMap<string, { treeModel: OutlineTreeModel; decoration: DecorationsManager }> = new LRUMap(
+    100,
+    80,
+  );
+  private _treeModelDisposeMap = new DisposableMap();
   private _whenInitTreeModelReady: Promise<void>;
   private _whenActiveChangeDeferred: Deferred<void> | null;
 
@@ -156,48 +162,55 @@ export class OutlineModelService {
     return this.refreshDeferred?.promise;
   }
 
+  private setTreeModel(treeModel: OutlineTreeModel) {
+    this._activeTreeModel = treeModel;
+    this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
+  }
+
   async initTreeModelByCurrentUri(uri?: URI | null) {
     await this.outlineTreeService.whenReady;
     // 等待上一次刷新完成
     await this.refreshDeferred?.promise;
     this.outlineTreeService.currentUri = uri;
-    if (!!uri && this._allTreeModels.has(uri.toString())) {
-      const treeModelStore = this._allTreeModels.get(uri.toString());
+    if (uri && this._allTreeModels.has(uri.toString())) {
+      const treeModelStore = this._allTreeModels.get(uri.toString())!;
       // 初始化节点装饰器
-      this._activeTreeModel = treeModelStore!.treeModel;
-      this._decorations = treeModelStore!.decoration;
-      this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
+      this._decorations = treeModelStore.decoration;
+      this.setTreeModel(treeModelStore.treeModel);
     } else if (uri) {
-      // 根据是否为多工作区创建不同根节点
+      // FIXME: 根据是否为多工作区创建不同根节点
       const root = (await this.outlineTreeService.resolveChildren())[0];
       if (!root) {
         return;
       }
-      const treeModel = this.injector.get<any>(OutlineTreeModel, [root]);
+      const treeModel = this.injector.get(OutlineTreeModel, [root]);
       await treeModel.ensureReady;
-      this._activeTreeModel = treeModel;
+      this.setTreeModel(treeModel);
       // 初始化节点装饰器
       const decoration = this.initDecorations(root);
-      if (uri) {
-        this._allTreeModels.set(uri?.toString(), {
-          treeModel,
-          decoration,
-        });
-      }
+      this._allTreeModels.set(uri.toString(), {
+        treeModel,
+        decoration,
+      });
       this.disposableCollection.push(
+        this._allTreeModels.onKeyDidDelete(uri.toString(), ({ key }) => {
+          this._treeModelDisposeMap.disposeKey(key);
+        }),
+      );
+      this._treeModelDisposeMap.set(
+        uri.toString(),
         treeModel.onWillUpdate(() => {
           if (this.focusedNode) {
             // 更新树前更新下选中节点
-            const node = treeModel?.root.getTreeNodeById(this.focusedNode.id);
+            const node = treeModel.root.getTreeNodeById(this.focusedNode.id);
             this.activeNodeDecoration(node as OutlineTreeNode, false);
           } else if (this.selectedNodes.length !== 0) {
             // 仅处理一下单选情况
-            const node = treeModel?.root.getTreeNodeById(this.selectedNodes[0].id);
+            const node = treeModel.root.getTreeNodeById(this.selectedNodes[0].id);
             this.selectNodeDecoration(node as OutlineTreeNode, false);
           }
         }),
       );
-      this.onDidUpdateTreeModelEmitter.fire(treeModel);
     } else {
       this.onDidUpdateTreeModelEmitter.fire(undefined);
     }
@@ -580,5 +593,6 @@ export class OutlineModelService {
 
   dispose() {
     this.disposableCollection.dispose();
+    this._treeModelDisposeMap.dispose();
   }
 }

@@ -139,7 +139,7 @@ export const OutlineTreeView = memo(
     );
 
     if (!model) {
-      return <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>;
+      return <span className={styles.outline_empty_text}>{localize('outline.nomodel')}</span>;
     } else {
       return (
         <RecycleTree

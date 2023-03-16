@@ -775,6 +775,7 @@ export const localizationBundle = {
 
     'outline.title': '大纲',
     'outline.noinfo': '活动编辑器无法提供大纲信息',
+    'outline.nomodel': '当前没有活动的编辑器',
     'outline.collapse.all': '折叠全部',
     'outline.sort.kind': '排序依据：类别',
     'outline.sort.name': '排序依据：名称',

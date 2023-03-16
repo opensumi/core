@@ -1154,6 +1154,7 @@ export const localizationBundle = {
 
     'outline.title': 'OutLine',
     'outline.noinfo': 'There is no outline information',
+    'outline.nomodel': 'There is no active editor currently',
     'outline.collapse.all': 'Collapse All',
     'outline.sort.kind': 'Sort By SymbolKind',
     'outline.sort.name': 'Sort By SymbolName',

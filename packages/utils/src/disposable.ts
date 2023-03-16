@@ -16,7 +16,6 @@
 import { MaybePromise } from './async';
 import { Event, Emitter } from './event';
 
-// DisposableStore 是从 vscode lifecycle 中复制而来
 export class DisposableStore implements IDisposable {
   private toDispose = new Set<IDisposable>();
   private _isDisposed = false;
@@ -373,5 +372,22 @@ export class RefCountedDisposable {
       this._disposable.dispose();
     }
     return this;
+  }
+}
+
+export class DisposableMap extends Map<string, IDisposable> implements IDisposable {
+  disposeKey(key: string): void {
+    const disposable = this.get(key);
+    if (disposable) {
+      disposable.dispose();
+    }
+    this.delete(key);
+  }
+
+  dispose(): void {
+    for (const disposable of this.values()) {
+      disposable.dispose();
+    }
+    this.clear();
   }
 }
