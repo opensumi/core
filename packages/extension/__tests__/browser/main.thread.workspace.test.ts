@@ -562,4 +562,8 @@ describe('MainThreadWorkspace API Test Suite', () => {
 
     await defered.promise;
   });
+
+  it('should implement an empty handler for compatibility with the experimental API', () => {
+    expect(typeof extHostWorkspaceAPI.registerTimelineProvider).toBe('function');
+  });
 });
