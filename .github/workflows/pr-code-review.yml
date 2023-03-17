@@ -5,6 +5,7 @@ on:
 
 jobs:
   code-review:
+    if: ${{ secrets.OPENAI_API_KEY }}
     name: Code Review
     runs-on: ubuntu-latest
     steps:
