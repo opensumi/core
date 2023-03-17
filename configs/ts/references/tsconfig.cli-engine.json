@@ -1,8 +1,0 @@
-{
-  "extends": "../tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "../../../tools/cli-engine/src",
-    "outDir": "../../../tools/cli-engine/lib"
-  },
-  "include": ["../../../tools/cli-engine/src"]
-}
