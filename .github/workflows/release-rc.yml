@@ -53,6 +53,8 @@ jobs:
         run: |
           yarn install --immutable
           yarn run init
+          yarn run build:cli-engine
+
       - name: Setup .yarnrc.yml
         run: |
           yarn config set -H npmRegistryServer "https://registry.npmjs.org"
