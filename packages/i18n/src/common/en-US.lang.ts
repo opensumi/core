@@ -1153,8 +1153,8 @@ export const localizationBundle = {
     'window.reload': 'Reload Window',
 
     'outline.title': 'OutLine',
-    'outline.noinfo': 'There is no outline information',
-    'outline.nomodel': 'There is no active editor currently',
+    'outline.noinfo': 'No symbols found in document',
+    'outline.nomodel': 'There is no outline information',
     'outline.collapse.all': 'Collapse All',
     'outline.sort.kind': 'Sort By SymbolKind',
     'outline.sort.name': 'Sort By SymbolName',
