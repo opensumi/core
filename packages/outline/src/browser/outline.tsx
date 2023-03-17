@@ -12,6 +12,7 @@ import React, {
 import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-browser';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import { OUTLINE_TREE_NODE_HEIGHT, OutlineNode } from './outline-node';
@@ -21,19 +22,17 @@ import { OutlineTreeModel } from './services/outline-model';
 import { OutlineModelService } from './services/outline-model.service';
 
 export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
-  const [model, setModel] = useState<OutlineTreeModel | undefined>();
-
   const { height } = viewState;
 
   const wrapperRef: RefObject<HTMLDivElement> = createRef();
 
   const outlineModelService = useInjectable<OutlineModelService>(OutlineModelService);
+  const [model, setModel] = useState<OutlineTreeModel | undefined>(undefined);
 
   const handleTreeReady = useCallback(
     (handle: IRecycleTreeHandle) => {
       outlineModelService.handleTreeHandler({
         ...handle,
-        getModel: () => outlineModelService.treeModel,
         hasDirectFocus: () => wrapperRef.current === document.activeElement,
       });
     },
@@ -137,7 +136,9 @@ export const OutlineTreeView = memo(
       ),
       [model],
     );
-
+    // if (outlineModelService.isLoading) {
+    //   return <Progress loading={true} />;
+    // }
     if (!model) {
       return <span className={styles.outline_empty_text}>{localize('outline.nomodel')}</span>;
     } else {

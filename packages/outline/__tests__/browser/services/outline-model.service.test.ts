@@ -134,7 +134,7 @@ describe('OutlineTreeModelService', () => {
 
     await outlineTreeModelService.whenReady;
 
-    await outlineTreeModelService.treeModel.ensureReady;
+    await outlineTreeModelService.treeModel!.ensureReady;
   });
 
   afterAll(() => {
@@ -175,7 +175,7 @@ describe('OutlineTreeModelService', () => {
   });
 
   it('activeNodeDecoration method should be work', () => {
-    const node = outlineTreeModelService.treeModel.root!.children![0] as OutlineTreeNode;
+    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
     outlineTreeModelService.activeNodeDecoration(node);
     const decoration = outlineTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -183,7 +183,7 @@ describe('OutlineTreeModelService', () => {
   });
 
   it('enactiveNodeDecoration method should be work', () => {
-    const node = outlineTreeModelService.treeModel.root!.children![0] as OutlineTreeNode;
+    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
     outlineTreeModelService.activeNodeDecoration(node);
     let decoration = outlineTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -195,7 +195,7 @@ describe('OutlineTreeModelService', () => {
   });
 
   it('removeNodeDecoration method should be work', () => {
-    const node = outlineTreeModelService.treeModel.root!.children![0] as OutlineTreeNode;
+    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
     outlineTreeModelService.activeNodeDecoration(node);
     let decoration = outlineTreeModelService.decorations.getDecorations(node);
     outlineTreeModelService.removeNodeDecoration();
@@ -211,8 +211,8 @@ describe('OutlineTreeModelService', () => {
   });
 
   it('handleTreeBlur method should be work', () => {
-    const node = outlineTreeModelService.treeModel.root!.children![0] as OutlineTreeNode;
-    outlineTreeModelService.initDecorations(outlineTreeModelService.treeModel.root);
+    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
+    outlineTreeModelService.initDecorations(outlineTreeModelService.treeModel!.root);
     outlineTreeModelService.activeNodeDecoration(node);
     let decoration = outlineTreeModelService.decorations.getDecorations(node);
     expect(decoration).toBeDefined();
@@ -244,14 +244,14 @@ describe('OutlineTreeModelService', () => {
 
   it('collapseAll method should be work', async () => {
     await outlineTreeModelService.collapseAll();
-    const node = outlineTreeModelService.treeModel.root!.children![0] as OutlineTreeNode;
+    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
     expect((node as OutlineCompositeTreeNode).expanded).toBeFalsy();
   });
 
   it('location method should be work', async () => {
     const treeHandle = { ensureVisible: jest.fn() } as any;
     outlineTreeModelService.handleTreeHandler(treeHandle);
-    const node = outlineTreeModelService.treeModel.root!.children![0] as OutlineTreeNode;
+    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
     await outlineTreeModelService.location(node);
     expect(treeHandle.ensureVisible).toBeCalledTimes(1);
   });

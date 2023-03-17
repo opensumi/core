@@ -65,6 +65,9 @@ export class OutlineTreeService extends Tree {
     return this._whenReady;
   }
 
+  /**
+   * trigger when outline tree changed(include sortType, followCursor changed)
+   */
   get onDidChange(): Event<void> {
     return this.onDidChangeEmitter.event;
   }
