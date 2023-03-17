@@ -6,10 +6,15 @@ import { LifeCyclePhase } from '@opensumi/ide-core-common';
 import { VSCodeContributePoint, Contributes, LifeCycle } from '../../../common';
 import { AbstractExtInstanceManagementService } from '../../types';
 import { KaitianExtensionToolbarService } from '../main.thread.toolbar';
-import { IToolbarButtonContribution, IToolbarSelectContribution, IToolbarActionBasicContribution } from '../types';
+import {
+  IToolbarButtonContribution,
+  IToolbarSelectContribution,
+  IToolbarActionBasicContribution,
+  IToolbarDropdownButtonContribution,
+} from '../types';
 
 export interface KtToolbarSchema {
-  actions?: Array<IToolbarButtonContribution | IToolbarSelectContribution>;
+  actions?: Array<IToolbarButtonContribution | IToolbarSelectContribution | IToolbarDropdownButtonContribution>;
   groups?: Array<{
     id: string;
     preferredLocation?: string;
@@ -62,23 +67,35 @@ export class ToolbarContributionPoint extends VSCodeContributePoint<KtToolbarSch
       }
       if (contributes.actions) {
         for (const toolbarAction of contributes.actions) {
-          if (toolbarAction.type === 'button') {
-            this.addDispose(
-              this.kaitianExtToolbarService.registerToolbarButton(
-                extensionId,
-                extension.path,
-                this.toLocalized(toolbarAction, ['title'], extensionId),
-              ),
-            );
-          } else if (toolbarAction.type === 'select') {
-            this.addDispose(
-              this.kaitianExtToolbarService.registerToolbarSelect(
-                extensionId,
-                extension.path,
-                this.toLocalized(toolbarAction, ['description'], extensionId),
-              ),
-            );
-          }
+          switch (toolbarAction.type) {
+            case 'button':
+              this.addDispose(
+                this.kaitianExtToolbarService.registerToolbarButton(
+                  extensionId,
+                  extension.path,
+                  this.toLocalized(toolbarAction, ['title'], extensionId),
+                ),
+              );
+              break;
+            case 'select':
+              this.addDispose(
+                this.kaitianExtToolbarService.registerToolbarSelect(
+                  extensionId,
+                  extension.path,
+                  this.toLocalized(toolbarAction, ['description'], extensionId),
+                ),
+              );
+              break;
+            case 'dropdownButton':
+              this.addDispose(
+                this.kaitianExtToolbarService.registerToolbarDropdownButton(
+                  extensionId,
+                  extension.path,
+                  this.toLocalized(toolbarAction, ['description'], extensionId),
+                ),
+              );
+              break;
+            }
         }
       }
     }
