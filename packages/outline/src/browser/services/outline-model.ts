@@ -11,7 +11,7 @@ export class OutlineTreeModel extends TreeModel {
   private flushDispatchChangeDelayer = new ThrottledDelayer<void>(OutlineTreeModel.DEFAULT_FLUSH_DELAY);
   private onWillUpdateEmitter: Emitter<void> = new Emitter();
 
-  constructor(root: OutlineCompositeTreeNode) {
+  constructor(@Optional() root: OutlineCompositeTreeNode) {
     super();
     this.init(root);
   }
