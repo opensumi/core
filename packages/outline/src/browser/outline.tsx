@@ -94,8 +94,21 @@ export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewS
     };
   }, [wrapperRef.current]);
 
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const disposable1 = outlineModelService.onLoadingStateChange((current) => {
+      setLoading((previous) => (previous !== current ? current : previous));
+    });
+
+    return () => {
+      disposable1.dispose();
+    };
+  }, [setLoading]);
+
   return (
     <div className={styles.outline_container} tabIndex={-1} ref={wrapperRef} onClick={handleOuterClick}>
+      <Progress loading={loading} />
       <OutlineTreeView
         height={height}
         model={model}
@@ -136,9 +149,7 @@ export const OutlineTreeView = memo(
       ),
       [model],
     );
-    // if (outlineModelService.isLoading) {
-    //   return <Progress loading={true} />;
-    // }
+
     if (!model) {
       return <span className={styles.outline_empty_text}>{localize('outline.nomodel')}</span>;
     } else {

@@ -104,6 +104,7 @@ export class OutlineModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
+  private onLoadingStateChangedEmitter: Emitter<boolean> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<OutlineTreeModel | undefined> = new Emitter();
 
   private _ignoreFollowCursorUpdateEventTimer = 0;
@@ -114,10 +115,6 @@ export class OutlineModelService {
     this.initTreeModelDelayer = new ThrottledDelayer(OutlineModelService.DEFAULT_INIT_TREE_MODEL_DELAY);
     this.refreshDelayer = new ThrottledDelayer(OutlineModelService.DEFAULT_REFRESH_DELAY);
     this._whenReady = this.initTreeModel();
-  }
-  private _isLoading = false;
-  get isLoading() {
-    return this._isLoading;
   }
 
   get whenReady() {
@@ -148,7 +145,9 @@ export class OutlineModelService {
   get selectedNodes() {
     return this._selectedNodes;
   }
-
+  get onLoadingStateChange(): Event<boolean> {
+    return this.onLoadingStateChangedEmitter.event;
+  }
   get onDidRefreshed(): Event<void> {
     return this.onDidRefreshedEmitter.event;
   }
@@ -215,6 +214,8 @@ export class OutlineModelService {
   }
 
   async initTreeModelByCurrentUri(uri?: URI | null) {
+    this.onLoadingStateChangedEmitter.fire(true);
+
     await this.outlineTreeService.whenReady;
     // 等待上一次刷新完成
     await this.refreshDeferred?.promise;
@@ -225,7 +226,12 @@ export class OutlineModelService {
     }
 
     this.outlineTreeService.currentUri = uri;
-    this.doInitTreeModel(uri).then((model) => this.setTreeModel(model));
+    this.doInitTreeModel(uri).then((model) => {
+      this.onDidRefreshedEmitter.fire();
+      this.onLoadingStateChangedEmitter.fire(false);
+
+      this.setTreeModel(model);
+    });
   }
 
   async initTreeModel() {
@@ -249,6 +255,7 @@ export class OutlineModelService {
         if (!this.initTreeModelDelayer.isTriggered()) {
           this.initTreeModelDelayer.cancel();
         }
+        this.onLoadingStateChangedEmitter.fire(true);
         this.initTreeModelDelayer.trigger(async () => {
           await this._whenInitTreeModelReady;
           // 初始化时如果存在还未刷新的执行逻辑时，需要进行清理
@@ -513,7 +520,8 @@ export class OutlineModelService {
    * 刷新指定下的所有子节点
    */
   async refresh() {
-    this._isLoading = true;
+    this.onLoadingStateChangedEmitter.fire(true);
+
     await this.whenInitTreeModelReady;
     await this.whenRefreshReady;
 
@@ -530,37 +538,38 @@ export class OutlineModelService {
       this.refreshDelayer.cancel();
     }
 
-    return this.refreshDelayer
-      .trigger(async () => {
-        const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
-        if (!handler || !handler.isVisible || handler.isCollapsed(OUTLINE_VIEW_ID)) {
-          if (this.refreshDeferred) {
-            this.refreshDeferred.resolve();
-            this.refreshDeferred = null;
-          }
-          return;
+    this.onLoadingStateChangedEmitter.fire(true);
+
+    return this.refreshDelayer.trigger(async () => {
+      const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
+      if (!handler || !handler.isVisible || handler.isCollapsed(OUTLINE_VIEW_ID)) {
+        if (this.refreshDeferred) {
+          this.refreshDeferred.resolve();
+          this.refreshDeferred = null;
         }
-        if (!this.refreshDeferred) {
-          this.refreshDeferred = new Deferred<void>();
-        }
-        this.outlineTreeService.currentUri = this.editorService?.currentEditor?.currentUri;
-        if (
-          node.currentUri &&
-          this.outlineTreeService.currentUri &&
-          this.outlineTreeService.currentUri.isEqual(node.currentUri)
-        ) {
-          // 刷新前需要更新诊断信息数据
-          this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri);
-          // 因为Outline模块的节点是自展开的，不需要遍历
-          await node.refresh();
-          this.onDidRefreshedEmitter.fire();
-        }
-        this.refreshDeferred?.resolve();
-        this.refreshDeferred = null;
-      })
-      .then(() => {
-        this._isLoading = false;
-      });
+        this.onDidRefreshedEmitter.fire();
+        this.onLoadingStateChangedEmitter.fire(false);
+        return;
+      }
+      if (!this.refreshDeferred) {
+        this.refreshDeferred = new Deferred<void>();
+      }
+      this.outlineTreeService.currentUri = this.editorService?.currentEditor?.currentUri;
+      if (
+        node.currentUri &&
+        this.outlineTreeService.currentUri &&
+        this.outlineTreeService.currentUri.isEqual(node.currentUri)
+      ) {
+        // 刷新前需要更新诊断信息数据
+        this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri);
+        // 因为Outline模块的节点是自展开的，不需要遍历
+        await node.refresh();
+        this.onDidRefreshedEmitter.fire();
+      }
+      this.refreshDeferred?.resolve();
+      this.refreshDeferred = null;
+      this.onLoadingStateChangedEmitter.fire(false);
+    });
   }
 
   public flushEventQueue = () => {
