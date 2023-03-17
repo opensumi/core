@@ -388,12 +388,12 @@ export class DebugSession implements IDebugSession {
 
   protected async configure(): Promise<void> {
     await this.initBreakpoints();
-    // 更新exceptionBreakpoint配置
+    // 更新 exceptionBreakpoint 配置
     this.breakpointManager.setExceptionBreakpoints(this.capabilities.exceptionBreakpointFilters || []);
-    if (this.capabilities.supportsConfigurationDoneRequest) {
-      await this.sendRequest('configurationDone', {});
-    }
     this.initialized = true;
+    if (this.capabilities.supportsConfigurationDoneRequest) {
+      this.sendRequest('configurationDone', {});
+    }
     if (!this.supportsThreadIdCorrespond) {
       await this.updateThreads(undefined);
     }
