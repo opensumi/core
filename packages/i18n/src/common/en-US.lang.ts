@@ -14,6 +14,7 @@ export const localizationBundle = {
     'common.yes': 'Yes',
     'common.no': 'No',
     editTtile: 'Edit',
+    'common.loading': 'Loading...',
 
     'tree.filter.placeholder': 'Enter a keyword or path to filter',
 

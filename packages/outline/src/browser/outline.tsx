@@ -1,3 +1,4 @@
+import debounce from 'lodash/debounce';
 import React, {
   PropsWithChildren,
   useCallback,
@@ -94,22 +95,32 @@ export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewS
     };
   }, [wrapperRef.current]);
 
-  const [loading, setLoading] = useState(false);
+  const [loadingState, setLoadingState] = React.useState(false);
+  const loading = React.useMemo(() => loadingState, [loadingState]);
 
   useEffect(() => {
-    const disposable1 = outlineModelService.onLoadingStateChange((current) => {
-      setLoading((previous) => (previous !== current ? current : previous));
-    });
+    const disposable1 = outlineModelService.onLoadingStateChange(
+      debounce(
+        (current) => {
+          setLoadingState((previous) => (previous !== current ? current : previous));
+        },
+        16 * 5,
+        {
+          leading: true,
+        },
+      ),
+    );
 
     return () => {
       disposable1.dispose();
     };
-  }, [setLoading]);
+  }, [setLoadingState]);
 
   return (
     <div className={styles.outline_container} tabIndex={-1} ref={wrapperRef} onClick={handleOuterClick}>
       <Progress loading={loading} />
       <OutlineTreeView
+        loading={loading}
         height={height}
         model={model}
         onItemClick={handleItemClicked}
@@ -122,6 +133,7 @@ export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewS
 
 interface IOutlineTreeViewProps {
   height: number;
+  loading: boolean;
   model?: OutlineTreeModel;
   onDidTreeReady(handle: IRecycleTreeHandle): void;
   onItemClick(ev: MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType): void;
@@ -129,7 +141,7 @@ interface IOutlineTreeViewProps {
 }
 
 export const OutlineTreeView = memo(
-  ({ height, model, onItemClick, onTwistierClick, onDidTreeReady }: IOutlineTreeViewProps) => {
+  ({ height, model, onItemClick, onTwistierClick, onDidTreeReady, loading }: IOutlineTreeViewProps) => {
     const outlineModelService = useInjectable<OutlineModelService>(OutlineModelService);
     const { decorationService, commandService } = outlineModelService;
 
@@ -151,7 +163,11 @@ export const OutlineTreeView = memo(
     );
 
     if (!model) {
-      return <span className={styles.outline_empty_text}>{localize('outline.nomodel')}</span>;
+      return (
+        <span className={styles.outline_empty_text}>
+          {loading ? localize('common.loading') : localize('outline.nomodel')}
+        </span>
+      );
     } else {
       return (
         <RecycleTree

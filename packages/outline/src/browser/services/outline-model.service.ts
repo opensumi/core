@@ -214,8 +214,6 @@ export class OutlineModelService {
   }
 
   async initTreeModelByCurrentUri(uri?: URI | null) {
-    this.onLoadingStateChangedEmitter.fire(true);
-
     await this.outlineTreeService.whenReady;
     // 等待上一次刷新完成
     await this.refreshDeferred?.promise;
@@ -228,7 +226,6 @@ export class OutlineModelService {
     this.outlineTreeService.currentUri = uri;
     this.doInitTreeModel(uri).then((model) => {
       this.onDidRefreshedEmitter.fire();
-      this.onLoadingStateChangedEmitter.fire(false);
 
       this.setTreeModel(model);
     });
@@ -264,6 +261,7 @@ export class OutlineModelService {
           }
           const uri = this.editorService.currentEditor?.currentUri;
           this._whenInitTreeModelReady = this.initTreeModelByCurrentUri(uri);
+          this.onLoadingStateChangedEmitter.fire(false);
         });
       }),
     );
@@ -531,14 +529,13 @@ export class OutlineModelService {
       // 1. 初次加载时可能还没有初始化Tree，主要原因在于没办法在outline加载时准确把握拿到currentEditor的时机
       // 2. 当前没有激活的URI时，需要情况当前的Tree
       this._whenInitTreeModelReady = this.initTreeModelByCurrentUri(this.editorService?.currentEditor?.currentUri);
+      this.onLoadingStateChangedEmitter.fire(false);
       return;
     }
 
     if (!this.refreshDelayer.isTriggered()) {
       this.refreshDelayer.cancel();
     }
-
-    this.onLoadingStateChangedEmitter.fire(true);
 
     return this.refreshDelayer.trigger(async () => {
       const handler = this.mainLayoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
