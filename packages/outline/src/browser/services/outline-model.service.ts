@@ -169,7 +169,7 @@ export class OutlineModelService {
     this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
   }
 
-  private async doInitTreeModel(uri?: URI | null) {
+  private async doInitTreeModelByCurrentUri(uri?: URI | null) {
     let treeModel: OutlineTreeModel | undefined;
     if (uri) {
       // FIXME: 根据是否为多工作区创建不同根节点
@@ -210,6 +210,7 @@ export class OutlineModelService {
         }),
       );
     }
+    this.setTreeModel(treeModel);
     return treeModel;
   }
 
@@ -217,18 +218,16 @@ export class OutlineModelService {
     await this.outlineTreeService.whenReady;
     // 等待上一次刷新完成
     await this.refreshDeferred?.promise;
+
+    this.outlineTreeService.currentUri = uri;
+
     if (uri && this._allTreeModels.has(uri.toString())) {
       const treeModelStore = this._allTreeModels.get(uri.toString())!;
       this._decorations = treeModelStore.decoration;
       this.setTreeModel(treeModelStore.treeModel);
+    } else {
+      await this.doInitTreeModelByCurrentUri(uri);
     }
-
-    this.outlineTreeService.currentUri = uri;
-    this.doInitTreeModel(uri).then((model) => {
-      this.onDidRefreshedEmitter.fire();
-
-      this.setTreeModel(model);
-    });
   }
 
   async initTreeModel() {
@@ -544,7 +543,6 @@ export class OutlineModelService {
           this.refreshDeferred.resolve();
           this.refreshDeferred = null;
         }
-        this.onDidRefreshedEmitter.fire();
         this.onLoadingStateChangedEmitter.fire(false);
         return;
       }

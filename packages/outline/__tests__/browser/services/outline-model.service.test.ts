@@ -64,6 +64,7 @@ describe('OutlineTreeModelService', () => {
     onDidActiveChange: jest.fn(() => Disposable.create(() => {})),
     onDidSelectionChange: jest.fn(() => Disposable.create(() => {})),
     onDidChange: jest.fn(() => Disposable.create(() => {})),
+    onDidViewCollapseChange: jest.fn(() => Disposable.create(() => {})),
   };
 
   const mockWorkbenchEditorService = {
