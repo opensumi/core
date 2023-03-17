@@ -1,13 +1,6 @@
 import { Injectable, Optional, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import {
-  DisposableCollection,
-  Uri,
-  ILoggerManagerClient,
-  ILogServiceClient,
-  SupportLogNamespace,
-  URI,
-} from '@opensumi/ide-core-browser';
+import { DisposableCollection, Uri, URI, ILogger } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import {
   DebuggerDescription,
@@ -91,9 +84,8 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(DebugSessionContributionRegistry)
   protected readonly sessionContributionRegistry: ExtensionDebugSessionContributionRegistry;
 
-  @Autowired(ILoggerManagerClient)
-  protected readonly loggerManager: ILoggerManagerClient;
-  protected readonly logger: ILogServiceClient;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(ITerminalApiService)
   protected readonly terminalService: ITerminalApiService;
@@ -114,7 +106,6 @@ export class MainThreadDebug implements IMainThreadDebug {
     @Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol,
     @Optional(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService,
   ) {
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
     this.listen();
     this.registerDebugContributions();

@@ -1,19 +1,13 @@
 import { Injectable, Injector, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { LogLevel } from '@opensumi/ide-core-common';
-import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@opensumi/ide-logs/lib/browser';
+import { ILogger, LogLevel } from '@opensumi/ide-core-common';
 
 import { IMainThreadExtensionLog, MainThreadExtensionLogIdentifier } from '../../../common/extension-log';
 
-
 @Injectable()
 export class MainThreadExtensionLog implements IMainThreadExtensionLog {
-  @Autowired(ILoggerManagerClient)
-  private readonly loggerManager: ILoggerManagerClient;
-
-  private get logger(): ILogServiceClient {
-    return this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
-  }
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   $getLevel() {
     return this.logger.getLevel();

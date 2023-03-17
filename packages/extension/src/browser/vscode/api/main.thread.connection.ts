@@ -1,7 +1,7 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, Deferred } from '@opensumi/ide-core-browser';
-import { Disposable, DisposableCollection } from '@opensumi/ide-core-common';
+import { Deferred } from '@opensumi/ide-core-browser';
+import { Disposable, DisposableCollection, ILogger } from '@opensumi/ide-core-common';
 
 import {
   IMainThreadConnectionService,
@@ -19,13 +19,11 @@ export class MainThreadConnection implements IMainThreadConnectionService {
   private connectionsReady = new Map<string, Deferred<void>>();
   private readonly toDispose = new DisposableCollection();
 
-  @Autowired(ILoggerManagerClient)
-  protected readonly LoggerManager: ILoggerManagerClient;
-  protected readonly logger: ILogServiceClient;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
-    this.logger = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
   }
 
   dispose() {
