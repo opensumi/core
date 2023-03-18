@@ -59,6 +59,11 @@ export class BreakpointManager extends MarkerManager<IDebugBreakpoint> {
     return Array.from(this._affected.values());
   }
 
+  protected whenReadyDeferred: Deferred<void> = new Deferred();
+  get whenReady() {
+    return this.whenReadyDeferred.promise;
+  }
+
   protected breakpointsDeffered: Deferred<void> | null = null;
 
   protected readonly onDidChangeBreakpointsEmitter = new Emitter<BreakpointsChangeEvent>();
@@ -266,6 +271,7 @@ export class BreakpointManager extends MarkerManager<IDebugBreakpoint> {
     this.defaultExceptionFilter.forEach((item) => {
       this.exceptionFilterValue![item.filter] = !!item.default;
     });
+    this.whenReadyDeferred.resolve();
   }
 
   async save(): Promise<void> {

@@ -6,11 +6,11 @@ import {
   IJSONSchema,
   IJSONSchemaSnippet,
   WaitUntilEvent,
+  ILogger,
 } from '@opensumi/ide-core-browser';
 import { DebugServer, DebuggerDescription, IDebugSessionManager, IDebugSessionDTO } from '@opensumi/ide-debug';
 import { DebugConfigurationManager } from '@opensumi/ide-debug/lib/browser/debug-configuration-manager';
 import { DebugConfiguration } from '@opensumi/ide-debug/lib/common/debug-configuration';
-import { ILoggerManagerClient, SupportLogNamespace, ILogServiceClient } from '@opensumi/ide-logs/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 
 import { DebugActivationEvent } from '../../../../common/vscode';
@@ -43,9 +43,8 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
-  @Autowired(ILoggerManagerClient)
-  protected readonly loggerManager: ILoggerManagerClient;
-  protected logger: ILogServiceClient;
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(IDebugSessionManager)
   protected readonly debugSessionManager: IDebugSessionManager;
@@ -63,7 +62,6 @@ export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapter
   }
 
   protected init(): void {
-    this.logger = this.loggerManager.getLogger(SupportLogNamespace.ExtensionHost);
     this.debugSessionManager.onWillStartDebugSession((event) => this.ensureDebugActivation(event));
     this.debugSessionManager.onWillResolveDebugConfiguration((event) =>
       this.ensureDebugActivation(event, 'onDebugResolve', event.debugType),

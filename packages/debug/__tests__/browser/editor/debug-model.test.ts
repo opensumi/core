@@ -53,6 +53,7 @@ describe('Debug Model', () => {
     };
 
     mockBreakpointManager = {
+      whenReady: Promise.resolve(),
       onDidChange: jest.fn(() => Disposable.create(() => {})),
       delBreakpoint: jest.fn(() => Disposable.create(() => {})),
       addBreakpoint: jest.fn(() => Disposable.create(() => {})),
@@ -155,16 +156,16 @@ describe('Debug Model', () => {
     expect(mockEditor.deltaDecorations).toBeCalledTimes(0);
   });
 
-  it('renderBreakpoints should be work', () => {
+  it('renderBreakpoints should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
-    debugModel.renderBreakpoints();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(2);
+    await debugModel.renderBreakpoints();
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
   });
 
-  it('render should be work', () => {
+  it('render should be work', async () => {
     mockEditor.deltaDecorations.mockClear();
-    debugModel.render();
-    expect(mockEditor.deltaDecorations).toBeCalledTimes(2);
+    await debugModel.render();
+    expect(mockEditor.deltaDecorations).toBeCalledTimes(3);
   });
 
   it('toggleBreakpoint should be work', () => {

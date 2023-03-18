@@ -8,13 +8,7 @@ import { useInjectable, ViewState, CommandService, EDITOR_COMMANDS, URI, getIcon
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
-import {
-  DebugBreakpoint,
-  DebugExceptionBreakpoint,
-  isDebugBreakpoint,
-  isRuntimeBreakpoint,
-  getStatus,
-} from '../../breakpoint';
+import { DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 
 import styles from './debug-breakpoints.module.less';

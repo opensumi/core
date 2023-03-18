@@ -1,3 +1,4 @@
+import type { DropDownProps } from '@opensumi/ide-components';
 import { IToolbarActionBtnStyle, IToolbarSelectStyle, IToolbarPopoverStyle } from '@opensumi/ide-core-browser';
 
 export interface IToolbarActionBasicContribution {
@@ -50,4 +51,14 @@ export interface IToolbarSelectContribution<T = any> extends IToolbarActionBasic
     [key: string]: IToolbarSelectStyle;
   };
   defaultState?: string;
+}
+
+export interface IToolbarDropdownButtonContribution<T = any> extends IToolbarActionBasicContribution {
+  type: 'dropdownButton';
+  command?: string;
+  trigger?: DropDownProps['trigger'];
+  options: {
+    label?: string;
+    value: T;
+  }[];
 }
