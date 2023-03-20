@@ -52,7 +52,7 @@ export async function renderApp(opts: IClientAppOpts) {
         window.location.reload();
       };
 
-      const targetDom = document.getElementById('main')!;
+      const targetDom = document.getElementById('fragement')!;
       await app.start((app) => {
         const MyApp = (
           <div id='custom-wrapper' style={{ height: '100%', width: '100%' }}>

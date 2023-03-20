@@ -15,7 +15,7 @@ import '@opensumi/ide-core-browser/lib/style/index.less';
 import './styles.less';
 
 // 视图和slot插槽的对应关系
-const layoutConfig = {
+export const layoutConfig = {
   [SlotLocation.top]: {
     modules: ['@opensumi/ide-menu-bar'],
   },
