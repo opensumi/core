@@ -115,7 +115,6 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
       },
     );
 
-    // 图片文件
     editorComponentRegistry.registerEditorComponentResolver(
       (scheme: string) => (scheme === Schemes.file || this.fileServiceClient.handlesScheme(scheme) ? 10 : -1),
       async (resource: IResource<any>, results: IEditorOpenType[]) => {
@@ -138,6 +137,7 @@ export class FileSystemEditorComponentContribution implements BrowserEditorContr
         if (type === 'text') {
           const { metadata, uri } = resource as { uri: URI; metadata: any };
           const stat = await this.fileServiceClient.getFileStat(uri.toString());
+          await this.preference.ready;
           const maxSize = this.preference.get<number>('editor.largeFile') || 4 * 1024 * 1024 * 1024;
 
           if (stat && (stat.size || 0) > maxSize && !(metadata || {}).noPrevent) {
