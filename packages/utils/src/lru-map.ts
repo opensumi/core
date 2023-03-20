@@ -14,6 +14,8 @@ export class LRUMap<K, V> extends Map<K, V> {
   private _onDidDelete = new Emitter<{ key: K; value: V }>();
 
   public readonly onDidDelete: Event<{ key: K; value: V }> = this._onDidDelete.event;
+  public readonly onKeyDidDelete = (key: K, ...args: Parameters<Event<{ key: K; value: V }>>) =>
+    Event.filter(this.onDidDelete, (e) => e.key === key)(...args);
 
   private head: ILRULinkListNode<K> = { key: undefined, prev: undefined, next: undefined };
 
@@ -23,8 +25,8 @@ export class LRUMap<K, V> extends Map<K, V> {
 
   constructor(private hardLimit: number, private softLimit: number) {
     super();
-    if (hardLimit <= softLimit) {
-      throw new Error('hardLimit 必须比 softLimit大');
+    if (hardLimit < softLimit) {
+      throw new Error('hardLimit must be greater equal than softLimit.');
     }
     this.head.next = this.tail;
     this.tail.prev = this.head;

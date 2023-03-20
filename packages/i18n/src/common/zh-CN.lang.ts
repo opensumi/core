@@ -14,6 +14,7 @@ export const localizationBundle = {
     'common.no': '否',
     extension: '插件',
     editTtile: '编辑',
+    'common.loading': '加载中...',
 
     'tree.filter.placeholder': '输入关键字或路径筛选',
 
@@ -777,7 +778,8 @@ export const localizationBundle = {
     'editor.compareAndSave.title': '{0} (在磁盘上) <=> {1} (编辑中) ',
 
     'outline.title': '大纲',
-    'outline.noinfo': '活动编辑器无法提供大纲信息',
+    'outline.noinfo': '在文档中没有找到符号',
+    'outline.nomodel': '活动的编辑器无法提供大纲',
     'outline.collapse.all': '折叠全部',
     'outline.sort.kind': '排序依据：类别',
     'outline.sort.name': '排序依据：名称',

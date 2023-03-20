@@ -5,9 +5,10 @@ import { runTest } from './jest/runTest';
 const modulePath: string | undefined = argv.module as any;
 
 if (!modulePath) {
-  throw new Error(
-    'The module name must be provided using the `--module` parameter, eg: yarn run test:module --module=editor',
+  console.error(
+    'The module name must be provided using the `--module={folder}` parameter, eg: yarn run test:module --module=editor',
   );
+  process.exit(1);
 }
 
 runTest(modulePath, argv.project as string).then((v) => {

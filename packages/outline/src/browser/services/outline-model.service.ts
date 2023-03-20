@@ -15,6 +15,9 @@ import {
   ThrottledDelayer,
   path,
   pSeries,
+  LRUMap,
+  DisposableMap,
+  ILogger,
 } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import {
@@ -47,6 +50,9 @@ export class OutlineModelService {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  @Autowired(ILogger)
+  private readonly logger: ILogger;
+
   @Autowired(OutlineTreeService)
   private readonly outlineTreeService: OutlineTreeService;
 
@@ -71,10 +77,13 @@ export class OutlineModelService {
   @Autowired(IMainLayoutService)
   private readonly mainLayoutService: IMainLayoutService;
 
-  private _activeTreeModel: OutlineTreeModel;
-  private _allTreeModels: Map<string, { treeModel: OutlineTreeModel; decoration: DecorationsManager }> = new Map();
+  private _activeTreeModel: OutlineTreeModel | undefined;
+  private _allTreeModels: LRUMap<string, { treeModel: OutlineTreeModel; decoration: DecorationsManager }> = new LRUMap(
+    100,
+    80,
+  );
+  private _treeModelDisposeMap = new DisposableMap();
   private _whenInitTreeModelReady: Promise<void>;
-  private _whenActiveChangeDeferred: Deferred<void> | null;
 
   private _whenReady: Promise<void>;
 
@@ -95,6 +104,7 @@ export class OutlineModelService {
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   private onDidRefreshedEmitter: Emitter<void> = new Emitter();
+  private onLoadingStateChangedEmitter: Emitter<boolean> = new Emitter();
   private onDidUpdateTreeModelEmitter: Emitter<OutlineTreeModel | undefined> = new Emitter();
 
   private _ignoreFollowCursorUpdateEventTimer = 0;
@@ -135,17 +145,15 @@ export class OutlineModelService {
   get selectedNodes() {
     return this._selectedNodes;
   }
-
+  get onLoadingStateChange(): Event<boolean> {
+    return this.onLoadingStateChangedEmitter.event;
+  }
   get onDidRefreshed(): Event<void> {
     return this.onDidRefreshedEmitter.event;
   }
 
   get onDidUpdateTreeModel(): Event<OutlineTreeModel | undefined> {
     return this.onDidUpdateTreeModelEmitter.event;
-  }
-
-  get whenActiveChangeReady() {
-    return this._whenActiveChangeDeferred?.promise;
   }
 
   get whenInitTreeModelReady() {
@@ -156,50 +164,69 @@ export class OutlineModelService {
     return this.refreshDeferred?.promise;
   }
 
-  async initTreeModelByCurrentUri(uri?: URI | null) {
-    await this.outlineTreeService.whenReady;
-    // 等待上一次刷新完成
-    await this.refreshDeferred?.promise;
-    this.outlineTreeService.currentUri = uri;
-    if (!!uri && this._allTreeModels.has(uri.toString())) {
-      const treeModelStore = this._allTreeModels.get(uri.toString());
-      // 初始化节点装饰器
-      this._activeTreeModel = treeModelStore!.treeModel;
-      this._decorations = treeModelStore!.decoration;
-      this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
-    } else if (uri) {
-      // 根据是否为多工作区创建不同根节点
+  private setTreeModel(treeModel?: OutlineTreeModel) {
+    this._activeTreeModel = treeModel;
+    this.onDidUpdateTreeModelEmitter.fire(this._activeTreeModel);
+  }
+
+  private async doInitTreeModelByCurrentUri(uri?: URI | null) {
+    let treeModel: OutlineTreeModel | undefined;
+    if (uri) {
+      // FIXME: 根据是否为多工作区创建不同根节点
       const root = (await this.outlineTreeService.resolveChildren())[0];
       if (!root) {
+        this.logger.error(`init outline tree model error: cannot resolve ${uri} children`);
         return;
       }
-      const treeModel = this.injector.get<any>(OutlineTreeModel, [root]);
+      treeModel = this.injector.get(OutlineTreeModel, [root]);
       await treeModel.ensureReady;
-      this._activeTreeModel = treeModel;
       // 初始化节点装饰器
       const decoration = this.initDecorations(root);
-      if (uri) {
-        this._allTreeModels.set(uri?.toString(), {
-          treeModel,
-          decoration,
-        });
+      if (this._allTreeModels.has(uri.toString())) {
+        this._allTreeModels.delete(uri.toString());
       }
+
+      this._allTreeModels.set(uri.toString(), {
+        treeModel,
+        decoration,
+      });
       this.disposableCollection.push(
+        this._allTreeModels.onKeyDidDelete(uri.toString(), ({ key }) => {
+          this._treeModelDisposeMap.disposeKey(key);
+        }),
+      );
+      this._treeModelDisposeMap.set(
+        uri.toString(),
         treeModel.onWillUpdate(() => {
           if (this.focusedNode) {
             // 更新树前更新下选中节点
-            const node = treeModel?.root.getTreeNodeById(this.focusedNode.id);
+            const node = treeModel!.root.getTreeNodeById(this.focusedNode.id);
             this.activeNodeDecoration(node as OutlineTreeNode, false);
           } else if (this.selectedNodes.length !== 0) {
             // 仅处理一下单选情况
-            const node = treeModel?.root.getTreeNodeById(this.selectedNodes[0].id);
+            const node = treeModel!.root.getTreeNodeById(this.selectedNodes[0].id);
             this.selectNodeDecoration(node as OutlineTreeNode, false);
           }
         }),
       );
-      this.onDidUpdateTreeModelEmitter.fire(treeModel);
+    }
+    this.setTreeModel(treeModel);
+    return treeModel;
+  }
+
+  async initTreeModelByCurrentUri(uri?: URI | null) {
+    await this.outlineTreeService.whenReady;
+    // 等待上一次刷新完成
+    await this.refreshDeferred?.promise;
+
+    this.outlineTreeService.currentUri = uri;
+
+    if (uri && this._allTreeModels.has(uri.toString())) {
+      const treeModelStore = this._allTreeModels.get(uri.toString())!;
+      this._decorations = treeModelStore.decoration;
+      this.setTreeModel(treeModelStore.treeModel);
     } else {
-      this.onDidUpdateTreeModelEmitter.fire(undefined);
+      await this.doInitTreeModelByCurrentUri(uri);
     }
   }
 
@@ -221,12 +248,10 @@ export class OutlineModelService {
 
     this.disposableCollection.push(
       this.outlineEventService.onDidActiveChange(async () => {
-        if (!this._whenActiveChangeDeferred) {
-          this._whenActiveChangeDeferred = new Deferred<void>();
-        }
         if (!this.initTreeModelDelayer.isTriggered()) {
           this.initTreeModelDelayer.cancel();
         }
+        this.onLoadingStateChangedEmitter.fire(true);
         this.initTreeModelDelayer.trigger(async () => {
           await this._whenInitTreeModelReady;
           // 初始化时如果存在还未刷新的执行逻辑时，需要进行清理
@@ -235,8 +260,7 @@ export class OutlineModelService {
           }
           const uri = this.editorService.currentEditor?.currentUri;
           this._whenInitTreeModelReady = this.initTreeModelByCurrentUri(uri);
-          this._whenActiveChangeDeferred?.resolve();
-          this._whenActiveChangeDeferred = null;
+          this.onLoadingStateChangedEmitter.fire(false);
         });
       }),
     );
@@ -252,12 +276,21 @@ export class OutlineModelService {
     );
 
     this.disposableCollection.push(
-      this.outlineEventService.onDidChange((url: URI | null) => {
-        this.outlineTreeService.currentUri = this.editorService.currentEditor?.currentUri;
-        this.refresh();
+      this.outlineEventService.onDidChange((uri: URI | null) => {
+        if (uri === this.editorService.currentEditor?.currentUri) {
+          // 因为刷新 children 那个函数不能传 currentUri，这里利用一下副作用
+          this.outlineTreeService.currentUri = this.editorService.currentEditor?.currentUri;
+          this.refresh();
+        }
       }),
     );
-
+    this.disposableCollection.push(
+      this.outlineEventService.onDidViewCollapseChange((collapsed) => {
+        if (!collapsed) {
+          this.refresh();
+        }
+      }),
+    );
     this.disposableCollection.push(
       this.outlineTreeService.onDidChange(() => {
         this.refresh();
@@ -484,16 +517,18 @@ export class OutlineModelService {
    * 刷新指定下的所有子节点
    */
   async refresh() {
-    await this.whenActiveChangeReady;
+    this.onLoadingStateChangedEmitter.fire(true);
+
     await this.whenInitTreeModelReady;
     await this.whenRefreshReady;
 
     const node: OutlineRoot = this.treeModel?.root as OutlineRoot;
 
-    if ((!node && this.editorService?.currentEditor?.currentUri) || !this.editorService?.currentEditor?.currentUri) {
+    if (!node || !this.editorService?.currentEditor?.currentUri) {
       // 1. 初次加载时可能还没有初始化Tree，主要原因在于没办法在outline加载时准确把握拿到currentEditor的时机
       // 2. 当前没有激活的URI时，需要情况当前的Tree
       this._whenInitTreeModelReady = this.initTreeModelByCurrentUri(this.editorService?.currentEditor?.currentUri);
+      this.onLoadingStateChangedEmitter.fire(false);
       return;
     }
 
@@ -508,6 +543,7 @@ export class OutlineModelService {
           this.refreshDeferred.resolve();
           this.refreshDeferred = null;
         }
+        this.onLoadingStateChangedEmitter.fire(false);
         return;
       }
       if (!this.refreshDeferred) {
@@ -515,23 +551,23 @@ export class OutlineModelService {
       }
       this.outlineTreeService.currentUri = this.editorService?.currentEditor?.currentUri;
       if (
-        !!node.currentUri &&
-        !!this.outlineTreeService.currentUri &&
+        node.currentUri &&
+        this.outlineTreeService.currentUri &&
         this.outlineTreeService.currentUri.isEqual(node.currentUri)
       ) {
         // 刷新前需要更新诊断信息数据
-        this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri!);
+        this.decorationService.updateDiagnosisInfo(this.outlineTreeService.currentUri);
         // 因为Outline模块的节点是自展开的，不需要遍历
         await node.refresh();
         this.onDidRefreshedEmitter.fire();
       }
       this.refreshDeferred?.resolve();
       this.refreshDeferred = null;
+      this.onLoadingStateChangedEmitter.fire(false);
     });
   }
 
   public flushEventQueue = () => {
-    let promise: Promise<any>;
     if (!this._changeEventDispatchQueue || this._changeEventDispatchQueue.length === 0) {
       return;
     }
@@ -548,9 +584,9 @@ export class OutlineModelService {
         roots.push(path);
       }
     }
-    promise = pSeries(
+    const promise = pSeries(
       roots.map((path) => async () => {
-        const watcher = this.treeModel.root?.watchEvents.get(path);
+        const watcher = this.treeModel?.root?.watchEvents.get(path);
         if (watcher && typeof watcher.callback === 'function') {
           await watcher.callback({ type: WatchEvent.Changed, path });
         }
@@ -580,5 +616,6 @@ export class OutlineModelService {
 
   dispose() {
     this.disposableCollection.dispose();
+    this._treeModelDisposeMap.dispose();
   }
 }

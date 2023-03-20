@@ -1,3 +1,4 @@
+import debounce from 'lodash/debounce';
 import React, {
   PropsWithChildren,
   useCallback,
@@ -12,6 +13,7 @@ import React, {
 import { RecycleTree, IRecycleTreeHandle, INodeRendererWrapProps, TreeNodeType } from '@opensumi/ide-components';
 import { ViewState } from '@opensumi/ide-core-browser';
 import { localize } from '@opensumi/ide-core-browser';
+import { Progress } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
 
 import { OUTLINE_TREE_NODE_HEIGHT, OutlineNode } from './outline-node';
@@ -21,19 +23,17 @@ import { OutlineTreeModel } from './services/outline-model';
 import { OutlineModelService } from './services/outline-model.service';
 
 export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewState }>) => {
-  const [model, setModel] = useState<OutlineTreeModel | undefined>();
-
   const { height } = viewState;
 
   const wrapperRef: RefObject<HTMLDivElement> = createRef();
 
   const outlineModelService = useInjectable<OutlineModelService>(OutlineModelService);
+  const [model, setModel] = useState<OutlineTreeModel | undefined>(undefined);
 
   const handleTreeReady = useCallback(
     (handle: IRecycleTreeHandle) => {
       outlineModelService.handleTreeHandler({
         ...handle,
-        getModel: () => outlineModelService.treeModel,
         hasDirectFocus: () => wrapperRef.current === document.activeElement,
       });
     },
@@ -95,9 +95,32 @@ export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewS
     };
   }, [wrapperRef.current]);
 
+  const [loadingState, setLoadingState] = React.useState(false);
+  const loading = React.useMemo(() => loadingState, [loadingState]);
+
+  useEffect(() => {
+    const disposable1 = outlineModelService.onLoadingStateChange(
+      debounce(
+        (current) => {
+          setLoadingState((previous) => (previous !== current ? current : previous));
+        },
+        16 * 5,
+        {
+          leading: true,
+        },
+      ),
+    );
+
+    return () => {
+      disposable1.dispose();
+    };
+  }, [setLoadingState]);
+
   return (
     <div className={styles.outline_container} tabIndex={-1} ref={wrapperRef} onClick={handleOuterClick}>
+      <Progress loading={loading} />
       <OutlineTreeView
+        loading={loading}
         height={height}
         model={model}
         onItemClick={handleItemClicked}
@@ -110,6 +133,7 @@ export const OutlinePanel = ({ viewState }: PropsWithChildren<{ viewState: ViewS
 
 interface IOutlineTreeViewProps {
   height: number;
+  loading: boolean;
   model?: OutlineTreeModel;
   onDidTreeReady(handle: IRecycleTreeHandle): void;
   onItemClick(ev: MouseEvent, item: OutlineTreeNode | OutlineCompositeTreeNode, type: TreeNodeType): void;
@@ -117,7 +141,7 @@ interface IOutlineTreeViewProps {
 }
 
 export const OutlineTreeView = memo(
-  ({ height, model, onItemClick, onTwistierClick, onDidTreeReady }: IOutlineTreeViewProps) => {
+  ({ height, model, onItemClick, onTwistierClick, onDidTreeReady, loading }: IOutlineTreeViewProps) => {
     const outlineModelService = useInjectable<OutlineModelService>(OutlineModelService);
     const { decorationService, commandService } = outlineModelService;
 
@@ -139,7 +163,11 @@ export const OutlineTreeView = memo(
     );
 
     if (!model) {
-      return <span className={styles.outline_empty_text}>{localize('outline.noinfo')}</span>;
+      return (
+        <span className={styles.outline_empty_text}>
+          {loading ? localize('common.loading') : localize('outline.nomodel')}
+        </span>
+      );
     } else {
       return (
         <RecycleTree

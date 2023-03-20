@@ -26,10 +26,6 @@ export interface Command {
    */
   iconClass?: string;
   /**
-   * 要在命令面板显示的图标
-   */
-  toogleIconClass?: string;
-  /**
    * 要在命令面板显示的分组
    * 支持国际化占位符，例如 %evenEditorGroups%
    */
