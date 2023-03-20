@@ -8,7 +8,7 @@ import Koa from 'koa';
 
 import { Injector } from '@opensumi/di';
 import { WebSocketHandler } from '@opensumi/ide-connection/lib/node';
-import { ContributionProvider, createContributionProvider, isWindows } from '@opensumi/ide-core-common';
+import { ContributionProvider, createContributionProvider, getDebugLogger, isWindows } from '@opensumi/ide-core-common';
 import { ILogServiceManager, ILogService, SupportLogNamespace, StoragePaths } from '@opensumi/ide-core-common';
 import { DEFAULT_TRS_REGISTRY } from '@opensumi/ide-core-common/lib/const';
 
@@ -23,7 +23,7 @@ export class ServerApp implements IServerApp {
 
   private config: IServerAppOpts;
 
-  private logger: ILogService;
+  private logger: Pick<ILogService, 'log' | 'error'> = getDebugLogger();
 
   private webSocketHandler: WebSocketHandler[];
 
