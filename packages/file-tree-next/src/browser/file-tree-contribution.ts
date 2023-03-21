@@ -857,7 +857,7 @@ export class FileTreeContribution
       },
       isEnabled: () =>
         (this.fileTreeModelService.pasteStore && this.fileTreeModelService.pasteStore.type !== PasteTypes.NONE) ||
-        !!this.clipboardService.hasResources(),
+        this.appConfig.isElectronRenderer,
     });
 
     if (this.appConfig.isElectronRenderer) {
