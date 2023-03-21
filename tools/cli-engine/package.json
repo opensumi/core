@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/cli-engine",
-  "version": "2.22.9",
+  "version": "2.23.0",
   "description": "Integration engine runtime for opensumi-cli and opensumi extension",
   "license": "MIT",
   "files": [
