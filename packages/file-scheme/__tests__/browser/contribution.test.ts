@@ -24,6 +24,12 @@ const mockFileService = {
   getFileType: jest.fn(),
 };
 
+const mockPreferenceService = {
+  onPreferenceChanged: jest.fn(),
+  get: jest.fn(() => undefined),
+  ready: Promise.resolve(),
+};
+
 describe('contribution test', () => {
   let injector: MockInjector;
   let contribution: BrowserEditorContribution;
@@ -39,14 +45,17 @@ describe('contribution test', () => {
       },
       {
         token: PreferenceService,
-        useValue: jest.fn(),
+        useValue: mockPreferenceService,
       },
       {
         token: EditorComponentRegistry,
         useClass: EditorComponentRegistryImpl,
       },
     );
-
+    injector.overrideProviders({
+      token: PreferenceService,
+      useValue: mockPreferenceService,
+    });
     const langService: ILanguageService = StandaloneServices.get(ILanguageService);
     langService.registerLanguage({
       id: 'javascript',
