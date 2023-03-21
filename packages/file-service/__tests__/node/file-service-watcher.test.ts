@@ -55,10 +55,10 @@ let seed = 1;
       root.withPath(root.path.join('foo', 'bar', 'baz.txt')).toString(),
     ];
 
-    await fse.mkdir(FileUri.fsPath(root.resolve('foo')));
+    await fse.mkdir(FileUri.fsPath(root.resolve('foo')), { recursive: true });
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
 
-    await fse.mkdir(FileUri.fsPath(root.resolve('foo').resolve('bar')));
+    await fse.mkdir(FileUri.fsPath(root.resolve('foo').resolve('bar')), { recursive: true });
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
 
     await fse.writeFile(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
@@ -82,11 +82,11 @@ let seed = 1;
     /* Unwatch root */
     await watcherServer.unwatchFileChanges(watcherId);
 
-    fse.mkdirSync(FileUri.fsPath(root.resolve('foo')));
+    fse.mkdirSync(FileUri.fsPath(root.resolve('foo')), { recursive: true });
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
     await sleep(sleepTime);
 
-    fse.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
+    fse.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')), { recursive: true });
     expect(fse.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
     await sleep(sleepTime);
 
@@ -103,7 +103,7 @@ let seed = 1;
     const folderName = `folder_${seed++}`;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
     expect(watcherId).toBeDefined();
-    fse.mkdirSync(newFolder);
+    fse.mkdirSync(newFolder, { recursive: true });
     const newWatcherId = await watcherServer.watchFileChanges(newFolder);
     expect(newWatcherId === watcherId).toBeTruthy();
   });
@@ -112,7 +112,7 @@ let seed = 1;
     const folderName = `folder_${seed++}`;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
     expect(watcherId).toBeDefined();
-    fse.mkdirSync(newFolder);
+    fse.mkdirSync(newFolder, { recursive: true });
     const parentId = await watcherServer.watchFileChanges(newFolder);
     const childFile = FileUri.fsPath(root.resolve(folderName).resolve('index.js'));
     const childId = await watcherServer.watchFileChanges(childFile);
@@ -128,19 +128,22 @@ let seed = 1;
     const newFolder = FileUri.fsPath(root.resolve(folderName));
     const fileA = FileUri.fsPath(root.resolve(folderName).resolve('a'));
     const fileB = FileUri.fsPath(root.resolve(folderName).resolve('b'));
-    fse.mkdirSync(newFolder);
+
+    fse.mkdirSync(newFolder, { recursive: true });
     await sleep(sleepTime);
     watcherClient.onDidFilesChanged.mockClear();
+
     let id = await watcherServer.watchFileChanges(newFolder, { excludes: [] });
     await fse.ensureFile(fileA);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
     await watcherServer.unwatchFileChanges(id);
+
     id = await watcherServer.watchFileChanges(newFolder, { excludes: ['**/b/**'] });
     await fse.ensureFile(fileB);
     await sleep(sleepTime);
     expect(watcherClient.onDidFilesChanged).toBeCalledTimes(1);
-    watcherServer.unwatchFileChanges(id);
+    await watcherServer.unwatchFileChanges(id);
   });
 });
 
