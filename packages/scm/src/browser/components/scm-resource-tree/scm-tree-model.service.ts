@@ -632,6 +632,9 @@ export class SCMTreeModelService {
    * 备注: 由于 SCM 默认都是 List，Tree 只是转出来的，每次都要重新触发计算
    */
   async refresh(node: SCMResourceFolder = this.treeModel?.root as SCMResourceFolder) {
+    if (!node) {
+      return;
+    }
     if (this.refreshCancelToken && !this.refreshCancelToken.token.isCancellationRequested) {
       this.refreshCancelToken.cancel();
     }
