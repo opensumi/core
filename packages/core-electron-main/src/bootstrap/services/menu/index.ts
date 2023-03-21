@@ -17,7 +17,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
 
   showContextMenu(template: INativeMenuTemplate, webContentsId: number) {
     let menu: Electron.Menu | undefined = this.buildMenu(template, webContentsId + '-context');
-    menu!.popup({
+    menu?.popup({
       callback: () => {
         menu = undefined;
         this.eventEmitter.fire('menuClose', webContentsId + '-context', template.id);
@@ -66,7 +66,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
   /**
    *
    * @param template
-   * @param targetId 目标webcontents或window
+   * @param targetId 目标 WebContents 或 Window
    */
   buildMenu(template: INativeMenuTemplate, targetId): Menu {
     const electronTemplate = this.getElectronTemplate(template, targetId);
