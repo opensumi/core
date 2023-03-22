@@ -153,7 +153,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         </div>
       ) : (
         otherThreads.map(
-          (thread) =>
+          (thread: DebugThread, index: number) =>
             !session.hasInMultipleThreadPaused(thread.raw.id) && (
               <DebugStackThreadView
                 key={thread.id}
@@ -161,6 +161,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
                 viewState={viewState}
                 thread={thread}
                 session={session}
+                isBottom={index === otherThreads.length - 1}
               />
             ),
         )
@@ -225,25 +226,27 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         </div>
       )}
       {supportsThreadIdCorrespond && unfold
-        ? multipleThreadPaused.map((t) => (
+        ? multipleThreadPaused.map((t: DebugThread, index: number) => (
             <DebugStackThreadView
               key={t.id}
               indent={mutipleSession ? 16 : 0}
               viewState={viewState}
               thread={t}
               session={session}
+              isBottom={index === multipleThreadPaused.length - 1}
             />
           ))
         : null}
       {!supportsThreadIdCorrespond &&
         (!mutipleSession || unfold) &&
-        threads.map((thread) => (
+        threads.map((thread: DebugThread, index: number) => (
           <DebugStackThreadView
             key={thread.id}
             indent={mutipleSession ? 16 : 0}
             viewState={viewState}
             thread={thread}
             session={session}
+            isBottom={index === threads.length - 1}
           />
         ))}
       {subSession.length > 0 &&

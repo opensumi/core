@@ -288,6 +288,7 @@ export const localizationBundle = {
 
     'debug.stack.loadMore': '展开全部堆栈',
     'debug.stack.loading': '加载中...',
+    'debug.stack.showMoreAndOrigin': '展示 {0} 项: {1}',
     'debug.breakpoint.deactive': '关闭所有断点',
     'debug.breakpoint.active': '激活所有断点',
     'debug.threads.title': '进程',

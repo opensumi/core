@@ -15,7 +15,7 @@ import {
 import { IDebugSessionManager } from '../../../common';
 import { DebugSession } from '../../debug-session';
 import { DebugSessionManager } from '../../debug-session-manager';
-import { DebugStackFrame } from '../../model';
+import { DebugStackFrame, ShowMoreDebugStackFrame } from '../../model';
 import { DebugThread } from '../../model/debug-thread';
 
 import styles from './debug-call-stack.module.less';
@@ -27,13 +27,14 @@ export interface DebugStackSessionViewProps {
   thread: DebugThread;
   viewState: ViewState;
   indent?: number;
+  isBottom?: boolean;
 }
 
 export const DebugStackFramesView = observer((props: DebugStackSessionViewProps) => {
-  const { viewState, frames: rawFrames, thread, indent = 0, session } = props;
+  const { viewState, frames: rawFrames, thread, indent = 0, session, isBottom } = props;
   const [selected, setSelected] = useState<number | undefined>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [frames, setFrames] = useState<DebugStackFrame[]>([]);
+  const [frames, setFrames] = useState<(DebugStackFrame | ShowMoreDebugStackFrame)[]>([]);
   const [framesErrorMessage, setFramesErrorMessage] = useState<string>('');
   const [canLoadMore, setCanLoadMore] = useState<boolean>(false);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
@@ -57,11 +58,62 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     }
   };
 
-  const updateFrames = useCallback(
-    (frames: DebugStackFrame[]) => {
-      setFrames(frames);
+  const expandFrame = useCallback(
+    (frame: ShowMoreDebugStackFrame) => {
+      const expanedFrames = frames.slice(0);
+      expanedFrames.splice(frame.startIndex, frame.frames.length, ...frame.frames);
+      setFrames(expanedFrames);
     },
     [frames],
+  );
+
+  const mergeFrames = useCallback((frames: DebugStackFrame[]) => {
+    const len = frames.length;
+    const results: (DebugStackFrame | ShowMoreDebugStackFrame)[] = [];
+    let showMoreFrames: DebugStackFrame[] = [];
+    let showMoreOrigin;
+    let showMoreIndex = -1;
+    let hasOrigin = false;
+    for (let i = 0; i < len; i++) {
+      if (frames[i].source?.raw.origin) {
+        if (hasOrigin) {
+          if (showMoreOrigin === frames[i].source?.raw.origin) {
+            showMoreFrames.push(frames[i]);
+            continue;
+          } else {
+            results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+            showMoreFrames = [];
+            showMoreIndex = i;
+            showMoreOrigin = frames[i].source?.raw.origin;
+            showMoreFrames.push(frames[i]);
+          }
+        } else {
+          hasOrigin = true;
+          showMoreFrames.push(frames[i]);
+          showMoreIndex = i;
+          showMoreOrigin = frames[i].source?.raw.origin;
+        }
+      } else {
+        if (hasOrigin && showMoreFrames.length > 0) {
+          results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+          showMoreFrames = [];
+          showMoreIndex = -1;
+          hasOrigin = false;
+        }
+        results.push(frames[i]);
+      }
+    }
+    if (hasOrigin && showMoreFrames.length > 0) {
+      results.push(new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame));
+    }
+    return results;
+  }, []);
+
+  const updateFrames = useCallback(
+    (frames: DebugStackFrame[]) => {
+      setFrames(mergeFrames(frames));
+    },
+    [frames, mergeFrames],
   );
 
   const updateSelected = useCallback(
@@ -118,11 +170,15 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   }, [frames]);
 
   const template = ({ data }) => {
-    const frame: DebugStackFrame = data;
-    const isLabel = frame.raw.presentationHint === 'label';
-    const isSubtle = frame.raw.presentationHint === 'subtle';
-    const clickHandler = useCallback(() => {
+    const frame: DebugStackFrame | ShowMoreDebugStackFrame = data;
+    const isLabel = DebugStackFrame.is(frame) && frame.raw.presentationHint === 'label';
+    const isSubtle = DebugStackFrame.is(frame) && frame.raw.presentationHint === 'subtle';
+    const onClickHandler = useCallback(() => {
       if (isLabel || isSubtle) {
+        return;
+      }
+      if (!DebugStackFrame.is(frame)) {
+        frame.open();
         return;
       }
       manager.updateCurrentSession(frame.session);
@@ -135,86 +191,120 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     const restartFrame = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
       event.preventDefault();
       event.stopPropagation();
-
+      if (!DebugStackFrame.is(frame)) {
+        return;
+      }
       if (frame.canRestart) {
         frame.restart();
       }
     };
 
+    const frameItemStyle = {
+      paddingLeft: `${indent}px`,
+    };
+
+    if (DebugStackFrame.is(frame) && frame.raw?.source?.presentationHint === 'deemphasize') {
+      frameItemStyle['color'] = 'var(--list-deemphasizedForeground)';
+    }
+
+    const renderFrame = useCallback((frame) => {
+      if (DebugStackFrame.is(frame)) {
+        return (
+          <>
+            <span
+              className={cls(styles.debug_stack_frames_item_label, isLabel && styles.label, isSubtle && styles.subtle)}
+            >
+              {frame.raw && frame.raw.name}
+            </span>
+            <span className={styles.debug_stack_frames_item_description}>
+              {(frame.raw && frame.raw.source && frame.raw.source.name) || localize('debug.stack.frame.noSource')}
+            </span>
+            <>
+              {frame.canRestart && (
+                <a
+                  title=''
+                  onClick={(event) => restartFrame(event)}
+                  className={cls(styles.debug_restart_frame_icon, getIcon('debug-restart-frame'))}
+                ></a>
+              )}
+              <div className={cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge)}>
+                {frame.raw && frame.raw.line}
+                {!isUndefined(frame.raw.line) && ':'}
+                {frame.raw && frame.raw.column}
+              </div>
+            </>
+          </>
+        );
+      } else {
+        return <span className={styles.debug_stack_frames_load_more}>{frame.name}</span>;
+      }
+    }, []);
+
     return (
       <div
-        style={{ paddingLeft: `${indent}px` }}
+        style={frameItemStyle}
         className={cls(
           styles.debug_stack_frames_item,
-          selected === frame.raw.id && styles.selected,
-          !(frame.raw && frame.raw.source && frame.raw.source.name) && styles.debug_stack_frames_item_hidden,
+          DebugStackFrame.is(frame) && selected === frame.raw.id && styles.selected,
+          DebugStackFrame.is(frame) &&
+            !(frame.raw && frame.raw.source && frame.raw.source.name) &&
+            styles.debug_stack_frames_item_hidden,
         )}
-        onClick={clickHandler}
+        onClick={onClickHandler}
         onContextMenu={(event: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
           debugCallStackService.handleContextMenu(event, data)
         }
       >
-        <span className={cls(styles.debug_stack_frames_item_label, isLabel && styles.label, isSubtle && styles.subtle)}>
-          {frame.raw && frame.raw.name}
-        </span>
-        <span className={styles.debug_stack_frames_item_description}>
-          {(frame.raw && frame.raw.source && frame.raw.source.name) || localize('debug.stack.frame.noSource')}
-        </span>
-        <>
-          <a
-            title=''
-            onClick={(event) => restartFrame(event)}
-            className={cls(styles.debug_restart_frame_icon, getIcon('debug-restart-frame'))}
-          ></a>
-          <div className={cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge)}>
-            {frame.raw && frame.raw.line}
-            {!isUndefined(frame.raw.line) && ':'}
-            {frame.raw && frame.raw.column}
-          </div>
-        </>
+        {renderFrame(frame)}
       </div>
     );
   };
 
-  const renderLoadMoreStackFrames = () => {
-    const clickHandler = async () => {
+  const renderLoadMoreStackFrames = useCallback(() => {
+    const onClickHandler = async () => {
       setIsLoading(true);
       await loadMore();
       setIsLoading(false);
     };
     return (
-      <div className={styles.debug_stack_frames_item} onClick={clickHandler}>
+      <div className={styles.debug_stack_frames_item} onClick={onClickHandler}>
         <span className={styles.debug_stack_frames_load_more}>{localize('debug.stack.loadMore')}</span>
       </div>
     );
-  };
+  }, [isLoading, loadMore]);
 
-  const renderLoading = () => (
-    <div className={styles.debug_stack_frames_item}>
-      <span className={styles.debug_stack_frames_load_more}>{localize('debug.stack.loading')}</span>
-    </div>
+  const renderLoading = useCallback(
+    () => (
+      <div className={styles.debug_stack_frames_item}>
+        <span className={styles.debug_stack_frames_load_more}>{localize('debug.stack.loading')}</span>
+      </div>
+    ),
+    [],
   );
 
-  const renderFramesErrorMessage = (message: string) => (
-    <div className={styles.debug_stack_frames_item}>
-      <span className={styles.debug_stack_frames_error_message} title={message}>
-        {message}
-      </span>
-    </div>
+  const renderFramesErrorMessage = useCallback(
+    (message: string) => (
+      <div className={styles.debug_stack_frames_item}>
+        <span className={styles.debug_stack_frames_error_message} title={message}>
+          {message}
+        </span>
+      </div>
+    ),
+    [],
   );
 
   if (framesErrorMessage) {
     return <div className={styles.debug_stack_frames}>{renderFramesErrorMessage(framesErrorMessage)}</div>;
   }
 
-  const footer = () => {
+  const footer = useCallback(() => {
     if (isLoading) {
       return renderLoading();
     } else if (canLoadMore) {
       return renderLoadMoreStackFrames();
     }
     return null;
-  };
+  }, [isLoading, canLoadMore]);
 
   return (
     <RecycleList
@@ -222,8 +312,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       template={template}
       itemHeight={22}
       width={viewState.width}
-      paddingBottomSize={0}
-      height={isLoading || canLoadMore ? (frames.length + 1) * 22 : frames.length * 22}
+      height={(isLoading || canLoadMore ? (frames.length + 1) * 22 : frames.length * 22) + (isBottom ? 10 : 0)}
       footer={isLoading || canLoadMore ? footer : undefined}
     />
   );

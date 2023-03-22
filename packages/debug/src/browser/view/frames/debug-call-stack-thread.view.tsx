@@ -18,10 +18,11 @@ export interface DebugStackThreadViewProps {
   viewState: ViewState;
   thread: DebugThread;
   indent?: number;
+  isBottom?: boolean;
 }
 
 export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
-  const { thread, viewState, indent, session } = props;
+  const { thread, viewState, indent, session, isBottom } = props;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
   const [expanded, setExpanded] = useState<boolean>(true);
@@ -95,6 +96,7 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
       {(!mutiple || expanded) && thread.frames.length > 0 && (
         <DebugStackFramesView
           indent={mutiple ? (mutipleS ? 24 + 14 : 16 + 14) : 8}
+          isBottom={isBottom}
           viewState={viewState}
           thread={thread}
           frames={frames}

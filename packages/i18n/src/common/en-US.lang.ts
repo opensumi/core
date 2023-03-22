@@ -317,6 +317,7 @@ export const localizationBundle = {
 
     'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
+    'debug.stack.showMoreAndOrigin': 'Show {0} More: {1}',
     'debug.breakpoint.deactive': 'Deactivate Breakpoints',
     'debug.breakpoint.active': 'Activate Breakpoints',
     'debug.threads.title': 'THREADS',
