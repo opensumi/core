@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-theme",
-  "version": "2.22.10",
+  "version": "2.22.11",
   "files": [
     "lib",
     "src"
