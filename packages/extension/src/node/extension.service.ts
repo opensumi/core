@@ -602,6 +602,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.clientExtProcessMap.delete(clientId);
 
       if (killProcess) {
+        await this.extensionHostManager.treeKill(extProcessId);
         await this.extensionHostManager.disposeProcess(extProcessId);
       }
       if (info) {
