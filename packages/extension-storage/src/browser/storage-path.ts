@@ -65,7 +65,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     workspace: FileStat | undefined,
     roots: FileStat[],
     extensionStorageDirName: string,
-  ): Promise<URI | undefined> {
+  ): Promise<URI> {
     const parentStorageDir = await this.getWorkspaceStorageDirPath(extensionStorageDirName);
 
     if (!parentStorageDir) {
