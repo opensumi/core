@@ -221,7 +221,7 @@ export function createLocalizedStr(
   language?: string,
   defaultLanguageId = 'en-US',
 ): ILocalizedStr {
-  const localized = replaceNlsField(raw, scope, fallback, language) ?? raw;
+  const localized = replaceNlsField(raw, scope, fallback, language) || raw;
   const alias = replaceNlsField(raw, scope, undefined, defaultLanguageId);
   return {
     raw,
@@ -230,9 +230,14 @@ export function createLocalizedStr(
   };
 }
 
-export function uppercaseFirstLetter(str: string | ILocalizedStr) {
-  if (typeof str === 'object') {
-    return _uppercaseFirstLetter(str.localized);
-  }
-  return _uppercaseFirstLetter(str);
+export function createFormatLocalizedStr(raw: ILocalizationKey, ...args: any): ILocalizedStr {
+  const defaultLanguageId = 'en-US';
+  const localized = format(localize(raw, raw, undefined), ...args) || raw;
+  const alias = format(localize(raw, raw, undefined, defaultLanguageId), ...args);
+
+  return {
+    raw,
+    localized,
+    alias: alias || localized,
+  };
 }

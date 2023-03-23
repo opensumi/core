@@ -32,13 +32,11 @@ import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-re
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
   label: '%theme.toggle%',
-  alias: 'Color Theme',
 };
 
 export const ICON_THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.icon.toggle',
   label: '%theme.icon.toggle%',
-  alias: 'File Icon Theme',
 };
 
 @Domain(MenuContribution, CommandContribution, ClientAppContribution)
