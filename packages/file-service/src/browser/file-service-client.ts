@@ -18,7 +18,14 @@ import {
   AppConfig,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
-import { FileSystemProviderCapabilities, IEventBus, Schemes } from '@opensumi/ide-core-common';
+import {
+  AppLifeCycleServiceToken,
+  FileSystemProviderCapabilities,
+  IAppLifeCycleService,
+  IEventBus,
+  LifeCyclePhase,
+  Schemes,
+} from '@opensumi/ide-core-common';
 import { IElectronMainUIService } from '@opensumi/ide-core-common/lib/electron';
 import { Iterable } from '@opensumi/monaco-editor-core/esm/vs/base/common/iterator';
 
@@ -110,6 +117,9 @@ export class FileServiceClient implements IFileServiceClient {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
+  @Autowired(AppLifeCycleServiceToken)
+  private lifecycleService: IAppLifeCycleService;
+
   private userHomeDeferred: Deferred<FileStat | undefined> = new Deferred();
 
   public options = {
@@ -128,6 +138,12 @@ export class FileServiceClient implements IFileServiceClient {
         }
       }),
     );
+    // FIXME: 目前是等框架 ready 后再主动更新一次
+    this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
+      if (newPhase === LifeCyclePhase.Ready) {
+        this.doGetCurrentUserHome();
+      }
+    });
   }
 
   private async doGetCurrentUserHome() {

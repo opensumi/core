@@ -78,7 +78,16 @@ import { injectInnerProviders } from './inner-providers';
 if (typeof (window as any).ResizeObserver === 'undefined') {
   (window as any).ResizeObserver = ResizeObserver;
 }
+function sleep(delay: number) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve('');
+    }, delay * 1e3);
+  });
+}
 
+// 可以在建连前初始化的贡献点白名单;
+const UIContributionNames = ['MainLayoutModuleContribution', 'ThemeContribution', 'PreferenceContribution'];
 export class ClientApp implements IClientApp, IDisposable {
   /**
    * 应用是否完成初始化
@@ -220,6 +229,9 @@ export class ClientApp implements IClientApp, IDisposable {
       if (type === 'electron') {
         await bindConnectionService(this.injector, this.modules, createElectronClientConnection());
       } else if (type === 'web') {
+        await this.startUIContributions(container);
+        // 模拟建连耗时
+        await sleep(3);
         await createClientConnection2(
           this.injector,
           this.modules,
@@ -245,7 +257,8 @@ export class ClientApp implements IClientApp, IDisposable {
     await this.injector.get(IApplicationService).initializeData();
 
     // 在 contributions 执行完 onStart 上报一次耗时
-    await this.measure('Contributions.start', () => this.startContributions(container));
+    await this.measure('Contributions.start', () => this.startNoUIContributions());
+    // await this.measure('Contributions.start', () => this.startContributions(container));
     this.stateService.state = 'started_contributions';
     this.stateService.state = 'ready';
 
@@ -330,12 +343,44 @@ export class ClientApp implements IClientApp, IDisposable {
     return this.contributionsProvider.getContributions();
   }
 
+  protected async startUIContributions(container) {
+    const contributions = this.contributions.filter((contribution) =>
+      UIContributionNames.includes(contribution.constructor.name),
+    );
+    // Rendering layout
+    await this.measure('RenderApp.render', () => this.renderApp(container));
+
+    this.lifeCycleService.phase = LifeCyclePhase.Initialize;
+
+    await this.runContributionsPhase(contributions, 'initialize');
+  }
+
+  protected async startNoUIContributions() {
+    const contributions = this.contributions.filter(
+      (contribution) => !UIContributionNames.includes(contribution.constructor.name),
+    );
+
+    await this.measure('Contributions.initialize', () => this.initializeContributions(contributions));
+    this.appInitialized.resolve();
+    // Initialize Command, Keybinding, Menus
+    await this.initializeCoreRegistry();
+
+    // Core modules initializeed ready
+    this.stateService.state = 'core_module_initialized';
+
+    this.lifeCycleService.phase = LifeCyclePhase.Starting;
+    await this.measure('Contributions.onStart', () => this.onStartContributions(this.contributions));
+
+    // onDidStart 需要包含 UIContributions
+    await this.runContributionsPhase(this.contributions, 'onDidStart');
+  }
+
   protected async startContributions(container) {
     // Rendering layout
     await this.measure('RenderApp.render', () => this.renderApp(container));
 
     this.lifeCycleService.phase = LifeCyclePhase.Initialize;
-    await this.measure('Contributions.initialize', () => this.initializeContributions());
+    await this.measure('Contributions.initialize', () => this.initializeContributions(this.contributions));
 
     // Initialize Command, Keybinding, Menus
     await this.initializeCoreRegistry();
@@ -344,7 +389,7 @@ export class ClientApp implements IClientApp, IDisposable {
     this.stateService.state = 'core_module_initialized';
 
     this.lifeCycleService.phase = LifeCyclePhase.Starting;
-    await this.measure('Contributions.onStart', () => this.onStartContributions());
+    await this.measure('Contributions.onStart', () => this.onStartContributions(this.contributions));
 
     await this.runContributionsPhase(this.contributions, 'onDidStart');
   }
@@ -355,15 +400,15 @@ export class ClientApp implements IClientApp, IDisposable {
     this.nextMenuRegistry.initialize();
   }
 
-  private async initializeContributions() {
-    await this.runContributionsPhase(this.contributions, 'initialize');
+  private async initializeContributions(contributions: ClientAppContribution[]) {
+    await this.runContributionsPhase(contributions, 'initialize');
     this.appInitialized.resolve();
 
     this.logger.verbose('contributions.initialize done');
   }
 
-  private async onStartContributions() {
-    await this.runContributionsPhase(this.contributions, 'onStart');
+  private async onStartContributions(contributions: ClientAppContribution[]) {
+    await this.runContributionsPhase(contributions, 'onStart');
   }
 
   private async runContributionsPhase(contributions: ClientAppContribution[], phaseName: keyof ClientAppContribution) {
@@ -374,10 +419,17 @@ export class ClientApp implements IClientApp, IDisposable {
 
   private async contributionPhaseRunner(contribution: ClientAppContribution, phaseName: keyof ClientAppContribution) {
     const phase = contribution[phaseName];
+    const contributionName = contribution.constructor.name;
     if (typeof phase === 'function') {
       try {
-        const uid = contribution.constructor.name + '.' + phaseName;
-        return await this.measure(uid, () => phase.call(contribution, this));
+        const uid = contributionName + '.' + phaseName;
+        return await this.measure(uid, () => {
+          try {
+            phase.call(contribution, this);
+          } catch (err) {
+            this.logger.error(`contributionPhaseRunner#${phaseName} fail: ${contributionName} `, err);
+          }
+        });
       } catch (error) {
         this.logger.error(`Could not run contribution#${phaseName}`, error);
       }
