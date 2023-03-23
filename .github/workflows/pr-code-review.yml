@@ -2,6 +2,7 @@ name: Pull Request Review By ChatGPT
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
   code-review:
