@@ -19,12 +19,13 @@ on:
       - 'packages/**'
 
 jobs:
-  browser:
+  unittest:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-latest, ubuntu-latest, windows-2019]
         node-version: [14.x]
+        ci-project: [node, jsdom]
 
     steps:
       - uses: actions/checkout@v3
@@ -48,112 +49,12 @@ jobs:
 
       - name: CI
         run: |
-          yarn run ci --selectProjects jsdom
+          yarn run ci --selectProjects ${{ matrix.ci-project }}
 
       - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
         name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
           token: ${{ secrets.CORE_CODECOV_TOKEN }}
-          flags: jsdom
+          flags: ${{ matrix.ci-project }}
           directory: ./coverage
-  node:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest]
-        node-version: [14.x]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Get yarn cache directory path
-        id: yarn_cache_dir_path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-      - uses: actions/cache@v3
-        id: yarn_cache
-        with:
-          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: install
-        run: |
-          yarn install --immutable
-
-      - name: CI
-        run: |
-          yarn run ci --selectProjects node
-
-      - if: ${{ matrix.node-version == '14.x' && matrix.os == 'ubuntu-latest' }}
-        name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CORE_CODECOV_TOKEN }}
-          flags: node
-          directory: ./coverage
-
-  browser-windows:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        node-version: [14.x]
-        os: [windows-2019]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Get yarn cache directory path
-        id: yarn_cache_dir_path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-      - uses: actions/cache@v3
-        id: yarn_cache
-        with:
-          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: install
-        run: |
-          yarn install --immutable
-
-      - name: CI
-        run: |
-          yarn run ci --selectProjects jsdom
-
-  node-windows:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-2019]
-        node-version: [14.x]
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Get yarn cache directory path
-        id: yarn_cache_dir_path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
-      - uses: actions/cache@v3
-        id: yarn_cache
-        with:
-          path: ${{ steps.yarn_cache_dir_path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-      - name: install
-        run: |
-          yarn install --immutable
-
-      - name: CI
-        run: |
-          yarn run ci --selectProjects node
