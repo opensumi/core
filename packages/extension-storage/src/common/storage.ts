@@ -1,4 +1,4 @@
-import { URI } from '@opensumi/ide-core-common';
+import { Uri } from '@opensumi/ide-core-common';
 import { FileStat } from '@opensumi/ide-file-service';
 
 import { KeysToAnyValues, KeysToKeysToAnyValue } from './types';
@@ -28,9 +28,9 @@ export interface IExtensionStorageService {
 }
 
 export interface IExtensionStorageUri {
-  logUri: URI;
-  storageUri: URI;
-  globalStorageUri: URI;
+  logUri: Uri;
+  storageUri: Uri;
+  globalStorageUri: Uri;
 }
 
 export interface IExtensionStorageTask {

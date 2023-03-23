@@ -96,9 +96,9 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
     // 返回插件storage存储路径信息
     return {
-      logUri,
-      storageUri,
-      globalStorageUri: URI.file(this.globalDataPath),
+      logUri: logUri.codeUri,
+      storageUri: storageUri.codeUri,
+      globalStorageUri: Uri.file(this.globalDataPath),
     };
   }
 

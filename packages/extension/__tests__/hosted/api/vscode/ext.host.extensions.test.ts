@@ -83,11 +83,11 @@ describe(`test ${__filename}`, () => {
     });
 
     it('path in unix is valid', async () => {
-      const logUri = URI.file('/User/log');
+      const logUri = Uri.file('/User/log');
       await extHostStorage.$acceptStoragePath({
         logUri,
-        storageUri: URI.file('/User/storage'),
-        globalStorageUri: URI.file('/User/globalStorage'),
+        storageUri: Uri.file('/User/storage'),
+        globalStorageUri: Uri.file('/User/globalStorage'),
       });
       // ensure logUri is 'vscode-uri' interface
       expect(context.logUri instanceof Uri).toBe(true);
@@ -98,9 +98,9 @@ describe(`test ${__filename}`, () => {
 
     (isWindows ? it : it.skip)('path in windows is valid', async () => {
       await extHostStorage.$acceptStoragePath({
-        logUri: URI.file('c:\\User\\log'),
-        storageUri: URI.file('c:\\User\\storage'),
-        globalStorageUri: URI.file('c:\\User\\globalStorage'),
+        logUri: Uri.file('c:\\User\\log'),
+        storageUri: Uri.file('c:\\User\\storage'),
+        globalStorageUri: Uri.file('c:\\User\\globalStorage'),
       });
       expect(context.logPath).toBe(`c:\\User\\log\\${extensionId}`);
       expect(context.storagePath).toBe(`c:\\User\\storage\\${extensionId}`);
