@@ -62,7 +62,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   const expandFrame = useCallback(
     (frame: ShowMoreDebugStackFrame) => {
       const expanedFrames = currentFrames.current.slice(0);
-      expanedFrames.splice(frame.startIndex, frame.frames.length, ...frame.frames);
+      expanedFrames.splice(frame.startIndex, 1, ...frame.frames);
       currentFrames.current = expanedFrames;
       setFrames(expanedFrames);
     },
@@ -84,7 +84,9 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
             continue;
           } else {
             if (showMoreFrames.length > 1) {
-              results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+              results.push(
+                new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame),
+              );
             } else {
               results.push(showMoreFrames[0]);
             }
@@ -102,7 +104,9 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       } else {
         if (hasOrigin && showMoreFrames.length > 0) {
           if (showMoreFrames.length > 1) {
-            results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+            results.push(
+              new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame),
+            );
           } else {
             results.push(showMoreFrames[0]);
           }
