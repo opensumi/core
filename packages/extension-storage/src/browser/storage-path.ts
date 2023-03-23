@@ -69,6 +69,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     const parentStorageDir = await this.getWorkspaceStorageDirPath(extensionStorageDirName);
 
     if (!parentStorageDir) {
+      // ? 这里应该没有理由会抛出异常
       throw new Error('Unable to get parent storage directory');
     }
 
