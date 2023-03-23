@@ -8,7 +8,7 @@ env:
 
 jobs:
   code-review:
-    if: ${{ OPENAI_API_KEY }}
+    if: ${{ env.OPENAI_API_KEY }}
     name: Code Review
     runs-on: ubuntu-latest
     steps:
