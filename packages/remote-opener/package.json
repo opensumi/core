@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-remote-opener",
-  "version": "2.23.0",
+  "version": "2.23.1",
   "files": [
     "lib",
     "src"
