@@ -6,7 +6,7 @@ export type ILocalizationKey = string; // ts不支持symbol作为key
 
 let _currentLanguageId = 'zh-CN';
 
-const localizationRegistryMap = new CaseInsensitiveMap<string, LocalizationRegistry>();
+export const localizationRegistryMap = new CaseInsensitiveMap<string, LocalizationRegistry>();
 
 export function localize(
   symbol: ILocalizationKey,
