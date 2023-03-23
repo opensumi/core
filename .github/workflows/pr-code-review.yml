@@ -3,12 +3,13 @@ name: Pull Request Review By ChatGPT
 on:
   pull_request:
 
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
 jobs:
   code-review:
-    if: ${{ secrets.OPENAI_API_KEY }}
+    if: ${{ OPENAI_API_KEY }}
     name: Code Review
     runs-on: ubuntu-latest
     steps:
       - uses: opensumi/actions/.github/actions/code-review@main
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
