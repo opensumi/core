@@ -8,9 +8,6 @@ jobs:
   code-review:
     name: Code Review
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
 
     steps:
       # 判断用户是否有写仓库权限
