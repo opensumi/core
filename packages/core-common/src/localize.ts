@@ -1,4 +1,5 @@
 import { strings, CaseInsensitiveMap } from '@opensumi/ide-utils';
+import { uppercaseFirstLetter as _uppercaseFirstLetter } from '@opensumi/ide-utils/lib/strings';
 
 const { format, mnemonicButtonLabel } = strings;
 
@@ -199,4 +200,39 @@ export function replaceNlsField(
     }
   }
   return label;
+}
+
+export interface ILocalizedStr {
+  raw: string;
+  localized: string;
+  /**
+   * The value is usually in English.
+   * which is used so that users can search for commands in English even in non-English environments.
+   *
+   * Alert: before using this value, you should check if `alias === localized`.
+   */
+  alias: string;
+}
+
+export function createLocalizedStr(
+  raw: string,
+  scope?: string,
+  fallback?: string,
+  language?: string,
+  defaultLanguageId = 'en-US',
+): ILocalizedStr {
+  const localized = replaceNlsField(raw, scope, fallback, language) ?? raw;
+  const alias = replaceNlsField(raw, scope, undefined, defaultLanguageId);
+  return {
+    raw,
+    localized,
+    alias: alias || localized,
+  };
+}
+
+export function uppercaseFirstLetter(str: string | ILocalizedStr) {
+  if (typeof str === 'object') {
+    return _uppercaseFirstLetter(str.localized);
+  }
+  return _uppercaseFirstLetter(str);
 }

@@ -161,9 +161,7 @@ describe('Extension service', () => {
       const command = commandRegistry.getCommand('Test');
       expect(command).toBeDefined();
       expect(command?.label).toBe('this is label');
-      expect(command?.alias).toBe('this is alias');
       expect(command?.category).toBe('this is category');
-      expect(command?.aliasCategory).toBe('this is aliasCategory');
     });
 
     it('should register menus in editor/title and editor/context position', () => {

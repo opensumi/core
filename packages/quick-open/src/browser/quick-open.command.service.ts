@@ -234,17 +234,21 @@ export class CommandQuickOpenItem extends QuickOpenItem {
     return super.isHidden();
   }
 
+  /**
+   * We show the command label in default language in detail if the command is localized.
+   */
   getDetail(): string | undefined {
-    if (this.command.label === this.command.alias) {
+    if (!this.command.labelLocalized) {
       return;
     }
     let detail: string | undefined;
-    if (this.command.alias) {
-      const category = this.command.aliasCategory ?? this.command.category;
+    const { alias, localized } = this.command.labelLocalized;
+    if (alias !== localized) {
+      const category = this.command.categoryLocalized?.alias ?? this.command.category;
       if (category) {
-        detail = `${uppercaseFirstLetter(category)}: ${this.command.alias}`;
+        detail = `${uppercaseFirstLetter(category)}: ${alias}`;
       } else {
-        detail = this.command.alias;
+        detail = alias;
       }
     }
 
