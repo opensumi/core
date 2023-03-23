@@ -57,20 +57,23 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   };
 
   useEffect(() => {
-    const createDispose = manager.onDidCreateDebugSession(() => {
-      const sub = findSubSessions();
-      setSubSession(sub);
-    });
+    const disposables = new DisposableCollection();
+    disposables.push(
+      manager.onDidCreateDebugSession(() => {
+        const sub = findSubSessions();
+        setSubSession(sub);
+      }),
+    );
 
-    const destroyDispose = manager.onDidDestroyDebugSession(() => {
-      const sub = findSubSessions();
-      setSubSession(sub);
-    });
+    disposables.push(
+      manager.onDidDestroyDebugSession(() => {
+        const sub = findSubSessions();
+        setSubSession(sub);
+      }),
+    );
 
     return () => {
-      createDispose.dispose();
-      destroyDispose.dispose();
-      setSubSession([]);
+      disposables.dispose();
     };
   }, []);
 

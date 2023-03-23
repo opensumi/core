@@ -286,7 +286,7 @@ export const localizationBundle = {
     'output.enableSmartScroll': '输出视图智能滚动',
     'output.enableSmartScrollDesc': '在点击输出视图时禁用滚动，点击最后一行输出时启用滚动。',
 
-    'debug.stack.loadMore': '展开全部堆栈',
+    'debug.stack.loadMore': '加载更多堆栈',
     'debug.stack.loading': '加载中...',
     'debug.stack.showMoreAndOrigin': '展示 {0} 项: {1}',
     'debug.breakpoint.deactive': '关闭所有断点',

@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 
 import { RecycleList } from '@opensumi/ide-components';
 import {
@@ -38,6 +38,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   const [framesErrorMessage, setFramesErrorMessage] = useState<string>('');
   const [canLoadMore, setCanLoadMore] = useState<boolean>(false);
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
+  const currentFrames = useRef<(DebugStackFrame | ShowMoreDebugStackFrame)[]>([]);
   const debugCallStackService = useInjectable<DebugCallStackService>(DebugCallStackService);
 
   const loadMore = useCallback(async () => {
@@ -60,11 +61,12 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
 
   const expandFrame = useCallback(
     (frame: ShowMoreDebugStackFrame) => {
-      const expanedFrames = frames.slice(0);
+      const expanedFrames = currentFrames.current.slice(0);
       expanedFrames.splice(frame.startIndex, frame.frames.length, ...frame.frames);
+      currentFrames.current = expanedFrames;
       setFrames(expanedFrames);
     },
-    [frames],
+    [currentFrames.current],
   );
 
   const mergeFrames = useCallback((frames: DebugStackFrame[]) => {
@@ -81,7 +83,11 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
             showMoreFrames.push(frames[i]);
             continue;
           } else {
-            results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+            if (showMoreFrames.length > 1) {
+              results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+            } else {
+              results.push(showMoreFrames[0]);
+            }
             showMoreFrames = [];
             showMoreIndex = i;
             showMoreOrigin = frames[i].source?.raw.origin;
@@ -95,7 +101,11 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
         }
       } else {
         if (hasOrigin && showMoreFrames.length > 0) {
-          results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+          if (showMoreFrames.length > 1) {
+            results.push(new ShowMoreDebugStackFrame(i, showMoreFrames, session, showMoreOrigin, expandFrame));
+          } else {
+            results.push(showMoreFrames[0]);
+          }
           showMoreFrames = [];
           showMoreIndex = -1;
           hasOrigin = false;
@@ -104,14 +114,19 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       }
     }
     if (hasOrigin && showMoreFrames.length > 0) {
-      results.push(new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame));
+      if (showMoreFrames.length > 1) {
+        results.push(new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame));
+      } else {
+        results.push(showMoreFrames[0]);
+      }
     }
     return results;
   }, []);
 
   const updateFrames = useCallback(
     (frames: DebugStackFrame[]) => {
-      setFrames(mergeFrames(frames));
+      currentFrames.current = mergeFrames(frames);
+      setFrames(currentFrames.current);
     },
     [frames, mergeFrames],
   );
@@ -173,6 +188,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
     const frame: DebugStackFrame | ShowMoreDebugStackFrame = data;
     const isLabel = DebugStackFrame.is(frame) && frame.raw.presentationHint === 'label';
     const isSubtle = DebugStackFrame.is(frame) && frame.raw.presentationHint === 'subtle';
+    const isDeemphasize = DebugStackFrame.is(frame) && frame.raw?.source?.presentationHint === 'deemphasize';
     const onClickHandler = useCallback(() => {
       if (isLabel || isSubtle) {
         return;
@@ -203,7 +219,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
       paddingLeft: `${indent}px`,
     };
 
-    if (DebugStackFrame.is(frame) && frame.raw?.source?.presentationHint === 'deemphasize') {
+    if (DebugStackFrame.is(frame) && isDeemphasize) {
       frameItemStyle['color'] = 'var(--list-deemphasizedForeground)';
     }
 
@@ -216,9 +232,11 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
             >
               {frame.raw && frame.raw.name}
             </span>
-            <span className={styles.debug_stack_frames_item_description}>
-              {(frame.raw && frame.raw.source && frame.raw.source.name) || localize('debug.stack.frame.noSource')}
-            </span>
+            {!isLabel && (
+              <span className={styles.debug_stack_frames_item_description}>
+                {(frame.raw && frame.raw.source && frame.raw.source.name) || localize('debug.stack.frame.noSource')}
+              </span>
+            )}
             <>
               {frame.canRestart && (
                 <a
@@ -227,11 +245,13 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
                   className={cls(styles.debug_restart_frame_icon, getIcon('debug-restart-frame'))}
                 ></a>
               )}
-              <div className={cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge)}>
-                {frame.raw && frame.raw.line}
-                {!isUndefined(frame.raw.line) && ':'}
-                {frame.raw && frame.raw.column}
-              </div>
+              {!isLabel && !isDeemphasize && (
+                <div className={cls(!isUndefined(frame.raw.line) && styles.debug_stack_frames_item_badge)}>
+                  {frame.raw && frame.raw.line}
+                  {!isUndefined(frame.raw.line) && ':'}
+                  {frame.raw && frame.raw.column}
+                </div>
+              )}
             </>
           </>
         );
@@ -245,6 +265,7 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
         style={frameItemStyle}
         className={cls(
           styles.debug_stack_frames_item,
+          isLabel && styles.is_label,
           DebugStackFrame.is(frame) && selected === frame.raw.id && styles.selected,
           DebugStackFrame.is(frame) &&
             !(frame.raw && frame.raw.source && frame.raw.source.name) &&

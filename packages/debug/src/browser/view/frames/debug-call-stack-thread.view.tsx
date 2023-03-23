@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 
+import { Badge } from '@opensumi/ide-components';
 import { ViewState, getIcon, useInjectable, localize, DisposableCollection } from '@opensumi/ide-core-browser';
 
 import { IDebugSessionManager } from '../../../common';
@@ -59,6 +60,15 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
     };
   }, []);
 
+  const statusDescription =
+    thread.stopped && thread.stoppedDetails
+      ? thread.raw.id === thread.stoppedDetails.threadId
+        ? `${localize('debug.stack.frame.because')} ${thread.stoppedDetails.reason} ${localize(
+            'debug.stack.frame.stopped',
+          )}`
+        : localize('debug.stack.frame.stopped')
+      : localize('debug.stack.frame.running');
+
   return (
     <div
       className={styles.debug_stack_item}
@@ -82,13 +92,7 @@ export const DebugStackThreadView = (props: DebugStackThreadViewProps) => {
               <DebugStackOperationView thread={thread} />
             </div>
             <span className={styles.debug_threads_description}>
-              {thread.stopped && thread.stoppedDetails
-                ? thread.raw.id === thread.stoppedDetails.threadId
-                  ? `${localize('debug.stack.frame.because')} ${thread.stoppedDetails.reason} ${localize(
-                      'debug.stack.frame.stopped',
-                    )}`
-                  : localize('debug.stack.frame.stopped')
-                : localize('debug.stack.frame.running')}
+              <Badge>{statusDescription.toUpperCase()}</Badge>
             </span>
           </>
         </div>
