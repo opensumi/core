@@ -23,13 +23,13 @@ export class ExtHostStorage implements IExtHostStorage {
   }
 
   getExtensionGlobalStorageUri(extensionId: string): Uri {
-    return UriUtils.joinPath(this._storagePath.globalStorageUri, extensionId);
+    return this._storagePath.globalStorageUri.resolve(extensionId).codeUri;
   }
   getExtensionStorageUri(extensionId: string): Uri {
-    return UriUtils.joinPath(this._storagePath.storageUri, extensionId);
+    return this._storagePath.storageUri.resolve(extensionId).codeUri;
   }
   getExtensionLogUri(extensionId: string): Uri {
-    return UriUtils.joinPath(this._storagePath.logUri, extensionId);
+    return this._storagePath.logUri.resolve(extensionId).codeUri;
   }
 
   async getValue<T>(shared: boolean, key: string, defaultValue?: T): Promise<T | KeysToAnyValues> {
