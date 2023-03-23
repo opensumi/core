@@ -115,7 +115,8 @@ export class DebugStackFrame extends DebugStackFrameData {
 
 export class ShowMoreDebugStackFrame {
   constructor(
-    public readonly startIndex: number,
+    // `undefined` 说明已经在末尾
+    public readonly nextFrame: DebugStackFrame | undefined,
     public readonly frames: DebugStackFrame[],
     readonly session: DebugSession,
     readonly origin: string,
@@ -127,7 +128,7 @@ export class ShowMoreDebugStackFrame {
   }
 
   get id(): string {
-    return `${this.session.id}:showMore:${this.startIndex}`;
+    return `${this.session.id}:showMore:${this.nextFrame?.id}`;
   }
 
   open = () => {

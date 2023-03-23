@@ -62,74 +62,93 @@ export const DebugStackFramesView = observer((props: DebugStackSessionViewProps)
   const expandFrame = useCallback(
     (frame: ShowMoreDebugStackFrame) => {
       const expanedFrames = currentFrames.current.slice(0);
-      expanedFrames.splice(frame.startIndex, 1, ...frame.frames);
-      currentFrames.current = expanedFrames;
-      setFrames(expanedFrames);
+      let index = -1;
+      if (!frame.nextFrame) {
+        index = expanedFrames.length;
+      } else {
+        index = expanedFrames.findIndex((f) => DebugStackFrame.is(f) && f.id === frame.nextFrame?.id);
+      }
+      if (index > -1) {
+        expanedFrames.splice(index - 1, 1, ...frame.frames);
+        currentFrames.current = expanedFrames;
+        setFrames(expanedFrames);
+      }
     },
     [currentFrames.current],
   );
 
-  const mergeFrames = useCallback((frames: DebugStackFrame[]) => {
-    const len = frames.length;
-    const results: (DebugStackFrame | ShowMoreDebugStackFrame)[] = [];
-    let showMoreFrames: DebugStackFrame[] = [];
-    let showMoreOrigin;
-    let showMoreIndex = -1;
-    let hasOrigin = false;
-    for (let i = 0; i < len; i++) {
-      if (frames[i].source?.raw.origin) {
-        if (hasOrigin) {
-          if (showMoreOrigin === frames[i].source?.raw.origin) {
-            showMoreFrames.push(frames[i]);
-            continue;
+  const mergeFrames = useCallback(
+    (current: (DebugStackFrame | ShowMoreDebugStackFrame)[], frames: DebugStackFrame[]) => {
+      const len = frames.length;
+      let offset = -1;
+      let lastFrame = current.length > 0 ? current[current.length + offset] : undefined;
+      while (lastFrame && !DebugStackFrame.is(lastFrame)) {
+        offset -= 1;
+        lastFrame = current[current.length + offset];
+      }
+      // 合并位置调整，方便将进一步加载的含 `frames[i].source?.raw.origin` 进行合并
+      const results: (DebugStackFrame | ShowMoreDebugStackFrame)[] = current.slice(0, current.length + offset + 1);
+
+      const startIndex = lastFrame ? frames.findIndex((frame) => frame.id === lastFrame?.id) + 1 : 0;
+      let showMoreFrames: DebugStackFrame[] = [];
+      let showMoreOrigin;
+      let hasOrigin = false;
+      for (let i = startIndex; i < len; i++) {
+        if (frames[i].source?.raw.origin) {
+          if (hasOrigin) {
+            if (showMoreOrigin === frames[i].source?.raw.origin) {
+              showMoreFrames.push(frames[i]);
+              continue;
+            } else {
+              if (showMoreFrames.length > 1) {
+                results.push(
+                  new ShowMoreDebugStackFrame(frames[i], showMoreFrames, session, showMoreOrigin, expandFrame),
+                );
+                offset -= showMoreFrames.length - 1;
+              } else {
+                results.push(showMoreFrames[0]);
+              }
+              showMoreFrames = [];
+              hasOrigin = false;
+              showMoreOrigin = frames[i].source?.raw.origin;
+              showMoreFrames.push(frames[i]);
+            }
           } else {
+            hasOrigin = true;
+            showMoreFrames.push(frames[i]);
+            showMoreOrigin = frames[i].source?.raw.origin;
+          }
+        } else {
+          if (hasOrigin && showMoreFrames.length > 0) {
             if (showMoreFrames.length > 1) {
               results.push(
-                new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame),
+                new ShowMoreDebugStackFrame(frames[i], showMoreFrames, session, showMoreOrigin, expandFrame),
               );
+              offset -= showMoreFrames.length - 1;
             } else {
               results.push(showMoreFrames[0]);
             }
             showMoreFrames = [];
-            showMoreIndex = i;
-            showMoreOrigin = frames[i].source?.raw.origin;
-            showMoreFrames.push(frames[i]);
+            hasOrigin = false;
           }
+          results.push(frames[i]);
+        }
+      }
+      if (hasOrigin && showMoreFrames.length > 0) {
+        if (showMoreFrames.length > 1) {
+          results.push(new ShowMoreDebugStackFrame(undefined, showMoreFrames, session, showMoreOrigin, expandFrame));
         } else {
-          hasOrigin = true;
-          showMoreFrames.push(frames[i]);
-          showMoreIndex = i;
-          showMoreOrigin = frames[i].source?.raw.origin;
+          results.push(showMoreFrames[0]);
         }
-      } else {
-        if (hasOrigin && showMoreFrames.length > 0) {
-          if (showMoreFrames.length > 1) {
-            results.push(
-              new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame),
-            );
-          } else {
-            results.push(showMoreFrames[0]);
-          }
-          showMoreFrames = [];
-          showMoreIndex = -1;
-          hasOrigin = false;
-        }
-        results.push(frames[i]);
       }
-    }
-    if (hasOrigin && showMoreFrames.length > 0) {
-      if (showMoreFrames.length > 1) {
-        results.push(new ShowMoreDebugStackFrame(showMoreIndex, showMoreFrames, session, showMoreOrigin, expandFrame));
-      } else {
-        results.push(showMoreFrames[0]);
-      }
-    }
-    return results;
-  }, []);
+      return results;
+    },
+    [],
+  );
 
   const updateFrames = useCallback(
     (frames: DebugStackFrame[]) => {
-      currentFrames.current = mergeFrames(frames);
+      currentFrames.current = mergeFrames(currentFrames.current, frames);
       setFrames(currentFrames.current);
     },
     [frames, mergeFrames],

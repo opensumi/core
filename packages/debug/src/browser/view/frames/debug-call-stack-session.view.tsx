@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 
 import { ViewState, getIcon, useInjectable, DisposableCollection, localize } from '@opensumi/ide-core-browser';
 
@@ -34,6 +34,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   const mutipleSession = manager.sessions.length > 1;
   const supportsThreadIdCorrespond = session.supportsThreadIdCorrespond;
 
+  const disposed = useRef<boolean>(false);
   // 从 manager.sessions 中找出 parentSession id 是当前 session id 的 session
   const findSubSessions = () => {
     const hasParentSessions = manager.sessions.filter((s) => s.parentSession);
@@ -60,6 +61,9 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
     const disposables = new DisposableCollection();
     disposables.push(
       manager.onDidCreateDebugSession(() => {
+        if (disposed.current) {
+          return;
+        }
         const sub = findSubSessions();
         setSubSession(sub);
       }),
@@ -67,12 +71,16 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
 
     disposables.push(
       manager.onDidDestroyDebugSession(() => {
+        if (disposed.current) {
+          return;
+        }
         const sub = findSubSessions();
         setSubSession(sub);
       }),
     );
 
     return () => {
+      disposed.current = true;
       disposables.dispose();
     };
   }, []);
