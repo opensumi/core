@@ -306,19 +306,21 @@ export class DebugContribution
         this.openDebugView();
       }
     });
-    this.sessionManager.onDidDestroyDebugSession((session) => {
+    this.sessionManager.onDidDestroyDebugSession(() => {
       if (this.sessionManager.sessions.length === 0) {
         this.commandService.tryExecuteCommand('statusbar.changeBackgroundColor', 'var(--statusBar-background)');
         this.commandService.tryExecuteCommand('statusbar.changeColor');
       }
     });
-    this.configurations.load();
-    this.breakpointManager.load();
-    this.configurations.onDidChange(() => this.configurations.save());
-    this.breakpointManager.onDidChangeBreakpoints(() => this.breakpointManager.save());
-    this.breakpointManager.onDidChangeExceptionsBreakpoints(() => this.breakpointManager.save());
-    this.breakpointManager.onDidChangeMarkers(() => this.breakpointManager.save());
-
+    this.configurations.whenReady.then(() => {
+      this.configurations.load();
+      this.configurations.onDidChange(() => this.configurations.save());
+    });
+    this.breakpointManager.load().then(() => {
+      this.breakpointManager.onDidChangeBreakpoints(() => this.breakpointManager.save());
+      this.breakpointManager.onDidChangeExceptionsBreakpoints(() => this.breakpointManager.save());
+      this.breakpointManager.onDidChangeMarkers(() => this.breakpointManager.save());
+    });
     this.extensionsPointService.appendExtensionPoint(['browserViews', 'properties'], {
       extensionPoint: DEBUG_CONTAINER_ID,
       frameworkKind: ['opensumi'],
