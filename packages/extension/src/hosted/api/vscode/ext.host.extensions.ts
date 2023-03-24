@@ -5,19 +5,19 @@ import type vscode from 'vscode';
 import { Uri } from '@opensumi/ide-core-common';
 
 import { IExtendProxy, IExtensionHost, IExtensionProps } from '../../../common';
-import { IExtHostTerminal } from '../../../common/vscode';
+import { IExtHostStorage, IExtHostTerminal } from '../../../common/vscode';
 import { ExtensionMode } from '../../../common/vscode/ext-types';
 import { KTExtension, KTWorkerExtension } from '../../vscode.extension';
 
 import { ExtensionSecrets, ExtHostSecret } from './ext.host.secrets';
-import { ExtensionGlobalMemento, ExtensionMemento, ExtHostStorage } from './ext.host.storage';
+import { ExtensionGlobalMemento, ExtensionMemento } from './ext.host.storage';
 
 export interface IKTContextOptions {
   extensionId: string;
   extensionPath: string;
   extensionLocation: Uri;
   extensionDescription: IExtensionProps;
-  storageProxy: ExtHostStorage;
+  storageProxy: IExtHostStorage;
   secretProxy: ExtHostSecret;
   extendProxy?: IExtendProxy;
   isDevelopment?: boolean;
@@ -55,7 +55,7 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
 
   private createExtension: IKTContextOptions['createExtension'];
 
-  private _storage: ExtHostStorage;
+  private _storage: IExtHostStorage;
 
   private exthostTerminalService: IExtHostTerminal | undefined;
 
@@ -64,6 +64,8 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
   public componentProxy: IExtendProxy | undefined;
 
   public registerExtendModuleService: ((exportsData: any) => void) | undefined;
+
+  extensionId: string;
 
   constructor(options: IKTContextOptions) {
     const {
@@ -75,6 +77,8 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
       extensionLocation,
       extensionDescription,
     } = options;
+
+    this.extensionId = extensionId;
 
     this._storage = storageProxy;
     this.createExtension = createExtension;
@@ -93,36 +97,36 @@ export class ExtensionContext implements vscode.ExtensionContext, IKTExtensionCo
     return path.join(this._extensionLocation.fsPath, relativePath);
   }
 
-  get extensionPath() {
-    return this._extensionLocation.fsPath;
-  }
-
   get extensionUri() {
     return this._extensionLocation;
   }
 
-  get storagePath() {
-    return this._storage.storagePath.storageUri?.fsPath.toString();
-  }
-
-  get logPath() {
-    return this._storage.storagePath.logUri.fsPath.toString();
+  get extensionPath() {
+    return this._extensionLocation.fsPath;
   }
 
   get storageUri() {
-    return this._storage.storagePath.storageUri;
+    return this._storage.getExtensionStorageUri(this.extensionId);
+  }
+
+  get storagePath() {
+    return this.storageUri?.fsPath.toString();
   }
 
   get logUri() {
-    return this._storage.storagePath.logUri;
+    return this._storage.getExtensionLogUri(this.extensionId);
   }
 
-  get globalStoragePath() {
-    return this._storage.storagePath.globalStorageUri.fsPath.toString();
+  get logPath() {
+    return this.logUri.fsPath.toString();
   }
 
   get globalStorageUri() {
-    return this._storage.storagePath.globalStorageUri;
+    return this._storage.getExtensionGlobalStorageUri(this.extensionId);
+  }
+
+  get globalStoragePath() {
+    return this.globalStorageUri.fsPath.toString();
   }
 
   get extensionMode() {

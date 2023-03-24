@@ -1,6 +1,6 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { URI, ILogger, WithEventBus, OnEvent, CancellationToken } from '@opensumi/ide-core-browser';
+import { URI, ILogger, WithEventBus, OnEvent, CancellationToken, IDisposable } from '@opensumi/ide-core-browser';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
@@ -42,7 +42,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   @Autowired(ILogger)
   logger: ILogger;
 
-  private workspaceChangeEvent;
+  private workspaceChangeEvent: IDisposable;
 
   constructor(@Optional(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
