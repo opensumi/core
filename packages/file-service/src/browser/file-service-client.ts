@@ -396,7 +396,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async delete(uriString: string, options?: FileDeleteOptions) {
-    if (this.appConfig.isElectronRenderer) {
+    if (this.appConfig.isElectronRenderer && options?.moveToTrash !== false) {
       const uri = new URI(uriString);
       if (uri.scheme === Schemes.file) {
         return (this.injector.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
