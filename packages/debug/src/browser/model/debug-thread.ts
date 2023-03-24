@@ -1,4 +1,5 @@
 import { Event, Emitter } from '@opensumi/ide-core-browser';
+import { uuid } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { DEBUG_REPORT_NAME, IDebugExceptionInfo } from '../../common';
@@ -83,7 +84,7 @@ export class DebugThread extends DebugThreadData {
     return this.session.sendRequest('terminateThreads', { threadIds: [this.raw.id] });
   }
 
-  protected readonly _frames = new Map<number, DebugStackFrame>();
+  protected readonly _frames = new Map<number | string, DebugStackFrame>();
   get frames(): DebugStackFrame[] {
     return Array.from(this._frames.values());
   }
@@ -155,10 +156,13 @@ export class DebugThread extends DebugThreadData {
       threadId: this.raw.id,
       threadAmount: this.session.threadCount,
     });
-    const result = new Map<number, DebugStackFrame>(this._frames);
+    const result = new Map<string | number, DebugStackFrame>(this._frames);
     for (const raw of frames) {
-      const id = raw.id;
-      const frame = this._frames.get(id) || new DebugStackFrame(this, this.session);
+      let id: string | number = raw.id;
+      if (this._frames.get(id)) {
+        id = uuid();
+      }
+      const frame = new DebugStackFrame(this, this.session);
       this._frames.set(id, frame);
       frame.update({ raw });
       result.set(id, frame);
