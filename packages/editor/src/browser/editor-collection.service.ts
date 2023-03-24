@@ -706,10 +706,12 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
       ? this.modifiedEditor.currentDocumentModel.languageId
       : undefined;
     const options = getConvertedMonacoOptions(this.configurationService, uriStr, languageId);
+    const readOnly = this.isReadonly();
     this.monacoDiffEditor.updateOptions({
       ...options.diffOptions,
       ...this.specialOptions,
-      readOnly: this.isReadonly(),
+      readOnly,
+      renderMarginRevertIcon: !readOnly,
     });
 
     if (this.currentUri) {
