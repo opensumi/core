@@ -1,5 +1,4 @@
 import { strings, CaseInsensitiveMap } from '@opensumi/ide-utils';
-import { uppercaseFirstLetter as _uppercaseFirstLetter } from '@opensumi/ide-utils/lib/strings';
 
 const { format, mnemonicButtonLabel } = strings;
 
