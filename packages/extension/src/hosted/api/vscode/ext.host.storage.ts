@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { Emitter, IDisposable } from '@opensumi/ide-core-common';
-import { ExtensionStorageUri } from '@opensumi/ide-extension-storage/lib/common/storage';
+import { Emitter, IDisposable, Uri, UriUtils } from '@opensumi/ide-core-common';
+import { IExtensionStorageUri } from '@opensumi/ide-extension-storage/lib/common/storage';
 
 import {
   IMainThreadStorage,
@@ -8,26 +8,28 @@ import {
   KeysToAnyValues,
   KeysToKeysToAnyValue,
   MainThreadAPIIdentifier,
+  IStorageChangeEvent,
 } from '../../../common/vscode';
 import { Memento } from '../../../common/vscode/ext-types';
-
-export interface IStorageChangeEvent {
-  shared: boolean;
-  data: KeysToAnyValues;
-}
 
 export class ExtHostStorage implements IExtHostStorage {
   private _onDidChangeStorage = new Emitter<IStorageChangeEvent>();
   readonly onDidChangeStorage = this._onDidChangeStorage.event;
   private proxy: IMainThreadStorage;
-  private _storagePath: ExtensionStorageUri;
+  private _storagePath: IExtensionStorageUri;
 
   constructor(rpc: IRPCProtocol) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadStorage);
   }
 
-  get storagePath() {
-    return this._storagePath;
+  getExtensionGlobalStorageUri(extensionId: string): Uri {
+    return UriUtils.resolvePath(this._storagePath.globalStorageUri, extensionId);
+  }
+  getExtensionStorageUri(extensionId: string): Uri {
+    return UriUtils.resolvePath(this._storagePath.storageUri, extensionId);
+  }
+  getExtensionLogUri(extensionId: string): Uri {
+    return UriUtils.resolvePath(this._storagePath.logUri, extensionId);
   }
 
   async getValue<T>(shared: boolean, key: string, defaultValue?: T): Promise<T | KeysToAnyValues> {
@@ -42,7 +44,7 @@ export class ExtHostStorage implements IExtHostStorage {
     this._onDidChangeStorage.fire({ shared: false, data });
   }
 
-  async $acceptStoragePath(paths: ExtensionStorageUri) {
+  async $acceptStoragePath(paths: IExtensionStorageUri) {
     this._storagePath = paths;
   }
 }
@@ -52,7 +54,11 @@ export class ExtensionMemento implements Memento {
   private cache: { [n: string]: any };
   private readonly storageListener: IDisposable;
 
-  constructor(private readonly id: string, private readonly global: boolean, private readonly storage: ExtHostStorage) {
+  constructor(
+    private readonly id: string,
+    private readonly global: boolean,
+    private readonly storage: IExtHostStorage,
+  ) {
     this._init = this.storage.getValue(this.global, this.id, Object.create(null)).then((value) => {
       this.cache = value;
       return this;
