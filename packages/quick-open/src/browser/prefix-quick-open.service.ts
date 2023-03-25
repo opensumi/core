@@ -31,7 +31,7 @@ import {
   QuickOpenItem,
   PrefixQuickOpenService,
 } from '@opensumi/ide-core-browser/lib/quick-open';
-import { DisposableCollection, IDisposable, Disposable, ILogger } from '@opensumi/ide-core-common';
+import { DisposableCollection, IDisposable, Disposable, ILogger, isString } from '@opensumi/ide-core-common';
 
 import { QuickOpenTabs } from './components/quick-open-tabs';
 import { QuickTitleBar } from './quick-title-bar';
@@ -117,9 +117,11 @@ export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHa
   }
 
   getHandlerOrDefault(text: string): QuickOpenHandler | undefined {
-    for (const handler of this.handlers.values()) {
-      if (text.startsWith(handler.prefix)) {
-        return handler;
+    if (isString(text)) {
+      for (const handler of this.handlers.values()) {
+        if (text.startsWith(handler.prefix)) {
+          return handler;
+        }
       }
     }
     return this.getDefaultHandler();
