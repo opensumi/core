@@ -24,28 +24,15 @@ export class LayoutState {
   async initStorage() {
     this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
     this.globalLayoutStorage = await this.getStorage(STORAGE_NAMESPACE.GLOBAL_LAYOUT);
-
-    // await this.preferenceService.ready;
-    // this.saveLayoutWithWorkspace = this.preferenceService.get<boolean>('view.saveLayoutWithWorkspace') || false;
-    // this.disposableCollection.push(
-    //   this.preferenceService.onPreferenceChanged((e) => {
-    //     if (e.preferenceName === 'view.saveLayoutWithWorkspace') {
-    //       this.saveLayoutWithWorkspace = e.newValue;
-    //     }
-    //   }),
-    // );
-
-    // FIXME: 调试发现后续好像并没有进入到 then 中来
-    this.preferenceService.ready.then(() => {
-      this.saveLayoutWithWorkspace = this.preferenceService.get<boolean>('view.saveLayoutWithWorkspace') || false;
-      this.disposableCollection.push(
-        this.preferenceService.onPreferenceChanged((e) => {
-          if (e.preferenceName === 'view.saveLayoutWithWorkspace') {
-            this.saveLayoutWithWorkspace = e.newValue;
-          }
-        }),
-      );
-    });
+    await this.preferenceService.ready;
+    this.saveLayoutWithWorkspace = this.preferenceService.get<boolean>('view.saveLayoutWithWorkspace') || false;
+    this.disposableCollection.push(
+      this.preferenceService.onPreferenceChanged((e) => {
+        if (e.preferenceName === 'view.saveLayoutWithWorkspace') {
+          this.saveLayoutWithWorkspace = e.newValue;
+        }
+      }),
+    );
   }
 
   getState<T>(key: string, defaultState: T): T {

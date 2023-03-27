@@ -168,7 +168,8 @@ export class MainLayoutModuleContribution
 
   async initialize() {
     // 全局只要初始化一次
-    await this.layoutState.initStorage();
+    // FIXME: 目前是等框架 ready 后再主动更新一次
+    this.layoutState.initStorage();
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
       if (contribution.registerComponent) {
@@ -181,8 +182,8 @@ export class MainLayoutModuleContribution
         contribution.registerRenderer(slotRendererRegistry);
       }
     }
-    const contributions = this.toolBarContributionProvider.getContributions();
-    for (const contribution of contributions) {
+    const toolBarContribution = this.toolBarContributionProvider.getContributions();
+    for (const contribution of toolBarContribution) {
       if (contribution.registerToolbarItems) {
         contribution.registerToolbarItems(this.toolBarRegistry);
       }

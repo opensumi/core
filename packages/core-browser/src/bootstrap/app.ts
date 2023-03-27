@@ -231,7 +231,8 @@ export class ClientApp implements IClientApp, IDisposable {
       } else if (type === 'web') {
         await this.startUIContributions(container);
         // 模拟建连耗时
-        await sleep(3);
+        // await sleep(3);
+        // return;
         await createClientConnection2(
           this.injector,
           this.modules,
@@ -350,12 +351,11 @@ export class ClientApp implements IClientApp, IDisposable {
     // Rendering layout
     await this.measure('RenderApp.render', () => this.renderApp(container));
 
-    this.lifeCycleService.phase = LifeCyclePhase.Initialize;
-
     await this.runContributionsPhase(contributions, 'initialize');
   }
 
   protected async startNoUIContributions() {
+    this.lifeCycleService.phase = LifeCyclePhase.Initialize;
     const contributions = this.contributions.filter(
       (contribution) => !UIContributionNames.includes(contribution.constructor.name),
     );
