@@ -22,6 +22,7 @@ import {
   IScopedContextKeyService,
   Deferred,
   formatLocalize,
+  createFormatLocalizedStr,
 } from '@opensumi/ide-core-browser';
 import { SCM_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { ResizeHandle } from '@opensumi/ide-core-browser/lib/components';
@@ -323,7 +324,7 @@ export class TabbarService extends WithEventBus {
         {
           id: 'container.show.' + containerId,
           label: formatLocalize('view.command.show', componentInfo.options?.title ?? containerId),
-          alias: `Show ${componentInfo.options?.title ?? componentInfo.options?.containerId}`,
+          labelLocalized: createFormatLocalizedStr('view.command.show', componentInfo.options?.title ?? containerId),
           category: 'View',
         },
         {
