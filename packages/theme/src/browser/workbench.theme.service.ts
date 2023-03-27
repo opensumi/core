@@ -20,9 +20,10 @@ import {
   OnEvent,
   ExtensionDidContributes,
   Deferred,
+  ContributionProvider,
 } from '@opensumi/ide-core-common';
 
-import { ICSSStyleService } from '../common';
+import { ICSSStyleService, ThemeContributionProvider } from '../common';
 import { Color } from '../common/color';
 import {
   editorSelectionBackground,
@@ -106,6 +107,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   @Autowired(ICSSStyleService)
   private readonly styleService: ICSSStyleService;
+
+  @Autowired(ThemeContributionProvider)
+  protected readonly themeContributionProvider: ContributionProvider<ThemeContributionProvider>;
 
   constructor() {
     super();
@@ -438,22 +442,22 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   private doApplyTheme(theme: Theme) {
-    const colorContributions = this.colorRegistry.getColors();
-    const colors = {};
-    colorContributions.forEach((contribution) => {
-      const colorId = contribution.id;
+    const registeredColors = this.colorRegistry.getColors();
+    const colors = {} as Record<string, string | undefined>;
+
+    registeredColors.forEach((c) => {
+      const colorId = c.id;
       const color = theme.getColor(colorId);
       colors[colorId] = color ? color.toString() : '';
     });
-    /** @deprecated Needs to be removed start */
-    const foreground = theme.getColor('foreground');
-    if (foreground) {
-      colors['foreground.secondary'] = foreground.darken(0.2).toString();
+
+    const contributions = this.themeContributionProvider.getContributions();
+    for (const c of contributions) {
+      if (typeof c.onWillApplyTheme === 'function') {
+        const contributionColor = c.onWillApplyTheme(theme);
+        Object.assign(colors, contributionColor);
+      }
     }
-    if (theme.getColor('menu.foreground')) {
-      colors[menuDisableForeground] = theme.getColor('menu.foreground')!.darken(0.4).toString();
-    }
-    /** Needs to be removed end */
 
     // fallback to editorSelectionBackground when global selectionBackgroun is null.
     if (!theme.getColor(selectionBackground)) {
