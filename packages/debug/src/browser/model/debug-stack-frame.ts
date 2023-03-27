@@ -1,4 +1,4 @@
-import { IRange } from '@opensumi/ide-core-browser';
+import { formatLocalize, IRange } from '@opensumi/ide-core-browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import { Range } from '@opensumi/monaco-editor-core/esm/vs/editor/common/core/range';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
@@ -9,12 +9,15 @@ import { DebugScope, ExpressionContainer } from '../tree/debug-tree-node.define'
 import { DebugSource } from './debug-source';
 import { DebugThread } from './debug-thread';
 
-
 export class DebugStackFrameData {
   readonly raw: DebugProtocol.StackFrame;
 }
 
 export class DebugStackFrame extends DebugStackFrameData {
+  public static is(frame: any): frame is DebugStackFrame {
+    return !!frame && 'raw' in frame;
+  }
+
   constructor(readonly thread: DebugThread, readonly session: DebugSession) {
     super();
   }
@@ -108,4 +111,27 @@ export class DebugStackFrame extends DebugStackFrameData {
       );
     return scopesContainingRange.length ? scopesContainingRange : nonExpensiveScopes;
   }
+}
+
+export class ShowMoreDebugStackFrame {
+  constructor(
+    // `undefined` 说明已经在末尾
+    public readonly nextFrame: DebugStackFrame | undefined,
+    public readonly frames: DebugStackFrame[],
+    readonly session: DebugSession,
+    readonly origin: string,
+    readonly _open: (showMoreFrame: ShowMoreDebugStackFrame) => void,
+  ) {}
+
+  get name() {
+    return formatLocalize('debug.stack.showMoreAndOrigin', this.frames.length, this.origin);
+  }
+
+  get id(): string {
+    return `${this.session.id}:showMore:${this.nextFrame?.id}`;
+  }
+
+  open = () => {
+    this._open(this);
+  };
 }
