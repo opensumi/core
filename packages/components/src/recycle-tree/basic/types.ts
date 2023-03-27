@@ -67,7 +67,7 @@ export interface IBasicTreeData {
   /**
    * 描述
    */
-  description?: string;
+  description?: string | React.ReactNode;
   /**
    * 子节点
    *

@@ -90,7 +90,7 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderDisplayName = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <div className={cls('segment', 'display_name')}>{getName(node)}</div>
+      node.displayName && <div className={cls('segment', 'display_name')}>{getName(node)}</div>
     ),
     [],
   );
@@ -99,7 +99,12 @@ export const BasicTreeNodeRenderer: React.FC<
     if (!node.description) {
       return null;
     }
-    return <div className={cls('segment_grow', 'description')}>{node.description}</div>;
+
+    if (typeof node.description === 'string') {
+      return <div className={cls('segment_grow', 'description')}>{node.description}</div>;
+    };
+
+    return node.description;
   }, []);
 
   const inlineMenuActions = useCallback(

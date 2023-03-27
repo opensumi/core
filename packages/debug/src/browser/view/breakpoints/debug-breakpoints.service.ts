@@ -21,6 +21,7 @@ import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';
 
 import { BreakpointItem } from './debug-breakpoints.view';
+import { BreakpointsTreeNode } from './debug-breakpoints-tree.model';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {
@@ -59,6 +60,8 @@ export class DebugBreakpointsService extends WithEventBus {
 
   @observable
   public nodes: BreakpointItem[] = [];
+  // @observable.shallow
+  // public nodes: Map<URI, BreakpointsTreeNode[]> = new Map();
 
   @observable
   public enable: boolean;
@@ -139,38 +142,44 @@ export class DebugBreakpointsService extends WithEventBus {
     }
   }
 
-  extractNodes(items: (DebugExceptionBreakpoint | IDebugBreakpoint)[]) {
-    const nodes: BreakpointItem[] = [];
-    items.forEach((item) => {
-      if (isDebugBreakpoint(item)) {
-        const uri = URI.parse(item.uri);
-        const parent = this.roots.filter((root) => root.isEqualOrParent(uri))[0];
-        nodes.push({
-          id: item.id,
-          name: uri.displayName,
-          description: parent && parent.relative(uri)!.toString(),
-          breakpoint: item,
-        });
+  extractNodes(item: (DebugExceptionBreakpoint | IDebugBreakpoint)): BreakpointItem | undefined {
+    if (isDebugBreakpoint(item)) {
+      const uri = URI.parse(item.uri);
+      const parent = this.roots.filter((root) => root.isEqualOrParent(uri))[0];
+      return {
+        id: item.id,
+        name: uri.displayName,
+        description: parent && parent.relative(uri)!.toString(),
+        breakpoint: item,
+      };
+    }
+    if (isDebugExceptionBreakpoint(item)) {
+      return {
+        id: item.filter,
+        name: item.label,
+        description: '',
+        breakpoint: item,
       }
-      if (isDebugExceptionBreakpoint(item)) {
-        nodes.push({
-          id: item.filter,
-          name: item.label,
-          description: '',
-          breakpoint: item,
-        });
-      }
-    });
-    return nodes;
+    };
   }
 
   @action
   private async updateBreakpoints() {
     await this.breakpoints.whenReady;
-    this.nodes = this.extractNodes([
+
+    const allBreakpoints = [
       ...this.breakpoints.getExceptionBreakpoints(),
       ...this.breakpoints.getBreakpoints(),
-    ]);
+    ];
+
+    allBreakpoints.forEach((item, index) => {
+
+    });
+
+    // this.nodes = this.extractNodes([
+    //   ...this.breakpoints.getExceptionBreakpoints(),
+    //   ...this.breakpoints.getBreakpoints(),
+    // ]);
   }
 
   removeAllBreakpoints() {
