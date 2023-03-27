@@ -47,6 +47,7 @@
   flex-direction: row;
   flex-shrink: 1;
   overflow: hidden;
+  align-items: center;
   i.arrow_icon {
     display: flex;
     align-items: center;
@@ -128,7 +129,18 @@
   cursor: pointer;
   user-select: none;
 }
-
+.section_badge {
+  line-height: 1;
+  background-color: var(--badge-background);
+  color: var(--badge-foreground);
+  margin-left: 6px;
+  padding: 2px 4px;
+  border-radius: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
 .section_description {
   font-weight: 400;
   margin-left: 10px;

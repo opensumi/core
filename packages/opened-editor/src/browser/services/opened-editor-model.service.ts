@@ -19,6 +19,7 @@ import {
   Event,
   path,
   pSeries,
+  formatLocalize,
 } from '@opensumi/ide-core-browser';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -29,6 +30,7 @@ import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
 import { EditorFile, EditorFileGroup } from '../opened-editor-node.define';
 import styles from '../opened-editor-node.module.less';
+import { ExplorerOpenedEditorViewId } from '../opened-editor.contribution';
 
 import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
 import { OpenedEditorEventService } from './opened-editor-event.service';
@@ -491,8 +493,11 @@ export class OpenedEditorModelService {
   private setExplorerTabBarBadge() {
     const handler = this.layoutService.getTabbarHandler(EXPLORER_CONTAINER_ID);
     const dirtyCount = this.editorService.calcDirtyCount();
+    const accordionService = this.layoutService.getAccordionService(EXPLORER_CONTAINER_ID);
     if (handler) {
+      const dirtyMsg = dirtyCount > 0 ? formatLocalize('opened.editors.unsaved', dirtyCount.toString()) : '';
       handler.setBadge(dirtyCount > 0 ? dirtyCount.toString() : '');
+      accordionService.updateViewBadge(ExplorerOpenedEditorViewId, dirtyMsg);
     }
   }
 }
