@@ -296,7 +296,7 @@ externals: [
 
 ```diff
 - import { FolderPreferencesProvider } from '@opensumi/ide-preferences/lib/browser/folder-preferences-provider';
-+ import { FoldersPreferencesProvider } from '@opensumi/ide-preferences/lib/browser/folders-preferences-provider';
++ import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
 ```
 
 2.  ParcelWatcherServer -> FileSystemWatcherServer
