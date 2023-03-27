@@ -290,6 +290,22 @@ externals: [
 ],
 ```
 
+#### 6. Class And Path changed
+
+1. FoldersPreferencesProvider -> FoldersPreferencesProvider
+
+```diff
+- import { FolderPreferencesProvider } from '@opensumi/ide-preferences/lib/browser/folder-preferences-provider';
++ import { FoldersPreferencesProvider } from '@opensumi/ide-preferences/lib/browser/folders-preferences-provider';
+```
+
+2.  ParcelWatcherServer -> FileSystemWatcherServer
+
+```diff
+- import { ParcelWatcherServer } from '@opensumi/ide-file-service/lib/node/file-service-watcher';
++ import { FileSystemWatcherServer } from '@opensumi/ide-file-service/lib/node/file-service-watcher';
+```
+
 ## v2.21.0
 
 ### What's New Features
