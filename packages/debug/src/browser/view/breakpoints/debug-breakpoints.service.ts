@@ -1,7 +1,16 @@
 import { observable, action, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemes } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  WithEventBus,
+  OnEvent,
+  IContextKeyService,
+  IReporterService,
+  Schemes,
+  Emitter,
+  Event,
+} from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
@@ -16,12 +25,13 @@ import {
   isDebugExceptionBreakpoint,
   BreakpointManager,
   DebugDecorator,
+  EXCEPTION_BREAKPOINT_URI,
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';
 
-import { BreakpointItem } from './debug-breakpoints.view';
 import { BreakpointsTreeNode } from './debug-breakpoints-tree.model';
+import { BreakpointItem } from './debug-breakpoints.view';
 
 @Injectable()
 export class DebugBreakpointsService extends WithEventBus {
@@ -52,16 +62,17 @@ export class DebugBreakpointsService extends WithEventBus {
   @Autowired(IEditorDocumentModelService)
   protected readonly documentService: IEditorDocumentModelService;
 
+  private readonly _onDidChangeBreakpointsTreeNode = new Emitter<Map<string, BreakpointsTreeNode[]>>();
+  readonly onDidChangeBreakpointsTreeNode: Event<Map<string, BreakpointsTreeNode[]>> =
+    this._onDidChangeBreakpointsTreeNode.event;
+
   private _inputEditor: ICodeEditor;
 
   public get inputEditor(): ICodeEditor {
     return this._inputEditor;
   }
 
-  @observable
-  public nodes: BreakpointItem[] = [];
-  // @observable.shallow
-  // public nodes: Map<URI, BreakpointsTreeNode[]> = new Map();
+  public treeNodeMap: Map<string, BreakpointsTreeNode[]> = new Map();
 
   @observable
   public enable: boolean;
@@ -142,7 +153,7 @@ export class DebugBreakpointsService extends WithEventBus {
     }
   }
 
-  extractNodes(item: (DebugExceptionBreakpoint | IDebugBreakpoint)): BreakpointItem | undefined {
+  extractNodes(item: DebugExceptionBreakpoint | IDebugBreakpoint): BreakpointItem | undefined {
     if (isDebugBreakpoint(item)) {
       const uri = URI.parse(item.uri);
       const parent = this.roots.filter((root) => root.isEqualOrParent(uri))[0];
@@ -159,27 +170,28 @@ export class DebugBreakpointsService extends WithEventBus {
         name: item.label,
         description: '',
         breakpoint: item,
-      }
-    };
+      };
+    }
   }
 
   @action
   private async updateBreakpoints() {
     await this.breakpoints.whenReady;
+    this.treeNodeMap.clear();
 
-    const allBreakpoints = [
-      ...this.breakpoints.getExceptionBreakpoints(),
-      ...this.breakpoints.getBreakpoints(),
-    ];
+    const allBreakpoints = [...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints()];
 
-    allBreakpoints.forEach((item, index) => {
-
+    allBreakpoints.forEach((item) => {
+      const extractNode = this.extractNodes(item);
+      if (extractNode) {
+        const uri = isDebugBreakpoint(item) ? URI.parse(item.uri) : EXCEPTION_BREAKPOINT_URI;
+        const getTreeNodes = this.treeNodeMap.get(uri.toString()) || [];
+        getTreeNodes.push(new BreakpointsTreeNode(uri, extractNode));
+        this.treeNodeMap.set(uri.toString(), getTreeNodes);
+      }
     });
 
-    // this.nodes = this.extractNodes([
-    //   ...this.breakpoints.getExceptionBreakpoints(),
-    //   ...this.breakpoints.getBreakpoints(),
-    // ]);
+    this._onDidChangeBreakpointsTreeNode.fire(this.treeNodeMap);
   }
 
   removeAllBreakpoints() {

@@ -4,11 +4,27 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
 import { Badge } from '@opensumi/ide-components';
-import { useInjectable, CommandService, EDITOR_COMMANDS, URI, getIcon, Disposable, ViewState } from '@opensumi/ide-core-browser';
+import {
+  useInjectable,
+  CommandService,
+  EDITOR_COMMANDS,
+  URI,
+  getIcon,
+  Disposable,
+  ViewState,
+} from '@opensumi/ide-core-browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
-import { DebugExceptionBreakpoint, isDebugBreakpoint, isRuntimeBreakpoint, getStatus, BreakpointManager, isDebugExceptionBreakpoint } from '../../breakpoint';
+import {
+  DebugExceptionBreakpoint,
+  isDebugBreakpoint,
+  isRuntimeBreakpoint,
+  getStatus,
+  BreakpointManager,
+  isDebugExceptionBreakpoint,
+  EXCEPTION_BREAKPOINT_URI,
+} from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 
 import styles from './debug-breakpoints.module.less';
@@ -22,64 +38,46 @@ export interface BreakpointItem {
 }
 
 export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
-  const { nodes, enable, inDebugMode, toggleBreakpointEnable }: DebugBreakpointsService =
+  const { enable, inDebugMode, toggleBreakpointEnable, onDidChangeBreakpointsTreeNode }: DebugBreakpointsService =
     useInjectable(DebugBreakpointsService);
+  const [treeData, setTreeData] = useState<IBasicTreeData[]>([]);
 
-  const treeData = React.useMemo(() => {
-    const breakpointTreeData: IBasicTreeData[] = [];
-    const exceptionBreakpoints = nodes.filter(node => isDebugExceptionBreakpoint(node.breakpoint));
-    const excludeExceptionBreakpoints = nodes.filter(node => isDebugBreakpoint(node.breakpoint));
+  useEffect(() => {
+    const dispose = new Disposable();
 
-    if (exceptionBreakpoints.length > 0) {
-      exceptionBreakpoints.forEach(item => {
-        breakpointTreeData.push({
-          id: item.id,
-          label: '',
-          description: <BreakpointItem
-            toggle={() => toggleBreakpointEnable(item.breakpoint)}
-            breakpointEnabled={enable}
-            data={item}
-            isDebugMode={inDebugMode}
-          ></BreakpointItem>,
-          expandable: false,
-          children: [],
+    dispose.addDispose(
+      onDidChangeBreakpointsTreeNode((nodes) => {
+        const breakpointTreeData: IBasicTreeData[] = [];
+
+        Array.from(nodes.entries()).forEach(([uri, items]) => {
+          const isException = EXCEPTION_BREAKPOINT_URI.toString() === uri;
+
+          breakpointTreeData.push({
+            label: isException ? '' : URI.parse(uri).displayName,
+            expandable: !isException,
+            children: items.map((item) => ({
+                ...item,
+                label: '',
+                description: (
+                  <BreakpointItem
+                    toggle={() => toggleBreakpointEnable(item.breakpoint)}
+                    breakpointEnabled={enable}
+                    data={item.rawData}
+                    isDebugMode={inDebugMode}
+                  ></BreakpointItem>
+                ),
+              })),
+          });
         });
-      })
-    }
 
-    const groupByUri: Record<string, BreakpointItem[]> = excludeExceptionBreakpoints.reduce((acc, cur) => {
-      const uri = (cur.breakpoint as ISourceBreakpoint).uri;
-      if (!acc[uri]) {
-        acc[uri] = [];
-      }
-      acc[uri].push(cur);
-      return acc;
-    }, {} as Record<string, BreakpointItem[]>);
+        setTreeData(breakpointTreeData);
+      }),
+    );
 
-    for (const uri in groupByUri) {
-      const toURI = new URI(uri);
-
-      breakpointTreeData.push({
-        id: toURI.toString(),
-        name: toURI.displayName,
-        label: toURI.displayName,
-        expandable: true,
-        children: groupByUri[uri].map(item => ({
-          label: '',
-          id: item.id,
-          name: '',
-          description: <BreakpointItem
-            toggle={() => toggleBreakpointEnable(item.breakpoint)}
-            breakpointEnabled={enable}
-            data={item}
-            isDebugMode={inDebugMode}
-          ></BreakpointItem>,
-          rawData: item,
-        })),
-      });
+    return () => {
+      dispose.dispose();
     };
-    return breakpointTreeData;
-  }, [nodes]);
+  }, []);
 
   const resolveTestChildren = React.useCallback((node?: any) => {
     if (!node) {
@@ -195,13 +193,11 @@ export const BreakpointItem = ({
     debugBreakpointsService.delBreakpoint(data.breakpoint as IDebugBreakpoint);
   };
 
-  const isExceptionBreakpoint = useMemo(() => {
-    return isDebugExceptionBreakpoint(data.breakpoint)
-  }, [data])
+  const isExceptionBreakpoint = useMemo(() => isDebugExceptionBreakpoint(data.breakpoint), [data]);
 
   return (
     <div className={cls(styles.debug_breakpoints_item)}>
-      { !isExceptionBreakpoint && <div className={cls(converBreakpointClsState(), styles.debug_breakpoints_icon)}></div> }
+      {!isExceptionBreakpoint && <div className={cls(converBreakpointClsState(), styles.debug_breakpoints_icon)}></div>}
       <CheckBox id={data.id} onChange={handleBreakpointChange} checked={enabled}></CheckBox>
       <div className={styles.debug_breakpoints_wrapper} onClick={handleBreakpointClick}>
         <span className={styles.debug_breakpoints_name}>{data.name}</span>

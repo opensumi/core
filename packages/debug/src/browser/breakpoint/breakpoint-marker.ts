@@ -1,12 +1,14 @@
 import btoa from 'btoa';
 
-import { URI } from '@opensumi/ide-core-common';
+import { Schemes, URI } from '@opensumi/ide-core-common';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { IRuntimeBreakpoint, IDebugBreakpoint } from '../../common';
 import { Marker } from '../markers';
 
 export const BREAKPOINT_KIND = 'breakpoint';
+export const EXCEPTION_BREAKPOINT_KIND = 'exception_breakpoint';
+export const EXCEPTION_BREAKPOINT_URI = URI.parse(EXCEPTION_BREAKPOINT_KIND).withScheme(Schemes.inMemory);
 
 function generateId(uri: string, line: number, column = 1) {
   return btoa(`${uri}:${line}:${column}`);
