@@ -158,7 +158,7 @@ export class DebugThread extends DebugThreadData {
     const result = new Map<number, DebugStackFrame>(this._frames);
     for (const raw of frames) {
       const id = raw.id;
-      if (!this._frames.get(id)) {
+      if (!this._frames.has(id)) {
         const frame = new DebugStackFrame(this, this.session);
         this._frames.set(id, frame);
         frame.update({ raw });
