@@ -49,6 +49,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
 
     dispose.addDispose(
       debugBreakpointsService.onDidChangeBreakpointsTreeNode((nodes) => {
+        const { roots } = debugBreakpointsService;
         const breakpointTreeData: IBasicTreeData[] = [];
 
         Array.from(nodes.entries()).forEach(([uri, items]) => {
@@ -71,8 +72,11 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               });
             });
           } else {
+            const toURI = URI.parse(uri);
+            const parent = roots.filter((root) => root.isEqualOrParent(toURI))[0];
+
             breakpointTreeData.push({
-              label: URI.parse(uri).displayName,
+              label: parent ? parent.relative(toURI)!.toString() : URI.parse(uri).displayName,
               expandable: true,
               iconClassName: getIcon('file-text'),
               expanded: true,
