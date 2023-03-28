@@ -1,7 +1,6 @@
 import { observable, action, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { IBasicRecycleTreeHandle } from '@opensumi/ide-components';
 import {
   URI,
   WithEventBus,
@@ -14,7 +13,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
-import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
 

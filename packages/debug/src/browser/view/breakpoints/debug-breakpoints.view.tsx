@@ -1,8 +1,8 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
-import { BasicRecycleTree, CheckBox, IBasicRecycleTreeHandle, IBasicTreeData } from '@opensumi/ide-components';
+import { BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
 import { Badge } from '@opensumi/ide-components';
 import {
   useInjectable,
@@ -22,7 +22,6 @@ import {
   isDebugBreakpoint,
   isRuntimeBreakpoint,
   getStatus,
-  BreakpointManager,
   isDebugExceptionBreakpoint,
   EXCEPTION_BREAKPOINT_URI,
 } from '../../breakpoint';
