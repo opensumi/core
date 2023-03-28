@@ -292,7 +292,7 @@ externals: [
 
 #### 6. Class And Path changed
 
-1. FoldersPreferencesProvider -> FoldersPreferencesProvider
+1. FoldersPreferencesProvider -> FolderFilePreferenceProvider
 
 ```diff
 - import { FolderPreferencesProvider } from '@opensumi/ide-preferences/lib/browser/folder-preferences-provider';
