@@ -1,6 +1,7 @@
 import { observable, action, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
+import { IBasicRecycleTreeHandle } from '@opensumi/ide-components';
 import {
   URI,
   WithEventBus,
@@ -13,7 +14,7 @@ import {
 } from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
-import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
+import { IEditorDocumentModelService, WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
 import { WorkspaceEditDidRenameFileEvent, WorkspaceEditDidDeleteFileEvent } from '@opensumi/ide-workspace-edit';
 
@@ -156,11 +157,11 @@ export class DebugBreakpointsService extends WithEventBus {
   extractNodes(item: DebugExceptionBreakpoint | IDebugBreakpoint): BreakpointItem | undefined {
     if (isDebugBreakpoint(item)) {
       const uri = URI.parse(item.uri);
-      const parent = this.roots.filter((root) => root.isEqualOrParent(uri))[0];
       return {
         id: item.id,
-        name: uri.displayName,
-        description: parent && parent.relative(uri)!.toString(),
+        name: '',
+        description: '',
+        onDescriptionChange: Event.None,
         breakpoint: item,
       };
     }
@@ -168,6 +169,7 @@ export class DebugBreakpointsService extends WithEventBus {
       return {
         id: item.filter,
         name: item.label,
+        onDescriptionChange: Event.None,
         description: '',
         breakpoint: item,
       };
@@ -192,6 +194,33 @@ export class DebugBreakpointsService extends WithEventBus {
     });
 
     this._onDidChangeBreakpointsTreeNode.fire(this.treeNodeMap);
+  }
+
+  private async getDocumentModelRef(uri: URI) {
+    const document = this.documentService.getModelReference(uri);
+    if (!document) {
+      return this.documentService.createModelReference(uri);
+    }
+    return document;
+  }
+
+  public async refreshBreakpointsInfo() {
+    const treeNodeValues = this.treeNodeMap.values();
+    const allTreeNodes: BreakpointsTreeNode[] = Array.from(treeNodeValues).reduce((acc, cur) => acc.concat(cur), []);
+
+    for await (const node of allTreeNodes) {
+      const { rawData, uri } = node;
+      if (isDebugBreakpoint(rawData.breakpoint)) {
+        const line = rawData.breakpoint.raw.line;
+        const monacoModel = await this.getDocumentModelRef(uri);
+        if (!monacoModel) {
+          return;
+        }
+
+        const getContent = monacoModel.instance.getMonacoModel().getLineContent(line);
+        node.fireDescriptionChange(getContent.trim());
+      }
+    }
   }
 
   removeAllBreakpoints() {
