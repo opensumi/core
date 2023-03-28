@@ -155,7 +155,6 @@ export class DebugBreakpointsService extends WithEventBus {
 
   extractNodes(item: DebugExceptionBreakpoint | IDebugBreakpoint): BreakpointItem | undefined {
     if (isDebugBreakpoint(item)) {
-      const uri = URI.parse(item.uri);
       return {
         id: item.id,
         name: '',
