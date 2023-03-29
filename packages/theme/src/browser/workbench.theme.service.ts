@@ -21,6 +21,7 @@ import {
   ExtensionDidContributes,
   Deferred,
   ContributionProvider,
+  isFunction,
 } from '@opensumi/ide-core-common';
 
 import { ICSSStyleService, ThemeContributionProvider } from '../common';
@@ -453,7 +454,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
     const contributions = this.themeContributionProvider.getContributions();
     for (const c of contributions) {
-      if (typeof c.onWillApplyTheme === 'function') {
+      if (isFunction(c.onWillApplyTheme)) {
         const contributionColor = c.onWillApplyTheme(theme);
         Object.assign(colors, contributionColor);
       }
