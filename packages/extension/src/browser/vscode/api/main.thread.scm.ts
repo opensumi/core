@@ -1,6 +1,6 @@
 import { Injectable, Optional, Autowired } from '@opensumi/di';
 import { IRPCProtocol } from '@opensumi/ide-connection';
-import { ILogger } from '@opensumi/ide-core-browser';
+import { strings, ILogger } from '@opensumi/ide-core-browser';
 import {
   UriComponents,
   Uri as URI,
@@ -11,6 +11,8 @@ import {
   CancellationToken,
   Sequence,
   ISplice,
+  localize,
+  formatLocalize,
 } from '@opensumi/ide-core-common';
 import {
   ISCMRepository,
@@ -31,6 +33,8 @@ import {
   SCMRawResourceSplices,
   IMainThreadSCMShape,
 } from '../../../common/vscode/scm';
+
+const GIT_EXTENSION_SCOPE = 'vscode.git';
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
   readonly elements: ISCMResource[] = [];
@@ -372,7 +376,7 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
     }
 
     const provider = repository.provider as MainThreadSCMProvider;
-    provider.$registerGroup(groupHandle, id, label);
+    provider.$registerGroup(groupHandle, id, localize(label, label, GIT_EXTENSION_SCOPE));
 
     this.addDispose(
       Disposable.create(() => {
@@ -442,7 +446,18 @@ export class MainThreadSCM extends Disposable implements IMainThreadSCMShape {
       return;
     }
 
-    repository.input.placeholder = placeholder;
+    const regex = /'(.+?)'/;
+
+    const safeMatch = (value: string) => {
+      const match = value.match(regex);
+      return match ? match[1] : '';
+    };
+
+    const newtext = placeholder.replace(regex, '"{1}"');
+    const checkBranchName = safeMatch(placeholder);
+    const localizeText = localize(newtext, newtext, GIT_EXTENSION_SCOPE);
+
+    repository.input.placeholder = strings.format(localizeText, '{0}', checkBranchName);
   }
 
   $setInputBoxVisibility(sourceControlHandle: number, visible: boolean): void {
