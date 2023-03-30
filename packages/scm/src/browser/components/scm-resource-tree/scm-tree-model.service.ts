@@ -484,7 +484,7 @@ export class SCMTreeModelService {
 
   public handleContextMenu = (
     event: React.MouseEvent,
-    item: SCMResourceGroup | SCMResourceFile,
+    item: SCMResourceGroup | SCMResourceFile | SCMResourceFolder,
     type: TreeNodeType,
   ) => {
     const { x, y } = event.nativeEvent;
@@ -504,10 +504,16 @@ export class SCMTreeModelService {
       this.enactiveFileDecoration();
     }
 
-    // 处理多选/单选时的参数问题
-    const args = this._isMutiSelected
-      ? this._getSelectedFiles().map((file) => file.resource.toJSON())
-      : [item.resource.toJSON()];
+    let args;
+    if (SCMResourceFolder.is(item)) {
+      // args 应为目录下所有的子节点
+      args = (item as SCMResourceFolder).arguments;
+    } else {
+      // 处理多选/单选时的参数问题
+      args = this._isMutiSelected
+        ? this._getSelectedFiles().map((file) => file.resource.toJSON())
+        : [item.resource.toJSON()];
+    }
 
     if (type === TreeNodeType.TreeNode) {
       const scmResource = item.resource as ISCMResource;
@@ -525,12 +531,10 @@ export class SCMTreeModelService {
       });
     } else {
       // SCMResourceFolder
-      // args 应为目录下所有的子节点
-      const folderArgs = (item as unknown as SCMResourceFolder).arguments;
       this.ctxMenuRenderer.show({
         anchor: { x, y },
         menuNodes: repoMenus.getResourceFolderMenu(group).getGroupedMenuNodes()[1],
-        args: folderArgs,
+        args,
       });
     }
   };
