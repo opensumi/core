@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-markdown",
-  "version": "2.22.9",
+  "version": "2.22.11",
   "files": [
     "lib",
     "src"

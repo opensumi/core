@@ -26,7 +26,6 @@ import { Output, ChannelSelector } from './output.view';
 
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',
-  iconClass: getIcon('clear'),
   label: '%output.channel.clear%',
 };
 
@@ -62,6 +61,7 @@ export class OutputContribution
     registry.registerItem({
       id: 'output.clear.action',
       command: OUTPUT_CLEAR.id,
+      iconClass: getIcon('clear'),
       viewId: OUTPUT_CONTAINER_ID,
     });
   }

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-markers",
-  "version": "2.22.9",
+  "version": "2.22.11",
   "files": [
     "lib",
     "src"
