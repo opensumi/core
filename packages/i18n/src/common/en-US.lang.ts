@@ -917,6 +917,8 @@ export const localizationBundle = {
       "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
     'editor.configuration.suggest.insertMode.insert': 'Insert suggestion without overwriting text right of the cursor.',
     'editor.configuration.suggest.insertMode.replace': 'Insert suggestion and overwrite text right of the cursor.',
+    'editor.configuration.unicodeHighlight.ambiguousCharacters':
+      'Controls whether characters are highlighted that can be confused with basic ASCII characters, except those that are common in the current user locale.',
 
     'diffEditor.configuration.renderSideBySide':
       'Controls whether the diff editor shows the diff side by side or inline.',
