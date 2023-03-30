@@ -160,6 +160,17 @@ export class ExtensionServiceClientImpl
     return languagePacks;
   }
 
+  public async setupNLSConfig(languageId: string, storagePath: string): Promise<void> {
+    const nlsConfig = await lp.getNLSConfiguration(
+      'f06011ac164ae4dc8e753a3fe7f9549844d15e35',
+      storagePath,
+      languageId.toLowerCase(),
+    );
+    // tslint:disable-next-line: no-string-literal
+    nlsConfig['_languagePackSupport'] = true;
+    process.env.VSCODE_NLS_CONFIG = JSON.stringify(nlsConfig);
+  }
+
   public async updateLanguagePack(languageId: string, languagePack: string, storagePath: string): Promise<void> {
     let languagePacks: { [key: string]: any } = {};
     storagePath = storagePath || DEFAULT_NLS_CONFIG_DIR;
@@ -192,17 +203,6 @@ export class ExtensionServiceClientImpl
         ...this.convertLanguagePack(packageJson, languagePack),
       };
     }
-
-    const languagePackJson = await this.fileService.getFileStat(languagePath);
-    await this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
-
-    const nlsConfig = await lp.getNLSConfiguration(
-      'f06011ac164ae4dc8e753a3fe7f9549844d15e35',
-      storagePath,
-      languageId.toLowerCase(),
-    );
-    // tslint:disable-next-line: no-string-literal
-    nlsConfig['_languagePackSupport'] = true;
-    process.env.VSCODE_NLS_CONFIG = JSON.stringify(nlsConfig);
+    await this.setupNLSConfig(languageId, storagePath);
   }
 }
