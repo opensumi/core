@@ -1026,6 +1026,8 @@ export const localizationBundle = {
     'editor.configuration.guides.indentation': '控制编辑器是否显示缩进参考线。',
     'editor.configuration.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
     'editor.configuration.trimAutoWhitespace': '删除自动插入的尾随空白符号。',
+    'editor.configuration.unicodeHighlight.ambiguousCharacters':
+      '控制是否突出显示可能与基本 ASCII 字符混淆的字符，但当前用户区域设置中常见的字符除外。',
 
     'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
