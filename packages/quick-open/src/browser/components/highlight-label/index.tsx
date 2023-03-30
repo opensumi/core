@@ -1,18 +1,9 @@
-import React from 'react';
+import React, { ReactChild } from 'react';
 
-import { getExternalIcon, LabelIcon, LabelPart, parseLabel } from '@opensumi/ide-core-browser';
+import { transformLabelWithCodicon } from '@opensumi/ide-core-browser';
 import { Highlight } from '@opensumi/ide-core-browser/lib/quick-open';
-import { strings } from '@opensumi/ide-core-common';
-
-const { escape } = strings;
-
-const labelWithIcons = (str: string, iconClassName?: string) =>
-  parseLabel(escape(str)).reduce((pre: string | LabelPart, cur: LabelPart) => {
-    if (!(typeof cur === 'string') && LabelIcon.is(cur)) {
-      return pre + `<span class='${getExternalIcon(cur.name)} ${iconClassName || ''}'></span>`;
-    }
-    return pre + cur;
-  }, '');
+import { useInjectable } from '@opensumi/ide-core-browser/lib/react-hooks';
+import { IIconService } from '@opensumi/ide-theme';
 
 export interface HighlightLabelProp {
   text?: string;
@@ -33,8 +24,10 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
   hightLightClassName = '',
   OutElementType = 'span',
 }) => {
+  const iconService = useInjectable<IIconService>(IIconService);
+
   const renderLabel = React.useMemo(() => {
-    const children: string[] = [];
+    const children: ReactChild[] = [];
     let pos = 0;
 
     for (const highlight of highlights) {
@@ -43,26 +36,36 @@ export const HighlightLabel: React.FC<HighlightLabelProp> = ({
       }
       if (pos < highlight.start) {
         const substring = text.substring(pos, highlight.start);
-        children.push(`<span class='${labelClassName}'>${labelWithIcons(substring, labelIconClassName)}</span>`);
+        children.push(
+          <span className={labelClassName}>
+            {transformLabelWithCodicon(substring, labelIconClassName, iconService.fromString.bind(iconService))}
+          </span>,
+        );
         pos = highlight.end;
       }
       const substring = text.substring(highlight.start, highlight.end);
-      children.push(`<span class='${hightLightClassName}'>${labelWithIcons(substring, labelIconClassName)}</span>`);
+      children.push(
+        <span className={hightLightClassName}>
+          {transformLabelWithCodicon(substring, labelIconClassName, iconService.fromString.bind(iconService))}
+        </span>,
+      );
       pos = highlight.end;
     }
 
     if (pos < text.length) {
       const substring = text.substring(pos);
-      children.push(`<span class='${labelClassName}'>${labelWithIcons(substring, labelIconClassName)}</span>`);
+      children.push(
+        <span className={labelClassName}>
+          {transformLabelWithCodicon(substring, labelIconClassName, iconService.fromString.bind(iconService))}
+        </span>,
+      );
     }
-    return children.join('');
+    return children;
   }, [text, highlights]);
   return (
-    <OutElementType
-      // @ts-ignore
-      title={text}
-      className={className}
-      dangerouslySetInnerHTML={{ __html: renderLabel }}
-    ></OutElementType>
+    // @ts-ignore
+    <OutElementType title={text} className={className}>
+      {renderLabel}
+    </OutElementType>
   );
 };
