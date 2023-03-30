@@ -1,8 +1,14 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
+import {
+  BasicRecycleTree,
+  CheckBox,
+  IBasicTreeData,
+  ICompositeTreeNode,
+  ITreeNodeOrCompositeTreeNode,
+} from '@opensumi/ide-components';
 import { Badge } from '@opensumi/ide-components';
 import {
   useInjectable,
@@ -113,9 +119,15 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
     }
   }, [treeData]);
 
+  const getItemClassName = useCallback((item: ICompositeTreeNode) => {
+    if (!item.children) {
+      return styles.debug_breakpoints_item_tree_node;
+    }
+  }, []);
+
   return (
     <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
-      <BasicRecycleTree treeData={treeData} height={viewState.height} />
+      <BasicRecycleTree treeData={treeData} height={viewState.height} getItemClassName={getItemClassName} />
     </div>
   );
 });
