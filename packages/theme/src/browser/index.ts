@@ -1,6 +1,7 @@
 import { Provider, Injectable } from '@opensumi/di';
 import { BrowserModule } from '@opensumi/ide-core-browser';
 
+import { ThemeContributionProvider } from '../common/provider';
 import { ISemanticTokenRegistry } from '../common/semantic-tokens-registry';
 import { ICSSStyleService } from '../common/style';
 import { ThemeServicePath, IThemeService, IIconService } from '../common/theme.service';
@@ -40,6 +41,7 @@ export class ThemeModule extends BrowserModule {
       clientToken: IThemeService,
     },
   ];
+  contributionProvider = ThemeContributionProvider;
 }
 
 export * from './icon.service';
