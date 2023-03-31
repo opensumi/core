@@ -42,11 +42,17 @@ jobs:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
 
+      - uses: opensumi/actions/bot-token@main
+        id: bot-token
+        with:
+          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
+          flag: ${{ secrets.BOT_FLAG }}
+
       # 评论正在发布
       - name: Update status for current issue
         uses: actions/github-script@v6
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{env.GITHUB_TOKEN}}
           script: |
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -76,13 +82,13 @@ jobs:
         run: |
           yarn run changelog --remote
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ env.GITHUB_TOKEN }}
 
       # 更新 Changelog 到 pre-release issue 正文
       - name: Update prerelease changelog for current issue
         uses: actions/github-script@v6
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
+          github-token: ${{env.GITHUB_TOKEN}}
           script: |
             const fs = require('fs');
             const releasemd = fs.readFileSync('./releaselog.md', 'utf8').toString();
@@ -117,7 +123,7 @@ jobs:
         run: |
           lerna publish --exact --preid next-$(date +%s) --dist-tag next --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --ignore-scripts --no-private -y
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ env.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Set Current Version

@@ -16,6 +16,12 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
+      - uses: opensumi/actions/bot-token@main
+        id: bot-token
+        with:
+          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
+          flag: ${{ secrets.BOT_FLAG }}
+
       - uses: actions/checkout@v3
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
@@ -36,5 +42,5 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ env.GITHUB_TOKEN }}
           publish_dir: ./packages/components/src/icon/iconfont
