@@ -10,7 +10,6 @@ export function createWorkerHostEnvAPIFactory(
 ): Pick<typeof vscode.env, 'clipboard' | 'openExternal' | 'language'> {
   const mainThreadEnvProxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
   return {
-    // TODO: initWorkerThreadAPIProxy 有时序问题，没有等待 worker host api 准备好就发送 port 了，因此不能先取值
     get language() {
       return extHostEnv.getEnvValues().language;
     },
