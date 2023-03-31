@@ -9,12 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != github.event.issue.user.login
     steps:
+      - uses: opensumi/actions/bot-token@main
+        id: bot-token
+        with:
+          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
+          flag: ${{ secrets.BOT_FLAG }}
+
       - name: Need more detail
         if: github.event.label.name == '🥸 needs more detail'
         uses: actions-cool/issues-helper@v3
         with:
           actions: 'create-comment'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ env.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           body: |
             Hello, @${{ github.event.issue.user.login }}, the information you provided is not enough for us to troubleshoot the problem. Please complete the issue description (refer #1165 #1141), provide gifs, screenshots, config, version. And explain the reproduction steps in detail. Thanks so much for your cooperation! The issue will be closed without any replay within 15 days.
@@ -25,12 +31,18 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor != github.event.issue.user.login
     steps:
+      - uses: opensumi/actions/bot-token@main
+        id: bot-token
+        with:
+          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
+          flag: ${{ secrets.BOT_FLAG }}
+
       - name: Need reproduce
         uses: actions-cool/issues-helper@v3
         if: github.event.label.name == '🧐 need reproduce'
         with:
           actions: 'create-comment'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ env.GITHUB_TOKEN }}
           issue-number: ${{ github.event.issue.number }}
           body: |
             Hello, @${{ github.event.issue.user.login }}, the information you provided is not enough for us to troubleshoot the problem. Please explain the reproduction steps in detail. Thanks so much for your cooperation! The issue will be closed without any replay within 15 days.
