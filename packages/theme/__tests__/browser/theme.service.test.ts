@@ -1,5 +1,11 @@
 import { Injectable } from '@opensumi/di';
-import { PreferenceSchemaProvider, IPreferenceSettingsService, URI, BinaryBuffer } from '@opensumi/ide-core-browser';
+import {
+  PreferenceSchemaProvider,
+  IPreferenceSettingsService,
+  URI,
+  BinaryBuffer,
+  createContributionProvider,
+} from '@opensumi/ide-core-browser';
 import {
   MockPreferenceSchemaProvider,
   MockPreferenceSettingsService,
@@ -9,9 +15,9 @@ import { SemanticTokenRegistryImpl } from '@opensumi/ide-theme/lib/browser/seman
 import { Color } from '@opensumi/ide-theme/lib/common';
 import { ISemanticTokenRegistry } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 
-import { IThemeService } from '../../';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { MockInjector } from '../../../../tools/dev-tool/src/mock-injector';
+import { IThemeService, ThemeContributionProvider } from '../../src';
 import { WorkbenchThemeService } from '../../src/browser/workbench.theme.service';
 
 @Injectable()
@@ -103,7 +109,7 @@ describe('color theme service test', () => {
   let injector: MockInjector;
   beforeEach(() => {
     injector = createBrowserInjector([]);
-
+    createContributionProvider(injector, ThemeContributionProvider);
     injector.addProviders(
       {
         token: IThemeService,

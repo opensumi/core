@@ -6,7 +6,6 @@ import {
   isOSX,
   ClientAppContribution,
   IElectronMainMenuService,
-  localize,
   SlotLocation,
   IElectronNativeDialogService,
   CommandContribution,
@@ -15,7 +14,6 @@ import {
   KeybindingRegistry,
   isWindows,
   electronEnv,
-  replaceLocalizePlaceholder,
   URI,
   ILogger,
   formatLocalize,
@@ -98,7 +96,6 @@ const nativeRoles = [
     name: 'toggleDevTools',
     key: 'alt+ctrlcmd+i',
     label: '%window.toggleDevTools%',
-    alias: 'Toggle Developer Tools',
   },
 ];
 
@@ -163,7 +160,7 @@ export class ElectronBasicContribution
     menuRegistry.registerMenuItem(MenuId.MenubarAppMenu, {
       command: {
         id: 'electron.about',
-        label: localize('common.about'),
+        label: '%common.about%',
       },
       group: '0_about',
       nativeRole: 'about',
@@ -172,7 +169,7 @@ export class ElectronBasicContribution
     menuRegistry.registerMenuItem(MenuId.MenubarHelpMenu, {
       command: {
         id: 'electron.toggleDevTools',
-        label: localize('window.toggleDevTools'),
+        label: '%window.toggleDevTools%',
       },
       nativeRole: 'toggledevtools',
     });
@@ -180,7 +177,7 @@ export class ElectronBasicContribution
     menuRegistry.registerMenuItem(MenuId.MenubarHelpMenu, {
       command: {
         id: 'electron.reload',
-        label: localize('window.reload'),
+        label: '%window.reload%',
       },
     });
 
@@ -201,8 +198,7 @@ export class ElectronBasicContribution
       commands.registerCommand(
         {
           id: 'electron.' + role.name,
-          label: replaceLocalizePlaceholder(role.label),
-          alias: role.alias,
+          label: role.label,
         },
         {
           execute: () => {
@@ -215,8 +211,7 @@ export class ElectronBasicContribution
     commands.registerCommand(
       {
         id: 'electron.zoomIn',
-        label: localize('view.zoomIn'),
-        alias: 'View: Zoom In',
+        label: '%view.zoomIn%',
       },
       {
         execute: () => {
@@ -230,8 +225,7 @@ export class ElectronBasicContribution
     commands.registerCommand(
       {
         id: 'electron.zoomOut',
-        label: localize('view.zoomOut'),
-        alias: 'View: Zoom Out',
+        label: '%view.zoomOut%',
       },
       {
         execute: () => {
@@ -245,8 +239,7 @@ export class ElectronBasicContribution
     commands.registerCommand(
       {
         id: 'electron.zoomReset',
-        label: localize('view.zoomReset'),
-        alias: 'View: Zoom Reset',
+        label: '%view.zoomReset%',
       },
       {
         execute: () => {
@@ -260,8 +253,7 @@ export class ElectronBasicContribution
     commands.registerCommand(
       {
         id: 'electron.reload',
-        label: localize('window.reload'),
-        alias: 'Reload Window',
+        label: '%window.reload%',
       },
       {
         execute: () => {
@@ -273,7 +265,7 @@ export class ElectronBasicContribution
     commands.registerCommand(
       {
         id: 'electron.revealInFinder',
-        label: localize('explorer.electron.revealInFinder'),
+        label: '%explorer.electron.revealInFinder%',
       },
       {
         execute: (uri: URI) => {
@@ -287,7 +279,7 @@ export class ElectronBasicContribution
     commands.registerCommand(
       {
         id: 'electron.revealInFinderTab',
-        label: localize('explorer.electron.revealInFinder'),
+        label: '%explorer.electron.revealInFinder%',
       },
       {
         execute: ({ uri }: { uri?: URI } = {}) => {
@@ -301,7 +293,7 @@ export class ElectronBasicContribution
     commands.registerCommand(
       {
         id: 'electron.openInSystemTerminal',
-        label: localize('explorer.electron.openInSystemTerminal'),
+        label: '%explorer.electron.openInSystemTerminal%',
       },
       {
         execute: (uri: URI) => {

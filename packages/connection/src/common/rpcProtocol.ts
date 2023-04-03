@@ -110,6 +110,12 @@ export namespace ObjectTransfer {
           $type: 'Buffer',
           data: Array.from(new Uint8Array(value)),
         };
+      } else if (value.type === 'Buffer') {
+        // https://nodejs.org/api/buffer.html#buftojson
+        return {
+          $type: 'Buffer',
+          data: value.data,
+        };
       }
     }
 
