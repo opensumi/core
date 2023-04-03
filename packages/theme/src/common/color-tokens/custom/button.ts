@@ -43,7 +43,7 @@ export const ktButtonDisableBorder = registerColor(
 /* primary button */
 export const ktPrimaryButtonForeground = registerColor(
   'kt.primaryButton.foreground',
-  { dark: buttonForeground, light: buttonForeground, hcDark: Color.white, hcLight: Color.white },
+  { dark: buttonForeground, light: buttonForeground, hcDark: buttonBorder, hcLight: buttonBorder },
   localize('primaryButtonForground', 'Primary Button Forground color.'),
 );
 export const ktPrimaryButtonBackground = registerColor(
