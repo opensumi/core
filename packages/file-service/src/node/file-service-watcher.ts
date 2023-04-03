@@ -326,7 +326,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       if (event.action === INsfw.actions.RENAMED) {
         const deletedPath = this.resolvePath(event.directory, event.oldFile!);
         if (isIgnored(watcherId, deletedPath)) {
-          return;
+          continue;
         }
 
         this.pushDeleted(deletedPath);
@@ -334,14 +334,14 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         if (event.newDirectory) {
           const path = this.resolvePath(event.newDirectory, event.newFile!);
           if (isIgnored(watcherId, path)) {
-            return;
+            continue;
           }
 
           this.pushAdded(path);
         } else {
           const path = this.resolvePath(event.directory, event.newFile!);
           if (isIgnored(watcherId, path)) {
-            return;
+            continue;
           }
 
           this.pushAdded(path);
@@ -349,7 +349,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       } else {
         const path = this.resolvePath(event.directory, event.file!);
         if (isIgnored(watcherId, path)) {
-          return;
+          continue;
         }
 
         if (event.action === INsfw.actions.CREATED) {
