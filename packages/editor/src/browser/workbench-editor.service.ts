@@ -518,9 +518,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
     // 询问用户是否保存
     const buttons = {
-      [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
-      [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
-      [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
+      [localize('file.prompt.dontSave', "Don't Save")]: AskSaveResult.REVERT,
+      [localize('file.prompt.save', 'Save')]: AskSaveResult.SAVE,
+      [localize('file.prompt.cancel', 'Cancel')]: AskSaveResult.CANCEL,
     };
     const files = toClose.slice(0, MAX_CONFIRM_RESOURCES);
     let filesDetail = files.map((v) => v.resource.name).join('、');

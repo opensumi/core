@@ -22,7 +22,7 @@ class MockRecentStorage {
   }
 }
 
-describe('测试 SearchHistory', () => {
+describe('SearchHistory test', () => {
   const searchServiceClient: any = new MockSearchServiceClient();
   const mockRecentStorage = new MockRecentStorage();
   const searchHistory = new SearchHistory(searchServiceClient, mockRecentStorage as any);
@@ -47,7 +47,7 @@ describe('测试 SearchHistory', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  test('method: setRecentSearchWord 前进到底', () => {
+  test('method: setRecentSearchWord', () => {
     searchHistory.setRecentSearchWord();
     searchHistory.setRecentSearchWord();
     searchHistory.setRecentSearchWord();
@@ -66,7 +66,7 @@ describe('测试 SearchHistory', () => {
     expect(spy).toHaveBeenCalled();
   });
 
-  test('method: setBackRecentSearchWord 后退到底', () => {
+  test('method: setBackRecentSearchWord', () => {
     searchHistory.setBackRecentSearchWord();
     searchHistory.setBackRecentSearchWord();
     searchHistory.setBackRecentSearchWord();

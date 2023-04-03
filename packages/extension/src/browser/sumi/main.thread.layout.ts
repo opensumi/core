@@ -103,8 +103,8 @@ export class MainThreadLayout extends Disposable implements IMainThreadLayout {
   protected getHandler(id: string) {
     const handler = this.layoutService.getTabbarHandler(id);
     if (!handler) {
-      this.logger.warn(`MainThreaLayout:没有找到${id}对应的handler`);
+      this.logger.warn(`Could not find a handler with \`${id}\``);
     }
-    return handler!;
+    return handler;
   }
 }

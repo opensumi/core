@@ -79,7 +79,7 @@ export class OutputChannel extends Disposable {
     this.documentService.createModelReference(uri).then((model) => {
       this.outputModel = model;
       this.monacoModel = this.outputModel.instance.getMonacoModel();
-      this.monacoModel.setValue(localize('output.channel.none', '还没有任何输出'));
+      this.monacoModel.setValue(localize('output.channel.none', '<no output yet>'));
 
       if (this.enableHighlight) {
         this.outputModel.instance.languageId = 'log';

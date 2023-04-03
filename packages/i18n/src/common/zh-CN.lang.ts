@@ -1079,6 +1079,9 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.complete': '确认保存并更改',
     'mergeEditor.button.apply': '应用更改',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
+
+    'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
+
     ...browserViews,
   },
 };
