@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-extension",
-  "version": "2.23.1",
+  "version": "2.23.2",
   "files": [
     "lib",
     "hosted"
