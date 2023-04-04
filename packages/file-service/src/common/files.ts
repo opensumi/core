@@ -447,6 +447,25 @@ export function isErrnoException(error: any | NodeJS.ErrnoException): error is N
   return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
 }
 
+export function handleError(error: any | NodeJS.ErrnoException) {
+  if (isErrnoException(error)) {
+    switch (error.code) {
+      case 'EEXIST':
+        throw FileSystemError.FileExists(Uri.file(error.path ?? ''));
+      case 'EPERM':
+      case 'EACCESS':
+        throw FileSystemError.FileIsNoPermissions(Uri.file(error.path ?? ''));
+      case 'ENOENT':
+        throw FileSystemError.FileNotFound(Uri.file(error.path ?? ''));
+      case 'ENOTDIR':
+        throw FileSystemError.FileNotADirectory(Uri.file(error.path ?? ''));
+      case 'EISDIR':
+        throw FileSystemError.FileIsADirectory(Uri.file(error.path ?? ''));
+    }
+  }
+  throw error;
+}
+
 export interface IFileSystemProviderRegistrationEvent {
   added: boolean;
   scheme: string;

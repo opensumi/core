@@ -68,6 +68,10 @@ export interface FileStat {
   realUri?: string;
 }
 
+export interface FileStatOptions {
+  throwIfError?: boolean;
+}
+
 export namespace FileStat {
   export function is(candidate: object | undefined): candidate is FileStat {
     return (
@@ -155,7 +159,7 @@ export interface FileSystemProvider {
    * @return The file metadata about the file.
    * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
    */
-  stat(uri: Uri): Promise<FileStat | void>;
+  stat(uri: Uri, options?: FileStatOptions): Promise<FileStat | void>;
 
   /**
    * Retrieve all entries of a [directory](#FileType.Directory).
