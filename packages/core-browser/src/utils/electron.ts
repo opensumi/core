@@ -26,7 +26,7 @@ export interface IElectronIpcRenderer {
   send(channel: string, ...args: any[]): void;
 }
 
-export function createElectronMainApi(name: string): IElectronMainApi<any> {
+export function createElectronMainApi(name: string, devtools: boolean): IElectronMainApi<any> {
   let id = 0;
   return new Proxy(
     {
@@ -34,7 +34,7 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
         const wrappedListener = (e, eventName, ...args) => {
           if (eventName === event) {
             // capture event:xxx
-            capture({ ipcMethod: 'ipcRenderer.on', channel: `event:${name}`, args: [eventName, ...args] });
+            devtools && capture({ ipcMethod: 'ipcRenderer.on', channel: `event:${name}`, args: [eventName, ...args] });
             return listener(...args);
           }
         };
@@ -57,16 +57,18 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
               ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
 
               // capture request:xxx
-              capture({
-                ipcMethod: 'ipcRenderer.send',
-                channel: `request:${name}`,
-                args: [method, requestId, ...args],
-              });
+              devtools &&
+                capture({
+                  ipcMethod: 'ipcRenderer.send',
+                  channel: `request:${name}`,
+                  args: [method, requestId, ...args],
+                });
 
               const listener = (event, id, error, result) => {
                 if (id === requestId) {
                   // capture response:xxx
-                  capture({ ipcMethod: 'ipcRenderer.on', channel: `response:${name}`, args: [id, error, result] });
+                  devtools &&
+                    capture({ ipcMethod: 'ipcRenderer.on', channel: `response:${name}`, args: [id, error, result] });
                   ElectronIpcRenderer.removeListener('response:' + name, listener);
                   if (error) {
                     const e = new Error(error.message);

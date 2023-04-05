@@ -109,7 +109,6 @@ export class ClientApp implements IClientApp, IDisposable {
       editorBackgroundImage,
       defaultPreferences,
       allowSetDocumentTitleFollowWorkspaceDir = true,
-      devtools = false, // if not set, disable devtools support as default
       ...restOpts
     } = opts;
 
@@ -139,10 +138,10 @@ export class ClientApp implements IClientApp, IDisposable {
       layoutConfig: opts.layoutConfig as LayoutConfig,
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,
-      devtools,
+      devtools: opts.devtools ?? false,
     };
 
-    if (devtools) {
+    if (this.config.devtools) {
       // set a global so the opensumi devtools can identify that
       // the current page is powered by opensumi core
       window.__OPENSUMI_DEVTOOLS_GLOBAL_HOOK__ = {};
