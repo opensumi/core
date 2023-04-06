@@ -209,9 +209,9 @@ export class UntitledSchemeResourceProvider extends WithEventBus implements IRes
     }
     // 询问用户是否保存
     const buttons = {
-      [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
-      [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
-      [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
+      [localize('file.prompt.dontSave', "Don't Save")]: AskSaveResult.REVERT,
+      [localize('file.prompt.save', 'Save')]: AskSaveResult.SAVE,
+      [localize('file.prompt.cancel', 'Cancel')]: AskSaveResult.CANCEL,
     };
     const selection = await this.dialogService.open(
       formatLocalize('saveChangesMessage', resource.name),

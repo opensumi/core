@@ -1361,6 +1361,9 @@ export const localizationBundle = {
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',
+
+    'webview.webviewTagUnavailable': 'Webview is unsupported on non-electron env, please use iframe instead',
+
     ...browserViews,
   },
 };

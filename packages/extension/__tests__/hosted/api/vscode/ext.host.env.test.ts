@@ -147,7 +147,7 @@ describe('vscode extHostEnv Test', () => {
         },
       });
 
-    it('用户首次访问时间大于一天', async () => {
+    it("The user's first visit is more than a day old", async () => {
       const envApi = createEnvApiFactory(
         rpcProtocolExt,
         extensionService,
@@ -158,7 +158,7 @@ describe('vscode extHostEnv Test', () => {
       expect(envApi.isNewAppInstall).toBe(false);
     });
 
-    it('用户首次访问时间小于一天', () => {
+    it("The user's first visit is less than a day old", () => {
       const envApi = createEnvApiFactory(
         rpcProtocolExt,
         extensionService,

@@ -388,7 +388,7 @@ export class FileService implements IFileService {
     const _uri = new URI(uri);
 
     if (!_uri.scheme) {
-      throw new Error(`没有设置 scheme: ${uri}`);
+      throw new Error(`Unsupported to get Uri from non-scheme Uri: ${uri}`);
     }
 
     return _uri;

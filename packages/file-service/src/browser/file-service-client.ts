@@ -426,7 +426,7 @@ export class FileServiceClient implements IFileServiceClient {
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
     if (this.fsProviders.has(scheme)) {
-      throw new Error(`'${scheme}' 的文件系统 provider 已存在`);
+      throw new Error(`The file system provider for \`${scheme}\` already registered`);
     }
 
     const disposables: IDisposable[] = [];
@@ -513,7 +513,7 @@ export class FileServiceClient implements IFileServiceClient {
     const _uri = new URI(uri);
 
     if (!_uri.scheme) {
-      throw new Error(`没有设置 scheme: ${uri}`);
+      throw new Error(`Unsupported convert Uri with non-scheme Uri: ${uri}`);
     }
 
     return _uri;

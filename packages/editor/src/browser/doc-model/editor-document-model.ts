@@ -401,7 +401,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
             this.compareAndSave();
           }
         });
-      this.logger.error('文件无法保存，版本和磁盘不一致');
+      this.logger.error('The file cannot be saved, the version is inconsistent with the disk');
       return false;
     }
     return false;
