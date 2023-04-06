@@ -35,7 +35,7 @@ const capture = (message: IPCMessage) => {
   }
 };
 
-export function createElectronMainApi(name: string, devtools: boolean): IElectronMainApi<any> {
+export function createElectronMainApi(name: string, devtools?: boolean): IElectronMainApi<any> {
   let id = 0;
   return new Proxy(
     {
