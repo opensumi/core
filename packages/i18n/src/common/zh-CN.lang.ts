@@ -96,6 +96,9 @@ export const localizationBundle = {
     'menu-bar.go.nextProblemInFiles': '下一个问题',
     'menu-bar.go.prevProblemInFiles': '上一个问题',
 
+    'menu-bar.file.pref': '设置',
+    'menu-bar.mode.compact': '紧凑模式',
+
     editor: '编辑器',
     'editor.undo': '撤销',
     'editor.redo': '重做',
@@ -229,7 +232,6 @@ export const localizationBundle = {
     'dialog.file.close': '关闭',
     'dialog.file.ok': '确定',
     'dialog.ensure': '确定',
-    'menu-bar.file.pref': '设置',
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
 
@@ -366,6 +368,8 @@ export const localizationBundle = {
 
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',
+
+    'preference.menubar.mode.compact': '控制菜单栏是否使用紧凑模式',
 
     'preference.explorer.confirm.delete': '控制是否在删除文件时弹出确认框',
     'preference.explorer.confirm.move': '控制是否在移动文件时弹出确认框',

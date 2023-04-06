@@ -29,6 +29,7 @@ import {
   Disposable,
   UserScope,
   WorkspaceScope,
+  MenubarSettingId,
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -685,6 +686,11 @@ export const defaultSettingSections: {
   ],
   // 整体布局相关的，比如 QuickOpen 也放这
   [PreferenceSettingId.View]: [
+    {
+      // 菜单栏
+      title: 'MenuBar',
+      preferences: [{ id: MenubarSettingId.CompactMode, localized: 'preference.menubar.mode.compact' }],
+    },
     {
       // 布局信息
       title: 'Layout',

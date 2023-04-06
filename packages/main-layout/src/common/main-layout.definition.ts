@@ -76,6 +76,7 @@ export interface IMainLayoutService {
   // 某一位置是否可见
   isVisible(location: string): boolean;
   isViewVisible(viewId: string): boolean;
+  getExtraTopMenu(): IContextMenu;
   getExtraMenu(): IContextMenu;
   getAllAccordionService(): Map<string, AccordionService>;
 }

@@ -196,8 +196,7 @@ class Menu extends Disposable implements IMenu {
         ]);
         return action;
       } else {
-        // 只有 label 存在值的时候才渲染
-        if (item.label) {
+        if (item.label || item.iconClass) {
           const action = this.injector.get(SubmenuItemNode, [item]);
           return action;
         }

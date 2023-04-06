@@ -250,7 +250,8 @@ export const LeftTabbarRenderer: React.FC = () => {
   const layoutService = useInjectable<IMainLayoutService>(IMainLayoutService);
   const tabbarService: TabbarService = useInjectable(TabbarServiceFactory)(side);
 
-  const leftBarInlineMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
+  const extraTopMenus = React.useMemo(() => layoutService.getExtraTopMenu(), [layoutService]);
+  const extraMenus = React.useMemo(() => layoutService.getExtraMenu(), [layoutService]);
 
   return (
     <div
@@ -258,6 +259,7 @@ export const LeftTabbarRenderer: React.FC = () => {
       className={styles.left_tab_bar}
       onContextMenu={tabbarService.handleContextMenu}
     >
+      <InlineMenuBar className={clsx(styles.vertical_icons, styles.extra_top_menus)} menus={extraTopMenus} />
       <TabbarViewBase
         tabSize={48}
         MoreTabView={IconElipses}
@@ -268,7 +270,7 @@ export const LeftTabbarRenderer: React.FC = () => {
         margin={90}
         panelBorderSize={1}
       />
-      <InlineMenuBar className={styles.vertical_icons} menus={leftBarInlineMenus} />
+      <InlineMenuBar className={styles.vertical_icons} menus={extraMenus} />
     </div>
   );
 };
