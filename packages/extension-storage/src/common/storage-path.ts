@@ -12,7 +12,7 @@ export interface IExtensionStoragePathServer {
     workspace: FileStat | undefined,
     roots: FileStat[],
     extensionStorageDirName: string,
-  ): Promise<URI | undefined>;
+  ): Promise<URI>;
   // 返回最后使用的存储路径(根据workspace生成的存储路径)
   getLastWorkspaceStoragePath(): Promise<string | undefined>;
   // 获取最后使用的顶级存储路径，默认为 ~/.sumi

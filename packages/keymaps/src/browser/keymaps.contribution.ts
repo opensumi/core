@@ -67,7 +67,7 @@ export namespace KEYMAP_COMMANDS {
 
   export const OPEN_SOURCE_FILE: Command = {
     id: 'keymaps.open.source',
-    label: localize('keymaps.editorTitle.openSource'),
+    label: '%keymaps.editorTitle.openSource%',
     category: CATEGORY,
   };
 }

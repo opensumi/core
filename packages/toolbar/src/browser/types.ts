@@ -70,7 +70,7 @@ export enum ToolBarPosition {
   RIGHT = 3,
 }
 
-export const ToolBarContribution = Symbol('BrowserEditorContribution');
+export const ToolBarContribution = Symbol('ToolBarContribution');
 
 export interface ToolBarContribution {
   registerToolBarElement(registry: IToolBarViewService): void;

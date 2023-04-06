@@ -391,7 +391,6 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.saveAll',
     category: CATEGORY,
     label: '%editor.saveAll%',
-    alias: 'Save All',
   };
 
   export const CLOSE_TO_RIGHT: Command = {
@@ -509,7 +508,6 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.closeOtherGroup',
     category: CATEGORY,
     label: '%editor.closeEditorsInOtherGroups%',
-    alias: 'Close Other Groups',
   };
 
   export const OPEN_EDITOR_AT_INDEX: Command = {
@@ -521,14 +519,12 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.evenEditorGroups',
     category: CATEGORY,
     label: '%editor.resetEditorGroups%',
-    alias: 'Reset Editor Group',
   };
 
   export const REVERT_DOCUMENT: Command = {
     id: 'editor.document.revert',
     category: CATEGORY,
     label: '%editor.revert%',
-    alias: 'Revert Document',
   };
 
   export const REVERT_AND_CLOSE: Command = {
@@ -610,21 +606,18 @@ export namespace EDITOR_COMMANDS {
   export const SEARCH_WORKSPACE_SYMBOL: Command = {
     id: 'editor.workspaceSymbol.quickopen',
     label: '%editor.workspaceSymbol.quickopen%',
-    alias: 'Search Workspace Symbol',
     category: CATEGORY,
   };
 
   export const SEARCH_WORKSPACE_SYMBOL_CLASS: Command = {
     id: 'editor.workspaceSymbolClass.quickopen',
     label: '%editor.workspaceSymbolClass.quickopen%',
-    alias: 'Search Workspace Class Symbol',
     category: CATEGORY,
   };
 
   export const GO_TO_LINE: Command = {
     id: 'editor.action.gotoLine',
     label: '%editor.goToLine%',
-    alias: 'Go to Line...',
     category: CATEGORY,
   };
 
@@ -632,7 +625,6 @@ export namespace EDITOR_COMMANDS {
     id: 'workbench.action.quickOpen',
     category: CATEGORY,
     label: '%editor.quickOpen%',
-    alias: 'Go to File...',
   };
 
   export const TOGGLE_WORD_WRAP: Command = {
@@ -645,14 +637,12 @@ export namespace EDITOR_COMMANDS {
     id: 'editor.action.formatDocument.multiple',
     category: CATEGORY,
     label: '%editor.formatDocument.label.multiple%',
-    alias: 'Format Document With...',
   };
 
   export const FORMAT_SELECTION_WITH: Command = {
     id: 'editor.action.formatSelection.multiple',
     category: CATEGORY,
     label: '%editor.formatSelection.label.multiple%',
-    alias: 'Format Selection With...',
   };
 
   export const COPY_PATH: Command = {

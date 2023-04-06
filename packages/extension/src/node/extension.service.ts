@@ -256,6 +256,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     extServer.listen(extServerListenOptions, () => {
       this.logger.log(`${clientId} ext server listen on ${JSON.stringify(extServerListenOptions)}`);
     });
+    // 重启时，旧的 path 已经不再使用，但是系统未清理，导致 listen 会失败，所以在连接关闭时，主动清理
+    extServer.on('close', () => {
+      this.extServerListenOptions.delete(clientId);
+    });
   }
 
   private async _createExtHostProcess(clientId: string, options?: ICreateProcessOptions) {
@@ -604,6 +608,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
       this.clientExtProcessMap.delete(clientId);
 
       if (killProcess) {
+        await this.extensionHostManager.treeKill(extProcessId);
         await this.extensionHostManager.disposeProcess(extProcessId);
       }
       if (info) {

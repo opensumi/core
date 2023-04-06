@@ -1,4 +1,6 @@
-import { ExtensionStorageUri } from '@opensumi/ide-extension-storage';
+import { Uri, Event } from '@opensumi/ide-core-common';
+import { IExtensionStorageUri } from '@opensumi/ide-extension-storage';
+
 export interface KeysToAnyValues {
   [key: string]: any;
 }
@@ -11,8 +13,21 @@ export interface IMainThreadStorage {
   $setValue(shared: boolean, key: string, value: KeysToAnyValues): Promise<void>;
 }
 
+export interface IStorageChangeEvent {
+  shared: boolean;
+  data: KeysToAnyValues;
+}
+
 export interface IExtHostStorage {
+  onDidChangeStorage: Event<IStorageChangeEvent>;
+
   getValue<T>(shared: boolean, key: string, defaultValue?: T): Promise<T | KeysToAnyValues>;
-  $acceptStoragePath(paths: ExtensionStorageUri): Promise<void>;
+  setValue(shared: boolean, key: string, value: any): Promise<void>;
+
+  getExtensionStorageUri(extensionId: string): Uri;
+  getExtensionGlobalStorageUri(extensionId: string): Uri;
+  getExtensionLogUri(extensionId: string): Uri;
+
+  $acceptStoragePath(paths: IExtensionStorageUri): Promise<void>;
   $updateWorkspaceStorageData(data: KeysToKeysToAnyValue): Promise<void>;
 }

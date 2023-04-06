@@ -1398,6 +1398,11 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     type: 'string',
     description: '%editor.configuration.defaultFormatter%',
   },
+  'editor.unicodeHighlight.ambiguousCharacters': {
+    type: 'boolean',
+    default: true,
+    description: '%editor.configuration.unicodeHighlight.ambiguousCharacters%',
+  },
 };
 
 const customEditorSchema: PreferenceSchemaProperties = {

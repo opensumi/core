@@ -522,12 +522,9 @@ export class BrowserCodeEditor extends BaseMonacoEditorWrapper implements ICodeE
     const { instance } = documentModelRef;
 
     /**
-     * 由于通过 monaco model 并不能得到该文档是否 readonly
-     * 所以这里需要对 readonly 单独设置一下
+     * 这里需要触发一下 monaco 的更新
      */
-    this.monacoEditor.updateOptions({
-      readOnly: instance.readonly,
-    });
+    this.updateOptions();
 
     this.eventBus.fire(
       new ResourceDecorationNeedChangeEvent({
@@ -706,10 +703,12 @@ export class BrowserDiffEditor extends WithEventBus implements IDiffEditor {
       ? this.modifiedEditor.currentDocumentModel.languageId
       : undefined;
     const options = getConvertedMonacoOptions(this.configurationService, uriStr, languageId);
+    const readOnly = this.isReadonly();
     this.monacoDiffEditor.updateOptions({
       ...options.diffOptions,
       ...this.specialOptions,
-      readOnly: this.isReadonly(),
+      readOnly,
+      renderMarginRevertIcon: !readOnly,
     });
 
     if (this.currentUri) {

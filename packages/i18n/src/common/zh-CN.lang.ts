@@ -286,8 +286,9 @@ export const localizationBundle = {
     'output.enableSmartScroll': '输出视图智能滚动',
     'output.enableSmartScrollDesc': '在点击输出视图时禁用滚动，点击最后一行输出时启用滚动。',
 
-    'debug.stack.loadMore': '展开全部堆栈',
+    'debug.stack.loadMore': '加载更多堆栈',
     'debug.stack.loading': '加载中...',
+    'debug.stack.showMoreAndOrigin': '展示 {0} 项: {1}',
     'debug.breakpoint.deactive': '关闭所有断点',
     'debug.breakpoint.active': '激活所有断点',
     'debug.threads.title': '进程',
@@ -1025,6 +1026,8 @@ export const localizationBundle = {
     'editor.configuration.guides.indentation': '控制编辑器是否显示缩进参考线。',
     'editor.configuration.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
     'editor.configuration.trimAutoWhitespace': '删除自动插入的尾随空白符号。',
+    'editor.configuration.unicodeHighlight.ambiguousCharacters':
+      '控制是否突出显示可能与基本 ASCII 字符混淆的字符，但当前用户区域设置中常见的字符除外。',
 
     'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
@@ -1076,6 +1079,9 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.complete': '确认保存并更改',
     'mergeEditor.button.apply': '应用更改',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
+
+    'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
+
     ...browserViews,
   },
 };

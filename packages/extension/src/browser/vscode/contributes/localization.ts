@@ -69,7 +69,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
       json = parseWithComments(content);
       return json;
     } catch (error) {
-      return this.logger.error('语言配置文件解析出错！', content);
+      return this.logger.error(`Language configuration file parsing error, ${error.stack}`);
     }
   }
 

@@ -26,7 +26,6 @@ import { Output, ChannelSelector } from './output.view';
 
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',
-  iconClass: getIcon('clear'),
   label: '%output.channel.clear%',
 };
 
@@ -62,6 +61,7 @@ export class OutputContribution
     registry.registerItem({
       id: 'output.clear.action',
       command: OUTPUT_CLEAR.id,
+      iconClass: getIcon('clear'),
       viewId: OUTPUT_CONTAINER_ID,
     });
   }
@@ -80,7 +80,7 @@ export class OutputContribution
         component: Output,
       },
       {
-        title: localize('output.tabbar.title', '输出'),
+        title: localize('output.tabbar.title'),
         priority: 9,
         containerId: OUTPUT_CONTAINER_ID,
         activateKeyBinding: 'ctrlcmd+shift+u',

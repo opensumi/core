@@ -1,5 +1,5 @@
 import cls from 'classnames';
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 
 import { ViewState, getIcon, useInjectable, DisposableCollection, localize } from '@opensumi/ide-core-browser';
 
@@ -34,6 +34,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   const mutipleSession = manager.sessions.length > 1;
   const supportsThreadIdCorrespond = session.supportsThreadIdCorrespond;
 
+  const disposed = useRef<boolean>(false);
   // 从 manager.sessions 中找出 parentSession id 是当前 session id 的 session
   const findSubSessions = () => {
     const hasParentSessions = manager.sessions.filter((s) => s.parentSession);
@@ -57,20 +58,30 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
   };
 
   useEffect(() => {
-    const createDispose = manager.onDidCreateDebugSession(() => {
-      const sub = findSubSessions();
-      setSubSession(sub);
-    });
+    const disposables = new DisposableCollection();
+    disposables.push(
+      manager.onDidCreateDebugSession(() => {
+        if (disposed.current) {
+          return;
+        }
+        const sub = findSubSessions();
+        setSubSession(sub);
+      }),
+    );
 
-    const destroyDispose = manager.onDidDestroyDebugSession(() => {
-      const sub = findSubSessions();
-      setSubSession(sub);
-    });
+    disposables.push(
+      manager.onDidDestroyDebugSession(() => {
+        if (disposed.current) {
+          return;
+        }
+        const sub = findSubSessions();
+        setSubSession(sub);
+      }),
+    );
 
     return () => {
-      createDispose.dispose();
-      destroyDispose.dispose();
-      setSubSession([]);
+      disposed.current = true;
+      disposables.dispose();
     };
   }, []);
 
@@ -153,7 +164,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         </div>
       ) : (
         otherThreads.map(
-          (thread) =>
+          (thread: DebugThread, index: number) =>
             !session.hasInMultipleThreadPaused(thread.raw.id) && (
               <DebugStackThreadView
                 key={thread.id}
@@ -161,6 +172,7 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
                 viewState={viewState}
                 thread={thread}
                 session={session}
+                isBottom={index === otherThreads.length - 1}
               />
             ),
         )
@@ -225,25 +237,27 @@ export const DebugStackSessionView = (props: DebugStackSessionViewProps) => {
         </div>
       )}
       {supportsThreadIdCorrespond && unfold
-        ? multipleThreadPaused.map((t) => (
+        ? multipleThreadPaused.map((t: DebugThread, index: number) => (
             <DebugStackThreadView
               key={t.id}
               indent={mutipleSession ? 16 : 0}
               viewState={viewState}
               thread={t}
               session={session}
+              isBottom={index === multipleThreadPaused.length - 1}
             />
           ))
         : null}
       {!supportsThreadIdCorrespond &&
         (!mutipleSession || unfold) &&
-        threads.map((thread) => (
+        threads.map((thread: DebugThread, index: number) => (
           <DebugStackThreadView
             key={thread.id}
             indent={mutipleSession ? 16 : 0}
             viewState={viewState}
             thread={thread}
             session={session}
+            isBottom={index === threads.length - 1}
           />
         ))}
       {subSession.length > 0 &&

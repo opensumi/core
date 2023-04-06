@@ -58,7 +58,7 @@ describe('extension/__tests__/hosted/api/vscode/ext.host.storage.test.ts', () =>
       storageUri: storagePath.resolve(StoragePaths.EXTENSIONS_WORKSPACE_STORAGE_DIR).codeUri,
       globalStorageUri: storagePath.resolve(StoragePaths.EXTENSIONS_GLOBAL_STORAGE_DIR).codeUri,
     });
-    expect(extHostStorage.storagePath).toBeTruthy();
+    expect(extHostStorage.getExtensionLogUri('test-id')).toBeTruthy();
   });
 
   it('getValue', async () => {

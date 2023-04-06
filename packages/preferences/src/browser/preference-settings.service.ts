@@ -657,6 +657,7 @@ export const defaultSettingSections: {
           localized: 'preference.editor.bracketPairColorization.enabled',
         },
         { id: 'workbench.editorAssociations' },
+        { id: 'editor.unicodeHighlight.ambiguousCharacters' },
       ],
     },
     {

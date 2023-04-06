@@ -20,6 +20,7 @@ import {
   IExtensionsSchemaService,
   LinkedText,
   URI,
+  createLocalizedStr,
 } from '@opensumi/ide-core-common';
 import { typeAndModifierIdPattern } from '@opensumi/ide-theme/lib/common/semantic-tokens-registry';
 import { IconType, IIconService, ThemeType } from '@opensumi/ide-theme/lib/common/theme.service';
@@ -299,8 +300,12 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
     return this.iconService?.fromIcon(basePath, iconContrib, type);
   }
 
-  protected getLocalizeFromNlsJSON(title: string, scope: string, languageId?: string): string {
-    return replaceNlsField(title, scope, title, languageId);
+  protected getLocalizeFromNlsJSON(title: string, extensionId: string, languageId?: string): string {
+    return replaceNlsField(title, extensionId, title, languageId);
+  }
+
+  protected createLocalizedStr(title: string, extensionId: string) {
+    return createLocalizedStr(title, extensionId, title, undefined, 'default');
   }
 }
 

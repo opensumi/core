@@ -61,7 +61,6 @@ describe(' monaco command service test', () => {
         {
           id: 'editor.action.cut',
           label: '剪切',
-          alias: 'cut',
         },
       ] as unknown as EditorAction[];
 

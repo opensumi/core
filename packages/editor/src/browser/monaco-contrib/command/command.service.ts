@@ -310,7 +310,14 @@ export class MonacoActionRegistry implements IMonacoActionRegistry {
         {
           id,
           label: data.label,
-          alias: data.alias,
+          labelLocalized:
+            data.label && data.alias
+              ? {
+                  alias: data.alias,
+                  localized: data.label,
+                  raw: data.label,
+                }
+              : undefined,
         },
         handler,
       );

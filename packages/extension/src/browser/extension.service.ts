@@ -17,6 +17,7 @@ import {
   ProgressLocation,
   ExtensionDidContributes,
   getLanguageId,
+  URI,
 } from '@opensumi/ide-core-common';
 import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
@@ -363,7 +364,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     if (!init) {
       // 重启场景下需要将申明过 browserView 的 sumi 插件的 contributes 重新跑一遍
       await this.rerunSumiViewExtensionContributes();
-
       // 重启场景下把 ActivationEvent 再发一次
       if (this.activationEventService.activatedEventSet.size) {
         const activatedEventArr = Array.from(this.activationEventService.activatedEventSet);
@@ -484,7 +484,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         (async () => {
           try {
             const result = await this.fileSearchService.find('', {
-              rootUris: this.workspaceService.tryGetRoots().map((r) => r.uri),
+              rootUris: this.workspaceService.tryGetRoots().map((stat) => new URI(stat.uri).codeUri.fsPath),
               includePatterns,
               limit: 1,
             });
@@ -629,8 +629,18 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     const extensionPaths = Array.from(activatedViewExtensionMap.keys());
 
     await Promise.all(
-      extensionPaths.map((path) => this.extensionInstanceManageService.getExtensionInstanceByPath(path)?.initialize()),
+      extensionPaths.map((path) => {
+        const extension = this.extensionInstanceManageService.getExtensionInstanceByPath(path);
+        if (extension) {
+          extension.initialize();
+          this.contributesService.register(extension.id, extension.contributes);
+          this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
+        }
+      }),
     );
+
+    this.contributesService.initialize();
+    this.sumiContributesService.initialize();
 
     activatedViewExtensionMap.clear();
   }

@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-storage",
-  "version": "2.22.9",
+  "version": "2.23.2",
   "files": [
     "lib",
     "src"

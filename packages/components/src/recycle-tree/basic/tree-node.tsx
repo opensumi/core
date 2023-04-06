@@ -89,9 +89,8 @@ export const BasicTreeNodeRenderer: React.FC<
   );
 
   const renderDisplayName = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <div className={cls('segment', 'display_name')}>{getName(node)}</div>
-    ),
+    (node: BasicCompositeTreeNode | BasicTreeNode) =>
+      node.displayName && <div className={cls('segment', 'display_name')}>{getName(node)}</div>,
     [],
   );
 
@@ -99,7 +98,12 @@ export const BasicTreeNodeRenderer: React.FC<
     if (!node.description) {
       return null;
     }
-    return <div className={cls('segment_grow', 'description')}>{node.description}</div>;
+
+    if (typeof node.description === 'string') {
+      return <div className={cls('segment_grow', 'description')}>{node.description}</div>;
+    }
+
+    return node.description;
   }, []);
 
   const inlineMenuActions = useCallback(
@@ -160,7 +164,7 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!(item as BasicCompositeTreeNode).expandable) {
-      return <div className={cls('segment', 'expansion_toggle')}></div>;
+      return null;
     }
 
     if (BasicCompositeTreeNode.is(item)) {

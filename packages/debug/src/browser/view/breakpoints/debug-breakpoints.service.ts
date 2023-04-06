@@ -1,7 +1,16 @@
 import { observable, action, runInAction } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { URI, WithEventBus, OnEvent, IContextKeyService, IReporterService, Schemes } from '@opensumi/ide-core-browser';
+import {
+  URI,
+  WithEventBus,
+  OnEvent,
+  IContextKeyService,
+  IReporterService,
+  Schemes,
+  Emitter,
+  Event,
+} from '@opensumi/ide-core-browser';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
 import { ICodeEditor, EditorCollectionService, getSimpleEditorOptions } from '@opensumi/ide-editor';
 import { IEditorDocumentModelService } from '@opensumi/ide-editor/lib/browser';
@@ -16,10 +25,12 @@ import {
   isDebugExceptionBreakpoint,
   BreakpointManager,
   DebugDecorator,
+  EXCEPTION_BREAKPOINT_URI,
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 import { DebugViewModel } from '../debug-view-model';
 
+import { BreakpointsTreeNode } from './debug-breakpoints-tree.model';
 import { BreakpointItem } from './debug-breakpoints.view';
 
 @Injectable()
@@ -51,14 +62,17 @@ export class DebugBreakpointsService extends WithEventBus {
   @Autowired(IEditorDocumentModelService)
   protected readonly documentService: IEditorDocumentModelService;
 
+  private readonly _onDidChangeBreakpointsTreeNode = new Emitter<Map<string, BreakpointsTreeNode[]>>();
+  readonly onDidChangeBreakpointsTreeNode: Event<Map<string, BreakpointsTreeNode[]>> =
+    this._onDidChangeBreakpointsTreeNode.event;
+
   private _inputEditor: ICodeEditor;
 
   public get inputEditor(): ICodeEditor {
     return this._inputEditor;
   }
 
-  @observable
-  public nodes: BreakpointItem[] = [];
+  public treeNodeMap: Map<string, BreakpointsTreeNode[]> = new Map();
 
   @observable
   public enable: boolean;
@@ -139,38 +153,72 @@ export class DebugBreakpointsService extends WithEventBus {
     }
   }
 
-  extractNodes(items: (DebugExceptionBreakpoint | IDebugBreakpoint)[]) {
-    const nodes: BreakpointItem[] = [];
-    items.forEach((item) => {
-      if (isDebugBreakpoint(item)) {
-        const uri = URI.parse(item.uri);
-        const parent = this.roots.filter((root) => root.isEqualOrParent(uri))[0];
-        nodes.push({
-          id: item.id,
-          name: uri.displayName,
-          description: parent && parent.relative(uri)!.toString(),
-          breakpoint: item,
-        });
-      }
-      if (isDebugExceptionBreakpoint(item)) {
-        nodes.push({
-          id: item.filter,
-          name: item.label,
-          description: '',
-          breakpoint: item,
-        });
-      }
-    });
-    return nodes;
+  extractNodes(item: DebugExceptionBreakpoint | IDebugBreakpoint): BreakpointItem | undefined {
+    if (isDebugBreakpoint(item)) {
+      return {
+        id: item.id,
+        name: '',
+        description: '',
+        onDescriptionChange: Event.None,
+        breakpoint: item,
+      };
+    }
+    if (isDebugExceptionBreakpoint(item)) {
+      return {
+        id: item.filter,
+        name: item.label,
+        onDescriptionChange: Event.None,
+        description: '',
+        breakpoint: item,
+      };
+    }
   }
 
   @action
   private async updateBreakpoints() {
     await this.breakpoints.whenReady;
-    this.nodes = this.extractNodes([
-      ...this.breakpoints.getExceptionBreakpoints(),
-      ...this.breakpoints.getBreakpoints(),
-    ]);
+    this.treeNodeMap.clear();
+
+    const allBreakpoints = [...this.breakpoints.getExceptionBreakpoints(), ...this.breakpoints.getBreakpoints()];
+
+    allBreakpoints.forEach((item) => {
+      const extractNode = this.extractNodes(item);
+      if (extractNode) {
+        const uri = isDebugBreakpoint(item) ? URI.parse(item.uri) : EXCEPTION_BREAKPOINT_URI;
+        const getTreeNodes = this.treeNodeMap.get(uri.toString()) || [];
+        getTreeNodes.push(new BreakpointsTreeNode(uri, extractNode));
+        this.treeNodeMap.set(uri.toString(), getTreeNodes);
+      }
+    });
+
+    this._onDidChangeBreakpointsTreeNode.fire(this.treeNodeMap);
+  }
+
+  private async getDocumentModelRef(uri: URI) {
+    const document = this.documentService.getModelReference(uri);
+    if (!document) {
+      return this.documentService.createModelReference(uri);
+    }
+    return document;
+  }
+
+  public async refreshBreakpointsInfo() {
+    const treeNodeValues = this.treeNodeMap.values();
+    const allTreeNodes: BreakpointsTreeNode[] = Array.from(treeNodeValues).reduce((acc, cur) => acc.concat(cur), []);
+
+    for await (const node of allTreeNodes) {
+      const { rawData, uri } = node;
+      if (isDebugBreakpoint(rawData.breakpoint)) {
+        const line = rawData.breakpoint.raw.line;
+        const monacoModel = await this.getDocumentModelRef(uri);
+        if (!monacoModel) {
+          return;
+        }
+
+        const getContent = monacoModel.instance.getMonacoModel().getLineContent(line);
+        node.fireDescriptionChange(getContent.trim());
+      }
+    }
   }
 
   removeAllBreakpoints() {

@@ -13,23 +13,23 @@ export interface IExtensionStorageServer {
     workspace: FileStat | undefined,
     roots: FileStat[],
     extensionStorageDirName?: string,
-  ): Promise<ExtensionStorageUri>;
+  ): Promise<IExtensionStorageUri>;
 }
 
 export const IExtensionStorageService = Symbol('ExtensionStorageService');
 
 export interface IExtensionStorageService {
-  whenReady: Promise<ExtensionStorageUri>;
-  extensionStoragePath: ExtensionStorageUri;
+  whenReady: Promise<IExtensionStorageUri>;
+  extensionStoragePath: IExtensionStorageUri;
   set(key: string, value: KeysToAnyValues, isGlobal: boolean): Promise<void>;
   get(key: string, isGlobal: boolean): Promise<KeysToAnyValues>;
   getAll(isGlobal: boolean): Promise<KeysToKeysToAnyValue>;
   reConnectInit(): void;
 }
 
-export interface ExtensionStorageUri {
+export interface IExtensionStorageUri {
   logUri: Uri;
-  storageUri?: Uri;
+  storageUri: Uri;
   globalStorageUri: Uri;
 }
 

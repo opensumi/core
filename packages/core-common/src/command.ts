@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@opensumi/di';
 import { Disposable, Emitter, Event, IDisposable, MaybePromise } from '@opensumi/ide-utils';
 
 import { ContributionProvider } from './contribution-provider';
-import { replaceLocalizePlaceholder } from './localize';
+import { createLocalizedStr, ILocalizedStr, replaceLocalizePlaceholder } from './localize';
 import { getDebugLogger } from './log';
 import { IExtensionInfo } from './types';
 
@@ -16,34 +16,29 @@ export interface Command {
    * 支持国际化占位符，例如 %evenEditorGroups%
    */
   label?: string;
+  labelLocalized?: ILocalizedStr;
   /**
    * 要在命令面板显示的较短的文案
    * 支持国际化占位符，例如 %evenEditorGroups%
    */
   shortLabel?: string;
-  /**
-   * 要在命令面板显示的图标
-   */
-  iconClass?: string;
+  shortLabelLocalized?: ILocalizedStr;
+
   /**
    * 要在命令面板显示的分组
    * 支持国际化占位符，例如 %evenEditorGroups%
    */
   category?: string;
-
+  categoryLocalized?: ILocalizedStr;
+  /**
+   * 要在命令面板显示的图标
+   */
+  iconClass?: string;
   /**
    * 代理执行的命令
    */
   delegate?: string;
 
-  /**
-   * 在任意语言下都相同的别名
-   */
-  alias?: string;
-  /**
-   * 在任意语言下都相同的分类名
-   */
-  aliasCategory?: string;
   /**
    * 是否启用该命令，值为 when 表达式
    * 这个值只影响 UI 是否展示 （命令面板或者菜单）
@@ -252,7 +247,7 @@ interface CoreCommandRegistry {
 
 export interface CommandRegistry extends CoreCommandRegistry {
   /**
-   * 从 ContributionProvide 中拿到执行命令 Contributuon
+   * 从 ContributionProvide 中拿到执行命令 Contribution
    * 执行注册操作
    */
   initialize(): void;
@@ -557,12 +552,25 @@ export class CoreCommandRegistryImpl implements CoreCommandRegistry {
       : undefined;
   }
 
+  protected localizeCommand(command: Command): Command {
+    if (command.label && !command.labelLocalized) {
+      command.labelLocalized = createLocalizedStr(command.label);
+    }
+    if (command.category && !command.categoryLocalized) {
+      command.categoryLocalized = createLocalizedStr(command.category);
+    }
+    if (command.shortLabel && !command.shortLabelLocalized) {
+      command.shortLabelLocalized = createLocalizedStr(command.shortLabel);
+    }
+    return command;
+  }
+
   /**
    * 给命令添加销毁函数
    * @param command 要添加销毁函数的命令
    */
   protected doRegisterCommand(command: Command): IDisposable {
-    this._commands[command.id] = command;
+    this._commands[command.id] = this.localizeCommand(command);
     return {
       dispose: () => {
         delete this._commands[command.id];

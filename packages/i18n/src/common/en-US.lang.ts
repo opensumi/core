@@ -317,6 +317,7 @@ export const localizationBundle = {
 
     'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
+    'debug.stack.showMoreAndOrigin': 'Show {0} More: {1}',
     'debug.breakpoint.deactive': 'Deactivate Breakpoints',
     'debug.breakpoint.active': 'Activate Breakpoints',
     'debug.threads.title': 'THREADS',
@@ -916,6 +917,8 @@ export const localizationBundle = {
       "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
     'editor.configuration.suggest.insertMode.insert': 'Insert suggestion without overwriting text right of the cursor.',
     'editor.configuration.suggest.insertMode.replace': 'Insert suggestion and overwrite text right of the cursor.',
+    'editor.configuration.unicodeHighlight.ambiguousCharacters':
+      'Controls whether characters are highlighted that can be confused with basic ASCII characters, except those that are common in the current user locale.',
 
     'diffEditor.configuration.renderSideBySide':
       'Controls whether the diff editor shows the diff side by side or inline.',
@@ -1358,6 +1361,9 @@ export const localizationBundle = {
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',
+
+    'webview.webviewTagUnavailable': 'Webview is unsupported on non-electron env, please use iframe instead',
+
     ...browserViews,
   },
 };

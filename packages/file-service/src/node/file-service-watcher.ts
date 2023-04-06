@@ -1,7 +1,7 @@
 import paths from 'path';
 
 import ParcelWatcher from '@parcel/watcher';
-import * as fs from 'fs-extra';
+import fs from 'fs-extra';
 import debounce from 'lodash/debounce';
 
 import { Injectable, Autowired, Optional } from '@opensumi/di';
@@ -12,7 +12,6 @@ import {
   Disposable,
   DisposableCollection,
   isWindows,
-  URI,
   isLinux,
   ILogService,
   SupportLogNamespace,
@@ -143,18 +142,18 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
    * 向上查找存在的目录
    * 默认向上查找 5 层，避免造成较大的目录监听带来的性能问题
    * 当前框架内所有配置文件可能存在的路径层级均不超过 5 层
-   * @param path 监听路径
+   * @param path 监听的文件路径
    * @param count 向上查找层级
    */
   protected async lookup(path: string, count = 5) {
-    let uri = new URI(path).parent;
+    let uri = paths.dirname(path);
     let times = 0;
-    while (!(await fs.pathExists(uri.codeUri.fsPath)) && times < count) {
-      uri = uri.parent;
+    while (!(await fs.pathExists(uri)) && times < count) {
+      uri = paths.dirname(uri);
       times++;
     }
-    if (await fs.pathExists(uri.codeUri.fsPath)) {
-      return uri.codeUri.fsPath;
+    if (await fs.pathExists(uri)) {
+      return uri;
     } else {
       return '';
     }
@@ -327,7 +326,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       if (event.action === INsfw.actions.RENAMED) {
         const deletedPath = this.resolvePath(event.directory, event.oldFile!);
         if (isIgnored(watcherId, deletedPath)) {
-          return;
+          continue;
         }
 
         this.pushDeleted(deletedPath);
@@ -335,14 +334,14 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
         if (event.newDirectory) {
           const path = this.resolvePath(event.newDirectory, event.newFile!);
           if (isIgnored(watcherId, path)) {
-            return;
+            continue;
           }
 
           this.pushAdded(path);
         } else {
           const path = this.resolvePath(event.directory, event.newFile!);
           if (isIgnored(watcherId, path)) {
-            return;
+            continue;
           }
 
           this.pushAdded(path);
@@ -350,7 +349,7 @@ export class FileSystemWatcherServer implements IFileSystemWatcherServer {
       } else {
         const path = this.resolvePath(event.directory, event.file!);
         if (isIgnored(watcherId, path)) {
-          return;
+          continue;
         }
 
         if (event.action === INsfw.actions.CREATED) {

@@ -14,6 +14,7 @@ import {
   Mode,
   ClientAppContribution,
   GeneralSettingsId,
+  ContributionProvider,
 } from '@opensumi/ide-core-browser';
 import { MenuContribution, IMenuRegistry, MenuId } from '@opensumi/ide-core-browser/lib/menu/next';
 
@@ -26,19 +27,18 @@ import {
   DEFAULT_THEME_ID,
   IconThemeInfo,
   ThemeInfo,
+  ThemeContributionProvider,
 } from '../common';
 import { ISemanticTokenRegistry, ProbeScope } from '../common/semantic-tokens-registry';
 
 export const THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.toggle',
   label: '%theme.toggle%',
-  alias: 'Color Theme',
 };
 
 export const ICON_THEME_TOGGLE_COMMAND: Command = {
   id: 'theme.icon.toggle',
   label: '%theme.icon.toggle%',
-  alias: 'File Icon Theme',
 };
 
 @Domain(MenuContribution, CommandContribution, ClientAppContribution)

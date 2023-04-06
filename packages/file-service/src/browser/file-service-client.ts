@@ -396,7 +396,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async delete(uriString: string, options?: FileDeleteOptions) {
-    if (this.appConfig.isElectronRenderer && options && options.moveToTrash) {
+    if (this.appConfig.isElectronRenderer && options?.moveToTrash !== false) {
       const uri = new URI(uriString);
       if (uri.scheme === Schemes.file) {
         return (this.injector.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
@@ -426,7 +426,7 @@ export class FileServiceClient implements IFileServiceClient {
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
     if (this.fsProviders.has(scheme)) {
-      throw new Error(`'${scheme}' 的文件系统 provider 已存在`);
+      throw new Error(`The file system provider for \`${scheme}\` already registered`);
     }
 
     const disposables: IDisposable[] = [];
@@ -513,7 +513,7 @@ export class FileServiceClient implements IFileServiceClient {
     const _uri = new URI(uri);
 
     if (!_uri.scheme) {
-      throw new Error(`没有设置 scheme: ${uri}`);
+      throw new Error(`Unsupported convert Uri with non-scheme Uri: ${uri}`);
     }
 
     return _uri;
