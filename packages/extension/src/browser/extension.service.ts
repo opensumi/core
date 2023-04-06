@@ -196,10 +196,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async activate(): Promise<void> {
-    await this.setupExtensionEnvironment();
+    // setup the basic environment
+    await this.setupExtensionNLSConfig();
     await this.initExtensionMetaData();
     await this.initExtensionInstanceData();
     await this.runEagerExtensionsContributes();
+    // update nls config by extensions
+    await this.setupExtensionNLSConfig();
+
     this.doActivate();
 
     // 监听页面展示状态，当页面状态变为可见且插件进程待重启的时候执行
@@ -222,7 +226,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
     );
   }
 
-  private async setupExtensionEnvironment() {
+  private async setupExtensionNLSConfig() {
     const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
     const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
     this.extensionNodeClient.setupNLSConfig(currentLanguage, storagePath);
