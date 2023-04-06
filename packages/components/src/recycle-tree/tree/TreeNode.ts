@@ -626,30 +626,19 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
-  private isCompactNode(node: ICompositeTreeNode) {
-    return CompositeTreeNode.is(node) && node.name.includes(Path.separator);
-  }
-
-  // 获取当前节点下所有展开的节点路径
+  // 获取当前节点下所有展开的节点路径, 仅支持 Root 节点
   private getAllExpandedNodePath() {
-    let paths: string[] = [];
-    if (this.children) {
-      for (let i = 0; i < this.children.length; i++) {
-        const child = this.children[i];
-        if (CompositeTreeNode.is(child) && (child as CompositeTreeNode).expanded) {
-          if (this.isCompactNode(child) && child.parent?.path) {
-            // 当获取到的节点为压缩节点时，仅需要存储其根路径，便于后续展开更新节点状态
-            paths.push(new Path(child.parent.path).join(child.name.split(Path.separator)[0]).toString());
-          } else {
-            paths.push(child.path);
-          }
-          paths = paths.concat((child as CompositeTreeNode).getAllExpandedNodePath());
-        }
-      }
-      return paths;
-    } else {
+    const paths: string[] = [];
+    if (!CompositeTreeNode.isRoot(this)) {
       return paths;
     }
+    for (let i = 0; i < this.branchSize; i++) {
+      const node = this.getTreeNodeAtIndex(i);
+      if (CompositeTreeNode.is(node) && (node as CompositeTreeNode).expanded) {
+        paths.push(node.path);
+      }
+    }
+    return paths;
   }
 
   // 获取当前节点下所有折叠的节点路径
@@ -1627,7 +1616,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
    * 根据路径展开节点树
    * @memberof CompositeTreeNode
    */
-  public async loadTreeNodeByPath(path: string): Promise<ITreeNodeOrCompositeTreeNode | undefined> {
+  public async loadTreeNodeByPath(path: string, quiet = false): Promise<ITreeNodeOrCompositeTreeNode | undefined> {
     if (!CompositeTreeNode.isRoot(this)) {
       return;
     }
@@ -1663,7 +1652,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       return;
     }
     let next = this._children;
-    let preItem: CompositeTreeNode;
+    let preItem: CompositeTreeNode | undefined;
     let preItemPath = '';
     let name;
     while (next && (name = pathFlag.shift())) {
@@ -1685,22 +1674,12 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           (item as CompositeTreeNode)._watcher.notifyDidChangeExpansionState(item, true);
         }
         if (pathFlag.length === 0) {
-          let child;
-          while ((child = flattenedBranchChilds.pop())) {
-            (child as CompositeTreeNode).expandBranch(child, true);
-            if (flattenedBranchChilds.length === 0) {
-              this.updateTreeNodeCache(child as CompositeTreeNode);
-            }
-          }
-          this.watcher.notifyDidUpdateBranch();
-          TreeNode.setGlobalTreeState(this.path, {
-            isLoadingPath: false,
-          });
-          return item;
+          preItem = item as CompositeTreeNode;
+          break;
         }
       }
       // 可能展开后路径发生了变化, 需要重新处理一下当前加载路径
-      if (!item && preItem!) {
+      if (!item && preItem) {
         const compactPath = splitPath(preItem.name).slice(1);
         if (compactPath[0] === name) {
           compactPath.shift();
@@ -1718,18 +1697,7 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
       // 最终加载到的路径节点
       if (!item || (!CompositeTreeNode.is(item) && pathFlag.length > 0)) {
-        let child;
-        while ((child = flattenedBranchChilds.pop())) {
-          (child as CompositeTreeNode).expandBranch(child, true);
-          if (flattenedBranchChilds.length === 0) {
-            this.updateTreeNodeCache(child as CompositeTreeNode);
-          }
-        }
-        this.watcher.notifyDidUpdateBranch();
-        TreeNode.setGlobalTreeState(this.path, {
-          isLoadingPath: false,
-        });
-        return preItem!;
+        break;
       }
       if (CompositeTreeNode.is(item)) {
         const isCompactName = item.name.indexOf(Path.separator) > 0;
@@ -1761,24 +1729,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
           }
         }
         if (item && pathFlag.length === 0) {
-          let child;
-          while ((child = flattenedBranchChilds.pop())) {
-            (child as CompositeTreeNode).expandBranch(child, true);
-            if (flattenedBranchChilds.length === 0) {
-              this.updateTreeNodeCache(child as CompositeTreeNode);
-            }
-          }
-          this.watcher.notifyDidUpdateBranch();
-          TreeNode.setGlobalTreeState(this.path, {
-            isLoadingPath: false,
-          });
-          return item;
+          preItem = item as CompositeTreeNode;
+          break;
         } else {
           if (!!preItemPath && preItemPath !== item.path) {
             // 说明此时已发生了路径压缩，如从 a -> a/b/c
             // 需要根据路径变化移除对应的展开路径, 这里只需考虑短变长场景
-            const prePaths = Path.splitPath(preItemPath);
-            const nextPaths = Path.splitPath(item.path);
+            const prePaths = splitPath(preItemPath);
+            const nextPaths = splitPath(item.path);
             if (nextPaths.length > prePaths.length) {
               pathFlag.splice(0, nextPaths.length - prePaths.length);
             }
@@ -1789,15 +1747,23 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
       }
     }
 
-    if (preItem!) {
+    if (preItem) {
       let child;
+      if (preItem.disposed) {
+        TreeNode.setGlobalTreeState(this.path, {
+          isLoadingPath: false,
+        });
+        return;
+      }
       while ((child = flattenedBranchChilds.pop())) {
         (child as CompositeTreeNode).expandBranch(child, true);
         if (flattenedBranchChilds.length === 0) {
           this.updateTreeNodeCache(child as CompositeTreeNode);
         }
       }
-      this.watcher.notifyDidUpdateBranch();
+      if (!quiet) {
+        this.watcher.notifyDidUpdateBranch();
+      }
       TreeNode.setGlobalTreeState(this.path, {
         isLoadingPath: false,
       });
