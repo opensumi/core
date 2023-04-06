@@ -105,8 +105,6 @@ export const MenuBar = observer(() => {
 
   const LogoIcon = componentRegistry.getComponentRegistryInfo('@opensumi/ide-menu-bar-logo')?.views[0].component;
 
-  // return null;
-
   return (
     <ClickOutside
       className={styles.menubars}
