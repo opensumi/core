@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { IEventBus } from '@opensumi/ide-core-browser';
-import { StorageProvider, IStorage, STORAGE_NAMESPACE, BasicEvent } from '@opensumi/ide-core-common';
-
-export class FileTreeDelectEvent extends BasicEvent<void> {}
+import { UpdateRecentStorageEvent } from '@opensumi/ide-core-browser';
+import { StorageProvider, IStorage, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
+import { FileChangeType } from '@opensumi/ide-file-service/lib/common';
 
 @Injectable()
 export class RecentStorage {
@@ -10,7 +10,7 @@ export class RecentStorage {
   private getStorage: StorageProvider;
 
   @Autowired(IEventBus)
-  eventBus: IEventBus;
+  private readonly eventBus: IEventBus;
 
   private recentStorage: IStorage;
   private recentGlobalStorage: IStorage;
@@ -20,8 +20,12 @@ export class RecentStorage {
   }
 
   initialize() {
-    this.eventBus.on(FileTreeDelectEvent, async () => {
-      this.recentStorage = await this.getStorage(STORAGE_NAMESPACE.RECENT_DATA);
+    this.eventBus.on(UpdateRecentStorageEvent, async (event: UpdateRecentStorageEvent) => {
+      event.payload.forEach(async (change) => {
+        if (change.type === FileChangeType.DELETED && change.uri) {
+          this.recentStorage = await this.getStorage(STORAGE_NAMESPACE.RECENT_DATA);
+        }
+      });
     });
   }
 

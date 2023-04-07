@@ -16,6 +16,7 @@ import {
   FilesChangeEvent,
   ExtensionActivateEvent,
   AppConfig,
+  UpdateRecentStorageEvent,
 } from '@opensumi/ide-core-browser';
 import { CorePreferences } from '@opensumi/ide-core-browser/lib/core-preferences';
 import { FileSystemProviderCapabilities, IEventBus, Schemes } from '@opensumi/ide-core-common';
@@ -325,6 +326,7 @@ export class FileServiceClient implements IFileServiceClient {
     );
     this._onFilesChanged.fire(changes);
     this.eventBus.fire(new FilesChangeEvent(changes));
+    this.eventBus.fire(new UpdateRecentStorageEvent(changes));
   }
 
   private uriWatcherMap: Map<string, FileSystemWatcher> = new Map();

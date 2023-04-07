@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { OnEvent, FileChangeType, IPosition } from '@opensumi/ide-core-common';
+import { OnEvent, FileChangeType, IPosition, BasicEvent, FileChange } from '@opensumi/ide-core-common';
 import { WithEventBus } from '@opensumi/ide-core-common/lib/event-bus';
 
 import { RecentStorage } from '../common/common.storage';
@@ -8,6 +8,8 @@ import { FilesChangeEvent } from '../fs';
 const OPENED_FILE = 'OPENED_FILE';
 
 const FILES_POSITION = 'OPENED_FILES_POSITION';
+
+export class UpdateRecentStorageEvent extends BasicEvent<FileChange[]> {}
 
 @Injectable()
 export class RecentFilesManager extends WithEventBus {

@@ -35,7 +35,6 @@ import {
   path,
   IClipboardService,
 } from '@opensumi/ide-core-browser';
-import { FileTreeDelectEvent } from '@opensumi/ide-core-browser/lib/common';
 import { ResourceContextKey } from '@opensumi/ide-core-browser/lib/contextkey/resource';
 import { AbstractContextMenuService, MenuId, ICtxMenuRenderer } from '@opensumi/ide-core-browser/lib/menu/next';
 import { LabelService } from '@opensumi/ide-core-browser/lib/services';
@@ -1072,7 +1071,6 @@ export class FileTreeModelService {
       toPromise.push(
         this.deleteFile(root.node, root.path).then((v) => {
           this.loadingDecoration.removeTarget(root.node);
-          this.eventBus.fire(new FileTreeDelectEvent());
           return v;
         }),
       );
