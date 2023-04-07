@@ -271,7 +271,7 @@ console.log(a);`,
     await app.page.waitForTimeout(1000);
     // |- test
     // |----a/b
-    const nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
+    let nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
     await nodeA?.expand();
     await app.page.waitForTimeout(2000);
     expect(await nodeA?.isCollapsed()).toBeFalsy();
@@ -282,7 +282,7 @@ console.log(a);`,
     newFileMenu = await menu?.menuItemByName('New File');
     await newFileMenu?.click();
     // type `a/d/c.js` as the file name
-    newFileName = 'a/d/c.js';
+    newFileName = 'b/c/.js';
     input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
     if (input != null) {
       await input.focus();
@@ -294,6 +294,9 @@ console.log(a);`,
     // |----a
     // |------b
     // |------d
+    // The `a` directory becomes collapsed again due to the compressed path being reset
+    nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
+    await nodeA?.expand();
     const uncompressNode = await explorer.getFileStatTreeNodeByPath('test/a/b');
     expect(uncompressNode).toBeDefined();
     expect(await uncompressNode?.label()).toBe('b');
