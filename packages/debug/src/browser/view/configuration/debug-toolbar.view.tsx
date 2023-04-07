@@ -79,8 +79,12 @@ class FloatController {
 
 export interface DebugToolbarViewProps {
   float: boolean;
+  className?: string;
 }
 
+/**
+ * @API 调试工具栏组件
+ */
 export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const {
     state,
@@ -221,7 +225,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   );
 
   return (
-    <div className={styles.debug_action_bar}>
+    <div className={cls(styles.debug_action_bar, props.className || '')}>
       {renderSelections(sessions.filter((s: DebugSession) => !s.parentSession))}
       <div className={styles.debug_actions}>
         {renderContinue(state)}

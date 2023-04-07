@@ -1,11 +1,14 @@
 @import '~@opensumi/ide-components/lib/style/mixins.less';
 
+.debug_action_bar_internal {
+  padding: 0px 8px;
+  margin-bottom: 8px;
+}
+
 .debug_action_bar {
   height: 28px;
   display: flex;
   align-items: center;
-  padding: 0px 8px;
-  margin-bottom: 8px;
   justify-content: flex-start;
   pointer-events: all;
   overflow: hidden;
@@ -36,11 +39,14 @@
   }
 }
 
+.debug_configuration_container {
+  padding-right: 8px;
+  margin-bottom: 8px;
+}
+
 .debug_configuration_toolbar {
   display: flex;
   height: 28px;
-  padding-right: 8px;
-  margin-bottom: 8px;
   align-items: center;
 
   .debug_actions {

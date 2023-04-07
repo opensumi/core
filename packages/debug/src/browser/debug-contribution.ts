@@ -75,7 +75,7 @@ import { DebugRunToCursorService } from './editor/debug-run-to-cursor.service';
 import { DebugBreakpointsService } from './view/breakpoints/debug-breakpoints.service';
 import { DebugBreakpointView } from './view/breakpoints/debug-breakpoints.view';
 import { DebugConfigurationService } from './view/configuration/debug-configuration.service';
-import { DebugConfigurationView } from './view/configuration/debug-configuration.view';
+import { DebugConfigurationContainerView } from './view/configuration/debug-configuration.view';
 import { DebugToolbarService } from './view/configuration/debug-toolbar.service';
 import { DebugConsoleService } from './view/console/debug-console.service';
 import { DebugViewModel } from './view/debug-view-model';
@@ -254,7 +254,7 @@ export class DebugContribution
         priority: 7,
         title: localize('debug.container.title'),
         containerId: DEBUG_CONTAINER_ID,
-        titleComponent: DebugConfigurationView,
+        titleComponent: DebugConfigurationContainerView,
         activateKeyBinding: 'ctrlcmd+shift+d',
       },
     );
@@ -349,7 +349,7 @@ export class DebugContribution
   onDidRender() {
     const handler = this.mainlayoutService.getTabbarHandler(DEBUG_CONTAINER_ID);
     if (handler) {
-      handler!.setTitleComponent(DebugConfigurationView);
+      handler!.setTitleComponent(DebugConfigurationContainerView);
     }
   }
 
