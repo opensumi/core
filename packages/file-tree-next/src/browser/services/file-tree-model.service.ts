@@ -29,7 +29,6 @@ import {
   Throttler,
   Emitter,
   Deferred,
-  IEventBus,
   CommandService,
   FILE_COMMANDS,
   path,
@@ -99,9 +98,6 @@ export class FileTreeModelService {
 
   @Autowired(IFileTreeAPI)
   private readonly fileTreeAPI: IFileTreeAPI;
-
-  @Autowired(IEventBus)
-  private readonly eventBus: IEventBus;
 
   @Autowired(IFileServiceClient)
   protected readonly filesystem: IFileServiceClient;
