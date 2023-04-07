@@ -1,4 +1,4 @@
-import { IDisposable } from '@opensumi/ide-core-common';
+import { IDisposable, isUndefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
@@ -29,20 +29,20 @@ const getCapturer = () => {
 
 const capture = (message: IPCMessage) => {
   const capturer = getCapturer();
-  if (capturer !== undefined) {
+  if (!isUndefined(capture)) {
     // if OpenSumi DevTools is opended
     capturer(message);
   }
 };
 
-export function createElectronMainApi(name: string, devtools?: boolean): IElectronMainApi<any> {
+export function createElectronMainApi(name: string, enableCaptured?: boolean): IElectronMainApi<any> {
   let id = 0;
   return new Proxy(
     {
       on: (event: string, listener: (...args) => void): IDisposable => {
         const wrappedListener = (e, eventName, ...args) => {
           if (eventName === event) {
-            devtools && capture({ type: 'event', service: name, method: event, args });
+            enableCaptured && capture({ type: 'event', service: name, method: event, args });
             return listener(...args);
           }
         };
@@ -63,7 +63,7 @@ export function createElectronMainApi(name: string, devtools?: boolean): IElectr
             new Promise((resolve, reject) => {
               const requestId = id++;
               ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
-              devtools && capture({ type: 'request', service: name, method: String(method), requestId, args });
+              enableCaptured && capture({ type: 'request', service: name, method: String(method), requestId, args });
               const listener = (event, id, error, result) => {
                 if (id === requestId) {
                   ElectronIpcRenderer.removeListener('response:' + name, listener);
@@ -74,7 +74,7 @@ export function createElectronMainApi(name: string, devtools?: boolean): IElectr
                   } else {
                     resolve(result);
                   }
-                  devtools &&
+                  enableCaptured &&
                     capture({
                       type: 'response',
                       service: name,
