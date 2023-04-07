@@ -282,7 +282,7 @@ console.log(a);`,
     newFileMenu = await menu?.menuItemByName('New File');
     await newFileMenu?.click();
     // type `a/d/c.js` as the file name
-    newFileName = 'b/c/.js';
+    newFileName = 'a/d/c.js';
     input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
     if (input != null) {
       await input.focus();
