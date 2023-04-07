@@ -10,4 +10,3 @@ export const EXPLORER_CONTAINER_ID = 'explorer';
 export const SEARCH_CONTAINER_ID = 'search';
 export const SCM_CONTAINER_ID = 'scm';
 export const EXTENSION_CONTAINER_ID = 'extension';
-export const MENU_BAR_COMPACT_ID = 'menu-bar-compact';

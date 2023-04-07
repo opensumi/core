@@ -10,11 +10,9 @@ import {
 } from '@opensumi/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@opensumi/ide-core-browser/lib/layout';
 import {
-  IMenuItem,
   IMenuRegistry,
   IMenubarItem,
   ISubmenuItem,
-  MenuCommandDesc,
   MenuContribution,
   MenuId,
 } from '@opensumi/ide-core-browser/lib/menu/next';
@@ -24,11 +22,8 @@ import { MenubarStore } from './menu-bar.store';
 import { MenuBarMixToolbarAction } from './menu-bar.view';
 import { ToolbarAction } from './toolbar-action.view';
 
-@Domain(ComponentContribution, ToolBarActionContribution, MenuContribution)
-export class MenuBarContribution
-  extends Disposable
-  implements ComponentContribution, ToolBarActionContribution, MenuContribution
-{
+@Domain(ComponentContribution, ToolBarActionContribution)
+export class MenuBarContribution extends Disposable implements ComponentContribution, ToolBarActionContribution {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
@@ -84,10 +79,13 @@ export class MenuBarContribution
 
     this.menuRegistry.registerMenuItems(
       MenuId.MenubarCompactMenu,
-      menubarItems.map((item: IMenubarItem) => ({
-          label: item.label,
-          submenu: item.id,
-        } as ISubmenuItem)),
+      menubarItems.map(
+        (item: IMenubarItem) =>
+          ({
+            label: item.label,
+            submenu: item.id,
+          } as ISubmenuItem),
+      ),
     );
   }
 
@@ -110,8 +108,6 @@ export class MenuBarContribution
       });
     }
   }
-
-  registerMenus(): void {}
 
   registerToolbarActions(registry: IToolbarRegistry) {
     if (!this.appConfig.isElectronRenderer) {
