@@ -12,6 +12,7 @@ export * from './icon';
 export * from './input';
 export * from './menu';
 export * from './modal';
+export * from './monaco';
 export * from './notification';
 export * from './panel';
 export * from './select';
