@@ -1319,7 +1319,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const previewMode =
         this.preferenceService.get('editor.previewMode') &&
         (isUndefinedOrNull(options.preview) ? true : options.preview);
-      if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
+      if (
+        this.currentResource &&
+        this.currentResource.uri.isEqual(uri) &&
+        this.currentOpenType?.type === options.forceOpenType?.type
+      ) {
         // 就是当前打开的resource
         if (options.focus && this.currentEditor) {
           this._domNode?.focus();
