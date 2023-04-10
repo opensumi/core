@@ -7,7 +7,7 @@ import { tuple } from '../utils/type';
 import { warning } from '../utils/warning';
 
 const Placements = tuple('topLeft', 'topCenter', 'topRight', 'bottomLeft', 'bottomCenter', 'bottomRight');
-type Placement = (typeof Placements)[number];
+export type Placement = (typeof Placements)[number];
 
 type OverlayFunc = () => React.ReactNode;
 

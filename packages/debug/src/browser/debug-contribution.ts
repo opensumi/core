@@ -40,7 +40,6 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
 import {
   IDebugSessionManager,
-  launchSchemaUri,
   DEBUG_CONTAINER_ID,
   DEBUG_WATCH_ID,
   DEBUG_VARIABLES_ID,
@@ -53,6 +52,7 @@ import {
   TSourceBrekpointProperties,
   DEBUG_COMMANDS,
   IDebugModelManager,
+  launchDefaultSchemaUri,
 } from '../common';
 
 import {
@@ -67,7 +67,7 @@ import { DebugContextKey } from './contextkeys/debug-contextkey.service';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugPreferences, debugPreferencesSchema } from './debug-preferences';
 import { DebugProgressService } from './debug-progress.service';
-import { launchSchema } from './debug-schema-updater';
+import { launchSchema } from './debug-schema-manager';
 import { DebugSession } from './debug-session';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugEditorContribution } from './editor/debug-editor-contribution';
@@ -610,7 +610,7 @@ export class DebugContribution
   }
 
   registerSchema(registry: IJSONSchemaRegistry) {
-    registry.registerSchema(`${launchSchemaUri}/default`, launchSchema, ['launch.json']);
+    registry.registerSchema(launchDefaultSchemaUri, launchSchema, ['launch.json']);
   }
 
   registerKeybindings(keybindings: KeybindingRegistry) {
