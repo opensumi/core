@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@opensumi/di';
 import { objects, IJSONSchema, IJSONSchemaRegistry } from '@opensumi/ide-core-browser';
 
-import { launchSchemaUri } from '../common';
+import { launchExtensionSchemaUri, launchSchemaUri } from '../common';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 
 import { DebugConfigurationManager } from './debug-configuration-manager';
@@ -9,7 +9,7 @@ import { DebugConfigurationManager } from './debug-configuration-manager';
 const { deepClone } = objects;
 
 @Injectable()
-export class DebugSchemaUpdater {
+export class DebugSchemaManager {
   @Autowired(IDebugServer)
   protected readonly debug: DebugServer;
 
@@ -19,7 +19,7 @@ export class DebugSchemaUpdater {
   @Autowired(DebugConfigurationManager)
   private config: DebugConfigurationManager;
 
-  async update(): Promise<void> {
+  public async update(): Promise<void> {
     const debuggers = this.config.getDebuggers();
     const schema = { ...deepClone(launchSchema) };
     const items = schema!.properties!.configurations.items as IJSONSchema;
@@ -38,7 +38,8 @@ export class DebugSchemaUpdater {
         items.defaultSnippets.push(...configurationSnippets);
       }
     }
-    this.schemaRegistry.registerSchema(`${launchSchemaUri}/extension`, schema, ['launch.json']);
+
+    this.schemaRegistry.registerSchema(launchExtensionSchemaUri, schema, ['launch.json']);
   }
 }
 
