@@ -201,6 +201,18 @@ export class SeparatorMenuItemNode extends MenuNode {
   }
 }
 
+// 只展示 label 的 menu node
+export class LabelMenuItemNode extends MenuNode {
+  static readonly ID = 'menu.item.node.label';
+
+  constructor(label: string) {
+    super({
+      id: LabelMenuItemNode.ID,
+      label,
+    });
+  }
+}
+
 export interface IMenu extends IDisposable {
   /**
    * menu-id

@@ -361,7 +361,7 @@ export class DebugConfigurationManager {
     if (!uri) {
       uri = await this.doCreate(model);
     }
-    return this.workbenchEditorService.open(uri, {
+    return this.workbenchEditorService.open(uri.withScheme('launch_view_scheme'), {
       disableNavigate: true,
     });
   }

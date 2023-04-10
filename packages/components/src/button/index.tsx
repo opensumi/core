@@ -2,6 +2,7 @@ import classNames from 'classnames';
 import React from 'react';
 
 import { Dropdown } from '../dropdown';
+import { Placement } from '../dropdown/dropdown';
 import { Icon, DefaultIconKeys, getIcon } from '../icon';
 import './style.less';
 
@@ -27,6 +28,8 @@ interface MoreActionProps {
   more?: boolean;
   moreIconClass?: string;
   menu?: React.ReactNode;
+  moreVisible?: boolean;
+  placement?: Placement;
   onVisibleChange?: (visible: boolean) => void;
 }
 
@@ -95,6 +98,8 @@ export const Button = React.memo(
     more,
     moreIconClass,
     menu,
+    moreVisible,
+    placement,
     title,
     onVisibleChange,
     ...otherProps
@@ -127,9 +132,16 @@ export const Button = React.memo(
 
     const iconNode = iconClass ? <Icon iconClass={iconClass} disabled={disabled} /> : null;
 
-    if (more) {
+    if (menu) {
       return (
-        <Dropdown className={'kt-menu'} overlay={menu} trigger={['click']} onVisibleChange={onVisibleChange}>
+        <Dropdown
+          visible={moreVisible}
+          className={'kt-menu'}
+          overlay={menu}
+          trigger={['click']}
+          onVisibleChange={onVisibleChange}
+          placement={placement}
+        >
           <button
             {...otherProps}
             disabled={disabled}
