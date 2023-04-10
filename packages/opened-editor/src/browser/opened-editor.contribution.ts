@@ -16,11 +16,11 @@ import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
+import { ExplorerOpenedEditorViewId } from '../common/index';
+
 import { ExplorerOpenEditorPanel } from './opened-editor';
 import { EditorFile, EditorFileGroup } from './opened-editor-node.define';
 import { OpenedEditorModelService } from './services/opened-editor-model.service';
-
-export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
 @Domain(ClientAppContribution, TabBarToolbarContribution, CommandContribution, MenuContribution)
 export class OpenedEditorContribution

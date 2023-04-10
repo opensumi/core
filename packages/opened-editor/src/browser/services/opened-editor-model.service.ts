@@ -28,9 +28,9 @@ import { WorkbenchEditorServiceImpl } from '@opensumi/ide-editor/lib/browser/wor
 import { EXPLORER_CONTAINER_ID } from '@opensumi/ide-explorer/lib/browser/explorer-contribution';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
 
+import { ExplorerOpenedEditorViewId } from '../../common/index';
 import { EditorFile, EditorFileGroup } from '../opened-editor-node.define';
 import styles from '../opened-editor-node.module.less';
-import { ExplorerOpenedEditorViewId } from '../opened-editor.contribution';
 
 import { OpenedEditorDecorationService } from './opened-editor-decoration.service';
 import { OpenedEditorEventService } from './opened-editor-event.service';
