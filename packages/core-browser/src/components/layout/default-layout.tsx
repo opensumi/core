@@ -32,7 +32,8 @@ export function ToolbarActionBasedLayout() {
           slot='left'
           isTabbar={true}
           defaultSize={layout.left?.currentId ? layout.left?.size || 310 : 49}
-          minResize={204}
+          minResize={280}
+          maxResize={480}
           minSize={49}
         />
         <SplitPanel id='main-vertical' minResize={300} flexGrow={1} direction='top-to-bottom'>
@@ -51,7 +52,8 @@ export function ToolbarActionBasedLayout() {
           slot='right'
           isTabbar={true}
           defaultSize={layout.right?.currentId ? layout.right?.size || 310 : 0}
-          minResize={200}
+          minResize={280}
+          maxResize={480}
           minSize={0}
         />
       </SplitPanel>
