@@ -243,6 +243,7 @@ export const SplitPanel: React.FC<SplitPanelProps> = ({
       >
         <div
           data-min-resize={getProp(element, 'minResize')}
+          data-max-resize={getProp(element, 'maxResize')}
           ref={(ele) => {
             if (ele && splitPanelService.panels.indexOf(ele) === -1) {
               splitPanelService.panels.push(ele);
