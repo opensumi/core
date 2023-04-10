@@ -8,7 +8,7 @@ export * from './debug-console';
 export * from './debug-session-options';
 export * from './debug-editor';
 export * from './debug-progress';
-export * from './debug-schema-updater';
+export * from './debug-schema';
 export * from './inline-values';
 export * from './types';
 export * from './constants';
