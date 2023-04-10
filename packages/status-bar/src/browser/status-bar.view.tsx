@@ -30,7 +30,6 @@ export const StatusBarView = memo(
         menuNodes: result[1],
       });
     }, []);
-
     return (
       <div
         id={VIEW_CONTAINERS.STATUSBAR}
@@ -39,16 +38,18 @@ export const StatusBarView = memo(
         onContextMenu={handleCtxMenu}
       >
         <div className={cls(styles.area, styles.left)}>
-          {statusBar.leftEntries.length &&
-            statusBar.leftEntries.map((entry: StatusBarEntry, index: number) => (
-              <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />
-            ))}
+          {statusBar.leftEntries.length
+            ? statusBar.leftEntries.map((entry: StatusBarEntry, index: number) => (
+                <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />
+              ))
+            : null}
         </div>
         <div className={cls(styles.area, styles.right)}>
-          {statusBar.rightEntries.length &&
-            statusBar.rightEntries.map((entry: StatusBarEntry, index: number) => (
-              <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />
-            ))}
+          {statusBar.rightEntries.length
+            ? statusBar.rightEntries.map((entry: StatusBarEntry, index: number) => (
+                <StatusBarItem key={`${entry.entryId}-${index}`} {...{ ...entry, color: color ?? entry.color }} />
+              ))
+            : null}
         </div>
       </div>
     );
