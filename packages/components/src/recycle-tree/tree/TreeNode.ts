@@ -626,14 +626,16 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     }
   }
 
-  // 获取当前节点下所有展开的节点路径, 仅支持 Root 节点
+  // 获取当前节点下所有展开的节点路径
   private getAllExpandedNodePath() {
     const paths: string[] = [];
+    let start = 0;
     if (!CompositeTreeNode.isRoot(this)) {
-      return paths;
+      start = (this.root as CompositeTreeNode)?.getIndexAtTreeNodeId(this.id);
     }
-    for (let i = 0; i < this.branchSize; i++) {
-      const node = this.getTreeNodeAtIndex(i);
+    const end = start + this.branchSize;
+    for (let i = start + 1; i < end; i++) {
+      const node = (this.root as CompositeTreeNode)?.getTreeNodeAtIndex(i);
       if (CompositeTreeNode.is(node) && (node as CompositeTreeNode).expanded) {
         paths.push(node.path);
       }
