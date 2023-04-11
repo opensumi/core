@@ -948,14 +948,14 @@ export class DebugSession implements IDebugSession {
     ]);
   }
 
-  async restart(): Promise<boolean> {
+  async restart(args: DebugProtocol.RestartArguments): Promise<boolean> {
     this.cancelAllRequests();
     if (this.capabilities.supportsRestartRequest) {
       this.terminated = false;
       if (this.lifecycleManagedByParent && this.parentSession) {
-        await this.parentSession.restart();
+        await this.parentSession.restart(args);
       } else {
-        await this.sendRequest('restart', {});
+        await this.sendRequest('restart', args);
       }
       return true;
     }
