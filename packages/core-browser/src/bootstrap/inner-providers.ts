@@ -270,19 +270,19 @@ export function injectInnerProviders(injector: Injector) {
     injector.addProviders(
       {
         token: IElectronMainMenuService,
-        useValue: createElectronMainApi(IElectronMainMenuService),
+        useValue: createElectronMainApi(IElectronMainMenuService, appConfig.devtools),
       },
       {
         token: IElectronMainUIService,
-        useValue: createElectronMainApi(IElectronMainUIService),
+        useValue: createElectronMainApi(IElectronMainUIService, appConfig.devtools),
       },
       {
         token: IElectronMainLifeCycleService,
-        useValue: createElectronMainApi(IElectronMainLifeCycleService),
+        useValue: createElectronMainApi(IElectronMainLifeCycleService, appConfig.devtools),
       },
       {
         token: IElectronURLService,
-        useValue: createElectronMainApi(IElectronURLService),
+        useValue: createElectronMainApi(IElectronURLService, appConfig.devtools),
       },
       {
         token: IElectronMenuFactory,
