@@ -953,7 +953,7 @@ export class DebugSession implements IDebugSession {
     if (this.capabilities.supportsRestartRequest) {
       this.terminated = false;
       if (this.lifecycleManagedByParent && this.parentSession) {
-        await this.parentSession.restart(args);
+        await this.parentSession.restart({ arguments: (this.parentSession as DebugSession).configuration });
       } else {
         await this.sendRequest('restart', args);
       }
