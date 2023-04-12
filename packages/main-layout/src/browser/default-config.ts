@@ -1,6 +1,5 @@
 /* istanbul ignore file */
 import { LayoutConfig, SlotLocation } from '@opensumi/ide-core-browser';
-import { DEBUG_CONSOLE_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 
 export const defaultConfig: LayoutConfig = {
   [SlotLocation.top]: {
@@ -25,12 +24,7 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@opensumi/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: [
-      '@opensumi/ide-terminal-next',
-      '@opensumi/ide-output',
-      DEBUG_CONSOLE_CONTAINER_ID,
-      '@opensumi/ide-markers',
-    ],
+    modules: ['@opensumi/ide-terminal-next', '@opensumi/ide-output', 'debug-console', '@opensumi/ide-markers'],
   },
   [SlotLocation.statusBar]: {
     modules: ['@opensumi/ide-status-bar'],

@@ -53,7 +53,7 @@ export class DebugConsoleContribution
 
   registerComponent(registry: ComponentRegistry) {
     registry.register(
-      DEBUG_CONSOLE_CONTAINER_ID,
+      'debug-console',
       {
         id: DEBUG_CONSOLE_VIEW_ID,
         component: DebugConsoleView,
