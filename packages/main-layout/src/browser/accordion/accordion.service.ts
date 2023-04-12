@@ -48,6 +48,7 @@ interface AccordionViewChangeEvent {
   title?: string;
   description?: string;
   message?: string;
+  badge?: string;
 }
 
 @Injectable({ multiple: true })
@@ -108,7 +109,7 @@ export class AccordionService extends WithEventBus {
   private scopedCtxKeyService: IScopedContextKeyService;
 
   private didChangeViewTitleEmitter: Emitter<AccordionViewChangeEvent> = new Emitter<AccordionViewChangeEvent>();
-  public onDidChangeViewTiele: Event<AccordionViewChangeEvent> = this.didChangeViewTitleEmitter.event;
+  public onDidChangeViewTitle: Event<AccordionViewChangeEvent> = this.didChangeViewTitleEmitter.event;
 
   private beforeAppendViewEmitter = new Emitter<string>();
   public onBeforeAppendViewEvent = this.beforeAppendViewEmitter.event;
@@ -159,6 +160,10 @@ export class AccordionService extends WithEventBus {
 
   updateViewMessage(viewId: string, msg: string) {
     this.didChangeViewTitleEmitter.fire({ id: viewId, message: msg });
+  }
+
+  updateViewBadge(viewId: string, badge: string) {
+    this.didChangeViewTitleEmitter.fire({ id: viewId, badge });
   }
 
   tryUpdateResize() {

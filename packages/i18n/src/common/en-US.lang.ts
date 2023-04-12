@@ -962,6 +962,7 @@ export const localizationBundle = {
     'opened.editors.compare': 'Compare With Current File',
     'opened.editors.copyRelativePath': 'Copy Relative Path',
     'opened.editors.copyPath': 'Copy Path',
+    'opened.editors.unsaved': '{0} unsaved',
 
     'terminal.name': 'Terminal',
     'terminal.disconnected': 'Terminal Already Disconnected',

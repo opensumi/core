@@ -31,9 +31,15 @@ describe('OpenedEditorModelService should be work', () => {
   const testFileUri = URI.file('/userhome/test.js');
 
   const fakeSetBadge = jest.fn();
+  const fakeUpdateViewBadge = jest.fn();
+
   const fakeGetTabbarHandler = jest.fn();
+  const fakeGetAccordionService = jest.fn();
   fakeGetTabbarHandler.mockReturnValue({
     setBadge: fakeSetBadge,
+  });
+  fakeGetAccordionService.mockReturnValue({
+    updateViewBadge: fakeUpdateViewBadge,
   });
 
   const MockResourceService = {
@@ -68,6 +74,7 @@ describe('OpenedEditorModelService should be work', () => {
         token: IMainLayoutService,
         useValue: {
           getTabbarHandler: fakeGetTabbarHandler,
+          getAccordionService: fakeGetAccordionService,
         },
       },
       {

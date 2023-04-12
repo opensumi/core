@@ -637,6 +637,7 @@ export const localizationBundle = {
     'opened.editors.compare': '与当前文件比较',
     'opened.editors.copyRelativePath': '复制相对路径',
     'opened.editors.copyPath': '复制路径',
+    'opened.editors.unsaved': '{0} 个未保存',
 
     'terminal.name': '终端',
     'terminal.disconnected': '终端断开连接',
