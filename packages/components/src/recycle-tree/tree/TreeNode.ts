@@ -631,10 +631,11 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     const paths: string[] = [];
     let start = 0;
     if (!CompositeTreeNode.isRoot(this)) {
-      start = (this.root as CompositeTreeNode)?.getIndexAtTreeNodeId(this.id);
+      // 找到节点位置下标，向下进一步查找展开目录
+      start = (this.root as CompositeTreeNode)?.getIndexAtTreeNodeId(this.id) + 1;
     }
     const end = start + this.branchSize;
-    for (let i = start + 1; i < end; i++) {
+    for (let i = start; i < end; i++) {
       const node = (this.root as CompositeTreeNode)?.getTreeNodeAtIndex(i);
       if (CompositeTreeNode.is(node) && (node as CompositeTreeNode).expanded) {
         paths.push(node.path);
