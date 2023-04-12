@@ -243,6 +243,9 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
           if (config.description) {
             config.description = replaceLocalizePlaceholder(config.description, extension.id);
           }
+          if (config.markdownDescription) {
+            config.markdownDescription = replaceLocalizePlaceholder(config.markdownDescription, extension.id);
+          }
           return config;
         },
       ),
@@ -280,6 +283,7 @@ export class DebuggersContributionPoint extends VSCodeContributePoint<DebuggersC
           recursionPropertiesDescription(prop[name].properties!);
         }
         prop[name].description = replaceLocalizePlaceholder(prop[name].description, extension.id);
+        prop[name].markdownDescription = replaceLocalizePlaceholder(prop[name].markdownDescription, extension.id);
       });
     };
 
