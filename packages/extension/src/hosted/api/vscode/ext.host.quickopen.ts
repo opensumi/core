@@ -482,6 +482,7 @@ abstract class ExtQuickInput implements vscode.InputBox {
     this._placeholder = '';
     this._password = false;
     this._ignoreFocusOut = false;
+    this._busy = false;
 
     this.disposableCollection = new DisposableCollection();
     this.disposableCollection.push((this._onDidAcceptEmitter = new Emitter()));

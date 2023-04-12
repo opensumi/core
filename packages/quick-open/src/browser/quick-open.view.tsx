@@ -13,6 +13,8 @@ import {
 } from '@opensumi/ide-components';
 import { Key, KeyCode, useInjectable, localize, isUndefined } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import {
   HideReason,
   QuickInputButton,
@@ -339,6 +341,8 @@ export const QuickOpenList: React.FC<{
 export const QuickOpenView = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const listApi = React.useRef<IRecycleListHandler>();
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const indicator = progressService.getIndicator(VIEW_CONTAINERS.QUICKPICK_PROGRESS);
 
   const scrollOffsetBefore = React.useRef(0);
 
@@ -466,6 +470,10 @@ export const QuickOpenView = observer(() => {
     widget.callbacks.onSelect(item, widget.selectIndex);
   }, [widget.items, widget.selectIndex, widget.keepScrollPosition]);
 
+  React.useEffect(() => {
+    widget.updateProgressStatus(!!widget.busy);
+  }, [widget.busy]);
+
   const onKeydown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     // 处于 composition 的输入，不做处理，否则在按 enter 后会直接打开选择的第一个文件，并且快捷键完全失效
     if (KEY_CODE_MAP[event.nativeEvent.keyCode] === KeyCodeEnum.KEY_IN_COMPOSITION) {
@@ -525,6 +533,9 @@ export const QuickOpenView = observer(() => {
     <div id={VIEW_CONTAINERS.QUICKPICK} tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
+      <div id={VIEW_CONTAINERS.QUICKPICK_PROGRESS} className={styles.progress_bar} >
+        <ProgressBar progressModel={indicator!.progressModel} />
+      </div>
       {widget.renderTab?.()}
       <QuickOpenList onReady={onListReady} onScroll={onListScroll} />
     </div>
