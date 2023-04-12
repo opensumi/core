@@ -485,11 +485,11 @@ export class DebugSessionManager implements IDebugSessionManager {
     return session && this.doRestart(session);
   }
   protected async doRestart(session: DebugSession, restart?: any): Promise<DebugSession | undefined> {
-    if (await session.restart()) {
+    const { options, configuration } = session;
+    if (await session.restart({ arguments: configuration })) {
       return session;
     }
     await session.terminate(true);
-    const { options, configuration } = session;
     configuration.__restart = restart;
     return this.start(options);
   }
