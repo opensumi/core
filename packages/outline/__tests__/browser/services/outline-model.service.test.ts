@@ -245,14 +245,14 @@ describe('OutlineTreeModelService', () => {
 
   it('collapseAll method should be work', async () => {
     await outlineTreeModelService.collapseAll();
-    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
+    const node = outlineTreeModelService.treeModel?.root?.getTreeNodeAtIndex(0) as OutlineTreeNode;
     expect((node as OutlineCompositeTreeNode).expanded).toBeFalsy();
   });
 
   it('location method should be work', async () => {
     const treeHandle = { ensureVisible: jest.fn() } as any;
     outlineTreeModelService.handleTreeHandler(treeHandle);
-    const node = outlineTreeModelService.treeModel!.root!.children![0] as OutlineTreeNode;
+    const node = outlineTreeModelService.treeModel?.root?.getTreeNodeAtIndex(0) as OutlineTreeNode;
     await outlineTreeModelService.location(node);
     expect(treeHandle.ensureVisible).toBeCalledTimes(1);
   });
