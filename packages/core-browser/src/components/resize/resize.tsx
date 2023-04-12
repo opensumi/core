@@ -88,13 +88,22 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     const parentWidth = ref.current!.parentElement!.offsetWidth;
     const prevEle = props.findPrevElement ? props.findPrevElement() : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement() : nextElement.current!;
+
     if ((prevEle && prevEle.classList.contains(RESIZE_LOCK)) || (nextEle && nextEle.classList.contains(RESIZE_LOCK))) {
       return;
     }
-    const prevMinResize = prevEle!.dataset.minResize || 0;
-    const nextMinResize = nextEle!.dataset.minResize || 0;
+    const prevMinResize = prevEle?.dataset.minResize || 0;
+    const nextMinResize = nextEle?.dataset.minResize || 0;
+
+    const prevMaxResize = prevEle?.dataset.maxResize || 0;
+    const nextMaxResize = nextEle?.dataset.maxResize || 0;
     if (prevMinResize || nextMinResize) {
       if (prev * parentWidth <= prevMinResize || next * parentWidth <= nextMinResize) {
+        return;
+      }
+    }
+    if (prevMaxResize || nextMaxResize) {
+      if (prev * parentWidth >= prevMaxResize || next * parentWidth >= nextMaxResize) {
         return;
       }
     }
@@ -109,34 +118,49 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     }
   };
 
-  const flexModeSetSize = (prevWidth: number, nextWidth: number, ignoreMin?: boolean, direction?: boolean) => {
+  const flexModeSetSize = (prevWidth: number, nextWidth: number, ignoreResizeRange?: boolean, direction?: boolean) => {
     const prevEle = props.findPrevElement ? props.findPrevElement(direction) : prevElement.current!;
     const nextEle = props.findNextElement ? props.findNextElement(direction) : nextElement.current!;
-    let fixedElement: HTMLElement;
-    let flexElement: HTMLElement;
-    let targetFixedWidth = 0;
-    const prevMinResize = parseInt(prevEle!.dataset.minResize || '0', 10);
-    const nextMinResize = parseInt(nextEle!.dataset.minResize || '0', 10);
-    if (props.flexMode === ResizeFlexMode.Prev) {
-      fixedElement = prevEle!;
-      flexElement = nextEle!;
-      targetFixedWidth = prevWidth;
-      if (!ignoreMin) {
-        if (prevMinResize > prevWidth) {
-          targetFixedWidth = prevMinResize;
-        } else if (nextMinResize > nextWidth) {
-          targetFixedWidth = prevWidth + nextWidth - nextMinResize;
+    const prevMinResize = Number(prevEle?.dataset.minResize ?? 0);
+    const nextMinResize = Number(nextEle?.dataset.minResize ?? 0);
+
+    const prevMaxResize = prevEle?.dataset.maxResize ? Number(prevEle?.dataset.maxResize) : null;
+    const nextMaxResize = nextEle?.dataset.maxResize ? Number(nextEle?.dataset.maxResize) : null;
+
+    const isPreFlexMode = props.flexMode === ResizeFlexMode.Prev;
+    const fixedElement = (isPreFlexMode ? prevEle : nextEle)!;
+    const flexElement = (isPreFlexMode ? nextEle : prevEle)!;
+    let targetFixedWidth = isPreFlexMode ? prevWidth : nextWidth;
+
+    if (!ignoreResizeRange) {
+      if (prevMinResize || nextMinResize) {
+        if (isPreFlexMode) {
+          if (prevMinResize > prevWidth) {
+            targetFixedWidth = prevMinResize;
+          } else if (nextMinResize > nextWidth) {
+            targetFixedWidth = prevWidth + nextWidth - nextMinResize;
+          }
+        } else {
+          if (nextMinResize > nextWidth) {
+            targetFixedWidth = nextMinResize;
+          } else if (prevMinResize > prevWidth) {
+            targetFixedWidth = prevWidth + nextWidth - prevMinResize;
+          }
         }
       }
-    } else {
-      fixedElement = nextEle!;
-      flexElement = prevEle!;
-      targetFixedWidth = nextWidth;
-      if (!ignoreMin) {
-        if (nextMinResize > nextWidth) {
-          targetFixedWidth = nextMinResize;
-        } else if (prevMinResize > prevWidth) {
-          targetFixedWidth = prevWidth + nextWidth - prevMinResize;
+      if (prevMaxResize || nextMaxResize) {
+        if (isPreFlexMode) {
+          if (prevMaxResize && prevMaxResize <= prevWidth) {
+            targetFixedWidth = prevMaxResize;
+          } else if (nextMaxResize && nextMaxResize > nextWidth) {
+            targetFixedWidth = prevWidth + nextWidth - nextMaxResize;
+          }
+        } else {
+          if (nextMaxResize && nextMaxResize <= nextWidth) {
+            targetFixedWidth = nextMaxResize;
+          } else if (prevMaxResize && prevMaxResize > nextWidth) {
+            targetFixedWidth = prevWidth + nextWidth - prevMaxResize;
+          }
         }
       }
     }
