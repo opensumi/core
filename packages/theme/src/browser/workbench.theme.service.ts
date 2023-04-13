@@ -470,13 +470,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     let vscodeCssVariables = '#workbench-editor .monaco-editor{';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = colors[colorKey] || theme.getColor(colorKey);
-      if (targetColor && !colorKey.startsWith('vscode')) {
+      if (targetColor) {
         const hexRule = `--${colorKey.replace(/\./g, '-')}: ${targetColor.toString()};\n`;
-        cssVariables += hexRule;
-      }
-      if (targetColor && colorKey.startsWith('vscode')) {
-        const hexRule = `--${colorKey.replace(/\./g, '-')}: ${targetColor.toString()};\n`;
-        vscodeCssVariables += hexRule;
+        if (colorKey.startsWith('vscode')) {
+          vscodeCssVariables += hexRule;
+        } else {
+          cssVariables += hexRule;
+        }
       }
     }
     let styleNode = document.getElementById('theme-style');
