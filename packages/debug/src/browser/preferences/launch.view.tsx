@@ -1,3 +1,6 @@
+import Form from '@rjsf/core';
+import { RJSFSchema, StrictRJSFSchema, UiSchema } from '@rjsf/utils';
+import validator from '@rjsf/validator-ajv8';
 import cls from 'classnames';
 import lodashGet from 'lodash/get';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -16,6 +19,7 @@ import {
 import { EDirection, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions/index';
 import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
+import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
 
@@ -23,7 +27,8 @@ import styles from './launch.module.less';
 
 export const LaunchViewContainer = () => {
   const schemaRegistry = useInjectable<IJSONSchemaRegistry>(IJSONSchemaRegistry);
-  const [snippetItems, setSnippetItems] = useState<IJSONSchemaSnippet[]>([]);
+  const [schemaContributions, setSchemaContributions] = useState<IJSONSchema>();
+  const [currentSnippetItem, setCurrentSnippetItem] = useState<IJSONSchemaSnippet>();
 
   useEffect(() => {
     const disposed = schemaRegistry.onDidChangeSchema((uri: string) => {
@@ -37,23 +42,41 @@ export const LaunchViewContainer = () => {
     return () => disposed.dispose();
   }, []);
 
-  const handleSchemaSnippets = (contributions: ISchemaContributions) => {
-    const launchExtension = contributions.schemas[launchExtensionSchemaUri];
+  const handleSchemaSnippets = useCallback(
+    (contributions: ISchemaContributions) => {
+      const launchExtension = contributions.schemas[launchExtensionSchemaUri];
 
-    if (!launchExtension) {
-      return;
+      if (!launchExtension) {
+        return;
+      }
+
+      setSchemaContributions(launchExtension);
+    },
+    [schemaContributions],
+  );
+
+  const snippetItems = useMemo(() => {
+    if (!schemaContributions) {
+      return [];
     }
 
-    const snippets: IJSONSchemaSnippet[] = lodashGet(launchExtension, [
+    const snippets: IJSONSchemaSnippet[] = lodashGet(schemaContributions, [
       'properties',
       'configurations',
       'items',
       'defaultSnippets',
     ] as (keyof IJSONSchema)[]);
-    setSnippetItems(snippets.filter((s) => s.label));
-  };
+    return snippets.filter((s) => s.label);
+  }, [schemaContributions]);
 
-  const onSelectedConfiguration = (current: string) => {};
+  const onSelectedConfiguration = (current: string) => {
+    const findItems = snippetItems.find(({ label }) => label === current);
+    if (!findItems) {
+      return;
+    }
+
+    setCurrentSnippetItem(findItems);
+  };
 
   return (
     <ComponentContextProvider value={{ getIcon, localize }}>
@@ -70,7 +93,7 @@ export const LaunchViewContainer = () => {
             snippetItems={snippetItems}
             onSelectedConfiguration={onSelectedConfiguration}
           />
-          <LaunchBody data-sp-flex={1} />
+          <LaunchBody data-sp-flex={1} snippetItem={currentSnippetItem} schemaContributions={schemaContributions} />
         </SplitPanel>
       </div>
     </ComponentContextProvider>
@@ -152,4 +175,64 @@ const LaunchIndexs = ({
   );
 };
 
-const LaunchBody = () => <div>body</div>;
+const LaunchBody = ({
+  snippetItem,
+  schemaContributions,
+}: {
+  snippetItem?: IJSONSchemaSnippet;
+  schemaContributions?: IJSONSchema;
+}) => {
+  if (!snippetItem) {
+    return <div>{localize('debug.action.no.configuration')}</div>;
+  }
+
+  const [schemaProperties, setSchemaProperties] = useState<IJSONSchema>();
+
+  useEffect(() => {
+    const ajv = acquireAjv();
+    // 1. 先从 schema 中找出 oneOf 池
+    const oneOfPool: IJSONSchema[] =
+      lodashGet(schemaContributions, ['properties', 'configurations', 'items', 'oneOf'] as (keyof IJSONSchema)[]) || [];
+
+    // 2. 再从 snippetItem body 中找出符合条件的 oneOf（可能存在多个，如果有多个就只取第一个）
+    const findOneOf = oneOfPool.filter((oneOf) => {
+      const { body } = snippetItem;
+      return ajv!.validate(oneOf, body);
+    });
+
+    if (findOneOf.length > 0) {
+      setSchemaProperties(findOneOf[0]);
+    }
+  }, [snippetItem, schemaContributions]);
+
+  const schema: RJSFSchema | undefined = useMemo(() => {
+    if (!(schemaProperties && schemaProperties.properties)) {
+      return;
+    }
+
+    const { label, body } = snippetItem;
+    const { properties } = schemaProperties;
+
+    let snippetProperties = {};
+    Object.keys(body).forEach((key) => {
+      if (properties![key].type === 'array') {
+        if (!Object.getOwnPropertyDescriptor(properties![key], 'items')) {
+          properties![key]['items'] = { type: 'string' };
+        }
+      }
+      snippetProperties[key] = properties![key];
+    });
+
+    return {
+      title: label,
+      type: 'object',
+      properties: snippetProperties,
+    } as StrictRJSFSchema;
+  }, [snippetItem, schemaProperties]);
+
+  return (
+    <div className={styles.launch_schema_body_container}>
+      {schema && <Form formData={snippetItem.body} schema={schema} validator={validator} />}
+    </div>
+  );
+};
