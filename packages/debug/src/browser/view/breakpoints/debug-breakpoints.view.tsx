@@ -73,7 +73,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
           const parent = roots.filter((root) => root.isEqualOrParent(toURI))[0];
 
           breakpointTreeData.push({
-            label: parent ? parent.relative(toURI)?.toString() : URI.parse(uri).displayName,
+            label: parent ? parent.relative(toURI)?.toString() || '' : URI.parse(uri).displayName,
             expandable: true,
             iconClassName: getIcon('file-text'),
             expanded: true,
