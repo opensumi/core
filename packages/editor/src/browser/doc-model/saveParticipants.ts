@@ -103,70 +103,83 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
       return undefined;
     }
 
-    return this.progressService.withProgress(
-      {
-        title: formatLocalize('editor.saveCodeActions.saving', e.payload.uri.displayName),
-        location: ProgressLocation.Notification,
-        cancellable: true,
-      },
-      async (progress) => {
-        const codeActions = Array.isArray(preferenceActions) ? preferenceActions : Object.keys(preferenceActions);
-        const codeActionsOnSave: CodeActionKind[] = codeActions.map((p) => new CodeActionKind(p));
-
-        if (!Array.isArray(preferenceActions)) {
-          codeActionsOnSave.sort((a, b) => {
-            if (CodeActionKind.SourceFixAll.contains(a)) {
-              if (CodeActionKind.SourceFixAll.contains(b)) {
-                return 0;
-              }
-              return -1;
-            }
-            if (CodeActionKind.SourceFixAll.contains(b)) {
-              return 1;
-            }
-            return 0;
-          });
-        }
-        if (codeActionsOnSave.length === 0) {
-          return;
-        }
-
-        const modelRef = this.docService.getModelReference(e.payload.uri, 'codeActionOnSave');
-        if (!modelRef) {
-          return;
-        }
-
-        const model = modelRef.instance.getMonacoModel();
-
-        const tokenSource = new monaco.CancellationTokenSource();
-
-        const timeout = this.preferenceService.get<number>(
-          'editor.codeActionsOnSaveTimeout',
-          undefined,
-          e.payload.uri.toString(),
-          e.payload.language,
-        );
-
-        const excludedActions = Array.isArray(preferenceActions)
-          ? []
-          : Object.keys(preferenceActions)
-              .filter((x: string) => preferenceActions[x] === false)
-              .map((x: string) => new CodeActionKind(x));
-
-        return Promise.race([
-          new Promise<void>((_resolve, reject) =>
-            setTimeout(() => {
-              tokenSource.cancel();
-              reject('codeActionsOnSave timeout');
-            }, timeout),
-          ),
-          this.applyOnSaveActions(model, codeActionsOnSave, excludedActions, progress, tokenSource.token),
-        ]).finally(() => {
-          tokenSource.cancel();
-          modelRef.dispose();
-        });
-      },
+    const preferenceSaveCodeActionsNotification = this.preferenceService.get<boolean>(
+      'editor.codeActionsOnSaveNotification',
+      true,
+      e.payload.uri.toString(),
+      e.payload.language,
     );
+
+    const runActions = (progress) => {
+      const codeActions = Array.isArray(preferenceActions) ? preferenceActions : Object.keys(preferenceActions);
+      const codeActionsOnSave: CodeActionKind[] = codeActions.map((p) => new CodeActionKind(p));
+
+      if (!Array.isArray(preferenceActions)) {
+        codeActionsOnSave.sort((a, b) => {
+          if (CodeActionKind.SourceFixAll.contains(a)) {
+            if (CodeActionKind.SourceFixAll.contains(b)) {
+              return 0;
+            }
+            return -1;
+          }
+          if (CodeActionKind.SourceFixAll.contains(b)) {
+            return 1;
+          }
+          return 0;
+        });
+      }
+      if (codeActionsOnSave.length === 0) {
+        return;
+      }
+
+      const modelRef = this.docService.getModelReference(e.payload.uri, 'codeActionOnSave');
+      if (!modelRef) {
+        return;
+      }
+
+      const model = modelRef.instance.getMonacoModel();
+
+      const tokenSource = new monaco.CancellationTokenSource();
+
+      const timeout = this.preferenceService.get<number>(
+        'editor.codeActionsOnSaveTimeout',
+        undefined,
+        e.payload.uri.toString(),
+        e.payload.language,
+      );
+
+      const excludedActions = Array.isArray(preferenceActions)
+        ? []
+        : Object.keys(preferenceActions)
+            .filter((x: string) => preferenceActions[x] === false)
+            .map((x: string) => new CodeActionKind(x));
+
+      return Promise.race([
+        new Promise<void>((_resolve, reject) =>
+          setTimeout(() => {
+            tokenSource.cancel();
+            reject('codeActionsOnSave timeout');
+          }, timeout),
+        ),
+        this.applyOnSaveActions(model, codeActionsOnSave, excludedActions, progress, tokenSource.token),
+      ]).finally(() => {
+        tokenSource.cancel();
+        modelRef.dispose();
+      });
+    };
+
+    if (preferenceSaveCodeActionsNotification) {
+      return this.progressService.withProgress(
+        {
+          title: formatLocalize('editor.saveCodeActions.saving', e.payload.uri.displayName),
+          location: ProgressLocation.Notification,
+          cancellable: true,
+        },
+        async (progress) => runActions(progress),
+      );
+    } else {
+      return runActions(null);
+    }
   }
 
   private async applyOnSaveActions(
@@ -179,12 +192,13 @@ export class CodeActionOnSaveParticipant extends WithEventBus {
     const getActionProgress = new (class implements IProgress<CodeActionProvider> {
       private _names = new Set<string>();
       private _report(): void {
-        progress.report({
-          message: formatLocalize(
-            'editor.saveCodeActions.getting',
-            [...this._names].map((name) => `'${name}'`).join(', '),
-          ),
-        });
+        progress &&
+          progress.report({
+            message: formatLocalize(
+              'editor.saveCodeActions.getting',
+              [...this._names].map((name) => `'${name}'`).join(', '),
+            ),
+          });
       }
       report(provider: CodeActionProvider) {
         if (provider.displayName && !this._names.has(provider.displayName)) {

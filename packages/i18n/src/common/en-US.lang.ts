@@ -540,6 +540,8 @@ export const localizationBundle = {
     'preference.files.trimTrailingWhitespace': 'Trim Trailing Whitespace',
     'preference.files.insertFinalNewline': 'Insert Final Newline',
     'preference.editor.lineHeight': 'Line Height',
+    'preference.editor.saveCodeActions': 'Code Actions On Save',
+    'preference.editor.saveCodeActionsNotification': 'Whether to notify when code operations run at save time',
 
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
@@ -892,6 +894,7 @@ export const localizationBundle = {
     'editor.configuration.codeActionsOnSave': 'Code action kinds to be run on save.',
     'editor.configuration.codeActionsOnSaveTimeout':
       'Timeout in milliseconds after which the code actions that are run on save are cancelled.',
+    'editor.configuration.codeActionsOnSaveNotification': 'Whether to notify when code operations run at save time.',
     'editor.configuration.selectionClipboard': 'Controls whether the Linux primary clipboard should be supported.',
     'editor.configuration.largeFileOptimizations':
       'Special handling for large files to disable certain memory intensive features.',
