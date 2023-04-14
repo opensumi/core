@@ -97,6 +97,9 @@ export const localizationBundle = {
     'menu-bar.go.nextProblemInFiles': 'Next Problem',
     'menu-bar.go.prevProblemInFiles': 'Previous Problem',
 
+    'menu-bar.file.pref': 'Preference',
+    'menu-bar.mode.compact': 'Compact Mode',
+
     editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
@@ -257,7 +260,6 @@ export const localizationBundle = {
     'dialog.file.close': 'Close',
     'dialog.file.ok': 'OK',
     'dialog.ensure': 'OK',
-    'menu-bar.file.pref': 'Preference',
 
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
@@ -391,6 +393,8 @@ export const localizationBundle = {
     'output.enableSmartScroll': 'Enable/disable Smart scrolling',
     'output.enableSmartScrollDesc':
       'Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line.',
+
+    'preference.menubar.mode.compact': 'Controls whether the menu bar uses compact mode',
 
     'preference.explorer.confirm.delete':
       'Controls whether the explorer should ask for confirmation when deleting a file via trash',

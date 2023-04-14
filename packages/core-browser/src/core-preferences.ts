@@ -5,6 +5,7 @@ import {
   SUPPORTED_ENCODINGS,
   GeneralSettingsId,
   PreferenceSchema,
+  MenubarSettingId,
 } from '@opensumi/ide-core-common';
 import { LOCALE_TYPES } from '@opensumi/ide-core-common/lib/const';
 
@@ -276,6 +277,10 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: false,
     },
+    [MenubarSettingId.CompactMode]: {
+      type: 'boolean',
+      default: false,
+    },
   },
 };
 
@@ -303,6 +308,7 @@ export interface CoreConfiguration {
   'general.language': string;
   'general.theme': string;
   'view.saveLayoutWithWorkspace': boolean;
+  'menubar.compactMode': boolean;
 }
 
 export const CorePreferences = Symbol('CorePreferences');

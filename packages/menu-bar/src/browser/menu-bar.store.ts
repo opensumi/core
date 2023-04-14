@@ -2,7 +2,7 @@ import debounce from 'lodash/debounce';
 import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
-import { Disposable } from '@opensumi/ide-core-browser';
+import { Disposable, Emitter, Event } from '@opensumi/ide-core-browser';
 import { AbstractMenubarService, IMenubarItem, MenuNode } from '@opensumi/ide-core-browser/lib/menu/next';
 
 export abstract class AbstractMenubarStore extends Disposable {
@@ -21,6 +21,11 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   @observable
   public menuItems = observable.map<string, MenuNode[]>();
 
+  private readonly _onDidMenuBarChange = new Emitter<IMenubarItem[]>();
+  public get onDidMenuBarChange(): Event<IMenubarItem[]> {
+    return this._onDidMenuBarChange.event;
+  }
+
   constructor() {
     super();
 
@@ -29,10 +34,14 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     this.registerDispose(this.menubarService.onDidMenuChange(this.handleMenuChanged, this, this.disposables));
   }
 
+  private getMenubarSubItems(menuId: string): MenuNode[] {
+    this.menubarService.rebuildMenuNodes(menuId);
+    return this.menubarService.getMenuNodes(menuId) || [];
+  }
+
   @action.bound
   private updateMenuNodes(menuId: string) {
-    this.menubarService.rebuildMenuNodes(menuId);
-    const menuItems = this.menubarService.getMenuNodes(menuId) || [];
+    const menuItems = this.getMenubarSubItems(menuId);
     this.menuItems.set(menuId, menuItems);
   }
 
@@ -42,6 +51,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
     menubarItems.forEach(({ id: menuId }) => {
       this.updateMenuNodes(menuId);
     });
+    this._onDidMenuBarChange.fire(this.menubarItems);
   }
 
   private handleMenuChanged(menuId: string) {
@@ -51,6 +61,7 @@ export class MenubarStore extends Disposable implements AbstractMenubarStore {
   private handleMenubarChanged() {
     const menubarItems = this.menubarService.getMenubarItems();
     this.menubarItems.replace(menubarItems);
+    this._onDidMenuBarChange.fire(this.menubarItems);
   }
 
   @action.bound
