@@ -204,14 +204,14 @@ function canceled(): Error {
   return error;
 }
 // 默认 30s 超时
-export const DEFAULT_TIMEOUT_MS = 30000
+export const DEFAULT_TIMEOUT_MS = 30000;
 
 export class RPCProtocol implements IRPCProtocol {
   private readonly _protocol: IMessagePassingProtocol;
   private readonly _locals: Map<string, any>;
   private readonly _proxies: Map<string, any>;
   private readonly _cancellationTokenSources: Map<string, CancellationTokenSource>;
-  private readonly _timeoutHandles: Map<string, NodeJS.Timeout | number>
+  private readonly _timeoutHandles: Map<string, NodeJS.Timeout | number>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
   private logger;
@@ -283,10 +283,10 @@ export class RPCProtocol implements IRPCProtocol {
     this._protocol.send(msg);
     // 设置超时回调
     const timeoutHandle = setTimeout(() => {
-      this._handleTimeout(callId)
-    }, this._protocol.timeoutMs || DEFAULT_TIMEOUT_MS)
+      this._handleTimeout(callId);
+    }, this._protocol.timeoutMs || DEFAULT_TIMEOUT_MS);
 
-    this._timeoutHandles.set(callId, timeoutHandle)
+    this._timeoutHandles.set(callId, timeoutHandle);
 
     return result.promise;
   }
@@ -296,8 +296,8 @@ export class RPCProtocol implements IRPCProtocol {
     // 清除 timeout
     if (this._timeoutHandles.has(msg.id)) {
       // @ts-ignore
-      clearTimeout(this._timeoutHandles.get(msg.id))
-      this._timeoutHandles.delete(msg.id)
+      clearTimeout(this._timeoutHandles.get(msg.id));
+      this._timeoutHandles.delete(msg.id);
     }
 
     switch (msg.type) {
@@ -406,7 +406,7 @@ export class RPCProtocol implements IRPCProtocol {
 
     const pendingReply = this._pendingRPCReplies.get(callId) as Deferred<any>;
     this._pendingRPCReplies.delete(callId);
-    this._timeoutHandles.delete(callId)
+    this._timeoutHandles.delete(callId);
 
     pendingReply.reject('RPC Timeout');
   }
