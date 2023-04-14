@@ -247,6 +247,7 @@ export interface QuickOpenService {
   showDecoration(type: VALIDATE_TYPE): void;
   hideDecoration(): void;
   refresh(): void;
+  updateOptions(options: QuickOpenOptions): void;
 }
 
 export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
@@ -355,6 +356,10 @@ export namespace QuickOpenOptions {
      * 内容更新后保持滚动区域不变
      */
     keepScrollPosition?: boolean;
+    /**
+     * 是否显示 progress
+     */
+    busy?: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     enabled: true,

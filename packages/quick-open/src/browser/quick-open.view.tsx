@@ -13,6 +13,8 @@ import {
 } from '@opensumi/ide-components';
 import { Key, KeyCode, useInjectable, localize, isUndefined } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import {
   HideReason,
   QuickInputButton,
@@ -338,6 +340,22 @@ export const QuickOpenList: React.FC<{
   ) : null;
 });
 
+export const QuickOpenProgress = observer(() => {
+  const { widget } = React.useContext(QuickOpenContext);
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const indicator = progressService.getIndicator(VIEW_CONTAINERS.QUICKPICK_PROGRESS);
+
+  React.useEffect(() => {
+    widget.updateProgressStatus(!!widget.busy);
+  }, [widget.busy]);
+
+  return (
+    <div id={VIEW_CONTAINERS.QUICKPICK_PROGRESS} className={styles.progress_bar} >
+      <ProgressBar progressModel={indicator!.progressModel} />
+    </div>
+  );
+});
+
 export const QuickOpenView = observer(() => {
   const { widget } = React.useContext(QuickOpenContext);
   const listApi = React.useRef<IRecycleListHandler>();
@@ -527,6 +545,7 @@ export const QuickOpenView = observer(() => {
     <div id={VIEW_CONTAINERS.QUICKPICK} tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
+      <QuickOpenProgress />
       {widget.renderTab?.()}
       <QuickOpenList onReady={onListReady} onScroll={onListScroll} />
     </div>
