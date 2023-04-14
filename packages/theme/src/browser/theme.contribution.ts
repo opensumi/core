@@ -288,7 +288,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
         const themeId = await this.showPickWithPreview(
           items,
           {
-            selectIndex: () => defaultSelected,
+            selectIndex: (lookFor) => (lookFor ? -1 : defaultSelected), // 默认展示当前主题，如果有输入，则选择第一个，否则 selectIndex 一直不变导致显示有问题
             placeholder: localize('theme.quickopen.plh'),
           },
           (value) => {
@@ -353,7 +353,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution,
         const themeId = await this.showPickWithPreview(
           items,
           {
-            selectIndex: () => defaultSelected,
+            selectIndex: (lookFor) => (lookFor ? -1 : defaultSelected),
             placeholder: localize('icon.quickopen.plh'),
           },
           (value) => {
