@@ -1,10 +1,9 @@
-import { Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
+import { Autowired } from '@opensumi/di';
 import {
   Domain,
   StorageResolverContribution,
   URI,
   IStorage,
-  ClientAppContribution,
   STORAGE_SCHEMA,
   AppConfig,
   ScopedBrowserStorageService,
@@ -17,8 +16,8 @@ import { IStorageServer, IWorkspaceStorageServer, IGlobalStorageServer } from '.
 
 import { Storage } from './storage';
 
-@Domain(StorageResolverContribution, ClientAppContribution)
-export class DatabaseStorageContribution implements StorageResolverContribution, ClientAppContribution {
+@Domain(StorageResolverContribution)
+export class DatabaseStorageContribution implements StorageResolverContribution {
   @Autowired(IWorkspaceStorageServer)
   private workspaceStorage: IStorageServer;
 
