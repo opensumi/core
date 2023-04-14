@@ -166,7 +166,6 @@ export class ExtensionServiceClientImpl
       storagePath,
       languageId.toLowerCase(),
     );
-    // tslint:disable-next-line: no-string-literal
     nlsConfig['_languagePackSupport'] = true;
     process.env.VSCODE_NLS_CONFIG = JSON.stringify(nlsConfig);
   }
