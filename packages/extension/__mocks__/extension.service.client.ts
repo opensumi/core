@@ -7,6 +7,9 @@ import { mockExtensionProps } from './extensions';
 
 @Injectable()
 export class MockExtNodeClientService implements IExtensionNodeClientService {
+  async setupNLSConfig(languageId: string, storagePath: string): Promise<void> {
+    // void
+  }
   getOpenVSXRegistry(): Promise<string> {
     return Promise.resolve('');
   }
