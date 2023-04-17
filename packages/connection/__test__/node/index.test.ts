@@ -236,4 +236,36 @@ describe('connection', () => {
     expect(mockUriTestFn.mock.results[0].value.toString()).toBe(testUri.toString());
     await expect(errorFunction()).rejects.toThrow(new Error('custom error'));
   });
+
+  it('RPCProtocol Timeout', async () => {
+    const emitterTimeoutA = new Emitter<string>();
+    const emitterTimeoutB = new Emitter<string>();
+    const emitterTimeoutC = new Emitter<string>();
+
+    const mockClientTA = {
+      onMessage: emitterTimeoutA.event,
+      send: (msg) => emitterTimeoutB.fire(msg),
+    };
+    const mockClientTB = {
+      onMessage: emitterTimeoutB.event,
+      send: (msg) => emitterTimeoutA.fire(msg),
+    };
+    const mockClientTC = {
+      onMessage: emitterTimeoutC.event,
+      send: (msg) => emitterTimeoutA.fire(msg),
+      timeoutMs: 1000,
+    };
+
+    const timeoutAProtocol = new RPCProtocol(mockClientTA);
+    const timeoutBProtocol = new RPCProtocol(mockClientTB);
+    const timeoutCProtocol = new RPCProtocol(mockClientTC);
+
+    const testTimeoutIdentifier = createMainContextProxyIdentifier('testTimeoutIdentifier');
+    timeoutAProtocol.set(testTimeoutIdentifier, {
+      $test: jest.fn(),
+    });
+
+    await expect(timeoutBProtocol.getProxy(testTimeoutIdentifier).$test()).resolves.toBe(void 0);
+    await expect(timeoutCProtocol.getProxy(testTimeoutIdentifier).$test()).rejects.toBe('RPC Timeout');
+  });
 });

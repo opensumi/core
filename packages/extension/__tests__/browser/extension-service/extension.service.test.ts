@@ -45,6 +45,7 @@ describe('Extension service', () => {
   let sumiContributes: VSCodeContributesService;
 
   beforeAll(async () => {
+    jest.spyOn(global, 'clearTimeout');
     injector = setupExtensionServiceInjector();
     injector.get(IMainLayoutService).viewReady.resolve();
     extensionService = injector.get(ExtensionService);
