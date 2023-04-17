@@ -1,5 +1,5 @@
 /**
- * 编译器 monaco 主题颜色使用的是 --vscode 开头的前缀
+ * monaco 编辑器内使用了 --vscode 前缀的 CSS Token，这里对其进行定义
  */
 import { localize } from '@opensumi/ide-core-common';
 
