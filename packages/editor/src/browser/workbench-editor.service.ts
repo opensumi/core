@@ -1319,8 +1319,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const previewMode =
         this.preferenceService.get('editor.previewMode') &&
         (isUndefinedOrNull(options.preview) ? true : options.preview);
-      if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
-        // 就是当前打开的resource
+      if (
+        this.currentResource &&
+        this.currentResource.uri.isEqual(uri) &&
+        // 当不存在 forceOpenType 或打开类型与当前打开类型符合时，才能说明是当前打开的 Reource 资源
+        (!options.forceOpenType || options.forceOpenType.type === this.currentOpenType?.type)
+      ) {
+        // 就是当前打开的 Resource
         if (options.focus && this.currentEditor) {
           this._domNode?.focus();
           this.currentEditor.monacoEditor.focus();
