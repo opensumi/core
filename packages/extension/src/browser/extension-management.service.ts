@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { CommandService, getLanguageId, ILogger, WithEventBus } from '@opensumi/ide-core-common';
+import { CommandService, getLanguageId, ILogger, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
 import { IIconService, IThemeService } from '@opensumi/ide-theme';
 import { ICON_THEME_TOGGLE_COMMAND, THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
@@ -208,7 +208,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
    */
   private async removeExtension(extensionPath: string) {
     try {
-      await this.fileService.delete(extensionPath);
+      await this.fileService.delete(URI.file(extensionPath).toString());
       return true;
     } catch (err) {
       this.logger.error(err);

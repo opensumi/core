@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-keymaps",
-  "version": "2.23.1",
+  "version": "2.23.3",
   "files": [
     "lib",
     "src"

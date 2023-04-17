@@ -271,7 +271,7 @@ console.log(a);`,
     await app.page.waitForTimeout(1000);
     // |- test
     // |----a/b
-    const nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
+    let nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
     await nodeA?.expand();
     await app.page.waitForTimeout(2000);
     expect(await nodeA?.isCollapsed()).toBeFalsy();
@@ -294,6 +294,9 @@ console.log(a);`,
     // |----a
     // |------b
     // |------d
+    // The `a` directory becomes collapsed again due to the compressed path being reset
+    nodeA = await explorer.getFileStatTreeNodeByPath('test/a');
+    await nodeA?.expand();
     const uncompressNode = await explorer.getFileStatTreeNodeByPath('test/a/b');
     expect(uncompressNode).toBeDefined();
     expect(await uncompressNode?.label()).toBe('b');
@@ -325,5 +328,60 @@ console.log(a);`,
     await app.page.reload();
     await app.page.waitForTimeout(2000);
     expect(await outlineView.isVisible()).toBeFalsy();
+  });
+
+  test('when a new file is created in the folder, the rest of the expanded folders are still expanded', async () => {
+    let action = await fileTreeView.getTitleActionByName('New File');
+    await action?.click();
+    // type `new_folder3` as the folder name
+    const newFileName_1 = 'new_folder3/index.js';
+    let input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName_1, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(200);
+    let node = await explorer.getFileStatTreeNodeByPath('new_folder3');
+    await node?.open();
+
+    action = await fileTreeView.getTitleActionByName('New Folder');
+    await action?.click();
+    // type `new_folder4` as the folder name
+    const newFileName_2 = 'new_folder4';
+    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName_2, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(200);
+    // expanded `new_folder4`
+    node = await explorer.getFileStatTreeNodeByPath(newFileName_2);
+    await node?.open();
+    expect(await node?.isExpanded()).toBeTruthy();
+
+    // select the `new_folder3` folder and expanded it
+    node = await explorer.getFileStatTreeNodeByPath(newFileName_1);
+    await node?.open();
+    await node?.open();
+
+    action = await fileTreeView.getTitleActionByName('New File');
+    await action?.click();
+    // type `new_file` as the file name
+    const newFileName_3 = 'new_file';
+    input = await (await fileTreeView.getViewElement())?.waitForSelector('.kt-input-box');
+    if (input != null) {
+      await input.focus();
+      await input.type(newFileName_3, { delay: 200 });
+      await app.page.keyboard.press('Enter');
+    }
+    await app.page.waitForTimeout(200);
+
+    node = await explorer.getFileStatTreeNodeByPath(newFileName_3);
+    expect(node).toBeDefined();
+    // The `new_folder3` folder should be expaned also
+    node = await explorer.getFileStatTreeNodeByPath(newFileName_1);
+    expect(await node?.isExpanded()).toBeTruthy();
   });
 });

@@ -65,6 +65,7 @@ export interface IJSONSchemaMap {
 export interface IJSONSchemaSnippet {
   label?: string;
   description?: string;
+  markdownDescription?: string;
   body?: any; // a object that will be JSON stringified
   bodyText?: string; // an already stringified JSON object that can contain new lines (\n) and tabs (\t)
 }

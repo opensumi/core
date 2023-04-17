@@ -182,7 +182,7 @@ export class DebugSessionConnection implements IDisposable {
     };
 
     let cancelationListener: IDisposable;
-    if (args && Object.keys(args).length > 0) {
+    if (args) {
       request.arguments = args;
     }
 
