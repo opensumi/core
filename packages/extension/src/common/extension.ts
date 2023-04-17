@@ -123,6 +123,7 @@ export interface IExtensionNodeClientService {
   restartExtProcessByClient(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
   updateLanguagePack(languageId: string, languagePackPath: string, storagePath: string): Promise<void>;
+  setupNLSConfig(languageId: string, storagePath: string): Promise<void>;
   getOpenVSXRegistry(): Promise<string>;
 }
 
@@ -310,7 +311,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 }
 
 export abstract class ExtensionContributesService extends WithEventBus {
-  abstract ContributionPoints: (typeof VSCodeContributePoint)[];
+  abstract ContributionPoints: typeof VSCodeContributePoint[];
 
   @Autowired(ILogger)
   private logger: ILogger;
