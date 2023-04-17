@@ -7,13 +7,13 @@ import { Injectable } from '@opensumi/di';
 import { Option, Select } from '@opensumi/ide-components';
 import {
   AppConfig,
-  getIcon,
-  localize,
-  PreferenceService,
-  useInjectable,
   DisposableCollection,
+  PreferenceService,
   electronEnv,
+  getIcon,
   isMacintosh,
+  localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
@@ -79,8 +79,13 @@ class FloatController {
 
 export interface DebugToolbarViewProps {
   float: boolean;
+  className?: string;
 }
 
+/**
+ * 该组件支持用户导入
+ * 后续如果有一些改动需要考虑是否有 breakchange
+ */
 export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const {
     state,
@@ -221,7 +226,7 @@ export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   );
 
   return (
-    <div className={styles.debug_action_bar}>
+    <div className={cls(styles.debug_action_bar, props.className || '')}>
       {renderSelections(sessions.filter((s: DebugSession) => !s.parentSession))}
       <div className={styles.debug_actions}>
         {renderContinue(state)}

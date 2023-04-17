@@ -2,15 +2,15 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 
-import { Select, Option } from '@opensumi/ide-components';
-import { useInjectable, localize, URI, AppConfig } from '@opensumi/ide-core-browser';
+import { Option, Select } from '@opensumi/ide-components';
+import { AppConfig, URI, localize, useInjectable } from '@opensumi/ide-core-browser';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
 
 import {
   DEFAULT_ADD_CONFIGURATION_KEY,
-  DEFAULT_NO_CONFIGURATION_KEY,
   DEFAULT_CONFIGURATION_INDEX_SEPARATOR,
   DEFAULT_CONFIGURATION_NAME_SEPARATOR,
+  DEFAULT_NO_CONFIGURATION_KEY,
   DebugSessionOptions,
 } from '../../../common';
 import { DebugAction } from '../../components';
@@ -198,7 +198,26 @@ export const DebugActionBar = React.memo(({ runDebug, openConfiguration, openDeb
   </div>
 ));
 
-export const DebugConfigurationView = observer((props) => {
+export const DebugConfigurationContainerView = observer(() => {
+  const { float } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
+
+  return (
+    <>
+      <DebugControllerView className={styles.debug_configuration_container} />
+      {!float && <DebugToolbarView float={false} className={styles.debug_action_bar_internal} />}
+    </>
+  );
+});
+
+export interface DebugControllerViewProps {
+  className?: string;
+}
+
+/**
+ * 该组件支持用户导入
+ * 后续如果有一些改动需要考虑是否有 breakchange
+ */
+export const DebugControllerView = observer((props: DebugControllerViewProps) => {
   const {
     configurationOptions,
     toValue,
@@ -208,12 +227,12 @@ export const DebugConfigurationView = observer((props) => {
     openDebugConsole,
     updateConfiguration,
     start,
-    float,
     isMultiRootWorkspace,
     workspaceRoots,
   } = useInjectable<DebugConfigurationService>(DebugConfigurationService);
   const appConfig = useInjectable<AppConfig>(AppConfig);
   const addConfigurationLabel = localize('debug.action.add.configuration');
+
   const setCurrentConfiguration = React.useCallback((event: React.ChangeEvent<HTMLSelectElement> | string) => {
     let value: React.ChangeEvent<HTMLSelectElement> | string;
     if (typeof event === 'object') {
@@ -236,21 +255,18 @@ export const DebugConfigurationView = observer((props) => {
   }, []);
 
   return (
-    <div>
-      <div className={styles.debug_configuration_toolbar}>
-        <ConfigurationSelector
-          currentValue={currentValue}
-          options={configurationOptions}
-          onChangeConfiguration={setCurrentConfiguration}
-          isMultiRootWorkspace={isMultiRootWorkspace}
-          addConfigurationLabel={addConfigurationLabel}
-          toValue={toValue}
-          isElectronRenderer={appConfig.isElectronRenderer}
-          workspaceRoots={workspaceRoots}
-        />
-        <DebugActionBar runDebug={start} openConfiguration={openConfiguration} openDebugConsole={openDebugConsole} />
-      </div>
-      {!float && <DebugToolbarView float={false} />}
+    <div className={cls(styles.debug_configuration_toolbar, props.className || '')}>
+      <ConfigurationSelector
+        currentValue={currentValue}
+        options={configurationOptions}
+        onChangeConfiguration={setCurrentConfiguration}
+        isMultiRootWorkspace={isMultiRootWorkspace}
+        addConfigurationLabel={addConfigurationLabel}
+        toValue={toValue}
+        isElectronRenderer={appConfig.isElectronRenderer}
+        workspaceRoots={workspaceRoots}
+      />
+      <DebugActionBar runDebug={start} openConfiguration={openConfiguration} openDebugConsole={openDebugConsole} />
     </div>
   );
 });
