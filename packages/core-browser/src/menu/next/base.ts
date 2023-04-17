@@ -18,7 +18,6 @@ import {
 } from '@opensumi/ide-core-common';
 import { ContextKeyExpr } from '@opensumi/monaco-editor-core/esm/vs/platform/contextkey/common/contextkey';
 
-
 import { MenuId } from './menu-id';
 
 export const MenuContribution = Symbol('MenuContribution');
@@ -311,21 +310,23 @@ export class CoreMenuRegistryImpl implements IMenuRegistry {
       return [];
     }
 
-    const result = (this._menuItems.get(id) || []).slice(0).reduce((prev, cur) => {
-      if (isIComponentMenuItem(cur)) {
-        // 目前只支持 `EditorTitle` 开放 `ComponentMenuItem`
-        if (CoreMenuRegistryImpl.EnableComponentMenuIds.includes(id)) {
-          prev.push({
-            ...cur,
-            group: 'navigation',
-          });
-        }
-      } else {
-        prev.push(cur);
-      }
+    // const result = (this._menuItems.get(id) || []).slice(0).reduce((prev, cur) => {
+    //   if (isIComponentMenuItem(cur)) {
+    //     // 目前只支持 `EditorTitle` 开放 `ComponentMenuItem`
+    //     if (CoreMenuRegistryImpl.EnableComponentMenuIds.includes(id)) {
+    //       prev.push({
+    //         ...cur,
+    //         group: 'navigation',
+    //       });
+    //     }
+    //   } else {
+    //     prev.push(cur);
+    //   }
 
-      return prev;
-    }, [] as Array<IMenuItem | ISubmenuItem | IComponentMenuItem>);
+    //   return prev;
+    // }, [] as Array<IMenuItem | ISubmenuItem | IComponentMenuItem>);
+
+    const result = (this._menuItems.get(id) || []).slice(0);
 
     if (id === MenuId.CommandPalette) {
       // CommandPalette 特殊处理, 默认展示所有的 command

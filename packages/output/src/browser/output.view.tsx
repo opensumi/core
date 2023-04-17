@@ -2,10 +2,11 @@ import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useEffect, createRef } from 'react';
 
-import { Select, Option } from '@opensumi/ide-components';
+import { Select, Option, Icon } from '@opensumi/ide-components';
 import { useInjectable, ViewState, AppConfig } from '@opensumi/ide-core-browser';
 import { OUTPUT_CONTAINER_ID } from '@opensumi/ide-core-browser/lib/common/container-id';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
+import { IComponentMenuItemProps } from '@opensumi/ide-core-browser/lib/menu/next/base';
 import { IMainLayoutService } from '@opensumi/ide-main-layout/lib/common/main-layout.definition';
 
 import styles from './output.module.less';
@@ -106,3 +107,5 @@ export const ChannelSelector = observer(() => {
     </Select>
   );
 });
+
+export const CustomMenuItem: React.FC<IComponentMenuItemProps> = () => <Icon icon='explorer' />;

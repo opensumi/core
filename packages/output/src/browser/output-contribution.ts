@@ -7,6 +7,7 @@ import {
   TabBarToolbarContribution,
   ToolbarRegistry,
 } from '@opensumi/ide-core-browser/lib/layout';
+import { MenuContribution } from '@opensumi/ide-core-browser/lib/menu/next';
 import {
   Disposable,
   CommandContribution,
@@ -22,7 +23,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { OutputLinkProvider } from './output-link.provider';
 import { outputPreferenceSchema } from './output-preference';
 import { OutputService } from './output.service';
-import { Output, ChannelSelector } from './output.view';
+import { Output, ChannelSelector, CustomMenuItem } from './output.view';
 
 const OUTPUT_CLEAR: Command = {
   id: 'output.channel.clear',
@@ -30,6 +31,7 @@ const OUTPUT_CLEAR: Command = {
 };
 
 @Domain(
+  MenuContribution,
   CommandContribution,
   ComponentContribution,
   TabBarToolbarContribution,
@@ -39,6 +41,7 @@ const OUTPUT_CLEAR: Command = {
 export class OutputContribution
   extends Disposable
   implements
+    MenuContribution,
     CommandContribution,
     ComponentContribution,
     TabBarToolbarContribution,
@@ -69,6 +72,22 @@ export class OutputContribution
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(OUTPUT_CLEAR, {
       execute: () => this.outputService.selectedChannel?.clear(),
+    });
+  }
+  registerMenus(menuRegistry): void {
+    menuRegistry.registerMenuItem('tabbar/bottom/common', {
+      // command: 'custom_group_0011',
+      component: CustomMenuItem,
+      order: -1,
+      group: 'navigation',
+      when: '!bottomFullExpanded',
+    });
+    menuRegistry.registerMenuItem('tabbar/bottom/common', {
+      // command: 'custom_group_0011',
+      component: CustomMenuItem,
+      order: -2,
+      group: 'custom_group_001',
+      when: '!bottomFullExpanded',
     });
   }
 
