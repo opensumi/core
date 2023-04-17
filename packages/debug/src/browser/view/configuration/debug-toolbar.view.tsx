@@ -7,13 +7,13 @@ import { Injectable } from '@opensumi/di';
 import { Option, Select } from '@opensumi/ide-components';
 import {
   AppConfig,
-  getIcon,
-  localize,
-  PreferenceService,
-  useInjectable,
   DisposableCollection,
+  PreferenceService,
   electronEnv,
+  getIcon,
   isMacintosh,
+  localize,
+  useInjectable,
 } from '@opensumi/ide-core-browser';
 import { InlineMenuBar } from '@opensumi/ide-core-browser/lib/components/actions';
 import { Select as NativeSelect } from '@opensumi/ide-core-browser/lib/components/select';
@@ -83,7 +83,8 @@ export interface DebugToolbarViewProps {
 }
 
 /**
- * @API 调试工具栏组件
+ * 该组件支持用户导入
+ * 后续如果有一些改动需要考虑是否有 breakchange
  */
 export const DebugToolbarView = observer((props: DebugToolbarViewProps) => {
   const {
