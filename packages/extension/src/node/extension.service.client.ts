@@ -162,6 +162,8 @@ export class ExtensionServiceClientImpl
 
   public async setupNLSConfig(languageId: string, storagePath: string): Promise<void> {
     const nlsConfig = await lp.getNLSConfiguration(
+      // This commit is used to generate the path for caching language packs.
+      // In VSCode, it use its head ref commit. here we just use a fixed commit.
       'f06011ac164ae4dc8e753a3fe7f9549844d15e35',
       storagePath,
       languageId.toLowerCase(),
