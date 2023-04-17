@@ -352,6 +352,10 @@ export class EditorContribution
       keybinding: 'ctrlcmd+k ctrlcmd+w',
     });
     keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.CLOSE_SAVED.id,
+      keybinding: 'ctrlcmd+k u',
+    });
+    keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.PIN_CURRENT.id,
       keybinding: 'ctrlcmd+k enter',
     });
