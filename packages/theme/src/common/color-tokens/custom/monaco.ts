@@ -1,3 +1,6 @@
+/**
+ * 编译器 monaco 主题颜色使用的是 --vscode 开头的前缀
+ */
 import { localize } from '@opensumi/ide-core-common';
 
 import { registerColor } from '../../utils';
