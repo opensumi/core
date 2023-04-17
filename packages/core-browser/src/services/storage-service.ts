@@ -99,6 +99,9 @@ abstract class BaseBrowserStorageService implements StorageService {
     } catch (e) {
       this.logger.error(`storage getDate error: ${e}, use defaultValue as result.`);
     }
+    if (defaultValue && isObject(defaultValue)) {
+      delete defaultValue['expires'];
+    }
     return defaultValue;
   }
 

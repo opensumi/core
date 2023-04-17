@@ -89,7 +89,6 @@ export class DebugBreakpointsService extends WithEventBus {
 
   async init() {
     await this.updateRoots();
-    await this.updateBreakpoints();
     this.workspaceService.onWorkspaceChanged(async () => {
       this.updateRoots();
       this.updateBreakpoints();
@@ -98,6 +97,9 @@ export class DebugBreakpointsService extends WithEventBus {
       this.updateBreakpoints();
     });
     this.breakpoints.onDidChangeExceptionsBreakpoints(() => {
+      this.updateBreakpoints();
+    });
+    this.breakpoints.whenReady.then(() => {
       this.updateBreakpoints();
     });
     this.contextKeyService.onDidChangeContext((e) => {
@@ -190,7 +192,6 @@ export class DebugBreakpointsService extends WithEventBus {
         this.treeNodeMap.set(uri.toString(), getTreeNodes);
       }
     });
-
     this._onDidChangeBreakpointsTreeNode.fire(this.treeNodeMap);
   }
 

@@ -233,6 +233,8 @@ const PreferenceIndexes = observer(() => {
       data.children = children;
       if (children.length > 0) {
         data.expandable = true;
+      } else {
+        data.expandable = false;
       }
       basicTreeData.push(data);
     }

@@ -1,14 +1,8 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import {
-  BasicRecycleTree,
-  CheckBox,
-  IBasicTreeData,
-  ICompositeTreeNode,
-  ITreeNodeOrCompositeTreeNode,
-} from '@opensumi/ide-components';
+import { BasicRecycleTree, CheckBox, IBasicTreeData, ICompositeTreeNode } from '@opensumi/ide-components';
 import { Badge } from '@opensumi/ide-components';
 import {
   useInjectable,
@@ -19,6 +13,7 @@ import {
   Disposable,
   ViewState,
   Event,
+  isUndefined,
 } from '@opensumi/ide-core-browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -33,6 +28,7 @@ import {
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 
+import { BreakpointsTreeNode } from './debug-breakpoints-tree.model';
 import styles from './debug-breakpoints.module.less';
 import { DebugBreakpointsService } from './debug-breakpoints.service';
 
@@ -47,66 +43,74 @@ export interface BreakpointItem {
 export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const debugBreakpointsService: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
   const { enable, toggleBreakpointEnable } = debugBreakpointsService;
+  const isDisposed = useRef<boolean>(false);
   const [treeData, setTreeData] = useState<IBasicTreeData[]>([]);
+
+  const updateTreeData = useCallback(
+    (nodes: [string, BreakpointsTreeNode[]][]) => {
+      const { roots } = debugBreakpointsService;
+      const breakpointTreeData: IBasicTreeData[] = [];
+      nodes.forEach(([uri, items]) => {
+        const isException = EXCEPTION_BREAKPOINT_URI.toString() === uri;
+        if (isException) {
+          items.forEach((item) => {
+            breakpointTreeData.push({
+              label: '',
+              expandable: false,
+              children: [],
+              description: (
+                <BreakpointItem
+                  toggle={() => toggleBreakpointEnable(item.breakpoint)}
+                  breakpointEnabled={enable}
+                  data={item.rawData}
+                  isDebugMode={debugBreakpointsService.inDebugMode}
+                ></BreakpointItem>
+              ),
+            });
+          });
+        } else {
+          const toURI = URI.parse(uri);
+          const parent = roots.filter((root) => root.isEqualOrParent(toURI))[0];
+
+          breakpointTreeData.push({
+            label: parent ? parent.relative(toURI)?.toString() || '' : URI.parse(uri).displayName,
+            expandable: true,
+            iconClassName: getIcon('file-text'),
+            expanded: true,
+            children: items.map((item) => ({
+              ...item,
+              label: '',
+              expandable: false,
+              description: (
+                <BreakpointItem
+                  toggle={() => toggleBreakpointEnable(item.breakpoint)}
+                  breakpointEnabled={enable}
+                  data={item.rawData}
+                  isDebugMode={debugBreakpointsService.inDebugMode}
+                ></BreakpointItem>
+              ),
+            })),
+          });
+        }
+      });
+      if (!isDisposed.current) {
+        setTreeData(breakpointTreeData);
+      }
+    },
+    [treeData],
+  );
 
   useEffect(() => {
     const dispose = new Disposable();
-
+    updateTreeData(Array.from(debugBreakpointsService.treeNodeMap.entries()));
     dispose.addDispose(
-      debugBreakpointsService.onDidChangeBreakpointsTreeNode((nodes) => {
-        const { roots } = debugBreakpointsService;
-        const breakpointTreeData: IBasicTreeData[] = [];
-
-        Array.from(nodes.entries()).forEach(([uri, items]) => {
-          const isException = EXCEPTION_BREAKPOINT_URI.toString() === uri;
-
-          if (isException) {
-            items.forEach((item) => {
-              breakpointTreeData.push({
-                label: '',
-                expandable: false,
-                children: [],
-                description: (
-                  <BreakpointItem
-                    toggle={() => toggleBreakpointEnable(item.breakpoint)}
-                    breakpointEnabled={enable}
-                    data={item.rawData}
-                    isDebugMode={debugBreakpointsService.inDebugMode}
-                  ></BreakpointItem>
-                ),
-              });
-            });
-          } else {
-            const toURI = URI.parse(uri);
-            const parent = roots.filter((root) => root.isEqualOrParent(toURI))[0];
-
-            breakpointTreeData.push({
-              label: parent ? parent.relative(toURI)!.toString() : URI.parse(uri).displayName,
-              expandable: true,
-              iconClassName: getIcon('file-text'),
-              expanded: true,
-              children: items.map((item) => ({
-                ...item,
-                label: '',
-                expandable: false,
-                description: (
-                  <BreakpointItem
-                    toggle={() => toggleBreakpointEnable(item.breakpoint)}
-                    breakpointEnabled={enable}
-                    data={item.rawData}
-                    isDebugMode={debugBreakpointsService.inDebugMode}
-                  ></BreakpointItem>
-                ),
-              })),
-            });
-          }
-        });
-
-        setTreeData(breakpointTreeData);
+      debugBreakpointsService.onDidChangeBreakpointsTreeNode((nodes: Map<string, BreakpointsTreeNode[]>) => {
+        updateTreeData(Array.from(nodes.entries()));
       }),
     );
 
     return () => {
+      isDisposed.current = true;
       dispose.dispose();
     };
   }, []);
@@ -120,11 +124,10 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
   }, [treeData]);
 
   const getItemClassName = useCallback((item: ICompositeTreeNode) => {
-    if (!item.children) {
+    if (!item.children && isUndefined((item as any).expandable)) {
       return styles.debug_breakpoints_item_tree_node;
     }
   }, []);
-
   return (
     <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
       <BasicRecycleTree treeData={treeData} height={viewState.height} getItemClassName={getItemClassName} />

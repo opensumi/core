@@ -514,6 +514,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     iconClass: getIcon('setting'),
   },
   {
+    id: PreferenceSettingId.Terminal,
+    title: '%settings.group.terminal%',
+    iconClass: getIcon('terminal'),
+  },
+  {
     id: PreferenceSettingId.Editor,
     title: '%settings.group.editor%',
     iconClass: getIcon('editor'),
@@ -522,11 +527,6 @@ export const defaultSettingGroup: ISettingGroup[] = [
     id: PreferenceSettingId.View,
     title: '%settings.group.view%',
     iconClass: getIcon('detail'),
-  },
-  {
-    id: PreferenceSettingId.Terminal,
-    title: '%settings.group.terminal%',
-    iconClass: getIcon('terminal'),
   },
   {
     id: PreferenceSettingId.Feature,
