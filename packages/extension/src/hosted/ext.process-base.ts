@@ -30,7 +30,14 @@ import '@opensumi/ide-i18n';
 setPerformance(performance);
 
 Error.stackTraceLimit = 100;
-let logger: any = console;
+
+// eslint-disable-next-line no-console
+const consoleError = console.error.bind(console);
+// eslint-disable-next-line no-console
+const consoleWarn = console.warn.bind(console);
+
+let logger: any;
+
 let preload: IExtensionHostService;
 export interface IBuiltInCommand {
   id: string;
@@ -176,13 +183,11 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
 }
 
 function getErrorLogger() {
-  // eslint-disable-next-line no-console
-  return (logger && logger.error.bind(logger)) || console.error.bind(console);
+  return (logger && logger.error.bind(logger)) || consoleError;
 }
 
 function getWarnLogger() {
-  // eslint-disable-next-line no-console
-  return (logger && logger.warn.bind(logger)) || console.warn.bind(console);
+  return (logger && logger.warn.bind(logger)) || consoleWarn;
 }
 
 function unexpectedErrorHandler(e) {
