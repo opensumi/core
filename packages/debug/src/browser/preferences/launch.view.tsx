@@ -1,5 +1,5 @@
-import Form from '@rjsf/core';
-import { RJSFSchema, StrictRJSFSchema, UiSchema } from '@rjsf/utils';
+import { withTheme } from '@rjsf/core';
+import { RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import cls from 'classnames';
 import lodashGet from 'lodash/get';
@@ -15,6 +15,8 @@ import {
   ISchemaContributions,
   IJSONSchema,
   IJSONSchemaSnippet,
+  IJSONSchemaMap,
+  isUndefined,
 } from '@opensumi/ide-core-browser';
 import { EDirection, SplitPanel } from '@opensumi/ide-core-browser/lib/components';
 import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions/index';
@@ -23,7 +25,22 @@ import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
 
+import { SelectWidget } from './components/select-widget';
+import { TextWidget } from './components/text-widget';
 import styles from './launch.module.less';
+import { ArrayFieldItemTemplate } from './templates/array-field-item-template';
+import { ArrayFieldTemplate } from './templates/array-field-template';
+import {
+  MoveUpButton,
+  MoveDownButton,
+  RemoveButton,
+  SubmitButton,
+  AddButton,
+  CopyButton,
+} from './templates/button-template';
+import { DescriptionFieldTemplate } from './templates/description-field-template';
+import { FieldTemplate } from './templates/field-template';
+import { ObjectFieldTemplate } from './templates/object-field-template';
 
 export const LaunchViewContainer = () => {
   const schemaRegistry = useInjectable<IJSONSchemaRegistry>(IJSONSchemaRegistry);
@@ -175,6 +192,13 @@ const LaunchIndexs = ({
   );
 };
 
+const Form = withTheme({
+  widgets: {
+    TextWidget,
+    SelectWidget,
+  },
+});
+
 const LaunchBody = ({
   snippetItem,
   schemaContributions,
@@ -210,29 +234,55 @@ const LaunchBody = ({
       return;
     }
 
-    const { label, body } = snippetItem;
+    const { label, body, description } = snippetItem;
     const { properties } = schemaProperties;
 
-    let snippetProperties = {};
-    Object.keys(body).forEach((key) => {
-      if (properties![key].type === 'array') {
-        if (!Object.getOwnPropertyDescriptor(properties![key], 'items')) {
-          properties![key]['items'] = { type: 'string' };
-        }
+    const snippetProperties = Object.keys(body).reduce((pre: IJSONSchemaMap, cur: string) => {
+      if (properties![cur]?.type === 'array' && isUndefined(properties![cur].items)) {
+        properties![cur].items = { type: 'string' };
       }
-      snippetProperties[key] = properties![key];
-    });
+
+      // 如果 type 是数组，则取第一个
+      if (Array.isArray(properties![cur]?.type)) {
+        properties![cur].type = properties![cur]?.type![0] || 'string';
+      }
+
+      pre[cur] = properties![cur];
+      return pre;
+    }, {});
 
     return {
       title: label,
       type: 'object',
+      description,
       properties: snippetProperties,
     } as StrictRJSFSchema;
   }, [snippetItem, schemaProperties]);
 
   return (
     <div className={styles.launch_schema_body_container}>
-      {schema && <Form formData={snippetItem.body} schema={schema} validator={validator} />}
+      {schema && (
+        <Form
+          formData={snippetItem.body}
+          schema={schema}
+          validator={validator}
+          templates={{
+            ArrayFieldTemplate,
+            ArrayFieldItemTemplate,
+            DescriptionFieldTemplate,
+            FieldTemplate,
+            ObjectFieldTemplate,
+            ButtonTemplates: {
+              MoveUpButton,
+              MoveDownButton,
+              RemoveButton,
+              SubmitButton,
+              AddButton,
+              CopyButton,
+            },
+          }}
+        />
+      )}
     </div>
   );
 };
