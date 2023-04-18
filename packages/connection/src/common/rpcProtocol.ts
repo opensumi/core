@@ -293,9 +293,9 @@ export class RPCProtocol implements IRPCProtocol {
 
   private _receiveOneMessage(rawmsg: string): void {
     const msg = JSON.parse(rawmsg, ObjectTransfer.reviver);
-    // 清除 timeout
+
     if (this._timeoutHandles.has(msg.id)) {
-      // 忽略一些 jest 测试场景的问题
+      // 忽略一些 jest 测试场景 clearTimeout not defined 的问题
       if (typeof clearTimeout === 'function') {
         // @ts-ignore
         clearTimeout(this._timeoutHandles.get(msg.id));
