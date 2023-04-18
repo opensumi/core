@@ -219,13 +219,13 @@ const LaunchBody = ({
       lodashGet(schemaContributions, ['properties', 'configurations', 'items', 'oneOf'] as (keyof IJSONSchema)[]) || [];
 
     // 2. 再从 snippetItem body 中找出符合条件的 oneOf（可能存在多个，如果有多个就只取第一个）
-    const findOneOf = oneOfPool.filter((oneOf) => {
+    const findOneOf = oneOfPool.find((oneOf) => {
       const { body } = snippetItem;
       return ajv!.validate(oneOf, body);
     });
 
-    if (findOneOf.length > 0) {
-      setSchemaProperties(findOneOf[0]);
+    if (findOneOf) {
+      setSchemaProperties(findOneOf);
     }
   }, [snippetItem, schemaContributions]);
 
