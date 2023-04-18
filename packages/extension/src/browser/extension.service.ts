@@ -8,6 +8,7 @@ import {
   IClientApp,
   ILogger,
   Disposable,
+  PreferenceService,
 } from '@opensumi/ide-core-browser';
 import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
@@ -18,8 +19,9 @@ import {
   ExtensionDidContributes,
   getLanguageId,
   URI,
+  GeneralSettingsId,
 } from '@opensumi/ide-core-common';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath, IFileSearchService } from '@opensumi/ide-file-search/lib/common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import { IWorkspaceService } from '@opensumi/ide-workspace';
@@ -120,6 +122,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   @Autowired(SumiContributionsServiceToken)
   private readonly sumiContributesService: SumiContributionsService;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
+  @Autowired(IExtensionStoragePathServer)
+  private readonly extensionStoragePathServer: IExtensionStoragePathServer;
+
   /**
    * 这里的 ready 是区分环境，将 node/worker 区分开使用
    */
@@ -188,9 +196,14 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async activate(): Promise<void> {
+    // setup the basic environment
+    await this.setupExtensionNLSConfig();
     await this.initExtensionMetaData();
     await this.initExtensionInstanceData();
     await this.runEagerExtensionsContributes();
+    // update nls config by extensions
+    await this.setupExtensionNLSConfig();
+
     this.doActivate();
 
     // 监听页面展示状态，当页面状态变为可见且插件进程待重启的时候执行
@@ -211,6 +224,12 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         document.removeEventListener('visibilitychange', onPageVisibilitychange);
       }),
     );
+  }
+
+  private async setupExtensionNLSConfig() {
+    const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
+    const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
+    this.extensionNodeClient.setupNLSConfig(currentLanguage, storagePath);
   }
 
   /**

@@ -1,4 +1,5 @@
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 import { Injectable, Provider } from '@opensumi/di';
@@ -50,7 +51,7 @@ import {
   IActivationEventService,
 } from '@opensumi/ide-extension/lib/browser/types';
 import { WalkthroughsService } from '@opensumi/ide-extension/lib/browser/walkthroughs.service';
-import { IExtensionStorageService } from '@opensumi/ide-extension-storage';
+import { IExtensionStoragePathServer, IExtensionStorageService } from '@opensumi/ide-extension-storage';
 import { FileSearchServicePath } from '@opensumi/ide-file-search/lib/common/file-search';
 import { MockFileServiceClient } from '@opensumi/ide-file-service/__mocks__/file-service-client';
 import { IMainLayoutService, MainLayoutContribution } from '@opensumi/ide-main-layout';
@@ -463,6 +464,14 @@ export function setupExtensionServiceInjector() {
         },
         init() {
           return Promise.resolve();
+        },
+      },
+    },
+    {
+      token: IExtensionStoragePathServer,
+      useValue: {
+        getLastStoragePath() {
+          return os.tmpdir();
         },
       },
     },
