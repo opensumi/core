@@ -197,7 +197,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
   public async activate(): Promise<void> {
     // setup the basic environment
-    await this.setupExtensionNLSConfig();
+    // 不能在这里设置，因为这里的设置会被插件覆盖
+    // await this.setupExtensionNLSConfig();
     await this.initExtensionMetaData();
     await this.initExtensionInstanceData();
     await this.runEagerExtensionsContributes();
