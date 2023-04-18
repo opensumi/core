@@ -253,7 +253,7 @@ describe('connection', () => {
     const mockClientTC = {
       onMessage: emitterTimeoutC.event,
       send: (msg) => emitterTimeoutA.fire(msg),
-      timeoutMs: 1000,
+      timeout: 1000,
     };
 
     const timeoutAProtocol = new RPCProtocol(mockClientTA);

@@ -58,7 +58,7 @@ export function createMainContextProxyIdentifier<T>(identifier: string): ProxyId
 export interface IMessagePassingProtocol {
   send(msg): void;
   onMessage: Event<string>;
-  timeoutMs?: number;
+  timeout?: number;
 }
 
 const enum MessageType {
@@ -284,7 +284,7 @@ export class RPCProtocol implements IRPCProtocol {
     // 设置超时回调
     const timeoutHandle = setTimeout(() => {
       this._handleTimeout(callId);
-    }, this._protocol.timeoutMs || DEFAULT_TIMEOUT_MS);
+    }, this._protocol.timeout || DEFAULT_TIMEOUT_MS);
 
     this._timeoutHandles.set(callId, timeoutHandle);
 
@@ -295,8 +295,11 @@ export class RPCProtocol implements IRPCProtocol {
     const msg = JSON.parse(rawmsg, ObjectTransfer.reviver);
     // 清除 timeout
     if (this._timeoutHandles.has(msg.id)) {
-      // @ts-ignore
-      clearTimeout(this._timeoutHandles.get(msg.id));
+      // 忽略一些 jest 测试场景的问题
+      if (typeof clearTimeout === 'function') {
+        // @ts-ignore
+        clearTimeout(this._timeoutHandles.get(msg.id));
+      }
       this._timeoutHandles.delete(msg.id);
     }
 
