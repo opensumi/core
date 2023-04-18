@@ -644,6 +644,9 @@ export const defaultSettingSections: {
         { id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave' },
         { id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout' },
         { id: 'editor.formatOnPaste', localized: 'preference.editor.formatOnPaste' },
+        // 代码操作
+        { id: 'editor.codeActionsOnSave', localized: 'preference.editor.saveCodeActions' },
+        { id: 'editor.codeActionsOnSaveNotification', localized: 'preference.editor.saveCodeActionsNotification' },
         // 智能提示
         { id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay' },
         // 文件

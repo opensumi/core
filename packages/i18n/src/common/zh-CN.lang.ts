@@ -497,6 +497,8 @@ export const localizationBundle = {
     'preference.editor.bracketPairColorization.enabled': '括号着色',
     'preference.array.additem': '添加',
     'preference.editor.lineHeight': '行高',
+    'preference.editor.saveCodeActions': '保存时运行的代码操作类型',
+    'preference.editor.saveCodeActionsNotification': '代码操作执行时是否展示通知信息',
 
     'preference.item.notValid': '{0} 不是有效选项',
 
@@ -998,6 +1000,11 @@ export const localizationBundle = {
     'editor.configuration.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
     'editor.configuration.experimental.stickyScroll.enabled': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标识。',
+    'editor.configuration.codeActionsOnSave.organizeImports': '控制是否应在文件保存时整理导入（Import）语句。',
+    'editor.configuration.codeActionsOnSave.fixAll': '控制是否应在文件保存时运行自动修复操作。',
+    'editor.configuration.codeActionsOnSave': '在保存时运行的代码操作类型',
+    'editor.configuration.codeActionsOnSaveTimeout': '在此超时时间(毫秒)之后代码操作将被取消。',
+    'editor.configuration.codeActionsOnSaveNotification': '代码操作执行时是否展示通知信息',
     'editor.configuration.quickSuggestionsDelay': '控制显示智能提示的延迟时长 (毫秒)。',
     'editor.configuration.tabSize':
       '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',

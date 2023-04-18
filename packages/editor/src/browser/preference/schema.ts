@@ -1378,6 +1378,11 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
     default: EDITOR_DEFAULTS.contribInfo.codeActionsOnSaveTimeout,
     description: '%editor.configuration.codeActionsOnSaveTimeout%',
   },
+  'editor.codeActionsOnSaveNotification': {
+    type: 'boolean',
+    default: true,
+    description: '%editor.configuration.codeActionsOnSaveNotification%',
+  },
   'editor.selectionClipboard': {
     type: 'boolean',
     default: EDITOR_DEFAULTS.contribInfo.selectionClipboard,
@@ -1397,6 +1402,11 @@ const monacoEditorSchema: PreferenceSchemaProperties = {
   'editor.defaultFormatter': {
     type: 'string',
     description: '%editor.configuration.defaultFormatter%',
+  },
+  'editor.unicodeHighlight.ambiguousCharacters': {
+    type: 'boolean',
+    default: true,
+    description: '%editor.configuration.unicodeHighlight.ambiguousCharacters%',
   },
 };
 
