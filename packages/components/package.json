@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-components",
-  "version": "2.23.4",
+  "version": "2.24.0",
   "description": "@opensumi/ide-components",
   "license": "MIT",
   "main": "lib/index.js",
@@ -17,6 +17,7 @@
   "dependencies": {
     "@ant-design/icons": "^4.6.4",
     "@opensumi/ide-utils": "workspace:*",
+    "dompurify": "^3.0.2",
     "fuzzy": "^0.1.3",
     "lodash": "^4.17.15",
     "marked": "4.0.10",
@@ -35,6 +36,7 @@
   },
   "devDependencies": {
     "@opensumi/ide-dev-tool": "workspace:*",
+    "@types/dompurify": "^3.0.1",
     "@types/marked": "^4.0.7",
     "@types/react-window": "^1.8.5",
     "prop-types": "^15.8.1"

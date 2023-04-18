@@ -1,7 +1,7 @@
 import { cutShortSearchResult } from '../../src/common/content-search';
 
-describe('cutShortSearchResult', () => {
-  test('内容超出长度的结果, matchStart 未达到截取位置', () => {
+describe('The long search results should be cropped', () => {
+  test('[0] The result of the content exceeding the length, matchStart did not reach the interception position', () => {
     const result = cutShortSearchResult({
       fileUri: 'file://root.txt',
       matchStart: 10,
@@ -16,7 +16,7 @@ describe('cutShortSearchResult', () => {
     expect(result.renderLineText![9]).toEqual('M');
   });
 
-  test('内容超出长度的结果, matchStart 未达到截取位置', () => {
+  test('[1] The result of the content exceeding the length, matchStart did not reach the interception position', () => {
     const result = cutShortSearchResult({
       fileUri: 'file://root.txt',
       matchStart: 21,
@@ -30,7 +30,7 @@ describe('cutShortSearchResult', () => {
     expect(result.renderLineText!.length).toEqual(500);
   });
 
-  test('内容超出长度的结果, matchStart 达到截取位置, matchLength达到截取长度', () => {
+  test('The matchStart and matchLength reaches the interception position', () => {
     const result = cutShortSearchResult({
       fileUri: 'file://root.txt',
       matchStart: 21,
@@ -45,7 +45,7 @@ describe('cutShortSearchResult', () => {
     expect(result.matchLength).toEqual(500);
   });
 
-  test('内容未超出长度, matchStart 未达到截取位置', () => {
+  test('[0] Content does not exceed length', () => {
     const insertResult = {
       fileUri: 'file://root.txt',
       matchStart: 21,
@@ -60,7 +60,7 @@ describe('cutShortSearchResult', () => {
     expect(result.matchLength).toEqual(insertResult.matchLength);
   });
 
-  test('内容未超出长度, matchStart 达到截取位置', () => {
+  test('[1] Content does not exceed length', () => {
     const insertResult = {
       fileUri: 'file://root.txt',
       matchStart: 41,

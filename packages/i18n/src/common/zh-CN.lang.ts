@@ -96,6 +96,9 @@ export const localizationBundle = {
     'menu-bar.go.nextProblemInFiles': '下一个问题',
     'menu-bar.go.prevProblemInFiles': '上一个问题',
 
+    'menu-bar.file.pref': '设置',
+    'menu-bar.mode.compact': '紧凑模式',
+
     editor: '编辑器',
     'editor.undo': '撤销',
     'editor.redo': '重做',
@@ -229,7 +232,6 @@ export const localizationBundle = {
     'dialog.file.close': '关闭',
     'dialog.file.ok': '确定',
     'dialog.ensure': '确定',
-    'menu-bar.file.pref': '设置',
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
 
@@ -286,8 +288,9 @@ export const localizationBundle = {
     'output.enableSmartScroll': '输出视图智能滚动',
     'output.enableSmartScrollDesc': '在点击输出视图时禁用滚动，点击最后一行输出时启用滚动。',
 
-    'debug.stack.loadMore': '展开全部堆栈',
+    'debug.stack.loadMore': '加载更多堆栈',
     'debug.stack.loading': '加载中...',
+    'debug.stack.showMoreAndOrigin': '展示 {0} 项: {1}',
     'debug.breakpoint.deactive': '关闭所有断点',
     'debug.breakpoint.active': '激活所有断点',
     'debug.threads.title': '进程',
@@ -365,6 +368,8 @@ export const localizationBundle = {
 
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',
+
+    'preference.menubar.mode.compact': '控制菜单栏是否使用紧凑模式',
 
     'preference.explorer.confirm.delete': '控制是否在删除文件时弹出确认框',
     'preference.explorer.confirm.move': '控制是否在移动文件时弹出确认框',
@@ -497,6 +502,8 @@ export const localizationBundle = {
     'preference.editor.bracketPairColorization.enabled': '括号着色',
     'preference.array.additem': '添加',
     'preference.editor.lineHeight': '行高',
+    'preference.editor.saveCodeActions': '保存时运行的代码操作类型',
+    'preference.editor.saveCodeActionsNotification': '代码操作执行时是否展示通知信息',
 
     'preference.item.notValid': '{0} 不是有效选项',
 
@@ -636,6 +643,7 @@ export const localizationBundle = {
     'opened.editors.compare': '与当前文件比较',
     'opened.editors.copyRelativePath': '复制相对路径',
     'opened.editors.copyPath': '复制路径',
+    'opened.editors.unsaved': '{0} 个未保存',
 
     'terminal.name': '终端',
     'terminal.disconnected': '终端断开连接',
@@ -998,6 +1006,11 @@ export const localizationBundle = {
     'editor.configuration.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
     'editor.configuration.experimental.stickyScroll.enabled': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标识。',
+    'editor.configuration.codeActionsOnSave.organizeImports': '控制是否应在文件保存时整理导入（Import）语句。',
+    'editor.configuration.codeActionsOnSave.fixAll': '控制是否应在文件保存时运行自动修复操作。',
+    'editor.configuration.codeActionsOnSave': '在保存时运行的代码操作类型',
+    'editor.configuration.codeActionsOnSaveTimeout': '在此超时时间(毫秒)之后代码操作将被取消。',
+    'editor.configuration.codeActionsOnSaveNotification': '代码操作执行时是否展示通知信息',
     'editor.configuration.quickSuggestionsDelay': '控制显示智能提示的延迟时长 (毫秒)。',
     'editor.configuration.tabSize':
       '控制 Tab 缩进等于的空格数。若启用 `#editor.detectIndentation#`，该设置可能会被覆盖',
@@ -1025,6 +1038,8 @@ export const localizationBundle = {
     'editor.configuration.guides.indentation': '控制编辑器是否显示缩进参考线。',
     'editor.configuration.guides.highlightActiveIndentation': '控制是否突出显示编辑器中活动的缩进参考线。',
     'editor.configuration.trimAutoWhitespace': '删除自动插入的尾随空白符号。',
+    'editor.configuration.unicodeHighlight.ambiguousCharacters':
+      '控制是否突出显示可能与基本 ASCII 字符混淆的字符，但当前用户区域设置中常见的字符除外。',
 
     'diffEditor.configuration.renderSideBySide': '控制差异编辑器的显示方式。',
     'diffEditor.configuration.ignoreTrimWhitespace': '启用后，差异编辑器的前导和尾随空白字符将会忽略',
@@ -1076,6 +1091,9 @@ export const localizationBundle = {
     'mergeEditor.conflict.action.apply.confirm.complete': '确认保存并更改',
     'mergeEditor.button.apply': '应用更改',
     'workbench.quickOpen.preserveInput': '是否在 QuickOpen 的输入框（包括命令面板）中保留上次输入的内容',
+
+    'webview.webviewTagUnavailable': '非 Electron 环境不支持 Webview 标签，请使用 Iframe 标签',
+
     ...browserViews,
   },
 };

@@ -518,9 +518,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
     // 询问用户是否保存
     const buttons = {
-      [localize('file.prompt.dontSave', '不保存')]: AskSaveResult.REVERT,
-      [localize('file.prompt.save', '保存')]: AskSaveResult.SAVE,
-      [localize('file.prompt.cancel', '取消')]: AskSaveResult.CANCEL,
+      [localize('file.prompt.dontSave', "Don't Save")]: AskSaveResult.REVERT,
+      [localize('file.prompt.save', 'Save')]: AskSaveResult.SAVE,
+      [localize('file.prompt.cancel', 'Cancel')]: AskSaveResult.CANCEL,
     };
     const files = toClose.slice(0, MAX_CONFIRM_RESOURCES);
     let filesDetail = files.map((v) => v.resource.name).join('、');
@@ -1319,8 +1319,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       const previewMode =
         this.preferenceService.get('editor.previewMode') &&
         (isUndefinedOrNull(options.preview) ? true : options.preview);
-      if (this.currentResource && this.currentResource.uri.isEqual(uri)) {
-        // 就是当前打开的resource
+      if (
+        this.currentResource &&
+        this.currentResource.uri.isEqual(uri) &&
+        // 当不存在 forceOpenType 或打开类型与当前打开类型符合时，才能说明是当前打开的 Reource 资源
+        (!options.forceOpenType || options.forceOpenType.type === this.currentOpenType?.type)
+      ) {
+        // 就是当前打开的 Resource
         if (options.focus && this.currentEditor) {
           this._domNode?.focus();
           this.currentEditor.monacoEditor.focus();

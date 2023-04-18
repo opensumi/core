@@ -8,8 +8,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: opensumi/actions/bot-token@main
+        id: bot-token
+        with:
+          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
+          flag: ${{ secrets.BOT_FLAG }}
+
       - name: Check Labels
         id: labeler
         uses: jimschubert/labeler-action@v2
         with:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{env.GITHUB_TOKEN}}

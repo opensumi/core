@@ -435,7 +435,7 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       json = parseWithComments(content);
       return json;
     } catch (error) {
-      this.logger.error('语言配置文件解析出错！', content);
+      this.logger.error(`Language configuration file parsing error, ${error.stack}`);
       return;
     }
   }

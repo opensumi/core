@@ -373,6 +373,10 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           source: e.payload.source,
         },
       });
+
+      this.proxy.$acceptChange({
+        actived: getTextEditorId(e.payload.group, e.payload.editorUri),
+      });
     };
 
     const debouncedSelectionChange = debounce((e) => selectionChange(e), 50, {

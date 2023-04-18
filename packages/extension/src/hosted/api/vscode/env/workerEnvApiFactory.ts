@@ -2,13 +2,17 @@ import type vscode from 'vscode';
 
 import { IRPCProtocol } from '@opensumi/ide-connection/lib/common/rpcProtocol';
 
-import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../../../common/vscode';
+import { MainThreadAPIIdentifier, IMainThreadEnv, IExtHostEnv } from '../../../../common/vscode';
 
 export function createWorkerHostEnvAPIFactory(
   rpcProtocol: IRPCProtocol,
-): Pick<typeof vscode.env, 'clipboard' | 'openExternal'> {
+  extHostEnv: IExtHostEnv,
+): Pick<typeof vscode.env, 'clipboard' | 'openExternal' | 'language'> {
   const mainThreadEnvProxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
   return {
+    get language() {
+      return extHostEnv.getEnvValues().language;
+    },
     clipboard: {
       readText: () => mainThreadEnvProxy.$clipboardReadText(),
       writeText: (text: string) => mainThreadEnvProxy.$clipboardWriteText(text),

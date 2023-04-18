@@ -29,6 +29,7 @@ import {
   Disposable,
   UserScope,
   WorkspaceScope,
+  MenubarSettingId,
 } from '@opensumi/ide-core-browser';
 import { SearchSettingId } from '@opensumi/ide-core-common/lib/settings/search';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
@@ -513,6 +514,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     iconClass: getIcon('setting'),
   },
   {
+    id: PreferenceSettingId.Terminal,
+    title: '%settings.group.terminal%',
+    iconClass: getIcon('terminal'),
+  },
+  {
     id: PreferenceSettingId.Editor,
     title: '%settings.group.editor%',
     iconClass: getIcon('editor'),
@@ -521,11 +527,6 @@ export const defaultSettingGroup: ISettingGroup[] = [
     id: PreferenceSettingId.View,
     title: '%settings.group.view%',
     iconClass: getIcon('detail'),
-  },
-  {
-    id: PreferenceSettingId.Terminal,
-    title: '%settings.group.terminal%',
-    iconClass: getIcon('terminal'),
   },
   {
     id: PreferenceSettingId.Feature,
@@ -644,6 +645,9 @@ export const defaultSettingSections: {
         { id: 'editor.formatOnSave', localized: 'preference.editor.formatOnSave' },
         { id: 'editor.formatOnSaveTimeout', localized: 'preference.editor.formatOnSaveTimeout' },
         { id: 'editor.formatOnPaste', localized: 'preference.editor.formatOnPaste' },
+        // 代码操作
+        { id: 'editor.codeActionsOnSave', localized: 'preference.editor.saveCodeActions' },
+        { id: 'editor.codeActionsOnSaveNotification', localized: 'preference.editor.saveCodeActionsNotification' },
         // 智能提示
         { id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay' },
         // 文件
@@ -657,6 +661,7 @@ export const defaultSettingSections: {
           localized: 'preference.editor.bracketPairColorization.enabled',
         },
         { id: 'workbench.editorAssociations' },
+        { id: 'editor.unicodeHighlight.ambiguousCharacters' },
       ],
     },
     {
@@ -684,6 +689,11 @@ export const defaultSettingSections: {
   ],
   // 整体布局相关的，比如 QuickOpen 也放这
   [PreferenceSettingId.View]: [
+    {
+      // 菜单栏
+      title: 'MenuBar',
+      preferences: [{ id: MenubarSettingId.CompactMode, localized: 'preference.menubar.mode.compact' }],
+    },
     {
       // 布局信息
       title: 'Layout',

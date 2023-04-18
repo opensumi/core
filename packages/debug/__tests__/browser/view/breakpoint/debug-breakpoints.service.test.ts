@@ -1,7 +1,11 @@
 import { IContextKeyService } from '@opensumi/ide-core-browser';
 import { Disposable, URI, IFileServiceClient, IEventBus, EventBusImpl } from '@opensumi/ide-core-common';
 import { IDebugSessionManager } from '@opensumi/ide-debug';
-import { BreakpointManager, DebugBreakpoint } from '@opensumi/ide-debug/lib/browser/breakpoint';
+import {
+  BreakpointManager,
+  DebugBreakpoint,
+  DebugExceptionBreakpoint,
+} from '@opensumi/ide-debug/lib/browser/breakpoint';
 import { DebugBreakpointsService } from '@opensumi/ide-debug/lib/browser/view/breakpoints/debug-breakpoints.service';
 import { DebugViewModel } from '@opensumi/ide-debug/lib/browser/view/debug-view-model';
 import { createBrowserInjector } from '@opensumi/ide-dev-tool/src/injector-helper';
@@ -40,6 +44,7 @@ describe('Debug Breakpoints Service', () => {
     updateBreakpoint: jest.fn(),
     updateExceptionBreakpoints: jest.fn(),
     cleanAllMarkers: jest.fn(),
+    whenReady: Promise.resolve(),
   };
 
   const mockContextKeyService = {
@@ -107,7 +112,7 @@ describe('Debug Breakpoints Service', () => {
     expect(typeof debugBreakpointsService.toggleBreakpoints).toBe('function');
   });
 
-  it('should init success', () => {
+  it('should init success', async () => {
     expect(mockBreakpointManager.onDidChangeBreakpoints).toBeCalledTimes(1);
     expect(mockBreakpointManager.onDidChangeExceptionsBreakpoints).toBeCalledTimes(1);
     expect(mockContextKeyService.onDidChangeContext).toBeCalledTimes(1);
@@ -132,10 +137,11 @@ describe('Debug Breakpoints Service', () => {
 
   it('extractNodes method should be work', () => {
     const breakpoint = DebugBreakpoint.create(URI.file('test.js'), { line: 1 });
-    const exceptionBreakpoint = { filter: 'test' };
-    const items = [breakpoint, exceptionBreakpoint];
-    const nodes = debugBreakpointsService.extractNodes(items as any);
-    expect(nodes.length).toBe(2);
+    const exceptionBreakpoint: DebugExceptionBreakpoint = { filter: 'test', label: '' };
+    const breakpointNode = debugBreakpointsService.extractNodes(breakpoint);
+    expect(breakpointNode?.id).toBe(breakpoint.id);
+    const exceptionNodes = debugBreakpointsService.extractNodes(exceptionBreakpoint);
+    expect(exceptionNodes?.id).toBe(exceptionBreakpoint.filter);
   });
 
   it('removeAllBreakpoints method should be work', () => {

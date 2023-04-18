@@ -15,4 +15,5 @@ export namespace VIEW_CONTAINERS {
   export const QUICKPICK_INPUT = `${VIEW_CONTAINERS_PREFIX}-quickpick-input`;
   export const QUICKPICK_TABS = `${VIEW_CONTAINERS_PREFIX}-quickpick-tabs`;
   export const QUICKPICK_ITEM = `${VIEW_CONTAINERS_PREFIX}-quickpick-item`;
+  export const QUICKPICK_PROGRESS = `${VIEW_CONTAINERS_PREFIX}-quickpick-progress`;
 }

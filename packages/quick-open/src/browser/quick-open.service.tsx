@@ -11,8 +11,11 @@ import {
   KeybindingRegistry,
   QuickOpenActionProvider,
   QuickOpenTabOptions,
+  IDisposable,
 } from '@opensumi/ide-core-browser';
 import { VALIDATE_TYPE } from '@opensumi/ide-core-browser/lib/components';
+import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
 import {
   HideReason,
   IKeyMods,
@@ -44,6 +47,7 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
   onChangeValue?(lookFor: string): void;
   onKeyMods?(mods: IKeyMods): void;
   keepScrollPosition?: boolean | undefined;
+  busy?: boolean;
 }
 
 @Injectable()
@@ -68,7 +72,12 @@ export class MonacoQuickOpenService implements QuickOpenService {
   @Autowired(AppConfig)
   private readonly appConfig: AppConfig;
 
+  @Autowired(IProgressService)
+  protected readonly progressService: IProgressService;
+
   private preLookFor = '';
+
+  private progressDispose: IDisposable;
 
   get inQuickOpenContextKey(): IContextKey<boolean> {
     return this.contextKeyService.createKey<boolean>('inQuickOpen', false);
@@ -95,12 +104,14 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
   open(model: IKaitianQuickOpenModel, options?: Partial<QuickOpenOptions.Resolved> | undefined): void {
     const opts = new KaitianQuickOpenControllerOpts(model, this.keybindingRegistry, options);
+    this.progressDispose = this.progressService.registerProgressIndicator(VIEW_CONTAINERS.QUICKPICK_PROGRESS);
     this.hideDecoration();
     this.internalOpen(opts);
   }
 
   hide(reason?: HideReason): void {
     this.widget.hide(reason);
+    this.progressDispose.dispose();
   }
 
   protected internalOpen(opts: IKaitianQuickOpenControllerOpts): void {
@@ -114,11 +125,17 @@ export class MonacoQuickOpenService implements QuickOpenService {
       valueSelection: opts.valueSelection,
       canSelectMany: opts.canSelectMany,
       keepScrollPosition: opts.keepScrollPosition,
+      busy: opts.busy,
       renderTab: opts.renderTab,
       toggleTab: opts.toggleTab,
     });
 
     this.inQuickOpenContextKey.set(true);
+  }
+
+  updateOptions(options: IKaitianQuickOpenControllerOpts): void {
+    this.opts = options;
+    this.widget.updateOptions(options);
   }
 
   refresh(): void {
@@ -260,6 +277,10 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
 
   get keepScrollPosition(): boolean | undefined {
     return this.options.keepScrollPosition;
+  }
+
+  get busy(): boolean | undefined {
+    return this.options.busy;
   }
 
   get renderTab() {

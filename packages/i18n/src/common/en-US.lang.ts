@@ -97,6 +97,9 @@ export const localizationBundle = {
     'menu-bar.go.nextProblemInFiles': 'Next Problem',
     'menu-bar.go.prevProblemInFiles': 'Previous Problem',
 
+    'menu-bar.file.pref': 'Preference',
+    'menu-bar.mode.compact': 'Compact Mode',
+
     editor: 'Editor',
     'editor.undo': 'Undo',
     'editor.redo': 'Redo',
@@ -257,7 +260,6 @@ export const localizationBundle = {
     'dialog.file.close': 'Close',
     'dialog.file.ok': 'OK',
     'dialog.ensure': 'OK',
-    'menu-bar.file.pref': 'Preference',
 
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
@@ -317,6 +319,7 @@ export const localizationBundle = {
 
     'debug.stack.loadMore': 'Load All Stack Frames',
     'debug.stack.loading': 'Loading...',
+    'debug.stack.showMoreAndOrigin': 'Show {0} More: {1}',
     'debug.breakpoint.deactive': 'Deactivate Breakpoints',
     'debug.breakpoint.active': 'Activate Breakpoints',
     'debug.threads.title': 'THREADS',
@@ -390,6 +393,8 @@ export const localizationBundle = {
     'output.enableSmartScroll': 'Enable/disable Smart scrolling',
     'output.enableSmartScrollDesc':
       'Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line.',
+
+    'preference.menubar.mode.compact': 'Controls whether the menu bar uses compact mode',
 
     'preference.explorer.confirm.delete':
       'Controls whether the explorer should ask for confirmation when deleting a file via trash',
@@ -539,6 +544,8 @@ export const localizationBundle = {
     'preference.files.trimTrailingWhitespace': 'Trim Trailing Whitespace',
     'preference.files.insertFinalNewline': 'Insert Final Newline',
     'preference.editor.lineHeight': 'Line Height',
+    'preference.editor.saveCodeActions': 'Code Actions On Save',
+    'preference.editor.saveCodeActionsNotification': 'Whether to notify when code operations run at save time',
 
     'keymaps.tab.name': 'Keyboard Shortcuts',
 
@@ -891,6 +898,7 @@ export const localizationBundle = {
     'editor.configuration.codeActionsOnSave': 'Code action kinds to be run on save.',
     'editor.configuration.codeActionsOnSaveTimeout':
       'Timeout in milliseconds after which the code actions that are run on save are cancelled.',
+    'editor.configuration.codeActionsOnSaveNotification': 'Whether to notify when code operations run at save time.',
     'editor.configuration.selectionClipboard': 'Controls whether the Linux primary clipboard should be supported.',
     'editor.configuration.largeFileOptimizations':
       'Special handling for large files to disable certain memory intensive features.',
@@ -916,6 +924,8 @@ export const localizationBundle = {
       "Enables the use of mouse buttons four and five for commands 'Go Back' and 'Go Forward'.",
     'editor.configuration.suggest.insertMode.insert': 'Insert suggestion without overwriting text right of the cursor.',
     'editor.configuration.suggest.insertMode.replace': 'Insert suggestion and overwrite text right of the cursor.',
+    'editor.configuration.unicodeHighlight.ambiguousCharacters':
+      'Controls whether characters are highlighted that can be confused with basic ASCII characters, except those that are common in the current user locale.',
 
     'diffEditor.configuration.renderSideBySide':
       'Controls whether the diff editor shows the diff side by side or inline.',
@@ -959,6 +969,7 @@ export const localizationBundle = {
     'opened.editors.compare': 'Compare With Current File',
     'opened.editors.copyRelativePath': 'Copy Relative Path',
     'opened.editors.copyPath': 'Copy Path',
+    'opened.editors.unsaved': '{0} unsaved',
 
     'terminal.name': 'Terminal',
     'terminal.disconnected': 'Terminal Already Disconnected',
@@ -1358,6 +1369,9 @@ export const localizationBundle = {
     // #endregion merge editor
     'workbench.quickOpen.preserveInput':
       'Controls whether the last typed input to Quick Open(include Command Palette) should be preserved.',
+
+    'webview.webviewTagUnavailable': 'Webview is unsupported on non-electron env, please use iframe instead',
+
     ...browserViews,
   },
 };

@@ -92,19 +92,19 @@ export namespace PREFERENCE_COMMANDS {
 
   export const OPEN_USER_SETTING_FILE: Command = {
     id: 'preference.open.user',
-    label: localize('preference.editorTitle.openUserSource'),
+    label: '%preference.editorTitle.openUserSource%',
     category: CATEGORY,
   };
 
   export const OPEN_WORKSPACE_SETTING_FILE: Command = {
     id: 'preference.open.workspace',
-    label: localize('preference.editorTitle.openWorkspaceSource'),
+    label: '%preference.editorTitle.openWorkspaceSource%',
     category: CATEGORY,
   };
 
   export const OPEN_SOURCE_FILE: Command = {
     id: 'preference.open.source',
-    label: localize('preference.editorTitle.openSource'),
+    label: '%preference.editorTitle.openSource%',
     category: CATEGORY,
   };
 

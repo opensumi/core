@@ -52,6 +52,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   }>({ show: false });
   const [menubarItems, setMenubarItems] = useState<IBasicTreeMenu[]>([]);
   const [model, setModel] = useState<BasicTreeModel | undefined>();
+  const isDisposed = useRef<boolean>(false);
   const treeService = useRef<BasicTreeService>();
   const treeHandle = useRef<IRecycleTreeHandle>();
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
@@ -99,6 +100,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     wrapperRef.current?.addEventListener('blur', handleBlur, true);
 
     return () => {
+      isDisposed.current = true;
       wrapperRef.current?.removeEventListener('blur', handleBlur, true);
       disposable.dispose();
       treeService.current?.dispose();
@@ -113,7 +115,9 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
     if (model) {
       await model.ensureReady;
     }
-    setModel(model);
+    if (!isDisposed.current) {
+      setModel(model);
+    }
   };
 
   const selectItem = async (item: BasicCompositeTreeNode | BasicTreeNode) => {

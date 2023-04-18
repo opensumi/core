@@ -58,7 +58,7 @@ export class QuickOpenHandlerRegistry extends Disposable implements IQuickOpenHa
 
   registerHandler(handler: QuickOpenHandler, tabConfig?: QuickOpenTabConfig): IDisposable {
     if (this.handlers.has(handler.prefix)) {
-      this.logger.warn(`前缀是 ${handler.prefix} 的处理函数已经存在`);
+      this.logger.warn(`The handler function of the \`${handler.prefix}\` is already registered`);
       return Disposable.NULL;
     }
     this.handlers.set(handler.prefix, handler);

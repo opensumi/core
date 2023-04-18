@@ -147,6 +147,10 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
     [searchBrowserService],
   );
 
+  const onOpenPreference = useCallback(() => {
+    searchBrowserService.openPreference();
+  }, [searchBrowserService]);
+
   const onSearchExcludeChange = useCallback(
     (e: FormEvent<HTMLInputElement>) => {
       searchBrowserService.onSearchExcludeChange(e.currentTarget.value || '');
@@ -271,7 +275,7 @@ export const Search = memo(({ viewState }: PropsWithChildren<{ viewState: ViewSt
               isIncludeIgnored={UIState.isIncludeIgnored}
               onOnlyOpenEditorsToggle={onOnlyOpenEditorsToggle}
               onIncludeIgnoredToggle={onIncludeIgnoredToggle}
-              onOpenPreference={searchBrowserService.openPreference}
+              onOpenPreference={onOpenPreference}
             />
           )}
         </div>

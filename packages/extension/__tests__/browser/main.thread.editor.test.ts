@@ -351,6 +351,16 @@ describe('MainThreadEditor Test Suites', () => {
         editorUri: resource.uri,
       }),
     );
+
+    eventBus.fire(
+      new EditorGroupChangeEvent({
+        group: workbenchEditorService.currentEditorGroup,
+        newOpenType: workbenchEditorService.currentEditorGroup.currentOpenType,
+        newResource: resource,
+        oldOpenType: null,
+        oldResource: null,
+      }),
+    );
   });
 
   it('should receive onDidChangeTextEditorVisibleRanges event when editor visible range has changed', (done) => {

@@ -87,6 +87,10 @@ const apiMenus: IAPIMenu[] = [
     description: localize('sumiContributes.menu.api.ActivityBarExtra'),
   },
   {
+    id: MenuId.ActivityBarTopExtra,
+    description: localize('sumiContributes.menu.api.ActivityBarTopExtra'),
+  },
+  {
     id: MenuId.DebugBreakpointsContext,
     description: localize('sumiContributes.menu.api.DebugBreakpointsContext'),
   },

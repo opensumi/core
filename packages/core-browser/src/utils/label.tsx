@@ -1,3 +1,4 @@
+import clx from 'classnames';
 import React, { CSSProperties } from 'react';
 
 import { Icon } from '@opensumi/ide-components/lib/icon/icon';
@@ -7,32 +8,52 @@ const SEPERATOR = ' ';
 
 export function transformLabelWithCodicon(
   label: string,
-  iconStyles: CSSProperties = {},
+  iconStyleProps: CSSProperties | string = {},
   transformer?: (str: string) => string | undefined,
   renderText?: (str: string, index: number) => React.ReactNode,
 ) {
   const ICON_REGX = /\$\(([a-z.]+\/)?([a-z-]+)(~[a-z]+)?\)/gi;
   const ICON_WITH_ANIMATE_REGX = /\$\(([a-z.]+\/)?([a-z-]+)~([a-z]+)\)/gi;
-  return label.split(SEPERATOR).map((e, index) => {
+  // some string like $() $(~spin)
+  const ICON_ERROR_REGX = /\$\(([a-z.]+\/)?([a-z-]+)?(~[a-z]+)?\)/gi;
+
+  const generateIconStyle = (icon?: string, styleProps?: CSSProperties | string) =>
+    typeof styleProps === 'string' ? { className: clx(icon, styleProps) } : { className: icon, style: styleProps };
+
+  const splitLabel = label.split(SEPERATOR);
+  const length = splitLabel.length;
+
+  return splitLabel.map((e, index) => {
     if (!transformer) {
       return e;
     }
     const icon = transformer(e);
     if (icon) {
-      return <Icon className={icon} style={iconStyles} key={`${index}-${icon}`} />;
+      return <Icon {...generateIconStyle(icon, iconStyleProps)} key={`${index}-${icon}`} />;
     } else if (ICON_REGX.test(e)) {
       if (e.includes('~')) {
         const [, , icon, animate] = ICON_WITH_ANIMATE_REGX.exec(e) || [];
         if (animate && icon) {
           return (
-            <Icon className={transformer(`$(${icon})`)} style={iconStyles} animate={animate} key={`${index}-${icon}`} />
+            <Icon
+              {...generateIconStyle(transformer(`$(${icon})`), iconStyleProps)}
+              animate={animate}
+              key={`${index}-${icon}`}
+            />
           );
         }
       }
       const newStr = e.replaceAll(ICON_REGX, (e) => `${SEPERATOR}${e}${SEPERATOR}`);
-      return transformLabelWithCodicon(newStr, iconStyles, transformer);
+      return transformLabelWithCodicon(newStr, iconStyleProps, transformer);
+    } else if (ICON_ERROR_REGX.test(e)) {
+      return transformLabelWithCodicon(e.replaceAll(ICON_ERROR_REGX, ''), iconStyleProps, transformer, renderText);
     } else {
-      return isFunction(renderText) ? renderText(e, index) : <span key={`${index}-${e}`}>{e}</span>;
+      const withSeperator = e + (index === length - 1 ? '' : SEPERATOR);
+      return isFunction(renderText) ? (
+        renderText(withSeperator, index)
+      ) : (
+        <span key={`${index}-${e}`}>{withSeperator}</span>
+      );
     }
   });
 }

@@ -130,7 +130,7 @@ export class ResourceTextEditTask {
     const monacoModel = documentModel.getMonacoModel();
     if (this.versionId) {
       if (monacoModel.getVersionId() !== this.versionId) {
-        throw new Error('文档版本不一致，无法执行变更');
+        throw new Error('Unable to perform changes due to inconsistent document versions');
       }
     }
     const edits: monaco.editor.IIdentifiedSingleEditOperation[] = [];

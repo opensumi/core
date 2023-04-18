@@ -301,6 +301,12 @@ export class LayoutService extends WithEventBus implements IMainLayoutService {
     return handler;
   }
 
+  getExtraTopMenu(): IContextMenu {
+    return this.contextmenuService.createMenu({
+      id: MenuId.ActivityBarTopExtra,
+    });
+  }
+
   getExtraMenu(): IContextMenu {
     return this.contextmenuService.createMenu({
       id: MenuId.ActivityBarExtra,

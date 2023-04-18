@@ -13,6 +13,8 @@ import {
 } from '@opensumi/ide-components';
 import { Key, KeyCode, useInjectable, localize, isUndefined } from '@opensumi/ide-core-browser';
 import { VIEW_CONTAINERS } from '@opensumi/ide-core-browser/lib/layout/view-id';
+import { IProgressService } from '@opensumi/ide-core-browser/lib/progress';
+import { ProgressBar } from '@opensumi/ide-core-browser/lib/progress/progress-bar';
 import {
   HideReason,
   QuickInputButton,
@@ -257,6 +259,8 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
           {iconClass && <span className={clx(styles.item_icon, iconClass)}></span>}
           <HighlightLabel
             className={styles.item_label_name}
+            labelClassName={styles.label_icon_container}
+            labelIconClassName={styles.item_label_name_icon}
             hightLightClassName={clx(styles.item_label_highlight)}
             text={label}
             highlights={labelHighlights}
@@ -265,7 +269,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
             <HighlightLabel
               className={styles.item_label_description}
               labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
-              labelIconClassName={styles.label_has_icon}
+              labelIconClassName={clx(styles.label_has_icon, styles.item_label_description_icon)}
               hightLightClassName={clx(styles.item_label_description_highlight)}
               text={description}
               highlights={descriptionHighlights}
@@ -277,7 +281,7 @@ const QuickOpenItemView: React.FC<IQuickOpenItemProps> = observer(({ data, index
             OutElementType='div'
             className={styles.item_label_detail}
             labelClassName={clx(styles.label_icon_container, styles.item_label_description_label)}
-            labelIconClassName={styles.label_has_icon}
+            labelIconClassName={clx(styles.label_has_icon, styles.item_label_detail_icon)}
             hightLightClassName={clx(styles.item_label_description_highlight)}
             text={detail}
             highlights={detailHighlights}
@@ -334,6 +338,22 @@ export const QuickOpenList: React.FC<{
       maxHeight={widget.items.length ? widget.MAX_HEIGHT : 0}
     />
   ) : null;
+});
+
+export const QuickOpenProgress = observer(() => {
+  const { widget } = React.useContext(QuickOpenContext);
+  const progressService: IProgressService = useInjectable(IProgressService);
+  const indicator = progressService.getIndicator(VIEW_CONTAINERS.QUICKPICK_PROGRESS);
+
+  React.useEffect(() => {
+    widget.updateProgressStatus(!!widget.busy);
+  }, [widget.busy]);
+
+  return (
+    <div id={VIEW_CONTAINERS.QUICKPICK_PROGRESS} className={styles.progress_bar} >
+      <ProgressBar progressModel={indicator!.progressModel} />
+    </div>
+  );
 });
 
 export const QuickOpenView = observer(() => {
@@ -525,6 +545,7 @@ export const QuickOpenView = observer(() => {
     <div id={VIEW_CONTAINERS.QUICKPICK} tabIndex={0} className={styles.container} onKeyDown={onKeydown} onBlur={onBlur}>
       <QuickOpenHeader />
       <QuickOpenInput />
+      <QuickOpenProgress />
       {widget.renderTab?.()}
       <QuickOpenList onReady={onListReady} onScroll={onListScroll} />
     </div>

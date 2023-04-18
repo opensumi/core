@@ -1,12 +1,15 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
+import { isDefined } from '@opensumi/ide-utils';
+
 import { Button } from '../../button';
 import { Icon } from '../../icon';
 import { Loading } from '../../loading';
 
 import { BasicCompositeTreeNode, BasicTreeNode } from './tree-node.define';
 import { IBasicInlineMenuPosition, IBasicNodeRendererProps, DECORATIONS } from './types';
+
 import './styles.less';
 
 export const BasicTreeNodeRenderer: React.FC<
@@ -67,19 +70,23 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-  const paddingLeft = `${(item.depth || 0) * (indent || 0)}px`;
+  // 14 * 2 = Toggle Icon Size + Icon Size
+  const paddingLeft = BasicCompositeTreeNode.is(item)
+    ? `${(item.depth || 0) * (indent || 0)}px`
+    : `${(item.depth || 0) * (indent || 0) + 14 * 2}px`;
 
-  const editorNodeStyle = {
+  const treeNodeStyle = {
     height: itemHeight,
     lineHeight: `${itemHeight}px`,
     paddingLeft,
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      // 图标的最大高度设置为 `itemHeight - 8`, 这样在视觉上看起来有一种 padding 的效果
-      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
-    ),
+    (node: BasicCompositeTreeNode | BasicTreeNode) =>
+      node.iconClassName ? (
+        // 图标的最大高度设置为 `itemHeight - 8`, 这样在视觉上看起来有一种 padding 的效果
+        <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
+      ) : null,
     [],
   );
 
@@ -89,9 +96,8 @@ export const BasicTreeNodeRenderer: React.FC<
   );
 
   const renderDisplayName = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <div className={cls('segment', 'display_name')}>{getName(node)}</div>
-    ),
+    (node: BasicCompositeTreeNode | BasicTreeNode) =>
+      node.displayName && <div className={cls('segment', 'display_name')}>{getName(node)}</div>,
     [],
   );
 
@@ -99,7 +105,12 @@ export const BasicTreeNodeRenderer: React.FC<
     if (!node.description) {
       return null;
     }
-    return <div className={cls('segment_grow', 'description')}>{node.description}</div>;
+
+    if (typeof node.description === 'string') {
+      return <div className={cls('segment_grow', 'description')}>{node.description}</div>;
+    }
+
+    return node.description;
   }, []);
 
   const inlineMenuActions = useCallback(
@@ -159,8 +170,12 @@ export const BasicTreeNodeRenderer: React.FC<
   };
 
   const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (!(item as BasicCompositeTreeNode).expandable) {
-      return <div className={cls('segment', 'expansion_toggle')}></div>;
+    if (isDefined((item as BasicCompositeTreeNode).expandable)) {
+      if (!(item as BasicCompositeTreeNode).expandable) {
+        return <div className={cls('segment', 'expansion_toggle')}></div>;
+      }
+    } else {
+      return null;
     }
 
     if (BasicCompositeTreeNode.is(item)) {
@@ -175,7 +190,7 @@ export const BasicTreeNodeRenderer: React.FC<
       onDoubleClick={handleDbClick}
       onContextMenu={handleContextMenu}
       className={cls('tree_node', className, decorations ? decorations.classlist : null)}
-      style={editorNodeStyle}
+      style={treeNodeStyle}
       data-id={item.id}
     >
       <div className='content'>

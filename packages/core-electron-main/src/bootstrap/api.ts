@@ -16,16 +16,14 @@ export class ElectronMainApiRegistryImpl implements ElectronMainApiRegistry {
   private apis: Map<string, ElectronMainApiProxy> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
-  constructor() {}
+  private readonly injector: Injector;
 
   registerMainApi(name: string, api: IElectronMainApiProvider): IDisposable {
     if (this.apis.has(name)) {
-      this.apis.get(name)!.dispose();
+      this.apis.get(name)?.dispose();
     }
     const proxy = this.injector.get(ElectronMainApiProxy, [name, api]);
-    getDebugLogger().log('注册Electron Main Api: ' + name);
+    getDebugLogger().log(`Register Electron Main Api: ${name}`);
     this.apis.set(name, proxy);
 
     return {

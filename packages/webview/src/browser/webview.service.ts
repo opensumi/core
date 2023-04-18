@@ -128,7 +128,10 @@ export class WebviewServiceImpl implements IWebviewService {
     } else {
       if (options.preferredImpl && options.preferredImpl === 'webview') {
         getDebugLogger().warn(
-          localize('webview.webviewTagUnavailable', '无法在非Electron环境使用Webview标签。回退至使用iframe。'),
+          localize(
+            'webview.webviewTagUnavailable',
+            'Webview is unsupported on non-electron env, please use iframe instead.',
+          ),
         );
       }
       return new IframePlainWebview();

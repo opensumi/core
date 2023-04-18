@@ -7,7 +7,77 @@
 - [Previous Changelogs](https://github.com/opensumi/core/releases)
 - [Previous Breaking Changes](https://github.com/opensumi/core/wiki/Breaking-Changes)
 
-## [Pre-release] v2.23.0
+## v2.23.0
+
+### What's New Features
+
+- feat: support electron titlebar string template by @yantze in https://github.com/opensumi/core/pull/2194
+- feat: add empty implementation for `Terminal Location` API by @bytemain in https://github.com/opensumi/core/pull/2202
+- feat: add cli engine by @bk1012 in https://github.com/opensumi/core/pull/2210
+- chore: show extension download error by @bk1012 in https://github.com/opensumi/core/pull/2266
+- feat: menubar component will reset focus after click by @pipiiiiii in https://github.com/opensumi/core/pull/2284
+- feat: read-only resource render lock icon by @Ricbet in https://github.com/opensumi/core/pull/2309
+- feat: support inspectExtensionHost config by @Ricbet in https://github.com/opensumi/core/pull/2310
+- feat: breadcrumbs support menus by @wangxiaojuan in https://github.com/opensumi/core/pull/2258
+- feat: editor tab title display file path by @hacke2 in https://github.com/opensumi/core/pull/2343
+- feat: statusbar pophover support icon by @hacke2 in https://github.com/opensumi/core/pull/2340
+- feat: compatibility with the experimental API registerTimelineProvider by @PerfectPan in https://github.com/opensumi/core/pull/2438
+- feat: toolbar dropdown-button contribute by @hacke2 in https://github.com/opensumi/core/pull/2312
+
+### Refactor
+
+- refactor: remove some useless icons by @erha19 in https://github.com/opensumi/core/pull/2204
+- refactor: remove unused application error definition by @erha19 in https://github.com/opensumi/core/pull/2403
+- fix: ensure outline is displayed properly by @bytemain in https://github.com/opensumi/core/pull/2440
+
+### Style Changes
+
+- style: improve outline treenode style by @erha19 in https://github.com/opensumi/core/pull/2329
+
+### Other Changes
+
+- fix: collaboration initialize by @Ricbet in https://github.com/opensumi/core/pull/2207
+- build(deps): bump cookiejar from 2.1.3 to 2.1.4 by @dependabot in https://github.com/opensumi/core/pull/2216
+- fix: remove collaboration preference code by @Ricbet in https://github.com/opensumi/core/pull/2221
+- build(deps): bump http-cache-semantics from 4.1.0 to 4.1.1 in /tools/electron by @dependabot in https://github.com/opensumi/core/pull/2236
+- chore: add E2E test badge by @erha19 in https://github.com/opensumi/core/pull/2237
+- fix: quick open hightlight label whitespace by @Ricbet in https://github.com/opensumi/core/pull/2265
+- fix: support Trim Final NewLines configuration by @pipiiiiii in https://github.com/opensumi/core/pull/2277
+- chore: remove engines required on package.json by @erha19 in https://github.com/opensumi/core/pull/2267
+- fix: scm badge is too large to display the problem by @wangxiaojuan in https://github.com/opensumi/core/pull/2274
+- chore: update license notice by @erha19 in https://github.com/opensumi/core/pull/2300
+- fix: add margins to the QuickOpen input by @wangxiaojuan in https://github.com/opensumi/core/pull/2299
+- fix: modified readonly logic of diff editor by @Ricbet in https://github.com/opensumi/core/pull/2295
+- chore: update extension engine version to 1.68.0 by @erha19 in https://github.com/opensumi/core/pull/2302
+- chore: improve terminal debug test by @erha19 in https://github.com/opensumi/core/pull/2304
+- tests: add collaboration module test case by @pipiiiiii in https://github.com/opensumi/core/pull/2306
+- fix: support normal prelunchTask on debug by @erha19 in https://github.com/opensumi/core/pull/2330
+- fix: sync file dirty status after spliting files by @erha19 in https://github.com/opensumi/core/pull/2323
+- chore: remove drivelist by @AhkunTa in https://github.com/opensumi/core/pull/2281
+- fix(collaboration): change default color by @winjo in https://github.com/opensumi/core/pull/2348
+- chore: remove useless application interface by @erha19 in https://github.com/opensumi/core/pull/2344
+- fix: improve context menu content fontsize by @wangxiaojuan in https://github.com/opensumi/core/pull/2351
+- chore: update render mode comment by @erha19 in https://github.com/opensumi/core/pull/2353
+- Revert "fix: use bash resolve shellpath" by @yantze in https://github.com/opensumi/core/pull/2347
+- chore: remove unused value in extension.service.ts by @bk1012 in https://github.com/opensumi/core/pull/2375
+- ci: add workflow for code review by @bytemain in https://github.com/opensumi/core/pull/2395
+- test: scm list view mode e2e by @Ricbet in https://github.com/opensumi/core/pull/2387
+- fix: show theme quick picker after theme extension installed by @PerfectPan in https://github.com/opensumi/core/pull/2398
+- chore: remove node-notifier from cli-engine by @erha19 in https://github.com/opensumi/core/pull/2400
+- fix: remove status bar warnings by @erha19 in https://github.com/opensumi/core/pull/2407
+- chore: update community information by @erha19 in https://github.com/opensumi/core/pull/2413
+- chore: build cli-engine before publish by @erha19 in https://github.com/opensumi/core/pull/2430
+- chore: download extension on Windows by @fankangsong in https://github.com/opensumi/core/pull/2436
+- chore: update cli-engine versison by @erha19 in https://github.com/opensumi/core/pull/2422
+- ci: add secrets check by @erha19 in https://github.com/opensumi/core/pull/2439
+- chore: support build cli-engine before release by @erha19 in https://github.com/opensumi/core/pull/2441
+- fix: namespace conflicts between extHost and extBrowser by @yantze in https://github.com/opensumi/core/pull/2415
+- fix: support haxe hashlink debug by @erha19 in https://github.com/opensumi/core/pull/2393
+- fix: logger should have default value to avoid error to be overridden by @miserylee in https://github.com/opensumi/core/pull/2433
+- fix: output clear icon lag renderer by @Ricbet in https://github.com/opensumi/core/pull/2447
+- fix: file watcher path error on Windows by @erha19 in https://github.com/opensumi/core/pull/2455
+- fix: electron menus will be called more than once by @erha19 in https://github.com/opensumi/core/pull/2453
+- fix: ensure preference ready before render editor by @bytemain in https://github.com/opensumi/core/pull/2451
 
 <a name="breaking_changes_2.23.0">[Breaking Changes:](#breaking_changes_2.23.0)</a>
 
@@ -218,6 +288,22 @@ externals: [
     callback();
   },
 ],
+```
+
+#### 6. Class And Path changed
+
+1. FoldersPreferencesProvider -> FolderFilePreferenceProvider
+
+```diff
+- import { FolderPreferencesProvider } from '@opensumi/ide-preferences/lib/browser/folder-preferences-provider';
++ import { FolderFilePreferenceProvider } from '@opensumi/ide-preferences/lib/browser/folder-file-preference-provider';
+```
+
+2.  ParcelWatcherServer -> FileSystemWatcherServer
+
+```diff
+- import { ParcelWatcherServer } from '@opensumi/ide-file-service/lib/node/file-service-watcher';
++ import { FileSystemWatcherServer } from '@opensumi/ide-file-service/lib/node/file-service-watcher';
 ```
 
 ## v2.21.0

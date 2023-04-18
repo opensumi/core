@@ -92,8 +92,8 @@ describe('extension browser test', () => {
       extension.initialize();
 
       // 注入语言包后
-      expect(extension.toJSON().displayName).toEqual('哈哈哈哈啊哈哈');
-      expect(extension.localize('displayName')).toEqual('哈哈哈哈啊哈哈');
+      expect(extension.toJSON().displayName).toEqual('中文测试');
+      expect(extension.localize('displayName')).toEqual('中文测试');
     }, 0);
   });
 

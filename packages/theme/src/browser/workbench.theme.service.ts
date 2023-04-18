@@ -467,20 +467,25 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
 
     let cssVariables = ':root{';
+    let vscodeCssVariables = '#workbench-editor .monaco-editor{';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = colors[colorKey] || theme.getColor(colorKey);
       if (targetColor) {
         const hexRule = `--${colorKey.replace(/\./g, '-')}: ${targetColor.toString()};\n`;
-        cssVariables += hexRule;
+        if (colorKey.startsWith('vscode')) {
+          vscodeCssVariables += hexRule;
+        } else {
+          cssVariables += hexRule;
+        }
       }
     }
     let styleNode = document.getElementById('theme-style');
     if (styleNode) {
-      styleNode.innerHTML = cssVariables + '}';
+      styleNode.innerHTML = vscodeCssVariables + '}' + cssVariables + '}';
     } else {
       styleNode = document.createElement('style');
       styleNode.id = 'theme-style';
-      styleNode.innerHTML = cssVariables + '}';
+      styleNode.innerHTML = vscodeCssVariables + '}' + cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
     if (this.currentTheme) {
