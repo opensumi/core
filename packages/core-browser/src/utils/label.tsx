@@ -20,7 +20,10 @@ export function transformLabelWithCodicon(
   const generateIconStyle = (icon?: string, styleProps?: CSSProperties | string) =>
     typeof styleProps === 'string' ? { className: clx(icon, styleProps) } : { className: icon, style: styleProps };
 
-  return label.split(SEPERATOR).map((e, index) => {
+  const splitLabel = label.split(SEPERATOR);
+  const length = splitLabel.length;
+
+  return splitLabel.map((e, index) => {
     if (!transformer) {
       return e;
     }
@@ -45,7 +48,12 @@ export function transformLabelWithCodicon(
     } else if (ICON_ERROR_REGX.test(e)) {
       return transformLabelWithCodicon(e.replaceAll(ICON_ERROR_REGX, ''), iconStyleProps, transformer, renderText);
     } else {
-      return isFunction(renderText) ? renderText(e, index) : <span key={`${index}-${e}`}>{e}</span>;
+      const withSeperator = e + (index === length - 1 ? '' : SEPERATOR);
+      return isFunction(renderText) ? (
+        renderText(withSeperator, index)
+      ) : (
+        <span key={`${index}-${e}`}>{withSeperator}</span>
+      );
     }
   });
 }
