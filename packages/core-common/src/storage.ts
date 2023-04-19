@@ -1,7 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
+import { FileChange } from '@opensumi/ide-core-browser';
 import { IDisposable, MaybePromise, Event, URI } from '@opensumi/ide-utils';
 
 import { ContributionProvider } from './contribution-provider';
+import { BasicEvent } from './event-bus';
 
 export const StorageProvider = Symbol('StorageProvider');
 export type StorageProvider = (storageId: URI) => Promise<IStorage>;
@@ -97,3 +99,5 @@ export namespace StoragePaths {
   export const EXTENSIONS_GLOBAL_STORAGE_DIR = 'extension-storage';
   export const EXTENSIONS_WORKSPACE_STORAGE_DIR = 'workspace-storage';
 }
+
+export class UpdateRecentStorageEvent extends BasicEvent<FileChange[]> {}

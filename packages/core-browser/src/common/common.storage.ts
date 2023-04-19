@@ -1,7 +1,12 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { IEventBus } from '@opensumi/ide-core-browser';
-import { UpdateRecentStorageEvent, FileChangeType } from '@opensumi/ide-core-browser';
-import { StorageProvider, IStorage, STORAGE_NAMESPACE } from '@opensumi/ide-core-common';
+import {
+  StorageProvider,
+  IStorage,
+  STORAGE_NAMESPACE,
+  IEventBus,
+  UpdateRecentStorageEvent,
+  FileChangeType,
+} from '@opensumi/ide-core-common';
 
 @Injectable()
 export class RecentStorage {
