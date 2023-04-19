@@ -418,7 +418,7 @@ export interface IBreadCrumbPart {
 
   uri?: URI;
 
-  isSymbol?: Boolean;
+  isSymbol?: boolean;
 
   getSiblings?(): MaybePromise<{ parts: IBreadCrumbPart[]; currentIndex: number }>;
 
