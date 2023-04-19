@@ -77,3 +77,32 @@
     color: var(--debugIcon-activateBreakpointsForeground);
   }
 }
+
+.debug_breakpoints_file_item {
+  display: flex;
+  align-items: center;
+
+  .file_item_control {
+    display: flex;
+    align-items: center;
+    min-width: 18px;
+  }
+
+  .file_item_checkbox {
+    display: none;
+  }
+
+  .file_item_icon {
+    display: block;
+    margin-left: -2px;
+  }
+
+  &:hover {
+    .file_item_checkbox {
+      display: inherit;
+    }
+    .file_item_icon {
+      display: none;
+    }
+  }
+}

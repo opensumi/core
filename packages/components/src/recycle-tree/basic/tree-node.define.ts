@@ -52,6 +52,10 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
     return this._displayName;
   }
 
+  get renderLabel() {
+    return this.raw.renderLabel;
+  }
+
   get icon() {
     return this.raw.icon;
   }
@@ -88,6 +92,10 @@ export class BasicTreeNode extends TreeNode {
 
   get displayName() {
     return this._displayName;
+  }
+
+  get renderLabel() {
+    return this.raw.renderLabel;
   }
 
   get description() {
