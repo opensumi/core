@@ -1,9 +1,9 @@
 import { Injectable, Autowired } from '@opensumi/di';
-import { FileChange } from '@opensumi/ide-core-browser';
 import { IDisposable, MaybePromise, Event, URI } from '@opensumi/ide-utils';
 
 import { ContributionProvider } from './contribution-provider';
 import { BasicEvent } from './event-bus';
+import { FileChange } from './types';
 
 export const StorageProvider = Symbol('StorageProvider');
 export type StorageProvider = (storageId: URI) => Promise<IStorage>;
