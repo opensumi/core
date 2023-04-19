@@ -356,6 +356,8 @@ export const localizationBundle = {
     'debug.launch.configurations.debugLinuxConfiguration': '特定于 Linux 的启动配置属性。',
     'debug.launch.typeNotSupported': '调试类型 "{0}" 不支持',
     'debug.launch.catchError': '启动调试进程时遇到了错误, 请检查调试控制台',
+    'debug.launch.view.template.button.addItem': '添加一项',
+
     'debug.widget.exception.thrownWithId': '发生异常: {0}',
     'debug.widget.exception.thrown': '出现异常。',
 
