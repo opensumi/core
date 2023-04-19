@@ -158,29 +158,22 @@ export const BreakpointFileItem = ({ label, icon, breakpointItems }: BreakpointF
   const defaultEnabled = useMemo(() => breakpointItems.some((item) => item.enabled), [breakpointItems]);
   const [enabled, setEnabled] = React.useState<boolean>(defaultEnabled);
 
-  useEffect(() => {
-    if (enabled) {
-      // 找出非 enable 的 breakpoint
-      const disabledBreakpoints = breakpointItems.filter((item) => !item.enabled);
-      disabledBreakpoints.forEach((breakpoint) => {
-        debugBreakpointsService.toggleBreakpointEnable(breakpoint);
-      });
-    } else {
-      const disabledBreakpoints = breakpointItems.filter((item) => item.enabled);
-      disabledBreakpoints.forEach((breakpoint) => {
-        debugBreakpointsService.toggleBreakpointEnable(breakpoint);
-      });
-    }
-  }, [enabled]);
-
-  const handleCheckBoxChange = () => {
+  const handleCheckBoxChange = (preEnabled: boolean) => {
+    const matchBreakpoints = breakpointItems.filter((item) => item.enabled === preEnabled);
+    matchBreakpoints.forEach((breakpoint) => {
+      debugBreakpointsService.toggleBreakpointEnable(breakpoint);
+    });
     setEnabled(!enabled);
   };
 
   return (
     <div className={styles.debug_breakpoints_file_item}>
       <div className={styles.file_item_control}>
-        <CheckBox className={styles.file_item_checkbox} onChange={handleCheckBoxChange} checked={enabled}></CheckBox>
+        <CheckBox
+          className={styles.file_item_checkbox}
+          onChange={() => handleCheckBoxChange(enabled)}
+          checked={enabled}
+        ></CheckBox>
         <i className={cls(icon, styles.file_item_icon)}></i>
       </div>
       <span>{label}</span>
