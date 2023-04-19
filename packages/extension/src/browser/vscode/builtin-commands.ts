@@ -131,6 +131,11 @@ export const CLOSE_OTHER_GROUPS: Command = {
   delegate: EDITOR_COMMANDS.CLOSE_OTHER_GROUPS.id,
 };
 
+export const CLOSE_SAVED: Command = {
+  id: 'workbench.action.closeUnmodifiedEditors',
+  delegate: EDITOR_COMMANDS.CLOSE_SAVED.id,
+};
+
 export const OPEN_EDITOR_AT_INDEX: Command = {
   id: 'workbench.action.openEditorAtIndex',
   delegate: EDITOR_COMMANDS.OPEN_EDITOR_AT_INDEX.id,
