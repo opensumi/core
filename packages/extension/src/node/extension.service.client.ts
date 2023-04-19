@@ -204,6 +204,8 @@ export class ExtensionServiceClientImpl
         ...this.convertLanguagePack(packageJson, languagePack),
       };
     }
+    const languagePackJson = await this.fileService.getFileStat(languagePath);
+    await this.fileService.setContent(languagePackJson!, JSON.stringify(languagePacks));
     await this.setupNLSConfig(languageId, storagePath);
   }
 }
