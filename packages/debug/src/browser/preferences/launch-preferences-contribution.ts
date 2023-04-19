@@ -29,7 +29,6 @@ export class LaunchResourceProvider implements IResourceProvider {
   readonly scheme: string = LAUNCH_VIEW_SCHEME;
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
-    // 获取文件类型 getFileType: (path: string) => string
     return {
       supportsRevive: true,
       name: localize('menu-bar.title.debug'),
@@ -38,11 +37,11 @@ export class LaunchResourceProvider implements IResourceProvider {
     };
   }
 
-  provideResourceSubname(resource: IResource, groupResources: IResource[]): string | null {
+  provideResourceSubname(): string | null {
     return null;
   }
 
-  async shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean> {
+  async shouldCloseResource(): Promise<boolean> {
     return true;
   }
 }
