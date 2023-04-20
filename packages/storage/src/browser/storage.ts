@@ -86,6 +86,7 @@ export class Storage implements IStorage {
     if (this.browserLocalStorage) {
       cache = await this.browserLocalStorage.getData(storageName);
     }
+    // 此处如果增加isEmptyObject判断，会导致Localization本地化插件加载失败，暂未找到原因，先去除
     if (!cache) {
       await this.database.init(this.appConfig.storageDirName, this.isGlobal ? undefined : workspace);
       cache = await this.database.getItems(storageName);
