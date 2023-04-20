@@ -86,12 +86,10 @@ export class Storage implements IStorage {
     if (this.browserLocalStorage) {
       cache = await this.browserLocalStorage.getData(storageName);
     }
-    if (!cache || isEmptyObject(cache)) {
+    if (!cache) {
       await this.database.init(this.appConfig.storageDirName, this.isGlobal ? undefined : workspace);
       cache = await this.database.getItems(storageName);
-      if (this.browserLocalStorage) {
-        this.browserLocalStorage.setData(storageName, cache);
-      }
+      this.browserLocalStorage?.setData(storageName, cache);
       this.whenReadyToWriteDeferred.resolve();
     } else {
       // 初始化服务端缓存
@@ -99,7 +97,7 @@ export class Storage implements IStorage {
         this.database.getItems(storageName).then(async (data) => {
           // 后续以服务端数据为准更新前端缓存数据，防止后续数据存取异常
           this.cache = this.jsonToMap(data);
-          await this.browserLocalStorage?.setData(storageName, data);
+          this.browserLocalStorage?.setData(storageName, data);
           this.whenReadyToWriteDeferred.resolve();
         });
       });
