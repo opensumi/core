@@ -422,7 +422,7 @@ export class ExtensionCommandContribution implements CommandContribution {
       VSCodeBuiltinCommands.NEXT_EDITOR_IN_GROUP,
       VSCodeBuiltinCommands.EVEN_EDITOR_WIDTH,
       VSCodeBuiltinCommands.CLOSE_OTHER_GROUPS,
-      VSCodeBuiltinCommands.CLOSE_SAVED,
+      VSCodeBuiltinCommands.CLOSE_UNMODIFIED_EDITORS,
       VSCodeBuiltinCommands.LAST_EDITOR_IN_GROUP,
       VSCodeBuiltinCommands.OPEN_EDITOR_AT_INDEX,
       VSCodeBuiltinCommands.CLOSE_OTHER_EDITORS,
