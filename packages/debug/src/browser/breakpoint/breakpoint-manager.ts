@@ -14,6 +14,7 @@ import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
 import { BreakpointsChangeEvent, DEBUG_REPORT_NAME, IDebugBreakpoint } from '../../common';
+import { DebugContextKey } from '../contextkeys/debug-contextkey.service';
 import { DebugModel } from '../editor';
 import { MarkerManager, Marker } from '../markers';
 
@@ -42,6 +43,9 @@ export class BreakpointManager extends MarkerManager<IDebugBreakpoint> {
 
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
+
+  @Autowired(DebugContextKey)
+  protected readonly debugContextKey: DebugContextKey;
 
   getKind(): string {
     return BREAKPOINT_KIND;
@@ -248,6 +252,7 @@ export class BreakpointManager extends MarkerManager<IDebugBreakpoint> {
         this.fireOnDidChangeMarkers(new URI(uri));
       }
       this.updateBreakpoints(this.getBreakpoints());
+      this.debugContextKey.contextActiveBreakpoints.set(breakpointsEnabled);
     }
   }
 
@@ -259,6 +264,7 @@ export class BreakpointManager extends MarkerManager<IDebugBreakpoint> {
       defaultExceptionFilter: [],
     });
     this._breakpointsEnabled = data!.breakpointsEnabled;
+    this.debugContextKey.contextActiveBreakpoints.set(this._breakpointsEnabled);
     // eslint-disable-next-line guard-for-in
     for (const uri in data!.breakpoints) {
       this.setBreakpoints(
