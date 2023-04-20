@@ -20,3 +20,6 @@ export * from '@opensumi/ide-components/lib/popover';
 export * from '@opensumi/ide-components/lib/message';
 export * from '@opensumi/ide-components/lib/tooltip';
 export * from '@opensumi/ide-components/lib/recycle-list';
+
+// re export `Scroll` for backward compatibility
+export { Scrollbars, Scrollbars as Scroll } from '@opensumi/ide-components/lib/scrollbars';
