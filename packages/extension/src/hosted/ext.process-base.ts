@@ -122,6 +122,26 @@ function patchProcess() {
   };
 }
 
+function _wrapConsoleMethod(method: 'log' | 'info' | 'warn' | 'error') {
+  // eslint-disable-next-line no-console
+  const original = console[method].bind(console);
+
+  Object.defineProperty(console, method, {
+    set: () => {},
+    get: () =>
+      function () {
+        original(arguments);
+      },
+  });
+}
+
+function patchConsole() {
+  _wrapConsoleMethod('info');
+  _wrapConsoleMethod('log');
+  _wrapConsoleMethod('warn');
+  _wrapConsoleMethod('error');
+}
+
 export async function extProcessInit(config: ExtProcessConfig = {}) {
   const extAppConfig = JSON.parse(argv[KT_APP_CONFIG_KEY] || '{}');
   const { injector, ...extConfig } = config;
@@ -141,6 +161,7 @@ export async function extProcessInit(config: ExtProcessConfig = {}) {
     setLanguageId(locale);
   }
   patchProcess();
+  patchConsole();
   const { extProtocol: protocol, logger } = await initRPCProtocol(extInjector);
   try {
     let Preload = require('./ext.host');
