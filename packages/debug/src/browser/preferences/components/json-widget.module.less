@@ -1,0 +1,17 @@
+@max_width: 500px;
+@min_width: 300px;
+
+.select_widget_control,
+.text_widget_control {
+  min-width: @min_width;
+  max-width: @max_width;
+  width: 100%;
+}
+
+.text_widget_control {
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
