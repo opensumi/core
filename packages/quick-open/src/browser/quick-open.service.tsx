@@ -53,7 +53,7 @@ export interface IKaitianQuickOpenControllerOpts extends QuickOpenTabOptions {
 @Injectable()
 export class MonacoQuickOpenService implements QuickOpenService {
   protected _widget: QuickOpenWidget | undefined;
-  protected opts: IKaitianQuickOpenControllerOpts;
+  protected opts: KaitianQuickOpenControllerOpts;
   protected container: HTMLElement;
   protected previousActiveElement: Element | undefined;
 
@@ -114,7 +114,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     this.progressDispose.dispose();
   }
 
-  protected internalOpen(opts: IKaitianQuickOpenControllerOpts): void {
+  protected internalOpen(opts: KaitianQuickOpenControllerOpts): void {
     this.opts = opts;
     const widget = this.widget;
 
@@ -134,7 +134,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   updateOptions(options: IKaitianQuickOpenControllerOpts): void {
-    this.opts = options;
+    this.opts.updateOptions(options);
     this.widget.updateOptions(options);
   }
 
@@ -217,7 +217,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     if (this.widget && options.onType) {
       options.onType(lookFor, (model) => {
         // 触发 onchange 事件
-        if (this.preLookFor !== lookFor && this.opts.onChangeValue) {
+        if (this.preLookFor !== lookFor) {
           this.opts.onChangeValue(lookFor);
         }
         this.preLookFor = lookFor;
@@ -240,7 +240,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
 }
 
 export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControllerOpts {
-  protected readonly options: QuickOpenOptions.Resolved;
+  protected options: QuickOpenOptions.Resolved;
 
   constructor(
     protected readonly model: IKaitianQuickOpenModel,
@@ -318,6 +318,16 @@ export class KaitianQuickOpenControllerOpts implements IKaitianQuickOpenControll
     if (this.options.onKeyMods) {
       this.options.onKeyMods(keyMods);
     }
+  }
+
+  onChangeValue(lookFor: string): void {
+    if (this.options.onChangeValue) {
+      this.options.onChangeValue(lookFor);
+    }
+  }
+
+  updateOptions(options?: QuickOpenOptions) {
+    this.options = QuickOpenOptions.resolve(options);
   }
 
   /**
