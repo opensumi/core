@@ -1,0 +1,97 @@
+@import '../style/variable.less';
+
+.@{prefix}-input-number {
+  padding-right: 0;
+
+  &:focus-within,
+  &:hover {
+    .kt-input-number-handler-up {
+      border-bottom-color: var(--focusBorder);
+    }
+    .kt-input-number-handler {
+      border-inline-start-color: var(--focusBorder);
+    }
+  }
+
+  .kt-input-number {
+    width: 100%;
+    text-align: start;
+    background-color: transparent;
+    border: 0;
+    outline: 0;
+    transition: all 0.3s linear;
+    appearance: textfield;
+    font-size: inherit;
+    vertical-align: top;
+  }
+
+  .kt-input-number-handler {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: auto;
+    height: 40%;
+    overflow: hidden;
+    color: rgba(0, 0, 0, 0.45);
+    font-weight: 700;
+    line-height: 0;
+    text-align: center;
+    cursor: pointer;
+    border-inline-start: 1px solid var(--kt-input-border);
+  }
+
+  .kt-input-number-handler-active {
+    background: #ddd;
+  }
+
+  .kt-input-number-handler-up-inner,
+  .kt-input-number-handler-down-inner {
+    color: var(--input-foreground);
+    user-select: none;
+  }
+
+  .kt-input-number-input-wrap {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .kt-input-number-handler-wrap {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0;
+    width: 22px;
+    height: 100%;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .kt-input-number-handler-up {
+    padding-top: 1px;
+    border-bottom: 1px solid var(--kt-input-border);
+  }
+
+  .kt-input-number-handler-up-inner:after {
+    content: '+';
+  }
+
+  .kt-input-number-handler-down-inner:after {
+    content: '-';
+  }
+
+  .kt-input-number-handler-down-disabled,
+  .kt-input-number-handler-up-disabled {
+    opacity: 0.3;
+  }
+
+  .kt-input-number-disabled .kt-input-number-input {
+    background-color: #f3f3f3;
+    cursor: not-allowed;
+    opacity: 0.72;
+  }
+
+  .kt-input-number-disabled .kt-input-number-handler {
+    opacity: 0.3;
+  }
+}
