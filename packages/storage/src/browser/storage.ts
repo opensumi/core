@@ -99,7 +99,7 @@ export class Storage implements IStorage {
         this.database.getItems(storageName).then(async (data) => {
           // 后续以服务端数据为准更新前端缓存数据，防止后续数据存取异常
           this.cache = this.jsonToMap(data);
-          await this.browserLocalStorage?.setData(storageName, data);
+          this.browserLocalStorage?.setData(storageName, data);
           this.whenReadyToWriteDeferred.resolve();
         });
       });
@@ -254,7 +254,7 @@ export class Storage implements IStorage {
         ...cache,
         ...updateRequest.insert,
       };
-      await this.browserLocalStorage.setData(this.storageName, cache);
+      this.browserLocalStorage.setData(this.storageName, cache);
     }
 
     // 重置等待队列用于下次存储
