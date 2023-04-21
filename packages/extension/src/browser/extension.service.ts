@@ -542,8 +542,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private normalExtensions: Extension[] = [];
 
   private async runEagerExtensionsContributes() {
-    this.contributesService.initialize();
-    this.sumiContributesService.initialize();
+    await Promise.all([this.contributesService.initialize(), this.sumiContributesService.initialize()]);
+
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
