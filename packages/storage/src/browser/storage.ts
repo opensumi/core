@@ -86,7 +86,7 @@ export class Storage implements IStorage {
     if (this.browserLocalStorage) {
       cache = await this.browserLocalStorage.getData(storageName);
     }
-    if (!cache || isEmptyObject(cache)) {
+    if (!cache) {
       await this.database.init(this.appConfig.storageDirName, this.isGlobal ? undefined : workspace);
       cache = await this.database.getItems(storageName);
       if (this.browserLocalStorage) {

@@ -91,18 +91,20 @@ abstract class BaseBrowserStorageService implements StorageService {
 
   public getData<T>(key: string, defaultValue?: T): T | undefined {
     const result = this.storage.getItem(this.prefix(key));
+    let data;
     if (isUndefinedOrNull(result)) {
       return defaultValue;
     }
     try {
-      return JSON.parse(result);
+      data = JSON.parse(result);
     } catch (e) {
       this.logger.error(`storage getDate error: ${e}, use defaultValue as result.`);
+      data = defaultValue;
     }
-    if (defaultValue && isObject(defaultValue)) {
-      delete defaultValue['expires'];
+    if (data && isObject(data)) {
+      delete data['expires'];
     }
-    return defaultValue;
+    return data;
   }
 
   public removeData<T>(key: string): void {
