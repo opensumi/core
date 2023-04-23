@@ -10,8 +10,12 @@ export class OpenSumiSourceControlView extends OpenSumiView {
     });
   }
 
+  async getTreeNode() {
+    return await this.page.$('[class*="scm_tree_node_content___"]');
+  }
+
   async getTreeNodeActionById(id: string) {
-    const header = await this.page.$('[class*="scm_tree_node_content___"]');
+    const header = await this.getTreeNode();
     if (!header) {
       return;
     }
