@@ -40,8 +40,6 @@ export const ArrayFieldItemTemplate = <
     onReorderClick,
     readonly,
     registry,
-    uiSchema,
-    schema,
   } = props;
   const { CopyButton, MoveDownButton, MoveUpButton, RemoveButton } = registry.templates.ButtonTemplates;
 
@@ -57,7 +55,6 @@ export const ArrayFieldItemTemplate = <
                 disabled={disabled || readonly || !hasMoveUp}
                 onClick={onReorderClick(index, index - 1)}
                 style={BTN_STYLE}
-                uiSchema={uiSchema}
                 registry={registry}
               />
             )}
@@ -66,7 +63,6 @@ export const ArrayFieldItemTemplate = <
                 disabled={disabled || readonly || !hasMoveDown}
                 onClick={onReorderClick(index, index + 1)}
                 style={BTN_STYLE}
-                uiSchema={uiSchema}
                 registry={registry}
               />
             )}
@@ -75,7 +71,6 @@ export const ArrayFieldItemTemplate = <
                 disabled={disabled || readonly}
                 onClick={onCopyIndexClick(index)}
                 style={BTN_STYLE}
-                uiSchema={uiSchema}
                 registry={registry}
               />
             )}
@@ -84,7 +79,6 @@ export const ArrayFieldItemTemplate = <
                 disabled={disabled || readonly}
                 onClick={onDropIndexClick(index)}
                 style={BTN_STYLE}
-                uiSchema={uiSchema}
                 registry={registry}
               />
             )}
