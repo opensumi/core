@@ -128,7 +128,12 @@ export const EVEN_EDITOR_WIDTH: Command = {
 
 export const CLOSE_OTHER_GROUPS: Command = {
   id: 'workbench.action.closeEditorsInOtherGroups',
-  delegate: EDITOR_COMMANDS.EVEN_EDITOR_GROUPS.id,
+  delegate: EDITOR_COMMANDS.CLOSE_OTHER_GROUPS.id,
+};
+
+export const CLOSE_UNMODIFIED_EDITORS: Command = {
+  id: 'workbench.action.closeUnmodifiedEditors',
+  delegate: EDITOR_COMMANDS.CLOSE_SAVED.id,
 };
 
 export const OPEN_EDITOR_AT_INDEX: Command = {

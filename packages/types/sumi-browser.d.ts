@@ -153,14 +153,38 @@ declare module 'sumi-browser' {
   export interface ScrollAreaProps {
     className?: string;
     onScroll?: (position: ScrollPosition) => any;
+    onUpdate?: any;
+    /**
+     * @deprecated no longer worked, please use `onScroll` to get the `scrollTop` and create the scroll container by yourself
+     */
     atTopClassName?: string;
     style?: any;
+    /**
+     * @deprecated no longer worked, please create the container by yourself
+     */
     containerStyle?: any;
+    onReachBottom?: () => void;
+    /**
+     * 这种模式下，左右滚动和上下滚动都会被视为左右滚动
+     */
+    tabBarMode?: boolean;
+    /**
+     * 滚动条滑块大小，默认 5px
+     */
+    thumbSize?: number;
   }
 
   export interface ScrollPosition {
+    /**
+     * @deprecated no longer worked, please use `scrollTop`
+     */
     top: number;
+    /**
+     * @deprecated no longer worked, please use `scrollLeft`
+     */
     left: number;
+    scrollTop: number;
+    scrollLeft: number;
   }
   export class Scroll extends React.Component<ScrollAreaProps, any> {}
 

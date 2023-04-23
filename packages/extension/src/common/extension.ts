@@ -311,7 +311,7 @@ export abstract class VSCodeContributePoint<T extends JSONType = JSONType> exten
 }
 
 export abstract class ExtensionContributesService extends WithEventBus {
-  abstract ContributionPoints: typeof VSCodeContributePoint[];
+  abstract ContributionPoints: (typeof VSCodeContributePoint)[];
 
   @Autowired(ILogger)
   private logger: ILogger;
@@ -387,8 +387,8 @@ export abstract class ExtensionContributesService extends WithEventBus {
     );
   }
 
-  public initialize() {
-    const runContributes = (phase = this.lifecycleService.phase) => {
+  public async initialize() {
+    const runContributes = async (phase = this.lifecycleService.phase) => {
       if (!phase) {
         return;
       }
@@ -399,16 +399,15 @@ export abstract class ExtensionContributesService extends WithEventBus {
         this.contributedSet.clear();
       }
 
-      this.runContributesByPhase(phase);
+      await this.runContributesByPhase(phase);
     };
-
-    runContributes();
 
     this.addDispose(
       this.lifecycleService.onDidLifeCyclePhaseChange((newPhase) => {
         runContributes(newPhase);
       }),
     );
+    await runContributes();
   }
 }
 

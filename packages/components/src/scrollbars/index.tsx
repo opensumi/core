@@ -8,12 +8,12 @@ import './styles.less';
 
 export interface ICustomScrollbarProps {
   forwardedRef?: any;
-  onScroll?: any;
-  onUpdate?: any;
+  onScroll?: (values: any) => void;
+  onUpdate?: (values: any) => void;
   style?: React.CSSProperties;
   className?: string;
   children?: React.ReactNode;
-  onReachBottom?: any;
+  onReachBottom?: () => void;
   /**
    * 这种模式下，左右滚动和上下滚动都会被视为左右滚动
    */
