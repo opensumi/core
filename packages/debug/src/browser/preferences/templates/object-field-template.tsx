@@ -1,6 +1,5 @@
 import {
   ObjectFieldTemplateProps,
-  canExpand,
   StrictRJSFSchema,
   RJSFSchema,
   FormContextType,
@@ -16,19 +15,7 @@ import styles from './json-templates.module.less';
 export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   props: ObjectFieldTemplateProps<T, S, F>,
 ) => {
-  const {
-    schema,
-    uiSchema,
-    formData,
-    onAddClick,
-    disabled,
-    required,
-    readonly,
-    registry,
-    idSchema,
-    title,
-    description,
-  } = props;
+  const { schema, uiSchema, required, registry, idSchema, title, description } = props;
   const uiOptions = getUiOptions<T, S, F>(uiSchema);
   const TitleFieldTemplate = getTemplate<'TitleFieldTemplate', T, S, F>('TitleFieldTemplate', registry, uiOptions);
   const DescriptionFieldTemplate = getTemplate<'DescriptionFieldTemplate', T, S, F>(
@@ -63,7 +50,9 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
         </div>
       )}
       {props.properties.map((element) => (
-        <div className={styles.property_wrapper}>{React.cloneElement(element.content, { displayLabel: true })}</div>
+        <div key={element.name} className={styles.property_wrapper}>
+          {React.cloneElement(element.content, { displayLabel: true })}
+        </div>
       ))}
     </fieldset>
   );
