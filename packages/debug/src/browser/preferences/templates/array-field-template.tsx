@@ -87,7 +87,7 @@ export const ArrayFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSch
 
         {canAdd && (
           <div className={styles.array_item_add}>
-            <AddButton disabled={disabled || readonly} onClick={onAddClick} uiSchema={uiSchema} registry={registry} />
+            <AddButton disabled={disabled || readonly} onClick={onAddClick} registry={registry} />
           </div>
         )}
       </div>
