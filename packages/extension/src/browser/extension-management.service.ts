@@ -123,7 +123,23 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
         this.disableExtension(oldExtensionPath!);
       }
 
-      return await this.enableExtension(extensionInstance);
+      await this.enableExtension(extensionInstance);
+
+      const colorThemes = this.themeService.getAvailableThemeInfos();
+      if (colorThemes.some((theme) => theme.extensionId === extensionInstance.id)) {
+        this.commandService.executeCommand(THEME_TOGGLE_COMMAND.id, {
+          extensionId: extensionInstance.id,
+        });
+        return;
+      }
+
+      const iconThemes = this.iconService.getAvailableThemeInfos();
+      if (iconThemes.some((theme) => theme.extensionId === extensionInstance.id)) {
+        this.commandService.executeCommand(ICON_THEME_TOGGLE_COMMAND.id, {
+          extensionId: extensionInstance.id,
+        });
+        return;
+      }
     }
   }
 
@@ -185,22 +201,6 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
     this.contributesService.register(extension.id, extension.contributes);
     this.sumiContributesService.initialize();
     this.contributesService.initialize();
-
-    const colorThemes = this.themeService.getAvailableThemeInfos();
-    if (colorThemes.some((theme) => theme.extensionId === extension.id)) {
-      this.commandService.executeCommand(THEME_TOGGLE_COMMAND.id, {
-        extensionId: extension.id,
-      });
-      return;
-    }
-
-    const iconThemes = this.iconService.getAvailableThemeInfos();
-    if (iconThemes.some((theme) => theme.extensionId === extension.id)) {
-      this.commandService.executeCommand(ICON_THEME_TOGGLE_COMMAND.id, {
-        extensionId: extension.id,
-      });
-      return;
-    }
   }
 
   /**
