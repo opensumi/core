@@ -1,8 +1,6 @@
 import { Autowired, Injectable } from '@opensumi/di';
-import { CommandService, getLanguageId, ILogger, URI, WithEventBus } from '@opensumi/ide-core-common';
+import { getLanguageId, ILogger, URI, WithEventBus } from '@opensumi/ide-core-common';
 import { IFileServiceClient } from '@opensumi/ide-file-service';
-import { IIconService, IThemeService } from '@opensumi/ide-theme';
-import { ICON_THEME_TOGGLE_COMMAND, THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 import {
   AbstractExtensionManagementService,
@@ -37,15 +35,6 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
 
   @Autowired(IFileServiceClient)
   private fileService: IFileServiceClient;
-
-  @Autowired(IThemeService)
-  protected readonly themeService: IThemeService;
-
-  @Autowired(IIconService)
-  protected readonly iconService: IIconService;
-
-  @Autowired(CommandService)
-  protected readonly commandService: CommandService;
 
   @Autowired(ILogger)
   private readonly logger: ILogger;
@@ -123,23 +112,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
         this.disableExtension(oldExtensionPath!);
       }
 
-      await this.enableExtension(extensionInstance);
-
-      const colorThemes = this.themeService.getAvailableThemeInfos();
-      if (colorThemes.some((theme) => theme.extensionId === extensionInstance.id)) {
-        this.commandService.executeCommand(THEME_TOGGLE_COMMAND.id, {
-          extensionId: extensionInstance.id,
-        });
-        return;
-      }
-
-      const iconThemes = this.iconService.getAvailableThemeInfos();
-      if (iconThemes.some((theme) => theme.extensionId === extensionInstance.id)) {
-        this.commandService.executeCommand(ICON_THEME_TOGGLE_COMMAND.id, {
-          extensionId: extensionInstance.id,
-        });
-        return;
-      }
+      return await this.enableExtension(extensionInstance);
     }
   }
 

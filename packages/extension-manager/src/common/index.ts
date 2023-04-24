@@ -49,6 +49,7 @@ export class VSXExtension {
   readonly path?: string;
   readonly realpath?: string;
   readonly extensionId?: string;
+  readonly originId?: string;
   static KEYS: Set<keyof VSXExtension> = new Set([
     'version',
     'iconUrl',

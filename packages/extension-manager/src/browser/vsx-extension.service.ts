@@ -2,6 +2,7 @@ import { observable, action } from 'mobx';
 
 import { Injectable, Autowired } from '@opensumi/di';
 import {
+  CommandService,
   Disposable,
   fuzzyScore,
   IStatusBarService,
@@ -13,6 +14,8 @@ import {
 import { WorkbenchEditorService } from '@opensumi/ide-editor/lib/browser';
 import { ExtensionManagementService } from '@opensumi/ide-extension/lib/browser/extension-management.service';
 import { AbstractExtInstanceManagementService } from '@opensumi/ide-extension/lib/browser/types';
+import { IIconService, IThemeService } from '@opensumi/ide-theme';
+import { ICON_THEME_TOGGLE_COMMAND, THEME_TOGGLE_COMMAND } from '@opensumi/ide-theme/lib/browser/theme.contribution';
 
 import {
   InstallState,
@@ -36,6 +39,15 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
 
   @Autowired()
   protected extensionManagementService: ExtensionManagementService;
+
+  @Autowired(IThemeService)
+  protected readonly themeService: IThemeService;
+
+  @Autowired(IIconService)
+  protected readonly iconService: IIconService;
+
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
 
   @observable
   public extensions: VSXExtension[] = [];
@@ -102,10 +114,27 @@ export class VSXExtensionService extends Disposable implements IVSXExtensionServ
     });
     this.tasks.set(id, task);
     this.updateStatusBar();
-    return task.then((res) => {
+    return task.then(async (res) => {
       this.tasks.delete(id);
       this.updateStatusBar();
-      this.extensionManagementService.postChangedExtension(false, res);
+      await this.extensionManagementService.postChangedExtension(false, res);
+
+      // 安装完插件后，如果是主题插件，自动弹出 quick open 选择主题
+      const colorThemes = this.themeService.getAvailableThemeInfos();
+      if (colorThemes.some((theme) => theme.extensionId === extension.originId)) {
+        this.commandService.executeCommand(THEME_TOGGLE_COMMAND.id, {
+          extensionId: extension.originId,
+        });
+        return;
+      }
+
+      const iconThemes = this.iconService.getAvailableThemeInfos();
+      if (iconThemes.some((theme) => theme.extensionId === extension.originId)) {
+        this.commandService.executeCommand(ICON_THEME_TOGGLE_COMMAND.id, {
+          extensionId: extension.originId,
+        });
+        return;
+      }
     });
   }
 
