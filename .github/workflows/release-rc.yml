@@ -29,7 +29,6 @@ jobs:
 
       - uses: opensumi/actions/bot-token@main
         if: success()
-        id: bot-token
         with:
           token-server: ${{ secrets.BOT_TOKEN_SERVER }}
           flag: ${{ secrets.BOT_FLAG }}
@@ -38,7 +37,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.ref }}
-          token: ${{ steps.bot-token.outputs.token }}
+          token: ${{ env.GITHUB_TOKEN }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3

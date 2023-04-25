@@ -18,7 +18,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: opensumi/actions/bot-token@main
-        id: bot-token
         with:
           token-server: ${{ secrets.BOT_TOKEN_SERVER }}
           flag: ${{ secrets.BOT_FLAG }}
@@ -26,4 +25,4 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         with:
-          github-token: ${{ steps.bot-token.outputs.token }}
+          github-token: ${{ env.GITHUB_TOKEN }}
