@@ -1,8 +1,9 @@
 import classNames from 'classnames';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 import './style.less';
-import { getIcon, Icon } from '../icon';
+import { Icon, getIcon } from '../icon';
 
 export interface IDataOption<T> {
   iconClass?: string;
@@ -394,22 +395,6 @@ export function Select<T = string>({
       }
       // 防止戳出下方屏幕
       const toBottom = window.innerHeight - boxRect.bottom;
-      if (!maxHeight) {
-        // 未设置最大高度
-        if (toBottom < 150) {
-          // 下方距离小于150，设置向上弹出选择框
-          overlayRef.current.style.bottom = selectRef.current.clientHeight + 4 + 'px';
-        } else {
-          // 下方距离大于150，设置最大高度为下方距离
-          overlayRef.current.style.maxHeight = `${toBottom}px`;
-        }
-      } else {
-        // 设置了最大高度
-        if (toBottom < parseInt(maxHeight, 10)) {
-          // 下方距离小于最大高度，设置向上弹出选择框
-          overlayRef.current.style.bottom = selectRef.current.clientHeight + 4 + 'px';
-        }
-      }
       if (!maxHeight || toBottom < parseInt(maxHeight, 10)) {
         overlayRef.current.style.maxHeight = `${toBottom}px`;
       }
