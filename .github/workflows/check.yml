@@ -59,7 +59,7 @@ jobs:
           node-version: 14.x
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
-        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+        run: echo "dir=$(yarn config get cacheFolder)" >> $Env:GITHUB_OUTPUT
       - uses: actions/cache@v3
         id: yarn_cache
         with:
