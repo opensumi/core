@@ -34,19 +34,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - uses: opensumi/actions/bot-token@main
+        id: bot-token
+        with:
+          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
+          flag: ${{ secrets.BOT_FLAG }}
+
       - uses: actions/checkout@v3
+        with:
+          token: ${{ steps.bot-token.outputs.token }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           registry-url: 'https://registry.npmjs.org'
-
-      - uses: opensumi/actions/bot-token@main
-        id: bot-token
-        with:
-          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
-          flag: ${{ secrets.BOT_FLAG }}
 
       # 评论正在发布
       - name: Update status for current issue
