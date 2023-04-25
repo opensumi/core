@@ -27,11 +27,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Checkout to specific branch
-      - uses: actions/checkout@v3
+      - uses: opensumi/actions/bot-token@main
         if: success()
         with:
+          token-server: ${{ secrets.BOT_TOKEN_SERVER }}
+          flag: ${{ secrets.BOT_FLAG }}
+
+      # Checkout to specific branch
+      - uses: actions/checkout@v3
+        with:
           ref: ${{ github.event.inputs.ref }}
+          token: ${{ env.GITHUB_TOKEN }}
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
@@ -40,7 +46,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - name: Get yarn cache directory path
         id: yarn_cache_dir_path
-        run: echo "::set-output name=dir::$(yarn config get cacheFolder)"
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
       - uses: actions/cache@v3
         id: yarn_cache
         with:
@@ -66,7 +72,7 @@ jobs:
         run: |
           lerna publish --exact --preid rc-$(date +%s) --dist-tag rc --force-publish='*' --no-push --no-git-tag-version prepatch --ignore-prepublish --ignore-scripts --no-private -y
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ env.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Adding markdown
         if: success()
