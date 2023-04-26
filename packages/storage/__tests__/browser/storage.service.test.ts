@@ -143,7 +143,7 @@ describe('StorageProvider should be work', () => {
     expect(extensionStorage.get('extensions')).toEqual(extensions);
     const browserLocalStroage = injector.get(ScopedBrowserStorageService, [MockWorkspaceService.workspace.uri]);
     const cache = browserLocalStroage.getData<any>(STORAGE_NAMESPACE.EXTENSIONS.path.toString());
-    expect(typeof cache?.expires).toBe('number');
+    expect(typeof cache?.expires).toBe('undefined');
     expect(cache?.extensions).toBe(JSON.stringify(extensions));
   });
 
