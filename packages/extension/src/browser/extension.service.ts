@@ -227,7 +227,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async setupExtensionNLSConfig() {
     const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
     const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
-    this.extensionNodeClient.setupNLSConfig(currentLanguage, storagePath);
+    await this.extensionNodeClient.setupNLSConfig(currentLanguage, storagePath);
   }
 
   /**
