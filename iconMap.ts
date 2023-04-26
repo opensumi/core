@@ -5,6 +5,7 @@ export const defaultIconfont = {
   'PR': 'PR',
   'ab': 'ab',
   'abl': 'abl',
+  'activate-breakpoints': 'activate-breakpoints',
   'add-comments': 'add-comments',
   'arrow-down': 'arrow-down',
   'arrow-right': 'arrow-right',
