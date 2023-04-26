@@ -43,6 +43,7 @@ export const defaultIconfont = {
   'continue': 'continue',
   'control': 'control',
   'deactivate-breakpoints': 'deactivate-breakpoints',
+  'activate-breakpoints': 'activate-breakpoints',
   'debug': 'debug',
   'debug-alt-small': 'debug-alt-small',
   'debug-restart-frame': 'debug-restart-frame',
