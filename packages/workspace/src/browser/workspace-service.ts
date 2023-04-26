@@ -789,10 +789,10 @@ export class WorkspaceService implements IWorkspaceService {
         if (path === rootPath) {
           path = '';
         }
-        if (rootPath.slice(-1) === '/') {
+        if (rootPath.slice(-1) === Path.nativeSeparator) {
           path = path.replace(rootPath, '');
         } else {
-          path = path.replace(rootPath + '/', '');
+          path = path.replace(rootPath + Path.nativeSeparator, '');
         }
         break;
       }
