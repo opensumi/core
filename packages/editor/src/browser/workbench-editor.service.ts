@@ -1316,7 +1316,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     uri: URI,
     options: IResourceOpenOptions = {},
   ): Promise<{ group: IEditorGroup; resource: IResource } | false> {
-    // 打开文件前需要判定文件是否存在
     if (!this.resourceService.handlesUri(uri)) {
       this.openerService.open(uri);
       return false;
