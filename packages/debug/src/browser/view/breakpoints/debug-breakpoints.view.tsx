@@ -158,13 +158,16 @@ export const BreakpointFileItem = ({ label, icon, breakpointItems }: BreakpointF
   const defaultEnabled = useMemo(() => breakpointItems.some((item) => item.enabled), [breakpointItems]);
   const [enabled, setEnabled] = React.useState<boolean>(defaultEnabled);
 
-  const handleCheckBoxChange = (preEnabled: boolean) => {
-    const matchBreakpoints = breakpointItems.filter((item) => item.enabled === preEnabled);
-    matchBreakpoints.forEach((breakpoint) => {
-      debugBreakpointsService.toggleBreakpointEnable(breakpoint);
-    });
-    setEnabled(!enabled);
-  };
+  const handleCheckBoxChange = useCallback(
+    (preEnabled: boolean) => {
+      const matchBreakpoints = breakpointItems.filter((item) => item.enabled === preEnabled);
+      matchBreakpoints.forEach((breakpoint) => {
+        debugBreakpointsService.toggleBreakpointEnable(breakpoint);
+      });
+      setEnabled(!enabled);
+    },
+    [enabled],
+  );
 
   return (
     <div className={styles.debug_breakpoints_file_item}>
