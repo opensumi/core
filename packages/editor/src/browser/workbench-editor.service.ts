@@ -50,6 +50,7 @@ import {
   Disposable,
   makeRandomHexString,
 } from '@opensumi/ide-core-common';
+import { IFileServiceClient } from '@opensumi/ide-file-service/lib/common';
 import { IDialogService, IMessageService } from '@opensumi/ide-overlay';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 
@@ -638,6 +639,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(IFileServiceClient)
+  protected readonly fileServiceClient: IFileServiceClient;
 
   codeEditor!: ICodeEditor;
 
@@ -1273,7 +1277,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
-    if (uri.scheme === Schemes.file) {
+    const stat = await this.fileServiceClient.getFileStat(uri.toString());
+    // 更新recently时需要判断文件是否存在
+    if (uri.scheme === Schemes.file && stat) {
       // 只记录 file 类型的
       this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
     }
@@ -1310,6 +1316,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     uri: URI,
     options: IResourceOpenOptions = {},
   ): Promise<{ group: IEditorGroup; resource: IResource } | false> {
+    // 打开文件前需要判定文件是否存在
     if (!this.resourceService.handlesUri(uri)) {
       this.openerService.open(uri);
       return false;
