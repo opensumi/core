@@ -26,6 +26,7 @@ import { BreakpointManager } from '../breakpoint';
 import { DebugBreakpoint, isDebugBreakpoint } from '../breakpoint';
 import { DebugDecorator } from '../breakpoint/breakpoint-decoration';
 import { DebugSessionManager } from '../debug-session-manager';
+import { DebugBreakpointsService } from '../view/breakpoints/debug-breakpoints.service';
 
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { DebugHoverWidget } from './debug-hover-widget';
@@ -46,6 +47,9 @@ export class DebugModel implements IDebugModel {
 
   @Autowired(IDebugSessionManager)
   private debugSessionManager: DebugSessionManager;
+
+  @Autowired(DebugBreakpointsService)
+  private debugBreakpointsService: DebugBreakpointsService;
 
   @Autowired(BreakpointManager)
   private breakpointManager: BreakpointManager;
@@ -115,13 +119,33 @@ export class DebugModel implements IDebugModel {
 
   async init() {
     const model = this.editor.getModel()!;
+    let timeOut: NodeJS.Timer;
     this._uri = new URI(model.uri.toString());
     this.decorator = new DebugDecorator();
+
     this.toDispose.pushAll([
       this.breakpointWidget,
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.editor.onDidChangeModelContent(() => this.renderFrames()),
+      this.editor.onDidFocusEditorText(() => this.renderFrames()),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
+      this.debugBreakpointsService.onDidFocusedBreakpoints(({ range }) => {
+        this.renderFrames([
+          {
+            options: options.FOCUS_BREAKPOINTS_STACK_FRAME_DECORATION,
+            range,
+          },
+        ]);
+
+        if (timeOut) {
+          clearTimeout(timeOut);
+        }
+
+        timeOut = global.setTimeout(() => {
+          this.renderFrames();
+          clearTimeout(timeOut);
+        }, 300);
+      }),
       this.editor.getModel()!.onDidChangeContent(() => this.updateBreakpoints()),
       this.editor.onDidChangeModel(() => {
         this.closeBreakpointView();
@@ -156,14 +180,14 @@ export class DebugModel implements IDebugModel {
    * @type {*}
    * @memberof DebugModel
    */
-  protected readonly renderFrames: any = debounce(() => {
+  protected readonly renderFrames: any = debounce((inflowDecorations: monaco.editor.IModelDeltaDecoration[] = []) => {
     if (this.toDispose.disposed) {
       return;
     }
     if (this.editor.getModel()?.uri.toString() !== this._uri.toString()) {
       return;
     }
-    const decorations = this.createFrameDecorations();
+    const decorations = this.createFrameDecorations().concat(inflowDecorations);
     this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
   }, 100);
 

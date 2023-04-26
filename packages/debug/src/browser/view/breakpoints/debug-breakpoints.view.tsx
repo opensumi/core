@@ -14,7 +14,9 @@ import {
   ViewState,
   Event,
   isUndefined,
+  IRange,
 } from '@opensumi/ide-core-browser';
+import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
 import { IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
@@ -159,32 +161,39 @@ export const BreakpointItem = ({
     setEnabled(!enabled);
   };
 
-  const handleBreakpointClick = () => {
+  const handleBreakpointClick = async () => {
     if ((data.breakpoint as ISourceBreakpoint).uri) {
-      const options = {
+      const options: IResourceOpenOptions = {
         preview: true,
         focus: true,
       };
       if (status) {
-        options['range'] = {
+        options.range = {
           startColumn: status.column || 0,
           endColumn: status.column || 0,
           startLineNumber: status.line,
           endLineNumber: status.line,
         };
       } else {
-        options['range'] = {
-          startColumn: (data.breakpoint as IDebugBreakpoint).raw.column || 0,
-          endColumn: (data.breakpoint as IDebugBreakpoint).raw.column || 0,
-          startLineNumber: (data.breakpoint as IDebugBreakpoint).raw.line,
-          endLineNumber: (data.breakpoint as IDebugBreakpoint).raw.line,
+        const { raw } = data.breakpoint as IDebugBreakpoint;
+        options.range = {
+          startColumn: raw.column || 0,
+          endColumn: raw.column || 0,
+          startLineNumber: raw.line,
+          endLineNumber: raw.line,
         };
       }
-      commandService.executeCommand(
+
+      await commandService.executeCommand(
         EDITOR_COMMANDS.OPEN_RESOURCE.id,
         new URI((data.breakpoint as ISourceBreakpoint).uri),
         options,
       );
+
+      debugBreakpointsService.launchFocusedBreakpoints({
+        uri: new URI((data.breakpoint as ISourceBreakpoint).uri),
+        range: options.range as IRange,
+      });
     }
   };
 

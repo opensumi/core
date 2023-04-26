@@ -1,3 +1,9 @@
+@sumi_top_stack_frame_line_color: #ffff6673;
+@dark_sumi_top_stack_frame_line_color: #ffff0033;
+@sumi_debug_focused_stack_frame_line_color: #cee7ce73;
+@dark_sumi_debug_focused_stack_frame_line_color: #7abd7a4d;
+@dark_sumi_debug_top_stack_frame_exception_line_color: #6c2022;
+
 .sumi-breakpoint-icon-size {
   background-size: 16px 16px;
   cursor: pointer;
@@ -73,11 +79,34 @@
 }
 
 .monaco-editor .view-overlays .sumi-debug-top-stack-frame-line {
-  background: #ffff6673;
+  background-color: @sumi_top_stack_frame_line_color;
 }
 
 .monaco-editor.vs-dark .view-overlays .sumi-debug-top-stack-frame-line {
-  background: #ffff0033;
+  background-color: @dark_sumi_top_stack_frame_line_color;
+}
+
+@keyframes slide-out {
+  100% {
+    background-color: transparent;
+  }
+}
+
+.monaco-editor .view-overlays .sumi-focus-breakpoints-stack-frame-line,
+.monaco-editor.vs-dark .view-overlays .sumi-focus-breakpoints-stack-frame-line {
+  animation: slide-out 0.3s;
+  animation-iteration-count: 1;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+  -webkit-animation-fill-mode: forwards;
+}
+
+.monaco-editor .view-overlays .sumi-focus-breakpoints-stack-frame-line {
+  background-color: @sumi_top_stack_frame_line_color;
+}
+
+.monaco-editor.vs-dark .view-overlays .sumi-focus-breakpoints-stack-frame-line {
+  background-color: @dark_sumi_top_stack_frame_line_color;
 }
 
 .monaco-editor .sumi-debug-focused-stack-frame {
@@ -91,15 +120,15 @@
 }
 
 .monaco-editor .view-overlays .sumi-debug-focused-stack-frame-line {
-  background: #cee7ce73;
+  background-color: @sumi_debug_focused_stack_frame_line_color;
 }
 
 .monaco-editor.vs-dark .view-overlays .sumi-debug-focused-stack-frame-line {
-  background: #7abd7a4d;
+  background-color: @dark_sumi_debug_focused_stack_frame_line_color;
 }
 
 .monaco-editor.vs-dark .view-overlays .sumi-debug-top-stack-frame-exception-line {
-  background-color: #6c2022;
+  background-color: @dark_sumi_debug_top_stack_frame_exception_line_color;
 }
 
 .inline-breakpoint-widget.codicon {
