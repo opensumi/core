@@ -127,7 +127,6 @@ export class DebugModel implements IDebugModel {
       this.breakpointWidget,
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.editor.onDidChangeModelContent(() => this.renderFrames()),
-      this.editor.onDidFocusEditorText(() => this.renderFrames()),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
       this.debugBreakpointsService.onDidFocusedBreakpoints(({ range }) => {
         this.renderFrames([
