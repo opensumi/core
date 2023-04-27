@@ -71,11 +71,19 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
         } else {
           const toURI = URI.parse(uri);
           const parent = roots.filter((root) => root.isEqualOrParent(toURI))[0];
+          const label = parent ? parent.relative(toURI)?.toString() || '' : URI.parse(uri).displayName;
+          const breakpointItems = items.map((item) => item.breakpoint as IDebugBreakpoint);
 
           breakpointTreeData.push({
-            label: parent ? parent.relative(toURI)?.toString() || '' : URI.parse(uri).displayName,
+            label,
+            renderLabel: (
+              <BreakpointFileItem
+                label={label}
+                icon={getIcon('file-text')}
+                breakpointItems={breakpointItems}
+              ></BreakpointFileItem>
+            ),
             expandable: true,
-            iconClassName: getIcon('file-text'),
             expanded: true,
             children: items.map((item) => ({
               ...item,
@@ -134,6 +142,47 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
     </div>
   );
 });
+
+interface BreakpointFileItemProps {
+  label: string;
+  icon: string;
+  breakpointItems: IDebugBreakpoint[];
+}
+
+export const BreakpointFileItem = ({ label, icon, breakpointItems }: BreakpointFileItemProps) => {
+  const debugBreakpointsService: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
+
+  /**
+   * 只要断点列表有一个是启用的，那么就认为是启用状态
+   */
+  const defaultEnabled = useMemo(() => breakpointItems.some((item) => item.enabled), [breakpointItems]);
+  const [enabled, setEnabled] = React.useState<boolean>(defaultEnabled);
+
+  const handleCheckBoxChange = useCallback(
+    (preEnabled: boolean) => {
+      const matchBreakpoints = breakpointItems.filter((item) => item.enabled === preEnabled);
+      matchBreakpoints.forEach((breakpoint) => {
+        debugBreakpointsService.toggleBreakpointEnable(breakpoint);
+      });
+      setEnabled(!enabled);
+    },
+    [enabled],
+  );
+
+  return (
+    <div className={styles.debug_breakpoints_file_item}>
+      <div className={styles.file_item_control}>
+        <CheckBox
+          className={styles.file_item_checkbox}
+          onChange={() => handleCheckBoxChange(enabled)}
+          checked={enabled}
+        ></CheckBox>
+        <i className={cls(icon, styles.file_item_icon)}></i>
+      </div>
+      <span>{label}</span>
+    </div>
+  );
+};
 
 export const BreakpointItem = ({
   data,

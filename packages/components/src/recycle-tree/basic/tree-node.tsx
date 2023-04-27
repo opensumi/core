@@ -101,6 +101,8 @@ export const BasicTreeNodeRenderer: React.FC<
     [],
   );
 
+  const renderLabel = useCallback((node: BasicCompositeTreeNode | BasicTreeNode) => node.renderLabel, []);
+
   const renderDescription = useCallback((node: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!node.description) {
       return null;
@@ -197,7 +199,7 @@ export const BasicTreeNodeRenderer: React.FC<
         {renderTwice(item)}
         {renderIcon(item)}
         <div className={'overflow_wrap'}>
-          {renderDisplayName(item)}
+          {renderLabel(item) || renderDisplayName(item)}
           {renderDescription(item)}
         </div>
         {renderNodeTail()}
