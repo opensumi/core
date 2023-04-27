@@ -85,7 +85,6 @@ import { DebugCallStackView } from './view/frames/debug-call-stack.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
-
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
 export namespace DebugBreakpointWidgetCommands {
@@ -453,7 +452,6 @@ export class DebugContribution
         }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
-      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.DISABLE_BREAKPOINT, {
       execute: async (position: monaco.Position) => {

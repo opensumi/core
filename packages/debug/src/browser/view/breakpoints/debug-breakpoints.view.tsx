@@ -15,11 +15,14 @@ import {
   Event,
   isUndefined,
   IRange,
+  localize,
 } from '@opensumi/ide-core-browser';
 import { IResourceOpenOptions } from '@opensumi/ide-editor';
+import { getExternalIcon } from '@opensumi/ide-core-browser';
+import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
-import { IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
+import { DEBUG_COMMANDS, IDebugBreakpoint, IDebugSessionManager, ISourceBreakpoint } from '../../../common';
 import {
   DebugExceptionBreakpoint,
   isDebugBreakpoint,
@@ -27,6 +30,7 @@ import {
   getStatus,
   isDebugExceptionBreakpoint,
   EXCEPTION_BREAKPOINT_URI,
+  BreakpointManager,
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
 
@@ -81,8 +85,8 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
             renderLabel: (
               <BreakpointFileItem
                 label={label}
-                icon={getIcon('file-text')}
                 breakpointItems={breakpointItems}
+                title={toURI.toString()}
               ></BreakpointFileItem>
             ),
             expandable: true,
@@ -147,11 +151,11 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
 
 interface BreakpointFileItemProps {
   label: string;
-  icon: string;
   breakpointItems: IDebugBreakpoint[];
+  title?: string;
 }
 
-export const BreakpointFileItem = ({ label, icon, breakpointItems }: BreakpointFileItemProps) => {
+export const BreakpointFileItem = ({ label, title, breakpointItems }: BreakpointFileItemProps) => {
   const debugBreakpointsService: DebugBreakpointsService = useInjectable(DebugBreakpointsService);
 
   /**
@@ -171,6 +175,13 @@ export const BreakpointFileItem = ({ label, icon, breakpointItems }: BreakpointF
     [enabled],
   );
 
+  const removeBreakpoint = useCallback((event: React.MouseEvent) => {
+    event.stopPropagation();
+    breakpointItems.forEach((breakpoint) => {
+      debugBreakpointsService.delBreakpoint(breakpoint);
+    });
+  }, []);
+
   return (
     <div className={styles.debug_breakpoints_file_item}>
       <div className={styles.file_item_control}>
@@ -179,9 +190,12 @@ export const BreakpointFileItem = ({ label, icon, breakpointItems }: BreakpointF
           onChange={() => handleCheckBoxChange(enabled)}
           checked={enabled}
         ></CheckBox>
-        <i className={cls(icon, styles.file_item_icon)}></i>
+        <i className={cls(getIcon('file-text'), styles.file_item_icon)}></i>
+        <span title={title}>{label}</span>
       </div>
-      <span>{label}</span>
+      <div className={styles.file_item_control_right}>
+        <i className={cls(getIcon('close'), styles.close_icon)} onClick={(event) => removeBreakpoint(event)}></i>
+      </div>
     </div>
   );
 };
@@ -199,6 +213,7 @@ export const BreakpointItem = ({
 }) => {
   const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!data.breakpoint.default;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
+  const breakpointManager = useInjectable<BreakpointManager>(BreakpointManager);
   const commandService = useInjectable<CommandService>(CommandService);
   const debugBreakpointsService = useInjectable<DebugBreakpointsService>(DebugBreakpointsService);
   const [enabled, setEnabled] = React.useState<boolean>(defaultValue);
@@ -290,9 +305,30 @@ export const BreakpointItem = ({
     return '';
   };
 
-  const removeBreakpoint = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+  const removeBreakpoint = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
     event.stopPropagation();
     debugBreakpointsService.delBreakpoint(data.breakpoint as IDebugBreakpoint);
+  };
+
+  const editBreakpoint = async (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    event.stopPropagation();
+    await commandService.executeCommand(
+      EDITOR_COMMANDS.OPEN_RESOURCE.id,
+      new URI((data.breakpoint as ISourceBreakpoint).uri),
+    );
+
+    let position: monaco.Position;
+
+    if (status) {
+      position = new monaco.Position(status.line || 1, status.column || 1);
+    } else {
+      position = new monaco.Position(
+        (data.breakpoint as IDebugBreakpoint).raw.line || 1,
+        (data.breakpoint as IDebugBreakpoint).raw.column || 1,
+      );
+    }
+
+    await commandService.executeCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT.id, position);
   };
 
   const isExceptionBreakpoint = useMemo(() => isDebugExceptionBreakpoint(data.breakpoint), [data]);
@@ -307,11 +343,18 @@ export const BreakpointItem = ({
       </div>
       {isDebugBreakpoint(data.breakpoint) ? (
         <>
-          <a
-            title='删除断点'
-            onClick={(event) => removeBreakpoint(event)}
-            className={cls(styles.debug_remove_breakpoints_icon, getIcon('close'))}
-          ></a>
+          <div className={styles.debug_breakpoints_item_control}>
+            <i
+              title={localize('debug.menu.edit.breakpoint')}
+              onClick={(event) => editBreakpoint(event)}
+              className={cls(styles.debug_edit_breakpoints_icon, getExternalIcon('edit'))}
+            ></i>
+            <i
+              title={localize('debug.menu.delete.breakpoint')}
+              onClick={(event) => removeBreakpoint(event)}
+              className={cls(styles.debug_remove_breakpoints_icon, getIcon('close'))}
+            ></i>
+          </div>
           <Badge className={styles.debug_breakpoints_badge}>
             {(data.breakpoint as IDebugBreakpoint).raw.line}
             {!!data.breakpoint.raw.column && `:${data.breakpoint.raw.column}`}
