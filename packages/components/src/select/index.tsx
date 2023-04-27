@@ -1,9 +1,8 @@
 import classNames from 'classnames';
-import React, { useCallback } from 'react';
-import { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import './style.less';
-import { Icon, getIcon } from '../icon';
+import { getIcon, Icon } from '../icon';
 
 export interface IDataOption<T> {
   iconClass?: string;
@@ -394,8 +393,12 @@ export function Select<T = string>({
         overlayRef.current.style.width = `${boxRect.width}px`;
       }
       // 防止戳出下方屏幕
-      const toBottom = window.innerHeight - boxRect.bottom;
-      if (!maxHeight || toBottom < parseInt(maxHeight, 10)) {
+      const toBottom = window.innerHeight - boxRect.bottom - 50;
+      if (toBottom < overlayRef.current.clientHeight) {
+        // 下方距离小于浮层高度，设置向上弹出选择框
+        overlayRef.current.style.bottom = selectRef.current.clientHeight + 4 + 'px';
+      } else {
+        // 下方距离大于浮层高度，设置最大高度为下方距离
         overlayRef.current.style.maxHeight = `${toBottom}px`;
       }
       overlayRef.current.style.position = dropdownRenderType === 'fixed' ? 'fixed' : 'absolute';

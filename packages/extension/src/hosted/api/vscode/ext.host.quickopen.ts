@@ -119,6 +119,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
         buttons: (options as QuickPickOptions).buttons,
         step: (options as QuickPickOptions).step,
         totalSteps: (options as QuickPickOptions).totalSteps,
+        value: (options as QuickPickOptions).value,
       },
     );
 
@@ -426,6 +427,7 @@ class ExtQuickPick<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
           ignoreFocusOut: this.ignoreFocusOut,
           _sessionId: this.quickPickIndex,
           keepScrollPosition: this.keepScrollPosition,
+          value: this.value,
         } as QuickPickOptions,
       )
       .then((item) => {

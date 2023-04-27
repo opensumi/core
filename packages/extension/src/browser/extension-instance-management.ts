@@ -1,6 +1,6 @@
 import { Autowired, Injectable, Injector, INJECTOR_TOKEN } from '@opensumi/di';
 import { AppConfig, Disposable, StorageProvider, STORAGE_NAMESPACE } from '@opensumi/ide-core-browser';
-import { Emitter, ExtensionCandidate as ExtensionCandidate, getLanguageId } from '@opensumi/ide-core-common';
+import { Emitter, ExtensionCandidate as ExtensionCandidate, getLanguageId, IStorage } from '@opensumi/ide-core-common';
 
 import {
   ExtensionNodeServiceServerPath,
@@ -32,6 +32,24 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
   private readonly extensionNodeClient: IExtensionNodeClientService;
 
   private onDidChangeEmitter: Emitter<void> = new Emitter();
+  private workspaceStorage: IStorage;
+  private globalStorage: IStorage;
+
+  private _whenReady: Promise<void>;
+
+  constructor() {
+    super();
+    this._whenReady = this.init();
+  }
+
+  async init() {
+    this.workspaceStorage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
+    this.globalStorage = await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS);
+  }
+
+  get whenReady() {
+    return this._whenReady;
+  }
 
   get onDidChange() {
     return this.onDidChangeEmitter.event;
@@ -96,14 +114,11 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
    * 检查插件是否激活
    */
   public async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
-    const [workspaceStorage, globalStorage] = await Promise.all([
-      this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
-      this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
-    ]);
+    await this.whenReady;
     // 全局默认为启用
-    const globalEnableFlag = globalStorage.get<number>(extension.extensionId, EXTENSION_ENABLE.ENABLE);
+    const globalEnableFlag = this.globalStorage.get<number>(extension.extensionId, EXTENSION_ENABLE.ENABLE);
     // 如果 workspace 未设置则读取全局配置
-    return workspaceStorage.get<number>(extension.extensionId, globalEnableFlag) === EXTENSION_ENABLE.ENABLE;
+    return this.workspaceStorage.get<number>(extension.extensionId, globalEnableFlag) === EXTENSION_ENABLE.ENABLE;
   }
 
   public async createExtensionInstance(
@@ -119,7 +134,6 @@ export class ExtInstanceManagementService extends Disposable implements Abstract
     if (!extensionMetadata) {
       return;
     }
-
     return this.injector.get(Extension, [
       extensionMetadata,
       await this.checkExtensionEnable(extensionMetadata),

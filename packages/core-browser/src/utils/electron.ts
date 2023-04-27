@@ -1,4 +1,4 @@
-import { IDisposable, isUndefined } from '@opensumi/ide-core-common';
+import { IDisposable, isDefined } from '@opensumi/ide-core-common';
 import { IElectronMainApi } from '@opensumi/ide-core-common/lib/electron';
 import type { MessageConnection } from '@opensumi/vscode-jsonrpc';
 
@@ -29,7 +29,7 @@ const getCapturer = () => {
 
 const capture = (message: IPCMessage) => {
   const capturer = getCapturer();
-  if (!isUndefined(capture)) {
+  if (isDefined(capturer)) {
     // if OpenSumi DevTools is opended
     capturer(message);
   }

@@ -196,8 +196,6 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   }
 
   public async activate(): Promise<void> {
-    // setup the basic environment
-    await this.setupExtensionNLSConfig();
     await this.initExtensionMetaData();
     await this.initExtensionInstanceData();
     await this.runEagerExtensionsContributes();
@@ -229,7 +227,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private async setupExtensionNLSConfig() {
     const storagePath = (await this.extensionStoragePathServer.getLastStoragePath()) || '';
     const currentLanguage: string = this.preferenceService.get(GeneralSettingsId.Language) || getLanguageId();
-    this.extensionNodeClient.setupNLSConfig(currentLanguage, storagePath);
+    await this.extensionNodeClient.setupNLSConfig(currentLanguage, storagePath);
   }
 
   /**
@@ -544,8 +542,8 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
   private normalExtensions: Extension[] = [];
 
   private async runEagerExtensionsContributes() {
-    this.contributesService.initialize();
-    this.sumiContributesService.initialize();
+    await Promise.all([this.contributesService.initialize(), this.sumiContributesService.initialize()]);
+
     this.commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;

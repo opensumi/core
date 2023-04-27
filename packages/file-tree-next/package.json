@@ -1,6 +1,6 @@
 {
   "name": "@opensumi/ide-file-tree-next",
-  "version": "2.23.4",
+  "version": "2.24.1",
   "files": [
     "lib",
     "src"
