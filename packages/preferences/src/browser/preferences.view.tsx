@@ -98,6 +98,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer(() => {
     const focusDispose = preferenceService.onFocus(() => {
       if (inputRef && inputRef.current) {
         inputRef.current.focus();
+        inputRef.current.select();
       }
     });
     return () => {
