@@ -27,7 +27,7 @@ export class ExtensionsPointServiceImpl implements IExtensionsSchemaService {
   private appendPropertiesFactory(kind: FrameworkKind): (points: string[], desc: IExtensionPointDescriptor) => void {
     const properties =
       kind === 'opensumi'
-        ? OpensumiExtensionPackageSchema.properties!.kaitianContributes.properties
+        ? OpensumiExtensionPackageSchema.properties!.sumiContributes.properties
         : VSCodeExtensionPackageSchema.properties!.contributes.properties;
 
     return (points: string[], desc: IExtensionPointDescriptor) => {

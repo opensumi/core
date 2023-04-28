@@ -577,7 +577,7 @@ declare module 'sumi' {
 
       /**
        * 设置 Button 的 State
-       * state 需要对应在 kaitianContributes 中配置
+       * state 需要对应在 sumiContributes 中配置
        * @param state
        * @param 额外改变的 title
        */
@@ -610,7 +610,7 @@ declare module 'sumi' {
       onStateChanged: Event<{ from: string; to: string }>;
 
       /**
-       * 显示 button 元素对应的 popover 元素，需要在 kaitianContributes 中配置
+       * 显示 button 元素对应的 popover 元素，需要在 sumiContributes 中配置
        */
       showPopover(): Promise<void>;
 
@@ -620,7 +620,7 @@ declare module 'sumi' {
     export interface IToolbarSelectActionHandle<T> {
       /**
        * 设置 Select 的 State
-       * state 需要对应在 kaitianContributes 中配置
+       * state 需要对应在 sumiContributes 中配置
        * @param state
        */
       setState(state: string): Promise<void>;

@@ -121,7 +121,7 @@ const mockExtensionProps: IExtensionProps = {
   packageJSON: {
     name: 'sumi-extension',
     extensionDependencies: ['uuid-for-test-extension-deps'],
-    kaitianContributes: {
+    sumiContributes: {
       viewsProxies: ['Leftview', 'TitleView'],
       browserViews: {
         left: {
@@ -307,7 +307,7 @@ const mockExtension = {
   uri: Uri.file(mockExtensionProps.path),
   contributes: Object.assign(
     mockExtensionProps.packageJSON.contributes,
-    mockExtensionProps.packageJSON.kaitianContributes,
+    mockExtensionProps.packageJSON.sumiContributes,
   ),
   activate: () => true,
   reset() {},

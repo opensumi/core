@@ -27,7 +27,7 @@ const mockExtension = {
     .codeUri,
   packageJSON: {
     name: 'sumi-extension',
-    kaitianContributes: {
+    sumiContributes: {
       workerMain: 'worker.js',
     },
   },

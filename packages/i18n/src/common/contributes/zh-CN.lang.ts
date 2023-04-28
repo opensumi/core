@@ -1,5 +1,5 @@
 export const browserViews = {
-  // kaitianContributes
+  // sumiContributes
   'sumiContributes.opensumiContributes': '由此包表示的 Opensumi 扩展的所有贡献',
 
   // 公用 properties，如 command
