@@ -16,6 +16,7 @@ import {
   TERMINAL_COMMANDS,
 } from '@opensumi/ide-core-browser';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
+import { PreferenceSettingId } from '@opensumi/ide-preferences';
 
 import {
   ITerminalController,
@@ -248,7 +249,7 @@ export class TerminalCommandContribution implements CommandContribution {
 
     registry.registerCommand(TERMINAL_COMMANDS.MORE_SETTINGS, {
       execute: async () => {
-        this.commands.executeCommand(COMMON_COMMANDS.LOCATE_PREFERENCES.id, 'terminal');
+        this.commands.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id, PreferenceSettingId.Terminal);
       },
     });
 

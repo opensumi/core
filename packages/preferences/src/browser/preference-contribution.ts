@@ -189,6 +189,7 @@ export class PreferenceContribution
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
       execute: async (search?: string) => {
         await this.openPreferences(search);
+        this.preferenceService.focusInput();
       },
     });
 
