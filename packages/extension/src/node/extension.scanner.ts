@@ -6,7 +6,6 @@ import semver from 'semver';
 
 import { getDebugLogger, getNodeRequire, Uri } from '@opensumi/ide-core-node';
 
-
 import { IExtensionMetaData, IExtraMetaData } from '../common';
 
 import { mergeContributes } from './merge-contributes';
@@ -119,8 +118,13 @@ export class ExtensionScanner {
       }
     }
 
-    // merge for `kaitianContributes` and `contributes`
-    packageJSON.contributes = mergeContributes(packageJSON.kaitianContributes, packageJSON.contributes);
+    // compatible with `kaitianContributes` declare
+    if (!packageJSON.sumiContributes && packageJSON.kaitianContributes) {
+      packageJSON.sumiContributes = packageJSON.kaitianContributes;
+    }
+
+    // merge for `sumiContributes` and `contributes`
+    packageJSON.contributes = mergeContributes(packageJSON.sumiContributes, packageJSON.contributes);
 
     const extension = {
       // vscode 规范
