@@ -153,8 +153,8 @@ export abstract class ZoneWidget extends Disposable implements IHorizontalSashLa
   private _overlay: OverlayWidgetDelegate | null;
   private _viewZone: ViewZoneDelegate | null;
   private _current: monaco.IRange;
+  private _linesCount: number;
   private _resizeSash: Sash | null = null;
-  public _linesCount: number;
 
   private _onDomNodeTop = new Emitter<number>();
   protected onDomNodeTop = this._onDomNodeTop.event;
