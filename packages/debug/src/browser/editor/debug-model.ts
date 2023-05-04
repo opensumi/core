@@ -122,7 +122,7 @@ export class DebugModel implements IDebugModel {
 
   async init() {
     const model = this.editor.getModel()!;
-    let timmer: number | undefined;
+    let timer: number | undefined;
     this._uri = new URI(model.uri.toString());
     this.decorator = new DebugDecorator();
 
@@ -145,13 +145,13 @@ export class DebugModel implements IDebugModel {
           },
         ]);
 
-        if (timmer) {
-          clearTimeout(timmer);
+        if (timer) {
+          clearTimeout(timer);
         }
 
-        timmer = window.setTimeout(() => {
+        timer = window.setTimeout(() => {
           this.renderFrames();
-          clearTimeout(timmer);
+          clearTimeout(timer);
         }, 300);
       }),
       this.editor.getModel()!.onDidChangeContent(() => this.updateBreakpoints()),
