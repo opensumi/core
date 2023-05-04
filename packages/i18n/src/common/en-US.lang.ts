@@ -518,6 +518,8 @@ export const localizationBundle = {
     'preference.debug.console.filter.mode.matcher': 'matcher',
     'preference.debug.console.wordWrap': 'Controls if the lines should wrap in the debug console.',
     'preference.debug.inline.values': 'Show variable values inline in editor while debugging.',
+    'preference.debug.breakpoint.editorHint':
+      'After enabling, there will be a background color blinking prompt when clicking on the breakpoint list to jump to the editor.',
 
     // workbench
     'preference.workbench.refactoringChanges.showPreviewStrategy':

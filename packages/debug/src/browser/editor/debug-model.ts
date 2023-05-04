@@ -1,7 +1,7 @@
 import debounce from 'lodash/debounce';
 
 import { Injector, Injectable, Autowired } from '@opensumi/di';
-import { DomListener, IContextKeyService, IReporterService } from '@opensumi/ide-core-browser';
+import { DomListener, IContextKeyService, IReporterService, PreferenceService } from '@opensumi/ide-core-browser';
 import {
   ICtxMenuRenderer,
   generateMergedCtxMenu,
@@ -66,6 +66,9 @@ export class DebugModel implements IDebugModel {
   @Autowired(IReporterService)
   private readonly reporterService: IReporterService;
 
+  @Autowired(PreferenceService)
+  private readonly preferenceService: PreferenceService;
+
   protected frameDecorations: string[] = [];
   protected topFrameRange: monaco.Range | undefined;
 
@@ -129,6 +132,12 @@ export class DebugModel implements IDebugModel {
       this.editor.onDidChangeModelContent(() => this.renderFrames()),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
       this.debugBreakpointsService.onDidFocusedBreakpoints(({ range }) => {
+        const enableHint = this.preferenceService.getValid('debug.breakpoint.editorHint', true);
+
+        if (!enableHint) {
+          return;
+        }
+
         this.renderFrames([
           {
             options: options.FOCUS_BREAKPOINTS_STACK_FRAME_DECORATION,
