@@ -154,6 +154,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'boolean',
       default: true,
     },
+    'debug.breakpoint.editorHint': {
+      type: 'boolean',
+      default: true,
+      description: '%preference.debug.breakpoint.editorHint%',
+    },
     'debug.toolbar.top': {
       type: 'number',
       default: 0,
@@ -299,6 +304,7 @@ export interface CoreConfiguration {
   'explorer.confirmMove': boolean;
   'explorer.compactFolders': boolean;
   'debug.toolbar.float': boolean;
+  'debug.breakpoint.editorHint': boolean;
   'debug.toolbar.top': number;
   'debug.toolbar.height': number;
   'files.watcherExclude': { [key: string]: boolean };
