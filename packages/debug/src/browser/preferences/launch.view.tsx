@@ -25,6 +25,7 @@ import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
 
+import { AnyOfField } from './components/fields/any-of-field';
 import { SelectWidget } from './components/select-widget';
 import { TextWidget } from './components/text-widget';
 import styles from './launch.module.less';
@@ -238,16 +239,23 @@ const LaunchBody = ({
     const { properties } = schemaProperties;
 
     const snippetProperties = Object.keys(body).reduce((pre: IJSONSchemaMap, cur: string) => {
-      if (properties![cur]?.type === 'array' && isUndefined(properties![cur].items)) {
-        properties![cur].items = { type: 'string' };
+      const curProp = properties![cur];
+
+      if (curProp?.type === 'array' && isUndefined(curProp?.items)) {
+        curProp.items = { type: 'string' };
       }
 
       // 如果 type 是数组，则取第一个
-      if (Array.isArray(properties![cur]?.type)) {
-        properties![cur].type = properties![cur]?.type![0] || 'string';
+      if (Array.isArray(curProp?.type)) {
+        curProp.type = curProp.type![0] || 'string';
       }
 
-      pre[cur] = properties![cur];
+      // 去掉 anyof 中的空对象
+      if (Array.isArray(curProp?.anyOf)) {
+        curProp.anyOf = curProp.anyOf.filter((c) => Object.keys(c).length > 0);
+      }
+
+      pre[cur] = curProp;
       return pre;
     }, {});
 
@@ -266,6 +274,7 @@ const LaunchBody = ({
           formData={snippetItem.body}
           schema={schema}
           validator={validator}
+          fields={{ AnyOfField }}
           templates={{
             ArrayFieldTemplate,
             ArrayFieldItemTemplate,
