@@ -17,8 +17,8 @@ import {
   IRange,
   localize,
 } from '@opensumi/ide-core-browser';
-import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import { getExternalIcon } from '@opensumi/ide-core-browser';
+import { IResourceOpenOptions } from '@opensumi/ide-editor';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -220,6 +220,36 @@ export const BreakpointItem = ({
   const [status, setStatus] = React.useState<DebugProtocol.Breakpoint | false | undefined>(undefined);
   const [description, setDescription] = React.useState<string>(data.description);
 
+  const openOptions = useMemo(() => {
+    const options: IResourceOpenOptions = {
+      preview: true,
+      focus: true,
+    };
+
+    if (!isDebugBreakpoint(data.breakpoint)) {
+      return options;
+    }
+
+    if (status) {
+      options.range = {
+        startColumn: status.column || 0,
+        endColumn: status.column || 0,
+        startLineNumber: status.line,
+        endLineNumber: status.line,
+      };
+    } else {
+      const { raw } = data.breakpoint as IDebugBreakpoint;
+      options.range = {
+        startColumn: raw.column || 0,
+        endColumn: raw.column || 0,
+        startLineNumber: raw.line,
+        endLineNumber: raw.line,
+      };
+    }
+
+    return options;
+  }, [status, data.breakpoint]);
+
   const handleBreakpointChange = () => {
     toggle();
     setEnabled(!enabled);
@@ -227,36 +257,15 @@ export const BreakpointItem = ({
 
   const handleBreakpointClick = async () => {
     if ((data.breakpoint as ISourceBreakpoint).uri) {
-      const options: IResourceOpenOptions = {
-        preview: true,
-        focus: true,
-      };
-      if (status) {
-        options.range = {
-          startColumn: status.column || 0,
-          endColumn: status.column || 0,
-          startLineNumber: status.line,
-          endLineNumber: status.line,
-        };
-      } else {
-        const { raw } = data.breakpoint as IDebugBreakpoint;
-        options.range = {
-          startColumn: raw.column || 0,
-          endColumn: raw.column || 0,
-          startLineNumber: raw.line,
-          endLineNumber: raw.line,
-        };
-      }
-
       await commandService.executeCommand(
         EDITOR_COMMANDS.OPEN_RESOURCE.id,
         new URI((data.breakpoint as ISourceBreakpoint).uri),
-        options,
+        openOptions,
       );
 
       debugBreakpointsService.launchFocusedBreakpoints({
         uri: new URI((data.breakpoint as ISourceBreakpoint).uri),
-        range: options.range as IRange,
+        range: openOptions.range as IRange,
       });
     }
   };
@@ -312,22 +321,16 @@ export const BreakpointItem = ({
 
   const editBreakpoint = async (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
     event.stopPropagation();
+
     await commandService.executeCommand(
       EDITOR_COMMANDS.OPEN_RESOURCE.id,
       new URI((data.breakpoint as ISourceBreakpoint).uri),
+      openOptions,
     );
 
-    let position: monaco.Position;
+    const { range } = openOptions;
 
-    if (status) {
-      position = new monaco.Position(status.line || 1, status.column || 1);
-    } else {
-      position = new monaco.Position(
-        (data.breakpoint as IDebugBreakpoint).raw.line || 1,
-        (data.breakpoint as IDebugBreakpoint).raw.column || 1,
-      );
-    }
-
+    const position = new monaco.Position(range?.startLineNumber || 1, range?.startColumn || 1);
     await commandService.executeCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT.id, position);
   };
 
@@ -344,11 +347,13 @@ export const BreakpointItem = ({
       {isDebugBreakpoint(data.breakpoint) ? (
         <>
           <div className={styles.debug_breakpoints_item_control}>
-            <i
-              title={localize('debug.menu.edit.breakpoint')}
-              onClick={(event) => editBreakpoint(event)}
-              className={cls(styles.debug_edit_breakpoints_icon, getExternalIcon('edit'))}
-            ></i>
+            {openOptions.range && (
+              <i
+                title={localize('debug.menu.edit.breakpoint')}
+                onClick={(event) => editBreakpoint(event)}
+                className={cls(styles.debug_edit_breakpoints_icon, getExternalIcon('edit'))}
+              ></i>
+            )}
             <i
               title={localize('debug.menu.delete.breakpoint')}
               onClick={(event) => removeBreakpoint(event)}
