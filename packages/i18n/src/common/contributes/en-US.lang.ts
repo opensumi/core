@@ -1,6 +1,6 @@
 export const browserViews = {
   // sumiContributes
-  'sumiContributes.opensumiContributes': 'All contributions of the Opensumi Extension represented by this package.',
+  'sumiContributes.contributes': 'Declare all contributions of the OpenSumi Extension.',
 
   // 公用 properties，如 command
   'sumiContributes.common.command':
