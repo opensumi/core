@@ -13,9 +13,8 @@ import { Deferred } from '@opensumi/ide-core-common';
 import * as monaco from '@opensumi/monaco-editor-core/esm/vs/editor/editor.api';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol';
 
-import { BreakpointsChangeEvent, DEBUG_REPORT_NAME, IDebugBreakpoint } from '../../common';
+import { BreakpointsChangeEvent, DEBUG_REPORT_NAME, IDebugBreakpoint, IDebugModel } from '../../common';
 import { DebugContextKey } from '../contextkeys/debug-contextkey.service';
-import { DebugModel } from '../editor';
 import { MarkerManager, Marker } from '../markers';
 
 import { DebugExceptionBreakpoint, BREAKPOINT_KIND } from './breakpoint-marker';
@@ -26,7 +25,7 @@ export interface ExceptionBreakpointsChangeEvent {
 
 export interface SelectedBreakpoint {
   breakpoint?: IDebugBreakpoint;
-  model: DebugModel;
+  model: IDebugModel;
 }
 
 @Injectable()

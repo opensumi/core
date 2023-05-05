@@ -85,7 +85,6 @@ import { DebugCallStackView } from './view/frames/debug-call-stack.view';
 import { DebugVariableView } from './view/variables/debug-variables.view';
 import { DebugWatchView } from './view/watch/debug-watch.view';
 
-
 const LAUNCH_JSON_REGEX = /launch\.json$/;
 
 export namespace DebugBreakpointWidgetCommands {
@@ -431,7 +430,23 @@ export class DebugContribution
     commands.registerCommand(DEBUG_COMMANDS.EDIT_BREAKPOINT, {
       execute: async (position: monaco.Position) => {
         this.reporterService.point(DEBUG_REPORT_NAME?.DEBUG_BREAKPOINT, 'edit');
+        const model = this.debugEditorController.model;
+        if (!model) {
+          return;
+        }
+
+        const { uri } = model;
+        const breakpoint = this.breakpointManager.getBreakpoint(uri, position!.lineNumber);
+        // 更新当前选中的断点
+        if (breakpoint) {
+          this.breakpointManager.selectedBreakpoint = {
+            breakpoint,
+            model,
+          };
+        }
+
         const { selectedBreakpoint } = this;
+
         if (selectedBreakpoint) {
           const { openBreakpointView } = selectedBreakpoint.model;
           let defaultContext: TSourceBrekpointProperties = 'condition';
@@ -453,7 +468,6 @@ export class DebugContribution
         }
       },
       isVisible: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
-      isEnabled: () => !!this.selectedBreakpoint && !!this.selectedBreakpoint.breakpoint,
     });
     commands.registerCommand(DEBUG_COMMANDS.DISABLE_BREAKPOINT, {
       execute: async (position: monaco.Position) => {
