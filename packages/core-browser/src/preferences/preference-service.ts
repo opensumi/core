@@ -316,7 +316,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     if (!property) {
       return value;
     }
-    const highPriorityValue = value;
+    const highPriorityValue = value as T;
     defaultValue = defaultValue ?? property?.default;
 
     // 当配置的类型数组存在 PREFERENCE_PROPERTY_TYPE.NULL 时，默认采用 PREFERENCE_PROPERTY_TYPE.NULL 类型
