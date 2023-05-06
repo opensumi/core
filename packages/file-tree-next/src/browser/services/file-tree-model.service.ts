@@ -1556,7 +1556,7 @@ export class FileTreeModelService {
       return;
     }
     let pasteStore = this.pasteStore;
-    let shouldConfirm = false;
+    let shouldConfirm = true;
     if (!pasteStore) {
       const uriList = await this.clipboardService.readResources();
 
@@ -1584,8 +1584,8 @@ export class FileTreeModelService {
       const confirm = await this.dialogService.warning(
         formatLocalize(
           'file.confirm.paste',
-          `[ ${pasteStore.crossFiles?.map((uri) => uri.displayName).join(',')} ]`,
-          parent.displayName,
+          `[ ${pasteStore.files?.map((uri) => uri.displayName).join(',')} ]`,
+          Directory.isRoot(parent) ? parent.uri.displayName : parent.displayName,
         ),
         [cancel, ok],
       );
