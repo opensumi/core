@@ -157,7 +157,15 @@
 
 .kt-toolbar-action-wrapper {
   position: relative;
+
+  .kt-select-value > .kt-select-value > .kt-select-option-icon {
+    // Background Icon 默认宽高均为 16px
+    // 这里由于 Select 组件默认的 22px 高度，导致图标偏移
+    // 故这里为图标在 Y 轴下新增 (22 - 16)/2 = 3 像素偏移保持居中
+    background-position-y: 3px;
+  }
 }
+
 .kt-toolbar-popover {
   position: absolute;
   --offset-size: 30px;
