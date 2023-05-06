@@ -25,7 +25,7 @@ export function ToolbarActionBasedLayout() {
   const { colors, layout } = getStorageValue();
   return (
     <BoxPanel direction='top-to-bottom'>
-      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={0} slot='top' z-index={2} />
+      <SlotRenderer backgroundColor={colors.menuBarBackground} defaultSize={0} slot='top' />
       <SplitPanel id='main-horizontal' flex={1}>
         <SlotRenderer
           backgroundColor={colors.sideBarBackground}
