@@ -444,7 +444,7 @@ export function Select<T = string>({
         ) : (
           <React.Fragment>
             {selected.iconClass ? (
-              <span className={classNames(selected.iconClass, 'kt-select-option-icon')}></span>
+              <div className={classNames(selected.iconClass, 'kt-select-option-icon')}></div>
             ) : undefined}
             <span className={'kt-select-option'}>{selected.label}</span>
           </React.Fragment>
