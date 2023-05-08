@@ -463,17 +463,18 @@ export class FileTreeContribution
       execute: (_, uris) => {
         exitFilterMode();
         if (!uris) {
-          if (this.fileTreeModelService.focusedFile) {
-            this.willDeleteUris.push(this.fileTreeModelService.focusedFile.uri);
-          } else if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
+          if (this.fileTreeModelService.selectedFiles && this.fileTreeModelService.selectedFiles.length > 0) {
             this.willDeleteUris = this.willDeleteUris.concat(
               this.fileTreeModelService.selectedFiles.map((file) => file.uri),
             );
-          } else {
-            return;
+          } else if (this.fileTreeModelService.focusedFile) {
+            this.willDeleteUris.push(this.fileTreeModelService.focusedFile.uri);
           }
         } else {
           this.willDeleteUris = this.willDeleteUris.concat(uris);
+        }
+        if (this.willDeleteUris.length === 0) {
+          return;
         }
         return this.deleteThrottler.queue<void>(this.doDelete.bind(this));
       },
