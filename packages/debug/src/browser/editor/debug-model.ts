@@ -354,7 +354,7 @@ export class DebugModel implements IDebugModel {
    */
   protected createBreakpointDecoration(breakpoint: IDebugBreakpoint): monaco.editor.IModelDeltaDecoration {
     const lineNumber = breakpoint.raw.line;
-    const column = breakpoint.raw.column || 1;
+    const column = breakpoint.raw.column || 0;
     const range = new monaco.Range(lineNumber, column, lineNumber, column + 1);
     return {
       range,
@@ -500,7 +500,7 @@ export class DebugModel implements IDebugModel {
     const session = this.debugSessionManager.currentSession;
     const status = breakpoint.status.get((session && session.id) || '');
     const lineNumber = status && status.line ? status.line : breakpoint.raw.line;
-    const column = breakpoint.raw.column || 1;
+    const column = breakpoint.raw.column || 0;
     const model = this.editor.getModel()!;
     const renderInline = column > model.getLineFirstNonWhitespaceColumn(lineNumber);
     const range = new monaco.Range(lineNumber, column, lineNumber, column + 1);
