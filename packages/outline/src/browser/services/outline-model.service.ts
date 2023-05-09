@@ -195,20 +195,6 @@ export class OutlineModelService {
           this._treeModelDisposeMap.disposeKey(key);
         }),
       );
-      this._treeModelDisposeMap.set(
-        uri.toString(),
-        treeModel.onWillUpdate(() => {
-          if (this.focusedNode) {
-            // 更新树前更新下选中节点
-            const node = treeModel!.root.getTreeNodeById(this.focusedNode.id);
-            this.activeNodeDecoration(node as OutlineTreeNode, false);
-          } else if (this.selectedNodes.length !== 0) {
-            // 仅处理一下单选情况
-            const node = treeModel!.root.getTreeNodeById(this.selectedNodes[0].id);
-            this.selectNodeDecoration(node as OutlineTreeNode, false);
-          }
-        }),
-      );
     }
     this.setTreeModel(treeModel);
     return treeModel;
