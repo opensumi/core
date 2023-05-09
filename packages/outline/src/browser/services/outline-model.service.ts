@@ -82,7 +82,6 @@ export class OutlineModelService {
     100,
     80,
   );
-  private _treeModelDisposeMap = new DisposableMap();
   private _whenInitTreeModelReady: Promise<void>;
 
   private _whenReady: Promise<void>;
@@ -190,11 +189,6 @@ export class OutlineModelService {
         treeModel,
         decoration,
       });
-      this.disposableCollection.push(
-        this._allTreeModels.onKeyDidDelete(uri.toString(), ({ key }) => {
-          this._treeModelDisposeMap.disposeKey(key);
-        }),
-      );
     }
     this.setTreeModel(treeModel);
     return treeModel;
@@ -602,6 +596,5 @@ export class OutlineModelService {
 
   dispose() {
     this.disposableCollection.dispose();
-    this._treeModelDisposeMap.dispose();
   }
 }
