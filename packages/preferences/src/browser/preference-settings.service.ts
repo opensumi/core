@@ -578,6 +578,18 @@ export const defaultSettingSections: {
         { id: 'editor.trimAutoWhitespace' },
 
         // 补全
+        { id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay' },
+        { id: 'editor.suggestOnTriggerCharacters' },
+        { id: 'editor.acceptSuggestionOnEnter' },
+        { id: 'editor.acceptSuggestionOnCommitCharacter' },
+        { id: 'editor.snippetSuggestions' },
+        { id: 'editor.wordBasedSuggestions' },
+        { id: 'editor.suggestSelection' },
+        { id: 'editor.suggestFontSize' },
+        { id: 'editor.suggestLineHeight' },
+        { id: 'editor.suggestSelection' },
+        { id: 'editor.tabCompletion' },
+        { id: 'editor.suggest.filteredTypes' },
         { id: 'editor.suggest.insertMode' },
         { id: 'editor.suggest.filterGraceful' },
         { id: 'editor.suggest.localityBonus' },
@@ -615,7 +627,12 @@ export const defaultSettingSections: {
         { id: 'editor.suggest.showIssues' },
         { id: 'editor.suggest.preview' },
         { id: 'editor.suggest.details.visible' },
-
+        // 行内补全
+        { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
+        {
+          id: 'editor.experimental.stickyScroll.enabled',
+          localized: 'preference.editor.experimental.stickyScroll.enabled',
+        },
         // Guides
         { id: 'editor.guides.bracketPairs', localized: 'preference.editor.guides.bracketPairs' },
         { id: 'editor.guides.indentation', localized: 'preference.editor.guides.indentation' },
@@ -624,12 +641,6 @@ export const defaultSettingSections: {
           localized: 'preference.editor.guides.highlightActiveIndentation',
         },
 
-        // 行内补全
-        { id: 'editor.inlineSuggest.enabled', localized: 'preference.editor.inlineSuggest.enabled' },
-        {
-          id: 'editor.experimental.stickyScroll.enabled',
-          localized: 'preference.editor.experimental.stickyScroll.enabled',
-        },
         // 缩进
         { id: 'editor.detectIndentation', localized: 'preference.editor.detectIndentation' },
         { id: 'editor.tabSize', localized: 'preference.editor.tabSize' },
@@ -648,8 +659,8 @@ export const defaultSettingSections: {
         // 代码操作
         { id: 'editor.codeActionsOnSave', localized: 'preference.editor.saveCodeActions' },
         { id: 'editor.codeActionsOnSaveNotification', localized: 'preference.editor.saveCodeActionsNotification' },
-        // 智能提示
-        { id: 'editor.quickSuggestionsDelay', localized: 'preference.editor.quickSuggestionsDelay' },
+        // 其他
+        { id: 'editor.gotoLocation.multiple' },
         // 文件
         // `forceReadOnly` 选项暂时不对用户暴露
         // {id: 'editor.forceReadOnly', localized: 'preference.editor.forceReadOnly'},
