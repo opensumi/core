@@ -587,7 +587,6 @@ export const defaultSettingSections: {
         { id: 'editor.suggestSelection' },
         { id: 'editor.suggestFontSize' },
         { id: 'editor.suggestLineHeight' },
-        { id: 'editor.suggestSelection' },
         { id: 'editor.tabCompletion' },
         { id: 'editor.suggest.filteredTypes' },
         { id: 'editor.suggest.insertMode' },
