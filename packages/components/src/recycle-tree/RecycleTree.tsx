@@ -658,7 +658,7 @@ export class RecycleTree extends React.Component<IRecycleTreeProps> {
   private getItemAtIndex = (index: number): INodeRendererProps => {
     const { filter } = this.props;
     if (!!filter && this.filterFlattenBranch.length > 0) {
-      return this.idToFilterRendererPropsCache.get(this.filterFlattenBranch[index])! as INodeRendererProps;
+      return this.idToFilterRendererPropsCache.get(this.filterFlattenBranch[index]) as INodeRendererProps;
     }
     let cached = this.idxToRendererPropsCache.get(index);
     if (!cached) {
