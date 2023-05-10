@@ -1,12 +1,30 @@
-import { WidgetProps } from '@rjsf/utils';
+import {
+  descriptionId,
+  FormContextType,
+  getTemplate,
+  RJSFSchema,
+  StrictRJSFSchema,
+  titleId,
+  WidgetProps,
+} from '@rjsf/utils';
 import React, { useMemo } from 'react';
 
 import { Option, Select } from '@opensumi/ide-components';
 
 import styles from './json-widget.module.less';
 
-export const SelectWidget = (props: WidgetProps) => {
-  const { schema, value, id } = props;
+export const SelectWidget = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
+  props: WidgetProps<T, S, F>,
+) => {
+  const { schema, value, id, registry, uiOptions, name, required } = props;
+  const description = schema.description;
+
+  const TitleFieldTemplate = getTemplate<'TitleFieldTemplate', T, S, F>('TitleFieldTemplate', registry, uiOptions);
+  const DescriptionFieldTemplate = getTemplate<'DescriptionFieldTemplate', T, S, F>(
+    'DescriptionFieldTemplate',
+    registry,
+    uiOptions,
+  );
 
   const enumValue = useMemo(() => {
     if (schema && schema.enum) {
@@ -16,12 +34,35 @@ export const SelectWidget = (props: WidgetProps) => {
   }, [schema, schema.enum]);
 
   return (
-    <Select key={id} value={value} className={styles.select_widget_control} dropdownRenderType='absolute'>
-      {enumValue.map((data: string) => (
-        <Option value={data} label={data} key={data}>
-          {data}
-        </Option>
-      ))}
-    </Select>
+    <div className={styles.select_widget_control}>
+      {name && (
+        <div className={styles.object_title}>
+          <TitleFieldTemplate
+            id={titleId<T>(id)}
+            title={name}
+            required={required}
+            schema={schema}
+            registry={registry}
+          />
+        </div>
+      )}
+      {description && (
+        <div className={styles.object_description}>
+          <DescriptionFieldTemplate
+            id={descriptionId<T>(id)}
+            description={description}
+            schema={schema}
+            registry={registry}
+          />
+        </div>
+      )}
+      <Select key={id} value={value} dropdownRenderType='absolute'>
+        {enumValue.map((data: string) => (
+          <Option value={data} label={data} key={data}>
+            {data}
+          </Option>
+        ))}
+      </Select>
+    </div>
   );
 };

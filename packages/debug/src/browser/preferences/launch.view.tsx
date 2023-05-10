@@ -25,12 +25,16 @@ import { acquireAjv } from '@opensumi/ide-core-browser/lib/utils/schema';
 
 import { launchExtensionSchemaUri } from '../../common/debug-schema';
 
+import { CheckboxWidget } from './components/checkbox-widget';
 import { AnyOfField } from './components/fields/any-of-field';
+import { TitleField } from './components/fields/title-field';
 import { SelectWidget } from './components/select-widget';
 import { TextWidget } from './components/text-widget';
 import styles from './launch.module.less';
+import { WrapIfAdditionalTemplate } from './templates/additional-template';
 import { ArrayFieldItemTemplate } from './templates/array-field-item-template';
 import { ArrayFieldTemplate } from './templates/array-field-template';
+import { BaseInputTemplate } from './templates/base-input-template';
 import {
   MoveUpButton,
   MoveDownButton,
@@ -197,6 +201,7 @@ const Form = withTheme({
   widgets: {
     TextWidget,
     SelectWidget,
+    CheckboxWidget,
   },
 });
 
@@ -255,6 +260,16 @@ const LaunchBody = ({
         curProp.anyOf = curProp.anyOf.filter((c) => Object.keys(c).length > 0);
       }
 
+      // 如果 type 是 object 且存在 additionalProperties 时，固定将其设置为 additionalProperties: { type: 'string' }
+      if (curProp?.type === 'object' && !isUndefined(curProp?.additionalProperties)) {
+        curProp.additionalProperties = { type: 'string' };
+      }
+
+      // 将 markdownDescription 赋给 description
+      if (!curProp?.description && curProp?.markdownDescription) {
+        curProp.description = curProp.markdownDescription;
+      }
+
       pre[cur] = curProp;
       return pre;
     }, {});
@@ -269,18 +284,21 @@ const LaunchBody = ({
 
   return (
     <div className={styles.launch_schema_body_container}>
-      {schema && (
+      {schema && schemaProperties && (
         <Form
           formData={snippetItem.body}
           schema={schema}
           validator={validator}
-          fields={{ AnyOfField }}
+          fields={{ AnyOfField, OneOfField: AnyOfField }}
           templates={{
             ArrayFieldTemplate,
             ArrayFieldItemTemplate,
             DescriptionFieldTemplate,
             FieldTemplate,
             ObjectFieldTemplate,
+            WrapIfAdditionalTemplate,
+            BaseInputTemplate,
+            TitleFieldTemplate: TitleField,
             ButtonTemplates: {
               MoveUpButton,
               MoveDownButton,

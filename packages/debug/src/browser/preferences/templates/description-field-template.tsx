@@ -1,5 +1,7 @@
 import { DescriptionFieldProps, FormContextType, RJSFSchema, StrictRJSFSchema } from '@rjsf/utils';
-import React from 'react';
+import React, { useMemo } from 'react';
+
+import { IJSONSchema } from '@opensumi/ide-core-common';
 
 import styles from './json-templates.module.less';
 
@@ -10,7 +12,12 @@ export const DescriptionFieldTemplate = <
 >(
   props: DescriptionFieldProps<T, S, F>,
 ) => {
-  const { id, description } = props;
+  const { id, schema } = props;
+  const description = useMemo(
+    () => schema.description ?? (schema as IJSONSchema).markdownDescription,
+    [schema, schema.description, (schema as IJSONSchema).markdownDescription],
+  );
+
   if (!description) {
     return null;
   }

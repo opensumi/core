@@ -5,6 +5,8 @@ import { Button, getIcon } from '@opensumi/ide-components';
 import { defaultIconfont } from '@opensumi/ide-components/lib/icon/iconfont/iconMap';
 import { localize } from '@opensumi/ide-core-common';
 
+import styles from './json-templates.module.less';
+
 export const MoveUpButton = (props: IconButtonProps) => (
   <Button {...props} type='primary' icon={defaultIconfont.arrowup}>
     <span className={getIcon(defaultIconfont.arrowup)}></span>
@@ -35,4 +37,8 @@ export const CopyButton = (props: IconButtonProps) => (
   </Button>
 );
 
-export const SubmitButton = (props: IconButtonProps) => <Button>{localize('ButtonOK')}</Button>;
+export const SubmitButton = (props: IconButtonProps) => (
+  <Button {...props} type='secondary' icon={defaultIconfont.plus} className={styles.add_new_field}>
+    <span className={getIcon(defaultIconfont.plus)}></span> 新增配置项
+  </Button>
+);
