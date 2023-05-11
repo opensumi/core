@@ -468,9 +468,9 @@ export function Select<T = string>({
 
   return (
     <div className={classNames('kt-select-container', className)} ref={selectRef}>
-      <p className={selectClasses} onClick={toggleOpen} style={style}>
+      <div className={selectClasses} onClick={toggleOpen} style={style}>
         {showSearch && open ? renderSearch() : renderSelected()}
-      </p>
+      </div>
       {showWarning && <div className='kt-select-warning-text'>{notMatchWarning}</div>}
 
       {open &&
