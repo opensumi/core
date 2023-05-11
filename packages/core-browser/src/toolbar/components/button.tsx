@@ -102,7 +102,8 @@ export const ToolbarActionBtn = (props: IToolbarActionBtnProps & IToolbarActionE
       style={{
         color: styles.iconForeground,
         backgroundColor: styles.iconBackground,
-        // 如果指定了按钮宽度，需要将padding清空，防止按钮比预期大16px
+        marginRight: styles.showTitle ? 5 : 0,
+        // 如果指定了按钮宽度，需要将padding清空，防止按钮比预期大 16px
         ...(styles.width ? { width: styles.width } : null),
         ...(styles.height ? { height: styles.height } : null),
         ...(styles.iconSize ? { fontSize: styles.iconSize, WebkitMaskSize: styles.iconSize } : null),
