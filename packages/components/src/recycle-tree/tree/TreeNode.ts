@@ -139,7 +139,7 @@ export class TreeNode implements ITreeNode {
   public static pathToTreeNode: Map<string, ITreeNodeOrCompositeTreeNode> = new Map();
   public static pathToId: Map<string, number> = new Map();
   // 每颗树都只会在根节点上绑定一个可取消的对象，即同个时间点只能存在一个改变树数据结构的事情
-  public static pathToGlobalTreeState: Map<string, IGlobalTreeState> = new Map();
+  private static pathToGlobalTreeState: Map<string, IGlobalTreeState> = new Map();
 
   private _parent: ICompositeTreeNode | undefined;
 
@@ -1349,7 +1349,10 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
   public async hardReloadChildren(token?: CancellationToken) {
     let rawItems;
 
+    const oldPath = this.path;
+
     try {
+      // ! `this.path` maybe changed after `resolveChildren` in file tree compact mode
       rawItems = (await this._tree.resolveChildren(this)) || [];
     } catch (e) {
       rawItems = [];
@@ -1358,6 +1361,14 @@ export class CompositeTreeNode extends TreeNode implements ICompositeTreeNode {
     // 后续的 expandBranch 也不应该被响应
     if (!this.expanded || token?.isCancellationRequested) {
       return false;
+    }
+    if (this.path !== oldPath) {
+      // do some clean up
+      TreeNode.setGlobalTreeState(oldPath, {
+        isExpanding: false,
+        isLoadingPath: false,
+        isRefreshing: false,
+      });
     }
 
     const expandedChilds: CompositeTreeNode[] = [];

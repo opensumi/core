@@ -1585,7 +1585,7 @@ export class FileTreeModelService {
         formatLocalize(
           'file.confirm.paste',
           `[ ${pasteStore.crossFiles?.map((uri) => uri.displayName).join(',')} ]`,
-          parent.displayName,
+          Directory.isRoot(parent) ? parent.uri.displayName : parent.displayName,
         ),
         [cancel, ok],
       );
