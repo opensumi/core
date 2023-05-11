@@ -473,7 +473,7 @@ class ExtHostSourceControl implements vscode.SourceControl {
           ),
         ),
         description: actionButton.description || (actionButton as any).tooltip,
-        enabled: true,
+        enabled: actionButton.enabled ?? true,
       };
     }
     this._proxy.$updateSourceControl(this.handle, { actionButton: internal ?? null });
