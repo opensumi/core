@@ -119,7 +119,7 @@ export const localizationBundle = {
     'editor.failToOpen': '打开文件 {0} 失败, 请确认文件是否存在。详细错误信息: {1}',
     'editor.lineHeight': '行高',
     'editor.lineHeight.description':
-      '控制行高。\r\n - 使用 0 根据字号自动计算行高。\r\n - 介于 0 和 8 之间的值将用作字号的乘数。\r\n - 大于 8 的值将用作有效值。',
+      '控制行高。\n\n - 使用 0 根据字号自动计算行高。\n\n - 介于 0 和 8 之间的值将用作字号的乘数。\n\n - 大于 8 的值将用作有效值。',
     'editor.copyPath': '复制路径',
     'editor.copyRelativePath': '复制相对路径',
 
@@ -955,6 +955,17 @@ export const localizationBundle = {
     'editor.configuration.suggestLineHeight':
       '建议小部件的行高。如果设置为 `0`，则使用 `#editor.lineHeight#` 的值。最小值为 8。',
     'editor.configuration.suggestOnTriggerCharacters': '控制在键入触发字符后是否自动显示建议。',
+    'editor.configuration.acceptSuggestionOnEnterSmart': '仅在建议做出文本更改时，才使用 `Enter` 接受建议。',
+    'editor.configuration.acceptSuggestionOnEnter':
+      '控制编辑器是否应该在 `Tab` 键之外，还使用 `Enter` 键来接受建议。这有助于避免在插入新行或接受建议之间的歧义。',
+    'editor.configuration.acceptSuggestionOnCommitCharacter':
+      '控制是否在使用提交字符时接受建议。例如，在 JavaScript 中，分号 (`;`) 是一个提交字符，可以接受一个建议并键入该字符。',
+    'editor.configuration.snippetSuggestions.top': '将代码片段的建议放在其他建议的顶部。',
+    'editor.configuration.snippetSuggestions.bottom': '将代码片段的建议放在其他建议的底部。',
+    'editor.configuration.snippetSuggestions.inline': '将代码片段的建议混合在其他建议的中间。',
+    'editor.configuration.snippetSuggestions.none': '不展示代码片段建议。',
+    'editor.configuration.snippetSuggestions': '控制代码片段是否与其他建议一同显示以及它们的排序方式。',
+    'editor.configuration.wordBasedSuggestions': '控制是否根据文档中的字词计算自动补全列表。',
     'editor.configuration.suggestSelection': '控制在建议列表中如何预先选择建议。',
     'editor.configuration.suggestSelection.first': '始终选择第一个建议。',
     'editor.configuration.suggestSelection.recentlyUsed':
@@ -1004,6 +1015,38 @@ export const localizationBundle = {
     'editor.configuration.suggest.maxVisibleSuggestions':
       '控制 IntelliSense 在显示滚动条之前将显示的建议数量（最多 15 个）。',
     'editor.configuration.suggest.details.visible': '控制编辑器代码补全是否默认展开详情信息',
+    'editor.configuration.suggest.filtered':
+      '控制是否应从 IntelliSense 中过滤掉某些建议类型。可以在此处找到一份建议类型列表: https://code.visualstudio.com/docs/editor/intellisense#_types-of-completions.',
+    'editor.configuration.suggest.filtered.method': '启用后，IntelliSense 将会展示 `method` 类型的建议。',
+    'editor.configuration.suggest.filtered.function': '启用后，IntelliSense 将会展示 `function` 类型的建议。',
+    'editor.configuration.suggest.filtered.constructor': '启用后，IntelliSense 将会展示 `constructor` 类型的建议。',
+    'editor.configuration.suggest.filtered.field': '启用后，IntelliSense 将会展示 `field` 类型的建议。',
+    'editor.configuration.suggest.filtered.variable': '启用后，IntelliSense 将会展示 `variable` 类型的建议。',
+    'editor.configuration.suggest.filtered.class': '启用后，IntelliSense 将会展示 `class` 类型的建议。',
+    'editor.configuration.suggest.filtered.struct': '启用后，IntelliSense 将会展示 `struct` 类型的建议。',
+    'editor.configuration.suggest.filtered.interface': '启用后，IntelliSense 将会展示 `interface` 类型的建议。',
+    'editor.configuration.suggest.filtered.module': '启用后，IntelliSense 将会展示 `module` 类型的建议。',
+    'editor.configuration.suggest.filtered.property': '启用后，IntelliSense 将会展示 `property` 类型的建议。',
+    'editor.configuration.suggest.filtered.event': '启用后，IntelliSense 将会展示 `event` 类型的建议。',
+    'editor.configuration.suggest.filtered.operator': '启用后，IntelliSense 将会展示 `operator` 类型的建议。',
+    'editor.configuration.suggest.filtered.unit': '启用后，IntelliSense 将会展示 `unit` 类型的建议。',
+    'editor.configuration.suggest.filtered.value': '启用后，IntelliSense 将会展示 `value` 类型的建议。',
+    'editor.configuration.suggest.filtered.constant': '启用后，IntelliSense 将会展示 `constant` 类型的建议。',
+    'editor.configuration.suggest.filtered.enum': '启用后，IntelliSense 将会展示 `enum` 类型的建议。',
+    'editor.configuration.suggest.filtered.enumMember': '启用后，IntelliSense 将会展示 `enumMember` 类型的建议。',
+    'editor.configuration.suggest.filtered.keyword': '启用后，IntelliSense 将会展示 `keyword` 类型的建议。',
+    'editor.configuration.suggest.filtered.text': '启用后，IntelliSense 将会展示 `text` 类型的建议。',
+    'editor.configuration.suggest.filtered.color': '启用后，IntelliSense 将会展示 `color` 类型的建议。',
+    'editor.configuration.suggest.filtered.file': '启用后，IntelliSense 将会展示 `file` 类型的建议。',
+    'editor.configuration.suggest.filtered.reference': '启用后，IntelliSense 将会展示 `reference` 类型的建议。',
+    'editor.configuration.suggest.filtered.customcolor': '启用后，IntelliSense 将会展示 `customcolor` 类型的建议。',
+    'editor.configuration.suggest.filtered.folder': '启用后，IntelliSense 将会展示 `folder` 类型的建议。',
+    'editor.configuration.suggest.filtered.typeParameter': '启用后，IntelliSense 将会展示 `typeParameter` 类型的建议。',
+    'editor.configuration.suggest.filtered.snippet': '启用后，IntelliSense 将会展示 `snippet` 类型的建议。',
+    'editor.configuration.editor.gotoLocation.multiple': '控制 "转到" 命令（例如转到定义）在存在多个目标位置时的行为。',
+    'editor.configuration.gotoLocation.multiple.peek': '在速览视图(Peek View)中显示结果。(默认)',
+    'editor.configuration.gotoLocation.multiple.gotoAndPeek': '转到主结果并显示速览视图(Peek View)。',
+    'editor.configuration.gotoLocation.multiple.goto': '转到主结果，并对其他结果启用无速览导航',
     'editor.configuration.experimental.stickyScroll.enabled': '在编辑器顶部的滚动过程中显示嵌套的当前作用域。',
     'editor.configuration.maxTokenizationLineLength': '由于性能原因，超过这个长度的行将不会被标识。',
     'editor.configuration.codeActionsOnSave.organizeImports': '控制是否应在文件保存时整理导入（Import）语句。',
@@ -1021,8 +1064,14 @@ export const localizationBundle = {
     'editor.configuration.enablePreviewFromCodeNavigation': '控制当代码导航从其出发时，编辑器是否仍处于预览模式。',
     'editor.configuration.formatOnSaveTimeout':
       '控制保存时格式化的超时时间（毫秒）。仅当 `#editor.formatOnSave#` 启用时生效。',
+    'editor.configuration.inlineSuggest.enabled': '控制是否在编辑器中自动显示内联建议。',
     'editor.configuration.autoSave': '控制如何自动保存文件。',
     'editor.configuration.formatOnSave': '在保存时格式化文件',
+    'editor.configuration.formatOnType': '控制编辑器是在键入后自动格式化该行。',
+    'editor.configuration.formatOnPaste':
+      '控制编辑器是否自动格式化粘贴的内容。需要当前文件有一个格式化工具并且该格式化格局必须能够在文档中格式化一个范围。',
+    'editor.configuration.autoIndent':
+      '控制编辑器是否应该在用户键入、粘贴或移动行时自动调整缩进。必须提供带有该语言缩进规则的扩展。',
     'editor.configuration.autoSaveDelay':
       '控制自动保存的延迟时长（毫秒）。仅当 `#editor.autoSave#` 设置为“编辑后自动保存”时生效。',
     'editor.configuration.askIfDiff': '保存文件时如果磁盘上的文件较新，进行提示手动解决保存冲突。',
