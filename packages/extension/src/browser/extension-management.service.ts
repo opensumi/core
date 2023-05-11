@@ -170,7 +170,7 @@ export class ExtensionManagementService extends WithEventBus implements Abstract
     await extension.initialize();
     this.eventBus.fire(new ExtensionDidEnabledEvent(extension.toJSON()));
 
-    this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
+    this.sumiContributesService.register(extension.id, extension.packageJSON.sumiContributes || {});
     this.contributesService.register(extension.id, extension.contributes);
     this.sumiContributesService.initialize();
     this.contributesService.initialize();

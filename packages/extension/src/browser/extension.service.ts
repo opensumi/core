@@ -271,7 +271,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
 
       if (extension?.contributes && extension.enabled) {
         this.contributesService.register(extension.id, extension.contributes);
-        this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
+        this.sumiContributesService.register(extension.id, extension.packageJSON.sumiContributes || {});
       }
     }
 
@@ -651,7 +651,7 @@ export class ExtensionServiceImpl extends WithEventBus implements ExtensionServi
         if (extension) {
           extension.initialize();
           this.contributesService.register(extension.id, extension.contributes);
-          this.sumiContributesService.register(extension.id, extension.packageJSON.kaitianContributes || {});
+          this.sumiContributesService.register(extension.id, extension.packageJSON.sumiContributes || {});
         }
       }),
     );

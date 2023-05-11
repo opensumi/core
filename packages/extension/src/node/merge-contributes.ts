@@ -1,5 +1,5 @@
 /**
- * handle `kaitianContributes` and `contributes`
+ * handle `sumiContributes` and `contributes`
  */
 import mergeWith from 'lodash/mergeWith';
 

@@ -347,7 +347,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   private containsSumiContributes(extension: IExtensionDescription): boolean {
-    if (extension.packageJSON.kaitianContributes) {
+    if (extension.packageJSON.sumiContributes) {
       return true;
     }
     return false;
@@ -433,10 +433,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
     }
 
-    if (extension.packageJSON.kaitianContributes && extension.packageJSON.kaitianContributes.nodeMain) {
+    if (extension.packageJSON.sumiContributes && extension.packageJSON.sumiContributes.nodeMain) {
       try {
         const reportTimer = this.reporterService.time(REPORT_NAME.ACTIVE_EXTENSION);
-        extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.kaitianContributes.nodeMain));
+        extendModule = getNodeRequire()(path.join(extension.path, extension.packageJSON.sumiContributes.nodeMain));
         reportTimer.timeEnd(extension.id, {
           version: extension.packageJSON.version,
         });
@@ -509,16 +509,16 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private getExtendModuleProxy(extension: IExtensionDescription, isSumiContributes: boolean) {
     /**
      * @example
-     * "kaitianContributes": {
+     * "sumiContributes": {
      *  "viewsProxies": ["ViewComponentID"],
      * }
      */
     if (
       isSumiContributes &&
-      extension.packageJSON.kaitianContributes &&
-      extension.packageJSON.kaitianContributes.viewsProxies
+      extension.packageJSON.sumiContributes &&
+      extension.packageJSON.sumiContributes.viewsProxies
     ) {
-      return this.getExtensionViewModuleProxy(extension, extension.packageJSON.kaitianContributes.viewsProxies);
+      return this.getExtensionViewModuleProxy(extension, extension.packageJSON.sumiContributes.viewsProxies);
     } else if (extension.extendConfig && extension.extendConfig.browser && extension.extendConfig.browser.componentId) {
       return this.getExtensionViewModuleProxy(extension, extension.extendConfig.browser.componentId);
     } else {

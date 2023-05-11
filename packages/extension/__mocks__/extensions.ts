@@ -52,7 +52,7 @@ export const mockExtensionProps2: IExtensionProps = {
     name: 'sumi-extension-error',
     main: './index.js',
     version: '0.0.1',
-    kaitianContributes: {
+    sumiContributes: {
       viewsProxies: ['FakeComponentId'],
       nodeMain: './index.js',
       workerMain: './worker.error.js',
