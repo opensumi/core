@@ -456,20 +456,24 @@ class ExtHostSourceControl implements vscode.SourceControl {
     } else if (typeof actionButton?.command === 'string') {
       internal = {
         command: this._commands.converter.toInternal(actionButton as any, this._actionButtonDisposables.value)!,
-        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) => commandGroup.map(
+        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) =>
+          commandGroup.map(
             (command) => this._commands.converter.toInternal(command, this._actionButtonDisposables.value!)!,
-          )),
+          ),
+        ),
         description: (actionButton as any).title,
         enabled: true,
       };
     } else {
       internal = {
         command: this._commands.converter.toInternal(actionButton.command, this._actionButtonDisposables.value)!,
-        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) => commandGroup.map(
+        secondaryCommands: actionButton.secondaryCommands?.map((commandGroup) =>
+          commandGroup.map(
             (command) => this._commands.converter.toInternal(command, this._actionButtonDisposables.value!)!,
-          )),
+          ),
+        ),
         description: actionButton.description || (actionButton as any).tooltip,
-        enabled: actionButton.enabled,
+        enabled: true,
       };
     }
     this._proxy.$updateSourceControl(this.handle, { actionButton: internal ?? null });
