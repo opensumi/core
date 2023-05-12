@@ -1,6 +1,5 @@
 import {
   ADDITIONAL_PROPERTY_FLAG,
-  UI_OPTIONS_KEY,
   FormContextType,
   RJSFSchema,
   StrictRJSFSchema,
@@ -8,11 +7,10 @@ import {
   ADDITIONAL_PROPERTIES_KEY,
   getUiOptions,
   getTemplate,
-  PROPERTIES_KEY,
   titleId,
   descriptionId,
 } from '@rjsf/utils';
-import React, { FocusEvent, ReactElement, useMemo } from 'react';
+import React, { FocusEvent, useMemo } from 'react';
 
 import { Input } from '@opensumi/ide-components';
 import { IJSONSchema } from '@opensumi/ide-core-common';
@@ -34,7 +32,6 @@ export const WrapIfAdditionalTemplate = <
     id,
     label,
     onKeyChange,
-    onDropPropertyClick,
     readonly,
     registry,
     required,
@@ -45,16 +42,17 @@ export const WrapIfAdditionalTemplate = <
   const { readonlyAsDisabled = true } = registry.formContext;
   const { templates, translateString } = registry;
   const { RemoveButton, AddButton } = templates.ButtonTemplates;
-  const isAdditional = ADDITIONAL_PROPERTY_FLAG in schema || ADDITIONAL_PROPERTIES_KEY in schema;
   const description = schema.description ?? (schema as IJSONSchema).markdownDescription;
+  const isPropertiesKey = ADDITIONAL_PROPERTIES_KEY in schema;
+  // 如果是用户手动添加 property 则存在该标识
+  const isPropertyFlag = ADDITIONAL_PROPERTY_FLAG in schema;
 
   /**
    * 不存在 additionalProperties 的话直接返回 children
    * 为了防止一些属性的 properties 过多，造成页面过长（比如 node 的 linux 配置项），对于 id 非 root 的配置项让其去 launch 文件处理
    * 二期再将这部分能力加上
    */
-  // const isDisplayNode = useMemo(() => type !== 'object' , [type, isAdditional])
-  if (!isAdditional) {
+  if (!(isPropertiesKey || isPropertyFlag)) {
     return (
       <div className={classNames} style={style}>
         {id === 'root' || type !== 'object' ? children : null}
@@ -71,7 +69,12 @@ export const WrapIfAdditionalTemplate = <
   );
 
   const handleBlur = ({ target }: FocusEvent<HTMLInputElement>) => onKeyChange(target.value);
-  const isHasProperties = useMemo(() => properties && Object.keys(properties).length > 0, [schema, properties]);
+  const isHasPropertiesFlag = useMemo(
+    () => properties && Object.values(properties).some((p) => p[ADDITIONAL_PROPERTY_FLAG]),
+    [schema, properties],
+  );
+
+  const isEmptyProperties = useMemo(() => properties && Object.keys(properties).length === 0, [schema, properties]);
 
   return (
     <div className={classNames} style={style}>
@@ -97,36 +100,42 @@ export const WrapIfAdditionalTemplate = <
         )}
         {
           // 如果不存在 properties 则说明是可以添加任意的 key:value 对象
-          isHasProperties ? (
+          !isHasPropertiesFlag && !isEmptyProperties ? (
             <div className={styles.children_field}>
               <div className={styles.dividing}></div>
               <div className={styles.children_container}>{children}</div>
             </div>
           ) : (
-            <div className={styles.form_additional}>
-              <div className={styles.form_group}>
-                <Input
-                  className={styles.form_control}
-                  defaultValue={label}
-                  placeholder={'请输入 Key'}
-                  disabled={disabled || (readonlyAsDisabled && readonly)}
-                  id={`${id}-key`}
-                  name={`${id}-key`}
-                  onBlur={!readonly ? handleBlur : undefined}
-                  type='text'
-                />
-                <Input
-                  className={styles.form_control}
-                  defaultValue={label}
-                  placeholder={'请输入 Value'}
-                  disabled={disabled || (readonlyAsDisabled && readonly)}
-                  id={`${id}-key`}
-                  name={`${id}-key`}
-                  onBlur={!readonly ? handleBlur : undefined}
-                  type='text'
-                />
-                <RemoveButton className='array-item-remove' disabled={disabled || readonly} registry={registry} />
+            <div className={styles.form_additional_container}>
+              <div className={styles.form_additional}>
+                {properties &&
+                  Object.keys(properties).map((item) => (
+                    <div className={styles.form_group}>
+                      <Input
+                        className={styles.form_control}
+                        defaultValue={label}
+                        placeholder={'请输入 Key'}
+                        disabled={disabled || (readonlyAsDisabled && readonly)}
+                        id={`${id}-key`}
+                        name={`${id}-key`}
+                        onBlur={!readonly ? handleBlur : undefined}
+                        type='text'
+                      />
+                      <Input
+                        className={styles.form_control}
+                        defaultValue={label}
+                        placeholder={'请输入 Value'}
+                        disabled={disabled || (readonlyAsDisabled && readonly)}
+                        id={`${id}-key`}
+                        name={`${id}-key`}
+                        onBlur={!readonly ? handleBlur : undefined}
+                        type='text'
+                      />
+                      <RemoveButton className='array-item-remove' disabled={disabled || readonly} registry={registry} />
+                    </div>
+                  ))}
               </div>
+              <div className={styles.form_additional_children}>{children}</div>
             </div>
           )
         }

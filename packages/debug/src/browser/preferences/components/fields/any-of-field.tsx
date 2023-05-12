@@ -7,7 +7,6 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
   titleId,
-  WidgetProps,
 } from '@rjsf/utils';
 import React from 'react';
 

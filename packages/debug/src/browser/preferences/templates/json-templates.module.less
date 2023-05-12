@@ -29,7 +29,7 @@
 }
 
 .object_field_template {
-  .container_field {
+  .object_field_container {
     .object_title {
       margin-bottom: 16px;
     }
@@ -64,15 +64,23 @@
   display: flex;
   flex-direction: column;
 
-  .form_additional {
+  .form_additional_container {
     min-width: 300px;
     max-width: 500px;
     width: 100%;
 
     .form_group {
       display: flex;
+      margin-bottom: 12px;
+
       .form_control {
         margin-right: 16px;
+      }
+    }
+
+    .form_additional_children {
+      .object_field_container {
+        display: none;
       }
     }
   }

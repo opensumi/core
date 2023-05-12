@@ -27,6 +27,7 @@ import { launchExtensionSchemaUri } from '../../common/debug-schema';
 
 import { CheckboxWidget } from './components/checkbox-widget';
 import { AnyOfField } from './components/fields/any-of-field';
+import { ObjectField } from './components/fields/object-filed';
 import { TitleField } from './components/fields/title-field';
 import { SelectWidget } from './components/select-widget';
 import { TextWidget } from './components/text-widget';
@@ -203,6 +204,9 @@ const Form = withTheme({
     SelectWidget,
     CheckboxWidget,
   },
+  fields: {
+    ObjectField,
+  },
 });
 
 const LaunchBody = ({
@@ -243,7 +247,7 @@ const LaunchBody = ({
     const { label, body, description } = snippetItem;
     const { properties } = schemaProperties;
 
-    const snippetProperties = Object.keys(body).reduce((pre: IJSONSchemaMap, cur: string) => {
+    const snippetProperties = Object.keys(properties).reduce((pre: IJSONSchemaMap, cur: string) => {
       const curProp = properties![cur];
 
       if (curProp?.type === 'array' && isUndefined(curProp?.items)) {

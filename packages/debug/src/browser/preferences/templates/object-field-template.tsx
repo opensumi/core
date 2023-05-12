@@ -6,15 +6,38 @@ import {
   getTemplate,
   getUiOptions,
   descriptionId,
-  titleId,
   canExpand,
+  titleId,
+  ADDITIONAL_PROPERTY_FLAG,
 } from '@rjsf/utils';
 import React from 'react';
 
-import { Button, getIcon } from '@opensumi/ide-components';
-import { defaultIconfont } from '@opensumi/ide-components/lib/icon/iconfont/iconMap';
-
 import styles from './json-templates.module.less';
+
+/**
+ * 情况一: properties 为空则表明该属性的值是任意的 key:value 对象组合，所以需要显示添加按钮
+ * 情况二: 如果 properties 当中存在 ADDITIONAL_PROPERTY_FLAG 字段，则允许继续添加
+ */
+const extendCanExpand = <T, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
+  props: ObjectFieldTemplateProps<T, S, F>,
+) => {
+  const { schema, uiSchema, formData } = props;
+  const { properties } = schema;
+
+  if (!properties) {
+    return false;
+  }
+
+  if (Object.keys(properties).length === 0) {
+    return true;
+  }
+
+  if (!Object.values(properties).some((item) => item[ADDITIONAL_PROPERTY_FLAG])) {
+    return false;
+  }
+
+  return canExpand(schema, uiSchema, formData);
+};
 
 export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   props: ObjectFieldTemplateProps<T, S, F>,
@@ -30,7 +53,6 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
     disabled,
     readonly,
     properties,
-    formData,
     onAddClick,
   } = props;
   const uiOptions = getUiOptions<T, S, F>(uiSchema);
@@ -47,7 +69,7 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
   return (
     <div className={styles.object_field_template}>
       <fieldset>
-        <div className={styles.container_field}>
+        <div className={styles.object_field_container}>
           {title && (
             <div className={styles.object_title}>
               <TitleFieldTemplate
@@ -79,7 +101,7 @@ export const ObjectFieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSc
               </div>
             ))}
         </div>
-        {canExpand<T, S, F>(schema, uiSchema, formData) && (
+        {extendCanExpand<T, S, F>(props) && (
           <AddButton
             className='object-property-expand'
             onClick={onAddClick(schema)}

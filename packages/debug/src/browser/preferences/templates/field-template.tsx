@@ -10,8 +10,6 @@ import {
 import cls from 'classnames';
 import React from 'react';
 
-import styles from './json-templates.module.less';
-
 export const FieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
   props: FieldTemplateProps<T, S, F>,
 ) => {
