@@ -70,23 +70,19 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-  // 14 * 2 = Toggle Icon Size + Icon Size
-  const paddingLeft = BasicCompositeTreeNode.is(item)
-    ? `${(item.depth || 0) * (indent || 0)}px`
-    : `${(item.depth || 0) * (indent || 0) + 14 * 2}px`;
+  const paddingLeft = (item.depth || 0) * (indent || 0);
 
   const treeNodeStyle = {
     height: itemHeight,
     lineHeight: `${itemHeight}px`,
-    paddingLeft,
+    paddingLeft: `${paddingLeft}px`,
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) =>
-      node.iconClassName ? (
-        // 图标的最大高度设置为 `itemHeight - 8`, 这样在视觉上看起来有一种 padding 的效果
-        <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
-      ) : null,
+    (node: BasicCompositeTreeNode | BasicTreeNode) => (
+      // 图标的最大高度设置为 `itemHeight - 8`, 这样在视觉上看起来有一种 padding 的效果
+      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
+    ),
     [],
   );
 
@@ -170,12 +166,8 @@ export const BasicTreeNodeRenderer: React.FC<
   };
 
   const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (isDefined((item as BasicCompositeTreeNode).expandable)) {
-      if (!(item as BasicCompositeTreeNode).expandable) {
-        return <div className={cls('segment', 'expansion_toggle')}></div>;
-      }
-    } else {
-      return null;
+    if (!(item as BasicCompositeTreeNode).expandable) {
+      return <div className={cls('segment', 'expansion_toggle')}></div>;
     }
 
     if (BasicCompositeTreeNode.is(item)) {
