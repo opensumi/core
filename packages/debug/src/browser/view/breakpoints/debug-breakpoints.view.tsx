@@ -75,12 +75,13 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
           breakpointTreeData.push({
             label: parent ? parent.relative(toURI)?.toString() || '' : URI.parse(uri).displayName,
             expandable: true,
-            iconClassName: getIcon('file-text'),
+            iconClassName: cls(getIcon('file-text'), ''),
             expanded: true,
             children: items.map((item) => ({
               ...item,
               label: '',
               expandable: false,
+              doNotUseExpandablePlaceholder: true,
               description: (
                 <BreakpointItem
                   toggle={() => toggleBreakpointEnable(item.breakpoint)}
@@ -241,8 +242,18 @@ export const BreakpointItem = ({
 
   return (
     <div className={cls(styles.debug_breakpoints_item)}>
-      {!isExceptionBreakpoint && <div className={cls(converBreakpointClsState(), styles.debug_breakpoints_icon)}></div>}
-      <CheckBox id={data.id} onChange={handleBreakpointChange} checked={enabled}></CheckBox>
+      {!isExceptionBreakpoint && (
+        <div
+          onClick={handleBreakpointChange}
+          className={cls(converBreakpointClsState(), styles.debug_breakpoints_icon)}
+        ></div>
+      )}
+      <CheckBox
+        className={styles.debug_breakpoints_icon}
+        id={data.id}
+        onChange={handleBreakpointChange}
+        checked={enabled}
+      ></CheckBox>
       <div className={styles.debug_breakpoints_wrapper} onClick={handleBreakpointClick}>
         {data.name && <span className={styles.debug_breakpoints_name}>{data.name}</span>}
         <span className={styles.debug_breakpoints_description}>{description}</span>

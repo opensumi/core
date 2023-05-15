@@ -71,7 +71,7 @@ export interface IBasicTreeData {
   /**
    * 子节点
    *
-   * 传入一个空数组可让本节点视为文件夹，同时可以通过 expandable 属性来设置是否展示收起图标
+   * 传入一个空数组可让本节点被视为文件夹，同时可以通过 expandable 属性来设置是否展示收起图标
    */
   children?: IBasicTreeData[] | null;
   /**
@@ -82,6 +82,10 @@ export interface IBasicTreeData {
    * 是否可展开，若为 false 则不显示展开收起图标
    */
   expandable?: boolean;
+  /**
+   * do not use expandable placeholder
+   */
+  doNotUseExpandablePlaceholder?: boolean;
   /**
    * 用于排序的字符串，若为空则默认以 label 作排序
    */

@@ -79,10 +79,8 @@ export const BasicTreeNodeRenderer: React.FC<
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      // 图标的最大高度设置为 `itemHeight - 8`, 这样在视觉上看起来有一种 padding 的效果
-      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
-    ),
+    (node: BasicCompositeTreeNode | BasicTreeNode) =>
+      node.iconClassName ? <Icon icon={node.icon} className={cls('icon', node.iconClassName)} /> : null,
     [],
   );
 
@@ -167,6 +165,11 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!(item as BasicCompositeTreeNode).expandable) {
+      if (item.raw && item.raw.doNotUseExpandablePlaceholder) {
+        return null;
+      }
+      // a simple trick to make the tree node's padding-left is the same as the folder node's
+      // but if user want to use a custom icon, we should not render this component
       return <div className={cls('segment', 'expansion_toggle')}></div>;
     }
 
