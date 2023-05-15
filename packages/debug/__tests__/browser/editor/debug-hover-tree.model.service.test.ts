@@ -81,7 +81,7 @@ describe('Debug Hover Model', () => {
 
   it('initTreeModel method should be work', () => {
     debugHoverTreeModelService.initTreeModel(mockRoot);
-    expect(mockRoot.watcher.on).toBeCalledTimes(7);
+    expect(mockRoot.watcher.on).toBeCalledTimes(8);
   });
 
   it('activeNodeDecoration method should be work', () => {

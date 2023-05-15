@@ -24,13 +24,14 @@ export class DecorationsManager implements IDisposable {
   private disposables: DisposableCollection = new DisposableCollection();
   private disposed = false;
 
-  constructor(root: CompositeTreeNode) {
+  constructor(private readonly root: CompositeTreeNode) {
     this.decorationsMeta.set(root, {
       applicable: new CompositeDecoration(root, CompositeDecorationType.Applicable),
       inheritable: new CompositeDecoration(root, CompositeDecorationType.Inheritable),
     });
     this.disposables.push(root.watcher.on(TreeNodeEvent.DidChangeParent, this.switchParent));
     this.disposables.push(root.watcher.on(TreeNodeEvent.DidDispose, (target) => this.decorationsMeta.delete(target)));
+    this.disposables.push(root.watcher.on(TreeNodeEvent.BranchDidUpdate, this.updateTarget));
   }
 
   public dispose(): void {
@@ -148,6 +149,18 @@ export class DecorationsManager implements IDisposable {
 
       if (inheritable) {
         inheritable.add(decoration);
+      }
+    }
+  };
+
+  private updateTarget = () => {
+    for (const [decoration] of this.decorations) {
+      for (const [target, flag] of Array.from(decoration.appliedTargets)) {
+        decoration.removeTarget(target);
+        const newTarget = this.root.getTreeNodeByPath(target.path);
+        if (newTarget) {
+          decoration.addTarget(newTarget, flag);
+        }
       }
     }
   };

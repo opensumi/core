@@ -339,16 +339,6 @@ export class ExtensionTreeViewModel {
         this.reveal(treeItemId);
       }),
     );
-    this.disposableCollection.push(
-      this.treeModel!.onWillUpdate(() => {
-        // 更新树前更新下选中节点
-        if (this.selectedNodes.length !== 0) {
-          // 仅处理一下单选情况
-          const node = this.treeModel?.root.getTreeNodeByPath(this.selectedNodes[0].path);
-          this.selectedDecoration.addTarget(node as ExtensionTreeNode);
-        }
-      }),
-    );
   }
 
   async updateTreeModel() {
