@@ -380,6 +380,8 @@ export const localizationBundle = {
     'debug.launch.typeNotSupported': 'The debug session type "{0}" is not supported.',
     'debug.launch.catchError': 'There was an error starting the debug session, check the logs for more details.',
     'debug.launch.view.template.button.addItem': 'Add items',
+    'debug.launch.view.template.input.placeholder': 'Please enter {0}',
+    'debug.launch.view.template.button.submit': 'Add new configuration item',
 
     'debug.widget.exception.thrownWithId': 'Exception has occurred: {0}',
     'debug.widget.exception.thrown': 'Exception has occurred.',
