@@ -1,40 +1,71 @@
-import { FieldTemplateProps } from '@rjsf/utils';
+import {
+  FieldTemplateProps,
+  FormContextType,
+  GenericObjectType,
+  getTemplate,
+  getUiOptions,
+  RJSFSchema,
+  StrictRJSFSchema,
+} from '@rjsf/utils';
 import cls from 'classnames';
-import React, { useMemo } from 'react';
+import React from 'react';
 
-import styles from './json-templates.module.less';
+export const FieldTemplate = <T = any, S extends StrictRJSFSchema = RJSFSchema, F extends FormContextType = any>(
+  props: FieldTemplateProps<T, S, F>,
+) => {
+  const {
+    classNames,
+    style,
+    children,
+    id,
+    schema,
+    label,
+    hidden,
+    formContext,
+    uiSchema,
+    registry,
+    disabled,
+    onDropPropertyClick,
+    onKeyChange,
+    required,
+    readonly,
+  } = props;
 
-export const FieldTemplate = (props: FieldTemplateProps) => {
-  const { classNames, style, help, description, errors, children, id, schema, label, displayLabel } = props;
-  const renderDescription = useMemo(() => {
-    if (id === 'root' || schema.type === 'array') {
-      return null;
-    }
+  const { wrapperStyle } = formContext as GenericObjectType;
 
-    return description;
-  }, [id, schema, schema.type, description]);
+  const uiOptions = getUiOptions<T, S, F>(uiSchema);
+  const WrapIfAdditionalTemplate = getTemplate<'WrapIfAdditionalTemplate', T, S, F>(
+    'WrapIfAdditionalTemplate',
+    registry,
+    uiOptions,
+  );
 
-  const renderLabel = useMemo(() => {
-    if (id === 'root' || schema.type === 'array' || displayLabel === false) {
-      return null;
-    }
-
-    return (
-      label && (
-        <label title={label} className={styles.field_label}>
-          {label}
-        </label>
-      )
-    );
-  }, [id, schema, schema.type, label, displayLabel]);
+  if (hidden) {
+    return null;
+  }
 
   return (
-    <div className={cls(classNames, styles.field_template)} style={style}>
-      {renderLabel}
-      {renderDescription}
-      {children}
-      {errors}
-      {help}
-    </div>
+    <WrapIfAdditionalTemplate
+      classNames={classNames}
+      style={style}
+      disabled={disabled}
+      id={id}
+      label={label}
+      onDropPropertyClick={onDropPropertyClick}
+      onKeyChange={onKeyChange}
+      readonly={readonly}
+      required={required}
+      schema={schema}
+      uiSchema={uiSchema}
+      registry={registry}
+    >
+      {id === 'root' ? (
+        children
+      ) : (
+        <div className={cls(classNames)} style={wrapperStyle}>
+          {children}
+        </div>
+      )}
+    </WrapIfAdditionalTemplate>
   );
 };
