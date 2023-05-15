@@ -1,9 +1,8 @@
 import { Emitter as Dispatcher } from 'event-kit';
 
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@opensumi/di';
-import { WSChannelHandler as IWSChannelHandler } from '@opensumi/ide-connection/lib/browser/ws-channel-handler';
-import { AppConfig, electronEnv, PreferenceService, OperatingSystem } from '@opensumi/ide-core-browser';
-import { Emitter, ILogger, Event } from '@opensumi/ide-core-common';
+import { PreferenceService, OperatingSystem } from '@opensumi/ide-core-browser';
+import { Emitter, ILogger, Event, IApplicationService } from '@opensumi/ide-core-common';
 
 import {
   generateSessionId,
@@ -46,8 +45,8 @@ export class NodePtyTerminalService implements ITerminalService {
   @Autowired(PreferenceService)
   private preferenceService: PreferenceService;
 
-  @Autowired(AppConfig)
-  private readonly appConfig: AppConfig;
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
 
   private _onError = new Emitter<ITerminalError>();
   public onError: Event<ITerminalError> = this._onError.event;
@@ -70,14 +69,7 @@ export class NodePtyTerminalService implements ITerminalService {
   >();
 
   generateSessionId() {
-    // Electron 环境下，未指定 isRemote 时默认使用本地连接
-    // 否则使用 WebSocket 连接
-    if (this.appConfig.isElectronRenderer && !this.appConfig.isRemote) {
-      return electronEnv.metadata.windowClientId + TERMINAL_ID_SEPARATOR + generateSessionId();
-    } else {
-      const WSChannelHandler = this.injector.get(IWSChannelHandler);
-      return WSChannelHandler.clientId + TERMINAL_ID_SEPARATOR + generateSessionId();
-    }
+    return this.applicationService.clientId + TERMINAL_ID_SEPARATOR + generateSessionId();
   }
 
   async check(ids: string[]) {
