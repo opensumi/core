@@ -39,6 +39,6 @@ export const CopyButton = (props: IconButtonProps) => (
 
 export const SubmitButton = (props: IconButtonProps) => (
   <Button {...props} type='secondary' icon={defaultIconfont.plus} className={styles.add_new_field}>
-    <span className={getIcon(defaultIconfont.plus)}></span> 新增配置项
+    <span className={getIcon(defaultIconfont.plus)}></span> {localize('debug.launch.view.template.button.submit')}
   </Button>
 );

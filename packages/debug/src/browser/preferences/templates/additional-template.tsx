@@ -13,7 +13,7 @@ import {
 import React, { FocusEvent, useMemo } from 'react';
 
 import { Input } from '@opensumi/ide-components';
-import { IJSONSchema } from '@opensumi/ide-core-common';
+import { formatLocalize, IJSONSchema, localize } from '@opensumi/ide-core-common';
 
 import styles from './json-templates.module.less';
 
@@ -114,7 +114,7 @@ export const WrapIfAdditionalTemplate = <
                       <Input
                         className={styles.form_control}
                         defaultValue={label}
-                        placeholder={'请输入 Key'}
+                        placeholder={formatLocalize('debug.launch.view.template.input.placeholder', 'Key')}
                         disabled={disabled || (readonlyAsDisabled && readonly)}
                         id={`${id}-key`}
                         name={`${id}-key`}
@@ -124,7 +124,7 @@ export const WrapIfAdditionalTemplate = <
                       <Input
                         className={styles.form_control}
                         defaultValue={label}
-                        placeholder={'请输入 Value'}
+                        placeholder={formatLocalize('debug.launch.view.template.input.placeholder', 'Value')}
                         disabled={disabled || (readonlyAsDisabled && readonly)}
                         id={`${id}-key`}
                         name={`${id}-key`}

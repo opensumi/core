@@ -247,7 +247,7 @@ const LaunchBody = ({
     const { label, body, description } = snippetItem;
     const { properties } = schemaProperties;
 
-    const snippetProperties = Object.keys(properties).reduce((pre: IJSONSchemaMap, cur: string) => {
+    const snippetProperties = Object.keys(body).reduce((pre: IJSONSchemaMap, cur: string) => {
       const curProp = properties![cur];
 
       if (curProp?.type === 'array' && isUndefined(curProp?.items)) {
