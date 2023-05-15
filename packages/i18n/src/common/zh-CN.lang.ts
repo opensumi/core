@@ -357,6 +357,8 @@ export const localizationBundle = {
     'debug.launch.typeNotSupported': '调试类型 "{0}" 不支持',
     'debug.launch.catchError': '启动调试进程时遇到了错误, 请检查调试控制台',
     'debug.launch.view.template.button.addItem': '添加一项',
+    'debug.launch.view.template.input.placeholder': '请输入 {0}',
+    'debug.launch.view.template.button.submit': '新增配置项',
 
     'debug.widget.exception.thrownWithId': '发生异常: {0}',
     'debug.widget.exception.thrown': '出现异常。',
