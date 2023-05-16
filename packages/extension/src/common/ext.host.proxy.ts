@@ -122,9 +122,9 @@ export interface IExtHostProxyOptions {
    * 默认 1000ms
    */
   retryTime?: number;
-   /**
-   * 通过 rpcProtocol 传递消息的超时时间
-   * 默认 -1，即不配置超时时间
+  /**
+   * control rpcProtocol message timeout
+   * default -1，it means disable
    */
    rpcMessageTimeout?: number;
 }
