@@ -247,6 +247,11 @@ export interface AppConfig {
    * 需要带端口号, 默认是 12345，可使用 COLLABORATION_PORT 字段来指定
    */
   collaborationWsPath?: string;
+  /**
+   * 通过 rpcProtocol 传递消息的超时时间
+   * 默认 -1，即不配置超时时间
+   */
+  rpcMessageTimeout?: number;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

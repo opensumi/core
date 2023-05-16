@@ -108,6 +108,11 @@ interface Config {
    * 配置关闭 keytar 校验能力，默认开启
    */
   disableKeytar?: boolean;
+  /**
+   * 通过 rpcProtocol 传递消息的超时时间
+   * 默认 -1，即不配置超时时间
+   */
+  rpcMessageTimeout?: number;
 }
 
 export interface AppConfig extends Partial<Config> {

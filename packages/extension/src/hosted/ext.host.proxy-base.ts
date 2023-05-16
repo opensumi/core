@@ -142,6 +142,7 @@ export class ExtHostProxy extends Disposable implements IExtHostProxy {
     this.protocol = new RPCProtocol({
       onMessage,
       send,
+      timeout: this.options.rpcMessageTimeout,
     });
     this.extServerProxy = this.protocol.getProxy(EXT_SERVER_IDENTIFIER);
     const extHostProxyRPCService = new ExtHostProxyRPCService(this.extServerProxy);
