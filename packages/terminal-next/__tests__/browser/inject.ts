@@ -5,6 +5,7 @@ import {
   PreferenceService,
   EventBusImpl,
   CorePreferences,
+  ApplicationService,
 } from '@opensumi/ide-core-browser';
 import { MockContextKeyService } from '@opensumi/ide-core-browser/__mocks__/context-key';
 import { MockLogger, MockLoggerManageClient, MockLoggerService } from '@opensumi/ide-core-browser/__mocks__/logger';
@@ -19,6 +20,7 @@ import {
   ILoggerManagerClient,
   ILogServiceManager,
   ILogger,
+  IApplicationService,
 } from '@opensumi/ide-core-common';
 import { MockInjector } from '@opensumi/ide-dev-tool/src/mock-injector';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
@@ -87,6 +89,10 @@ export const injector = new MockInjector([
   {
     token: ITerminalService,
     useClass: MockSocketService,
+  },
+  {
+    token: IApplicationService,
+    useClass: ApplicationService,
   },
   {
     token: IContextKeyService,
