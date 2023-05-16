@@ -1,9 +1,16 @@
-import { IconButtonProps } from '@rjsf/utils';
-import React from 'react';
+import { IconButtonProps, SubmitButtonProps } from '@rjsf/utils';
+import React, { useCallback, useEffect, useMemo } from 'react';
 
-import { Button, getIcon } from '@opensumi/ide-components';
+import { Button, ButtonProps, getIcon } from '@opensumi/ide-components';
 import { defaultIconfont } from '@opensumi/ide-components/lib/icon/iconfont/iconMap';
-import { localize } from '@opensumi/ide-core-common';
+import { useInjectable } from '@opensumi/ide-core-browser';
+import { MenuActionList } from '@opensumi/ide-core-browser/lib/components/actions/index';
+import { MenuNode } from '@opensumi/ide-core-browser/lib/menu/next/base';
+import { LabelMenuItemNode } from '@opensumi/ide-core-browser/lib/menu/next/menu.interface';
+import { Disposable, localize } from '@opensumi/ide-core-common';
+import { ILaunchService } from '@opensumi/ide-debug';
+
+import { LaunchService } from '../launch.service';
 
 import styles from './json-templates.module.less';
 
@@ -37,8 +44,61 @@ export const CopyButton = (props: IconButtonProps) => (
   </Button>
 );
 
-export const SubmitButton = (props: IconButtonProps) => (
-  <Button {...props} type='secondary' icon={defaultIconfont.plus} className={styles.add_new_field}>
-    <span className={getIcon(defaultIconfont.plus)}></span> {localize('debug.launch.view.template.button.submit')}
-  </Button>
-);
+export const AddItemButton = (props: SubmitButtonProps & { onAddClick: (item: LabelMenuItemNode) => void }) => {
+  const {
+    registry: { rootSchema },
+    onAddClick,
+  } = props;
+  const launchService = useInjectable<LaunchService>(ILaunchService);
+  const [menuOpen, setMenuOpen] = React.useState<boolean>(false);
+  const [snippetMenu, setSnippetMenu] = React.useState<MenuNode[]>([]);
+  const { currentSchemaProperties } = launchService;
+
+  const handleVisibleChange = useCallback((visible: boolean) => setMenuOpen(visible), []);
+
+  const handleMenuItemClick = useCallback((item: LabelMenuItemNode) => {
+    setMenuOpen(false);
+    onAddClick(item);
+  }, []);
+
+  useEffect(() => {
+    if (!currentSchemaProperties || !currentSchemaProperties.properties) {
+      return;
+    }
+
+    if (!rootSchema || !rootSchema.properties) {
+      return;
+    }
+
+    const disabled = new Disposable();
+    const { properties } = currentSchemaProperties;
+    const { properties: existedProperties } = rootSchema;
+
+    const updateMenu = () => {
+      setSnippetMenu(
+        Object.keys(properties)
+          // 过滤已存在于视图中的 properties
+          .filter((key) => !Object.hasOwn(existedProperties, key))
+          .map((item) => new LabelMenuItemNode(item)),
+      );
+    };
+
+    disabled.addDispose(launchService.onAddNewProperties(() => updateMenu()));
+    updateMenu();
+
+    return () => disabled.dispose();
+  }, [currentSchemaProperties, rootSchema]);
+
+  return (
+    <Button
+      type='secondary'
+      icon={defaultIconfont.plus}
+      className={styles.add_new_field}
+      menu={<MenuActionList afterClick={handleMenuItemClick} data={snippetMenu} />}
+      moreVisible={menuOpen}
+      onVisibleChange={handleVisibleChange}
+    >
+      <span className={getIcon(defaultIconfont.plus)}></span> {localize('debug.launch.view.template.button.submit')}
+    </Button>
+  );
+};
