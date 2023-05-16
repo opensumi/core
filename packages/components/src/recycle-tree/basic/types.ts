@@ -64,6 +64,11 @@ export interface IBasicTreeData {
    */
   icon?: string;
   iconClassName?: string;
+  twisterClassName?: string;
+  /**
+   * if this node is not a composite node, it will use a empty div placeholder to fill the space
+   */
+  twisterPlaceholderClassName?: string;
   /**
    * 描述
    */
@@ -82,10 +87,6 @@ export interface IBasicTreeData {
    * 是否可展开，若为 false 则不显示展开收起图标
    */
   expandable?: boolean;
-  /**
-   * do not use expandable placeholder
-   */
-  doNotUseExpandablePlaceholder?: boolean;
   /**
    * 用于排序的字符串，若为空则默认以 label 作排序
    */

@@ -81,7 +81,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               ...item,
               label: '',
               expandable: false,
-              doNotUseExpandablePlaceholder: true,
+              twisterPlaceholderClassName: styles.tree_item_twister_placeholder,
               description: (
                 <BreakpointItem
                   toggle={() => toggleBreakpointEnable(item.breakpoint)}

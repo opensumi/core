@@ -154,7 +154,7 @@ export const BasicTreeNodeRenderer: React.FC<
     }
     return (
       <Icon
-        className={cls('segment', 'expansion_toggle', {
+        className={cls('segment', 'expansion_toggle', node.twisterClassName, {
           ['mod_collapsed']: !(node as BasicCompositeTreeNode).expanded,
         })}
         onClick={clickHandler}
@@ -163,14 +163,11 @@ export const BasicTreeNodeRenderer: React.FC<
     );
   };
 
-  const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
+  const renderTwistier = (item: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!(item as BasicCompositeTreeNode).expandable) {
-      if (item.raw && item.raw.doNotUseExpandablePlaceholder) {
-        return null;
-      }
       // a simple trick to make the tree node's padding-left is the same as the folder node's
       // but if user want to use a custom icon, we should not render this component
-      return <div className={cls('segment', 'expansion_toggle')}></div>;
+      return <div className={cls('segment', 'expansion_toggle', item.twisterPlaceholderClassName)}></div>;
     }
 
     if (BasicCompositeTreeNode.is(item)) {
@@ -189,7 +186,7 @@ export const BasicTreeNodeRenderer: React.FC<
       data-id={item.id}
     >
       <div className='content'>
-        {renderTwice(item)}
+        {renderTwistier(item)}
         {renderIcon(item)}
         <div className={'overflow_wrap'}>
           {renderDisplayName(item)}
