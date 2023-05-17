@@ -102,6 +102,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               label: '',
               expandable: false,
               twisterPlaceholderClassName: styles.tree_item_twister_placeholder,
+              breakpoint: item.breakpoint,
               iconClassName: cls(
                 getBreakpointClsState({
                   data: item.rawData,
@@ -152,7 +153,15 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
 
   return (
     <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
-      <BasicRecycleTree indent={20} baseIndent={8} treeData={treeData} height={viewState.height} />
+      <BasicRecycleTree
+        onIconClick={(_, item) => {
+          toggleBreakpointEnable(item.raw.breakpoint);
+        }}
+        indent={20}
+        baseIndent={8}
+        treeData={treeData}
+        height={viewState.height}
+      />
     </div>
   );
 });

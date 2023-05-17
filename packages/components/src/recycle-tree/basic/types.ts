@@ -99,6 +99,8 @@ export interface IBasicTreeData {
   [key: string]: any;
 }
 
+export type TBasicTreeNodeOrCompositeTreeNode = BasicCompositeTreeNode | BasicTreeNode;
+
 export interface IBasicRecycleTreeHandle extends IRecycleTreeHandle {
   selectItem: (item: BasicCompositeTreeNode | BasicTreeNode) => Promise<void>;
   focusItem(path: string): Promise<void>;
@@ -162,6 +164,7 @@ export interface IBasicRecycleTreeProps {
    * 箭头点击事件
    */
   onTwistierClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
+  onIconClick?: (event: React.MouseEvent, node: TBasicTreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单定义，但传入了 `onContextMenu` 函数时将有限执行 `onContextMenu` 函数
    */
@@ -227,6 +230,7 @@ export interface IBasicNodeProps {
    * 箭头点击事件
    */
   onTwistierClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
+  onIconClick?: (event: React.MouseEvent, node: ITreeNodeOrCompositeTreeNode) => void;
   /**
    * 右键菜单定义，但传入了 `onContextMenu` 函数时将优先执行 `onContextMenu` 函数
    */

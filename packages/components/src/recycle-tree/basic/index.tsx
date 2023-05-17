@@ -29,6 +29,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   onClick,
   onContextMenu,
   onTwistierClick,
+  onIconClick,
   onDbClick,
   resolveChildren,
   sortComparator,
@@ -70,6 +71,7 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
         onDbClick={handleItemDbClick}
         onContextMenu={handleContextMenu}
         onTwistierClick={handleTwistierClick}
+        onIconClick={handleItemIconClick}
         decorations={treeService.current?.decorations.getDecorations(props.item as ITreeNodeOrCompositeTreeNode)}
       />
     ),
@@ -145,6 +147,15 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
       }
     },
     [onClick],
+  );
+
+  const handleItemIconClick = useCallback(
+    (event: React.MouseEvent, item: BasicCompositeTreeNode | BasicTreeNode) => {
+      if (onIconClick) {
+        onIconClick(event, item);
+      }
+    },
+    [onIconClick],
   );
 
   const handleItemDbClick = useCallback(

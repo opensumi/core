@@ -21,6 +21,7 @@ export const BasicTreeNodeRenderer: React.FC<
   onClick,
   onDbClick,
   onTwistierClick,
+  onIconClick,
   onContextMenu,
   decorations,
   inlineMenus = [],
@@ -69,6 +70,18 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
+  const handlerIconClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+
+      if (onIconClick) {
+        onIconClick(event, item as any);
+      } else if (onClick) {
+        onClick(event, item as any);
+      }
+    },
+    [onClick, onIconClick],
+  );
   const depth = item.depth > 0 ? item.depth - 1 : 0;
   let paddingLeft = depth * indent;
 
@@ -88,7 +101,7 @@ export const BasicTreeNodeRenderer: React.FC<
 
   const renderIcon = useCallback(
     (node: BasicCompositeTreeNode | BasicTreeNode) => (
-      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} />
+      <Icon onClick={handlerIconClick} icon={node.icon} className={cls('icon', node.iconClassName)} />
     ),
     [],
   );
