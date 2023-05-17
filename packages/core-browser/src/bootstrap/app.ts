@@ -139,6 +139,7 @@ export class ClientApp implements IClientApp, IDisposable {
       editorBackgroundImage: opts.editorBackgroundImage || editorBackgroundImage,
       allowSetDocumentTitleFollowWorkspaceDir,
       devtools: opts.devtools ?? false,
+      rpcMessageTimeout: opts.rpcMessageTimeout || -1,
     };
 
     if (this.config.devtools) {
