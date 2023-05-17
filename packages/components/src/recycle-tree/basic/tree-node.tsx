@@ -76,6 +76,10 @@ export const BasicTreeNodeRenderer: React.FC<
     paddingLeft += baseIndent;
   }
 
+  if (item.indentOffset) {
+    paddingLeft += item.indentOffset;
+  }
+
   const treeNodeStyle = {
     height: itemHeight,
     lineHeight: `${itemHeight}px`,

@@ -72,6 +72,10 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
     return this.raw.twisterPlaceholderClassName;
   }
 
+  get indentOffset() {
+    return this.raw.indentOffset;
+  }
+
   get description() {
     return this.raw.description;
   }
@@ -121,9 +125,15 @@ export class BasicTreeNode extends TreeNode {
   get twisterClassName() {
     return this.raw.twisterClassName;
   }
+
+  get indentOffset() {
+    return this.raw.indentOffset;
+  }
+
   get twisterPlaceholderClassName() {
     return this.raw.twisterPlaceholderClassName;
   }
+
   get raw() {
     return this._raw;
   }
