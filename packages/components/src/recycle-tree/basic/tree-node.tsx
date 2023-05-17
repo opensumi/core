@@ -188,7 +188,6 @@ export const BasicTreeNodeRenderer: React.FC<
   const renderTwistier = (item: BasicCompositeTreeNode | BasicTreeNode) => {
     if (!(item as BasicCompositeTreeNode).expandable) {
       // a simple trick to make the tree node's padding-left is the same as the folder node's
-      // but if user want to use a custom icon, we should not render this component
       return <div className={cls('segment', 'expansion_toggle', item.twisterPlaceholderClassName)}></div>;
     }
 
