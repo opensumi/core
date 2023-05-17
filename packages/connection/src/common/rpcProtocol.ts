@@ -203,8 +203,6 @@ function canceled(): Error {
   error.name = error.message;
   return error;
 }
-// 默认 30s 超时
-export const DEFAULT_TIMEOUT_MS = 30000;
 
 export class RPCProtocol implements IRPCProtocol {
   private readonly _protocol: IMessagePassingProtocol;
@@ -281,12 +279,13 @@ export class RPCProtocol implements IRPCProtocol {
     const msg = MessageIO.serializeRequest(callId, rpcId, methodName, args);
 
     this._protocol.send(msg);
-    // 设置超时回调
-    const timeoutHandle = setTimeout(() => {
-      this._handleTimeout(callId);
-    }, this._protocol.timeout || DEFAULT_TIMEOUT_MS);
-
-    this._timeoutHandles.set(callId, timeoutHandle);
+    // 设置超时回调, -1 即不配置超时时间
+    if (this._protocol.timeout && this._protocol.timeout !== -1) {
+      const timeoutHandle = setTimeout(() => {
+        this._handleTimeout(callId);
+      }, this._protocol.timeout);
+      this._timeoutHandles.set(callId, timeoutHandle);
+    }
 
     return result.promise;
   }
@@ -411,6 +410,6 @@ export class RPCProtocol implements IRPCProtocol {
     this._pendingRPCReplies.delete(callId);
     this._timeoutHandles.delete(callId);
 
-    pendingReply.reject('RPC Timeout');
+    pendingReply.reject(new Error('RPC Timeout: '+ callId));
   }
 }

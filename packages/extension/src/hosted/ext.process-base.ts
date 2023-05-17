@@ -70,9 +70,14 @@ export interface ExtProcessConfig {
   builtinCommands?: IBuiltInCommand[];
   customDebugChildProcess?: CustomChildProcessModule;
   customVSCodeEngineVersion?: string;
+   /**
+   * control rpcProtocol message timeout
+   * default -1，it means disable
+   */
+   rpcMessageTimeout?: number;
 }
 
-async function initRPCProtocol(extInjector): Promise<any> {
+async function initRPCProtocol(extInjector: Injector): Promise<any> {
   const extCenter = new RPCServiceCenter();
   const { getRPCService } = initRPCService<{
     onMessage(msg: string): void;
@@ -92,9 +97,12 @@ async function initRPCProtocol(extInjector): Promise<any> {
   const onMessage = onMessageEmitter.event;
   const send = service.onMessage;
 
+  const appConfig = extInjector.get(AppConfig);
+
   const extProtocol = new RPCProtocol({
     onMessage,
     send,
+    timeout: appConfig.rpcMessageTimeout,
   });
 
   logger = new ExtensionLogger2(extInjector); // new ExtensionLogger(extProtocol);

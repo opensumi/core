@@ -78,6 +78,7 @@ export class ServerApp implements IServerApp {
       blockPatterns: opts.blockPatterns,
       extHostIPCSockPath: opts.extHostIPCSockPath,
       extHostForkOptions: opts.extHostForkOptions,
+      rpcMessageTimeout: opts.rpcMessageTimeout || -1,
     };
     this.bindProcessHandler();
     this.initBaseProvider();
