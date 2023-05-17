@@ -63,6 +63,7 @@ export interface IBasicTreeData {
    * 图标
    */
   icon?: string;
+  className?: string;
   iconClassName?: string;
   twisterClassName?: string;
   /**

@@ -69,7 +69,8 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-  let paddingLeft = (item.depth || 0) * (indent || 0);
+  const depth = item.depth > 0 ? item.depth - 1 : 0;
+  let paddingLeft = depth * indent;
 
   if (baseIndent) {
     paddingLeft += baseIndent;
@@ -185,7 +186,7 @@ export const BasicTreeNodeRenderer: React.FC<
       onClick={handleClick}
       onDoubleClick={handleDbClick}
       onContextMenu={handleContextMenu}
-      className={cls('tree_node', className, decorations ? decorations.classlist : null)}
+      className={cls('tree_node', className, decorations ? decorations.classlist : null, item.className)}
       style={treeNodeStyle}
       data-id={item.id}
     >

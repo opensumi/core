@@ -196,6 +196,8 @@ const parseTreeData = (id: string, section: ISettingSection, i: number) => {
       section: section.title,
       groupId: id,
       order: i,
+      twisterPlaceholderClassName: styles.item_twister_placeholder,
+      className: styles.index_item,
     } as IPreferenceTreeData;
   }
   const subTreeData = [] as IPreferenceTreeData[];
@@ -229,6 +231,7 @@ const PreferenceIndexes = observer(() => {
         iconClassName: iconClass,
         groupId: id,
         order: index,
+        className: styles.group_item,
       } as IPreferenceTreeData;
       const children = [] as IPreferenceTreeData[];
       const sections = preferenceService.getResolvedSections(id);
@@ -265,13 +268,8 @@ const PreferenceIndexes = observer(() => {
           height={height}
           width={width}
           itemHeight={26}
-          getItemClassName={(item) => {
-            if (item?.depth === 1) {
-              return styles.group_item;
-            }
-            return styles.index_item;
-          }}
           baseIndent={8}
+          indent={16}
           treeData={treeData}
           onClick={(_e, node) => {
             const treeData = node && ((node as any)._raw as IPreferenceTreeData);

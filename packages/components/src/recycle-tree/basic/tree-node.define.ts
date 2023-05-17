@@ -60,6 +60,10 @@ export class BasicCompositeTreeNode extends CompositeTreeNode {
     return this.raw.iconClassName;
   }
 
+  get className() {
+    return this.raw.className;
+  }
+
   get twisterClassName() {
     return this.raw.twisterClassName;
   }
@@ -108,6 +112,10 @@ export class BasicTreeNode extends TreeNode {
 
   get iconClassName() {
     return this.raw.iconClassName;
+  }
+
+  get className() {
+    return this.raw.className;
   }
 
   get twisterClassName() {

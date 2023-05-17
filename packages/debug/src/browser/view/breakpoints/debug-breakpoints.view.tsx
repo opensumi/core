@@ -1,6 +1,6 @@
 import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import { BasicRecycleTree, CheckBox, IBasicTreeData, ICompositeTreeNode } from '@opensumi/ide-components';
 import { Badge } from '@opensumi/ide-components';
@@ -23,7 +23,6 @@ import {
   isDebugBreakpoint,
   isRuntimeBreakpoint,
   getStatus,
-  isDebugExceptionBreakpoint,
   EXCEPTION_BREAKPOINT_URI,
 } from '../../breakpoint';
 import { DebugSessionManager } from '../../debug-session-manager';
@@ -165,7 +164,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
     <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
       <BasicRecycleTree
         indent={20}
-        baseIndent={-12}
+        baseIndent={8}
         treeData={treeData}
         height={viewState.height}
         getItemClassName={getItemClassName}
