@@ -2,7 +2,7 @@ import cls from 'classnames';
 import { observer } from 'mobx-react-lite';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { BasicRecycleTree, CheckBox, IBasicTreeData, ICompositeTreeNode } from '@opensumi/ide-components';
+import { BasicRecycleTree, CheckBox, IBasicTreeData } from '@opensumi/ide-components';
 import { Badge } from '@opensumi/ide-components';
 import {
   useInjectable,
@@ -13,7 +13,6 @@ import {
   Disposable,
   ViewState,
   Event,
-  isUndefined,
 } from '@opensumi/ide-core-browser';
 import { DebugProtocol } from '@opensumi/vscode-debugprotocol/lib/debugProtocol';
 
@@ -84,9 +83,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               description: (
                 <BreakpointItem
                   toggle={() => toggleBreakpointEnable(item.breakpoint)}
-                  breakpointEnabled={enable}
                   data={item.rawData}
-                  isDebugMode={debugBreakpointsService.inDebugMode}
                 ></BreakpointItem>
               ),
             });
@@ -116,9 +113,7 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               description: (
                 <BreakpointItem
                   toggle={() => toggleBreakpointEnable(item.breakpoint)}
-                  breakpointEnabled={enable}
                   data={item.rawData}
-                  isDebugMode={debugBreakpointsService.inDebugMode}
                 ></BreakpointItem>
               ),
             })),
@@ -155,35 +150,14 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
     }
   }, [treeData]);
 
-  const getItemClassName = useCallback((item: ICompositeTreeNode) => {
-    if (!item.children && isUndefined((item as any).expandable)) {
-      return styles.debug_breakpoints_item_tree_node;
-    }
-  }, []);
   return (
     <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
-      <BasicRecycleTree
-        indent={20}
-        baseIndent={8}
-        treeData={treeData}
-        height={viewState.height}
-        getItemClassName={getItemClassName}
-      />
+      <BasicRecycleTree indent={20} baseIndent={8} treeData={treeData} height={viewState.height} />
     </div>
   );
 });
 
-export const BreakpointItem = ({
-  data,
-  toggle,
-  isDebugMode,
-  breakpointEnabled,
-}: {
-  data: BreakpointItem;
-  toggle: () => void;
-  isDebugMode: boolean;
-  breakpointEnabled: boolean;
-}) => {
+export const BreakpointItem = ({ data, toggle }: { data: BreakpointItem; toggle: () => void }) => {
   const defaultValue = isDebugBreakpoint(data.breakpoint) ? data.breakpoint.enabled : !!data.breakpoint.default;
   const manager = useInjectable<DebugSessionManager>(IDebugSessionManager);
   const commandService = useInjectable<CommandService>(CommandService);
@@ -246,8 +220,6 @@ export const BreakpointItem = ({
       disposable.dispose();
     };
   }, []);
-
-  const verified = !isDebugMode ? true : isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint);
 
   const removeBreakpoint = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     event.stopPropagation();

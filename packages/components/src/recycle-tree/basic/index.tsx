@@ -1,4 +1,3 @@
-import throttle from 'lodash/throttle';
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import CtxMenuTrigger from 'react-ctxmenu-trigger';
 
@@ -40,7 +39,6 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   contextMenus,
   contextMenuActuator,
   treeName,
-  getItemClassName,
 }) => {
   const [showMenus, setShowMenus] = useState<{
     show: boolean;

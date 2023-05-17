@@ -187,8 +187,6 @@ export interface IBasicRecycleTreeProps {
    * 指定 RecycleTree 的名字
    */
   treeName?: string;
-
-  getItemClassName?: (item?: ITreeNodeOrCompositeTreeNode) => string | undefined;
 }
 
 export interface IBasicNodeProps {
