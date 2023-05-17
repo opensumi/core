@@ -1,8 +1,6 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { isDefined } from '@opensumi/ide-utils';
-
 import { Button } from '../../button';
 import { Icon } from '../../icon';
 import { Loading } from '../../loading';
@@ -19,6 +17,7 @@ export const BasicTreeNodeRenderer: React.FC<
   className,
   itemHeight = 22,
   indent = 8,
+  baseIndent = 8,
   onClick,
   onDbClick,
   onTwistierClick,
@@ -70,7 +69,11 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-  const paddingLeft = (item.depth || 0) * (indent || 0);
+  let paddingLeft = (item.depth || 0) * (indent || 0);
+
+  if (baseIndent) {
+    paddingLeft += baseIndent;
+  }
 
   const treeNodeStyle = {
     height: itemHeight,
@@ -79,8 +82,9 @@ export const BasicTreeNodeRenderer: React.FC<
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) =>
-      node.iconClassName ? <Icon icon={node.icon} className={cls('icon', node.iconClassName)} /> : null,
+    (node: BasicCompositeTreeNode | BasicTreeNode) => (
+      <Icon icon={node.icon} className={cls('icon', node.iconClassName)} />
+    ),
     [],
   );
 

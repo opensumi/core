@@ -46,6 +46,30 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
   const isDisposed = useRef<boolean>(false);
   const [treeData, setTreeData] = useState<IBasicTreeData[]>([]);
 
+  const getBreakpointClsState = (options: {
+    data: BreakpointItem;
+    inDebugMode: boolean;
+    breakpointEnabled: boolean;
+  }) => {
+    const { data, inDebugMode, breakpointEnabled } = options;
+    if (isDebugBreakpoint(data.breakpoint)) {
+      const verified = !inDebugMode ? true : isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint);
+
+      if (!verified) {
+        return 'sumi-debug-breakpoint-unverified';
+      }
+
+      const { className } = debugBreakpointsService.getBreakpointDecoration(
+        data.breakpoint as IDebugBreakpoint,
+        inDebugMode,
+        breakpointEnabled,
+      );
+      return className;
+    }
+
+    return '';
+  };
+
   const updateTreeData = useCallback(
     (nodes: [string, BreakpointsTreeNode[]][]) => {
       const { roots } = debugBreakpointsService;
@@ -82,6 +106,14 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
               label: '',
               expandable: false,
               twisterPlaceholderClassName: styles.tree_item_twister_placeholder,
+              iconClassName: cls(
+                getBreakpointClsState({
+                  data: item.rawData,
+                  inDebugMode: debugBreakpointsService.inDebugMode,
+                  breakpointEnabled: enable,
+                }),
+                styles.debug_breakpoints_icon,
+              ),
               description: (
                 <BreakpointItem
                   toggle={() => toggleBreakpointEnable(item.breakpoint)}
@@ -131,7 +163,13 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
   }, []);
   return (
     <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
-      <BasicRecycleTree treeData={treeData} height={viewState.height} getItemClassName={getItemClassName} />
+      <BasicRecycleTree
+        indent={20}
+        baseIndent={-12}
+        treeData={treeData}
+        height={viewState.height}
+        getItemClassName={getItemClassName}
+      />
     </div>
   );
 });
@@ -212,42 +250,13 @@ export const BreakpointItem = ({
 
   const verified = !isDebugMode ? true : isDebugBreakpoint(data.breakpoint) && isRuntimeBreakpoint(data.breakpoint);
 
-  const getBreakpointIcon = () => {
-    const { className } = debugBreakpointsService.getBreakpointDecoration(
-      data.breakpoint as IDebugBreakpoint,
-      isDebugMode,
-      breakpointEnabled && enabled,
-    );
-    return className;
-  };
-
-  const converBreakpointClsState = () => {
-    if (isDebugBreakpoint(data.breakpoint)) {
-      if (!verified) {
-        return 'sumi-debug-breakpoint-unverified';
-      }
-
-      return getBreakpointIcon();
-    }
-
-    return '';
-  };
-
   const removeBreakpoint = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
     event.stopPropagation();
     debugBreakpointsService.delBreakpoint(data.breakpoint as IDebugBreakpoint);
   };
 
-  const isExceptionBreakpoint = useMemo(() => isDebugExceptionBreakpoint(data.breakpoint), [data]);
-
   return (
     <div className={cls(styles.debug_breakpoints_item)}>
-      {!isExceptionBreakpoint && (
-        <div
-          onClick={handleBreakpointChange}
-          className={cls(converBreakpointClsState(), styles.debug_breakpoints_icon)}
-        ></div>
-      )}
       <CheckBox
         className={styles.debug_breakpoints_icon}
         id={data.id}

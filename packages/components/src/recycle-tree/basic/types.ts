@@ -204,6 +204,10 @@ export interface IBasicNodeProps {
    */
   indent?: number;
   /**
+   * 基础缩进。即第一层距离左边的距离，默认为 8
+   */
+  baseIndent?: number;
+  /**
    * 节点装饰
    */
   decorations?: ClasslistComposite;

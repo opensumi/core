@@ -58,32 +58,23 @@ export const BasicRecycleTree: React.FC<IBasicRecycleTreeProps> = ({
   const wrapperRef: React.RefObject<HTMLDivElement> = React.createRef();
 
   const renderTreeNode = useCallback(
-    (props: INodeRendererWrapProps) => {
-      let _indent: number | undefined;
-      if (baseIndent) {
-        _indent = baseIndent;
-      }
-      if (indent) {
-        _indent = (_indent ?? 0) + indent;
-      }
-
-      return (
-        <BasicTreeNodeRenderer
-          item={props.item as any}
-          itemType={props.itemType}
-          itemHeight={itemHeight}
-          indent={_indent}
-          className={getItemClassName?.(props.item as any) ?? itemClassname}
-          inlineMenus={inlineMenus}
-          inlineMenuActuator={inlineMenuActuator}
-          onClick={handleItemClick}
-          onDbClick={handleItemDbClick}
-          onContextMenu={handleContextMenu}
-          onTwistierClick={handleTwistierClick}
-          decorations={treeService.current?.decorations.getDecorations(props.item as ITreeNodeOrCompositeTreeNode)}
-        />
-      );
-    },
+    (props: INodeRendererWrapProps) => (
+      <BasicTreeNodeRenderer
+        item={props.item as any}
+        itemType={props.itemType}
+        itemHeight={itemHeight}
+        indent={indent}
+        baseIndent={baseIndent}
+        className={getItemClassName?.(props.item as any) ?? itemClassname}
+        inlineMenus={inlineMenus}
+        inlineMenuActuator={inlineMenuActuator}
+        onClick={handleItemClick}
+        onDbClick={handleItemDbClick}
+        onContextMenu={handleContextMenu}
+        onTwistierClick={handleTwistierClick}
+        decorations={treeService.current?.decorations.getDecorations(props.item as ITreeNodeOrCompositeTreeNode)}
+      />
+    ),
     [model],
   );
 
