@@ -160,7 +160,7 @@ export const Scrollbars = ({
         }}
         className={'scrollbar-decoration-horizontal'}
       />
-      {children}
+      <div className={'scrollbar-container'}>{children}</div>
     </CustomScrollbars>
   );
 };
