@@ -48,9 +48,14 @@ export function getPreferenceIconThemeId(): string {
 export function getPreferenceLanguageId(defaultPreferences?: IPreferences): string {
   // 默认从配置项中获取语言选项，其次从默认配置项中获取 `general.language`, 默认为 `en-US`
   const langFromDefaultPreferences = defaultPreferences && defaultPreferences[GeneralSettingsId.Language];
-  return (
-    getExternalPreference<string>(GeneralSettingsId.Language).value || langFromDefaultPreferences || getLanguageId()
-  );
+  const langExternalPreference = getExternalPreference<string>(GeneralSettingsId.Language);
+
+  // 用户自定义语言设置优先于默认设置
+  if (langExternalPreference.value && langExternalPreference.scope > PreferenceScope.Default) {
+    return langExternalPreference.value;
+  }
+
+  return langFromDefaultPreferences || langExternalPreference.value || getLanguageId();
 }
 
 // 默认使用 localStorage
