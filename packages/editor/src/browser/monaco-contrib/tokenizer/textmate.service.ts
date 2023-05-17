@@ -489,10 +489,6 @@ export class TextmateService extends WithEventBus implements ITextmateTokenizerS
       const scope = scopes[i];
       const langId = languages[scope];
       result[scope] = getEncodedLanguageId(langId);
-      // TODO 后置到 tokenize 使用到对应的 scope 时激活（vscode逻辑），现在先激活一个 language 时激活所有 embed language
-      if (!this.activatedLanguage.has(langId)) {
-        this.activateLanguage(langId);
-      }
     }
     return result;
   }
