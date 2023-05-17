@@ -43,7 +43,7 @@ export const buttonBorder = registerColor(
 );
 /** secondary button */
 export const buttonSecondaryForeground = registerColor(
-  'button.foreground',
+  'button.secondaryForeground',
   {
     dark: Color.white,
     light: Color.white,
