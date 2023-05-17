@@ -1277,14 +1277,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
-    let stat;
-    if (uri.toString().startsWith('file:/')) {
-      stat = await this.fileServiceClient.getFileStat(uri.toString());
-    }
-    // 更新recently时需要判断文件是否存在
-    if (uri.scheme === Schemes.file && stat) {
-      // 只记录 file 类型的
-      this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
+    // 只记录 file 类型的
+    if (uri.scheme === Schemes.file) {
+      // 更新recently时需要判断文件是否存在
+      const stat = await this.fileServiceClient.getFileStat(uri.toString());
+      if (stat) {
+        this.recentFilesManager.setMostRecentlyOpenedFile!(uri.withoutFragment().toString());
+      }
     }
     if (options && options.split) {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined, preview: false }));
