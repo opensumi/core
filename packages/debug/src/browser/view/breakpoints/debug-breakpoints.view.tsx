@@ -155,7 +155,9 @@ export const DebugBreakpointView = observer(({ viewState }: React.PropsWithChild
     <div className={cls(styles.debug_breakpoints, !enable && styles.debug_breakpoints_disabled)}>
       <BasicRecycleTree
         onIconClick={(_, item) => {
-          toggleBreakpointEnable(item.raw.breakpoint);
+          if (item.raw.breakpoint) {
+            toggleBreakpointEnable(item.raw.breakpoint);
+          }
         }}
         indent={20}
         baseIndent={8}
