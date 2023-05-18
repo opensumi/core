@@ -1,4 +1,3 @@
-import { sanitize } from 'dompurify';
 import { marked, Renderer } from 'marked';
 
 export type IMarkedOptions = marked.MarkedOptions;
@@ -11,16 +10,13 @@ export const parseMarkdown = (
   callback?: (error: any, parseResult: string) => void,
 ) => {
   if (!callback) {
-    return sanitize(marked.parse(value, options));
+    return marked.parse(value, options);
   }
-  const wrappedCallback = (error: any, parseResult: string) => {
-    callback(error, sanitize(parseResult));
-  };
   if (options) {
-    marked.parse(value, options, wrappedCallback);
+    marked.parse(value, options, callback);
   } else {
-    marked.parse(value, wrappedCallback);
+    marked.parse(value, callback);
   }
 };
 
-export const toMarkdownHtml = (value: string, options?: IMarkedOptions) => sanitize(marked(value, options));
+export const toMarkdownHtml = (value: string, options?: IMarkedOptions) => marked(value, options);
