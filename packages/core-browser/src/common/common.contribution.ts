@@ -1,5 +1,4 @@
 import { Autowired } from '@opensumi/di';
-import { getIcon } from '@opensumi/ide-components';
 import {
   CommandContribution,
   CommandService,
@@ -11,7 +10,6 @@ import {
   replaceLocalizePlaceholder,
 } from '@opensumi/ide-core-common';
 
-import { getExternalIcon } from '../../lib';
 import { IContextKeyService, IContextKey } from '../context-key';
 import { corePreferenceSchema } from '../core-preferences';
 import { trackFocus } from '../dom';
@@ -318,46 +316,6 @@ export class ClientCommonContribution
         group: '0_about',
       });
     }
-
-    // Icon Menubar
-    menus.registerMenuItems(MenuId.IconMenubarContext, [
-      {
-        command: EDITOR_COMMANDS.QUICK_OPEN.id,
-        iconClass: getIcon('search'),
-        group: '1_menubar_group',
-        order: 1,
-      },
-      {
-        command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
-        iconClass: getExternalIcon('new-file'),
-        group: '2_menubar_group',
-        order: 2,
-      },
-      {
-        command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
-        iconClass: getIcon('left'),
-        group: '2_menubar_group',
-        order: 2,
-      },
-      {
-        command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
-        iconClass: getIcon('right'),
-        group: '2_menubar_group',
-        order: 2,
-      },
-      {
-        command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
-        iconClass: getIcon('extension'),
-        group: '3_menubar_group',
-        order: 2,
-      },
-      {
-        command: EDITOR_COMMANDS.NEW_UNTITLED_FILE.id,
-        iconClass: getIcon('question-circle'),
-        group: '3_menubar_group',
-        order: 2,
-      },
-    ]);
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

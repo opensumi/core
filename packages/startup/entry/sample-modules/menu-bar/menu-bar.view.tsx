@@ -18,7 +18,9 @@ export const MenuBarView = () => (
     style={{ height: LAYOUT_VIEW_SIZE.MENUBAR_HEIGHT }}
   >
     <span className={styles.menu_bar_logo} />
-    <MenuBar />
-    {/* <div style={{ marginLeft: '15px' }}><IconMenuBar /></div> */}
+    {/* <MenuBar /> */}
+    <div style={{ marginLeft: '15px' }}>
+      <IconMenuBar />
+    </div>
   </div>
 );
