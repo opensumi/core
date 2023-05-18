@@ -160,3 +160,16 @@ export interface IDebugServiceContributionPoint {
   contributions: IJSONSchema[];
   removed?: boolean;
 }
+
+/**
+ * launch view service
+ */
+
+export const ILaunchService = Symbol('ILaunchService');
+
+export interface ILaunchService {
+  currentSchemaProperties: IJSONSchema | null;
+}
+/**
+ * launch view service end
+ */
