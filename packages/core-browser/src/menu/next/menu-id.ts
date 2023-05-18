@@ -18,6 +18,8 @@ export enum MenuId {
   BreadcrumbsTitleContext = 'breadcrumbs/title/context',
   EmptyEditorGroupContext = 'empty/editor/group/context',
   ExplorerContext = 'explorer/context',
+  // top icon menubar
+  IconMenubarContext = 'iconMenubar/context',
   MenubarAppearanceMenu = 'menubar/appearance',
   MenubarAppMenu = 'menubar/app',
   MenubarDebugMenu = 'menubar/debug',

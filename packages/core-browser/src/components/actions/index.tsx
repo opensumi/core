@@ -1,5 +1,5 @@
 import clsx from 'classnames';
-import React, { useCallback } from 'react';
+import React, { useMemo } from 'react';
 
 import { Button, CheckBox, Icon } from '@opensumi/ide-components';
 import { ClickParam, Menu } from '@opensumi/ide-components/lib/menu';
@@ -387,6 +387,11 @@ export const TitleActionList: React.FC<
             }
           }
 
+          // 分隔符
+          if (item.id === SeparatorMenuItemNode.ID) {
+            return <span key={`vertical-divider-${item.id}`} className={styles.verticalDivider} />;
+          }
+
           // submenu 使用 submenu-id 作为 id 唯一值
           const id = item.id === SubmenuItemNode.ID ? (item as SubmenuItemNode).submenuId : item.id;
           return (
@@ -434,6 +439,7 @@ interface InlineActionBarProps<T, U, K, M> extends Omit<BaseActionListProps, 'ex
   separator?: IMenuSeparator;
   className?: string;
   debounce?: { delay: number; maxWait?: number };
+  isFlattenMenu?: boolean;
 }
 
 interface IMenubarIconService {
@@ -443,13 +449,20 @@ interface IMenubarIconService {
 export function InlineActionBar<T = undefined, U = undefined, K = undefined, M = undefined>(
   props: InlineActionBarProps<T, U, K, M>,
 ): React.ReactElement<InlineActionBarProps<T, U, K, M>> {
-  const { menus, context, separator = 'navigation', debounce, ...restProps } = props;
+  const { menus, context, separator = 'navigation', debounce, isFlattenMenu = false, ...restProps } = props;
   // 因为这里的 context 塞到 useMenus 之后会自动把参数加入到 MenuItem.execute 里面
   const [navMenu, moreMenu] = useMenus(menus, separator, context, debounce);
 
+  const navMenus = useMemo(() => isFlattenMenu ? [...navMenu, ...moreMenu] : navMenu, [navMenu, moreMenu, isFlattenMenu]);
+
   // inline 菜单不取第二组，对应内容由关联 context menu 去渲染
   return (
-    <TitleActionList menuId={menus.menuId} nav={navMenu} more={separator === 'inline' ? [] : moreMenu} {...restProps} />
+    <TitleActionList
+      menuId={menus.menuId}
+      nav={navMenus}
+      more={separator === 'inline' || isFlattenMenu ? [] : moreMenu}
+      {...restProps}
+    />
   );
 }
 
