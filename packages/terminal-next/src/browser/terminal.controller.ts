@@ -21,6 +21,7 @@ import {
   withNullAsUndefined,
   isThemeColor,
   Uri,
+  IApplicationService,
 } from '@opensumi/ide-core-common';
 import { WorkbenchEditorService } from '@opensumi/ide-editor';
 import { IMainLayoutService } from '@opensumi/ide-main-layout';
@@ -118,6 +119,9 @@ export class TerminalController extends WithEventBus implements ITerminalControl
   @Autowired(IMenuRegistry)
   private readonly menuRegistry: IMenuRegistry;
 
+  @Autowired(IApplicationService)
+  protected readonly applicationService: IApplicationService;
+
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
@@ -177,12 +181,7 @@ export class TerminalController extends WithEventBus implements ITerminalControl
     if (this._clientId) {
       return this._clientId;
     }
-    if (this.appConfig.isElectronRenderer) {
-      this._clientId = (global as any).metadata?.windowClientId;
-    } else {
-      const WSHandler = this.injector.get(WSChannelHandler);
-      this._clientId = WSHandler.clientId;
-    }
+    this._clientId = this.applicationService.clientId;
     return this._clientId;
   }
 
