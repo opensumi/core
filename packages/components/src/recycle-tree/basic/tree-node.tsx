@@ -1,8 +1,6 @@
 import cls from 'classnames';
 import React, { useCallback } from 'react';
 
-import { isDefined } from '@opensumi/ide-utils';
-
 import { Button } from '../../button';
 import { Icon } from '../../icon';
 import { Loading } from '../../loading';
@@ -19,9 +17,11 @@ export const BasicTreeNodeRenderer: React.FC<
   className,
   itemHeight = 22,
   indent = 8,
+  baseIndent = 8,
   onClick,
   onDbClick,
   onTwistierClick,
+  onIconClick,
   onContextMenu,
   decorations,
   inlineMenus = [],
@@ -70,23 +70,39 @@ export const BasicTreeNodeRenderer: React.FC<
     },
     [onClick, onTwistierClick],
   );
-  // 14 * 2 = Toggle Icon Size + Icon Size
-  const paddingLeft = BasicCompositeTreeNode.is(item)
-    ? `${(item.depth || 0) * (indent || 0)}px`
-    : `${(item.depth || 0) * (indent || 0) + 14 * 2}px`;
+  const handlerIconClick = useCallback(
+    (event: React.MouseEvent) => {
+      event.stopPropagation();
+
+      if (onIconClick) {
+        onIconClick(event, item as any);
+      } else if (onClick) {
+        onClick(event, item as any);
+      }
+    },
+    [onClick, onIconClick],
+  );
+  const depth = item.depth > 0 ? item.depth - 1 : 0;
+  let paddingLeft = depth * indent;
+
+  if (baseIndent) {
+    paddingLeft += baseIndent;
+  }
+
+  if (item.indentOffset) {
+    paddingLeft += item.indentOffset;
+  }
 
   const treeNodeStyle = {
     height: itemHeight,
     lineHeight: `${itemHeight}px`,
-    paddingLeft,
+    paddingLeft: `${paddingLeft}px`,
   } as React.CSSProperties;
 
   const renderIcon = useCallback(
-    (node: BasicCompositeTreeNode | BasicTreeNode) =>
-      node.iconClassName ? (
-        // 图标的最大高度设置为 `itemHeight - 8`, 这样在视觉上看起来有一种 padding 的效果
-        <Icon icon={node.icon} className={cls('icon', node.iconClassName)} style={{ maxHeight: itemHeight - 8 }} />
-      ) : null,
+    (node: BasicCompositeTreeNode | BasicTreeNode) => (
+      <Icon onClick={handlerIconClick} icon={node.icon} className={cls('icon', node.iconClassName)} />
+    ),
     [],
   );
 
@@ -160,7 +176,7 @@ export const BasicTreeNodeRenderer: React.FC<
     }
     return (
       <Icon
-        className={cls('segment', 'expansion_toggle', {
+        className={cls('segment', 'expansion_toggle', node.twisterClassName, {
           ['mod_collapsed']: !(node as BasicCompositeTreeNode).expanded,
         })}
         onClick={clickHandler}
@@ -169,13 +185,10 @@ export const BasicTreeNodeRenderer: React.FC<
     );
   };
 
-  const renderTwice = (item: BasicCompositeTreeNode | BasicTreeNode) => {
-    if (isDefined((item as BasicCompositeTreeNode).expandable)) {
-      if (!(item as BasicCompositeTreeNode).expandable) {
-        return <div className={cls('segment', 'expansion_toggle')}></div>;
-      }
-    } else {
-      return null;
+  const renderTwistier = (item: BasicCompositeTreeNode | BasicTreeNode) => {
+    if (!(item as BasicCompositeTreeNode).expandable) {
+      // a simple trick to make the tree node's padding-left is the same as the folder node's
+      return <div className={cls('segment', 'expansion_toggle', item.twisterPlaceholderClassName)}></div>;
     }
 
     if (BasicCompositeTreeNode.is(item)) {
@@ -189,12 +202,12 @@ export const BasicTreeNodeRenderer: React.FC<
       onClick={handleClick}
       onDoubleClick={handleDbClick}
       onContextMenu={handleContextMenu}
-      className={cls('tree_node', className, decorations ? decorations.classlist : null)}
+      className={cls('tree_node', className, decorations ? decorations.classlist : null, item.className)}
       style={treeNodeStyle}
       data-id={item.id}
     >
       <div className='content'>
-        {renderTwice(item)}
+        {renderTwistier(item)}
         {renderIcon(item)}
         <div className={'overflow_wrap'}>
           {renderDisplayName(item)}

@@ -44,6 +44,7 @@ interface IPreferenceTreeData extends IBasicTreeData {
 }
 
 const TREE_NAME = 'preferenceViewIndexTree';
+const kBaseIndent = 8;
 
 const usePreferenceGroups = () => {
   const preferenceService: PreferenceSettingsService = useInjectable(IPreferenceSettingsService);
@@ -57,6 +58,15 @@ const usePreferenceGroups = () => {
       setGroups(toJS(_groups, { recurseEverything: true }));
     }
   }, 16);
+
+  useEffect(() => {
+    const dispose = preferenceService.onSettingsGroupsChange(() => {
+      updateGroup.run();
+    });
+    return () => {
+      dispose.dispose();
+    };
+  });
 
   useEffect(() => {
     updateGroup.run();
@@ -179,20 +189,22 @@ export const PreferenceItem = ({ data, index }: { data: ISectionItemData; index:
   }
 };
 
-const parseTreeData = (id: string, section: ISettingSection, i: number) => {
+const parseTreeData = (id: string, section: ISettingSection, order: number, depth: number) => {
   let innerTreeData: IPreferenceTreeData | undefined;
   if (section.title) {
     innerTreeData = {
       label: section.title,
       section: section.title,
       groupId: id,
-      order: i,
+      order,
+      indentOffset: depth === 1 ? -kBaseIndent : -(kBaseIndent >> 1),
+      className: styles.index_item,
     } as IPreferenceTreeData;
   }
   const subTreeData = [] as IPreferenceTreeData[];
   if (section.subSections) {
     section.subSections.forEach((v, _i) => {
-      const _treeData = parseTreeData(id, v, _i);
+      const _treeData = parseTreeData(id, v, _i, depth + 1);
       _treeData && subTreeData.push(_treeData);
     });
   }
@@ -220,11 +232,12 @@ const PreferenceIndexes = observer(() => {
         iconClassName: iconClass,
         groupId: id,
         order: index,
+        className: styles.group_item,
       } as IPreferenceTreeData;
       const children = [] as IPreferenceTreeData[];
       const sections = preferenceService.getResolvedSections(id);
       sections.forEach((sec, i) => {
-        const _treeData = parseTreeData(id, sec, i);
+        const _treeData = parseTreeData(id, sec, i, 1);
         if (_treeData) {
           children.push(_treeData);
         }
@@ -256,13 +269,8 @@ const PreferenceIndexes = observer(() => {
           height={height}
           width={width}
           itemHeight={26}
-          getItemClassName={(item) => {
-            if (item?.depth === 1) {
-              return styles.group_item;
-            }
-            return styles.index_item;
-          }}
-          baseIndent={8}
+          baseIndent={kBaseIndent}
+          indent={12}
           treeData={treeData}
           onClick={(_e, node) => {
             const treeData = node && ((node as any)._raw as IPreferenceTreeData);
