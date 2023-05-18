@@ -1,6 +1,7 @@
-import { sanitize } from 'dompurify';
 import { marked, Renderer } from 'marked';
 import React from 'react';
+
+import { toMarkdownHtml } from '../utils/marked';
 
 import { DATA_SET_COMMAND, IOpenerShape, RenderWrapper } from './render';
 
@@ -20,7 +21,7 @@ export class DefaultMarkedRenderer extends Renderer {
 }
 
 export function Markdown(props: IMarkdownProps) {
-  const parseMarkdown = (text: string, renderer: any) => sanitize(marked.parse(text, { renderer }));
+  const parseMarkdown = (text: string, renderer: any) => toMarkdownHtml(text, { renderer });
 
   const [htmlContent, setHtmlContent] = React.useState(parseMarkdown(props.value, props.renderer));
 
